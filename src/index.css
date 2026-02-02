@@ -2,29 +2,51 @@
 @import "nprogress/nprogress.css";
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+	font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+	color-scheme: light dark;
+	color: rgba(255, 255, 255, 0.87);
+	background-color: #16181c;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 #nprogress .bar {
-  background: #22c55e;
-  height: 2px;
+	background: #0076ff;
+	height: 2px;
 }
 
 #nprogress .peg {
-  box-shadow: none;
+	box-shadow: none;
 }
 
 #nprogress .spinner {
-  display: none;
+	display: none;
+}
+
+#main-gradient {
+	height: 262px;
+	position: absolute;
+	top: 0px;
+	width: 100%;
+	z-index: -1;
+	background: linear-gradient(0deg, transparent 2%, #16181c 109%);
+}
+
+#gradient, .gradient {
+  background: -moz-linear-gradient(top, rgba(125, 185, 232, 0) 0, #16181c 100%);
+  background: -webkit-linear-gradient(top, rgba(125, 185, 232, 0) 0, #16181c 100%);
+  background: linear-gradient(to bottom, rgba(125, 185, 232, 0) 0, #16181c 100%);
+  bottom: -1px;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#007db9e8",endColorstr="#16181c",GradientType=0);
+  height: 80%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  z-index: -1;
 }
