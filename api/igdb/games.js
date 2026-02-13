@@ -45,6 +45,7 @@ export default async function handler(req, res) {
           first_release_date,
           cover.url,
           platforms.name,
+          platforms.platform_logo.url,
           rating,
           rating_count,
           follows,
@@ -59,12 +60,6 @@ export default async function handler(req, res) {
     }
 
     let games = await igdbRes.json()
-
-    games = games.map(g => ({
-      ...g,
-      cover: g.cover?.url?.replace("t_thumb", "t_cover_big") || null,
-      platforms: g.platforms?.map(p => p.name) || []
-    }))
 
     games.sort((a, b) => {
       const score = g =>
