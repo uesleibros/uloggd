@@ -13,6 +13,22 @@ function formatDate(dateString) {
   }).replace(/\./g, "").replace(/ de /g, " ")
 }
 
+function MetacriticBadge({ score }) {
+  if (!score) return null
+
+  const getScoreColor = () => {
+    if (score >= 75) return "bg-green-600 text-white"
+    if (score >= 50) return "bg-yellow-500 text-black"
+    return "bg-red-600 text-white"
+  }
+
+  return (
+    <span className={`px-1.5 py-0.5 text-xs font-bold rounded ${getScoreColor()}`}>
+      {score}
+    </span>
+  )
+}
+
 function SearchIcon({ focused }) {
   return (
     <svg 
@@ -38,23 +54,30 @@ function SearchResultItem({ item, onSelect }) {
   return (
     <li
       onMouseDown={() => onSelect(item.slug)}
-      style={{ borderLeftColor: `#${item.dominant_color}` }}
+      style={{ borderLeftColor: `#${item.dominant_color || '52525b'}` }}
       className="border-l-4 cursor-pointer px-3 py-2.5 border-b border-zinc-800 last:border-0 hover:bg-zinc-800 transition-colors"
     >
       <div className="flex items-center gap-3">
-        {item.background_image && (
+        {item.background_image ? (
           <img 
             src={item.background_image} 
             alt=""
-            className="h-10 w-8 rounded object-cover bg-zinc-800"
+            className="h-12 w-9 rounded object-cover bg-zinc-800 flex-shrink-0"
           />
+        ) : (
+          <div className="h-12 w-9 rounded bg-zinc-800 flex-shrink-0" />
         )}
+        
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-sm text-white truncate">
-            {item.name}
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-sm text-white truncate">
+              {item.name}
+            </span>
+            <MetacriticBadge score={item.metacritic} />
           </div>
+          
           {item.released && (
-            <div className="text-xs text-zinc-500 mt-0.5">
+            <div className="text-xs text-zinc-500 mt-1">
               {formatDate(item.released)}
             </div>
           )}
@@ -68,7 +91,7 @@ function SearchResults({ results, loading, open, onSelect, className = "" }) {
   if (!open) return null
   
   return (
-    <ul className={`absolute top-full z-50 mt-1.5 max-h-72 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl ${className}`}>
+    <ul className={`absolute top-full z-50 mt-1.5 max-h-80 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl ${className}`}>
       {loading ? (
         <LoadingSpinner />
       ) : results.length > 0 ? (
@@ -287,7 +310,7 @@ export default function Header() {
               loading={loading}
               open={open && (loading || results.length > 0 || query.trim())}
               onSelect={handleSelect}
-              className="right-0 w-72 lg:w-80"
+              className="right-0 w-80 lg:w-96"
             />
           </div>
           <AuthButtons />
