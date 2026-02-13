@@ -34,6 +34,7 @@ const PLATFORMS_MAP = {
   "48": "playstation",
   "49": "xbox",
   "51": "nintendo",
+  "52": "arcade",
   "58": "nintendo",
   "59": "atari",
   "60": "atari",
@@ -114,12 +115,13 @@ const PLATFORM_PRIORITY = {
   linux: 7,
   ios: 8,
   web: 9,
-  metaquest: 10,
-  sega: 11,
-  atari: 12,
-  snk: 13,
-  commodore: 14,
-  amiga: 15
+  arcade: 10,
+  metaquest: 11,
+  sega: 12,
+  atari: 13,
+  snk: 14,
+  commodore: 15,
+  amiga: 16
 }
 
 export { PLATFORM_PRIORITY, PLATFORMS_MAP }

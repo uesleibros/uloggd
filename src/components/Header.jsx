@@ -67,9 +67,10 @@ function SearchResultItem({ item, onSelect }) {
             <div className="flex items-center gap-2">
               {item.platformIcons.slice(0, 4).map((platform) => (
                 <img
-                  className="w-3 brightness-0 invert"
+                  className="w-3 brightness-0 invert select-none object-contain"
                   key={platform.name}
                   src={platform.icon}
+                  title={platform.name}
                   alt={platform.name}
                 />
               ))}
@@ -235,6 +236,7 @@ export default function Header() {
     }
 
     setLoading(true)
+    setOpen(true)
     clearTimeout(timeoutRef.current)
 
     timeoutRef.current = setTimeout(async () => {
@@ -330,8 +332,8 @@ export default function Header() {
 
       <div 
         className={`
-          md:hidden overflow-hidden transition-all duration-300 ease-out
-          ${mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
+          md:hidden transition-all duration-300 ease-out
+          ${mobileMenuOpen ? 'max-h-[80vh] opacity-100 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}
         `}
       >
         <div className="px-4 py-4 space-y-4">
@@ -371,13 +373,3 @@ export default function Header() {
     </header>
   )
 }
-
-
-
-
-
-
-
-
-
-
