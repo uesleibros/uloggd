@@ -72,7 +72,7 @@ function SearchResultItem({ item, onSelect }) {
             <span className="font-medium text-sm text-white truncate">
               {item.name}
             </span>
-            <MetacriticBadge score={item.total_rating}>
+            <MetacriticBadge score={item.total_rating} />
           </div>
           
           {item.first_release_date && (
@@ -371,6 +371,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 
