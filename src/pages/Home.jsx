@@ -1,3 +1,5 @@
+import UsersChoiceCarousel from "../components/UsersChoiceCarousel"
+
 export default function Home() {
 	return (
 		<div>
@@ -28,6 +30,11 @@ export default function Home() {
 				    automaticamente conforme você joga.
 				  </p>
 				</div>
+			</div>
+
+			<div className="mt-12">
+			  <h2 className="text-xl font-semibold text-white mb-4">Favoritos da comunidade</h2>
+			  <UsersChoiceCarousel />
 			</div>
 		</div>
 	)
