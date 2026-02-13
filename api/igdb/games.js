@@ -38,10 +38,6 @@ export default async function handler(req, res) {
       },
       body: `
         search "${safeQuery}";
-        where 
-          category = 0 
-          & version_parent = null 
-          & first_release_date != null;
         fields 
           id,
           name,
