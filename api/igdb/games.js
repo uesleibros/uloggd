@@ -61,6 +61,13 @@ export default async function handler(req, res) {
 
     let games = await igdbRes.json()
 
+    games = games.map(g => ({
+      ...g,
+      cover: g.cover?.url
+        ? { url: g.cover.url.replace("t_thumb", "t_logo_med") }
+        : null
+    }))
+
     games.sort((a, b) => {
       const score = g =>
         (g.rating || 0) * Math.log10((g.rating_count || 1)) +
