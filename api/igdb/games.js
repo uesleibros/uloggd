@@ -43,7 +43,6 @@ export default async function handler(req, res) {
                platforms.name, platforms.abbreviation, 
                total_rating_count, category, 
                collection, franchises, version_parent;
-        where (total_rating_count > 0 | collection != null | franchises != null);
         limit 50;
       `.trim()
     })
