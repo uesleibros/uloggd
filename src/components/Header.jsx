@@ -54,13 +54,12 @@ function SearchResultItem({ item, onSelect }) {
   return (
     <li
       onMouseDown={() => onSelect(item.slug)}
-      style={{ borderLeftColor: `#${item.dominant_color || '52525b'}` }}
-      className="border-l-4 cursor-pointer px-3 py-2.5 border-b border-zinc-800 last:border-0 hover:bg-zinc-800 transition-colors"
+      className="cursor-pointer px-3 py-2.5 border-b border-zinc-800 last:border-0 hover:bg-zinc-800 transition-colors"
     >
       <div className="flex items-center gap-3">
-        {item.background_image ? (
+        {item.cloudinary ? (
           <img 
-            src={item.background_image} 
+            src={`https://images.igdb.com/igdb/image/upload/t_cover_small/${item.cloudinary}.png`} 
             alt=""
             className="h-12 w-9 rounded object-cover bg-zinc-800 flex-shrink-0"
           />
@@ -73,12 +72,11 @@ function SearchResultItem({ item, onSelect }) {
             <span className="font-medium text-sm text-white truncate">
               {item.name}
             </span>
-            <MetacriticBadge score={item.metacritic} />
           </div>
           
-          {item.released && (
+          {item.firstReleaseDate && (
             <div className="text-xs text-zinc-500 mt-1">
-              {formatDate(item.released)}
+              {formatDate(item.firstReleaseDate)}
             </div>
           )}
         </div>
@@ -241,10 +239,21 @@ export default function Header() {
     timeoutRef.current = setTimeout(async () => {
       try {
         const res = await fetch(
-          `https://rawg.io/api/games?page_size=20&page=1&key=c542e67aec3a4340908f9de9e86038af&search=${encodeURIComponent(query)}`
+          "https://www.igdb.com/gql",
+          {
+            method: "POST",
+            body: {
+              "operationName": "GetAutocompleteSuggestions",
+              "variables": {
+                "limit": 20,
+                "search": query
+              },
+              "query": "query GetAutocompleteSuggestions($search: String!, $limit: Int, $gamesOnly: Boolean) {\n  autocomplete(search: $search, limit: $limit, gamesOnly: $gamesOnly) {\n    options {\n      id\n      slug\n      value\n      modelType\n      cloudinary\n      url\n      text\n      categoryName\n      year\n      firstReleaseDate\n      name\n      isExact\n      __typename\n    }\n    __typename\n  }\n}"
+            }
+          }
         )
         const data = await res.json()
-        setResults(data.results || [])
+        setResults(data.data?.autocomplete?.options || [])
         setOpen(true)
       } catch (err) {
         console.error(err)
@@ -365,3 +374,4 @@ export default function Header() {
     </header>
   )
 }
+
