@@ -4,11 +4,16 @@ export default async function handler(req, res) {
   const { query } = req.body
 
   try {
+    const authRes = await fetch(`https://id.twitch.tv{process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`, {
+      method: "POST"
+    })
+    const { access_token } = await authRes.json()
+
     const igdbRes = await fetch("https://api.igdb.com/v4/games", {
       method: "POST",
       headers: {
-        "Client-ID": process.env.IGDB_CLIENT_ID,
-        "Authorization": `Bearer ${process.env.IGDB_TOKEN}`,
+        "Client-ID": process.env.TWITCH_CLIENT_ID,
+        "Authorization": `Bearer ${access_token}`,
         "Content-Type": "text/plain"
       },
       body: `search "${query}"; fields id,name,slug,first_release_date,cover.url; limit 20;`
