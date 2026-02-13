@@ -38,6 +38,7 @@ export default async function handler(req, res) {
       },
       body: `
         search "${safeQuery}";
+        where category = (0,8,9);
         fields 
           id,
           name,
