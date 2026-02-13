@@ -44,7 +44,6 @@ export default async function handler(req, res) {
                collection, franchises, version_parent;
         where (name ~ *"${safeQuery}"* | slug ~ *"${safeQuery}"*) 
           & version_parent = null 
-          & category = (0, 8, 9, 10, 11) 
           & cover != null;
         sort total_rating_count desc;
         limit 50;
