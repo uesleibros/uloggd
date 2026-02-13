@@ -4,43 +4,14 @@ export default async function handler(req, res) {
   const { query } = req.body
 
   try {
-    const igdbRes = await fetch("https://www.igdb.com/gql", {
+    const igdbRes = await fetch("https://api.igdb.com/v4/games", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Origin": "https://www.igdb.com",
-        "Referer": "https://www.igdb.com/",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+        "Client-ID": process.env.IGDB_CLIENT_ID,
+        "Authorization": `Bearer ${process.env.IGDB_TOKEN}`,
+        "Content-Type": "text/plain"
       },
-      body: JSON.stringify({
-        operationName: "GetAutocompleteSuggestions",
-        variables: {
-          limit: 20,
-          search: query
-        },
-        query: `
-          query GetAutocompleteSuggestions($search: String!, $limit: Int, $gamesOnly: Boolean) {
-            autocomplete(search: $search, limit: $limit, gamesOnly: $gamesOnly) {
-              options {
-                id
-                slug
-                value
-                modelType
-                cloudinary
-                url
-                text
-                categoryName
-                year
-                firstReleaseDate
-                name
-                isExact
-                __typename
-              }
-              __typename
-            }
-          }
-        `
-      })
+      body: `search "${query}"; fields id,name,slug,first_release_date,cover.url; limit 20;`
     })
 
     const data = await igdbRes.json()
