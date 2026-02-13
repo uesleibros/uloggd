@@ -13,23 +13,6 @@ function formatDate(unixSeconds) {
   }).replace(/\./g, "").replace(/ de /g, " ")
 }
 
-function MetacriticBadge({ score }) {
-  score = parseInt(score)
-  if (!score) return null
-
-  const getScoreColor = () => {
-    if (score >= 75) return "bg-green-600 text-white"
-    if (score >= 50) return "bg-yellow-500 text-black"
-    return "bg-red-600 text-white"
-  }
-
-  return (
-    <span className={`px-1.5 py-0.5 text-xs font-bold rounded ${getScoreColor()}`}>
-      {score}
-    </span>
-  )
-}
-
 function SearchIcon({ focused }) {
   return (
     <svg 
@@ -73,14 +56,30 @@ function SearchResultItem({ item, onSelect }) {
             <span className="font-medium text-sm text-white truncate">
               {item.name}
             </span>
-            <MetacriticBadge score={item.total_rating} />
           </div>
           
-          {item.first_release_date && (
-            <div className="text-xs text-zinc-500 mt-1">
-              {formatDate(item.first_release_date)}
+          <div className="flex items-center gap-2 mt-1">
+            {item.first_release_date && (
+              <div className="text-xs text-zinc-500">
+                {formatDate(item.first_release_date)}
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              {item.platformIcons.slice(0, 4).map((platform) => (
+                <img
+                  className="w-3 brightness-0 invert"
+                  key={platform.name}
+                  src={platform.icon}
+                  alt={platform.name}
+                />
+              ))}
+              {item.platformIcons.length > 4 && (
+                <span className="text-xs font-bold text-zinc-500">
+                  +{item.platformIcons.length - 4}
+                </span>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </li>
