@@ -37,31 +37,36 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${access_token}`,
         "Content-Type": "text/plain"
       },
-      body: `search "${safeQuery}"; fields id, name, slug, first_release_date, cover.url, cover.image_id, platforms.name, platforms.abbreviation, platforms.platform_logo.url, total_rating, total_rating_count, rating, rating_count, aggregated_rating, aggregated_rating_count, follows, hypes, category, version_parent, parent_game; limit 50;`
+      body: `search "${safeQuery}"; fields id, name, slug, first_release_date, cover.url, cover.image_id, platforms.name, platforms.abbreviation, total_rating, total_rating_count, rating, rating_count, aggregated_rating, aggregated_rating_count, follows, hypes, category, version_parent, parent_game; limit 50;`
     })
 
     if (!igdbRes.ok) {
       const err = await igdbRes.text()
+      console.error("IGDB Error:", err)
       return res.status(500).json({ error: err })
     }
 
     let games = await igdbRes.json()
+    console.log("Total games from IGDB:", games.length)
+    
     const queryLower = trimmed.toLowerCase()
 
-    games = games
-      .filter(g => {
-        const validCategory = [0, 3, 4, 8, 9, 10].includes(g.category)
-        const notVersion = !g.version_parent
-        const hasCover = g.cover?.url
-        return validCategory && notVersion && hasCover
-      })
-      .map(g => ({
-        ...g,
-        cover: {
-          ...g.cover,
-          url: g.cover.url.replace("t_thumb", "t_logo_med")
-        }
-      }))
+    const beforeFilter = games.length
+    games = games.filter(g => {
+      const validCategory = !g.category || [0, 3, 4, 8, 9, 10].includes(g.category)
+      const notVersion = !g.version_parent
+      const hasCover = g.cover?.url
+      return validCategory && notVersion && hasCover
+    })
+    console.log(`Filtered: ${beforeFilter} -> ${games.length}`)
+
+    games = games.map(g => ({
+      ...g,
+      cover: {
+        ...g.cover,
+        url: g.cover.url.replace("t_thumb", "t_logo_med")
+      }
+    }))
 
     games.sort((a, b) => {
       const score = g => {
@@ -87,7 +92,7 @@ export default async function handler(req, res) {
         s += (g.follows || 0) * 10
         s += (g.hypes || 0) * 5
         
-        if (g.category === 0) {
+        if (!g.category || g.category === 0) {
           s += 10000
         } else if (g.category === 3 || g.category === 4) {
           s += 5000
@@ -114,7 +119,7 @@ export default async function handler(req, res) {
 
     res.status(200).json(games)
   } catch (e) {
-    console.error(e)
+    console.error("Handler error:", e)
     res.status(500).json({ error: "fail" })
   }
 }
