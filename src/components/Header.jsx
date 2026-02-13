@@ -242,14 +242,14 @@ export default function Header() {
           "https://www.igdb.com/gql",
           {
             method: "POST",
-            body: {
+            body: JSON.stringify({
               "operationName": "GetAutocompleteSuggestions",
               "variables": {
                 "limit": 20,
                 "search": query
               },
               "query": "query GetAutocompleteSuggestions($search: String!, $limit: Int, $gamesOnly: Boolean) {\n  autocomplete(search: $search, limit: $limit, gamesOnly: $gamesOnly) {\n    options {\n      id\n      slug\n      value\n      modelType\n      cloudinary\n      url\n      text\n      categoryName\n      year\n      firstReleaseDate\n      name\n      isExact\n      __typename\n    }\n    __typename\n  }\n}"
-            }
+            })
           }
         )
         const data = await res.json()
@@ -374,4 +374,5 @@ export default function Header() {
     </header>
   )
 }
+
 
