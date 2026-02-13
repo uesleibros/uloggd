@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     const access_token = await getToken()
     const safeQuery = escapeIGDB(query.trim())
 
-    const igdbRes = await fetch("https://api.igdb.com", {
+    const igdbRes = await fetch("https://api.igdb.com/v4/games", {
       method: "POST",
       headers: {
         "Client-ID": process.env.TWITCH_CLIENT_ID,
