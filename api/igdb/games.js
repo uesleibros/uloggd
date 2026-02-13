@@ -37,7 +37,16 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${access_token}`,
         "Content-Type": "text/plain"
       },
-      body: `search "${safeQuery}"; fields id, name, slug, first_release_date, cover.url, cover.image_id, platforms.name, platforms.abbreviation, platforms.platform_logo.url, total_rating, total_rating_count, rating, rating_count, aggregated_rating, aggregated_rating_count, follows, hypes, category; limit 50;`
+      body: `
+        search "${safeQuery}"; 
+        fields id, name, slug, first_release_date, cover.url, cover.image_id, 
+               platforms.name, platforms.abbreviation, platforms.platform_logo.url, 
+               total_rating, total_rating_count, rating, rating_count, 
+               aggregated_rating, aggregated_rating_count, follows, hypes, 
+               category, version_parent, parent_game;
+        where category = (0,3,4,8,9,10) & version_parent = null;
+        limit 50;
+      `
     })
 
     if (!igdbRes.ok) {
@@ -48,39 +57,64 @@ export default async function handler(req, res) {
     let games = await igdbRes.json()
     const queryLower = trimmed.toLowerCase()
 
-    games = games.map(g => ({
-      ...g,
-      cover: g.cover?.url
-        ? {
-            ...g.cover,
-            url: g.cover.url
-              .replace("t_thumb", "t_logo_med")
-          }
-        : null
-    }))
+    games = games
+      .filter(g => g.cover?.url)
+      .map(g => ({
+        ...g,
+        cover: {
+          ...g.cover,
+          url: g.cover.url.replace("t_thumb", "t_logo_med")
+        }
+      }))
 
     games.sort((a, b) => {
       const score = g => {
         let s = 0
         const name = (g.name || "").toLowerCase()
-
-        if (name === queryLower) s += 10000
-        else if (name.startsWith(queryLower)) s += 5000
-        else if (name.includes(queryLower)) s += 2000
-
-        const count = g.total_rating_count || g.rating_count || 0
-        const value = g.total_rating || g.rating || 0
-        s += Math.log10(count + 1) * value
-        s += (g.follows || 0) * 2
-        s += (g.hypes || 0) * 0.5
-
-        if (g.category === 0) s += 500
-
+        
+        if (name === queryLower) {
+          s += 100000
+        } else if (name.startsWith(queryLower)) {
+          s += 50000
+        } else if (name.includes(queryLower)) {
+          s += 10000
+        }
+        
+        const ratingCount = g.total_rating_count || g.rating_count || 0
+        if (ratingCount < 10) {
+          s -= 5000
+        }
+        
+        const rating = g.total_rating || g.rating || 0
+        s += ratingCount * (rating / 10)
+        
+        s += (g.follows || 0) * 10
+        s += (g.hypes || 0) * 5
+        
+        if (g.category === 0) {
+          s += 10000
+        } else if (g.category === 3 || g.category === 4) {
+          s += 5000
+        }
+        
+        if (g.first_release_date) {
+          const releaseYear = new Date(g.first_release_date * 1000).getFullYear()
+          const currentYear = new Date().getFullYear()
+          
+          if (currentYear - releaseYear <= 5) {
+            s += 2000
+          } else if (releaseYear < 2000 && rating > 70) {
+            s += 1000
+          }
+        }
+        
         return s
       }
 
       return score(b) - score(a)
     })
+
+    games = games.slice(0, 20)
 
     res.status(200).json(games)
   } catch (e) {
