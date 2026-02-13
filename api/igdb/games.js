@@ -42,9 +42,8 @@ export default async function handler(req, res) {
         name,
         slug,
         first_release_date,
-        cover.url,
-        platforms.name,
-        platforms.platform_logo.url,
+        cover,
+        platforms,
         rating,
         rating_count,
         popularity;
