@@ -1,6 +1,18 @@
 import { Link, useNavigate } from "react-router-dom"
 import { useEffect, useRef, useState } from "react"
 
+function formatDate(dateString) {
+  if (!dateString) return null
+  
+  const date = new Date(dateString + "T00:00:00")
+  
+  return date.toLocaleDateString("pt-BR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  }).replace(/\./g, "").replace(/ de /g, " ")
+}
+
 function SearchIcon({ focused }) {
   return (
     <svg 
@@ -41,9 +53,11 @@ function SearchResultItem({ item, onSelect }) {
           <div className="font-medium text-sm text-white truncate">
             {item.name}
           </div>
-          <div className="text-xs text-zinc-500 mt-0.5">
-            {item.released}
-          </div>
+          {item.released && (
+            <div className="text-xs text-zinc-500 mt-0.5">
+              {formatDate(item.released)}
+            </div>
+          )}
         </div>
       </div>
     </li>
