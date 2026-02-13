@@ -57,9 +57,9 @@ function SearchResultItem({ item, onSelect }) {
       className="cursor-pointer px-3 py-2.5 border-b border-zinc-800 last:border-0 hover:bg-zinc-800 transition-colors"
     >
       <div className="flex items-center gap-3">
-        {item.cloudinary ? (
+        {item.cover ? (
           <img 
-            src={`https://images.igdb.com/igdb/image/upload/t_cover_small/${item.cloudinary}.png`} 
+            src={`https:${item.cover.url}`} 
             alt=""
             className="h-12 w-9 rounded object-cover bg-zinc-800 flex-shrink-0"
           />
@@ -74,9 +74,9 @@ function SearchResultItem({ item, onSelect }) {
             </span>
           </div>
           
-          {item.firstReleaseDate && (
+          {item.first_release_date && (
             <div className="text-xs text-zinc-500 mt-1">
-              {formatDate(item.firstReleaseDate)}
+              {formatDate(item.first_release_date)}
             </div>
           )}
         </div>
@@ -249,7 +249,7 @@ export default function Header() {
           }
         )
         const data = await res.json()
-        setResults(data.data?.autocomplete?.options || [])
+        setResults(data || [])
         setOpen(true)
       } catch (err) {
         console.error(err)
@@ -370,6 +370,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 
