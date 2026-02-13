@@ -36,7 +36,7 @@ export default async function handler(req, res) {
              total_rating, total_rating_count,
              category, version_parent, parent_game;
 
-      where (name ~ *"${q}"* | slug ~ *"${q}"*)
+      where (name ~ "${q}"* | slug ~ "${q}"*)
         & game_type = 0
         & version_parent = null
         & parent_game = null
