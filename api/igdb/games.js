@@ -19,6 +19,28 @@ function escapeIGDB(str) {
   return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
 }
 
+function buildNameFilter(raw) {
+  const q = raw.trim()
+  const words = q.split(/\s+/).filter(w => w.length >= 2)
+
+  if (words.length > 1) {
+    return words.map(w => `name ~ *"${escapeIGDB(w)}"*`).join(" & ")
+  }
+
+  const escaped = escapeIGDB(q)
+  const parts = [`name ~ *"${escaped}"*`]
+
+  if (q.length >= 6) {
+    for (let i = 3; i <= q.length - 3; i++) {
+      const l = escapeIGDB(q.substring(0, i))
+      const r = escapeIGDB(q.substring(i))
+      parts.push(`(name ~ *"${l}"* & name ~ *"${r}"*)`)
+    }
+  }
+
+  return parts.length > 1 ? `(${parts.join(" | ")})` : parts[0]
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end()
 
@@ -27,7 +49,7 @@ export default async function handler(req, res) {
 
   try {
     const token = await getToken()
-    const q = escapeIGDB(query.trim())
+    const nameFilter = buildNameFilter(query)
 
     const body = `
       fields name, slug, first_release_date,
@@ -35,8 +57,8 @@ export default async function handler(req, res) {
              platforms.name, platforms.abbreviation,
              total_rating, total_rating_count,
              category;
-      where name ~ *"${q}"*
-        & game_type = (0,4,8,9,10)
+      where ${nameFilter}
+        & category = (0,4,8,9,10)
         & version_parent = null
         & parent_game = null
         & cover != null
