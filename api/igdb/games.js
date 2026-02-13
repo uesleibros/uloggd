@@ -42,10 +42,10 @@ export default async function handler(req, res) {
                platforms.name, platforms.abbreviation, 
                total_rating_count, category, 
                collection, franchises, version_parent;
-        where (name ~ *"${safeQuery}"* | slug ~ *"${safeQuery}"*) 
+        where (name ~ "${safeQuery}"* | slug ~ *"${safeQuery}"*) 
           & version_parent = null 
           & cover != null;
-        sort total_rating_count desc;
+        sort rating desc;
         limit 50;
       `.trim()
     })
