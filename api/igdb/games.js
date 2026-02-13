@@ -46,7 +46,6 @@ export default async function handler(req, res) {
         platforms,
         rating,
         rating_count;
-      sort popularity desc;
       limit 50;
       `
     })
