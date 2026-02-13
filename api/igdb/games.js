@@ -5,7 +5,7 @@ async function getToken() {
   if (cachedToken && Date.now() < tokenExpires) return cachedToken
 
   const res = await fetch(
-    `https://id.twitch.tv{process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`,
+    `https://id.twitch.tv/oauth2/token?client_id=${process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`,
     { method: "POST" }
   )
 
