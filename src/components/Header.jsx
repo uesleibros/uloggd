@@ -14,6 +14,7 @@ function formatDate(unixSeconds) {
 }
 
 function MetacriticBadge({ score }) {
+  score = parseInt(score)
   if (!score) return null
 
   const getScoreColor = () => {
@@ -371,6 +372,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 
