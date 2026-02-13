@@ -5,7 +5,7 @@ async function getToken() {
   if (cachedToken && Date.now() < tokenExpires) return cachedToken
 
   const res = await fetch(
-    `https://id.twitch.tv/oauth2/token?client_id=${process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`,
+    `https://id.twitch.tv{process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`,
     { method: "POST" }
   )
 
@@ -27,38 +27,45 @@ export default async function handler(req, res) {
 
   try {
     const access_token = await getToken()
-    const trimmed = query.trim()
-    const safeQuery = escapeIGDB(trimmed)
+    const safeQuery = escapeIGDB(query.trim())
 
-    const igdbRes = await fetch("https://api.igdb.com/v4/games", {
+    const igdbRes = await fetch("https://api.igdb.com", {
       method: "POST",
       headers: {
         "Client-ID": process.env.TWITCH_CLIENT_ID,
         Authorization: `Bearer ${access_token}`,
         "Content-Type": "text/plain"
       },
-      body: `search "${safeQuery}"; fields id, name, slug, first_release_date, cover.url, cover.image_id, platforms.name, platforms.abbreviation, total_rating, total_rating_count, rating, rating_count, collection, version_parent, franchises, aggregated_rating, aggregated_rating_count, follows, hypes, category, version_parent, parent_game; where version_parent = null & category = (0, 8, 9, 10, 11) & (total_rating_count > 0 | collection != null; limit 50;`
+      body: `
+        search "${safeQuery}";
+        fields name, slug, first_release_date, 
+               cover.url, cover.image_id, 
+               platforms.name, platforms.abbreviation, 
+               total_rating_count, category, 
+               collection, franchises, version_parent;
+        where version_parent = null 
+              & category = (0, 8, 9, 10, 11) 
+              & (total_rating_count > 0 | collection != null | franchises != null);
+        limit 50;
+      `.trim()
     })
 
     if (!igdbRes.ok) {
       const err = await igdbRes.text()
-      console.error("IGDB Error:", err)
       return res.status(500).json({ error: err })
     }
 
-    let games = await igdbRes.json()
+    const data = await igdbRes.json()
     
-    games = games.map(g => ({
+    const games = data.map(g => ({
       ...g,
-      cover: {
-        ...g.cover,
-        url: g.cover.url.replace("t_thumb", "t_logo_med")
-      }
+      cover: g.cover?.url 
+        ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_720p") } 
+        : null
     }))
 
     res.status(200).json(games)
   } catch (e) {
-    console.error("Handler error:", e)
     res.status(500).json({ error: "fail" })
   }
 }
