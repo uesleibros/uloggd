@@ -37,16 +37,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${access_token}`,
         "Content-Type": "text/plain"
       },
-      body: `
-        search "${safeQuery}"; 
-        fields id, name, slug, first_release_date, cover.url, cover.image_id, 
-               platforms.name, platforms.abbreviation, platforms.platform_logo.url, 
-               total_rating, total_rating_count, rating, rating_count, 
-               aggregated_rating, aggregated_rating_count, follows, hypes, 
-               category, version_parent, parent_game;
-        where category = (0,3,4,8,9,10) & version_parent = null;
-        limit 50;
-      `
+      body: `search "${safeQuery}"; fields id, name, slug, first_release_date, cover.url, cover.image_id, platforms.name, platforms.abbreviation, platforms.platform_logo.url, total_rating, total_rating_count, rating, rating_count, aggregated_rating, aggregated_rating_count, follows, hypes, category, version_parent, parent_game; limit 50;`
     })
 
     if (!igdbRes.ok) {
@@ -58,7 +49,12 @@ export default async function handler(req, res) {
     const queryLower = trimmed.toLowerCase()
 
     games = games
-      .filter(g => g.cover?.url)
+      .filter(g => {
+        const validCategory = [0, 3, 4, 8, 9, 10].includes(g.category)
+        const notVersion = !g.version_parent
+        const hasCover = g.cover?.url
+        return validCategory && notVersion && hasCover
+      })
       .map(g => ({
         ...g,
         cover: {
