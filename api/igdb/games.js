@@ -37,7 +37,7 @@ export default async function handler(req, res) {
              category, version_parent, parent_game;
 
       where (name ~ *"${q}"* | slug ~ *"${q}"*)
-        & category = 0
+        & game_type = 0
         & version_parent = null
         & parent_game = null
         & cover != null;
