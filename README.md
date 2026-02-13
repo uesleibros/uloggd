@@ -1,6 +1,6 @@
 <div align="center">
   
-<img src="/public/banner.png"> <br>
+# uloggd
 
 <a href="https://github.com/uesleibros/uloggd/commits/main"><img src="https://img.shields.io/github/last-commit/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Último commit." /></a>
 
