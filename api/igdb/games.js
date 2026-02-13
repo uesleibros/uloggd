@@ -31,7 +31,26 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${access_token}`,
         "Content-Type": "text/plain"
       },
-      body: `search "${query}"; fields id,name,slug,first_release_date,cover.url; limit 20;`
+      body: `
+      search "${query}";
+      where 
+        category = 0 
+        & version_parent = null 
+        & first_release_date != null;
+      fields 
+        id,
+        name,
+        slug,
+        first_release_date,
+        cover.url,
+        platforms.name,
+        platforms.platform_logo.url,
+        rating,
+        rating_count,
+        popularity;
+      sort popularity desc;
+      limit 50;
+      `
     })
 
     const data = await igdbRes.json()
