@@ -59,7 +59,7 @@ export default async function handler(req, res) {
              game_type;
       where ${nameFilter}
         & game_type = (0,2,4,8,9,10)
-        & cover != null
+        & cover != null;
       sort total_rating_count desc;
       limit 30;
     `
