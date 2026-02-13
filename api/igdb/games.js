@@ -59,7 +59,6 @@ export default async function handler(req, res) {
              game_type;
       where ${nameFilter}
         & game_type = (0,2,4,8,9,10)
-        & version_parent = null
         & cover != null
         & total_rating_count > 0;
       sort total_rating_count desc;
