@@ -37,14 +37,16 @@ export default async function handler(req, res) {
         "Content-Type": "text/plain"
       },
       body: `
-        search "${safeQuery}";
         fields name, slug, first_release_date, 
                cover.url, cover.image_id, 
                platforms.name, platforms.abbreviation, 
                total_rating_count, category, 
                collection, franchises, version_parent;
-        where version_parent = null 
-              & (total_rating_count > 0 | collection != null | franchises != null);
+        where (name ~ *"${safeQuery}"* | slug ~ *"${safeQuery}"*) 
+          & version_parent = null 
+          & category = (0, 8, 9, 10, 11) 
+          & cover != null;
+        sort total_rating_count desc;
         limit 50;
       `.trim()
     })
