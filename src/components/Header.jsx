@@ -21,12 +21,12 @@ export default function Header() {
     timeoutRef.current = setTimeout(async () => {
       try {
         const res = await fetch(
-          `https://backloggd.com/autocomplete.json?filter_editions=true&query=${encodeURIComponent(
+          `https://rawg.io/api/games?page_size=20&page=1&key=c542e67aec3a4340908f9de9e86038af&search=${encodeURIComponent(
             query
           )}`
         )
         const data = await res.json()
-        setResults(data.suggestions || [])
+        setResults(data.results || [])
         setOpen(true)
       } catch (err) {
         console.error(err)
@@ -109,24 +109,25 @@ export default function Header() {
               <ul className="absolute top-full right-0 z-50 mt-1.5 w-72 lg:w-80 max-h-72 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl">
                 {results.map((item) => (
                   <li
-                    key={item.data.id}
-                    onMouseDown={() => handleSelect(item.data.slug)}
-                    className="cursor-pointer px-3 py-2.5 border-b border-zinc-800 last:border-0 hover:bg-zinc-800 transition-colors"
+                    key={item.id}
+                    onMouseDown={() => handleSelect(item.slug)}
+                    style={{ borderLeftColor: `#${item.dominant_color}` }}
+                    className="border border-l-5 cursor-pointer px-3 py-2.5 border-b border-zinc-800 last:border-0 hover:bg-zinc-800 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      {item.data.cover && (
+                      {item.background_image && (
                         <img 
-                          src={item.data.cover} 
+                          src={item.background_image} 
                           alt=""
                           className="h-10 w-8 rounded object-cover bg-zinc-800"
                         />
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm text-white truncate">
-                          {item.data.title}
+                          {item.name}
                         </div>
                         <div className="text-xs text-zinc-500 mt-0.5">
-                          {item.data.year}
+                          {item.released}
                         </div>
                       </div>
                     </div>
@@ -199,24 +200,25 @@ export default function Header() {
               <ul className="absolute top-full left-0 right-0 z-50 mt-1.5 max-h-64 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl">
                 {results.map((item) => (
                   <li
-                    key={item.data.id}
-                    onMouseDown={() => handleSelect(item.data.slug)}
+                    key={item.id}
+                    onMouseDown={() => handleSelect(item.slug)}
+                    style={{ borderLeftColor: `#${item.dominant_color}` }}
                     className="cursor-pointer px-3 py-2.5 border-b border-zinc-800 last:border-0 hover:bg-zinc-800 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      {item.data.cover && (
+                      {item.background_image && (
                         <img 
-                          src={item.data.cover} 
+                          src={item.background_image} 
                           alt=""
                           className="h-10 w-8 rounded object-cover bg-zinc-800"
                         />
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm text-white truncate">
-                          {item.data.title}
+                          {item.name}
                         </div>
                         <div className="text-xs text-zinc-500 mt-0.5">
-                          {item.data.year}
+                          {item.released}
                         </div>
                       </div>
                     </div>
