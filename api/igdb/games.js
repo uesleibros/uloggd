@@ -63,7 +63,7 @@ export default async function handler(req, res) {
         & cover != null
         & total_rating_count > 0;
       sort total_rating_count desc;
-      limit 20;
+      limit 30;
     `
 
     const igdbRes = await fetch("https://api.igdb.com/v4/games", {
