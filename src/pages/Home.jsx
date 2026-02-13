@@ -18,10 +18,10 @@ export default function Home() {
 				    de tierlists que utiliza o{" "}
 				    <a 
 				      className="text-white underline underline-offset-2 transition hover:text-blue-300" 
-				      href="https://backloggd.com/"
+				      href="https://www.igdb.com/"
 				      target="_blank"
 				    >
-				      Backloggd
+				      IGDB
 				    </a>{" "}
 				    como fonte de dados. Sincronize sua biblioteca, crie rankings personalizados 
 				    e compare suas classificações com outros usuários tudo atualizado 
@@ -32,3 +32,4 @@ export default function Home() {
 		</div>
 	)
 }
+
