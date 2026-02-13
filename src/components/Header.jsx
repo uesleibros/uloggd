@@ -1,11 +1,11 @@
 import { Link, useNavigate } from "react-router-dom"
 import { useEffect, useRef, useState } from "react"
 
-function formatDate(dateString) {
-  if (!dateString) return null
-  
-  const date = new Date(dateString + "T00:00:00")
-  
+function formatDate(unixSeconds) {
+  if (!unixSeconds) return null
+
+  const date = new Date(unixSeconds * 1000)
+
   return date.toLocaleDateString("pt-BR", {
     day: "numeric",
     month: "short",
@@ -370,6 +370,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 
