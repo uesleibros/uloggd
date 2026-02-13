@@ -23,49 +23,55 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end()
 
   const { query } = req.body
-  if (!query || !query.trim()) return res.status(400).json({ error: "missing query" })
+  if (!query?.trim()) return res.status(400).json({ error: "missing query" })
 
   try {
-    const access_token = await getToken()
-    const safeQuery = escapeIGDB(query.trim())
+    const token = await getToken()
+    const q = escapeIGDB(query.trim())
+
+    const body = `
+      fields name, slug, first_release_date,
+             cover.url, cover.image_id,
+             platforms.name, platforms.abbreviation,
+             total_rating, total_rating_count,
+             category, version_parent, parent_game;
+
+      where (name ~ *"${q}"* | slug ~ *"${q}"*)
+        & category = 0
+        & version_parent = null
+        & parent_game = null
+        & cover != null;
+
+      sort total_rating_count desc;
+      limit 50;
+    `
 
     const igdbRes = await fetch("https://api.igdb.com/v4/games", {
       method: "POST",
       headers: {
         "Client-ID": process.env.TWITCH_CLIENT_ID,
-        Authorization: `Bearer ${access_token}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "text/plain"
       },
-      body: `
-        fields name, slug, first_release_date, 
-               cover.url, cover.image_id, 
-               platforms.name, platforms.abbreviation, 
-               total_rating_count, category, 
-               collection, franchises, version_parent;
-        where (name ~ "${safeQuery}"* | slug ~ *"${safeQuery}"*) 
-          & version_parent = null 
-          & cover != null;
-        sort rating desc;
-        limit 50;
-      `.trim()
+      body
     })
 
     if (!igdbRes.ok) {
-      const err = await igdbRes.text()
-      return res.status(500).json({ error: err })
+      return res.status(500).json({ error: await igdbRes.text() })
     }
 
     const data = await igdbRes.json()
-    
+
     const games = data.map(g => ({
       ...g,
-      cover: g.cover?.url 
-        ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_720p") } 
+      cover: g.cover?.url
+        ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_720p") }
         : null
     }))
 
-    res.status(200).json(games)
+    res.json(games)
   } catch (e) {
+    console.error(e)
     res.status(500).json({ error: "fail" })
   }
 }
