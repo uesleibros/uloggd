@@ -11,48 +11,33 @@ async function getToken() {
 
   const data = await res.json()
   cachedToken = data.access_token
-  tokenExpires = Date.now() + (data.expires_in - 60) * 1000 // buffer
+  tokenExpires = Date.now() + (data.expires_in - 60) * 1000
   return cachedToken
 }
 
 function escapeIGDB(str) {
-  return str.replace(/"/g, '\\"')
+  return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
 }
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end()
 
   const { query } = req.body
-  if (!query) return res.status(400).json({ error: "missing query" })
+  if (!query || !query.trim()) return res.status(400).json({ error: "missing query" })
 
   try {
     const access_token = await getToken()
-    const safeQuery = escapeIGDB(query)
+    const trimmed = query.trim()
+    const safeQuery = escapeIGDB(trimmed)
 
     const igdbRes = await fetch("https://api.igdb.com/v4/games", {
       method: "POST",
       headers: {
         "Client-ID": process.env.TWITCH_CLIENT_ID,
-        "Authorization": `Bearer ${access_token}`,
+        Authorization: `Bearer ${access_token}`,
         "Content-Type": "text/plain"
       },
-      body: `
-        search "${safeQuery}";
-        where category = (0,8,9);
-        fields 
-          id,
-          name,
-          slug,
-          first_release_date,
-          cover.url,
-          platforms.name,
-          platforms.platform_logo.url,
-          rating,
-          rating_count,
-          follows,
-          hypes;
-        limit 50;
-      `
+      body: `search "${safeQuery}"; fields id, name, slug, first_release_date, cover.url, cover.image_id, platforms.name, platforms.abbreviation, platforms.platform_logo.url, total_rating, total_rating_count, rating, rating_count, aggregated_rating, aggregated_rating_count, follows, hypes, category; where category = (0,1,2,4,8,9,10,11) & version_parent = null; limit 50;`
     })
 
     if (!igdbRes.ok) {
@@ -61,19 +46,39 @@ export default async function handler(req, res) {
     }
 
     let games = await igdbRes.json()
+    const queryLower = trimmed.toLowerCase()
 
     games = games.map(g => ({
       ...g,
       cover: g.cover?.url
-        ? { url: g.cover.url.replace("t_thumb", "t_logo_med") }
+        ? {
+            ...g.cover,
+            url: g.cover.url
+              .replace("t_thumb", "t_cover_big")
+              .replace(/^\/\//, "https://")
+          }
         : null
     }))
 
     games.sort((a, b) => {
-      const score = g =>
-        (g.rating || 0) * Math.log10((g.rating_count || 1)) +
-        (g.follows || 0) * 0.1 +
-        (g.hypes || 0) * 0.5
+      const score = g => {
+        let s = 0
+        const name = (g.name || "").toLowerCase()
+
+        if (name === queryLower) s += 10000
+        else if (name.startsWith(queryLower)) s += 5000
+        else if (name.includes(queryLower)) s += 2000
+
+        const count = g.total_rating_count || g.rating_count || 0
+        const value = g.total_rating || g.rating || 0
+        s += Math.log10(count + 1) * value
+        s += (g.follows || 0) * 2
+        s += (g.hypes || 0) * 0.5
+
+        if (g.category === 0) s += 500
+
+        return s
+      }
 
       return score(b) - score(a)
     })
