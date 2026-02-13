@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   const { query } = req.body
 
   try {
-    const authRes = await fetch(`https://id.twitch.tv{process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`, {
+    const authRes = await fetch(`https://id.twitch.tv${process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`, {
       method: "POST"
     })
     const { access_token } = await authRes.json()
