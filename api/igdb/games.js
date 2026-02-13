@@ -37,7 +37,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${access_token}`,
         "Content-Type": "text/plain"
       },
-      body: `search "${safeQuery}"; fields id, name, slug, first_release_date, cover.url, cover.image_id, platforms.name, platforms.abbreviation, platforms.platform_logo.url, total_rating, total_rating_count, rating, rating_count, aggregated_rating, aggregated_rating_count, follows, hypes, category; where category = (0,1,2,4,8,9,10,11) & version_parent = null; limit 50;`
+      body: `search "${safeQuery}"; fields id, name, slug, first_release_date, cover.url, cover.image_id, platforms.name, platforms.abbreviation, platforms.platform_logo.url, total_rating, total_rating_count, rating, rating_count, aggregated_rating, aggregated_rating_count, follows, hypes, category; limit 50;`
     })
 
     if (!igdbRes.ok) {
