@@ -11,8 +11,12 @@ async function getToken() {
 
   const data = await res.json()
   cachedToken = data.access_token
-  tokenExpires = Date.now() + data.expires_in * 1000
+  tokenExpires = Date.now() + (data.expires_in - 60) * 1000 // buffer
   return cachedToken
+}
+
+function escapeIGDB(str) {
+  return str.replace(/"/g, '\\"')
 }
 
 export default async function handler(req, res) {
@@ -23,6 +27,7 @@ export default async function handler(req, res) {
 
   try {
     const access_token = await getToken()
+    const safeQuery = escapeIGDB(query)
 
     const igdbRes = await fetch("https://api.igdb.com/v4/games", {
       method: "POST",
@@ -32,27 +37,51 @@ export default async function handler(req, res) {
         "Content-Type": "text/plain"
       },
       body: `
-      search "${query}";
-      where 
-        category = 0 
-        & version_parent = null 
-        & first_release_date != null;
-      fields 
-        id,
-        name,
-        slug,
-        first_release_date,
-        cover,
-        platforms,
-        rating,
-        rating_count;
-      limit 50;
+        search "${safeQuery}";
+        where 
+          category = 0 
+          & version_parent = null 
+          & first_release_date != null;
+        fields 
+          id,
+          name,
+          slug,
+          first_release_date,
+          cover.url,
+          platforms.name,
+          rating,
+          rating_count,
+          follows,
+          hypes;
+        limit 50;
       `
     })
 
-    const data = await igdbRes.json()
-    res.status(200).json(data)
-  } catch {
+    if (!igdbRes.ok) {
+      const err = await igdbRes.text()
+      return res.status(500).json({ error: err })
+    }
+
+    let games = await igdbRes.json()
+
+    games = games.map(g => ({
+      ...g,
+      cover: g.cover?.url?.replace("t_thumb", "t_cover_big") || null,
+      platforms: g.platforms?.map(p => p.name) || []
+    }))
+
+    games.sort((a, b) => {
+      const score = g =>
+        (g.rating || 0) * Math.log10((g.rating_count || 1)) +
+        (g.follows || 0) * 0.1 +
+        (g.hypes || 0) * 0.5
+
+      return score(b) - score(a)
+    })
+
+    res.status(200).json(games)
+  } catch (e) {
+    console.error(e)
     res.status(500).json({ error: "fail" })
   }
 }
