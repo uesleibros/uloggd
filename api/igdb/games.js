@@ -56,9 +56,9 @@ export default async function handler(req, res) {
              cover.url, cover.image_id,
              platforms.name, platforms.abbreviation,
              total_rating, total_rating_count,
-             category;
+             game_type;
       where ${nameFilter}
-        & category = (0,4,8,9,10)
+        & game_type = (0,4,8,9,10)
         & version_parent = null
         & parent_game = null
         & cover != null
