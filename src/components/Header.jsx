@@ -242,6 +242,12 @@ export default function Header() {
           "https://www.igdb.com/gql",
           {
             method: "POST",
+            headers: {
+              "Authority": "www.igdb.com",
+              "Origin": "https://www.igdb.com",
+              "Referer": "https://www.igdb.com/",
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+            },
             body: JSON.stringify({
               "operationName": "GetAutocompleteSuggestions",
               "variables": {
@@ -374,5 +380,6 @@ export default function Header() {
     </header>
   )
 }
+
 
 
