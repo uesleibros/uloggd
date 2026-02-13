@@ -30,19 +30,16 @@ export default async function handler(req, res) {
     const q = escapeIGDB(query.trim())
 
     const body = `
+      search "${q}";
       fields name, slug, first_release_date,
              cover.url, cover.image_id,
              platforms.name, platforms.abbreviation,
              total_rating, total_rating_count,
-             category, version_parent, parent_game;
-
-      where (name ~ "${q}"* | slug ~ "${q}"*)
-        & game_type = 0
+             category;
+      where game_type = (0,4,8,9,10)
         & version_parent = null
         & parent_game = null
         & cover != null;
-
-      sort total_rating desc;
       limit 20;
     `
 
