@@ -54,8 +54,7 @@ export default async function handler(req, res) {
         ? {
             ...g.cover,
             url: g.cover.url
-              .replace("t_thumb", "t_cover_big")
-              .replace(/^\/\//, "https://")
+              .replace("t_thumb", "t_logo_med")
           }
         : null
     }))
