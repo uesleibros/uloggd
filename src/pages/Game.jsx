@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "../../hooks/usePageMeta"
+import { PLATFORMS_MAP } from "../../data/platformsMapper.js"
 import PacmanLoading from "../components/PacmanLoading"
 import RatingBadge from "../components/RatingBadge"
 import PlatformIcons from "../components/PlatformIcons"
@@ -416,9 +417,9 @@ export default function Game() {
                       key={p.id}
                       className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg"
                     >
-                      {p.platform_logo && (
+                      {PLATFORMS_MAP[p.id] && (
                         <img
-                          src={`https:${p.platform_logo.url}`}
+                          src={`/platforms/${PLATFORMS_MAP[p.id]}.png`}
                           alt={p.name}
                           className="w-5 h-5 object-contain"
                         />
@@ -495,5 +496,6 @@ export default function Game() {
   )
 
 }
+
 
 
