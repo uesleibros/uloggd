@@ -23,7 +23,7 @@ function Websites({ websites }) {
   if (!websites || websites.length === 0) return null;
 
   return (
-    <div className="mt-4 space-y-3">
+    <div className="mt-4 space-y-3 max-w-sm">
       <h3 className="text-lg font-semibold text-white">Conexões</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {websites.map((site, index) => (
@@ -75,7 +75,7 @@ function AgeRatings({ ratings }) {
   if (!ratings || ratings.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 gap-3 max-w-sm">
       {ratings.map((rating, index) => (
         <AgeRatingCard key={index} rating={rating} />
       ))}
@@ -86,47 +86,114 @@ function AgeRatings({ ratings }) {
 function Keywords({ keywords }) {
   if (!keywords || keywords.length === 0) return null;
 
-  const [showAll, setShowAll] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const INITIAL_SHOW = 10;
-  
-  const visibleKeywords = showAll ? keywords : keywords.slice(0, INITIAL_SHOW);
   const hasMore = keywords.length > INITIAL_SHOW;
 
   return (
     <div className="max-w-sm space-y-3">
+      <hr className="my-6 border-zinc-700" />
       <h2 className="text-lg font-semibold text-white mb-3">Palavras-chaves</h2>
       <div className="flex flex-wrap gap-2">
-        {visibleKeywords.map((keyword) => (
+        {keywords.slice(0, INITIAL_SHOW).map((keyword) => (
           <Keyword key={keyword.slug} text={keyword.slug} />
         ))}
-        
+
         {hasMore && (
           <button
-            onClick={() => setShowAll(!showAll)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-900/30 hover:bg-blue-900/50 border border-blue-700/50 hover:border-blue-600 rounded-full text-sm transition-all duration-200"
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-900/30 hover:bg-blue-900/50 border border-blue-700/50 hover:border-blue-600 rounded-full text-sm transition-all duration-200 cursor-pointer"
           >
-            {showAll ? (
-              <>
-                <span className="text-blue-400">Ver menos</span>
-                <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                </svg>
-              </>
-            ) : (
-              <>
-                <span className="text-blue-400">
-                  Ver mais {keywords.length - INITIAL_SHOW}
-                </span>
-                <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </>
-            )}
+            <span className="text-blue-400">
+              Ver todas {keywords.length}
+            </span>
+            <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
         )}
       </div>
+
+      {showModal && (
+        <KeywordsModal keywords={keywords} onClose={() => setShowModal(false)} />
+      )}
     </div>
   );
+}
+
+function KeywordsModal({ keywords, onClose }) {
+  const [search, setSearch] = useState("")
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden"
+    return () => { document.body.style.overflow = "" }
+  }, [])
+
+  useEffect(() => {
+    function handleKey(e) {
+      if (e.key === "Escape") onClose()
+    }
+    window.addEventListener("keydown", handleKey)
+    return () => window.removeEventListener("keydown", handleKey)
+  }, [onClose])
+
+  const filtered = search.trim()
+    ? keywords.filter(k => k.slug.toLowerCase().includes(search.toLowerCase()))
+    : keywords
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+
+      <div
+        className="relative bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-zinc-700">
+          <h3 className="text-lg font-semibold text-white">
+            Palavras-chaves
+            <span className="text-sm text-zinc-500 font-normal ml-2">{keywords.length}</span>
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="px-4 pt-3">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar palavra-chave..."
+            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
+            autoFocus
+          />
+        </div>
+
+        <div className="p-4 overflow-y-auto flex-1">
+          {filtered.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {filtered.map((keyword) => (
+                <Keyword key={keyword.slug} text={keyword.slug} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-zinc-500 text-center py-8">
+              Nenhuma palavra-chave encontrada
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function Keyword({ text }) {
@@ -390,6 +457,28 @@ export default function Game() {
 
             <Websites websites={game.websites} />
             <hr className="my-6 border-zinc-700" />
+            {game.platforms?.length > 0 && (
+              <div>
+                <h2 className="text-lg font-semibold text-white mb-3">Plataformas</h2>
+                <div className="flex flex-wrap max-w-sm gap-2">
+                  {game.platforms.map(p => (
+                    <div
+                      key={p.id}
+                      className="flex items-center gap-2 px-3 py-2 hover:bg-zinc-700/50 transition-colors bg-zinc-800/50 border border-zinc-700 rounded-lg"
+                    >
+                      {PLATFORMS_MAP[p.id] && (
+                        <img
+                          src={`/platforms/${PLATFORMS_MAP[p.id]}.png`}
+                          alt={p.name}
+                          className="w-5 h-5 brightness-0 invert select-none"
+                        />
+                      )}
+                      <span className="text-sm text-zinc-300">{p.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <Keywords keywords={game.keywords} />
           </div>
 
@@ -451,30 +540,6 @@ export default function Game() {
               <InfoRow label="Temas">{game.themes?.map(t => t.name).join(", ")}</InfoRow>
               <InfoRow label="Modos">{game.game_modes?.map(m => m.name).join(", ")}</InfoRow>
             </div>
-
-            {game.platforms?.length > 0 && (
-              <div>
-                <hr className="my-6 border-zinc-700" />
-                <h2 className="text-lg font-semibold text-white mb-3">Plataformas</h2>
-                <div className="flex flex-wrap gap-2">
-                  {game.platforms.map(p => (
-                    <div
-                      key={p.id}
-                      className="flex items-center gap-2 px-3 py-2 hover:bg-zinc-700/50 transition-colors bg-zinc-800/50 border border-zinc-700 rounded-lg"
-                    >
-                      {PLATFORMS_MAP[p.id] && (
-                        <img
-                          src={`/platforms/${PLATFORMS_MAP[p.id]}.png`}
-                          alt={p.name}
-                          className="w-5 h-5 brightness-0 invert select-none"
-                        />
-                      )}
-                      <span className="text-sm text-zinc-300">{p.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {allMedia.length > 0 && (
               <div>
