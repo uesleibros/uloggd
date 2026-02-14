@@ -467,7 +467,7 @@ export default function Game() {
                         <img
                           src={`/platforms/${PLATFORMS_MAP[p.id]}.png`}
                           alt={p.name}
-                          className="w-5 h-5 brightness-0 invert select-none"
+                          className="w-5 h-5 brightness-0 invert object-contain select-none"
                         />
                       )}
                       <span className="text-sm text-zinc-300">{p.name}</span>
