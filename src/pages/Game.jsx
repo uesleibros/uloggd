@@ -132,6 +132,7 @@ function Keywords({ keywords }) {
 
   return (
     <div className="mt-4 space-y-3">
+      <h2 className="text-lg font-semibold text-white mb-3">Palavras-chave</h2>
       <div className="flex flex-wrap gap-2">
         {visibleKeywords.map((keyword) => (
           <Keyword key={keyword.slug} text={keyword.slug} />
@@ -421,7 +422,7 @@ export default function Game() {
                         <img
                           src={`/platforms/${PLATFORMS_MAP[p.id]}.png`}
                           alt={p.name}
-                          className="w-5 h-5 object-contain"
+                          className="w-5 h-5 brightness-0 invert select-none"
                         />
                       )}
                       <span className="text-sm text-zinc-300">{p.abbreviation || p.name}</span>
@@ -496,6 +497,7 @@ export default function Game() {
   )
 
 }
+
 
 
 
