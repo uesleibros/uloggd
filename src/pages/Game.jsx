@@ -79,7 +79,7 @@ function WebsiteLink({ site }) {
 function StatCard({ value, label }) {
   if (!value) return null
   return (
-    <div className="bg-zinc-800/50 rounded-lg px-4 py-3 text-center">
+    <div className="bg-zinc-800/50 border-zinc-700 rounded-lg px-4 py-3 text-center">
       <div className="text-2xl font-bold text-white">{value}</div>
       <div className="text-xs text-zinc-300 mt-1">{label}</div>
     </div>
@@ -182,7 +182,7 @@ function Keyword({ text }) {
 
 function AgeRatingCard({ rating }) {
   return (
-    <div className="bg-zinc-700/50 rounded-lg p-3 flex flex-col items-center space-y-2 hover:bg-zinc-600/50 transition-colors">
+    <div className="bg-zinc-700/50 border-zinc-700 rounded-lg p-3 flex flex-col items-center space-y-2 hover:bg-zinc-600/50 transition-colors">
       <span className="text-xs text-gray-400 font-medium">
         {rating.region}
       </span>
@@ -489,6 +489,7 @@ export default function Game() {
   )
 
 }
+
 
 
 
