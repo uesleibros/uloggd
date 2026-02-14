@@ -75,7 +75,7 @@ function AgeRatings({ ratings }) {
   if (!ratings || ratings.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-2 gap-3 max-w-sm">
+    <div className="flex flex-wrap items-center gap-2 max-w-sm">
       {ratings.map((rating, index) => (
         <AgeRatingCard key={index} rating={rating} />
       ))}
@@ -212,11 +212,8 @@ function Keyword({ text }) {
 function AgeRatingCard({ rating }) {
   return (
     <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 flex flex-col items-center space-y-2">
-      <span className="text-xs text-gray-400 font-medium">
-        {rating.region}
-      </span>
       <img 
-        className="w-10 h-10 object-contain select-none"
+        className="w-5 h-5 object-contain select-none"
         src={`https://www.igdb.com/icons/rating_icons/${rating.category}/${rating.category}_${rating.rating}.png`}
         alt={`${rating.category.toUpperCase()} rating icon rated ${rating.rating.toUpperCase()}`}
         aria-label={rating.rating.toUpperCase()}
@@ -545,7 +542,7 @@ export default function Game() {
               <div>
                 <hr className="my-6 border-zinc-700" />
                 <h2 className="text-lg font-semibold text-white mb-4">
-                  Mídia
+                  Capturas de tela/Artes
                   <span className="text-sm text-zinc-500 font-normal ml-2">
                     {allMedia.length} {allMedia.length === 1 ? "imagem" : "imagens"}
                   </span>
