@@ -54,21 +54,21 @@ function WebsiteLink({ site }) {
       href={site.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
+      className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
       title={site.label}
     >
       <img 
         src={`https://www.igdb.com/icons/${site.type}.svg`}
         alt={site.label}
-        className="w-6 h-6 object-contain"
+        className="w-6 h-6 object-contain flex-shrink-0"
         onError={(e) => {
           e.target.style.display = 'none';
         }}
       />
-      <span className="text-sm text-zinc-400 group-hover:text-white">
+      <span className="text-sm text-zinc-400 group-hover:text-white break-words flex-1">
         {site.label}
       </span>
-      <svg className="w-3 h-3 text-zinc-500 group-hover:text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-3 h-3 text-zinc-500 group-hover:text-zinc-300 flex-shrink-0 self-start mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
       </svg>
     </a>
