@@ -13,7 +13,7 @@ const WEBSITE_MAP = {
   13: { type: "steam", label: "Steam" },
   14: { type: "subreddit", label: "Reddit" },
   15: { type: "itch", label: "Itch.io" },
-  16: { type: "epicgames", label: "Epic Games" },
+  16: { type: "epic", label: "Epic Games" },
   17: { type: "gog", label: "GOG" },
   18: { type: "discord", label: "Discord" },
   19: { type: "bluesky", label: "Bluesky" }
@@ -21,4 +21,5 @@ const WEBSITE_MAP = {
 
 
 export { WEBSITE_MAP }
+
 
