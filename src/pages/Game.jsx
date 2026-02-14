@@ -79,7 +79,7 @@ function WebsiteLink({ site }) {
 function StatCard({ value, label }) {
   if (!value) return null
   return (
-    <div className="bg-zinc-700/50 rounded-lg px-4 py-3 text-center">
+    <div className="bg-zinc-800/50 rounded-lg px-4 py-3 text-center">
       <div className="text-2xl font-bold text-white">{value}</div>
       <div className="text-xs text-zinc-300 mt-1">{label}</div>
     </div>
@@ -168,24 +168,14 @@ function Keywords({ keywords }) {
 }
 
 function Keyword({ text }) {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <div className="relative inline-block">
       <button 
-        className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-700/50 backdrop-blur-sm hover:bg-gray-700/80 border border border-zinc-700 hover:border-zinc-600 rounded-full text-sm transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-800/50 backdrop-blur-sm hover:bg-gray-700/50 border border border-zinc-700 hover:border-zinc-600 rounded-full text-sm transition-all duration-200"
       >
         <span className="text-blue-400 text-base">#</span>
         <span className="text-gray-300 hover:text-white">{text}</span>
       </button>
-      
-      {isHovered && (
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-xs text-gray-400 rounded whitespace-nowrap pointer-events-none">
-          Clique para buscar por "{text}"
-        </div>
-      )}
     </div>
   );
 }
@@ -499,6 +489,7 @@ export default function Game() {
   )
 
 }
+
 
 
 
