@@ -4,7 +4,7 @@ import usePageMeta from "../../hooks/usePageMeta"
 import { PLATFORMS_MAP } from "../../data/platformsMapper.js"
 import PacmanLoading from "../components/PacmanLoading"
 import RatingBadge from "../components/RatingBadge"
-import PlatformIcons from "../components/PlatformIcons"
+//import PlatformIcons from "../components/PlatformIcons"
 import GameCard from "../components/GameCard"
 import Lightbox from "../components/Lightbox"
 import { formatDateLong } from "../../utils/formatDate"
@@ -352,9 +352,11 @@ export default function Game() {
               </p>
             )}
 
+            {/*
             <div className="mt-2">
               <PlatformIcons icons={game.platformIcons} max={10} size="w-5" />
             </div>
+            */}
 
             <div className="flex gap-6 mt-6">
               <RatingBadge score={game.total_rating} label="Total" />
@@ -377,7 +379,7 @@ export default function Game() {
               />
               <StatCard
                 value={game.platforms?.length}
-                label="Plataformas"
+                label="Plataforma(s)"
               />
             </div>
 
@@ -497,6 +499,7 @@ export default function Game() {
   )
 
 }
+
 
 
 
