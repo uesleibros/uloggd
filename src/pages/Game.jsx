@@ -295,7 +295,7 @@ export default function Game() {
             {game.parent_game && (
               <Link
                 to={`/game/${game.parent_game.slug}`}
-                className="mt-3 flex items-center gap-3 px-4 py-3 bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
+                className="mt-3 flex items-center gap-3 px-4 py-3 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
               >
                 {game.parent_game.cover ? (
                   <img
@@ -489,6 +489,7 @@ export default function Game() {
   )
 
 }
+
 
 
 
