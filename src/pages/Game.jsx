@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "../../hooks/usePageMeta"
 import { PLATFORMS_MAP } from "../../data/platformsMapper.js"
@@ -7,6 +7,7 @@ import RatingBadge from "../components/RatingBadge"
 import GameCard from "../components/GameCard"
 import Lightbox from "../components/Lightbox"
 import { formatDateLong } from "../../utils/formatDate"
+import DragScrollRow from "../components/DragScrollRow.jsx"
 
 function InfoRow({ label, children }) {
   if (!children) return null
@@ -92,7 +93,7 @@ function Keywords({ keywords }) {
   const hasMore = keywords.length > INITIAL_SHOW;
 
   return (
-    <div className="mt-4 space-y-3">
+    <div className="max-w-sm space-y-3">
       <h2 className="text-lg font-semibold text-white mb-3">Palavras-chaves</h2>
       <div className="flex flex-wrap gap-2">
         {visibleKeywords.map((keyword) => (
@@ -143,7 +144,7 @@ function Keyword({ text }) {
 
 function AgeRatingCard({ rating }) {
   return (
-    <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 flex flex-col items-center space-y-2 hover:bg-zinc-700/50 transition-colors">
+    <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 flex flex-col items-center space-y-2">
       <span className="text-xs text-gray-400 font-medium">
         {rating.region}
       </span>
@@ -245,69 +246,12 @@ function VideoGrid({ videos }) {
 }
 
 function GameCardGrid({ games }) {
-  const scrollRef = useRef(null)
-  const dragRef = useRef({
-    isDown: false,
-    startX: 0,
-    scrollLeft: 0,
-    hasMoved: false
-  })
-
-  const handlePointerDown = useCallback((e) => {
-    const el = scrollRef.current
-    if (!el) return
-    const pageX = e.type === "touchstart" ? e.touches[0].pageX : e.pageX
-    dragRef.current = {
-      isDown: true,
-      startX: pageX,
-      scrollLeft: el.scrollLeft,
-      hasMoved: false
-    }
-  }, [])
-
-  const handlePointerMove = useCallback((e) => {
-    if (!dragRef.current.isDown) return
-    const el = scrollRef.current
-    if (!el) return
-    const pageX = e.type === "touchmove" ? e.touches[0].pageX : e.pageX
-    const diff = pageX - dragRef.current.startX
-    if (Math.abs(diff) > 5) {
-      dragRef.current.hasMoved = true
-      if (e.type === "mousemove") e.preventDefault()
-    }
-    el.scrollLeft = dragRef.current.scrollLeft - diff
-  }, [])
-
-  const handlePointerUp = useCallback(() => {
-    dragRef.current.isDown = false
-  }, [])
-
-  const handleClickCapture = useCallback((e) => {
-    if (dragRef.current.hasMoved) {
-      e.preventDefault()
-      e.stopPropagation()
-      dragRef.current.hasMoved = false
-    }
-  }, [])
-
   return (
-    <div
-      ref={scrollRef}
-      onMouseDown={handlePointerDown}
-      onMouseMove={handlePointerMove}
-      onMouseUp={handlePointerUp}
-      onMouseLeave={handlePointerUp}
-      onTouchStart={handlePointerDown}
-      onTouchMove={handlePointerMove}
-      onTouchEnd={handlePointerUp}
-      onClickCapture={handleClickCapture}
-      onDragStart={(e) => e.preventDefault()}
-      className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide select-none cursor-grab active:cursor-grabbing"
-    >
+    <DragScrollRow className="gap-4 pb-2">
       {games.map(g => (
         <GameCard key={g.id} game={g} draggable={false} />
       ))}
-    </div>
+    </DragScrollRow>
   )
 }
 
@@ -341,7 +285,6 @@ export default function Game() {
       })
       .then(data => {
         setGame(data)
-        console.log(data)
         setLoading(false)
       })
       .catch(() => {
@@ -408,7 +351,7 @@ export default function Game() {
               <>
                 <Link
                   to={`/game/${game.parent_game.slug}`}
-                  className="mt-3 flex items-center gap-3 px-4 py-3 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
+                  className="mt-6 flex items-center gap-3 px-4 py-3 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
                 >
                   {game.parent_game.cover ? (
                     <img
@@ -446,6 +389,8 @@ export default function Game() {
             )}
 
             <Websites websites={game.websites} />
+            <hr className="my-6 border-zinc-700" />
+            <Keywords keywords={game.keywords} />
           </div>
 
           <div className="flex-1 min-w-0">
@@ -515,7 +460,7 @@ export default function Game() {
                   {game.platforms.map(p => (
                     <div
                       key={p.id}
-                      className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg"
+                      className="flex items-center gap-2 px-3 py-2 hover:bg-zinc-700/50 transition-colors bg-zinc-800/50 border border-zinc-700 rounded-lg"
                     >
                       {PLATFORMS_MAP[p.id] && (
                         <img
@@ -531,8 +476,6 @@ export default function Game() {
               </div>
             )}
 
-            <Keywords keywords={game.keywords} />
-            
             {allMedia.length > 0 && (
               <div>
                 <hr className="my-6 border-zinc-700" />

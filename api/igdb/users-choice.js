@@ -13,6 +13,7 @@ const FEATURED_SLUGS = [
   "osu",
   "grand-theft-auto-san-andreas",
   "mortal-kombat-armageddon",
+  "the-binding-of-isaac-rebirth",
   "super-mario-galaxy",
   "deltarune",
   "half-life-2",

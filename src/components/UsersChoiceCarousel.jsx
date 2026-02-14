@@ -1,19 +1,12 @@
-import { useEffect, useState, useRef, useCallback } from "react"
+import { useEffect, useState, useRef } from "react"
 import GameCard from "./GameCard"
+import DragScrollRow from "./DragScrollRow"
 
 export default function UsersChoiceCarousel() {
   const [games, setGames] = useState([])
   const [loading, setLoading] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
-
   const carouselRef = useRef(null)
-  const autoScrollRef = useRef(null)
-  const dragRef = useRef({
-    isDown: false,
-    startX: 0,
-    scrollLeft: 0,
-    hasMoved: false
-  })
 
   useEffect(() => {
     fetch("/api/igdb/users-choice")
@@ -27,8 +20,7 @@ export default function UsersChoiceCarousel() {
 
   useEffect(() => {
     if (!carouselRef.current || loading) return
-    const carousel = carouselRef.current
-    carousel.scrollLeft = carousel.scrollWidth / 3
+    carouselRef.current.scrollLeft = carouselRef.current.scrollWidth / 3
   }, [loading])
 
   useEffect(() => {
@@ -37,76 +29,14 @@ export default function UsersChoiceCarousel() {
     const carousel = carouselRef.current
     const sectionWidth = carousel.scrollWidth / 3
 
-    autoScrollRef.current = setInterval(() => {
-      if (dragRef.current.isDown) return
-
+    const interval = setInterval(() => {
       carousel.scrollLeft += 0.5
-
-      if (carousel.scrollLeft >= sectionWidth * 2) {
-        carousel.scrollLeft -= sectionWidth
-      }
-
-      if (carousel.scrollLeft <= 0) {
-        carousel.scrollLeft += sectionWidth
-      }
+      if (carousel.scrollLeft >= sectionWidth * 2) carousel.scrollLeft -= sectionWidth
+      if (carousel.scrollLeft <= 0) carousel.scrollLeft += sectionWidth
     }, 20)
 
-    return () => clearInterval(autoScrollRef.current)
+    return () => clearInterval(interval)
   }, [loading, isPaused])
-
-  const handlePointerDown = useCallback((e) => {
-    const carousel = carouselRef.current
-    if (!carousel) return
-
-    const pageX = e.type === "touchstart" ? e.touches[0].pageX : e.pageX
-
-    dragRef.current = {
-      isDown: true,
-      startX: pageX,
-      scrollLeft: carousel.scrollLeft,
-      hasMoved: false
-    }
-  }, [])
-
-  const handlePointerMove = useCallback((e) => {
-    if (!dragRef.current.isDown) return
-
-    const carousel = carouselRef.current
-    if (!carousel) return
-
-    const pageX = e.type === "touchmove" ? e.touches[0].pageX : e.pageX
-    const diff = pageX - dragRef.current.startX
-
-    if (Math.abs(diff) > 5) {
-      dragRef.current.hasMoved = true
-
-      if (e.type === "mousemove") {
-        e.preventDefault()
-      }
-    }
-
-    carousel.scrollLeft = dragRef.current.scrollLeft - diff
-
-    const sectionWidth = carousel.scrollWidth / 3
-    if (carousel.scrollLeft >= sectionWidth * 2) {
-      carousel.scrollLeft -= sectionWidth
-      dragRef.current.scrollLeft -= sectionWidth
-    }
-    if (carousel.scrollLeft <= 0) {
-      carousel.scrollLeft += sectionWidth
-      dragRef.current.scrollLeft += sectionWidth
-    }
-  }, [])
-
-  const handlePointerUp = useCallback(() => {
-    dragRef.current.isDown = false
-  }, [])
-
-  const handleClick = useCallback((e) => {
-    if (dragRef.current.hasMoved) {
-      e.preventDefault()
-    }
-  }, [])
 
   if (loading) {
     return (
@@ -119,29 +49,19 @@ export default function UsersChoiceCarousel() {
   }
 
   return (
-    <div
+    <DragScrollRow
       ref={carouselRef}
-      onMouseDown={handlePointerDown}
-      onMouseMove={handlePointerMove}
-      onMouseUp={handlePointerUp}
-      onMouseLeave={() => {
-        handlePointerUp()
-        setIsPaused(false)
-      }}
+      className="gap-4 overflow-x-hidden py-2"
       onMouseEnter={() => setIsPaused(true)}
-      onTouchStart={handlePointerDown}
-      onTouchMove={handlePointerMove}
-      onTouchEnd={handlePointerUp}
-      className="flex gap-4 overflow-x-hidden select-none py-2"
+      onMouseLeave={() => setIsPaused(false)}
     >
       {games.map((game, index) => (
         <GameCard
           key={`${game.id}-${index}`}
           game={game}
-          onClick={handleClick}
           draggable={false}
         />
       ))}
-    </div>
+    </DragScrollRow>
   )
 }
