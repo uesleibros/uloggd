@@ -103,7 +103,7 @@ export default async function handler(req, res) {
         : null
     })) || []
 
-    g.parent_game.cover.url = g.parent_game.cover.url.replace("t_thumb", "t_logo_med")
+    if (g.parent_game) g.parent_game.cover.url = g.parent_game.cover.url.replace("t_thumb", "t_logo_med")
 
     const game = {
       ...g,
@@ -144,6 +144,7 @@ export default async function handler(req, res) {
   }
 
 }
+
 
 
 
