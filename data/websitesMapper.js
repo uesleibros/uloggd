@@ -7,9 +7,9 @@ const WEBSITE_MAP = {
   6: { type: "twitch", label: "Twitch" },
   8: { type: "instagram", label: "Instagram" },
   9: { type: "youtube", label: "YouTube" },
-  10: { type: "iphone", label: "iPhone" },
-  11: { type: "ipad", label: "iPad" },
-  12: { type: "android", label: "Android" },
+  10: { type: "app-store-iphone", label: "App Store (iPhone)" },
+  11: { type: "app-store-ipad", label: "App Store (iPad)" },
+  12: { type: "google-play", label: "Play Store" },
   13: { type: "steam", label: "Steam" },
   14: { type: "subreddit", label: "Reddit" },
   15: { type: "itch", label: "Itch.io" },
@@ -21,3 +21,4 @@ const WEBSITE_MAP = {
 
 
 export { WEBSITE_MAP }
+
