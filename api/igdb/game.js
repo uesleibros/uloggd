@@ -103,7 +103,7 @@ export default async function handler(req, res) {
         : null
     })) || []
 
-    g.cover.url.replace("t_thumb", "t_logo_med")
+    g.cover.url = g.cover.url.replace("t_thumb", "t_logo_med")
 
     const game = {
       ...g,
@@ -144,5 +144,6 @@ export default async function handler(req, res) {
   }
 
 }
+
 
 
