@@ -417,7 +417,7 @@ export default function Game() {
                           className="w-5 h-5 brightness-0 invert select-none"
                         />
                       )}
-                      <span className="text-sm text-zinc-300">{p.abbreviation || p.name}</span>
+                      <span className="text-sm text-zinc-300">{p.name}</span>
                     </div>
                   ))}
                 </div>
@@ -489,6 +489,7 @@ export default function Game() {
   )
 
 }
+
 
 
 
