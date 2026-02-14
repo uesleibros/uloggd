@@ -151,20 +151,13 @@ function AuthButtons({ onNavigate, variant = "desktop" }) {
   
   if (variant === "mobile") {
     return (
-      <div className="flex flex-col gap-2 pt-2 border-t border-zinc-800">
+      <div className="pt-2 border-t border-zinc-800">
         <Link 
-          to="/login"
+          to="#"
           onClick={handleClick}
-          className="px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors"
+          className="h-10 rounded-md bg-purple-100 text-sm font-medium text-zinc-900 flex items-center justify-center hover:bg-white transition-colors"
         >
-          Log in
-        </Link>
-        <Link 
-          to="/signup"
-          onClick={handleClick}
-          className="h-10 rounded-md bg-zinc-100 text-sm font-medium text-zinc-900 flex items-center justify-center hover:bg-white transition-colors"
-        >
-          Sign up
+          Entrar com o Discord
         </Link>
       </div>
     )
@@ -173,16 +166,10 @@ function AuthButtons({ onNavigate, variant = "desktop" }) {
   return (
     <>
       <Link 
-        to="/login"
-        className="text-sm text-zinc-400 hover:text-white transition-colors"
+        to="#"
+        className="h-8 px-4 rounded-md bg-purple-100 text-sm font-medium text-zinc-900 flex items-center hover:bg-white transition-colors"
       >
-        Log in
-      </Link>
-      <Link 
-        to="/signup"
-        className="h-8 px-4 rounded-md bg-zinc-100 text-sm font-medium text-zinc-900 flex items-center hover:bg-white transition-colors"
-      >
-        Sign up
+        Entrar com o Discord
       </Link>
     </>
   )
@@ -349,3 +336,4 @@ export default function Header() {
   )
 
 }
+
