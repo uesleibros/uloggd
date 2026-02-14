@@ -113,7 +113,7 @@ export default async function handler(req, res) {
       supporters,
       websites,
       cover: g.cover?.url
-        ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_cover_big") }
+        ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_1080p") }
         : null,
       screenshots: g.screenshots?.map(s => ({
         ...s,
@@ -140,4 +140,5 @@ export default async function handler(req, res) {
     console.error(e)
     res.status(500).json({ error: "fail" })
   }
+
 }
