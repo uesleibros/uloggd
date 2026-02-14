@@ -17,7 +17,7 @@ export default async function handler(req, res) {
              screenshots.url, screenshots.image_id,
              artworks.url, artworks.image_id,
              videos.video_id, videos.name,
-             platforms.name, platforms.abbreviation,
+             platforms.name, platforms.id, platforms.abbreviation,
              genres.name,
              themes.name,
              involved_companies.company.name, involved_companies.company.logo.url,
@@ -144,6 +144,7 @@ export default async function handler(req, res) {
   }
 
 }
+
 
 
 
