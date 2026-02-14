@@ -303,9 +303,31 @@ export default function Game() {
             {game.parent_game && (
               <Link
                 to={`/game/${game.parent_game.slug}`}
-                className="text-sm text-zinc-500 hover:text-white transition-colors"
+                className="mt-3 flex items-center gap-3 px-4 py-3 bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
               >
-                ← {game.parent_game.name}
+                {game.parent_game.cover ? (
+                  <img
+                    src={`https:${game.parent_game.cover.url}`}
+                    alt={game.parent_game.name}
+                    className="w-10 h-14 rounded object-cover bg-zinc-700 flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-10 h-14 rounded bg-zinc-700 flex-shrink-0" />
+                )}
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs text-zinc-500 uppercase tracking-wide">Jogo principal</span>
+                  <span className="text-sm text-zinc-300 group-hover:text-white transition-colors truncate">
+                    {game.parent_game.name}
+                  </span>
+                </div>
+                <svg
+                  className="w-4 h-4 text-zinc-500 group-hover:text-white ml-auto flex-shrink-0 transition-colors"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </Link>
             )}
 
@@ -450,3 +472,4 @@ export default function Game() {
   )
 
 }
+
