@@ -263,6 +263,13 @@ export default function Header() {
   return (
     <header className="w-full">
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-2">
+        
+        <div className="flex items-center gap-2">
+          <Link to="/" className="text-2xl font-bold text-white hover:text-zinc-300 transition-colors">
+            uloggd
+          </Link>
+        </div>
+        
         <nav className="hidden md:flex ml-auto items-center gap-1 text-sm">
           {NAV_ITEMS.map((item) => (
             <NavLink key={item.label} to={item.to}>
@@ -340,4 +347,5 @@ export default function Header() {
       </div>
     </header>
   )
+
 }
