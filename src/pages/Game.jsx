@@ -227,12 +227,12 @@ function AgeRatingCard({ rating }) {
 
 function RelatedGamesSection({ game }) {
   const tabs = [
-    { key: "videos",      label: "Vídeos",      data: game.videos },
     { key: "dlcs",        label: "DLCs",         data: game.dlcs },
     { key: "expansions",  label: "Expansões",    data: game.expansions },
     { key: "standalone",  label: "Standalone",   data: game.standalone_expansions },
     { key: "remakes",     label: "Remakes",      data: game.remakes },
     { key: "remasters",   label: "Remasters",    data: game.remasters },
+    { key: "videos",      label: "Vídeos",      data: game.videos },
     { key: "similar",     label: "Similares",    data: game.similar_games },
   ].filter(t => t.data?.length > 0)
 
@@ -284,7 +284,7 @@ function VideoGrid({ videos }) {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {visible.map(v => (
           <div key={v.video_id} className="relative aspect-video rounded-lg overflow-hidden bg-zinc-800">
             <iframe
