@@ -19,7 +19,7 @@ export default function Home() {
 				    <span className="text-white font-semibold">uloggd</span> é um agregador 
 				    de tierlists que utiliza o{" "}
 				    <a 
-				      className="text-white underline underline-offset-2 transition hover:text-blue-300" 
+				      className="text-white underline font-bold underline-offset-2 transition hover:text-blue-300" 
 				      href="https://www.igdb.com/"
 				      target="_blank"
 				    >
