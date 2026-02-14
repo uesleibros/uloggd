@@ -36,7 +36,7 @@ export default async function handler(req, res) {
              standalone_expansions.name, standalone_expansions.slug, standalone_expansions.cover.url, standalone_expansions.cover.image_id,
              remakes.name, remakes.slug, remakes.cover.url, remakes.cover.image_id,
              remasters.name, remasters.slug, remasters.cover.url, remasters.cover.image_id,
-             parent_game.name, parent_game.slug, parent_game.cover, parent_game.cover.url
+             parent_game.name, parent_game.slug, parent_game.cover, parent_game.cover.url,
              franchises.name,
              collection.name, collection.games.name, collection.games.slug, collection.games.cover.url, collection.games.cover.image_id,
              age_ratings, age_ratings.organization, age_ratings.rating_category,
@@ -144,4 +144,5 @@ export default async function handler(req, res) {
   }
 
 }
+
 
