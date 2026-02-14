@@ -66,6 +66,105 @@ function VideoSection({ videos }) {
   )
 }
 
+function AgeRatings({ ratings }) {
+  if (!ratings || ratings.length === 0) return null;
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {ratings.map((rating, index) => (
+        <AgeRatingCard key={index} rating={rating} />
+      ))}
+    </div>
+  );
+}
+
+function Keywords({ keywords }) {
+  if (!keywords || keywords.length === 0) return null;
+
+  const [showAll, setShowAll] = useState(false);
+  const INITIAL_SHOW = 10;
+  
+  const visibleKeywords = showAll ? keywords : keywords.slice(0, INITIAL_SHOW);
+  const hasMore = keywords.length > INITIAL_SHOW;
+
+  return (
+    <div className="mt-4 space-y-3">
+      <div className="flex flex-wrap gap-2">
+        {visibleKeywords.map((keyword) => (
+          <Keyword key={keyword.slug} text={keyword.slug} />
+        ))}
+        
+        {hasMore && (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-900/30 hover:bg-blue-900/50 border border-blue-700/50 hover:border-blue-600 rounded-full text-sm transition-all duration-200"
+          >
+            {showAll ? (
+              <>
+                <span className="text-blue-400">Ver menos</span>
+                <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
+              </>
+            ) : (
+              <>
+                <span className="text-blue-400">
+                  Ver mais {keywords.length - INITIAL_SHOW}
+                </span>
+                <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Keyword({ text }) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div className="relative inline-block">
+      <button 
+        className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-700/50 backdrop-blur-sm hover:bg-gray-700/80 border border-gray-700 hover:border-gray-600 rounded-full text-sm transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <span className="text-blue-400 text-base">#</span>
+        <span className="text-gray-300 hover:text-white">{text}</span>
+      </button>
+      
+      {isHovered && (
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-xs text-gray-400 rounded whitespace-nowrap pointer-events-none">
+          Clique para buscar por "{text}"
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AgeRatingCard({ rating }) {
+  return (
+    <div className="bg-zinc-700/50 rounded-lg p-3 flex flex-col items-center space-y-2 hover:bg-zinc-600/50 transition-colors">
+      <span className="text-xs text-gray-400 font-medium">
+        {rating.region}
+      </span>
+      <img 
+        className="w-10 h-10 object-contain select-none"
+        src={`https://www.igdb.com/icons/rating_icons/${rating.category}/${rating.category}_${rating.rating}.png`}
+        alt={`${rating.category.toUpperCase()} rating icon rated ${rating.rating.toUpperCase()}`}
+        aria-label={rating.rating.toUpperCase()}
+        onError={(e) => {
+          e.target.style.display = 'none';
+        }}
+      />
+    </div>
+  );
+}
+
 export default function Game() {
   const { slug } = useParams()
   const [game, setGame] = useState(null)
@@ -151,7 +250,7 @@ export default function Game() {
               <img
                 src={`https:${game.cover.url}`}
                 alt={game.name}
-                className="w-64 rounded-lg shadow-2xl bg-zinc-800"
+                className="w-64 rounded-lg shadow-2xl bg-zinc-800 select-none"
               />
             ) : (
               <div className="w-64 h-96 rounded-lg bg-zinc-800 flex items-center justify-center">
@@ -166,6 +265,13 @@ export default function Game() {
               >
                 ← {game.parent_game.name}
               </Link>
+            )}
+
+            {game.ageRatings?.length > 0 && (
+              <div className="mt-4 ">
+                <h2 className="text-lg font-semibold text-white mb-4">Classificação de Idade</h2>
+                <AgeRatings ratings={game.ageRatings} />
+              </div>
             )}
           </div>
 
@@ -234,6 +340,8 @@ export default function Game() {
               <InfoRow label="Temas">{game.themes?.map(t => t.name).join(", ")}</InfoRow>
               <InfoRow label="Modos">{game.game_modes?.map(m => m.name).join(", ")}</InfoRow>
             </div>
+
+            <Keywords keywords={game.keywords} />
           </div>
         </div>
 

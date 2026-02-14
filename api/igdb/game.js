@@ -1,5 +1,6 @@
 import { query } from "../../lib/igdb-wrapper.js"
 import { PLATFORM_PRIORITY, PLATFORMS_MAP } from "../../data/platformsMapper.js"
+import { AGE_RATINGS_MAP } from "../../data/ageRatingsMapper.js"
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end()
@@ -27,6 +28,7 @@ export default async function handler(req, res) {
              aggregated_rating, aggregated_rating_count,
              rating, rating_count,
              follows, hypes,
+             keywords, keywords.name, keywords.slug,
              similar_games.name, similar_games.slug, similar_games.cover.url, similar_games.cover.image_id,
              dlcs.name, dlcs.slug, dlcs.cover.url, dlcs.cover.image_id,
              expansions.name, expansions.slug, expansions.cover.url, expansions.cover.image_id,
@@ -36,7 +38,7 @@ export default async function handler(req, res) {
              parent_game.name, parent_game.slug,
              franchises.name,
              collection.name, collection.games.name, collection.games.slug, collection.games.cover.url, collection.games.cover.image_id,
-             age_ratings.category, age_ratings.rating,
+             age_ratings, age_ratings.organization, age_ratings.rating_category,
              language_supports.language.name, language_supports.language_support_type.name,
              game_type,
              websites.url, websites.category;
@@ -53,6 +55,20 @@ export default async function handler(req, res) {
       const s = PLATFORMS_MAP[String(p.id)]
       if (s) slugs.add(s)
     })
+
+    const ageRatings = g.age_ratings?.map(ar => {
+      const orgData = AGE_RATINGS_MAP[ar.organization]
+      if (!orgData) return null
+      
+      const ratingLabel = orgData.ratings[ar.rating_category]
+      if (!ratingLabel) return null
+      
+      return {
+        category: orgData.org,
+        rating: ratingLabel,
+        region: orgData.region
+      }
+    }).filter(Boolean) || []
 
     const platformIcons = [...slugs]
       .sort((a, b) => (PLATFORM_PRIORITY[a] ?? 99) - (PLATFORM_PRIORITY[b] ?? 99))
@@ -83,6 +99,7 @@ export default async function handler(req, res) {
 
     const game = {
       ...g,
+      ageRatings,
       platformIcons,
       developers,
       publishers,
