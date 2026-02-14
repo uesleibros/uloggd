@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "../../hooks/usePageMeta"
 import { PLATFORMS_MAP } from "../../data/platformsMapper.js"
 import PacmanLoading from "../components/PacmanLoading"
 import RatingBadge from "../components/RatingBadge"
-//import PlatformIcons from "../components/PlatformIcons"
 import GameCard from "../components/GameCard"
 import Lightbox from "../components/Lightbox"
 import { formatDateLong } from "../../utils/formatDate"
@@ -15,21 +14,6 @@ function InfoRow({ label, children }) {
     <div className="flex gap-2">
       <span className="text-sm text-zinc-500 w-28 flex-shrink-0">{label}</span>
       <span className="text-sm text-zinc-300">{children}</span>
-    </div>
-  )
-}
-
-function GameCardRow({ title, games }) {
-  if (!games?.length) return null
-
-  return (
-    <div className="mt-12">
-      <h2 className="text-lg font-semibold text-white mb-4">{title}</h2>
-      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-        {games.map(g => (
-          <GameCard key={g.id} game={g} />
-        ))}
-      </div>
     </div>
   )
 }
@@ -86,34 +70,11 @@ function StatCard({ value, label }) {
   )
 }
 
-function VideoSection({ videos }) {
-  if (!videos?.length) return null
-
-  return (
-    <div className="mt-12">
-      <h2 className="text-lg font-semibold text-white mb-4">Vídeos</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {videos.slice(0, 4).map(v => (
-          <div key={v.video_id} className="relative aspect-video rounded-lg overflow-hidden bg-zinc-800">
-            <iframe
-              src={`https://www.youtube.com/embed/${v.video_id}`}
-              title={v.name}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="absolute inset-0 w-full h-full"
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 function AgeRatings({ ratings }) {
   if (!ratings || ratings.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 gap-3">
       {ratings.map((rating, index) => (
         <AgeRatingCard key={index} rating={rating} />
       ))}
@@ -199,6 +160,157 @@ function AgeRatingCard({ rating }) {
   );
 }
 
+function RelatedGamesSection({ game }) {
+  const tabs = [
+    { key: "videos",      label: "Vídeos",      data: game.videos },
+    { key: "dlcs",        label: "DLCs",         data: game.dlcs },
+    { key: "expansions",  label: "Expansões",    data: game.expansions },
+    { key: "standalone",  label: "Standalone",   data: game.standalone_expansions },
+    { key: "remakes",     label: "Remakes",      data: game.remakes },
+    { key: "remasters",   label: "Remasters",    data: game.remasters },
+    { key: "similar",     label: "Similares",    data: game.similar_games },
+  ].filter(t => t.data?.length > 0)
+
+  const [activeTab, setActiveTab] = useState(tabs[0]?.key ?? null)
+
+  if (tabs.length === 0) return null
+
+  const current = tabs.find(t => t.key === activeTab) ?? tabs[0]
+
+  return (
+    <div className="mt-12">
+      <div className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold text-white">Conteúdo relacionado</h2>
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {tabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`
+                flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer
+                ${activeTab === tab.key
+                  ? "bg-white text-black"
+                  : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 border border-zinc-700"
+                }
+              `}
+            >
+              {tab.label}
+              <span className={`ml-1.5 text-xs ${activeTab === tab.key ? "text-zinc-600" : "text-zinc-500"}`}>
+                {tab.data.length}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <hr className="my-4 border-zinc-700" />
+
+      <div>
+        {current.key === "videos" && <VideoGrid videos={current.data} />}
+        {current.key !== "videos" && <GameCardGrid games={current.data} />}
+      </div>
+    </div>
+  )
+}
+
+function VideoGrid({ videos }) {
+  const [showAll, setShowAll] = useState(false)
+  const visible = showAll ? videos : videos.slice(0, 4)
+
+  return (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {visible.map(v => (
+          <div key={v.video_id} className="relative aspect-video rounded-lg overflow-hidden bg-zinc-800">
+            <iframe
+              src={`https://www.youtube.com/embed/${v.video_id}`}
+              title={v.name}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="absolute inset-0 w-full h-full"
+            />
+          </div>
+        ))}
+      </div>
+      {videos.length > 4 && (
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="mt-3 cursor-pointer text-sm text-zinc-500 hover:text-white transition-colors"
+        >
+          {showAll ? "Mostrar menos" : `Ver todos (${videos.length})`}
+        </button>
+      )}
+    </>
+  )
+}
+
+function GameCardGrid({ games }) {
+  const scrollRef = useRef(null)
+  const dragRef = useRef({
+    isDown: false,
+    startX: 0,
+    scrollLeft: 0,
+    hasMoved: false
+  })
+
+  const handlePointerDown = useCallback((e) => {
+    const el = scrollRef.current
+    if (!el) return
+    const pageX = e.type === "touchstart" ? e.touches[0].pageX : e.pageX
+    dragRef.current = {
+      isDown: true,
+      startX: pageX,
+      scrollLeft: el.scrollLeft,
+      hasMoved: false
+    }
+  }, [])
+
+  const handlePointerMove = useCallback((e) => {
+    if (!dragRef.current.isDown) return
+    const el = scrollRef.current
+    if (!el) return
+    const pageX = e.type === "touchmove" ? e.touches[0].pageX : e.pageX
+    const diff = pageX - dragRef.current.startX
+    if (Math.abs(diff) > 5) {
+      dragRef.current.hasMoved = true
+      if (e.type === "mousemove") e.preventDefault()
+    }
+    el.scrollLeft = dragRef.current.scrollLeft - diff
+  }, [])
+
+  const handlePointerUp = useCallback(() => {
+    dragRef.current.isDown = false
+  }, [])
+
+  const handleClickCapture = useCallback((e) => {
+    if (dragRef.current.hasMoved) {
+      e.preventDefault()
+      e.stopPropagation()
+      dragRef.current.hasMoved = false
+    }
+  }, [])
+
+  return (
+    <div
+      ref={scrollRef}
+      onMouseDown={handlePointerDown}
+      onMouseMove={handlePointerMove}
+      onMouseUp={handlePointerUp}
+      onMouseLeave={handlePointerUp}
+      onTouchStart={handlePointerDown}
+      onTouchMove={handlePointerMove}
+      onTouchEnd={handlePointerUp}
+      onClickCapture={handleClickCapture}
+      onDragStart={(e) => e.preventDefault()}
+      className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide select-none cursor-grab active:cursor-grabbing"
+    >
+      {games.map(g => (
+        <GameCard key={g.id} game={g} draggable={false} />
+      ))}
+    </div>
+  )
+}
+
 export default function Game() {
   const { slug } = useParams()
   const [game, setGame] = useState(null)
@@ -277,7 +389,7 @@ export default function Game() {
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto px-4 pt-32 pb-16">
+      <div className="mx-auto pt-32 pb-16">
         <div className="flex flex-col md:flex-row gap-8">
           <div className="flex-shrink-0">
             {game.cover ? (
@@ -293,34 +405,37 @@ export default function Game() {
             )}
 
             {game.parent_game && (
-              <Link
-                to={`/game/${game.parent_game.slug}`}
-                className="mt-3 flex items-center gap-3 px-4 py-3 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
-              >
-                {game.parent_game.cover ? (
-                  <img
-                    src={`https:${game.parent_game.cover.url}`}
-                    alt={game.parent_game.name}
-                    className="w-10 h-14 rounded object-cover bg-zinc-700 flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-10 h-14 rounded bg-zinc-700 flex-shrink-0" />
-                )}
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs text-zinc-500 uppercase tracking-wide">Jogo principal</span>
-                  <span className="text-sm text-zinc-300 group-hover:text-white transition-colors truncate">
-                    {game.parent_game.name}
-                  </span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-zinc-500 group-hover:text-white ml-auto flex-shrink-0 transition-colors"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <>
+                <Link
+                  to={`/game/${game.parent_game.slug}`}
+                  className="mt-3 flex items-center gap-3 px-4 py-3 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
+                  {game.parent_game.cover ? (
+                    <img
+                      src={`https:${game.parent_game.cover.url}`}
+                      alt={game.parent_game.name}
+                      className="w-10 h-14 rounded object-cover bg-zinc-700 flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-14 rounded bg-zinc-700 flex-shrink-0" />
+                  )}
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs text-zinc-500 uppercase tracking-wide">Jogo principal</span>
+                    <span className="text-sm text-zinc-300 group-hover:text-white transition-colors truncate">
+                      {game.parent_game.name}
+                    </span>
+                  </div>
+                  <svg
+                    className="w-4 h-4 text-zinc-500 group-hover:text-white ml-auto flex-shrink-0 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+                <hr className="my-6 border-zinc-700" />
+              </>
             )}
 
             {game.ageRatings?.length > 0 && (
@@ -342,12 +457,6 @@ export default function Game() {
               </p>
             )}
 
-            {/*
-            <div className="mt-2">
-              <PlatformIcons icons={game.platformIcons} max={10} size="w-5" />
-            </div>
-            */}
-
             <div className="flex gap-6 mt-6">
               <RatingBadge score={game.total_rating} label="Total" />
               <RatingBadge score={game.aggregated_rating} label="Crítica" />
@@ -360,10 +469,6 @@ export default function Game() {
                 label="Avaliações"
               />
               <StatCard
-                value={game.follows}
-                label="Seguindo"
-              />
-              <StatCard
                 value={game.hypes}
                 label="Hype"
               />
@@ -374,7 +479,8 @@ export default function Game() {
             </div>
 
             {game.summary && (
-              <div className="mt-6">
+              <div>
+                <hr className="my-6 border-zinc-700" />
                 <h2 className="text-lg font-semibold text-white mb-2">Sobre</h2>
                 <p className="text-sm text-zinc-400 leading-relaxed">
                   {summaryTruncated && !showFullSummary
@@ -402,7 +508,8 @@ export default function Game() {
             </div>
 
             {game.platforms?.length > 0 && (
-              <div className="mt-6">
+              <div>
+                <hr className="my-6 border-zinc-700" />
                 <h2 className="text-lg font-semibold text-white mb-3">Plataformas</h2>
                 <div className="flex flex-wrap gap-2">
                   {game.platforms.map(p => (
@@ -425,57 +532,40 @@ export default function Game() {
             )}
 
             <Keywords keywords={game.keywords} />
-          </div>
-        </div>
-
-        {allMedia.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-lg font-semibold text-white mb-4">
-              Mídia
-              <span className="text-sm text-zinc-500 font-normal ml-2">
-                {allMedia.length} {allMedia.length === 1 ? "imagem" : "imagens"}
-              </span>
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {allMedia.slice(0, 9).map((img, i) => (
-                <img
-                  key={img.image_id}
-                  src={`https:${img.url}`}
-                  alt=""
-                  onClick={() => openLightbox(allMedia, i)}
-                  className="rounded-lg w-full object-cover aspect-video bg-zinc-800 cursor-pointer hover:brightness-75 transition-all"
-                />
-              ))}
-            </div>
-            {allMedia.length > 9 && (
-              <button
-                onClick={() => openLightbox(allMedia, 9)}
-                className="mt-3 cursor-pointer text-sm text-zinc-500 hover:text-white transition-colors"
-              >
-                Ver todas ({allMedia.length})
-              </button>
+            
+            {allMedia.length > 0 && (
+              <div>
+                <hr className="my-6 border-zinc-700" />
+                <h2 className="text-lg font-semibold text-white mb-4">
+                  Mídia
+                  <span className="text-sm text-zinc-500 font-normal ml-2">
+                    {allMedia.length} {allMedia.length === 1 ? "imagem" : "imagens"}
+                  </span>
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {allMedia.slice(0, 9).map((img, i) => (
+                    <img
+                      key={img.image_id}
+                      src={`https:${img.url}`}
+                      alt=""
+                      onClick={() => openLightbox(allMedia, i)}
+                      className="rounded-lg w-full object-cover aspect-video bg-zinc-800 cursor-pointer hover:brightness-75 transition-all"
+                    />
+                  ))}
+                </div>
+                {allMedia.length > 9 && (
+                  <button
+                    onClick={() => openLightbox(allMedia, 9)}
+                    className="mt-3 cursor-pointer text-sm text-zinc-500 hover:text-white transition-colors"
+                  >
+                    Ver todas ({allMedia.length})
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        )}
-
-        <VideoSection videos={game.videos} />
-
-        <GameCardRow title="DLCs" games={game.dlcs} />
-        <GameCardRow title="Expansões" games={game.expansions} />
-        <GameCardRow title="Expansões standalone" games={game.standalone_expansions} />
-        <GameCardRow title="Remakes" games={game.remakes} />
-        <GameCardRow title="Remasters" games={game.remasters} />
-
-        {game.similar_games?.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-lg font-semibold text-white mb-4">Jogos similares</h2>
-            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-              {game.similar_games.map(sg => (
-                <GameCard key={sg.id} game={sg} />
-              ))}
-            </div>
-          </div>
-        )}
+        </div>
+        <RelatedGamesSection game={game} />
       </div>
 
       <Lightbox
