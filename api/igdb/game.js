@@ -1,6 +1,7 @@
 import { query } from "../../lib/igdb-wrapper.js"
 import { PLATFORM_PRIORITY, PLATFORMS_MAP } from "../../data/platformsMapper.js"
 import { AGE_RATINGS_MAP } from "../../data/ageRatingsMapper.js"
+import { WEBSITE_MAP } from "../../data/websitesMapper.js"
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end()
@@ -41,7 +42,7 @@ export default async function handler(req, res) {
              age_ratings, age_ratings.organization, age_ratings.rating_category,
              language_supports.language.name, language_supports.language_support_type.name,
              game_type,
-             websites.url, websites.category;
+             websites.url, websites.type;
       where slug = "${slug}";
       limit 1;
     `)
@@ -69,6 +70,11 @@ export default async function handler(req, res) {
         region: orgData.region
       }
     }).filter(Boolean) || []
+
+    const websites = g.websites?.map(site => ({
+      url: site.url,
+      ...WEBSITE_MAP[site.type]
+    })).filter(site => site.type) || []
 
     const platformIcons = [...slugs]
       .sort((a, b) => (PLATFORM_PRIORITY[a] ?? 99) - (PLATFORM_PRIORITY[b] ?? 99))
@@ -105,6 +111,7 @@ export default async function handler(req, res) {
       publishers,
       porters,
       supporters,
+      websites,
       cover: g.cover?.url
         ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_cover_big") }
         : null,

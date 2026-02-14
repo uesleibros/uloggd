@@ -1,5 +1,4 @@
 const AGE_RATINGS_MAP = {
-  // ESRB (organization: 1)
   1: {
     org: "esrb",
     region: "U.S. & CA",
@@ -14,7 +13,6 @@ const AGE_RATINGS_MAP = {
       12: "ao"
     }
   },
-  // PEGI (organization: 2)
   2: {
     org: "pegi",
     region: "EU",
@@ -27,7 +25,6 @@ const AGE_RATINGS_MAP = {
       9: "7"
     }
   },
-  // CERO (organization: 3)
   3: {
     org: "cero",
     region: "JP",
@@ -39,7 +36,6 @@ const AGE_RATINGS_MAP = {
       17: "z"
     }
   },
-  // USK (organization: 4)
   4: {
     org: "usk",
     region: "DE",
@@ -51,7 +47,6 @@ const AGE_RATINGS_MAP = {
       22: "18"
     }
   },
-  // GRAC (organization: 5)
   5: {
     org: "grac",
     region: "KR",
@@ -64,7 +59,6 @@ const AGE_RATINGS_MAP = {
       27: "testing"
     }
   },
-  // CLASS_IND (organization: 6)
   6: {
     org: "class_ind",
     region: "BR",
@@ -77,7 +71,6 @@ const AGE_RATINGS_MAP = {
       33: "18"
     }
   },
-  // ACB (organization: 7)
   7: {
     org: "acb",
     region: "AU",

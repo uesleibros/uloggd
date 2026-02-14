@@ -33,6 +33,48 @@ function GameCardRow({ title, games }) {
   )
 }
 
+function Websites({ websites }) {
+  if (!websites || websites.length === 0) return null;
+
+  return (
+    <div className="mt-4 space-y-3">
+      <h3 className="text-lg font-semibold text-white">Conexões</h3>
+      <div className="grid grid-cols-2 gap-3">
+        {websites.map((site, index) => (
+          <WebsiteLink key={index} site={site} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WebsiteLink({ site }) {
+  return (
+    <a
+      href={site.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
+      title={site.label}
+    >
+      <img 
+        src={`https://www.igdb.com/icons/${site.type}.svg`}
+        alt={site.label}
+        className="w-6 h-6 object-contain"
+        onError={(e) => {
+          e.target.style.display = 'none';
+        }}
+      />
+      <span className="text-sm text-zinc-400 group-hover:text-white">
+        {site.label}
+      </span>
+      <svg className="w-3 h-3 text-zinc-500 group-hover:text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+      </svg>
+    </a>
+  );
+}
+
 function StatCard({ value, label }) {
   if (!value) return null
   return (
@@ -129,7 +171,7 @@ function Keyword({ text }) {
   return (
     <div className="relative inline-block">
       <button 
-        className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-700/50 backdrop-blur-sm hover:bg-gray-700/80 border border-gray-700 hover:border-gray-600 rounded-full text-sm transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10"
+        className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-700/50 backdrop-blur-sm hover:bg-gray-700/80 border border border-zinc-700 hover:border-zinc-600 rounded-full text-sm transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -269,10 +311,12 @@ export default function Game() {
 
             {game.ageRatings?.length > 0 && (
               <div className="mt-4 ">
-                <h2 className="text-lg font-semibold text-white mb-4">Classificação de Idade</h2>
+                <h2 className="text-lg font-semibold text-white mb-4">Classificações de Idade</h2>
                 <AgeRatings ratings={game.ageRatings} />
               </div>
             )}
+
+            <Websites websites={game.websites} />
           </div>
 
           <div className="flex-1 min-w-0">
