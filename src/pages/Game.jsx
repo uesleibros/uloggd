@@ -39,7 +39,7 @@ function Websites({ websites }) {
   return (
     <div className="mt-4 space-y-3">
       <h3 className="text-lg font-semibold text-white">Conexões</h3>
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {websites.map((site, index) => (
           <WebsiteLink key={index} site={site} />
         ))}
@@ -448,4 +448,5 @@ export default function Game() {
       />
     </div>
   )
+
 }
