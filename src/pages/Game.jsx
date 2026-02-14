@@ -407,6 +407,29 @@ export default function Game() {
               <InfoRow label="Modos">{game.game_modes?.map(m => m.name).join(", ")}</InfoRow>
             </div>
 
+            {game.platforms?.length > 0 && (
+              <div className="mt-6">
+                <h2 className="text-lg font-semibold text-white mb-3">Plataformas</h2>
+                <div className="flex flex-wrap gap-2">
+                  {game.platforms.map(p => (
+                    <div
+                      key={p.id}
+                      className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg"
+                    >
+                      {p.platform_logo && (
+                        <img
+                          src={`https:${p.platform_logo.url}`}
+                          alt={p.name}
+                          className="w-5 h-5 object-contain"
+                        />
+                      )}
+                      <span className="text-sm text-zinc-300">{p.abbreviation || p.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <Keywords keywords={game.keywords} />
           </div>
         </div>
@@ -472,4 +495,5 @@ export default function Game() {
   )
 
 }
+
 
