@@ -1,5 +1,3 @@
-import { next } from '@vercel/edge';
-
 export const config = {
   matcher: '/game/:slug*',
 };
@@ -9,7 +7,7 @@ export default async function middleware(req) {
   const bots = /Discordbot|Twitterbot|facebookexternalhit|LinkedInBot|TelegramBot|Slackbot/i;
 
   if (!bots.test(userAgent)) {
-    return next();
+    return;
   }
 
   const url = new URL(req.url);
@@ -22,7 +20,7 @@ export default async function middleware(req) {
       body: JSON.stringify({ slug }),
     });
 
-    if (!apiRes.ok) return next();
+    if (!apiRes.ok) return;
     const game = await apiRes.json();
 
     const title = `${game.name} - uloggd`;
@@ -55,6 +53,6 @@ export default async function middleware(req) {
       headers: { 'Content-Type': 'text/html; charset=UTF-8' },
     });
   } catch (e) {
-    return next();
+    return;
   }
 }
