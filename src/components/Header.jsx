@@ -155,7 +155,7 @@ function AuthButtons({ onNavigate, variant = "desktop" }) {
         <Link 
           to="#"
           onClick={handleClick}
-          className="h-10 rounded-md bg-purple-100 text-sm font-medium text-zinc-900 flex items-center justify-center hover:bg-white transition-colors"
+          className="h-10 rounded-md bg-indigo-600 text-sm font-medium text-white flex items-center justify-center hover:bg-white transition-colors"
         >
           Entrar com o Discord
         </Link>
@@ -167,7 +167,7 @@ function AuthButtons({ onNavigate, variant = "desktop" }) {
     <>
       <Link 
         to="#"
-        className="h-8 px-4 rounded-md bg-purple-100 text-sm font-medium text-zinc-900 flex items-center hover:bg-white transition-colors"
+        className="h-8 px-4 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm font-medium text-white flex items-center transition-colors"
       >
         Entrar com o Discord
       </Link>
@@ -336,4 +336,5 @@ export default function Header() {
   )
 
 }
+
 
