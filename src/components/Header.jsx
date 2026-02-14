@@ -286,7 +286,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full">
+    <header className="w-full">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
         
         <div className="flex items-center gap-2">
