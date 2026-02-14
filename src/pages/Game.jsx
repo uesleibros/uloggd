@@ -132,7 +132,7 @@ function Keywords({ keywords }) {
 
   return (
     <div className="mt-4 space-y-3">
-      <h2 className="text-lg font-semibold text-white mb-3">Palavras-chave</h2>
+      <h2 className="text-lg font-semibold text-white mb-3">Palavras-chaves</h2>
       <div className="flex flex-wrap gap-2">
         {visibleKeywords.map((keyword) => (
           <Keyword key={keyword.slug} text={keyword.slug} />
@@ -489,6 +489,7 @@ export default function Game() {
   )
 
 }
+
 
 
 
