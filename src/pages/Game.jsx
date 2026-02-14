@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "../../hooks/usePageMeta"
 import { PLATFORMS_MAP } from "../../data/platformsMapper.js"
@@ -141,9 +142,9 @@ function KeywordsModal({ keywords, onClose }) {
     ? keywords.filter(k => k.slug.toLowerCase().includes(search.toLowerCase()))
     : keywords
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
@@ -192,7 +193,8 @@ function KeywordsModal({ keywords, onClose }) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -243,7 +245,7 @@ function RelatedGamesSection({ game }) {
   const current = tabs.find(t => t.key === activeTab) ?? tabs[0]
 
   return (
-    <div className="mt-12">
+    <div className="mt-16">
       <div className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold text-white">Conteúdo relacionado</h2>
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -284,9 +286,9 @@ function VideoGrid({ videos }) {
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         {visible.map(v => (
-          <div key={v.video_id} className="relative aspect-video rounded-lg overflow-hidden bg-zinc-800">
+          <div key={v.video_id} className="relative z-0 aspect-video rounded-lg overflow-hidden bg-zinc-800">
             <iframe
               src={`https://www.youtube.com/embed/${v.video_id}`}
               title={v.name}
@@ -465,7 +467,7 @@ export default function Game() {
                     >
                       {PLATFORMS_MAP[p.id] && (
                         <img
-                          src={`/platforms/${PLATFORMS_MAP[p.id]}.png`}
+                          src={`/platforms_out/${PLATFORMS_MAP[p.id]}.png`}
                           alt={p.name}
                           className="w-5 h-5 brightness-0 invert object-contain select-none"
                         />

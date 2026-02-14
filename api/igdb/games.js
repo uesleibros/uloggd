@@ -61,7 +61,7 @@ export default async function handler(req, res) {
         .sort((a, b) => (PLATFORM_PRIORITY[a] ?? 99) - (PLATFORM_PRIORITY[b] ?? 99))
         .map(slug => ({
           name: slug,
-          icon: `/platforms/${slug}.png`
+          icon: `/platforms_out/${slug}.png`
         }))
 
       return {

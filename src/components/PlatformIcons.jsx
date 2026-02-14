@@ -8,7 +8,6 @@ export default function PlatformIcons({ icons, max = 4, size = "w-3" }) {
           key={p.name}
           src={p.icon}
           alt={p.name}
-          title={p.name}
           className={`${size} brightness-0 invert select-none object-contain`}
         />
       ))}
