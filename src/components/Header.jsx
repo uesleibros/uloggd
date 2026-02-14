@@ -1,17 +1,7 @@
 import { Link, useNavigate } from "react-router-dom"
 import { useEffect, useRef, useState } from "react"
-
-function formatDate(unixSeconds) {
-  if (!unixSeconds) return null
-
-  const date = new Date(unixSeconds * 1000)
-
-  return date.toLocaleDateString("pt-BR", {
-    day: "numeric",
-    month: "short",
-    year: "numeric"
-  }).replace(/\./g, "").replace(/ de /g, " ")
-}
+import PlatformIcons from "./PlatformIcons"
+import { formatDateShort } from "../../utils/formatDate"
 
 function SearchIcon({ focused }) {
   return (
@@ -61,25 +51,10 @@ function SearchResultItem({ item, onSelect }) {
           <div className="flex items-center gap-2 mt-1">
             {item.first_release_date && (
               <div className="text-xs text-zinc-500">
-                {formatDate(item.first_release_date)}
+                {formatDateShort(item.first_release_date)}
               </div>
             )}
-            <div className="flex items-center gap-2">
-              {item.platformIcons.slice(0, 4).map((platform) => (
-                <img
-                  className="w-3 brightness-0 invert select-none object-contain"
-                  key={platform.name}
-                  src={platform.icon}
-                  title={platform.name}
-                  alt={platform.name}
-                />
-              ))}
-              {item.platformIcons.length > 4 && (
-                <span className="text-xs font-bold text-zinc-500">
-                  +{item.platformIcons.length - 4}
-                </span>
-              )}
-            </div>
+            <PlatformIcons icons={item.platformIcons} />
           </div>
         </div>
       </div>
@@ -287,15 +262,8 @@ export default function Header() {
 
   return (
     <header className="w-full">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-        
-        <div className="flex items-center gap-2">
-          <Link to="/" className="text-2xl font-bold text-white hover:text-zinc-300 transition-colors">
-            uloggd
-          </Link>
-        </div>
-
-        <nav className="ml-8 hidden md:flex items-center gap-1 text-sm">
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-2">
+        <nav className="hidden md:flex ml-auto items-center gap-1 text-sm">
           {NAV_ITEMS.map((item) => (
             <NavLink key={item.label} to={item.to}>
               {item.label}
@@ -303,7 +271,7 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="hidden md:flex relative ml-auto items-center gap-4">
+        <div className="hidden md:flex relative items-center gap-4">
           <div className="relative">
             <SearchInput
               query={query}

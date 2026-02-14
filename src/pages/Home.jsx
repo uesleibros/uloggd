@@ -1,6 +1,9 @@
+import usePageMeta from "../../hooks/usePageMeta"
 import UsersChoiceCarousel from "../components/UsersChoiceCarousel"
 
 export default function Home() {
+	usePageMeta()
+
 	return (
 		<div>
 			<div className="absolute z-[-1] z-0 top-0 left-0 h-[262px] w-full overflow-hidden">
@@ -16,18 +19,12 @@ export default function Home() {
 				<h1 className="text-5xl font-bold text-blue-200 mb-5">Descubra, colecione, seus jogos.</h1>
 				<div className="max-w-2xl">
 				  <p className="text-lg leading-relaxed text-zinc-300">
-				    <span className="text-white font-semibold">uloggd</span> é um agregador 
-				    de tierlists que utiliza o{" "}
-				    <a 
-				      className="text-white underline font-bold underline-offset-2 transition hover:text-blue-300" 
-				      href="https://www.igdb.com/"
-				      target="_blank"
-				    >
-				      IGDB
-				    </a>{" "}
-				    como fonte de dados. Sincronize sua biblioteca, crie rankings personalizados 
-				    e compare suas classificações com outros usuários tudo atualizado 
-				    automaticamente conforme você joga.
+				    Acompanhe tudo que você já jogou, está jogando ou quer jogar. 
+				    Organize sua biblioteca pessoal, crie tierlists e rankings personalizados, 
+				    dê notas aos seus jogos favoritos e descubra o que a comunidade está curtindo. 
+				    Compare suas classificações com outros jogadores, explore recomendações 
+				    baseadas nos seus gostos e mantenha tudo atualizado automaticamente 
+				    conforme você joga.
 				  </p>
 				</div>
 			</div>
