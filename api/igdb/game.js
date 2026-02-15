@@ -19,6 +19,7 @@ export default async function handler(req, res) {
              platforms.name, platforms.id,
              genres.name,
              themes.name,
+             alternative_names.name,
              involved_companies.company.name,
              involved_companies.developer, involved_companies.publisher,
              game_modes.name,

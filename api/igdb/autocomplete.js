@@ -1,5 +1,5 @@
 import { query } from "../../lib/igdb-wrapper.js"
-import { PLATFORMS_MAP, PLATFORM_PRIORITY } from "../../data/platformsMapper.js"
+import { PLATFORMS_MAP } from "../../data/platformsMapper.js"
 
 function escapeIGDB(str) {
   return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
@@ -180,7 +180,6 @@ export default async function handler(req, res) {
         })
 
         const platformIcons = [...slugs]
-          .sort((a, b) => (PLATFORM_PRIORITY[a] ?? 99) - (PLATFORM_PRIORITY[b] ?? 99))
           .map(slug => ({
             name: slug,
             icon: `/platforms_out/${slug}.png`

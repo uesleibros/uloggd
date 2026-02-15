@@ -84,17 +84,57 @@ function AgeRatings({ ratings }) {
   );
 }
 
-function HowLongToBeat({ hltb }) {
-  if (!hltb) return null
+function HowLongToBeatSkeleton() {
+  return (
+    <div>
+      <hr className="my-6 border-zinc-700" />
+      <h2 className="text-lg font-semibold text-white mb-4">Tempo para zerar</h2>
+      <div className="space-y-2.5">
+        {[75, 90, 100].map((w, i) => (
+          <div key={i}>
+            <div className="flex items-center justify-between mb-1">
+              <div className="h-4 w-20 bg-zinc-800 rounded animate-pulse" />
+              <div className="h-4 w-10 bg-zinc-800 rounded animate-pulse" />
+            </div>
+            <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-zinc-700 animate-pulse"
+                style={{ width: `${w}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="h-3 w-28 bg-zinc-800 rounded animate-pulse mt-4" />
+    </div>
+  )
+}
+
+function HowLongToBeatEmpty() {
+  return (
+    <div>
+      <hr className="my-6 border-zinc-700" />
+      <h2 className="text-lg font-semibold text-white mb-4">Tempo para zerar</h2>
+      <div className="flex flex-col items-center justify-center py-6 gap-2">
+        <span className="text-2xl">😕</span>
+        <p className="text-sm text-zinc-500">Sem dados de tempo disponíveis</p>
+      </div>
+    </div>
+  )
+}
+
+function HowLongToBeat({ hltb, loading }) {
+  if (loading) return <HowLongToBeatSkeleton />
+
+  if (hltb === null) return <HowLongToBeatEmpty />
 
   const bars = [
-    { label: "História",     hours: hltb.times.main,          color: "bg-blue-500" },
-    { label: "História +",   hours: hltb.times.mainExtra,     color: "bg-purple-500" },
-    { label: "Completista",  hours: hltb.times.completionist, color: "bg-amber-500" },
-    { label: "Todos estilos", hours: hltb.times.allStyles,    color: "bg-emerald-500" },
+    { label: "História",    hours: hltb.times.main,          color: "bg-blue-500",   hoverColor: "group-hover:bg-blue-400" },
+    { label: "História +",  hours: hltb.times.mainExtra,     color: "bg-purple-500", hoverColor: "group-hover:bg-purple-400" },
+    { label: "Completista", hours: hltb.times.completionist, color: "bg-amber-500",  hoverColor: "group-hover:bg-amber-400" },
   ].filter(b => b.hours)
 
-  if (bars.length === 0) return null
+  if (bars.length === 0) return <HowLongToBeatEmpty />
 
   const max = Math.max(...bars.map(b => b.hours))
 
@@ -102,26 +142,33 @@ function HowLongToBeat({ hltb }) {
     <div>
       <hr className="my-6 border-zinc-700" />
       <h2 className="text-lg font-semibold text-white mb-4">Tempo para zerar</h2>
-      <div className="space-y-3">
-        {bars.map(bar => (
-          <div key={bar.label} className="flex items-center gap-3">
-            <span className="text-sm text-zinc-400 w-28 flex-shrink-0">{bar.label}</span>
-            <div className="flex-1 bg-zinc-800 rounded-full h-5 overflow-hidden">
-              <div
-                className={`${bar.color} h-full rounded-full flex items-center justify-end pr-2 transition-all duration-500`}
-                style={{ width: `${(bar.hours / max) * 100}%`, minWidth: "2.5rem" }}
-              >
-                <span className="text-xs font-semibold text-white drop-shadow">{bar.hours}h</span>
+      <div className="space-y-2.5">
+        {bars.map(bar => {
+          const pct = (bar.hours / max) * 100
+
+          return (
+            <div key={bar.label} className="group">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm text-zinc-400">{bar.label}</span>
+                <span className="text-sm font-semibold text-white tabular-nums">
+                  {bar.hours}<span className="text-zinc-500 font-normal text-xs ml-0.5">h</span>
+                </span>
+              </div>
+              <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${bar.color} ${bar.hoverColor} transition-all duration-500`}
+                  style={{ width: `${pct}%` }}
+                />
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
       <a
         href={`https://howlongtobeat.com/game/${hltb.id}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 mt-3 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+        className="inline-flex items-center gap-1.5 mt-4 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
       >
         via HowLongToBeat
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -373,6 +420,7 @@ export default function Game() {
   const { slug } = useParams()
   const [game, setGame] = useState(null)
   const [hltb, setHltb] = useState(null)
+  const [hltbLoading, setHltbLoading] = useState(true)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [lightboxIndex, setLightboxIndex] = useState(null)
@@ -389,6 +437,7 @@ export default function Game() {
     setLoading(true)
     setError(null)
     setHltb(null)
+    setHltbLoading(true)
 
     fetch("/api/igdb/game", {
       method: "POST",
@@ -406,11 +455,24 @@ export default function Game() {
         fetch("/api/hltb/game", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: data.name })
+          body: JSON.stringify({
+            name: data.name,
+            altNames: data.alternative_names?.map(a => a.name) || [],
+            year: data.first_release_date
+              ? new Date(data.first_release_date * 1000).getFullYear()
+              : null,
+            platforms: data.platforms?.map(p => p.name) || null
+          })
         })
           .then(r => r.ok ? r.json() : null)
-          .then(h => { if (h) setHltb(h) })
-          .catch(() => {})
+          .then(h => {
+            setHltb(h)
+            setHltbLoading(false)
+          })
+          .catch(() => {
+            setHltb(null)
+            setHltbLoading(false)
+          })
       })
       .catch(() => {
         setError("Jogo não encontrado")
@@ -537,6 +599,22 @@ export default function Game() {
                 </div>
               </div>
             )}
+            {game.alternative_names && (
+              <>
+                <hr className="my-6 border-zinc-700" />
+                <h2 className="text-lg font-semibold text-white mb-4">Nomes alternativos</h2>
+                <div className="flex flex-wrap max-w-sm gap-2">
+                  {game.alternative_names.map((alternative_name, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg"
+                    >
+                      <span className="text-sm text-zinc-300">{alternative_name.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
             <Keywords keywords={game.keywords} />
           </div>
 
@@ -599,7 +677,7 @@ export default function Game() {
               <InfoRow label="Modos">{game.game_modes?.map(m => m.name).join(", ")}</InfoRow>
             </div>
 
-            <HowLongToBeat hltb={hltb} />
+            <HowLongToBeat hltb={hltb} loading={hltbLoading} />
 
             {allMedia.length > 0 && (
               <div>

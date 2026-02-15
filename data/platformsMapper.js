@@ -105,15 +105,4 @@ const PLATFORMS_MAP = {
   "510": "ereader"
 }
 
-const PLATFORM_PRIORITY = {
-  windows: 1,
-  android: 2,
-  playstation: 4,
-  xbox: 5,
-  macos: 6,
-  linux: 7,
-  ios: 8,
-  web: 9
-}
-
-export { PLATFORM_PRIORITY, PLATFORMS_MAP }
+export { PLATFORMS_MAP }
