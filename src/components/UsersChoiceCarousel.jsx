@@ -6,8 +6,10 @@ export default function UsersChoiceCarousel() {
   const [games, setGames] = useState([])
   const [loading, setLoading] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
+  
   const carouselRef = useRef(null)
   const rafRef = useRef(null)
+  const virtualScrollLeft = useRef(0)
 
   useEffect(() => {
     fetch("/api/igdb/users-choice")
@@ -21,7 +23,10 @@ export default function UsersChoiceCarousel() {
 
   useEffect(() => {
     if (!carouselRef.current || loading) return
-    carouselRef.current.scrollLeft = carouselRef.current.scrollWidth / 3
+    const carousel = carouselRef.current
+    const initialPos = carousel.scrollWidth / 3
+    carousel.scrollLeft = initialPos
+    virtualScrollLeft.current = initialPos
   }, [loading])
 
   const normalizeScroll = useCallback(() => {
@@ -29,11 +34,14 @@ export default function UsersChoiceCarousel() {
     if (!carousel) return
 
     const sectionWidth = carousel.scrollWidth / 3
+    if (sectionWidth === 0) return
 
-    if (carousel.scrollLeft >= sectionWidth * 2) {
-      carousel.scrollLeft -= sectionWidth
-    } else if (carousel.scrollLeft <= 0) {
-      carousel.scrollLeft += sectionWidth
+    if (virtualScrollLeft.current >= sectionWidth * 2) {
+      virtualScrollLeft.current -= sectionWidth
+      carousel.scrollLeft = virtualScrollLeft.current
+    } else if (virtualScrollLeft.current <= 0) {
+      virtualScrollLeft.current += sectionWidth
+      carousel.scrollLeft = virtualScrollLeft.current
     }
   }, [])
 
@@ -49,30 +57,50 @@ export default function UsersChoiceCarousel() {
       const carousel = carouselRef.current
       if (!carousel) return
 
-      carousel.scrollLeft += 0.03 * delta
-      normalizeScroll()
+      virtualScrollLeft.current += 0.04 * delta
+      
+      carousel.scrollLeft = Math.floor(virtualScrollLeft.current)
 
+      normalizeScroll()
       rafRef.current = requestAnimationFrame(step)
     }
 
     rafRef.current = requestAnimationFrame(step)
-
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
+    return () => cancelAnimationFrame(rafRef.current)
   }, [loading, isPaused, normalizeScroll])
+
+  const syncVirtualScroll = () => {
+    if (carouselRef.current) {
+      virtualScrollLeft.current = carouselRef.current.scrollLeft
+    }
+  }
 
   useEffect(() => {
     const handleVisibility = () => {
-      if (document.hidden && rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
-        rafRef.current = null
+      if (!document.hidden) {
+        setIsPaused(false)
+      } else {
+        setIsPaused(true)
       }
     }
-
     document.addEventListener("visibilitychange", handleVisibility)
     return () => document.removeEventListener("visibilitychange", handleVisibility)
   }, [])
+
+  useEffect(() => {
+    if (loading) return
+
+    const handleResize = () => {
+      const carousel = carouselRef.current
+      if (!carousel) return
+      const newPos = carousel.scrollWidth / 3
+      carousel.scrollLeft = newPos
+      virtualScrollLeft.current = newPos
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [loading])
 
   if (loading) {
     return (
@@ -89,10 +117,16 @@ export default function UsersChoiceCarousel() {
       ref={carouselRef}
       className="gap-4 overflow-x-hidden py-2"
       onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+      onMouseLeave={() => {
+        syncVirtualScroll()
+        setIsPaused(false)
+      }}
       onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => setIsPaused(false)}
-      onScrollEnd={normalizeScroll}
+      onTouchEnd={() => {
+        syncVirtualScroll()
+        setIsPaused(false)
+      }}
+      onScroll={syncVirtualScroll}
     >
       {games.map((game, index) => (
         <GameCard

@@ -15,20 +15,34 @@ async function loadUser(session) {
     return
   }
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("is_verified, is_moderator")
-    .eq("user_id", session.user.id)
-    .single()
+  try {
+    const res = await fetch("/api/user/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: session.user.id }),
+    })
 
-  cachedUser = {
-    id: session.user.id,
-    discordId: session.user.user_metadata.provider_id,
-    username: session.user.user_metadata.full_name,
-    avatar: session.user.user_metadata.avatar_url,
-    email: session.user.email,
-    is_verified: profile?.is_verified || false,
-    is_moderator: profile?.is_moderator || false,
+    const profile = res.ok ? await res.json() : null
+
+    cachedUser = {
+      id: session.user.id,
+      discordId: session.user.user_metadata.provider_id,
+      username: session.user.user_metadata.full_name,
+      avatar: session.user.user_metadata.avatar_url,
+      email: session.user.email,
+      is_verified: profile?.is_verified || false,
+      is_moderator: profile?.is_moderator || false,
+    }
+  } catch {
+    cachedUser = {
+      id: session.user.id,
+      discordId: session.user.user_metadata.provider_id,
+      username: session.user.user_metadata.full_name,
+      avatar: session.user.user_metadata.avatar_url,
+      email: session.user.email,
+      is_verified: false,
+      is_moderator: false,
+    }
   }
 
   notify()
