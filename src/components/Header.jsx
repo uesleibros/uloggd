@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useEffect, useRef, useState } from "react"
 import PlatformIcons from "./PlatformIcons"
 import { formatDateShort } from "../../utils/formatDate"
@@ -346,6 +346,7 @@ function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) {
 
           <DropdownItem
             to={`/u/${user.username}`}
+            onClick={onNavigate}
             label="Meu perfil"
             icon={
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -354,7 +355,7 @@ function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) {
             }
           />
           <DropdownItem
-            to="/settings"
+            onClick={onNavigate}
             label="Configurações"
             icon={
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -366,7 +367,7 @@ function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) {
 
           <div className="pt-1 mt-1 border-t border-zinc-800">
             <DropdownItem
-              onClick={handleSignOut}
+              onClick={() => { onNavigate?.(); handleSignOut() }}
               label="Sair"
               variant="danger"
               icon={
@@ -426,8 +427,13 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const timeoutRef = useRef(null)
   const navigate = useNavigate()
+  const location = useLocation()
 
   const { user, loading: authLoading } = useAuth()
+
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [location.pathname])
 
   useEffect(() => {
     if (!query.trim()) {

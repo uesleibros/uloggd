@@ -6,10 +6,14 @@ export default function UsersChoiceCarousel() {
   const [games, setGames] = useState([])
   const [loading, setLoading] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
-  
+
   const carouselRef = useRef(null)
   const rafRef = useRef(null)
   const virtualScrollLeft = useRef(0)
+  const isDragging = useRef(false)
+  const touchStartY = useRef(0)
+  const touchStartX = useRef(0)
+  const isHorizontalSwipe = useRef(false)
 
   useEffect(() => {
     fetch("/api/igdb/users-choice")
@@ -58,9 +62,7 @@ export default function UsersChoiceCarousel() {
       if (!carousel) return
 
       virtualScrollLeft.current += 0.04 * delta
-      
       carousel.scrollLeft = Math.floor(virtualScrollLeft.current)
-
       normalizeScroll()
       rafRef.current = requestAnimationFrame(step)
     }
@@ -69,20 +71,14 @@ export default function UsersChoiceCarousel() {
     return () => cancelAnimationFrame(rafRef.current)
   }, [loading, isPaused, normalizeScroll])
 
-  const syncVirtualScroll = () => {
+  const syncVirtualScroll = useCallback(() => {
     if (carouselRef.current) {
       virtualScrollLeft.current = carouselRef.current.scrollLeft
     }
-  }
+  }, [])
 
   useEffect(() => {
-    const handleVisibility = () => {
-      if (!document.hidden) {
-        setIsPaused(false)
-      } else {
-        setIsPaused(true)
-      }
-    }
+    const handleVisibility = () => setIsPaused(document.hidden)
     document.addEventListener("visibilitychange", handleVisibility)
     return () => document.removeEventListener("visibilitychange", handleVisibility)
   }, [])
@@ -101,6 +97,43 @@ export default function UsersChoiceCarousel() {
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
   }, [loading])
+
+  const handleTouchStart = useCallback((e) => {
+    const touch = e.touches[0]
+    touchStartX.current = touch.clientX
+    touchStartY.current = touch.clientY
+    isHorizontalSwipe.current = false
+    isDragging.current = false
+  }, [])
+
+  const handleTouchMove = useCallback((e) => {
+    if (isDragging.current) return
+
+    const touch = e.touches[0]
+    const dx = Math.abs(touch.clientX - touchStartX.current)
+    const dy = Math.abs(touch.clientY - touchStartY.current)
+
+    if (dx + dy < 10) return
+
+    if (dx > dy) {
+      isHorizontalSwipe.current = true
+      isDragging.current = true
+      setIsPaused(true)
+    } else {
+      isHorizontalSwipe.current = false
+      isDragging.current = true
+    }
+  }, [])
+
+  const handleTouchEnd = useCallback(() => {
+    if (isHorizontalSwipe.current) {
+      syncVirtualScroll()
+      normalizeScroll()
+      setTimeout(() => setIsPaused(false), 100)
+    }
+    isDragging.current = false
+    isHorizontalSwipe.current = false
+  }, [syncVirtualScroll, normalizeScroll])
 
   if (loading) {
     return (
@@ -121,12 +154,9 @@ export default function UsersChoiceCarousel() {
         syncVirtualScroll()
         setIsPaused(false)
       }}
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => {
-        syncVirtualScroll()
-        setIsPaused(false)
-      }}
-      onScroll={syncVirtualScroll}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {games.map((game, index) => (
         <GameCard

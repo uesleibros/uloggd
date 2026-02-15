@@ -3,12 +3,138 @@ import { createPortal } from "react-dom"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "../../hooks/usePageMeta"
 import { PLATFORMS_MAP } from "../../data/platformsMapper.js"
-import PacmanLoading from "../components/PacmanLoading"
 import RatingBadge from "../components/RatingBadge"
 import GameCard from "../components/GameCard"
 import Lightbox from "../components/Lightbox"
 import { formatDateLong } from "../../utils/formatDate"
 import DragScrollRow from "../components/DragScrollRow.jsx"
+
+function GameSkeleton() {
+  return (
+    <div>
+      <div className="absolute z-[-1] top-0 left-0 h-[262px] w-full overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/30 via-zinc-900 to-zinc-900" />
+        <div id="main-gradient" />
+        <div id="gradient" />
+      </div>
+
+      <div className="mx-auto pt-32 pb-16">
+        <div className="flex flex-col md:flex-row gap-8">
+          <div className="flex-shrink-0">
+            <div className="w-64 h-96 rounded-lg bg-zinc-800 animate-pulse" />
+
+            <div className="mt-6 space-y-3">
+              <div className="h-5 w-40 bg-zinc-800 rounded animate-pulse" />
+              <div className="flex flex-wrap gap-2">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-10 w-10 bg-zinc-800 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            </div>
+
+            <div className="h-px bg-zinc-700 my-6" />
+
+            <div className="space-y-3">
+              <div className="h-5 w-32 bg-zinc-800 rounded animate-pulse" />
+              <div className="flex flex-wrap gap-2 max-w-sm">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-9 w-28 bg-zinc-800 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            </div>
+
+            <div className="h-px bg-zinc-700 my-6" />
+
+            <div className="space-y-3">
+              <div className="h-5 w-28 bg-zinc-800 rounded animate-pulse" />
+              <div className="grid grid-cols-2 gap-3 max-w-sm">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-10 bg-zinc-800 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="h-10 w-80 bg-zinc-800 rounded animate-pulse" />
+            <div className="h-4 w-40 bg-zinc-800 rounded animate-pulse mt-3 mb-6" />
+
+            <div className="flex gap-6 mb-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex flex-col items-center gap-1">
+                  <div className="w-14 h-14 rounded-full bg-zinc-800 animate-pulse" />
+                  <div className="h-3 w-10 bg-zinc-800 rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 h-[72px] animate-pulse" />
+              ))}
+            </div>
+
+            <div className="h-px bg-zinc-700 my-6" />
+
+            <div className="space-y-3">
+              <div className="h-5 w-20 bg-zinc-800 rounded animate-pulse" />
+              <div className="space-y-2">
+                <div className="h-4 w-full bg-zinc-800 rounded animate-pulse" />
+                <div className="h-4 w-full bg-zinc-800 rounded animate-pulse" />
+                <div className="h-4 w-3/4 bg-zinc-800 rounded animate-pulse" />
+                <div className="h-4 w-5/6 bg-zinc-800 rounded animate-pulse" />
+                <div className="h-4 w-2/3 bg-zinc-800 rounded animate-pulse" />
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex gap-2">
+                  <div className="h-4 w-28 bg-zinc-800 rounded animate-pulse flex-shrink-0" />
+                  <div className="h-4 w-48 bg-zinc-800 rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+
+            <div className="h-px bg-zinc-700 my-6" />
+
+            <div className="space-y-3">
+              <div className="h-5 w-36 bg-zinc-800 rounded animate-pulse" />
+              <div className="h-3 w-full bg-zinc-800/50 rounded animate-pulse" />
+              <div className="space-y-2.5">
+                {[75, 90, 100].map((w, i) => (
+                  <div key={i}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="h-4 w-20 bg-zinc-800 rounded animate-pulse" />
+                      <div className="h-4 w-10 bg-zinc-800 rounded animate-pulse" />
+                    </div>
+                    <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-zinc-700 animate-pulse" style={{ width: `${w}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="h-px bg-zinc-700 my-6" />
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="h-5 w-44 bg-zinc-800 rounded animate-pulse" />
+                <div className="h-4 w-20 bg-zinc-800/50 rounded animate-pulse" />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="aspect-video bg-zinc-800 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function InfoRow({ label, children }) {
   if (!children) return null
@@ -21,7 +147,7 @@ function InfoRow({ label, children }) {
 }
 
 function Websites({ websites }) {
-  if (!websites || websites.length === 0) return null;
+  if (!websites || websites.length === 0) return null
 
   return (
     <div className="mt-4 space-y-3 max-w-sm">
@@ -32,7 +158,7 @@ function Websites({ websites }) {
         ))}
       </div>
     </div>
-  );
+  )
 }
 
 function WebsiteLink({ site }) {
@@ -44,13 +170,11 @@ function WebsiteLink({ site }) {
       className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
       title={site.label}
     >
-      <img 
+      <img
         src={`https://www.igdb.com/icons/${site.type}.svg`}
         alt={site.label}
         className="w-6 h-6 object-contain flex-shrink-0"
-        onError={(e) => {
-          e.target.style.display = 'none';
-        }}
+        onError={(e) => { e.target.style.display = 'none' }}
       />
       <span className="text-sm text-zinc-400 group-hover:text-white break-words flex-1">
         {site.label}
@@ -59,7 +183,7 @@ function WebsiteLink({ site }) {
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
       </svg>
     </a>
-  );
+  )
 }
 
 function StatCard({ value, label }) {
@@ -73,7 +197,7 @@ function StatCard({ value, label }) {
 }
 
 function AgeRatings({ ratings }) {
-  if (!ratings || ratings.length === 0) return null;
+  if (!ratings || ratings.length === 0) return null
 
   return (
     <div className="flex flex-wrap items-center gap-2 max-w-sm">
@@ -81,7 +205,7 @@ function AgeRatings({ ratings }) {
         <AgeRatingCard key={index} rating={rating} />
       ))}
     </div>
-  );
+  )
 }
 
 function HowLongToBeatSkeleton() {
@@ -100,10 +224,7 @@ function HowLongToBeatSkeleton() {
               <div className="h-4 w-10 bg-zinc-800 rounded animate-pulse" />
             </div>
             <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-zinc-700 animate-pulse"
-                style={{ width: `${w}%` }}
-              />
+              <div className="h-full rounded-full bg-zinc-700 animate-pulse" style={{ width: `${w}%` }} />
             </div>
           </div>
         ))}
@@ -131,13 +252,12 @@ function HowLongToBeatEmpty() {
 
 function HowLongToBeat({ hltb, loading }) {
   if (loading) return <HowLongToBeatSkeleton />
-
   if (hltb === null) return <HowLongToBeatEmpty />
 
   const bars = [
-    { label: "História",    hours: hltb.times.main,          color: "bg-blue-500",   hoverColor: "group-hover:bg-blue-400" },
-    { label: "História +",  hours: hltb.times.mainExtra,     color: "bg-purple-500", hoverColor: "group-hover:bg-purple-400" },
-    { label: "Completista", hours: hltb.times.completionist, color: "bg-amber-500",  hoverColor: "group-hover:bg-amber-400" },
+    { label: "História", hours: hltb.times.main, color: "bg-blue-500", hoverColor: "group-hover:bg-blue-400" },
+    { label: "História +", hours: hltb.times.mainExtra, color: "bg-purple-500", hoverColor: "group-hover:bg-purple-400" },
+    { label: "Completista", hours: hltb.times.completionist, color: "bg-amber-500", hoverColor: "group-hover:bg-amber-400" },
   ].filter(b => b.hours)
 
   if (bars.length === 0) return <HowLongToBeatEmpty />
@@ -154,7 +274,6 @@ function HowLongToBeat({ hltb, loading }) {
       <div className="space-y-2.5">
         {bars.map(bar => {
           const pct = (bar.hours / max) * 100
-
           return (
             <div key={bar.label} className="group">
               <div className="flex items-center justify-between mb-1">
@@ -189,11 +308,11 @@ function HowLongToBeat({ hltb, loading }) {
 }
 
 function Keywords({ keywords }) {
-  if (!keywords || keywords.length === 0) return null;
+  if (!keywords || keywords.length === 0) return null
 
-  const [showModal, setShowModal] = useState(false);
-  const INITIAL_SHOW = 10;
-  const hasMore = keywords.length > INITIAL_SHOW;
+  const [showModal, setShowModal] = useState(false)
+  const INITIAL_SHOW = 10
+  const hasMore = keywords.length > INITIAL_SHOW
 
   return (
     <div className="max-w-sm space-y-3">
@@ -203,27 +322,23 @@ function Keywords({ keywords }) {
         {keywords.slice(0, INITIAL_SHOW).map((keyword) => (
           <Keyword key={keyword.slug} text={keyword.slug} />
         ))}
-
         {hasMore && (
           <button
             onClick={() => setShowModal(true)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-900/30 hover:bg-blue-900/50 border border-blue-700/50 hover:border-blue-600 rounded-full text-sm transition-all duration-200 cursor-pointer"
           >
-            <span className="text-blue-400">
-              Ver todas {keywords.length}
-            </span>
+            <span className="text-blue-400">Ver todas {keywords.length}</span>
             <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
         )}
       </div>
-
       {showModal && (
         <KeywordsModal keywords={keywords} onClose={() => setShowModal(false)} />
       )}
     </div>
-  );
+  )
 }
 
 function KeywordsModal({ keywords, onClose }) {
@@ -235,9 +350,7 @@ function KeywordsModal({ keywords, onClose }) {
   }, [])
 
   useEffect(() => {
-    function handleKey(e) {
-      if (e.key === "Escape") onClose()
-    }
+    function handleKey(e) { if (e.key === "Escape") onClose() }
     window.addEventListener("keydown", handleKey)
     return () => window.removeEventListener("keydown", handleKey)
   }, [onClose])
@@ -247,12 +360,8 @@ function KeywordsModal({ keywords, onClose }) {
     : keywords
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-
       <div
         className="relative bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -262,16 +371,12 @@ function KeywordsModal({ keywords, onClose }) {
             Palavras-chaves
             <span className="text-sm text-zinc-500 font-normal ml-2">{keywords.length}</span>
           </h3>
-          <button
-            onClick={onClose}
-            className="p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
-          >
+          <button onClick={onClose} className="p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-
         <div className="px-4 pt-3">
           <input
             type="text"
@@ -282,7 +387,6 @@ function KeywordsModal({ keywords, onClose }) {
             autoFocus
           />
         </div>
-
         <div className="p-4 overflow-y-auto flex-1">
           {filtered.length > 0 ? (
             <div className="flex flex-wrap gap-2">
@@ -291,9 +395,7 @@ function KeywordsModal({ keywords, onClose }) {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-zinc-500 text-center py-8">
-              Nenhuma palavra-chave encontrada
-            </p>
+            <p className="text-sm text-zinc-500 text-center py-8">Nenhuma palavra-chave encontrada</p>
           )}
         </div>
       </div>
@@ -305,42 +407,38 @@ function KeywordsModal({ keywords, onClose }) {
 function Keyword({ text }) {
   return (
     <div className="relative inline-block">
-      <button 
-        className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-800/50 backdrop-blur-sm hover:bg-gray-700/50 border border border-zinc-700 hover:border-zinc-600 rounded-full text-sm transition-all duration-200"
-      >
+      <button className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-800/50 backdrop-blur-sm hover:bg-gray-700/50 border border-zinc-700 hover:border-zinc-600 rounded-full text-sm transition-all duration-200">
         <span className="text-blue-400 text-base">#</span>
         <span className="text-gray-300 hover:text-white">{text}</span>
       </button>
     </div>
-  );
+  )
 }
 
 function AgeRatingCard({ rating }) {
   return (
     <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 flex flex-col items-center space-y-2">
-      <img 
+      <img
         className="w-5 h-5 object-contain select-none"
         src={`https://www.igdb.com/icons/rating_icons/${rating.category}/${rating.category}_${rating.rating}.png`}
         alt={`${rating.category.toUpperCase()} rating icon rated ${rating.rating.toUpperCase()}`}
         aria-label={rating.rating.toUpperCase()}
-        onError={(e) => {
-          e.target.style.display = 'none';
-        }}
+        onError={(e) => { e.target.style.display = 'none' }}
       />
     </div>
-  );
+  )
 }
 
 function RelatedGamesSection({ game }) {
   const tabs = [
-    { key: "dlcs",        label: "DLCs",               data: game.dlcs },
-    { key: "expansions",  label: "Expansões",          data: game.expansions },
-    { key: "standalone",  label: "Standalone",         data: game.standalone_expansions },
-    { key: "remakes",     label: "Remakes",            data: game.remakes },
-    { key: "remasters",   label: "Remasters",          data: game.remasters },
-    { key: "altNames",    label: "Nomes Alternativos", data: game.alternative_names },
-    { key: "videos",      label: "Vídeos",             data: game.videos },
-    { key: "similar",     label: "Similares",          data: game.similar_games },
+    { key: "dlcs", label: "DLCs", data: game.dlcs },
+    { key: "expansions", label: "Expansões", data: game.expansions },
+    { key: "standalone", label: "Standalone", data: game.standalone_expansions },
+    { key: "remakes", label: "Remakes", data: game.remakes },
+    { key: "remasters", label: "Remasters", data: game.remasters },
+    { key: "altNames", label: "Nomes Alternativos", data: game.alternative_names },
+    { key: "videos", label: "Vídeos", data: game.videos },
+    { key: "similar", label: "Similares", data: game.similar_games },
   ].filter(t => t.data?.length > 0)
 
   const [activeTab, setActiveTab] = useState(tabs[0]?.key ?? null)
@@ -358,13 +456,11 @@ function RelatedGamesSection({ game }) {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`
-                flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer
-                ${activeTab === tab.key
+              className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
+                activeTab === tab.key
                   ? "bg-white text-black"
                   : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 border border-zinc-700"
-                }
-              `}
+              }`}
             >
               {tab.label}
               <span className={`ml-1.5 text-xs ${activeTab === tab.key ? "text-zinc-600" : "text-zinc-500"}`}>
@@ -374,9 +470,7 @@ function RelatedGamesSection({ game }) {
           ))}
         </div>
       </div>
-
       <hr className="my-4 border-zinc-700" />
-
       <div>
         {current.key === "altNames" && <AltNamesGrid altNames={current.data} />}
         {current.key === "videos" && <VideoGrid videos={current.data} />}
@@ -390,14 +484,9 @@ function AltNamesGrid({ altNames }) {
   return (
     <div className="flex flex-wrap gap-2">
       {altNames.map((alt, index) => (
-        <div
-          key={index}
-          className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg"
-        >
+        <div key={index} className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg">
           <span className="text-sm text-zinc-300">{alt.name}</span>
-          {alt.comment && (
-            <span className="text-xs text-zinc-500">({alt.comment})</span>
-          )}
+          {alt.comment && <span className="text-xs text-zinc-500">({alt.comment})</span>}
         </div>
       ))}
     </div>
@@ -514,11 +603,7 @@ export default function Game() {
     setLightboxIndex(index)
   }
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <PacmanLoading />
-    </div>
-  )
+  if (loading) return <GameSkeleton />
 
   if (error || !game) {
     return (
@@ -584,12 +669,7 @@ export default function Game() {
                       {game.parent_game.name}
                     </span>
                   </div>
-                  <svg
-                    className="w-4 h-4 text-zinc-500 group-hover:text-white ml-auto flex-shrink-0 transition-colors"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-4 h-4 text-zinc-500 group-hover:text-white ml-auto flex-shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
@@ -598,7 +678,7 @@ export default function Game() {
             )}
 
             {game.ageRatings?.length > 0 && (
-              <div className="mt-4 ">
+              <div className="mt-4">
                 <h2 className="text-lg font-semibold text-white mb-4">Classificações de Idade</h2>
                 <AgeRatings ratings={game.ageRatings} />
               </div>
@@ -647,18 +727,9 @@ export default function Game() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <StatCard
-                value={game.total_rating_count}
-                label="Avaliações"
-              />
-              <StatCard
-                value={game.hypes}
-                label="Hype"
-              />
-              <StatCard
-                value={game.platforms?.length}
-                label="Plataforma(s)"
-              />
+              <StatCard value={game.total_rating_count} label="Avaliações" />
+              <StatCard value={game.hypes} label="Hype" />
+              <StatCard value={game.platforms?.length} label="Plataforma(s)" />
             </div>
 
             {game.summary && (
@@ -668,8 +739,7 @@ export default function Game() {
                 <p className="text-sm text-zinc-400 leading-relaxed">
                   {summaryTruncated && !showFullSummary
                     ? game.summary.slice(0, 500) + "..."
-                    : game.summary
-                  }
+                    : game.summary}
                 </p>
                 {summaryTruncated && (
                   <button
@@ -737,5 +807,4 @@ export default function Game() {
       />
     </div>
   )
-
 }
