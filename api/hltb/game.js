@@ -6,6 +6,8 @@ let cachedToken = null
 let cachedAt = 0
 const TOKEN_TTL = 1000 * 60 * 30
 
+const MIN_NAME_SCORE = 180
+
 async function getToken() {
   if (cachedToken && Date.now() - cachedAt < TOKEN_TTL) return cachedToken
 
@@ -85,15 +87,8 @@ const NOISE = new Set([
   "hd", "4k", "the", "a", "an", "of", "and", "for", "super deluxe",
 ])
 
-const PLATFORM_FAMILIES = {
-  pc: ["pc", "microsoft windows", "windows", "mac", "linux"],
-  playstation: ["ps", "playstation", "ps1", "ps2", "ps3", "ps4", "ps5", "psx", "vita", "psp"],
-  xbox: ["xbox", "xbox 360", "xbox one", "xbox series", "xsx"],
-  nintendo: ["nintendo", "switch", "wii", "wii u", "gamecube", "n64", "nes", "snes", "3ds", "ds", "game boy", "gba", "gbc"],
-  mobile: ["ios", "android", "mobile"],
-}
-
 function norm(str) {
+  if (!str) return ""
   return str
     .toLowerCase()
     .normalize("NFD")
@@ -142,25 +137,14 @@ function buildQueries(name, altNames) {
   return queries
 }
 
-function platformMatch(hltbPlatforms, igdbPlatforms) {
-  if (!hltbPlatforms || !igdbPlatforms?.length) return 0
+function wordOverlap(a, b) {
+  const aw = strip(a).split(" ").filter(w => w.length >= 2)
+  const bw = strip(b).split(" ").filter(w => w.length >= 2)
 
-  const h = norm(hltbPlatforms)
-  let hits = 0
+  if (aw.length === 0 || bw.length === 0) return 0
 
-  for (const p of igdbPlatforms) {
-    const pn = norm(p)
-    if (h.includes(pn)) { hits++; continue }
-
-    for (const aliases of Object.values(PLATFORM_FAMILIES)) {
-      if (aliases.some(a => pn.includes(a)) && aliases.some(a => h.includes(a))) {
-        hits++
-        break
-      }
-    }
-  }
-
-  return hits / igdbPlatforms.length
+  const matched = bw.filter(w => aw.some(x => x === w)).length
+  return matched / Math.max(aw.length, bw.length)
 }
 
 function similarity(a, b) {
@@ -186,10 +170,15 @@ function similarity(a, b) {
 
   if (bw.length > 0) {
     const matched = bw.filter(w => aw.some(x => x === w || x.includes(w) || w.includes(x))).length
-    s += (matched / bw.length) * 100
+    const ratio = matched / bw.length
+    s += ratio * 100
+
+    if (ratio < 0.3 && s < 200) return 0
   }
 
-  s -= Math.min(Math.abs(ac.length - bc.length) * 1.5, 50)
+  s -= Math.min(Math.abs(ac.length - bc.length) * 2, 80)
+
+  if (s > 0 && wordOverlap(a, b) === 0 && an !== bn) return 0
 
   return s
 }
@@ -213,10 +202,13 @@ function bestNameScore(hltbGame, allNames) {
   return best
 }
 
-function score(g, name, altNames, year, platforms) {
+function score(g, name, altNames, year) {
   const allNames = [name, ...(altNames || [])]
 
-  let s = bestNameScore(g, allNames)
+  const nameScore = bestNameScore(g, allNames)
+  if (nameScore < MIN_NAME_SCORE) return -1
+
+  let s = nameScore
 
   if (year && g.release_world) {
     const diff = Math.abs(g.release_world - year)
@@ -224,10 +216,6 @@ function score(g, name, altNames, year, platforms) {
     else if (diff === 1) s += 60
     else if (diff === 2) s += 20
     else s -= diff * 15
-  }
-
-  if (platforms?.length) {
-    s += platformMatch(g.profile_platform, platforms) * 80
   }
 
   if (g.count_comp > 1000) s += 20
@@ -262,9 +250,12 @@ async function findGame(name, altNames, year, platforms) {
   const all = [...seen.values()]
   if (!all.length) return null
 
-  return all
-    .map(g => ({ ...g, _score: score(g, name, altNames, year, platforms) }))
-    .sort((a, b) => b._score - a._score)[0]
+  const scored = all
+    .map(g => ({ ...g, _score: score(g, name, altNames, year) }))
+    .filter(g => g._score >= MIN_NAME_SCORE)
+    .sort((a, b) => b._score - a._score)
+
+  return scored.length > 0 ? scored[0] : null
 }
 
 const secToHours = (s) => (s > 0 ? +(s / 3600).toFixed(1) : null)

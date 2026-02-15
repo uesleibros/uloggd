@@ -122,7 +122,7 @@ function HowLongToBeatEmpty() {
         Os tempos exibidos são estimativas baseadas em dados reportados pela comunidade do HowLongToBeat e podem não refletir com precisão a sua experiência. O tempo real pode variar de acordo com o estilo de jogo, nível de dificuldade e outros fatores individuais.
       </p>
       <div className="flex flex-col items-center justify-center py-6 gap-2">
-        <span className="text-2xl">😕</span>
+        <img className="object-contain h-10 w-10 select-none" src="/problem.png" />
         <p className="text-sm text-zinc-500">Sem dados de tempo disponíveis</p>
       </div>
     </div>
