@@ -67,6 +67,12 @@ if (!initialized) {
       return
     }
 
+    if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
+      if (cachedUser && session?.user?.id === cachedUser.id) return
+    }
+
+    if (event === "SIGNED_IN" && cachedUser?.id === session?.user?.id) return
+
     authLoading = true
     notify()
     loadUser(session)
