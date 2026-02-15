@@ -75,19 +75,19 @@ export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, titl
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center sm:p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
 
       <div
         data-crop-modal
-        className="relative bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl"
+        className="relative bg-zinc-900 border-t sm:border border-zinc-700 rounded-t-2xl sm:rounded-xl w-full sm:max-w-2xl max-h-[95dvh] sm:max-h-[85vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b border-zinc-700">
-          <h3 className="text-lg font-semibold text-white">{title}</h3>
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-zinc-700 shrink-0">
+          <h3 className="text-base sm:text-lg font-semibold text-white">{title}</h3>
           <button
             onClick={onClose}
-            className="p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            className="p-2 -mr-1 text-zinc-400 hover:text-white active:text-white transition-colors cursor-pointer"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -95,38 +95,39 @@ export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, titl
           </button>
         </div>
 
-        <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-zinc-950/50">
+        <div className="flex-1 min-h-0 overflow-auto p-3 sm:p-4 flex items-center justify-center bg-zinc-950/50">
           <ReactCrop
             crop={crop}
             onChange={(c) => setCrop(c)}
             onComplete={(c) => setCompletedCrop(c)}
             aspect={aspect}
-            className="max-h-[60vh]"
+            className="max-h-[60dvh] sm:max-h-[60vh] touch-none"
           >
             <img
               ref={imgRef}
               src={imageSrc}
               alt="Crop"
               onLoad={onImageLoad}
-              className="max-h-[60vh] select-none max-w-full object-contain"
+              className="max-h-[60dvh] sm:max-h-[60vh] select-none max-w-full object-contain"
+              draggable={false}
               crossOrigin="anonymous"
             />
           </ReactCrop>
         </div>
 
-        <div className="flex items-center justify-between p-4 border-t border-zinc-700">
-          <p className="text-xs text-zinc-500">Arraste para ajustar a área do recorte</p>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 sm:p-4 border-t border-zinc-700 shrink-0 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-4">
+          <p className="text-xs text-zinc-500 text-center sm:text-left">Arraste para ajustar a área do recorte</p>
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer"
+              className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm font-medium text-zinc-300 hover:text-white active:text-white bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-700 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer"
             >
               Cancelar
             </button>
             <button
               onClick={handleConfirm}
               disabled={!completedCrop}
-              className="px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-600 rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Aplicar
             </button>
