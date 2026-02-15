@@ -54,6 +54,12 @@ async function loadUser(session) {
   notify()
 }
 
+function updateUser(partial) {
+  if (!cachedUser) return
+  cachedUser = { ...cachedUser, ...partial }
+  notify()
+}
+
 if (!initialized) {
   initialized = true
 
@@ -91,5 +97,5 @@ export function useAuth() {
     return () => listeners.delete(handler)
   }, [])
 
-  return state
+  return { ...state, updateUser }
 }
