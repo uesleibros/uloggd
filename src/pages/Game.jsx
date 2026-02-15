@@ -333,13 +333,14 @@ function AgeRatingCard({ rating }) {
 
 function RelatedGamesSection({ game }) {
   const tabs = [
-    { key: "dlcs",        label: "DLCs",         data: game.dlcs },
-    { key: "expansions",  label: "Expansões",    data: game.expansions },
-    { key: "standalone",  label: "Standalone",   data: game.standalone_expansions },
-    { key: "remakes",     label: "Remakes",      data: game.remakes },
-    { key: "remasters",   label: "Remasters",    data: game.remasters },
-    { key: "videos",      label: "Vídeos",      data: game.videos },
-    { key: "similar",     label: "Similares",    data: game.similar_games },
+    { key: "dlcs",        label: "DLCs",               data: game.dlcs },
+    { key: "expansions",  label: "Expansões",          data: game.expansions },
+    { key: "standalone",  label: "Standalone",         data: game.standalone_expansions },
+    { key: "remakes",     label: "Remakes",            data: game.remakes },
+    { key: "remasters",   label: "Remasters",          data: game.remasters },
+    { key: "altNames",    label: "Nomes Alternativos", data: game.alternative_names },
+    { key: "videos",      label: "Vídeos",             data: game.videos },
+    { key: "similar",     label: "Similares",          data: game.similar_games },
   ].filter(t => t.data?.length > 0)
 
   const [activeTab, setActiveTab] = useState(tabs[0]?.key ?? null)
@@ -377,9 +378,28 @@ function RelatedGamesSection({ game }) {
       <hr className="my-4 border-zinc-700" />
 
       <div>
+        {current.key === "altNames" && <AltNamesGrid altNames={current.data} />}
         {current.key === "videos" && <VideoGrid videos={current.data} />}
-        {current.key !== "videos" && <GameCardGrid games={current.data} />}
+        {current.key !== "altNames" && current.key !== "videos" && <GameCardGrid games={current.data} />}
       </div>
+    </div>
+  )
+}
+
+function AltNamesGrid({ altNames }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {altNames.map((alt, index) => (
+        <div
+          key={index}
+          className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg"
+        >
+          <span className="text-sm text-zinc-300">{alt.name}</span>
+          {alt.comment && (
+            <span className="text-xs text-zinc-500">({alt.comment})</span>
+          )}
+        </div>
+      ))}
     </div>
   )
 }
@@ -608,22 +628,6 @@ export default function Game() {
                 </div>
               </div>
             )}
-            {game.alternative_names && (
-              <>
-                <hr className="my-6 border-zinc-700" />
-                <h2 className="text-lg font-semibold text-white mb-4">Nomes alternativos</h2>
-                <div className="flex flex-wrap max-w-sm gap-2">
-                  {game.alternative_names.map((alternative_name, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg"
-                    >
-                      <span className="text-sm text-zinc-300">{alternative_name.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
             <Keywords keywords={game.keywords} />
           </div>
 
@@ -733,4 +737,5 @@ export default function Game() {
       />
     </div>
   )
+
 }
