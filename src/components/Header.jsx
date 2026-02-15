@@ -204,7 +204,7 @@ export default function Header() {
     timeoutRef.current = setTimeout(async () => {
       try {
         const res = await fetch(
-          "/api/igdb/games",
+          "/api/igdb/autocomplete",
           {
             method: "POST",
             headers: {

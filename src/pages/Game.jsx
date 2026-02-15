@@ -84,6 +84,54 @@ function AgeRatings({ ratings }) {
   );
 }
 
+function HowLongToBeat({ hltb }) {
+  if (!hltb) return null
+
+  const bars = [
+    { label: "História",     hours: hltb.times.main,          color: "bg-blue-500" },
+    { label: "História +",   hours: hltb.times.mainExtra,     color: "bg-purple-500" },
+    { label: "Completista",  hours: hltb.times.completionist, color: "bg-amber-500" },
+    { label: "Todos estilos", hours: hltb.times.allStyles,    color: "bg-emerald-500" },
+  ].filter(b => b.hours)
+
+  if (bars.length === 0) return null
+
+  const max = Math.max(...bars.map(b => b.hours))
+
+  return (
+    <div>
+      <hr className="my-6 border-zinc-700" />
+      <h2 className="text-lg font-semibold text-white mb-4">Tempo para zerar</h2>
+      <div className="space-y-3">
+        {bars.map(bar => (
+          <div key={bar.label} className="flex items-center gap-3">
+            <span className="text-sm text-zinc-400 w-28 flex-shrink-0">{bar.label}</span>
+            <div className="flex-1 bg-zinc-800 rounded-full h-5 overflow-hidden">
+              <div
+                className={`${bar.color} h-full rounded-full flex items-center justify-end pr-2 transition-all duration-500`}
+                style={{ width: `${(bar.hours / max) * 100}%`, minWidth: "2.5rem" }}
+              >
+                <span className="text-xs font-semibold text-white drop-shadow">{bar.hours}h</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <a
+        href={`https://howlongtobeat.com/game/${hltb.id}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 mt-3 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+      >
+        via HowLongToBeat
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
+      </a>
+    </div>
+  )
+}
+
 function Keywords({ keywords }) {
   if (!keywords || keywords.length === 0) return null;
 
@@ -286,7 +334,7 @@ function VideoGrid({ videos }) {
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {visible.map(v => (
           <div key={v.video_id} className="relative z-0 aspect-video rounded-lg overflow-hidden bg-zinc-800">
             <iframe
@@ -324,6 +372,7 @@ function GameCardGrid({ games }) {
 export default function Game() {
   const { slug } = useParams()
   const [game, setGame] = useState(null)
+  const [hltb, setHltb] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [lightboxIndex, setLightboxIndex] = useState(null)
@@ -339,6 +388,7 @@ export default function Game() {
   useEffect(() => {
     setLoading(true)
     setError(null)
+    setHltb(null)
 
     fetch("/api/igdb/game", {
       method: "POST",
@@ -352,6 +402,15 @@ export default function Game() {
       .then(data => {
         setGame(data)
         setLoading(false)
+
+        fetch("/api/hltb/game", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: data.name })
+        })
+          .then(r => r.ok ? r.json() : null)
+          .then(h => { if (h) setHltb(h) })
+          .catch(() => {})
       })
       .catch(() => {
         setError("Jogo não encontrado")
@@ -540,6 +599,8 @@ export default function Game() {
               <InfoRow label="Modos">{game.game_modes?.map(m => m.name).join(", ")}</InfoRow>
             </div>
 
+            <HowLongToBeat hltb={hltb} />
+
             {allMedia.length > 0 && (
               <div>
                 <hr className="my-6 border-zinc-700" />
@@ -584,17 +645,4 @@ export default function Game() {
       />
     </div>
   )
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
