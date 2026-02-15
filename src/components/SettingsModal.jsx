@@ -35,6 +35,24 @@ function Toast({ message, type = "success", onClose }) {
   )
 }
 
+function MobileTabButton({ icon, label, active, onClick, danger = false }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer flex-shrink-0 ${
+        active
+          ? "bg-white text-black"
+          : danger
+            ? "text-red-400"
+            : "text-zinc-400"
+      }`}
+    >
+      {icon}
+      <span>{label}</span>
+    </button>
+  )
+}
+
 function SidebarItem({ icon, label, active, onClick, danger = false }) {
   return (
     <button
@@ -55,12 +73,12 @@ function SidebarItem({ icon, label, active, onClick, danger = false }) {
 
 function InfoField({ label, value, icon }) {
   return (
-    <div className="flex items-center justify-between py-3.5 border-b border-zinc-700/50 last:border-0">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between py-3.5 border-b border-zinc-700/50 last:border-0 gap-1 sm:gap-0">
       <div className="flex items-center gap-2.5">
         {icon && <span className="text-zinc-600">{icon}</span>}
         <span className="text-sm text-zinc-400">{label}</span>
       </div>
-      <span className="text-sm text-zinc-200 font-medium">{value || "—"}</span>
+      <span className="text-sm text-zinc-200 font-medium pl-6.5 sm:pl-0">{value || "—"}</span>
     </div>
   )
 }
@@ -81,7 +99,7 @@ function Badge({ text, color = "zinc" }) {
 
 function SettingsSection({ title, description, children, danger = false }) {
   return (
-    <div className={`rounded-xl p-6 ${
+    <div className={`rounded-xl p-4 sm:p-6 ${
       danger
         ? "bg-red-500/5 border border-red-500/20"
         : "bg-zinc-800/50 border border-zinc-700"
@@ -89,14 +107,14 @@ function SettingsSection({ title, description, children, danger = false }) {
       <h2 className={`text-base font-semibold mb-1 ${danger ? "text-red-400" : "text-white"}`}>
         {title}
       </h2>
-      {description && <p className="text-sm text-zinc-500 mb-5">{description}</p>}
+      {description && <p className="text-sm text-zinc-500 mb-4 sm:mb-5">{description}</p>}
       {children}
     </div>
   )
 }
 
 export default function SettingsModal({ onClose }) {
-  const { user, updateUser } = useAuth()
+  const { user } = useAuth()
   const [bannerSaving, setBannerSaving] = useState(false)
   const [activeTab, setActiveTab] = useState("account")
   const [signOutLoading, setSignOutLoading] = useState(false)
@@ -131,8 +149,6 @@ export default function SettingsModal({ onClose }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const isRemoving = base64 === null
-
       const res = await fetch("/api/user/banner", {
         method: "POST",
         headers: {
@@ -140,20 +156,13 @@ export default function SettingsModal({ onClose }) {
           "Authorization": `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          action: isRemoving ? "remove" : "upload",
+          action: base64 === null ? "remove" : "upload",
           image: base64,
         }),
       })
 
       if (res.ok) {
-        const data = await res.json().catch(() => null)
-        if (isRemoving) {
-          updateUser({ banner: null })
-          showToast("Banner removido com sucesso!")
-        } else {
-          updateUser({ banner: data?.url || base64 })
-          showToast("Banner atualizado com sucesso!")
-        }
+        showToast(base64 === null ? "Banner removido com sucesso!" : "Banner atualizado com sucesso!")
       } else {
         showToast("Erro ao salvar o banner. Tente novamente.", "error")
       }
@@ -189,77 +198,82 @@ export default function SettingsModal({ onClose }) {
 
   if (!user) return null
 
+  const accountIcon = (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    </svg>
+  )
+
+  const sessionsIcon = (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+    </svg>
+  )
+
+  const appearanceIcon = (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z" />
+    </svg>
+  )
+
+  const signOutIcon = signOutLoading ? (
+    <div className="w-4 h-4 border-2 border-red-500/30 border-t-red-400 rounded-full animate-spin" />
+  ) : (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+    </svg>
+  )
+
   return createPortal(
     <>
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-0 md:p-6" onClick={onClose}>
+      <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:p-6" onClick={onClose}>
         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
         <div
           className="relative w-full h-full md:w-[860px] md:h-[620px] md:max-h-[90vh] bg-zinc-900 md:border md:border-zinc-700 md:rounded-xl shadow-2xl flex flex-col md:flex-row overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="w-full md:w-56 flex-shrink-0 bg-zinc-900 md:bg-zinc-900/80 flex flex-col border-b md:border-b-0 md:border-r border-zinc-700">
+          <div className="hidden md:flex w-56 flex-shrink-0 bg-zinc-900/80 flex-col border-r border-zinc-700">
             <div className="p-4 flex-1 overflow-y-auto">
               <div className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest px-3 mb-3">
                 Configurações
               </div>
 
               <div className="space-y-1">
-                <SidebarItem
-                  active={activeTab === "account"}
-                  onClick={() => setActiveTab("account")}
-                  label="Minha conta"
-                  icon={
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                    </svg>
-                  }
-                />
-                <SidebarItem
-                  active={activeTab === "sessions"}
-                  onClick={() => setActiveTab("sessions")}
-                  label="Sessão"
-                  icon={
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
-                    </svg>
-                  }
-                />
-                <SidebarItem
-                  active={activeTab === "appearance"}
-                  onClick={() => setActiveTab("appearance")}
-                  label="Aparência"
-                  icon={
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z" />
-                    </svg>
-                  }
-                />
+                <SidebarItem active={activeTab === "account"} onClick={() => setActiveTab("account")} label="Minha conta" icon={accountIcon} />
+                <SidebarItem active={activeTab === "sessions"} onClick={() => setActiveTab("sessions")} label="Sessão" icon={sessionsIcon} />
+                <SidebarItem active={activeTab === "appearance"} onClick={() => setActiveTab("appearance")} label="Aparência" icon={appearanceIcon} />
               </div>
 
               <div className="h-px bg-zinc-800 my-3 mx-1" />
 
               <div className="space-y-1">
-                <SidebarItem
-                  onClick={handleSignOut}
-                  label={signOutLoading ? "Saindo..." : "Sair"}
-                  danger
-                  icon={
-                    signOutLoading ? (
-                      <div className="w-4 h-4 border-2 border-red-500/30 border-t-red-400 rounded-full animate-spin" />
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                      </svg>
-                    )
-                  }
-                />
+                <SidebarItem onClick={handleSignOut} label={signOutLoading ? "Saindo..." : "Sair"} danger icon={signOutIcon} />
               </div>
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col min-w-0 relative">
-            <div className="absolute top-4 right-4 z-10 flex flex-col items-center">
+          <div className="flex md:hidden items-center justify-between px-4 pt-4 pb-2 border-b border-zinc-700 flex-shrink-0">
+            <h1 className="text-base font-semibold text-white">Configurações</h1>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full border border-zinc-700 text-zinc-400 flex items-center justify-center cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="flex md:hidden items-center gap-1 px-4 py-3 border-b border-zinc-700/50 overflow-x-auto scrollbar-hide flex-shrink-0">
+            <MobileTabButton active={activeTab === "account"} onClick={() => setActiveTab("account")} label="Conta" icon={accountIcon} />
+            <MobileTabButton active={activeTab === "sessions"} onClick={() => setActiveTab("sessions")} label="Sessão" icon={sessionsIcon} />
+            <MobileTabButton active={activeTab === "appearance"} onClick={() => setActiveTab("appearance")} label="Aparência" icon={appearanceIcon} />
+            <MobileTabButton onClick={handleSignOut} label={signOutLoading ? "..." : "Sair"} danger icon={signOutIcon} />
+          </div>
+
+          <div className="flex-1 flex flex-col min-w-0 min-h-0 relative">
+            <div className="hidden md:flex absolute top-4 right-4 z-10 flex-col items-center">
               <button
                 onClick={onClose}
                 className="w-9 h-9 rounded-full border border-zinc-700 hover:border-zinc-500 text-zinc-500 hover:text-white flex items-center justify-center transition-all duration-200 cursor-pointer hover:bg-zinc-800/50"
@@ -271,13 +285,13 @@ export default function SettingsModal({ onClose }) {
               <span className="text-[10px] font-bold text-zinc-600 mt-1.5 uppercase tracking-wide">ESC</span>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 pr-16">
+            <div className="flex-1 overflow-y-auto overscroll-contain p-4 pb-8 sm:p-6 md:p-8 md:pr-16">
               {activeTab === "account" && (
                 <div>
                   <h2 className="text-lg font-semibold text-white">Minha conta</h2>
                   <p className="text-sm text-zinc-500 mt-1 mb-6">Informações da sua conta vinculada ao Discord.</p>
 
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     <SettingsSection
                       title="Banner"
                       description="Personalize o banner do seu perfil. Recomendado: 1500x375px."
@@ -289,12 +303,12 @@ export default function SettingsModal({ onClose }) {
                       />
                     </SettingsSection>
                     <SettingsSection title="Perfil">
-                      <div className="flex items-center gap-4 p-4 bg-zinc-900/50 rounded-lg border border-zinc-700/50 mb-5">
+                      <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-zinc-900/50 rounded-lg border border-zinc-700/50 mb-4 sm:mb-5">
                         <div className="relative group cursor-pointer flex-shrink-0">
                           <img
                             src={user.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
                             alt={user.username}
-                            className="w-16 h-16 rounded-full border-2 border-zinc-700 select-none object-cover"
+                            className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-zinc-700 select-none object-cover"
                             draggable={false}
                           />
                           <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-200">
@@ -306,7 +320,7 @@ export default function SettingsModal({ onClose }) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-lg font-semibold text-white truncate">{user.username}</span>
+                            <span className="text-base sm:text-lg font-semibold text-white truncate">{user.username}</span>
                             {user.is_verified && (
                               <img src="/badges/verified.png" alt="Verificado" className="w-4 h-4 select-none" draggable={false} />
                             )}
@@ -314,7 +328,7 @@ export default function SettingsModal({ onClose }) {
                               <img src="/badges/moderator.png" alt="Moderador" className="w-4 h-4 select-none" draggable={false} />
                             )}
                           </div>
-                          <span className="text-sm text-zinc-500 truncate block mt-0.5">{user.email}</span>
+                          <span className="text-xs sm:text-sm text-zinc-500 truncate block mt-0.5">{user.email}</span>
                         </div>
                       </div>
 
@@ -380,7 +394,7 @@ export default function SettingsModal({ onClose }) {
                           Excluir minha conta
                         </button>
                       ) : (
-                        <div className="p-4 bg-zinc-900/30 border border-red-500/20 rounded-lg space-y-4">
+                        <div className="p-3 sm:p-4 bg-zinc-900/30 border border-red-500/20 rounded-lg space-y-4">
                           <div className="flex items-start gap-3">
                             <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
                               <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -394,7 +408,7 @@ export default function SettingsModal({ onClose }) {
                               </p>
                             </div>
                           </div>
-                          <div className="flex gap-3">
+                          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                             <button
                               onClick={() => setShowDeleteConfirm(false)}
                               className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 cursor-pointer"
@@ -485,5 +499,4 @@ export default function SettingsModal({ onClose }) {
     </>,
     document.body
   )
-
 }
