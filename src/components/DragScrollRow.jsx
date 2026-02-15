@@ -5,40 +5,93 @@ const DragScrollRow = forwardRef(function DragScrollRow({ children, className = 
   const dragRef = useRef({
     isDown: false,
     startX: 0,
+    startY: 0,
     scrollLeft: 0,
-    hasMoved: false
+    hasMoved: false,
+    directionDecided: false,
+    isHorizontal: false
   })
 
   useImperativeHandle(ref, () => scrollRef.current)
 
-  const handlePointerDown = useCallback((e) => {
+  const handleMouseDown = useCallback((e) => {
     const el = scrollRef.current
     if (!el) return
-    const pageX = e.type === "touchstart" ? e.touches[0].pageX : e.pageX
     dragRef.current = {
       isDown: true,
-      startX: pageX,
+      startX: e.pageX,
+      startY: 0,
       scrollLeft: el.scrollLeft,
-      hasMoved: false
+      hasMoved: false,
+      directionDecided: true,
+      isHorizontal: true
     }
   }, [])
 
-  const handlePointerMove = useCallback((e) => {
-    if (!dragRef.current.isDown) return
+  const handleMouseMove = useCallback((e) => {
+    if (!dragRef.current.isDown || !dragRef.current.isHorizontal) return
     const el = scrollRef.current
     if (!el) return
-    const pageX = e.type === "touchmove" ? e.touches[0].pageX : e.pageX
-    const diff = pageX - dragRef.current.startX
+    const diff = e.pageX - dragRef.current.startX
     if (Math.abs(diff) > 5) {
       dragRef.current.hasMoved = true
-      if (e.type === "mousemove") e.preventDefault()
+      e.preventDefault()
     }
     el.scrollLeft = dragRef.current.scrollLeft - diff
   }, [])
 
-  const handlePointerUp = useCallback(() => {
+  const handleMouseUp = useCallback(() => {
     dragRef.current.isDown = false
+    dragRef.current.directionDecided = false
+    dragRef.current.isHorizontal = false
   }, [])
+
+  const handleTouchStart = useCallback((e) => {
+    const el = scrollRef.current
+    if (!el) return
+    const touch = e.touches[0]
+    dragRef.current = {
+      isDown: true,
+      startX: touch.pageX,
+      startY: touch.pageY,
+      scrollLeft: el.scrollLeft,
+      hasMoved: false,
+      directionDecided: false,
+      isHorizontal: false
+    }
+    props.onTouchStart?.(e)
+  }, [props.onTouchStart])
+
+  const handleTouchMove = useCallback((e) => {
+    if (!dragRef.current.isDown) return
+    const el = scrollRef.current
+    if (!el) return
+
+    const touch = e.touches[0]
+
+    if (!dragRef.current.directionDecided) {
+      const dx = Math.abs(touch.pageX - dragRef.current.startX)
+      const dy = Math.abs(touch.pageY - dragRef.current.startY)
+      if (dx + dy < 10) return
+      dragRef.current.directionDecided = true
+      dragRef.current.isHorizontal = dx > dy
+    }
+
+    if (dragRef.current.isHorizontal) {
+      const diff = touch.pageX - dragRef.current.startX
+      if (Math.abs(diff) > 5) dragRef.current.hasMoved = true
+      el.scrollLeft = dragRef.current.scrollLeft - diff
+    }
+
+    props.onTouchMove?.(e)
+  }, [props.onTouchMove])
+
+  const handleTouchEnd = useCallback((e) => {
+    dragRef.current.isDown = false
+    dragRef.current.directionDecided = false
+    dragRef.current.isHorizontal = false
+    props.onTouchEnd?.(e)
+  }, [props.onTouchEnd])
 
   const handleClickCapture = useCallback((e) => {
     if (dragRef.current.hasMoved) {
@@ -51,17 +104,17 @@ const DragScrollRow = forwardRef(function DragScrollRow({ children, className = 
   return (
     <div
       ref={scrollRef}
-      onMouseDown={handlePointerDown}
-      onMouseMove={handlePointerMove}
-      onMouseUp={handlePointerUp}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
       onMouseLeave={(e) => {
-        handlePointerUp()
+        handleMouseUp()
         props.onMouseLeave?.(e)
       }}
       onMouseEnter={props.onMouseEnter}
-      onTouchStart={handlePointerDown}
-      onTouchMove={handlePointerMove}
-      onTouchEnd={handlePointerUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       onClickCapture={handleClickCapture}
       onDragStart={(e) => e.preventDefault()}
       className={`flex overflow-x-auto scrollbar-hide select-none cursor-grab active:cursor-grabbing ${className}`}
