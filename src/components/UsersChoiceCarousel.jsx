@@ -10,9 +10,9 @@ export default function UsersChoiceCarousel() {
   const carouselRef = useRef(null)
   const rafRef = useRef(null)
   const virtualScrollLeft = useRef(0)
-  const isDragging = useRef(false)
   const touchStartY = useRef(0)
   const touchStartX = useRef(0)
+  const directionDecided = useRef(false)
   const isHorizontalSwipe = useRef(false)
 
   useEffect(() => {
@@ -102,12 +102,12 @@ export default function UsersChoiceCarousel() {
     const touch = e.touches[0]
     touchStartX.current = touch.clientX
     touchStartY.current = touch.clientY
+    directionDecided.current = false
     isHorizontalSwipe.current = false
-    isDragging.current = false
   }, [])
 
   const handleTouchMove = useCallback((e) => {
-    if (isDragging.current) return
+    if (directionDecided.current) return
 
     const touch = e.touches[0]
     const dx = Math.abs(touch.clientX - touchStartX.current)
@@ -115,13 +115,11 @@ export default function UsersChoiceCarousel() {
 
     if (dx + dy < 10) return
 
+    directionDecided.current = true
+
     if (dx > dy) {
       isHorizontalSwipe.current = true
-      isDragging.current = true
       setIsPaused(true)
-    } else {
-      isHorizontalSwipe.current = false
-      isDragging.current = true
     }
   }, [])
 
@@ -131,7 +129,7 @@ export default function UsersChoiceCarousel() {
       normalizeScroll()
       setTimeout(() => setIsPaused(false), 100)
     }
-    isDragging.current = false
+    directionDecided.current = false
     isHorizontalSwipe.current = false
   }, [syncVirtualScroll, normalizeScroll])
 
