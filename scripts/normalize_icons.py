@@ -13,8 +13,8 @@ para exibição consistente no frontend.
 from PIL import Image
 import os
 
-INPUT_FOLDER = "public/platforms"
-OUTPUT_FOLDER = "public/platforms_out"
+INPUT_FOLDER = "public/platforms/raw"
+OUTPUT_FOLDER = "public/platforms/out"
 SIZE = (256, 256)
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
