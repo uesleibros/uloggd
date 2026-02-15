@@ -114,7 +114,7 @@ function SettingsSection({ title, description, children, danger = false }) {
 }
 
 export default function SettingsModal({ onClose }) {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const [bannerSaving, setBannerSaving] = useState(false)
   const [activeTab, setActiveTab] = useState("account")
   const [signOutLoading, setSignOutLoading] = useState(false)
@@ -162,6 +162,15 @@ export default function SettingsModal({ onClose }) {
       })
 
       if (res.ok) {
+        let newBanner = base64
+        try {
+          const data = await res.json()
+          if (data.url || data.banner) {
+            newBanner = data.url || data.banner
+          }
+        } catch {}
+
+        updateUser({ banner: base64 === null ? null : newBanner })
         showToast(base64 === null ? "Banner removido com sucesso!" : "Banner atualizado com sucesso!")
       } else {
         showToast("Erro ao salvar o banner. Tente novamente.", "error")
@@ -172,7 +181,7 @@ export default function SettingsModal({ onClose }) {
       setBannerSaving(false)
     }
   }
-
+  
   async function handleDeleteAccount() {
     setDeleteLoading(true)
     try {
@@ -500,3 +509,4 @@ export default function SettingsModal({ onClose }) {
     document.body
   )
 }
+
