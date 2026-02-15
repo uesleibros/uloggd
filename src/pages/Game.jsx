@@ -151,7 +151,7 @@ function HowLongToBeat({ hltb, loading }) {
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm text-zinc-400">{bar.label}</span>
                 <span className="text-sm font-semibold text-white tabular-nums">
-                  {bar.hours}<span className="text-zinc-500 font-normal text-xs ml-0.5">h</span>
+                  {Math.round(bar.hours)}<span className="text-zinc-500 font-normal text-xs ml-0.5">h</span>
                 </span>
               </div>
               <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
