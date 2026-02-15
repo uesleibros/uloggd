@@ -2,6 +2,25 @@ import usePageMeta from "../../hooks/usePageMeta"
 import UsersChoiceCarousel from "../components/UsersChoiceCarousel"
 import { useAuth } from "../../hooks/useAuth"
 
+function WelcomeBackSkeleton() {
+  return (
+    <div className="mt-40">
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-14 h-14 rounded-full bg-zinc-800 animate-pulse" />
+        <div className="space-y-2">
+          <div className="h-4 w-20 bg-zinc-800 rounded animate-pulse" />
+          <div className="h-8 w-40 bg-zinc-800 rounded animate-pulse" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="bg-zinc-800/50 border border-zinc-700 rounded-xl px-4 py-4 h-[88px] animate-pulse" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function WelcomeBack({ user }) {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite"
@@ -99,7 +118,13 @@ function HeroSection() {
 
 export default function Home() {
   usePageMeta()
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
+
+  function renderHero() {
+    if (loading) return <WelcomeBackSkeleton />
+    if (user) return <WelcomeBack user={user} />
+    return <HeroSection />
+  }
 
   return (
     <div>
@@ -113,7 +138,7 @@ export default function Home() {
         <div id="gradient" />
       </div>
 
-      {user ? <WelcomeBack user={user} /> : <HeroSection />}
+      {renderHero()}
 
       <div className="mt-12">
         <h2 className="text-xl font-semibold text-white mb-4">Favoritos da comunidade</h2>

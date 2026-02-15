@@ -2,15 +2,18 @@ import { useEffect, useState } from "react"
 import { supabase } from "../lib/supabase"
 
 let cachedUser = null
+let authLoading = true
+let initialized = false
 let listeners = new Set()
 
 function notify() {
-  listeners.forEach(fn => fn(cachedUser))
+  listeners.forEach(fn => fn({ user: cachedUser, loading: authLoading }))
 }
 
 async function loadUser(session) {
   if (!session?.user) {
     cachedUser = null
+    authLoading = false
     notify()
     return
   }
@@ -45,26 +48,40 @@ async function loadUser(session) {
     }
   }
 
+  authLoading = false
   notify()
 }
 
-supabase.auth.getSession().then(({ data: { session } }) => {
-  loadUser(session)
-})
+if (!initialized) {
+  initialized = true
 
-supabase.auth.onAuthStateChange((event, session) => {
-  loadUser(session)
-})
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    loadUser(session)
+  })
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT") {
+      cachedUser = null
+      authLoading = false
+      notify()
+      return
+    }
+
+    authLoading = true
+    notify()
+    loadUser(session)
+  })
+}
 
 export function useAuth() {
-  const [user, setUser] = useState(cachedUser)
+  const [state, setState] = useState({ user: cachedUser, loading: authLoading })
 
   useEffect(() => {
-    const handler = (u) => setUser(u)
+    const handler = (s) => setState(s)
     listeners.add(handler)
-    setUser(cachedUser)
+    setState({ user: cachedUser, loading: authLoading })
     return () => listeners.delete(handler)
   }, [])
 
-  return { user }
+  return state
 }

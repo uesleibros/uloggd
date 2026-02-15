@@ -4,6 +4,7 @@ import PlatformIcons from "./PlatformIcons"
 import { formatDateShort } from "../../utils/formatDate"
 import { supabase } from "../../lib/supabase"
 import UserDisplay from "./UserDisplay"
+import SettingsModal from "./SettingsModal"
 import { useAuth } from "../../hooks/useAuth"
 
 function SearchIcon({ focused }) {
@@ -43,14 +44,12 @@ function SearchResultItem({ item, onSelect }) {
         ) : (
           <div className="h-12 w-9 rounded bg-zinc-800 flex-shrink-0" />
         )}
-        
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-medium text-sm text-white truncate">
               {item.name}
             </span>
           </div>
-          
           <div className="flex items-center gap-2 mt-1">
             {item.first_release_date && (
               <div className="text-xs text-zinc-500">
@@ -171,6 +170,7 @@ function DropdownItem({ to, onClick, icon, label, variant = "default" }) {
 
 function UserDropdown({ user, onSignOut }) {
   const [open, setOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const dropdownRef = useRef(null)
 
   useEffect(() => {
@@ -191,96 +191,102 @@ function UserDropdown({ user, onSignOut }) {
   }, [open])
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setOpen(!open)}
-        className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
-          open ? "bg-zinc-800 ring-1 ring-zinc-700" : "hover:bg-zinc-800/60"
-        }`}
-      >
-        <UserDisplay user={user} size="sm" showBadges={false} showUsername={false} />
-        <span className="text-sm text-white hidden sm:block max-w-[120px] truncate">{user.username}</span>
-        <svg
-          className={`w-3.5 h-3.5 text-zinc-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+    <>
+      <div className="relative" ref={dropdownRef}>
+        <button
+          onClick={() => setOpen(!open)}
+          className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
+            open ? "bg-zinc-800 ring-1 ring-zinc-700" : "hover:bg-zinc-800/60"
+          }`}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
+          <UserDisplay user={user} size="sm" showBadges={false} showUsername={false} />
+          <span className="text-sm text-white hidden sm:block max-w-[120px] truncate">{user.username}</span>
+          <svg
+            className={`w-3.5 h-3.5 text-zinc-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
 
-      <div
-        className={`absolute right-0 mt-2 w-64 rounded-xl bg-zinc-900 border border-zinc-700/80 shadow-2xl shadow-black/40 transition-all duration-200 origin-top-right ${
-          open
-            ? "opacity-100 scale-100 translate-y-0"
-            : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-        }`}
-      >
-        <div className="p-3 border-b border-zinc-800">
-          <div className="flex items-center gap-3">
-            <UserDisplay user={user} size="md" showBadges={true} showUsername={false} />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-medium text-white truncate">{user.username}</span>
-                {(user.is_verified || user.is_moderator) && (
-                  <div className="flex items-center gap-1">
-                    {user.is_verified && (
-                      <img src="/badges/verified.png" alt="Verificado" className="w-3.5 h-3.5 select-none" draggable={false} />
-                    )}
-                    {user.is_moderator && (
-                      <img src="/badges/moderator.png" alt="Moderador" className="w-3.5 h-3.5 select-none" draggable={false} />
-                    )}
-                  </div>
-                )}
+        <div
+          className={`absolute right-0 mt-2 w-64 rounded-xl bg-zinc-900 border border-zinc-700/80 shadow-2xl shadow-black/40 transition-all duration-200 origin-top-right z-50 ${
+            open
+              ? "opacity-100 scale-100 translate-y-0"
+              : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+          }`}
+        >
+          <div className="p-3 border-b border-zinc-800">
+            <div className="flex items-center gap-3">
+              <UserDisplay user={user} size="md" showBadges={true} showUsername={false} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium text-white truncate">{user.username}</span>
+                  {(user.is_verified || user.is_moderator) && (
+                    <div className="flex items-center gap-1">
+                      {user.is_verified && (
+                        <img src="/badges/verified.png" alt="Verificado" className="w-3.5 h-3.5 select-none" draggable={false} />
+                      )}
+                      {user.is_moderator && (
+                        <img src="/badges/moderator.png" alt="Moderador" className="w-3.5 h-3.5 select-none" draggable={false} />
+                      )}
+                    </div>
+                  )}
+                </div>
+                <span className="text-xs text-zinc-500 truncate block">{user.email}</span>
               </div>
-              <span className="text-xs text-zinc-500 truncate block">{user.email}</span>
             </div>
           </div>
-        </div>
 
-        <div className="p-1.5">
-          <DropdownItem
-            to={`/u/${user.username}`}
-            onClick={() => setOpen(false)}
-            label="Meu perfil"
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-              </svg>
-            }
-          />
-          <DropdownItem
-            to="/settings"
-            onClick={() => setOpen(false)}
-            label="Configurações"
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            }
-          />
-        </div>
+          <div className="p-1.5">
+            <DropdownItem
+              to={`/u/${user.username}`}
+              onClick={() => setOpen(false)}
+              label="Meu perfil"
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+              }
+            />
+            <DropdownItem
+              onClick={() => {
+                setOpen(false)
+                setSettingsOpen(true)
+              }}
+              label="Configurações"
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              }
+            />
+          </div>
 
-        <div className="p-1.5 border-t border-zinc-800">
-          <DropdownItem
-            onClick={() => { setOpen(false); onSignOut() }}
-            label="Sair"
-            variant="danger"
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-              </svg>
-            }
-          />
+          <div className="p-1.5 border-t border-zinc-800">
+            <DropdownItem
+              onClick={() => { setOpen(false); onSignOut() }}
+              label="Sair"
+              variant="danger"
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                </svg>
+              }
+            />
+          </div>
         </div>
       </div>
-    </div>
+
+      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
+    </>
   )
 }
 
-function AuthButtons({ user, onNavigate, variant = "desktop" }) {
+function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) {
   const handleSignIn = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -301,6 +307,17 @@ function AuthButtons({ user, onNavigate, variant = "desktop" }) {
     } catch (error) {
       console.error("Error signing out:", error)
     }
+  }
+
+  if (loading) {
+    if (variant === "mobile") {
+      return (
+        <div className="pt-2 border-t border-zinc-800">
+          <div className="h-10 w-full rounded-md bg-zinc-800 animate-pulse" />
+        </div>
+      )
+    }
+    return <div className="h-8 w-24 rounded-md bg-zinc-800 animate-pulse" />
   }
 
   if (variant === "mobile") {
@@ -410,7 +427,7 @@ export default function Header() {
   const timeoutRef = useRef(null)
   const navigate = useNavigate()
 
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
 
   useEffect(() => {
     if (!query.trim()) {
@@ -499,7 +516,7 @@ export default function Header() {
               className="right-0 w-80 lg:w-96"
             />
           </div>
-          <AuthButtons user={user} />
+          <AuthButtons user={user} loading={authLoading} />
         </div>
 
         <MenuToggle isOpen={mobileMenuOpen} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} />
@@ -536,7 +553,7 @@ export default function Header() {
             ))}
           </nav>
 
-          <AuthButtons user={user} variant="mobile" onNavigate={closeMobileMenu} />
+          <AuthButtons user={user} loading={authLoading} variant="mobile" onNavigate={closeMobileMenu} />
         </div>
       </div>
     </header>
