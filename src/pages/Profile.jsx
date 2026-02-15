@@ -5,6 +5,7 @@ import usePageMeta from "../../hooks/usePageMeta"
 import { supabase } from "../../lib/supabase"
 import { useAuth } from "../../hooks/useAuth"
 import UserDisplay from "../components/UserDisplay"
+import SettingsModal from "../components/SettingsModal"
 
 function ProfileSkeleton() {
   return (
@@ -71,18 +72,18 @@ function FollowButton({ isFollowing, onClick, loading, isLoggedIn }) {
   )
 }
 
-function ProfileActions({ isOwnProfile, isFollowing, followLoading, onFollow, isLoggedIn }) {
+function ProfileActions({ isOwnProfile, isFollowing, followLoading, onFollow, onEditProfile, isLoggedIn }) {
   if (isOwnProfile) {
     return (
-      <Link
-        to="/settings"
-        className="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 flex items-center gap-2"
+      <button
+        onClick={onEditProfile}
+        className="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 flex items-center gap-2 cursor-pointer"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
         </svg>
         Editar perfil
-      </Link>
+      </button>
     )
   }
 
@@ -302,6 +303,7 @@ export default function Profile() {
   const [followersCount, setFollowersCount] = useState(0)
   const [followingCount, setFollowingCount] = useState(0)
   const [followModal, setFollowModal] = useState(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const isOwnProfile = currentUser?.username?.toLowerCase() === username?.toLowerCase()
 
@@ -351,34 +353,34 @@ export default function Profile() {
       })
   }, [username, currentUser?.id])
 
-	async function handleFollow() {
-	  if (!currentUser || !profile) return
-	  setFollowLoading(true)
+  async function handleFollow() {
+    if (!currentUser || !profile) return
+    setFollowLoading(true)
 
-	  try {
-	    const { data: { session } } = await supabase.auth.getSession()
-	    if (!session) return
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
 
-	    const res = await fetch("/api/user/follow", {
-	      method: "POST",
-	      headers: {
-	        "Content-Type": "application/json",
-	        "Authorization": `Bearer ${session.access_token}`,
-	      },
-	      body: JSON.stringify({
-	        followingId: profile.id,
-	        action: isFollowing ? "unfollow" : "follow",
-	      }),
-	    })
+      const res = await fetch("/api/user/follow", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          followingId: profile.id,
+          action: isFollowing ? "unfollow" : "follow",
+        }),
+      })
 
-	    const data = await res.json()
-	    setIsFollowing(data.followed)
-	    setFollowersCount(prev => data.followed ? prev + 1 : prev - 1)
-	  } catch {
-	  } finally {
-	    setFollowLoading(false)
-	  }
-	}
+      const data = await res.json()
+      setIsFollowing(data.followed)
+      setFollowersCount(prev => data.followed ? prev + 1 : prev - 1)
+    } catch {
+    } finally {
+      setFollowLoading(false)
+    }
+  }
 
   if (loading) return <ProfileSkeleton />
 
@@ -410,7 +412,15 @@ export default function Profile() {
   return (
     <div>
       <div className="absolute z-[-1] top-0 left-0 h-[280px] w-full overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-zinc-900 to-zinc-900" />
+        {profile.banner ? (
+          <img
+            src={profile.banner}
+            alt="Banner"
+            className="select-none pointer-events-none absolute z-[-2] inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-zinc-900 to-zinc-900" />
+        )}
         <div id="main-gradient" />
         <div id="gradient" />
       </div>
@@ -466,6 +476,7 @@ export default function Profile() {
                 isFollowing={isFollowing}
                 followLoading={followLoading}
                 onFollow={handleFollow}
+                onEditProfile={() => setSettingsOpen(true)}
                 isLoggedIn={!!currentUser}
               />
             </div>
@@ -516,6 +527,10 @@ export default function Profile() {
           userId={profile.id}
           onClose={() => setFollowModal(null)}
         />
+      )}
+
+      {settingsOpen && (
+        <SettingsModal onClose={() => setSettingsOpen(false)} />
       )}
     </div>
   )
