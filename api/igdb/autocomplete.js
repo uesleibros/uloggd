@@ -183,7 +183,7 @@ export default async function handler(req, res) {
           .sort((a, b) => a.localeCompare(b))
           .map(slug => ({
             name: slug,
-            icon: `/platforms/out/${slug}.png`
+            icon: `/platforms/result/${slug}.png`
           }))
 
         return {

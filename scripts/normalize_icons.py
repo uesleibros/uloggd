@@ -14,7 +14,7 @@ from PIL import Image
 import os
 
 INPUT_FOLDER = "public/platforms/raw"
-OUTPUT_FOLDER = "public/platforms/out"
+OUTPUT_FOLDER = "public/platforms/result"
 SIZE = (256, 256)
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)

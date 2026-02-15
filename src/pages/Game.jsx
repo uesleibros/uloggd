@@ -617,7 +617,7 @@ export default function Game() {
                     >
                       {PLATFORMS_MAP[p.id] && (
                         <img
-                          src={`/platforms/out/${PLATFORMS_MAP[p.id]}.png`}
+                          src={`/platforms/result/${PLATFORMS_MAP[p.id]}.png`}
                           alt={p.name}
                           className="w-5 h-5 brightness-0 invert object-contain select-none"
                         />
