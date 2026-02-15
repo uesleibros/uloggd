@@ -96,7 +96,7 @@ function SettingsSection({ title, description, children, danger = false }) {
 }
 
 export default function SettingsModal({ onClose }) {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const [bannerSaving, setBannerSaving] = useState(false)
   const [activeTab, setActiveTab] = useState("account")
   const [signOutLoading, setSignOutLoading] = useState(false)
@@ -131,6 +131,8 @@ export default function SettingsModal({ onClose }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
+      const isRemoving = base64 === null
+
       const res = await fetch("/api/user/banner", {
         method: "POST",
         headers: {
@@ -138,13 +140,20 @@ export default function SettingsModal({ onClose }) {
           "Authorization": `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          action: base64 === null ? "remove" : "upload",
+          action: isRemoving ? "remove" : "upload",
           image: base64,
         }),
       })
 
       if (res.ok) {
-        showToast(base64 === null ? "Banner removido com sucesso!" : "Banner atualizado com sucesso!")
+        const data = await res.json().catch(() => null)
+        if (isRemoving) {
+          updateUser({ banner: null })
+          showToast("Banner removido com sucesso!")
+        } else {
+          updateUser({ banner: data?.url || base64 })
+          showToast("Banner atualizado com sucesso!")
+        }
       } else {
         showToast("Erro ao salvar o banner. Tente novamente.", "error")
       }
@@ -476,4 +485,5 @@ export default function SettingsModal({ onClose }) {
     </>,
     document.body
   )
+
 }
