@@ -23,6 +23,7 @@ export default async function handler(req, res) {
              involved_companies.company.name,
              involved_companies.developer, involved_companies.publisher,
              game_modes.name,
+             game_engines.name,
              total_rating, total_rating_count,
              aggregated_rating, rating,
              hypes,
@@ -69,6 +70,10 @@ export default async function handler(req, res) {
       ?.filter(c => c.publisher)
       .map(c => c.company.name) || []
 
+    const platforms = g.platforms
+      ?.slice()
+      .sort((a, b) => a.name.localeCompare(b.name)) || []
+
     const mapCovers = (arr) => arr?.map(item => ({
       ...item,
       cover: item.cover?.url
@@ -86,6 +91,7 @@ export default async function handler(req, res) {
       developers,
       publishers,
       websites,
+      platforms,
       cover: g.cover?.url
         ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_1080p") }
         : null,

@@ -180,6 +180,7 @@ export default async function handler(req, res) {
         })
 
         const platformIcons = [...slugs]
+          .sort((a, b) => a.localeCompare(b))
           .map(slug => ({
             name: slug,
             icon: `/platforms_out/${slug}.png`

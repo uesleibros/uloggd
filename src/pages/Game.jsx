@@ -88,7 +88,10 @@ function HowLongToBeatSkeleton() {
   return (
     <div>
       <hr className="my-6 border-zinc-700" />
-      <h2 className="text-lg font-semibold text-white mb-4">Tempo para zerar</h2>
+      <h2 className="text-lg font-semibold text-white">Tempo para zerar</h2>
+      <p className="text-xs text-zinc-500 mb-4">
+        Os tempos exibidos são estimativas baseadas em dados reportados pela comunidade do HowLongToBeat e podem não refletir com precisão a sua experiência. O tempo real pode variar de acordo com o estilo de jogo, nível de dificuldade e outros fatores individuais.
+      </p>
       <div className="space-y-2.5">
         {[75, 90, 100].map((w, i) => (
           <div key={i}>
@@ -114,7 +117,10 @@ function HowLongToBeatEmpty() {
   return (
     <div>
       <hr className="my-6 border-zinc-700" />
-      <h2 className="text-lg font-semibold text-white mb-4">Tempo para zerar</h2>
+      <h2 className="text-lg font-semibold text-white">Tempo para zerar</h2>
+      <p className="text-xs text-zinc-500 mb-4">
+        Os tempos exibidos são estimativas baseadas em dados reportados pela comunidade do HowLongToBeat e podem não refletir com precisão a sua experiência. O tempo real pode variar de acordo com o estilo de jogo, nível de dificuldade e outros fatores individuais.
+      </p>
       <div className="flex flex-col items-center justify-center py-6 gap-2">
         <span className="text-2xl">😕</span>
         <p className="text-sm text-zinc-500">Sem dados de tempo disponíveis</p>
@@ -141,7 +147,10 @@ function HowLongToBeat({ hltb, loading }) {
   return (
     <div>
       <hr className="my-6 border-zinc-700" />
-      <h2 className="text-lg font-semibold text-white mb-4">Tempo para zerar</h2>
+      <h2 className="text-lg font-semibold text-white">Tempo para zerar</h2>
+      <p className="text-xs text-zinc-500 mb-4">
+        Os tempos exibidos são estimativas baseadas em dados reportados pela comunidade do HowLongToBeat e podem não refletir com precisão a sua experiência. O tempo real pode variar de acordo com o estilo de jogo, nível de dificuldade e outros fatores individuais.
+      </p>
       <div className="space-y-2.5">
         {bars.map(bar => {
           const pct = (bar.hours / max) * 100
@@ -168,7 +177,7 @@ function HowLongToBeat({ hltb, loading }) {
         href={`https://howlongtobeat.com/game/${hltb.id}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 mt-4 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+        className="inline-flex items-center gap-1.5 mt-4 text-xs text-zinc-500 hover:text-zinc-400 transition-colors"
       >
         via HowLongToBeat
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -622,18 +631,18 @@ export default function Game() {
             <h1 className="text-4xl font-bold text-white">{game.name}</h1>
 
             {game.first_release_date && (
-              <p className="text-sm text-zinc-400 mt-2">
+              <p className="text-sm text-zinc-400 mt-2 mb-6">
                 {formatDateLong(game.first_release_date)}
               </p>
             )}
 
-            <div className="flex gap-6 mt-6">
+            <div className="flex gap-6 mb-4">
               <RatingBadge score={game.total_rating} label="Total" />
               <RatingBadge score={game.aggregated_rating} label="Crítica" />
               <RatingBadge score={game.rating} label="Usuários" />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <StatCard
                 value={game.total_rating_count}
                 label="Avaliações"
@@ -675,6 +684,7 @@ export default function Game() {
               <InfoRow label="Gêneros">{game.genres?.map(g => g.name).join(", ")}</InfoRow>
               <InfoRow label="Temas">{game.themes?.map(t => t.name).join(", ")}</InfoRow>
               <InfoRow label="Modos">{game.game_modes?.map(m => m.name).join(", ")}</InfoRow>
+              <InfoRow label="Engine">{game.game_engines?.map(e => e.name).join(", ")}</InfoRow>
             </div>
 
             <HowLongToBeat hltb={hltb} loading={hltbLoading} />
