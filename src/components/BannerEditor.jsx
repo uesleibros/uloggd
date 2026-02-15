@@ -14,6 +14,12 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
   const fileRef = useRef(null)
 
   useEffect(() => {
+    setPreview(currentBanner)
+    setPendingBlob(null)
+    setMode(null) 
+  }, [currentBanner])
+
+  useEffect(() => {
     if (!cropSrc) return
 
     function blockEvents(e) {
@@ -269,4 +275,5 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
       )}
     </div>
   )
+
 }
