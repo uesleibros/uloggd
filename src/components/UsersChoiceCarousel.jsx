@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import GameCard from "./GameCard"
 import DragScrollRow from "./DragScrollRow"
 
@@ -7,6 +7,7 @@ export default function UsersChoiceCarousel() {
   const [loading, setLoading] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
   const carouselRef = useRef(null)
+  const rafRef = useRef(null)
 
   useEffect(() => {
     fetch("/api/igdb/users-choice")
@@ -23,20 +24,55 @@ export default function UsersChoiceCarousel() {
     carouselRef.current.scrollLeft = carouselRef.current.scrollWidth / 3
   }, [loading])
 
+  const normalizeScroll = useCallback(() => {
+    const carousel = carouselRef.current
+    if (!carousel) return
+
+    const sectionWidth = carousel.scrollWidth / 3
+
+    if (carousel.scrollLeft >= sectionWidth * 2) {
+      carousel.scrollLeft -= sectionWidth
+    } else if (carousel.scrollLeft <= 0) {
+      carousel.scrollLeft += sectionWidth
+    }
+  }, [])
+
   useEffect(() => {
     if (loading || isPaused || !carouselRef.current) return
 
-    const carousel = carouselRef.current
-    const sectionWidth = carousel.scrollWidth / 3
+    let lastTime = performance.now()
 
-    const interval = setInterval(() => {
-      carousel.scrollLeft += 0.5
-      if (carousel.scrollLeft >= sectionWidth * 2) carousel.scrollLeft -= sectionWidth
-      if (carousel.scrollLeft <= 0) carousel.scrollLeft += sectionWidth
-    }, 20)
+    function step(now) {
+      const delta = now - lastTime
+      lastTime = now
 
-    return () => clearInterval(interval)
-  }, [loading, isPaused])
+      const carousel = carouselRef.current
+      if (!carousel) return
+
+      carousel.scrollLeft += 0.03 * delta
+      normalizeScroll()
+
+      rafRef.current = requestAnimationFrame(step)
+    }
+
+    rafRef.current = requestAnimationFrame(step)
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
+  }, [loading, isPaused, normalizeScroll])
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden && rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibility)
+    return () => document.removeEventListener("visibilitychange", handleVisibility)
+  }, [])
 
   if (loading) {
     return (
@@ -54,6 +90,9 @@ export default function UsersChoiceCarousel() {
       className="gap-4 overflow-x-hidden py-2"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setIsPaused(false)}
+      onScrollEnd={normalizeScroll}
     >
       {games.map((game, index) => (
         <GameCard
