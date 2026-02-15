@@ -14,6 +14,7 @@ export default function UsersChoiceCarousel() {
   const touchStartX = useRef(0)
   const directionDecided = useRef(false)
   const isHorizontalSwipe = useRef(false)
+  const windowWidthRef = useRef(typeof window !== "undefined" ? window.innerWidth : 0)
 
   useEffect(() => {
     fetch("/api/igdb/users-choice")
@@ -87,6 +88,10 @@ export default function UsersChoiceCarousel() {
     if (loading) return
 
     const handleResize = () => {
+      if (window.innerWidth === windowWidthRef.current) return
+      
+      windowWidthRef.current = window.innerWidth
+      
       const carousel = carouselRef.current
       if (!carousel) return
       const newPos = carousel.scrollWidth / 3
@@ -146,7 +151,7 @@ export default function UsersChoiceCarousel() {
   return (
     <DragScrollRow
       ref={carouselRef}
-      className="gap-4 overflow-x-hidden py-2"
+      className="gap-4 overflow-x-hidden py-2 touch-pan-y"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => {
         syncVirtualScroll()
