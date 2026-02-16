@@ -13,7 +13,7 @@ import { markdown, markdownLanguage } from "@codemirror/lang-markdown"
 import { languages } from "@codemirror/language-data"
 import { syntaxHighlighting, HighlightStyle, defaultHighlightStyle, bracketMatching } from "@codemirror/language"
 import { tags } from "@lezer/highlight"
-import { history, historyKeymap, undo, redo } from "@codemirror/commands"
+import { history, historyKeymap, defaultKeymap } from "@codemirror/commands"
 
 const customSchema = {
   ...defaultSchema,
@@ -760,7 +760,7 @@ function useCodeMirror({ value, onChange, maxLength, placeholder: ph, editorRef,
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         markdown({ base: markdownLanguage, codeLanguages: languages }),
         history(),
-        keymap.of(historyKeymap),
+        keymap.of([...defaultKeymap, ...historyKeymap]),
         drawSelection(),
         highlightActiveLine(),
         bracketMatching(),
@@ -1141,10 +1141,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
         {showToolbar && renderToolbar()}
 
         <div className={isFullscreen ? "flex-1 min-h-0 overflow-hidden flex flex-col" : ""}>
-          <div
-            className={`relative ${tab === "write" || tab === "sidebyside" ? (isFullscreen ? "flex-1 min-h-0" : "min-h-[250px] sm:min-h-[300px]") : "hidden"}`}
-            style={tab === "sidebyside" ? { display: "none" } : undefined}
-          >
+          <div className={`relative ${tab === "write" ? (isFullscreen ? "flex-1 min-h-0" : "h-[250px] sm:h-[300px]") : "hidden"}`}>
             <div
               ref={mainEditorContainer}
               className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto"
