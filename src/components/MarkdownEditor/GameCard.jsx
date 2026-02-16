@@ -108,25 +108,40 @@ export function GameCard({ slug, variant = "default" }) {
 
   if (variant === "cover") {
     return (
-      <a 
-        href={`/game/${game.slug}`} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="flex-shrink-0 group relative block"
-        title={game.name}
-      >
-        <img
-          src={game.cover?.url || "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"}
-          alt={game.name}
-          className="w-32 h-44 object-cover select-none rounded-lg bg-zinc-800 shadow-lg border border-zinc-800/50 transition-transform duration-300 group-hover:shadow-xl group-hover:border-zinc-600"
-          draggable={false}
-        />
-        <div className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center p-2 pointer-events-none">
-          <span className="text-white text-xs font-medium text-center leading-tight line-clamp-3">
-            {game.name}
-          </span>
-        </div>
-      </a>
+      <div className="relative group flex-shrink-0">
+        {isFavorite && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 text-amber-400 drop-shadow-md">
+            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <path d="M11.7 2.805a.75.75 0 0 1 .6 0A16.002 16.002 0 0 0 16.736 4.5 16.004 16.004 0 0 0 21 3.688a.75.75 0 0 1 .865 1.185l-3.66 4.63a.75.75 0 0 0 .157.94l5.3 5.3a.75.75 0 0 1-.53 1.28H.868a.75.75 0 0 1-.53-1.28l5.3-5.3a.75.75 0 0 0 .157-.94l-3.66-4.63a.75.75 0 0 1 .865-1.185A16.004 16.004 0 0 0 7.264 4.5 16.002 16.002 0 0 0 11.7 2.805Z" />
+            </svg>
+          </div>
+        )}
+
+        <a 
+          href={`/game/${game.slug}`} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className={`block relative rounded-lg transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl ${
+            isFavorite 
+              ? "ring-2 ring-amber-500/70 shadow-lg shadow-amber-500/10"
+              : "border border-zinc-800/50 group-hover:border-zinc-600"
+          }`}
+          title={game.name}
+        >
+          <img
+            src={game.cover?.url || "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"}
+            alt={game.name}
+            className="w-32 h-44 object-cover select-none rounded-lg bg-zinc-800"
+            draggable={false}
+          />
+          
+          <div className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center p-2 pointer-events-none">
+            <span className="text-white text-xs font-medium text-center leading-tight line-clamp-3">
+              {game.name}
+            </span>
+          </div>
+        </a>
+      </div>
     )
   }
 

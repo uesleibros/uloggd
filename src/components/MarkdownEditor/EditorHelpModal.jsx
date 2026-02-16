@@ -68,9 +68,9 @@ export function EditorHelpModal({ onClose }) {
             example="!game:mini(celeste)"
           />
           <FeatureItem 
-            syntax="!game:grid(slug1, slug2, ...)" 
-            description="Cria uma vitrine horizontal de capas de jogos."
-            example="!game:grid(persona-3-portable, celeste, hollow-knight)"
+            syntax="!game:grid(slug1, slug2+, ...)" 
+            description="Vitrine de jogos. Adicione um + no final do slug para destacar como favorito."
+            example="!game:grid(celeste, hollow-knight+)"
           />
           <FeatureItem 
             syntax="@usuario" 
