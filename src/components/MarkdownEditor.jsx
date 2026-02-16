@@ -747,42 +747,51 @@ function MentionSuggestions({ query, position, onSelect, userId, editorContainer
       .catch(() => setLoading(false))
   }, [userId])
 
-	useEffect(() => {
-	  if (!containerRef.current || !editorContainerRef?.current) return
-	
-	  const editorRect = editorContainerRef.current.getBoundingClientRect()
-	  const menuHeight = containerRef.current.offsetHeight || 200
-	  const isMobile = window.innerWidth < 640
-	
-	  const cursorY = editorRect.top + (editorRect.height - position.bottom)
-	  const cursorLeft = editorRect.left + position.left
-	
-	  const availableAbove = cursorY - 20
-	  const availableBelow = window.innerHeight - cursorY - 20
-	
-	  const placeAbove = availableAbove > availableBelow
-	
-	  let top = placeAbove
-	    ? cursorY - menuHeight - 20
-	    : cursorY + 20
-	
-	  let left, width
-	  if (isMobile) {
-	    left = 12
-	    width = window.innerWidth - 24
-	  } else {
-	    const menuWidth = 280
-	    left = cursorLeft - 12
-	    if (left + menuWidth > window.innerWidth - 16) left = window.innerWidth - menuWidth - 16
-	    if (left < 16) left = 16
-	    width = menuWidth
-	  }
-	
-	  top = Math.max(top, 8)
-	  top = Math.min(top, window.innerHeight - menuHeight - 8)
-	
-	  setPlacement({ top, left, width })
-	}, [position, users, loading, editorContainerRef])
+  useEffect(() => {
+    if (!containerRef.current || !editorContainerRef?.current) return
+
+    const editorRect = editorContainerRef.current.getBoundingClientRect()
+    const menuHeight = containerRef.current.offsetHeight || 200
+    const isMobile = window.innerWidth < 640
+
+    const cursorTop = editorRect.bottom - position.bottom + 8
+    const cursorLeft = editorRect.left + position.left
+
+    const lineHeight = 24
+    const gap = 6
+
+    const spaceAbove = cursorTop - gap
+    const spaceBelow = window.innerHeight - (cursorTop + lineHeight + gap)
+
+    const fitsBelow = spaceBelow >= menuHeight
+    const fitsAbove = spaceAbove >= menuHeight
+    
+    const placeAbove = !fitsBelow || (fitsAbove && spaceAbove > spaceBelow)
+
+    let top
+    if (placeAbove) {
+      top = cursorTop - menuHeight - gap
+    } else {
+      top = cursorTop + lineHeight + gap
+    }
+
+    let left, width
+    if (isMobile) {
+      left = 12
+      width = window.innerWidth - 24
+    } else {
+      const menuWidth = 280
+      left = cursorLeft
+      if (left + menuWidth > window.innerWidth - 16) left = window.innerWidth - menuWidth - 16
+      if (left < 16) left = 16
+      width = menuWidth
+    }
+
+    if (top < 8) top = 8
+    if (top + menuHeight > window.innerHeight - 8) top = window.innerHeight - menuHeight - 8
+
+    setPlacement({ top, left, width })
+  }, [position, users, loading, editorContainerRef])
 
   const filtered = query ? users.filter(u => u.username?.toLowerCase().includes(query.toLowerCase())) : users
 
