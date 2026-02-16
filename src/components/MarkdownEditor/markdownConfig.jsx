@@ -14,7 +14,7 @@ export const customSchema = {
   tagNames: [
     ...(defaultSchema.tagNames || []), 
     "details", "summary", "iframe", "img", "spoiler", "spoilerimg", 
-    "div", "center", "mention", "game-card", "game-grid", "svg", "path", "hr"
+    "div", "center", "mention", "game-card", "game-grid", "game-grid-auto", "svg", "path", "hr"
   ],
   attributes: {
     ...defaultSchema.attributes,
