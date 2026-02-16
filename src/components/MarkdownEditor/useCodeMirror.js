@@ -3,8 +3,8 @@ import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, highli
 import { EditorState } from "@codemirror/state"
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown"
 import { languages } from "@codemirror/language-data"
-import { syntaxHighlighting, defaultHighlightStyle, bracketMatching } from "@codemirror/language"
-import { history, historyKeymap, defaultKeymap } from "@codemirror/commands"
+import { syntaxHighlighting, defaultHighlightStyle, bracketMatching, indentUnit } from "@codemirror/language"
+import { history, historyKeymap, defaultKeymap, indentWithTab } from "@codemirror/commands"
 import { cmTheme, markdownHighlightStyle, customDecorations } from "./editorConfig"
 
 export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, editorRef, onMentionQuery }) {
@@ -67,7 +67,8 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
         markdown({ base: markdownLanguage, codeLanguages: languages }),
         customDecorations,
         history(),
-        keymap.of([...defaultKeymap, ...historyKeymap]),
+        indentUnit.of("  "),
+        keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
         drawSelection(),
         highlightActiveLine(),
         bracketMatching(),
