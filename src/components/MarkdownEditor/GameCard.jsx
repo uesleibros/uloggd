@@ -28,7 +28,7 @@ export function GameCard({ slug }) {
 
   if (loading) {
     return (
-      <div className="my-6 relative w-full max-w-2xl mx-auto overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800 p-4 flex gap-4 select-none">
+      <div className="my-6 relative w-full max-w-2xl overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800 p-4 flex gap-4 select-none">
         <div className="w-20 h-28 sm:w-24 sm:h-32 bg-zinc-800 rounded-lg shrink-0 animate-pulse" />
         <div className="flex-1 space-y-3 py-1">
           <div className="h-5 bg-zinc-800 rounded w-3/4 animate-pulse" />
@@ -57,7 +57,7 @@ export function GameCard({ slug }) {
   else if (score > 0) scoreColor = "bg-red-500/20 text-red-400 border-red-500/30"
 
   return (
-    <div className="my-8 group relative w-full max-w-3xl mx-auto overflow-hidden rounded-xl bg-zinc-900 border border-zinc-700/50 hover:border-zinc-600 transition-all duration-300 shadow-lg">
+    <div className="my-8 group relative w-full max-w-3xl overflow-hidden rounded-xl bg-zinc-900 border border-zinc-700/50 hover:border-zinc-600 transition-all duration-300 shadow-lg">
       <div className="absolute inset-0 z-0">
         {game.artworks?.[0]?.url ? (
           <div

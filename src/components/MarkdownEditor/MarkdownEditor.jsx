@@ -6,6 +6,7 @@ import { PortalDropdown } from "./PortalDropdown"
 import { MentionSuggestions } from "./MentionSuggestions"
 import { MarkdownPreview } from "./MarkdownPreview"
 import { useCodeMirror } from "./useCodeMirror"
+import { EditorHelpModal } from "./EditorHelpModal"
 
 function useMediaQuery(query) {
   const [matches, setMatches] = useState(false)
@@ -26,9 +27,11 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
   const [splitPos, setSplitPos] = useState(50)
   const { user: currentUser } = useAuth()
   const [mention, setMention] = useState(null)
+  const [showHelp, setShowHelp] = useState(false)
   const editorViewRef = useRef(null)
   const splitContainerRef = useRef(null)
   const isDragging = useRef(false)
+  const previewSideRef = useRef(null)
   const headingBtnRef = useRef(null)
 
   const isLargeScreen = useMediaQuery("(min-width: 1024px)")
@@ -244,7 +247,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
             <button
               key={level}
               role="menuitem"
-              onClick={() => { insertAtLineStart("#".repeat(level) +" "); setHeadingOpen(false) }}
+              onClick={() => { insertAtLineStart("#".repeat(level) + " "); setHeadingOpen(false) }}
               className="w-full text-left px-3 py-1.5 hover:bg-zinc-700 transition-colors cursor-pointer flex items-center gap-2"
             >
               <span className={`text-zinc-300 font-semibold ${level === 1 ? "text-lg" : level === 2 ? "text-base" : level === 3 ? "text-sm" : "text-xs"}`}>
@@ -255,6 +258,8 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
           ))}
         </div>
       </PortalDropdown>
+
+      {showHelp && <EditorHelpModal onClose={() => setShowHelp(false)} />}
 
       <div
         className={
@@ -318,6 +323,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
             <button
               onClick={() => setIsFullscreen(f => !f)}
               title={isFullscreen ? "Sair da tela cheia (Esc)" : "Tela cheia"}
+              aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
               className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer active:scale-90"
             >
               {isFullscreen ? (
@@ -351,7 +357,6 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
               isFullscreen ? "flex-1 min-h-0" : "h-[250px] sm:h-[300px]"
             }`}
           >
-            
             <div
               className="relative h-full overflow-hidden"
               style={{
@@ -359,11 +364,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
                 display: tab === 'preview' ? 'none' : 'block'
               }}
             >
-              <div 
-                ref={mainEditorContainer} 
-                className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto" 
-              />
-              
+              <div ref={mainEditorContainer} className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto" />
               {mention && currentUser && (
                 <MentionSuggestions
                   query={mention.query}
@@ -407,7 +408,6 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
                 <MarkdownPreview content={value} />
               </div>
             </div>
-
           </div>
         </div>
 
@@ -431,6 +431,17 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
               </span>
             )}
           </div>
+
+          <button
+            onClick={() => setShowHelp(true)}
+            className="text-[10px] sm:text-xs text-zinc-500 hover:text-indigo-400 flex items-center gap-1 transition-colors cursor-pointer hover:bg-indigo-500/10 px-1.5 py-0.5 rounded flex-shrink-0"
+            title="Ver guia de formatação"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="hidden sm:inline">Ajuda</span>
+          </button>
         </div>
       </div>
     </>
