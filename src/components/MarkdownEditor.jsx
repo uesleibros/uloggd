@@ -355,22 +355,30 @@ function PortalDropdown({ anchorRef, open, onClose, children }) {
 
 function SpoilerText({ children }) {
   const [revealed, setRevealed] = useState(false)
+
   return (
     <span
-      onClick={(e) => { e.stopPropagation(); setRevealed(true) }}
-      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 cursor-pointer transition-all duration-300 ${
-        revealed ? "bg-zinc-700/40 text-zinc-300" : "bg-zinc-700 hover:bg-zinc-600 select-none"
-      }`}
+      onClick={(e) => {
+        e.stopPropagation()
+        setRevealed(true)
+      }}
+      className="relative inline-block align-middle cursor-pointer group"
       title={revealed ? "" : "Clique para revelar"}
     >
-      {!revealed && (
-        <svg className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-        </svg>
-      )}
-      <span className={revealed ? "" : "text-transparent text-sm"}>
-        {revealed ? children : "Spoiler"}
+      <span className={`inline-block px-1.5 py-0.5 rounded transition-colors ${revealed ? "text-zinc-300" : "text-transparent"}`}>
+        {children}
       </span>
+
+      {!revealed && (
+        <span className="absolute inset-0 flex items-center gap-1.5 rounded bg-zinc-700 hover:bg-zinc-600 px-1.5 py-0.5 select-none transition-colors pointer-events-none">
+          <svg className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+          </svg>
+          <span className="text-sm">Spoiler</span>
+        </span>
+      )}
+
+      {revealed && <span className="absolute inset-0 rounded bg-zinc-700/40 pointer-events-none" />}
     </span>
   )
 }
@@ -738,44 +746,42 @@ function MentionSuggestions({ query, position, onSelect, userId, editorContainer
       .catch(() => setLoading(false))
   }, [userId])
 
-  useEffect(() => {
-    if (!containerRef.current || !editorContainerRef?.current) return
-
-    const editorRect = editorContainerRef.current.getBoundingClientRect()
-    const menuHeight = containerRef.current.offsetHeight || 200
-    const isMobile = window.innerWidth < 640
-
-    const cursorTop = editorRect.top + (editorRect.height - position.bottom)
-    const cursorLeft = editorRect.left + position.left
-
-    const spaceBelow = window.innerHeight - cursorTop - 30
-    const spaceAbove = cursorTop - editorRect.top
-
-    const showBelow = spaceBelow >= menuHeight || spaceBelow > spaceAbove
-
-    let top, left, width
-
-    if (showBelow) {
-      top = cursorTop + 24
-    } else {
-      top = cursorTop - menuHeight - 8
-    }
-
-    if (isMobile) {
-      left = 12
-      width = window.innerWidth - 24
-    } else {
-      const menuWidth = 224
-      left = Math.min(cursorLeft, window.innerWidth - menuWidth - 16)
-      left = Math.max(left, 16)
-      width = menuWidth
-    }
-
-    top = Math.max(top, 8)
-    top = Math.min(top, window.innerHeight - menuHeight - 8)
-
-    setPlacement({ top, left, width })
-  }, [position, users, loading, editorContainerRef])
+	useEffect(() => {
+	  if (!containerRef.current || !editorContainerRef?.current) return
+	
+	  const editorRect = editorContainerRef.current.getBoundingClientRect()
+	  const menuHeight = containerRef.current.offsetHeight || 200
+	  const isMobile = window.innerWidth < 640
+	
+	  const cursorY = editorRect.top + (editorRect.height - position.bottom)
+	  const cursorLeft = editorRect.left + position.left
+	
+	  const availableAbove = cursorY - 20
+	  const availableBelow = window.innerHeight - cursorY - 20
+	
+	  const placeAbove = availableAbove > availableBelow
+	
+	  let top = placeAbove
+	    ? cursorY - menuHeight - 20
+	    : cursorY + 20
+	
+	  let left, width
+	  if (isMobile) {
+	    left = 12
+	    width = window.innerWidth - 24
+	  } else {
+	    const menuWidth = 280
+	    left = cursorLeft - 12
+	    if (left + menuWidth > window.innerWidth - 16) left = window.innerWidth - menuWidth - 16
+	    if (left < 16) left = 16
+	    width = menuWidth
+	  }
+	
+	  top = Math.max(top, 8)
+	  top = Math.min(top, window.innerHeight - menuHeight - 8)
+	
+	  setPlacement({ top, left, width })
+	}, [position, users, loading, editorContainerRef])
 
   const filtered = query ? users.filter(u => u.username?.toLowerCase().includes(query.toLowerCase())) : users
 
