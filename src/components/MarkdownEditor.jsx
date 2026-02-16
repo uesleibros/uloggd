@@ -693,19 +693,11 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
         }
       )
       .replace(
-        /(```[\s\S]*?```|`[^`\n]+`|\[.*?\]\(.*?\)|https?:\/\/\S+)|(?<![a-zA-Z0-9])@([a-zA-Z0-9_]{2,32})(?![a-zA-Z0-9_])/g,
-        (match, skip, username) => {
-          if (skip) return skip
-          if (!username) return match
-          return `<mention>${username}</mention>`
-        }
-      )
-      .replace(
-        /(```[\s\S]*?```|`[^`\n]+`|\[.*?\]\(.*?\)|https?:\/\/\S+)|(?<![a-zA-Z0-9])@([a-zA-Z0-9_]{2,32})(?![a-zA-Z0-9_])|!game\(([\w-]+)\)/g,
+        /(```[\s\S]*?```|`[^`\n]+`|\[.*?\]\(.*?\)|https?:\/\/\S+)|(?<![a-zA-Z0-9])@([a-zA-Z0-9_]{2,32})(?![a-zA-Z0-9_])|!game\(([^)\n]+)\)/g,
         (match, skip, username, gameSlug) => {
           if (skip) return skip
           if (username) return `<mention>${username}</mention>`
-          if (gameSlug) return `<game-card slug="${gameSlug}" />`
+          if (gameSlug) return `<game-card slug="${gameSlug}"></game-card>`
           return match
         }
       )
