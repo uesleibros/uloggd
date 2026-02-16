@@ -41,6 +41,10 @@ export const customSchema = {
     svg: ["className", "class", "fill", "stroke", "viewBox", "strokeWidth", "width", "height"],
     path: ["d", "strokeLinecap", "strokeLinejoin"],
   },
+  ancestors: {
+    ...defaultSchema.ancestors,
+  },
+  strip: [],
   protocols: {
     ...defaultSchema.protocols,
     src: ["https"],
@@ -122,7 +126,7 @@ export const markdownComponents = {
     }
     return <li className="leading-relaxed">{children}</li>
   },
-  hr: () => <hr className="my-6 border-zinc-700 border-t-[2px] border-zinc-700 border-solid w-full block" />,
+  hr: () => <hr className="my-6 border-zinc-700 border-t-[3px] w-full" />,
   img: ({ src, alt, width, height }) => (
     <img
       src={src}
@@ -139,7 +143,7 @@ export const markdownComponents = {
   },
   mention: ({ children }) => <Mention username={children} />,
   center: ({ children }) => (
-    <div className="w-full text-center [&_img]:mx-auto [&_img]:inline-block [&>div]:mx-auto [&>table]:mx-auto">
+    <div className="flex flex-col items-center justify-center w-full text-center [&_img]:mx-auto [&_hr]:w-full">
       {children}
     </div>
   ),
