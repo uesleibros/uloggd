@@ -101,6 +101,7 @@ const markdownHighlightStyle = HighlightStyle.define([
 const mentionAtMark = Decoration.mark({ class: "cm-mention-at" })
 const mentionUserMark = Decoration.mark({ class: "cm-mention-user" })
 const spoilerMark = Decoration.mark({ class: "cm-spoiler-syntax" })
+const gameSyntaxMark = Decoration.mark({ class: "cm-game-syntax" })
 
 const customDecorations = ViewPlugin.fromClass(
   class {
@@ -131,6 +132,11 @@ const customDecorations = ViewPlugin.fromClass(
       const spoilerRegex = /\|\|(.+?)\|\|/g
       while ((match = spoilerRegex.exec(doc)) !== null) {
         widgets.push(spoilerMark.range(match.index, match.index + match[0].length))
+      }
+
+      const gameRegex = /!game\(([\w-]+)\)/g
+      while ((match = gameRegex.exec(doc)) !== null) {
+        widgets.push(gameSyntaxMark.range(match.index, match.index + match[0].length))
       }
 
       return Decoration.set(widgets, true)
@@ -209,6 +215,10 @@ const cmTheme = EditorView.theme({
     color: "#6e7681",
     backgroundColor: "rgba(110, 118, 129, 0.2)",
     borderRadius: "3px",
+  },
+  ".cm-game-syntax": {
+    color: "#fbbf24",
+    fontWeight: "bold",
   },
 })
 
