@@ -5,10 +5,11 @@ import remarkGfm from "remark-gfm"
 import rehypeRaw from "rehype-raw"
 import rehypeSanitize from "rehype-sanitize"
 import { defaultSchema } from "rehype-sanitize"
+import { UserBadges } from "./UserBadges"
 
 const customSchema = {
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames || []), "details", "summary", "iframe", "img", "spoiler", "div", "center"],
+  tagNames: [...(defaultSchema.tagNames || []), "details", "summary", "iframe", "img", "spoiler", "div", "center", "mention"],
   attributes: {
     ...defaultSchema.attributes,
     img: ["src", "alt", "width", "height", "loading", "style"],
@@ -24,6 +25,7 @@ const customSchema = {
     h5: ["style", "align"],
     h6: ["style", "align"],
     center: [],
+		mention: [],
     spoiler: [],
   },
   protocols: {
@@ -54,6 +56,8 @@ const TOOLBAR = [
   { key: "spoiler", tooltip: "Spoiler texto", group: "block" },
   { key: "spoilerimage", tooltip: "Imagem com spoiler", group: "block" },
   { key: "hr", tooltip: "Separador", group: "block" },
+	{ key: "center", tooltip: "Centralizar", group: "block" },
+	{ key: "mention", tooltip: "Mencionar usuário", group: "block" },
   { key: "table", tooltip: "Tabela", group: "block" },
 ]
 
@@ -134,6 +138,11 @@ function ToolbarIcon({ type }) {
         <path strokeLinecap="round" d="M3 12h18" />
       </svg>
     ),
+		mention: (
+			<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 10-2.636 6.364M16.5 12V8.25" />
+			</svg>
+		),
 		center: (
 			<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
 				<path strokeLinecap="round" d="M3 6h18M7 12h10M5 18h14" />
@@ -265,11 +274,159 @@ function SpoilerImage({ src, alt, width, height }) {
   )
 }
 
-export function MarkdownPreview({ content }) {
-  const processedContent = content.replace(
-    /\|\|(.+?)\|\|/g,
-    '<spoiler>$1</spoiler>'
+function MentionCard({ username, onClose }) {
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    fetch("/api/user/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    })
+      .then(r => {
+        if (!r.ok) throw new Error()
+        return r.json()
+      })
+      .then(data => {
+        setProfile(data)
+        setLoading(false)
+      })
+      .catch(() => {
+        setError(true)
+        setLoading(false)
+      })
+  }, [username])
+
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose() }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [onClose])
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden"
+    return () => { document.body.style.overflow = "" }
+  }, [])
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div
+        className="relative bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-sm shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {loading ? (
+          <div className="p-6 flex flex-col items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-zinc-800 animate-pulse" />
+            <div className="h-5 w-32 bg-zinc-800 rounded animate-pulse" />
+            <div className="h-4 w-24 bg-zinc-800 rounded animate-pulse" />
+          </div>
+        ) : error ? (
+          <div className="p-6 flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-zinc-800/50 border border-zinc-700 flex items-center justify-center">
+              <svg className="w-6 h-6 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+            </div>
+            <p className="text-sm text-zinc-400">Usuário <span className="text-white font-medium">@{username}</span> não encontrado</p>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-colors cursor-pointer"
+            >
+              Fechar
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Banner */}
+            <div className="h-24 relative overflow-hidden">
+              {profile.banner ? (
+                <img
+                  src={profile.banner}
+                  alt=""
+                  className="w-full h-full object-cover select-none pointer-events-none"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 via-zinc-800 to-zinc-900" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/50 to-transparent" />
+            </div>
+
+            {/* Avatar */}
+            <div className="px-5 -mt-10 relative">
+              <img
+                src={profile.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
+                alt={profile.username}
+                className="w-20 h-20 rounded-full border-4 border-zinc-900 bg-zinc-800 select-none object-cover"
+                draggable={false}
+              />
+            </div>
+
+            {/* Info */}
+            <div className="px-5 pt-3 pb-5">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-white">{profile.username}</h3>
+                <UserBadges user={profile} size="lg" />
+              </div>
+
+              {profile.created_at && (
+                <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                  </svg>
+                  Membro desde {new Date(profile.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+                </p>
+              )}
+
+              <a
+                href={`/u/${profile.username}`}
+                className="mt-4 w-full px-4 py-2.5 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                Ver perfil
+              </a>
+            </div>
+          </>
+        )}
+      </div>
+    </div>,
+    document.body
   )
+}
+
+function Mention({ username }) {
+  const [showCard, setShowCard] = useState(false)
+
+  return (
+    <>
+      <span
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setShowCard(true)
+        }}
+        className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 rounded text-sm font-medium transition-colors cursor-pointer no-underline"
+      >
+        @{username}
+      </span>
+      {showCard && (
+        <MentionCard
+          username={username}
+          onClose={() => setShowCard(false)}
+        />
+      )}
+    </>
+  )
+}
+
+export function MarkdownPreview({ content }) {
+  const processedContent = content
+    .replace(/\|\|(.+?)\|\|/g, '<spoiler>$1</spoiler>')
+    .replace(/@(\w+)/g, '<mention>$1</mention>')
 
   if (!processedContent.trim()) {
     return (
@@ -415,6 +572,7 @@ export function MarkdownPreview({ content }) {
 						const alignClass = align === "center" ? "text-center" : align === "right" ? "text-right" : ""
 						return <div className={alignClass}>{children}</div>
 					},
+					mention: ({ children }) => <Mention username={children} />,
 					center: ({ children }) => <div className="text-center">{children}</div>,
           table: ({ children }) => (
             <div className="overflow-x-auto my-3 -mx-1">
@@ -609,6 +767,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 	    spoiler: () => insertText("||", "||", "texto escondido"),
 	    spoilerimage: () => insertNewBlock('<img src="https://url-da-imagem.com" alt="spoiler" width="400" />'),
 	    hr: () => insertNewBlock("---"),
+			mention: () => insertText("@", "", "username"),
 			center: () => insertNewBlock("<center>\n\nconteúdo centralizado\n\n</center>"),
 	    table: () => insertNewBlock("| Coluna 1 | Coluna 2 | Coluna 3 |\n| --- | --- | --- |\n| dado | dado | dado |"),
 	  }
