@@ -1192,9 +1192,9 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 
         {showToolbar && renderToolbar()}
 
-        <div className={isFullscreen ? "flex-1 min-h-0 overflow-hidden" : "min-h-[250px] sm:min-h-[300px]"}>
+        <div className={isFullscreen ? "flex-1 min-h-0 overflow-hidden flex flex-col" : "min-h-[250px] sm:min-h-[300px]"}>
           {tab === "write" && (
-            <div className="relative">
+            <div className="relative h-full">
               <textarea
                 ref={textareaRef}
                 value={value}
