@@ -1,31 +1,5 @@
 import { Link } from "react-router-dom"
-
-function UserBadges({ isVerified, isModerator }) {
-  if (!isVerified && !isModerator) return null
-
-  return (
-    <div className="flex items-center gap-1">
-      {isVerified && (
-        <img
-          src="/badges/verified.png"
-          alt="Verificado"
-          title="Verificado"
-          className="w-4 h-4 select-none"
-          draggable={false}
-        />
-      )}
-      {isModerator && (
-        <img
-          src="/badges/moderator.png"
-          alt="Moderador"
-          title="Moderador"
-          className="w-4 h-4 select-none"
-          draggable={false}
-        />
-      )}
-    </div>
-  )
-}
+import UserBadges from "./UserBadges"
 
 function UserAvatar({ avatar, username, size = "md" }) {
   const sizes = {
@@ -67,10 +41,7 @@ export default function UserDisplay({
         <div className="flex items-center gap-1.5 min-w-0">
           <span className="text-sm text-white truncate">{user.username}</span>
           {showBadges && (
-            <UserBadges
-              isVerified={user.is_verified}
-              isModerator={user.is_moderator}
-            />
+            <UserBadges user={user} size="sm" />
           )}
         </div>
       )}
@@ -91,4 +62,4 @@ export default function UserDisplay({
   return content
 }
 
-export { UserAvatar, UserBadges }
+export { UserAvatar }

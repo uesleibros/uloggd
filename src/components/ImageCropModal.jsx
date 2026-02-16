@@ -97,7 +97,6 @@ export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, titl
 				className="relative bg-zinc-900 border-t sm:border border-zinc-700 rounded-t-2xl sm:rounded-xl w-full sm:max-w-2xl max-h-[95dvh] sm:max-h-[85vh] flex flex-col shadow-2xl"
 				onClick={(e) => e.stopPropagation()}
 			>
-				{/* Header */}
 				<div className="flex items-center justify-between p-3 sm:p-4 border-b border-zinc-700 shrink-0">
 					<h3 className="text-base sm:text-lg font-semibold text-white">{title}</h3>
 					<button
@@ -110,7 +109,6 @@ export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, titl
 					</button>
 				</div>
 
-				{/* Crop area */}
 				<div className="flex-1 min-h-0 overflow-auto p-3 sm:p-4 flex items-center justify-center bg-zinc-950/50">
 					<ReactCrop
 						crop={crop}
@@ -134,7 +132,6 @@ export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, titl
 					</ReactCrop>
 				</div>
 
-				{/* Footer */}
 				<div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 sm:p-4 border-t border-zinc-700 shrink-0 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-4">
 					<p className="text-xs text-zinc-500 text-center sm:text-left hidden sm:block">
 						Arraste para ajustar a área do recorte

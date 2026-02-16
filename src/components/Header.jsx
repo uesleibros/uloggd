@@ -6,13 +6,14 @@ import { supabase } from "../../lib/supabase"
 import UserDisplay from "./UserDisplay"
 import SettingsModal from "./SettingsModal"
 import { useAuth } from "../../hooks/useAuth"
+import UserBadges from "./UserBadges"
 
 function SearchIcon({ focused }) {
   return (
-    <svg 
+    <svg
       className={`absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focused ? 'text-zinc-300' : 'text-zinc-500'}`}
-      fill="none" 
-      stroke="currentColor" 
+      fill="none"
+      stroke="currentColor"
       viewBox="0 0 24 24"
     >
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -36,8 +37,8 @@ function SearchResultItem({ item, onSelect }) {
     >
       <div className="flex items-center gap-3">
         {item.cover ? (
-          <img 
-            src={`https:${item.cover.url}`} 
+          <img
+            src={`https:${item.cover.url}`}
             alt=""
             className="h-12 w-9 rounded object-cover bg-zinc-800 flex-shrink-0"
           />
@@ -66,7 +67,7 @@ function SearchResultItem({ item, onSelect }) {
 
 function SearchResults({ results, loading, open, onSelect, className = "" }) {
   if (!open) return null
-  
+
   return (
     <ul className={`absolute top-full z-50 mt-1.5 max-h-80 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl ${className}`}>
       {loading ? (
@@ -84,20 +85,20 @@ function SearchResults({ results, loading, open, onSelect, className = "" }) {
   )
 }
 
-function SearchInput({ 
-  query, 
-  onChange, 
-  onFocus, 
-  onBlur, 
+function SearchInput({
+  query,
+  onChange,
+  onFocus,
+  onBlur,
   focused = false,
-  variant = "desktop" 
+  variant = "desktop"
 }) {
   const baseClasses = "rounded-md bg-zinc-800 text-sm text-white placeholder-zinc-500 outline-none border"
-  
+
   const variants = {
     desktop: `h-8 w-48 lg:w-64 bg-zinc-800/80 pl-9 pr-3 transition-all duration-200 ${
-      focused 
-        ? 'border-zinc-600 bg-zinc-800 w-56 lg:w-72' 
+      focused
+        ? 'border-zinc-600 bg-zinc-800 w-56 lg:w-72'
         : 'border-zinc-700/50 hover:border-zinc-600 hover:bg-zinc-800'
     }`,
     mobile: "h-10 w-full pl-10 pr-3 border-zinc-700"
@@ -121,8 +122,8 @@ function SearchInput({
 
 function NavLink({ to, onClick, children, className = "" }) {
   return (
-    <Link 
-      to={to} 
+    <Link
+      to={to}
       onClick={onClick}
       className={`px-3 py-1.5 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all ${className}`}
     >
@@ -133,9 +134,9 @@ function NavLink({ to, onClick, children, className = "" }) {
 
 function MenuToggle({ isOpen, onClick }) {
   return (
-    <button 
+    <button
       onClick={onClick}
-      className="md:hidden p-2 text-zinc-400 hover:text-white transition-colors"
+      className="md:hidden p-2 text-zinc-400 hover:text-white transition-colors cursor-pointer"
     >
       <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         {isOpen ? (
@@ -144,6 +145,21 @@ function MenuToggle({ isOpen, onClick }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
         )}
       </svg>
+    </button>
+  )
+}
+
+function NotificationButton({ count = 0 }) {
+  return (
+    <button className="relative p-2 text-zinc-400 hover:text-white transition-colors cursor-pointer rounded-lg hover:bg-zinc-800/60">
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+      </svg>
+      {count > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-white bg-indigo-500 rounded-full ring-2 ring-zinc-900">
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
     </button>
   )
 }
@@ -224,16 +240,7 @@ function UserDropdown({ user, onSignOut }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-medium text-white truncate">{user.username}</span>
-                  {(user.is_verified || user.is_moderator) && (
-                    <div className="flex items-center gap-1">
-                      {user.is_verified && (
-                        <img src="/badges/verified.png" alt="Verificado" className="w-3.5 h-3.5 select-none" draggable={false} />
-                      )}
-                      {user.is_moderator && (
-                        <img src="/badges/moderator.png" alt="Moderador" className="w-3.5 h-3.5 select-none" draggable={false} />
-                      )}
-                    </div>
-                  )}
+                  <UserBadges user={user} size="sm" />
                 </div>
                 <span className="text-xs text-zinc-500 truncate block">{user.email}</span>
               </div>
@@ -332,16 +339,7 @@ function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-medium text-white truncate">{user.username}</span>
-                  {(user.is_verified || user.is_moderator) && (
-                    <div className="flex items-center gap-1">
-                      {user.is_verified && (
-                        <img src="/badges/verified.png" alt="Verificado" className="w-3.5 h-3.5 select-none" draggable={false} />
-                      )}
-                      {user.is_moderator && (
-                        <img src="/badges/moderator.png" alt="Moderador" className="w-3.5 h-3.5 select-none" draggable={false} />
-                      )}
-                    </div>
-                  )}
+                  <UserBadges user={user} size="sm" />
                 </div>
                 <span className="text-xs text-zinc-500 truncate block">{user.email}</span>
               </div>
@@ -367,6 +365,14 @@ function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              }
+            />
+            <DropdownItem
+              label="Notificações"
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                 </svg>
               }
             />
@@ -434,6 +440,7 @@ export default function Header() {
   const [loading, setLoading] = useState(false)
   const [focused, setFocused] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const timeoutRef = useRef(null)
   const navigate = useNavigate()
   const location = useLocation()
@@ -443,6 +450,15 @@ export default function Header() {
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [location.pathname])
+
+  useEffect(() => {
+    function handleScroll() {
+      setScrolled(window.scrollY > 8)
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   useEffect(() => {
     if (!query.trim()) {
@@ -497,8 +513,14 @@ export default function Header() {
   }
 
   return (
-    <header className="w-full">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-2">
+    <header
+      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+        scrolled
+          ? "bg-zinc-900/75 backdrop-blur-xl border-b border-zinc-800/80 shadow-lg shadow-black/20"
+          : "bg-transparent border-b border-transparent"
+      }`}
+    >
+      <div className="mx-auto flex h-14 items-center gap-2 px-4" style={{ maxWidth: 1180 }}>
         <div className="flex items-center gap-2">
           <Link to="/" className="text-2xl font-bold text-white hover:text-zinc-300 transition-colors">
             uloggd
@@ -513,7 +535,7 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="hidden md:flex relative items-center gap-4">
+        <div className="hidden md:flex relative items-center gap-2">
           <div className="relative">
             <SearchInput
               query={query}
@@ -531,18 +553,24 @@ export default function Header() {
               className="right-0 w-80 lg:w-96"
             />
           </div>
+          {user && <NotificationButton count={0} />}
           <AuthButtons user={user} loading={authLoading} />
         </div>
 
-        <MenuToggle isOpen={mobileMenuOpen} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} />
+        <div className="flex md:hidden items-center gap-1 ml-auto">
+          {user && <NotificationButton count={0} />}
+          <MenuToggle isOpen={mobileMenuOpen} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} />
+        </div>
       </div>
 
       <div
         className={`md:hidden transition-all duration-300 ease-out ${
-          mobileMenuOpen ? "max-h-[80vh] opacity-100 overflow-visible" : "max-h-0 opacity-0 overflow-hidden"
+          scrolled ? "bg-zinc-900/75 backdrop-blur-xl" : "bg-zinc-900/95 backdrop-blur-xl"
+        } ${
+          mobileMenuOpen ? "max-h-[80vh] opacity-100 overflow-visible border-b border-zinc-800/80" : "max-h-0 opacity-0 overflow-hidden"
         }`}
       >
-        <div className="px-4 py-4 space-y-4">
+        <div className="px-4 py-4 space-y-4 mx-auto" style={{ maxWidth: 1180 }}>
           <div className="relative">
             <SearchInput
               query={query}

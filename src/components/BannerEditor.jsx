@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { notify } from "./Notification"
 import ImageCropModal from "./ImageCropModal"
 
 const BANNER_ASPECT = 16 / 4
@@ -92,60 +93,45 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
 		setCropSrc(null)
 	}
 
-	function handleSave() {
-		if (!pendingBlob) return
+  function handleSave() {
+    if (!pendingBlob) return
 
-		const reader = new FileReader()
-		reader.onload = () => {
-			onSave(reader.result)
-		}
-		reader.readAsDataURL(pendingBlob)
-	}
+    const reader = new FileReader()
+    reader.onload = () => {
+      onSave(reader.result)
+      notify("Banner salvo com sucesso!")
+    }
+    reader.readAsDataURL(pendingBlob)
+  }
 
-	function handleRemove() {
-		setPreview(null)
-		setPendingBlob(null)
-		onSave(null)
-	}
+  function handleRemove() {
+    setPreview(null)
+    setPendingBlob(null)
+    setMode(null)
+
+    if (currentBanner) {
+      onSave(null)
+    } else {
+      notify("Alteração descartada.", "info")
+    }
+  }
 
 	const hasChanges = pendingBlob !== null || (preview === null && currentBanner !== null)
 
 	return (
 		<div className="space-y-4">
-			{/* Banner display */}
 			<div className="relative rounded-lg overflow-hidden border border-zinc-700 bg-zinc-800/50">
 				{preview ? (
 					<>
-						{/* Banner image - clickable only on desktop for hover overlay */}
 						<div className="relative group">
 							<img
 								src={preview}
 								alt="Banner"
 								className="w-full aspect-[16/4] select-none object-cover"
 							/>
-
-							{/* Desktop-only hover overlay */}
-							<div
-								className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 hidden md:flex items-center justify-center gap-3 transition-all duration-200 cursor-pointer"
-								onClick={() => setMode("choose")}
-							>
-								<button
-									onClick={(e) => { e.stopPropagation(); setMode("choose") }}
-									className="px-4 py-2 text-sm font-medium text-white bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-600 rounded-lg transition-colors cursor-pointer backdrop-blur-sm"
-								>
-									Alterar
-								</button>
-								<button
-									onClick={(e) => { e.stopPropagation(); handleRemove() }}
-									className="px-4 py-2 text-sm font-medium text-red-400 bg-zinc-800/90 hover:bg-red-500/20 border border-zinc-600 hover:border-red-500/50 rounded-lg transition-colors cursor-pointer backdrop-blur-sm"
-								>
-									Remover
-								</button>
-							</div>
 						</div>
 
-						{/* Mobile action buttons - always visible below banner */}
-						<div className="flex md:hidden border-t border-zinc-700">
+						<div className="flex border-t border-zinc-700">
 							<button
 								onClick={() => setMode("choose")}
 								className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-700/50 transition-colors cursor-pointer border-r border-zinc-700"

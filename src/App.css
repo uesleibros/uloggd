@@ -1,8 +1,15 @@
 :root {
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.main-content {
   max-width: 1180px;
   margin: 0 auto;
   padding: 0 16px;
-  min-height: 100vh;
 }
 
 * {

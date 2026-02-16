@@ -6,6 +6,7 @@ import { supabase } from "../../lib/supabase"
 import { useAuth } from "../../hooks/useAuth"
 import UserDisplay from "../components/UserDisplay"
 import SettingsModal from "../components/SettingsModal"
+import UserBadges from "../components/UserBadges"
 
 function ProfileSkeleton() {
   return (
@@ -293,7 +294,7 @@ function EmptyTab({ tabKey, isOwnProfile, username }) {
 
 export default function Profile() {
   const { username } = useParams()
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, loading: authLoading } = useAuth()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -317,11 +318,17 @@ export default function Profile() {
     setLoading(true)
     setError(null)
     setProfile(null)
+    setIsFollowing(false)
+    setFollowersCount(0)
+    setFollowingCount(0)
+
+    const controller = new AbortController()
 
     fetch("/api/user/profile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username })
+      body: JSON.stringify({ username }),
+      signal: controller.signal,
     })
       .then(res => {
         if (!res.ok) throw new Error("not found")
@@ -330,28 +337,45 @@ export default function Profile() {
       .then(data => {
         setProfile(data)
         setLoading(false)
+      })
+      .catch(err => {
+        if (err.name !== "AbortError") {
+          setError("Usuário não encontrado")
+          setLoading(false)
+        }
+      })
 
-        fetch("/api/user/follow-status", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: data.id,
-            currentUserId: currentUser?.id || null,
-          }),
-        })
-          .then(r => r.json())
-          .then(status => {
-            setFollowersCount(status.followers)
-            setFollowingCount(status.following)
-            setIsFollowing(status.isFollowing)
-          })
-          .catch(() => {})
+    return () => controller.abort()
+  }, [username])
+
+  useEffect(() => {
+    if (!profile || authLoading) return
+
+    const controller = new AbortController()
+
+    fetch("/api/user/follow-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: profile.id,
+        currentUserId: currentUser?.id || null,
+      }),
+      signal: controller.signal,
+    })
+      .then(r => r.json())
+      .then(status => {
+        setFollowersCount(status.followers)
+        setFollowingCount(status.following)
+        setIsFollowing(status.isFollowing)
       })
-      .catch(() => {
-        setError("Usuário não encontrado")
-        setLoading(false)
+      .catch(err => {
+        if (err.name !== "AbortError") {
+          console.error("Failed to fetch follow status:", err)
+        }
       })
-  }, [username, currentUser?.id])
+
+    return () => controller.abort()
+  }, [profile, currentUser?.id, authLoading])
 
   async function handleFollow() {
     if (!currentUser || !profile) return
@@ -441,12 +465,7 @@ export default function Profile() {
               <div>
                 <div className="flex items-center gap-2.5">
                   <h1 className="text-3xl font-bold text-white">{profile.username}</h1>
-                  {profile.is_verified && (
-                    <img src="/badges/verified.png" alt="Verificado" title="Verificado" className="w-5 h-5 select-none" draggable={false} />
-                  )}
-                  {profile.is_moderator && (
-                    <img src="/badges/moderator.png" alt="Moderador" title="Moderador" className="w-5 h-5 select-none" draggable={false} />
-                  )}
+                  <UserBadges user={profile} clickable={true} size="xl" />
                 </div>
 
                 <div className="flex items-center gap-5 mt-3">
