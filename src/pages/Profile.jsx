@@ -11,7 +11,7 @@ import UserBadges from "../components/UserBadges"
 function ProfileSkeleton() {
   return (
     <div>
-      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/5] sm:aspect-[16/4] md:aspect-auto md:h-[280px] overflow-hidden">
+      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/7] sm:aspect-[16/5] md:aspect-auto md:h-[280px] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-zinc-900 to-zinc-900" />
         <div id="main-gradient" />
         <div id="gradient" />
@@ -547,7 +547,7 @@ export default function Profile() {
 
   return (
     <div>
-      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/5] sm:aspect-[16/4] md:aspect-auto md:h-[280px] overflow-hidden">
+      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/7] sm:aspect-[16/5] md:aspect-auto md:h-[280px] overflow-hidden">
         {profile.banner ? (
           <img
             src={profile.banner}
@@ -671,4 +671,5 @@ export default function Profile() {
       )}
     </div>
   )
+
 }
