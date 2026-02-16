@@ -657,9 +657,11 @@ function useMediaQuery(query) {
 
 const followingCache = new Map()
 
-function MentionSuggestions({ query, position, onSelect, userId }) {
+function MentionSuggestions({ query, position, onSelect, userId, editorRef }) {
   const [users, setUsers] = useState(() => followingCache.get(userId) || [])
   const [loading, setLoading] = useState(!followingCache.has(userId))
+  const [showAbove, setShowAbove] = useState(true)
+  const containerRef = useRef(null)
 
   useEffect(() => {
     if (followingCache.has(userId)) return
@@ -678,17 +680,26 @@ function MentionSuggestions({ query, position, onSelect, userId }) {
       .catch(() => setLoading(false))
   }, [userId])
 
+  useEffect(() => {
+    if (!containerRef.current) return
+    const menuHeight = containerRef.current.offsetHeight || 200
+    const spaceAbove = position.bottom
+    setShowAbove(spaceAbove > menuHeight + 50)
+  }, [position, users, loading])
+
   const filtered = query ? users.filter(u => u.username?.toLowerCase().includes(query.toLowerCase())) : users
 
   if (!loading && filtered.length === 0) return null
 
+  const style = showAbove
+    ? { bottom: Math.max(position.bottom, 8), left: Math.max(position.left, 8) }
+    : { top: `calc(100% - ${position.bottom - 30}px)`, left: Math.max(position.left, 8) }
+
   return (
     <div
+      ref={containerRef}
       className="absolute z-50 bg-zinc-800 border border-zinc-700 rounded-lg shadow-2xl shadow-black/50 py-1 w-[calc(100%-1.5rem)] sm:w-56 max-h-48 overflow-y-auto left-3 sm:left-auto"
-      style={{
-        bottom: Math.max(position.bottom, 8),
-        ...(window.innerWidth >= 640 ? { left: Math.max(position.left, 8) } : {}),
-      }}
+      style={style}
     >
       {loading ? (
         <div className="px-3 py-4 flex items-center justify-center">
