@@ -9,16 +9,48 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
         /:::(\w+)\n([\s\S]*?)\n:::/g,
         (match, type, innerContent) => {
           const styles = {
-            info: { color: "text-blue-300", border: "border-blue-500/30", bg: "bg-blue-500/10", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />' },
-            warning: { color: "text-amber-300", border: "border-amber-500/30", bg: "bg-amber-500/10", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />' },
-            danger: { color: "text-red-300", border: "border-red-500/30", bg: "bg-red-500/10", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />' },
-            success: { color: "text-emerald-300", border: "border-emerald-500/30", bg: "bg-emerald-500/10", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />' },
-            tip: { color: "text-purple-300", border: "border-purple-500/30", bg: "bg-purple-500/10", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />' }
+            note: { 
+              color: "text-blue-400", 
+              border: "border-blue-500/40", 
+              bg: "bg-blue-500/10", 
+              label: "Note",
+              icon: '<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path>' 
+            },
+            tip: { 
+              color: "text-emerald-400", 
+              border: "border-emerald-500/40", 
+              bg: "bg-emerald-500/10", 
+              label: "Tip",
+              icon: '<path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.21c-.04-.292-.216-.615-.55-1.101-.214-.307-.48-.61-.714-.895a6.3 6.3 0 0 1-1.134-2.664C2.5 2.42 4.5 0 8 0c2.25 0 4 1.25 4 3.25a.75.75 0 0 1-1.5 0c0-1.25-1-1.75-2.5-1.75ZM6 13a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5Zm.75 2.5a.75.75 0 0 0 0 1.5h2.5a.75.75 0 0 0 0-1.5h-2.5Z"></path>' 
+            },
+            important: { 
+              color: "text-purple-400", 
+              border: "border-purple-500/40", 
+              bg: "bg-purple-500/10", 
+              label: "Important",
+              icon: '<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM5 8a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 5 8Zm2.5-2.25a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1-.75-.75ZM6.5 10.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Z"></path>' 
+            },
+            warning: { 
+              color: "text-amber-400", 
+              border: "border-amber-500/40", 
+              bg: "bg-amber-500/10", 
+              label: "Warning",
+              icon: '<path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.978c.579 1.137-.163 2.475-1.542 2.475H1.917C.538 15.5-.204 14.162.375 13.025L6.457 1.047ZM8 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm.75-3V4.5a.75.75 0 0 0-1.5 0V10a.75.75 0 0 0 1.5 0Z"></path>' 
+            },
+            caution: { 
+              color: "text-red-400", 
+              border: "border-red-500/40", 
+              bg: "bg-red-500/10", 
+              label: "Caution",
+              icon: '<path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53L4.47.22Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5H5.31ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path>' 
+            }
           }
           
-          const style = styles[type] || styles.info
+          const typeMap = { info: 'note', danger: 'caution', success: 'tip' }
+          const normalizedType = typeMap[type] || type
+          const style = styles[normalizedType] || styles.note
           
-          return `<div class="flex gap-3 p-4 my-4 rounded-lg border ${style.border} ${style.bg}"><svg class="w-5 h-5 flex-shrink-0 ${style.color}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">${style.icon}</svg><div class="text-sm ${style.color} space-y-1">${innerContent}</div></div>`
+          return `<div class="mb-4 overflow-hidden rounded-lg border-l-4 ${style.border} ${style.bg}"><div class="flex items-center gap-2.5 px-4 py-3 border-b border-white/5 bg-white/5"><svg class="w-4 h-4 flex-shrink-0 ${style.color}" viewBox="0 0 16 16" fill="currentColor">${style.icon}</svg><span class="text-xs font-bold uppercase tracking-wide ${style.color}">${style.label}</span></div><div class="px-4 py-3 text-sm text-zinc-300 leading-relaxed">${innerContent}</div></div>`
         }
       )
       .replace(
