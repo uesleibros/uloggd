@@ -1,5 +1,3 @@
-// components/MarkdownEditor/GameCard.jsx
-
 import { useState, useEffect } from "react"
 import { PlatformList } from "../Game/PlatformBadge"
 
@@ -110,9 +108,10 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
     return (
       <div className="relative group flex-shrink-0">
         {isFavorite && (
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 text-amber-400 drop-shadow-md">
-            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-              <path d="M11.7 2.805a.75.75 0 0 1 .6 0A16.002 16.002 0 0 0 16.736 4.5 16.004 16.004 0 0 0 21 3.688a.75.75 0 0 1 .865 1.185l-3.66 4.63a.75.75 0 0 0 .157.94l5.3 5.3a.75.75 0 0 1-.53 1.28H.868a.75.75 0 0 1-.53-1.28l5.3-5.3a.75.75 0 0 0 .157-.94l-3.66-4.63a.75.75 0 0 1 .865-1.185A16.004 16.004 0 0 0 7.264 4.5 16.002 16.002 0 0 0 11.7 2.805Z" />
+          <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-10 text-amber-400 drop-shadow-md">
+            <svg className="w-5 h-5 fill-current" viewBox="0 0 256 256">
+              <path d="M239.2,97.29a16,16,0,0,0-13.81-9.43l-56.76-2.41L146.45,32.61a16,16,0,0,0-28.9,0L95.37,85.45,38.61,87.86a16,16,0,0,0-9.11,28.06l43.57,37.63L59.66,208.8a16,16,0,0,0,24.16,17.56L128,197.69l44.18,28.67a16,16,0,0,0,24.16-17.56l-13.41-55.25,43.57-37.63A16,16,0,0,0,239.2,97.29Zm-32.06,47.76,11.2,46.16L179.6,166.1a16,16,0,0,0-16.74-.49L128,187.37l-34.86-21.76a16,16,0,0,0-16.74.49l-38.74,25.11,11.2-46.16a16,16,0,0,0-5.08-15.63L47.36,97.77l47.42-2a16,16,0,0,0,13.26-9.64L128,41.22l19.95,44.91a16,16,0,0,0,13.26,9.64l47.42,2-36.42,31.65A16,16,0,0,0,207.14,145.05Z" opacity="0.2"/>
+              <path d="M239.2,97.29a16,16,0,0,0-13.81-9.43l-56.76-2.41L146.45,32.61a16,16,0,0,0-28.9,0L95.37,85.45,38.61,87.86a16,16,0,0,0-9.11,28.06l43.57,37.63L59.66,208.8a16,16,0,0,0,24.16,17.56L128,197.69l44.18,28.67a16,16,0,0,0,24.16-17.56l-13.41-55.25,43.57-37.63A16,16,0,0,0,239.2,97.29Z"/>
             </svg>
           </div>
         )}
@@ -121,7 +120,7 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
           href={`/game/${game.slug}`} 
           target="_blank" 
           rel="noopener noreferrer"
-          className={`block relative rounded-lg transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl ${
+          className={`block relative rounded-lg transition-transform duration-300 group-hover:shadow-xl ${
             isFavorite 
               ? "ring-2 ring-amber-500/70 shadow-lg shadow-amber-500/10"
               : "border border-zinc-800/50 group-hover:border-zinc-600"
