@@ -71,37 +71,34 @@ const TOOLBAR = [
 ]
 
 const markdownHighlightStyle = HighlightStyle.define([
-  { tag: tags.heading1, color: "#e2e8f0", fontWeight: "bold", fontSize: "1.3em" },
-  { tag: tags.heading2, color: "#e2e8f0", fontWeight: "bold", fontSize: "1.2em" },
-  { tag: tags.heading3, color: "#e2e8f0", fontWeight: "bold", fontSize: "1.1em" },
-  { tag: tags.heading4, color: "#cbd5e1", fontWeight: "bold" },
-  { tag: tags.heading5, color: "#cbd5e1", fontWeight: "bold" },
-  { tag: tags.heading6, color: "#94a3b8", fontWeight: "bold" },
-  { tag: tags.strong, color: "#f1f5f9", fontWeight: "bold" },
-  { tag: tags.emphasis, color: "#c4b5fd", fontStyle: "italic" },
-  { tag: tags.strikethrough, color: "#64748b", textDecoration: "line-through" },
-  { tag: tags.link, color: "#818cf8", textDecoration: "underline" },
-  { tag: tags.url, color: "#6366f1" },
-  { tag: tags.processingInstruction, color: "#a78bfa" },
-  { tag: tags.monospace, color: "#f472b6", backgroundColor: "rgba(63, 63, 70, 0.5)", borderRadius: "3px", padding: "1px 4px" },
-  { tag: tags.contentSeparator, color: "#475569" },
-  { tag: tags.list, color: "#818cf8" },
-  { tag: tags.quote, color: "#a78bfa", fontStyle: "italic" },
-  { tag: tags.meta, color: "#64748b" },
-  { tag: tags.labelName, color: "#818cf8" },
-  { tag: tags.contentSeparator, color: "#334155" },
-  { tag: tags.angleBracket, color: "#64748b" },
-  { tag: tags.tagName, color: "#f472b6" },
-  { tag: tags.attributeName, color: "#818cf8" },
-  { tag: tags.attributeValue, color: "#34d399" },
-  { tag: tags.string, color: "#34d399" },
-  { tag: tags.comment, color: "#475569", fontStyle: "italic" },
+  { tag: [tags.heading1, tags.heading2, tags.heading3], color: "#c9d1d9", fontWeight: "bold" },
+  { tag: tags.heading1, fontSize: "1.3em" },
+  { tag: tags.heading2, fontSize: "1.2em" },
+  { tag: tags.heading3, fontSize: "1.1em" },
+  { tag: [tags.heading4, tags.heading5], color: "#c9d1d9", fontWeight: "bold" },
+  { tag: tags.heading6, color: "#8b949e", fontWeight: "bold" },
+  { tag: tags.strong, color: "#c9d1d9", fontWeight: "bold" },
+  { tag: tags.emphasis, color: "#c9d1d9", fontStyle: "italic" },
+  { tag: tags.strikethrough, color: "#8b949e", textDecoration: "line-through" },
+  { tag: tags.link, color: "#58a6ff", textDecoration: "underline" },
+  { tag: tags.url, color: "#58a6ff" },
+  { tag: [tags.processingInstruction, tags.meta], color: "#ff7b72" },
+  { tag: tags.monospace, color: "#ffa657", backgroundColor: "rgba(110, 118, 129, 0.1)", borderRadius: "3px", padding: "1px 4px" },
+  { tag: tags.list, color: "#ffa657" },
+  { tag: tags.quote, color: "#7ee787", fontStyle: "italic" },
+  { tag: tags.labelName, color: "#79c0ff" },
+  { tag: tags.contentSeparator, color: "#30363d" },
+  { tag: tags.angleBracket, color: "#8b949e" },
+  { tag: tags.tagName, color: "#7ee787" },
+  { tag: tags.attributeName, color: "#d2a8ff" },
+  { tag: [tags.attributeValue, tags.string], color: "#a5d6ff" },
+  { tag: tags.comment, color: "#8b949e", fontStyle: "italic" },
 ])
 
 const cmTheme = EditorView.theme({
   "&": {
-    backgroundColor: "transparent",
-    color: "#d4d4d8",
+    backgroundColor: "#0d1117",
+    color: "#c9d1d9",
     fontSize: "14px",
     height: "100%",
   },
@@ -110,40 +107,40 @@ const cmTheme = EditorView.theme({
   },
   ".cm-scroller": {
     fontFamily: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace",
-    lineHeight: "1.7",
+    lineHeight: "1.6",
     padding: "12px 16px",
     overflow: "auto",
   },
   ".cm-content": {
-    caretColor: "#a78bfa",
+    caretColor: "#58a6ff",
     padding: "0",
   },
   ".cm-line": {
     padding: "0",
   },
   ".cm-cursor": {
-    borderLeftColor: "#a78bfa",
+    borderLeftColor: "#58a6ff",
     borderLeftWidth: "2px",
   },
-  ".cm-selectionBackground": {
-    backgroundColor: "rgba(99, 102, 241, 0.25) !important",
+  ".cm-selectionBackground, ::selection": {
+    backgroundColor: "rgba(56, 139, 253, 0.3) !important",
   },
   "&.cm-focused .cm-selectionBackground": {
-    backgroundColor: "rgba(99, 102, 241, 0.3) !important",
+    backgroundColor: "rgba(56, 139, 253, 0.4) !important",
   },
   ".cm-activeLine": {
-    backgroundColor: "rgba(63, 63, 70, 0.15)",
+    backgroundColor: "rgba(110, 118, 129, 0.08)",
   },
   ".cm-gutters": {
     display: "none",
   },
   ".cm-placeholder": {
-    color: "#52525b",
+    color: "#484f58",
     fontStyle: "normal",
   },
   ".cm-panels": {
-    backgroundColor: "#18181b",
-    color: "#d4d4d8",
+    backgroundColor: "#0d1117",
+    color: "#c9d1d9",
   },
 })
 
