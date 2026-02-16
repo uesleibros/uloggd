@@ -143,7 +143,7 @@ export const markdownComponents = {
   },
   mention: ({ children }) => <Mention username={children} />,
   center: ({ children }) => (
-    <div className="flex flex-col items-center justify-center w-full text-center [&_img]:mx-auto [&_hr]:w-full">
+    <div className="w-full text-center [&_img]:mx-auto [&>div]:mx-auto">
       {children}
     </div>
   ),
