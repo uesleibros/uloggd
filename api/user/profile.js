@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
     const { data: profile } = await supabase
       .from("users")
-      .select("is_verified, is_moderator, banner, created_at")
+      .select("is_verified, is_moderator, is_trainee_moderator, banner, created_at")
       .eq("user_id", authUser.id)
       .single()
 
@@ -32,10 +32,7 @@ export default async function handler(req, res) {
       username: authUser.user_metadata?.full_name,
       avatar: authUser.user_metadata?.avatar_url,
       discord_id: authUser.user_metadata?.provider_id,
-      is_verified: profile?.is_verified || false,
-      is_moderator: profile?.is_moderator || false,
-      banner: profile?.banner || null,
-      created_at: profile?.created_at || authUser.created_at,
+      ...profile
     })
   } catch (e) {
     console.error(e)

@@ -12,17 +12,32 @@ import DragScrollRow from "../components/DragScrollRow.jsx"
 function GameSkeleton() {
   return (
     <div>
-      <div className="absolute z-[-1] top-0 left-0 h-[262px] w-full overflow-hidden">
+      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/5] sm:aspect-[16/4] md:aspect-auto md:h-[262px] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/30 via-zinc-900 to-zinc-900" />
         <div id="main-gradient" />
         <div id="gradient" />
       </div>
 
-      <div className="mx-auto pt-32 pb-16">
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="flex-shrink-0">
-            <div className="w-64 h-96 rounded-lg bg-zinc-800 animate-pulse" />
+      <div className="mx-auto pt-[22vw] sm:pt-[20vw] md:pt-32 pb-16">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+          <div className="flex-shrink-0 flex flex-row md:flex-col gap-4 md:gap-0">
+            <div className="w-32 h-48 sm:w-48 sm:h-72 md:w-64 md:h-96 rounded-lg bg-zinc-800 animate-pulse flex-shrink-0" />
 
+            <div className="flex-1 md:hidden space-y-3 pt-1">
+              <div className="h-7 w-48 bg-zinc-800 rounded animate-pulse" />
+              <div className="h-4 w-32 bg-zinc-800 rounded animate-pulse" />
+              <div className="flex gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex flex-col items-center gap-1">
+                    <div className="w-11 h-11 rounded-full bg-zinc-800 animate-pulse" />
+                    <div className="h-3 w-8 bg-zinc-800 rounded animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden md:block flex-shrink-0">
             <div className="mt-6 space-y-3">
               <div className="h-5 w-40 bg-zinc-800 rounded animate-pulse" />
               <div className="flex flex-wrap gap-2">
@@ -31,41 +46,21 @@ function GameSkeleton() {
                 ))}
               </div>
             </div>
-
-            <div className="h-px bg-zinc-700 my-6" />
-
-            <div className="space-y-3">
-              <div className="h-5 w-32 bg-zinc-800 rounded animate-pulse" />
-              <div className="flex flex-wrap gap-2 max-w-sm">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-9 w-28 bg-zinc-800 rounded-lg animate-pulse" />
-                ))}
-              </div>
-            </div>
-
-            <div className="h-px bg-zinc-700 my-6" />
-
-            <div className="space-y-3">
-              <div className="h-5 w-28 bg-zinc-800 rounded animate-pulse" />
-              <div className="grid grid-cols-2 gap-3 max-w-sm">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-10 bg-zinc-800 rounded-lg animate-pulse" />
-                ))}
-              </div>
-            </div>
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="h-10 w-80 bg-zinc-800 rounded animate-pulse" />
-            <div className="h-4 w-40 bg-zinc-800 rounded animate-pulse mt-3 mb-6" />
+            <div className="hidden md:block">
+              <div className="h-10 w-80 bg-zinc-800 rounded animate-pulse" />
+              <div className="h-4 w-40 bg-zinc-800 rounded animate-pulse mt-3 mb-6" />
 
-            <div className="flex gap-6 mb-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex flex-col items-center gap-1">
-                  <div className="w-14 h-14 rounded-full bg-zinc-800 animate-pulse" />
-                  <div className="h-3 w-10 bg-zinc-800 rounded animate-pulse" />
-                </div>
-              ))}
+              <div className="flex gap-6 mb-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex flex-col items-center gap-1">
+                    <div className="w-14 h-14 rounded-full bg-zinc-800 animate-pulse" />
+                    <div className="h-3 w-10 bg-zinc-800 rounded animate-pulse" />
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -139,8 +134,8 @@ function GameSkeleton() {
 function InfoRow({ label, children }) {
   if (!children) return null
   return (
-    <div className="flex gap-2">
-      <span className="text-sm text-zinc-500 w-28 flex-shrink-0">{label}</span>
+    <div className="flex flex-col sm:flex-row gap-0.5 sm:gap-2">
+      <span className="text-sm text-zinc-500 sm:w-28 flex-shrink-0">{label}</span>
       <span className="text-sm text-zinc-300">{children}</span>
     </div>
   )
@@ -345,8 +340,13 @@ function KeywordsModal({ keywords, onClose }) {
   const [search, setSearch] = useState("")
 
   useEffect(() => {
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
     document.body.style.overflow = "hidden"
-    return () => { document.body.style.overflow = "" }
+    if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`
+    return () => {
+      document.body.style.overflow = ""
+      document.body.style.paddingRight = ""
+    }
   }, [])
 
   useEffect(() => {
@@ -448,7 +448,7 @@ function RelatedGamesSection({ game }) {
   const current = tabs.find(t => t.key === activeTab) ?? tabs[0]
 
   return (
-    <div className="mt-16">
+    <div className="mt-12 md:mt-16">
       <div className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold text-white">Conteúdo relacionado</h2>
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -499,7 +499,7 @@ function VideoGrid({ videos }) {
 
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         {visible.map(v => (
           <div key={v.video_id} className="relative z-0 aspect-video rounded-lg overflow-hidden bg-zinc-800">
             <iframe
@@ -621,32 +621,50 @@ export default function Game() {
 
   return (
     <div>
-      {game.screenshots?.length > 0 && (
-        <div className="absolute z-[-1] top-0 left-0 h-[262px] w-full overflow-hidden">
+      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/5] sm:aspect-[16/4] md:aspect-auto md:h-[262px] overflow-hidden">
+        {game.screenshots?.length > 0 ? (
           <img
             src={`https:${game.screenshots[0].url}`}
             alt=""
-            className="select-none pointer-events-none absolute z-[-2] inset-0 h-full w-full object-cover"
+            className="select-none pointer-events-none absolute z-[-2] inset-0 h-full w-full object-cover object-center"
           />
-          <div id="main-gradient" />
-          <div id="gradient" />
-        </div>
-      )}
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/30 via-zinc-900 to-zinc-900" />
+        )}
+        <div id="main-gradient" />
+        <div id="gradient" />
+      </div>
 
-      <div className="mx-auto pt-32 pb-16">
-        <div className="flex flex-col md:flex-row gap-8">
+      <div className="mx-auto pt-[22vw] sm:pt-[20vw] md:pt-32 pb-16">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
           <div className="flex-shrink-0">
-            {game.cover ? (
-              <img
-                src={`https:${game.cover.url}`}
-                alt={game.name}
-                className="w-64 rounded-lg shadow-2xl bg-zinc-800 select-none"
-              />
-            ) : (
-              <div className="w-64 h-96 rounded-lg bg-zinc-800 flex items-center justify-center">
-                <span className="text-zinc-500">{game.name}</span>
+            <div className="flex flex-row md:flex-col gap-4 md:gap-0">
+              {game.cover ? (
+                <img
+                  src={`https:${game.cover.url}`}
+                  alt={game.name}
+                  className="w-32 sm:w-48 md:w-64 rounded-lg shadow-2xl bg-zinc-800 select-none flex-shrink-0"
+                />
+              ) : (
+                <div className="w-32 h-48 sm:w-48 sm:h-72 md:w-64 md:h-96 rounded-lg bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                  <span className="text-zinc-500 text-xs sm:text-sm text-center px-2">{game.name}</span>
+                </div>
+              )}
+
+              <div className="flex-1 md:hidden min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight">{game.name}</h1>
+                {game.first_release_date && (
+                  <p className="text-xs sm:text-sm text-zinc-400 mt-1.5">
+                    {formatDateLong(game.first_release_date)}
+                  </p>
+                )}
+                <div className="flex gap-4 mt-3">
+                  <RatingBadge score={game.total_rating} label="Total" size="sm" />
+                  <RatingBadge score={game.aggregated_rating} label="Crítica" size="sm" />
+                  <RatingBadge score={game.rating} label="Usuários" size="sm" />
+                </div>
               </div>
-            )}
+            </div>
 
             {game.parent_game && (
               <>
@@ -712,18 +730,18 @@ export default function Game() {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h1 className="text-4xl font-bold text-white">{game.name}</h1>
-
-            {game.first_release_date && (
-              <p className="text-sm text-zinc-400 mt-2 mb-6">
-                {formatDateLong(game.first_release_date)}
-              </p>
-            )}
-
-            <div className="flex gap-6 mb-4">
-              <RatingBadge score={game.total_rating} label="Total" />
-              <RatingBadge score={game.aggregated_rating} label="Crítica" />
-              <RatingBadge score={game.rating} label="Usuários" />
+            <div className="hidden md:block">
+              <h1 className="text-4xl font-bold text-white">{game.name}</h1>
+              {game.first_release_date && (
+                <p className="text-sm text-zinc-400 mt-2 mb-6">
+                  {formatDateLong(game.first_release_date)}
+                </p>
+              )}
+              <div className="flex gap-6 mb-4">
+                <RatingBadge score={game.total_rating} label="Total" />
+                <RatingBadge score={game.aggregated_rating} label="Crítica" />
+                <RatingBadge score={game.rating} label="Usuários" />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

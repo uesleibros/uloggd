@@ -33,9 +33,7 @@ async function loadUser(session) {
       username: session.user.user_metadata.full_name,
       avatar: session.user.user_metadata.avatar_url,
       email: session.user.email,
-      banner: profile?.banner || null,
-      is_verified: profile?.is_verified || false,
-      is_moderator: profile?.is_moderator || false,
+      ...profile
     }
   } catch {
     cachedUser = {
@@ -43,10 +41,7 @@ async function loadUser(session) {
       discordId: session.user.user_metadata.provider_id,
       username: session.user.user_metadata.full_name,
       avatar: session.user.user_metadata.avatar_url,
-      email: session.user.email,
-      banner: null,
-      is_verified: false,
-      is_moderator: false,
+      email: session.user.email
     }
   }
 

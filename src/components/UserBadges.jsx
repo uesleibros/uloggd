@@ -14,6 +14,17 @@ const BADGES = [
     iconBg: "bg-purple-500/10",
   },
   {
+    key: "is_trainee_moderator",
+    src: "/badges/trainee_moderator.png",
+    alt: "Moderador Estagiário",
+    title: "Moderador Estagiário",
+    description: "Este usuário está em fase de treinamento na equipe de moderação do uloggd, aprendendo a manter a comunidade segura e organizada.",
+    color: "from-sky-500/20 to-cyan-500/20",
+    borderColor: "border-sky-500/30",
+    glowColor: "shadow-sky-500/10",
+    iconBg: "bg-sky-500/10",
+  },
+  {
     key: "is_moderator",
     src: "/badges/moderator.png",
     alt: "Moderador",

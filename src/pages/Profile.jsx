@@ -11,15 +11,15 @@ import UserBadges from "../components/UserBadges"
 function ProfileSkeleton() {
   return (
     <div>
-      <div className="absolute z-[-1] top-0 left-0 h-[280px] w-full overflow-hidden">
+      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/5] sm:aspect-[16/4] md:aspect-auto md:h-[280px] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-zinc-900 to-zinc-900" />
         <div id="main-gradient" />
         <div id="gradient" />
       </div>
-      <div className="pt-36 pb-16">
-        <div className="flex flex-col sm:flex-row gap-8">
+      <div className="pt-[22vw] sm:pt-[20vw] md:pt-36 pb-16">
+        <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
           <div className="flex-shrink-0">
-            <div className="w-36 h-36 rounded-full bg-zinc-800 animate-pulse border-4 border-zinc-900" />
+            <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full bg-zinc-800 animate-pulse border-4 border-zinc-900" />
           </div>
           <div className="flex-1 space-y-4 pt-2">
             <div className="h-8 w-52 bg-zinc-800 rounded animate-pulse" />
@@ -122,8 +122,13 @@ function FollowListModal({ title, userId, onClose }) {
   const [search, setSearch] = useState("")
 
   useEffect(() => {
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
     document.body.style.overflow = "hidden"
-    return () => { document.body.style.overflow = "" }
+    if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`
+    return () => {
+      document.body.style.overflow = ""
+      document.body.style.paddingRight = ""
+    }
   }, [])
 
   useEffect(() => {
@@ -292,6 +297,113 @@ function EmptyTab({ tabKey, isOwnProfile, username }) {
   )
 }
 
+function ListsSection({ lists = [], isOwnProfile, username }) {
+  if (lists.length === 0) {
+    return (
+      <div className="mt-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+            <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+            </svg>
+            Listas
+          </h2>
+          {isOwnProfile && (
+            <button className="px-3 py-1.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              Criar lista
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-col items-center justify-center py-16 gap-4 bg-zinc-800/20 border border-zinc-800 rounded-xl">
+          <div className="w-14 h-14 rounded-full bg-zinc-800/50 border border-zinc-700 flex items-center justify-center text-zinc-600">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+            </svg>
+          </div>
+          <p className="text-sm text-zinc-500">
+            {isOwnProfile
+              ? "Você ainda não criou nenhuma lista."
+              : `${username} ainda não criou nenhuma lista.`
+            }
+          </p>
+          {isOwnProfile && (
+            <button className="mt-1 px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors cursor-pointer flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              Criar primeira lista
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-12">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+          <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+          </svg>
+          Listas
+          <span className="text-sm text-zinc-500 font-normal">{lists.length}</span>
+        </h2>
+        {isOwnProfile && (
+          <button className="px-3 py-1.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Criar lista
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {lists.map(list => (
+          <Link
+            key={list.id}
+            to={`/list/${list.id}`}
+            className="group bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-xl p-4 transition-all duration-200"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-zinc-700/50 group-hover:bg-zinc-700 flex items-center justify-center flex-shrink-0 transition-colors">
+                <svg className="w-5 h-5 text-zinc-400 group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-white group-hover:text-white truncate">{list.name}</h3>
+                {list.description && (
+                  <p className="text-xs text-zinc-500 mt-1 line-clamp-2">{list.description}</p>
+                )}
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="text-xs text-zinc-600">{list.games_count || 0} jogos</span>
+                  {list.is_public === false && (
+                    <span className="text-xs text-zinc-600 flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                      </svg>
+                      Privada
+                    </span>
+                  )}
+                </div>
+              </div>
+              <svg className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 flex-shrink-0 mt-1 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function Profile() {
   const { username } = useParams()
   const { user: currentUser, loading: authLoading } = useAuth()
@@ -435,12 +547,12 @@ export default function Profile() {
 
   return (
     <div>
-      <div className="absolute z-[-1] top-0 left-0 h-[280px] w-full overflow-hidden">
+      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/5] sm:aspect-[16/4] md:aspect-auto md:h-[280px] overflow-hidden">
         {profile.banner ? (
           <img
             src={profile.banner}
             alt="Banner"
-            className="select-none pointer-events-none absolute z-[-2] inset-0 h-full w-full object-cover"
+            className="select-none pointer-events-none absolute z-[-2] inset-0 h-full w-full object-cover object-center"
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-zinc-900 to-zinc-900" />
@@ -449,13 +561,13 @@ export default function Profile() {
         <div id="gradient" />
       </div>
 
-      <div className="pt-36 pb-16">
-        <div className="flex flex-col md:flex-row gap-8">
+      <div className="pt-[22vw] sm:pt-[20vw] md:pt-36 pb-16">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
           <div className="flex-shrink-0">
             <img
               src={profile.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
               alt={profile.username}
-              className="w-36 h-36 rounded-full border-4 border-zinc-900 shadow-2xl bg-zinc-800 select-none object-cover"
+              className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full border-4 border-zinc-900 shadow-2xl bg-zinc-800 select-none object-cover"
               draggable={false}
             />
           </div>
@@ -463,12 +575,12 @@ export default function Profile() {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
-                <div className="flex items-center gap-2.5">
-                  <h1 className="text-3xl font-bold text-white">{profile.username}</h1>
+                <div className="flex items-center gap-2 sm:gap-2.5">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white">{profile.username}</h1>
                   <UserBadges user={profile} clickable={true} size="xl" />
                 </div>
 
-                <div className="flex items-center gap-5 mt-3">
+                <div className="flex items-center gap-3 sm:gap-5 mt-3 flex-wrap">
                   <SocialCount
                     value={followersCount}
                     label="seguidores"
@@ -480,7 +592,7 @@ export default function Profile() {
                     onClick={() => setFollowModal("Seguindo")}
                   />
                   {memberSince && (
-                    <span className="text-sm text-zinc-600 flex items-center gap-1.5">
+                    <span className="text-xs sm:text-sm text-zinc-600 flex items-center gap-1.5">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                       </svg>
@@ -538,6 +650,12 @@ export default function Profile() {
             username={profile.username}
           />
         </div>
+
+        <ListsSection
+          lists={profile.lists || []}
+          isOwnProfile={isOwnProfile}
+          username={profile.username}
+        />
       </div>
 
       {followModal && (
