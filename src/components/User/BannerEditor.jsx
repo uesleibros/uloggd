@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
-import { notify } from "./Notification"
-import ImageCropModal from "./ImageCropModal"
+import { notify } from "../UI/Notification"
+import ImageCropModal from "../UI/ImageCropModal"
 
 const BANNER_ASPECT = 16 / 4
 

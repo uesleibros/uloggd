@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react"
-import GameCard from "./GameCard"
-import DragScrollRow from "./DragScrollRow"
+import GameCard from "../Game/GameCard"
+import DragScrollRow from "../UI/DragScrollRow"
 
 export default function UsersChoiceCarousel() {
   const [games, setGames] = useState([])
