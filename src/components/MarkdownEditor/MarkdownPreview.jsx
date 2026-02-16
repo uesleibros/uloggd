@@ -6,6 +6,20 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
   const processedContent = useMemo(() => {
     return content
       .replace(
+        /<center>([\s\S]*?)(?:<\/center>|(?=<center>)|$)/gi,
+        (match, inner) => {
+          if (match.endsWith("</center>")) return match
+          return `<center>${inner}</center>`
+        }
+      )
+      .replace(
+        /(```[\s\S]*?```)|^---$/gm,
+        (match, code) => {
+          if (code) return code
+          return "<hr />"
+        }
+      )
+      .replace(
         /:::(\w+)\n([\s\S]*?)\n:::/g,
         (match, type, innerContent) => {
           const styles = {
