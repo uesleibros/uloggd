@@ -13,7 +13,7 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
         }
       )
       .replace(
-        /(```[\s\S]*?```)|^---$/gm,
+        /(```[\s\S]*?```)|^\s*---\s*$/gm,
         (match, code) => {
           if (code) return code
           return "<hr />"
