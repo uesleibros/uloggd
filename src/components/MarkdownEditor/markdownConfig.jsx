@@ -6,10 +6,15 @@ import { SpoilerText } from "./SpoilerText"
 import { SpoilerImage } from "./SpoilerImage"
 import { Mention } from "./Mention"
 import { GameCard } from "./GameCard"
+import { GameGrid } from "./GameGrid"
 
 export const customSchema = {
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames || []), "details", "summary", "iframe", "img", "spoiler", "spoilerimg", "div", "center", "mention", "game-card", "svg", "path"],
+  tagNames: [
+    ...(defaultSchema.tagNames || []), 
+    "details", "summary", "iframe", "img", "spoiler", "spoilerimg", 
+    "div", "center", "mention", "game-card", "game-grid", "svg", "path"
+  ],
   attributes: {
     ...defaultSchema.attributes,
     img: ["src", "alt", "width", "height", "loading", "style"],
@@ -28,7 +33,8 @@ export const customSchema = {
     center: [],
     mention: [],
     spoiler: [],
-    "game-card": ["slug"],
+    "game-card": ["slug", "variant"],
+    "game-grid": ["slugs"],
     svg: ["className", "class", "fill", "stroke", "viewBox", "strokeWidth", "width", "height"],
     path: ["d", "strokeLinecap", "strokeLinejoin"],
   },
@@ -135,7 +141,8 @@ export const markdownComponents = {
       <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">{children}</table>
     </div>
   ),
-  "game-card": ({ slug }) => <GameCard slug={slug} />,
+  "game-card": ({ slug, variant }) => <GameCard slug={slug} variant={variant} />,
+  "game-grid": ({ slugs }) => <GameGrid slugs={slugs} />,
   thead: ({ children }) => <thead className="bg-zinc-800/80">{children}</thead>,
   th: ({ children }) => <th className="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-zinc-300 uppercase tracking-wider border border-zinc-700">{children}</th>,
   td: ({ children }) => <td className="px-3 sm:px-4 py-2 text-sm text-zinc-400 border border-zinc-700">{children}</td>,

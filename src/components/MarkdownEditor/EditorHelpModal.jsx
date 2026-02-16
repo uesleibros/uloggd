@@ -54,18 +54,23 @@ export function EditorHelpModal({ onClose }) {
         <div className="overflow-y-auto p-4">
           <FeatureItem 
             syntax=":::tipo ... :::" 
-            description="Cria blocos de alerta coloridos. Tipos suportados: info, warning, danger, success, tip."
+            description="Cria blocos de alerta coloridos. Tipos suportados: note, tip, important, warning, caution."
             example={":::warning\nCuidado com este chefe!\n:::"}
-          />
-          <FeatureItem 
-            syntax=":emoji" 
-            description="Insere emojis. Digite : para abrir a lista de sugestões."
-            example=":fire"
           />
           <FeatureItem 
             syntax="!game(slug)" 
             description="Exibe um card detalhado de um jogo. O slug pode ser encontrado na URL da página do jogo."
             example="!game(the-last-of-us)"
+          />
+          <FeatureItem 
+            syntax="!game:mini(slug)" 
+            description="Versão compacta do card de jogo, ideal para listas."
+            example="!game:mini(celeste)"
+          />
+          <FeatureItem 
+            syntax="!game:grid(slug1, slug2, ...)" 
+            description="Cria uma vitrine horizontal de capas de jogos."
+            example="!game:grid(persona-3-portable, celeste, hollow-knight)"
           />
           <FeatureItem 
             syntax="@usuario" 
