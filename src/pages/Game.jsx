@@ -9,6 +9,8 @@ import Lightbox from "../components/UI/Lightbox"
 import { formatDateLong } from "../../utils/formatDate"
 import DragScrollRow from "../components/UI/DragScrollRow"
 import PageBanner from "../components/Layout/PageBanner"
+import ReviewButton from "../components/Game/ReviewButton"
+import GameReviews from "../components/Game/GameReviews"
 
 function GameSkeleton() {
   return (
@@ -650,6 +652,10 @@ export default function Game() {
                   <RatingBadge score={game.aggregated_rating} label="Crítica" size="sm" />
                   <RatingBadge score={game.rating} label="Usuários" size="sm" />
                 </div>
+
+                <div className="mt-4">
+                  <ReviewButton game={game} />
+                </div>
               </div>
             </div>
 
@@ -717,6 +723,10 @@ export default function Game() {
                 <RatingBadge score={game.total_rating} label="Total" />
                 <RatingBadge score={game.aggregated_rating} label="Crítica" />
                 <RatingBadge score={game.rating} label="Usuários" />
+              </div>
+
+              <div className="mb-6">
+                <ReviewButton game={game} />
               </div>
             </div>
 
@@ -790,6 +800,10 @@ export default function Game() {
           </div>
         </div>
         <RelatedGamesSection game={game} />
+
+        <hr className="my-6 border-zinc-700" />
+
+        <GameReviews gameId={game.id} />
       </div>
 
       <Lightbox
