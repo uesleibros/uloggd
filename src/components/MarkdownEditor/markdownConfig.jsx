@@ -136,7 +136,11 @@ export const markdownComponents = {
     return <div className={alignClass}>{children}</div>
   },
   mention: ({ children }) => <Mention username={children} />,
-  center: ({ children }) => <div className="flex flex-col items-center justify-center w-full">{children}</div>,
+  center: ({ children }) => (
+    <div className="flex flex-col items-center justify-center w-full text-center [&_img]:mx-auto">
+      {children}
+    </div>
+  ),
   table: ({ children }) => (
     <div className="overflow-x-auto my-4">
       <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">{children}</table>
