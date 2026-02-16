@@ -65,7 +65,7 @@ export const customDecorations = ViewPlugin.fromClass(
         widgets.push(spoilerMark.range(match.index, match.index + match[0].length))
       }
 
-      const gameRegex = /!game(?::(?:mini|grid))?\(([^)\n]+)\)/g
+      const gameRegex = /!game(?::(?:mini|grid|grid-auto))?\(([^)\n]+)\)/g
       while ((match = gameRegex.exec(doc)) !== null) {
         widgets.push(gameSyntaxMark.range(match.index, match.index + match[0].length))
       }

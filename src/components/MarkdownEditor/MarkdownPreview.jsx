@@ -75,6 +75,10 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
         (match, gameSlug) => `<game-card slug="${gameSlug}" variant="mini"></game-card>`
       )
       .replace(
+        /!game:grid-auto\(([^)\n]+)\)/g,
+        (match, slugs) => `<game-grid-auto slugs="${slugs}"></game-grid-auto>`
+      )
+      .replace(
         /!game:grid\(([^)\n]+)\)/g,
         (match, slugs) => `<game-grid slugs="${slugs}"></game-grid>`
       )

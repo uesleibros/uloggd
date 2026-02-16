@@ -69,8 +69,13 @@ export function EditorHelpModal({ onClose }) {
           />
           <FeatureItem 
             syntax="!game:grid(slug1, slug2+, ...)" 
-            description="Vitrine de jogos. Adicione um + no final do slug para destacar como favorito."
+            description="Vitrine de jogos em carrossel manual. Adicione + no final do slug para destacar como favorito."
             example="!game:grid(celeste, hollow-knight+)"
+          />
+          <FeatureItem 
+            syntax="!game:grid-auto(slug1, slug2+, ...)" 
+            description="Vitrine de jogos com carrossel automático infinito. Também suporta + para favoritos."
+            example="!game:grid-auto(celeste, hollow-knight+, hades)"
           />
           <FeatureItem 
             syntax="@usuario" 

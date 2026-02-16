@@ -14,7 +14,7 @@ export const customSchema = {
   tagNames: [
     ...(defaultSchema.tagNames || []), 
     "details", "summary", "iframe", "img", "spoiler", "spoilerimg", 
-    "div", "center", "mention", "game-card", "game-grid", "svg", "path"
+    "div", "center", "mention", "game-card", "game-grid", "svg", "path", "hr"
   ],
   attributes: {
     ...defaultSchema.attributes,
@@ -31,11 +31,13 @@ export const customSchema = {
     h4: ["style", "align"],
     h5: ["style", "align"],
     h6: ["style", "align"],
+    hr: [],
     center: [],
     mention: [],
     spoiler: [],
     "game-card": ["slug", "variant"],
     "game-grid": ["slugs"],
+    "game-grid-auto": ["slugs"],
     svg: ["className", "class", "fill", "stroke", "viewBox", "strokeWidth", "width", "height"],
     path: ["d", "strokeLinecap", "strokeLinejoin"],
   },
@@ -148,6 +150,7 @@ export const markdownComponents = {
   ),
   "game-card": ({ slug, variant }) => <GameCard slug={slug} variant={variant} />,
   "game-grid": ({ slugs }) => <GameGrid slugs={slugs} />,
+  "game-grid-auto": ({ slugs }) => <GameGrid slugs={slugs} autoScroll />,
   thead: ({ children }) => <thead className="bg-zinc-800/80">{children}</thead>,
   th: ({ children }) => <th className="px-3 py-2 text-left text-xs font-semibold text-zinc-300 uppercase tracking-wider border border-zinc-700">{children}</th>,
   td: ({ children }) => <td className="px-3 py-2 text-sm text-zinc-400 border border-zinc-700">{children}</td>,

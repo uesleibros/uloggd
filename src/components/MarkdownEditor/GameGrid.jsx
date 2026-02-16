@@ -1,7 +1,7 @@
 import DragScrollRow from "../UI/DragScrollRow"
 import { GameCard } from "./GameCard"
 
-export function GameGrid({ slugs }) {
+export function GameGrid({ slugs, autoScroll = false }) {
   const slugList = slugs.split(",").map(s => {
     const raw = s.trim()
     const isFavorite = raw.endsWith("+")
@@ -11,12 +11,19 @@ export function GameGrid({ slugs }) {
 
   if (slugList.length === 0) return null
 
+  const items = autoScroll ? [...slugList, ...slugList, ...slugList] : slugList
+
   return (
     <div className="my-2">
-      <DragScrollRow className="gap-3 pb-4 pt-4 px-1 items-end">
-        {slugList.map(({ slug, isFavorite }) => (
+      <DragScrollRow
+        className={`gap-3 pb-4 pt-4 px-1 items-end ${autoScroll ? "overflow-x-hidden" : ""}`}
+        autoScroll={autoScroll}
+        autoScrollSpeed={0.04}
+        loop={autoScroll}
+      >
+        {items.map(({ slug, isFavorite }, i) => (
           <GameCard 
-            key={slug} 
+            key={`${slug}-${i}`} 
             slug={slug} 
             variant="cover" 
             isFavorite={isFavorite}
