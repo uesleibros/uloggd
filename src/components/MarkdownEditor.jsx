@@ -704,18 +704,20 @@ function MentionSuggestions({ query, position, onSelect, userId }) {
   )
 }
 
-function useCodeMirror({ value, onChange, maxLength, placeholder: ph, editorRef, isFullscreen }) {
+function useCodeMirror({ value, onChange, maxLength, placeholder: ph, editorRef, onMentionQuery }) {
   const containerRef = useRef(null)
   const viewRef = useRef(null)
   const onChangeRef = useRef(onChange)
+  const onMentionQueryRef = useRef(onMentionQuery)
   const isExternalUpdate = useRef(false)
 
   useEffect(() => {
     onChangeRef.current = onChange
-  }, [onChange])
+    onMentionQueryRef.current = onMentionQuery
+  }, [onChange, onMentionQuery])
 
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!containerRef.current || viewRef.current) return
 
     const maxLengthFilter = maxLength
       ? EditorState.transactionFilter.of(tr => {
@@ -728,6 +730,28 @@ function useCodeMirror({ value, onChange, maxLength, placeholder: ph, editorRef,
     const updateListener = EditorView.updateListener.of(update => {
       if (update.docChanged && !isExternalUpdate.current) {
         onChangeRef.current(update.state.doc.toString())
+      }
+      
+      if (update.selectionSet || update.docChanged) {
+        const { from } = update.state.selection.main
+        const doc = update.state.doc.toString()
+        const textBefore = doc.slice(0, from)
+        const match = textBefore.match(/(?:^|[\s\n])@([a-zA-Z0-9_]{0,32})$/)
+        
+        if (match) {
+          const coords = update.view.coordsAtPos(from)
+          const editorRect = update.view.dom.getBoundingClientRect()
+          onMentionQueryRef.current?.({
+            query: match[1],
+            startIndex: from - match[1].length - 1,
+            position: coords ? {
+              bottom: editorRect.bottom - coords.top + 8,
+              left: coords.left - editorRect.left,
+            } : { bottom: 40, left: 16 }
+          })
+        } else {
+          onMentionQueryRef.current?.(null)
+        }
       }
     })
 
@@ -763,7 +787,7 @@ function useCodeMirror({ value, onChange, maxLength, placeholder: ph, editorRef,
       viewRef.current = null
       if (editorRef) editorRef.current = null
     }
-  }, [])
+  }, [maxLength, ph])
 
   useEffect(() => {
     const view = viewRef.current
