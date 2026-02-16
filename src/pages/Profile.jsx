@@ -8,15 +8,12 @@ import UserDisplay from "../components/UserDisplay"
 import SettingsModal from "../components/SettingsModal"
 import UserBadges from "../components/UserBadges"
 import { MarkdownPreview } from "../components/MarkdownEditor"
+import PageBanner from "../components/PageBanner"
 
 function ProfileSkeleton() {
   return (
     <div>
-      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/7] sm:aspect-[16/5] md:aspect-auto md:h-[280px] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-zinc-900 to-zinc-900" />
-        <div id="main-gradient" />
-        <div id="gradient" />
-      </div>
+      <PageBanner height="profile" />
       <div className="pt-[22vw] sm:pt-[20vw] md:pt-36 pb-16">
         <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
           <div className="flex-shrink-0">
@@ -604,20 +601,7 @@ export default function Profile() {
 
   return (
     <div>
-      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/7] sm:aspect-[16/5] md:aspect-auto md:h-[280px] overflow-hidden">
-        {profile.banner ? (
-          <img
-            src={profile.banner}
-            alt="Banner"
-            className="select-none pointer-events-none absolute z-[-2] inset-0 h-full w-full object-cover object-center"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-zinc-900 to-zinc-900" />
-        )}
-        <div id="main-gradient" />
-        <div id="gradient" />
-      </div>
-
+      <PageBanner image={profile.banner} height="profile" />
       <div className="pt-[22vw] sm:pt-[20vw] md:pt-36 pb-16">
         <div className="flex flex-col md:flex-row gap-6 md:gap-8">
           <div className="flex-shrink-0">

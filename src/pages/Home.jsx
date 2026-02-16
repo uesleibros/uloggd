@@ -1,6 +1,9 @@
+// Home.jsx
+
 import usePageMeta from "../../hooks/usePageMeta"
 import UsersChoiceCarousel from "../components/UsersChoiceCarousel"
 import { useAuth } from "../../hooks/useAuth"
+import PageBanner from "../components/PageBanner"
 
 function WelcomeBackSkeleton() {
   return (
@@ -128,15 +131,7 @@ export default function Home() {
 
   return (
     <div>
-      <div className="absolute z-[-1] top-0 left-0 h-[262px] w-full overflow-hidden">
-        <img
-          src="/games-background.png"
-          alt="Banner"
-          className="select-none pointer-events-none absolute z-[-2] inset-0 h-full w-full object-cover"
-        />
-        <div id="main-gradient" />
-        <div id="gradient" />
-      </div>
+      <PageBanner image="/games-background.png" height="home" />
 
       {renderHero()}
 

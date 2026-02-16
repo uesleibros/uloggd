@@ -2,22 +2,18 @@ import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "../../hooks/usePageMeta"
-import { PLATFORMS_MAP } from "../../data/platformsMapper.js"
+import { PlatformList, default as PlatformBadge } from "../components/PlatformBadge"
 import RatingBadge from "../components/RatingBadge"
 import GameCard from "../components/GameCard"
 import Lightbox from "../components/Lightbox"
 import { formatDateLong } from "../../utils/formatDate"
 import DragScrollRow from "../components/DragScrollRow.jsx"
+import PageBanner from "../components/PageBanner.jsx"
 
 function GameSkeleton() {
   return (
     <div>
-      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/7] sm:aspect-[16/5] md:aspect-auto md:h-[262px] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/30 via-zinc-900 to-zinc-900" />
-        <div id="main-gradient" />
-        <div id="gradient" />
-      </div>
-
+      <PageBanner height="game" />
       <div className="mx-auto pt-[22vw] sm:pt-[20vw] md:pt-32 pb-16">
         <div className="flex flex-col md:flex-row gap-6 md:gap-8">
           <div className="flex-shrink-0 flex flex-row md:flex-col gap-4 md:gap-0">
@@ -619,22 +615,13 @@ export default function Game() {
   const allMedia = [...(game.screenshots || []), ...(game.artworks || [])]
   const summaryTruncated = game.summary?.length > 500
 
+  const bannerImage = game.screenshots?.length > 0
+      ? `https:${game.screenshots[0].url}`
+      : null
+
   return (
     <div>
-      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/7] sm:aspect-[16/5] md:aspect-auto md:h-[262px] overflow-hidden">
-        {game.screenshots?.length > 0 ? (
-          <img
-            src={`https:${game.screenshots[0].url}`}
-            alt=""
-            className="select-none pointer-events-none absolute z-[-2] inset-0 h-full w-full object-cover object-center"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/30 via-zinc-900 to-zinc-900" />
-        )}
-        <div id="main-gradient" />
-        <div id="gradient" />
-      </div>
-
+      <PageBanner image={bannerImage} height="game" />
       <div className="mx-auto pt-[22vw] sm:pt-[20vw] md:pt-32 pb-16">
         <div className="flex flex-col md:flex-row gap-6 md:gap-8">
           <div className="flex-shrink-0">
@@ -707,23 +694,12 @@ export default function Game() {
             {game.platforms?.length > 0 && (
               <div>
                 <h2 className="text-lg font-semibold text-white mb-3">Plataformas</h2>
-                <div className="flex flex-wrap max-w-sm gap-2">
-                  {game.platforms.map(p => (
-                    <div
-                      key={p.id}
-                      className="flex items-center gap-2 px-3 py-2 hover:bg-zinc-700/50 transition-colors bg-zinc-800/50 border border-zinc-700 rounded-lg"
-                    >
-                      {PLATFORMS_MAP[p.id] && (
-                        <img
-                          src={`/platforms/result/${PLATFORMS_MAP[p.id]}.png`}
-                          alt={p.name}
-                          className="w-5 h-5 brightness-0 invert object-contain select-none"
-                        />
-                      )}
-                      <span className="text-sm text-zinc-300">{p.name}</span>
-                    </div>
-                  ))}
-                </div>
+                <PlatformList
+                  platforms={game.platforms}
+                  variant="badge"
+                  className="max-w-sm"
+                  badgeClassName="hover:bg-zinc-700/50 transition-colors"
+                />
               </div>
             )}
             <Keywords keywords={game.keywords} />
