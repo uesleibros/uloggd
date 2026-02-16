@@ -809,9 +809,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
   const [splitPos, setSplitPos] = useState(50)
   const { user: currentUser } = useAuth()
   const [mention, setMention] = useState(null)
-  const [mentionPos, setMentionPos] = useState({ bottom: 0, left: 0 })
   const editorViewRef = useRef(null)
-  const editorViewSplitRef = useRef(null)
   const splitContainerRef = useRef(null)
   const isDragging = useRef(false)
   const previewSideRef = useRef(null)
@@ -825,38 +823,43 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
   const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0
   const lineCount = value.split("\n").length
 
+  const handleMentionQuery = useCallback((data) => {
+    setMention(data)
+  }, [])
+
   const mainEditorContainer = useCodeMirror({
     value,
     onChange,
     maxLength,
     placeholder,
     editorRef: editorViewRef,
-    isFullscreen,
+    onMentionQuery: handleMentionQuery,
   })
 
-  const splitEditorContainer = useCodeMirror({
-    value,
-    onChange,
-    maxLength,
-    placeholder,
-    editorRef: editorViewSplitRef,
-    isFullscreen,
-  })
+  const handleMentionSelect = useCallback((username) => {
+    if (!mention) return
+    const view = editorViewRef.current
+    if (!view) return
 
-  const getActiveView = useCallback(() => {
-    if (tab === "sidebyside") return editorViewSplitRef.current
-    return editorViewRef.current
-  }, [tab])
+    const insertText = "@" + username + " "
+    view.dispatch({
+      changes: { from: mention.startIndex, to: view.state.selection.main.from, insert: insertText },
+      selection: { anchor: mention.startIndex + insertText.length },
+    })
+    view.focus()
+    setMention(null)
+  }, [mention])
 
   useEffect(() => {
     const handler = (e) => {
       if (e.key !== "Escape") return
+      if (mention) { setMention(null); return }
       if (headingOpen) { setHeadingOpen(false); return }
       if (isFullscreen) setIsFullscreen(false)
     }
     document.addEventListener("keydown", handler)
     return () => document.removeEventListener("keydown", handler)
-  }, [isFullscreen, headingOpen])
+  }, [isFullscreen, headingOpen, mention])
 
   useEffect(() => {
     document.body.style.overflow = isFullscreen ? "hidden" : ""
@@ -865,11 +868,11 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 
   useEffect(() => {
     if (!isFullscreen && tab === "sidebyside") setTab("write")
-  }, [isFullscreen])
+  }, [isFullscreen, tab])
 
   useEffect(() => {
     if (!isLargeScreen && tab === "sidebyside") setTab("write")
-  }, [isLargeScreen])
+  }, [isLargeScreen, tab])
 
   useEffect(() => {
     setHeadingOpen(false)
@@ -910,7 +913,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
   }, [])
 
   const insertText = useCallback((before, after = "", ph = "") => {
-    const view = getActiveView()
+    const view = editorViewRef.current
     if (!view) return
     const { from, to } = view.state.selection.main
     const selected = view.state.sliceDoc(from, to)
@@ -927,10 +930,10 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
       },
     })
     view.focus()
-  }, [getActiveView, maxLength])
+  }, [maxLength])
 
   const insertAtLineStart = useCallback((prefix) => {
-    const view = getActiveView()
+    const view = editorViewRef.current
     if (!view) return
     const { from } = view.state.selection.main
     const line = view.state.doc.lineAt(from)
@@ -942,10 +945,10 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
       selection: { anchor: from + prefix.length },
     })
     view.focus()
-  }, [getActiveView, maxLength])
+  }, [maxLength])
 
   const insertNewBlock = useCallback((block) => {
-    const view = getActiveView()
+    const view = editorViewRef.current
     if (!view) return
     const { from } = view.state.selection.main
     const doc = view.state.doc.toString()
@@ -960,7 +963,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
       selection: { anchor: from + fullBlock.length },
     })
     view.focus()
-  }, [getActiveView, maxLength])
+  }, [maxLength])
 
   const handleAction = useCallback((key) => {
     const actions = {
@@ -1138,12 +1141,23 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
         {showToolbar && renderToolbar()}
 
         <div className={isFullscreen ? "flex-1 min-h-0 overflow-hidden flex flex-col" : ""}>
-          {tab === "write" && (
+          <div
+            className={`relative ${tab === "write" || tab === "sidebyside" ? (isFullscreen ? "flex-1 min-h-0" : "min-h-[250px] sm:min-h-[300px]") : "hidden"}`}
+            style={tab === "sidebyside" ? { display: "none" } : undefined}
+          >
             <div
               ref={mainEditorContainer}
-              className={`${isFullscreen ? "flex-1 min-h-0 overflow-auto" : "min-h-[250px] sm:min-h-[300px]"} [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto`}
+              className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto"
             />
-          )}
+            {mention && currentUser && (
+              <MentionSuggestions
+                query={mention.query}
+                position={mention.position}
+                onSelect={handleMentionSelect}
+                userId={currentUser.id}
+              />
+            )}
+          </div>
 
           {tab === "preview" && (
             <div className={`p-3 sm:p-4 overflow-y-auto ${isFullscreen ? "flex-1 min-h-0" : "min-h-[250px] sm:min-h-[300px]"}`}>
@@ -1154,10 +1168,22 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
           {tab === "sidebyside" && (
             <div ref={splitContainerRef} className="flex flex-1 min-h-0">
               <div
-                className="h-full overflow-hidden [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto"
+                className="relative h-full overflow-hidden"
                 style={{ width: `${splitPos}%` }}
-                ref={splitEditorContainer}
-              />
+              >
+                <div
+                  ref={mainEditorContainer}
+                  className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto"
+                />
+                {mention && currentUser && (
+                  <MentionSuggestions
+                    query={mention.query}
+                    position={mention.position}
+                    onSelect={handleMentionSelect}
+                    userId={currentUser.id}
+                  />
+                )}
+              </div>
               <div
                 onMouseDown={handleSplitStart}
                 onTouchStart={handleSplitStart}
