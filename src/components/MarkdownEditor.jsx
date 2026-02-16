@@ -191,9 +191,9 @@ function SpoilerText({ children }) {
   return (
     <span
       onClick={(e) => {
-        e.stopPropagation()
-        setRevealed(r => !r)
-      }}
+				e.stopPropagation()
+					setRevealed(true)
+			}}
       className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 cursor-pointer transition-all duration-300 ${
         revealed
           ? "bg-zinc-700/40 text-zinc-300"
@@ -218,12 +218,9 @@ function SpoilerImage({ src, alt, width, height }) {
 
   return (
     <div
-      className={`relative inline-block my-3 rounded-xl overflow-hidden border cursor-pointer transition-all duration-300 ${
-        revealed ? "border-zinc-700" : "border-zinc-600 hover:border-zinc-500"
-      }`}
-      style={width ? { width: `${width}px` } : undefined}
-      onClick={() => setRevealed(r => !r)}
-    >
+			className={`relative inline-block my-3 rounded-xl overflow-hidden border transition-all duration-300 max-w-full ${revealed ? "border-zinc-700" : "border-zinc-600 hover:border-zinc-500 cursor-pointer"}`}
+			onClick={() => setRevealed(true)}
+		>
       <img
         src={src}
         alt={alt || ""}
@@ -232,7 +229,6 @@ function SpoilerImage({ src, alt, width, height }) {
         className={`max-w-full block transition-all duration-500 ${
           revealed ? "blur-0 scale-100" : "blur-3xl scale-110 brightness-50"
         }`}
-        style={width ? { width: `${width}px`, height: height ? `${height}px` : "auto" } : undefined}
         loading="lazy"
         onError={(e) => {
           e.target.onerror = null
@@ -252,13 +248,6 @@ function SpoilerImage({ src, alt, width, height }) {
           <span className="text-xs text-zinc-500">Clique para revelar</span>
         </div>
       </div>
-      {revealed && (
-        <div className="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity">
-          <div className="bg-zinc-900/80 backdrop-blur-sm rounded-lg px-2 py-1 text-xs text-zinc-400 border border-zinc-700/50">
-            Clique para esconder
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -399,8 +388,8 @@ export function MarkdownPreview({ content }) {
                 width={width}
                 height={height}
                 className="max-w-full rounded-lg my-3 border border-zinc-700"
-                style={width ? { width: `${width}px`, height: height ? `${height}px` : "auto" } : undefined}
-                loading="lazy"
+                style={width ? { width: `min(${width}px, 100%)` } : undefined}
+								loading="lazy"
                 onError={(e) => {
                   e.target.onerror = null
                   e.target.className = "hidden"
