@@ -20,6 +20,7 @@ export const TOOLBAR = [
   { key: "spoiler", tooltip: "Spoiler texto", group: "block" },
   { key: "spoilerimage", tooltip: "Imagem com spoiler", group: "block" },
   { key: "hr", tooltip: "Separador", group: "block" },
+  { key: "alert", tooltip: "Alerta / Callout", group: "block" },
   { key: "center", tooltip: "Centralizar", group: "block" },
   { key: "mention", tooltip: "Mencionar usuário", group: "block" },
   { key: "table", tooltip: "Tabela", group: "block" },
