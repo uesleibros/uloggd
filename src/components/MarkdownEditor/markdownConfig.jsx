@@ -9,7 +9,7 @@ import { GameCard } from "./GameCard"
 
 export const customSchema = {
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames || []), "details", "summary", "iframe", "img", "spoiler", "spoilerimg", "div", "center", "mention", "game-card"],
+  tagNames: [...(defaultSchema.tagNames || []), "details", "summary", "iframe", "img", "spoiler", "spoilerimg", "div", "center", "mention", "game-card", "svg", "path"],
   attributes: {
     ...defaultSchema.attributes,
     img: ["src", "alt", "width", "height", "loading", "style"],
@@ -29,6 +29,8 @@ export const customSchema = {
     mention: [],
     spoiler: [],
     "game-card": ["slug"],
+    svg: ["className", "class", "fill", "stroke", "viewBox", "strokeWidth", "width", "height"],
+    path: ["d", "strokeLinecap", "strokeLinejoin"],
   },
   protocols: {
     ...defaultSchema.protocols,

@@ -18,14 +18,7 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
           
           const style = styles[type] || styles.info
           
-          return `
-            <div class="flex gap-3 p-4 my-4 rounded-lg border ${style.border} ${style.bg}">
-              <svg class="w-5 h-5 flex-shrink-0 ${style.color}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">${style.icon}</svg>
-              <div class="text-sm ${style.color} space-y-1">
-                ${innerContent}
-              </div>
-            </div>
-          `
+          return `<div class="flex gap-3 p-4 my-4 rounded-lg border ${style.border} ${style.bg}"><svg class="w-5 h-5 flex-shrink-0 ${style.color}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">${style.icon}</svg><div class="text-sm ${style.color} space-y-1">${innerContent}</div></div>`
         }
       )
       .replace(

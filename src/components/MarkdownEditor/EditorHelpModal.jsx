@@ -11,7 +11,7 @@ function FeatureItem({ syntax, description, example }) {
       </div>
       <p className="text-sm text-zinc-400 mb-2">{description}</p>
       {example && (
-        <div className="text-xs bg-zinc-900/50 border border-zinc-700/50 rounded p-2 text-zinc-500 font-mono">
+        <div className="text-xs bg-zinc-900/50 border border-zinc-700/50 rounded p-2 text-zinc-500 font-mono whitespace-pre-wrap">
           {example}
         </div>
       )}
@@ -53,6 +53,16 @@ export function EditorHelpModal({ onClose }) {
 
         <div className="overflow-y-auto p-4">
           <FeatureItem 
+            syntax=":::tipo ... :::" 
+            description="Cria blocos de alerta coloridos. Tipos suportados: info, warning, danger, success, tip."
+            example={":::warning\nCuidado com este chefe!\n:::"}
+          />
+          <FeatureItem 
+            syntax=":emoji" 
+            description="Insere emojis. Digite : para abrir a lista de sugestões."
+            example=":fire"
+          />
+          <FeatureItem 
             syntax="!game(slug)" 
             description="Exibe um card detalhado de um jogo. O slug pode ser encontrado na URL da página do jogo."
             example="!game(the-last-of-us)"
@@ -76,11 +86,6 @@ export function EditorHelpModal({ onClose }) {
             syntax="<center>...</center>" 
             description="Centraliza o conteúdo (texto ou imagens)."
             example="<center>Texto centralizado</center>"
-          />
-          <FeatureItem 
-            syntax="![alt](url)" 
-            description="Insere uma imagem padrão."
-            example="![Capa](https://site.com/img.jpg)"
           />
         </div>
         

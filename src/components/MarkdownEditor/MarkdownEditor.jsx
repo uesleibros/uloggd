@@ -188,6 +188,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
       ol: () => insertAtLineStart("1. "),
       checklist: () => insertAtLineStart("- [ ] "),
       quote: () => insertAtLineStart("> "),
+      alert: () => insertNewBlock(":::info\nTexto do alerta\n:::"), 
       spoiler: () => insertText("||", "||", "texto escondido"),
       spoilerimage: () => insertNewBlock('<spoilerimg src="https://url-da-imagem.com" alt="descrição" width="400" />'),
       hr: () => insertNewBlock("---"),
