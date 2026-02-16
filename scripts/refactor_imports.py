@@ -1,7 +1,14 @@
 import os
 import re
 
+# Old_Path: New_Path or Same:Same to fix import level.
 MOVES = {
+		# Hooks
+		"hooks/useAuth": "hooks/useAuth",
+
+		# Libs
+		"lib/supabase": "lib/supabase",
+
     # Game
     "src/components/GameCard": "src/components/Game/GameCard",
     "src/components/PlatformBadge": "src/components/Game/PlatformBadge",
