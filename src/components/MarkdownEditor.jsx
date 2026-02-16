@@ -714,20 +714,6 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
               </span>
             )}
           </div>
-
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-zinc-600 flex-shrink-0">
-            <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">Ctrl</kbd>
-            <span>+</span>
-            <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">B</kbd>
-            <span className="text-zinc-700 mx-0.5">·</span>
-            <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">Ctrl</kbd>
-            <span>+</span>
-            <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">I</kbd>
-            <span className="text-zinc-700 mx-0.5">·</span>
-            <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">Ctrl</kbd>
-            <span>+</span>
-            <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">K</kbd>
-          </div>
         </div>
       </div>
     </>
