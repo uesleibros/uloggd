@@ -4,6 +4,24 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeRaw from "rehype-raw"
 import rehypeSanitize from "rehype-sanitize"
+import { defaultSchema } from "rehype-sanitize"
+
+const customSchema = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames || []), "details", "summary", "iframe", "img"],
+  attributes: {
+    ...defaultSchema.attributes,
+    img: ["src", "alt", "width", "height", "loading"],
+    iframe: ["src", "title", "allow", "allowfullscreen", "class", "className"],
+    details: ["class", "className"],
+    summary: ["class", "className"],
+    div: [...(defaultSchema.attributes?.div || []), "class", "className"],
+  },
+  protocols: {
+    ...defaultSchema.protocols,
+    src: ["https"],
+  },
+}
 
 const TOOLBAR = [
   { key: "heading", tooltip: "Título", group: "text" },
@@ -13,14 +31,19 @@ const TOOLBAR = [
   { key: "divider1" },
   { key: "link", tooltip: "Link", group: "insert" },
   { key: "image", tooltip: "Imagem", group: "insert" },
+  { key: "imagesize", tooltip: "Imagem com tamanho", group: "insert" },
+  { key: "youtube", tooltip: "Vídeo do YouTube", group: "insert" },
+  { key: "divider2" },
   { key: "code", tooltip: "Código inline", group: "insert" },
   { key: "codeblock", tooltip: "Bloco de código", group: "insert" },
-  { key: "divider2" },
+  { key: "divider3" },
   { key: "ul", tooltip: "Lista", group: "list" },
   { key: "ol", tooltip: "Lista numerada", group: "list" },
   { key: "checklist", tooltip: "Checklist", group: "list" },
-  { key: "divider3" },
+  { key: "divider4" },
   { key: "quote", tooltip: "Citação", group: "block" },
+  { key: "spoiler", tooltip: "Spoiler", group: "block" },
+  { key: "spoilerimage", tooltip: "Imagem com spoiler", group: "block" },
   { key: "hr", tooltip: "Separador", group: "block" },
   { key: "table", tooltip: "Tabela", group: "block" },
 ]
@@ -43,6 +66,17 @@ function ToolbarIcon({ type }) {
     image: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+      </svg>
+    ),
+    imagesize: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-3-3m0 0h3m-3 0v3" strokeWidth={2} />
+      </svg>
+    ),
+    youtube: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.546 12 3.546 12 3.546s-7.505 0-9.377.504A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.504 9.376.504 9.376.504s7.505 0 9.377-.504a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
       </svg>
     ),
     code: (
@@ -73,6 +107,17 @@ function ToolbarIcon({ type }) {
     quote: (
       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
         <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" />
+      </svg>
+    ),
+    spoiler: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+      </svg>
+    ),
+    spoilerimage: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" strokeWidth={2} />
       </svg>
     ),
     hr: (
@@ -155,84 +200,166 @@ export function MarkdownPreview({ content }) {
     <div className="markdown-body">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, rehypeSanitize]}
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, customSchema]]}
         components={{
-          h1: ({ children }) => <h1 className="text-2xl sm:text-3xl font-bold text-white mt-6 mb-3 pb-2 border-b border-zinc-700">{children}</h1>,
-          h2: ({ children }) => <h2 className="text-xl sm:text-2xl font-bold text-white mt-5 mb-2 pb-1.5 border-b border-zinc-800">{children}</h2>,
-          h3: ({ children }) => <h3 className="text-lg sm:text-xl font-semibold text-white mt-4 mb-2">{children}</h3>,
-          h4: ({ children }) => <h4 className="text-base sm:text-lg font-semibold text-zinc-200 mt-3 mb-1.5">{children}</h4>,
-          h5: ({ children }) => <h5 className="text-sm sm:text-base font-semibold text-zinc-300 mt-3 mb-1">{children}</h5>,
-          h6: ({ children }) => <h6 className="text-xs sm:text-sm font-semibold text-zinc-400 mt-2 mb-1">{children}</h6>,
-          p: ({ children }) => <p className="text-sm text-zinc-300 leading-relaxed mb-3">{children}</p>,
-          a: ({ href, children }) => (
-            <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">
-              {children}
-            </a>
-          ),
-          strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
-          em: ({ children }) => <em className="italic text-zinc-300">{children}</em>,
-          del: ({ children }) => <del className="text-zinc-500 line-through">{children}</del>,
-          blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-indigo-500/50 bg-indigo-500/5 pl-4 py-2 my-3 rounded-r-lg">
-              {children}
-            </blockquote>
-          ),
-          code: ({ inline, className, children }) => {
-            if (inline) {
-              return (
-                <code className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-sm text-pink-400 font-mono">
-                  {children}
-                </code>
-              )
-            }
-            return (
-              <pre className="bg-zinc-900 border border-zinc-700 rounded-lg p-3 sm:p-4 my-3 overflow-x-auto">
-                <code className={`text-xs sm:text-sm text-zinc-300 font-mono ${className || ""}`}>
-                  {children}
-                </code>
-              </pre>
-            )
-          },
-          ul: ({ children }) => <ul className="list-disc list-inside space-y-1 my-2 text-sm text-zinc-300">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 my-2 text-sm text-zinc-300">{children}</ol>,
-          li: ({ children, checked }) => {
-            if (checked !== null && checked !== undefined) {
-              return (
-                <li className="flex items-start gap-2 list-none">
-                  <input type="checkbox" checked={checked} readOnly className="mt-1 accent-indigo-500 pointer-events-none" />
-                  <span className={checked ? "text-zinc-500 line-through" : "text-zinc-300"}>{children}</span>
-                </li>
-              )
-            }
-            return <li>{children}</li>
-          },
-          hr: () => <hr className="my-6 border-zinc-700" />,
-          img: ({ src, alt }) => (
-            <img
-              src={src}
-              alt={alt || ""}
-              className="max-w-full rounded-lg my-3 border border-zinc-700"
-              loading="lazy"
-              onError={(e) => {
-                e.target.onerror = null
-                e.target.src = ""
-                e.target.alt = "Imagem não encontrada"
-                e.target.className = "hidden"
-              }}
-            />
-          ),
-          table: ({ children }) => (
-            <div className="overflow-x-auto my-3 -mx-1">
-              <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">
-                {children}
-              </table>
-            </div>
-          ),
-          thead: ({ children }) => <thead className="bg-zinc-800/80">{children}</thead>,
-          th: ({ children }) => <th className="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-zinc-300 uppercase tracking-wider border border-zinc-700">{children}</th>,
-          td: ({ children }) => <td className="px-3 sm:px-4 py-2 text-sm text-zinc-400 border border-zinc-700">{children}</td>,
-          tr: ({ children }) => <tr className="hover:bg-zinc-800/30 transition-colors">{children}</tr>,
-        }}
+				  h1: ({ children }) => <h1 className="text-2xl sm:text-3xl font-bold text-white mt-6 mb-3 pb-2 border-b border-zinc-700">{children}</h1>,
+				  h2: ({ children }) => <h2 className="text-xl sm:text-2xl font-bold text-white mt-5 mb-2 pb-1.5 border-b border-zinc-800">{children}</h2>,
+				  h3: ({ children }) => <h3 className="text-lg sm:text-xl font-semibold text-white mt-4 mb-2">{children}</h3>,
+				  h4: ({ children }) => <h4 className="text-base sm:text-lg font-semibold text-zinc-200 mt-3 mb-1.5">{children}</h4>,
+				  h5: ({ children }) => <h5 className="text-sm sm:text-base font-semibold text-zinc-300 mt-3 mb-1">{children}</h5>,
+				  h6: ({ children }) => <h6 className="text-xs sm:text-sm font-semibold text-zinc-400 mt-2 mb-1">{children}</h6>,
+				  p: ({ children }) => {
+				    if (children && typeof children === "string") {
+				      const ytMatch = children.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/)
+				      if (ytMatch) {
+				        return (
+				          <div className="my-3 aspect-video rounded-lg overflow-hidden border border-zinc-700 bg-zinc-800">
+				            <iframe
+				              src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}`}
+				              title="YouTube"
+				              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+				              allowFullScreen
+				              className="w-full h-full"
+				            />
+				          </div>
+				        )
+				      }
+				    }
+				    if (children?.props?.href) {
+				      const ytMatch = children.props.href.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/)
+				      if (ytMatch) {
+				        return (
+				          <div className="my-3 aspect-video rounded-lg overflow-hidden border border-zinc-700 bg-zinc-800">
+				            <iframe
+				              src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}`}
+				              title="YouTube"
+				              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+				              allowFullScreen
+				              className="w-full h-full"
+				            />
+				          </div>
+				        )
+				      }
+				    }
+				    const childArray = Array.isArray(children) ? children : [children]
+				    const hasOnlyYouTubeLink = childArray.length === 1 && childArray[0]?.props?.href
+				    if (hasOnlyYouTubeLink) {
+				      const ytMatch = childArray[0].props.href.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/)
+				      if (ytMatch) {
+				        return (
+				          <div className="my-3 aspect-video rounded-lg overflow-hidden border border-zinc-700 bg-zinc-800">
+				            <iframe
+				              src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}`}
+				              title="YouTube"
+				              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+				              allowFullScreen
+				              className="w-full h-full"
+				            />
+				          </div>
+				        )
+				      }
+				    }
+				    return <p className="text-sm text-zinc-300 leading-relaxed mb-3">{children}</p>
+				  },
+				  a: ({ href, children }) => {
+				    const ytMatch = href?.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/)
+				    if (ytMatch) {
+				      return (
+				        <div className="my-3 aspect-video rounded-lg overflow-hidden border border-zinc-700 bg-zinc-800">
+				          <iframe
+				            src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}`}
+				            title="YouTube"
+				            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+				            allowFullScreen
+				            className="w-full h-full"
+				          />
+				        </div>
+				      )
+				    }
+				    return (
+				      <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">
+				        {children}
+				      </a>
+				    )
+				  },
+				  strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
+				  em: ({ children }) => <em className="italic text-zinc-300">{children}</em>,
+				  del: ({ children }) => <del className="text-zinc-500 line-through">{children}</del>,
+				  blockquote: ({ children }) => (
+				    <blockquote className="border-l-4 border-indigo-500/50 bg-indigo-500/5 pl-4 py-2 my-3 rounded-r-lg">
+				      {children}
+				    </blockquote>
+				  ),
+				  details: ({ children }) => (
+				    <details className="my-3 bg-zinc-800/50 border border-zinc-700 rounded-lg overflow-hidden group">
+				      {children}
+				    </details>
+				  ),
+				  summary: ({ children }) => (
+				    <summary className="px-4 py-3 text-sm font-medium text-zinc-300 hover:text-white cursor-pointer select-none transition-colors hover:bg-zinc-700/30 flex items-center gap-2">
+				      <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+				        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+				      </svg>
+				      {children}
+				    </summary>
+				  ),
+				  code: ({ inline, className, children }) => {
+				    if (inline) {
+				      return (
+				        <code className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-sm text-pink-400 font-mono">
+				          {children}
+				        </code>
+				      )
+				    }
+				    return (
+				      <pre className="bg-zinc-900 border border-zinc-700 rounded-lg p-3 sm:p-4 my-3 overflow-x-auto">
+				        <code className={`text-xs sm:text-sm text-zinc-300 font-mono ${className || ""}`}>
+				          {children}
+				        </code>
+				      </pre>
+				    )
+				  },
+				  ul: ({ children }) => <ul className="list-disc list-inside space-y-1 my-2 text-sm text-zinc-300">{children}</ul>,
+				  ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 my-2 text-sm text-zinc-300">{children}</ol>,
+				  li: ({ children, checked }) => {
+				    if (checked !== null && checked !== undefined) {
+				      return (
+				        <li className="flex items-start gap-2 list-none">
+				          <input type="checkbox" checked={checked} readOnly className="mt-1 accent-indigo-500 pointer-events-none" />
+				          <span className={checked ? "text-zinc-500 line-through" : "text-zinc-300"}>{children}</span>
+				        </li>
+				      )
+				    }
+				    return <li>{children}</li>
+				  },
+				  hr: () => <hr className="my-6 border-zinc-700" />,
+				  img: ({ src, alt, width, height }) => (
+				    <img
+				      src={src}
+				      alt={alt || ""}
+				      width={width}
+				      height={height}
+				      className="max-w-full rounded-lg my-3 border border-zinc-700"
+				      style={width ? { width: `${width}px`, height: height ? `${height}px` : "auto" } : undefined}
+				      loading="lazy"
+				      onError={(e) => {
+				        e.target.onerror = null
+				        e.target.className = "hidden"
+				      }}
+				    />
+				  ),
+				  table: ({ children }) => (
+				    <div className="overflow-x-auto my-3 -mx-1">
+				      <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">
+				        {children}
+				      </table>
+				    </div>
+				  ),
+				  thead: ({ children }) => <thead className="bg-zinc-800/80">{children}</thead>,
+				  th: ({ children }) => <th className="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-zinc-300 uppercase tracking-wider border border-zinc-700">{children}</th>,
+				  td: ({ children }) => <td className="px-3 sm:px-4 py-2 text-sm text-zinc-400 border border-zinc-700">{children}</td>,
+				  tr: ({ children }) => <tr className="hover:bg-zinc-800/30 transition-colors">{children}</tr>,
+				}}
       >
         {content}
       </ReactMarkdown>
@@ -396,25 +523,29 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
     })
   }, [value, onChange, maxLength])
 
-  const handleAction = useCallback((key) => {
-    const actions = {
-      bold: () => insertText("**", "**", "texto em negrito"),
-      italic: () => insertText("*", "*", "texto em itálico"),
-      strikethrough: () => insertText("~~", "~~", "texto riscado"),
-      link: () => insertText("[", "](https://)", "texto do link"),
-      image: () => insertText("![", "](https://url-da-imagem.com)", "descrição"),
-      code: () => insertText("`", "`", "código"),
-      codeblock: () => insertNewBlock("```\ncódigo aqui\n```"),
-      ul: () => insertAtLineStart("- "),
-      ol: () => insertAtLineStart("1. "),
-      checklist: () => insertAtLineStart("- [ ] "),
-      quote: () => insertAtLineStart("> "),
-      hr: () => insertNewBlock("---"),
-      table: () => insertNewBlock("| Coluna 1 | Coluna 2 | Coluna 3 |\n| --- | --- | --- |\n| dado | dado | dado |"),
-    }
-    actions[key]?.()
-  }, [insertText, insertAtLineStart, insertNewBlock])
-
+	const handleAction = useCallback((key) => {
+	  const actions = {
+	    bold: () => insertText("**", "**", "texto em negrito"),
+	    italic: () => insertText("*", "*", "texto em itálico"),
+	    strikethrough: () => insertText("~~", "~~", "texto riscado"),
+	    link: () => insertText("[", "](https://)", "texto do link"),
+	    image: () => insertText("![", "](https://url-da-imagem.com)", "descrição"),
+	    imagesize: () => insertNewBlock('<img src="https://url-da-imagem.com" alt="descrição" width="400" />'),
+	    youtube: () => insertNewBlock('<div class="youtube-embed">\n\nhttps://www.youtube.com/watch?v=VIDEO_ID\n\n</div>'),
+	    code: () => insertText("`", "`", "código"),
+	    codeblock: () => insertNewBlock("```\ncódigo aqui\n```"),
+	    ul: () => insertAtLineStart("- "),
+	    ol: () => insertAtLineStart("1. "),
+	    checklist: () => insertAtLineStart("- [ ] "),
+	    quote: () => insertAtLineStart("> "),
+	    spoiler: () => insertNewBlock("<details>\n<summary>Clique para revelar</summary>\n\nConteúdo escondido aqui\n\n</details>"),
+	    spoilerimage: () => insertNewBlock('<details>\n<summary>⚠️ Imagem com spoiler - Clique para revelar</summary>\n\n![descrição](https://url-da-imagem.com)\n\n</details>'),
+	    hr: () => insertNewBlock("---"),
+	    table: () => insertNewBlock("| Coluna 1 | Coluna 2 | Coluna 3 |\n| --- | --- | --- |\n| dado | dado | dado |"),
+	  }
+	  actions[key]?.()
+	}, [insertText, insertAtLineStart, insertNewBlock])
+  
   function handleKeyDown(e) {
     if (e.key === "Tab") {
       e.preventDefault()
