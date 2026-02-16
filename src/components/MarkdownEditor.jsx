@@ -1067,8 +1067,8 @@ function GameCard({ slug }) {
 
           {game.platforms && (
             <div className="flex flex-wrap gap-1.5 mt-auto pt-1">
-              <div className="flex items-center gap-2">
                 {game.platforms.slice(0, 4).map(p => (
+				  <div key={p.id} className="flex items-center gap-2 bg-zinc-800/60 border border-zinc-700/60 px-1.5 py-0.5 rounded">
 	              {PLATFORMS_MAP[p.id] && (
 	                <img
 	                  src={`/platforms/result/${PLATFORMS_MAP[p.id]}.png`}
@@ -1076,11 +1076,11 @@ function GameCard({ slug }) {
 	                  className="w-5 h-5 brightness-0 invert object-contain select-none"
 	                />
 	              )}
-	              <span key={p.id} className="text-[10px] uppercase font-semibold tracking-wider text-zinc-400 bg-zinc-800/60 border border-zinc-700/60 px-1.5 py-0.5 rounded">
+	              <span className="text-[10px] uppercase font-semibold tracking-wider text-zinc-400">
 	                {p.name}
 	              </span>
+				  </div>
 	            ))} 
-              </div>
               {game.platforms.length > 4 && (
                 <span className="text-[10px] text-zinc-500 py-0.5 px-1">+ {game.platforms.length - 4}</span>
               )}
