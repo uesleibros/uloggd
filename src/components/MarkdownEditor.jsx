@@ -193,17 +193,20 @@ const cmTheme = EditorView.theme({
     display: "none",
   },
   ".cm-mention-at": {
-    color: "#6e7681",
+    color: "#818cf8",
+    backgroundColor: "rgba(99, 102, 241, 0.1)",
+    borderRadius: "3px 0 0 3px",
+    padding: "1px 0 1px 3px",
   },
   ".cm-mention-user": {
-    color: "#4493f8",
-    backgroundColor: "rgba(56, 139, 253, 0.15)",
-    borderRadius: "3px",
+    color: "#818cf8",
+    backgroundColor: "rgba(99, 102, 241, 0.1)",
+    borderRadius: "0 3px 3px 0",
     padding: "1px 3px 1px 0",
   },
   ".cm-spoiler-syntax": {
-    color: "#f0883e",
-    backgroundColor: "rgba(240, 136, 62, 0.15)",
+    color: "#6e7681",
+    backgroundColor: "rgba(110, 118, 129, 0.2)",
     borderRadius: "3px",
   },
 })
