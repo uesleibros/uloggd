@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react"
-import { useAuth } from "../../hooks/useAuth"
+import { useAuth } from "../../../hooks/useAuth"
 import { TOOLBAR } from "./constants"
 import { ToolbarIcon } from "./ToolbarIcon"
 import { PortalDropdown } from "./PortalDropdown"
