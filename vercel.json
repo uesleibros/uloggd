@@ -6,7 +6,7 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/((?!assets|badges|platforms_out|favicon|.*\\..*).*)",
+      "source": "/((?!assets|platforms_out|favicon|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]
