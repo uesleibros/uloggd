@@ -7,6 +7,7 @@ import rehypeRaw from "rehype-raw"
 import rehypeSanitize from "rehype-sanitize"
 import { defaultSchema } from "rehype-sanitize"
 import UserBadges from "./UserBadges"
+import { PLATFORMS_MAP } from "../../data/platformsMapper.js"
 import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, highlightActiveLine, ViewPlugin, Decoration } from "@codemirror/view"
 import { EditorState, Compartment } from "@codemirror/state"
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown"
@@ -1066,11 +1067,20 @@ function GameCard({ slug }) {
 
           {game.platforms && (
             <div className="flex flex-wrap gap-1.5 mt-auto pt-1">
-              {game.platforms.slice(0, 4).map(p => (
-                <span key={p.id} className="text-[10px] uppercase font-semibold tracking-wider text-zinc-400 bg-zinc-800/60 border border-zinc-700/60 px-1.5 py-0.5 rounded">
-                  {p.name.replace("PlayStation", "PS").replace("Xbox", "XB").replace("Nintendo", "").trim()}
-                </span>
-              ))}
+              <div className="flex items-center gap-2">
+                {game.platforms.slice(0, 4).map(p => (
+	                {PLATFORMS_MAP[p.id] && (
+	                  <img
+	                    src={`/platforms/result/${PLATFORMS_MAP[p.id]}.png`}
+	                    alt={p.name}
+	                    className="w-5 h-5 brightness-0 invert object-contain select-none"
+	                  />
+	                )}
+	                <span key={p.id} className="text-[10px] uppercase font-semibold tracking-wider text-zinc-400 bg-zinc-800/60 border border-zinc-700/60 px-1.5 py-0.5 rounded">
+	                  {p.name.replace("PlayStation", "PS").replace("Xbox", "XB").replace("Nintendo", "").trim()}
+	                </span>
+	              ))} 
+              </div>
               {game.platforms.length > 4 && (
                 <span className="text-[10px] text-zinc-500 py-0.5 px-1">+ {game.platforms.length - 4}</span>
               )}
