@@ -7,7 +7,7 @@ import rehypeRaw from "rehype-raw"
 import rehypeSanitize from "rehype-sanitize"
 import { defaultSchema } from "rehype-sanitize"
 import UserBadges from "./UserBadges"
-import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, highlightActiveLine, lineNumbers } from "@codemirror/view"
+import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, highlightActiveLine, ViewPlugin, Decoration } from "@codemirror/view"
 import { EditorState, Compartment } from "@codemirror/state"
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown"
 import { languages } from "@codemirror/language-data"
@@ -97,6 +97,47 @@ const markdownHighlightStyle = HighlightStyle.define([
   { tag: tags.comment, color: "#848d97", fontStyle: "italic" },
 ])
 
+const mentionAtMark = Decoration.mark({ class: "cm-mention-at" })
+const mentionUserMark = Decoration.mark({ class: "cm-mention-user" })
+const spoilerMark = Decoration.mark({ class: "cm-spoiler-syntax" })
+
+const customDecorations = ViewPlugin.fromClass(
+  class {
+    constructor(view) {
+      this.decorations = this.build(view)
+    }
+    update(update) {
+      if (update.docChanged || update.viewportChanged) {
+        this.decorations = this.build(update.view)
+      }
+    }
+    build(view) {
+      const widgets = []
+      const doc = view.state.doc.toString()
+
+      const mentionRegex = /(?:^|[\s\n])(@)([a-zA-Z0-9_]{2,32})(?=[\s\n.,!?;:]|$)/g
+      let match
+      while ((match = mentionRegex.exec(doc)) !== null) {
+        const offset = match[0].startsWith("@") ? 0 : 1
+        const atStart = match.index + offset
+        const atEnd = atStart + 1
+        const userStart = atEnd
+        const userEnd = userStart + match[2].length
+        widgets.push(mentionAtMark.range(atStart, atEnd))
+        widgets.push(mentionUserMark.range(userStart, userEnd))
+      }
+
+      const spoilerRegex = /\|\|(.+?)\|\|/g
+      while ((match = spoilerRegex.exec(doc)) !== null) {
+        widgets.push(spoilerMark.range(match.index, match.index + match[0].length))
+      }
+
+      return Decoration.set(widgets, true)
+    }
+  },
+  { decorations: (v) => v.decorations }
+)
+
 const cmTheme = EditorView.theme({
   "&": {
     backgroundColor: "transparent",
@@ -150,6 +191,20 @@ const cmTheme = EditorView.theme({
   },
   ".cm-foldGutter": {
     display: "none",
+  },
+  ".cm-mention-at": {
+    color: "#6e7681",
+  },
+  ".cm-mention-user": {
+    color: "#4493f8",
+    backgroundColor: "rgba(56, 139, 253, 0.15)",
+    borderRadius: "3px",
+    padding: "1px 3px 1px 0",
+  },
+  ".cm-spoiler-syntax": {
+    color: "#f0883e",
+    backgroundColor: "rgba(240, 136, 62, 0.15)",
+    borderRadius: "3px",
   },
 })
 
@@ -808,6 +863,7 @@ function useCodeMirror({ value, onChange, maxLength, placeholder: ph, editorRef,
         syntaxHighlighting(markdownHighlightStyle),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         markdown({ base: markdownLanguage, codeLanguages: languages }),
+        customDecorations,
         history(),
         keymap.of([...defaultKeymap, ...historyKeymap]),
         drawSelection(),
