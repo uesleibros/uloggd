@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect, memo } from "react"
 import { createPortal } from "react-dom"
+import { useAuth } from "../../hooks/useAuth"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeRaw from "rehype-raw"
@@ -659,12 +660,78 @@ function useMediaQuery(query) {
   return matches
 }
 
+function MentionSuggestions({ query, position, onSelect, userId }) {
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [fetched, setFetched] = useState(false)
+
+  useEffect(() => {
+    if (fetched || !userId) return
+    setLoading(true)
+    fetch("/api/user/followers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, type: "following" }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        setUsers(data || [])
+        setLoading(false)
+        setFetched(true)
+      })
+      .catch(() => {
+        setLoading(false)
+        setFetched(true)
+      })
+  }, [userId, fetched])
+
+  const filtered = query
+    ? users.filter(u => u.username?.toLowerCase().includes(query.toLowerCase()))
+    : users
+
+  if (!loading && filtered.length === 0) return null
+
+  return (
+    <div
+      className="absolute z-50 bg-zinc-800 border border-zinc-700 rounded-lg shadow-2xl shadow-black/50 py-1 w-56 max-h-48 overflow-y-auto"
+      style={{ bottom: position.bottom, left: position.left }}
+    >
+      {loading ? (
+        <div className="px-3 py-4 flex items-center justify-center">
+          <div className="w-4 h-4 border-2 border-zinc-600 border-t-zinc-400 rounded-full animate-spin" />
+        </div>
+      ) : (
+        filtered.slice(0, 8).map(u => (
+          <button
+            key={u.id}
+            onMouseDown={(e) => {
+              e.preventDefault()
+              onSelect(u.username)
+            }}
+            className="w-full px-3 py-2 flex items-center gap-2.5 hover:bg-zinc-700/70 transition-colors cursor-pointer text-left"
+          >
+            <img
+              src={u.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
+              alt=""
+              className="w-6 h-6 rounded-full bg-zinc-700 object-cover flex-shrink-0"
+            />
+            <span className="text-sm text-zinc-300 truncate">{u.username}</span>
+          </button>
+        ))
+      )}
+    </div>
+  )
+}
+
 export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeholder = "Escreva sobre você..." }) {
   const [tab, setTab] = useState("write")
   const [headingOpen, setHeadingOpen] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [splitPos, setSplitPos] = useState(50)
-  const textareaRef = useRef(null)
+  const { user: currentUser } = useAuth()
+	const [mention, setMention] = useState(null)
+	const [mentionPos, setMentionPos] = useState({ bottom: 0, left: 0 })
+	const textareaRef = useRef(null)
   const splitContainerRef = useRef(null)
   const isDragging = useRef(false)
   const previewSideRef = useRef(null)
@@ -829,6 +896,11 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 	}, [insertText, insertAtLineStart, insertNewBlock])
   
   function handleKeyDown(e) {
+		if (mention && e.key === "Escape") {
+		  e.preventDefault()
+		  setMention(null)
+		  return
+		}
     if (e.key === "Tab") {
       e.preventDefault()
       insertText("  ")
@@ -859,6 +931,63 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
       }
     }
   }
+
+	const checkMention = useCallback(() => {
+	  const ta = textareaRef.current
+	  if (!ta) return
+	
+	  const cursor = ta.selectionStart
+	  const textBefore = value.slice(0, cursor)
+	  const match = textBefore.match(/@([a-zA-Z0-9_]{0,32})$/)
+	
+	  if (match) {
+	    setMention({ query: match[1], startIndex: cursor - match[0].length })
+	
+	    const lines = textBefore.split("\n")
+	    const currentLine = lines.length
+	    const charInLine = lines[lines.length - 1].length
+	    const lineHeight = 22
+	    const charWidth = 8.4
+	
+	    setMentionPos({
+	      bottom: ta.offsetHeight - (currentLine * lineHeight - ta.scrollTop) + 8,
+	      left: Math.min(charInLine * charWidth + 16, ta.offsetWidth - 240),
+	    })
+	  } else {
+	    setMention(null)
+	  }
+	}, [value])
+
+	const handleMentionSelect = useCallback((username) => {
+	  if (!mention) return
+	  const ta = textareaRef.current
+	  const before = value.slice(0, mention.startIndex)
+	  const after = value.slice(ta.selectionStart)
+	  const newValue = before + "@" + username + " " + after
+	
+	  if (maxLength && newValue.length > maxLength) return
+	  onChange(newValue)
+	  setMention(null)
+	
+	  requestAnimationFrame(() => {
+	    ta.focus()
+	    const pos = mention.startIndex + username.length + 2
+	    ta.setSelectionRange(pos, pos)
+	  })
+	}, [mention, value, onChange, maxLength])
+	
+	const handleChange = useCallback((e) => {
+	  if (maxLength && e.target.value.length > maxLength) return
+	  onChange(e.target.value)
+	}, [onChange, maxLength])
+
+	useEffect(() => {
+	  if (tab === "preview") {
+	    setMention(null)
+	    return
+	  }
+	  checkMention()
+	}, [value, checkMention, tab])
 
   const showToolbar = tab === "write" || tab === "sidebyside"
 
@@ -1031,19 +1160,26 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 
         <div className={isFullscreen ? "flex-1 min-h-0 overflow-hidden" : "min-h-[250px] sm:min-h-[300px]"}>
           {tab === "write" && (
-            <textarea
-              ref={textareaRef}
-              value={value}
-              onChange={(e) => {
-                if (maxLength && e.target.value.length > maxLength) return
-                onChange(e.target.value)
-              }}
-              onKeyDown={handleKeyDown}
-              onPaste={handlePaste}
-              placeholder={placeholder}
-              spellCheck={false}
-              className={textareaClasses(isFullscreen)}
-            />
+            <div className="relative">
+              <textarea
+                ref={textareaRef}
+                value={value}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+                placeholder={placeholder}
+                spellCheck={false}
+                className={textareaClasses(isFullscreen)}
+              />
+              {mention && currentUser && (
+                <MentionSuggestions
+                  query={mention.query}
+                  position={mentionPos}
+                  onSelect={handleMentionSelect}
+                  userId={currentUser.id}
+                />
+              )}
+            </div>
           )}
 
           {tab === "preview" && (
@@ -1052,16 +1188,14 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
             </div>
           )}
 
+
           {tab === "sidebyside" && (
             <div ref={splitContainerRef} className="flex h-full">
-              <div className="h-full overflow-hidden" style={{ width: `${splitPos}%` }}>
+              <div className="h-full overflow-hidden relative" style={{ width: `${splitPos}%` }}>
                 <textarea
                   ref={textareaRef}
                   value={value}
-                  onChange={(e) => {
-                    if (maxLength && e.target.value.length > maxLength) return
-                    onChange(e.target.value)
-                  }}
+                  onChange={handleChange}
                   onKeyDown={handleKeyDown}
                   onPaste={handlePaste}
                   onScroll={handleTextareaScroll}
@@ -1069,8 +1203,15 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
                   spellCheck={false}
                   className="w-full h-full p-3 sm:p-4 bg-transparent text-sm text-zinc-300 placeholder-zinc-600 font-mono leading-relaxed resize-none focus:outline-none"
                 />
+                {mention && currentUser && (
+                  <MentionSuggestions
+                    query={mention.query}
+                    position={mentionPos}
+                    onSelect={handleMentionSelect}
+                    userId={currentUser.id}
+                  />
+                )}
               </div>
-
               <div
                 onMouseDown={handleSplitStart}
                 onTouchStart={handleSplitStart}
