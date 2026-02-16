@@ -10,14 +10,17 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
     let active = true
     const fetchGame = async () => {
       try {
-        const res = await fetch("/api/igdb/game", {
+        const res = await fetch("/api/igdb/games-batch", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slug }),
+          body: JSON.stringify({ slugs: [slug] }),
         })
         if (!res.ok) throw new Error()
         const data = await res.json()
-        if (active) { setGame(data); setLoading(false) }
+        if (active) {
+          setGame(data[slug] || null)
+          setLoading(false)
+        }
       } catch {
         if (active) { setError(true); setLoading(false) }
       }
@@ -42,7 +45,7 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
       return <div className="w-32 h-44 bg-zinc-800 rounded-lg animate-pulse flex-shrink-0" />
     }
     return (
-      <div className="my-6 relative w-full max-w-2xl overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800 p-4 flex gap-4 select-none">
+      <div className="my-6 relative w-full min-w-2xl max-w-2xl overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800 p-4 flex gap-4 select-none">
         <div className="w-20 h-28 sm:w-24 sm:h-32 bg-zinc-800 rounded-lg shrink-0 animate-pulse" />
         <div className="flex-1 space-y-3 py-1">
           <div className="h-5 bg-zinc-800 rounded w-3/4 animate-pulse" />
@@ -69,18 +72,16 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
     return (
       <div className="flex items-center gap-3 p-2 bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-700/50 hover:border-zinc-600 rounded-lg w-full max-w-md my-2 transition-all group">
         <a href={`/game/${game.slug}`} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
-          <img 
-            src={game.cover?.url || "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"} 
-            alt={game.name} 
+          <img
+            src={game.cover?.url || "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"}
+            alt={game.name}
             className="w-10 h-14 rounded object-cover shadow-sm bg-zinc-800"
           />
         </a>
-        
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
           <a href={`/game/${game.slug}`} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-white hover:text-indigo-400 truncate transition-colors">
             {game.name}
           </a>
-          
           <div className="flex items-center gap-2 text-xs text-zinc-500">
             {year && <span>{year}</span>}
             {year && game.genres?.[0] && <span>•</span>}
@@ -102,13 +103,12 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
             </svg>
           </div>
         )}
-
-        <a 
-          href={`/game/${game.slug}`} 
-          target="_blank" 
+        <a
+          href={`/game/${game.slug}`}
+          target="_blank"
           rel="noopener noreferrer"
           className={`block relative rounded-lg transition-transform duration-300 group-hover:shadow-xl ${
-            isFavorite 
+            isFavorite
               ? "ring-2 ring-amber-500/70 shadow-lg shadow-amber-500/10"
               : "border border-zinc-800/50 group-hover:border-zinc-600"
           }`}
@@ -120,7 +120,6 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
             className="w-32 h-44 object-cover select-none rounded-lg bg-zinc-800"
             draggable={false}
           />
-          
           <div className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center p-2 pointer-events-none">
             <span className="text-white text-xs font-medium text-center leading-tight line-clamp-3">
               {game.name}
@@ -132,7 +131,7 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
   }
 
   return (
-    <div className="my-8 group relative w-full max-w-3xl overflow-hidden rounded-xl bg-zinc-900 border border-zinc-700/50 hover:border-zinc-600 transition-all duration-300 shadow-lg">
+    <div className="my-8 text-start group relative w-full max-w-2xl overflow-hidden rounded-xl bg-zinc-900 border border-zinc-700/50 hover:border-zinc-600 transition-all duration-300 shadow-lg">
       <div className="absolute inset-0 z-0">
         {game.artworks?.[0]?.url ? (
           <div

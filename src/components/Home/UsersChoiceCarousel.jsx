@@ -17,12 +17,18 @@ export default function UsersChoiceCarousel() {
   }, [])
 
   if (loading) {
+    const skeletons = [...Array(27)]
     return (
-      <div className="flex gap-4 overflow-hidden py-2">
-        {[...Array(9)].map((_, i) => (
+      <DragScrollRow
+        className="gap-4 overflow-x-hidden py-2 touch-pan-y"
+        autoScroll
+        autoScrollSpeed={0.04}
+        loop
+      >
+        {skeletons.map((_, i) => (
           <div key={i} className="w-32 h-44 bg-zinc-800 rounded-lg animate-pulse flex-shrink-0" />
         ))}
-      </div>
+      </DragScrollRow>
     )
   }
 

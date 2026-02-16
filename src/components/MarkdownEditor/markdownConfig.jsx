@@ -57,7 +57,7 @@ export const markdownComponents = {
   h4: ({ children }) => <h4 className="text-base font-semibold text-zinc-200 mt-6 mb-4 leading-snug">{children}</h4>,
   h5: ({ children }) => <h5 className="text-sm font-semibold text-zinc-300 mt-6 mb-4">{children}</h5>,
   h6: ({ children }) => <h6 className="text-xs font-semibold text-zinc-400 mt-6 mb-4">{children}</h6>,
-  p: ({ children }) => {
+  p: ({ children, node }) => {
     const childArray = Array.isArray(children) ? children : [children]
     if (childArray.length === 1) {
       const child = childArray[0]
@@ -73,7 +73,15 @@ export const markdownComponents = {
         }
       }
     }
-    return <p className="mb-4 leading-relaxed">{children}</p>
+
+    const hasBlock = node?.children?.some(c => 
+      c.type === "element" && c.tagName !== "br" && 
+      !/^(a|abbr|b|bdo|br|cite|code|em|i|img|kbd|mark|q|s|small|span|strong|sub|sup|u|del|ins|mention|spoiler)$/.test(c.tagName)
+    )
+
+    return hasBlock 
+      ? <div className="mb-4 leading-relaxed">{children}</div>
+      : <p className="mb-4 leading-relaxed">{children}</p>
   },
   a: ({ href, children }) => {
     const ytMatch = href?.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/)
@@ -139,7 +147,7 @@ export const markdownComponents = {
   },
   mention: ({ children }) => <Mention username={children} />,
   center: ({ children }) => (
-    <div className="w-full text-center [&_img]:mx-auto [&>div]:mx-auto">
+    <div className="flex flex-col items-center text-center w-full">
       {children}
     </div>
   ),
