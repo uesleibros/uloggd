@@ -122,7 +122,7 @@ export const markdownComponents = {
     }
     return <li className="leading-relaxed">{children}</li>
   },
-  hr: () => <hr className="my-6 border-zinc-700 border-t-[3px]" />,
+  hr: () => <hr className="my-6 border-zinc-700 border-t-[3px] w-full" />,
   img: ({ src, alt, width, height }) => (
     <img
       src={src}
