@@ -64,12 +64,6 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
   }
 
   const year = game.first_release_date ? new Date(game.first_release_date * 1000).getFullYear() : null
-  const score = game.total_rating ? Math.round(game.total_rating) : null
-
-  let scoreColor = "text-zinc-400 bg-zinc-800/50 border-zinc-700"
-  if (score >= 75) scoreColor = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
-  else if (score >= 50) scoreColor = "text-amber-400 bg-amber-500/10 border-amber-500/20"
-  else if (score > 0) scoreColor = "text-red-400 bg-red-500/10 border-red-500/20"
 
   if (variant === "mini") {
     return (
@@ -83,16 +77,9 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
         </a>
         
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-          <div className="flex items-center justify-between gap-2">
-            <a href={`/game/${game.slug}`} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-white hover:text-indigo-400 truncate transition-colors">
-              {game.name}
-            </a>
-            {score && (
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${scoreColor}`}>
-                {score}
-              </span>
-            )}
-          </div>
+          <a href={`/game/${game.slug}`} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-white hover:text-indigo-400 truncate transition-colors">
+            {game.name}
+          </a>
           
           <div className="flex items-center gap-2 text-xs text-zinc-500">
             {year && <span>{year}</span>}
@@ -144,11 +131,6 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
     )
   }
 
-  let fullScoreColor = "bg-zinc-700 text-zinc-300 border-zinc-600"
-  if (score >= 75) fullScoreColor = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-  else if (score >= 50) fullScoreColor = "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-  else if (score > 0) fullScoreColor = "bg-red-500/20 text-red-400 border-red-500/30"
-
   return (
     <div className="my-8 group relative w-full max-w-3xl overflow-hidden rounded-xl bg-zinc-900 border border-zinc-700/50 hover:border-zinc-600 transition-all duration-300 shadow-lg">
       <div className="absolute inset-0 z-0">
@@ -170,11 +152,6 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
             alt={game.name}
             className="w-20 sm:w-24 rounded-lg shadow-xl shadow-black/50 border border-zinc-700/50 group-hover/cover:ring-2 ring-indigo-500/50 transition-all aspect-[3/4] object-cover"
           />
-          {score && (
-            <div className={`absolute -top-2 -right-2 ${fullScoreColor} border backdrop-blur-md px-1.5 py-0.5 rounded text-xs font-bold shadow-lg`}>
-              {score}
-            </div>
-          )}
         </a>
 
         <div className="flex-1 min-w-0 flex flex-col h-full justify-between gap-2">
