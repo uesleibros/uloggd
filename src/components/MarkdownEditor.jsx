@@ -108,7 +108,7 @@ const cmTheme = EditorView.theme({
     outline: "none",
   },
   ".cm-scroller": {
-    fontFamily: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace",
+    fontFamily: "'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace",
     fontSize: "13.6px",
     lineHeight: "1.45",
     padding: "16px",
