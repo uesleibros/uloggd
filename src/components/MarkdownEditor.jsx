@@ -693,8 +693,11 @@ function MentionSuggestions({ query, position, onSelect, userId }) {
 
   return (
     <div
-      className="absolute z-50 bg-zinc-800 border border-zinc-700 rounded-lg shadow-2xl shadow-black/50 py-1 w-56 max-h-48 overflow-y-auto"
-      style={{ bottom: position.bottom, left: position.left }}
+      className="absolute z-50 bg-zinc-800 border border-zinc-700 rounded-lg shadow-2xl shadow-black/50 py-1 w-[calc(100%-1.5rem)] sm:w-56 max-h-48 overflow-y-auto left-3 sm:left-auto"
+      style={{
+        bottom: Math.max(position.bottom, 8),
+        ...(window.innerWidth >= 640 ? { left: Math.max(position.left, 8) } : {}),
+      }}
     >
       {loading ? (
         <div className="px-3 py-4 flex items-center justify-center">
@@ -934,14 +937,24 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 
 	const checkMention = useCallback(() => {
 	  const ta = textareaRef.current
-	  if (!ta) return
+	  if (!ta) {
+	    setMention(null)
+	    return
+	  }
 	
 	  const cursor = ta.selectionStart
+	  const end = ta.selectionEnd
+	
+	  if (cursor !== end) {
+	    setMention(null)
+	    return
+	  }
+	
 	  const textBefore = value.slice(0, cursor)
-	  const match = textBefore.match(/@([a-zA-Z0-9_]{0,32})$/)
+	  const match = textBefore.match(/(?:^|[\s\n])@([a-zA-Z0-9_]{0,32})$/)
 	
 	  if (match) {
-	    setMention({ query: match[1], startIndex: cursor - match[0].length })
+	    const startIndex = cursor - match[0].length + (match[0].startsWith("@") ? 0 : 1)
 	
 	    const lines = textBefore.split("\n")
 	    const currentLine = lines.length
@@ -949,6 +962,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 	    const lineHeight = 22
 	    const charWidth = 8.4
 	
+	    setMention({ query: match[1], startIndex })
 	    setMentionPos({
 	      bottom: ta.offsetHeight - (currentLine * lineHeight - ta.scrollTop) + 8,
 	      left: Math.min(charInLine * charWidth + 16, ta.offsetWidth - 240),
@@ -957,6 +971,26 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 	    setMention(null)
 	  }
 	}, [value])
+
+	useEffect(() => {
+	  const ta = textareaRef.current
+	  if (!ta) return
+	
+	  const handleBlur = () => {
+	    setTimeout(() => setMention(null), 150)
+	  }
+	
+	  const handleClick = () => {
+	    checkMention()
+	  }
+	
+	  ta.addEventListener("blur", handleBlur)
+	  ta.addEventListener("click", handleClick)
+	  return () => {
+	    ta.removeEventListener("blur", handleBlur)
+	    ta.removeEventListener("click", handleClick)
+	  }
+	}, [checkMention])
 
 	const handleMentionSelect = useCallback((username) => {
 	  if (!mention) return
