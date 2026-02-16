@@ -118,7 +118,7 @@ export function GameCard({ slug, variant = "default" }) {
         <img
           src={game.cover?.url || "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"}
           alt={game.name}
-          className="w-32 h-44 object-cover select-none rounded-lg bg-zinc-800 shadow-lg border border-zinc-800/50 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl group-hover:border-zinc-600"
+          className="w-32 h-44 object-cover select-none rounded-lg bg-zinc-800 shadow-lg border border-zinc-800/50 transition-transform duration-300 group-hover:shadow-xl group-hover:border-zinc-600"
           draggable={false}
         />
         <div className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center p-2 pointer-events-none">
