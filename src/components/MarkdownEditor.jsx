@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react"
+import { createPortal } from "react-dom"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeRaw from "rehype-raw"
@@ -89,35 +90,52 @@ function ToolbarIcon({ type }) {
   return icons[type] || null
 }
 
-function HeadingDropdown({ onSelect, onClose }) {
-  useEffect(() => {
-    function handleClick(e) {
-      if (!e.target.closest("[data-heading-dropdown]")) onClose()
-    }
-    document.addEventListener("mousedown", handleClick)
-    return () => document.removeEventListener("mousedown", handleClick)
-  }, [onClose])
+function PortalDropdown({ anchorRef, open, onClose, children }) {
+  const [pos, setPos] = useState({ top: 0, left: 0 })
 
-  return (
+  useEffect(() => {
+    if (!open || !anchorRef.current) return
+
+    const update = () => {
+      const rect = anchorRef.current.getBoundingClientRect()
+      const dropdownWidth = 160
+      let left = rect.left
+      if (left + dropdownWidth > window.innerWidth - 8) {
+        left = window.innerWidth - dropdownWidth - 8
+      }
+      if (left < 8) left = 8
+      setPos({ top: rect.bottom + 4, left })
+    }
+
+    update()
+    window.addEventListener("scroll", update, true)
+    window.addEventListener("resize", update)
+    return () => {
+      window.removeEventListener("scroll", update, true)
+      window.removeEventListener("resize", update)
+    }
+  }, [open, anchorRef])
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e) => {
+      if (anchorRef.current?.contains(e.target)) return
+      onClose()
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [open, onClose, anchorRef])
+
+  if (!open) return null
+
+  return createPortal(
     <div
-      data-heading-dropdown
-      className="absolute top-full left-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 py-1 min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-150"
+      className="fixed z-[9999] bg-zinc-800 border border-zinc-700 rounded-lg shadow-2xl shadow-black/50 py-1 min-w-[150px]"
+      style={{ top: pos.top, left: pos.left }}
     >
-      {[1, 2, 3, 4, 5, 6].map(level => (
-        <button
-          key={level}
-          onClick={() => { onSelect(level); onClose() }}
-          className="w-full text-left px-3 py-1.5 hover:bg-zinc-700 transition-colors cursor-pointer flex items-center gap-2"
-        >
-          <span className={`text-zinc-300 font-semibold ${
-            level === 1 ? "text-lg" : level === 2 ? "text-base" : level === 3 ? "text-sm" : "text-xs"
-          }`}>
-            H{level}
-          </span>
-          <span className="text-xs text-zinc-500">{"#".repeat(level)} Título</span>
-        </button>
-      ))}
-    </div>
+      {children}
+    </div>,
+    document.body
   )
 }
 
@@ -243,6 +261,7 @@ export default function MarkdownEditor({ value = "", onChange, maxLength = 10000
   const splitContainerRef = useRef(null)
   const isDragging = useRef(false)
   const previewSideRef = useRef(null)
+  const headingBtnRef = useRef(null)
 
   const isLargeScreen = useMediaQuery("(min-width: 1024px)")
   const showSideBySideOption = isFullscreen && isLargeScreen
@@ -443,21 +462,15 @@ export default function MarkdownEditor({ value = "", onChange, maxLength = 10000
         }
         if (item.key === "heading") {
           return (
-            <div key={item.key} className="relative">
-              <button
-                onClick={() => setHeadingOpen(!headingOpen)}
-                title={item.tooltip}
-                className="p-1.5 sm:p-2 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer flex-shrink-0"
-              >
-                <ToolbarIcon type={item.key} />
-              </button>
-              {headingOpen && (
-                <HeadingDropdown
-                  onSelect={(level) => insertAtLineStart("#".repeat(level) + " ")}
-                  onClose={() => setHeadingOpen(false)}
-                />
-              )}
-            </div>
+            <button
+              key={item.key}
+              ref={headingBtnRef}
+              onClick={() => setHeadingOpen(prev => !prev)}
+              title={item.tooltip}
+              className="p-1.5 sm:p-2 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer flex-shrink-0 active:scale-90"
+            >
+              <ToolbarIcon type={item.key} />
+            </button>
           )
         }
         return (
@@ -477,8 +490,32 @@ export default function MarkdownEditor({ value = "", onChange, maxLength = 10000
   return (
     <>
       {isFullscreen && (
-        <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" />
+        <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setIsFullscreen(false)} />
       )}
+
+      <PortalDropdown
+        anchorRef={headingBtnRef}
+        open={headingOpen}
+        onClose={() => setHeadingOpen(false)}
+      >
+        {[1, 2, 3, 4, 5, 6].map(level => (
+          <button
+            key={level}
+            onClick={() => {
+              insertAtLineStart("#".repeat(level) + " ")
+              setHeadingOpen(false)
+            }}
+            className="w-full text-left px-3 py-1.5 hover:bg-zinc-700 transition-colors cursor-pointer flex items-center gap-2"
+          >
+            <span className={`text-zinc-300 font-semibold ${
+              level === 1 ? "text-lg" : level === 2 ? "text-base" : level === 3 ? "text-sm" : "text-xs"
+            }`}>
+              H{level}
+            </span>
+            <span className="text-xs text-zinc-500">{"#".repeat(level)} Título</span>
+          </button>
+        ))}
+      </PortalDropdown>
 
       <div
         className={
@@ -551,7 +588,6 @@ export default function MarkdownEditor({ value = "", onChange, maxLength = 10000
             <button
               onClick={() => setIsFullscreen(f => !f)}
               title={isFullscreen ? "Sair da tela cheia (Esc)" : "Tela cheia"}
-              aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
               className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer active:scale-90"
             >
               {isFullscreen ? (
