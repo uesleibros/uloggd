@@ -1,4 +1,4 @@
-import { PLATFORMS_MAP } from "../../data/platformsMapper.js"
+import { PLATFORMS_MAP } from "../../../data/platformsMapper"
 
 export default function PlatformBadge({
   platform,

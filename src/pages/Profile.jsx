@@ -4,11 +4,11 @@ import { useParams, Link } from "react-router-dom"
 import usePageMeta from "../../hooks/usePageMeta"
 import { supabase } from "../../lib/supabase"
 import { useAuth } from "../../hooks/useAuth"
-import UserDisplay from "../components/UserDisplay"
-import SettingsModal from "../components/SettingsModal"
-import UserBadges from "../components/UserBadges"
+import UserDisplay from "../components/User/UserDisplay"
+import SettingsModal from "../components/User/SettingsModal"
+import UserBadges from "../components/User/UserBadges"
 import { MarkdownPreview } from "../components/MarkdownEditor"
-import PageBanner from "../components/PageBanner"
+import PageBanner from "../components/Layout/PageBanner"
 
 function ProfileSkeleton() {
   return (

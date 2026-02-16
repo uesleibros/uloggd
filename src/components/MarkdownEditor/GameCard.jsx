@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { PlatformList } from "../PlatformBadge"
+import { PlatformList } from "../Game/PlatformBadge"
 
 export function GameCard({ slug }) {
   const [game, setGame] = useState(null)

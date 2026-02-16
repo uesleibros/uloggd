@@ -29,7 +29,6 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
   const editorViewRef = useRef(null)
   const splitContainerRef = useRef(null)
   const isDragging = useRef(false)
-  const previewSideRef = useRef(null)
   const headingBtnRef = useRef(null)
 
   const isLargeScreen = useMediaQuery("(min-width: 1024px)")
@@ -245,7 +244,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
             <button
               key={level}
               role="menuitem"
-              onClick={() => { insertAtLineStart("#".repeat(level) + " "); setHeadingOpen(false) }}
+              onClick={() => { insertAtLineStart("#".repeat(level) +" "); setHeadingOpen(false) }}
               className="w-full text-left px-3 py-1.5 hover:bg-zinc-700 transition-colors cursor-pointer flex items-center gap-2"
             >
               <span className={`text-zinc-300 font-semibold ${level === 1 ? "text-lg" : level === 2 ? "text-base" : level === 3 ? "text-sm" : "text-xs"}`}>
@@ -319,7 +318,6 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
             <button
               onClick={() => setIsFullscreen(f => !f)}
               title={isFullscreen ? "Sair da tela cheia (Esc)" : "Tela cheia"}
-              aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
               className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer active:scale-90"
             >
               {isFullscreen ? (
@@ -347,44 +345,42 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
         {showToolbar && renderToolbar()}
 
         <div className={isFullscreen ? "flex-1 min-h-0 overflow-hidden flex flex-col" : ""}>
-          <div className={`relative ${tab === "write" ? (isFullscreen ? "flex-1 min-h-0" : "h-[250px] sm:h-[300px]") : "hidden"}`}>
-            <div ref={mainEditorContainer} className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto" />
-            {mention && currentUser && (
-              <MentionSuggestions
-                query={mention.query}
-                position={mention.position}
-                onSelect={handleMentionSelect}
-                userId={currentUser.id}
-                editorContainerRef={mainEditorContainer}
+          <div 
+            ref={splitContainerRef}
+            className={`flex flex-row relative w-full ${
+              isFullscreen ? "flex-1 min-h-0" : "h-[250px] sm:h-[300px]"
+            }`}
+          >
+            
+            <div
+              className="relative h-full overflow-hidden"
+              style={{
+                width: tab === 'sidebyside' ? `${splitPos}%` : (tab === 'preview' ? '0%' : '100%'),
+                display: tab === 'preview' ? 'none' : 'block'
+              }}
+            >
+              <div 
+                ref={mainEditorContainer} 
+                className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto" 
               />
-            )}
-          </div>
-
-          {tab === "preview" && (
-            <div className={`p-3 sm:p-4 overflow-y-auto ${isFullscreen ? "flex-1 min-h-0" : "min-h-[250px] sm:min-h-[300px]"}`}>
-              <MarkdownPreview content={value} />
+              
+              {mention && currentUser && (
+                <MentionSuggestions
+                  query={mention.query}
+                  position={mention.position}
+                  onSelect={handleMentionSelect}
+                  userId={currentUser.id}
+                  editorContainerRef={mainEditorContainer}
+                />
+              )}
             </div>
-          )}
 
-          {tab === "sidebyside" && (
-            <div ref={splitContainerRef} className="flex flex-1 min-h-0">
-              <div className="relative h-full overflow-hidden" style={{ width: `${splitPos}%` }}>
-                <div ref={mainEditorContainer} className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto" />
-                {mention && currentUser && (
-                  <MentionSuggestions
-                    query={mention.query}
-                    position={mention.position}
-                    onSelect={handleMentionSelect}
-                    userId={currentUser.id}
-                  />
-                )}
-              </div>
+            {tab === "sidebyside" && (
               <div
                 onMouseDown={handleSplitStart}
                 onTouchStart={handleSplitStart}
-                className="relative flex-shrink-0 touch-none cursor-col-resize group z-10"
+                className="relative flex-shrink-0 w-px bg-zinc-700 hover:bg-indigo-500/70 transition-colors cursor-col-resize group z-10 touch-none"
               >
-                <div className="w-px h-full bg-zinc-700 group-hover:bg-indigo-500/70 transition-colors" />
                 <div className="absolute inset-y-0 -left-2 -right-2" />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-10 rounded-full bg-zinc-700/80 group-hover:bg-indigo-500/80 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center shadow-lg">
                   <svg className="w-1.5 h-4 text-zinc-300" viewBox="0 0 6 16" fill="currentColor">
@@ -397,13 +393,22 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
                   </svg>
                 </div>
               </div>
-              <div ref={previewSideRef} className="h-full overflow-y-auto" style={{ width: `${100 - splitPos}%` }}>
-                <div className="p-3 sm:p-4">
-                  <MarkdownPreview content={value} />
-                </div>
+            )}
+
+            <div
+              className="h-full overflow-y-auto"
+              style={{
+                width: tab === 'sidebyside' ? `${100 - splitPos}%` : (tab === 'preview' ? '100%' : '0%'),
+                display: tab === 'write' ? 'none' : 'block',
+                borderLeftWidth: tab === 'sidebyside' ? '0px' : '0px'
+              }}
+            >
+              <div className="p-3 sm:p-4">
+                <MarkdownPreview content={value} />
               </div>
             </div>
-          )}
+
+          </div>
         </div>
 
         <div className="flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 border-t border-zinc-800 bg-zinc-800/20 flex-shrink-0 gap-2">

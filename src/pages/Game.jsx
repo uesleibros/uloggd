@@ -2,13 +2,13 @@ import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "../../hooks/usePageMeta"
-import { PlatformList, default as PlatformBadge } from "../components/PlatformBadge"
-import RatingBadge from "../components/RatingBadge"
-import GameCard from "../components/GameCard"
-import Lightbox from "../components/Lightbox"
+import { PlatformList, default as PlatformBadge } from "../components/Game/PlatformBadge"
+import RatingBadge from "../components/Game/RatingBadge"
+import GameCard from "../components/Game/GameCard"
+import Lightbox from "../components/UI/Lightbox"
 import { formatDateLong } from "../../utils/formatDate"
-import DragScrollRow from "../components/DragScrollRow.jsx"
-import PageBanner from "../components/PageBanner.jsx"
+import DragScrollRow from "../components/UI/DragScrollRow"
+import PageBanner from "../components/Layout/PageBanner"
 
 function GameSkeleton() {
   return (
@@ -732,7 +732,7 @@ export default function Game() {
                 <h2 className="text-lg font-semibold text-white mb-2">Sobre</h2>
                 <p className="text-sm text-zinc-400 leading-relaxed">
                   {summaryTruncated && !showFullSummary
-                    ? game.summary.slice(0, 500) + "..."
+                    ? game.summary.slice(0, 500) + "."
                     : game.summary}
                 </p>
                 {summaryTruncated && (

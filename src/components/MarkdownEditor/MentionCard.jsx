@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react"
 import { createPortal } from "react-dom"
-import UserBadges from "../UserBadges"
+import UserBadges from "../User/UserBadges"
 
 export function MentionCard({ username, onClose }) {
   const [profile, setProfile] = useState(null)

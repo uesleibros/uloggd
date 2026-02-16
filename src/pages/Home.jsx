@@ -1,9 +1,7 @@
-// Home.jsx
-
 import usePageMeta from "../../hooks/usePageMeta"
-import UsersChoiceCarousel from "../components/UsersChoiceCarousel"
+import UsersChoiceCarousel from "../components/Home/UsersChoiceCarousel"
 import { useAuth } from "../../hooks/useAuth"
-import PageBanner from "../components/PageBanner"
+import PageBanner from "../components/Layout/PageBanner"
 
 function WelcomeBackSkeleton() {
   return (

@@ -1,15 +1,15 @@
 import { Routes, Route } from "react-router-dom"
-import RouteLoader from "./components/RouteLoader"
-import ScrollToTop from "./components/ScrollToTop"
-import Header from "./components/Header"
-import Footer from "./components/Footer"
+import RouteLoader from "./components/Layout/RouteLoader"
+import ScrollToTop from "./components/Layout/ScrollToTop"
+import Header from "./components/Layout/Header"
+import Footer from "./components/Layout/Footer"
 import Home from "./pages/Home"
 import Game from "./pages/Game"
 import Profile from "./pages/Profile"
-import NotificationContainer from "./components/Notification"
+import NotificationContainer from "./components/UI/Notification"
 import NotFound from "./pages/NotFound"
 
-import "./App.css"
+import "./App"
 
 export default function App() {
   return (

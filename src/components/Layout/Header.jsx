@@ -1,12 +1,12 @@
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useEffect, useRef, useState } from "react"
-import PlatformIcons from "./PlatformIcons"
-import { formatDateShort } from "../../utils/formatDate"
-import { supabase } from "../../lib/supabase"
-import UserDisplay from "./UserDisplay"
-import SettingsModal from "./SettingsModal"
-import { useAuth } from "../../hooks/useAuth"
-import UserBadges from "./UserBadges"
+import PlatformIcons from "../Game/PlatformIcons"
+import { formatDateShort } from "../../../utils/formatDate"
+import { supabase } from "../../../lib/supabase"
+import UserDisplay from "../User/UserDisplay"
+import SettingsModal from "../User/SettingsModal"
+import { useAuth } from "../../../hooks/useAuth"
+import UserBadges from "../User/UserBadges"
 
 function SearchIcon({ focused }) {
   return (

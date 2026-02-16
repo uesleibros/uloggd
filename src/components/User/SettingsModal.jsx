@@ -278,7 +278,7 @@ export default function SettingsModal({ onClose }) {
           <MobileTabButton active={activeTab === "account"} onClick={() => setActiveTab("account")} label="Conta" icon={accountIcon} />
           <MobileTabButton active={activeTab === "sessions"} onClick={() => setActiveTab("sessions")} label="Sessão" icon={sessionsIcon} />
           <MobileTabButton active={activeTab === "appearance"} onClick={() => setActiveTab("appearance")} label="Aparência" icon={appearanceIcon} />
-          <MobileTabButton onClick={handleSignOut} label={signOutLoading ? "..." : "Sair"} danger icon={signOutIcon} />
+          <MobileTabButton onClick={handleSignOut} label={signOutLoading ? "." : "Sair"} danger icon={signOutIcon} />
         </div>
 
         <div className="flex-1 flex flex-col min-w-0 min-h-0 relative">
