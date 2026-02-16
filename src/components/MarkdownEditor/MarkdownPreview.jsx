@@ -87,11 +87,6 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
           return match
         }
       )
-      .replace(
-        /<center>([\s\S]*?)<\/center>/g,
-        (match, innerContent) => 
-          `<div class="w-full flex flex-col items-center text-center my-4 gap-2">${innerContent}</div>`
-      )
   }, [content])
 
   if (!processedContent.trim()) {
@@ -106,7 +101,7 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
   }
 
   return (
-    <div className="markdown-body text-sm text-zinc-300 leading-relaxed">
+    <div className="markdown-body">
       <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={markdownComponents}>
         {processedContent}
       </ReactMarkdown>
