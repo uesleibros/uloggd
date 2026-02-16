@@ -6,9 +6,12 @@ export default function Footer() {
       <div className="mx-auto px-4 py-8" style={{ maxWidth: 1180 }}>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
-            <Link to="/" className="text-lg font-bold text-white">
-              uloggd
-            </Link>
+            <div className="flex items-end gap-2">
+              <Link to="/" className="text-lg font-bold text-white">
+                uloggd
+              </Link>
+              <span className="text-xs mb-1 text-zinc-600">v1.0.5</span>
+            </div>
             <p className="mt-2 text-sm text-zinc-500 max-w-sm">
               Dados de jogos fornecidos por{" "}
               <a
