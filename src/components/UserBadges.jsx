@@ -13,6 +13,17 @@ const BADGES = [
     glowColor: "shadow-purple-500/10",
     iconBg: "bg-purple-500/10",
   },
+	{
+	  key: "is_developer",
+	  src: "/badges/developer.png",
+	  alt: "Desenvolvedor",
+	  title: "Desenvolvedor",
+	  description: "Este usuário faz parte da equipe de desenvolvimento do uloggd, ajudando a criar e manter a plataforma.",
+	  color: "from-pink-300/20 to-rose-300/20",
+	  borderColor: "border-pink-300/30",
+	  glowColor: "shadow-pink-300/10",
+	  iconBg: "bg-pink-300/10",
+	},
   {
     key: "is_trainee_moderator",
     src: "/badges/trainee_moderator.png",
@@ -181,4 +192,5 @@ export default function UserBadges({ user, size = "md", clickable = false, class
       )}
     </>
   )
+
 }
