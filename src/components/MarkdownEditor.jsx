@@ -450,8 +450,8 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
   const showToolbar = tab === "write" || tab === "sidebyside"
 
   const textareaClasses = (fullHeight) =>
-    `w-full bg-transparent text-sm text-zinc-300 placeholder-zinc-600 font-mono leading-relaxed focus:outline-none p-3 sm:p-4 ${
-      fullHeight ? "h-full resize-none" : "min-h-[250px] sm:min-h-[300px] max-h-[600px] resize-y"
+    `w-full bg-transparent text-sm text-zinc-300 placeholder-zinc-600 font-mono leading-relaxed focus:outline-none resize-none p-3 sm:p-4 ${
+    fullHeight ? "h-full" : "min-h-[250px] sm:min-h-[300px]"
     }`
 
   const renderToolbar = () => (
@@ -616,7 +616,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 
         {showToolbar && renderToolbar()}
 
-        <div className={isFullscreen ? "flex-1 overflow-hidden" : "min-h-[250px] sm:min-h-[300px]"}>
+        <div className={isFullscreen ? "flex-1 min-h-0 overflow-hidden" : "min-h-[250px] sm:min-h-[300px]"}>
           {tab === "write" && (
             <textarea
               ref={textareaRef}
