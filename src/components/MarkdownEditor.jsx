@@ -7,6 +7,13 @@ import rehypeRaw from "rehype-raw"
 import rehypeSanitize from "rehype-sanitize"
 import { defaultSchema } from "rehype-sanitize"
 import UserBadges from "./UserBadges"
+import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, highlightActiveLine, lineNumbers } from "@codemirror/view"
+import { EditorState, Compartment } from "@codemirror/state"
+import { markdown, markdownLanguage } from "@codemirror/lang-markdown"
+import { languages } from "@codemirror/language-data"
+import { syntaxHighlighting, HighlightStyle, defaultHighlightStyle, bracketMatching } from "@codemirror/language"
+import { tags } from "@lezer/highlight"
+import { history, historyKeymap, undo, redo } from "@codemirror/commands"
 
 const customSchema = {
   ...defaultSchema,
@@ -62,6 +69,83 @@ const TOOLBAR = [
   { key: "mention", tooltip: "Mencionar usuário", group: "block" },
   { key: "table", tooltip: "Tabela", group: "block" },
 ]
+
+const markdownHighlightStyle = HighlightStyle.define([
+  { tag: tags.heading1, color: "#e2e8f0", fontWeight: "bold", fontSize: "1.3em" },
+  { tag: tags.heading2, color: "#e2e8f0", fontWeight: "bold", fontSize: "1.2em" },
+  { tag: tags.heading3, color: "#e2e8f0", fontWeight: "bold", fontSize: "1.1em" },
+  { tag: tags.heading4, color: "#cbd5e1", fontWeight: "bold" },
+  { tag: tags.heading5, color: "#cbd5e1", fontWeight: "bold" },
+  { tag: tags.heading6, color: "#94a3b8", fontWeight: "bold" },
+  { tag: tags.strong, color: "#f1f5f9", fontWeight: "bold" },
+  { tag: tags.emphasis, color: "#c4b5fd", fontStyle: "italic" },
+  { tag: tags.strikethrough, color: "#64748b", textDecoration: "line-through" },
+  { tag: tags.link, color: "#818cf8", textDecoration: "underline" },
+  { tag: tags.url, color: "#6366f1" },
+  { tag: tags.processingInstruction, color: "#a78bfa" },
+  { tag: tags.monospace, color: "#f472b6", backgroundColor: "rgba(63, 63, 70, 0.5)", borderRadius: "3px", padding: "1px 4px" },
+  { tag: tags.contentSeparator, color: "#475569" },
+  { tag: tags.list, color: "#818cf8" },
+  { tag: tags.quote, color: "#a78bfa", fontStyle: "italic" },
+  { tag: tags.meta, color: "#64748b" },
+  { tag: tags.labelName, color: "#818cf8" },
+  { tag: tags.contentSeparator, color: "#334155" },
+  { tag: tags.angleBracket, color: "#64748b" },
+  { tag: tags.tagName, color: "#f472b6" },
+  { tag: tags.attributeName, color: "#818cf8" },
+  { tag: tags.attributeValue, color: "#34d399" },
+  { tag: tags.string, color: "#34d399" },
+  { tag: tags.comment, color: "#475569", fontStyle: "italic" },
+])
+
+const cmTheme = EditorView.theme({
+  "&": {
+    backgroundColor: "transparent",
+    color: "#d4d4d8",
+    fontSize: "14px",
+    height: "100%",
+  },
+  "&.cm-focused": {
+    outline: "none",
+  },
+  ".cm-scroller": {
+    fontFamily: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace",
+    lineHeight: "1.7",
+    padding: "12px 16px",
+    overflow: "auto",
+  },
+  ".cm-content": {
+    caretColor: "#a78bfa",
+    padding: "0",
+  },
+  ".cm-line": {
+    padding: "0",
+  },
+  ".cm-cursor": {
+    borderLeftColor: "#a78bfa",
+    borderLeftWidth: "2px",
+  },
+  ".cm-selectionBackground": {
+    backgroundColor: "rgba(99, 102, 241, 0.25) !important",
+  },
+  "&.cm-focused .cm-selectionBackground": {
+    backgroundColor: "rgba(99, 102, 241, 0.3) !important",
+  },
+  ".cm-activeLine": {
+    backgroundColor: "rgba(63, 63, 70, 0.15)",
+  },
+  ".cm-gutters": {
+    display: "none",
+  },
+  ".cm-placeholder": {
+    color: "#52525b",
+    fontStyle: "normal",
+  },
+  ".cm-panels": {
+    backgroundColor: "#18181b",
+    color: "#d4d4d8",
+  },
+})
 
 function ToolbarIcon({ type }) {
   const icons = {
@@ -165,18 +249,14 @@ function PortalDropdown({ anchorRef, open, onClose, children }) {
 
   useEffect(() => {
     if (!open || !anchorRef.current) return
-
     const update = () => {
       const rect = anchorRef.current.getBoundingClientRect()
       const dropdownWidth = 160
       let left = rect.left
-      if (left + dropdownWidth > window.innerWidth - 8) {
-        left = window.innerWidth - dropdownWidth - 8
-      }
+      if (left + dropdownWidth > window.innerWidth - 8) left = window.innerWidth - dropdownWidth - 8
       if (left < 8) left = 8
       setPos({ top: rect.bottom + 4, left })
     }
-
     update()
     window.addEventListener("scroll", update, true)
     window.addEventListener("resize", update)
@@ -211,17 +291,11 @@ function PortalDropdown({ anchorRef, open, onClose, children }) {
 
 function SpoilerText({ children }) {
   const [revealed, setRevealed] = useState(false)
-
   return (
     <span
-      onClick={(e) => {
-        e.stopPropagation()
-        setRevealed(true)
-      }}
+      onClick={(e) => { e.stopPropagation(); setRevealed(true) }}
       className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 cursor-pointer transition-all duration-300 ${
-        revealed
-          ? "bg-zinc-700/40 text-zinc-300"
-          : "bg-zinc-700 hover:bg-zinc-600 select-none"
+        revealed ? "bg-zinc-700/40 text-zinc-300" : "bg-zinc-700 hover:bg-zinc-600 select-none"
       }`}
       title={revealed ? "" : "Clique para revelar"}
     >
@@ -239,7 +313,6 @@ function SpoilerText({ children }) {
 
 function SpoilerImage({ src, alt, width, height }) {
   const [revealed, setRevealed] = useState(false)
-
   return (
     <div
       className={`relative inline-block my-3 rounded-xl overflow-hidden border transition-all duration-300 max-w-full ${revealed ? "border-zinc-700" : "border-zinc-600 hover:border-zinc-500 cursor-pointer"}`}
@@ -250,18 +323,11 @@ function SpoilerImage({ src, alt, width, height }) {
         alt={alt || ""}
         width={width}
         height={height}
-        className={`max-w-full block transition-all duration-500 ${
-          revealed ? "blur-0 scale-100" : "blur-3xl scale-110 brightness-50"
-        }`}
+        className={`max-w-full block transition-all duration-500 ${revealed ? "blur-0 scale-100" : "blur-3xl scale-110 brightness-50"}`}
         loading="lazy"
-        onError={(e) => {
-          e.target.onerror = null
-          e.target.className = "hidden"
-        }}
+        onError={(e) => { e.target.onerror = null; e.target.className = "hidden" }}
       />
-      <div className={`absolute inset-0 flex flex-col items-center justify-center gap-2 transition-all duration-300 ${
-        revealed ? "opacity-0 pointer-events-none" : "opacity-100"
-      }`}>
+      <div className={`absolute inset-0 flex flex-col items-center justify-center gap-2 transition-all duration-300 ${revealed ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
         <div className="bg-zinc-900/80 backdrop-blur-sm rounded-xl px-5 py-3 flex flex-col items-center gap-2 border border-zinc-700/50 shadow-lg">
           <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-600 flex items-center justify-center">
             <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
@@ -283,9 +349,7 @@ function MentionCard({ username, onClose }) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => setMounted(true))
-    })
+    requestAnimationFrame(() => { requestAnimationFrame(() => setMounted(true)) })
   }, [])
 
   const handleClose = useCallback(() => {
@@ -301,20 +365,9 @@ function MentionCard({ username, onClose }) {
       body: JSON.stringify({ username }),
       signal: controller.signal,
     })
-      .then(r => {
-        if (!r.ok) throw new Error()
-        return r.json()
-      })
-      .then(data => {
-        setProfile(data)
-        setLoading(false)
-      })
-      .catch(err => {
-        if (err.name !== "AbortError") {
-          setError(true)
-          setLoading(false)
-        }
-      })
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(data => { setProfile(data); setLoading(false) })
+      .catch(err => { if (err.name !== "AbortError") { setError(true); setLoading(false) } })
     return () => controller.abort()
   }, [username])
 
@@ -346,21 +399,15 @@ function MentionCard({ username, onClose }) {
         className={`relative bg-zinc-900 border border-zinc-700/50 rounded-2xl w-full max-w-sm shadow-2xl shadow-black/50 overflow-hidden transition-all duration-150 ${mounted ? "scale-100 translate-y-0" : "scale-95 translate-y-2"}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={handleClose}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-black/40 backdrop-blur-sm text-zinc-400 hover:text-white hover:bg-black/60 transition-all cursor-pointer"
-        >
+        <button onClick={handleClose} className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-black/40 backdrop-blur-sm text-zinc-400 hover:text-white hover:bg-black/60 transition-all cursor-pointer">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-
         {loading ? (
           <>
             <div className="h-28 bg-gradient-to-br from-zinc-800 to-zinc-900 animate-pulse" />
-            <div className="px-5 -mt-10 relative">
-              <div className="w-20 h-20 rounded-full bg-zinc-700 border-4 border-zinc-900 animate-pulse" />
-            </div>
+            <div className="px-5 -mt-10 relative"><div className="w-20 h-20 rounded-full bg-zinc-700 border-4 border-zinc-900 animate-pulse" /></div>
             <div className="px-5 pt-3 pb-5 space-y-3">
               <div className="h-6 w-36 bg-zinc-800 rounded-md animate-pulse" />
               <div className="h-3.5 w-48 bg-zinc-800/60 rounded animate-pulse" />
@@ -379,43 +426,26 @@ function MentionCard({ username, onClose }) {
               <p className="text-sm font-medium text-zinc-300">Usuário não encontrado</p>
               <p className="text-xs text-zinc-500">@{username} não existe ou foi removido</p>
             </div>
-            <button
-              onClick={handleClose}
-              className="px-5 py-2 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-colors cursor-pointer"
-            >
-              Fechar
-            </button>
+            <button onClick={handleClose} className="px-5 py-2 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-colors cursor-pointer">Fechar</button>
           </div>
         ) : (
           <>
             <div className="h-28 relative overflow-hidden">
               {profile.banner ? (
-                <img
-                  src={profile.banner}
-                  alt=""
-                  className="w-full h-full object-cover select-none pointer-events-none"
-                />
+                <img src={profile.banner} alt="" className="w-full h-full object-cover select-none pointer-events-none" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 via-zinc-800 to-zinc-900" />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/40 to-transparent" />
             </div>
-
             <div className="px-5 -mt-10 relative">
-              <img
-                src={profile.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
-                alt={profile.username}
-                className="w-20 h-20 rounded-full border-4 border-zinc-900 bg-zinc-800 select-none object-cover shadow-xl"
-                draggable={false}
-              />
+              <img src={profile.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"} alt={profile.username} className="w-20 h-20 rounded-full border-4 border-zinc-900 bg-zinc-800 select-none object-cover shadow-xl" draggable={false} />
             </div>
-
             <div className="px-5 pt-3 pb-5">
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-white truncate">{profile.username}</h3>
                 <UserBadges user={profile} size="lg" />
               </div>
-
               {profile.created_at && (
                 <p className="text-xs text-zinc-600 mt-2.5 flex items-center gap-1.5">
                   <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
@@ -424,11 +454,7 @@ function MentionCard({ username, onClose }) {
                   Membro desde {new Date(profile.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
                 </p>
               )}
-
-              <a
-                href={`/u/${profile.username}`}
-                className="mt-4 w-full px-4 py-2.5 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 group"
-              >
+              <a href={`/u/${profile.username}`} className="mt-4 w-full px-4 py-2.5 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 group">
                 Ver perfil completo
                 <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -445,25 +471,15 @@ function MentionCard({ username, onClose }) {
 
 function Mention({ username }) {
   const [showCard, setShowCard] = useState(false)
-
   return (
     <>
       <span
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          setShowCard(true)
-        }}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowCard(true) }}
         className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 rounded text-sm font-medium transition-colors cursor-pointer no-underline"
       >
         @{username}
       </span>
-      {showCard && (
-        <MentionCard
-          username={username}
-          onClose={() => setShowCard(false)}
-        />
-      )}
+      {showCard && <MentionCard username={username} onClose={() => setShowCard(false)} />}
     </>
   )
 }
@@ -488,13 +504,7 @@ const markdownComponents = {
         if (ytMatch) {
           return (
             <div className="my-4 aspect-video rounded-xl overflow-hidden border border-zinc-700 bg-zinc-800 shadow-lg">
-              <iframe
-                src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}`}
-                title="YouTube"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="w-full h-full"
-              />
+              <iframe src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}`} title="YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="w-full h-full" />
             </div>
           )
         }
@@ -507,37 +517,19 @@ const markdownComponents = {
     if (ytMatch) {
       return (
         <div className="my-4 aspect-video rounded-xl overflow-hidden border border-zinc-700 bg-zinc-800 shadow-lg">
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}`}
-            title="YouTube"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="w-full h-full"
-          />
+          <iframe src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}`} title="YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="w-full h-full" />
         </div>
       )
     }
-    return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">
-        {children}
-      </a>
-    )
+    return <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">{children}</a>
   },
   strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
   em: ({ children }) => <em className="italic text-zinc-300">{children}</em>,
   del: ({ children }) => <del className="text-zinc-500 line-through">{children}</del>,
-  blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-indigo-500/50 bg-indigo-500/5 pl-4 py-2 my-3 rounded-r-lg">
-      {children}
-    </blockquote>
-  ),
+  blockquote: ({ children }) => <blockquote className="border-l-4 border-indigo-500/50 bg-indigo-500/5 pl-4 py-2 my-3 rounded-r-lg">{children}</blockquote>,
   spoiler: ({ children }) => <SpoilerText>{children}</SpoilerText>,
   spoilerimg: ({ src, alt, width, height }) => <SpoilerImage src={src} alt={alt} width={width} height={height} />,
-  details: ({ children }) => (
-    <details className="my-3 bg-zinc-800/50 border border-zinc-700 rounded-lg overflow-hidden group">
-      {children}
-    </details>
-  ),
+  details: ({ children }) => <details className="my-3 bg-zinc-800/50 border border-zinc-700 rounded-lg overflow-hidden group">{children}</details>,
   summary: ({ children }) => (
     <summary className="px-4 py-3 text-sm font-medium text-zinc-300 hover:text-white cursor-pointer select-none transition-colors hover:bg-zinc-700/30 flex items-center gap-2">
       <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -547,18 +539,10 @@ const markdownComponents = {
     </summary>
   ),
   code: ({ inline, className, children }) => {
-    if (inline) {
-      return (
-        <code className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-sm text-pink-400 font-mono">
-          {children}
-        </code>
-      )
-    }
+    if (inline) return <code className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-sm text-pink-400 font-mono">{children}</code>
     return (
       <pre className="bg-zinc-900 border border-zinc-700 rounded-lg p-3 sm:p-4 my-3 overflow-x-auto">
-        <code className={`text-xs sm:text-sm text-zinc-300 font-mono ${className || ""}`}>
-          {children}
-        </code>
+        <code className={`text-xs sm:text-sm text-zinc-300 font-mono ${className || ""}`}>{children}</code>
       </pre>
     )
   },
@@ -581,15 +565,9 @@ const markdownComponents = {
       src={src}
       alt={alt || ""}
       className="max-w-full rounded-lg my-3 border border-zinc-700"
-      style={{
-        width: width ? `min(${width}px, 100%)` : undefined,
-        height: height ? `${height}px` : undefined,
-      }}
+      style={{ width: width ? `min(${width}px, 100%)` : undefined, height: height ? `${height}px` : undefined }}
       loading="lazy"
-      onError={(e) => {
-        e.target.onerror = null
-        e.target.className = "hidden"
-      }}
+      onError={(e) => { e.target.onerror = null; e.target.className = "hidden" }}
     />
   ),
   div: ({ align, children }) => {
@@ -600,9 +578,7 @@ const markdownComponents = {
   center: ({ children }) => <div className="text-center">{children}</div>,
   table: ({ children }) => (
     <div className="overflow-x-auto my-3 -mx-1">
-      <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">
-        {children}
-      </table>
+      <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">{children}</table>
     </div>
   ),
   thead: ({ children }) => <thead className="bg-zinc-800/80">{children}</thead>,
@@ -620,10 +596,6 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
           if (code) return code
           return `<spoiler>${spoiler}</spoiler>`
         }
-      )
-      .replace(
-        /(```[\s\S]*?```|`[^`\n]+`)/g,
-        (match) => match
       )
       .replace(
         /<spoilerimg\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+width="([^"]*)")?(?:\s+height="([^"]*)")?\s*\/?>/g,
@@ -658,11 +630,7 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
 
   return (
     <div className="markdown-body">
-      <ReactMarkdown
-        remarkPlugins={remarkPlugins}
-        rehypePlugins={rehypePlugins}
-        components={markdownComponents}
-      >
+      <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={markdownComponents}>
         {processedContent}
       </ReactMarkdown>
     </div>
@@ -701,14 +669,10 @@ function MentionSuggestions({ query, position, onSelect, userId }) {
         setUsers(data || [])
         setLoading(false)
       })
-      .catch(() => {
-        setLoading(false)
-      })
+      .catch(() => setLoading(false))
   }, [userId])
 
-  const filtered = query
-    ? users.filter(u => u.username?.toLowerCase().includes(query.toLowerCase()))
-    : users
+  const filtered = query ? users.filter(u => u.username?.toLowerCase().includes(query.toLowerCase())) : users
 
   if (!loading && filtered.length === 0) return null
 
@@ -728,23 +692,93 @@ function MentionSuggestions({ query, position, onSelect, userId }) {
         filtered.slice(0, 8).map(u => (
           <button
             key={u.id}
-            onMouseDown={(e) => {
-              e.preventDefault()
-              onSelect(u.username)
-            }}
+            onMouseDown={(e) => { e.preventDefault(); onSelect(u.username) }}
             className="w-full px-3 py-2 flex items-center gap-2.5 hover:bg-zinc-700/70 transition-colors cursor-pointer text-left"
           >
-            <img
-              src={u.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
-              alt=""
-              className="w-6 h-6 rounded-full bg-zinc-700 object-cover flex-shrink-0"
-            />
+            <img src={u.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"} alt="" className="w-6 h-6 rounded-full bg-zinc-700 object-cover flex-shrink-0" />
             <span className="text-sm text-zinc-300 truncate">{u.username}</span>
           </button>
         ))
       )}
     </div>
   )
+}
+
+function useCodeMirror({ value, onChange, maxLength, placeholder: ph, editorRef, isFullscreen }) {
+  const containerRef = useRef(null)
+  const viewRef = useRef(null)
+  const onChangeRef = useRef(onChange)
+  const isExternalUpdate = useRef(false)
+
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const maxLengthFilter = maxLength
+      ? EditorState.transactionFilter.of(tr => {
+          if (!tr.docChanged) return tr
+          if (tr.newDoc.length > maxLength) return []
+          return tr
+        })
+      : []
+
+    const updateListener = EditorView.updateListener.of(update => {
+      if (update.docChanged && !isExternalUpdate.current) {
+        onChangeRef.current(update.state.doc.toString())
+      }
+    })
+
+    const state = EditorState.create({
+      doc: value,
+      extensions: [
+        cmTheme,
+        syntaxHighlighting(markdownHighlightStyle),
+        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        markdown({ base: markdownLanguage, codeLanguages: languages }),
+        history(),
+        keymap.of(historyKeymap),
+        drawSelection(),
+        highlightActiveLine(),
+        bracketMatching(),
+        EditorView.lineWrapping,
+        ph ? cmPlaceholder(ph) : [],
+        maxLengthFilter,
+        updateListener,
+      ],
+    })
+
+    const view = new EditorView({
+      state,
+      parent: containerRef.current,
+    })
+
+    viewRef.current = view
+    if (editorRef) editorRef.current = view
+
+    return () => {
+      view.destroy()
+      viewRef.current = null
+      if (editorRef) editorRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const view = viewRef.current
+    if (!view) return
+    const currentDoc = view.state.doc.toString()
+    if (currentDoc !== value) {
+      isExternalUpdate.current = true
+      view.dispatch({
+        changes: { from: 0, to: currentDoc.length, insert: value },
+      })
+      isExternalUpdate.current = false
+    }
+  }, [value])
+
+  return containerRef
 }
 
 export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeholder = "Escreva sobre você..." }) {
@@ -755,7 +789,8 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
   const { user: currentUser } = useAuth()
   const [mention, setMention] = useState(null)
   const [mentionPos, setMentionPos] = useState({ bottom: 0, left: 0 })
-  const textareaRef = useRef(null)
+  const editorViewRef = useRef(null)
+  const editorViewSplitRef = useRef(null)
   const splitContainerRef = useRef(null)
   const isDragging = useRef(false)
   const previewSideRef = useRef(null)
@@ -769,23 +804,34 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
   const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0
   const lineCount = value.split("\n").length
 
-  useEffect(() => {
-    const ta = textareaRef.current
-    if (!ta || isFullscreen || tab !== "write") return
-    ta.style.height = "auto"
-    ta.style.height = `${Math.max(ta.scrollHeight, 300)}px`
-  }, [value, isFullscreen, tab])
+  const mainEditorContainer = useCodeMirror({
+    value,
+    onChange,
+    maxLength,
+    placeholder,
+    editorRef: editorViewRef,
+    isFullscreen,
+  })
+
+  const splitEditorContainer = useCodeMirror({
+    value,
+    onChange,
+    maxLength,
+    placeholder,
+    editorRef: editorViewSplitRef,
+    isFullscreen,
+  })
+
+  const getActiveView = useCallback(() => {
+    if (tab === "sidebyside") return editorViewSplitRef.current
+    return editorViewRef.current
+  }, [tab])
 
   useEffect(() => {
     const handler = (e) => {
       if (e.key !== "Escape") return
-      if (headingOpen) {
-        setHeadingOpen(false)
-        return
-      }
-      if (isFullscreen) {
-        setIsFullscreen(false)
-      }
+      if (headingOpen) { setHeadingOpen(false); return }
+      if (isFullscreen) setIsFullscreen(false)
     }
     document.addEventListener("keydown", handler)
     return () => document.removeEventListener("keydown", handler)
@@ -842,76 +888,58 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
     e.preventDefault()
   }, [])
 
-  const handleTextareaScroll = useCallback(() => {
-    if (tab !== "sidebyside") return
-    const ta = textareaRef.current
-    const pv = previewSideRef.current
-    if (!ta || !pv) return
-    requestAnimationFrame(() => {
-      const ratio = ta.scrollTop / Math.max(ta.scrollHeight - ta.clientHeight, 1)
-      pv.scrollTop = ratio * (pv.scrollHeight - pv.clientHeight)
-    })
-  }, [tab])
-
   const insertText = useCallback((before, after = "", ph = "") => {
-    const ta = textareaRef.current
-    if (!ta) return
-    ta.focus()
-    const start = ta.selectionStart
-    const end = ta.selectionEnd
-    const selected = value.slice(start, end)
+    const view = getActiveView()
+    if (!view) return
+    const { from, to } = view.state.selection.main
+    const selected = view.state.sliceDoc(from, to)
     const insert = selected || ph
     const fullInsert = before + insert + after
 
-    if (maxLength && (value.length - (end - start) + fullInsert.length) > maxLength) return
+    if (maxLength && (view.state.doc.length - (to - from) + fullInsert.length) > maxLength) return
 
-    ta.setSelectionRange(start, end)
-    document.execCommand("insertText", false, fullInsert)
-
-    requestAnimationFrame(() => {
-      if (!selected) {
-        ta.setSelectionRange(start + before.length, start + before.length + insert.length)
-      }
+    view.dispatch({
+      changes: { from, to, insert: fullInsert },
+      selection: {
+        anchor: selected ? from + fullInsert.length : from + before.length,
+        head: selected ? from + fullInsert.length : from + before.length + insert.length,
+      },
     })
-  }, [value, maxLength])
+    view.focus()
+  }, [getActiveView, maxLength])
 
   const insertAtLineStart = useCallback((prefix) => {
-    const ta = textareaRef.current
-    if (!ta) return
-    ta.focus()
-    const start = ta.selectionStart
-    const lineStart = value.lastIndexOf("\n", start - 1) + 1
+    const view = getActiveView()
+    if (!view) return
+    const { from } = view.state.selection.main
+    const line = view.state.doc.lineAt(from)
 
-    if (maxLength && value.length + prefix.length > maxLength) return
+    if (maxLength && view.state.doc.length + prefix.length > maxLength) return
 
-    ta.setSelectionRange(lineStart, lineStart)
-    document.execCommand("insertText", false, prefix)
-
-    requestAnimationFrame(() => {
-      const newPos = start + prefix.length
-      ta.setSelectionRange(newPos, newPos)
+    view.dispatch({
+      changes: { from: line.from, to: line.from, insert: prefix },
+      selection: { anchor: from + prefix.length },
     })
-  }, [value, maxLength])
+    view.focus()
+  }, [getActiveView, maxLength])
 
   const insertNewBlock = useCallback((block) => {
-    const ta = textareaRef.current
-    if (!ta) return
-    ta.focus()
-    const start = ta.selectionStart
-    const needsNewline = start > 0 && value[start - 1] !== "\n"
-    const prefix = needsNewline ? "\n\n" : start === 0 ? "" : "\n"
+    const view = getActiveView()
+    if (!view) return
+    const { from } = view.state.selection.main
+    const doc = view.state.doc.toString()
+    const needsNewline = from > 0 && doc[from - 1] !== "\n"
+    const prefix = needsNewline ? "\n\n" : from === 0 ? "" : "\n"
     const fullBlock = prefix + block + "\n"
 
-    if (maxLength && value.length + fullBlock.length > maxLength) return
+    if (maxLength && view.state.doc.length + fullBlock.length > maxLength) return
 
-    ta.setSelectionRange(start, start)
-    document.execCommand("insertText", false, fullBlock)
-
-    requestAnimationFrame(() => {
-      const pos = start + fullBlock.length
-      ta.setSelectionRange(pos, pos)
+    view.dispatch({
+      changes: { from, to: from, insert: fullBlock },
+      selection: { anchor: from + fullBlock.length },
     })
-  }, [value, maxLength])
+    view.focus()
+  }, [getActiveView, maxLength])
 
   const handleAction = useCallback((key) => {
     const actions = {
@@ -938,151 +966,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
     actions[key]?.()
   }, [insertText, insertAtLineStart, insertNewBlock])
 
-  const checkMention = useCallback(() => {
-    const ta = textareaRef.current
-    if (!ta) {
-      setMention(null)
-      return
-    }
-
-    const cursor = ta.selectionStart
-    const end = ta.selectionEnd
-
-    if (cursor !== end) {
-      setMention(null)
-      return
-    }
-
-    const textBefore = value.slice(0, cursor)
-    const match = textBefore.match(/(?:^|[\s\n])@([a-zA-Z0-9_]{0,32})$/)
-
-    if (match) {
-      const startIndex = cursor - match[0].length + (match[0].startsWith("@") ? 0 : 1)
-
-      const computedStyle = window.getComputedStyle(ta)
-      const lineHeight = parseFloat(computedStyle.lineHeight) || 22
-      const lines = textBefore.split("\n")
-      const currentLine = lines.length
-      const charInLine = lines[lines.length - 1].length
-      const charWidth = 8.4
-
-      setMention({ query: match[1], startIndex })
-      setMentionPos({
-        bottom: ta.offsetHeight - (currentLine * lineHeight - ta.scrollTop) + 8,
-        left: Math.min(charInLine * charWidth + 16, ta.offsetWidth - 240),
-      })
-    } else {
-      setMention(null)
-    }
-  }, [value])
-
-  useEffect(() => {
-    const ta = textareaRef.current
-    if (!ta) return
-
-    const handleBlur = () => {
-      setTimeout(() => setMention(null), 150)
-    }
-
-    const handleClick = () => {
-      checkMention()
-    }
-
-    ta.addEventListener("blur", handleBlur)
-    ta.addEventListener("click", handleClick)
-    return () => {
-      ta.removeEventListener("blur", handleBlur)
-      ta.removeEventListener("click", handleClick)
-    }
-  }, [checkMention])
-
-  const handleMentionSelect = useCallback((username) => {
-    if (!mention) return
-    const ta = textareaRef.current
-    const before = value.slice(0, mention.startIndex)
-    const after = value.slice(ta.selectionStart)
-    const newValue = before + "@" + username + " " + after
-
-    if (maxLength && newValue.length > maxLength) return
-    onChange(newValue)
-    setMention(null)
-
-    requestAnimationFrame(() => {
-      ta.focus()
-      const pos = mention.startIndex + username.length + 2
-      ta.setSelectionRange(pos, pos)
-    })
-  }, [mention, value, onChange, maxLength])
-
-  const handleChange = useCallback((e) => {
-    if (maxLength && e.target.value.length > maxLength) return
-    onChange(e.target.value)
-    requestAnimationFrame(checkMention)
-  }, [onChange, maxLength, checkMention])
-
-  useEffect(() => {
-    if (tab === "preview") {
-      setMention(null)
-      return
-    }
-    checkMention()
-  }, [value, checkMention, tab])
-
-  function handleKeyDown(e) {
-    if (mention && e.key === "Escape") {
-      e.preventDefault()
-      setMention(null)
-      return
-    }
-    if (e.key === "Tab") {
-      e.preventDefault()
-      insertText("  ")
-    }
-    if (e.ctrlKey || e.metaKey) {
-      const map = { b: "bold", i: "italic", k: "link" }
-      if (map[e.key]) {
-        e.preventDefault()
-        handleAction(map[e.key])
-      }
-    }
-  }
-
-  function handlePaste(e) {
-    const items = e.clipboardData?.items
-    if (!items) return
-    for (const item of items) {
-      if (item.type.startsWith("image/")) {
-        e.preventDefault()
-        const ta = textareaRef.current
-        if (ta) {
-          const start = ta.selectionStart
-          const imgPlaceholder = "![imagem](cole-a-url-aqui)"
-          const newValue = value.slice(0, start) + imgPlaceholder + value.slice(start)
-          if (!maxLength || newValue.length <= maxLength) onChange(newValue)
-        }
-        break
-      }
-    }
-  }
-
-  function handleDrop(e) {
-    const files = e.dataTransfer?.files
-    if (!files?.length) return
-    for (const file of files) {
-      if (file.type.startsWith("image/")) {
-        e.preventDefault()
-        insertText("![imagem](", ")", "cole-a-url-aqui")
-        break
-      }
-    }
-  }
-
   const showToolbar = tab === "write" || tab === "sidebyside"
-
-  const textareaClasses = (fullHeight) =>
-    `w-full bg-transparent text-sm text-zinc-300 placeholder-zinc-600 font-mono leading-relaxed focus:outline-none resize-none p-3 sm:p-4 ${
-      fullHeight ? "h-full" : "min-h-[250px] sm:min-h-[300px]"
-    }`
 
   const renderToolbar = () => (
     <div className="flex items-center gap-0.5 px-1.5 sm:px-2 py-1 sm:py-1.5 border-b border-zinc-800 bg-zinc-800/20 overflow-x-auto scrollbar-hide flex-shrink-0">
@@ -1125,25 +1009,16 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
         <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setIsFullscreen(false)} />
       )}
 
-      <PortalDropdown
-        anchorRef={headingBtnRef}
-        open={headingOpen}
-        onClose={() => setHeadingOpen(false)}
-      >
+      <PortalDropdown anchorRef={headingBtnRef} open={headingOpen} onClose={() => setHeadingOpen(false)}>
         <div role="menu">
           {[1, 2, 3, 4, 5, 6].map(level => (
             <button
               key={level}
               role="menuitem"
-              onClick={() => {
-                insertAtLineStart("#".repeat(level) + " ")
-                setHeadingOpen(false)
-              }}
+              onClick={() => { insertAtLineStart("#".repeat(level) + " "); setHeadingOpen(false) }}
               className="w-full text-left px-3 py-1.5 hover:bg-zinc-700 transition-colors cursor-pointer flex items-center gap-2"
             >
-              <span className={`text-zinc-300 font-semibold ${
-                level === 1 ? "text-lg" : level === 2 ? "text-base" : level === 3 ? "text-sm" : "text-xs"
-              }`}>
+              <span className={`text-zinc-300 font-semibold ${level === 1 ? "text-lg" : level === 2 ? "text-base" : level === 3 ? "text-sm" : "text-xs"}`}>
                 H{level}
               </span>
               <span className="text-xs text-zinc-500">{"#".repeat(level)} Título</span>
@@ -1163,9 +1038,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
           <div className="flex items-center min-w-0">
             <button
               onClick={() => setTab("write")}
-              className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${
-                tab === "write" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
-              }`}
+              className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${tab === "write" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
             >
               <span className="flex items-center gap-1 sm:gap-1.5">
                 <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
@@ -1178,9 +1051,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 
             <button
               onClick={() => setTab("preview")}
-              className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${
-                tab === "preview" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
-              }`}
+              className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${tab === "preview" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
             >
               <span className="flex items-center gap-1 sm:gap-1.5">
                 <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
@@ -1195,9 +1066,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
             {showSideBySideOption && (
               <button
                 onClick={() => setTab("sidebyside")}
-                className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${
-                  tab === "sidebyside" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
-                }`}
+                className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${tab === "sidebyside" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
               >
                 <span className="flex items-center gap-1 sm:gap-1.5">
                   <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
@@ -1213,13 +1082,10 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 
           <div className="flex items-center gap-1.5 sm:gap-2 pr-2 sm:pr-3 flex-shrink-0">
             {maxLength && (
-              <span className={`text-xs tabular-nums hidden sm:inline ${
-                charPercent > 90 ? "text-red-400" : charPercent > 70 ? "text-amber-400" : "text-zinc-600"
-              }`}>
+              <span className={`text-xs tabular-nums hidden sm:inline ${charPercent > 90 ? "text-red-400" : charPercent > 70 ? "text-amber-400" : "text-zinc-600"}`}>
                 {charCount.toLocaleString()}/{maxLength.toLocaleString()}
               </span>
             )}
-
             <button
               onClick={() => setIsFullscreen(f => !f)}
               title={isFullscreen ? "Sair da tela cheia (Esc)" : "Tela cheia"}
@@ -1242,9 +1108,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
         {maxLength && (
           <div className="h-[2px] bg-zinc-800/50 flex-shrink-0">
             <div
-              className={`h-full transition-all duration-500 ease-out ${
-                charPercent > 90 ? "bg-red-500/80" : charPercent > 70 ? "bg-amber-500/60" : "bg-indigo-500/30"
-              }`}
+              className={`h-full transition-all duration-500 ease-out ${charPercent > 90 ? "bg-red-500/80" : charPercent > 70 ? "bg-amber-500/60" : "bg-indigo-500/30"}`}
               style={{ width: `${Math.min(charPercent, 100)}%` }}
             />
           </div>
@@ -1254,29 +1118,10 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 
         <div className={isFullscreen ? "flex-1 min-h-0 overflow-hidden flex flex-col" : ""}>
           {tab === "write" && (
-            <div className={`relative ${isFullscreen ? "flex-1 min-h-0" : ""}`}>
-              <textarea
-                ref={textareaRef}
-                value={value}
-                onChange={handleChange}
-                onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-                onDrop={handleDrop}
-                placeholder={placeholder}
-                spellCheck={false}
-                aria-label="Editor de markdown"
-                aria-multiline="true"
-                className={textareaClasses(isFullscreen)}
-              />
-              {mention && currentUser && (
-                <MentionSuggestions
-                  query={mention.query}
-                  position={mentionPos}
-                  onSelect={handleMentionSelect}
-                  userId={currentUser.id}
-                />
-              )}
-            </div>
+            <div
+              ref={mainEditorContainer}
+              className={`${isFullscreen ? "flex-1 min-h-0 overflow-auto" : "min-h-[250px] sm:min-h-[300px]"} [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto`}
+            />
           )}
 
           {tab === "preview" && (
@@ -1287,30 +1132,11 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 
           {tab === "sidebyside" && (
             <div ref={splitContainerRef} className="flex flex-1 min-h-0">
-              <div className="h-full overflow-hidden relative" style={{ width: `${splitPos}%` }}>
-                <textarea
-                  ref={textareaRef}
-                  value={value}
-                  onChange={handleChange}
-                  onKeyDown={handleKeyDown}
-                  onPaste={handlePaste}
-                  onDrop={handleDrop}
-                  onScroll={handleTextareaScroll}
-                  placeholder={placeholder}
-                  spellCheck={false}
-                  aria-label="Editor de markdown"
-                  aria-multiline="true"
-                  className="w-full h-full p-3 sm:p-4 bg-transparent text-sm text-zinc-300 placeholder-zinc-600 font-mono leading-relaxed resize-none focus:outline-none"
-                />
-                {mention && currentUser && (
-                  <MentionSuggestions
-                    query={mention.query}
-                    position={mentionPos}
-                    onSelect={handleMentionSelect}
-                    userId={currentUser.id}
-                  />
-                )}
-              </div>
+              <div
+                className="h-full overflow-hidden [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto"
+                style={{ width: `${splitPos}%` }}
+                ref={splitEditorContainer}
+              />
               <div
                 onMouseDown={handleSplitStart}
                 onTouchStart={handleSplitStart}
@@ -1329,7 +1155,6 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
                   </svg>
                 </div>
               </div>
-
               <div
                 ref={previewSideRef}
                 className="h-full overflow-y-auto"
@@ -1352,17 +1177,13 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
               <span className="hidden sm:inline">Markdown suportado</span>
               <span className="sm:hidden">MD</span>
             </span>
-
             <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-600">
               <span className="tabular-nums">{wordCount} {wordCount === 1 ? "palavra" : "palavras"}</span>
               <span className="text-zinc-700">·</span>
               <span className="tabular-nums">{lineCount} {lineCount === 1 ? "linha" : "linhas"}</span>
             </div>
-
             {maxLength && (
-              <span className={`text-[10px] tabular-nums sm:hidden flex-shrink-0 ${
-                charPercent > 90 ? "text-red-400" : charPercent > 70 ? "text-amber-400" : "text-zinc-600"
-              }`}>
+              <span className={`text-[10px] tabular-nums sm:hidden flex-shrink-0 ${charPercent > 90 ? "text-red-400" : charPercent > 70 ? "text-amber-400" : "text-zinc-600"}`}>
                 {charCount}/{maxLength}
               </span>
             )}
