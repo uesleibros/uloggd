@@ -9,7 +9,7 @@ import Profile from "./pages/Profile"
 import NotificationContainer from "./components/UI/Notification"
 import NotFound from "./pages/NotFound"
 
-import "./App"
+import "./App.css"
 
 export default function App() {
   return (
