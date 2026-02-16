@@ -41,9 +41,7 @@ export const customSchema = {
     svg: ["className", "class", "fill", "stroke", "viewBox", "strokeWidth", "width", "height"],
     path: ["d", "strokeLinecap", "strokeLinejoin"],
   },
-  ancestors: {
-    ...defaultSchema.ancestors,
-  },
+  ancestors: {},
   strip: [],
   protocols: {
     ...defaultSchema.protocols,
