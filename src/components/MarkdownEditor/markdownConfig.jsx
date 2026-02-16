@@ -122,7 +122,7 @@ export const markdownComponents = {
     }
     return <li className="leading-relaxed">{children}</li>
   },
-  hr: () => <hr className="my-6 border-zinc-700 border-t-[3px] w-full" />,
+  hr: () => <hr className="my-6 border-zinc-700 border-t-[3px] w-full block" />,
   img: ({ src, alt, width, height }) => (
     <img
       src={src}
@@ -139,7 +139,7 @@ export const markdownComponents = {
   },
   mention: ({ children }) => <Mention username={children} />,
   center: ({ children }) => (
-    <div className="flex flex-col items-center justify-center w-full text-center [&_img]:mx-auto">
+    <div className="flex flex-col items-center justify-center w-full text-center [&_img]:mx-auto [&_hr]:w-full">
       {children}
     </div>
   ),
