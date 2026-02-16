@@ -5,7 +5,7 @@ import { supabase } from "../../../lib/supabase"
 import { notify } from "../UI/Notification"
 import BannerEditor from "./BannerEditor"
 import UserBadges from "./UserBadges"
-import { MarkdownEditor } from "./MarkdownEditor"
+import { MarkdownEditor } from "../MarkdownEditor"
 
 function MobileTabButton({ icon, label, active, onClick, danger = false }) {
   return (

@@ -36,7 +36,10 @@ MOVES = {
     "src/components/ImageCropModal": "src/components/UI/ImageCropModal",
 
     # Home
-    "src/components/UsersChoiceCarousel": "src/components/Home/UsersChoiceCarousel"
+    "src/components/UsersChoiceCarousel": "src/components/Home/UsersChoiceCarousel",
+
+    # Markdown Editor
+    "src/components/MarkdownEditor": "src/components/MarkdownEditor"
 }
 
 ROOT_DIR = './src'
