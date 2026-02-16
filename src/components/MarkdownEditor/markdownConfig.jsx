@@ -125,7 +125,7 @@ export const markdownComponents = {
     <img
       src={src}
       alt={alt || ""}
-      className="max-w-full rounded-lg my-4"
+      className="max-w-full rounded-lg my-4 object-contain"
       style={{ width: width ? `min(${width}px, 100%)` : undefined, height: height ? `${height}px` : undefined }}
       loading="lazy"
       onError={(e) => { e.target.onerror = null; e.target.className = "hidden" }}
