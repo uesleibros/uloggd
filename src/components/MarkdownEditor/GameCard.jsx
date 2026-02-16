@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { PlatformList } from "../Game/PlatformBadge"
 
-export function GameCard({ slug, variant = "default" }) {
+export function GameCard({ slug, variant = "default", isFavorite = false }) {
   const [game, setGame] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
