@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react"
+import { useState, useRef, useCallback, useEffect, memo } from "react"
 import { createPortal } from "react-dom"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -464,7 +464,7 @@ function Mention({ username }) {
   )
 }
 
-export function MarkdownPreview({ content }) {
+export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
   const processedContent = content
   .replace(
     /(```[\s\S]*?```|`[^`\n]+`)|\|\|(.+?)\|\|/g,
