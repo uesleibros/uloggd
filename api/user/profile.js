@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
     const { data: profile } = await supabase
       .from("users")
-      .select("is_verified, is_moderator, is_trainee_moderator, banner, bio, created_at")
+      .select("is_verified, is_moderator, is_trainee_moderator, is_developer, banner, bio, created_at")
       .eq("user_id", authUser.id)
       .single()
 
@@ -40,3 +40,4 @@ export default async function handler(req, res) {
   }
 
 }
+
