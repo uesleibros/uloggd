@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, memo } from "react"
+import { useState, useRef, useCallback, useEffect, useMemo, memo } from "react"
 import { createPortal } from "react-dom"
 import { useAuth } from "../../hooks/useAuth"
 import ReactMarkdown from "react-markdown"
@@ -10,10 +10,11 @@ import UserBadges from "./UserBadges"
 
 const customSchema = {
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames || []), "details", "summary", "iframe", "img", "spoiler", "div", "center", "mention"],
+  tagNames: [...(defaultSchema.tagNames || []), "details", "summary", "iframe", "img", "spoiler", "spoilerimg", "div", "center", "mention"],
   attributes: {
     ...defaultSchema.attributes,
     img: ["src", "alt", "width", "height", "loading", "style"],
+    spoilerimg: ["src", "alt", "width", "height"],
     iframe: ["src", "title", "allow", "allowfullscreen", "class", "className"],
     details: ["class", "className"],
     summary: ["class", "className"],
@@ -26,7 +27,7 @@ const customSchema = {
     h5: ["style", "align"],
     h6: ["style", "align"],
     center: [],
-		mention: [],
+    mention: [],
     spoiler: [],
   },
   protocols: {
@@ -37,11 +38,11 @@ const customSchema = {
 
 const TOOLBAR = [
   { key: "heading", tooltip: "Título", group: "text" },
-  { key: "bold", tooltip: "Negrito", group: "text" },
-  { key: "italic", tooltip: "Itálico", group: "text" },
+  { key: "bold", tooltip: "Negrito (Ctrl+B)", group: "text" },
+  { key: "italic", tooltip: "Itálico (Ctrl+I)", group: "text" },
   { key: "strikethrough", tooltip: "Riscado", group: "text" },
   { key: "divider1" },
-  { key: "link", tooltip: "Link", group: "insert" },
+  { key: "link", tooltip: "Link (Ctrl+K)", group: "insert" },
   { key: "image", tooltip: "Imagem", group: "insert" },
   { key: "imagesize", tooltip: "Imagem com tamanho", group: "insert" },
   { key: "youtube", tooltip: "Vídeo do YouTube", group: "insert" },
@@ -57,8 +58,8 @@ const TOOLBAR = [
   { key: "spoiler", tooltip: "Spoiler texto", group: "block" },
   { key: "spoilerimage", tooltip: "Imagem com spoiler", group: "block" },
   { key: "hr", tooltip: "Separador", group: "block" },
-	{ key: "center", tooltip: "Centralizar", group: "block" },
-	{ key: "mention", tooltip: "Mencionar usuário", group: "block" },
+  { key: "center", tooltip: "Centralizar", group: "block" },
+  { key: "mention", tooltip: "Mencionar usuário", group: "block" },
   { key: "table", tooltip: "Tabela", group: "block" },
 ]
 
@@ -139,16 +140,16 @@ function ToolbarIcon({ type }) {
         <path strokeLinecap="round" d="M3 12h18" />
       </svg>
     ),
-		mention: (
-			<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 10-2.636 6.364M16.5 12V8.25" />
-			</svg>
-		),
-		center: (
-			<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-				<path strokeLinecap="round" d="M3 6h18M7 12h10M5 18h14" />
-			</svg>
-		),
+    mention: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 10-2.636 6.364M16.5 12V8.25" />
+      </svg>
+    ),
+    center: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <path strokeLinecap="round" d="M3 6h18M7 12h10M5 18h14" />
+      </svg>
+    ),
     table: (
       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
         <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -214,15 +215,15 @@ function SpoilerText({ children }) {
   return (
     <span
       onClick={(e) => {
-				e.stopPropagation()
-					setRevealed(true)
-			}}
+        e.stopPropagation()
+        setRevealed(true)
+      }}
       className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 cursor-pointer transition-all duration-300 ${
         revealed
           ? "bg-zinc-700/40 text-zinc-300"
           : "bg-zinc-700 hover:bg-zinc-600 select-none"
       }`}
-      title={revealed ? '' : "Clique para revelar"}
+      title={revealed ? "" : "Clique para revelar"}
     >
       {!revealed && (
         <svg className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
@@ -241,9 +242,9 @@ function SpoilerImage({ src, alt, width, height }) {
 
   return (
     <div
-			className={`relative inline-block my-3 rounded-xl overflow-hidden border transition-all duration-300 max-w-full ${revealed ? "border-zinc-700" : "border-zinc-600 hover:border-zinc-500 cursor-pointer"}`}
-			onClick={() => setRevealed(true)}
-		>
+      className={`relative inline-block my-3 rounded-xl overflow-hidden border transition-all duration-300 max-w-full ${revealed ? "border-zinc-700" : "border-zinc-600 hover:border-zinc-500 cursor-pointer"}`}
+      onClick={() => setRevealed(true)}
+    >
       <img
         src={src}
         alt={alt || ""}
@@ -324,12 +325,14 @@ function MentionCard({ username, onClose }) {
   }, [handleClose])
 
   useEffect(() => {
+    const originalOverflow = document.body.style.overflow
+    const originalPadding = document.body.style.paddingRight
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
     document.body.style.overflow = "hidden"
     if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`
     return () => {
-      document.body.style.overflow = ""
-      document.body.style.paddingRight = ""
+      document.body.style.overflow = originalOverflow
+      document.body.style.paddingRight = originalPadding
     }
   }, [])
 
@@ -465,24 +468,183 @@ function Mention({ username }) {
   )
 }
 
+const remarkPlugins = [remarkGfm]
+const rehypePlugins = [rehypeRaw, [rehypeSanitize, customSchema]]
+
+const markdownComponents = {
+  h1: ({ children }) => <h1 className="text-2xl sm:text-3xl font-bold text-white mt-6 mb-3 pb-2 border-b border-zinc-700">{children}</h1>,
+  h2: ({ children }) => <h2 className="text-xl sm:text-2xl font-bold text-white mt-5 mb-2 pb-1.5 border-b border-zinc-800">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-lg sm:text-xl font-semibold text-white mt-4 mb-2">{children}</h3>,
+  h4: ({ children }) => <h4 className="text-base sm:text-lg font-semibold text-zinc-200 mt-3 mb-1.5">{children}</h4>,
+  h5: ({ children }) => <h5 className="text-sm sm:text-base font-semibold text-zinc-300 mt-3 mb-1">{children}</h5>,
+  h6: ({ children }) => <h6 className="text-xs sm:text-sm font-semibold text-zinc-400 mt-2 mb-1">{children}</h6>,
+  p: ({ children }) => {
+    const childArray = Array.isArray(children) ? children : [children]
+    if (childArray.length === 1) {
+      const child = childArray[0]
+      const href = typeof child === "string" ? child : child?.props?.href
+      if (href && typeof href === "string") {
+        const ytMatch = href.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/)
+        if (ytMatch) {
+          return (
+            <div className="my-4 aspect-video rounded-xl overflow-hidden border border-zinc-700 bg-zinc-800 shadow-lg">
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}`}
+                title="YouTube"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            </div>
+          )
+        }
+      }
+    }
+    return <p className="text-sm text-zinc-300 leading-relaxed mb-3">{children}</p>
+  },
+  a: ({ href, children }) => {
+    const ytMatch = href?.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/)
+    if (ytMatch) {
+      return (
+        <div className="my-4 aspect-video rounded-xl overflow-hidden border border-zinc-700 bg-zinc-800 shadow-lg">
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}`}
+            title="YouTube"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="w-full h-full"
+          />
+        </div>
+      )
+    }
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">
+        {children}
+      </a>
+    )
+  },
+  strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
+  em: ({ children }) => <em className="italic text-zinc-300">{children}</em>,
+  del: ({ children }) => <del className="text-zinc-500 line-through">{children}</del>,
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-4 border-indigo-500/50 bg-indigo-500/5 pl-4 py-2 my-3 rounded-r-lg">
+      {children}
+    </blockquote>
+  ),
+  spoiler: ({ children }) => <SpoilerText>{children}</SpoilerText>,
+  spoilerimg: ({ src, alt, width, height }) => <SpoilerImage src={src} alt={alt} width={width} height={height} />,
+  details: ({ children }) => (
+    <details className="my-3 bg-zinc-800/50 border border-zinc-700 rounded-lg overflow-hidden group">
+      {children}
+    </details>
+  ),
+  summary: ({ children }) => (
+    <summary className="px-4 py-3 text-sm font-medium text-zinc-300 hover:text-white cursor-pointer select-none transition-colors hover:bg-zinc-700/30 flex items-center gap-2">
+      <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+      {children}
+    </summary>
+  ),
+  code: ({ inline, className, children }) => {
+    if (inline) {
+      return (
+        <code className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-sm text-pink-400 font-mono">
+          {children}
+        </code>
+      )
+    }
+    return (
+      <pre className="bg-zinc-900 border border-zinc-700 rounded-lg p-3 sm:p-4 my-3 overflow-x-auto">
+        <code className={`text-xs sm:text-sm text-zinc-300 font-mono ${className || ""}`}>
+          {children}
+        </code>
+      </pre>
+    )
+  },
+  ul: ({ children }) => <ul className="list-disc list-inside space-y-1 my-2 text-sm text-zinc-300">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 my-2 text-sm text-zinc-300">{children}</ol>,
+  li: ({ children, checked }) => {
+    if (checked !== null && checked !== undefined) {
+      return (
+        <li className="flex items-start gap-2 list-none">
+          <input type="checkbox" checked={checked} readOnly className="mt-1 accent-indigo-500 pointer-events-none" />
+          <span className={checked ? "text-zinc-500 line-through" : "text-zinc-300"}>{children}</span>
+        </li>
+      )
+    }
+    return <li>{children}</li>
+  },
+  hr: () => <hr className="my-6 border-zinc-700" />,
+  img: ({ src, alt, width, height }) => (
+    <img
+      src={src}
+      alt={alt || ""}
+      className="max-w-full rounded-lg my-3 border border-zinc-700"
+      style={{
+        width: width ? `min(${width}px, 100%)` : undefined,
+        height: height ? `${height}px` : undefined,
+      }}
+      loading="lazy"
+      onError={(e) => {
+        e.target.onerror = null
+        e.target.className = "hidden"
+      }}
+    />
+  ),
+  div: ({ align, children }) => {
+    const alignClass = align === "center" ? "text-center" : align === "right" ? "text-right" : ""
+    return <div className={alignClass}>{children}</div>
+  },
+  mention: ({ children }) => <Mention username={children} />,
+  center: ({ children }) => <div className="text-center">{children}</div>,
+  table: ({ children }) => (
+    <div className="overflow-x-auto my-3 -mx-1">
+      <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">
+        {children}
+      </table>
+    </div>
+  ),
+  thead: ({ children }) => <thead className="bg-zinc-800/80">{children}</thead>,
+  th: ({ children }) => <th className="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-zinc-300 uppercase tracking-wider border border-zinc-700">{children}</th>,
+  td: ({ children }) => <td className="px-3 sm:px-4 py-2 text-sm text-zinc-400 border border-zinc-700">{children}</td>,
+  tr: ({ children }) => <tr className="hover:bg-zinc-800/30 transition-colors">{children}</tr>,
+}
+
 export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
-  const processedContent = content
-  .replace(
-    /(```[\s\S]*?```|`[^`\n]+`)|\|\|(.+?)\|\|/g,
-    (match, code, spoiler) => {
-      if (code) return code
-      return `<spoiler>${spoiler}</spoiler>`
-    }
-  )
-  .replace(
-    /(```[\s\S]*?```|`[^`\n]+`|\[.*?\]\(.*?\)|https?:\/\/\S+)|(?<![a-zA-Z0-9])@([a-zA-Z0-9_]{2,32})(?![a-zA-Z0-9_])/g,
-    (match, skip, username) => {
-      if (skip) return skip
-      if (!username) return match
-      return `<mention>${username}</mention>`
-    }
-  )
-	
+  const processedContent = useMemo(() => {
+    return content
+      .replace(
+        /(```[\s\S]*?```|`[^`\n]+`)|\|\|(.+?)\|\|/g,
+        (match, code, spoiler) => {
+          if (code) return code
+          return `<spoiler>${spoiler}</spoiler>`
+        }
+      )
+      .replace(
+        /(```[\s\S]*?```|`[^`\n]+`)/g,
+        (match) => match
+      )
+      .replace(
+        /<spoilerimg\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+width="([^"]*)")?(?:\s+height="([^"]*)")?\s*\/?>/g,
+        (match, src, alt, width, height) => {
+          const attrs = [`src="${src}"`]
+          if (alt) attrs.push(`alt="${alt}"`)
+          if (width) attrs.push(`width="${width}"`)
+          if (height) attrs.push(`height="${height}"`)
+          return `<spoilerimg ${attrs.join(" ")} />`
+        }
+      )
+      .replace(
+        /(```[\s\S]*?```|`[^`\n]+`|\[.*?\]\(.*?\)|https?:\/\/\S+)|(?<![a-zA-Z0-9])@([a-zA-Z0-9_]{2,32})(?![a-zA-Z0-9_])/g,
+        (match, skip, username) => {
+          if (skip) return skip
+          if (!username) return match
+          return `<mention>${username}</mention>`
+        }
+      )
+  }, [content])
+
   if (!processedContent.trim()) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3 text-zinc-600">
@@ -497,150 +659,9 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
   return (
     <div className="markdown-body">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, [rehypeSanitize, customSchema]]}
-        components={{
-          h1: ({ children }) => <h1 className="text-2xl sm:text-3xl font-bold text-white mt-6 mb-3 pb-2 border-b border-zinc-700">{children}</h1>,
-          h2: ({ children }) => <h2 className="text-xl sm:text-2xl font-bold text-white mt-5 mb-2 pb-1.5 border-b border-zinc-800">{children}</h2>,
-          h3: ({ children }) => <h3 className="text-lg sm:text-xl font-semibold text-white mt-4 mb-2">{children}</h3>,
-          h4: ({ children }) => <h4 className="text-base sm:text-lg font-semibold text-zinc-200 mt-3 mb-1.5">{children}</h4>,
-          h5: ({ children }) => <h5 className="text-sm sm:text-base font-semibold text-zinc-300 mt-3 mb-1">{children}</h5>,
-          h6: ({ children }) => <h6 className="text-xs sm:text-sm font-semibold text-zinc-400 mt-2 mb-1">{children}</h6>,
-          p: ({ children }) => {
-            const childArray = Array.isArray(children) ? children : [children]
-            if (childArray.length === 1) {
-              const child = childArray[0]
-              const href = typeof child === "string" ? child : child?.props?.href
-              if (href && typeof href === "string") {
-                const ytMatch = href.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/)
-                if (ytMatch) {
-                  return (
-                    <div className="my-4 aspect-video rounded-xl overflow-hidden border border-zinc-700 bg-zinc-800 shadow-lg">
-                      <iframe
-                        src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}`}
-                        title="YouTube"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="w-full h-full"
-                      />
-                    </div>
-                  )
-                }
-              }
-            }
-            return <p className="text-sm text-zinc-300 leading-relaxed mb-3">{children}</p>
-          },
-          a: ({ href, children }) => {
-            const ytMatch = href?.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/)
-            if (ytMatch) {
-              return (
-                <div className="my-4 aspect-video rounded-xl overflow-hidden border border-zinc-700 bg-zinc-800 shadow-lg">
-                  <iframe
-                    src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}`}
-                    title="YouTube"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="w-full h-full"
-                  />
-                </div>
-              )
-            }
-            return (
-              <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">
-                {children}
-              </a>
-            )
-          },
-          strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
-          em: ({ children }) => <em className="italic text-zinc-300">{children}</em>,
-          del: ({ children }) => <del className="text-zinc-500 line-through">{children}</del>,
-          blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-indigo-500/50 bg-indigo-500/5 pl-4 py-2 my-3 rounded-r-lg">
-              {children}
-            </blockquote>
-          ),
-          spoiler: ({ children }) => <SpoilerText>{children}</SpoilerText>,
-          details: ({ children }) => (
-            <details className="my-3 bg-zinc-800/50 border border-zinc-700 rounded-lg overflow-hidden group">
-              {children}
-            </details>
-          ),
-          summary: ({ children }) => (
-            <summary className="px-4 py-3 text-sm font-medium text-zinc-300 hover:text-white cursor-pointer select-none transition-colors hover:bg-zinc-700/30 flex items-center gap-2">
-              <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-              {children}
-            </summary>
-          ),
-          code: ({ inline, className, children }) => {
-            if (inline) {
-              return (
-                <code className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-sm text-pink-400 font-mono">
-                  {children}
-                </code>
-              )
-            }
-            return (
-              <pre className="bg-zinc-900 border border-zinc-700 rounded-lg p-3 sm:p-4 my-3 overflow-x-auto">
-                <code className={`text-xs sm:text-sm text-zinc-300 font-mono ${className || ""}`}>
-                  {children}
-                </code>
-              </pre>
-            )
-          },
-          ul: ({ children }) => <ul className="list-disc list-inside space-y-1 my-2 text-sm text-zinc-300">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 my-2 text-sm text-zinc-300">{children}</ol>,
-          li: ({ children, checked }) => {
-            if (checked !== null && checked !== undefined) {
-              return (
-                <li className="flex items-start gap-2 list-none">
-                  <input type="checkbox" checked={checked} readOnly className="mt-1 accent-indigo-500 pointer-events-none" />
-                  <span className={checked ? "text-zinc-500 line-through" : "text-zinc-300"}>{children}</span>
-                </li>
-              )
-            }
-            return <li>{children}</li>
-          },
-          hr: () => <hr className="my-6 border-zinc-700" />,
-					img: ({ src, alt, width, height }) => {
-					  const isSpoiler = alt?.toLowerCase() === "spoiler"
-					  if (isSpoiler) return <SpoilerImage src={src} alt={alt} width={width} height={height} />
-					  return (
-					    <img
-					      src={src}
-					      alt={alt || ""}
-					      className="max-w-full rounded-lg my-3 border border-zinc-700"
-					      style={{
-					        width: width ? `min(${width}px, 100%)` : undefined,
-					        height: height ? `${height}px` : undefined,
-					      }}
-					      loading="lazy"
-					      onError={(e) => {
-					        e.target.onerror = null
-					        e.target.className = "hidden"
-					      }}
-					    />
-					  )
-					},
-					div: ({ align, children }) => {
-						const alignClass = align === "center" ? "text-center" : align === "right" ? "text-right" : ""
-						return <div className={alignClass}>{children}</div>
-					},
-					mention: ({ children }) => <Mention username={children} />,
-					center: ({ children }) => <div className="text-center">{children}</div>,
-          table: ({ children }) => (
-            <div className="overflow-x-auto my-3 -mx-1">
-              <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">
-                {children}
-              </table>
-            </div>
-          ),
-          thead: ({ children }) => <thead className="bg-zinc-800/80">{children}</thead>,
-          th: ({ children }) => <th className="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-zinc-300 uppercase tracking-wider border border-zinc-700">{children}</th>,
-          td: ({ children }) => <td className="px-3 sm:px-4 py-2 text-sm text-zinc-400 border border-zinc-700">{children}</td>,
-          tr: ({ children }) => <tr className="hover:bg-zinc-800/30 transition-colors">{children}</tr>,
-        }}
+        remarkPlugins={remarkPlugins}
+        rehypePlugins={rehypePlugins}
+        components={markdownComponents}
       >
         {processedContent}
       </ReactMarkdown>
@@ -660,13 +681,14 @@ function useMediaQuery(query) {
   return matches
 }
 
+const followingCache = new Map()
+
 function MentionSuggestions({ query, position, onSelect, userId }) {
-  const [users, setUsers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [fetched, setFetched] = useState(false)
+  const [users, setUsers] = useState(() => followingCache.get(userId) || [])
+  const [loading, setLoading] = useState(!followingCache.has(userId))
 
   useEffect(() => {
-    if (fetched || !userId) return
+    if (followingCache.has(userId)) return
     setLoading(true)
     fetch("/api/user/followers", {
       method: "POST",
@@ -675,15 +697,14 @@ function MentionSuggestions({ query, position, onSelect, userId }) {
     })
       .then(r => r.json())
       .then(data => {
+        followingCache.set(userId, data || [])
         setUsers(data || [])
         setLoading(false)
-        setFetched(true)
       })
       .catch(() => {
         setLoading(false)
-        setFetched(true)
       })
-  }, [userId, fetched])
+  }, [userId])
 
   const filtered = query
     ? users.filter(u => u.username?.toLowerCase().includes(query.toLowerCase()))
@@ -732,9 +753,9 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [splitPos, setSplitPos] = useState(50)
   const { user: currentUser } = useAuth()
-	const [mention, setMention] = useState(null)
-	const [mentionPos, setMentionPos] = useState({ bottom: 0, left: 0 })
-	const textareaRef = useRef(null)
+  const [mention, setMention] = useState(null)
+  const [mentionPos, setMentionPos] = useState({ bottom: 0, left: 0 })
+  const textareaRef = useRef(null)
   const splitContainerRef = useRef(null)
   const isDragging = useRef(false)
   const previewSideRef = useRef(null)
@@ -747,6 +768,13 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
   const charPercent = maxLength ? (charCount / maxLength) * 100 : 0
   const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0
   const lineCount = value.split("\n").length
+
+  useEffect(() => {
+    const ta = textareaRef.current
+    if (!ta || isFullscreen || tab !== "write") return
+    ta.style.height = "auto"
+    ta.style.height = `${Math.max(ta.scrollHeight, 300)}px`
+  }, [value, isFullscreen, tab])
 
   useEffect(() => {
     const handler = (e) => {
@@ -819,91 +847,193 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
     const ta = textareaRef.current
     const pv = previewSideRef.current
     if (!ta || !pv) return
-    const ratio = ta.scrollTop / Math.max(ta.scrollHeight - ta.clientHeight, 1)
-    pv.scrollTop = ratio * (pv.scrollHeight - pv.clientHeight)
+    requestAnimationFrame(() => {
+      const ratio = ta.scrollTop / Math.max(ta.scrollHeight - ta.clientHeight, 1)
+      pv.scrollTop = ratio * (pv.scrollHeight - pv.clientHeight)
+    })
   }, [tab])
 
   const insertText = useCallback((before, after = "", ph = "") => {
     const ta = textareaRef.current
     if (!ta) return
+    ta.focus()
     const start = ta.selectionStart
     const end = ta.selectionEnd
     const selected = value.slice(start, end)
     const insert = selected || ph
-    const newValue = value.slice(0, start) + before + insert + after + value.slice(end)
-    if (maxLength && newValue.length > maxLength) return
-    onChange(newValue)
+    const fullInsert = before + insert + after
+
+    if (maxLength && (value.length - (end - start) + fullInsert.length) > maxLength) return
+
+    ta.setSelectionRange(start, end)
+    document.execCommand("insertText", false, fullInsert)
+
     requestAnimationFrame(() => {
-      ta.focus()
-      const cursorPos = start + before.length + insert.length
-      ta.setSelectionRange(
-        selected ? cursorPos + after.length : start + before.length,
-        selected ? cursorPos + after.length : start + before.length + insert.length
-      )
+      if (!selected) {
+        ta.setSelectionRange(start + before.length, start + before.length + insert.length)
+      }
     })
-  }, [value, onChange, maxLength])
+  }, [value, maxLength])
 
   const insertAtLineStart = useCallback((prefix) => {
     const ta = textareaRef.current
     if (!ta) return
+    ta.focus()
     const start = ta.selectionStart
     const lineStart = value.lastIndexOf("\n", start - 1) + 1
-    const newValue = value.slice(0, lineStart) + prefix + value.slice(lineStart)
-    if (maxLength && newValue.length > maxLength) return
-    onChange(newValue)
+
+    if (maxLength && value.length + prefix.length > maxLength) return
+
+    ta.setSelectionRange(lineStart, lineStart)
+    document.execCommand("insertText", false, prefix)
+
     requestAnimationFrame(() => {
-      ta.focus()
-      ta.setSelectionRange(start + prefix.length, start + prefix.length)
+      const newPos = start + prefix.length
+      ta.setSelectionRange(newPos, newPos)
     })
-  }, [value, onChange, maxLength])
+  }, [value, maxLength])
 
   const insertNewBlock = useCallback((block) => {
     const ta = textareaRef.current
     if (!ta) return
+    ta.focus()
     const start = ta.selectionStart
     const needsNewline = start > 0 && value[start - 1] !== "\n"
     const prefix = needsNewline ? "\n\n" : start === 0 ? "" : "\n"
-    const newValue = value.slice(0, start) + prefix + block + "\n" + value.slice(start)
-    if (maxLength && newValue.length > maxLength) return
-    onChange(newValue)
+    const fullBlock = prefix + block + "\n"
+
+    if (maxLength && value.length + fullBlock.length > maxLength) return
+
+    ta.setSelectionRange(start, start)
+    document.execCommand("insertText", false, fullBlock)
+
     requestAnimationFrame(() => {
-      ta.focus()
-      const pos = start + prefix.length + block.length + 1
+      const pos = start + fullBlock.length
       ta.setSelectionRange(pos, pos)
     })
-  }, [value, onChange, maxLength])
+  }, [value, maxLength])
 
-	const handleAction = useCallback((key) => {
-	  const actions = {
-	    bold: () => insertText("**", "**", "texto em negrito"),
-	    italic: () => insertText("*", "*", "texto em itálico"),
-	    strikethrough: () => insertText("~~", "~~", "texto riscado"),
-	    link: () => insertText("[", "](https://)", "texto do link"),
-	    image: () => insertText("![", "](https://url-da-imagem.com)", "descrição"),
-	    imagesize: () => insertNewBlock('<img src="https://url-da-imagem.com" alt="descrição" width="400" />'),
-	    youtube: () => insertNewBlock("https://www.youtube.com/watch?v=VIDEO_ID"),
-	    code: () => insertText("`", "`", "código"),
-	    codeblock: () => insertNewBlock("```\ncódigo aqui\n```"),
-	    ul: () => insertAtLineStart("- "),
-	    ol: () => insertAtLineStart("1. "),
-	    checklist: () => insertAtLineStart("- [ ] "),
-	    quote: () => insertAtLineStart("> "),
-	    spoiler: () => insertText("||", "||", "texto escondido"),
-	    spoilerimage: () => insertNewBlock('<img src="https://url-da-imagem.com" alt="spoiler" width="400" />'),
-	    hr: () => insertNewBlock("---"),
-			mention: () => insertText("@", "", "username"),
-			center: () => insertNewBlock("<center>\n\nconteúdo centralizado\n\n</center>"),
-	    table: () => insertNewBlock("| Coluna 1 | Coluna 2 | Coluna 3 |\n| --- | --- | --- |\n| dado | dado | dado |"),
-	  }
-	  actions[key]?.()
-	}, [insertText, insertAtLineStart, insertNewBlock])
-  
+  const handleAction = useCallback((key) => {
+    const actions = {
+      bold: () => insertText("**", "**", "texto em negrito"),
+      italic: () => insertText("*", "*", "texto em itálico"),
+      strikethrough: () => insertText("~~", "~~", "texto riscado"),
+      link: () => insertText("[", "](https://)", "texto do link"),
+      image: () => insertText("![", "](https://url-da-imagem.com)", "descrição"),
+      imagesize: () => insertNewBlock('<img src="https://url-da-imagem.com" alt="descrição" width="400" />'),
+      youtube: () => insertNewBlock("https://www.youtube.com/watch?v=VIDEO_ID"),
+      code: () => insertText("`", "`", "código"),
+      codeblock: () => insertNewBlock("```\ncódigo aqui\n```"),
+      ul: () => insertAtLineStart("- "),
+      ol: () => insertAtLineStart("1. "),
+      checklist: () => insertAtLineStart("- [ ] "),
+      quote: () => insertAtLineStart("> "),
+      spoiler: () => insertText("||", "||", "texto escondido"),
+      spoilerimage: () => insertNewBlock('<spoilerimg src="https://url-da-imagem.com" alt="descrição" width="400" />'),
+      hr: () => insertNewBlock("---"),
+      mention: () => insertText("@", "", "username"),
+      center: () => insertNewBlock("<center>\n\nconteúdo centralizado\n\n</center>"),
+      table: () => insertNewBlock("| Coluna 1 | Coluna 2 | Coluna 3 |\n| --- | --- | --- |\n| dado | dado | dado |"),
+    }
+    actions[key]?.()
+  }, [insertText, insertAtLineStart, insertNewBlock])
+
+  const checkMention = useCallback(() => {
+    const ta = textareaRef.current
+    if (!ta) {
+      setMention(null)
+      return
+    }
+
+    const cursor = ta.selectionStart
+    const end = ta.selectionEnd
+
+    if (cursor !== end) {
+      setMention(null)
+      return
+    }
+
+    const textBefore = value.slice(0, cursor)
+    const match = textBefore.match(/(?:^|[\s\n])@([a-zA-Z0-9_]{0,32})$/)
+
+    if (match) {
+      const startIndex = cursor - match[0].length + (match[0].startsWith("@") ? 0 : 1)
+
+      const computedStyle = window.getComputedStyle(ta)
+      const lineHeight = parseFloat(computedStyle.lineHeight) || 22
+      const lines = textBefore.split("\n")
+      const currentLine = lines.length
+      const charInLine = lines[lines.length - 1].length
+      const charWidth = 8.4
+
+      setMention({ query: match[1], startIndex })
+      setMentionPos({
+        bottom: ta.offsetHeight - (currentLine * lineHeight - ta.scrollTop) + 8,
+        left: Math.min(charInLine * charWidth + 16, ta.offsetWidth - 240),
+      })
+    } else {
+      setMention(null)
+    }
+  }, [value])
+
+  useEffect(() => {
+    const ta = textareaRef.current
+    if (!ta) return
+
+    const handleBlur = () => {
+      setTimeout(() => setMention(null), 150)
+    }
+
+    const handleClick = () => {
+      checkMention()
+    }
+
+    ta.addEventListener("blur", handleBlur)
+    ta.addEventListener("click", handleClick)
+    return () => {
+      ta.removeEventListener("blur", handleBlur)
+      ta.removeEventListener("click", handleClick)
+    }
+  }, [checkMention])
+
+  const handleMentionSelect = useCallback((username) => {
+    if (!mention) return
+    const ta = textareaRef.current
+    const before = value.slice(0, mention.startIndex)
+    const after = value.slice(ta.selectionStart)
+    const newValue = before + "@" + username + " " + after
+
+    if (maxLength && newValue.length > maxLength) return
+    onChange(newValue)
+    setMention(null)
+
+    requestAnimationFrame(() => {
+      ta.focus()
+      const pos = mention.startIndex + username.length + 2
+      ta.setSelectionRange(pos, pos)
+    })
+  }, [mention, value, onChange, maxLength])
+
+  const handleChange = useCallback((e) => {
+    if (maxLength && e.target.value.length > maxLength) return
+    onChange(e.target.value)
+    requestAnimationFrame(checkMention)
+  }, [onChange, maxLength, checkMention])
+
+  useEffect(() => {
+    if (tab === "preview") {
+      setMention(null)
+      return
+    }
+    checkMention()
+  }, [value, checkMention, tab])
+
   function handleKeyDown(e) {
-		if (mention && e.key === "Escape") {
-		  e.preventDefault()
-		  setMention(null)
-		  return
-		}
+    if (mention && e.key === "Escape") {
+      e.preventDefault()
+      setMention(null)
+      return
+    }
     if (e.key === "Tab") {
       e.preventDefault()
       insertText("  ")
@@ -935,99 +1065,23 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
     }
   }
 
-	const checkMention = useCallback(() => {
-	  const ta = textareaRef.current
-	  if (!ta) {
-	    setMention(null)
-	    return
-	  }
-	
-	  const cursor = ta.selectionStart
-	  const end = ta.selectionEnd
-	
-	  if (cursor !== end) {
-	    setMention(null)
-	    return
-	  }
-	
-	  const textBefore = value.slice(0, cursor)
-	  const match = textBefore.match(/(?:^|[\s\n])@([a-zA-Z0-9_]{0,32})$/)
-	
-	  if (match) {
-	    const startIndex = cursor - match[0].length + (match[0].startsWith("@") ? 0 : 1)
-	
-	    const lines = textBefore.split("\n")
-	    const currentLine = lines.length
-	    const charInLine = lines[lines.length - 1].length
-	    const lineHeight = 22
-	    const charWidth = 8.4
-	
-	    setMention({ query: match[1], startIndex })
-	    setMentionPos({
-	      bottom: ta.offsetHeight - (currentLine * lineHeight - ta.scrollTop) + 8,
-	      left: Math.min(charInLine * charWidth + 16, ta.offsetWidth - 240),
-	    })
-	  } else {
-	    setMention(null)
-	  }
-	}, [value])
-
-	useEffect(() => {
-	  const ta = textareaRef.current
-	  if (!ta) return
-	
-	  const handleBlur = () => {
-	    setTimeout(() => setMention(null), 150)
-	  }
-	
-	  const handleClick = () => {
-	    checkMention()
-	  }
-	
-	  ta.addEventListener("blur", handleBlur)
-	  ta.addEventListener("click", handleClick)
-	  return () => {
-	    ta.removeEventListener("blur", handleBlur)
-	    ta.removeEventListener("click", handleClick)
-	  }
-	}, [checkMention])
-
-	const handleMentionSelect = useCallback((username) => {
-	  if (!mention) return
-	  const ta = textareaRef.current
-	  const before = value.slice(0, mention.startIndex)
-	  const after = value.slice(ta.selectionStart)
-	  const newValue = before + "@" + username + " " + after
-	
-	  if (maxLength && newValue.length > maxLength) return
-	  onChange(newValue)
-	  setMention(null)
-	
-	  requestAnimationFrame(() => {
-	    ta.focus()
-	    const pos = mention.startIndex + username.length + 2
-	    ta.setSelectionRange(pos, pos)
-	  })
-	}, [mention, value, onChange, maxLength])
-	
-	const handleChange = useCallback((e) => {
-	  if (maxLength && e.target.value.length > maxLength) return
-	  onChange(e.target.value)
-	}, [onChange, maxLength])
-
-	useEffect(() => {
-	  if (tab === "preview") {
-	    setMention(null)
-	    return
-	  }
-	  checkMention()
-	}, [value, checkMention, tab])
+  function handleDrop(e) {
+    const files = e.dataTransfer?.files
+    if (!files?.length) return
+    for (const file of files) {
+      if (file.type.startsWith("image/")) {
+        e.preventDefault()
+        insertText("![imagem](", ")", "cole-a-url-aqui")
+        break
+      }
+    }
+  }
 
   const showToolbar = tab === "write" || tab === "sidebyside"
 
   const textareaClasses = (fullHeight) =>
     `w-full bg-transparent text-sm text-zinc-300 placeholder-zinc-600 font-mono leading-relaxed focus:outline-none resize-none p-3 sm:p-4 ${
-    fullHeight ? "h-full" : "min-h-[250px] sm:min-h-[300px]"
+      fullHeight ? "h-full" : "min-h-[250px] sm:min-h-[300px]"
     }`
 
   const renderToolbar = () => (
@@ -1043,6 +1097,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
               ref={headingBtnRef}
               onClick={() => setHeadingOpen(prev => !prev)}
               title={item.tooltip}
+              aria-label={item.tooltip}
               className="p-1.5 sm:p-2 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer flex-shrink-0 active:scale-90"
             >
               <ToolbarIcon type={item.key} />
@@ -1054,6 +1109,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
             key={item.key}
             onClick={() => handleAction(item.key)}
             title={item.tooltip}
+            aria-label={item.tooltip}
             className="p-1.5 sm:p-2 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer flex-shrink-0 active:scale-90"
           >
             <ToolbarIcon type={item.key} />
@@ -1074,23 +1130,26 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
         open={headingOpen}
         onClose={() => setHeadingOpen(false)}
       >
-        {[1, 2, 3, 4, 5, 6].map(level => (
-          <button
-            key={level}
-            onClick={() => {
-              insertAtLineStart("#".repeat(level) + " ")
-              setHeadingOpen(false)
-            }}
-            className="w-full text-left px-3 py-1.5 hover:bg-zinc-700 transition-colors cursor-pointer flex items-center gap-2"
-          >
-            <span className={`text-zinc-300 font-semibold ${
-              level === 1 ? "text-lg" : level === 2 ? "text-base" : level === 3 ? "text-sm" : "text-xs"
-            }`}>
-              H{level}
-            </span>
-            <span className="text-xs text-zinc-500">{"#".repeat(level)} Título</span>
-          </button>
-        ))}
+        <div role="menu">
+          {[1, 2, 3, 4, 5, 6].map(level => (
+            <button
+              key={level}
+              role="menuitem"
+              onClick={() => {
+                insertAtLineStart("#".repeat(level) + " ")
+                setHeadingOpen(false)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-zinc-700 transition-colors cursor-pointer flex items-center gap-2"
+            >
+              <span className={`text-zinc-300 font-semibold ${
+                level === 1 ? "text-lg" : level === 2 ? "text-base" : level === 3 ? "text-sm" : "text-xs"
+              }`}>
+                H{level}
+              </span>
+              <span className="text-xs text-zinc-500">{"#".repeat(level)} Título</span>
+            </button>
+          ))}
+        </div>
       </PortalDropdown>
 
       <div
@@ -1164,6 +1223,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
             <button
               onClick={() => setIsFullscreen(f => !f)}
               title={isFullscreen ? "Sair da tela cheia (Esc)" : "Tela cheia"}
+              aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
               className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer active:scale-90"
             >
               {isFullscreen ? (
@@ -1192,17 +1252,20 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 
         {showToolbar && renderToolbar()}
 
-        <div className={isFullscreen ? "flex-1 min-h-0 overflow-hidden flex flex-col" : "min-h-[250px] sm:min-h-[300px]"}>
+        <div className={isFullscreen ? "flex-1 min-h-0 overflow-hidden flex flex-col" : ""}>
           {tab === "write" && (
-            <div className="relative h-full">
+            <div className={`relative ${isFullscreen ? "flex-1 min-h-0" : ""}`}>
               <textarea
                 ref={textareaRef}
                 value={value}
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
+                onDrop={handleDrop}
                 placeholder={placeholder}
                 spellCheck={false}
+                aria-label="Editor de markdown"
+                aria-multiline="true"
                 className={textareaClasses(isFullscreen)}
               />
               {mention && currentUser && (
@@ -1217,14 +1280,13 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
           )}
 
           {tab === "preview" && (
-            <div className={`p-3 sm:p-4 overflow-y-auto ${isFullscreen ? "h-full" : "min-h-[250px] sm:min-h-[300px]"}`}>
+            <div className={`p-3 sm:p-4 overflow-y-auto ${isFullscreen ? "flex-1 min-h-0" : "min-h-[250px] sm:min-h-[300px]"}`}>
               <MarkdownPreview content={value} />
             </div>
           )}
 
-
           {tab === "sidebyside" && (
-            <div ref={splitContainerRef} className="flex h-full">
+            <div ref={splitContainerRef} className="flex flex-1 min-h-0">
               <div className="h-full overflow-hidden relative" style={{ width: `${splitPos}%` }}>
                 <textarea
                   ref={textareaRef}
@@ -1232,9 +1294,12 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
                   onChange={handleChange}
                   onKeyDown={handleKeyDown}
                   onPaste={handlePaste}
+                  onDrop={handleDrop}
                   onScroll={handleTextareaScroll}
                   placeholder={placeholder}
                   spellCheck={false}
+                  aria-label="Editor de markdown"
+                  aria-multiline="true"
                   className="w-full h-full p-3 sm:p-4 bg-transparent text-sm text-zinc-300 placeholder-zinc-600 font-mono leading-relaxed resize-none focus:outline-none"
                 />
                 {mention && currentUser && (
