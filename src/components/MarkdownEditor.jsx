@@ -11,7 +11,7 @@ const customSchema = {
   tagNames: [...(defaultSchema.tagNames || []), "details", "summary", "iframe", "img", "spoiler"],
   attributes: {
     ...defaultSchema.attributes,
-    img: ["src", "alt", "width", "height", "loading"],
+    img: ["src", "alt", "width", "height", "loading", "style"],
     iframe: ["src", "title", "allow", "allowfullscreen", "class", "className"],
     details: ["class", "className"],
     summary: ["class", "className"],
@@ -378,25 +378,26 @@ export function MarkdownPreview({ content }) {
             return <li>{children}</li>
           },
           hr: () => <hr className="my-6 border-zinc-700" />,
-          img: ({ src, alt, width, height }) => {
-            const isSpoiler = alt?.toLowerCase() === "spoiler"
-            if (isSpoiler) return <SpoilerImage src={src} alt={alt} width={width} height={height} />
-            return (
-              <img
-                src={src}
-                alt={alt || ""}
-                width={width}
-                height={height}
-                className="max-w-full rounded-lg my-3 border border-zinc-700"
-                style={width ? { width: `min(${width}px, 100%)` } : undefined}
-								loading="lazy"
-                onError={(e) => {
-                  e.target.onerror = null
-                  e.target.className = "hidden"
-                }}
-              />
-            )
-          },
+					img: ({ src, alt, width, height }) => {
+					  const isSpoiler = alt?.toLowerCase() === "spoiler"
+					  if (isSpoiler) return <SpoilerImage src={src} alt={alt} width={width} height={height} />
+					  return (
+					    <img
+					      src={src}
+					      alt={alt || ""}
+					      className="max-w-full rounded-lg my-3 border border-zinc-700"
+					      style={{
+					        width: width ? `min(${width}px, 100%)` : undefined,
+					        height: height ? `${height}px` : undefined,
+					      }}
+					      loading="lazy"
+					      onError={(e) => {
+					        e.target.onerror = null
+					        e.target.className = "hidden"
+					      }}
+					    />
+					  )
+					},
           table: ({ children }) => (
             <div className="overflow-x-auto my-3 -mx-1">
               <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">
