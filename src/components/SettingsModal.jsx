@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase"
 import { notify } from "./Notification"
 import BannerEditor from "./BannerEditor"
 import UserBadges from "./UserBadges"
+import MarkdownEditor from "./MarkdownEditor"
 
 function MobileTabButton({ icon, label, active, onClick, danger = false }) {
   return (
@@ -91,6 +92,8 @@ export default function SettingsModal({ onClose }) {
   const [signOutLoading, setSignOutLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [bio, setBio] = useState(user?.bio || "")
+  const [bioSaving, setBioSaving] = useState(false)
 
   useEffect(() => {
     document.body.style.overflow = "hidden"
@@ -145,6 +148,34 @@ export default function SettingsModal({ onClose }) {
       notify("Erro ao salvar o banner. Tente novamente.", "error")
     } finally {
       setBannerSaving(false)
+    }
+  }
+
+  async function handleBioSave() {
+    setBioSaving(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const res = await fetch("/api/user/bio", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ bio }),
+      })
+
+      if (res.ok) {
+        updateUser({ bio })
+        notify("Bio atualizada com sucesso!")
+      } else {
+        notify("Erro ao salvar a bio.", "error")
+      }
+    } catch {
+      notify("Erro ao salvar a bio.", "error")
+    } finally {
+      setBioSaving(false)
     }
   }
 
@@ -280,6 +311,35 @@ export default function SettingsModal({ onClose }) {
                       saving={bannerSaving}
                     />
                   </SettingsSection>
+
+                  <SettingsSection
+                    title="Sobre mim"
+                    description="Escreva uma bio para o seu perfil. Suporta Markdown."
+                  >
+                    <MarkdownEditor
+                      value={bio}
+                      onChange={setBio}
+                      maxLength={10000}
+                      placeholder="Escreva sobre você..."
+                    />
+                    <div className="flex justify-end mt-3">
+                      <button
+                        onClick={handleBioSave}
+                        disabled={bioSaving}
+                        className="px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {bioSaving ? (
+                          <div className="w-4 h-4 border-2 border-indigo-300 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                        Salvar
+                      </button>
+                    </div>
+                  </SettingsSection>
+
                   <SettingsSection title="Perfil">
                     <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-zinc-900/50 rounded-lg border border-zinc-700/50 mb-4 sm:mb-5">
                       <div className="relative group cursor-pointer flex-shrink-0">
