@@ -1,0 +1,534 @@
+import { useState, useRef, useCallback, useEffect } from "react"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import rehypeRaw from "rehype-raw"
+import rehypeSanitize from "rehype-sanitize"
+
+const TOOLBAR = [
+  { key: "heading", icon: "H", tooltip: "Título", group: "text" },
+  { key: "bold", icon: "B", tooltip: "Negrito", group: "text", bold: true },
+  { key: "italic", icon: "I", tooltip: "Itálico", group: "text", italic: true },
+  { key: "strikethrough", icon: "S", tooltip: "Riscado", group: "text", strike: true },
+  { key: "divider1" },
+  { key: "link", tooltip: "Link", group: "insert" },
+  { key: "image", tooltip: "Imagem", group: "insert" },
+  { key: "code", tooltip: "Código inline", group: "insert" },
+  { key: "codeblock", tooltip: "Bloco de código", group: "insert" },
+  { key: "divider2" },
+  { key: "ul", tooltip: "Lista", group: "list" },
+  { key: "ol", tooltip: "Lista numerada", group: "list" },
+  { key: "checklist", tooltip: "Checklist", group: "list" },
+  { key: "divider3" },
+  { key: "quote", tooltip: "Citação", group: "block" },
+  { key: "hr", tooltip: "Separador", group: "block" },
+  { key: "table", tooltip: "Tabela", group: "block" },
+]
+
+function ToolbarIcon({ type }) {
+  const icons = {
+    heading: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+        <path d="M4 4v16M20 4v16M4 12h16" strokeLinecap="round" />
+      </svg>
+    ),
+    bold: <span className="font-bold text-sm">B</span>,
+    italic: <span className="italic text-sm font-serif">I</span>,
+    strikethrough: <span className="line-through text-sm">S</span>,
+    link: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+      </svg>
+    ),
+    image: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+      </svg>
+    ),
+    code: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+      </svg>
+    ),
+    codeblock: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" />
+      </svg>
+    ),
+    ul: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+      </svg>
+    ),
+    ol: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8.242 5.992h12m-12 6.003h12m-12 5.999h12M4.117 7.495v-3.75H2.99m1.125 3.75H2.99m1.125 0H5.24m-1.92 2.577a1.125 1.125 0 11-1.087 0m.912 4.828v-.998h1.125m-1.125.998h1.125m-1.125 0a.75.75 0 01-.262-.073" />
+      </svg>
+    ),
+    checklist: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    quote: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" />
+      </svg>
+    ),
+    hr: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <path strokeLinecap="round" d="M3 12h18" />
+      </svg>
+    ),
+    table: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M11.25 12h.008v.008h-.008V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM12 12c-.621 0-1.125.504-1.125 1.125M12 12c.621 0 1.125.504 1.125 1.125m-2.25 0c0 .621.504 1.125 1.125 1.125m0 0c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m0-3.75c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125" />
+      </svg>
+    ),
+  }
+  return icons[type] || null
+}
+
+function HeadingDropdown({ onSelect, onClose }) {
+  useEffect(() => {
+    function handleClick(e) {
+      if (!e.target.closest("[data-heading-dropdown]")) onClose()
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [onClose])
+
+  return (
+    <div
+      data-heading-dropdown
+      className="absolute top-full left-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 py-1 min-w-[140px]"
+    >
+      {[1, 2, 3, 4, 5, 6].map(level => (
+        <button
+          key={level}
+          onClick={() => { onSelect(level); onClose() }}
+          className="w-full text-left px-3 py-1.5 hover:bg-zinc-700 transition-colors cursor-pointer flex items-center gap-2"
+        >
+          <span className={`text-zinc-300 font-semibold ${
+            level === 1 ? "text-lg" : level === 2 ? "text-base" : level === 3 ? "text-sm" : "text-xs"
+          }`}>
+            H{level}
+          </span>
+          <span className="text-xs text-zinc-500">{"#".repeat(level)} Título</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function MarkdownPreview({ content }) {
+  if (!content.trim()) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-3 text-zinc-600">
+        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+        </svg>
+        <p className="text-sm">Nada para visualizar</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="markdown-body">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw, rehypeSanitize]}
+        components={{
+          h1: ({ children }) => <h1 className="text-3xl font-bold text-white mt-6 mb-3 pb-2 border-b border-zinc-700">{children}</h1>,
+          h2: ({ children }) => <h2 className="text-2xl font-bold text-white mt-5 mb-2 pb-1.5 border-b border-zinc-800">{children}</h2>,
+          h3: ({ children }) => <h3 className="text-xl font-semibold text-white mt-4 mb-2">{children}</h3>,
+          h4: ({ children }) => <h4 className="text-lg font-semibold text-zinc-200 mt-3 mb-1.5">{children}</h4>,
+          h5: ({ children }) => <h5 className="text-base font-semibold text-zinc-300 mt-3 mb-1">{children}</h5>,
+          h6: ({ children }) => <h6 className="text-sm font-semibold text-zinc-400 mt-2 mb-1">{children}</h6>,
+          p: ({ children }) => <p className="text-sm text-zinc-300 leading-relaxed mb-3">{children}</p>,
+          a: ({ href, children }) => (
+            <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">
+              {children}
+            </a>
+          ),
+          strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
+          em: ({ children }) => <em className="italic text-zinc-300">{children}</em>,
+          del: ({ children }) => <del className="text-zinc-500 line-through">{children}</del>,
+          blockquote: ({ children }) => (
+            <blockquote className="border-l-4 border-indigo-500/50 bg-indigo-500/5 pl-4 py-2 my-3 rounded-r-lg">
+              {children}
+            </blockquote>
+          ),
+          code: ({ inline, className, children }) => {
+            if (inline) {
+              return (
+                <code className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-sm text-pink-400 font-mono">
+                  {children}
+                </code>
+              )
+            }
+            return (
+              <pre className="bg-zinc-900 border border-zinc-700 rounded-lg p-4 my-3 overflow-x-auto">
+                <code className={`text-sm text-zinc-300 font-mono ${className || ""}`}>
+                  {children}
+                </code>
+              </pre>
+            )
+          },
+          ul: ({ children }) => <ul className="list-disc list-inside space-y-1 my-2 text-sm text-zinc-300">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 my-2 text-sm text-zinc-300">{children}</ol>,
+          li: ({ children, checked }) => {
+            if (checked !== null && checked !== undefined) {
+              return (
+                <li className="flex items-start gap-2 list-none">
+                  <input type="checkbox" checked={checked} readOnly className="mt-1 accent-indigo-500 pointer-events-none" />
+                  <span className={checked ? "text-zinc-500 line-through" : "text-zinc-300"}>{children}</span>
+                </li>
+              )
+            }
+            return <li>{children}</li>
+          },
+          hr: () => <hr className="my-6 border-zinc-700" />,
+          img: ({ src, alt }) => (
+            <img
+              src={src}
+              alt={alt || ""}
+              className="max-w-full rounded-lg my-3 border border-zinc-700"
+              loading="lazy"
+              onError={(e) => {
+                e.target.onerror = null
+                e.target.src = ""
+                e.target.alt = "Imagem não encontrada"
+                e.target.className = "hidden"
+              }}
+            />
+          ),
+          table: ({ children }) => (
+            <div className="overflow-x-auto my-3">
+              <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">
+                {children}
+              </table>
+            </div>
+          ),
+          thead: ({ children }) => <thead className="bg-zinc-800/80">{children}</thead>,
+          th: ({ children }) => <th className="px-4 py-2 text-left text-xs font-semibold text-zinc-300 uppercase tracking-wider border border-zinc-700">{children}</th>,
+          td: ({ children }) => <td className="px-4 py-2 text-sm text-zinc-400 border border-zinc-700">{children}</td>,
+          tr: ({ children }) => <tr className="hover:bg-zinc-800/30 transition-colors">{children}</tr>,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  )
+}
+
+export default function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeholder = "Escreva sobre você..." }) {
+  const [tab, setTab] = useState("write")
+  const [headingOpen, setHeadingOpen] = useState(false)
+  const textareaRef = useRef(null)
+
+  const charCount = value.length
+  const charPercent = maxLength ? (charCount / maxLength) * 100 : 0
+
+  const insertText = useCallback((before, after = "", placeholder = "") => {
+    const ta = textareaRef.current
+    if (!ta) return
+
+    const start = ta.selectionStart
+    const end = ta.selectionEnd
+    const selected = value.slice(start, end)
+    const insert = selected || placeholder
+    const newValue = value.slice(0, start) + before + insert + after + value.slice(end)
+
+    if (maxLength && newValue.length > maxLength) return
+
+    onChange(newValue)
+
+    requestAnimationFrame(() => {
+      ta.focus()
+      const cursorPos = start + before.length + insert.length
+      ta.setSelectionRange(
+        selected ? cursorPos + after.length : start + before.length,
+        selected ? cursorPos + after.length : start + before.length + insert.length
+      )
+    })
+  }, [value, onChange, maxLength])
+
+  const insertAtLineStart = useCallback((prefix) => {
+    const ta = textareaRef.current
+    if (!ta) return
+
+    const start = ta.selectionStart
+    const lineStart = value.lastIndexOf("\n", start - 1) + 1
+    const newValue = value.slice(0, lineStart) + prefix + value.slice(lineStart)
+
+    if (maxLength && newValue.length > maxLength) return
+
+    onChange(newValue)
+
+    requestAnimationFrame(() => {
+      ta.focus()
+      ta.setSelectionRange(start + prefix.length, start + prefix.length)
+    })
+  }, [value, onChange, maxLength])
+
+  const insertNewBlock = useCallback((block) => {
+    const ta = textareaRef.current
+    if (!ta) return
+
+    const start = ta.selectionStart
+    const needsNewline = start > 0 && value[start - 1] !== "\n"
+    const prefix = needsNewline ? "\n\n" : start === 0 ? "" : "\n"
+    const newValue = value.slice(0, start) + prefix + block + "\n" + value.slice(start)
+
+    if (maxLength && newValue.length > maxLength) return
+
+    onChange(newValue)
+
+    requestAnimationFrame(() => {
+      ta.focus()
+      const pos = start + prefix.length + block.length + 1
+      ta.setSelectionRange(pos, pos)
+    })
+  }, [value, onChange, maxLength])
+
+  function handleAction(key) {
+    switch (key) {
+      case "bold":
+        insertText("**", "**", "texto em negrito")
+        break
+      case "italic":
+        insertText("*", "*", "texto em itálico")
+        break
+      case "strikethrough":
+        insertText("~~", "~~", "texto riscado")
+        break
+      case "link":
+        insertText("[", "](https://)", "texto do link")
+        break
+      case "image":
+        insertText("![", "](https://url-da-imagem.com)", "descrição")
+        break
+      case "code":
+        insertText("`", "`", "código")
+        break
+      case "codeblock":
+        insertNewBlock("```\ncódigo aqui\n```")
+        break
+      case "ul":
+        insertAtLineStart("- ")
+        break
+      case "ol":
+        insertAtLineStart("1. ")
+        break
+      case "checklist":
+        insertAtLineStart("- [ ] ")
+        break
+      case "quote":
+        insertAtLineStart("> ")
+        break
+      case "hr":
+        insertNewBlock("---")
+        break
+      case "table":
+        insertNewBlock("| Coluna 1 | Coluna 2 | Coluna 3 |\n| --- | --- | --- |\n| dado | dado | dado |")
+        break
+      default:
+        break
+    }
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === "Tab") {
+      e.preventDefault()
+      insertText("  ")
+    }
+
+    if (e.ctrlKey || e.metaKey) {
+      switch (e.key) {
+        case "b":
+          e.preventDefault()
+          handleAction("bold")
+          break
+        case "i":
+          e.preventDefault()
+          handleAction("italic")
+          break
+        case "k":
+          e.preventDefault()
+          handleAction("link")
+          break
+        default:
+          break
+      }
+    }
+  }
+
+  function handlePaste(e) {
+    const items = e.clipboardData?.items
+    if (!items) return
+
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        e.preventDefault()
+        // Aqui você pode integrar upload pro Supabase Storage
+        // Por enquanto, só avisa o usuário
+        const ta = textareaRef.current
+        if (ta) {
+          const start = ta.selectionStart
+          const placeholder = "![imagem](cole-a-url-aqui)"
+          const newValue = value.slice(0, start) + placeholder + value.slice(start)
+          onChange(newValue)
+        }
+        break
+      }
+    }
+  }
+
+  return (
+    <div className="border border-zinc-700 rounded-xl overflow-hidden bg-zinc-900/50">
+      {/* Header com tabs */}
+      <div className="flex items-center justify-between border-b border-zinc-700 bg-zinc-800/30">
+        <div className="flex">
+          <button
+            onClick={() => setTab("write")}
+            className={`px-4 py-2.5 text-sm font-medium transition-all cursor-pointer relative ${
+              tab === "write"
+                ? "text-white"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            <span className="flex items-center gap-1.5">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+              </svg>
+              Escrever
+            </span>
+            {tab === "write" && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />
+            )}
+          </button>
+          <button
+            onClick={() => setTab("preview")}
+            className={`px-4 py-2.5 text-sm font-medium transition-all cursor-pointer relative ${
+              tab === "preview"
+                ? "text-white"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            <span className="flex items-center gap-1.5">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              </svg>
+              Visualizar
+            </span>
+            {tab === "preview" && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />
+            )}
+          </button>
+        </div>
+
+        {/* Contador de caracteres */}
+        {maxLength && (
+          <div className="pr-3 flex items-center gap-2">
+            <span className={`text-xs tabular-nums ${
+              charPercent > 90 ? "text-red-400" : charPercent > 70 ? "text-amber-400" : "text-zinc-600"
+            }`}>
+              {charCount.toLocaleString()}/{maxLength.toLocaleString()}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Toolbar */}
+      {tab === "write" && (
+        <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-zinc-800 bg-zinc-800/20 overflow-x-auto scrollbar-hide">
+          {TOOLBAR.map(item => {
+            if (item.key.startsWith("divider")) {
+              return <div key={item.key} className="w-px h-5 bg-zinc-700 mx-1 flex-shrink-0" />
+            }
+
+            if (item.key === "heading") {
+              return (
+                <div key={item.key} className="relative">
+                  <button
+                    onClick={() => setHeadingOpen(!headingOpen)}
+                    title={item.tooltip}
+                    className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer flex-shrink-0"
+                  >
+                    <ToolbarIcon type={item.key} />
+                  </button>
+                  {headingOpen && (
+                    <HeadingDropdown
+                      onSelect={(level) => insertAtLineStart("#".repeat(level) + " ")}
+                      onClose={() => setHeadingOpen(false)}
+                    />
+                  )}
+                </div>
+              )
+            }
+
+            return (
+              <button
+                key={item.key}
+                onClick={() => handleAction(item.key)}
+                title={item.tooltip}
+                className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer flex-shrink-0"
+              >
+                <ToolbarIcon type={item.key} />
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Content area */}
+      <div className="min-h-[300px]">
+        {tab === "write" ? (
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => {
+              if (maxLength && e.target.value.length > maxLength) return
+              onChange(e.target.value)
+            }}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            placeholder={placeholder}
+            spellCheck={false}
+            className="w-full min-h-[300px] max-h-[600px] p-4 bg-transparent text-sm text-zinc-300 placeholder-zinc-600 font-mono leading-relaxed resize-y focus:outline-none"
+          />
+        ) : (
+          <div className="p-4 min-h-[300px]">
+            <MarkdownPreview content={value} />
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between px-3 py-2 border-t border-zinc-800 bg-zinc-800/20">
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-zinc-600 flex items-center gap-1">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+            </svg>
+            Markdown suportado
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-zinc-600">
+          <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">Ctrl</kbd>
+          <span>+</span>
+          <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">B</kbd>
+          <span className="text-zinc-700 mx-1">·</span>
+          <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">Ctrl</kbd>
+          <span>+</span>
+          <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">I</kbd>
+          <span className="text-zinc-700 mx-1">·</span>
+          <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">Ctrl</kbd>
+          <span>+</span>
+          <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">K</kbd>
+        </div>
+      </div>
+    </div>
+  )
+}
