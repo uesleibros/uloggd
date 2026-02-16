@@ -12,6 +12,7 @@ const DragScrollRow = forwardRef(function DragScrollRow({
   const rafRef = useRef(null)
   const virtualScrollLeft = useRef(0)
   const windowWidthRef = useRef(typeof window !== "undefined" ? window.innerWidth : 0)
+  const lastScrollWidth = useRef(0)
   const [isPaused, setIsPaused] = useState(false)
 
   const dragRef = useRef({
@@ -32,12 +33,13 @@ const DragScrollRow = forwardRef(function DragScrollRow({
     if (!el) return
     const sectionWidth = el.scrollWidth / 3
     if (sectionWidth === 0) return
-    if (virtualScrollLeft.current >= sectionWidth * 2) {
-      virtualScrollLeft.current -= sectionWidth
-      el.scrollLeft = virtualScrollLeft.current
-    } else if (virtualScrollLeft.current <= 0) {
-      virtualScrollLeft.current += sectionWidth
-      el.scrollLeft = virtualScrollLeft.current
+    
+    if (el.scrollLeft >= sectionWidth * 2) {
+      el.scrollLeft -= sectionWidth
+      virtualScrollLeft.current = el.scrollLeft
+    } else if (el.scrollLeft <= 0) {
+      el.scrollLeft += sectionWidth
+      virtualScrollLeft.current = el.scrollLeft
     }
   }, [loop])
 
@@ -47,13 +49,33 @@ const DragScrollRow = forwardRef(function DragScrollRow({
     }
   }, [])
 
-  useEffect(() => {
-    if (!autoScroll || !loop || !scrollRef.current) return
+  const initializeScrollPosition = useCallback(() => {
+    if (!loop || !scrollRef.current) return
     const el = scrollRef.current
+    if (el.scrollWidth === lastScrollWidth.current) return
+    lastScrollWidth.current = el.scrollWidth
     const initialPos = el.scrollWidth / 3
     el.scrollLeft = initialPos
     virtualScrollLeft.current = initialPos
-  }, [autoScroll, loop, children])
+  }, [loop])
+
+  useEffect(() => {
+    if (!autoScroll || !loop || !scrollRef.current) return
+    initializeScrollPosition()
+  }, [autoScroll, loop, children, initializeScrollPosition])
+
+  useEffect(() => {
+    if (!loop || !scrollRef.current) return
+    
+    const el = scrollRef.current
+    const observer = new ResizeObserver(() => {
+      initializeScrollPosition()
+    })
+    
+    observer.observe(el)
+    
+    return () => observer.disconnect()
+  }, [loop, initializeScrollPosition])
 
   useEffect(() => {
     if (!autoScroll || isPaused || !scrollRef.current) return
@@ -94,16 +116,13 @@ const DragScrollRow = forwardRef(function DragScrollRow({
     const handleResize = () => {
       if (window.innerWidth === windowWidthRef.current) return
       windowWidthRef.current = window.innerWidth
-      const el = scrollRef.current
-      if (!el) return
-      const newPos = el.scrollWidth / 3
-      el.scrollLeft = newPos
-      virtualScrollLeft.current = newPos
+      lastScrollWidth.current = 0
+      initializeScrollPosition()
     }
 
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
-  }, [autoScroll, loop])
+  }, [autoScroll, loop, initializeScrollPosition])
 
   const handleMouseDown = useCallback((e) => {
     const el = scrollRef.current
@@ -117,7 +136,8 @@ const DragScrollRow = forwardRef(function DragScrollRow({
       directionDecided: true,
       isHorizontal: true
     }
-  }, [])
+    if (autoScroll) setIsPaused(true)
+  }, [autoScroll])
 
   const handleMouseMove = useCallback((e) => {
     if (!dragRef.current.isDown || !dragRef.current.isHorizontal) return
@@ -129,16 +149,22 @@ const DragScrollRow = forwardRef(function DragScrollRow({
       e.preventDefault()
     }
     el.scrollLeft = dragRef.current.scrollLeft - diff
-  }, [])
+    
+    if (loop) {
+      normalizeScroll()
+    }
+  }, [loop, normalizeScroll])
 
   const handleMouseUp = useCallback(() => {
+    if (dragRef.current.isDown && autoScroll) {
+      syncVirtualScroll()
+      normalizeScroll()
+      setTimeout(() => setIsPaused(false), 100)
+    }
     dragRef.current.isDown = false
     dragRef.current.directionDecided = false
     dragRef.current.isHorizontal = false
-  }, [])
-
-  const touchStartRef = useRef({ x: 0, y: 0 })
-  const touchDirectionRef = useRef({ decided: false, horizontal: false })
+  }, [autoScroll, syncVirtualScroll, normalizeScroll])
 
   const handleTouchStart = useCallback((e) => {
     const el = scrollRef.current
@@ -153,8 +179,6 @@ const DragScrollRow = forwardRef(function DragScrollRow({
       directionDecided: false,
       isHorizontal: false
     }
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
-    touchDirectionRef.current = { decided: false, horizontal: false }
     props.onTouchStart?.(e)
   }, [props.onTouchStart])
 
@@ -177,10 +201,14 @@ const DragScrollRow = forwardRef(function DragScrollRow({
       const diff = touch.pageX - dragRef.current.startX
       if (Math.abs(diff) > 5) dragRef.current.hasMoved = true
       el.scrollLeft = dragRef.current.scrollLeft - diff
+      
+      if (loop) {
+        normalizeScroll()
+      }
     }
 
     props.onTouchMove?.(e)
-  }, [props.onTouchMove, autoScroll])
+  }, [props.onTouchMove, autoScroll, loop, normalizeScroll])
 
   const handleTouchEnd = useCallback((e) => {
     if (dragRef.current.isHorizontal && autoScroll) {
