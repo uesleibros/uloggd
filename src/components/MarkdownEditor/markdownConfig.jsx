@@ -125,7 +125,7 @@ export const markdownComponents = {
     <img
       src={src}
       alt={alt || ""}
-      className="max-w-full rounded-lg my-4 border border-zinc-700"
+      className="max-w-full rounded-lg my-4"
       style={{ width: width ? `min(${width}px, 100%)` : undefined, height: height ? `${height}px` : undefined }}
       loading="lazy"
       onError={(e) => { e.target.onerror = null; e.target.className = "hidden" }}
@@ -137,7 +137,7 @@ export const markdownComponents = {
   },
   mention: ({ children }) => <Mention username={children} />,
   center: ({ children }) => (
-    <div className="flex flex-col items-center justify-center w-full text-center [&_img]:mx-auto">
+    <div className="flex flex-col items-center justify-center w-full text-center [&>*]:mx-auto [&_img]:mx-auto [&_p]:text-center [&_a]:justify-center [&_div]:mx-auto">
       {children}
     </div>
   ),
