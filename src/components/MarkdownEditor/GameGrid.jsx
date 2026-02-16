@@ -12,7 +12,7 @@ export function GameGrid({ slugs }) {
   if (slugList.length === 0) return null
 
   return (
-    <div className="my-6">
+    <div className="my-2">
       <DragScrollRow className="gap-3 pb-4 pt-4 px-1 items-end">
         {slugList.map(({ slug, isFavorite }) => (
           <GameCard 
