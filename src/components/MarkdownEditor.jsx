@@ -71,12 +71,12 @@ const TOOLBAR = [
 ]
 
 const markdownHighlightStyle = HighlightStyle.define([
-  { tag: tags.heading1, color: "#f0f6fc", fontWeight: "600", fontSize: "2em" },
-  { tag: tags.heading2, color: "#f0f6fc", fontWeight: "600", fontSize: "1.5em" },
-  { tag: tags.heading3, color: "#f0f6fc", fontWeight: "600", fontSize: "1.25em" },
-  { tag: tags.heading4, color: "#f0f6fc", fontWeight: "600", fontSize: "1em" },
-  { tag: tags.heading5, color: "#f0f6fc", fontWeight: "600", fontSize: "0.875em" },
-  { tag: tags.heading6, color: "#848d97", fontWeight: "600", fontSize: "0.85em" },
+  { tag: tags.heading1, color: "#f0f6fc", fontWeight: "600" },
+  { tag: tags.heading2, color: "#f0f6fc", fontWeight: "600" },
+  { tag: tags.heading3, color: "#f0f6fc", fontWeight: "600" },
+  { tag: tags.heading4, color: "#f0f6fc", fontWeight: "600" },
+  { tag: tags.heading5, color: "#f0f6fc", fontWeight: "600" },
+  { tag: tags.heading6, color: "#848d97", fontWeight: "600" },
   { tag: tags.strong, color: "#f0f6fc", fontWeight: "600" },
   { tag: tags.emphasis, color: "#f0f6fc", fontStyle: "italic" },
   { tag: tags.strikethrough, color: "#848d97", textDecoration: "line-through" },
@@ -108,8 +108,9 @@ const cmTheme = EditorView.theme({
     outline: "none",
   },
   ".cm-scroller": {
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'",
-    lineHeight: "1.5",
+    fontFamily: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace",
+    fontSize: "13.6px",
+    lineHeight: "1.45",
     padding: "16px",
     overflow: "auto",
   },
