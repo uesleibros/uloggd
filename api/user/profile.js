@@ -23,21 +23,37 @@ export default async function handler(req, res) {
 
     const { data: profile } = await supabase
       .from("users")
-      .select("is_verified, is_moderator, is_trainee_moderator, is_developer, banner, bio, created_at")
+      .select(`
+        banner, 
+        bio, 
+        created_at,
+        is_moderator,
+        user_badges (
+          badge:badges (
+            id,
+            title,
+            description
+          )
+        )
+      `)
       .eq("user_id", authUser.id)
       .single()
+
+    const badges = profile?.user_badges?.map(ub => ub.badge) || []
 
     res.json({
       id: authUser.id,
       username: authUser.user_metadata?.full_name,
       avatar: authUser.user_metadata?.avatar_url,
       discord_id: authUser.user_metadata?.provider_id,
-      ...profile
+      banner: profile?.banner,
+      bio: profile?.bio,
+      is_moderator: profile?.is_moderator,
+      created_at: profile?.created_at,
+      badges
     })
   } catch (e) {
     console.error(e)
     res.status(500).json({ error: "fail" })
   }
-
 }
-

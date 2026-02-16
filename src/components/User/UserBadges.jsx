@@ -1,52 +1,43 @@
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 
-const BADGES = [
-  {
-    key: "is_verified",
-    src: "/badges/verified.png",
-    alt: "Verificado",
-    title: "Verificado",
-    description: "Este usuário foi verificado pela equipe do uloggd, confirmando sua identidade e autenticidade.",
+const BADGE_STYLES = {
+  verified: {
     color: "from-purple-500/20 to-indigo-500/20",
     borderColor: "border-purple-500/30",
     glowColor: "shadow-purple-500/10",
     iconBg: "bg-purple-500/10",
+    iconUrl: "/badges/verified.png",
   },
-	{
-	  key: "is_developer",
-	  src: "/badges/developer.png",
-	  alt: "Desenvolvedor",
-	  title: "Desenvolvedor",
-	  description: "Este usuário faz parte da equipe de desenvolvimento do uloggd, ajudando a criar e manter a plataforma.",
-	  color: "from-pink-300/20 to-rose-300/20",
-	  borderColor: "border-pink-300/30",
-	  glowColor: "shadow-pink-300/10",
-	  iconBg: "bg-pink-300/10",
-	},
-  {
-    key: "is_trainee_moderator",
-    src: "/badges/trainee_moderator.png",
-    alt: "Moderador Estagiário",
-    title: "Moderador Estagiário",
-    description: "Este usuário está em fase de treinamento na equipe de moderação do uloggd, aprendendo a manter a comunidade segura e organizada.",
+  developer: {
+    color: "from-pink-300/20 to-rose-300/20",
+    borderColor: "border-pink-300/30",
+    glowColor: "shadow-pink-300/10",
+    iconBg: "bg-pink-300/10",
+    iconUrl: "/badges/developer.png",
+  },
+  trainee_moderator: {
     color: "from-sky-500/20 to-cyan-500/20",
     borderColor: "border-sky-500/30",
     glowColor: "shadow-sky-500/10",
     iconBg: "bg-sky-500/10",
+    iconUrl: "/badges/trainee_moderator.png",
   },
-  {
-    key: "is_moderator",
-    src: "/badges/moderator.png",
-    alt: "Moderador",
-    title: "Moderador",
-    description: "Este usuário faz parte da equipe de moderação do uloggd, ajudando a manter a comunidade segura e organizada.",
+  moderator: {
     color: "from-amber-500/20 to-teal-500/20",
     borderColor: "border-amber-500/30",
     glowColor: "shadow-amber-500/10",
     iconBg: "bg-amber-500/10",
+    iconUrl: "/badges/moderator.png",
   },
-]
+  default: {
+    color: "from-zinc-500/20 to-gray-500/20",
+    borderColor: "border-zinc-500/30",
+    glowColor: "shadow-zinc-500/10",
+    iconBg: "bg-zinc-500/10",
+    iconUrl: "/badges/default.png",
+  },
+}
 
 const SIZES = {
   xs: "w-3 h-3",
@@ -118,8 +109,8 @@ function BadgeModal({ badge, onClose }) {
           <div className="relative flex flex-col items-center text-center px-6 pt-8 pb-6">
             <div className={`w-20 h-20 rounded-full ${badge.iconBg} border ${badge.borderColor} flex items-center justify-center mb-5 shadow-lg ${badge.glowColor}`}>
               <img
-                src={badge.src}
-                alt={badge.alt}
+                src={badge.iconUrl}
+                alt={badge.title}
                 className="w-10 h-10 select-none"
                 draggable={false}
               />
@@ -152,10 +143,8 @@ function BadgeModal({ badge, onClose }) {
 export default function UserBadges({ user, size = "md", clickable = false, className = "" }) {
   const [activeBadge, setActiveBadge] = useState(null)
 
-  if (!user) return null
-
-  const activeBadges = BADGES.filter((b) => user[b.key])
-  if (activeBadges.length === 0) return null
+  const badges = user?.badges || []
+  if (badges.length === 0) return null
 
   const sizeClass = SIZES[size] || SIZES.md
 
@@ -169,19 +158,24 @@ export default function UserBadges({ user, size = "md", clickable = false, class
   return (
     <>
       <div className={`flex items-center gap-1 ${className}`}>
-        {activeBadges.map((badge) => (
-          <img
-            key={badge.key}
-            src={badge.src}
-            alt={badge.alt}
-            title={!clickable ? badge.title : undefined}
-            className={`${sizeClass} select-none ${
-              clickable ? "cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150" : ""
-            }`}
-            draggable={false}
-            onClick={(e) => handleClick(e, badge)}
-          />
-        ))}
+        {badges.map((badge) => {
+          const style = BADGE_STYLES[badge.id] || BADGE_STYLES.default
+          const fullBadge = { ...badge, ...style }
+
+          return (
+            <img
+              key={badge.id}
+              src={fullBadge.iconUrl}
+              alt={fullBadge.title}
+              title={!clickable ? fullBadge.title : undefined}
+              className={`${sizeClass} select-none ${
+                clickable ? "cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150" : ""
+              }`}
+              draggable={false}
+              onClick={(e) => clickable && handleClick(e, fullBadge)}
+            />
+          )
+        })}
       </div>
 
       {activeBadge && (
@@ -192,5 +186,4 @@ export default function UserBadges({ user, size = "md", clickable = false, class
       )}
     </>
   )
-
 }

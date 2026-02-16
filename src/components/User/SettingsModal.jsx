@@ -97,6 +97,9 @@ export default function SettingsModal({ onClose }) {
 
   const bioIsDirty = bio !== (user?.bio || "")
 
+  const isVerified = user?.badges?.some(b => b.id === 'verified')
+  const isModerator = user?.badges?.some(b => b.id === 'moderator')
+
   useEffect(() => {
     document.body.style.overflow = "hidden"
     return () => { document.body.style.overflow = "" }
@@ -419,10 +422,10 @@ export default function SettingsModal({ onClose }) {
                       value={
                         <div className="flex items-center gap-2">
                           <Badge
-                            text={user.is_verified ? "Verificado" : "Não verificado"}
-                            color={user.is_verified ? "green" : "zinc"}
+                            text={isVerified ? "Verificado" : "Não verificado"}
+                            color={isVerified ? "green" : "zinc"}
                           />
-                          {user.is_moderator && <Badge text="Moderador" color="blue" />}
+                          {isModerator && <Badge text="Moderador" color="blue" />}
                         </div>
                       }
                       icon={
