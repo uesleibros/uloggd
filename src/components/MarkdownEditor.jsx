@@ -139,7 +139,7 @@ function PortalDropdown({ anchorRef, open, onClose, children }) {
   )
 }
 
-function MarkdownPreview({ content }) {
+export function MarkdownPreview({ content }) {
   if (!content.trim()) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3 text-zinc-600">
@@ -252,7 +252,7 @@ function useMediaQuery(query) {
   return matches
 }
 
-export default function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeholder = "Escreva sobre você..." }) {
+export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeholder = "Escreva sobre você..." }) {
   const [tab, setTab] = useState("write")
   const [headingOpen, setHeadingOpen] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
