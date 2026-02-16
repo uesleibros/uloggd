@@ -50,7 +50,7 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
           const normalizedType = typeMap[type] || type
           const style = styles[normalizedType] || styles.note
           
-          return `<div class="my-4 rounded-md border-l-[3px] ${style.border} ${style.bg}"><div class="flex items-center gap-2 px-4 py-2 border-b border-white/5 bg-white/5"><svg class="w-4 h-4 flex-shrink-0 ${style.color}" viewBox="0 0 16 16" fill="currentColor">${style.icon}</svg><span class="text-xs font-bold uppercase tracking-wide ${style.color}">${style.label}</span></div><div class="px-4 py-3 text-sm text-zinc-300 leading-relaxed">${innerContent}</div></div>`
+          return `<div class="my-3 rounded-md border-l-[3px] ${style.border} ${style.bg}"><div class="flex items-center gap-2 px-3 py-1.5 border-b border-white/5 bg-white/5"><svg class="w-4 h-4 flex-shrink-0 ${style.color}" viewBox="0 0 16 16" fill="currentColor">${style.icon}</svg><span class="text-xs font-bold uppercase tracking-wide ${style.color}">${style.label}</span></div><div class="px-3 py-2 text-sm text-zinc-300 leading-relaxed">${innerContent}</div></div>`
         }
       )
       .replace(
