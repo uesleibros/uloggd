@@ -5,10 +5,10 @@ import rehypeRaw from "rehype-raw"
 import rehypeSanitize from "rehype-sanitize"
 
 const TOOLBAR = [
-  { key: "heading", icon: "H", tooltip: "Título", group: "text" },
-  { key: "bold", icon: "B", tooltip: "Negrito", group: "text", bold: true },
-  { key: "italic", icon: "I", tooltip: "Itálico", group: "text", italic: true },
-  { key: "strikethrough", icon: "S", tooltip: "Riscado", group: "text", strike: true },
+  { key: "heading", tooltip: "Título", group: "text" },
+  { key: "bold", tooltip: "Negrito", group: "text" },
+  { key: "italic", tooltip: "Itálico", group: "text" },
+  { key: "strikethrough", tooltip: "Riscado", group: "text" },
   { key: "divider1" },
   { key: "link", tooltip: "Link", group: "insert" },
   { key: "image", tooltip: "Imagem", group: "insert" },
@@ -31,9 +31,9 @@ function ToolbarIcon({ type }) {
         <path d="M4 4v16M20 4v16M4 12h16" strokeLinecap="round" />
       </svg>
     ),
-    bold: <span className="font-bold text-sm">B</span>,
-    italic: <span className="italic text-sm font-serif">I</span>,
-    strikethrough: <span className="line-through text-sm">S</span>,
+    bold: <span className="font-bold text-sm leading-none">B</span>,
+    italic: <span className="italic text-sm font-serif leading-none">I</span>,
+    strikethrough: <span className="line-through text-sm leading-none">S</span>,
     link: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
@@ -80,8 +80,9 @@ function ToolbarIcon({ type }) {
       </svg>
     ),
     table: (
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M11.25 12h.008v.008h-.008V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM12 12c-.621 0-1.125.504-1.125 1.125M12 12c.621 0 1.125.504 1.125 1.125m-2.25 0c0 .621.504 1.125 1.125 1.125m0 0c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m0-3.75c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125" />
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+        <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M3 9h18M3 15h18M9 3v18M15 3v18" strokeLinecap="round" />
       </svg>
     ),
   }
@@ -100,7 +101,7 @@ function HeadingDropdown({ onSelect, onClose }) {
   return (
     <div
       data-heading-dropdown
-      className="absolute top-full left-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 py-1 min-w-[140px]"
+      className="absolute top-full left-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl z-50 py-1 min-w-[140px] animate-in fade-in slide-in-from-top-1 duration-150"
     >
       {[1, 2, 3, 4, 5, 6].map(level => (
         <button
@@ -138,12 +139,12 @@ function MarkdownPreview({ content }) {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, rehypeSanitize]}
         components={{
-          h1: ({ children }) => <h1 className="text-3xl font-bold text-white mt-6 mb-3 pb-2 border-b border-zinc-700">{children}</h1>,
-          h2: ({ children }) => <h2 className="text-2xl font-bold text-white mt-5 mb-2 pb-1.5 border-b border-zinc-800">{children}</h2>,
-          h3: ({ children }) => <h3 className="text-xl font-semibold text-white mt-4 mb-2">{children}</h3>,
-          h4: ({ children }) => <h4 className="text-lg font-semibold text-zinc-200 mt-3 mb-1.5">{children}</h4>,
-          h5: ({ children }) => <h5 className="text-base font-semibold text-zinc-300 mt-3 mb-1">{children}</h5>,
-          h6: ({ children }) => <h6 className="text-sm font-semibold text-zinc-400 mt-2 mb-1">{children}</h6>,
+          h1: ({ children }) => <h1 className="text-2xl sm:text-3xl font-bold text-white mt-6 mb-3 pb-2 border-b border-zinc-700">{children}</h1>,
+          h2: ({ children }) => <h2 className="text-xl sm:text-2xl font-bold text-white mt-5 mb-2 pb-1.5 border-b border-zinc-800">{children}</h2>,
+          h3: ({ children }) => <h3 className="text-lg sm:text-xl font-semibold text-white mt-4 mb-2">{children}</h3>,
+          h4: ({ children }) => <h4 className="text-base sm:text-lg font-semibold text-zinc-200 mt-3 mb-1.5">{children}</h4>,
+          h5: ({ children }) => <h5 className="text-sm sm:text-base font-semibold text-zinc-300 mt-3 mb-1">{children}</h5>,
+          h6: ({ children }) => <h6 className="text-xs sm:text-sm font-semibold text-zinc-400 mt-2 mb-1">{children}</h6>,
           p: ({ children }) => <p className="text-sm text-zinc-300 leading-relaxed mb-3">{children}</p>,
           a: ({ href, children }) => (
             <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">
@@ -167,8 +168,8 @@ function MarkdownPreview({ content }) {
               )
             }
             return (
-              <pre className="bg-zinc-900 border border-zinc-700 rounded-lg p-4 my-3 overflow-x-auto">
-                <code className={`text-sm text-zinc-300 font-mono ${className || ""}`}>
+              <pre className="bg-zinc-900 border border-zinc-700 rounded-lg p-3 sm:p-4 my-3 overflow-x-auto">
+                <code className={`text-xs sm:text-sm text-zinc-300 font-mono ${className || ""}`}>
                   {children}
                 </code>
               </pre>
@@ -203,15 +204,15 @@ function MarkdownPreview({ content }) {
             />
           ),
           table: ({ children }) => (
-            <div className="overflow-x-auto my-3">
+            <div className="overflow-x-auto my-3 -mx-1">
               <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">
                 {children}
               </table>
             </div>
           ),
           thead: ({ children }) => <thead className="bg-zinc-800/80">{children}</thead>,
-          th: ({ children }) => <th className="px-4 py-2 text-left text-xs font-semibold text-zinc-300 uppercase tracking-wider border border-zinc-700">{children}</th>,
-          td: ({ children }) => <td className="px-4 py-2 text-sm text-zinc-400 border border-zinc-700">{children}</td>,
+          th: ({ children }) => <th className="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-zinc-300 uppercase tracking-wider border border-zinc-700">{children}</th>,
+          td: ({ children }) => <td className="px-3 sm:px-4 py-2 text-sm text-zinc-400 border border-zinc-700">{children}</td>,
           tr: ({ children }) => <tr className="hover:bg-zinc-800/30 transition-colors">{children}</tr>,
         }}
       >
@@ -221,28 +222,121 @@ function MarkdownPreview({ content }) {
   )
 }
 
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia(query)
+    setMatches(mq.matches)
+    const handler = (e) => setMatches(e.matches)
+    mq.addEventListener("change", handler)
+    return () => mq.removeEventListener("change", handler)
+  }, [query])
+  return matches
+}
+
 export default function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeholder = "Escreva sobre você..." }) {
   const [tab, setTab] = useState("write")
   const [headingOpen, setHeadingOpen] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [splitPos, setSplitPos] = useState(50)
   const textareaRef = useRef(null)
+  const splitContainerRef = useRef(null)
+  const isDragging = useRef(false)
+  const previewSideRef = useRef(null)
+
+  const isLargeScreen = useMediaQuery("(min-width: 1024px)")
+  const showSideBySideOption = isFullscreen && isLargeScreen
 
   const charCount = value.length
   const charPercent = maxLength ? (charCount / maxLength) * 100 : 0
+  const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0
+  const lineCount = value.split("\n").length
 
-  const insertText = useCallback((before, after = "", placeholder = "") => {
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key !== "Escape") return
+      if (headingOpen) {
+        setHeadingOpen(false)
+        return
+      }
+      if (isFullscreen) {
+        setIsFullscreen(false)
+      }
+    }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [isFullscreen, headingOpen])
+
+  useEffect(() => {
+    document.body.style.overflow = isFullscreen ? "hidden" : ""
+    return () => { document.body.style.overflow = "" }
+  }, [isFullscreen])
+
+  useEffect(() => {
+    if (!isFullscreen && tab === "sidebyside") setTab("write")
+  }, [isFullscreen])
+
+  useEffect(() => {
+    if (!isLargeScreen && tab === "sidebyside") setTab("write")
+  }, [isLargeScreen])
+
+  useEffect(() => {
+    setHeadingOpen(false)
+  }, [tab, isFullscreen])
+
+  useEffect(() => {
+    const handleMove = (e) => {
+      if (!isDragging.current || !splitContainerRef.current) return
+      e.preventDefault()
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX
+      const rect = splitContainerRef.current.getBoundingClientRect()
+      const pos = ((clientX - rect.left) / rect.width) * 100
+      setSplitPos(Math.min(Math.max(pos, 20), 80))
+    }
+    const handleEnd = () => {
+      if (!isDragging.current) return
+      isDragging.current = false
+      document.body.style.cursor = ""
+      document.body.style.userSelect = ""
+    }
+    window.addEventListener("mousemove", handleMove)
+    window.addEventListener("mouseup", handleEnd)
+    window.addEventListener("touchmove", handleMove, { passive: false })
+    window.addEventListener("touchend", handleEnd)
+    return () => {
+      window.removeEventListener("mousemove", handleMove)
+      window.removeEventListener("mouseup", handleEnd)
+      window.removeEventListener("touchmove", handleMove)
+      window.removeEventListener("touchend", handleEnd)
+    }
+  }, [])
+
+  const handleSplitStart = useCallback((e) => {
+    isDragging.current = true
+    document.body.style.cursor = "col-resize"
+    document.body.style.userSelect = "none"
+    e.preventDefault()
+  }, [])
+
+  const handleTextareaScroll = useCallback(() => {
+    if (tab !== "sidebyside") return
+    const ta = textareaRef.current
+    const pv = previewSideRef.current
+    if (!ta || !pv) return
+    const ratio = ta.scrollTop / Math.max(ta.scrollHeight - ta.clientHeight, 1)
+    pv.scrollTop = ratio * (pv.scrollHeight - pv.clientHeight)
+  }, [tab])
+
+  const insertText = useCallback((before, after = "", ph = "") => {
     const ta = textareaRef.current
     if (!ta) return
-
     const start = ta.selectionStart
     const end = ta.selectionEnd
     const selected = value.slice(start, end)
-    const insert = selected || placeholder
+    const insert = selected || ph
     const newValue = value.slice(0, start) + before + insert + after + value.slice(end)
-
     if (maxLength && newValue.length > maxLength) return
-
     onChange(newValue)
-
     requestAnimationFrame(() => {
       ta.focus()
       const cursorPos = start + before.length + insert.length
@@ -256,15 +350,11 @@ export default function MarkdownEditor({ value = "", onChange, maxLength = 10000
   const insertAtLineStart = useCallback((prefix) => {
     const ta = textareaRef.current
     if (!ta) return
-
     const start = ta.selectionStart
     const lineStart = value.lastIndexOf("\n", start - 1) + 1
     const newValue = value.slice(0, lineStart) + prefix + value.slice(lineStart)
-
     if (maxLength && newValue.length > maxLength) return
-
     onChange(newValue)
-
     requestAnimationFrame(() => {
       ta.focus()
       ta.setSelectionRange(start + prefix.length, start + prefix.length)
@@ -274,16 +364,12 @@ export default function MarkdownEditor({ value = "", onChange, maxLength = 10000
   const insertNewBlock = useCallback((block) => {
     const ta = textareaRef.current
     if (!ta) return
-
     const start = ta.selectionStart
     const needsNewline = start > 0 && value[start - 1] !== "\n"
     const prefix = needsNewline ? "\n\n" : start === 0 ? "" : "\n"
     const newValue = value.slice(0, start) + prefix + block + "\n" + value.slice(start)
-
     if (maxLength && newValue.length > maxLength) return
-
     onChange(newValue)
-
     requestAnimationFrame(() => {
       ta.focus()
       const pos = start + prefix.length + block.length + 1
@@ -291,74 +377,35 @@ export default function MarkdownEditor({ value = "", onChange, maxLength = 10000
     })
   }, [value, onChange, maxLength])
 
-  function handleAction(key) {
-    switch (key) {
-      case "bold":
-        insertText("**", "**", "texto em negrito")
-        break
-      case "italic":
-        insertText("*", "*", "texto em itálico")
-        break
-      case "strikethrough":
-        insertText("~~", "~~", "texto riscado")
-        break
-      case "link":
-        insertText("[", "](https://)", "texto do link")
-        break
-      case "image":
-        insertText("![", "](https://url-da-imagem.com)", "descrição")
-        break
-      case "code":
-        insertText("`", "`", "código")
-        break
-      case "codeblock":
-        insertNewBlock("```\ncódigo aqui\n```")
-        break
-      case "ul":
-        insertAtLineStart("- ")
-        break
-      case "ol":
-        insertAtLineStart("1. ")
-        break
-      case "checklist":
-        insertAtLineStart("- [ ] ")
-        break
-      case "quote":
-        insertAtLineStart("> ")
-        break
-      case "hr":
-        insertNewBlock("---")
-        break
-      case "table":
-        insertNewBlock("| Coluna 1 | Coluna 2 | Coluna 3 |\n| --- | --- | --- |\n| dado | dado | dado |")
-        break
-      default:
-        break
+  const handleAction = useCallback((key) => {
+    const actions = {
+      bold: () => insertText("**", "**", "texto em negrito"),
+      italic: () => insertText("*", "*", "texto em itálico"),
+      strikethrough: () => insertText("~~", "~~", "texto riscado"),
+      link: () => insertText("[", "](https://)", "texto do link"),
+      image: () => insertText("![", "](https://url-da-imagem.com)", "descrição"),
+      code: () => insertText("`", "`", "código"),
+      codeblock: () => insertNewBlock("```\ncódigo aqui\n```"),
+      ul: () => insertAtLineStart("- "),
+      ol: () => insertAtLineStart("1. "),
+      checklist: () => insertAtLineStart("- [ ] "),
+      quote: () => insertAtLineStart("> "),
+      hr: () => insertNewBlock("---"),
+      table: () => insertNewBlock("| Coluna 1 | Coluna 2 | Coluna 3 |\n| --- | --- | --- |\n| dado | dado | dado |"),
     }
-  }
+    actions[key]?.()
+  }, [insertText, insertAtLineStart, insertNewBlock])
 
   function handleKeyDown(e) {
     if (e.key === "Tab") {
       e.preventDefault()
       insertText("  ")
     }
-
     if (e.ctrlKey || e.metaKey) {
-      switch (e.key) {
-        case "b":
-          e.preventDefault()
-          handleAction("bold")
-          break
-        case "i":
-          e.preventDefault()
-          handleAction("italic")
-          break
-        case "k":
-          e.preventDefault()
-          handleAction("link")
-          break
-        default:
-          break
+      const map = { b: "bold", i: "italic", k: "link" }
+      if (map[e.key]) {
+        e.preventDefault()
+        handleAction(map[e.key])
       }
     }
   }
@@ -366,169 +413,287 @@ export default function MarkdownEditor({ value = "", onChange, maxLength = 10000
   function handlePaste(e) {
     const items = e.clipboardData?.items
     if (!items) return
-
     for (const item of items) {
       if (item.type.startsWith("image/")) {
         e.preventDefault()
-        // Aqui você pode integrar upload pro Supabase Storage
-        // Por enquanto, só avisa o usuário
         const ta = textareaRef.current
         if (ta) {
           const start = ta.selectionStart
-          const placeholder = "![imagem](cole-a-url-aqui)"
-          const newValue = value.slice(0, start) + placeholder + value.slice(start)
-          onChange(newValue)
+          const imgPlaceholder = "![imagem](cole-a-url-aqui)"
+          const newValue = value.slice(0, start) + imgPlaceholder + value.slice(start)
+          if (!maxLength || newValue.length <= maxLength) onChange(newValue)
         }
         break
       }
     }
   }
 
-  return (
-    <div className="border border-zinc-700 rounded-xl overflow-hidden bg-zinc-900/50">
-      {/* Header com tabs */}
-      <div className="flex items-center justify-between border-b border-zinc-700 bg-zinc-800/30">
-        <div className="flex">
-          <button
-            onClick={() => setTab("write")}
-            className={`px-4 py-2.5 text-sm font-medium transition-all cursor-pointer relative ${
-              tab === "write"
-                ? "text-white"
-                : "text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-              </svg>
-              Escrever
-            </span>
-            {tab === "write" && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />
-            )}
-          </button>
-          <button
-            onClick={() => setTab("preview")}
-            className={`px-4 py-2.5 text-sm font-medium transition-all cursor-pointer relative ${
-              tab === "preview"
-                ? "text-white"
-                : "text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-              </svg>
-              Visualizar
-            </span>
-            {tab === "preview" && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />
-            )}
-          </button>
-        </div>
+  const showToolbar = tab === "write" || tab === "sidebyside"
 
-        {/* Contador de caracteres */}
-        {maxLength && (
-          <div className="pr-3 flex items-center gap-2">
-            <span className={`text-xs tabular-nums ${
-              charPercent > 90 ? "text-red-400" : charPercent > 70 ? "text-amber-400" : "text-zinc-600"
-            }`}>
-              {charCount.toLocaleString()}/{maxLength.toLocaleString()}
-            </span>
-          </div>
-        )}
-      </div>
+  const textareaClasses = (fullHeight) =>
+    `w-full bg-transparent text-sm text-zinc-300 placeholder-zinc-600 font-mono leading-relaxed focus:outline-none p-3 sm:p-4 ${
+      fullHeight ? "h-full resize-none" : "min-h-[250px] sm:min-h-[300px] max-h-[600px] resize-y"
+    }`
 
-      {/* Toolbar */}
-      {tab === "write" && (
-        <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-zinc-800 bg-zinc-800/20 overflow-x-auto scrollbar-hide">
-          {TOOLBAR.map(item => {
-            if (item.key.startsWith("divider")) {
-              return <div key={item.key} className="w-px h-5 bg-zinc-700 mx-1 flex-shrink-0" />
-            }
-
-            if (item.key === "heading") {
-              return (
-                <div key={item.key} className="relative">
-                  <button
-                    onClick={() => setHeadingOpen(!headingOpen)}
-                    title={item.tooltip}
-                    className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer flex-shrink-0"
-                  >
-                    <ToolbarIcon type={item.key} />
-                  </button>
-                  {headingOpen && (
-                    <HeadingDropdown
-                      onSelect={(level) => insertAtLineStart("#".repeat(level) + " ")}
-                      onClose={() => setHeadingOpen(false)}
-                    />
-                  )}
-                </div>
-              )
-            }
-
-            return (
+  const renderToolbar = () => (
+    <div className="flex items-center gap-0.5 px-1.5 sm:px-2 py-1 sm:py-1.5 border-b border-zinc-800 bg-zinc-800/20 overflow-x-auto scrollbar-hide flex-shrink-0">
+      {TOOLBAR.map(item => {
+        if (item.key.startsWith("divider")) {
+          return <div key={item.key} className="w-px h-5 bg-zinc-700/60 mx-0.5 sm:mx-1 flex-shrink-0" />
+        }
+        if (item.key === "heading") {
+          return (
+            <div key={item.key} className="relative">
               <button
-                key={item.key}
-                onClick={() => handleAction(item.key)}
+                onClick={() => setHeadingOpen(!headingOpen)}
                 title={item.tooltip}
-                className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer flex-shrink-0"
+                className="p-1.5 sm:p-2 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer flex-shrink-0"
               >
                 <ToolbarIcon type={item.key} />
               </button>
-            )
-          })}
-        </div>
+              {headingOpen && (
+                <HeadingDropdown
+                  onSelect={(level) => insertAtLineStart("#".repeat(level) + " ")}
+                  onClose={() => setHeadingOpen(false)}
+                />
+              )}
+            </div>
+          )
+        }
+        return (
+          <button
+            key={item.key}
+            onClick={() => handleAction(item.key)}
+            title={item.tooltip}
+            className="p-1.5 sm:p-2 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer flex-shrink-0 active:scale-90"
+          >
+            <ToolbarIcon type={item.key} />
+          </button>
+        )
+      })}
+    </div>
+  )
+
+  return (
+    <>
+      {isFullscreen && (
+        <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" />
       )}
 
-      {/* Content area */}
-      <div className="min-h-[300px]">
-        {tab === "write" ? (
-          <textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => {
-              if (maxLength && e.target.value.length > maxLength) return
-              onChange(e.target.value)
-            }}
-            onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
-            placeholder={placeholder}
-            spellCheck={false}
-            className="w-full min-h-[300px] max-h-[600px] p-4 bg-transparent text-sm text-zinc-300 placeholder-zinc-600 font-mono leading-relaxed resize-y focus:outline-none"
-          />
-        ) : (
-          <div className="p-4 min-h-[300px]">
-            <MarkdownPreview content={value} />
+      <div
+        className={
+          isFullscreen
+            ? "fixed inset-0 z-50 flex flex-col bg-zinc-900 sm:inset-4 sm:rounded-2xl sm:border sm:border-zinc-700/50 sm:shadow-2xl sm:shadow-black/50"
+            : "border border-zinc-700 rounded-xl overflow-hidden bg-zinc-900/50"
+        }
+      >
+        <div className="flex items-center justify-between border-b border-zinc-700 bg-zinc-800/30 flex-shrink-0">
+          <div className="flex items-center min-w-0">
+            <button
+              onClick={() => setTab("write")}
+              className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${
+                tab === "write" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              <span className="flex items-center gap-1 sm:gap-1.5">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                </svg>
+                <span className="hidden xs:inline">Escrever</span>
+              </span>
+              {tab === "write" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />}
+            </button>
+
+            <button
+              onClick={() => setTab("preview")}
+              className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${
+                tab === "preview" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              <span className="flex items-center gap-1 sm:gap-1.5">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                </svg>
+                <span className="hidden xs:inline">Visualizar</span>
+              </span>
+              {tab === "preview" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />}
+            </button>
+
+            {showSideBySideOption && (
+              <button
+                onClick={() => setTab("sidebyside")}
+                className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${
+                  tab === "sidebyside" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                <span className="flex items-center gap-1 sm:gap-1.5">
+                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                    <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M12 3v18" strokeLinecap="round" />
+                  </svg>
+                  <span className="hidden sm:inline">Lado a lado</span>
+                </span>
+                {tab === "sidebyside" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />}
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 sm:gap-2 pr-2 sm:pr-3 flex-shrink-0">
+            {maxLength && (
+              <span className={`text-xs tabular-nums hidden sm:inline ${
+                charPercent > 90 ? "text-red-400" : charPercent > 70 ? "text-amber-400" : "text-zinc-600"
+              }`}>
+                {charCount.toLocaleString()}/{maxLength.toLocaleString()}
+              </span>
+            )}
+
+            <button
+              onClick={() => setIsFullscreen(f => !f)}
+              title={isFullscreen ? "Sair da tela cheia (Esc)" : "Tela cheia"}
+              aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+              className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer active:scale-90"
+            >
+              {isFullscreen ? (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {maxLength && (
+          <div className="h-[2px] bg-zinc-800/50 flex-shrink-0">
+            <div
+              className={`h-full transition-all duration-500 ease-out ${
+                charPercent > 90 ? "bg-red-500/80" : charPercent > 70 ? "bg-amber-500/60" : "bg-indigo-500/30"
+              }`}
+              style={{ width: `${Math.min(charPercent, 100)}%` }}
+            />
           </div>
         )}
-      </div>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between px-3 py-2 border-t border-zinc-800 bg-zinc-800/20">
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-zinc-600 flex items-center gap-1">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-            </svg>
-            Markdown suportado
-          </span>
+        {showToolbar && renderToolbar()}
+
+        <div className={isFullscreen ? "flex-1 overflow-hidden" : "min-h-[250px] sm:min-h-[300px]"}>
+          {tab === "write" && (
+            <textarea
+              ref={textareaRef}
+              value={value}
+              onChange={(e) => {
+                if (maxLength && e.target.value.length > maxLength) return
+                onChange(e.target.value)
+              }}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              placeholder={placeholder}
+              spellCheck={false}
+              className={textareaClasses(isFullscreen)}
+            />
+          )}
+
+          {tab === "preview" && (
+            <div className={`p-3 sm:p-4 overflow-y-auto ${isFullscreen ? "h-full" : "min-h-[250px] sm:min-h-[300px]"}`}>
+              <MarkdownPreview content={value} />
+            </div>
+          )}
+
+          {tab === "sidebyside" && (
+            <div ref={splitContainerRef} className="flex h-full">
+              <div className="h-full overflow-hidden" style={{ width: `${splitPos}%` }}>
+                <textarea
+                  ref={textareaRef}
+                  value={value}
+                  onChange={(e) => {
+                    if (maxLength && e.target.value.length > maxLength) return
+                    onChange(e.target.value)
+                  }}
+                  onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
+                  onScroll={handleTextareaScroll}
+                  placeholder={placeholder}
+                  spellCheck={false}
+                  className="w-full h-full p-3 sm:p-4 bg-transparent text-sm text-zinc-300 placeholder-zinc-600 font-mono leading-relaxed resize-none focus:outline-none"
+                />
+              </div>
+
+              <div
+                onMouseDown={handleSplitStart}
+                onTouchStart={handleSplitStart}
+                className="relative flex-shrink-0 touch-none cursor-col-resize group z-10"
+              >
+                <div className="w-px h-full bg-zinc-700 group-hover:bg-indigo-500/70 transition-colors" />
+                <div className="absolute inset-y-0 -left-2 -right-2" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-10 rounded-full bg-zinc-700/80 group-hover:bg-indigo-500/80 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center shadow-lg">
+                  <svg className="w-1.5 h-4 text-zinc-300" viewBox="0 0 6 16" fill="currentColor">
+                    <circle cx="1.5" cy="3" r="1" />
+                    <circle cx="4.5" cy="3" r="1" />
+                    <circle cx="1.5" cy="8" r="1" />
+                    <circle cx="4.5" cy="8" r="1" />
+                    <circle cx="1.5" cy="13" r="1" />
+                    <circle cx="4.5" cy="13" r="1" />
+                  </svg>
+                </div>
+              </div>
+
+              <div
+                ref={previewSideRef}
+                className="h-full overflow-y-auto"
+                style={{ width: `${100 - splitPos}%` }}
+              >
+                <div className="p-3 sm:p-4">
+                  <MarkdownPreview content={value} />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-        <div className="flex items-center gap-2 text-xs text-zinc-600">
-          <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">Ctrl</kbd>
-          <span>+</span>
-          <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">B</kbd>
-          <span className="text-zinc-700 mx-1">·</span>
-          <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">Ctrl</kbd>
-          <span>+</span>
-          <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">I</kbd>
-          <span className="text-zinc-700 mx-1">·</span>
-          <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">Ctrl</kbd>
-          <span>+</span>
-          <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">K</kbd>
+
+        <div className="flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 border-t border-zinc-800 bg-zinc-800/20 flex-shrink-0 gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <span className="text-[10px] sm:text-xs text-zinc-600 flex items-center gap-1 flex-shrink-0">
+              <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+              </svg>
+              <span className="hidden sm:inline">Markdown suportado</span>
+              <span className="sm:hidden">MD</span>
+            </span>
+
+            <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-600">
+              <span className="tabular-nums">{wordCount} {wordCount === 1 ? "palavra" : "palavras"}</span>
+              <span className="text-zinc-700">·</span>
+              <span className="tabular-nums">{lineCount} {lineCount === 1 ? "linha" : "linhas"}</span>
+            </div>
+
+            {maxLength && (
+              <span className={`text-[10px] tabular-nums sm:hidden flex-shrink-0 ${
+                charPercent > 90 ? "text-red-400" : charPercent > 70 ? "text-amber-400" : "text-zinc-600"
+              }`}>
+                {charCount}/{maxLength}
+              </span>
+            )}
+          </div>
+
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-zinc-600 flex-shrink-0">
+            <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">Ctrl</kbd>
+            <span>+</span>
+            <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">B</kbd>
+            <span className="text-zinc-700 mx-0.5">·</span>
+            <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">Ctrl</kbd>
+            <span>+</span>
+            <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">I</kbd>
+            <span className="text-zinc-700 mx-0.5">·</span>
+            <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">Ctrl</kbd>
+            <span>+</span>
+            <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">K</kbd>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
