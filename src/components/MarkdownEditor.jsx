@@ -657,11 +657,11 @@ function useMediaQuery(query) {
 
 const followingCache = new Map()
 
-function MentionSuggestions({ query, position, onSelect, userId, editorRef }) {
+function MentionSuggestions({ query, position, onSelect, userId, editorContainerRef }) {
   const [users, setUsers] = useState(() => followingCache.get(userId) || [])
   const [loading, setLoading] = useState(!followingCache.has(userId))
-  const [showAbove, setShowAbove] = useState(true)
   const containerRef = useRef(null)
+  const [placement, setPlacement] = useState({ top: 0, left: 0 })
 
   useEffect(() => {
     if (followingCache.has(userId)) return
@@ -681,25 +681,53 @@ function MentionSuggestions({ query, position, onSelect, userId, editorRef }) {
   }, [userId])
 
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!containerRef.current || !editorContainerRef?.current) return
+
+    const editorRect = editorContainerRef.current.getBoundingClientRect()
     const menuHeight = containerRef.current.offsetHeight || 200
-    const spaceAbove = position.bottom
-    setShowAbove(spaceAbove > menuHeight + 50)
-  }, [position, users, loading])
+    const isMobile = window.innerWidth < 640
+
+    const cursorTop = editorRect.top + (editorRect.height - position.bottom)
+    const cursorLeft = editorRect.left + position.left
+
+    const spaceBelow = window.innerHeight - cursorTop - 30
+    const spaceAbove = cursorTop - editorRect.top
+
+    const showBelow = spaceBelow >= menuHeight || spaceBelow > spaceAbove
+
+    let top, left, width
+
+    if (showBelow) {
+      top = cursorTop + 24
+    } else {
+      top = cursorTop - menuHeight - 8
+    }
+
+    if (isMobile) {
+      left = 12
+      width = window.innerWidth - 24
+    } else {
+      const menuWidth = 224
+      left = Math.min(cursorLeft, window.innerWidth - menuWidth - 16)
+      left = Math.max(left, 16)
+      width = menuWidth
+    }
+
+    top = Math.max(top, 8)
+    top = Math.min(top, window.innerHeight - menuHeight - 8)
+
+    setPlacement({ top, left, width })
+  }, [position, users, loading, editorContainerRef])
 
   const filtered = query ? users.filter(u => u.username?.toLowerCase().includes(query.toLowerCase())) : users
 
   if (!loading && filtered.length === 0) return null
 
-  const style = showAbove
-    ? { bottom: Math.max(position.bottom, 8), left: Math.max(position.left, 8) }
-    : { top: `calc(100% - ${position.bottom - 30}px)`, left: Math.max(position.left, 8) }
-
-  return (
+  return createPortal(
     <div
       ref={containerRef}
-      className="absolute z-50 bg-zinc-800 border border-zinc-700 rounded-lg shadow-2xl shadow-black/50 py-1 w-[calc(100%-1.5rem)] sm:w-56 max-h-48 overflow-y-auto left-3 sm:left-auto"
-      style={style}
+      className="fixed z-[9999] bg-zinc-800 border border-zinc-700 rounded-lg shadow-2xl shadow-black/50 py-1 max-h-48 overflow-y-auto"
+      style={{ top: placement.top, left: placement.left, width: placement.width }}
     >
       {loading ? (
         <div className="px-3 py-4 flex items-center justify-center">
@@ -710,14 +738,15 @@ function MentionSuggestions({ query, position, onSelect, userId, editorRef }) {
           <button
             key={u.id}
             onMouseDown={(e) => { e.preventDefault(); onSelect(u.username) }}
-            className="w-full px-3 py-2 flex items-center gap-2.5 hover:bg-zinc-700/70 transition-colors cursor-pointer text-left"
+            className="w-full px-3 py-2 flex items-center gap-2.5 hover:bg-zinc-700/70 active:bg-zinc-700 transition-colors cursor-pointer text-left"
           >
             <img src={u.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"} alt="" className="w-6 h-6 rounded-full bg-zinc-700 object-cover flex-shrink-0" />
             <span className="text-sm text-zinc-300 truncate">{u.username}</span>
           </button>
         ))
       )}
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -1172,6 +1201,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
                 position={mention.position}
                 onSelect={handleMentionSelect}
                 userId={currentUser.id}
+                editorContainerRef={mainEditorContainer}
               />
             )}
           </div>
