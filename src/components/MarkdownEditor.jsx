@@ -8,14 +8,22 @@ import { defaultSchema } from "rehype-sanitize"
 
 const customSchema = {
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames || []), "details", "summary", "iframe", "img", "spoiler"],
+  tagNames: [...(defaultSchema.tagNames || []), "details", "summary", "iframe", "img", "spoiler", "div", "center"],
   attributes: {
     ...defaultSchema.attributes,
     img: ["src", "alt", "width", "height", "loading", "style"],
     iframe: ["src", "title", "allow", "allowfullscreen", "class", "className"],
     details: ["class", "className"],
     summary: ["class", "className"],
-    div: [...(defaultSchema.attributes?.div || []), "class", "className"],
+    div: [...(defaultSchema.attributes?.div || []), "class", "className", "style", "align"],
+    p: ["style", "align"],
+    h1: ["style", "align"],
+    h2: ["style", "align"],
+    h3: ["style", "align"],
+    h4: ["style", "align"],
+    h5: ["style", "align"],
+    h6: ["style", "align"],
+    center: [],
     spoiler: [],
   },
   protocols: {
@@ -126,6 +134,11 @@ function ToolbarIcon({ type }) {
         <path strokeLinecap="round" d="M3 12h18" />
       </svg>
     ),
+		center: (
+			<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+				<path strokeLinecap="round" d="M3 6h18M7 12h10M5 18h14" />
+			</svg>
+		),
     table: (
       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
         <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -398,6 +411,11 @@ export function MarkdownPreview({ content }) {
 					    />
 					  )
 					},
+					div: ({ align, children }) => {
+						const alignClass = align === "center" ? "text-center" : align === "right" ? "text-right" : ""
+						return <div className={alignClass}>{children}</div>
+					},
+					center: ({ children }) => <div className="text-center">{children}</div>,
           table: ({ children }) => (
             <div className="overflow-x-auto my-3 -mx-1">
               <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">
@@ -591,6 +609,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 	    spoiler: () => insertText("||", "||", "texto escondido"),
 	    spoilerimage: () => insertNewBlock('<img src="https://url-da-imagem.com" alt="spoiler" width="400" />'),
 	    hr: () => insertNewBlock("---"),
+			center: () => insertNewBlock("<center>\n\nconteúdo centralizado\n\n</center>"),
 	    table: () => insertNewBlock("| Coluna 1 | Coluna 2 | Coluna 3 |\n| --- | --- | --- |\n| dado | dado | dado |"),
 	  }
 	  actions[key]?.()
