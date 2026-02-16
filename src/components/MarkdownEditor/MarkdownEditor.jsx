@@ -133,12 +133,14 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
     const selected = view.state.sliceDoc(from, to)
     const insert = selected || ph
     const fullInsert = before + insert + after
+
     if (maxLength && (view.state.doc.length - (to - from) + fullInsert.length) > maxLength) return
+
     view.dispatch({
       changes: { from, to, insert: fullInsert },
       selection: {
-        anchor: selected ? from + fullInsert.length : from + before.length,
-        head: selected ? from + fullInsert.length : from + before.length + insert.length,
+        anchor: from,
+        head: from + fullInsert.length,
       },
     })
     view.focus()

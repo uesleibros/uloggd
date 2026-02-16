@@ -1,6 +1,7 @@
 import { defaultSchema } from "rehype-sanitize"
 import remarkGfm from "remark-gfm"
 import rehypeRaw from "rehype-raw"
+import remarkBreaks from "remark-breaks"
 import rehypeSanitize from "rehype-sanitize"
 import { SpoilerText } from "./SpoilerText"
 import { SpoilerImage } from "./SpoilerImage"
@@ -44,7 +45,7 @@ export const customSchema = {
   },
 }
 
-export const remarkPlugins = [remarkGfm]
+export const remarkPlugins = [remarkGfm, remarkBreaks]
 export const rehypePlugins = [rehypeRaw, [rehypeSanitize, customSchema]]
 
 export const markdownComponents = {
@@ -70,7 +71,7 @@ export const markdownComponents = {
         }
       }
     }
-    return <p className="text-sm text-zinc-300 leading-relaxed mb-3">{children}</p>
+    return <p className="mb-3">{children}</p>
   },
   a: ({ href, children }) => {
     const ytMatch = href?.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/)

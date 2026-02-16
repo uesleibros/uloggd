@@ -5,7 +5,6 @@ import Header from "./components/Layout/Header"
 import Footer from "./components/Layout/Footer"
 import Home from "./pages/Home"
 import Game from "./pages/Game"
-import Badges from "./pages/Badges"
 import Profile from "./pages/Profile"
 import NotificationContainer from "./components/UI/Notification"
 import NotFound from "./pages/NotFound"
@@ -25,7 +24,6 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/game/:slug" element={<Game />} />
           <Route path="/u/:username" element={<Profile />} />
-          <Route path="/badges" element={<Badges />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
