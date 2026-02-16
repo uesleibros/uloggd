@@ -12,7 +12,7 @@ import DragScrollRow from "../components/DragScrollRow.jsx"
 function GameSkeleton() {
   return (
     <div>
-      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/5] sm:aspect-[16/4] md:aspect-auto md:h-[262px] overflow-hidden">
+      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/7] sm:aspect-[16/5] md:aspect-auto md:h-[262px] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/30 via-zinc-900 to-zinc-900" />
         <div id="main-gradient" />
         <div id="gradient" />
@@ -621,7 +621,7 @@ export default function Game() {
 
   return (
     <div>
-      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/5] sm:aspect-[16/4] md:aspect-auto md:h-[262px] overflow-hidden">
+      <div className="absolute z-[-1] top-0 left-0 w-full aspect-[16/7] sm:aspect-[16/5] md:aspect-auto md:h-[262px] overflow-hidden">
         {game.screenshots?.length > 0 ? (
           <img
             src={`https:${game.screenshots[0].url}`}
@@ -825,4 +825,5 @@ export default function Game() {
       />
     </div>
   )
+
 }
