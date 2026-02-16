@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm"
 import rehypeRaw from "rehype-raw"
 import rehypeSanitize from "rehype-sanitize"
 import { defaultSchema } from "rehype-sanitize"
-import { UserBadges } from "./UserBadges"
+import UserBadges from "./UserBadges"
 
 const customSchema = {
   ...defaultSchema,
