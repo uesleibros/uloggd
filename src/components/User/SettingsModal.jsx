@@ -95,6 +95,8 @@ export default function SettingsModal({ onClose }) {
   const [bio, setBio] = useState(user?.bio || "")
   const [bioSaving, setBioSaving] = useState(false)
 
+  const bioIsDirty = bio !== (user?.bio || "")
+
   useEffect(() => {
     document.body.style.overflow = "hidden"
     return () => { document.body.style.overflow = "" }
@@ -105,6 +107,10 @@ export default function SettingsModal({ onClose }) {
     window.addEventListener("keydown", handleKey)
     return () => window.removeEventListener("keydown", handleKey)
   }, [onClose])
+
+  function handleResetBio() {
+    setBio(user?.bio || "")
+  }
 
   async function handleSignOut() {
     setSignOutLoading(true)
@@ -152,6 +158,8 @@ export default function SettingsModal({ onClose }) {
   }
 
   async function handleBioSave() {
+    if (!bioIsDirty) return
+
     setBioSaving(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -322,14 +330,28 @@ export default function SettingsModal({ onClose }) {
                       maxLength={10000}
                       placeholder="Escreva sobre você..."
                     />
-                    <div className="flex justify-end mt-3">
+                    <div className="flex justify-end items-center gap-3 mt-3">
+                      {bioIsDirty && (
+                        <button
+                          onClick={handleResetBio}
+                          disabled={bioSaving}
+                          className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Resetar
+                        </button>
+                      )}
+                      
                       <button
                         onClick={handleBioSave}
-                        disabled={bioSaving}
-                        className="px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        disabled={!bioIsDirty || bioSaving}
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
+                          !bioIsDirty || bioSaving
+                            ? "bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50"
+                            : "bg-indigo-500 hover:bg-indigo-600 text-white cursor-pointer shadow-lg shadow-indigo-500/20"
+                        }`}
                       >
                         {bioSaving ? (
-                          <div className="w-4 h-4 border-2 border-indigo-300 border-t-white rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-zinc-400 border-t-white rounded-full animate-spin" />
                         ) : (
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -524,4 +546,3 @@ export default function SettingsModal({ onClose }) {
     document.body
   )
 }
-
