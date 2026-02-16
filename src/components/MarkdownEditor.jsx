@@ -646,7 +646,7 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
       </ReactMarkdown>
     </div>
   )
-}
+})
 
 function useMediaQuery(query) {
   const [matches, setMatches] = useState(false)
