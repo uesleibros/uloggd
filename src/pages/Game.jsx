@@ -11,6 +11,7 @@ import DragScrollRow from "../components/UI/DragScrollRow"
 import PageBanner from "../components/Layout/PageBanner"
 import ReviewButton from "../components/Game/ReviewButton"
 import GameReviews from "../components/Game/GameReviews"
+import QuickActions from "../components/Game/QuickActions"
 
 function GameSkeleton() {
   return (
@@ -590,6 +591,7 @@ export default function Game() {
             </div>
 
             <div className="mt-4 md:hidden">
+              <QuickActions game={game} />
               <ReviewButton game={game} />
             </div>
 
@@ -655,6 +657,7 @@ export default function Game() {
             </div>
 
             <div className="hidden md:block mb-6">
+              <QuickActions game={game} />
               <ReviewButton game={game} />
             </div>
 
@@ -737,3 +740,4 @@ export default function Game() {
   )
 
 }
+
