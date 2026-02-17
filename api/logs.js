@@ -463,6 +463,89 @@ async function handleUser(req, res) {
   }
 }
 
+async function handleProfileGames(req, res) {
+  const { userId } = req.body
+  if (!userId) return res.status(400).json({ error: "userId required" })
+
+  try {
+    const { data: logs, error } = await supabase
+      .from("logs")
+      .select("game_id, game_slug, rating, status, playing, backlog, wishlist, liked, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+
+    if (error) throw error
+    if (!logs || logs.length === 0) {
+      return res.json({
+        games: {},
+        counts: { playing: 0, completed: 0, backlog: 0, wishlist: 0, dropped: 0, rated: 0 },
+      })
+    }
+
+    const gameMap = {}
+
+    for (const log of logs) {
+      const slug = log.game_slug
+      if (!gameMap[slug]) {
+        gameMap[slug] = {
+          gameId: log.game_id,
+          slug,
+          ratings: [],
+          statuses: [],
+          playing: false,
+          backlog: false,
+          wishlist: false,
+          liked: false,
+          latestCreatedAt: log.created_at,
+        }
+      }
+
+      if (log.rating != null) gameMap[slug].ratings.push(log.rating)
+      if (log.status) gameMap[slug].statuses.push(log.status)
+      if (log.playing) gameMap[slug].playing = true
+      if (log.backlog) gameMap[slug].backlog = true
+      if (log.wishlist) gameMap[slug].wishlist = true
+      if (log.liked) gameMap[slug].liked = true
+    }
+
+    const games = {}
+    const counts = { playing: 0, completed: 0, backlog: 0, wishlist: 0, dropped: 0, rated: 0 }
+
+    for (const [slug, g] of Object.entries(gameMap)) {
+      const avgRating = g.ratings.length > 0
+        ? Math.round(g.ratings.reduce((a, b) => a + b, 0) / g.ratings.length)
+        : null
+
+      const primaryStatus = g.statuses[0] || null
+
+      games[slug] = {
+        gameId: g.gameId,
+        slug,
+        avgRating,
+        ratingCount: g.ratings.length,
+        status: primaryStatus,
+        playing: g.playing,
+        backlog: g.backlog,
+        wishlist: g.wishlist,
+        liked: g.liked,
+        latestCreatedAt: g.latestCreatedAt,
+      }
+
+      if (g.playing) counts.playing++
+      if (g.statuses.includes("completed")) counts.completed++
+      if (g.backlog) counts.backlog++
+      if (g.wishlist) counts.wishlist++
+      if (g.statuses.includes("abandoned")) counts.dropped++
+      if (g.ratings.length > 0) counts.rated++
+    }
+
+    res.json({ games, counts })
+  } catch (e) {
+    console.error(e)
+    res.status(500).json({ error: "failed to fetch profile games" })
+  }
+}
+
 const ACTIONS = {
   create: handleCreate,
   delete: handleDelete,
@@ -471,6 +554,7 @@ const ACTIONS = {
   stats: handleStats,
   update: handleUpdate,
   user: handleUser,
+  "profile-games": handleProfileGames,
 }
 
 export default async function handler(req, res) {
