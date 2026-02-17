@@ -130,7 +130,7 @@ export const markdownComponents = {
     }
     return <li className="leading-relaxed">{children}</li>
   },
-  hr: () => <hr className="my-6 border-zinc-700 border-t-[3px] w-full" />,
+  hr: () => <hr className="my-6 border-zinc-700 border-t-[3px]" />,
   img: ({ src, alt, width, height }) => (
     <img
       src={src}
@@ -147,7 +147,7 @@ export const markdownComponents = {
   },
   mention: ({ children }) => <Mention username={children} />,
   center: ({ children }) => (
-    <div className="flex flex-col items-center text-center w-full">
+    <div className="flex flex-col items-center text-center w-full overflow-hidden">
       {children}
     </div>
   ),
@@ -163,4 +163,5 @@ export const markdownComponents = {
   th: ({ children }) => <th className="px-3 py-2 text-left text-xs font-semibold text-zinc-300 uppercase tracking-wider border border-zinc-700">{children}</th>,
   td: ({ children }) => <td className="px-3 py-2 text-sm text-zinc-400 border border-zinc-700">{children}</td>,
   tr: ({ children }) => <tr className="hover:bg-zinc-800/30 transition-colors">{children}</tr>,
+
 }
