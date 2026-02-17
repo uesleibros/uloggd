@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "../../hooks/usePageMeta"
@@ -9,6 +9,7 @@ import SettingsModal from "../components/User/SettingsModal"
 import UserBadges from "../components/User/UserBadges"
 import { MarkdownPreview } from "../components/MarkdownEditor"
 import PageBanner from "../components/Layout/PageBanner"
+import GameCard from "../components/GameCard"
 
 function ProfileSkeleton() {
   return (
@@ -295,6 +296,32 @@ function EmptyTab({ tabKey, isOwnProfile, username }) {
   )
 }
 
+function GameGridSkeleton() {
+  return (
+    <div className="flex flex-wrap gap-3">
+      {[...Array(8)].map((_, i) => (
+        <div key={i} className="w-32 h-44 bg-zinc-800 rounded-lg animate-pulse" />
+      ))}
+    </div>
+  )
+}
+
+function GamesGrid({ games, profileGames }) {
+  if (!games || games.length === 0) return null
+
+  return (
+    <div className="flex flex-wrap gap-3">
+      {games.map(game => (
+        <GameCard
+          key={game.slug}
+          game={game}
+          userRating={profileGames[game.slug]?.avgRating}
+        />
+      ))}
+    </div>
+  )
+}
+
 function ListsSection({ lists = [], isOwnProfile, username }) {
   if (lists.length === 0) {
     return (
@@ -458,6 +485,78 @@ function BioSection({ bio, isOwnProfile, onEdit }) {
   )
 }
 
+function useProfileGames(profileId) {
+  const [profileGames, setProfileGames] = useState({})
+  const [counts, setCounts] = useState({ playing: 0, completed: 0, backlog: 0, wishlist: 0, dropped: 0, rated: 0 })
+  const [igdbGames, setIgdbGames] = useState({})
+  const [loadingGames, setLoadingGames] = useState(true)
+
+  const fetchGames = useCallback(async () => {
+    if (!profileId) return
+    setLoadingGames(true)
+
+    try {
+      const res = await fetch("/api/logs?action=profile-games", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: profileId }),
+      })
+
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+
+      setProfileGames(data.games || {})
+      setCounts(data.counts || { playing: 0, completed: 0, backlog: 0, wishlist: 0, dropped: 0, rated: 0 })
+
+      const slugs = Object.keys(data.games || {})
+      if (slugs.length > 0) {
+        const batchRes = await fetch("/api/igdb?action=games-batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slugs }),
+        })
+
+        if (batchRes.ok) {
+          const batchData = await batchRes.json()
+          setIgdbGames(batchData)
+        }
+      }
+    } catch {
+    } finally {
+      setLoadingGames(false)
+    }
+  }, [profileId])
+
+  useEffect(() => { fetchGames() }, [fetchGames])
+
+  return { profileGames, counts, igdbGames, loadingGames }
+}
+
+function filterGamesByTab(profileGames, igdbGames, tabKey) {
+  const entries = Object.entries(profileGames)
+
+  const filtered = entries.filter(([, g]) => {
+    switch (tabKey) {
+      case "playing": return g.playing
+      case "completed": return g.status === "completed"
+      case "backlog": return g.backlog
+      case "wishlist": return g.wishlist
+      case "dropped": return g.status === "abandoned"
+      case "rated": return g.ratingCount > 0
+      default: return false
+    }
+  })
+
+  return filtered
+    .map(([slug]) => igdbGames[slug])
+    .filter(Boolean)
+    .sort((a, b) => {
+      const ga = profileGames[a.slug]
+      const gb = profileGames[b.slug]
+      return new Date(gb?.latestCreatedAt || 0) - new Date(ga?.latestCreatedAt || 0)
+    })
+}
+
 export default function Profile() {
   const { username } = useParams()
   const { user: currentUser, loading: authLoading } = useAuth()
@@ -473,6 +572,8 @@ export default function Profile() {
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   const isOwnProfile = currentUser?.username?.toLowerCase() === username?.toLowerCase()
+
+  const { profileGames, counts, igdbGames, loadingGames } = useProfileGames(profile?.id)
 
   usePageMeta(profile ? {
     title: `${profile.username} - uloggd`,
@@ -587,13 +688,15 @@ export default function Profile() {
   }
 
   const tabs = [
-    { key: "playing", label: "Jogando", count: 0 },
-    { key: "completed", label: "Zerados", count: 0 },
-    { key: "backlog", label: "Backlog", count: 0 },
-    { key: "wishlist", label: "Wishlist", count: 0 },
-    { key: "dropped", label: "Largados", count: 0 },
-    { key: "rated", label: "Avaliados", count: 0 },
+    { key: "playing", label: "Jogando", count: counts.playing },
+    { key: "completed", label: "Zerados", count: counts.completed },
+    { key: "backlog", label: "Backlog", count: counts.backlog },
+    { key: "wishlist", label: "Wishlist", count: counts.wishlist },
+    { key: "dropped", label: "Largados", count: counts.dropped },
+    { key: "rated", label: "Avaliados", count: counts.rated },
   ]
+
+  const tabGames = filterGamesByTab(profileGames, igdbGames, activeTab)
 
   const memberSince = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
@@ -654,10 +757,10 @@ export default function Profile() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-              <StatCard value={0} label="Jogando" />
-              <StatCard value={0} label="Zerados" />
-              <StatCard value={0} label="Backlog" />
-              <StatCard value={0} label="Avaliados" />
+              <StatCard value={counts.playing} label="Jogando" />
+              <StatCard value={counts.completed} label="Zerados" />
+              <StatCard value={counts.backlog} label="Backlog" />
+              <StatCard value={counts.rated} label="Avaliados" />
             </div>
           </div>
         </div>
@@ -691,11 +794,17 @@ export default function Profile() {
 
           <hr className="my-4 border-zinc-700" />
 
-          <EmptyTab
-            tabKey={activeTab}
-            isOwnProfile={isOwnProfile}
-            username={profile.username}
-          />
+          {loadingGames ? (
+            <GameGridSkeleton />
+          ) : tabGames.length > 0 ? (
+            <GamesGrid games={tabGames} profileGames={profileGames} />
+          ) : (
+            <EmptyTab
+              tabKey={activeTab}
+              isOwnProfile={isOwnProfile}
+              username={profile.username}
+            />
+          )}
         </div>
 
         <ListsSection
@@ -718,7 +827,4 @@ export default function Profile() {
       )}
     </div>
   )
-
 }
-
-
