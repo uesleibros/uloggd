@@ -1,6 +1,7 @@
 # Logs
 logs
 !api/logs/
+!services/logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
