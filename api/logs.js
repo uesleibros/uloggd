@@ -476,8 +476,7 @@ const ACTIONS = {
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end()
 
-  const url = new URL(req.url)
-  const action = url.searchParams.get("action")
+  const action = req.query.action
   const fn = ACTIONS[action]
 
   if (!fn) return res.status(404).json({ error: "Action not found" })
