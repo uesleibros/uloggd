@@ -673,7 +673,7 @@ function LogModal({ game, onClose, existingLog, onDeleted }) {
         aspectRatings: validAspects.length > 0 ? validAspects : null,
       }
 
-      const url = isEditing ? "/api/logs/update" : "/api/logs/create"
+      const url = isEditing ? "/api/logs?action=update" : "/api/logs?action=create"
       if (isEditing) payload.logId = existingLog.id
 
       const res = await fetch(url, {
@@ -694,7 +694,7 @@ function LogModal({ game, onClose, existingLog, onDeleted }) {
     try {
       const token = await getToken()
       if (!token) return
-      const res = await fetch("/api/logs/delete", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify({ logId: existingLog.id }) })
+      const res = await fetch("/api/logs?action=delete", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify({ logId: existingLog.id }) })
       if (res.ok) { notify("Log excluído!"); onDeleted?.(); onClose() }
       else notify("Falha ao excluir.", "error")
     } catch { notify("Falha ao excluir.", "error") }
@@ -951,7 +951,7 @@ export default function ReviewButton({ game }) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
-      const res = await fetch("/api/logs/game", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` }, body: JSON.stringify({ gameId: game.id }) })
+      const res = await fetch("/api/logs?action=game", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` }, body: JSON.stringify({ gameId: game.id }) })
       if (res.ok) { const data = await res.json(); setLogs(data); if (data.length > 0 && !selectedLog) setSelectedLog(data[0]) }
     } catch {} finally { setLoading(false) }
   }, [user, game?.id])
@@ -989,4 +989,5 @@ export default function ReviewButton({ game }) {
       {showModal && <LogModal game={game} existingLog={selectedLog} onClose={() => { setShowModal(false); fetchLogs() }} onDeleted={() => { setSelectedLog(null); fetchLogs() }} />}
     </>
   )
+
 }
