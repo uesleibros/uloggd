@@ -142,93 +142,6 @@ function RatingModeSelector({ mode, setMode, compact = false }) {
   )
 }
 
-function StatusSelector({ status, setStatus }) {
-  const [open, setOpen] = useState(false)
-
-  const statuses = [
-    { id: "played", label: "Jogado", sub: "Nada específico" },
-    { id: "completed", label: "Completo", sub: "Zerou o objetivo principal" },
-    { id: "retired", label: "Aposentado", sub: "Terminou um jogo sem final" },
-    { id: "shelved", label: "Na prateleira", sub: "Não terminou mas pode voltar" },
-    { id: "abandoned", label: "Abandonado", sub: "Não terminou e não vai voltar" },
-  ]
-
-  const colors = { played: "bg-zinc-500", completed: "bg-emerald-500", retired: "bg-blue-500", shelved: "bg-amber-500", abandoned: "bg-red-500" }
-  const current = statuses.find((s) => s.id === status)
-
-  return (
-    <div className="relative">
-      <div className="flex rounded-lg overflow-hidden">
-        <button type="button" onClick={() => setOpen(!open)} className={`flex items-center justify-center w-11 border-r border-black/20 cursor-pointer transition-colors ${status ? colors[status] : "bg-zinc-700"}`}>
-          <svg className={`w-3.5 h-3.5 text-white transition-transform duration-200 ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-        </button>
-        <button type="button" onClick={() => setStatus(status ? "" : "played")} className={`flex-1 flex items-center gap-2 px-3 py-2.5 text-sm font-medium cursor-pointer transition-colors ${status ? `${colors[status]} text-white` : "bg-zinc-700 text-zinc-300 hover:bg-zinc-600"}`}>
-          {current?.label || "Jogado"}
-        </button>
-      </div>
-
-      {open && createPortal(
-        <div className="fixed inset-0 z-[10001]" onClick={() => setOpen(false)}>
-          <div className="absolute inset-0 bg-black/50" />
-          <div
-            className="absolute bottom-0 left-0 right-0 sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:-translate-y-1/2 w-full sm:w-[calc(100vw-2rem)] sm:max-w-sm bg-zinc-900 border border-zinc-700 border-b-0 sm:border-b rounded-t-2xl sm:rounded-xl shadow-2xl overflow-hidden"
-            style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-center pt-3 sm:hidden">
-              <div className="w-10 h-1 bg-zinc-700 rounded-full" />
-            </div>
-            <div className="p-4 border-b border-zinc-700">
-              <h4 className="text-sm font-semibold text-white">Definir status</h4>
-              <p className="text-xs text-zinc-500 mt-0.5">Como você finalizou esse jogo?</p>
-            </div>
-            <div className="p-2">
-              {statuses.map((s) => (
-                <button key={s.id} type="button" onClick={() => { setStatus(s.id); setOpen(false) }} className={`w-full flex items-start gap-3 px-3 py-3 rounded-lg text-left cursor-pointer transition-all duration-200 ${status === s.id ? "bg-zinc-800" : "hover:bg-zinc-800/50"}`}>
-                  <div className={`w-3.5 h-3.5 rounded-full mt-0.5 flex-shrink-0 ${colors[s.id]} ${status === s.id ? "ring-2 ring-offset-1 ring-offset-zinc-900 ring-white/20" : ""}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white">{s.label}</p>
-                    <p className="text-xs text-zinc-500 mt-0.5">{s.sub}</p>
-                  </div>
-                  {status === s.id && <svg className="w-4 h-4 text-white ml-auto mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-    </div>
-  )
-}
-
-function ToggleButton({ active, onClick, children }) {
-  return (
-    <button type="button" onClick={onClick} className={`w-full flex items-center justify-center md:justify-start gap-1.5 md:gap-2 px-2 md:px-3 py-2.5 rounded-lg text-xs md:text-sm font-medium cursor-pointer transition-all duration-200 ${active ? "bg-white text-black" : "bg-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-700/60 border border-zinc-700"}`}>
-      {children}
-    </button>
-  )
-}
-
-function TabNav({ activeTab, setActiveTab }) {
-  const tabs = [
-    { key: "review", label: "Review", icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg> },
-    { key: "dates", label: "Datas", icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> },
-    { key: "details", label: "Detalhes", icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg> },
-  ]
-
-  return (
-    <div className="flex gap-1 pb-0.5">
-      {tabs.map((tab) => (
-        <button key={tab.key} type="button" onClick={() => setActiveTab(tab.key)} className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 whitespace-nowrap flex-1 sm:flex-initial ${activeTab === tab.key ? "bg-white text-black" : "text-zinc-500 hover:text-white hover:bg-zinc-800/50"}`}>
-          {tab.icon}
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  )
-}
-
 function PlatformSelect({ platforms, value, onChange, placeholder = "Selecionar plataforma..." }) {
   if (!platforms || platforms.length === 0) return null
   return (
@@ -251,6 +164,25 @@ function LogSection({ title, description, children }) {
       {description && <p className="text-xs text-zinc-500 mb-3">{description}</p>}
       {!description && <div className="mb-3" />}
       {children}
+    </div>
+  )
+}
+
+function TabNav({ activeTab, setActiveTab }) {
+  const tabs = [
+    { key: "review", label: "Review", icon: <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg> },
+    { key: "dates", label: "Datas", icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> },
+    { key: "details", label: "Detalhes", icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg> },
+  ]
+
+  return (
+    <div className="flex gap-1 pb-0.5">
+      {tabs.map((tab) => (
+        <button key={tab.key} type="button" onClick={() => setActiveTab(tab.key)} className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 whitespace-nowrap flex-1 sm:flex-initial ${activeTab === tab.key ? "bg-white text-black" : "text-zinc-500 hover:text-white hover:bg-zinc-800/50"}`}>
+          {tab.icon}
+          {tab.label}
+        </button>
+      ))}
     </div>
   )
 }
@@ -282,68 +214,38 @@ function AspectRatingItem({ aspect, onUpdate, onRemove }) {
     onUpdate({ ...aspect, ratingMode: newMode, rating: converted })
   }
 
-  function handlePointsChange(val) {
-    onUpdate({ ...aspect, rating: val })
-  }
-
   const hasReview = !!aspect.review?.trim()
 
   return (
     <div className="bg-zinc-900/50 border border-zinc-700/50 rounded-xl overflow-hidden">
-      <div className="p-3 sm:p-3 flex items-start gap-3">
+      <div className="p-3 flex items-start gap-3">
         <div className="flex-1 min-w-0 space-y-2.5">
           <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={aspect.label}
-              onChange={(e) => onUpdate({ ...aspect, label: e.target.value.slice(0, MAX_ASPECT_LABEL) })}
-              placeholder="Nome do aspecto"
-              className="flex-1 min-w-0 px-0 py-0 bg-transparent text-sm font-medium text-white placeholder-zinc-600 focus:outline-none border-none"
-            />
+            <input type="text" value={aspect.label} onChange={(e) => onUpdate({ ...aspect, label: e.target.value.slice(0, MAX_ASPECT_LABEL) })} placeholder="Nome do aspecto" className="flex-1 min-w-0 px-0 py-0 bg-transparent text-sm font-medium text-white placeholder-zinc-600 focus:outline-none border-none" />
             <span className="text-[10px] text-zinc-700 flex-shrink-0">{aspect.label.length}/{MAX_ASPECT_LABEL}</span>
           </div>
-
           <RatingModeSelector mode={aspect.ratingMode} setMode={handleModeChange} compact />
-
           <div>
             {isStars ? (
               <StarRatingInput value={getStarValue()} onChange={handleStarChange} allowHalf={aspect.ratingMode === "stars_5h"} size="sm" />
             ) : (
-              <PointsRatingInput value={aspect.rating} onChange={handlePointsChange} mode={aspect.ratingMode} compact />
+              <PointsRatingInput value={aspect.rating} onChange={(val) => onUpdate({ ...aspect, rating: val })} mode={aspect.ratingMode} compact />
             )}
           </div>
         </div>
-
         <div className="flex flex-col items-center gap-1.5 flex-shrink-0 pt-0.5">
-          <button
-            type="button"
-            onClick={() => setExpanded(!expanded)}
-            className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${
-              expanded || hasReview
-                ? "text-indigo-400 bg-indigo-400/10"
-                : "text-zinc-700 hover:text-zinc-400"
-            }`}
-            title="Comentário"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-            </svg>
+          <button type="button" onClick={() => setExpanded(!expanded)} className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${expanded || hasReview ? "text-indigo-400 bg-indigo-400/10" : "text-zinc-700 hover:text-zinc-400"}`}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
           </button>
           <button type="button" onClick={onRemove} className="p-2 text-zinc-700 hover:text-red-400 transition-colors cursor-pointer rounded-lg">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
       </div>
-
       {expanded && (
         <div className="px-3 pb-3 border-t border-zinc-800">
           <div className="pt-3">
-            <MarkdownEditor
-              value={aspect.review || ""}
-              onChange={(val) => onUpdate({ ...aspect, review: val })}
-              maxLength={MAX_ASPECT_REVIEW}
-              placeholder={`Comentário sobre ${aspect.label || "este aspecto"}...`}
-            />
+            <MarkdownEditor value={aspect.review || ""} onChange={(val) => onUpdate({ ...aspect, review: val })} maxLength={MAX_ASPECT_REVIEW} placeholder={`Comentário sobre ${aspect.label || "este aspecto"}...`} />
           </div>
         </div>
       )}
@@ -362,41 +264,22 @@ function AspectRatings({ aspects, setAspects }) {
     setShowSuggestions(false)
   }
 
-  function updateAspect(updated) {
-    setAspects(aspects.map(a => a.id === updated.id ? updated : a))
-  }
-
-  function removeAspect(id) {
-    setAspects(aspects.filter(a => a.id !== id))
-  }
-
   return (
-    <LogSection title="Avaliação por aspecto" description="Avalie partes específicas do jogo. Cada aspecto tem sua própria nota e modo.">
+    <LogSection title="Avaliação por aspecto" description="Avalie partes específicas do jogo.">
       {aspects.length > 0 && (
         <div className="space-y-2 mb-3">
           {aspects.map((aspect) => (
-            <AspectRatingItem
-              key={aspect.id}
-              aspect={aspect}
-              onUpdate={updateAspect}
-              onRemove={() => removeAspect(aspect.id)}
-            />
+            <AspectRatingItem key={aspect.id} aspect={aspect} onUpdate={(u) => setAspects(aspects.map(a => a.id === u.id ? u : a))} onRemove={() => setAspects(aspects.filter(a => a.id !== aspect.id))} />
           ))}
         </div>
       )}
-
       {aspects.length < MAX_ASPECTS && (
         <div>
-          <button
-            type="button"
-            onClick={() => setShowSuggestions(!showSuggestions)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-3 border border-dashed border-zinc-700 hover:border-zinc-500 rounded-lg text-sm text-zinc-500 hover:text-zinc-300 transition-all duration-200 cursor-pointer"
-          >
+          <button type="button" onClick={() => setShowSuggestions(!showSuggestions)} className="w-full flex items-center justify-center gap-2 px-3 py-3 border border-dashed border-zinc-700 hover:border-zinc-500 rounded-lg text-sm text-zinc-500 hover:text-zinc-300 transition-all duration-200 cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             Adicionar aspecto
             <span className="text-zinc-700 text-xs">{aspects.length}/{MAX_ASPECTS}</span>
           </button>
-
           {showSuggestions && (
             <div className="mt-2 p-3 bg-zinc-900 border border-zinc-700 rounded-lg">
               {availableSuggestions.length > 0 && (
@@ -404,20 +287,14 @@ function AspectRatings({ aspects, setAspects }) {
                   <p className="text-xs text-zinc-500 mb-2">Sugestões</p>
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {availableSuggestions.map((s) => (
-                      <button key={s} type="button" onClick={() => addAspect(s)} className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded-full text-xs text-zinc-400 hover:text-white transition-all duration-200 cursor-pointer">
-                        {s}
-                      </button>
+                      <button key={s} type="button" onClick={() => addAspect(s)} className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded-full text-xs text-zinc-400 hover:text-white transition-all duration-200 cursor-pointer">{s}</button>
                     ))}
                   </div>
                 </>
               )}
               <div className="flex gap-2">
-                <button type="button" onClick={() => addAspect("")} className="flex-1 px-3 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-xs text-zinc-400 hover:text-white transition-all duration-200 cursor-pointer text-center">
-                  Campo vazio
-                </button>
-                <button type="button" onClick={() => setShowSuggestions(false)} className="px-3 py-2.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors cursor-pointer">
-                  Fechar
-                </button>
+                <button type="button" onClick={() => addAspect("")} className="flex-1 px-3 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-xs text-zinc-400 hover:text-white transition-all duration-200 cursor-pointer text-center">Campo vazio</button>
+                <button type="button" onClick={() => setShowSuggestions(false)} className="px-3 py-2.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors cursor-pointer">Fechar</button>
               </div>
             </div>
           )}
@@ -488,7 +365,6 @@ function ReviewTabContent({ rating, setRating, ratingMode, setRatingMode, platfo
 function DatesTabContent({ startedOn, setStartedOn, finishedOn, setFinishedOn }) {
   const today = new Date().toISOString().split("T")[0]
   const minDate = "2000-01-01"
-
   const startError = startedOn && (startedOn < minDate || startedOn > today) ? (startedOn > today ? "Data no futuro" : "Data muito antiga") : null
   const finishError = finishedOn && (finishedOn < minDate || finishedOn > today) ? (finishedOn > today ? "Data no futuro" : "Data muito antiga") : null
   const orderError = startedOn && finishedOn && finishedOn < startedOn ? "Término antes do início" : null
@@ -498,12 +374,12 @@ function DatesTabContent({ startedOn, setStartedOn, finishedOn, setFinishedOn })
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="text-sm text-zinc-400 mb-1.5 block">Começou em</label>
-          <input type="date" value={startedOn} onChange={(e) => setStartedOn(e.target.value)} max={today} min={minDate} className={`w-full px-3 py-2.5 bg-zinc-900/50 border rounded-lg text-sm text-white focus:outline-none transition-colors cursor-pointer [color-scheme:dark] ${startError ? "border-red-500/50 focus:border-red-500" : "border-zinc-700/50 focus:border-zinc-500"}`} />
+          <input type="date" value={startedOn} onChange={(e) => setStartedOn(e.target.value)} max={today} min={minDate} className={`w-full px-3 py-2.5 bg-zinc-900/50 border rounded-lg text-sm text-white focus:outline-none transition-colors cursor-pointer [color-scheme:dark] ${startError ? "border-red-500/50" : "border-zinc-700/50 focus:border-zinc-500"}`} />
           {startError && <p className="text-xs text-red-400 mt-1">{startError}</p>}
         </div>
         <div>
           <label className="text-sm text-zinc-400 mb-1.5 block">Terminou em</label>
-          <input type="date" value={finishedOn} onChange={(e) => setFinishedOn(e.target.value)} max={today} min={startedOn || minDate} className={`w-full px-3 py-2.5 bg-zinc-900/50 border rounded-lg text-sm text-white focus:outline-none transition-colors cursor-pointer [color-scheme:dark] ${finishError || orderError ? "border-red-500/50 focus:border-red-500" : "border-zinc-700/50 focus:border-zinc-500"}`} />
+          <input type="date" value={finishedOn} onChange={(e) => setFinishedOn(e.target.value)} max={today} min={startedOn || minDate} className={`w-full px-3 py-2.5 bg-zinc-900/50 border rounded-lg text-sm text-white focus:outline-none transition-colors cursor-pointer [color-scheme:dark] ${finishError || orderError ? "border-red-500/50" : "border-zinc-700/50 focus:border-zinc-500"}`} />
           {finishError && <p className="text-xs text-red-400 mt-1">{finishError}</p>}
           {!finishError && orderError && <p className="text-xs text-red-400 mt-1">{orderError}</p>}
         </div>
@@ -526,7 +402,7 @@ function DetailsTabContent({ logTitle, setLogTitle, replay, setReplay, hoursPlay
           </div>
           <div className="flex-shrink-0">
             <label className="text-sm text-zinc-400 mb-1.5 block">Replay</label>
-            <button type="button" onClick={() => setReplay(!replay)} className={`w-11 h-11 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 ${replay ? "bg-white text-black" : "bg-zinc-900/50 border border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600"}`}>
+            <button type="button" onClick={() => setReplay(!replay)} className={`w-11 h-11 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 ${replay ? "bg-white text-black" : "bg-zinc-900/50 border border-zinc-700/50 text-zinc-500 hover:text-zinc-300"}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
             </button>
           </div>
@@ -544,12 +420,6 @@ function DetailsTabContent({ logTitle, setLogTitle, replay, setReplay, hoursPlay
             <span className="text-sm text-zinc-500">m</span>
           </div>
         </div>
-        {hoursPlayed && parseInt(hoursPlayed) > 50000 && (
-          <p className="text-xs text-amber-400 mt-2 flex items-center gap-1.5">
-            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-            Isso é mais de {Math.round(parseInt(hoursPlayed) / 8760)} anos jogando. Tem certeza?
-          </p>
-        )}
       </LogSection>
 
       <LogSection title="Jogou em" description="A plataforma física que você usou.">
@@ -573,12 +443,12 @@ function DetailsTabContent({ logTitle, setLogTitle, replay, setReplay, hoursPlay
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-red-400">Tem certeza?</p>
-                  <p className="text-xs text-zinc-500 mt-1 leading-relaxed">Sua avaliação, review, nota e todos os dados deste log serão permanentemente excluídos.</p>
+                  <p className="text-xs text-zinc-500 mt-1 leading-relaxed">Todos os dados deste log serão permanentemente excluídos.</p>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                <button type="button" onClick={() => setShowDeleteConfirm(false)} className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 cursor-pointer">Cancelar</button>
-                <button type="button" onClick={onDelete} disabled={deleting} className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <button type="button" onClick={() => setShowDeleteConfirm(false)} className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer">Cancelar</button>
+                <button type="button" onClick={onDelete} disabled={deleting} className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2">
                   {deleting ? <div className="w-4 h-4 border-2 border-red-300 border-t-white rounded-full animate-spin" /> : "Excluir permanentemente"}
                 </button>
               </div>
@@ -602,11 +472,6 @@ function LogModal({ game, onClose, existingLog, onDeleted }) {
   const [review, setReview] = useState(existingLog?.review || "")
   const [spoilers, setSpoilers] = useState(existingLog?.contain_spoilers || false)
   const [mastered, setMastered] = useState(existingLog?.mastered || false)
-  const [status, setStatus] = useState(existingLog?.status || "")
-  const [playing, setPlaying] = useState(existingLog?.playing || false)
-  const [backlog, setBacklog] = useState(existingLog?.backlog || false)
-  const [wishlist, setWishlist] = useState(existingLog?.wishlist || false)
-  const [liked, setLiked] = useState(existingLog?.liked || false)
   const [startedOn, setStartedOn] = useState(existingLog?.started_on || "")
   const [finishedOn, setFinishedOn] = useState(existingLog?.finished_on || "")
   const [logTitle, setLogTitle] = useState(existingLog?.log_title || "Log")
@@ -653,9 +518,7 @@ function LogModal({ game, onClose, existingLog, onDeleted }) {
 
     if (startedOn && (startedOn < minDate || startedOn > today)) { notify("Data de início inválida.", "error"); return }
     if (finishedOn && (finishedOn < minDate || finishedOn > today)) { notify("Data de término inválida.", "error"); return }
-    if (startedOn && finishedOn && finishedOn < startedOn) { notify("A data de término não pode ser antes do início.", "error"); return }
-    if (hoursPlayed && (parseInt(hoursPlayed) < 0 || parseInt(hoursPlayed) > 99999)) { notify("Horas jogadas inválidas.", "error"); return }
-    if (minutesPlayed && (parseInt(minutesPlayed) < 0 || parseInt(minutesPlayed) > 59)) { notify("Minutos jogados inválidos.", "error"); return }
+    if (startedOn && finishedOn && finishedOn < startedOn) { notify("Data de término não pode ser antes do início.", "error"); return }
 
     const validAspects = aspects
       .filter(a => a.label.trim())
@@ -679,9 +542,7 @@ function LogModal({ game, onClose, existingLog, onDeleted }) {
         ratingMode,
         review: review.trim() || null,
         containSpoilers: spoilers,
-        mastered, liked,
-        status: status || "played",
-        playing, backlog, wishlist,
+        mastered,
         startedOn: startedOn || null,
         finishedOn: finishedOn || null,
         replay,
@@ -725,79 +586,32 @@ function LogModal({ game, onClose, existingLog, onDeleted }) {
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:p-6 overscroll-none" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div
-        className="relative w-full h-full md:h-auto md:max-w-3xl md:max-h-[90vh] bg-zinc-900 md:border md:border-zinc-700 md:rounded-xl shadow-2xl flex flex-col overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div
-          className="flex md:hidden items-center justify-between px-4 pb-2 border-b border-zinc-700 flex-shrink-0"
-          style={{ paddingTop: "max(1rem, env(safe-area-inset-top, 1rem))" }}
-        >
+      <div className="relative w-full h-full md:h-auto md:max-w-2xl md:max-h-[90vh] bg-zinc-900 md:border md:border-zinc-700 md:rounded-xl shadow-2xl flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-4 pb-2 border-b border-zinc-700 flex-shrink-0 md:px-5 md:pb-3" style={{ paddingTop: "max(1rem, env(safe-area-inset-top, 1rem))" }}>
           <div className="flex items-center gap-3 min-w-0">
             {game.cover && <img src={`https:${game.cover.url}`} alt="" className="w-8 h-11 rounded object-cover bg-zinc-800 flex-shrink-0" draggable={false} />}
             <div className="min-w-0">
-              <h2 className="text-base font-semibold text-white truncate">{game.name}</h2>
+              <h2 className="text-base md:text-lg font-semibold text-white truncate">{game.name}</h2>
               {releaseYear && <p className="text-xs text-zinc-500">{releaseYear}</p>}
             </div>
           </div>
-          <button onClick={onClose} className="w-9 h-9 rounded-full border border-zinc-700 text-zinc-400 flex items-center justify-center cursor-pointer flex-shrink-0 active:bg-zinc-800">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        </div>
-
-        <div className="hidden md:flex items-start justify-between p-5 pb-3 flex-shrink-0">
-          <div className="min-w-0 pr-4">
-            <h2 className="text-2xl font-bold text-white leading-tight truncate">{game.name}</h2>
-            {releaseYear && <p className="text-sm text-zinc-500 mt-0.5">{releaseYear}</p>}
-          </div>
           <div className="flex flex-col items-center flex-shrink-0">
-            <button type="button" onClick={onClose} className="w-9 h-9 rounded-full border border-zinc-700 hover:border-zinc-500 text-zinc-500 hover:text-white flex items-center justify-center transition-all duration-200 cursor-pointer hover:bg-zinc-800/50">
+            <button onClick={onClose} className="w-9 h-9 rounded-full border border-zinc-700 hover:border-zinc-500 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer active:bg-zinc-800 transition-all">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
-            <span className="text-[10px] font-bold text-zinc-600 mt-1.5 uppercase tracking-wide">ESC</span>
+            <span className="text-[10px] font-bold text-zinc-600 mt-1 uppercase tracking-wide hidden md:block">ESC</span>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 md:px-5 pb-4 -webkit-overflow-scrolling-touch">
-          <div className="flex flex-col md:flex-row gap-4 md:gap-5">
-            <div className="flex-shrink-0 w-full md:w-44">
-              <div className="flex flex-row md:flex-col gap-3 md:gap-0">
-                {game.cover ? (
-                  <img src={`https:${game.cover.url}`} alt={game.name} className="w-24 sm:w-28 md:w-full rounded-lg bg-zinc-800 select-none flex-shrink-0 hidden md:block" draggable={false} />
-                ) : (
-                  <div className="w-24 h-36 sm:w-28 sm:h-40 md:w-full md:h-56 rounded-lg bg-zinc-800 flex items-center justify-center flex-shrink-0 hidden md:flex">
-                    <span className="text-zinc-600 text-xs text-center px-2">{game.name}</span>
-                  </div>
-                )}
-                <div className="flex-1 md:flex-none grid grid-cols-3 md:grid-cols-1 gap-1.5 md:gap-2 md:mt-3 w-full">
-                  <div className="col-span-3 md:col-span-1"><StatusSelector status={status} setStatus={setStatus} /></div>
-                  <ToggleButton active={playing} onClick={() => setPlaying(!playing)}><svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg><span className="truncate">Jogando</span></ToggleButton>
-                  <ToggleButton active={backlog} onClick={() => setBacklog(!backlog)}><svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.331 0 4.467.89 6.064 2.346M12 6.042c1.597-1.456 3.733-2.346 6.064-2.346.938 0 1.948.18 3 .512v14.25A8.987 8.987 0 0018.064 18c-2.331 0-4.467.89-6.064 2.346M12 6.042V20.346" /></svg><span className="truncate">Backlog</span></ToggleButton>
-                  <ToggleButton active={wishlist} onClick={() => setWishlist(!wishlist)}><svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg><span className="truncate">Wishlist</span></ToggleButton>
-                  <div className="col-span-3 md:col-span-1 flex justify-center pt-1 md:pt-2">
-                    <button type="button" onClick={() => setLiked(!liked)} className="flex items-center gap-2.5 cursor-pointer transition-all duration-200 py-2 px-4 rounded-lg hover:bg-zinc-800/50 active:bg-zinc-800">
-                      <span className="text-sm text-zinc-400">Curtir</span>
-                      <svg className={`w-5 h-5 transition-all duration-200 ${liked ? "text-red-500 scale-110" : "text-zinc-600"}`} fill={liked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={liked ? 0 : 1.5} d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="mb-4"><TabNav activeTab={activeTab} setActiveTab={setActiveTab} /></div>
-              {activeTab === "review" && <ReviewTabContent rating={rating} setRating={setRating} ratingMode={ratingMode} setRatingMode={setRatingMode} platform={platform} setPlatform={setPlatform} platforms={game.platforms} review={review} setReview={setReview} spoilers={spoilers} setSpoilers={setSpoilers} mastered={mastered} setMastered={setMastered} aspects={aspects} setAspects={setAspects} />}
-              {activeTab === "dates" && <DatesTabContent startedOn={startedOn} setStartedOn={setStartedOn} finishedOn={finishedOn} setFinishedOn={setFinishedOn} />}
-              {activeTab === "details" && <DetailsTabContent logTitle={logTitle} setLogTitle={setLogTitle} replay={replay} setReplay={setReplay} hoursPlayed={hoursPlayed} setHoursPlayed={setHoursPlayed} minutesPlayed={minutesPlayed} setMinutesPlayed={setMinutesPlayed} playedPlatform={playedPlatform} setPlayedPlatform={setPlayedPlatform} platforms={game.platforms} onDelete={handleDelete} deleting={deleting} isEditing={isEditing} />}
-            </div>
-          </div>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 md:px-5 py-4">
+          <div className="mb-4"><TabNav activeTab={activeTab} setActiveTab={setActiveTab} /></div>
+          {activeTab === "review" && <ReviewTabContent rating={rating} setRating={setRating} ratingMode={ratingMode} setRatingMode={setRatingMode} platform={platform} setPlatform={setPlatform} platforms={game.platforms} review={review} setReview={setReview} spoilers={spoilers} setSpoilers={setSpoilers} mastered={mastered} setMastered={setMastered} aspects={aspects} setAspects={setAspects} />}
+          {activeTab === "dates" && <DatesTabContent startedOn={startedOn} setStartedOn={setStartedOn} finishedOn={finishedOn} setFinishedOn={setFinishedOn} />}
+          {activeTab === "details" && <DetailsTabContent logTitle={logTitle} setLogTitle={setLogTitle} replay={replay} setReplay={setReplay} hoursPlayed={hoursPlayed} setHoursPlayed={setHoursPlayed} minutesPlayed={minutesPlayed} setMinutesPlayed={setMinutesPlayed} playedPlatform={playedPlatform} setPlayedPlatform={setPlayedPlatform} platforms={game.platforms} onDelete={handleDelete} deleting={deleting} isEditing={isEditing} />}
         </div>
 
-        <div
-          className="flex items-center justify-end gap-2 sm:gap-3 px-4 md:px-5 py-3 border-t border-zinc-700 flex-shrink-0"
-          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))" }}
-        >
-          <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 cursor-pointer active:bg-zinc-600">Cancelar</button>
+        <div className="flex items-center justify-end gap-2 sm:gap-3 px-4 md:px-5 py-3 border-t border-zinc-700 flex-shrink-0" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))" }}>
+          <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer active:bg-zinc-600">Cancelar</button>
           <button type="button" onClick={handleSave} disabled={submitting} className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2 ${submitting ? "bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50" : "bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white cursor-pointer shadow-lg shadow-indigo-500/20"}`}>
             {submitting ? <div className="w-4 h-4 border-2 border-indigo-300 border-t-white rounded-full animate-spin" /> : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
             {isEditing ? "Salvar" : "Criar Log"}
@@ -854,7 +668,6 @@ function UserLogStatusBadge({ status }) {
 function AspectRatingDisplay({ aspect }) {
   const mode = aspect.ratingMode || "stars_5h"
   const isStars = mode === "stars_5" || mode === "stars_5h"
-
   if (aspect.rating == null) return <span className="text-xs text-zinc-700">—</span>
 
   if (isStars) {
@@ -864,7 +677,6 @@ function AspectRatingDisplay({ aspect }) {
     const full = Math.floor(clamped)
     const half = clamped % 1 >= 0.5
     const empty = 5 - full - (half ? 1 : 0)
-
     return (
       <div className="flex items-center gap-0.5">
         {Array.from({ length: full }, (_, i) => <svg key={`f${i}`} className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>)}
@@ -892,7 +704,7 @@ export function UserLogCard({ log, onEdit }) {
       <div className="px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between border-b border-zinc-700/50">
         <div className="flex items-center gap-2.5">
           <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
-          <span className="text-sm font-semibold text-white">Minha avaliação</span>
+          <span className="text-sm font-semibold text-white">{log.log_title || "Log"}</span>
         </div>
         <button onClick={onEdit} className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white active:text-white bg-zinc-700/50 hover:bg-zinc-700 active:bg-zinc-600 rounded-lg transition-all duration-200 cursor-pointer border border-zinc-600/50 hover:border-zinc-500">
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" /></svg>
@@ -908,16 +720,8 @@ export function UserLogCard({ log, onEdit }) {
 
           <div className="flex-1 min-w-0 space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <UserLogStatusBadge status={log.status} />
-              {log.liked && <div className="flex items-center gap-1.5"><svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg><span className="text-xs text-red-400 font-medium">Curtido</span></div>}
               {log.mastered && <div className="flex items-center gap-1.5"><svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5m14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" /></svg><span className="text-xs text-amber-400 font-medium">Masterizado</span></div>}
               {log.replay && <div className="flex items-center gap-1.5"><svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg><span className="text-xs text-zinc-400 font-medium">Replay</span></div>}
-            </div>
-
-            <div className="flex flex-wrap gap-1.5">
-              {log.playing && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-500/15 text-indigo-400 border border-indigo-500/20"><svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>Jogando</span>}
-              {log.backlog && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-500/15 text-purple-400 border border-purple-500/20">Backlog</span>}
-              {log.wishlist && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-pink-500/15 text-pink-400 border border-pink-500/20">Wishlist</span>}
             </div>
 
             {aspects.length > 0 && (
@@ -1008,8 +812,8 @@ export default function ReviewButton({ game }) {
           )}
         </div>
       ) : (
-        <button onClick={() => openModal(null)} disabled={loading} className="inline-flex items-center gap-2.5 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-white text-black hover:bg-zinc-200 active:bg-zinc-300 shadow-lg shadow-white/10">
-          {loading ? <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" /> : <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>}
+        <button onClick={() => openModal(null)} disabled={loading} className="inline-flex items-center gap-2.5 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20">
+          {loading ? <div className="w-4 h-4 border-2 border-indigo-300 border-t-white rounded-full animate-spin" /> : <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>}
           Criar Log
         </button>
       )}
