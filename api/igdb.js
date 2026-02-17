@@ -1,7 +1,3 @@
-export const config = {
-  runtime: "nodejs"
-}
-
 import { query } from "../../lib/igdb-wrapper.js"
 import { PLATFORMS_MAP } from "../../data/platformsMapper.js"
 import { AGE_RATINGS_MAP } from "../../data/ageRatingsMapper.js"
