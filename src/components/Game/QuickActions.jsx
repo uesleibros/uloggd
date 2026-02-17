@@ -166,7 +166,7 @@ export default function QuickActions({ game }) {
   if (!user) return null
   if (loading) {
     return (
-      <div className="flex flex-wrap gap-2 mb-2">
+      <div className="flex flex-wrap gap-2 mb-4">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="h-9 w-20 bg-zinc-800 rounded-lg animate-pulse" />
         ))}
@@ -178,7 +178,7 @@ export default function QuickActions({ game }) {
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2 mb-2">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <button
           type="button"
           onClick={() => setShowStatus(true)}
