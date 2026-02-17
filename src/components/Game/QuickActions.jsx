@@ -12,28 +12,46 @@ const STATUS_OPTIONS = [
 ]
 
 function StatusDropdown({ status, onSelect, onClose }) {
+  useEffect(() => {
+    const scrollY = window.scrollY
+    const body = document.body
+    body.style.position = "fixed"
+    body.style.top = `-${scrollY}px`
+    body.style.left = "0"
+    body.style.right = "0"
+    body.style.overflow = "hidden"
+    return () => {
+      body.style.position = ""
+      body.style.top = ""
+      body.style.left = ""
+      body.style.right = ""
+      body.style.overflow = ""
+      window.scrollTo(0, scrollY)
+    }
+  }, [])
+
   return createPortal(
     <div className="fixed inset-0 z-[10001]" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
         className="absolute bottom-0 left-0 right-0 sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:-translate-y-1/2 w-full sm:w-[calc(100vw-2rem)] sm:max-w-sm bg-zinc-900 border border-zinc-700 border-b-0 sm:border-b rounded-t-2xl sm:rounded-xl shadow-2xl overflow-hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-center pt-3 sm:hidden">
+        <div className="flex justify-center pt-3 pb-1 sm:hidden">
           <div className="w-10 h-1 bg-zinc-700 rounded-full" />
         </div>
-        <div className="p-4 border-b border-zinc-700">
+        <div className="px-4 pt-3 pb-3 sm:p-4 border-b border-zinc-700">
           <h4 className="text-sm font-semibold text-white">Definir status</h4>
           <p className="text-xs text-zinc-500 mt-0.5">Como você finalizou esse jogo?</p>
         </div>
-        <div className="p-2">
+        <div className="p-2 max-h-[60vh] overflow-y-auto overscroll-contain">
           {STATUS_OPTIONS.map((s) => (
             <button
               key={s.id}
               type="button"
               onClick={() => onSelect(s.id)}
-              className={`w-full flex items-start gap-3 px-3 py-3 rounded-lg text-left cursor-pointer transition-all duration-200 ${
+              className={`w-full flex items-start gap-3 px-3 py-3.5 rounded-lg text-left cursor-pointer transition-all duration-200 active:bg-zinc-800 ${
                 status === s.id ? "bg-zinc-800" : "hover:bg-zinc-800/50"
               }`}
             >
@@ -55,7 +73,7 @@ function StatusDropdown({ status, onSelect, onClose }) {
             <button
               type="button"
               onClick={() => onSelect(null)}
-              className="w-full px-3 py-2.5 mt-1 rounded-lg text-left text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 cursor-pointer transition-all"
+              className="w-full px-3 py-3 mt-1 rounded-lg text-left text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 active:bg-zinc-800 cursor-pointer transition-all"
             >
               Remover status
             </button>
@@ -67,15 +85,16 @@ function StatusDropdown({ status, onSelect, onClose }) {
   )
 }
 
-function ActionButton({ active, onClick, icon, label, activeClass = "bg-white text-black" }) {
+function ActionButton({ active, onClick, icon, label, activeClass = "bg-white text-black", disabled }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 ${
+      disabled={disabled}
+      className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 select-none disabled:opacity-50 disabled:cursor-not-allowed ${
         active
           ? activeClass
-          : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 border border-zinc-700"
+          : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 active:bg-zinc-700 border border-zinc-700"
       }`}
     >
       {icon}
@@ -168,7 +187,7 @@ export default function QuickActions({ game }) {
     return (
       <div className="flex flex-wrap gap-2 mb-4">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-9 w-20 bg-zinc-800 rounded-lg animate-pulse" />
+          <div key={i} className="h-10 w-24 bg-zinc-800 rounded-lg animate-pulse" />
         ))}
       </div>
     )
@@ -182,15 +201,16 @@ export default function QuickActions({ game }) {
         <button
           type="button"
           onClick={() => setShowStatus(true)}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 ${
+          disabled={!!updating}
+          className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 select-none disabled:opacity-50 disabled:cursor-not-allowed ${
             state.status
-              ? `${statusConfig?.color || "bg-zinc-500"} text-white`
-              : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 border border-zinc-700"
+              ? `${statusConfig?.color || "bg-zinc-500"} text-white active:opacity-80`
+              : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 active:bg-zinc-700 border border-zinc-700"
           }`}
         >
-          <div className={`w-2 h-2 rounded-full ${state.status ? "bg-white/30" : "bg-zinc-600"}`} />
+          <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${state.status ? "bg-white/30" : "bg-zinc-600"}`} />
           {statusConfig?.label || "Status"}
-          <svg className="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 opacity-50 -mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
@@ -198,15 +218,17 @@ export default function QuickActions({ game }) {
         <ActionButton
           active={state.playing}
           onClick={() => toggle("playing", !state.playing)}
-          icon={<svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>}
+          disabled={!!updating}
+          icon={<svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>}
           label="Jogando"
         />
 
         <ActionButton
           active={state.backlog}
           onClick={() => toggle("backlog", !state.backlog)}
+          disabled={!!updating}
           icon={
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           }
@@ -216,8 +238,9 @@ export default function QuickActions({ game }) {
         <ActionButton
           active={state.wishlist}
           onClick={() => toggle("wishlist", !state.wishlist)}
+          disabled={!!updating}
           icon={
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21" />
             </svg>
           }
@@ -227,10 +250,11 @@ export default function QuickActions({ game }) {
         <button
           type="button"
           onClick={() => toggle("liked", !state.liked)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 hover:bg-zinc-800/50"
+          disabled={!!updating}
+          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 select-none hover:bg-zinc-800/50 active:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg
-            className={`w-4 h-4 transition-all duration-200 ${state.liked ? "text-red-500 scale-110" : "text-zinc-600"}`}
+            className={`w-4.5 h-4.5 transition-all duration-200 ${state.liked ? "text-red-500 scale-110" : "text-zinc-600"}`}
             fill={state.liked ? "currentColor" : "none"}
             stroke="currentColor"
             viewBox="0 0 24 24"
