@@ -1,5 +1,5 @@
 export const config = {
-  runtime: "nodejs18.x"
+  runtime: "nodejs"
 }
 
 import { query } from "../../lib/igdb-wrapper.js"
