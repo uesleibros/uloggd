@@ -553,7 +553,7 @@ function filterGamesByTab(profileGames, igdbGames, tabKey) {
     .sort((a, b) => {
       const ga = profileGames[a.slug]
       const gb = profileGames[b.slug]
-      return new Date(gb?.latestCreatedAt || 0) - new Date(ga?.latestCreatedAt || 0)
+      return new Date(gb?.latestAt || 0) - new Date(ga?.latestAt || 0)
     })
 }
 
@@ -828,6 +828,7 @@ export default function Profile() {
     </div>
   )
 }
+
 
 
 
