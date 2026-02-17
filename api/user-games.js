@@ -113,7 +113,7 @@ async function handleProfileGames(req, res) {
 
     const { data: logs, error: logsError } = await supabase
       .from("logs")
-      .select("game_id, game_slug, rating, status, created_at")
+      .select("game_id, game_slug, rating, status, playing, backlog, wishlist, liked, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
 
@@ -143,16 +143,20 @@ async function handleProfileGames(req, res) {
           gameId: log.game_id,
           slug,
           status: log.status,
-          playing: false,
-          backlog: false,
-          wishlist: false,
-          liked: false,
+          playing: log.playing || false,
+          backlog: log.backlog || false,
+          wishlist: log.wishlist || false,
+          liked: log.liked || false,
           ratings: [],
           hasLog: true,
           latestAt: log.created_at,
         }
       } else {
         gameMap[slug].hasLog = true
+        if (log.playing) gameMap[slug].playing = true
+        if (log.backlog) gameMap[slug].backlog = true
+        if (log.wishlist) gameMap[slug].wishlist = true
+        if (log.liked) gameMap[slug].liked = true
         if (!gameMap[slug].status && log.status) gameMap[slug].status = log.status
       }
 
