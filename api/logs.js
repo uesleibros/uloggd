@@ -1,5 +1,5 @@
-import { supabase } from "../../lib/supabase-ssr.js"
-import { query } from "../../lib/igdb-wrapper.js"
+import { supabase } from "../lib/supabase-ssr.js"
+import { query } from "../lib/igdb-wrapper.js"
 
 const VALID_STATUSES = ["played", "completed", "retired", "shelved", "abandoned"]
 const VALID_RATING_MODES = ["stars_5", "stars_5h", "points_10", "points_10d", "points_100"]
