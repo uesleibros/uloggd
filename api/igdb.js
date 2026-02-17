@@ -16,11 +16,9 @@ function generateVariations(q) {
   variations.add(lower.replace(/([a-z])([A-Z])/g, "$1 $2"))
 
   if (!lower.includes(" ")) {
-    const splits = []
     for (let i = 2; i <= lower.length - 2; i++) {
-      splits.push(lower.slice(0, i) + " " + lower.slice(i))
+      variations.add(lower.slice(0, i) + " " + lower.slice(i))
     }
-    splits.forEach(s => variations.add(s))
   }
 
   if (lower.includes(" ")) {
@@ -46,18 +44,10 @@ function generateVariations(q) {
   })
 
   const prefixMap = {
-    "re": ["re-", "re "],
-    "pre": ["pre-", "pre "],
-    "un": ["un-", "un "],
-    "non": ["non-", "non "],
-    "mega": ["mega "],
-    "super": ["super "],
-    "ultra": ["ultra "],
-    "mini": ["mini "],
-    "micro": ["micro "],
-    "neo": ["neo "],
-    "bio": ["bio "],
-    "cyber": ["cyber "],
+    "re": ["re-", "re "], "pre": ["pre-", "pre "], "un": ["un-", "un "],
+    "non": ["non-", "non "], "mega": ["mega "], "super": ["super "],
+    "ultra": ["ultra "], "mini": ["mini "], "micro": ["micro "],
+    "neo": ["neo "], "bio": ["bio "], "cyber": ["cyber "],
   }
 
   variations.forEach(v => {
@@ -66,26 +56,15 @@ function generateVariations(q) {
         replacements.forEach(r => variations.add(r + v.slice(prefix.length)))
       }
       replacements.forEach(r => {
-        if (v.startsWith(r)) {
-          variations.add(prefix + v.slice(r.length))
-        }
+        if (v.startsWith(r)) variations.add(prefix + v.slice(r.length))
       })
     }
   })
 
   const suffixMap = {
-    "man": [" man"],
-    "boy": [" boy"],
-    "craft": [" craft"],
-    "vania": [" vania"],
-    "world": [" world"],
-    "land": [" land"],
-    "star": [" star"],
-    "fire": [" fire"],
-    "ball": [" ball"],
-    "blade": [" blade"],
-    "soul": [" soul"],
-    "born": [" born"],
+    "man": [" man"], "boy": [" boy"], "craft": [" craft"], "vania": [" vania"],
+    "world": [" world"], "land": [" land"], "star": [" star"], "fire": [" fire"],
+    "ball": [" ball"], "blade": [" blade"], "soul": [" soul"], "born": [" born"],
     "bound": [" bound"],
   }
 
@@ -98,9 +77,7 @@ function generateVariations(q) {
         }
       }
       replacements.forEach(r => {
-        if (v.endsWith(r)) {
-          variations.add(v.slice(0, -r.length) + suffix)
-        }
+        if (v.endsWith(r)) variations.add(v.slice(0, -r.length) + suffix)
       })
     }
   })
@@ -112,7 +89,6 @@ function buildNameFilter(raw) {
   const q = raw.trim()
   const words = q.split(/\s+/).filter(w => w.length >= 2)
   const variations = generateVariations(q)
-
   const parts = []
 
   if (words.length > 1) {
@@ -133,25 +109,12 @@ function buildNameFilter(raw) {
 }
 
 const FEATURED_SLUGS = [
-  "psychopomp",
-  "mother-3",
-  "the-legend-of-zelda-twilight-princess",
-  "minecraft-java-edition",
-  "terraria",
-  "downhill-domination",
-  "shin-megami-tensei-v-vengeance",
-  "persona-5-royal",
-  "portal-2",
-  "osu",
-  "grand-theft-auto-san-andreas",
-  "mortal-kombat-armageddon",
-  "the-binding-of-isaac-rebirth",
-  "super-mario-galaxy",
-  "deltarune",
-  "half-life-2",
-  "celeste",
-  "danganronpa-2-goodbye-despair",
-  "final-fantasy-vi--2",
+  "psychopomp", "mother-3", "the-legend-of-zelda-twilight-princess",
+  "minecraft-java-edition", "terraria", "downhill-domination",
+  "shin-megami-tensei-v-vengeance", "persona-5-royal", "portal-2", "osu",
+  "grand-theft-auto-san-andreas", "mortal-kombat-armageddon",
+  "the-binding-of-isaac-rebirth", "super-mario-galaxy", "deltarune",
+  "half-life-2", "celeste", "danganronpa-2-goodbye-despair", "final-fantasy-vi--2",
 ]
 
 async function handleAutocomplete(req, res) {
@@ -160,61 +123,48 @@ async function handleAutocomplete(req, res) {
 
   try {
     const nameFilter = buildNameFilter(q)
-
     const data = await query("games", `
       fields name, slug, first_release_date,
              cover.url, cover.image_id,
              platforms.id, platforms.name, platforms.abbreviation,
-             total_rating, total_rating_count,
-             game_type;
-      where ${nameFilter}
-        & game_type = (0,2,4,8,9,10)
-        & cover != null;
+             total_rating, total_rating_count, game_type;
+      where ${nameFilter} & game_type = (0,2,4,8,9,10) & cover != null;
       sort total_rating_count desc;
       limit 30;
     `)
 
     const input = q.toLowerCase().trim()
+    const games = data.map(g => {
+      const name = g.name.toLowerCase()
+      let relevance = 0
+      if (name === input) relevance = 100
+      else if (name.startsWith(input)) relevance = 80
+      else if (name.includes(input)) relevance = 60
+      else {
+        const inputWords = input.split(/\s+/)
+        const matched = inputWords.filter(w => name.includes(w)).length
+        relevance = (matched / inputWords.length) * 40
+      }
+      relevance += Math.min((g.total_rating_count || 0) / 100, 20)
 
-    const games = data
-      .map(g => {
-        const name = g.name.toLowerCase()
-        let relevance = 0
-
-        if (name === input) relevance = 100
-        else if (name.startsWith(input)) relevance = 80
-        else if (name.includes(input)) relevance = 60
-        else {
-          const inputWords = input.split(/\s+/)
-          const matched = inputWords.filter(w => name.includes(w)).length
-          relevance = (matched / inputWords.length) * 40
-        }
-
-        relevance += Math.min((g.total_rating_count || 0) / 100, 20)
-
-        const slugs = new Set()
-        g.platforms?.forEach(p => {
-          const slug = PLATFORMS_MAP[String(p.id)]
-          if (slug) slugs.add(slug)
-        })
-
-        const platformIcons = [...slugs]
-          .sort((a, b) => a.localeCompare(b))
-          .map(slug => ({
-            name: slug,
-            icon: `/platforms/result/${slug}.png`
-          }))
-
-        return {
-          ...g,
-          relevance,
-          platformIcons,
-          cover: g.cover?.url
-            ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_logo_med") }
-            : null
-        }
+      const slugs = new Set()
+      g.platforms?.forEach(p => {
+        const slug = PLATFORMS_MAP[String(p.id)]
+        if (slug) slugs.add(slug)
       })
-      .sort((a, b) => b.relevance - a.relevance)
+
+      return {
+        ...g,
+        relevance,
+        platformIcons: [...slugs].sort().map(slug => ({
+          name: slug,
+          icon: `/platforms/result/${slug}.png`
+        })),
+        cover: g.cover?.url
+          ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_logo_med") }
+          : null
+      }
+    }).sort((a, b) => b.relevance - a.relevance)
 
     res.json(games)
   } catch (e) {
@@ -229,23 +179,17 @@ async function handleGame(req, res) {
 
   try {
     const data = await query("games", `
-      fields name, slug, summary,
-        first_release_date,
+      fields name, slug, summary, first_release_date,
         cover.url, cover.image_id,
         screenshots.url, screenshots.image_id,
         artworks.url, artworks.image_id,
         videos.video_id, videos.name,
         platforms.name, platforms.id,
-        genres.name,
-        themes.name,
-        alternative_names.name,
+        genres.name, themes.name, alternative_names.name,
         involved_companies.company.name,
         involved_companies.developer, involved_companies.publisher,
-        game_modes.name,
-        game_engines.name,
-        total_rating, total_rating_count,
-        aggregated_rating, rating,
-        hypes,
+        game_modes.name, game_engines.name,
+        total_rating, total_rating_count, aggregated_rating, rating, hypes,
         keywords.name, keywords.slug,
         similar_games.name, similar_games.slug, similar_games.cover.url, similar_games.cover.image_id,
         dlcs.name, dlcs.slug, dlcs.cover.url, dlcs.cover.image_id,
@@ -269,11 +213,7 @@ async function handleGame(req, res) {
       if (!orgData) return null
       const ratingLabel = orgData.ratings[ar.rating_category]
       if (!ratingLabel) return null
-      return {
-        category: orgData.org,
-        rating: ratingLabel,
-        region: orgData.region
-      }
+      return { category: orgData.org, rating: ratingLabel, region: orgData.region }
     }).filter(Boolean) || []
 
     const websites = g.websites?.map(site => ({
@@ -281,17 +221,9 @@ async function handleGame(req, res) {
       ...WEBSITE_MAP[site.type]
     })).filter(site => site.type) || []
 
-    const developers = g.involved_companies
-      ?.filter(c => c.developer)
-      .map(c => c.company.name) || []
-
-    const publishers = g.involved_companies
-      ?.filter(c => c.publisher)
-      .map(c => c.company.name) || []
-
-    const platforms = g.platforms
-      ?.slice()
-      .sort((a, b) => a.name.localeCompare(b.name)) || []
+    const developers = g.involved_companies?.filter(c => c.developer).map(c => c.company.name) || []
+    const publishers = g.involved_companies?.filter(c => c.publisher).map(c => c.company.name) || []
+    const platforms = g.platforms?.slice().sort((a, b) => a.name.localeCompare(b.name)) || []
 
     const mapCovers = (arr) => arr?.map(item => ({
       ...item,
@@ -304,33 +236,19 @@ async function handleGame(req, res) {
       g.parent_game.cover.url = g.parent_game.cover.url.replace("t_thumb", "t_logo_med")
     }
 
-    const game = {
+    res.json({
       ...g,
-      ageRatings,
-      developers,
-      publishers,
-      websites,
-      platforms,
-      cover: g.cover?.url
-        ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_1080p") }
-        : null,
-      screenshots: g.screenshots?.map(s => ({
-        ...s,
-        url: s.url.replace("t_thumb", "t_1080p")
-      })) || [],
-      artworks: g.artworks?.map(a => ({
-        ...a,
-        url: a.url.replace("t_thumb", "t_1080p")
-      })) || [],
+      ageRatings, developers, publishers, websites, platforms,
+      cover: g.cover?.url ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_1080p") } : null,
+      screenshots: g.screenshots?.map(s => ({ ...s, url: s.url.replace("t_thumb", "t_1080p") })) || [],
+      artworks: g.artworks?.map(a => ({ ...a, url: a.url.replace("t_thumb", "t_1080p") })) || [],
       similar_games: mapCovers(g.similar_games),
       dlcs: mapCovers(g.dlcs),
       expansions: mapCovers(g.expansions),
       standalone_expansions: mapCovers(g.standalone_expansions),
       remakes: mapCovers(g.remakes),
       remasters: mapCovers(g.remasters),
-    }
-
-    res.json(game)
+    })
   } catch (e) {
     console.error(e)
     res.status(500).json({ error: "fail" })
@@ -348,39 +266,23 @@ async function handleGamesBatch(req, res) {
 
   try {
     const data = await query("games", `
-      fields name, slug, summary,
-             first_release_date,
+      fields name, slug, summary, first_release_date,
              cover.url, cover.image_id,
              artworks.url, artworks.image_id,
-             platforms.name, platforms.id,
-             genres.name,
-             involved_companies.company.name,
-             involved_companies.developer;
+             platforms.name, platforms.id, genres.name,
+             involved_companies.company.name, involved_companies.developer;
       where slug = (${slugCondition});
       limit ${uniqueSlugs.length};
     `)
 
     const games = {}
     for (const g of data) {
-      const developers = g.involved_companies
-        ?.filter(c => c.developer)
-        .map(c => c.company.name) || []
-
-      const platforms = g.platforms
-        ?.slice()
-        .sort((a, b) => a.name.localeCompare(b.name)) || []
-
       games[g.slug] = {
         ...g,
-        developers,
-        platforms,
-        cover: g.cover?.url
-          ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_cover_big") }
-          : null,
-        artworks: g.artworks?.map(a => ({
-          ...a,
-          url: a.url.replace("t_thumb", "t_1080p")
-        })) || [],
+        developers: g.involved_companies?.filter(c => c.developer).map(c => c.company.name) || [],
+        platforms: g.platforms?.slice().sort((a, b) => a.name.localeCompare(b.name)) || [],
+        cover: g.cover?.url ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_cover_big") } : null,
+        artworks: g.artworks?.map(a => ({ ...a, url: a.url.replace("t_thumb", "t_1080p") })) || [],
       }
     }
 
@@ -394,7 +296,6 @@ async function handleGamesBatch(req, res) {
 async function handleUsersChoice(req, res) {
   try {
     const slugList = FEATURED_SLUGS.map(s => `"${s}"`).join(",")
-
     const data = await query("games", `
       fields name, slug, cover.url, cover.image_id, total_rating;
       where slug = (${slugList});
@@ -403,9 +304,7 @@ async function handleUsersChoice(req, res) {
 
     const games = data.map(g => ({
       ...g,
-      cover: g.cover?.url
-        ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_cover_big") }
-        : null
+      cover: g.cover?.url ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_cover_big") } : null
     }))
 
     res.json(games)
@@ -425,8 +324,7 @@ const ACTIONS = {
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end()
 
-  const url = new URL(req.url)
-  const action = url.searchParams.get("action")
+  const action = req.query.action
   const fn = ACTIONS[action]
 
   if (!fn) return res.status(404).json({ error: "Action not found" })
