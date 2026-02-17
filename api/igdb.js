@@ -1,7 +1,7 @@
-import { query } from "../../lib/igdb-wrapper.js"
-import { PLATFORMS_MAP } from "../../data/platformsMapper.js"
-import { AGE_RATINGS_MAP } from "../../data/ageRatingsMapper.js"
-import { WEBSITE_MAP } from "../../data/websitesMapper.js"
+import { query } from "../lib/igdb-wrapper.js"
+import { PLATFORMS_MAP } from "../data/platformsMapper.js"
+import { AGE_RATINGS_MAP } from "../data/ageRatingsMapper.js"
+import { WEBSITE_MAP } from "../data/websitesMapper.js"
 
 function escapeIGDB(str) {
   return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
