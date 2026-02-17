@@ -496,7 +496,7 @@ function useProfileGames(profileId) {
     setLoadingGames(true)
 
     try {
-      const res = await fetch("/api/logs?action=profile-games", {
+      const res = await fetch("/api/user-games?action=profile-games", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: profileId }),
@@ -828,5 +828,6 @@ export default function Profile() {
     </div>
   )
 }
+
 
 
