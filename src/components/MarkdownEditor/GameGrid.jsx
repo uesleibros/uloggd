@@ -21,7 +21,7 @@ export function GameGrid({ slugs, autoScroll = false }) {
     let active = true
     const fetchGames = async () => {
       try {
-        const res = await fetch("/api/igdb/games-batch", {
+        const res = await fetch("/api/igdb?action=games-batch", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ slugs: uniqueSlugs }),
@@ -108,4 +108,5 @@ function GameCardCover({ game, slug, loading, error, isFavorite }) {
       </a>
     </div>
   )
+
 }
