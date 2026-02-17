@@ -106,11 +106,11 @@ async function handleCreate(req, res) {
   try {
     const games = await query(
       "games",
-      `fields id, category; where id = ${Math.floor(gameId)}; limit 1;`
+      `fields id, game_type; where id = ${Math.floor(gameId)}; limit 1;`
     )
     if (!games.length)
       return res.status(404).json({ error: "Jogo não encontrado" })
-    if (!REVIEWABLE_CATEGORIES.includes(games[0].category))
+    if (!REVIEWABLE_CATEGORIES.includes(games[0].game_type))
       return res.status(400).json({ error: "Este tipo de conteúdo não pode ser avaliado" })
   } catch (e) {
     console.error(e)
