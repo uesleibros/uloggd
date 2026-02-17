@@ -232,7 +232,7 @@ function ReviewModal({ log, user, onClose }) {
       >
         <div className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
           <div className="flex items-center gap-3.5 min-w-0">
-            <Link to={`/user/${user?.username}`} onClick={onClose} className="flex-shrink-0">
+            <Link to={`/u/${user?.username}`} onClick={onClose} className="flex-shrink-0">
               <img
                 src={user?.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
                 alt={user?.username}
@@ -242,7 +242,7 @@ function ReviewModal({ log, user, onClose }) {
             </Link>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <Link to={`/user/${user?.username}`} onClick={onClose} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors">
+                <Link to={`/u/${user?.username}`} onClick={onClose} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors">
                   {user?.username || "Usuário"}
                 </Link>
                 <UserBadges user={user} size="md" clickable />
@@ -324,7 +324,7 @@ function ReviewCard({ log, user }) {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <Link to={`/user/${user?.username}`} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate">
+              <Link to={`/u/${user?.username}`} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate">
                 {user?.username || "Usuário"}
               </Link>
               <UserBadges user={user} size="md" clickable />
@@ -492,5 +492,4 @@ export default function GameReviews({ gameId }) {
       </div>
     </div>
   )
-
 }
