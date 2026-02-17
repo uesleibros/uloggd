@@ -34,23 +34,31 @@ function getTimeAgo(dateStr) {
   return years === 1 ? "1 ano" : `${years} anos`
 }
 
-function StarIcon({ className = "w-5 h-5", filled = true }) {
-  return (
-    <svg className={`${className} ${filled ? "text-amber-400" : "text-zinc-700"}`} fill="currentColor" viewBox="0 0 24 24">
-      <path d={STAR_PATH} />
-    </svg>
-  )
-}
+function StarsDisplay({ rating, ratingMode, size = "md" }) {
+  if (rating == null) return null
 
-function HalfStarIcon({ className = "w-5 h-5" }) {
+  const sizeClass = size === "sm" ? "w-3.5 h-3.5" : "w-5 h-5"
+  const raw = rating / 20
+  const count = ratingMode === "stars_5" ? Math.round(raw) : Math.round(raw * 2) / 2
+  const clamped = Math.min(Math.max(count, 0), 5)
+  const full = Math.floor(clamped)
+  const half = clamped % 1 >= 0.5
+  const empty = 5 - full - (half ? 1 : 0)
+
   return (
-    <div className={`relative ${className}`}>
-      <svg className="absolute inset-0 w-full h-full text-zinc-700" fill="currentColor" viewBox="0 0 24 24">
-        <path d={STAR_PATH} />
-      </svg>
-      <svg className="absolute inset-0 w-full h-full text-amber-400" fill="currentColor" viewBox="0 0 24 24" style={{ clipPath: "inset(0 50% 0 0)" }}>
-        <path d={STAR_PATH} />
-      </svg>
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: full }, (_, i) => (
+        <svg key={`f${i}`} className={`${sizeClass} text-amber-400`} fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
+      ))}
+      {half && (
+        <div className={`relative ${sizeClass}`}>
+          <svg className="absolute inset-0 w-full h-full text-zinc-700" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
+          <svg className="absolute inset-0 w-full h-full text-amber-400" fill="currentColor" viewBox="0 0 24 24" style={{ clipPath: "inset(0 50% 0 0)" }}><path d={STAR_PATH} /></svg>
+        </div>
+      )}
+      {Array.from({ length: empty }, (_, i) => (
+        <svg key={`e${i}`} className={`${sizeClass} text-zinc-700`} fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
+      ))}
     </div>
   )
 }
@@ -66,30 +74,45 @@ function ReviewRating({ rating, ratingMode }) {
 
     return (
       <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-        <StarIcon className="w-4 h-4" />
-        <span className="text-base font-bold text-amber-400 tabular-nums leading-none">
-          {formatted.display}
-        </span>
+        <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
+        <span className="text-base font-bold text-amber-400 tabular-nums leading-none">{formatted.display}</span>
         <span className="text-sm text-zinc-500 font-normal leading-none">/{formatted.max}</span>
       </div>
     )
   }
 
-  const raw = rating / 20
-  const count = ratingMode === "stars_5"
-    ? Math.round(raw)          // 0, 1, 2, 3, 4, 5
-    : Math.round(raw * 2) / 2  // 0, 0.5, 1, 1.5, ... 5
+  return <StarsDisplay rating={rating} ratingMode={ratingMode} />
+}
 
-  const clamped = Math.min(Math.max(count, 0), 5)
-  const full = Math.floor(clamped)
-  const half = clamped % 1 >= 0.5
-  const empty = 5 - full - (half ? 1 : 0)
+function AspectRatingDisplay({ aspect }) {
+  const mode = aspect.ratingMode || "stars_5h"
+  const isStars = mode === "stars_5" || mode === "stars_5h"
+
+  if (aspect.rating == null) return <span className="text-xs text-zinc-700">—</span>
+
+  if (isStars) return <StarsDisplay rating={aspect.rating} ratingMode={mode} size="sm" />
+
+  const formatted = formatRating(aspect.rating, mode)
+  if (!formatted) return null
 
   return (
-    <div className="flex items-center gap-0.5">
-      {Array.from({ length: full }, (_, i) => <StarIcon key={`f${i}`} />)}
-      {half && <HalfStarIcon />}
-      {Array.from({ length: empty }, (_, i) => <StarIcon key={`e${i}`} filled={false} />)}
+    <span className="text-xs font-semibold text-zinc-300 tabular-nums">
+      {formatted.display}<span className="text-zinc-600">/{formatted.max}</span>
+    </span>
+  )
+}
+
+function AspectRatingsPreview({ aspects, compact = false }) {
+  if (!aspects?.length) return null
+
+  return (
+    <div className={`space-y-1.5 ${compact ? "" : "pt-1"}`}>
+      {aspects.map((aspect, i) => (
+        <div key={i} className="flex items-center justify-between gap-3">
+          <span className="text-xs text-zinc-500 truncate">{aspect.label}</span>
+          <AspectRatingDisplay aspect={aspect} />
+        </div>
+      ))}
     </div>
   )
 }
@@ -184,14 +207,13 @@ function SpoilerOverlay({ onReveal }) {
 }
 
 function ReviewModal({ log, user, onClose }) {
+  const aspects = log.aspect_ratings || []
+
   useEffect(() => {
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
     document.body.style.overflow = "hidden"
     if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`
-    return () => {
-      document.body.style.overflow = ""
-      document.body.style.paddingRight = ""
-    }
+    return () => { document.body.style.overflow = ""; document.body.style.paddingRight = "" }
   }, [])
 
   useEffect(() => {
@@ -220,14 +242,10 @@ function ReviewModal({ log, user, onClose }) {
             </Link>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <Link
-                  to={`/user/${user?.username}`}
-                  onClick={onClose}
-                  className="text-base font-semibold text-white hover:text-zinc-300 transition-colors"
-                >
+                <Link to={`/user/${user?.username}`} onClick={onClose} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors">
                   {user?.username || "Usuário"}
                 </Link>
-                <UserBadges user={user} size="md" clickable={true} />
+                <UserBadges user={user} size="md" clickable />
                 <StatusBadge status={log.status} />
                 <LogIndicators log={log} />
               </div>
@@ -250,13 +268,30 @@ function ReviewModal({ log, user, onClose }) {
             </div>
           )}
 
+          {aspects.length > 0 && (
+            <div className="mb-5 p-4 bg-zinc-800/50 border border-zinc-700/50 rounded-xl">
+              <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Avaliação por aspecto</h4>
+              <div className="space-y-2.5">
+                {aspects.map((aspect, i) => (
+                  <div key={i}>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-sm text-zinc-300">{aspect.label}</span>
+                      <AspectRatingDisplay aspect={aspect} />
+                    </div>
+                    {aspect.review && (
+                      <div className="mt-1.5 pl-0 text-xs text-zinc-500 leading-relaxed">
+                        <MarkdownPreview content={aspect.review} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <MarkdownPreview content={log.review || ""} />
 
-          <Playtime
-            hours={log.hours_played}
-            minutes={log.minutes_played}
-            className="mt-6 pt-5 border-t border-zinc-700/50"
-          />
+          <Playtime hours={log.hours_played} minutes={log.minutes_played} className="mt-6 pt-5 border-t border-zinc-700/50" />
         </div>
       </div>
     </div>,
@@ -271,6 +306,8 @@ function ReviewCard({ log, user }) {
   const hasReview = !!log.review
   const isLong = hasReview && log.review.length > 300
   const isSpoilerHidden = log.contain_spoilers && !spoilerRevealed
+  const aspects = log.aspect_ratings || []
+  const hasAspects = aspects.length > 0
 
   return (
     <>
@@ -287,13 +324,10 @@ function ReviewCard({ log, user }) {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <Link
-                to={`/user/${user?.username}`}
-                className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate"
-              >
+              <Link to={`/user/${user?.username}`} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate">
                 {user?.username || "Usuário"}
               </Link>
-              <UserBadges user={user} size="md" clickable={true} />
+              <UserBadges user={user} size="md" clickable />
               <StatusBadge status={log.status} />
               <LogIndicators log={log} />
             </div>
@@ -303,14 +337,17 @@ function ReviewCard({ log, user }) {
               <span className="text-sm text-zinc-600">{getTimeAgo(log.created_at)}</span>
             </div>
 
+            {hasAspects && (
+              <div className="mt-3 p-3 bg-zinc-900/40 border border-zinc-700/30 rounded-lg">
+                <AspectRatingsPreview aspects={aspects} compact />
+              </div>
+            )}
+
             {hasReview && (
               <div className="mt-4">
                 {isSpoilerHidden ? (
-                  <SpoilerOverlay
-                    preview={log.review.slice(0, 200)}
-                    onReveal={() => setSpoilerRevealed(true)}
-                  />
-                ) : (
+                  <SpoilerOverlay onReveal={() => setSpoilerRevealed(true)} />
+                ) : isLong ? (
                   <div className="relative">
                     <div className="max-h-36 overflow-hidden">
                       <MarkdownPreview content={log.review} />
@@ -326,6 +363,8 @@ function ReviewCard({ log, user }) {
                       Ler review completa
                     </button>
                   </div>
+                ) : (
+                  <MarkdownPreview content={log.review} />
                 )}
               </div>
             )}
@@ -335,9 +374,7 @@ function ReviewCard({ log, user }) {
         </div>
       </div>
 
-      {showModal && (
-        <ReviewModal log={log} user={user} onClose={() => setShowModal(false)} />
-      )}
+      {showModal && <ReviewModal log={log} user={user} onClose={() => setShowModal(false)} />}
     </>
   )
 }
