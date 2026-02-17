@@ -55,6 +55,8 @@ function stripMarkdown(str) {
     .replace(/^\d+\.\s+/gm, '')
     .replace(/^---+$/gm, '')
     .replace(/\|/g, '')
+    .replace(/<[^>]*>/g, '')
+    .replace(/!game:\w+\([^)]*\)/g, '')
     .replace(/\n+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
@@ -93,13 +95,7 @@ async function handleProfile(url, username) {
   const profile = await res.json()
 
   const title = `${profile.username} - uloggd`
-
-  const descParts = [`Perfil de ${profile.username} no uloggd`]
-  if (profile.bio) {
-    const cleanBio = stripMarkdown(profile.bio).substring(0, 120)
-    if (cleanBio) descParts.push(cleanBio)
-  }
-  const description = descParts.join(' · ')
+  const description = `Perfil de ${profile.username}`
 
   const avatar = ensureAbsoluteUrl(profile.avatar, url.origin)
   const image = avatar || `${url.origin}/default-share.png`
@@ -112,7 +108,6 @@ function buildResponse(title, description, image, pageUrl, isProfile = false) {
   const safeDesc = escapeHtml(description)
   const safeImage = escapeHtml(image)
   const safeUrl = escapeHtml(pageUrl)
-  const cardType = isProfile ? 'summary' : 'summary_large_image'
 
   const html = `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -126,7 +121,7 @@ function buildResponse(title, description, image, pageUrl, isProfile = false) {
   <meta property="og:url" content="${safeUrl}" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="uloggd" />
-  <meta name="twitter:card" content="${cardType}" />
+  <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="${safeTitle}" />
   <meta name="twitter:description" content="${safeDesc}" />
   <meta name="twitter:image" content="${safeImage}" />
