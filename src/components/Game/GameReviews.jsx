@@ -427,7 +427,7 @@ export default function GameReviews({ gameId }) {
     if (!gameId) return
     setLoading(true)
 
-    fetch("/api/logs/public", {
+    fetch("/api/logs?action=public", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ gameId, sortBy }),
@@ -492,4 +492,5 @@ export default function GameReviews({ gameId }) {
       </div>
     </div>
   )
+
 }
