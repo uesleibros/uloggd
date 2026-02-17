@@ -2,10 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "source": "/api/igdb/:action",
-      "destination": "/api/igdb.js"
-    },
-    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
@@ -15,3 +11,4 @@
     }
   ]
 }
+
