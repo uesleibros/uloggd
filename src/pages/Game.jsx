@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "../../hooks/usePageMeta"
-import { PlatformList, default as PlatformBadge } from "../components/Game/PlatformBadge"
+import { PlatformList } from "../components/Game/PlatformBadge"
 import RatingBadge from "../components/Game/RatingBadge"
 import GameCard from "../components/Game/GameCard"
 import Lightbox from "../components/UI/Lightbox"
@@ -20,12 +20,11 @@ function GameSkeleton() {
         <div className="flex flex-col md:flex-row gap-6 md:gap-8">
           <div className="flex-shrink-0 flex flex-row md:flex-col gap-4 md:gap-0">
             <div className="w-32 h-48 sm:w-48 sm:h-72 md:w-64 md:h-96 rounded-lg bg-zinc-800 animate-pulse flex-shrink-0" />
-
             <div className="flex-1 md:hidden space-y-3 pt-1">
               <div className="h-7 w-48 bg-zinc-800 rounded animate-pulse" />
               <div className="h-4 w-32 bg-zinc-800 rounded animate-pulse" />
               <div className="flex gap-4">
-                {[...Array(3)].map((_, i) => (
+                {Array.from({ length: 3 }, (_, i) => (
                   <div key={i} className="flex flex-col items-center gap-1">
                     <div className="w-11 h-11 rounded-full bg-zinc-800 animate-pulse" />
                     <div className="h-3 w-8 bg-zinc-800 rounded animate-pulse" />
@@ -39,7 +38,7 @@ function GameSkeleton() {
             <div className="mt-6 space-y-3">
               <div className="h-5 w-40 bg-zinc-800 rounded animate-pulse" />
               <div className="flex flex-wrap gap-2">
-                {[...Array(3)].map((_, i) => (
+                {Array.from({ length: 3 }, (_, i) => (
                   <div key={i} className="h-10 w-10 bg-zinc-800 rounded-lg animate-pulse" />
                 ))}
               </div>
@@ -50,9 +49,8 @@ function GameSkeleton() {
             <div className="hidden md:block">
               <div className="h-10 w-80 bg-zinc-800 rounded animate-pulse" />
               <div className="h-4 w-40 bg-zinc-800 rounded animate-pulse mt-3 mb-6" />
-
               <div className="flex gap-6 mb-4">
-                {[...Array(3)].map((_, i) => (
+                {Array.from({ length: 3 }, (_, i) => (
                   <div key={i} className="flex flex-col items-center gap-1">
                     <div className="w-14 h-14 rounded-full bg-zinc-800 animate-pulse" />
                     <div className="h-3 w-10 bg-zinc-800 rounded animate-pulse" />
@@ -61,8 +59,22 @@ function GameSkeleton() {
               </div>
             </div>
 
+            <div className="rounded-xl bg-zinc-800/50 border border-zinc-700 animate-pulse mb-6">
+              <div className="px-5 py-4 border-b border-zinc-700/50 flex justify-between">
+                <div className="h-4 w-32 bg-zinc-700 rounded" />
+                <div className="h-6 w-16 bg-zinc-700 rounded-lg" />
+              </div>
+              <div className="p-5 flex gap-5">
+                <div className="h-9 w-36 bg-zinc-700 rounded" />
+                <div className="flex-1 space-y-3">
+                  <div className="h-4 w-24 bg-zinc-700 rounded" />
+                  <div className="h-3 w-48 bg-zinc-700 rounded" />
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[...Array(3)].map((_, i) => (
+              {Array.from({ length: 3 }, (_, i) => (
                 <div key={i} className="bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 h-[72px] animate-pulse" />
               ))}
             </div>
@@ -72,16 +84,14 @@ function GameSkeleton() {
             <div className="space-y-3">
               <div className="h-5 w-20 bg-zinc-800 rounded animate-pulse" />
               <div className="space-y-2">
-                <div className="h-4 w-full bg-zinc-800 rounded animate-pulse" />
-                <div className="h-4 w-full bg-zinc-800 rounded animate-pulse" />
-                <div className="h-4 w-3/4 bg-zinc-800 rounded animate-pulse" />
-                <div className="h-4 w-5/6 bg-zinc-800 rounded animate-pulse" />
-                <div className="h-4 w-2/3 bg-zinc-800 rounded animate-pulse" />
+                {Array.from({ length: 5 }, (_, i) => (
+                  <div key={i} className="h-4 bg-zinc-800 rounded animate-pulse" style={{ width: `${85 - i * 10}%` }} />
+                ))}
               </div>
             </div>
 
             <div className="mt-6 space-y-3">
-              {[...Array(6)].map((_, i) => (
+              {Array.from({ length: 6 }, (_, i) => (
                 <div key={i} className="flex gap-2">
                   <div className="h-4 w-28 bg-zinc-800 rounded animate-pulse flex-shrink-0" />
                   <div className="h-4 w-48 bg-zinc-800 rounded animate-pulse" />
@@ -117,7 +127,7 @@ function GameSkeleton() {
                 <div className="h-4 w-20 bg-zinc-800/50 rounded animate-pulse" />
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {[...Array(6)].map((_, i) => (
+                {Array.from({ length: 6 }, (_, i) => (
                   <div key={i} className="aspect-video bg-zinc-800 rounded-lg animate-pulse" />
                 ))}
               </div>
@@ -140,42 +150,35 @@ function InfoRow({ label, children }) {
 }
 
 function Websites({ websites }) {
-  if (!websites || websites.length === 0) return null
+  if (!websites?.length) return null
 
   return (
     <div className="mt-4 space-y-3 max-w-sm">
       <h3 className="text-lg font-semibold text-white">Conexões</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {websites.map((site, index) => (
-          <WebsiteLink key={index} site={site} />
+        {websites.map((site, i) => (
+          <a
+            key={i}
+            href={site.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
+            title={site.label}
+          >
+            <img
+              src={`https://www.igdb.com/icons/${site.type}.svg`}
+              alt={site.label}
+              className="w-6 h-6 object-contain flex-shrink-0"
+              onError={(e) => { e.target.style.display = 'none' }}
+            />
+            <span className="text-sm text-zinc-400 group-hover:text-white break-words flex-1">{site.label}</span>
+            <svg className="w-3 h-3 text-zinc-500 group-hover:text-zinc-300 flex-shrink-0 self-start mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
         ))}
       </div>
     </div>
-  )
-}
-
-function WebsiteLink({ site }) {
-  return (
-    <a
-      href={site.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
-      title={site.label}
-    >
-      <img
-        src={`https://www.igdb.com/icons/${site.type}.svg`}
-        alt={site.label}
-        className="w-6 h-6 object-contain flex-shrink-0"
-        onError={(e) => { e.target.style.display = 'none' }}
-      />
-      <span className="text-sm text-zinc-400 group-hover:text-white break-words flex-1">
-        {site.label}
-      </span>
-      <svg className="w-3 h-3 text-zinc-500 group-hover:text-zinc-300 flex-shrink-0 self-start mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-      </svg>
-    </a>
   )
 }
 
@@ -190,70 +193,71 @@ function StatCard({ value, label }) {
 }
 
 function AgeRatings({ ratings }) {
-  if (!ratings || ratings.length === 0) return null
-
+  if (!ratings?.length) return null
   return (
     <div className="flex flex-wrap items-center gap-2 max-w-sm">
-      {ratings.map((rating, index) => (
-        <AgeRatingCard key={index} rating={rating} />
+      {ratings.map((rating, i) => (
+        <div key={i} className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 flex flex-col items-center space-y-2">
+          <img
+            className="w-5 h-5 object-contain select-none"
+            src={`https://www.igdb.com/icons/rating_icons/${rating.category}/${rating.category}_${rating.rating}.png`}
+            alt={`${rating.category.toUpperCase()} rated ${rating.rating.toUpperCase()}`}
+            onError={(e) => { e.target.style.display = 'none' }}
+          />
+        </div>
       ))}
     </div>
   )
 }
 
-function HowLongToBeatSkeleton() {
-  return (
-    <div>
-      <hr className="my-6 border-zinc-700" />
-      <h2 className="text-lg font-semibold text-white">Tempo para zerar</h2>
-      <p className="text-xs text-zinc-500 mb-4">
-        Os tempos exibidos são estimativas baseadas em dados reportados pela comunidade do HowLongToBeat e podem não refletir com precisão a sua experiência. O tempo real pode variar de acordo com o estilo de jogo, nível de dificuldade e outros fatores individuais.
-      </p>
-      <div className="space-y-2.5">
-        {[75, 90, 100].map((w, i) => (
-          <div key={i}>
-            <div className="flex items-center justify-between mb-1">
-              <div className="h-4 w-20 bg-zinc-800 rounded animate-pulse" />
-              <div className="h-4 w-10 bg-zinc-800 rounded animate-pulse" />
-            </div>
-            <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
-              <div className="h-full rounded-full bg-zinc-700 animate-pulse" style={{ width: `${w}%` }} />
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="h-3 w-28 bg-zinc-800 rounded animate-pulse mt-4" />
-    </div>
-  )
-}
-
-function HowLongToBeatEmpty() {
-  return (
-    <div>
-      <hr className="my-6 border-zinc-700" />
-      <h2 className="text-lg font-semibold text-white">Tempo para zerar</h2>
-      <p className="text-xs text-zinc-500 mb-4">
-        Os tempos exibidos são estimativas baseadas em dados reportados pela comunidade do HowLongToBeat e podem não refletir com precisão a sua experiência. O tempo real pode variar de acordo com o estilo de jogo, nível de dificuldade e outros fatores individuais.
-      </p>
-      <div className="flex flex-col items-center justify-center py-6 gap-2">
-        <img className="object-contain h-10 w-10 select-none" src="/problem.png" />
-        <p className="text-sm text-zinc-500">Sem dados de tempo disponíveis</p>
-      </div>
-    </div>
-  )
-}
-
 function HowLongToBeat({ hltb, loading }) {
-  if (loading) return <HowLongToBeatSkeleton />
-  if (hltb === null) return <HowLongToBeatEmpty />
+  if (loading) {
+    return (
+      <div>
+        <hr className="my-6 border-zinc-700" />
+        <h2 className="text-lg font-semibold text-white">Tempo para zerar</h2>
+        <p className="text-xs text-zinc-500 mb-4">
+          Os tempos exibidos são estimativas baseadas em dados reportados pela comunidade do HowLongToBeat e podem não refletir com precisão a sua experiência.
+        </p>
+        <div className="space-y-2.5">
+          {[75, 90, 100].map((w, i) => (
+            <div key={i}>
+              <div className="flex items-center justify-between mb-1">
+                <div className="h-4 w-20 bg-zinc-800 rounded animate-pulse" />
+                <div className="h-4 w-10 bg-zinc-800 rounded animate-pulse" />
+              </div>
+              <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-full rounded-full bg-zinc-700 animate-pulse" style={{ width: `${w}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="h-3 w-28 bg-zinc-800 rounded animate-pulse mt-4" />
+      </div>
+    )
+  }
 
-  const bars = [
-    { label: "História", hours: hltb.times.main, color: "bg-blue-500", hoverColor: "group-hover:bg-blue-400" },
-    { label: "História +", hours: hltb.times.mainExtra, color: "bg-purple-500", hoverColor: "group-hover:bg-purple-400" },
-    { label: "Completista", hours: hltb.times.completionist, color: "bg-amber-500", hoverColor: "group-hover:bg-amber-400" },
-  ].filter(b => b.hours)
+  const bars = hltb ? [
+    { label: "História", hours: hltb.times?.main, color: "bg-blue-500", hoverColor: "group-hover:bg-blue-400" },
+    { label: "História +", hours: hltb.times?.mainExtra, color: "bg-purple-500", hoverColor: "group-hover:bg-purple-400" },
+    { label: "Completista", hours: hltb.times?.completionist, color: "bg-amber-500", hoverColor: "group-hover:bg-amber-400" },
+  ].filter(b => b.hours) : []
 
-  if (bars.length === 0) return <HowLongToBeatEmpty />
+  if (!bars.length) {
+    return (
+      <div>
+        <hr className="my-6 border-zinc-700" />
+        <h2 className="text-lg font-semibold text-white">Tempo para zerar</h2>
+        <p className="text-xs text-zinc-500 mb-4">
+          Os tempos exibidos são estimativas baseadas em dados reportados pela comunidade do HowLongToBeat e podem não refletir com precisão a sua experiência.
+        </p>
+        <div className="flex flex-col items-center justify-center py-6 gap-2">
+          <img className="object-contain h-10 w-10 select-none" src="/problem.png" />
+          <p className="text-sm text-zinc-500">Sem dados de tempo disponíveis</p>
+        </div>
+      </div>
+    )
+  }
 
   const max = Math.max(...bars.map(b => b.hours))
 
@@ -265,25 +269,19 @@ function HowLongToBeat({ hltb, loading }) {
         Os tempos exibidos são estimativas baseadas em dados reportados pela comunidade do HowLongToBeat e podem não refletir com precisão a sua experiência. O tempo real pode variar de acordo com o estilo de jogo, nível de dificuldade e outros fatores individuais.
       </p>
       <div className="space-y-2.5">
-        {bars.map(bar => {
-          const pct = (bar.hours / max) * 100
-          return (
-            <div key={bar.label} className="group">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-zinc-400">{bar.label}</span>
-                <span className="text-sm font-semibold text-white tabular-nums">
-                  {Math.round(bar.hours)}<span className="text-zinc-500 font-normal text-xs ml-0.5">h</span>
-                </span>
-              </div>
-              <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${bar.color} ${bar.hoverColor} transition-all duration-500`}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
+        {bars.map(bar => (
+          <div key={bar.label} className="group">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm text-zinc-400">{bar.label}</span>
+              <span className="text-sm font-semibold text-white tabular-nums">
+                {Math.round(bar.hours)}<span className="text-zinc-500 font-normal text-xs ml-0.5">h</span>
+              </span>
             </div>
-          )
-        })}
+            <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
+              <div className={`h-full rounded-full ${bar.color} ${bar.hoverColor} transition-all duration-500`} style={{ width: `${(bar.hours / max) * 100}%` }} />
+            </div>
+          </div>
+        ))}
       </div>
       <a
         href={`https://howlongtobeat.com/game/${hltb.id}`}
@@ -301,9 +299,9 @@ function HowLongToBeat({ hltb, loading }) {
 }
 
 function Keywords({ keywords }) {
-  if (!keywords || keywords.length === 0) return null
-
   const [showModal, setShowModal] = useState(false)
+  if (!keywords?.length) return null
+
   const INITIAL_SHOW = 10
   const hasMore = keywords.length > INITIAL_SHOW
 
@@ -312,8 +310,8 @@ function Keywords({ keywords }) {
       <hr className="my-6 border-zinc-700" />
       <h2 className="text-lg font-semibold text-white mb-3">Palavras-chaves</h2>
       <div className="flex flex-wrap gap-2">
-        {keywords.slice(0, INITIAL_SHOW).map((keyword) => (
-          <Keyword key={keyword.slug} text={keyword.slug} />
+        {keywords.slice(0, INITIAL_SHOW).map((kw) => (
+          <Keyword key={kw.slug} text={kw.slug} />
         ))}
         {hasMore && (
           <button
@@ -327,9 +325,7 @@ function Keywords({ keywords }) {
           </button>
         )}
       </div>
-      {showModal && (
-        <KeywordsModal keywords={keywords} onClose={() => setShowModal(false)} />
-      )}
+      {showModal && <KeywordsModal keywords={keywords} onClose={() => setShowModal(false)} />}
     </div>
   )
 }
@@ -338,19 +334,16 @@ function KeywordsModal({ keywords, onClose }) {
   const [search, setSearch] = useState("")
 
   useEffect(() => {
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    const sw = window.innerWidth - document.documentElement.clientWidth
     document.body.style.overflow = "hidden"
-    if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`
-    return () => {
-      document.body.style.overflow = ""
-      document.body.style.paddingRight = ""
-    }
+    if (sw > 0) document.body.style.paddingRight = `${sw}px`
+    return () => { document.body.style.overflow = ""; document.body.style.paddingRight = "" }
   }, [])
 
   useEffect(() => {
-    function handleKey(e) { if (e.key === "Escape") onClose() }
-    window.addEventListener("keydown", handleKey)
-    return () => window.removeEventListener("keydown", handleKey)
+    const fn = (e) => { if (e.key === "Escape") onClose() }
+    window.addEventListener("keydown", fn)
+    return () => window.removeEventListener("keydown", fn)
   }, [onClose])
 
   const filtered = search.trim()
@@ -360,14 +353,10 @@ function KeywordsModal({ keywords, onClose }) {
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div
-        className="relative bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="relative bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4 border-b border-zinc-700">
           <h3 className="text-lg font-semibold text-white">
-            Palavras-chaves
-            <span className="text-sm text-zinc-500 font-normal ml-2">{keywords.length}</span>
+            Palavras-chaves <span className="text-sm text-zinc-500 font-normal ml-2">{keywords.length}</span>
           </h3>
           <button onClick={onClose} className="p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -388,9 +377,7 @@ function KeywordsModal({ keywords, onClose }) {
         <div className="p-4 overflow-y-auto flex-1">
           {filtered.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {filtered.map((keyword) => (
-                <Keyword key={keyword.slug} text={keyword.slug} />
-              ))}
+              {filtered.map((kw) => <Keyword key={kw.slug} text={kw.slug} />)}
             </div>
           ) : (
             <p className="text-sm text-zinc-500 text-center py-8">Nenhuma palavra-chave encontrada</p>
@@ -404,26 +391,10 @@ function KeywordsModal({ keywords, onClose }) {
 
 function Keyword({ text }) {
   return (
-    <div className="relative inline-block">
-      <button className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-800/50 backdrop-blur-sm hover:bg-gray-700/50 border border-zinc-700 hover:border-zinc-600 rounded-full text-sm transition-all duration-200">
-        <span className="text-blue-400 text-base">#</span>
-        <span className="text-gray-300 hover:text-white">{text}</span>
-      </button>
-    </div>
-  )
-}
-
-function AgeRatingCard({ rating }) {
-  return (
-    <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 flex flex-col items-center space-y-2">
-      <img
-        className="w-5 h-5 object-contain select-none"
-        src={`https://www.igdb.com/icons/rating_icons/${rating.category}/${rating.category}_${rating.rating}.png`}
-        alt={`${rating.category.toUpperCase()} rating icon rated ${rating.rating.toUpperCase()}`}
-        aria-label={rating.rating.toUpperCase()}
-        onError={(e) => { e.target.style.display = 'none' }}
-      />
-    </div>
+    <button className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-800/50 backdrop-blur-sm hover:bg-gray-700/50 border border-zinc-700 hover:border-zinc-600 rounded-full text-sm transition-all duration-200">
+      <span className="text-blue-400 text-base">#</span>
+      <span className="text-gray-300 hover:text-white">{text}</span>
+    </button>
   )
 }
 
@@ -441,7 +412,7 @@ function RelatedGamesSection({ game }) {
 
   const [activeTab, setActiveTab] = useState(tabs[0]?.key ?? null)
 
-  if (tabs.length === 0) return null
+  if (!tabs.length) return null
 
   const current = tabs.find(t => t.key === activeTab) ?? tabs[0]
 
@@ -461,32 +432,30 @@ function RelatedGamesSection({ game }) {
               }`}
             >
               {tab.label}
-              <span className={`ml-1.5 text-xs ${activeTab === tab.key ? "text-zinc-600" : "text-zinc-500"}`}>
-                {tab.data.length}
-              </span>
+              <span className={`ml-1.5 text-xs ${activeTab === tab.key ? "text-zinc-600" : "text-zinc-500"}`}>{tab.data.length}</span>
             </button>
           ))}
         </div>
       </div>
       <hr className="my-4 border-zinc-700" />
       <div>
-        {current.key === "altNames" && <AltNamesGrid altNames={current.data} />}
+        {current.key === "altNames" && (
+          <div className="flex flex-wrap gap-2">
+            {current.data.map((alt, i) => (
+              <div key={i} className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg">
+                <span className="text-sm text-zinc-300">{alt.name}</span>
+                {alt.comment && <span className="text-xs text-zinc-500">({alt.comment})</span>}
+              </div>
+            ))}
+          </div>
+        )}
         {current.key === "videos" && <VideoGrid videos={current.data} />}
-        {current.key !== "altNames" && current.key !== "videos" && <GameCardGrid games={current.data} />}
+        {current.key !== "altNames" && current.key !== "videos" && (
+          <DragScrollRow className="gap-4 pb-2">
+            {current.data.map(g => <GameCard key={g.id} game={g} draggable={false} />)}
+          </DragScrollRow>
+        )}
       </div>
-    </div>
-  )
-}
-
-function AltNamesGrid({ altNames }) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {altNames.map((alt, index) => (
-        <div key={index} className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg">
-          <span className="text-sm text-zinc-300">{alt.name}</span>
-          {alt.comment && <span className="text-xs text-zinc-500">({alt.comment})</span>}
-        </div>
-      ))}
     </div>
   )
 }
@@ -511,24 +480,11 @@ function VideoGrid({ videos }) {
         ))}
       </div>
       {videos.length > 4 && (
-        <button
-          onClick={() => setShowAll(!showAll)}
-          className="mt-3 cursor-pointer text-sm text-zinc-500 hover:text-white transition-colors"
-        >
+        <button onClick={() => setShowAll(!showAll)} className="mt-3 cursor-pointer text-sm text-zinc-500 hover:text-white transition-colors">
           {showAll ? "Mostrar menos" : `Ver todos (${videos.length})`}
         </button>
       )}
     </>
-  )
-}
-
-function GameCardGrid({ games }) {
-  return (
-    <DragScrollRow className="gap-4 pb-2">
-      {games.map(g => (
-        <GameCard key={g.id} game={g} draggable={false} />
-      ))}
-    </DragScrollRow>
   )
 }
 
@@ -574,26 +530,15 @@ export default function Game() {
           body: JSON.stringify({
             name: data.name,
             altNames: data.alternative_names?.map(a => a.name) || [],
-            year: data.first_release_date
-              ? new Date(data.first_release_date * 1000).getFullYear()
-              : null,
+            year: data.first_release_date ? new Date(data.first_release_date * 1000).getFullYear() : null,
             platforms: data.platforms?.map(p => p.name) || null
           })
         })
           .then(r => r.ok ? r.json() : null)
-          .then(h => {
-            setHltb(h)
-            setHltbLoading(false)
-          })
-          .catch(() => {
-            setHltb(null)
-            setHltbLoading(false)
-          })
+          .then(h => { setHltb(h); setHltbLoading(false) })
+          .catch(() => { setHltb(null); setHltbLoading(false) })
       })
-      .catch(() => {
-        setError("Jogo não encontrado")
-        setLoading(false)
-      })
+      .catch(() => { setError("Jogo não encontrado"); setLoading(false) })
   }, [slug])
 
   function openLightbox(images, index) {
@@ -607,19 +552,14 @@ export default function Game() {
     return (
       <div className="flex flex-col items-center justify-center py-32 gap-4">
         <h1 className="text-2xl font-bold text-white">Jogo não encontrado</h1>
-        <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">
-          Voltar ao início
-        </Link>
+        <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">Voltar ao início</Link>
       </div>
     )
   }
 
   const allMedia = [...(game.screenshots || []), ...(game.artworks || [])]
   const summaryTruncated = game.summary?.length > 500
-
-  const bannerImage = game.screenshots?.length > 0
-      ? `https:${game.screenshots[0].url}`
-      : null
+  const bannerImage = game.screenshots?.length > 0 ? `https:${game.screenshots[0].url}` : null
 
   return (
     <div>
@@ -629,11 +569,7 @@ export default function Game() {
           <div className="flex-shrink-0">
             <div className="flex flex-row md:flex-col gap-4 md:gap-0">
               {game.cover ? (
-                <img
-                  src={`https:${game.cover.url}`}
-                  alt={game.name}
-                  className="w-32 sm:w-48 md:w-64 rounded-lg shadow-2xl bg-zinc-800 select-none flex-shrink-0"
-                />
+                <img src={`https:${game.cover.url}`} alt={game.name} className="w-32 sm:w-48 md:w-64 rounded-lg shadow-2xl bg-zinc-800 select-none flex-shrink-0" />
               ) : (
                 <div className="w-32 h-48 sm:w-48 sm:h-72 md:w-64 md:h-96 rounded-lg bg-zinc-800 flex items-center justify-center flex-shrink-0">
                   <span className="text-zinc-500 text-xs sm:text-sm text-center px-2">{game.name}</span>
@@ -643,20 +579,18 @@ export default function Game() {
               <div className="flex-1 md:hidden min-w-0">
                 <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight">{game.name}</h1>
                 {game.first_release_date && (
-                  <p className="text-xs sm:text-sm text-zinc-400 mt-1.5">
-                    {formatDateLong(game.first_release_date)}
-                  </p>
+                  <p className="text-xs sm:text-sm text-zinc-400 mt-1.5">{formatDateLong(game.first_release_date)}</p>
                 )}
                 <div className="flex gap-4 mt-3">
                   <RatingBadge score={game.total_rating} label="Total" size="sm" />
                   <RatingBadge score={game.aggregated_rating} label="Crítica" size="sm" />
                   <RatingBadge score={game.rating} label="Usuários" size="sm" />
                 </div>
-
-                <div className="mt-4">
-                  <ReviewButton game={game} />
-                </div>
               </div>
+            </div>
+
+            <div className="mt-4 md:hidden">
+              <ReviewButton game={game} />
             </div>
 
             {game.parent_game && (
@@ -666,19 +600,13 @@ export default function Game() {
                   className="mt-6 flex items-center gap-3 px-4 py-3 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
                 >
                   {game.parent_game.cover ? (
-                    <img
-                      src={`https:${game.parent_game.cover.url}`}
-                      alt={game.parent_game.name}
-                      className="w-10 h-14 rounded object-cover bg-zinc-700 flex-shrink-0"
-                    />
+                    <img src={`https:${game.parent_game.cover.url}`} alt={game.parent_game.name} className="w-10 h-14 rounded object-cover bg-zinc-700 flex-shrink-0" />
                   ) : (
                     <div className="w-10 h-14 rounded bg-zinc-700 flex-shrink-0" />
                   )}
                   <div className="flex flex-col min-w-0">
                     <span className="text-xs text-zinc-500 uppercase tracking-wide">Jogo principal</span>
-                    <span className="text-sm text-zinc-300 group-hover:text-white transition-colors truncate">
-                      {game.parent_game.name}
-                    </span>
+                    <span className="text-sm text-zinc-300 group-hover:text-white transition-colors truncate">{game.parent_game.name}</span>
                   </div>
                   <svg className="w-4 h-4 text-zinc-500 group-hover:text-white ml-auto flex-shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -697,6 +625,7 @@ export default function Game() {
 
             <Websites websites={game.websites} />
             <hr className="my-6 border-zinc-700" />
+
             {game.platforms?.length > 0 && (
               <div>
                 <h2 className="text-lg font-semibold text-white mb-3">Plataformas</h2>
@@ -708,6 +637,7 @@ export default function Game() {
                 />
               </div>
             )}
+
             <Keywords keywords={game.keywords} />
           </div>
 
@@ -715,19 +645,17 @@ export default function Game() {
             <div className="hidden md:block">
               <h1 className="text-4xl font-bold text-white">{game.name}</h1>
               {game.first_release_date && (
-                <p className="text-sm text-zinc-400 mt-2 mb-6">
-                  {formatDateLong(game.first_release_date)}
-                </p>
+                <p className="text-sm text-zinc-400 mt-2 mb-6">{formatDateLong(game.first_release_date)}</p>
               )}
-              <div className="flex gap-6 mb-4">
+              <div className="flex gap-6 mb-6">
                 <RatingBadge score={game.total_rating} label="Total" />
                 <RatingBadge score={game.aggregated_rating} label="Crítica" />
                 <RatingBadge score={game.rating} label="Usuários" />
               </div>
+            </div>
 
-              <div className="mb-6">
-                <ReviewButton game={game} />
-              </div>
+            <div className="hidden md:block mb-6">
+              <ReviewButton game={game} />
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -741,15 +669,10 @@ export default function Game() {
                 <hr className="my-6 border-zinc-700" />
                 <h2 className="text-lg font-semibold text-white mb-2">Sobre</h2>
                 <p className="text-sm text-zinc-400 leading-relaxed">
-                  {summaryTruncated && !showFullSummary
-                    ? game.summary.slice(0, 500) + "."
-                    : game.summary}
+                  {summaryTruncated && !showFullSummary ? game.summary.slice(0, 500) + "." : game.summary}
                 </p>
                 {summaryTruncated && (
-                  <button
-                    onClick={() => setShowFullSummary(!showFullSummary)}
-                    className="text-sm cursor-pointer text-zinc-500 hover:text-white mt-2 transition-colors"
-                  >
+                  <button onClick={() => setShowFullSummary(!showFullSummary)} className="text-sm cursor-pointer text-zinc-500 hover:text-white mt-2 transition-colors">
                     {showFullSummary ? "Mostrar menos" : "Ler mais"}
                   </button>
                 )}
@@ -788,22 +711,19 @@ export default function Game() {
                   ))}
                 </div>
                 {allMedia.length > 9 && (
-                  <button
-                    onClick={() => openLightbox(allMedia, 9)}
-                    className="mt-3 cursor-pointer text-sm text-zinc-500 hover:text-white transition-colors"
-                  >
+                  <button onClick={() => openLightbox(allMedia, 9)} className="mt-3 cursor-pointer text-sm text-zinc-500 hover:text-white transition-colors">
                     Ver todas ({allMedia.length})
                   </button>
                 )}
               </div>
             )}
+
+            <hr className="my-6 border-zinc-700" />
+
+            <GameReviews gameId={game.id} />
           </div>
         </div>
         <RelatedGamesSection game={game} />
-
-        <hr className="my-6 border-zinc-700" />
-
-        <GameReviews gameId={game.id} />
       </div>
 
       <Lightbox
@@ -815,5 +735,4 @@ export default function Game() {
       />
     </div>
   )
-
 }
