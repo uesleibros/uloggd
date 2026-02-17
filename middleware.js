@@ -2,11 +2,11 @@ export const config = {
   matcher: ['/game/:slug*', '/u/:username*'],
 }
 
+const BOT_REGEX = /Discordbot|Twitterbot|facebookexternalhit|LinkedInBot|TelegramBot|Slackbot/i
+
 export default async function middleware(req) {
   const userAgent = req.headers.get('user-agent') || ''
-  const bots = /Discordbot|Twitterbot|facebookexternalhit|LinkedInBot|TelegramBot|Slackbot/i
-
-  if (!bots.test(userAgent)) return
+  if (!BOT_REGEX.test(userAgent)) return
 
   const url = new URL(req.url)
   const segments = url.pathname.split('/').filter(Boolean)
@@ -19,13 +19,49 @@ export default async function middleware(req) {
     if (segments[0] === 'u' && segments[1]) {
       return handleProfile(url, segments[1])
     }
-  } catch (e) {
+  } catch {
     return
   }
 }
 
+function ensureAbsoluteUrl(urlStr, origin) {
+  if (!urlStr) return null
+  if (urlStr.startsWith('http://') || urlStr.startsWith('https://')) return urlStr
+  if (urlStr.startsWith('//')) return `https:${urlStr}`
+  if (urlStr.startsWith('/')) return `${origin}${urlStr}`
+  return urlStr
+}
+
+function escapeHtml(str) {
+  if (!str) return ''
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+function stripMarkdown(str) {
+  if (!str) return ''
+  return str
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    .replace(/\[([^\]]*)\]\(.*?\)/g, '$1')
+    .replace(/#{1,6}\s+/g, '')
+    .replace(/(\*{1,3}|_{1,3})(.*?)\1/g, '$2')
+    .replace(/~~(.*?)~~/g, '$1')
+    .replace(/`{1,3}[^`]*`{1,3}/g, '')
+    .replace(/^>\s+/gm, '')
+    .replace(/^[-*+]\s+/gm, '')
+    .replace(/^\d+\.\s+/gm, '')
+    .replace(/^---+$/gm, '')
+    .replace(/\|/g, '')
+    .replace(/\n+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 async function handleGame(url, slug) {
-  const res = await fetch(`${url.origin}/api/igdb/game`, {
+  const res = await fetch(`${url.origin}/api/igdb?action=game`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ slug }),
@@ -36,17 +72,18 @@ async function handleGame(url, slug) {
 
   const title = `${game.name} - uloggd`
   const description = game.summary
-    ? game.summary.substring(0, 160) + '...'
+    ? stripMarkdown(game.summary).substring(0, 160) + '...'
     : 'Veja detalhes do jogo no uloggd'
+
   const image = game.cover?.url
-    ? `https:${game.cover.url.replace('t_thumb', 't_720p')}`
+    ? ensureAbsoluteUrl(game.cover.url.replace('t_thumb', 't_720p'), url.origin)
     : `${url.origin}/default-share.png`
 
-  return buildResponse(title, description, image)
+  return buildResponse(title, description, image, url.href)
 }
 
 async function handleProfile(url, username) {
-  const res = await fetch(`${url.origin}/api/user/profile`, {
+  const res = await fetch(`${url.origin}/api/user?action=profile`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username }),
@@ -56,27 +93,44 @@ async function handleProfile(url, username) {
   const profile = await res.json()
 
   const title = `${profile.username} - uloggd`
-  const description = `Veja o perfil de ${profile.username} no uloggd`
-  const image = profile.avatar || `${url.origin}/default-share.png`
 
-  return buildResponse(title, description, image)
+  const descParts = [`Perfil de ${profile.username} no uloggd`]
+  if (profile.bio) {
+    const cleanBio = stripMarkdown(profile.bio).substring(0, 120)
+    if (cleanBio) descParts.push(cleanBio)
+  }
+  const description = descParts.join(' · ')
+
+  const avatar = ensureAbsoluteUrl(profile.avatar, url.origin)
+  const image = avatar || `${url.origin}/default-share.png`
+
+  return buildResponse(title, description, image, url.href, true)
 }
 
-function buildResponse(title, description, image) {
+function buildResponse(title, description, image, pageUrl, isProfile = false) {
+  const safeTitle = escapeHtml(title)
+  const safeDesc = escapeHtml(description)
+  const safeImage = escapeHtml(image)
+  const safeUrl = escapeHtml(pageUrl)
+  const cardType = isProfile ? 'summary' : 'summary_large_image'
+
   const html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>${title}</title>
-  <meta name="description" content="${description}" />
-  <meta property="og:title" content="${title}" />
-  <meta property="og:description" content="${description}" />
-  <meta property="og:image" content="${image}" />
+  <title>${safeTitle}</title>
+  <meta name="description" content="${safeDesc}" />
+  <meta property="og:title" content="${safeTitle}" />
+  <meta property="og:description" content="${safeDesc}" />
+  <meta property="og:image" content="${safeImage}" />
+  <meta property="og:url" content="${safeUrl}" />
   <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${title}" />
-  <meta name="twitter:description" content="${description}" />
-  <meta name="twitter:image" content="${image}" />
+  <meta property="og:site_name" content="uloggd" />
+  <meta name="twitter:card" content="${cardType}" />
+  <meta name="twitter:title" content="${safeTitle}" />
+  <meta name="twitter:description" content="${safeDesc}" />
+  <meta name="twitter:image" content="${safeImage}" />
+  <meta name="theme-color" content="#5865F2" />
 </head>
 <body></body>
 </html>`
