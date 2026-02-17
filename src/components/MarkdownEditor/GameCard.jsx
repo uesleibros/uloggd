@@ -10,7 +10,7 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
     let active = true
     const fetchGame = async () => {
       try {
-        const res = await fetch("/api/igdb/games-batch", {
+        const res = await fetch("/api/igdb?action=games-batch", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ slugs: [slug] }),
@@ -194,4 +194,5 @@ export function GameCard({ slug, variant = "default", isFavorite = false }) {
       </div>
     </div>
   )
+
 }
