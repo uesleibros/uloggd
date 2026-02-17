@@ -511,7 +511,7 @@ export default function Game() {
     setHltb(null)
     setHltbLoading(true)
 
-    fetch("/api/igdb/game", {
+    fetch("/api/igdb?action=game", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ slug })
@@ -735,4 +735,5 @@ export default function Game() {
       />
     </div>
   )
+
 }
