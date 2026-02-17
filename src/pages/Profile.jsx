@@ -9,7 +9,7 @@ import SettingsModal from "../components/User/SettingsModal"
 import UserBadges from "../components/User/UserBadges"
 import { MarkdownPreview } from "../components/MarkdownEditor"
 import PageBanner from "../components/Layout/PageBanner"
-import GameCard from "../components/GameCard"
+import GameCard from "../components/Game/GameCard"
 
 function ProfileSkeleton() {
   return (
@@ -828,3 +828,4 @@ export default function Profile() {
     </div>
   )
 }
+
