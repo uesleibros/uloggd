@@ -6,8 +6,8 @@ import { handleUsersChoice } from "../services/igdb/handlers/usersChoice.js"
 const ACTIONS = {
   autocomplete: handleAutocomplete,
   game: handleGame,
-  "games-batch": handleGamesBatch,
-  "users-choice": handleUsersChoice,
+  gamesBatch: handleGamesBatch,
+  usersChoice: handleUsersChoice,
 }
 
 export default async function handler(req, res) {

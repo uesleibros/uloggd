@@ -5,6 +5,7 @@ let cachedUser = null
 let authLoading = true
 let initialized = false
 let listeners = new Set()
+let loadingPromise = null
 
 function notify() {
   listeners.forEach(fn => fn({ user: cachedUser, loading: authLoading }))
@@ -14,39 +15,50 @@ async function loadUser(session) {
   if (!session?.user) {
     cachedUser = null
     authLoading = false
+    loadingPromise = null
     notify()
     return
   }
 
-  try {
-    const res = await fetch("/api/user/profile", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: session.user.id }),
-    })
+  if (loadingPromise) return loadingPromise
 
-    const profile = res.ok ? await res.json() : null
-
-    cachedUser = {
-      id: session.user.id,
-      discordId: session.user.user_metadata.provider_id,
-      username: session.user.user_metadata.full_name,
-      avatar: session.user.user_metadata.avatar_url,
-      email: session.user.email,
-      ...profile
-    }
-  } catch {
-    cachedUser = {
-      id: session.user.id,
-      discordId: session.user.user_metadata.provider_id,
-      username: session.user.user_metadata.full_name,
-      avatar: session.user.user_metadata.avatar_url,
-      email: session.user.email
-    }
-  }
-
-  authLoading = false
+  authLoading = true
   notify()
+
+  loadingPromise = (async () => {
+    try {
+      const res = await fetch("/api/user?action=profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: session.user.id }),
+      })
+
+      const profile = res.ok ? await res.json() : null
+
+      cachedUser = {
+        id: session.user.id,
+        discordId: session.user.user_metadata.provider_id,
+        username: session.user.user_metadata.full_name,
+        avatar: session.user.user_metadata.avatar_url,
+        email: session.user.email,
+        ...profile,
+      }
+    } catch {
+      cachedUser = {
+        id: session.user.id,
+        discordId: session.user.user_metadata.provider_id,
+        username: session.user.user_metadata.full_name,
+        avatar: session.user.user_metadata.avatar_url,
+        email: session.user.email,
+      }
+    }
+
+    authLoading = false
+    loadingPromise = null
+    notify()
+  })()
+
+  return loadingPromise
 }
 
 function updateUser(partial) {
@@ -58,26 +70,17 @@ function updateUser(partial) {
 if (!initialized) {
   initialized = true
 
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    loadUser(session)
-  })
-
   supabase.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT") {
       cachedUser = null
       authLoading = false
+      loadingPromise = null
       notify()
       return
     }
 
-    if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
-      if (cachedUser && session?.user?.id === cachedUser.id) return
-    }
+    if (cachedUser && session?.user?.id === cachedUser.id) return
 
-    if (event === "SIGNED_IN" && cachedUser?.id === session?.user?.id) return
-
-    authLoading = true
-    notify()
     loadUser(session)
   })
 }

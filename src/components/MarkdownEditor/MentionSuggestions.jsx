@@ -12,7 +12,7 @@ export function MentionSuggestions({ query, position, onSelect, userId, editorCo
   useEffect(() => {
     if (followingCache.has(userId)) return
     setLoading(true)
-    fetch("/api/user/followers", {
+    fetch("/api/user?action=followers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, type: "following" }),

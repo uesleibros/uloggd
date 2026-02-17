@@ -139,7 +139,7 @@ function FollowListModal({ title, userId, onClose }) {
   }, [onClose])
 
   useEffect(() => {
-    fetch("/api/user/followers", {
+    fetch("/api/user?action=followers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -496,7 +496,7 @@ function useProfileGames(profileId) {
     setLoadingGames(true)
 
     try {
-      const res = await fetch("/api/user-games?action=profile-games", {
+      const res = await fetch("/api/userGames?action=profileGames", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: profileId }),
@@ -510,7 +510,7 @@ function useProfileGames(profileId) {
 
       const slugs = Object.keys(data.games || {})
       if (slugs.length > 0) {
-        const batchRes = await fetch("/api/igdb?action=games-batch", {
+        const batchRes = await fetch("/api/igdb?action=gamesBatch", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ slugs }),
@@ -591,7 +591,7 @@ export default function Profile() {
 
     const controller = new AbortController()
 
-    fetch("/api/user/profile", {
+    fetch("/api/user?action=profile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username }),
@@ -620,7 +620,7 @@ export default function Profile() {
 
     const controller = new AbortController()
 
-    fetch("/api/user/follow-status", {
+    fetch("/api/user?action=followStatus", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -652,7 +652,7 @@ export default function Profile() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const res = await fetch("/api/user/follow", {
+      const res = await fetch("/api/user?action=follow", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

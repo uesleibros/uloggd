@@ -1,8 +1,6 @@
-import { supabase } from "../../lib/supabase-ssr.js"
+import { supabase } from "../../../lib/supabase-ssr.js"
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end()
-
+export async function handleProfile(req, res) {
   const { userId, username } = req.body
   if (!userId && !username) return res.status(400).json({ error: "missing userId or username" })
 
@@ -12,7 +10,7 @@ export default async function handler(req, res) {
     if (userId) {
       const { data } = await supabase.auth.admin.getUserById(userId)
       authUser = data?.user
-    } else if (username) {
+    } else {
       const { data } = await supabase.auth.admin.listUsers({ perPage: 1000 })
       authUser = data?.users?.find(
         u => u.user_metadata?.full_name?.toLowerCase() === username.toLowerCase()
@@ -24,17 +22,8 @@ export default async function handler(req, res) {
     const { data: profile } = await supabase
       .from("users")
       .select(`
-        banner, 
-        bio, 
-        created_at,
-        is_moderator,
-        user_badges (
-          badge:badges (
-            id,
-            title,
-            description
-          )
-        )
+        banner, bio, created_at, is_moderator,
+        user_badges ( badge:badges ( id, title, description ) )
       `)
       .eq("user_id", authUser.id)
       .single()
@@ -50,7 +39,7 @@ export default async function handler(req, res) {
       bio: profile?.bio,
       is_moderator: profile?.is_moderator,
       created_at: profile?.created_at,
-      badges
+      badges,
     })
   } catch (e) {
     console.error(e)

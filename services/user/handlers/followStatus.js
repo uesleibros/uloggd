@@ -1,8 +1,6 @@
-import { supabase } from "../../lib/supabase-ssr.js"
+import { supabase } from "../../../lib/supabase-ssr.js"
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end()
-
+export async function handleFollowStatus(req, res) {
   const { userId, currentUserId } = req.body
   if (!userId) return res.status(400).json({ error: "missing userId" })
 

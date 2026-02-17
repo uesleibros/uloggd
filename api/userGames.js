@@ -5,7 +5,7 @@ import { handleProfileGames } from "../services/user-games/handlers/profileGames
 const ACTIONS = {
   get: handleGet,
   update: handleUpdate,
-  "profile-games": handleProfileGames,
+  profileGames: handleProfileGames,
 }
 
 export default async function handler(req, res) {

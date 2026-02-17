@@ -127,7 +127,7 @@ export default function SettingsModal({ onClose }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const res = await fetch("/api/user/banner", {
+      const res = await fetch("/api/user?action=banner", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -168,7 +168,7 @@ export default function SettingsModal({ onClose }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const res = await fetch("/api/user/bio", {
+      const res = await fetch("/api/user?action=bio", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -196,7 +196,7 @@ export default function SettingsModal({ onClose }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const res = await fetch("/api/user/delete", {
+      const res = await fetch("/api/user?action=delete", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
