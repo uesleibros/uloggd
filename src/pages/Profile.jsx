@@ -10,6 +10,8 @@ import UserBadges from "../components/User/UserBadges"
 import { MarkdownPreview } from "../components/MarkdownEditor"
 import PageBanner from "../components/Layout/PageBanner"
 import GameCard from "../components/Game/GameCard"
+import NowPlaying from "../components/Game/NowPlaying"
+import ThinkingBubble from "../components/User/ThinkingBubble"
 
 function ProfileSkeleton() {
   return (
@@ -708,12 +710,25 @@ export default function Profile() {
       <div className="pt-[22vw] sm:pt-[20vw] md:pt-36 pb-16">
         <div className="flex flex-col md:flex-row gap-6 md:gap-8">
           <div className="flex-shrink-0">
-            <img
-              src={profile.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
-              alt={profile.username}
-              className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full border-4 border-zinc-900 shadow-2xl bg-zinc-800 select-none object-cover"
-              draggable={false}
-            />
+            <div className="relative">
+              <img
+                src={profile.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
+                alt={profile.username}
+                className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full border-4 border-zinc-900 shadow-2xl bg-zinc-800 select-none object-cover"
+                draggable={false}
+              />
+
+              <div
+                className="absolute z-20 left-[15%] sm:left-[13%] md:left-[65%]"
+                style={{ bottom: 'calc(100% - 10px)' }}
+              >
+                <ThinkingBubble
+                  text={profile.thinking}
+                  isOwnProfile={isOwnProfile}
+                  onSave={(newThinking) => setProfile(prev => ({ ...prev, thinking: newThinking }))}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="flex-1 min-w-0">
@@ -764,6 +779,15 @@ export default function Profile() {
             </div>
           </div>
         </div>
+
+        {/*
+        {!loadingGames && (
+          <NowPlaying
+            games={profileGames}
+            igdbGames={igdbGames}
+          />
+        )}
+        */}
 
         <BioSection
           bio={profile.bio}

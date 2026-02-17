@@ -22,7 +22,7 @@ export async function handleProfile(req, res) {
     const { data: profile } = await supabase
       .from("users")
       .select(`
-        banner, bio, created_at, is_moderator,
+        banner, bio, thinking, created_at, is_moderator,
         user_badges ( badge:badges ( id, title, description ) )
       `)
       .eq("user_id", authUser.id)
@@ -37,6 +37,7 @@ export async function handleProfile(req, res) {
       discord_id: authUser.user_metadata?.provider_id,
       banner: profile?.banner,
       bio: profile?.bio,
+      thinking: profile?.thinking,
       is_moderator: profile?.is_moderator,
       created_at: profile?.created_at,
       badges,
