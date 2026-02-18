@@ -29,7 +29,7 @@ export default function AvatarWithDecoration({
         <img
           src={currentDecorationUrl}
           alt=""
-          className="absolute top-1/2 left-1/2 w-[106%] h-[106%] max-w-none pointer-events-none select-none z-20 object-contain"
+          className="absolute top-1/2 left-1/2 w-[110%] h-[110%] max-w-none pointer-events-none select-none z-20 object-contain"
           style={{ transform: 'translate(-50%, -50%)' }}
           draggable={false}
         />
