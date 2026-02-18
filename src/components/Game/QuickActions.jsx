@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "../../../hooks/useAuth"
 import { supabase } from "../../../lib/supabase"
+import { useUserGames } from "../../../hooks/useUserGames"
 import { createPortal } from "react-dom"
 
 const STATUS_OPTIONS = [
@@ -105,6 +106,7 @@ function ActionButton({ active, onClick, icon, label, activeClass = "bg-white te
 
 export default function QuickActions({ game }) {
   const { user } = useAuth()
+  const { refresh } = useUserGames()
   const [state, setState] = useState({
     status: null,
     playing: false,
@@ -174,7 +176,11 @@ export default function QuickActions({ game }) {
         }),
       })
 
-      if (!res.ok) setState(prev)
+      if (res.ok) {
+        refresh()
+      } else {
+        setState(prev)
+      }
     } catch {
       setState(prev)
     } finally {

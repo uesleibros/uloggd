@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { useUserGames } from "../../../hooks/useUserGames"
 
 const STAR_PATH = "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
 
@@ -27,8 +28,11 @@ function MiniStars({ rating }) {
   )
 }
 
-export default function GameCard({ game, userRating }) {
-  const hasRating = userRating != null && userRating > 0
+export default function GameCard({ game, userRating: propRating }) {
+  const { getRating } = useUserGames()
+
+  const rating = propRating ?? getRating(game.slug)
+  const hasRating = rating != null && rating > 0
 
   return (
     <Link
@@ -47,13 +51,13 @@ export default function GameCard({ game, userRating }) {
             <span className="text-white select-none text-xs font-medium text-center leading-tight line-clamp-3">
               {game.name}
             </span>
-            {hasRating && <MiniStars rating={userRating} />}
+            {hasRating && <MiniStars rating={rating} />}
           </div>
         </>
       ) : (
         <div className="w-32 h-44 bg-zinc-800 rounded-lg flex flex-col items-center justify-center gap-1.5 group">
           <span className="text-xs select-none text-zinc-500 text-center px-2">{game.name}</span>
-          {hasRating && <MiniStars rating={userRating} />}
+          {hasRating && <MiniStars rating={rating} />}
         </div>
       )}
     </Link>

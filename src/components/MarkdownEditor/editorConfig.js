@@ -1,6 +1,92 @@
-import { EditorView, ViewPlugin, Decoration } from "@codemirror/view"
-import { syntaxHighlighting, HighlightStyle } from "@codemirror/language"
+import { EditorView, ViewPlugin, WidgetType, Decoration } from "@codemirror/view"
+import { HighlightStyle } from "@codemirror/language"
 import { tags } from "@lezer/highlight"
+import { StateField } from "@codemirror/state"
+import twemoji from "@twemoji/api"
+
+class TwemojiWidget extends WidgetType {
+  constructor(emoji, url) {
+    super()
+    this.emoji = emoji
+    this.url = url
+  }
+
+  toDOM() {
+    const img = document.createElement("img")
+    img.src = this.url
+    img.alt = this.emoji
+    img.className = "cm-twemoji"
+    img.draggable = false
+    img.style.cssText = "display:inline;height:1em;width:1em;margin:0 .05em 0 .1em;vertical-align:-0.1em;pointer-events:none;"
+    return img
+  }
+
+  eq(other) {
+    return this.emoji === other.emoji
+  }
+}
+
+const emojiUrlCache = new Map()
+
+function getEmojiUrl(emoji) {
+  if (emojiUrlCache.has(emoji)) return emojiUrlCache.get(emoji)
+
+  let url = null
+  const div = document.createElement("div")
+  div.textContent = emoji
+  twemoji.parse(div, {
+    folder: "svg",
+    ext: ".svg",
+    base: "https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/",
+  })
+
+  const img = div.querySelector("img")
+  if (img) url = img.src
+
+  emojiUrlCache.set(emoji, url)
+  return url
+}
+
+const emojiRegex = /\p{Emoji_Presentation}|\p{Emoji}\uFE0F(?:\u200D(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F))*/gu
+
+function buildEmojiDecorations(state) {
+  const decorations = []
+  const doc = state.doc.toString()
+
+  let match
+  emojiRegex.lastIndex = 0
+  while ((match = emojiRegex.exec(doc)) !== null) {
+    const emoji = match[0]
+    const from = match.index
+    const to = from + emoji.length
+    const url = getEmojiUrl(emoji)
+
+    if (url) {
+      decorations.push(
+        Decoration.replace({
+          widget: new TwemojiWidget(emoji, url),
+        }).range(from, to)
+      )
+    }
+  }
+
+  return Decoration.set(decorations, true)
+}
+
+export const twemojiExtension = StateField.define({
+  create(state) {
+    return buildEmojiDecorations(state)
+  },
+  update(decorations, tr) {
+    if (tr.docChanged) {
+      return buildEmojiDecorations(tr.state)
+    }
+    return decorations
+  },
+  provide(field) {
+    return EditorView.decorations.from(field)
+  },
+})
 
 export const markdownHighlightStyle = HighlightStyle.define([
   { tag: tags.heading1, color: "#f0f6fc", fontWeight: "600" },
