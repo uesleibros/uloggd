@@ -12,7 +12,7 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
   const viewRef = useRef(null)
   const onChangeRef = useRef(onChange)
   const onMentionQueryRef = useRef(onMentionQuery)
-  const lastEmittedValue = useRef(value)
+  const isInternalChange = useRef(false)
 
   useEffect(() => {
     onChangeRef.current = onChange
@@ -32,9 +32,8 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
 
     const updateListener = EditorView.updateListener.of(update => {
       if (update.docChanged) {
-        const newValue = update.state.doc.toString()
-        lastEmittedValue.current = newValue
-        onChangeRef.current(newValue)
+        isInternalChange.current = true
+        onChangeRef.current(update.state.doc.toString())
       }
 
       if (update.selectionSet || update.docChanged) {
@@ -95,13 +94,16 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
   }, [maxLength, ph])
 
   useEffect(() => {
+    if (isInternalChange.current) {
+      isInternalChange.current = false
+      return
+    }
+
     const view = viewRef.current
     if (!view) return
 
     const currentDoc = view.state.doc.toString()
-
-    if (value !== lastEmittedValue.current && value !== currentDoc) {
-      lastEmittedValue.current = value
+    if (value !== currentDoc) {
       view.dispatch({
         changes: { from: 0, to: currentDoc.length, insert: value },
       })
