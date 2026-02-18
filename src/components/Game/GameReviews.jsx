@@ -4,6 +4,7 @@ import { Link } from "react-router-dom"
 import { formatRating } from "../../../utils/rating"
 import { MarkdownPreview } from "../MarkdownEditor"
 import UserBadges from "../User/UserBadges"
+import AvatarWithDecoration from "../User/AvatarWithDecoration"
 
 const STAR_PATH = "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
 
@@ -233,12 +234,12 @@ function ReviewModal({ log, user, onClose }) {
         <div className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
           <div className="flex items-center gap-3.5 min-w-0">
             <Link to={`/u/${user?.username}`} onClick={onClose} className="flex-shrink-0">
-              <img
-                src={user?.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
-                alt={user?.username}
-                className="w-12 h-12 rounded-full border border-zinc-700 object-cover select-none"
-                draggable={false}
-              />
+              <AvatarWithDecoration
+								src={user.avatar}
+								alt={user.username}
+								decoration={user.avatar_decoration}
+								size="lg"
+							/>
             </Link>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -314,12 +315,12 @@ function ReviewCard({ log, user }) {
       <div className="rounded-xl p-5 sm:p-6 bg-zinc-800/50 border border-zinc-700 hover:border-zinc-600 transition-all duration-200">
         <div className="flex items-start gap-3.5">
           <Link to={`/user/${user?.username}`} className="flex-shrink-0">
-            <img
-              src={user?.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
-              alt={user?.username}
-              className="w-12 h-12 rounded-full border border-zinc-700 object-cover select-none"
-              draggable={false}
-            />
+            <AvatarWithDecoration
+							src={user.avatar}
+							alt={user.username}
+							decoration={user.avatar_decoration}
+							size="lg"
+						/>
           </Link>
 
           <div className="flex-1 min-w-0">
@@ -493,3 +494,4 @@ export default function GameReviews({ gameId }) {
     </div>
   )
 }
+
