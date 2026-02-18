@@ -15,7 +15,7 @@ import ProfileTabs from "../components/Profile/ProfileTabs"
 import BioSection from "../components/Profile/BioSection"
 import ListsSection from "../components/Profile/ListsSection"
 import FollowListModal from "../components/Profile/FollowListModal"
-import AvatarWithBorder from "../components/User/AvatarWithBorder"
+import AvatarWithDecoration from "../components/User/AvatarWithDecoration"
 
 const GAMES_PER_PAGE = 24
 
@@ -129,10 +129,10 @@ export default function Profile() {
 				<div className="flex flex-col md:flex-row gap-6 md:gap-8">
 					<div className="flex-shrink-0">
 						<div className="relative">
-							<AvatarWithBorder
+							<AvatarWithDecoration
 								src={profile.avatar}
 								alt={profile.username}
-								border={profile.avatar_border}
+								decoration={profile.avatar_decoration}
 								size="xl"
 							/>
 							<div className="absolute z-20 left-[15%] sm:left-[13%] md:left-[65%]" style={{ bottom: 'calc(100% - 10px)' }}>
@@ -201,4 +201,3 @@ export default function Profile() {
 		</div>
 	)
 }
-
