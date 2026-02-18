@@ -96,20 +96,11 @@ async function handleProfile(url, username) {
   const profile = await res.json()
 
   const title = `${profile.username} - uloggd`
+  const description = `Perfil de ${profile.username}`
 
-  const bioClean = profile.bio ? stripMarkdown(profile.bio) : ''
-  const thinking = profile.thinking ? `💭 ${profile.thinking}` : ''
-  const description = bioClean || thinking || `Veja o perfil de ${profile.username} no uloggd`
+  const avatar = ensureAbsoluteUrl(profile.avatar, url.origin)
 
-  let image = `${url.origin}/default-share.png`
-
-  if (profile.banner) {
-    image = ensureAbsoluteUrl(profile.banner, url.origin)
-  } else if (profile.avatar) {
-    image = profile.avatar.replace(/\?size=\d+/, '').replace(/\.png|\.jpg|\.webp/, '.png') + '?size=512'
-  }
-
-  return buildResponse(title, description, image, url.href, true)
+  return buildResponse(title, description, null, url.href, true)
 }
 
 function buildResponse(title, description, image, pageUrl, isProfile = false) {
@@ -117,7 +108,6 @@ function buildResponse(title, description, image, pageUrl, isProfile = false) {
   const safeDesc = escapeHtml(description)
   const safeImage = escapeHtml(image)
   const safeUrl = escapeHtml(pageUrl)
-  const cardType = isProfile ? 'summary_large_image' : 'summary_large_image'
 
   const html = `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -129,11 +119,9 @@ function buildResponse(title, description, image, pageUrl, isProfile = false) {
   <meta property="og:description" content="${safeDesc}" />
   <meta property="og:image" content="${safeImage}" />
   <meta property="og:url" content="${safeUrl}" />
-  <meta property="og:type" content="${isProfile ? 'profile' : 'website'}" />
+  <meta property="og:type" content="website" />
   <meta property="og:site_name" content="uloggd" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta name="twitter:card" content="${cardType}" />
+  <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="${safeTitle}" />
   <meta name="twitter:description" content="${safeDesc}" />
   <meta name="twitter:image" content="${safeImage}" />
