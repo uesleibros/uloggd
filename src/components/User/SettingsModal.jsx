@@ -589,7 +589,7 @@ export default function SettingsModal({ onClose }) {
                         src={user.avatar}
                         alt={user.username}
                         decoration={selectedDecoration}
-                        size="lg"
+                        size="xl"
                       />
                     </div>
 
@@ -723,3 +723,4 @@ export default function SettingsModal({ onClose }) {
     document.body
   )
 }
+
