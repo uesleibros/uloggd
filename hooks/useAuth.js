@@ -35,8 +35,6 @@ async function loadUser(session) {
 
       const profile = res.ok ? await res.json() : null
 
-      console.log(profile)
-
       cachedUser = {
         id: session.user.id,
         discordId: session.user.user_metadata.provider_id,
