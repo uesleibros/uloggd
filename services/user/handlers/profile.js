@@ -1,4 +1,5 @@
 import { supabase } from "../../../lib/supabase-ssr.js"
+import { DEFAULT_AVATAR_URL } from "../constants.js"
 
 export async function handleProfile(req, res) {
   const { userId, username } = req.body
@@ -33,7 +34,7 @@ export async function handleProfile(req, res) {
     res.json({
       id: authUser.id,
       username: authUser.user_metadata?.full_name,
-      avatar: authUser.user_metadata?.avatar_url,
+      avatar: profile?.avatar || DEFAULT_AVATAR_URL,
       discord_id: authUser.user_metadata?.provider_id,
       banner: profile?.banner,
       bio: profile?.bio,
@@ -49,5 +50,6 @@ export async function handleProfile(req, res) {
   }
 
 }
+
 
 
