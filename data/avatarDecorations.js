@@ -1,4 +1,38 @@
-[
+/**
+ * ----------------------------------------------------------------------------
+ * AVISO LEGAL E PROPRIEDADE INTELECTUAL
+ * ----------------------------------------------------------------------------
+ *
+ * Os assets de avatar decorations referenciados neste arquivo são recursos
+ * proprietários pertencentes à Discord Inc. e distribuídos através da CDN pública
+ * do Discord.
+ *
+ *
+ * Este projeto é uma implementação independente e não é afiliado, autorizado,
+ * mantido, patrocinado ou endossado pela Discord Inc.
+ *
+ * Discord®, Discord Nitro® e todas as marcas relacionadas são marcas registradas
+ * da Discord Inc. Todos os direitos reservados.
+ *
+ * Caso você seja o detentor dos direitos e considere que este uso viola suas
+ * políticas, entre em contato com os mantenedores deste projeto para remoção
+ * imediata.
+ *
+ * ----------------------------------------------------------------------------
+ * INFORMAÇÕES TÉCNICAS
+ * ----------------------------------------------------------------------------
+ * - Fonte dos dados: API de Avatar Decorations do Discord
+ * - CDN: https://cdn.discordapp.com/
+ * - Este arquivo contém apenas metadados (IDs, rótulos e URLs).
+ * - Os assets são carregados dinamicamente a partir da infraestrutura do Discord.
+ * - Não redistribua ou empacote esses assets fora desta aplicação.
+ *
+ * ----------------------------------------------------------------------------
+ * Arquivo: avatarDecorations.js
+ * ----------------------------------------------------------------------------
+ */
+
+const AVATAR_DECORATIONS = [
    {
       "id": "1352687418418921532",
       "url": "https://cdn.discordapp.com/avatar-decoration-presets/a_0c0eeb351ae2cf48c6e1eee2cae49d40.png?size=240&passthrough=true",
@@ -1170,3 +1204,5 @@
       "category": "decorations"
    },
 ]
+
+export { AVATAR_DECORATIONS }
