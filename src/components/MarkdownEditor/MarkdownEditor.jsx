@@ -44,9 +44,13 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 
   const handleMentionQuery = useCallback((data) => setMention(data), [])
 
+  const onChangeRef = useRef(onChange)
+  useEffect(() => { onChangeRef.current = onChange }, [onChange])
+  const stableOnChange = useCallback((val) => onChangeRef.current(val), [])
+
   const mainEditorContainer = useCodeMirror({
     value,
-    onChange,
+    onChange: stableOnChange,
     maxLength,
     placeholder,
     editorRef: editorViewRef,
@@ -449,4 +453,5 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
       </div>
     </>
   )
+
 }
