@@ -1,24 +1,6 @@
 import { Link } from "react-router-dom"
 import UserBadges from "./UserBadges"
-
-function UserAvatar({ avatar, username, size = "md" }) {
-  const sizes = {
-    xs: "h-5 w-5",
-    sm: "h-7 w-7",
-    md: "h-9 w-9",
-    lg: "h-12 w-12",
-    xl: "h-16 w-16",
-  }
-
-  return (
-    <img
-      src={avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
-      alt={username}
-      className={`${sizes[size]} rounded-full object-cover bg-zinc-800 select-none`}
-      draggable={false}
-    />
-  )
-}
+import AvatarWithDecoration from "./AvatarWithDecoration"
 
 export default function UserDisplay({
   user,
@@ -32,9 +14,10 @@ export default function UserDisplay({
 
   const content = (
     <div className={`flex items-center gap-2 ${className}`}>
-      <UserAvatar
-        avatar={user.avatar}
-        username={user.username}
+      <AvatarWithDecoration
+        src={user.avatar}
+        alt={user.username}
+        decoration={user.avatar_decoration}
         size={size}
       />
       {showUsername && (
@@ -61,5 +44,3 @@ export default function UserDisplay({
 
   return content
 }
-
-export { UserAvatar }
