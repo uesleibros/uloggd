@@ -131,7 +131,7 @@ export default function Profile() {
 							<AvatarWithBorder
 								src={profile.avatar}
 								alt={profile.username}
-								border={profile.avatar_border || (profile.is_moderator ? 'mod' : 'default')}
+								border={profile.avatar_border}
 								size="xl"
 							/>
 							<div className="absolute z-20 left-[15%] sm:left-[13%] md:left-[65%]" style={{ bottom: 'calc(100% - 10px)' }}>
@@ -199,4 +199,3 @@ export default function Profile() {
 		</div>
 	)
 }
-
