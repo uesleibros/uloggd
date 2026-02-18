@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import { createPortal } from "react-dom"
+import UserDisplay from "../User/UserDisplay"
 
 const followingCache = new Map()
 
@@ -90,10 +91,9 @@ export function MentionSuggestions({ query, position, onSelect, userId, editorCo
           <button
             key={u.id}
             onMouseDown={(e) => { e.preventDefault(); onSelect(u.username) }}
-            className="w-full px-3 py-2 flex items-center gap-2.5 hover:bg-zinc-700/70 active:bg-zinc-700 transition-colors cursor-pointer text-left"
+            className="w-full px-3 py-2 hover:bg-zinc-700/70 active:bg-zinc-700 transition-colors cursor-pointer text-left"
           >
-            <img src={u.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"} alt="" className="w-6 h-6 rounded-full bg-zinc-700 object-cover flex-shrink-0" />
-            <span className="text-sm text-zinc-300 truncate">{u.username}</span>
+            <UserDisplay user={u} size="xs" showBadges={false} />
           </button>
         ))
       )}
