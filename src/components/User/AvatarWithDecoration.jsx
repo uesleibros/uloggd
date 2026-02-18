@@ -1,8 +1,9 @@
 import { AVATAR_DECORATIONS } from "../../../data/avatarDecorations"
 
 const sizeClasses = {
-  sm: 'w-10 h-10',
-  md: 'w-16 h-16',
+  xs: 'w-5 h-5',
+  sm: 'w-7 h-7',
+  md: 'w-9 h-9',
   lg: 'w-24 h-24',
   xl: 'w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36',
 }
