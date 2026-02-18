@@ -6,6 +6,7 @@ import { handleFollowStatus } from "../services/user/handlers/followStatus.js"
 import { handleFollowers } from "../services/user/handlers/followers.js"
 import { handleBanner } from "../services/user/handlers/banner.js"
 import { handleThinking } from "../services/user/handlers/thinking.js"
+import { handleBorder } from "../services/user/handlers/border.js"
 
 const ACTIONS = {
   profile: handleProfile,
@@ -15,7 +16,8 @@ const ACTIONS = {
   followStatus: handleFollowStatus,
   followers: handleFollowers,
   banner: handleBanner,
-  thinking: handleThinking
+  thinking: handleThinking,
+  border: handleBorder
 }
 
 export default async function handler(req, res) {
