@@ -2,6 +2,7 @@ import usePageMeta from "../../hooks/usePageMeta"
 import UsersChoiceCarousel from "../components/Home/UsersChoiceCarousel"
 import { useAuth } from "../../hooks/useAuth"
 import PageBanner from "../components/Layout/PageBanner"
+import AvatarWithDecoration from "../components/User/AvatarWithDecoration"
 
 function WelcomeBackSkeleton() {
   return (
@@ -24,11 +25,11 @@ function WelcomeBack({ user }) {
   return (
     <div className="mt-40">
       <div className="flex items-center gap-4 mb-6">
-        <img
-          src={user.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
+        <AvatarWithDecoration
+          src={user.avatar}
           alt={user.username}
-          className="w-14 h-14 rounded-full border-2 border-zinc-700 select-none"
-          draggable={false}
+          decoration={user.avatar_decoration}
+          size="xl"
         />
         <div>
           <p className="text-sm text-zinc-500">{greeting},</p>
