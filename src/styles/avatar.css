@@ -1,7 +1,8 @@
 .avatar-wrapper {
   position: relative;
-  display: inline-block;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .avatar-wrapper::before {
