@@ -133,7 +133,7 @@ export default function Profile() {
 								src={profile.avatar}
 								alt={profile.username}
 								decoration={profile.avatar_decoration}
-								size="xl"
+								size="profile"
 							/>
 							<div className="absolute z-20 left-[15%] sm:left-[13%] md:left-[65%]" style={{ bottom: 'calc(100% - 10px)' }}>
 								<ThinkingBubble
@@ -201,3 +201,4 @@ export default function Profile() {
 		</div>
 	)
 }
+
