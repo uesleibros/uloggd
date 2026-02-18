@@ -1,4 +1,4 @@
-import { AVATAR_DECORATIONS } from "../../../avatarDecorations"
+import { AVATAR_DECORATIONS } from "../../../data/avatarDecorations"
 
 const sizeClasses = {
   sm: 'w-10 h-10',
