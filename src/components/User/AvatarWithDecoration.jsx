@@ -31,8 +31,8 @@ export default function AvatarWithDecoration({
           alt=""
           className="absolute top-1/2 left-1/2 pointer-events-none select-none z-20 object-contain"
           style={{
-            width: 'calc(100% + 56px)',
-            height: 'calc(100% + 56px)',
+            width: 'calc(100% + 64px)',
+            height: 'calc(100% + 64px)',
             transform: 'translate(-50%, -50%)'
           }}
           draggable={false}
