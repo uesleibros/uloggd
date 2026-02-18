@@ -51,9 +51,8 @@ export async function handleFollowers(req, res) {
           id: authUser.id,
           username: authUser.user_metadata?.full_name,
           avatar: authUser.user_metadata?.avatar_url,
-          is_verified: prof?.is_verified || false,
-          is_moderator: prof?.is_moderator || false,
-          avatar_decoration: prof?.avatar_decoration || null,
+          is_moderator: prof?.is_moderator,
+          avatar_decoration: prof?.avatar_decoration,
           badges: badgesMap[id] || [],
         }
       })
@@ -65,3 +64,4 @@ export async function handleFollowers(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
