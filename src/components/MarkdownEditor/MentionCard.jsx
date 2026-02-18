@@ -104,7 +104,7 @@ export function MentionCard({ username, onClose }) {
                 src={profile.avatar}
                 alt={profile.username}
                 decoration={profile.avatar_decoration}
-                size="lg"
+                size="xl"
               />
             </div>
             <div className="px-5 pt-3 pb-5">
@@ -134,3 +134,4 @@ export function MentionCard({ username, onClose }) {
     document.body
   )
 }
+
