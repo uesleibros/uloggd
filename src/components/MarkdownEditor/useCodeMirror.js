@@ -12,7 +12,7 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
   const viewRef = useRef(null)
   const onChangeRef = useRef(onChange)
   const onMentionQueryRef = useRef(onMentionQuery)
-  const isExternalUpdate = useRef(false)
+  const lastEmittedValue = useRef(value)
 
   useEffect(() => {
     onChangeRef.current = onChange
@@ -31,8 +31,10 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
       : []
 
     const updateListener = EditorView.updateListener.of(update => {
-      if (update.docChanged && !isExternalUpdate.current) {
-        onChangeRef.current(update.state.doc.toString())
+      if (update.docChanged) {
+        const newValue = update.state.doc.toString()
+        lastEmittedValue.current = newValue
+        onChangeRef.current(newValue)
       }
 
       if (update.selectionSet || update.docChanged) {
@@ -47,10 +49,12 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
           onMentionQueryRef.current?.({
             query: match[1],
             startIndex: from - match[1].length - 1,
-            position: coords ? {
-              bottom: editorRect.bottom - coords.top + 8,
-              left: coords.left - editorRect.left,
-            } : { bottom: 40, left: 16 },
+            position: coords
+              ? {
+                  bottom: editorRect.bottom - coords.top + 8,
+                  left: coords.left - editorRect.left,
+                }
+              : { bottom: 40, left: 16 },
           })
         } else {
           onMentionQueryRef.current?.(null)
@@ -66,7 +70,6 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         markdown({ base: markdownLanguage, codeLanguages: languages }),
         customDecorations,
-        // twemojiExtension removido daqui
         history(),
         indentUnit.of("  "),
         keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
@@ -81,7 +84,6 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
     })
 
     const view = new EditorView({ state, parent: containerRef.current })
-
     viewRef.current = view
     if (editorRef) editorRef.current = view
 
@@ -95,13 +97,14 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
   useEffect(() => {
     const view = viewRef.current
     if (!view) return
+
     const currentDoc = view.state.doc.toString()
-    if (currentDoc !== value) {
-      isExternalUpdate.current = true
+
+    if (value !== lastEmittedValue.current && value !== currentDoc) {
+      lastEmittedValue.current = value
       view.dispatch({
         changes: { from: 0, to: currentDoc.length, insert: value },
       })
-      isExternalUpdate.current = false
     }
   }, [value])
 
