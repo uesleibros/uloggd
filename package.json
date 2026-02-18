@@ -20,6 +20,7 @@
     "@lezer/highlight": "^1.2.0",
     "@supabase/supabase-js": "^2.95.3",
     "@tailwindcss/vite": "^4.1.18",
+    "@twemoji/api": "^17.0.2",
     "nprogress": "^0.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef  } from "react"
 import { createPortal } from "react-dom"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "../../hooks/usePageMeta"
@@ -12,6 +12,9 @@ import PageBanner from "../components/Layout/PageBanner"
 import GameCard from "../components/Game/GameCard"
 import NowPlaying from "../components/Game/NowPlaying"
 import ThinkingBubble from "../components/User/ThinkingBubble"
+import DragScrollRow from "../components/UI/DragScrollRow"
+
+const GAMES_PER_PAGE = 24
 
 function ProfileSkeleton() {
   return (
@@ -123,12 +126,9 @@ function FollowListModal({ title, userId, onClose }) {
   const [search, setSearch] = useState("")
 
   useEffect(() => {
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
     document.body.style.overflow = "hidden"
-    if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`
     return () => {
       document.body.style.overflow = ""
-      document.body.style.paddingRight = ""
     }
   }, [])
 
@@ -232,11 +232,16 @@ function FollowListModal({ title, userId, onClose }) {
   )
 }
 
-function TabIcon({ tabKey, className = "w-4 h-4" }) {
+function TabIcon({ tabKey, className = "w-3.5 h-3.5" }) {
   const icons = {
     playing: (
+      <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z" />
+      </svg>
+    ),
+    played: (
       <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 01-.657.643 48.39 48.39 0 01-4.163-.3c.186 1.613.293 3.25.315 4.907a.656.656 0 01-.658.663v0c-.355 0-.676-.186-.959-.401a1.647 1.647 0 00-1.003-.349c-1.036 0-1.875 1.007-1.875 2.25s.84 2.25 1.875 2.25c.369 0 .713-.128 1.003-.349.283-.215.604-.401.959-.401v0c.31 0 .555.26.532.57a48.039 48.039 0 01-.642 5.056c1.518.19 3.058.309 4.616.354a.64.64 0 00.657-.643v0c0-.355-.186-.676-.401-.959a1.647 1.647 0 01-.349-1.003c0-1.035 1.008-1.875 2.25-1.875 1.243 0 2.25.84 2.25 1.875 0 .369-.128.713-.349 1.003-.215.283-.4.604-.4.959v0c0 .333.277.599.61.58a48.1 48.1 0 005.427-.63 48.05 48.05 0 00.582-4.717.532.532 0 00-.533-.57v0c-.355 0-.676.186-.959.401-.29.221-.634.349-1.003.349-1.035 0-1.875-1.007-1.875-2.25s.84-2.25 1.875-2.25c.37 0 .713.128 1.003.349.283.215.604.401.96.401v0a.656.656 0 00.657-.663 48.422 48.422 0 00-.37-5.36c-1.886.342-3.81.574-5.766.689a.578.578 0 01-.61-.58v0z" />
       </svg>
     ),
     completed: (
@@ -251,12 +256,22 @@ function TabIcon({ tabKey, className = "w-4 h-4" }) {
     ),
     wishlist: (
       <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21" />
+      </svg>
+    ),
+    liked: (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
       </svg>
     ),
     dropped: (
       <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+      </svg>
+    ),
+    shelved: (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
       </svg>
     ),
     rated: (
@@ -271,10 +286,13 @@ function TabIcon({ tabKey, className = "w-4 h-4" }) {
 function EmptyTab({ tabKey, isOwnProfile, username }) {
   const messages = {
     playing: { own: "Você não está jogando nada no momento.", other: `${username} não está jogando nada no momento.` },
+    played: { own: "Você ainda não jogou nenhum jogo.", other: `${username} ainda não jogou nenhum jogo.` },
     completed: { own: "Você ainda não zerou nenhum jogo.", other: `${username} ainda não zerou nenhum jogo.` },
     backlog: { own: "Seu backlog está vazio.", other: `${username} não tem jogos no backlog.` },
     wishlist: { own: "Sua wishlist está vazia.", other: `${username} não tem jogos na wishlist.` },
     dropped: { own: "Você não abandonou nenhum jogo.", other: `${username} não abandonou nenhum jogo.` },
+    shelved: { own: "Você não engavetou nenhum jogo.", other: `${username} não engavetou nenhum jogo.` },
+    liked: { own: "Você ainda não curtiu nenhum jogo.", other: `${username} ainda não curtiu nenhum jogo.` },
     rated: { own: "Você ainda não avaliou nenhum jogo.", other: `${username} ainda não avaliou nenhum jogo.` },
   }
 
@@ -304,6 +322,82 @@ function GameGridSkeleton() {
       {[...Array(8)].map((_, i) => (
         <div key={i} className="w-32 h-44 bg-zinc-800 rounded-lg animate-pulse" />
       ))}
+    </div>
+  )
+}
+
+function Pagination({ currentPage, totalPages, onPageChange }) {
+  if (totalPages <= 1) return null
+
+  function getPages() {
+    const pages = []
+    const maxVisible = 5
+
+    if (totalPages <= maxVisible + 2) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+      return pages
+    }
+
+    pages.push(1)
+
+    let start = Math.max(2, currentPage - 1)
+    let end = Math.min(totalPages - 1, currentPage + 1)
+
+    if (currentPage <= 3) {
+      start = 2
+      end = Math.min(maxVisible, totalPages - 1)
+    } else if (currentPage >= totalPages - 2) {
+      start = Math.max(2, totalPages - maxVisible + 1)
+      end = totalPages - 1
+    }
+
+    if (start > 2) pages.push("...")
+    for (let i = start; i <= end; i++) pages.push(i)
+    if (end < totalPages - 1) pages.push("...")
+
+    pages.push(totalPages)
+    return pages
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-1.5 mt-8">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      {getPages().map((page, i) =>
+        page === "..." ? (
+          <span key={`dots-${i}`} className="px-2 text-zinc-600 text-sm">...</span>
+        ) : (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`min-w-[36px] h-9 px-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${
+              currentPage === page
+                ? "bg-white text-black"
+                : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+            }`}
+          >
+            {page}
+          </button>
+        )
+      )}
+
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
     </div>
   )
 }
@@ -489,7 +583,10 @@ function BioSection({ bio, isOwnProfile, onEdit }) {
 
 function useProfileGames(profileId) {
   const [profileGames, setProfileGames] = useState({})
-  const [counts, setCounts] = useState({ playing: 0, completed: 0, backlog: 0, wishlist: 0, dropped: 0, rated: 0 })
+  const [counts, setCounts] = useState({
+    playing: 0, played: 0, completed: 0, backlog: 0,
+    wishlist: 0, dropped: 0, shelved: 0, liked: 0, rated: 0,
+  })
   const [igdbGames, setIgdbGames] = useState({})
   const [loadingGames, setLoadingGames] = useState(true)
 
@@ -508,7 +605,10 @@ function useProfileGames(profileId) {
       const data = await res.json()
 
       setProfileGames(data.games || {})
-      setCounts(data.counts || { playing: 0, completed: 0, backlog: 0, wishlist: 0, dropped: 0, rated: 0 })
+      setCounts(data.counts || {
+        playing: 0, played: 0, completed: 0, backlog: 0,
+        wishlist: 0, dropped: 0, shelved: 0, liked: 0, rated: 0,
+      })
 
       const slugs = Object.keys(data.games || {})
       if (slugs.length > 0) {
@@ -540,10 +640,13 @@ function filterGamesByTab(profileGames, igdbGames, tabKey) {
   const filtered = entries.filter(([, g]) => {
     switch (tabKey) {
       case "playing": return g.playing
+      case "played": return g.status === "played"
       case "completed": return g.status === "completed"
       case "backlog": return g.backlog
       case "wishlist": return g.wishlist
       case "dropped": return g.status === "abandoned"
+      case "shelved": return g.status === "shelved"
+      case "liked": return g.liked
       case "rated": return g.ratingCount > 0
       default: return false
     }
@@ -566,6 +669,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState("playing")
+  const [currentPage, setCurrentPage] = useState(1)
   const [isFollowing, setIsFollowing] = useState(false)
   const [followLoading, setFollowLoading] = useState(false)
   const [followersCount, setFollowersCount] = useState(0)
@@ -582,6 +686,10 @@ export default function Profile() {
     description: `Perfil de ${profile.username} no uloggd`,
     image: profile.avatar || undefined
   } : undefined)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeTab])
 
   useEffect(() => {
     setLoading(true)
@@ -691,14 +799,19 @@ export default function Profile() {
 
   const tabs = [
     { key: "playing", label: "Jogando", count: counts.playing },
+    { key: "played", label: "Jogados", count: counts.played },
     { key: "completed", label: "Zerados", count: counts.completed },
     { key: "backlog", label: "Backlog", count: counts.backlog },
     { key: "wishlist", label: "Wishlist", count: counts.wishlist },
+    { key: "liked", label: "Curtidos", count: counts.liked },
     { key: "dropped", label: "Largados", count: counts.dropped },
+    { key: "shelved", label: "Engavetados", count: counts.shelved },
     { key: "rated", label: "Avaliados", count: counts.rated },
   ]
 
-  const tabGames = filterGamesByTab(profileGames, igdbGames, activeTab)
+  const allTabGames = filterGamesByTab(profileGames, igdbGames, activeTab)
+  const totalPages = Math.ceil(allTabGames.length / GAMES_PER_PAGE)
+  const tabGames = allTabGames.slice((currentPage - 1) * GAMES_PER_PAGE, currentPage * GAMES_PER_PAGE)
 
   const memberSince = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
@@ -780,15 +893,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/*
-        {!loadingGames && (
-          <NowPlaying
-            games={profileGames}
-            igdbGames={igdbGames}
-          />
-        )}
-        */}
-
         <BioSection
           bio={profile.bio}
           isOwnProfile={isOwnProfile}
@@ -796,32 +900,41 @@ export default function Profile() {
         />
 
         <div className="mt-12">
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {tabs.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer flex items-center gap-2 ${
-                  activeTab === tab.key
-                    ? "bg-white text-black"
-                    : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 border border-zinc-700"
-                }`}
-              >
-                <TabIcon tabKey={tab.key} />
-                {tab.label}
-                <span className={`text-xs ${activeTab === tab.key ? "text-zinc-600" : "text-zinc-500"}`}>
-                  {tab.count}
-                </span>
-              </button>
-            ))}
-          </div>
+          <DragScrollRow className="pb-1">
+            <div className="flex gap-2 w-max">
+              {tabs.map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer flex items-center gap-2 ${
+                    activeTab === tab.key
+                      ? "bg-white text-black"
+                      : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 border border-zinc-700"
+                  }`}
+                >
+                  <TabIcon tabKey={tab.key} />
+                  {tab.label}
+                  <span className={`text-xs ${activeTab === tab.key ? "text-zinc-600" : "text-zinc-500"}`}>
+                    {tab.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </DragScrollRow>
 
           <hr className="my-4 border-zinc-700" />
 
           {loadingGames ? (
             <GameGridSkeleton />
           ) : tabGames.length > 0 ? (
-            <GamesGrid games={tabGames} profileGames={profileGames} />
+            <>
+              <GamesGrid games={tabGames} profileGames={profileGames} />
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </>
           ) : (
             <EmptyTab
               tabKey={activeTab}
@@ -852,7 +965,3 @@ export default function Profile() {
     </div>
   )
 }
-
-
-
-

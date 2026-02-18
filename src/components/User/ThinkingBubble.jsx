@@ -119,7 +119,7 @@ export default function ThinkingBubble({ text, isOwnProfile, onSave }) {
         <div style={{ animation: 'tbFloat 4s ease-in-out infinite' }}>
           <div className="group">
             <div
-              className="relative bg-zinc-800/95 backdrop-blur-sm border border-zinc-600/80 rounded-[20px] px-3.5 py-2 min-w-[150px] max-w-[200px]"
+              className="relative bg-zinc-800/95 backdrop-blur-sm border border-zinc-600/80 rounded-[20px] px-3.5 py-2 max-w-[200px]"
               style={{ animation: 'tbGlow 3s ease-in-out infinite' }}
             >
               <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-zinc-500/30 to-transparent rounded-full" />

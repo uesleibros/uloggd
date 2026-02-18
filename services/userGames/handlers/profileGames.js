@@ -52,7 +52,17 @@ function buildGameMap(userGames, logs) {
 
 function aggregateGames(gameMap) {
   const games = {}
-  const counts = { playing: 0, completed: 0, backlog: 0, wishlist: 0, dropped: 0, rated: 0 }
+  const counts = {
+    playing: 0,
+    played: 0,
+    completed: 0,
+    backlog: 0,
+    wishlist: 0,
+    dropped: 0,
+    shelved: 0,
+    liked: 0,
+    rated: 0,
+  }
 
   for (const [slug, g] of Object.entries(gameMap)) {
     const avgRating = g.ratings.length > 0
@@ -74,10 +84,13 @@ function aggregateGames(gameMap) {
     }
 
     if (g.playing) counts.playing++
+    if (g.status === "played") counts.played++
     if (g.status === "completed") counts.completed++
     if (g.backlog) counts.backlog++
     if (g.wishlist) counts.wishlist++
     if (g.status === "abandoned") counts.dropped++
+    if (g.status === "shelved") counts.shelved++
+    if (g.liked) counts.liked++
     if (g.ratings.length > 0) counts.rated++
   }
 

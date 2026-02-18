@@ -59,35 +59,16 @@
   display: none;
 }
 
-@keyframes pacman-chomp {
-  0%, 100% { 
-    clip-path: polygon(
-      50% 50%, 
-      100% 25%, 
-      100% 0%, 
-      0% 0%, 
-      0% 100%, 
-      100% 100%, 
-      100% 75%
-    ); 
-  }
-  50% { 
-    clip-path: polygon(
-      50% 50%, 
-      50% 50%, 
-      100% 0%, 
-      0% 0%, 
-      0% 100%, 
-      100% 100%, 
-      50% 50%
-    ); 
-  }
-}
-
-@keyframes pacman-dot-move {
-  0% { opacity: 1; transform: translateX(0); }
-  80% { opacity: 1; }
-  100% { opacity: 0; transform: translateX(-24px); }
+img.emoji {
+  display: inline;
+  height: 1.1em;
+  width: 1.1em;
+  margin: 0 0.05em 0 0.1em;
+  vertical-align: -0.15em;
+  user-select: all;
+  -webkit-user-drag: none;
+  cursor: text;
+  pointer-events: auto;
 }
 
 @keyframes slide-up {

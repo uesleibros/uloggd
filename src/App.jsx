@@ -3,6 +3,7 @@ import RouteLoader from "./components/Layout/RouteLoader"
 import ScrollToTop from "./components/Layout/ScrollToTop"
 import Header from "./components/Layout/Header"
 import Footer from "./components/Layout/Footer"
+import TwemojiProvider from "./components/UI/Twemoji"
 import Home from "./pages/Home"
 import Game from "./pages/Game"
 import Profile from "./pages/Profile"
@@ -17,6 +18,7 @@ export default function App() {
       <ScrollToTop />
       <RouteLoader />
       <NotificationContainer />
+      <TwemojiProvider />
       <Header />
 
       <main className="main-content">
