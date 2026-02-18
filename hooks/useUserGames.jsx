@@ -62,6 +62,16 @@ export function UserGamesProvider({ children }) {
 
 export function useUserGames() {
   const ctx = useContext(UserGamesContext)
-  if (!ctx) throw new Error("useUserGames must be used within UserGamesProvider")
+  
+  if (!ctx) {
+    return {
+      games: {},
+      loaded: true,
+      getGameData: () => null,
+      getRating: () => null,
+      refresh: () => {},
+    }
+  }
+  
   return ctx
 }

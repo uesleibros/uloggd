@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { MarkdownPreview } from "../MarkdownEditor"
 
-export default function BioSection({ bio, isOwnProfile, onEdit }) {
+export default function BioSection({ bio, isOwnProfile, onEdit, profileGames = {} }) {
   if (!bio) return null
   const [copied, setCopied] = useState(false)
 
@@ -49,7 +49,7 @@ export default function BioSection({ bio, isOwnProfile, onEdit }) {
         )}
       </div>
       <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl p-5 sm:p-6">
-        <MarkdownPreview content={bio} />
+        <MarkdownPreview content={bio} authorRatings={profileGames} />
       </div>
     </div>
   )

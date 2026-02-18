@@ -1,8 +1,9 @@
 import { useMemo, memo } from "react"
 import ReactMarkdown from "react-markdown"
-import { remarkPlugins, rehypePlugins, markdownComponents } from "./markdownConfig"
+import { remarkPlugins, rehypePlugins, createMarkdownComponents } from "./markdownConfig"
+import { GamesBatchProvider } from "../../../hooks/useGamesBatch"
 
-export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
+export const MarkdownPreview = memo(function MarkdownPreview({ content, authorRatings = {} }) {
   const processedContent = useMemo(() => {
     return content
       .replace(
@@ -100,6 +101,11 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
       )
   }, [content])
 
+  const components = useMemo(
+    () => createMarkdownComponents(authorRatings),
+    [authorRatings]
+  )
+
   if (!processedContent.trim()) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3 text-zinc-600">
@@ -112,10 +118,16 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content }) {
   }
 
   return (
-    <div className="markdown-body">
-      <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={markdownComponents}>
-        {processedContent}
-      </ReactMarkdown>
-    </div>
+    <GamesBatchProvider>
+      <div className="markdown-body">
+        <ReactMarkdown 
+          remarkPlugins={remarkPlugins} 
+          rehypePlugins={rehypePlugins} 
+          components={components}
+        >
+          {processedContent}
+        </ReactMarkdown>
+      </div>
+    </GamesBatchProvider>
   )
 })

@@ -44,7 +44,6 @@ export default function Profile() {
 
   useEffect(() => { setCurrentPage(1) }, [activeTab])
 
-  // Fetch profile
   useEffect(() => {
     setLoading(true)
     setError(null)
@@ -67,7 +66,6 @@ export default function Profile() {
     return () => controller.abort()
   }, [username])
 
-  // Fetch follow status
   useEffect(() => {
     if (!profile || authLoading) return
     const controller = new AbortController()
@@ -173,7 +171,12 @@ export default function Profile() {
           </div>
         </div>
 
-        <BioSection bio={profile.bio} isOwnProfile={isOwnProfile} onEdit={() => setSettingsOpen(true)} />
+        <BioSection 
+          bio={profile.bio} 
+          isOwnProfile={isOwnProfile} 
+          onEdit={() => setSettingsOpen(true)} 
+          profileGames={profileGames}
+        />
 
         <ProfileTabs
           activeTab={activeTab}

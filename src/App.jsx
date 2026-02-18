@@ -15,25 +15,23 @@ import "./App.css"
 
 export default function App() {
 	return (
-		<>
+		<UserGamesProvider>
 			<ScrollToTop />
 			<RouteLoader />
 			<NotificationContainer />
 			<TwemojiProvider />
 			<Header />
 
-			<UserGamesProvider>
-				<main className="main-content">
-					<Routes>
-						<Route path="/" element={<Home />} />
-						<Route path="/game/:slug" element={<Game />} />
-						<Route path="/u/:username" element={<Profile />} />
-						<Route path="*" element={<NotFound />} />
-					</Routes>
-				</main>
-			</UserGamesProvider>
-			
+			<main className="main-content">
+				<Routes>
+					<Route path="/" element={<Home />} />
+					<Route path="/game/:slug" element={<Game />} />
+					<Route path="/u/:username" element={<Profile />} />
+					<Route path="*" element={<NotFound />} />
+				</Routes>
+			</main>
+
 			<Footer />
-		</>
+		</UserGamesProvider>
 	)
 }
