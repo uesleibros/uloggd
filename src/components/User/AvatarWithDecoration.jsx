@@ -29,7 +29,12 @@ export default function AvatarWithDecoration({
         <img
           src={currentDecorationUrl}
           alt=""
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] aspect-square pointer-events-none select-none z-20 object-contain"
+          className="absolute top-1/2 left-1/2 pointer-events-none select-none z-20 object-contain"
+          style={{
+            width: 'calc(100% + 56px)',
+            height: 'calc(100% + 56px)',
+            transform: 'translate(-50%, -50%)'
+          }}
           draggable={false}
         />
       )}
