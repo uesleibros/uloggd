@@ -7,13 +7,6 @@ const sizeClasses = {
   xl: 'w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36',
 }
 
-const decorationSizes = {
-  sm: 'w-[160%] h-[160%]',
-  md: 'w-[160%] h-[160%]',
-  lg: 'w-[160%] h-[160%]',
-  xl: 'w-[160%] h-[160%]',
-}
-
 export default function AvatarWithDecoration({ 
   src, 
   alt, 
@@ -36,7 +29,7 @@ export default function AvatarWithDecoration({
         <img
           src={currentDecorationUrl}
           alt=""
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160%] aspect-square pointer-events-none select-none z-20 object-contain`}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[180%] aspect-square pointer-events-none select-none z-20 object-contain"
           draggable={false}
         />
       )}
