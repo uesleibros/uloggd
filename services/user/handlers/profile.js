@@ -22,7 +22,7 @@ export async function handleProfile(req, res) {
     const { data: profile } = await supabase
       .from("users")
       .select(`
-        banner, bio, thinking, created_at, is_moderator,
+        banner, bio, thinking, avatar_border, created_at, is_moderator,
         user_badges ( badge:badges ( id, title, description ) )
       `)
       .eq("user_id", authUser.id)
@@ -46,4 +46,5 @@ export async function handleProfile(req, res) {
     console.error(e)
     res.status(500).json({ error: "fail" })
   }
+
 }
