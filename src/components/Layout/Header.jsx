@@ -4,7 +4,7 @@ import PlatformIcons from "../Game/PlatformIcons"
 import { formatDateShort } from "../../../utils/formatDate"
 import { supabase } from "../../../lib/supabase"
 import UserDisplay from "../User/UserDisplay"
-import SettingsModal from "../User/SettingsModal"
+import SettingsModal from "../User/Settings/SettingsModal"
 import { useAuth } from "../../../hooks/useAuth"
 import UserBadges from "../User/UserBadges"
 

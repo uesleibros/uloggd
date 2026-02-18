@@ -21,6 +21,7 @@
     "@supabase/supabase-js": "^2.95.3",
     "@tailwindcss/vite": "^4.1.18",
     "@twemoji/api": "^17.0.2",
+    "lucide-react": "^0.574.0",
     "nprogress": "^0.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
