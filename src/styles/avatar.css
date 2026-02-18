@@ -1,17 +1,6 @@
 .avatar-wrapper {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  display: inline-block;
   overflow: visible;
-}
-
-.avatar-wrapper::before {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  z-index: 0;
-  opacity: 0;
+  line-height: 0;
 }
