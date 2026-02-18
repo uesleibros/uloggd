@@ -5,6 +5,7 @@ import { handleFollow } from "../services/user/handlers/follow.js"
 import { handleFollowStatus } from "../services/user/handlers/followStatus.js"
 import { handleFollowers } from "../services/user/handlers/followers.js"
 import { handleBanner } from "../services/user/handlers/banner.js"
+import { handleAvatar } from "../services/user/handlers/avatar.js"
 import { handleThinking } from "../services/user/handlers/thinking.js"
 import { handleDecoration } from "../services/user/handlers/decoration.js"
 
@@ -16,6 +17,7 @@ const ACTIONS = {
   followStatus: handleFollowStatus,
   followers: handleFollowers,
   banner: handleBanner,
+  avatar: handleAvatar,
   thinking: handleThinking,
   decoration: handleDecoration
 }
@@ -28,5 +30,3 @@ export default async function handler(req, res) {
 
   return fn(req, res)
 }
-
-
