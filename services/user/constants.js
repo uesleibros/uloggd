@@ -3,3 +3,4 @@ export const MAX_BANNER_SIZE = 5 * 1024 * 1024
 export const VALID_FOLLOW_ACTIONS = ["follow", "unfollow"]
 export const VALID_LIST_TYPES = ["followers", "following"]
 export const VALID_BANNER_ACTIONS = ["upload", "remove"]
+export DEFAULT_AVATAR_URL = "https://cdn.imgchest.com/files/ef68461049cb.jpg"
