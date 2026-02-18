@@ -29,6 +29,7 @@ export default function Profile() {
 	const [currentPage, setCurrentPage] = useState(1)
 	const [isFollowing, setIsFollowing] = useState(false)
 	const [followLoading, setFollowLoading] = useState(false)
+	const [followsYou, setFollowsYou] = useState(false)
 	const [followersCount, setFollowersCount] = useState(0)
 	const [followingCount, setFollowingCount] = useState(0)
 	const [followModal, setFollowModal] = useState(null)
@@ -78,7 +79,7 @@ export default function Profile() {
 			signal: controller.signal,
 		})
 			.then(r => r.json())
-			.then(s => { setFollowersCount(s.followers); setFollowingCount(s.following); setIsFollowing(s.isFollowing) })
+			.then(s => { setFollowersCount(s.followers); setFollowingCount(s.following); setIsFollowing(s.isFollowing); setFollowsYou(s.followsYou) })
 			.catch(() => {})
 
 		return () => controller.abort()
@@ -166,6 +167,7 @@ export default function Profile() {
 							memberSince={memberSince}
 							onFollowersClick={() => setFollowModal("Seguidores")}
 							onFollowingClick={() => setFollowModal("Seguindo")}
+							followsYou={followsYou && !isOwnProfile}
 						/>
 					</div>
 				</div>
@@ -199,3 +201,4 @@ export default function Profile() {
 		</div>
 	)
 }
+
