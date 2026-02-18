@@ -6,6 +6,8 @@ import { notify } from "../UI/Notification"
 import BannerEditor from "./BannerEditor"
 import UserBadges from "./UserBadges"
 import { MarkdownEditor } from "../MarkdownEditor"
+import AvatarWithDecoration from "./AvatarWithDecoration"
+import { AVATAR_DECORATIONS } from "../../../data/avatarDecorations"
 
 function MobileTabButton({ icon, label, active, onClick, danger = false }) {
   return (
@@ -85,6 +87,8 @@ function SettingsSection({ title, description, children, danger = false }) {
   )
 }
 
+const categories = ["todas", ...new Set(AVATAR_DECORATIONS.map(d => d.category))]
+
 export default function SettingsModal({ onClose }) {
   const { user, updateUser } = useAuth()
   const [bannerSaving, setBannerSaving] = useState(false)
@@ -94,11 +98,22 @@ export default function SettingsModal({ onClose }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [bio, setBio] = useState(user?.bio || "")
   const [bioSaving, setBioSaving] = useState(false)
+  const [selectedDecoration, setSelectedDecoration] = useState(user?.avatar_decoration || null)
+  const [decorationSaving, setDecorationSaving] = useState(false)
+  const [decorationSearch, setDecorationSearch] = useState("")
+  const [decorationCategory, setDecorationCategory] = useState("todas")
 
   const bioIsDirty = bio !== (user?.bio || "")
+  const decorationIsDirty = selectedDecoration !== (user?.avatar_decoration || null)
 
   const isVerified = user?.badges?.some(b => b.id === 'verified')
   const isModerator = user?.badges?.some(b => b.id === 'moderator')
+
+  const filteredDecorations = AVATAR_DECORATIONS.filter(d => {
+    const matchCategory = decorationCategory === "todas" || d.category === decorationCategory
+    const matchSearch = (d.label || d.name || "").toLowerCase().includes(decorationSearch.toLowerCase())
+    return matchCategory && matchSearch
+  })
 
   useEffect(() => {
     document.body.style.overflow = "hidden"
@@ -113,6 +128,10 @@ export default function SettingsModal({ onClose }) {
 
   function handleResetBio() {
     setBio(user?.bio || "")
+  }
+
+  function handleResetDecoration() {
+    setSelectedDecoration(user?.avatar_decoration || null)
   }
 
   async function handleSignOut() {
@@ -187,6 +206,36 @@ export default function SettingsModal({ onClose }) {
       notify("Erro ao salvar a bio.", "error")
     } finally {
       setBioSaving(false)
+    }
+  }
+
+  async function handleDecorationSave() {
+    if (!decorationIsDirty) return
+
+    setDecorationSaving(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const res = await fetch("/api/user?action=decoration", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ decoration: selectedDecoration }),
+      })
+
+      if (res.ok) {
+        updateUser({ avatar_decoration: selectedDecoration })
+        notify("Decoração atualizada com sucesso!")
+      } else {
+        notify("Erro ao salvar a decoração.", "error")
+      }
+    } catch {
+      notify("Erro ao salvar a decoração.", "error")
+    } finally {
+      setDecorationSaving(false)
     }
   }
 
@@ -528,18 +577,143 @@ export default function SettingsModal({ onClose }) {
             {activeTab === "appearance" && (
               <div>
                 <h2 className="text-lg font-semibold text-white">Aparência</h2>
-                <p className="text-sm text-zinc-500 mt-1 mb-6">Defina como o uloggd aparece para você.</p>
+                <p className="text-sm text-zinc-500 mt-1 mb-6">Personalize como seu perfil aparece.</p>
 
-                <SettingsSection title="Tema">
-                  <div className="flex flex-col items-center justify-center py-12 gap-4">
-                    <div className="w-14 h-14 rounded-full bg-zinc-800/50 border border-zinc-700 flex items-center justify-center text-zinc-600">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z" />
-                      </svg>
+                <div className="space-y-4 sm:space-y-6">
+                  <SettingsSection
+                    title="Decoração do Avatar"
+                    description="Escolha uma decoração para o seu avatar."
+                  >
+                    <div className="flex items-center justify-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 mb-5">
+                      <AvatarWithDecoration
+                        src={user.avatar}
+                        alt={user.username}
+                        decoration={selectedDecoration}
+                        size="lg"
+                      />
                     </div>
-                    <p className="text-sm text-zinc-500">Configurações de aparência em breve.</p>
-                  </div>
-                </SettingsSection>
+
+                    <div className="flex flex-col sm:flex-row gap-2 mb-4">
+                      <input
+                        type="text"
+                        placeholder="Pesquisar decoração..."
+                        value={decorationSearch}
+                        onChange={(e) => setDecorationSearch(e.target.value)}
+                        className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
+                      />
+                      <select
+                        value={decorationCategory}
+                        onChange={(e) => setDecorationCategory(e.target.value)}
+                        className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:border-zinc-500 capitalize"
+                      >
+                        {categories.map(cat => (
+                          <option key={cat} value={cat} className="capitalize">{cat}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 gap-2 max-h-72 overflow-y-auto pr-1">
+                      <button
+                        onClick={() => setSelectedDecoration(null)}
+                        className={`relative flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
+                          selectedDecoration === null
+                            ? "border-white bg-zinc-800"
+                            : "border-zinc-700 hover:border-zinc-500 bg-zinc-800/50 hover:bg-zinc-800"
+                        }`}
+                      >
+                        <div className="w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                        <span className="text-[10px] text-zinc-400 text-center leading-tight">Nenhuma</span>
+                        {selectedDecoration === null && (
+                          <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-white flex items-center justify-center">
+                            <svg className="w-2 h-2 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                      </button>
+
+                      {filteredDecorations.map(decoration => {
+                        const isSelected = selectedDecoration === decoration.id
+                        const label = decoration.label || decoration.name || ""
+
+                        return (
+                          <button
+                            key={decoration.id}
+                            onClick={() => setSelectedDecoration(decoration.id)}
+                            title={label}
+                            className={`relative flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
+                              isSelected
+                                ? "border-white bg-zinc-800"
+                                : "border-zinc-700 hover:border-zinc-500 bg-zinc-800/50 hover:bg-zinc-800"
+                            }`}
+                          >
+                            <img
+                              src={decoration.url}
+                              alt={label}
+                              className="w-10 h-10 object-contain"
+                            />
+                            <span className="text-[10px] text-zinc-400 text-center leading-tight line-clamp-1 w-full">
+                              {label}
+                            </span>
+                            {isSelected && (
+                              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-white flex items-center justify-center">
+                                <svg className="w-2 h-2 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    <div className="flex justify-end items-center gap-3 mt-4">
+                      {decorationIsDirty && (
+                        <button
+                          onClick={handleResetDecoration}
+                          disabled={decorationSaving}
+                          className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Resetar
+                        </button>
+                      )}
+
+                      <button
+                        onClick={handleDecorationSave}
+                        disabled={!decorationIsDirty || decorationSaving}
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
+                          !decorationIsDirty || decorationSaving
+                            ? "bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50"
+                            : "bg-indigo-500 hover:bg-indigo-600 text-white cursor-pointer shadow-lg shadow-indigo-500/20"
+                        }`}
+                      >
+                        {decorationSaving ? (
+                          <div className="w-4 h-4 border-2 border-zinc-400 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                        Salvar
+                      </button>
+                    </div>
+                  </SettingsSection>
+
+                  <SettingsSection title="Tema">
+                    <div className="flex flex-col items-center justify-center py-12 gap-4">
+                      <div className="w-14 h-14 rounded-full bg-zinc-800/50 border border-zinc-700 flex items-center justify-center text-zinc-600">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z" />
+                        </svg>
+                      </div>
+                      <p className="text-sm text-zinc-500">Configurações de aparência em breve.</p>
+                    </div>
+                  </SettingsSection>
+                </div>
               </div>
             )}
           </div>
