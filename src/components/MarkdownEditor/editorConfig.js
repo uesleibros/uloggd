@@ -17,12 +17,16 @@ class TwemojiWidget extends WidgetType {
     img.alt = this.emoji
     img.className = "cm-twemoji"
     img.draggable = false
-    img.style.cssText = "display:inline;height:1em;width:1em;margin:0 .05em 0 .1em;vertical-align:-0.1em;pointer-events:none;"
+    img.style.cssText = "display:inline-block;height:1em;width:1em;margin:0 .05em 0 .1em;vertical-align:-0.1em;pointer-events:none;"
     return img
   }
 
   eq(other) {
     return this.emoji === other.emoji
+  }
+
+  ignoreEvent() {
+    return false
   }
 }
 
@@ -47,10 +51,10 @@ function getEmojiUrl(emoji) {
   return url
 }
 
-const emojiRegex = /\p{Emoji_Presentation}|\p{Emoji}\uFE0F(?:\u200D(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F))*/gu
+const emojiRegexSource = "\\p{Emoji_Presentation}|\\p{Emoji}\\uFE0F(?:\\u200D(?:\\p{Emoji_Presentation}|\\p{Emoji}\\uFE0F))*"
 
 function isSurrogatePair(str, index) {
-  if (index <= 0) return false
+  if (index <= 0 || index >= str.length) return false
   const prevCode = str.charCodeAt(index - 1)
   const currCode = str.charCodeAt(index)
   return prevCode >= 0xD800 && prevCode <= 0xDBFF && currCode >= 0xDC00 && currCode <= 0xDFFF
@@ -60,7 +64,7 @@ function buildEmojiDecorations(state) {
   const decorations = []
   const doc = state.doc.toString()
   const docLength = doc.length
-  const regex = new RegExp(emojiRegex.source, emojiRegex.flags)
+  const regex = new RegExp(emojiRegexSource, "gu")
 
   let match
   while ((match = regex.exec(doc)) !== null) {
@@ -72,23 +76,24 @@ function buildEmojiDecorations(state) {
     if (from > 0 && isSurrogatePair(doc, from)) continue
 
     const url = getEmojiUrl(emoji)
+
     if (url) {
       try {
         decorations.push(
           Decoration.replace({
             widget: new TwemojiWidget(emoji, url),
+            inclusive: false,
+            block: false,
           }).range(from, to)
         )
-      } catch {
-        // skip
-      }
+      } catch (e) {}
     }
   }
 
   try {
     return Decoration.set(decorations, true)
-  } catch {
-    return Decoration.set([])
+  } catch (e) {
+    return Decoration.none
   }
 }
 
@@ -100,7 +105,7 @@ export const twemojiExtension = StateField.define({
     if (tr.docChanged) {
       return buildEmojiDecorations(tr.state)
     }
-    return decorations
+    return decorations.map(tr.changes)
   },
   provide(field) {
     return EditorView.decorations.from(field)
@@ -256,5 +261,4 @@ export const cmTheme = EditorView.theme({
     color: "#fbbf24",
     fontWeight: "bold",
   },
-
 })
