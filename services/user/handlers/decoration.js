@@ -1,8 +1,8 @@
 import { supabase } from "../../../lib/supabase-ssr.js"
 import { getUser } from "../../../utils/auth.js"
-import decorationsData from "../../../data/avatarDecorations.json" assert { type: "json" }
+import  { AVATAR_DECORATIONS } from "../../../data/avatarDecorations.js"
 
-const VALID_DECORATIONS = decorationsData.map(d => d.id)
+const VALID_DECORATIONS = AVATAR_DECORATIONS.map(d => d.id)
 
 export async function handleDecoration(req, res) {
   const user = await getUser(req)
