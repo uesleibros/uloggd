@@ -17,7 +17,6 @@ const ACTIONS = {
   followers: handleFollowers,
   banner: handleBanner,
   thinking: handleThinking,
-  border: handleBorder,
   decoration: handleDecoration
 }
 
@@ -29,4 +28,5 @@ export default async function handler(req, res) {
 
   return fn(req, res)
 }
+
 
