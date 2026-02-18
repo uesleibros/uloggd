@@ -1,4 +1,5 @@
 import { supabase } from "../../../lib/supabase-ssr.js"
+import { DEFAULT_AVATAR_URL } from "../../user/constants.js"
 
 export async function handlePublic(req, res) {
   const { gameId, sortBy = "recent", page = 1, limit = 20 } = req.body
@@ -32,7 +33,7 @@ export async function handlePublic(req, res) {
         supabase.auth.admin.listUsers({ perPage: 1000 }),
         supabase
           .from("users")
-          .select("user_id, avatar_decoration")
+          .select("user_id, avatar, avatar_decoration")
           .in("user_id", userIds),
         supabase
           .from("user_badges")
@@ -55,7 +56,7 @@ export async function handlePublic(req, res) {
           if (authUser) {
             users[uid] = {
               username: authUser.user_metadata?.full_name,
-              avatar: authUser.user_metadata?.avatar_url,
+              avatar: profileMap[uid]?.avatar || DEFAULT_AVATAR_URL,
               avatar_decoration: profileMap[uid]?.avatar_decoration || null,
               badges: badgesMap[uid] || [],
             }
@@ -76,3 +77,4 @@ export async function handlePublic(req, res) {
     res.status(500).json({ error: "failed to fetch reviews" })
   }
 }
+
