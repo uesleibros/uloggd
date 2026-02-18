@@ -39,7 +39,7 @@ function getCroppedCanvas(image, crop) {
 	return canvas
 }
 
-export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, title = "Recortar imagem" }) {
+export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, title = "Recortar imagem", circularCrop = false }) {
 	const [crop, setCrop] = useState()
 	const [completedCrop, setCompletedCrop] = useState(null)
 	const imgRef = useRef(null)
@@ -82,7 +82,7 @@ export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, titl
 			if (!blob) return
 			const url = URL.createObjectURL(blob)
 			onCrop({ blob, url })
-		}, "image/jpeg", 0.90)
+		}, "image/png", 0.95)
 	}
 
 	return createPortal(
@@ -115,6 +115,7 @@ export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, titl
 						onChange={(_, percentCrop) => setCrop(percentCrop)}
 						onComplete={(c) => setCompletedCrop(c)}
 						aspect={aspect}
+						circularCrop={circularCrop}
 						minWidth={50}
 						minHeight={50}
 						className="max-h-[60dvh] sm:max-h-[60vh]"
