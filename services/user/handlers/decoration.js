@@ -1,6 +1,6 @@
 import { supabase } from "../../../lib/supabase-ssr.js"
 import { getUser } from "../../../utils/auth.js"
-import decorationsData from "../../../data/decorations.json" assert { type: "json" }
+import decorationsData from "../../../data/avatarDecorations.json" assert { type: "json" }
 
 const VALID_DECORATIONS = decorationsData.map(d => d.id)
 
