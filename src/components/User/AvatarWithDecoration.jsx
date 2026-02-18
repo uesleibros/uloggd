@@ -21,7 +21,7 @@ export default function AvatarWithDecoration({
       <img
         src={src || "https://cdn.discordapp.com/embed/avatars/0.png"}
         alt={alt}
-        className="w-full h-full rounded-full border-4 border-zinc-900 shadow-2xl bg-zinc-800 select-none object-cover relative z-10"
+        className="w-full h-full rounded-full bg-zinc-800 select-none object-cover relative z-10"
         draggable={false}
       />
       
