@@ -15,6 +15,7 @@ import ProfileTabs from "../components/Profile/ProfileTabs"
 import BioSection from "../components/Profile/BioSection"
 import ListsSection from "../components/Profile/ListsSection"
 import FollowListModal from "../components/Profile/FollowListModal"
+import AvatarWithBorder from "../components/User/AvatarWithBorder"
 
 const GAMES_PER_PAGE = 24
 
@@ -127,11 +128,11 @@ export default function Profile() {
 				<div className="flex flex-col md:flex-row gap-6 md:gap-8">
 					<div className="flex-shrink-0">
 						<div className="relative">
-							<img
-								src={profile.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
+							<AvatarWithBorder
+								src={profile.avatar}
 								alt={profile.username}
-								className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full border-4 border-zinc-900 shadow-2xl bg-zinc-800 select-none object-cover"
-								draggable={false}
+								border={profile.avatar_border || (profile.is_moderator ? 'mod' : 'default')}
+								size="xl"
 							/>
 							<div className="absolute z-20 left-[15%] sm:left-[13%] md:left-[65%]" style={{ bottom: 'calc(100% - 10px)' }}>
 								<ThinkingBubble
@@ -198,3 +199,4 @@ export default function Profile() {
 		</div>
 	)
 }
+
