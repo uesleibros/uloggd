@@ -27,7 +27,8 @@ Uma plataforma para catalogar, avaliar e compartilhar sua coleção de jogos.
 
 ## Sobre
 
-uloggd e uma plataforma onde voce pode manter uma lista virtual dos jogos da sua colecao, avaliar e comentar os que ja jogou, e compartilhar tudo com seus amigos. Pense nele como um diario pessoal de jogos com recursos sociais.
+**uloggd** é uma plataforma onde você pode manter uma lista virtual dos jogos da sua coleção, avaliar e comentar os que já jogou e compartilhar tudo com seus amigos.  
+Pense nele como um **diário social de jogos**, inspirado em plataformas como Letterboxd e Backloggd.
 
 ## Funcionalidades
 
@@ -37,6 +38,16 @@ uloggd e uma plataforma onde voce pode manter uma lista virtual dos jogos da sua
 - **Sistema social** - Siga outros usuários e acompanhe a atividade deles
 - **Autenticação via Discord** - Login integrado com sua conta do Discord
 - **Dados de jogos via IGDB** - Informações completas dos jogos fornecidas pela API do IGDB/Twitch
+
+## Stack
+
+- React 19
+- Vite 7
+- Tailwind CSS 4
+- Supabase (Auth + Database)
+- IGDB API
+- Discord OAuth
+- Vercel Serverless Functions
 
 ## Desenvolvimento
 
@@ -71,7 +82,7 @@ cp .env.example .env
 
 As variáveis necessárias:
 
-| Variavel | Descricao | Onde obter |
+| Variável | Descrição | Onde obter |
 |----------|-----------|------------|
 | `TWITCH_CLIENT_ID` | Client ID da aplicacao Twitch | [Twitch Dev Console](https://dev.twitch.tv/console/apps) |
 | `TWITCH_CLIENT_SECRET` | Client Secret da aplicacao Twitch | [Twitch Dev Console](https://dev.twitch.tv/console/apps) |
@@ -80,6 +91,8 @@ As variáveis necessárias:
 | `SUPABASE_URL` | URL do projeto Supabase (backend) | Supabase Dashboard > Settings > API |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key do Supabase (backend) | Supabase Dashboard > Settings > API |
 | `IMGCHEST_API_KEY` | Chave de API para upload de imagens | [imgchest](https://imgchest.com/docs/api) |
+
+> Também veja o arquivo [`.env.example`](/.env.example) para aplicar corretamente no seu `.env.local`/`.env`
 
 4. Inicie o servidor de desenvolvimento:
 
@@ -99,6 +112,14 @@ npm run dev:vercel
 |---------|-----------|
 | `npm run dev` | Inicia o servidor de desenvolvimento com Vite |
 | `npm run dev:vercel` | Inicia o ambiente de desenvolvimento com Vercel CLI |
-| `npm run build` | Gera o build de producao |
-| `npm run preview` | Visualiza o build de producao localmente |
+| `npm run build` | Gera o build de produção |
+| `npm run preview` | Visualiza o build de produção localmente |
 | `npm run lint` | Executa o ESLint no projeto |
+
+## Contribuindo
+
+Pull requests são bem-vindos. Para mudanças maiores, abra uma issue primeiro.
+
+## Licença 
+
+Este projeto está sob a licença Apache 2.0. Veja o arquivo [LICENSE](/LICENSE) para mais detalhes.
