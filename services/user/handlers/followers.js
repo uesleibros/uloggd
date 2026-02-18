@@ -20,26 +20,32 @@ export async function handleFollowers(req, res) {
     const userIds = data?.map(r => r[column]) || []
     if (userIds.length === 0) return res.json([])
 
-    const [authRes, profilesRes] = await Promise.all([
+    const [authRes, profilesRes, badgesRes] = await Promise.all([
       supabase.auth.admin.listUsers({ perPage: 1000 }),
       supabase
         .from("users")
-        .select(`
-          user_id, is_verified, is_moderator, avatar_decoration,
-          user_badges ( badge:badges ( id, title, description ) )
-        `)
+        .select("user_id, is_verified, is_moderator, avatar_decoration")
+        .in("user_id", userIds),
+      supabase
+        .from("user_badges")
+        .select("user_id, badge:badges ( id, title, description )")
         .in("user_id", userIds),
     ])
 
     const profileMap = {}
     profilesRes.data?.forEach(p => { profileMap[p.user_id] = p })
 
+    const badgesMap = {}
+    badgesRes.data?.forEach(ub => {
+      if (!badgesMap[ub.user_id]) badgesMap[ub.user_id] = []
+      if (ub.badge) badgesMap[ub.user_id].push(ub.badge)
+    })
+
     const result = userIds
       .map(id => {
         const authUser = authRes.data?.users?.find(u => u.id === id)
         if (!authUser) return null
         const prof = profileMap[id]
-        const badges = prof?.user_badges?.map(ub => ub.badge) || []
 
         return {
           id: authUser.id,
@@ -48,7 +54,7 @@ export async function handleFollowers(req, res) {
           is_verified: prof?.is_verified || false,
           is_moderator: prof?.is_moderator || false,
           avatar_decoration: prof?.avatar_decoration || null,
-          badges,
+          badges: badgesMap[id] || [],
         }
       })
       .filter(Boolean)
