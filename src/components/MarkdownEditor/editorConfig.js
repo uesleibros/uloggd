@@ -49,28 +49,47 @@ function getEmojiUrl(emoji) {
 
 const emojiRegex = /\p{Emoji_Presentation}|\p{Emoji}\uFE0F(?:\u200D(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F))*/gu
 
+function isSurrogatePair(str, index) {
+  if (index <= 0) return false
+  const prevCode = str.charCodeAt(index - 1)
+  const currCode = str.charCodeAt(index)
+  return prevCode >= 0xD800 && prevCode <= 0xDBFF && currCode >= 0xDC00 && currCode <= 0xDFFF
+}
+
 function buildEmojiDecorations(state) {
   const decorations = []
   const doc = state.doc.toString()
+  const docLength = doc.length
+  const regex = new RegExp(emojiRegex.source, emojiRegex.flags)
 
   let match
-  emojiRegex.lastIndex = 0
-  while ((match = emojiRegex.exec(doc)) !== null) {
+  while ((match = regex.exec(doc)) !== null) {
     const emoji = match[0]
     const from = match.index
     const to = from + emoji.length
-    const url = getEmojiUrl(emoji)
 
+    if (from < 0 || to > docLength || from >= to) continue
+    if (from > 0 && isSurrogatePair(doc, from)) continue
+
+    const url = getEmojiUrl(emoji)
     if (url) {
-      decorations.push(
-        Decoration.replace({
-          widget: new TwemojiWidget(emoji, url),
-        }).range(from, to)
-      )
+      try {
+        decorations.push(
+          Decoration.replace({
+            widget: new TwemojiWidget(emoji, url),
+          }).range(from, to)
+        )
+      } catch {
+        // skip
+      }
     }
   }
 
-  return Decoration.set(decorations, true)
+  try {
+    return Decoration.set(decorations, true)
+  } catch {
+    return Decoration.set([])
+  }
 }
 
 export const twemojiExtension = StateField.define({
@@ -237,4 +256,5 @@ export const cmTheme = EditorView.theme({
     color: "#fbbf24",
     fontWeight: "bold",
   },
+
 })
