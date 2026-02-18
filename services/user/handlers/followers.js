@@ -24,7 +24,7 @@ export async function handleFollowers(req, res) {
       supabase.auth.admin.listUsers({ perPage: 1000 }),
       supabase
         .from("users")
-        .select("user_id, is_verified, is_moderator, avatar_decoration")
+        .select("user_id, is_moderator, avatar_decoration")
         .in("user_id", userIds),
       supabase
         .from("user_badges")
@@ -64,4 +64,5 @@ export async function handleFollowers(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
 
