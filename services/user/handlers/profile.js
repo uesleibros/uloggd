@@ -37,6 +37,7 @@ export async function handleProfile(req, res) {
       discord_id: authUser.user_metadata?.provider_id,
       banner: profile?.banner,
       bio: profile?.bio,
+      avatar_border: profile?.avatar_border,
       thinking: profile?.thinking,
       is_moderator: profile?.is_moderator,
       created_at: profile?.created_at,
@@ -48,3 +49,4 @@ export async function handleProfile(req, res) {
   }
 
 }
+
