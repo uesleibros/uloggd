@@ -98,8 +98,6 @@ async function handleProfile(url, username) {
   const title = `${profile.username} - uloggd`
   const description = `Perfil de ${profile.username}`
 
-  const avatar = ensureAbsoluteUrl(profile.avatar, url.origin)
-
   return buildResponse(title, description, null, url.href, true)
 }
 
