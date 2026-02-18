@@ -314,7 +314,7 @@ function ReviewCard({ log, user }) {
     <>
       <div className="rounded-xl p-5 sm:p-6 bg-zinc-800/50 border border-zinc-700 hover:border-zinc-600 transition-all duration-200">
         <div className="flex items-start gap-3.5">
-          <Link to={`/user/${user?.username}`} className="flex-shrink-0">
+          <Link to={`/u/${user?.username}`} className="flex-shrink-0">
             <AvatarWithDecoration
 							src={user.avatar}
 							alt={user.username}
@@ -494,4 +494,3 @@ export default function GameReviews({ gameId }) {
     </div>
   )
 }
-
