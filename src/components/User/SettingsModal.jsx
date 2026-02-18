@@ -4,6 +4,7 @@ import { useAuth } from "../../../hooks/useAuth"
 import { supabase } from "../../../lib/supabase"
 import { notify } from "../UI/Notification"
 import BannerEditor from "./BannerEditor"
+import AvatarEditor from "./AvatarEditor"
 import UserBadges from "./UserBadges"
 import { MarkdownEditor } from "../MarkdownEditor"
 import AvatarWithDecoration from "./AvatarWithDecoration"
@@ -92,6 +93,7 @@ const categories = ["todas", ...new Set(AVATAR_DECORATIONS.map(d => d.category))
 export default function SettingsModal({ onClose }) {
   const { user, updateUser } = useAuth()
   const [bannerSaving, setBannerSaving] = useState(false)
+  const [avatarSaving, setAvatarSaving] = useState(false)
   const [activeTab, setActiveTab] = useState("account")
   const [signOutLoading, setSignOutLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
@@ -138,6 +140,45 @@ export default function SettingsModal({ onClose }) {
     setSignOutLoading(true)
     await supabase.auth.signOut()
     onClose()
+  }
+
+  async function handleAvatarSave(base64) {
+    setAvatarSaving(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const res = await fetch("/api/user?action=avatar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          action: base64 === null ? "remove" : "upload",
+          image: base64,
+        }),
+      })
+
+      if (res.ok) {
+        let newAvatar = base64
+        try {
+          const data = await res.json()
+          if (data.url || data.avatar) {
+            newAvatar = data.url || data.avatar
+          }
+        } catch {}
+
+        updateUser({ avatar: base64 === null ? null : newAvatar })
+        notify(base64 === null ? "Avatar removido com sucesso!" : "Avatar atualizado com sucesso!")
+      } else {
+        notify("Erro ao salvar o avatar. Tente novamente.", "error")
+      }
+    } catch {
+      notify("Erro ao salvar o avatar. Tente novamente.", "error")
+    } finally {
+      setAvatarSaving(false)
+    }
   }
 
   async function handleBannerSave(base64) {
@@ -362,6 +403,17 @@ export default function SettingsModal({ onClose }) {
 
                 <div className="space-y-4 sm:space-y-6">
                   <SettingsSection
+                    title="Avatar"
+                    description="Personalize o avatar do seu perfil. Recomendado: 512x512px."
+                  >
+                    <AvatarEditor
+                      currentAvatar={user.avatar || null}
+                      onSave={handleAvatarSave}
+                      saving={avatarSaving}
+                    />
+                  </SettingsSection>
+
+                  <SettingsSection
                     title="Banner"
                     description="Personalize o banner do seu perfil. Recomendado: 1500x375px."
                   >
@@ -416,19 +468,13 @@ export default function SettingsModal({ onClose }) {
 
                   <SettingsSection title="Perfil">
                     <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-zinc-900/50 rounded-lg border border-zinc-700/50 mb-4 sm:mb-5">
-                      <div className="relative group cursor-pointer flex-shrink-0">
+                      <div className="relative group flex-shrink-0">
                         <img
                           src={user.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"}
                           alt={user.username}
                           className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-zinc-700 select-none object-cover"
                           draggable={false}
                         />
-                        <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-200">
-                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
-                          </svg>
-                        </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -723,4 +769,3 @@ export default function SettingsModal({ onClose }) {
     document.body
   )
 }
-
