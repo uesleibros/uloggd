@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom"
 
 import App from "./App"
 import "./index.css"
+import "./styles/avatar-borders.css"
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -11,4 +12,5 @@ createRoot(document.getElementById("root")).render(
       <App />
     </BrowserRouter>
   </StrictMode>
+
 )
