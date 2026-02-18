@@ -1,0 +1,14 @@
+.avatar-wrapper {
+  position: relative;
+  display: inline-block;
+  border-radius: 50%;
+}
+
+.avatar-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  z-index: 0;
+  opacity: 0;
+}
