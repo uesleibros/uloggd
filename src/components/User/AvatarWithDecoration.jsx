@@ -4,9 +4,11 @@ const sizeClasses = {
   xs: 'w-5 h-5',
   sm: 'w-7 h-7',
   md: 'w-9 h-9',
-  lg: 'w-24 h-24',
+  lg: 'w-12 h-12',
+  xl: 'w-16 h-16',
+  '2xl': 'w-20 h-20',
   mention: 'w-20 h-20',
-  xl: 'w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36',
+  profile: 'w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36',
 }
 
 export default function AvatarWithDecoration({ 
