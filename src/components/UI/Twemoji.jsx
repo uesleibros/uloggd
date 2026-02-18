@@ -6,13 +6,16 @@ export default function TwemojiProvider() {
   const { pathname } = useLocation()
 
   function parse() {
-    twemoji.parse(document.body, {
-      folder: "svg",
-      ext: ".svg",
-      base: "https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/",
-      callback: (icon, options) => {
-        return `${options.base}${options.size}/${icon}${options.ext}`
-      },
+    document.querySelectorAll("body > *").forEach(el => {
+      if (el.classList.contains("cm-editor") || el.querySelector(".cm-editor")) return
+      twemoji.parse(el, {
+        folder: "svg",
+        ext: ".svg",
+        base: "https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/",
+        callback: (icon, options) => {
+          return `${options.base}${options.size}/${icon}${options.ext}`
+        },
+      })
     })
   }
 
@@ -23,7 +26,13 @@ export default function TwemojiProvider() {
 
   useEffect(() => {
     let timeout
-    const observer = new MutationObserver(() => {
+    const observer = new MutationObserver((mutations) => {
+      const isEditorMutation = mutations.some(m =>
+        m.target.closest?.(".cm-editor")
+      )
+
+      if (isEditorMutation) return
+
       clearTimeout(timeout)
       timeout = setTimeout(parse, 100)
     })
