@@ -5,7 +5,7 @@ import { markdown, markdownLanguage } from "@codemirror/lang-markdown"
 import { languages } from "@codemirror/language-data"
 import { syntaxHighlighting, defaultHighlightStyle, bracketMatching, indentUnit } from "@codemirror/language"
 import { history, historyKeymap, defaultKeymap, indentWithTab } from "@codemirror/commands"
-import { cmTheme, markdownHighlightStyle, customDecorations, twemojiExtension } from "./editorConfig"
+import { cmTheme, markdownHighlightStyle, customDecorations } from "./editorConfig"
 
 export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, editorRef, onMentionQuery }) {
   const containerRef = useRef(null)
@@ -66,7 +66,7 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         markdown({ base: markdownLanguage, codeLanguages: languages }),
         customDecorations,
-        twemojiExtension,
+        // twemojiExtension removido daqui
         history(),
         indentUnit.of("  "),
         keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
