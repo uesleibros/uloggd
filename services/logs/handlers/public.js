@@ -28,30 +28,35 @@ export async function handlePublic(req, res) {
     const users = {}
 
     if (userIds.length > 0) {
-      const { data: usersData } = await supabase.auth.admin.listUsers({
-        perPage: 1000,
-      })
+      const [authRes, profilesRes, badgesRes] = await Promise.all([
+        supabase.auth.admin.listUsers({ perPage: 1000 }),
+        supabase
+          .from("users")
+          .select("user_id, avatar_decoration")
+          .in("user_id", userIds),
+        supabase
+          .from("user_badges")
+          .select("user_id, badge:badges(id, title, description)")
+          .in("user_id", userIds),
+      ])
 
-      const { data: badgesData } = await supabase
-        .from("user_badges")
-        .select("user_id, badge:badges(id, title, description)")
-        .in("user_id", userIds)
+      const profileMap = {}
+      profilesRes.data?.forEach(p => { profileMap[p.user_id] = p })
 
       const badgesMap = {}
-      if (badgesData) {
-        for (const row of badgesData) {
-          if (!badgesMap[row.user_id]) badgesMap[row.user_id] = []
-          if (row.badge) badgesMap[row.user_id].push(row.badge)
-        }
-      }
+      badgesRes.data?.forEach(row => {
+        if (!badgesMap[row.user_id]) badgesMap[row.user_id] = []
+        if (row.badge) badgesMap[row.user_id].push(row.badge)
+      })
 
-      if (usersData?.users) {
+      if (authRes.data?.users) {
         for (const uid of userIds) {
-          const authUser = usersData.users.find(u => u.id === uid)
+          const authUser = authRes.data.users.find(u => u.id === uid)
           if (authUser) {
             users[uid] = {
               username: authUser.user_metadata?.full_name,
               avatar: authUser.user_metadata?.avatar_url,
+              avatar_decoration: profileMap[uid]?.avatar_decoration || null,
               badges: badgesMap[uid] || [],
             }
           }
