@@ -29,7 +29,7 @@ function WelcomeBack({ user }) {
           src={user.avatar}
           alt={user.username}
           decoration={user.avatar_decoration}
-          size="xl"
+          size="lg"
         />
         <div>
           <p className="text-sm text-zinc-500">{greeting},</p>
@@ -81,3 +81,4 @@ export default function Home() {
     </div>
   )
 }
+
