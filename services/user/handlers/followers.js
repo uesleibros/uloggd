@@ -1,5 +1,5 @@
 import { supabase } from "../../../lib/supabase-ssr.js"
-import { VALID_LIST_TYPES } from "../constants.js"
+import { DEFAULT_AVATAR_URL, VALID_LIST_TYPES } from "../constants.js"
 
 export async function handleFollowers(req, res) {
   const { userId, type } = req.body
@@ -24,7 +24,7 @@ export async function handleFollowers(req, res) {
       supabase.auth.admin.listUsers({ perPage: 1000 }),
       supabase
         .from("users")
-        .select("user_id, is_moderator, avatar_decoration")
+        .select("user_id, avatar, is_moderator, avatar_decoration")
         .in("user_id", userIds),
       supabase
         .from("user_badges")
@@ -50,7 +50,7 @@ export async function handleFollowers(req, res) {
         return {
           id: authUser.id,
           username: authUser.user_metadata?.full_name,
-          avatar: authUser.user_metadata?.avatar_url,
+          avatar: prof?.avatar || DEFAULT_AVATAR_URL,
           is_moderator: prof?.is_moderator,
           avatar_decoration: prof?.avatar_decoration,
           badges: badgesMap[id] || [],
@@ -64,5 +64,6 @@ export async function handleFollowers(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
 
 
