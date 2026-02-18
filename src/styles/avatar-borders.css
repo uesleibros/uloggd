@@ -1,0 +1,83 @@
+.avatar-wrapper {
+  position: relative;
+  display: inline-block;
+  border-radius: 50%;
+}
+
+.avatar-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.avatar-wrapper[data-border="default"]::before {
+  display: none;
+}
+
+/* Premium - Rainbow */
+.avatar-wrapper[data-border="premium"]::before {
+  opacity: 1;
+  background: linear-gradient(
+    90deg,
+    #ff6b6b,
+    #feca57,
+    #48dbfb,
+    #ff9ff3,
+    #54a0ff,
+    #5f27cd,
+    #ff6b6b
+  );
+  background-size: 300% 300%;
+  animation: rainbow-spin 4s linear infinite;
+}
+
+@keyframes rainbow-spin {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Mod - Roxo pulsando */
+.avatar-wrapper[data-border="mod"]::before {
+  opacity: 1;
+  background: #5865f2;
+  animation: mod-pulse 2s ease-in-out infinite;
+}
+
+@keyframes mod-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 10px #5865f2, 0 0 20px #5865f280;
+  }
+  50% { 
+    box-shadow: 0 0 20px #5865f2, 0 0 40px #5865f2;
+  }
+}
+
+/* Gold */
+.avatar-wrapper[data-border="gold"]::before {
+  opacity: 1;
+  background: linear-gradient(45deg, #f39c12, #ffd700, #f39c12);
+  background-size: 200% 200%;
+  animation: gold-shine 3s ease infinite;
+}
+
+@keyframes gold-shine {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Fire */
+.avatar-wrapper[data-border="fire"]::before {
+  opacity: 1;
+  background: linear-gradient(45deg, #ff4757, #ffa502, #ff4757);
+  background-size: 200% 200%;
+  animation: fire-pulse 2s ease infinite;
+}
+
+@keyframes fire-pulse {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
