@@ -8,10 +8,10 @@ const sizeClasses = {
 }
 
 const decorationSizes = {
-  sm: 'w-16 h-16',
-  md: 'w-24 h-24',
-  lg: 'w-36 h-36',
-  xl: 'w-36 h-36 sm:w-48 sm:h-48 md:w-54 md:h-54',
+  sm: 'w-[160%] h-[160%]',
+  md: 'w-[160%] h-[160%]',
+  lg: 'w-[160%] h-[160%]',
+  xl: 'w-[160%] h-[160%]',
 }
 
 export default function AvatarWithDecoration({ 
@@ -24,15 +24,15 @@ export default function AvatarWithDecoration({
   const currentDecorationUrl = AVATAR_DECORATIONS.find(d => d.id === decoration)?.url || null
   
   return (
-    <div className={`avatar-wrapper ${className}`}>
+    <div className={`avatar-wrapper ${sizeClasses[size]} ${className}`}>
       <img
         src={src || "https://cdn.discordapp.com/embed/avatars/0.png"}
         alt={alt}
-        className={`${sizeClasses[size]} rounded-full border-4 border-zinc-900 shadow-2xl bg-zinc-800 select-none object-cover relative z-10`}
+        className="w-full h-full rounded-full border-4 border-zinc-900 shadow-2xl bg-zinc-800 select-none object-cover relative z-10"
         draggable={false}
       />
       
-      {decoration && (
+      {decoration && currentDecorationUrl && (
         <img
           src={currentDecorationUrl}
           alt=""
