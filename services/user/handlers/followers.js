@@ -24,7 +24,10 @@ export async function handleFollowers(req, res) {
       supabase.auth.admin.listUsers({ perPage: 1000 }),
       supabase
         .from("users")
-        .select("user_id, is_verified, is_moderator")
+        .select(`
+          user_id, is_verified, is_moderator, avatar_decoration,
+          user_badges ( badge:badges ( id, title, description ) )
+        `)
         .in("user_id", userIds),
     ])
 
@@ -36,12 +39,16 @@ export async function handleFollowers(req, res) {
         const authUser = authRes.data?.users?.find(u => u.id === id)
         if (!authUser) return null
         const prof = profileMap[id]
+        const badges = prof?.user_badges?.map(ub => ub.badge) || []
+
         return {
           id: authUser.id,
           username: authUser.user_metadata?.full_name,
           avatar: authUser.user_metadata?.avatar_url,
           is_verified: prof?.is_verified || false,
           is_moderator: prof?.is_moderator || false,
+          avatar_decoration: prof?.avatar_decoration || null,
+          badges,
         }
       })
       .filter(Boolean)
