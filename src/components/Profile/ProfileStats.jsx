@@ -1,12 +1,3 @@
-function StatCard({ value, label }) {
-  return (
-    <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 text-center">
-      <div className="text-2xl font-bold text-white">{value}</div>
-      <div className="text-xs text-zinc-300 mt-1">{label}</div>
-    </div>
-  )
-}
-
 function SocialCount({ value, label, onClick }) {
   return (
     <button onClick={onClick} className="text-sm hover:opacity-80 transition-opacity cursor-pointer">
@@ -16,12 +7,36 @@ function SocialCount({ value, label, onClick }) {
   )
 }
 
-export default function ProfileStats({ counts, followersCount, followingCount, memberSince, onFollowersClick, onFollowingClick }) {
+function StatCard({ value, label }) {
+  return (
+    <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 text-center">
+      <div className="text-2xl font-bold text-white">{value}</div>
+      <div className="text-xs text-zinc-300 mt-1">{label}</div>
+    </div>
+  )
+}
+
+export default function ProfileStats({ 
+  counts, 
+  followersCount, 
+  followingCount, 
+  memberSince, 
+  onFollowersClick, 
+  onFollowingClick,
+  followsYou = false
+}) {
   return (
     <>
       <div className="flex items-center gap-3 sm:gap-5 mt-3 flex-wrap">
         <SocialCount value={followersCount} label="seguidores" onClick={onFollowersClick} />
         <SocialCount value={followingCount} label="seguindo" onClick={onFollowingClick} />
+        
+        {followsYou && (
+          <span className="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-md border border-zinc-700">
+            Segue você
+          </span>
+        )}
+        
         {memberSince && (
           <span className="text-xs sm:text-sm text-zinc-600 flex items-center gap-1.5">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
