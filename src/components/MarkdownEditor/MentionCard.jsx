@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react"
 import { createPortal } from "react-dom"
 import UserBadges from "../User/UserBadges"
+import AvatarWithDecoration from "../User/AvatarWithDecoration"
 
 export function MentionCard({ username, onClose }) {
   const [profile, setProfile] = useState(null)
@@ -99,7 +100,12 @@ export function MentionCard({ username, onClose }) {
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/40 to-transparent" />
             </div>
             <div className="px-5 -mt-10 relative">
-              <img src={profile.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"} alt={profile.username} className="w-20 h-20 rounded-full border-4 border-zinc-900 bg-zinc-800 select-none object-cover shadow-xl" draggable={false} />
+              <AvatarWithDecoration
+                src={profile.avatar}
+                alt={profile.username}
+                decoration={profile.avatar_decoration}
+                size="lg"
+              />
             </div>
             <div className="px-5 pt-3 pb-5">
               <div className="flex items-center gap-2">
