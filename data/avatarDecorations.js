@@ -1,7 +1,4 @@
 /**
- * ----------------------------------------------------------------------------
- * AVISO LEGAL E PROPRIEDADE INTELECTUAL
- * ----------------------------------------------------------------------------
  *
  * Os assets de avatar decorations referenciados neste arquivo são recursos
  * proprietários pertencentes à Discord Inc. e distribuídos através da CDN pública
@@ -25,7 +22,6 @@
  * - CDN: https://cdn.discordapp.com/
  * - Este arquivo contém apenas metadados (IDs, rótulos e URLs).
  * - Os assets são carregados dinamicamente a partir da infraestrutura do Discord.
- * - Não redistribua ou empacote esses assets fora desta aplicação.
  *
  * ----------------------------------------------------------------------------
  * Arquivo: avatarDecorations.js
