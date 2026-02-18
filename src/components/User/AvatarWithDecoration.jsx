@@ -1,5 +1,3 @@
-import { AVATAR_DECORATIONS } from "../../../data/avatarDecorations"
-
 const sizeClasses = {
   sm: 'w-10 h-10',
   md: 'w-16 h-16',
@@ -8,10 +6,10 @@ const sizeClasses = {
 }
 
 const decorationSizes = {
-  sm: 'w-14 h-14',
-  md: 'w-22 h-22',
-  lg: 'w-32 h-32',
-  xl: 'w-32 h-32 sm:w-44 sm:h-44 md:w-48 md:h-48',
+  sm: 'w-16 h-16',
+  md: 'w-24 h-24',
+  lg: 'w-36 h-36',
+  xl: 'w-36 h-36 sm:w-48 sm:h-48 md:w-54 md:h-54',
 }
 
 export default function AvatarWithDecoration({ 
@@ -21,8 +19,6 @@ export default function AvatarWithDecoration({
   size = 'xl',
   className = '' 
 }) {
-  const currentDecorationUrl = AVATAR_DECORATIONS.find(d => d.id === decoration)?.url || null
-  
   return (
     <div className={`avatar-wrapper ${className}`}>
       <img
@@ -34,11 +30,10 @@ export default function AvatarWithDecoration({
       
       {decoration && (
         <img
-          src={currentDecorationUrl}
+          src={decoration}
           alt=""
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${decorationSizes[size]} pointer-events-none select-none z-20`}
           draggable={false}
-          style={{ imageRendering: 'auto' }}
         />
       )}
     </div>
