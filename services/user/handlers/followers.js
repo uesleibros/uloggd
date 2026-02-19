@@ -28,7 +28,7 @@ export async function handleFollowers(req, res) {
         .in("user_id", userIds),
       supabase
         .from("user_badges")
-        .select("user_id, badge:badges ( id, title, description )")
+        .select("user_id, badge:badges ( id, title, description, icon_url, color )")
         .in("user_id", userIds),
     ])
 
@@ -64,6 +64,3 @@ export async function handleFollowers(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
-
-
-
