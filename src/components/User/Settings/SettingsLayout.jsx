@@ -1,4 +1,4 @@
-import { User, Monitor, Palette, LogOut, X, Loader2, ArrowDownToLine  } from "lucide-react"
+import { User, Monitor, Palette, LogOut, X, Loader2, ArrowDownToLine } from "lucide-react"
 import SidebarItem from "./ui/SidebarItem"
 import MobileTabButton from "./ui/MobileTabButton"
 
@@ -6,7 +6,7 @@ const TABS = [
   { id: "account", label: "Minha conta", mobile: "Conta", icon: User },
   { id: "sessions", label: "Sessão", mobile: "Sessão", icon: Monitor },
   { id: "appearance", label: "Aparência", mobile: "Aparência", icon: Palette },
-  { id: "integrations", label: "Integrações", icon: ArrowDownToLine },
+  { id: "integrations", label: "Integrações", mobile: "Importar", icon: ArrowDownToLine },
 ]
 
 export default function SettingsLayout({ activeTab, onTabChange, onClose, onSignOut, signOutLoading, children }) {
@@ -42,17 +42,19 @@ export default function SettingsLayout({ activeTab, onTabChange, onClose, onSign
         </button>
       </div>
 
-      <div className="flex md:hidden items-center gap-1 px-4 py-3 border-b border-zinc-700/50 overflow-x-auto scrollbar-hide flex-shrink-0">
-        {TABS.map(tab => (
-          <MobileTabButton
-            key={tab.id}
-            active={activeTab === tab.id}
-            onClick={() => onTabChange(tab.id)}
-            label={tab.mobile}
-            icon={<tab.icon className="w-4 h-4" />}
-          />
-        ))}
-        <MobileTabButton onClick={onSignOut} label={signOutLoading ? "." : "Sair"} danger icon={signOutIcon} />
+      <div className="flex md:hidden px-4 py-3 border-b border-zinc-700/50 flex-shrink-0 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-1 w-max">
+          {TABS.map(tab => (
+            <MobileTabButton
+              key={tab.id}
+              active={activeTab === tab.id}
+              onClick={() => onTabChange(tab.id)}
+              label={tab.mobile}
+              icon={<tab.icon className="w-4 h-4" />}
+            />
+          ))}
+          <MobileTabButton onClick={onSignOut} label={signOutLoading ? "." : "Sair"} danger icon={signOutIcon} />
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col min-w-0 min-h-0 relative">
