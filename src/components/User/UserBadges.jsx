@@ -1,42 +1,29 @@
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 
-const BADGE_STYLES = {
-  verified: {
-    color: "from-purple-500/20 to-indigo-500/20",
-    borderColor: "border-purple-500/30",
-    glowColor: "shadow-purple-500/10",
-    iconBg: "bg-purple-500/10",
-    iconUrl: "/badges/verified.png",
-  },
-  developer: {
-    color: "from-pink-300/20 to-rose-300/20",
-    borderColor: "border-pink-300/30",
-    glowColor: "shadow-pink-300/10",
-    iconBg: "bg-pink-300/10",
-    iconUrl: "/badges/developer.png",
-  },
-  trainee_moderator: {
-    color: "from-sky-500/20 to-cyan-500/20",
-    borderColor: "border-sky-500/30",
-    glowColor: "shadow-sky-500/10",
-    iconBg: "bg-sky-500/10",
-    iconUrl: "/badges/trainee_moderator.png",
-  },
-  moderator: {
-    color: "from-amber-500/20 to-teal-500/20",
-    borderColor: "border-amber-500/30",
-    glowColor: "shadow-amber-500/10",
-    iconBg: "bg-amber-500/10",
-    iconUrl: "/badges/moderator.png",
-  },
-  default: {
-    color: "from-zinc-500/20 to-gray-500/20",
-    borderColor: "border-zinc-500/30",
-    glowColor: "shadow-zinc-500/10",
-    iconBg: "bg-zinc-500/10",
-    iconUrl: "/badges/default.png",
-  },
+function colorToRGB(colorName) {
+  if (typeof document === "undefined") return { r: 161, g: 161, b: 170 }
+
+  const ctx = document.createElement("canvas").getContext("2d")
+  ctx.fillStyle = colorName
+  const hex = ctx.fillStyle
+
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+
+  return { r, g, b }
+}
+
+function getBadgeStyles(color) {
+  const { r, g, b } = colorToRGB(color || "gray")
+
+  return {
+    gradient: `linear-gradient(135deg, rgba(${r},${g},${b},0.2), rgba(${r},${g},${b},0.05))`,
+    border: `rgba(${r},${g},${b},0.3)`,
+    glow: `0 0 20px rgba(${r},${g},${b},0.1)`,
+    iconBg: `rgba(${r},${g},${b},0.1)`,
+  }
 }
 
 const SIZES = {
@@ -49,10 +36,11 @@ const SIZES = {
 
 function BadgeModal({ badge, onClose }) {
   const [visible, setVisible] = useState(false)
+  const s = getBadgeStyles(badge.color)
 
   useEffect(() => {
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-    
+
     document.body.style.overflow = "hidden"
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`
@@ -101,15 +89,29 @@ function BadgeModal({ badge, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className={`relative overflow-hidden rounded-2xl border ${badge.borderColor} bg-zinc-900 shadow-2xl ${badge.glowColor}`}
+          className="relative overflow-hidden rounded-2xl bg-zinc-900"
+          style={{
+            border: `1px solid ${s.border}`,
+            boxShadow: `${s.glow}, 0 25px 50px -12px rgba(0,0,0,0.25)`,
+          }}
         >
-          <div className={`absolute inset-0 bg-gradient-to-br ${badge.color} opacity-50`} />
+          <div
+            className="absolute inset-0 opacity-50"
+            style={{ background: s.gradient }}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/80 to-transparent" />
 
           <div className="relative flex flex-col items-center text-center px-6 pt-8 pb-6">
-            <div className={`w-20 h-20 rounded-full ${badge.iconBg} border ${badge.borderColor} flex items-center justify-center mb-5 shadow-lg ${badge.glowColor}`}>
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
+              style={{
+                background: s.iconBg,
+                border: `1px solid ${s.border}`,
+                boxShadow: s.glow,
+              }}
+            >
               <img
-                src={badge.iconUrl}
+                src={badge.icon_url}
                 alt={badge.title}
                 className="w-10 h-10 select-none"
                 draggable={false}
@@ -158,24 +160,21 @@ export default function UserBadges({ user, size = "md", clickable = false, class
   return (
     <>
       <div className={`flex items-center gap-1 ${className}`}>
-        {badges.map((badge) => {
-          const style = BADGE_STYLES[badge.id] || BADGE_STYLES.default
-          const fullBadge = { ...badge, ...style }
-
-          return (
-            <img
-              key={badge.id}
-              src={fullBadge.iconUrl}
-              alt={fullBadge.title}
-              title={!clickable ? fullBadge.title : undefined}
-              className={`${sizeClass} select-none ${
-                clickable ? "cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150" : ""
-              }`}
-              draggable={false}
-              onClick={(e) => clickable && handleClick(e, fullBadge)}
-            />
-          )
-        })}
+        {badges.map((badge) => (
+          <img
+            key={badge.id}
+            src={badge.icon_url}
+            alt={badge.title}
+            title={!clickable ? badge.title : undefined}
+            className={`${sizeClass} select-none ${
+              clickable
+                ? "cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150"
+                : ""
+            }`}
+            draggable={false}
+            onClick={(e) => clickable && handleClick(e, badge)}
+          />
+        ))}
       </div>
 
       {activeBadge && (
