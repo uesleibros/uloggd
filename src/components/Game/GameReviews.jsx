@@ -8,8 +8,7 @@ import UserBadges from "../User/UserBadges"
 import AvatarWithDecoration from "../User/AvatarWithDecoration"
 
 const STATUS_MAP = {
-  played: { label: "Jogado", classes: "bg-zinc-500/15 text-zinc-400 border-zinc-700" },
-  completed: { label: "Completo", classes: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
+  played: { label: "Jogado", classes: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
   retired: { label: "Aposentado", classes: "bg-blue-500/15 text-blue-400 border-blue-500/30" },
   shelved: { label: "Na prateleira", classes: "bg-amber-500/15 text-amber-400 border-amber-500/30" },
   abandoned: { label: "Abandonado", classes: "bg-red-500/15 text-red-400 border-red-500/30" },
@@ -471,4 +470,5 @@ export default function GameReviews({ gameId }) {
       </div>
     </div>
   )
+
 }
