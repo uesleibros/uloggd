@@ -140,7 +140,10 @@ export default function SettingsModal({ onClose }) {
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:p-6" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div onClick={e => e.stopPropagation()}>
+      <div
+        className="relative w-full h-full md:w-auto md:h-auto"
+        onClick={e => e.stopPropagation()}
+      >
         <SettingsLayout
           activeTab={activeTab}
           onTabChange={setActiveTab}
