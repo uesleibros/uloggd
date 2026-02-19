@@ -6,7 +6,7 @@ import { supabase } from "../../../lib/supabase"
 import { useUserGames } from "../../../hooks/useUserGames"
 
 const STATUS_OPTIONS = [
-	{ id: "played", label: "Jogado", sub: "Nada específico", color: "bg-emerald-500" },
+	{ id: "played", label: "Jogado", sub: "Zerou o objetivo principal", color: "bg-emerald-500" },
 	{ id: "retired", label: "Aposentado", sub: "Terminou um jogo sem final", color: "bg-blue-500" },
 	{ id: "shelved", label: "Na prateleira", sub: "Não terminou mas pode voltar", color: "bg-amber-500" },
 	{ id: "abandoned", label: "Abandonado", sub: "Não terminou e não vai voltar", color: "bg-red-500" },
