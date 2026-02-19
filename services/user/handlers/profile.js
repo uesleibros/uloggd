@@ -24,7 +24,7 @@ export async function handleProfile(req, res) {
       .from("users")
       .select(`
         banner, bio, pronoun, thinking, avatar, avatar_decoration, created_at, is_moderator,
-        user_badges ( badge:badges ( id, title, description, icon_url, color ) )
+        user_badges ( badge:badges ( id, title, description, icon_url, color, assigned_at ) )
       `)
       .eq("user_id", authUser.id)
       .single()
@@ -51,6 +51,7 @@ export async function handleProfile(req, res) {
   }
 
 }
+
 
 
 
