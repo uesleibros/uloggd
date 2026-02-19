@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 import ReactCrop, { centerCrop, makeAspectCrop, convertToPixelCrop } from "react-image-crop"
 import "react-image-crop/dist/ReactCrop.css"
+import { X } from "lucide-react"
 import Modal from "../UI/Modal"
 
 function getCroppedCanvas(image, crop) {
@@ -100,9 +101,7 @@ export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClo
 						onClick={onClose}
 						className="p-2 -mr-1 text-zinc-400 hover:text-white active:text-white transition-colors cursor-pointer"
 					>
-						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-						</svg>
+						<X className="w-5 h-5" />
 					</button>
 				</div>
 
