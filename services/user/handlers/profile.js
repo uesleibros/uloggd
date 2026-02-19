@@ -24,12 +24,15 @@ export async function handleProfile(req, res) {
       .from("users")
       .select(`
         banner, bio, pronoun, thinking, avatar, avatar_decoration, created_at, is_moderator,
-        user_badges ( badge:badges ( id, title, description, icon_url, color, assigned_at ) )
+        user_badges ( assigned_at, badge:badges ( id, title, description, icon_url, color ) )
       `)
       .eq("user_id", authUser.id)
       .single()
 
-    const badges = profile?.user_badges?.map(ub => ub.badge) || []
+    const badges = profile?.user_badges?.map(ub => ({
+      ...ub.badge,
+      assigned_at: ub.assigned_at,
+    })) || []
 
     res.json({
       id: authUser.id,
@@ -49,11 +52,4 @@ export async function handleProfile(req, res) {
     console.error(e)
     res.status(500).json({ error: "fail" })
   }
-
 }
-
-
-
-
-
-
