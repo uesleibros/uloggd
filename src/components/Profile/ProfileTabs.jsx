@@ -98,7 +98,7 @@ const ProfileTabs = forwardRef(function ProfileTabs({ activeTab, onTabChange, co
         </div>
       ) : games.length > 0 ? (
         <>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-3">
             {games.map(game => (
               <GameCard key={game.slug} game={game} userRating={profileGames[game.slug]?.avgRating} />
             ))}
