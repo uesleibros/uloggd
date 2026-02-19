@@ -49,10 +49,11 @@ export default function ProfileStats({
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
         <StatCard value={counts.playing} label="Jogando" />
-        <StatCard value={counts.completed} label="Zerados" />
+        <StatCard value={counts.played} label="Jogados" />
         <StatCard value={counts.backlog} label="Backlog" />
         <StatCard value={counts.rated} label="Avaliados" />
       </div>
     </>
   )
+
 }
