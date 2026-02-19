@@ -1,4 +1,4 @@
-export const VALID_STATUSES = ["played", "completed", "retired", "shelved", "abandoned"]
+export const VALID_STATUSES = ["played", "retired", "shelved", "abandoned"]
 
 export const ALLOWED_FIELDS = ["status", "playing", "backlog", "wishlist", "liked"]
 
@@ -11,5 +11,6 @@ export const DEFAULT_GAME_STATE = {
   wishlist: false,
   liked: false,
 }
+
 
 export const MAX_SLUG = 200
