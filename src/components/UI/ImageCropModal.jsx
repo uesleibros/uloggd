@@ -66,8 +66,7 @@ export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClo
 		)
 
 		setCrop(percentCrop)
-		
-		// Converte para pixels para o completedCrop
+
 		const pixelCrop = convertToPixelCrop(percentCrop, width, height)
 		setCompletedCrop(pixelCrop)
 	}, [aspect])
@@ -97,6 +96,7 @@ export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClo
 				<div className="flex items-center justify-between p-3 sm:p-4 border-b border-zinc-700 shrink-0">
 					<h3 className="text-base sm:text-lg font-semibold text-white">{title}</h3>
 					<button
+						type="button"
 						onClick={onClose}
 						className="p-2 -mr-1 text-zinc-400 hover:text-white active:text-white transition-colors cursor-pointer"
 					>
@@ -138,12 +138,14 @@ export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClo
 					</p>
 					<div className="flex gap-3">
 						<button
+							type="button"
 							onClick={onClose}
 							className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm font-medium text-zinc-300 hover:text-white active:text-white bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-700 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer"
 						>
 							Cancelar
 						</button>
 						<button
+							type="button"
 							onClick={handleConfirm}
 							disabled={!completedCrop}
 							className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-600 rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
