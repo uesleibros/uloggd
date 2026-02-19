@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react"
-import { createPortal } from "react-dom"
 import { Star, X, Calendar, SlidersHorizontal, MessageSquare, Plus, Trash2, AlertTriangle, Check, Trophy, RotateCcw, Clock, User, Pencil } from "lucide-react"
 import { useAuth } from "../../../hooks/useAuth"
 import { supabase } from "../../../lib/supabase"
 import { notify } from "../UI/Notification"
 import { MarkdownEditor } from "../MarkdownEditor"
 import { formatRating, toRatingValue, ratingSteps } from "../../../utils/rating"
+import Modal from "../UI/Modal"
 
 const STATUS_CONFIG = {
 	played: { label: "Jogado", color: "bg-emerald-500", textColor: "text-emerald-400" },
@@ -476,7 +476,7 @@ function DetailsTabContent({ logTitle, setLogTitle, replay, setReplay, hoursPlay
 	)
 }
 
-function LogModal({ game, onClose, existingLog, onDeleted }) {
+function LogModalContent({ game, onClose, existingLog, onDeleted }) {
 	const isEditing = !!existingLog
 	const [activeTab, setActiveTab] = useState("review")
 	const [submitting, setSubmitting] = useState(false)
@@ -498,30 +498,6 @@ function LogModal({ game, onClose, existingLog, onDeleted }) {
 	const [aspects, setAspects] = useState(
 		existingLog?.aspect_ratings?.map(a => ({ id: crypto.randomUUID(), label: a.label || "", rating: a.rating ?? null, ratingMode: a.ratingMode || "stars_5h", review: a.review || "" })) || []
 	)
-
-	useEffect(() => {
-		const scrollY = window.scrollY
-		const body = document.body
-		body.style.position = "fixed"
-		body.style.top = `-${scrollY}px`
-		body.style.left = "0"
-		body.style.right = "0"
-		body.style.overflow = "hidden"
-		return () => {
-			body.style.position = ""
-			body.style.top = ""
-			body.style.left = ""
-			body.style.right = ""
-			body.style.overflow = ""
-			window.scrollTo(0, scrollY)
-		}
-	}, [])
-
-	useEffect(() => {
-		const fn = (e) => { if (e.key === "Escape") onClose() }
-		window.addEventListener("keydown", fn)
-		return () => window.removeEventListener("keydown", fn)
-	}, [onClose])
 
 	async function getToken() {
 		const { data: { session } } = await supabase.auth.getSession()
@@ -599,43 +575,39 @@ function LogModal({ game, onClose, existingLog, onDeleted }) {
 
 	const releaseYear = game.first_release_date ? new Date(game.first_release_date * 1000).getFullYear() : null
 
-	return createPortal(
-		<div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:p-6 overscroll-none" onClick={onClose}>
-			<div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-			<div className="relative w-full h-full md:h-auto md:max-w-2xl md:max-h-[90vh] bg-zinc-900 md:border md:border-zinc-700 md:rounded-xl shadow-2xl flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
-				<div className="flex items-center justify-between px-4 pb-2 border-b border-zinc-700 flex-shrink-0 md:px-5 md:pb-3" style={{ paddingTop: "max(1rem, env(safe-area-inset-top, 1rem))" }}>
-					<div className="flex items-center gap-3 min-w-0">
-						{game.cover && <img src={`https:${game.cover.url}`} alt="" className="w-8 h-11 rounded object-cover bg-zinc-800 flex-shrink-0" draggable={false} />}
-						<div className="min-w-0">
-							<h2 className="text-base md:text-lg font-semibold text-white truncate">{game.name}</h2>
-							{releaseYear && <p className="text-xs text-zinc-500">{releaseYear}</p>}
-						</div>
-					</div>
-					<div className="flex flex-col items-center flex-shrink-0">
-						<button onClick={onClose} className="w-9 h-9 rounded-full border border-zinc-700 hover:border-zinc-500 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer active:bg-zinc-800 transition-all">
-							<X className="w-4 h-4" />
-						</button>
-						<span className="text-[10px] font-bold text-zinc-600 mt-1 uppercase tracking-wide hidden md:block">ESC</span>
+	return (
+		<div className="w-full h-full md:h-auto md:max-w-2xl md:max-h-[90vh] bg-zinc-900 md:border md:border-zinc-700 md:rounded-xl shadow-2xl flex flex-col overflow-hidden">
+			<div className="flex items-center justify-between px-4 pb-2 border-b border-zinc-700 flex-shrink-0 md:px-5 md:pb-3" style={{ paddingTop: "max(1rem, env(safe-area-inset-top, 1rem))" }}>
+				<div className="flex items-center gap-3 min-w-0">
+					{game.cover && <img src={`https:${game.cover.url}`} alt="" className="w-8 h-11 rounded object-cover bg-zinc-800 flex-shrink-0" draggable={false} />}
+					<div className="min-w-0">
+						<h2 className="text-base md:text-lg font-semibold text-white truncate">{game.name}</h2>
+						{releaseYear && <p className="text-xs text-zinc-500">{releaseYear}</p>}
 					</div>
 				</div>
-
-				<div className="flex-1 overflow-y-auto overscroll-contain px-4 md:px-5 py-4">
-					<div className="mb-4"><TabNav activeTab={activeTab} setActiveTab={setActiveTab} /></div>
-					{activeTab === "review" && <ReviewTabContent rating={rating} setRating={setRating} ratingMode={ratingMode} setRatingMode={setRatingMode} platform={platform} setPlatform={setPlatform} platforms={game.platforms} review={review} setReview={setReview} spoilers={spoilers} setSpoilers={setSpoilers} mastered={mastered} setMastered={setMastered} aspects={aspects} setAspects={setAspects} />}
-					{activeTab === "dates" && <DatesTabContent startedOn={startedOn} setStartedOn={setStartedOn} finishedOn={finishedOn} setFinishedOn={setFinishedOn} />}
-					{activeTab === "details" && <DetailsTabContent logTitle={logTitle} setLogTitle={setLogTitle} replay={replay} setReplay={setReplay} hoursPlayed={hoursPlayed} setHoursPlayed={setHoursPlayed} minutesPlayed={minutesPlayed} setMinutesPlayed={setMinutesPlayed} playedPlatform={playedPlatform} setPlayedPlatform={setPlayedPlatform} platforms={game.platforms} onDelete={handleDelete} deleting={deleting} isEditing={isEditing} />}
-				</div>
-
-				<div className="flex items-center justify-end gap-2 sm:gap-3 px-4 md:px-5 py-3 border-t border-zinc-700 flex-shrink-0" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))" }}>
-					<button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer active:bg-zinc-600">Cancelar</button>
-					<button type="button" onClick={handleSave} disabled={submitting} className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2 ${submitting ? "bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50" : "bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white cursor-pointer shadow-lg shadow-indigo-500/20"}`}>
-						{submitting ? <div className="w-4 h-4 border-2 border-indigo-300 border-t-white rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
-						{isEditing ? "Salvar" : "Criar Log"}
+				<div className="flex flex-col items-center flex-shrink-0">
+					<button onClick={onClose} className="w-9 h-9 rounded-full border border-zinc-700 hover:border-zinc-500 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer active:bg-zinc-800 transition-all">
+						<X className="w-4 h-4" />
 					</button>
+					<span className="text-[10px] font-bold text-zinc-600 mt-1 uppercase tracking-wide hidden md:block">ESC</span>
 				</div>
 			</div>
-		</div>,
-		document.body
+
+			<div className="flex-1 overflow-y-auto overscroll-contain px-4 md:px-5 py-4">
+				<div className="mb-4"><TabNav activeTab={activeTab} setActiveTab={setActiveTab} /></div>
+				{activeTab === "review" && <ReviewTabContent rating={rating} setRating={setRating} ratingMode={ratingMode} setRatingMode={setRatingMode} platform={platform} setPlatform={setPlatform} platforms={game.platforms} review={review} setReview={setReview} spoilers={spoilers} setSpoilers={setSpoilers} mastered={mastered} setMastered={setMastered} aspects={aspects} setAspects={setAspects} />}
+				{activeTab === "dates" && <DatesTabContent startedOn={startedOn} setStartedOn={setStartedOn} finishedOn={finishedOn} setFinishedOn={setFinishedOn} />}
+				{activeTab === "details" && <DetailsTabContent logTitle={logTitle} setLogTitle={setLogTitle} replay={replay} setReplay={setReplay} hoursPlayed={hoursPlayed} setHoursPlayed={setHoursPlayed} minutesPlayed={minutesPlayed} setMinutesPlayed={setMinutesPlayed} playedPlatform={playedPlatform} setPlayedPlatform={setPlayedPlatform} platforms={game.platforms} onDelete={handleDelete} deleting={deleting} isEditing={isEditing} />}
+			</div>
+
+			<div className="flex items-center justify-end gap-2 sm:gap-3 px-4 md:px-5 py-3 border-t border-zinc-700 flex-shrink-0" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))" }}>
+				<button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer active:bg-zinc-600">Cancelar</button>
+				<button type="button" onClick={handleSave} disabled={submitting} className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2 ${submitting ? "bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50" : "bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white cursor-pointer shadow-lg shadow-indigo-500/20"}`}>
+					{submitting ? <div className="w-4 h-4 border-2 border-indigo-300 border-t-white rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
+					{isEditing ? "Salvar" : "Criar Log"}
+				</button>
+			</div>
+		</div>
 	)
 }
 
@@ -814,6 +786,16 @@ export default function ReviewButton({ game }) {
 	function openModal(log = activeLog) { setSelectedLog(log); setShowModal(true) }
 	function openNewLog() { setSelectedLog(null); setShowModal(true) }
 
+	function handleClose() {
+		setShowModal(false)
+		fetchLogs()
+	}
+
+	function handleDeleted() {
+		setSelectedLog(null)
+		fetchLogs()
+	}
+
 	return (
 		<>
 			{hasLogs ? (
@@ -834,8 +816,22 @@ export default function ReviewButton({ game }) {
 				</button>
 			)}
 
-			{showModal && <LogModal game={game} existingLog={selectedLog} onClose={() => { setShowModal(false); fetchLogs() }} onDeleted={() => { setSelectedLog(null); fetchLogs() }} />}
+			<Modal
+				isOpen={showModal}
+				onClose={handleClose}
+				raw
+				fullscreenMobile
+				className="w-full md:max-w-2xl"
+			>
+				{showModal && (
+					<LogModalContent
+						game={game}
+						existingLog={selectedLog}
+						onClose={handleClose}
+						onDeleted={handleDeleted}
+					/>
+				)}
+			</Modal>
 		</>
 	)
-
 }

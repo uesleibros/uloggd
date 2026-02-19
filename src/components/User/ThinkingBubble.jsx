@@ -63,7 +63,12 @@ function ThinkingModalContent({ currentThinking, onClose, onSave }) {
 					Cancelar
 				</button>
 				<button onClick={() => save(text.trim() || null)} disabled={saving || (!text.trim() && !currentThinking)} className="flex-1 px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-all cursor-pointer disabled:opacity-50">
-					{saving ? "Salvando..." : "Salvar"}
+					{saving ? (
+						<div className="flex items-center gap-2">
+							<div className="w-4 h-4 border-2 border-indigo-300 border-t-white rounded-full animate-spin" />
+							Salvando...
+						</div>
+					) : "Salvar"}
 				</button>
 			</div>
 		</div>

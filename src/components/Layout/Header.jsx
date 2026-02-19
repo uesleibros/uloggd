@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useEffect, useRef, useState } from "react"
-import { Search, Bell, User, Settings, LogOut, ChevronDown, X, Menu, Loader2 } from "lucide-react"
+import { Search, Bell, User, Settings, LogOut, ChevronDown, X, Menu } from "lucide-react"
 import PlatformIcons from "../Game/PlatformIcons"
 import { formatDateShort } from "../../../utils/formatDate"
 import { supabase } from "../../../lib/supabase"
@@ -22,7 +22,7 @@ function DiscordIcon({ className }) {
 function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center py-3">
-      <Loader2 className="h-6 w-6 text-indigo-500 animate-spin" />
+      <div className="w-6 h-6 border-2 border-indigo-500 border-t-indigo-300 rounded-full animate-spin" />
     </div>
   )
 }
