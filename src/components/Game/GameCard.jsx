@@ -53,6 +53,7 @@ export default function GameCard({
 	isFavorite = false,
 	newTab = false,
 	showRating = true,
+	fixed = false,
 }) {
 	const { getRating } = useUserGames()
 
@@ -64,13 +65,17 @@ export default function GameCard({
 		? "ring-2 ring-amber-500/70 shadow-lg shadow-amber-500/10"
 		: ""
 
+	const sizeClasses = fixed
+		? "w-32 h-44 flex-shrink-0"
+		: "w-full aspect-[3/4]"
+
 	const imageContent = (
 		<>
 			<img
 				src={coverUrl}
 				alt={game.name}
 				draggable={false}
-				className="w-full aspect-[3/4] object-cover select-none rounded-lg bg-zinc-800"
+				className={`${sizeClasses} object-cover select-none rounded-lg bg-zinc-800`}
 			/>
 			<div className="absolute inset-0 bg-black/70 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center p-2 gap-1.5 pointer-events-none">
 				<span className="text-white select-none text-xs font-medium text-center leading-tight line-clamp-3">
@@ -82,7 +87,7 @@ export default function GameCard({
 	)
 
 	return (
-		<div className="group relative">
+		<div className={`group relative ${fixed ? "flex-shrink-0" : ""}`}>
 			{isFavorite && <FavoriteBadge />}
 
 			{newTab ? (
@@ -107,8 +112,12 @@ export default function GameCard({
 	)
 }
 
-export function GameCardSkeleton() {
-	return <div className="aspect-[3/4] bg-zinc-800 rounded-lg animate-pulse" />
+export function GameCardSkeleton({ fixed = false }) {
+	const sizeClasses = fixed
+		? "w-32 h-44 flex-shrink-0"
+		: "aspect-[3/4]"
+
+	return <div className={`${sizeClasses} bg-zinc-800 rounded-lg animate-pulse`} />
 }
 
 export { MiniStars }
