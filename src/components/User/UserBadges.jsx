@@ -38,7 +38,7 @@ const SIZES = {
 function BadgeModal({ badge, onClose }) {
   const [visible, setVisible] = useState(false)
   const s = getBadgeStyles(badge.color)
-  const assignedDate = formatDate(badge.assigned_at)
+  const assignedDate = formatDateLong(badge.assigned_at)
 
   useEffect(() => {
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
