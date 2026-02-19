@@ -37,34 +37,26 @@ const HEADERS = {
   "Referer": BASE
 }
 
+const GAMES_PER_PAGE = 40
+
 async function buildCookieJar() {
   const jar = new CookieJar()
-
   for (const [name, value] of Object.entries(COOKIES)) {
-    const cookie = new Cookie({
-      key: name,
-      value: value,
-      domain: "backloggd.com",
-      path: "/"
-    })
+    const cookie = new Cookie({ key: name, value, domain: "backloggd.com", path: "/" })
     await jar.setCookie(cookie, BASE)
   }
-
   return jar
 }
 
 let cookieJar = null
 
 async function getCookieJar() {
-  if (!cookieJar) {
-    cookieJar = await buildCookieJar()
-  }
+  if (!cookieJar) cookieJar = await buildCookieJar()
   return cookieJar
 }
 
 async function fetchPage(url) {
   const jar = await getCookieJar()
-
   const { body, statusCode } = await gotScraping({
     url,
     cookieJar: jar,
@@ -74,11 +66,7 @@ async function fetchPage(url) {
       operatingSystems: ["windows"]
     }
   })
-
-  if (statusCode !== 200) {
-    throw new Error(`HTTP ${statusCode}`)
-  }
-
+  if (statusCode !== 200) throw new Error(`HTTP ${statusCode}`)
   return body
 }
 
@@ -86,31 +74,43 @@ function getTotalPages(html) {
   const $ = cheerio.load(html)
   const pages = []
 
-  $(".page").each((_, el) => {
-    const n = parseInt($(el).text().trim(), 10)
+  $("nav.pagy a, nav[aria-label='Pages'] a").each((_, el) => {
+    const text = $(el).text().trim()
+    const n = parseInt(text, 10)
     if (!isNaN(n)) pages.push(n)
+
+    const href = $(el).attr("href") || ""
+    const match = href.match(/[?&]page=(\d+)/)
+    if (match) pages.push(parseInt(match[1], 10))
   })
 
-  return pages.length > 0 ? Math.max(...pages) : 1
+  if (pages.length > 0) return Math.max(...pages)
+
+  const countMatch = html.match(/(\d+)\s+Games/i)
+  if (countMatch) return Math.ceil(parseInt(countMatch[1], 10) / GAMES_PER_PAGE)
+
+  return 1
 }
 
 function parseGames(html) {
   const $ = cheerio.load(html)
   const games = []
 
-  $(".game-cover").each((_, el) => {
+  $("#user-games-library-container .game-cover, #game-lists .game-cover").each((_, el) => {
     const $el = $(el)
     const gameId = $el.attr("game_id")
     if (!gameId) return
 
     const link = $el.find("a.cover-link")
-    const img = $el.find("img.card-img")
     if (!link.length) return
 
     const href = link.attr("href") || ""
-    const slug = href.split("/games/").pop().replace(/\/$/, "")
+    const slug = href.replace(/^\/games\//, "").replace(/\/$/, "")
+
+    const img = $el.find("img")
     const title = img.length ? (img.attr("alt") || "").trim() : ""
     const cover = img.length ? (img.attr("src") || img.attr("data-src") || "") : ""
+
     const ratingRaw = $el.attr("data-rating")
 
     games.push({
@@ -125,17 +125,36 @@ function parseGames(html) {
   return games
 }
 
+function buildSectionUrl(username, section, page) {
+  if (page <= 1) return `${BASE}/u/${username}/games/added/type:${section}/`
+  return `${BASE}/u/${username}/games/added/type:${section}?page=${page}`
+}
+
 async function scrapeSection(username, section) {
-  const baseUrl = `${BASE}/u/${username}/games/added/type:${section}/`
+  const allGames = []
+  let page = 1
+  let maxPage = 1
 
-  const html = await fetchPage(baseUrl)
-  const totalPages = getTotalPages(html)
-  const allGames = parseGames(html)
+  while (page <= maxPage) {
+    const url = buildSectionUrl(username, section, page)
+    let html
 
-  for (let page = 2; page <= totalPages; page++) {
-    const pageHtml = await fetchPage(`${baseUrl}?page=${page}`)
-    allGames.push(...parseGames(pageHtml))
-    await new Promise((r) => setTimeout(r, 800))
+    try {
+      html = await fetchPage(url)
+    } catch {
+      break
+    }
+
+    const detected = getTotalPages(html)
+    if (detected > maxPage) maxPage = detected
+
+    const games = parseGames(html)
+    if (games.length === 0) break
+
+    allGames.push(...games)
+    page++
+
+    if (page <= maxPage) await new Promise((r) => setTimeout(r, 800))
   }
 
   return allGames
@@ -150,13 +169,7 @@ export async function scrapeUser(username) {
 
     for (const g of data) {
       if (!gamesMap[g.game_id]) {
-        gamesMap[g.game_id] = {
-          ...g,
-          played: false,
-          playing: false,
-          backlog: false,
-          wishlist: false
-        }
+        gamesMap[g.game_id] = { ...g, played: false, playing: false, backlog: false, wishlist: false }
       }
       gamesMap[g.game_id][section] = true
     }
