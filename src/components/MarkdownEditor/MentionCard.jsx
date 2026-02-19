@@ -112,6 +112,9 @@ export function MentionCard({ username, onClose }) {
                 <h3 className="text-lg font-bold text-white truncate">{profile.username}</h3>
                 <UserBadges user={profile} size="lg" />
               </div>
+              {profile.pronoun && (
+                <span className="text-xs mt-1 bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-md border border-zinc-700">{profile.pronoun}</span>
+              )}
               {profile.created_at && (
                 <p className="text-xs text-zinc-600 mt-2.5 flex items-center gap-1.5">
                   <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>

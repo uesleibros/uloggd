@@ -40,3 +40,5 @@ export const updateDecoration = (decoration) => request("decoration", { decorati
 export const deleteAccount = () => request("delete")
 
 export const signOut = () => supabase.auth.signOut()
+
+export const updatePronoun = (pronoun) => request("pronoun", { pronoun })

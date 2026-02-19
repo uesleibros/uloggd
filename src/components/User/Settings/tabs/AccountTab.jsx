@@ -1,6 +1,7 @@
 import AvatarSection from "../sections/AvatarSection"
 import BannerSection from "../sections/BannerSection"
 import BioSection from "../sections/BioSection"
+import PronounSection from "../sections/PronounSection"
 import ProfileSection from "../sections/ProfileSection"
 import DangerZoneSection from "../sections/DangerZoneSection"
 
@@ -9,6 +10,7 @@ export default function AccountTab({
   onAvatarSave, avatarSaving,
   onBannerSave, bannerSaving,
   bio, onBioChange, onBioSave, onBioReset, bioSaving, bioIsDirty,
+  pronoun, onPronounChange, onPronounSave, onPronounReset, pronounSaving, pronounIsDirty,
   onDelete, deleteLoading,
 }) {
   return (
@@ -20,6 +22,7 @@ export default function AccountTab({
         <AvatarSection avatar={user.avatar || null} onSave={onAvatarSave} saving={avatarSaving} />
         <BannerSection banner={user.banner || null} onSave={onBannerSave} saving={bannerSaving} />
         <BioSection bio={bio} onChange={onBioChange} onSave={onBioSave} onReset={onBioReset} saving={bioSaving} isDirty={bioIsDirty} />
+        <PronounSection pronoun={pronoun} onChange={onPronounChange} onSave={onPronounSave} onReset={onPronounReset} saving={pronounSaving} isDirty={pronounIsDirty} />
         <ProfileSection user={user} />
         <DangerZoneSection onDelete={onDelete} loading={deleteLoading} />
       </div>

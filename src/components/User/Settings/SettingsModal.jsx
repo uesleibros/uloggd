@@ -16,12 +16,15 @@ export default function SettingsModal({ onClose }) {
   const [bannerSaving, setBannerSaving] = useState(false)
   const [bio, setBio] = useState(user?.bio || "")
   const [bioSaving, setBioSaving] = useState(false)
+  const [pronoun, setPronoun] = useState(user?.pronoun || "")
+  const [pronounSaving, setPronounSaving] = useState(false)
   const [selectedDecoration, setSelectedDecoration] = useState(user?.avatar_decoration || null)
   const [decorationSaving, setDecorationSaving] = useState(false)
   const [signOutLoading, setSignOutLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
   const bioIsDirty = bio !== (user?.bio || "")
+  const pronounIsDirty = pronoun !== (user?.pronoun || "")
   const decorationIsDirty = selectedDecoration !== (user?.avatar_decoration || null)
 
   useEffect(() => {
@@ -70,6 +73,24 @@ export default function SettingsModal({ onClose }) {
       notify("Erro ao salvar a bio.", "error")
     } finally {
       setBioSaving(false)
+    }
+  }
+
+  async function handlePronounSave() {
+    if (!pronounIsDirty) return
+    setPronounSaving(true)
+    try {
+      const data = await api.updatePronoun(pronoun)
+      if (data) {
+        updateUser({ pronoun })
+        notify("Pronome atualizado com sucesso!")
+      } else {
+        notify("Erro ao salvar o pronome.", "error")
+      }
+    } catch {
+      notify("Erro ao salvar o pronome.", "error")
+    } finally {
+      setPronounSaving(false)
     }
   }
 
@@ -140,6 +161,12 @@ export default function SettingsModal({ onClose }) {
               onBioReset={() => setBio(user?.bio || "")}
               bioSaving={bioSaving}
               bioIsDirty={bioIsDirty}
+              pronoun={pronoun}
+              onPronounChange={setPronoun}
+              onPronounSave={handlePronounSave}
+              onPronounReset={() => setPronoun(user?.pronoun || "")}
+              pronounSaving={pronounSaving}
+              pronounIsDirty={pronounIsDirty}
               onDelete={handleDelete}
               deleteLoading={deleteLoading}
             />

@@ -160,6 +160,9 @@ export default function Profile() {
 								isLoggedIn={!!currentUser}
 							/>
 						</div>
+						{profile.pronoun && (
+							<span className="text-xs mt-1 bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-md border border-zinc-700">{profile.pronoun}</span>
+						)}
 						<ProfileStats
 							counts={counts}
 							followersCount={followersCount}

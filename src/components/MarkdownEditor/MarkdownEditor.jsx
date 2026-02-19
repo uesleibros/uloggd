@@ -32,7 +32,6 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 	const editorViewRef = useRef(null)
 	const splitContainerRef = useRef(null)
 	const isDragging = useRef(false)
-	const previewSideRef = useRef(null)
 	const headingBtnRef = useRef(null)
 
 	const isLargeScreen = useMediaQuery("(min-width: 1024px)")
@@ -47,6 +46,7 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 
 	const onChangeRef = useRef(onChange)
 	useEffect(() => { onChangeRef.current = onChange }, [onChange])
+	useEffect(() => { setHeadingOpen(false); setMention(null) }, [tab, isFullscreen])
 	const stableOnChange = useCallback((val) => onChangeRef.current(val), [])
 
 	const mainEditorContainer = useCodeMirror({

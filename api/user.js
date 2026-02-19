@@ -8,6 +8,7 @@ import { handleBanner } from "../services/user/handlers/banner.js"
 import { handleAvatar } from "../services/user/handlers/avatar.js"
 import { handleThinking } from "../services/user/handlers/thinking.js"
 import { handleDecoration } from "../services/user/handlers/decoration.js"
+import { handlePronoun } from "../services/user/handlers/pronoun.js"
 
 const ACTIONS = {
   profile: handleProfile,
@@ -19,7 +20,8 @@ const ACTIONS = {
   banner: handleBanner,
   avatar: handleAvatar,
   thinking: handleThinking,
-  decoration: handleDecoration
+  decoration: handleDecoration,
+  pronoun: handlePronoun
 }
 
 export default async function handler(req, res) {
