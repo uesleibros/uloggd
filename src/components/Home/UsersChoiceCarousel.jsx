@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import GameCard from "../Game/GameCard"
+import GameCard, { GameCardSkeleton } from "../Game/GameCard"
 import DragScrollRow from "../UI/DragScrollRow"
 
 export default function UsersChoiceCarousel() {
@@ -17,7 +17,6 @@ export default function UsersChoiceCarousel() {
   }, [])
 
   if (loading) {
-    const skeletons = [...Array(27)]
     return (
       <DragScrollRow
         className="gap-4 overflow-x-hidden py-2 touch-pan-y"
@@ -25,8 +24,8 @@ export default function UsersChoiceCarousel() {
         autoScrollSpeed={0.04}
         loop
       >
-        {skeletons.map((_, i) => (
-          <div key={i} className="w-32 h-44 bg-zinc-800 rounded-lg animate-pulse flex-shrink-0" />
+        {[...Array(27)].map((_, i) => (
+          <GameCardSkeleton key={i} fixed />
         ))}
       </DragScrollRow>
     )
@@ -46,9 +45,9 @@ export default function UsersChoiceCarousel() {
           key={`${game.id}-${index}`}
           game={game}
           draggable={false}
+          fixed
         />
       ))}
     </DragScrollRow>
   )
 }
-
