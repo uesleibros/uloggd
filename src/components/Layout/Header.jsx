@@ -21,8 +21,8 @@ function DiscordIcon({ className }) {
 
 function LoadingSpinner() {
   return (
-    <div className="flex items-center justify-center py-8">
-      <Loader2 className="h-6 w-6 text-zinc-300 animate-spin" />
+    <div className="flex items-center justify-center py-3">
+      <Loader2 className="h-6 w-6 text-indigo-500 animate-spin" />
     </div>
   )
 }
@@ -31,7 +31,7 @@ function SearchResultItem({ item, onSelect }) {
   return (
     <li
       onMouseDown={() => onSelect(item.slug)}
-      className="cursor-pointer px-3 py-2.5 border-b border-zinc-800 last:border-0 hover:bg-zinc-800 transition-colors"
+      className="group cursor-pointer px-3 py-2.5 border-b border-zinc-800 last:border-0 hover:bg-indigo-500/10 transition-colors"
     >
       <div className="flex items-center gap-3">
         {item.cover ? (
@@ -45,7 +45,7 @@ function SearchResultItem({ item, onSelect }) {
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-sm text-white truncate">
+            <span className="group-hover:text-indigo-400 transition-colors font-medium text-sm text-white truncate">
               {item.name}
             </span>
           </div>
@@ -248,7 +248,7 @@ function UserDropdown({ user, onSignOut }) {
         </div>
       </div>
 
-      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </>
   )
 }
@@ -331,7 +331,7 @@ function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) {
             </div>
           </div>
 
-          {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
+          <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
         </>
       )
     }
@@ -378,6 +378,7 @@ export default function Header() {
   const [loading, setLoading] = useState(false)
   const [focused, setFocused] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const timeoutRef = useRef(null)
   const navigate = useNavigate()

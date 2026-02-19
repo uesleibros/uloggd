@@ -53,6 +53,7 @@ export default function GameCard({
 	isFavorite = false,
 	newTab = false,
 	showRating = true,
+	className = "",
 }) {
 	const { getRating } = useUserGames()
 	
@@ -70,7 +71,7 @@ export default function GameCard({
 				src={coverUrl}
 				alt={game.name}
 				draggable={false}
-				className="w-32 h-44 object-cover select-none rounded-lg bg-zinc-800"
+				className="w-full h-full object-cover select-none rounded-lg bg-zinc-800"
 			/>
 			<div className="absolute inset-0 bg-black/70 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center p-2 gap-1.5 pointer-events-none">
 				<span className="text-white select-none text-xs font-medium text-center leading-tight line-clamp-3">
@@ -82,7 +83,7 @@ export default function GameCard({
 	)
 
 	return (
-		<div className="flex-shrink-0 group relative">
+		<div className={`flex-shrink-0 w-34 h-44 group relative ${className}`}>
 			{isFavorite && <FavoriteBadge />}
 			
 			{newTab ? (
@@ -90,7 +91,7 @@ export default function GameCard({
 					href={`/game/${game.slug}`}
 					target="_blank"
 					rel="noopener noreferrer"
-					className={`block relative rounded-lg transition-all ${cardClasses}`}
+					className={`block relative w-full h-full rounded-lg transition-all ${cardClasses}`}
 					title={game.name}
 				>
 					{imageContent}
@@ -98,7 +99,7 @@ export default function GameCard({
 			) : (
 				<Link 
 					to={`/game/${game.slug}`} 
-					className={`block relative rounded-lg ${cardClasses}`}
+					className={`block relative w-full h-full rounded-lg ${cardClasses}`}
 				>
 					{imageContent}
 				</Link>
@@ -107,8 +108,8 @@ export default function GameCard({
 	)
 }
 
-export function GameCardSkeleton() {
-	return <div className="w-32 h-44 bg-zinc-800 rounded-lg animate-pulse flex-shrink-0" />
+export function GameCardSkeleton({ className = "" }) {
+	return <div className={`w-34 h-44 bg-zinc-800 rounded-lg animate-pulse flex-shrink-0 ${className}`} />
 }
 
 export { MiniStars }

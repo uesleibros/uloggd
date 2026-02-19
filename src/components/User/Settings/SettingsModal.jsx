@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react"
-import { createPortal } from "react-dom"
+import { useState } from "react"
 import { useAuth } from "../../../../hooks/useAuth"
 import { notify } from "../../UI/Notification"
 import * as api from "./api"
+import Modal from "../../UI/Modal"
 import SettingsLayout from "./SettingsLayout"
 import AccountTab from "./tabs/AccountTab"
 import SessionsTab from "./tabs/SessionsTab"
 import AppearanceTab from "./tabs/AppearanceTab"
 import IntegrationsTab from "./tabs/IntegrationsTab"
 
-export default function SettingsModal({ onClose }) {
+export default function SettingsModal({ isOpen, onClose }) {
   const { user, updateUser } = useAuth()
   const [activeTab, setActiveTab] = useState("account")
   const [avatarSaving, setAvatarSaving] = useState(false)
@@ -26,17 +26,6 @@ export default function SettingsModal({ onClose }) {
   const bioIsDirty = bio !== (user?.bio || "")
   const pronounIsDirty = pronoun !== (user?.pronoun || "")
   const decorationIsDirty = selectedDecoration !== (user?.avatar_decoration || null)
-
-  useEffect(() => {
-    document.body.style.overflow = "hidden"
-    return () => { document.body.style.overflow = "" }
-  }, [])
-
-  useEffect(() => {
-    const handleKey = (e) => { if (e.key === "Escape") onClose() }
-    window.addEventListener("keydown", handleKey)
-    return () => window.removeEventListener("keydown", handleKey)
-  }, [onClose])
 
   async function handleImageSave(type, base64) {
     const setter = type === "avatar" ? setAvatarSaving : setBannerSaving
@@ -137,63 +126,60 @@ export default function SettingsModal({ onClose }) {
 
   if (!user) return null
 
-  return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:p-6" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div
-        className="relative w-full h-full md:w-auto md:h-auto"
-        onClick={e => e.stopPropagation()}
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      raw
+    >
+      <SettingsLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onClose={onClose}
+        onSignOut={handleSignOut}
+        signOutLoading={signOutLoading}
       >
-        <SettingsLayout
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onClose={onClose}
-          onSignOut={handleSignOut}
-          signOutLoading={signOutLoading}
-        >
-          {activeTab === "account" && (
-            <AccountTab
-              user={user}
-              onAvatarSave={(b64) => handleImageSave("avatar", b64)}
-              avatarSaving={avatarSaving}
-              onBannerSave={(b64) => handleImageSave("banner", b64)}
-              bannerSaving={bannerSaving}
-              bio={bio}
-              onBioChange={setBio}
-              onBioSave={handleBioSave}
-              onBioReset={() => setBio(user?.bio || "")}
-              bioSaving={bioSaving}
-              bioIsDirty={bioIsDirty}
-              pronoun={pronoun}
-              onPronounChange={setPronoun}
-              onPronounSave={handlePronounSave}
-              onPronounReset={() => setPronoun(user?.pronoun || "")}
-              pronounSaving={pronounSaving}
-              pronounIsDirty={pronounIsDirty}
-              onDelete={handleDelete}
-              deleteLoading={deleteLoading}
-            />
-          )}
-          {activeTab === "sessions" && (
-            <SessionsTab onSignOut={handleSignOut} loading={signOutLoading} />
-          )}
-          {activeTab === "appearance" && (
-            <AppearanceTab
-              user={user}
-              selectedDecoration={selectedDecoration}
-              onSelectDecoration={setSelectedDecoration}
-              onDecorationSave={handleDecorationSave}
-              onDecorationReset={() => setSelectedDecoration(user?.avatar_decoration || null)}
-              decorationSaving={decorationSaving}
-              decorationIsDirty={decorationIsDirty}
-            />
-          )}
-          {activeTab === "integrations" && (
-            <IntegrationsTab />
-          )}
-        </SettingsLayout>
-      </div>
-    </div>,
-    document.body
+        {activeTab === "account" && (
+          <AccountTab
+            user={user}
+            onAvatarSave={(b64) => handleImageSave("avatar", b64)}
+            avatarSaving={avatarSaving}
+            onBannerSave={(b64) => handleImageSave("banner", b64)}
+            bannerSaving={bannerSaving}
+            bio={bio}
+            onBioChange={setBio}
+            onBioSave={handleBioSave}
+            onBioReset={() => setBio(user?.bio || "")}
+            bioSaving={bioSaving}
+            bioIsDirty={bioIsDirty}
+            pronoun={pronoun}
+            onPronounChange={setPronoun}
+            onPronounSave={handlePronounSave}
+            onPronounReset={() => setPronoun(user?.pronoun || "")}
+            pronounSaving={pronounSaving}
+            pronounIsDirty={pronounIsDirty}
+            onDelete={handleDelete}
+            deleteLoading={deleteLoading}
+          />
+        )}
+        {activeTab === "sessions" && (
+          <SessionsTab onSignOut={handleSignOut} loading={signOutLoading} />
+        )}
+        {activeTab === "appearance" && (
+          <AppearanceTab
+            user={user}
+            selectedDecoration={selectedDecoration}
+            onSelectDecoration={setSelectedDecoration}
+            onDecorationSave={handleDecorationSave}
+            onDecorationReset={() => setSelectedDecoration(user?.avatar_decoration || null)}
+            decorationSaving={decorationSaving}
+            decorationIsDirty={decorationIsDirty}
+          />
+        )}
+        {activeTab === "integrations" && (
+          <IntegrationsTab />
+        )}
+      </SettingsLayout>
+    </Modal>
   )
 }

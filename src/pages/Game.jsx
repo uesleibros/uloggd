@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { createPortal } from "react-dom"
 import { useParams, Link } from "react-router-dom"
 import {
 	ExternalLink,
@@ -12,12 +11,14 @@ import { PlatformList } from "../components/Game/PlatformBadge"
 import RatingBadge from "../components/Game/RatingBadge"
 import GameCard from "../components/Game/GameCard"
 import Lightbox from "../components/UI/Lightbox"
+import Modal from "../components/UI/Modal"
 import { formatDateLong } from "../../utils/formatDate"
 import DragScrollRow from "../components/UI/DragScrollRow"
 import PageBanner from "../components/Layout/PageBanner"
 import ReviewButton from "../components/Game/ReviewButton"
 import GameReviews from "../components/Game/GameReviews"
 import QuickActions from "../components/Game/QuickActions"
+import CountUp from "../components/UI/CountUp"
 
 function GameSkeleton() {
 	return (
@@ -191,7 +192,9 @@ function StatCard({ value, label }) {
 	if (!value) return null
 	return (
 		<div className="bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 text-center">
-			<div className="text-2xl font-bold text-white">{value}</div>
+			<div className="text-2xl font-bold text-white">
+				<CountUp end={value} />
+			</div>
 			<div className="text-xs text-zinc-300 mt-1">{label}</div>
 		</div>
 	)
@@ -326,65 +329,48 @@ function Keywords({ keywords }) {
 					</button>
 				)}
 			</div>
-			{showModal && <KeywordsModal keywords={keywords} onClose={() => setShowModal(false)} />}
+
+			<Modal
+				isOpen={showModal}
+				onClose={() => setShowModal(false)}
+				title="Palavras-chaves"
+				subtitle={String(keywords.length)}
+			>
+				<KeywordsModalContent keywords={keywords} />
+			</Modal>
 		</div>
 	)
 }
 
-function KeywordsModal({ keywords, onClose }) {
+function KeywordsModalContent({ keywords }) {
 	const [search, setSearch] = useState("")
-
-	useEffect(() => {
-		const sw = window.innerWidth - document.documentElement.clientWidth
-		document.body.style.overflow = "hidden"
-		if (sw > 0) document.body.style.paddingRight = `${sw}px`
-		return () => { document.body.style.overflow = ""; document.body.style.paddingRight = "" }
-	}, [])
-
-	useEffect(() => {
-		const fn = (e) => { if (e.key === "Escape") onClose() }
-		window.addEventListener("keydown", fn)
-		return () => window.removeEventListener("keydown", fn)
-	}, [onClose])
 
 	const filtered = search.trim()
 		? keywords.filter(k => k.slug.toLowerCase().includes(search.toLowerCase()))
 		: keywords
 
-	return createPortal(
-		<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onClose}>
-			<div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-			<div className="relative bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
-				<div className="flex items-center justify-between p-4 border-b border-zinc-700">
-					<h3 className="text-lg font-semibold text-white">
-						Palavras-chaves <span className="text-sm text-zinc-500 font-normal ml-2">{keywords.length}</span>
-					</h3>
-					<button onClick={onClose} className="p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer">
-						<X className="w-5 h-5" />
-					</button>
-				</div>
-				<div className="px-4 pt-3">
-					<input
-						type="text"
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						placeholder="Buscar palavra-chave..."
-						className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
-						autoFocus
-					/>
-				</div>
-				<div className="p-4 overflow-y-auto flex-1">
-					{filtered.length > 0 ? (
-						<div className="flex flex-wrap gap-2">
-							{filtered.map((kw) => <Keyword key={kw.slug} text={kw.slug} />)}
-						</div>
-					) : (
-						<p className="text-sm text-zinc-500 text-center py-8">Nenhuma palavra-chave encontrada</p>
-					)}
-				</div>
+	return (
+		<>
+			<div className="px-4 pt-3 flex-shrink-0">
+				<input
+					type="text"
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
+					placeholder="Buscar palavra-chave..."
+					className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
+					autoFocus
+				/>
 			</div>
-		</div>,
-		document.body
+			<div className="p-4 overflow-y-auto flex-1">
+				{filtered.length > 0 ? (
+					<div className="flex flex-wrap gap-2">
+						{filtered.map((kw) => <Keyword key={kw.slug} text={kw.slug} />)}
+					</div>
+				) : (
+					<p className="text-sm text-zinc-500 text-center py-8">Nenhuma palavra-chave encontrada</p>
+				)}
+			</div>
+		</>
 	)
 }
 

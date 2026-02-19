@@ -1,21 +1,26 @@
 import { Calendar } from "lucide-react"
+import CountUp from "../UI/CountUp"
 
 function SocialCount({ value, label, onClick }) {
   return (
     <button onClick={onClick} className="text-sm hover:opacity-80 transition-opacity cursor-pointer">
-      <span className="font-semibold text-white">{value}</span>
+      <span className="font-semibold text-white">
+        <CountUp end={value} />
+      </span>
       <span className="text-zinc-500 ml-1">{label}</span>
     </button>
-  )
+  );
 }
 
 function StatCard({ value, label }) {
   return (
     <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 text-center">
-      <div className="text-2xl font-bold text-white">{value}</div>
+      <div className="text-2xl font-bold text-white">
+        <CountUp end={value} />
+      </div>
       <div className="text-xs text-zinc-300 mt-1">{label}</div>
     </div>
-  )
+  );
 }
 
 export default function ProfileStats({ 
@@ -55,5 +60,4 @@ export default function ProfileStats({
       </div>
     </>
   )
-
 }

@@ -2,7 +2,7 @@ import { forwardRef } from "react"
 import { Link } from "react-router-dom"
 import { Play, CheckCircle, Clock, Gift, Heart, Ban, Archive, Star } from "lucide-react"
 import DragScrollRow from "../UI/DragScrollRow"
-import GameCard, { GameCardSkeleton } from "../Game/GameCard"
+import GameCard from "../Game/GameCard"
 import Pagination from "./Pagination"
 
 const TAB_ICONS = {
@@ -91,16 +91,22 @@ const ProfileTabs = forwardRef(function ProfileTabs({ activeTab, onTabChange, co
       <hr className="my-4 border-zinc-700" />
 
       {loading ? (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 lg:grid-cols-8 gap-3">
-          {[...Array(14)].map((_, i) => (
-            <GameCardSkeleton key={i} />
+        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+          {[...Array(16)].map((_, i) => (
+            <div key={i} className="aspect-[3/4] bg-zinc-800 rounded-lg animate-pulse" />
           ))}
         </div>
       ) : games.length > 0 ? (
         <>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 lg:grid-cols-8 gap-3">
+          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
             {games.map(game => (
-              <GameCard key={game.slug} game={game} userRating={profileGames[game.slug]?.avgRating} />
+              <div key={game.slug} className="aspect-[3/4]">
+                <GameCard
+                  game={game}
+                  userRating={profileGames[game.slug]?.avgRating}
+                  className="!w-full !h-full"
+                />
+              </div>
             ))}
           </div>
           <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
@@ -113,4 +119,3 @@ const ProfileTabs = forwardRef(function ProfileTabs({ activeTab, onTabChange, co
 })
 
 export default ProfileTabs
-

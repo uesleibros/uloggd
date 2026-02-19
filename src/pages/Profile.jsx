@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "../../hooks/usePageMeta"
 import { supabase } from "../../lib/supabase"
@@ -34,6 +34,8 @@ export default function Profile() {
 	const [followingCount, setFollowingCount] = useState(0)
 	const [followModal, setFollowModal] = useState(null)
 	const [settingsOpen, setSettingsOpen] = useState(false)
+
+	const tabsRef = useRef(null)
 
 	const isOwnProfile = currentUser?.username?.toLowerCase() === username?.toLowerCase()
 	const { profileGames, counts, igdbGames, loadingGames } = useProfileGames(profile?.id)
@@ -100,6 +102,15 @@ export default function Profile() {
 			setIsFollowing(data.followed)
 			setFollowersCount(prev => data.followed ? prev + 1 : prev - 1)
 		} catch {} finally { setFollowLoading(false) }
+	}
+
+	function handlePageChange(page) {
+		setCurrentPage(page)
+		const el = tabsRef.current
+		if (el) {
+			const y = el.getBoundingClientRect().top + window.scrollY - 24
+			window.scrollTo({ top: y, behavior: "smooth" })
+		}
 	}
 
 	if (loading) return <ProfileSkeleton />
@@ -183,6 +194,7 @@ export default function Profile() {
 				/>
 
 				<ProfileTabs
+					ref={tabsRef}
 					activeTab={activeTab}
 					onTabChange={setActiveTab}
 					counts={counts}
@@ -193,15 +205,22 @@ export default function Profile() {
 					username={profile.username}
 					currentPage={currentPage}
 					totalPages={totalPages}
-					onPageChange={setCurrentPage}
+					onPageChange={handlePageChange}
 				/>
 
 				<ListsSection lists={profile.lists || []} isOwnProfile={isOwnProfile} username={profile.username} />
 			</div>
 
-			{followModal && <FollowListModal title={followModal} userId={profile.id} onClose={() => setFollowModal(null)} />}
-			{settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
+			<FollowListModal
+				isOpen={!!followModal}
+				title={followModal || ""}
+				userId={profile.id}
+				onClose={() => setFollowModal(null)}
+			/>
+			<SettingsModal
+				isOpen={settingsOpen}
+				onClose={() => setSettingsOpen(false)}
+			/>
 		</div>
 	)
 }
-

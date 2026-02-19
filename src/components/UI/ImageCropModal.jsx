@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react"
-import { createPortal } from "react-dom"
-import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop"
+import ReactCrop, { centerCrop, makeAspectCrop, convertToPixelCrop } from "react-image-crop"
 import "react-image-crop/dist/ReactCrop.css"
+import Modal from "../UI/Modal"
 
 function getCroppedCanvas(image, crop) {
 	const canvas = document.createElement("canvas")
@@ -39,26 +39,22 @@ function getCroppedCanvas(image, crop) {
 	return canvas
 }
 
-export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, title = "Recortar imagem", circularCrop = false }) {
+export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClose, title = "Recortar imagem", circularCrop = false }) {
 	const [crop, setCrop] = useState()
 	const [completedCrop, setCompletedCrop] = useState(null)
 	const imgRef = useRef(null)
 
 	useEffect(() => {
-		document.body.style.overflow = "hidden"
-		return () => { document.body.style.overflow = "" }
-	}, [])
-
-	useEffect(() => {
-		const handleKey = (e) => { if (e.key === "Escape") onClose() }
-		window.addEventListener("keydown", handleKey)
-		return () => window.removeEventListener("keydown", handleKey)
-	}, [onClose])
+		if (isOpen) {
+			setCrop(undefined)
+			setCompletedCrop(null)
+		}
+	}, [isOpen, imageSrc])
 
 	const onImageLoad = useCallback((e) => {
 		const { width, height } = e.currentTarget
 
-		const initialCrop = centerCrop(
+		const percentCrop = centerCrop(
 			makeAspectCrop(
 				{ unit: "%", width: 90 },
 				aspect,
@@ -69,8 +65,11 @@ export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, titl
 			height
 		)
 
-		setCrop(initialCrop)
-		setCompletedCrop(initialCrop)
+		setCrop(percentCrop)
+		
+		// Converte para pixels para o completedCrop
+		const pixelCrop = convertToPixelCrop(percentCrop, width, height)
+		setCompletedCrop(pixelCrop)
 	}, [aspect])
 
 	function handleConfirm() {
@@ -85,17 +84,15 @@ export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, titl
 		}, "image/png", 0.95)
 	}
 
-	return createPortal(
-		<div
-			className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center sm:p-4"
-			onClick={onClose}
+	return (
+		<Modal
+			isOpen={isOpen}
+			onClose={onClose}
+			raw
 		>
-			<div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-
 			<div
 				data-crop-modal
 				className="relative bg-zinc-900 border-t sm:border border-zinc-700 rounded-t-2xl sm:rounded-xl w-full sm:max-w-2xl max-h-[95dvh] sm:max-h-[85vh] flex flex-col shadow-2xl"
-				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="flex items-center justify-between p-3 sm:p-4 border-b border-zinc-700 shrink-0">
 					<h3 className="text-base sm:text-lg font-semibold text-white">{title}</h3>
@@ -110,27 +107,29 @@ export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, titl
 				</div>
 
 				<div className="flex-1 min-h-0 overflow-auto p-3 sm:p-4 flex items-center justify-center bg-zinc-950/50">
-					<ReactCrop
-						crop={crop}
-						onChange={(_, percentCrop) => setCrop(percentCrop)}
-						onComplete={(c) => setCompletedCrop(c)}
-						aspect={aspect}
-						circularCrop={circularCrop}
-						minWidth={50}
-						minHeight={50}
-						className="max-h-[60dvh] sm:max-h-[60vh]"
-						style={{ touchAction: "none" }}
-					>
-						<img
-							ref={imgRef}
-							src={imageSrc}
-							alt="Crop"
-							onLoad={onImageLoad}
-							className="max-h-[60dvh] sm:max-h-[60vh] select-none max-w-full object-contain"
-							draggable={false}
-							crossOrigin="anonymous"
-						/>
-					</ReactCrop>
+					{isOpen && imageSrc && (
+						<ReactCrop
+							crop={crop}
+							onChange={(_, percentCrop) => setCrop(percentCrop)}
+							onComplete={(pixelCrop) => setCompletedCrop(pixelCrop)}
+							aspect={aspect}
+							circularCrop={circularCrop}
+							minWidth={50}
+							minHeight={50}
+							className="max-h-[60dvh] sm:max-h-[60vh]"
+							style={{ touchAction: "none" }}
+						>
+							<img
+								ref={imgRef}
+								src={imageSrc}
+								alt="Crop"
+								onLoad={onImageLoad}
+								className="max-h-[60dvh] sm:max-h-[60vh] select-none max-w-full object-contain"
+								draggable={false}
+								crossOrigin="anonymous"
+							/>
+						</ReactCrop>
+					)}
 				</div>
 
 				<div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 sm:p-4 border-t border-zinc-700 shrink-0 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-4">
@@ -154,7 +153,6 @@ export default function ImageCropModal({ imageSrc, aspect, onCrop, onClose, titl
 					</div>
 				</div>
 			</div>
-		</div>,
-		document.body
+		</Modal>
 	)
 }

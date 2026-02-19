@@ -286,16 +286,15 @@ export default function AvatarEditor({ currentAvatar, onSave, saving = false }) 
 				</div>
 			)}
 
-			{cropSrc && (
-				<ImageCropModal
-					imageSrc={cropSrc}
-					aspect={AVATAR_ASPECT}
-					title="Recortar avatar"
-					circularCrop
-					onCrop={handleCropComplete}
-					onClose={() => setCropSrc(null)}
-				/>
-			)}
+			<ImageCropModal
+				isOpen={!!cropSrc}
+				imageSrc={cropSrc || ""}
+				aspect={AVATAR_ASPECT}
+				title="Recortar avatar"
+				circularCrop
+				onCrop={handleCropComplete}
+				onClose={() => setCropSrc(null)}
+			/>
 		</div>
 	)
 }

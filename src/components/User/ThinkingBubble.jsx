@@ -1,24 +1,14 @@
-import { useState, useEffect } from "react"
-import { createPortal } from "react-dom"
-import { X, Pencil, Plus } from "lucide-react"
+import { useState } from "react"
+import { Pencil, Plus } from "lucide-react"
 import { supabase } from "../../../lib/supabase"
 import { notify } from "../UI/Notification"
+import Modal from "../UI/Modal"
 
 const MAX_THINKING = 50
 
-function ThinkingModal({ currentThinking, onClose, onSave }) {
+function ThinkingModalContent({ currentThinking, onClose, onSave }) {
 	const [text, setText] = useState(currentThinking || "")
 	const [saving, setSaving] = useState(false)
-
-	useEffect(() => {
-		const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-		document.body.style.overflow = "hidden"
-		if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`
-		return () => {
-			document.body.style.overflow = ""
-			document.body.style.paddingRight = ""
-		}
-	}, [])
 
 	async function save(value) {
 		setSaving(true)
@@ -45,50 +35,38 @@ function ThinkingModal({ currentThinking, onClose, onSave }) {
 		}
 	}
 
-	return createPortal(
-		<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onClose}>
-			<div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-			<div className="relative bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
-				<div className="flex items-center justify-between p-4 border-b border-zinc-700">
-					<h3 className="text-lg font-semibold text-white">Pensamento</h3>
-					<button onClick={onClose} className="p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer">
-						<X className="w-5 h-5" />
-					</button>
-				</div>
-				<div className="p-4 space-y-4">
-					<div>
-						<textarea
-							value={text}
-							onChange={e => setText(e.target.value.slice(0, MAX_THINKING))}
-							placeholder="No que você está pensando..."
-							rows={3}
-							maxLength={MAX_THINKING}
-							className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
-							autoFocus
-						/>
-						<div className="flex justify-end mt-1">
-							<span className={`text-xs ${text.length >= MAX_THINKING ? "text-red-400" : "text-zinc-600"}`}>
-								{text.length}/{MAX_THINKING}
-							</span>
-						</div>
-					</div>
-					<div className="flex gap-2">
-						{currentThinking && (
-							<button onClick={() => save(null)} disabled={saving} className="px-4 py-2 text-sm font-medium text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-all cursor-pointer disabled:opacity-50">
-								Remover
-							</button>
-						)}
-						<button onClick={onClose} className="flex-1 px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all cursor-pointer">
-							Cancelar
-						</button>
-						<button onClick={() => save(text.trim() || null)} disabled={saving || (!text.trim() && !currentThinking)} className="flex-1 px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-all cursor-pointer disabled:opacity-50">
-							{saving ? "Salvando..." : "Salvar"}
-						</button>
-					</div>
+	return (
+		<div className="p-4 space-y-4">
+			<div>
+				<textarea
+					value={text}
+					onChange={e => setText(e.target.value.slice(0, MAX_THINKING))}
+					placeholder="No que você está pensando..."
+					rows={3}
+					maxLength={MAX_THINKING}
+					className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+					autoFocus
+				/>
+				<div className="flex justify-end mt-1">
+					<span className={`text-xs ${text.length >= MAX_THINKING ? "text-red-400" : "text-zinc-600"}`}>
+						{text.length}/{MAX_THINKING}
+					</span>
 				</div>
 			</div>
-		</div>,
-		document.body
+			<div className="flex gap-2">
+				{currentThinking && (
+					<button onClick={() => save(null)} disabled={saving} className="px-4 py-2 text-sm font-medium text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-all cursor-pointer disabled:opacity-50">
+						Remover
+					</button>
+				)}
+				<button onClick={onClose} className="flex-1 px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all cursor-pointer">
+					Cancelar
+				</button>
+				<button onClick={() => save(text.trim() || null)} disabled={saving || (!text.trim() && !currentThinking)} className="flex-1 px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-all cursor-pointer disabled:opacity-50">
+					{saving ? "Salvando..." : "Salvar"}
+				</button>
+			</div>
+		</div>
 	)
 }
 
@@ -161,8 +139,13 @@ export default function ThinkingBubble({ text, isOwnProfile, onSave }) {
 				</div>
 			) : null}
 
-			{modalOpen && (
-				<ThinkingModal
+			<Modal
+				isOpen={modalOpen}
+				onClose={() => setModalOpen(false)}
+				title="Pensamento"
+				maxWidth="max-w-sm"
+			>
+				<ThinkingModalContent
 					currentThinking={text}
 					onClose={() => setModalOpen(false)}
 					onSave={(newThinking) => {
@@ -170,7 +153,7 @@ export default function ThinkingBubble({ text, isOwnProfile, onSave }) {
 						setModalOpen(false)
 					}}
 				/>
-			)}
+			</Modal>
 		</>
 	)
 }

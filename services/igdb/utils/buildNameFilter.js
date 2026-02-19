@@ -3,21 +3,15 @@ import { generateVariations } from "./generateVariations.js"
 
 export function buildNameFilter(raw) {
   const q = raw.trim()
-  const words = q.split(/\s+/).filter(w => w.length >= 2)
-  const variations = generateVariations(q)
-  const parts = []
+  if (!q) return ""
 
-  if (words.length > 1) {
-    parts.push(words.map(w => `name ~ *"${escapeIGDB(w)}"*`).join(" & "))
-  }
+  const queries = [q, ...generateVariations(q)]
 
-  variations.forEach(v => {
-    const vWords = v.split(/\s+/).filter(w => w.length >= 2)
-    if (vWords.length > 1) {
-      parts.push(vWords.map(w => `name ~ *"${escapeIGDB(w)}"*`).join(" & "))
-    } else {
-      parts.push(`name ~ *"${escapeIGDB(v)}"*`)
-    }
+  const parts = queries.map(term => {
+    const words = term.split(/\s+/).filter(w => w.length >= 2)
+    return words.length > 1
+      ? words.map(w => `name ~ *"${escapeIGDB(w)}"*`).join(" & ")
+      : `name ~ *"${escapeIGDB(term)}"*`
   })
 
   const unique = [...new Set(parts)]

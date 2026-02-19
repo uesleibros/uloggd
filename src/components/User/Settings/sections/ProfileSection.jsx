@@ -35,5 +35,4 @@ export default function ProfileSection({ user }) {
       />
     </SettingsSection>
   )
-
 }

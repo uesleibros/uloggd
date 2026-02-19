@@ -6,7 +6,7 @@ const TABS = [
   { id: "account", label: "Minha conta", mobile: "Conta", icon: User },
   { id: "sessions", label: "Sessão", mobile: "Sessão", icon: Monitor },
   { id: "appearance", label: "Aparência", mobile: "Aparência", icon: Palette },
-  { id: "integrations", label: "Integrações", mobile: "Importar", icon: ArrowDownToLine },
+  { id: "integrations", label: "Integrações", mobile: "Integrações", icon: ArrowDownToLine },
 ]
 
 export default function SettingsLayout({ activeTab, onTabChange, onClose, onSignOut, signOutLoading, children }) {

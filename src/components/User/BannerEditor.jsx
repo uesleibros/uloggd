@@ -93,28 +93,28 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
 		setCropSrc(null)
 	}
 
-  function handleSave() {
-    if (!pendingBlob) return
+	function handleSave() {
+		if (!pendingBlob) return
 
-    const reader = new FileReader()
-    reader.onload = () => {
-      onSave(reader.result)
-      notify("Banner salvo com sucesso!")
-    }
-    reader.readAsDataURL(pendingBlob)
-  }
+		const reader = new FileReader()
+		reader.onload = () => {
+			onSave(reader.result)
+			notify("Banner salvo com sucesso!")
+		}
+		reader.readAsDataURL(pendingBlob)
+	}
 
-  function handleRemove() {
-    setPreview(null)
-    setPendingBlob(null)
-    setMode(null)
+	function handleRemove() {
+		setPreview(null)
+		setPendingBlob(null)
+		setMode(null)
 
-    if (currentBanner) {
-      onSave(null)
-    } else {
-      notify("Alteração descartada.", "info")
-    }
-  }
+		if (currentBanner) {
+			onSave(null)
+		} else {
+			notify("Alteração descartada.", "info")
+		}
+	}
 
 	const hasChanges = pendingBlob !== null || (preview === null && currentBanner !== null)
 
@@ -275,15 +275,14 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
 				</div>
 			)}
 
-			{cropSrc && (
-				<ImageCropModal
-					imageSrc={cropSrc}
-					aspect={BANNER_ASPECT}
-					title="Recortar banner"
-					onCrop={handleCropComplete}
-					onClose={() => setCropSrc(null)}
-				/>
-			)}
+			<ImageCropModal
+				isOpen={!!cropSrc}
+				imageSrc={cropSrc || ""}
+				aspect={BANNER_ASPECT}
+				title="Recortar banner"
+				onCrop={handleCropComplete}
+				onClose={() => setCropSrc(null)}
+			/>
 		</div>
 	)
 }

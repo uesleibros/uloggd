@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { useAuth } from "../../../hooks/useAuth"
 import { Pencil, Eye, Columns2, Minimize2, Maximize2, CircleAlert, CircleHelp, GripVertical } from "lucide-react"
 import { TOOLBAR } from "./constants"
@@ -58,6 +59,15 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 		onMentionQuery: handleMentionQuery,
 	})
 
+	const setEditorRef = useCodeMirror({
+    value,
+    onChange: stableOnChange,
+    maxLength,
+    placeholder,
+    editorRef: editorViewRef,
+    onMentionQuery: handleMentionQuery,
+	})
+
 	const handleMentionSelect = useCallback((username) => {
 		if (!mention) return
 		const view = editorViewRef.current
@@ -74,13 +84,14 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 	useEffect(() => {
 		const handler = (e) => {
 			if (e.key !== "Escape") return
-			if (mention) { setMention(null); return }
-			if (headingOpen) { setHeadingOpen(false); return }
-			if (isFullscreen) setIsFullscreen(false)
+			if (showHelp) { setShowHelp(false); e.stopPropagation(); return }
+			if (mention) { setMention(null); e.stopPropagation(); return }
+			if (headingOpen) { setHeadingOpen(false); e.stopPropagation(); return }
+			if (isFullscreen) { setIsFullscreen(false); e.stopPropagation(); return }
 		}
-		document.addEventListener("keydown", handler)
-		return () => document.removeEventListener("keydown", handler)
-	}, [isFullscreen, headingOpen, mention])
+		document.addEventListener("keydown", handler, true)
+		return () => document.removeEventListener("keydown", handler, true)
+	}, [isFullscreen, headingOpen, mention, showHelp])
 
 	useEffect(() => {
 		document.body.style.overflow = isFullscreen ? "hidden" : ""
@@ -243,12 +254,182 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 		</div>
 	)
 
-	return (
+	const renderEditorContent = () => (
 		<>
-			{isFullscreen && (
-				<div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setIsFullscreen(false)} />
+			<div className="flex items-center justify-between border-b border-zinc-700 bg-zinc-800/30 flex-shrink-0">
+				<div className="flex items-center min-w-0">
+					<button
+						onClick={() => setTab("write")}
+						className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${tab === "write" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+					>
+						<span className="flex items-center gap-1 sm:gap-1.5">
+							<Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+							<span className="xs:inline">Escrever</span>
+						</span>
+						{tab === "write" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />}
+					</button>
+
+					<button
+						onClick={() => setTab("preview")}
+						className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${tab === "preview" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+					>
+						<span className="flex items-center gap-1 sm:gap-1.5">
+							<Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+							<span className="xs:inline">Visualizar</span>
+						</span>
+						{tab === "preview" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />}
+					</button>
+
+					{showSideBySideOption && (
+						<button
+							onClick={() => setTab("sidebyside")}
+							className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${tab === "sidebyside" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+						>
+							<span className="flex items-center gap-1 sm:gap-1.5">
+								<Columns2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+								<span className="hidden sm:inline">Lado a lado</span>
+							</span>
+							{tab === "sidebyside" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />}
+						</button>
+					)}
+				</div>
+
+				<div className="flex items-center gap-1.5 sm:gap-2 pr-2 sm:pr-3 flex-shrink-0">
+					{maxLength && (
+						<span className={`text-xs tabular-nums hidden sm:inline ${charPercent > 90 ? "text-red-400" : charPercent > 70 ? "text-amber-400" : "text-zinc-600"}`}>
+							{charCount.toLocaleString()}/{maxLength.toLocaleString()}
+						</span>
+					)}
+					<button
+						onClick={() => setIsFullscreen(f => !f)}
+						title={isFullscreen ? "Sair da tela cheia (Esc)" : "Tela cheia"}
+						aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+						className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer active:scale-90"
+					>
+						{isFullscreen ? (
+							<Minimize2 className="w-4 h-4" />
+						) : (
+							<Maximize2 className="w-4 h-4" />
+						)}
+					</button>
+				</div>
+			</div>
+
+			{maxLength && (
+				<div className="h-[2px] bg-zinc-800/50 flex-shrink-0">
+					<div
+						className={`h-full transition-all duration-500 ease-out ${charPercent > 90 ? "bg-red-500/80" : charPercent > 70 ? "bg-amber-500/60" : "bg-indigo-500/30"}`}
+						style={{ width: `${Math.min(charPercent, 100)}%` }}
+					/>
+				</div>
 			)}
 
+			{showToolbar && renderToolbar()}
+
+			<div className={isFullscreen ? "flex-1 min-h-0 overflow-hidden flex flex-col" : ""}>
+				<div
+					ref={splitContainerRef}
+					className={`flex flex-row relative w-full ${
+						isFullscreen ? "flex-1 min-h-0" : "h-[250px] sm:h-[300px]"
+					}`}
+				>
+					<div
+						className="relative h-full overflow-hidden"
+						style={{
+							width: tab === 'sidebyside' ? `${splitPos}%` : (tab === 'preview' ? '0%' : '100%'),
+							display: tab === 'preview' ? 'none' : 'block'
+						}}
+					>
+						<div ref={setEditorRef} className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto" />
+						{mention && currentUser && (
+							<MentionSuggestions
+								query={mention.query}
+								position={mention.position}
+								onSelect={handleMentionSelect}
+								userId={currentUser.id}
+							/>
+						)}
+					</div>
+
+					{tab === "sidebyside" && (
+						<div
+							onMouseDown={handleSplitStart}
+							onTouchStart={handleSplitStart}
+							className="relative flex-shrink-0 w-px bg-zinc-700 hover:bg-indigo-500/70 transition-colors cursor-col-resize group z-10 touch-none"
+						>
+							<div className="absolute inset-y-0 -left-2 -right-2" />
+							<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-10 rounded-full bg-zinc-700/80 group-hover:bg-indigo-500/80 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center shadow-lg">
+								<GripVertical className="w-3 h-4 text-zinc-300" />
+							</div>
+						</div>
+					)}
+
+					<div
+						className="h-full overflow-y-auto"
+						style={{
+							width: tab === 'sidebyside' ? `${100 - splitPos}%` : (tab === 'preview' ? '100%' : '0%'),
+							display: tab === 'write' ? 'none' : 'block',
+							borderLeftWidth: tab === 'sidebyside' ? '0px' : '0px'
+						}}
+					>
+						<div className="p-3 sm:p-4">
+							<MarkdownPreview content={value} />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div className="flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 border-t border-zinc-800 bg-zinc-800/20 flex-shrink-0 gap-2">
+				<div className="flex items-center gap-2 sm:gap-3 min-w-0">
+					<span className="text-[10px] sm:text-xs text-zinc-600 flex items-center gap-1 flex-shrink-0">
+						<CircleAlert className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+						<span className="hidden sm:inline">Markdown suportado</span>
+						<span className="sm:hidden">MD</span>
+					</span>
+					<div className="hidden sm:flex items-center gap-2 text-xs text-zinc-600">
+						<span className="tabular-nums">{wordCount} {wordCount === 1 ? "palavra" : "palavras"}</span>
+						<span className="text-zinc-700">·</span>
+						<span className="tabular-nums">{lineCount} {lineCount === 1 ? "linha" : "linhas"}</span>
+					</div>
+					{maxLength && (
+						<span className={`text-[10px] tabular-nums sm:hidden flex-shrink-0 ${charPercent > 90 ? "text-red-400" : charPercent > 70 ? "text-amber-400" : "text-zinc-600"}`}>
+							{charCount}/{maxLength}
+						</span>
+					)}
+				</div>
+
+				<button
+					onClick={() => setShowHelp(true)}
+					className="text-[10px] sm:text-xs text-zinc-500 hover:text-indigo-400 flex items-center gap-1 transition-colors cursor-pointer hover:bg-indigo-500/10 px-1.5 py-0.5 rounded flex-shrink-0"
+					title="Ver guia de formatação"
+				>
+					<CircleHelp className="w-4 h-4" />
+					<span className="hidden sm:inline">Ajuda</span>
+				</button>
+			</div>
+		</>
+	)
+
+	const fullscreenContent = (
+		<>
+			<div
+				className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm"
+				onClick={(e) => {
+					e.stopPropagation()
+					setIsFullscreen(false)
+				}}
+			/>
+			<div
+				className="fixed inset-0 z-[10001] flex flex-col bg-zinc-900 sm:inset-4 sm:rounded-2xl sm:border sm:border-zinc-700/50 sm:shadow-2xl sm:shadow-black/50"
+				onClick={(e) => e.stopPropagation()}
+			>
+				{renderEditorContent()}
+			</div>
+		</>
+	)
+
+	return (
+		<>
 			<PortalDropdown anchorRef={headingBtnRef} open={headingOpen} onClose={() => setHeadingOpen(false)}>
 				<div role="menu">
 					{[1, 2, 3, 4, 5, 6].map(level => (
@@ -267,168 +448,21 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 				</div>
 			</PortalDropdown>
 
-			{showHelp && <EditorHelpModal onClose={() => setShowHelp(false)} />}
+			<EditorHelpModal 
+				isOpen={showHelp} 
+				onClose={() => setShowHelp(false)} 
+				zIndex={isFullscreen ? 10002 : 9999} 
+			/>
 
-			<div
-				className={
-					isFullscreen
-						? "fixed inset-0 z-50 flex flex-col bg-zinc-900 sm:inset-4 sm:rounded-2xl sm:border sm:border-zinc-700/50 sm:shadow-2xl sm:shadow-black/50"
-						: "border border-zinc-700 rounded-xl overflow-hidden bg-zinc-900/50"
-				}
-			>
-				<div className="flex items-center justify-between border-b border-zinc-700 bg-zinc-800/30 flex-shrink-0">
-					<div className="flex items-center min-w-0">
-						<button
-							onClick={() => setTab("write")}
-							className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${tab === "write" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
-						>
-							<span className="flex items-center gap-1 sm:gap-1.5">
-								<Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-								<span className="xs:inline">Escrever</span>
-							</span>
-							{tab === "write" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />}
-						</button>
-
-						<button
-							onClick={() => setTab("preview")}
-							className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${tab === "preview" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
-						>
-							<span className="flex items-center gap-1 sm:gap-1.5">
-								<Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-								<span className="xs:inline">Visualizar</span>
-							</span>
-							{tab === "preview" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />}
-						</button>
-
-						{showSideBySideOption && (
-							<button
-								onClick={() => setTab("sidebyside")}
-								className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all cursor-pointer relative ${tab === "sidebyside" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
-							>
-								<span className="flex items-center gap-1 sm:gap-1.5">
-									<Columns2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-									<span className="hidden sm:inline">Lado a lado</span>
-								</span>
-								{tab === "sidebyside" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />}
-							</button>
-						)}
+			{isFullscreen ? (
+				createPortal(fullscreenContent, document.body)
+			) : (
+				<>
+					<div className="border border-zinc-700 rounded-xl overflow-hidden bg-zinc-900/50">
+						{renderEditorContent()}
 					</div>
-
-					<div className="flex items-center gap-1.5 sm:gap-2 pr-2 sm:pr-3 flex-shrink-0">
-						{maxLength && (
-							<span className={`text-xs tabular-nums hidden sm:inline ${charPercent > 90 ? "text-red-400" : charPercent > 70 ? "text-amber-400" : "text-zinc-600"}`}>
-								{charCount.toLocaleString()}/{maxLength.toLocaleString()}
-							</span>
-						)}
-						<button
-							onClick={() => setIsFullscreen(f => !f)}
-							title={isFullscreen ? "Sair da tela cheia (Esc)" : "Tela cheia"}
-							aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-							className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition-all cursor-pointer active:scale-90"
-						>
-							{isFullscreen ? (
-								<Minimize2 className="w-4 h-4" />
-							) : (
-								<Maximize2 className="w-4 h-4" />
-							)}
-						</button>
-					</div>
-				</div>
-
-				{maxLength && (
-					<div className="h-[2px] bg-zinc-800/50 flex-shrink-0">
-						<div
-							className={`h-full transition-all duration-500 ease-out ${charPercent > 90 ? "bg-red-500/80" : charPercent > 70 ? "bg-amber-500/60" : "bg-indigo-500/30"}`}
-							style={{ width: `${Math.min(charPercent, 100)}%` }}
-						/>
-					</div>
-				)}
-
-				{showToolbar && renderToolbar()}
-
-				<div className={isFullscreen ? "flex-1 min-h-0 overflow-hidden flex flex-col" : ""}>
-					<div
-						ref={splitContainerRef}
-						className={`flex flex-row relative w-full ${
-							isFullscreen ? "flex-1 min-h-0" : "h-[250px] sm:h-[300px]"
-						}`}
-					>
-						<div
-							className="relative h-full overflow-hidden"
-							style={{
-								width: tab === 'sidebyside' ? `${splitPos}%` : (tab === 'preview' ? '0%' : '100%'),
-								display: tab === 'preview' ? 'none' : 'block'
-							}}
-						>
-							<div ref={mainEditorContainer} className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:overflow-auto" />
-							{mention && currentUser && (
-								<MentionSuggestions
-									query={mention.query}
-									position={mention.position}
-									onSelect={handleMentionSelect}
-									userId={currentUser.id}
-									editorContainerRef={mainEditorContainer}
-								/>
-							)}
-						</div>
-
-						{tab === "sidebyside" && (
-							<div
-								onMouseDown={handleSplitStart}
-								onTouchStart={handleSplitStart}
-								className="relative flex-shrink-0 w-px bg-zinc-700 hover:bg-indigo-500/70 transition-colors cursor-col-resize group z-10 touch-none"
-							>
-								<div className="absolute inset-y-0 -left-2 -right-2" />
-								<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-10 rounded-full bg-zinc-700/80 group-hover:bg-indigo-500/80 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center shadow-lg">
-									<GripVertical className="w-3 h-4 text-zinc-300" />
-								</div>
-							</div>
-						)}
-
-						<div
-							className="h-full overflow-y-auto"
-							style={{
-								width: tab === 'sidebyside' ? `${100 - splitPos}%` : (tab === 'preview' ? '100%' : '0%'),
-								display: tab === 'write' ? 'none' : 'block',
-								borderLeftWidth: tab === 'sidebyside' ? '0px' : '0px'
-							}}
-						>
-							<div className="p-3 sm:p-4">
-								<MarkdownPreview content={value} />
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div className="flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 border-t border-zinc-800 bg-zinc-800/20 flex-shrink-0 gap-2">
-					<div className="flex items-center gap-2 sm:gap-3 min-w-0">
-						<span className="text-[10px] sm:text-xs text-zinc-600 flex items-center gap-1 flex-shrink-0">
-							<CircleAlert className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-							<span className="hidden sm:inline">Markdown suportado</span>
-							<span className="sm:hidden">MD</span>
-						</span>
-						<div className="hidden sm:flex items-center gap-2 text-xs text-zinc-600">
-							<span className="tabular-nums">{wordCount} {wordCount === 1 ? "palavra" : "palavras"}</span>
-							<span className="text-zinc-700">·</span>
-							<span className="tabular-nums">{lineCount} {lineCount === 1 ? "linha" : "linhas"}</span>
-						</div>
-						{maxLength && (
-							<span className={`text-[10px] tabular-nums sm:hidden flex-shrink-0 ${charPercent > 90 ? "text-red-400" : charPercent > 70 ? "text-amber-400" : "text-zinc-600"}`}>
-								{charCount}/{maxLength}
-							</span>
-						)}
-					</div>
-
-					<button
-						onClick={() => setShowHelp(true)}
-						className="text-[10px] sm:text-xs text-zinc-500 hover:text-indigo-400 flex items-center gap-1 transition-colors cursor-pointer hover:bg-indigo-500/10 px-1.5 py-0.5 rounded flex-shrink-0"
-						title="Ver guia de formatação"
-					>
-						<CircleHelp className="w-4 h-4" />
-						<span className="hidden sm:inline">Ajuda</span>
-					</button>
-				</div>
-			</div>
+				</>
+			)}
 		</>
 	)
 }

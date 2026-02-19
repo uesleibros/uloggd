@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, highlightActiveLine } from "@codemirror/view"
 import { EditorState } from "@codemirror/state"
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown"
@@ -8,7 +8,7 @@ import { history, historyKeymap, defaultKeymap, indentWithTab } from "@codemirro
 import { cmTheme, markdownHighlightStyle, customDecorations } from "./editorConfig"
 
 export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, editorRef, onMentionQuery }) {
-  const containerRef = useRef(null)
+  const [container, setContainer] = useState(null)
   const viewRef = useRef(null)
   const onChangeRef = useRef(onChange)
   const onMentionQueryRef = useRef(onMentionQuery)
@@ -20,7 +20,7 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
   }, [onChange, onMentionQuery])
 
   useEffect(() => {
-    if (!containerRef.current || viewRef.current) return
+    if (!container) return
 
     const maxLengthFilter = maxLength
       ? EditorState.transactionFilter.of(tr => {
@@ -36,6 +36,10 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
         onChangeRef.current(update.state.doc.toString())
       }
 
+      if (update.transactions.some(tr => tr.scrollIntoView)) {
+        onMentionQueryRef.current?.(null);
+      }
+
       if (update.selectionSet || update.docChanged) {
         const { from } = update.state.selection.main
         const doc = update.state.doc.toString()
@@ -43,20 +47,18 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
         const match = textBefore.match(/(?:^|[\s\n])@([a-zA-Z0-9_]{0,32})$/)
 
         if (match) {
-          const coords = update.view.coordsAtPos(from)
-          const editorRect = update.view.dom.getBoundingClientRect()
+          const mentionIndex = from - match[1].length - 1
+          const coords = update.view.coordsAtPos(mentionIndex)
+
           onMentionQueryRef.current?.({
             query: match[1],
-            startIndex: from - match[1].length - 1,
-            position: coords
-              ? {
-                  bottom: editorRect.bottom - coords.top + 8,
-                  left: coords.left - editorRect.left,
-                }
-              : { bottom: 40, left: 16 },
+            startIndex: mentionIndex,
+            position: coords ? { 
+              top: coords.top, 
+              left: coords.left, 
+              bottom: coords.bottom 
+            } : null,
           })
-        } else {
-          onMentionQueryRef.current?.(null)
         }
       }
     })
@@ -82,7 +84,7 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
       ],
     })
 
-    const view = new EditorView({ state, parent: containerRef.current })
+    const view = new EditorView({ state, parent: container })
     viewRef.current = view
     if (editorRef) editorRef.current = view
 
@@ -91,7 +93,7 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
       viewRef.current = null
       if (editorRef) editorRef.current = null
     }
-  }, [maxLength, ph])
+  }, [container, maxLength, ph])
 
   useEffect(() => {
     if (isInternalChange.current) {
@@ -110,5 +112,5 @@ export function useCodeMirror({ value, onChange, maxLength, placeholder: ph, edi
     }
   }, [value])
 
-  return containerRef
+  return setContainer
 }
