@@ -3,7 +3,7 @@ import { query } from "../../../lib/igdb-wrapper.js"
 import { getUser } from "../../../utils/auth.js"
 import { sanitize, safePlatform, sanitizeAspects } from "../utils/sanitize.js"
 import { validateDates, validateTime, validateRating, validateAspectRatings, runValidations } from "../utils/validators.js"
-import { VALID_STATUSES, VALID_RATING_MODES, REVIEWABLE_CATEGORIES, LIMITS } from "../constants.js"
+import { VALID_STATUSES, VALID_RATING_MODES, LIMITS } from "../constants.js"
 
 export async function handleCreate(req, res) {
   const user = await getUser(req)
@@ -30,8 +30,6 @@ export async function handleCreate(req, res) {
     )
     if (!games.length)
       return res.status(404).json({ error: "Jogo não encontrado" })
-    if (!REVIEWABLE_CATEGORIES.includes(games[0].game_type))
-      return res.status(400).json({ error: "Este tipo de conteúdo não pode ser avaliado" })
   } catch (e) {
     console.error(e)
     return res.status(502).json({ error: "Falha ao validar o jogo" })
@@ -86,4 +84,5 @@ export async function handleCreate(req, res) {
     console.error(e)
     res.status(500).json({ error: "Falha ao criar log" })
   }
+
 }
