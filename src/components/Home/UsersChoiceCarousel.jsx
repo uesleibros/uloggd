@@ -25,7 +25,7 @@ export default function UsersChoiceCarousel() {
         loop
       >
         {[...Array(27)].map((_, i) => (
-          <GameCardSkeleton key={i} fixed />
+          <GameCardSkeleton key={i} />
         ))}
       </DragScrollRow>
     )
@@ -45,9 +45,9 @@ export default function UsersChoiceCarousel() {
           key={`${game.id}-${index}`}
           game={game}
           draggable={false}
-          fixed
         />
       ))}
     </DragScrollRow>
   )
 }
+
