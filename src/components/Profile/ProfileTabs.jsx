@@ -1,3 +1,4 @@
+import { forwardRef } from "react"
 import { Link } from "react-router-dom"
 import { Play, CheckCircle, Clock, Gift, Heart, Ban, Archive, Star } from "lucide-react"
 import DragScrollRow from "../UI/DragScrollRow"
@@ -62,9 +63,9 @@ function EmptyTab({ tabKey, isOwnProfile, username }) {
   )
 }
 
-export default function ProfileTabs({ activeTab, onTabChange, counts, games, profileGames, loading, isOwnProfile, username, currentPage, totalPages, onPageChange }) {
+const ProfileTabs = forwardRef(function ProfileTabs({ activeTab, onTabChange, counts, games, profileGames, loading, isOwnProfile, username, currentPage, totalPages, onPageChange }, ref) {
   return (
-    <div className="mt-12">
+    <div className="mt-12" ref={ref}>
       <DragScrollRow className="pb-1">
         <div className="flex gap-2 w-max">
           {TABS.map(tab => (
@@ -90,14 +91,14 @@ export default function ProfileTabs({ activeTab, onTabChange, counts, games, pro
       <hr className="my-4 border-zinc-700" />
 
       {loading ? (
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="w-32 h-44 bg-zinc-800 rounded-lg animate-pulse" />
+            <div key={i} className="aspect-[3/4] bg-zinc-800 rounded-lg animate-pulse" />
           ))}
         </div>
       ) : games.length > 0 ? (
         <>
-          <div className="flex flex-wrap gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
             {games.map(game => (
               <GameCard key={game.slug} game={game} userRating={profileGames[game.slug]?.avgRating} />
             ))}
@@ -109,4 +110,6 @@ export default function ProfileTabs({ activeTab, onTabChange, counts, games, pro
       )}
     </div>
   )
-}
+})
+
+export default ProfileTabs
