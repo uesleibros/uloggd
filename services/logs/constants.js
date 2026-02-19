@@ -10,8 +10,6 @@ export const RATING_STEPS = {
   points_100: 1,
 }
 
-export const REVIEWABLE_CATEGORIES = [0, 1, 2, 3, 4, 8, 9, 10, 11, 14]
-
 export const LIMITS = {
   MIN_DATE: "2000-01-01",
   MAX_ASPECTS: 10,
