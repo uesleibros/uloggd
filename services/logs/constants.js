@@ -1,4 +1,4 @@
-export const VALID_STATUSES = ["played", "completed", "retired", "shelved", "abandoned"]
+export const VALID_STATUSES = ["played", "retired", "shelved", "abandoned"]
 
 export const VALID_RATING_MODES = ["stars_5", "stars_5h", "points_10", "points_10d", "points_100"]
 
@@ -24,3 +24,4 @@ export const LIMITS = {
   DEFAULT_RATING_MODE: "stars_5h",
   DEFAULT_STATUS: "played",
 }
+
