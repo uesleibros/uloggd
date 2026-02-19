@@ -2,7 +2,7 @@ import { forwardRef } from "react"
 import { Link } from "react-router-dom"
 import { Play, CheckCircle, Clock, Gift, Heart, Ban, Archive, Star } from "lucide-react"
 import DragScrollRow from "../UI/DragScrollRow"
-import GameCard from "../Game/GameCard"
+import GameCard, { GameCardSkeleton } from "../Game/GameCard"
 import Pagination from "./Pagination"
 
 const TAB_ICONS = {
@@ -91,9 +91,9 @@ const ProfileTabs = forwardRef(function ProfileTabs({ activeTab, onTabChange, co
       <hr className="my-4 border-zinc-700" />
 
       {loading ? (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-3">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="aspect-[3/4] bg-zinc-800 rounded-lg animate-pulse" />
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3">
+          {[...Array(14)].map((_, i) => (
+            <GameCardSkeleton key={i} />
           ))}
         </div>
       ) : games.length > 0 ? (
@@ -113,4 +113,3 @@ const ProfileTabs = forwardRef(function ProfileTabs({ activeTab, onTabChange, co
 })
 
 export default ProfileTabs
-
