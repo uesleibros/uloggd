@@ -35,8 +35,8 @@ function FavoriteBadge() {
 	return (
 		<div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 text-amber-400 drop-shadow-md">
 			<svg className="w-5 h-5 fill-current" viewBox="0 0 256 256">
-				<path d="M239.2,97.29a16,16,0,0,0-13.81-9.43l-56.76-2.41L146.45,32.61a16,16,0,0,0-28.9,0L95.37,85.45,38.61,87.86a16,16,0,0,0-9.11,28.06l43.57,37.63L59.66,208.8a16,16,0,0,0,24.16,17.56L128,197.69l44.18,28.67a16,16,0,0,0,24.16-17.56l-13.41-55.25,43.57-37.63A16,16,0,0,0,239.2,97.29Zm-32.06,47.76,11.2,46.16L179.6,166.1a16,16,0,0,0-16.74-.49L128,187.37l-34.86-21.76a16,16,0,0,0-16.74.49l-38.74,25.11,11.2-46.16a16,16,0,0,0-5.08-15.63L47.36,97.77l47.42-2a16,16,0,0,0,13.26-9.64L128,41.22l19.95,44.91a16,16,0,0,0,13.26,9.64l47.42,2-36.42,31.65A16,16,0,0,0,207.14,145.05Z" opacity="0.2"/>
-				<path d="M239.2,97.29a16,16,0,0,0-13.81-9.43l-56.76-2.41L146.45,32.61a16,16,0,0,0-28.9,0L95.37,85.45,38.61,87.86a16,16,0,0,0-9.11,28.06l43.57,37.63L59.66,208.8a16,16,0,0,0,24.16,17.56L128,197.69l44.18,28.67a16,16,0,0,0,24.16-17.56l-13.41-55.25,43.57-37.63A16,16,0,0,0,239.2,97.29Z"/>
+				<path d="M239.2,97.29a16,16,0,0,0-13.81-9.43l-56.76-2.41L146.45,32.61a16,16,0,0,0-28.9,0L95.37,85.45,38.61,87.86a16,16,0,0,0-9.11,28.06l43.57,37.63L59.66,208.8a16,16,0,0,0,24.16,17.56L128,197.69l44.18,28.67a16,16,0,0,0,24.16-17.56l-13.41-55.25,43.57-37.63A16,16,0,0,0,239.2,97.29Zm-32.06,47.76,11.2,46.16L179.6,166.1a16,16,0,0,0-16.74-.49L128,187.37l-34.86-21.76a16,16,0,0,0-16.74.49l-38.74,25.11,11.2-46.16a16,16,0,0,0-5.08-15.63L47.36,97.77l47.42-2a16,16,0,0,0,13.26-9.64L128,41.22l19.95,44.91a16,16,0,0,0,13.26,9.64l47.42,2-36.42,31.65A16,16,0,0,0,207.14,145.05Z" opacity="0.2" />
+				<path d="M239.2,97.29a16,16,0,0,0-13.81-9.43l-56.76-2.41L146.45,32.61a16,16,0,0,0-28.9,0L95.37,85.45,38.61,87.86a16,16,0,0,0-9.11,28.06l43.57,37.63L59.66,208.8a16,16,0,0,0,24.16,17.56L128,197.69l44.18,28.67a16,16,0,0,0,24.16-17.56l-13.41-55.25,43.57-37.63A16,16,0,0,0,239.2,97.29Z" />
 			</svg>
 		</div>
 	)
@@ -47,15 +47,15 @@ function getCoverUrl(game) {
 	return game.cover.url.startsWith('http') ? game.cover.url : `https:${game.cover.url}`
 }
 
-export default function GameCard({ 
-	game, 
+export default function GameCard({
+	game,
 	userRating: propRating,
 	isFavorite = false,
 	newTab = false,
 	showRating = true,
 }) {
 	const { getRating } = useUserGames()
-	
+
 	const rating = propRating ?? getRating(game.slug)
 	const hasRating = showRating && rating != null && rating > 0
 	const coverUrl = getCoverUrl(game)
@@ -70,7 +70,7 @@ export default function GameCard({
 				src={coverUrl}
 				alt={game.name}
 				draggable={false}
-				className="w-32 h-44 object-cover select-none rounded-lg bg-zinc-800"
+				className="w-full aspect-[3/4] object-cover select-none rounded-lg bg-zinc-800"
 			/>
 			<div className="absolute inset-0 bg-black/70 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center p-2 gap-1.5 pointer-events-none">
 				<span className="text-white select-none text-xs font-medium text-center leading-tight line-clamp-3">
@@ -82,9 +82,9 @@ export default function GameCard({
 	)
 
 	return (
-		<div className="flex-shrink-0 group relative">
+		<div className="group relative">
 			{isFavorite && <FavoriteBadge />}
-			
+
 			{newTab ? (
 				<a
 					href={`/game/${game.slug}`}
@@ -96,8 +96,8 @@ export default function GameCard({
 					{imageContent}
 				</a>
 			) : (
-				<Link 
-					to={`/game/${game.slug}`} 
+				<Link
+					to={`/game/${game.slug}`}
 					className={`block relative rounded-lg ${cardClasses}`}
 				>
 					{imageContent}
@@ -108,7 +108,7 @@ export default function GameCard({
 }
 
 export function GameCardSkeleton() {
-	return <div className="w-32 h-44 bg-zinc-800 rounded-lg animate-pulse flex-shrink-0" />
+	return <div className="aspect-[3/4] bg-zinc-800 rounded-lg animate-pulse" />
 }
 
 export { MiniStars }
