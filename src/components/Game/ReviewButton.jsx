@@ -8,8 +8,7 @@ import { MarkdownEditor } from "../MarkdownEditor"
 import { formatRating, toRatingValue, ratingSteps } from "../../../utils/rating"
 
 const STATUS_CONFIG = {
-	played: { label: "Jogado", color: "bg-zinc-500", textColor: "text-zinc-400" },
-	completed: { label: "Completo", color: "bg-emerald-500", textColor: "text-emerald-400" },
+	played: { label: "Jogado", color: "bg-emerald-500", textColor: "text-emerald-400" },
 	retired: { label: "Aposentado", color: "bg-blue-500", textColor: "text-blue-400" },
 	shelved: { label: "Na prateleira", color: "bg-amber-500", textColor: "text-amber-400" },
 	abandoned: { label: "Abandonado", color: "bg-red-500", textColor: "text-red-400" },
@@ -838,4 +837,5 @@ export default function ReviewButton({ game }) {
 			{showModal && <LogModal game={game} existingLog={selectedLog} onClose={() => { setShowModal(false); fetchLogs() }} onDeleted={() => { setSelectedLog(null); fetchLogs() }} />}
 		</>
 	)
+
 }
