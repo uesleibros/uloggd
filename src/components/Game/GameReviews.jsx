@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { Link } from "react-router-dom"
+import { Star, Heart, Trophy, Clock, X, AlertTriangle, Eye, FileText, MessageSquare } from "lucide-react"
 import { formatRating } from "../../../utils/rating"
 import { MarkdownPreview } from "../MarkdownEditor"
 import UserBadges from "../User/UserBadges"
 import AvatarWithDecoration from "../User/AvatarWithDecoration"
-
-const STAR_PATH = "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
 
 const STATUS_MAP = {
   played: { label: "Jogado", classes: "bg-zinc-500/15 text-zinc-400 border-zinc-700" },
@@ -49,16 +48,18 @@ function StarsDisplay({ rating, ratingMode, size = "md" }) {
   return (
     <div className="flex items-center gap-0.5">
       {Array.from({ length: full }, (_, i) => (
-        <svg key={`f${i}`} className={`${sizeClass} text-amber-400`} fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
+        <Star key={`f${i}`} className={`${sizeClass} text-amber-400 fill-current`} />
       ))}
       {half && (
         <div className={`relative ${sizeClass}`}>
-          <svg className="absolute inset-0 w-full h-full text-zinc-700" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
-          <svg className="absolute inset-0 w-full h-full text-amber-400" fill="currentColor" viewBox="0 0 24 24" style={{ clipPath: "inset(0 50% 0 0)" }}><path d={STAR_PATH} /></svg>
+          <Star className="absolute inset-0 w-full h-full text-zinc-700 fill-current" />
+          <div className="absolute inset-0 overflow-hidden" style={{ width: "50%" }}>
+            <Star className={`${sizeClass} text-amber-400 fill-current`} />
+          </div>
         </div>
       )}
       {Array.from({ length: empty }, (_, i) => (
-        <svg key={`e${i}`} className={`${sizeClass} text-zinc-700`} fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
+        <Star key={`e${i}`} className={`${sizeClass} text-zinc-700 fill-current`} />
       ))}
     </div>
   )
@@ -75,7 +76,7 @@ function ReviewRating({ rating, ratingMode }) {
 
     return (
       <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-        <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d={STAR_PATH} /></svg>
+        <Star className="w-4 h-4 text-amber-400 fill-current" />
         <span className="text-base font-bold text-amber-400 tabular-nums leading-none">{formatted.display}</span>
         <span className="text-sm text-zinc-500 font-normal leading-none">/{formatted.max}</span>
       </div>
@@ -132,16 +133,8 @@ function StatusBadge({ status }) {
 function LogIndicators({ log }) {
   return (
     <>
-      {log.liked && (
-        <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-        </svg>
-      )}
-      {log.mastered && (
-        <svg className="w-5 h-5 text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5m14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
-        </svg>
-      )}
+      {log.liked && <Heart className="w-5 h-5 text-red-500 fill-current flex-shrink-0" />}
+      {log.mastered && <Trophy className="w-5 h-5 text-amber-400 fill-current flex-shrink-0" />}
     </>
   )
 }
@@ -155,9 +148,7 @@ function Playtime({ hours, minutes, className = "" }) {
 
   return (
     <div className={`flex items-center gap-2 text-sm text-zinc-500 ${className}`}>
-      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
+      <Clock className="w-4 h-4 flex-shrink-0" />
       <span>{parts.join(" ")} de jogo</span>
     </div>
   )
@@ -170,9 +161,7 @@ function CloseButton({ onClick, showEsc = false }) {
         onClick={onClick}
         className="w-9 h-9 rounded-full border border-zinc-700 hover:border-zinc-500 text-zinc-500 hover:text-white flex items-center justify-center transition-all duration-200 cursor-pointer hover:bg-zinc-800/50"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        <X className="w-4 h-4" />
       </button>
       {showEsc && (
         <span className="text-[10px] font-bold text-zinc-600 mt-1.5 uppercase tracking-wide hidden md:block">ESC</span>
@@ -185,9 +174,7 @@ function SpoilerOverlay({ onReveal }) {
   return (
     <div className="relative rounded-xl bg-zinc-800/50 border border-zinc-700 p-6 flex flex-col items-center justify-center gap-4">
       <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-        <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-        </svg>
+        <AlertTriangle className="w-5 h-5 text-amber-400" />
       </div>
       <div className="text-center">
         <p className="text-sm font-medium text-zinc-300">Esta review contém spoilers</p>
@@ -197,10 +184,7 @@ function SpoilerOverlay({ onReveal }) {
         onClick={onReveal}
         className="px-4 py-2 bg-zinc-700/50 hover:bg-zinc-700 border border-zinc-600 hover:border-zinc-500 rounded-lg text-sm text-zinc-300 hover:text-white font-medium cursor-pointer transition-all duration-200 flex items-center gap-2"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
+        <Eye className="w-4 h-4" />
         Revelar conteúdo
       </button>
     </div>
@@ -235,11 +219,11 @@ function ReviewModal({ log, user, onClose }) {
           <div className="flex items-center gap-3.5 min-w-0">
             <Link to={`/u/${user?.username}`} onClick={onClose} className="flex-shrink-0">
               <AvatarWithDecoration
-								src={user.avatar}
-								alt={user.username}
-								decoration={user.avatar_decoration}
-								size="lg"
-							/>
+                src={user.avatar}
+                alt={user.username}
+                decoration={user.avatar_decoration}
+                size="lg"
+              />
             </Link>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -262,9 +246,7 @@ function ReviewModal({ log, user, onClose }) {
         <div className="flex-1 overflow-y-auto overscroll-contain p-5 md:p-7">
           {log.contain_spoilers && (
             <div className="flex items-center gap-2.5 px-4 py-2.5 mb-5 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-              <svg className="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-              </svg>
+              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
               <span className="text-sm text-amber-400 font-medium">Esta review contém spoilers</span>
             </div>
           )}
@@ -316,11 +298,11 @@ function ReviewCard({ log, user }) {
         <div className="flex items-start gap-3.5">
           <Link to={`/u/${user?.username}`} className="flex-shrink-0">
             <AvatarWithDecoration
-							src={user.avatar}
-							alt={user.username}
-							decoration={user.avatar_decoration}
-							size="lg"
-						/>
+              src={user.avatar}
+              alt={user.username}
+              decoration={user.avatar_decoration}
+              size="lg"
+            />
           </Link>
 
           <div className="flex-1 min-w-0">
@@ -358,9 +340,7 @@ function ReviewCard({ log, user }) {
                       onClick={() => setShowModal(true)}
                       className="relative z-10 mt-2 px-4 py-2 text-sm text-indigo-400 hover:text-indigo-300 cursor-pointer transition-all duration-200 flex items-center gap-2 font-medium bg-zinc-800/50 hover:bg-zinc-700/50 rounded-lg border border-zinc-700/50"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                      </svg>
+                      <FileText className="w-4 h-4" />
                       Ler review completa
                     </button>
                   </div>
@@ -406,9 +386,7 @@ function EmptyState() {
   return (
     <div className="rounded-xl p-10 sm:p-14 bg-zinc-800/50 border border-zinc-700 flex flex-col items-center justify-center gap-4">
       <div className="w-14 h-14 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-        <svg className="w-6 h-6 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-        </svg>
+        <MessageSquare className="w-6 h-6 text-zinc-600" />
       </div>
       <div className="text-center">
         <p className="text-sm text-zinc-400 font-medium">Nenhuma review ainda</p>

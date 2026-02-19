@@ -1,4 +1,4 @@
-import { User, Monitor, Palette, LogOut, X, Loader2 } from "lucide-react"
+import { User, Monitor, Palette, LogOut, X, Loader2, ArrowDownToLine  } from "lucide-react"
 import SidebarItem from "./ui/SidebarItem"
 import MobileTabButton from "./ui/MobileTabButton"
 
@@ -6,6 +6,7 @@ const TABS = [
   { id: "account", label: "Minha conta", mobile: "Conta", icon: User },
   { id: "sessions", label: "Sessão", mobile: "Sessão", icon: Monitor },
   { id: "appearance", label: "Aparência", mobile: "Aparência", icon: Palette },
+  { id: "integrations", label: "Integrações", icon: ArrowDownToLine },
 ]
 
 export default function SettingsLayout({ activeTab, onTabChange, onClose, onSignOut, signOutLoading, children }) {

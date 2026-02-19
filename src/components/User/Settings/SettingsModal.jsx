@@ -7,6 +7,7 @@ import SettingsLayout from "./SettingsLayout"
 import AccountTab from "./tabs/AccountTab"
 import SessionsTab from "./tabs/SessionsTab"
 import AppearanceTab from "./tabs/AppearanceTab"
+import IntegrationsTab from "./tabs/IntegrationsTab"
 
 export default function SettingsModal({ onClose }) {
   const { user, updateUser } = useAuth()
@@ -156,6 +157,9 @@ export default function SettingsModal({ onClose }) {
               decorationSaving={decorationSaving}
               decorationIsDirty={decorationIsDirty}
             />
+          )}
+          {activeTab === "integrations" && (
+            <IntegrationsTab />
           )}
         </SettingsLayout>
       </div>

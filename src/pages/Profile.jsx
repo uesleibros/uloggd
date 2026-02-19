@@ -135,7 +135,7 @@ export default function Profile() {
 								decoration={profile.avatar_decoration}
 								size="profile"
 							/>
-							<div className="absolute z-20 left-[15%] sm:left-[13%] md:left-[65%]" style={{ bottom: 'calc(100% - 10px)' }}>
+							<div className="absolute z-20 left-[15%] sm:left-[13%] md:left-[65%]" style={{ bottom: 'calc(100% - 1px)' }}>
 								<ThinkingBubble
 									text={profile.thinking}
 									isOwnProfile={isOwnProfile}

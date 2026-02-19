@@ -1,0 +1,214 @@
+import { useState, useEffect, useRef, useCallback } from "react"
+import {
+  Download,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  ExternalLink,
+  X,
+  RefreshCw,
+  Info,
+} from "lucide-react"
+import SettingsSection from "../ui/SettingsSection"
+
+function StatusBadge({ status }) {
+  const config = {
+    running: { icon: Loader2, text: "Importando...", color: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20", spin: true },
+    completed: { icon: CheckCircle2, text: "Concluída", color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
+    failed: { icon: XCircle, text: "Falhou", color: "text-red-400 bg-red-500/10 border-red-500/20" },
+    cancelled: { icon: AlertTriangle, text: "Cancelada", color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
+  }
+
+  const c = config[status] || config.failed
+  const Icon = c.icon
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full border ${c.color}`}>
+      <Icon className={`w-3 h-3 ${c.spin ? "animate-spin" : ""}`} />
+      {c.text}
+    </span>
+  )
+}
+
+function ProgressBar({ progress }) {
+  return (
+    <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+      <div
+        className="h-full bg-indigo-500 rounded-full transition-all duration-500 ease-out"
+        style={{ width: `${Math.min(progress, 100)}%` }}
+      />
+    </div>
+  )
+}
+
+function ImportResult({ job }) {
+  if (!job || job.status === "running") return null
+
+  const timeAgo = job.finished_at
+    ? new Date(job.finished_at).toLocaleString("pt-BR", {
+        day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit",
+      })
+    : null
+
+  return (
+    <div className="mt-3 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50 space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <StatusBadge status={job.status} />
+          <span className="text-xs text-zinc-500">@{job.source_username}</span>
+        </div>
+        {timeAgo && <span className="text-[10px] text-zinc-600">{timeAgo}</span>}
+      </div>
+
+      {(job.status === "completed" || job.status === "cancelled") && (
+        <div className="flex items-center gap-3 text-xs text-zinc-400">
+          {job.imported > 0 && (
+            <span className="flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+              {job.imported} importados
+            </span>
+          )}
+          {job.skipped > 0 && (
+            <span className="flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3 text-amber-400" />
+              {job.skipped} ignorados
+            </span>
+          )}
+          {job.failed > 0 && (
+            <span className="flex items-center gap-1">
+              <XCircle className="w-3 h-3 text-red-400" />
+              {job.failed} erros
+            </span>
+          )}
+        </div>
+      )}
+
+      {job.status === "failed" && job.error && (
+        <p className="text-xs text-red-400/80">{job.error}</p>
+      )}
+    </div>
+  )
+}
+
+export default function BackloggdSection() {
+  const [username, setUsername] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [isRunning, setIsRunning] = useState(false)
+  const [job, setJob] = useState(null)
+  const [polling, setPolling] = useState(false)
+  const [fetchingStatus, setFetchingStatus] = useState(true)
+  const pollRef = useRef(null)
+
+  return (
+    <SettingsSection title="Backloggd">
+      <div className="space-y-4">
+        <div className="flex items-start gap-3 p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/10">
+          <Info className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-zinc-400 space-y-1">
+            <p>
+              Importe seus jogos do{" "}
+              <a
+                href="https://www.backloggd.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 transition-colors"
+              >
+                Backloggd
+                <ExternalLink className="w-3 h-3" />
+              </a>
+              {" "}para o uloggd.
+            </p>
+            <p className="text-xs text-zinc-500">
+              Serão importados jogos marcados como jogados, jogando, backlog e lista de desejos.
+              Jogos já existentes na sua conta serão ignorados.
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-zinc-300">
+            Username do Backloggd
+          </label>
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white font-semibold text-sm select-none pointer-events-none">
+                backloggd.com/u/
+              </span>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !isRunning && !loading) handleImport()
+                }}
+                placeholder="username"
+                disabled={isRunning || loading}
+                maxLength={50}
+                className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg pl-[128px] pr-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
+            <button
+              disabled={isRunning || loading || !username.trim()}
+              className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white text-sm font-medium transition-all cursor-pointer disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">Importar</span>
+            </button>
+          </div>
+        </div>
+
+        {isRunning && job && (
+          <div className="p-4 rounded-lg bg-zinc-800/50 border border-zinc-700/50 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
+                <span className="text-sm text-zinc-300">Importando de @{job.source_username}...</span>
+              </div>
+              <button
+                className="p-1 rounded-md text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+                title="Cancelar importação"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <ProgressBar progress={job.total > 0 ? (job.progress / job.total) * 100 : 0} />
+
+            <div className="flex items-center justify-between text-xs text-zinc-500">
+              <span>
+                {job.imported || 0} importados
+                {job.skipped > 0 && ` · ${job.skipped} ignorados`}
+              </span>
+              {job.total > 0 && (
+                <span>{job.progress || 0}/{job.total}</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!isRunning && job && <ImportResult job={job} />}
+
+        {job && (job.status === "failed" || job.status === "cancelled") && (
+          <button
+            className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-indigo-400 transition-colors cursor-pointer"
+          >
+            <RefreshCw className="w-3 h-3" />
+            Tentar novamente
+          </button>
+        )}
+
+        {fetchingStatus && (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="w-5 h-5 text-zinc-600 animate-spin" />
+          </div>
+        )}
+      </div>
+    </SettingsSection>
+  )
+}

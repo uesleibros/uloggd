@@ -1,3 +1,5 @@
+import { ChevronLeft, ChevronRight } from "lucide-react"
+
 export default function Pagination({ currentPage, totalPages, onPageChange }) {
   if (totalPages <= 1) return null
 
@@ -30,9 +32,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
       disabled={disabled}
       className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
     >
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={direction === -1 ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
-      </svg>
+      {direction === -1 ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
     </button>
   )
 
