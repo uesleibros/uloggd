@@ -91,7 +91,7 @@ const ProfileTabs = forwardRef(function ProfileTabs({ activeTab, onTabChange, co
       <hr className="my-4 border-zinc-700" />
 
       {loading ? (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-3">
           {[...Array(8)].map((_, i) => (
             <div key={i} className="aspect-[3/4] bg-zinc-800 rounded-lg animate-pulse" />
           ))}
