@@ -28,7 +28,7 @@ export async function handleFollowers(req, res) {
         .in("user_id", userIds),
       supabase
         .from("user_badges")
-        .select("user_id, badge:badges ( id, title, description, icon_url, color, assigned_at )")
+        .select("user_id, assigned_at, badge:badges ( id, title, description, icon_url, color )")
         .in("user_id", userIds),
     ])
 
@@ -38,7 +38,12 @@ export async function handleFollowers(req, res) {
     const badgesMap = {}
     badgesRes.data?.forEach(ub => {
       if (!badgesMap[ub.user_id]) badgesMap[ub.user_id] = []
-      if (ub.badge) badgesMap[ub.user_id].push(ub.badge)
+      if (ub.badge) {
+        badgesMap[ub.user_id].push({
+          ...ub.badge,
+          assigned_at: ub.assigned_at,
+        })
+      }
     })
 
     const result = userIds
@@ -64,4 +69,3 @@ export async function handleFollowers(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
-
