@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from "react"
 const TAB_FILTERS = {
   playing: g => g.playing,
   played: g => g.status === "played",
-  completed: g => g.status === "completed",
   backlog: g => g.backlog,
   wishlist: g => g.wishlist,
   dropped: g => g.status === "abandoned",
@@ -13,7 +12,7 @@ const TAB_FILTERS = {
 }
 
 const EMPTY_COUNTS = {
-  playing: 0, played: 0, completed: 0, backlog: 0,
+  playing: 0, played: 0, backlog: 0,
   wishlist: 0, dropped: 0, shelved: 0, liked: 0, rated: 0,
 }
 
@@ -75,3 +74,4 @@ export function filterGamesByTab(profileGames, igdbGames, tabKey) {
       return new Date(gb?.latestAt || 0) - new Date(ga?.latestAt || 0)
     })
 }
+
