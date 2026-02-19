@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
+import { formatDateLong } from "../../../utils/formatDate"
 
 function colorToRGB(colorName) {
   if (typeof document === "undefined") return { r: 161, g: 161, b: 170 }
@@ -37,6 +38,7 @@ const SIZES = {
 function BadgeModal({ badge, onClose }) {
   const [visible, setVisible] = useState(false)
   const s = getBadgeStyles(badge.color)
+  const assignedDate = formatDate(badge.assigned_at)
 
   useEffect(() => {
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
@@ -125,6 +127,12 @@ function BadgeModal({ badge, onClose }) {
             <p className="text-sm text-zinc-400 leading-relaxed">
               {badge.description}
             </p>
+
+            {assignedDate && (
+              <p className="text-xs text-zinc-500 mt-3">
+                Atribuído em {assignedDate}
+              </p>
+            )}
           </div>
 
           <div className="relative border-t border-zinc-800 px-6 py-4">
