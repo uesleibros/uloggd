@@ -9,7 +9,7 @@ export async function handleAvatar(req, res) {
 
   const { action, image } = req.body
 
-  if (!VALID_BANNER_ACTIONS.includes(action))
+  if (!VALID_AVATAR_ACTIONS.includes(action))
     return res.status(400).json({ error: "invalid action" })
 
   try {

@@ -364,10 +364,12 @@ function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) {
   )
 }
 
-const NAV_ITEMS = [
+/*const NAV_ITEMS = [
   { to: "#", label: "Games" },
   { to: "#", label: "Tierlists" },
-]
+]*/
+
+const NAV_ITEMS = []
 
 export default function Header() {
   const [query, setQuery] = useState("")
