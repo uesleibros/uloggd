@@ -41,15 +41,15 @@ export function useProfileGames(profileId) {
       setCounts({ ...EMPTY_COUNTS, ...data.counts })
 
       const slugs = Object.keys(data.games || {})
-      if (slugs.length > 0) {
-        const batchRes = await fetch("/api/igdb?action=gamesBatch", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slugs }),
-        })
+      if (slugs.length === 0) return
 
-        if (batchRes.ok) setIgdbGames(await batchRes.json())
-      }
+      const batchRes = await fetch("/api/igdb?action=gamesBatch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slugs }),
+      })
+
+      if (batchRes.ok) setIgdbGames(await batchRes.json())
     } catch {
     } finally {
       setLoadingGames(false)
