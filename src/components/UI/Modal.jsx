@@ -100,7 +100,7 @@ export default function Modal({
 			<div
 				ref={modalRef}
 				style={{ zIndex }}
-				className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-6"
+				className="fixed inset-0 flex items-end md:items-center justify-center md:p-6"
 				onClick={closeOnOverlay ? onClose : undefined}
 			>
 				<div
@@ -109,12 +109,17 @@ export default function Modal({
 					}`}
 				/>
 				<div
-					className={`relative w-full sm:w-auto transition-all duration-200 ease-out ${
+					className={`relative w-full h-full md:w-auto md:h-auto flex flex-col justify-end md:block transition-all duration-200 ease-out ${
 						visible
-							? "translate-y-0 opacity-100 sm:scale-100"
-							: "translate-y-full opacity-100 sm:translate-y-2 sm:scale-95 sm:opacity-0"
+							? "translate-y-0 opacity-100 md:scale-100"
+							: "translate-y-full md:translate-y-2 md:scale-95 md:opacity-0"
 					} ${className}`}
-					onClick={(e) => e.stopPropagation()}
+					onClick={(e) => {
+						e.stopPropagation()
+						if (e.target === e.currentTarget && closeOnOverlay) {
+							onClose()
+						}
+					}}
 				>
 					{children}
 				</div>
