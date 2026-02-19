@@ -6,7 +6,7 @@ import UserBadges from "../../UserBadges"
 import AvatarWithDecoration from "../../AvatarWithDecoration"
 
 export default function ProfileSection({ user }) {
-  const isModerator = user?.badges?.some(b => b.id === "moderator")
+  const isModerator = user.is_moderator
 
   return (
     <SettingsSection title="Perfil">
@@ -35,4 +35,5 @@ export default function ProfileSection({ user }) {
       />
     </SettingsSection>
   )
+
 }
