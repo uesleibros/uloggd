@@ -13,7 +13,7 @@ export async function handleAutocomplete(req, res) {
              cover.url, cover.image_id,
              platforms.id, platforms.name, platforms.abbreviation,
              total_rating, total_rating_count, game_type;
-      where ${nameFilter} & game_type = (0,2,4,8,9,10) & cover != null;
+      where ${nameFilter} & cover != null;
       sort total_rating_count desc;
       limit 30;
     `)
@@ -59,4 +59,5 @@ export async function handleAutocomplete(req, res) {
     console.error(e)
     res.status(500).json({ error: "fail" })
   }
+
 }
