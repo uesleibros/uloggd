@@ -281,8 +281,8 @@ function HowLongToBeat({ hltb, loading }) {
 					<div key={bar.label} className="group">
 						<div className="flex items-center justify-between mb-1">
 							<span className="text-sm text-zinc-400">{bar.label}</span>
-							<span className="text-sm font-semibold text-white tabular-nums">
-								{Math.round(bar.hours)}<span className="text-zinc-500 font-normal text-xs ml-0.5">h</span>
+							<span className="flex items-center gap-2 text-sm font-semibold text-white tabular-nums">
+								<CountUp end={Math.round(bar.hours)} /><span className="text-zinc-500 font-normal text-xs ml-0.5">h</span>
 							</span>
 						</div>
 						<div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
@@ -720,4 +720,5 @@ export default function Game() {
 			/>
 		</div>
 	)
+
 }
