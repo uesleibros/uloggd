@@ -21,7 +21,7 @@ export default function Modal({
 	subtitle,
 	maxWidth = "max-w-lg",
 	showCloseButton = true,
-	closeOnOverlay = true,
+	closeOnOverlay = false,
 	fullscreenMobile = false,
 	showMobileGrip = false,
 	raw = false,
@@ -216,3 +216,4 @@ export default function Modal({
 		document.body
 	)
 }
+
