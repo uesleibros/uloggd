@@ -7,6 +7,8 @@ import UserBadges from "../User/UserBadges"
 import AvatarWithDecoration from "../User/AvatarWithDecoration"
 import Modal from "../UI/Modal"
 import LikeListModal from "./LikeListModal"
+import CountUp from "../UI/CountUp"
+import { supabase } from "../../../lib/supabase"
 import { useAuth } from "../../../hooks/useAuth"
 
 const STATUS_MAP = {
@@ -208,9 +210,19 @@ function LikeButton({ logId, currentUserId }) {
 		setCount(newCount)
 
 		try {
+			const { data: { session } } = await supabase.auth.getSession()
+			if (!session) {
+				setIsLiked(!newLiked)
+				setCount(count)
+				return
+			}
+
 			const r = await fetch("/api/logs?action=like", {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${session.access_token}`,
+				},
 				body: JSON.stringify({ logId, action }),
 			})
 			if (!r.ok) {
@@ -244,7 +256,7 @@ function LikeButton({ logId, currentUserId }) {
 						onClick={() => setShowLikes(true)}
 						className="text-sm text-zinc-500 hover:text-zinc-300 tabular-nums cursor-pointer transition-colors"
 					>
-						{count}
+						<CountUp end={count} />
 					</button>
 				)}
 			</div>
@@ -534,3 +546,4 @@ export default function GameReviews({ gameId }) {
 		</div>
 	)
 }
+
