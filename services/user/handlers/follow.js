@@ -28,6 +28,7 @@ export async function handleFollow(req, res) {
         userId: followingId,
         type: "follow",
         data: { follower_id: user.id },
+        dedupeKey: { follower_id: user.id },
       })
 
       return res.json({ followed: true })
@@ -46,3 +47,4 @@ export async function handleFollow(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
