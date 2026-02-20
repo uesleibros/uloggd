@@ -1,5 +1,6 @@
 import { supabase } from "../../../lib/supabase-ssr.js"
 import { getUser } from "../../../utils/auth.js"
+import { createNotification } from "../../notifications/create.js"
 import { VALID_FOLLOW_ACTIONS } from "../constants.js"
 
 export async function handleFollow(req, res) {
@@ -22,6 +23,13 @@ export async function handleFollow(req, res) {
         )
 
       if (error) throw error
+
+      await createNotification({
+        userId: followingId,
+        type: "follow",
+        data: { follower_id: user.id },
+      })
+
       return res.json({ followed: true })
     }
 
