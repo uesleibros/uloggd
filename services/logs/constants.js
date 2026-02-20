@@ -14,7 +14,7 @@ export const LIMITS = {
   MIN_DATE: "2000-01-01",
   MAX_ASPECTS: 10,
   MAX_ASPECT_LABEL: 30,
-  MAX_ASPECT_REVIEW: 1000,
+  MAX_ASPECT_REVIEW: 500,
   MAX_REVIEW: 10000,
   MAX_LOG_TITLE: 24,
   MAX_SLUG: 200,
@@ -24,4 +24,5 @@ export const LIMITS = {
   DEFAULT_RATING_MODE: "stars_5h",
   DEFAULT_STATUS: "played",
 }
+
 
