@@ -39,7 +39,7 @@ function getCroppedCanvas(image, crop, maxWidth = 1920) {
 	return canvas
 }
 
-export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClose, title = "Recortar imagem", circularCrop = false }) {
+export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClose, maxWidth = 1920, title = "Recortar imagem", circularCrop = false }) {
 	const [crop, setCrop] = useState()
 	const [completedCrop, setCompletedCrop] = useState(null)
 	const imgRef = useRef(null)
@@ -156,4 +156,5 @@ export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClo
 		</Modal>
 	)
 }
+
 
