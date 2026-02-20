@@ -2,14 +2,14 @@ import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { UserPlus, ThumbsUp, Check, Trash2, X, Bell } from "lucide-react"
 import { supabase } from "../../../lib/supabase"
-import AvatarWithDecoration from "../User/AvatarWithDecoration"
 
 const NOTIFICATION_CONFIG = {
   follow: {
     icon: UserPlus,
     color: "text-indigo-400",
     bg: "bg-indigo-500/10",
-    getMessage: (data, users) => `${users[data.follower_id]?.username || "Alguém"} começou a te seguir`,
+    getActor: (data, users) => users[data.follower_id]?.username || "Alguém",
+    getText: () => "começou a te seguir",
     getLink: (data, users) => `/u/${users[data.follower_id]?.username}`,
     getUserId: (data) => data.follower_id,
   },
@@ -17,7 +17,8 @@ const NOTIFICATION_CONFIG = {
     icon: ThumbsUp,
     color: "text-amber-400",
     bg: "bg-amber-500/10",
-    getMessage: (data, users) => `${users[data.liker_id]?.username || "Alguém"} curtiu sua review`,
+    getActor: (data, users) => users[data.liker_id]?.username || "Alguém",
+    getText: () => "curtiu sua review",
     getLink: (data) => `/game/${data.game_slug}`,
     getUserId: (data) => data.liker_id,
   },
@@ -38,9 +39,10 @@ function NotificationItem({ notification, users, onClose, onAction }) {
 
   const Icon = config.icon
   const link = config.getLink(notification.data, users)
-  const message = config.getMessage(notification.data, users)
+  const actor = config.getActor(notification.data, users)
+  const text = config.getText(notification.data, users)
   const actorId = config.getUserId(notification.data)
-  const actor = users[actorId]
+  const actorUser = users[actorId]
 
   return (
     <Link
@@ -54,19 +56,18 @@ function NotificationItem({ notification, users, onClose, onAction }) {
       }`}
     >
       <div className="relative flex-shrink-0">
-        <AvatarWithDecoration
-          src={actor?.avatar}
-          alt={actor?.username}
-          decoration={actor?.avatar_decoration}
-          size="sm"
+        <img
+          src={actorUser?.avatar}
+          alt={actor}
+          className="w-9 h-9 rounded-full object-cover bg-zinc-800"
         />
-        <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${config.bg} border-2 border-zinc-900 flex items-center justify-center`}>
+        <div className={`absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full ${config.bg} border-2 border-zinc-900 flex items-center justify-center`}>
           <Icon className={`w-2.5 h-2.5 ${config.color}`} />
         </div>
       </div>
       <div className="flex-1 min-w-0">
         <p className={`text-sm leading-snug ${!notification.read ? "text-zinc-200" : "text-zinc-400"}`}>
-          {message}
+          <span className="font-semibold text-white">{actor}</span> {text}
         </p>
         <span className="text-xs text-zinc-600 mt-0.5 block">{getTimeAgo(notification.created_at)}</span>
       </div>
