@@ -33,6 +33,7 @@ export async function handleLike(req, res) {
           userId: log.user_id,
           type: "log_like",
           data: { liker_id: user.id, log_id: logId, game_slug: log.game_slug },
+          dedupeKey: { liker_id: user.id, log_id: logId },
         })
       }
 
