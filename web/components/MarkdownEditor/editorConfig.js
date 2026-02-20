@@ -33,6 +33,8 @@ const mentionAtMark = Decoration.mark({ class: "cm-mention-at" })
 const mentionUserMark = Decoration.mark({ class: "cm-mention-user" })
 const spoilerMark = Decoration.mark({ class: "cm-spoiler-syntax" })
 const gameSyntaxMark = Decoration.mark({ class: "cm-game-syntax" })
+const alertSyntaxMark = Decoration.mark({ class: "cm-alert-syntax" })
+const alertTypeMark = Decoration.mark({ class: "cm-alert-type" })
 
 export const customDecorations = ViewPlugin.fromClass(
   class {
@@ -68,6 +70,25 @@ export const customDecorations = ViewPlugin.fromClass(
       const gameRegex = /!game(?::(?:mini|grid|grid-auto))?\(([^)\n]+)\)/g
       while ((match = gameRegex.exec(doc)) !== null) {
         widgets.push(gameSyntaxMark.range(match.index, match.index + match[0].length))
+      }
+
+      const alertRegex = /^:::(\w+).*$/gm
+      while ((match = alertRegex.exec(doc)) !== null) {
+        const fullStart = match.index
+        const fullEnd = fullStart + match[0].length
+
+        const typeStart = fullStart + 3
+        const typeEnd = typeStart + match[1].length
+
+        widgets.push(alertSyntaxMark.range(fullStart, fullStart + 3))
+        widgets.push(alertTypeMark.range(typeStart, typeEnd))
+      }
+
+      const alertCloseRegex = /^:::$/gm
+      while ((match = alertCloseRegex.exec(doc)) !== null) {
+        widgets.push(
+          alertSyntaxMark.range(match.index, match.index + 3)
+        )
       }
 
       return Decoration.set(widgets, true)
@@ -160,5 +181,14 @@ export const cmTheme = EditorView.theme({
   ".cm-game-syntax": {
     color: "#fbbf24",
     fontWeight: "bold",
+  },
+  ".cm-alert-syntax": {
+    color: "#64748b",
+    fontWeight: "600",
+  },
+
+  ".cm-alert-type": {
+    color: "#818cf8",
+    fontWeight: "600",
   },
 })

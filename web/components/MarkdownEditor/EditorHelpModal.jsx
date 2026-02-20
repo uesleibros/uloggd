@@ -37,10 +37,16 @@ const FEATURES = [
 	{ section: "blocos", syntax: "---", description: "Linha horizontal separadora.", preview: "---" },
 	{ section: "blocos", syntax: "| Col | Col |", description: "Tabela com colunas e linhas.", example: "| Nome | Nota |\n| --- | --- |\n| Jogo A | 10 |", preview: "| Nome | Nota |\n| --- | --- |\n| Jogo A | 10 |" },
 	{ section: "alertas", syntax: ":::info", description: "Bloco informativo neutro.", example: ":::info\nInformação importante\n:::" },
+	{ section: "alertas", syntax: ":::note", description: "Nota complementar ou observação.", example: ":::note\nIsso é apenas uma nota.\n:::" },
 	{ section: "alertas", syntax: ":::tip", description: "Dica útil para o leitor.", example: ":::tip\nUse arma de gelo contra inimigos de fogo.\n:::" },
+	{ section: "alertas", syntax: ":::important", description: "Informação importante que merece destaque.", example: ":::important\nIsso é muito relevante.\n:::" },
 	{ section: "alertas", syntax: ":::warning", description: "Aviso importante.", example: ":::warning\nCuidado com esta área.\n:::" },
-	{ section: "alertas", syntax: ":::danger", description: "Alerta crítico.", example: ":::danger\nEssa escolha é irreversível.\n:::" },
+	{ section: "alertas", syntax: ":::danger", description: "Alerta crítico ou perigoso.", example: ":::danger\nEssa escolha é irreversível.\n:::" },
 	{ section: "alertas", syntax: ":::success", description: "Mensagem de sucesso ou conclusão.", example: ":::success\nMissão concluída!\n:::" },
+	{ section: "alertas", syntax: ":::question", description: "Pergunta ou reflexão destacada.", example: ":::question\nVocê já tentou essa abordagem?\n:::" },
+	{ section: "alertas", syntax: ":::example", description: "Exemplo prático ou demonstração.", example: ":::example\nVeja este caso aplicado.\n:::" },
+	{ section: "alertas", syntax: ":::bug", description: "Problema conhecido ou comportamento inesperado.", example: ":::bug\nExiste um erro nessa versão.\n:::" },
+	{ section: "alertas", syntax: ":::neutral", description: "Observação neutra sem ênfase emocional.", example: ":::neutral\nApenas uma observação geral.\n:::" },
 	{ section: "jogos", syntax: "!game(slug)", description: "Exibe um card detalhado de um jogo. O slug pode ser encontrado na URL da página do jogo.", example: "!game(the-last-of-us)" },
 	{ section: "jogos", syntax: "!game:mini(slug)", description: "Versão compacta do card de jogo, ideal para listas.", example: "!game:mini(celeste)" },
 	{ section: "jogos", syntax: "!game:grid(slug1, slug2+, ...)", description: "Vitrine de jogos em carrossel manual. Adicione + no final do slug para destacar como favorito.", example: "!game:grid(celeste, hollow-knight+)" },
@@ -371,7 +377,11 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
 
 			<div className="p-3 bg-zinc-900/50 border-t border-zinc-800 rounded-b-xl flex items-center justify-between flex-shrink-0">
 				<p className="text-xs text-zinc-500">
-					<span className="text-zinc-400">Ctrl+B</span> negrito · <span className="text-zinc-400">Ctrl+I</span> itálico · <span className="text-zinc-400">Tab</span> indentação
+					<span className="text-zinc-400">Ctrl+B</span> negrito · 
+					<span className="text-zinc-400">Ctrl+I</span> itálico · 
+					<span className="text-zinc-400">Ctrl+K</span> link · 
+					<span className="text-zinc-400">Ctrl+Shift+C</span> bloco · 
+					<span className="text-zinc-400">Tab</span> indentação
 				</p>
 				{search.trim() && filtered.length > 0 && (
 					<span className="text-[10px] text-zinc-600 tabular-nums">

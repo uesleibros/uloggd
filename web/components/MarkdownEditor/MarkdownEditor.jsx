@@ -432,6 +432,75 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 		</>
 	)
 
+	useEffect(() => {
+		const handler = (e) => {
+			if (!editorViewRef.current) return
+			if (e.defaultPrevented) return
+
+			const isMod = e.ctrlKey || e.metaKey
+
+			if (!isMod) return
+
+			switch (e.key.toLowerCase()) {
+				case "b":
+					e.preventDefault()
+					handleAction("bold")
+					break
+
+				case "i":
+					e.preventDefault()
+					handleAction("italic")
+					break
+
+				case "k":
+					e.preventDefault()
+					handleAction("link")
+					break
+
+				case "e":
+					e.preventDefault()
+					handleAction("code")
+					break
+
+				case "shift":
+					break
+
+				default:
+					break
+			}
+
+			if (isMod && e.shiftKey) {
+				switch (e.key.toLowerCase()) {
+					case "x":
+						e.preventDefault()
+						handleAction("strikethrough")
+						break
+
+					case "l":
+						e.preventDefault()
+						handleAction("ul")
+						break
+
+					case "o":
+						e.preventDefault()
+						handleAction("ol")
+						break
+
+					case "c":
+						e.preventDefault()
+						handleAction("codeblock")
+						break
+
+					default:
+						break
+				}
+			}
+		}
+
+		window.addEventListener("keydown", handler)
+		return () => window.removeEventListener("keydown", handler)
+	}, [handleAction])
+
 	return (
 		<>
 			<PortalDropdown anchorRef={headingBtnRef} open={headingOpen} onClose={() => setHeadingOpen(false)}>
