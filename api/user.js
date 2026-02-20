@@ -9,6 +9,7 @@ import { handleAvatar } from "../services/user/handlers/avatar.js"
 import { handleThinking } from "../services/user/handlers/thinking.js"
 import { handleDecoration } from "../services/user/handlers/decoration.js"
 import { handlePronoun } from "../services/user/handlers/pronoun.js"
+import { handleBatch } from "../services/user/handlers/batch.js"
 
 const ACTIONS = {
   profile: handleProfile,
@@ -21,7 +22,8 @@ const ACTIONS = {
   avatar: handleAvatar,
   thinking: handleThinking,
   decoration: handleDecoration,
-  pronoun: handlePronoun
+  pronoun: handlePronoun,
+  batch: handleBatch
 }
 
 export default async function handler(req, res) {
@@ -32,3 +34,4 @@ export default async function handler(req, res) {
 
   return fn(req, res)
 }
+
