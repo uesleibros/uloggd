@@ -113,16 +113,9 @@ function AspectRatingsPreview({ aspects, compact = false }) {
 	return (
 		<div className={`space-y-1.5 ${compact ? "" : "pt-1"}`}>
 			{aspects.map((aspect, i) => (
-				<div key={i}>
-					<div className="flex items-center justify-between gap-3">
-						<span className="text-xs text-zinc-500 truncate">{aspect.label}</span>
-						<AspectRatingDisplay aspect={aspect} />
-					</div>
-					{aspect.review && (
-						<div className="mt-1 text-xs text-zinc-600 leading-relaxed">
-							<MarkdownPreview content={aspect.review} />
-						</div>
-					)}
+				<div key={i} className="flex items-center justify-between gap-3">
+					<span className="text-xs text-zinc-500 truncate">{aspect.label}</span>
+					<AspectRatingDisplay aspect={aspect} />
 				</div>
 			))}
 		</div>
@@ -558,6 +551,7 @@ export default function GameReviews({ gameId }) {
 		</div>
 	)
 }
+
 
 
 
