@@ -87,7 +87,6 @@ export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClo
 		<Modal
 			isOpen={isOpen}
 			onClose={onClose}
-			closeOnOverlay={true}
 			raw
 		>
 			<div
@@ -157,6 +156,7 @@ export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClo
 		</Modal>
 	)
 }
+
 
 
 
