@@ -7,7 +7,7 @@ const NOTIFICATION_CONFIG = {
   follow: {
     icon: UserPlus,
     color: "text-indigo-400",
-    bg: "bg-indigo-500/10",
+    bg: "bg-indigo-500",
     getActor: (data, users) => users[data.follower_id]?.username || "Alguém",
     getText: () => "começou a te seguir",
     getLink: (data, users) => `/u/${users[data.follower_id]?.username}`,
