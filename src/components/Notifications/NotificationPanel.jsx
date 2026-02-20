@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { UserPlus, ThumbsUp, Check, Trash2, X, Bell } from "lucide-react"
-import { supabase } from "../../lib/supabase"
+import { supabase } from "../../../lib/supabase"
 
 const NOTIFICATION_CONFIG = {
   follow: {
