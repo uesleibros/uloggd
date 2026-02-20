@@ -148,7 +148,7 @@ export function createMarkdownComponents(authorRatings = {}) {
     },
     mention: ({ children }) => <Mention username={children} />,
     center: ({ children }) => (
-      <div className="flex flex-col items-center text-center w-full overflow-hidden">
+      <div className="flex flex-col items-center text-center w-full min-w-0 overflow-x-auto">
         {children}
       </div>
     ),
@@ -165,4 +165,5 @@ export function createMarkdownComponents(authorRatings = {}) {
     td: ({ children }) => <td className="px-3 py-2 text-sm text-zinc-400 border border-zinc-700">{children}</td>,
     tr: ({ children }) => <tr className="hover:bg-zinc-800/30 transition-colors">{children}</tr>,
   }
+
 }
