@@ -6,6 +6,8 @@ import { MarkdownPreview } from "../MarkdownEditor"
 import UserBadges from "../User/UserBadges"
 import AvatarWithDecoration from "../User/AvatarWithDecoration"
 import Modal from "../UI/Modal"
+import LikeListModal from "./LikeListModal"
+import { useAuth } from "../../../hooks/useAuth"
 
 const STATUS_MAP = {
 	played: { label: "Jogado", classes: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
@@ -174,7 +176,89 @@ function SpoilerOverlay({ onReveal }) {
 	)
 }
 
-function ReviewModalHeader({ log, user, onClose }) {
+function LikeButton({ logId, currentUserId }) {
+	const [isLiked, setIsLiked] = useState(false)
+	const [count, setCount] = useState(0)
+	const [loading, setLoading] = useState(false)
+	const [showLikes, setShowLikes] = useState(false)
+
+	useEffect(() => {
+		fetch("/api/logs?action=likeStatus", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ logId, currentUserId }),
+		})
+			.then(r => r.json())
+			.then(data => {
+				setCount(data.count || 0)
+				setIsLiked(data.isLiked || false)
+			})
+			.catch(() => {})
+	}, [logId, currentUserId])
+
+	const handleLike = async () => {
+		if (!currentUserId || loading) return
+		setLoading(true)
+
+		const action = isLiked ? "unlike" : "like"
+		const newLiked = !isLiked
+		const newCount = newLiked ? count + 1 : count - 1
+
+		setIsLiked(newLiked)
+		setCount(newCount)
+
+		try {
+			const r = await fetch("/api/logs?action=like", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ logId, action }),
+			})
+			if (!r.ok) {
+				setIsLiked(!newLiked)
+				setCount(count)
+			}
+		} catch {
+			setIsLiked(!newLiked)
+			setCount(count)
+		} finally {
+			setLoading(false)
+		}
+	}
+
+	return (
+		<>
+			<div className="flex items-center gap-1.5">
+				<button
+					onClick={handleLike}
+					disabled={!currentUserId || loading}
+					className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-sm transition-all duration-200 cursor-pointer disabled:cursor-default ${
+						isLiked
+							? "text-red-400 hover:text-red-300"
+							: "text-zinc-500 hover:text-zinc-300"
+					}`}
+				>
+					<Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
+				</button>
+				{count > 0 && (
+					<button
+						onClick={() => setShowLikes(true)}
+						className="text-sm text-zinc-500 hover:text-zinc-300 tabular-nums cursor-pointer transition-colors"
+					>
+						{count}
+					</button>
+				)}
+			</div>
+
+			<LikeListModal
+				isOpen={showLikes}
+				logId={logId}
+				onClose={() => setShowLikes(false)}
+			/>
+		</>
+	)
+}
+
+function ReviewModalHeader({ log, user, currentUserId, onClose }) {
 	return (
 		<div className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
 			<div className="flex items-center gap-3.5 min-w-0">
@@ -201,6 +285,7 @@ function ReviewModalHeader({ log, user, onClose }) {
 					</div>
 				</div>
 			</div>
+			<LikeButton logId={log.id} currentUserId={currentUserId} />
 		</div>
 	)
 }
@@ -245,7 +330,7 @@ function ReviewModalContent({ log }) {
 	)
 }
 
-function ReviewCard({ log, user }) {
+function ReviewCard({ log, user, currentUserId }) {
 	const [spoilerRevealed, setSpoilerRevealed] = useState(false)
 	const [showModal, setShowModal] = useState(false)
 
@@ -313,7 +398,10 @@ function ReviewCard({ log, user }) {
 							</div>
 						)}
 
-						<Playtime hours={log.hours_played} minutes={log.minutes_played} className="mt-4" />
+						<div className="flex items-center justify-between mt-4">
+							<Playtime hours={log.hours_played} minutes={log.minutes_played} />
+							<LikeButton logId={log.id} currentUserId={currentUserId} />
+						</div>
 					</div>
 				</div>
 			</div>
@@ -326,7 +414,7 @@ function ReviewCard({ log, user }) {
 				maxWidth="max-w-2xl"
 				className="!bg-zinc-900 !border-zinc-700 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
 			>
-				<ReviewModalHeader log={log} user={user} onClose={() => setShowModal(false)} />
+				<ReviewModalHeader log={log} user={user} currentUserId={currentUserId} onClose={() => setShowModal(false)} />
 				<ReviewModalContent log={log} />
 			</Modal>
 		</>
@@ -370,6 +458,7 @@ function EmptyState() {
 }
 
 export default function GameReviews({ gameId }) {
+	const { user: currentUser } = useAuth()
 	const [logs, setLogs] = useState([])
 	const [users, setUsers] = useState({})
 	const [loading, setLoading] = useState(true)
@@ -439,7 +528,7 @@ export default function GameReviews({ gameId }) {
 
 			<div className="space-y-3">
 				{logs.map((log) => (
-					<ReviewCard key={log.id} log={log} user={users[log.user_id]} />
+					<ReviewCard key={log.id} log={log} user={users[log.user_id]} currentUserId={currentUser?.id} />
 				))}
 			</div>
 		</div>
