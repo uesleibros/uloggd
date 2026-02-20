@@ -324,6 +324,7 @@ export default function AvatarEditor({ currentAvatar, onSave, saving = false }) 
 				aspect={AVATAR_ASPECT}
 				title="Recortar avatar"
 				circularCrop
+				maxWidth={512}
 				onCrop={handleCropComplete}
 				onClose={() => setCropSrc(null)}
 			/>
