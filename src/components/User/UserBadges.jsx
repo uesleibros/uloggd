@@ -28,11 +28,11 @@ function getBadgeStyles(color) {
 }
 
 const SIZES = {
-	xs: "w-3 h-3",
-	sm: "w-3.5 h-3.5",
-	md: "w-4 h-4",
-	lg: "w-5 h-5",
-	xl: "w-8 h-8",
+	xs: { class: "w-3 h-3", min: "12px" },
+	sm: { class: "w-3.5 h-3.5", min: "14px" },
+	md: { class: "w-4 h-4", min: "16px" },
+	lg: { class: "w-5 h-5", min: "20px" },
+	xl: { class: "w-8 h-8", min: "32px" },
 }
 
 function BadgeModalContent({ badge }) {
@@ -88,7 +88,7 @@ export default function UserBadges({ user, size = "md", clickable = false, class
 	const badges = user?.badges || []
 	if (badges.length === 0) return null
 
-	const sizeClass = SIZES[size] || SIZES.md
+	const sizeConfig = SIZES[size] || SIZES.md
 
 	function handleClick(e, badge) {
 		if (!clickable) return
@@ -99,18 +99,19 @@ export default function UserBadges({ user, size = "md", clickable = false, class
 
 	return (
 		<>
-			<div className={`flex items-center gap-1 ${className}`}>
+			<div className={`flex items-center flex-wrap gap-1 ${className}`}>
 				{badges.map((badge) => (
 					<img
 						key={badge.id}
 						src={badge.icon_url}
 						alt={badge.title}
 						title={!clickable ? badge.title : undefined}
-						className={`${sizeClass} select-none ${
+						className={`${sizeConfig.class} shrink-0 select-none ${
 							clickable
 								? "cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150"
 								: ""
 						}`}
+						style={{ minWidth: sizeConfig.min, minHeight: sizeConfig.min }}
 						draggable={false}
 						onClick={(e) => clickable && handleClick(e, badge)}
 					/>
