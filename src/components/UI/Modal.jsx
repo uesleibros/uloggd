@@ -32,6 +32,7 @@ export default function Modal({
 	const [mounted, setMounted] = useState(false)
 	const closeTimerRef = useRef(null)
 	const modalRef = useRef(null)
+	const mouseDownTargetRef = useRef(null)
 
 	useEffect(() => {
 		if (isOpen) {
@@ -95,13 +96,26 @@ export default function Modal({
 
 	if (!mounted) return null
 
+	function handleOverlayMouseDown(e) {
+		mouseDownTargetRef.current = e.target
+	}
+
+	function handleOverlayClick(e) {
+		if (!closeOnOverlay) return
+		if (mouseDownTargetRef.current === e.target && e.target === e.currentTarget) {
+			onClose()
+		}
+		mouseDownTargetRef.current = null
+	}
+
 	if (raw) {
 		return createPortal(
 			<div
 				ref={modalRef}
 				style={{ zIndex }}
 				className="fixed inset-0 flex items-end md:items-center justify-center md:p-6"
-				onClick={closeOnOverlay ? onClose : undefined}
+				onMouseDown={handleOverlayMouseDown}
+				onClick={handleOverlayClick}
 			>
 				<div
 					className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-200 ${
@@ -114,12 +128,8 @@ export default function Modal({
 							? "translate-y-0 opacity-100 md:scale-100"
 							: "translate-y-full md:translate-y-2 md:scale-95 md:opacity-0"
 					} ${className}`}
-					onClick={(e) => {
-						e.stopPropagation()
-						if (e.target === e.currentTarget && closeOnOverlay) {
-							onClose()
-						}
-					}}
+					onMouseDown={(e) => e.stopPropagation()}
+					onClick={(e) => e.stopPropagation()}
 				>
 					{children}
 				</div>
@@ -151,7 +161,8 @@ export default function Modal({
 				ref={modalRef}
 				style={{ zIndex }}
 				className={`fixed inset-0 flex ${fullscreenMobile ? "items-end md:items-center" : "items-center"} justify-center ${fullscreenMobile ? "md:p-6" : "p-4"}`}
-				onClick={closeOnOverlay ? onClose : undefined}
+				onMouseDown={handleOverlayMouseDown}
+				onClick={handleOverlayClick}
 			>
 				<div
 					className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-200 ${
@@ -161,6 +172,7 @@ export default function Modal({
 
 				<div
 					className={`relative ${contentSizeClasses} ${contentStyleClasses} ${animationClasses} ${className}`}
+					onMouseDown={(e) => e.stopPropagation()}
 					onClick={(e) => e.stopPropagation()}
 				>
 					{fullscreenMobile && showMobileGrip && (
