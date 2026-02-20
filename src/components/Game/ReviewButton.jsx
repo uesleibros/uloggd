@@ -25,7 +25,7 @@ const RATING_MODES = [
 const ASPECT_SUGGESTIONS = ["Gameplay", "História", "Personagens", "Trilha sonora", "Gráficos", "Level design", "Rejogabilidade", "Multiplayer", "Performance", "UI/UX"]
 const MAX_ASPECTS = 10
 const MAX_ASPECT_LABEL = 30
-const MAX_ASPECT_REVIEW = 1000
+const MAX_ASPECT_REVIEW = 500
 
 function HalfStar({ size = "w-10 h-10", filledColor = "text-amber-400", emptyColor = "text-zinc-700" }) {
 	return (
@@ -834,4 +834,5 @@ export default function ReviewButton({ game }) {
 			</Modal>
 		</>
 	)
+
 }
