@@ -1,7 +1,6 @@
 import { supabase } from "../../../lib/supabase-ssr.js"
 import { getUser } from "../../../utils/auth.js"
-
-const VALID_LIKE_ACTIONS = ["like", "unlike"]
+import { createNotification } from "../../notifications/create.js"
 
 export async function handleLike(req, res) {
   const user = await getUser(req)
@@ -10,7 +9,7 @@ export async function handleLike(req, res) {
   const { logId, action } = req.body
 
   if (!logId) return res.status(400).json({ error: "missing logId" })
-  if (!VALID_LIKE_ACTIONS.includes(action)) return res.status(400).json({ error: "invalid action" })
+  if (!["like", "unlike"].includes(action)) return res.status(400).json({ error: "invalid action" })
 
   try {
     if (action === "like") {
@@ -22,6 +21,21 @@ export async function handleLike(req, res) {
         )
 
       if (error) throw error
+
+      const { data: log } = await supabase
+        .from("logs")
+        .select("user_id, game_slug")
+        .eq("id", logId)
+        .single()
+
+      if (log && log.user_id !== user.id) {
+        await createNotification({
+          userId: log.user_id,
+          type: "log_like",
+          data: { liker_id: user.id, log_id: logId, game_slug: log.game_slug },
+        })
+      }
+
       return res.json({ liked: true })
     }
 
