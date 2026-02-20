@@ -16,7 +16,7 @@ const NOTIFICATION_CONFIG = {
   log_like: {
     icon: ThumbsUp,
     color: "text-amber-400",
-    bg: "bg-amber-500/10",
+    bg: "bg-amber-500",
     getActor: (data, users) => users[data.liker_id]?.username || "Alguém",
     getText: () => "curtiu sua review",
     getLink: (data) => `/game/${data.game_slug}`,
