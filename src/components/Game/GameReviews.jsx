@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Star, Heart, Trophy, Clock, AlertTriangle, Eye, FileText, MessageSquare } from "lucide-react"
+import { Star, Heart, ThumbsUp, Trophy, Clock, AlertTriangle, Eye, FileText, MessageSquare } from "lucide-react"
 import { formatRating } from "../../../utils/rating"
 import { MarkdownPreview } from "../MarkdownEditor"
 import UserBadges from "../User/UserBadges"
@@ -237,26 +237,31 @@ function LikeButton({ logId, currentUserId }) {
 		}
 	}
 
+	const label = count === 1 ? "curtida" : "curtidas"
+
 	return (
 		<>
-			<div className="flex items-center gap-1.5">
+			<div className="flex items-center gap-2">
 				<button
 					onClick={handleLike}
 					disabled={!currentUserId || loading}
-					className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-sm transition-all duration-200 cursor-pointer disabled:cursor-default ${
+					className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer disabled:cursor-default ${
 						isLiked
-							? "text-red-400 hover:text-red-300"
-							: "text-zinc-500 hover:text-zinc-300"
+							? "bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/15"
+							: "bg-zinc-800/50 border border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50 hover:border-zinc-600/50"
 					}`}
 				>
-					<Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
+					<ThumbsUp className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${isLiked ? "fill-current" : ""}`} />
+					<span className="text-sm font-medium">
+						{isLiked ? "Curtido" : "Curtir"}
+					</span>
 				</button>
 				{count > 0 && (
 					<button
 						onClick={() => setShowLikes(true)}
-						className="text-sm text-zinc-500 hover:text-zinc-300 tabular-nums cursor-pointer transition-colors"
+						className="text-sm text-zinc-500 hover:text-zinc-300 tabular-nums cursor-pointer transition-colors hover:underline"
 					>
-						<CountUp end={count} />
+						<CountUp end={count} /> {label}
 					</button>
 				)}
 			</div>
@@ -546,4 +551,5 @@ export default function GameReviews({ gameId }) {
 		</div>
 	)
 }
+
 
