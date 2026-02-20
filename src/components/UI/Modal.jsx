@@ -96,7 +96,7 @@ export default function Modal({
 
 	if (!mounted) return null
 
-	function handlePointerDown(e) {
+	function handleOverlayPointerDown(e) {
 		pointerDownTargetRef.current = e.target
 	}
 
@@ -108,17 +108,13 @@ export default function Modal({
 		pointerDownTargetRef.current = null
 	}
 
-	function stopPointerDown(e) {
-		e.stopPropagation()
-	}
-
 	if (raw) {
 		return createPortal(
 			<div
 				ref={modalRef}
 				style={{ zIndex }}
 				className="fixed inset-0 flex items-end md:items-center justify-center md:p-6"
-				onPointerDown={handlePointerDown}
+				onPointerDown={handleOverlayPointerDown}
 				onClick={handleOverlayClick}
 			>
 				<div
@@ -132,7 +128,7 @@ export default function Modal({
 							? "translate-y-0 opacity-100 md:scale-100"
 							: "translate-y-full md:translate-y-2 md:scale-95 md:opacity-0"
 					} ${className}`}
-					onPointerDown={stopPointerDown}
+					onPointerDown={(e) => e.stopPropagation()}
 					onClick={(e) => e.stopPropagation()}
 				>
 					{children}
@@ -165,7 +161,7 @@ export default function Modal({
 				ref={modalRef}
 				style={{ zIndex }}
 				className={`fixed inset-0 flex ${fullscreenMobile ? "items-end md:items-center" : "items-center"} justify-center ${fullscreenMobile ? "md:p-6" : "p-4"}`}
-				onPointerDown={handlePointerDown}
+				onPointerDown={handleOverlayPointerDown}
 				onClick={handleOverlayClick}
 			>
 				<div
@@ -176,7 +172,7 @@ export default function Modal({
 
 				<div
 					className={`relative ${contentSizeClasses} ${contentStyleClasses} ${animationClasses} ${className}`}
-					onPointerDown={stopPointerDown}
+					onPointerDown={(e) => e.stopPropagation()}
 					onClick={(e) => e.stopPropagation()}
 				>
 					{fullscreenMobile && showMobileGrip && (
