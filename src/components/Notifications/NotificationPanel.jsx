@@ -55,21 +55,19 @@ function NotificationItem({ notification, users, onClose, onAction }) {
         !notification.read ? "bg-zinc-800/30" : ""
       }`}
     >
-      <div className="relative flex-shrink-0">
-        <img
-          src={actorUser?.avatar}
-          alt={actor}
-          className="w-9 h-9 rounded-full object-cover bg-zinc-800"
-        />
-        <div className={`absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full ${config.bg} border-2 border-zinc-900 flex items-center justify-center`}>
-          <Icon className={`w-2.5 h-2.5 ${config.color}`} />
-        </div>
-      </div>
+      <img
+        src={actorUser?.avatar}
+        alt={actor}
+        className="w-9 h-9 rounded-full object-cover bg-zinc-800 flex-shrink-0"
+      />
       <div className="flex-1 min-w-0">
         <p className={`text-sm leading-snug ${!notification.read ? "text-zinc-200" : "text-zinc-400"}`}>
           <span className="font-semibold text-white">{actor}</span> {text}
         </p>
-        <span className="text-xs text-zinc-600 mt-0.5 block">{getTimeAgo(notification.created_at)}</span>
+        <div className="flex items-center gap-1.5 mt-1">
+          <Icon className={`w-3 h-3 ${config.color}`} />
+          <span className="text-xs text-zinc-600">{getTimeAgo(notification.created_at)}</span>
+        </div>
       </div>
       {!notification.read && (
         <div className="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0 mt-2" />
