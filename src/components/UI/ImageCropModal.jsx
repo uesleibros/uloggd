@@ -4,7 +4,7 @@ import "react-image-crop/dist/ReactCrop.css"
 import { X } from "lucide-react"
 import Modal from "../UI/Modal"
 
-function getCroppedCanvas(image, crop) {
+function getCroppedCanvas(image, crop, maxWidth = 1920) {
 	const canvas = document.createElement("canvas")
 	const scaleX = image.naturalWidth / image.width
 	const scaleY = image.naturalHeight / image.height
@@ -16,8 +16,7 @@ function getCroppedCanvas(image, crop) {
 		height: Math.round(crop.height * scaleY),
 	}
 
-	const MAX_SIZE = 512
-	const scale = Math.min(1, MAX_SIZE / Math.max(pixelCrop.width, pixelCrop.height))
+	const scale = Math.min(1, maxWidth / pixelCrop.width)
 
 	canvas.width = Math.round(pixelCrop.width * scale)
 	canvas.height = Math.round(pixelCrop.height * scale)
@@ -74,13 +73,13 @@ export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClo
 
 	function handleConfirm() {
 		if (!completedCrop || !imgRef.current) return
-
-		const canvas = getCroppedCanvas(imgRef.current, completedCrop)
-
+		
+		const canvas = getCroppedCanvas(imgRef.current, completedCrop, maxWidth)
+		
 		canvas.toBlob((blob) => {
 			if (!blob) return
 			const url = URL.createObjectURL(blob)
-			onCrop({ blob, url })
+				onCrop({ blob, url })
 		}, "image/webp", 0.85)
 	}
 
@@ -157,3 +156,4 @@ export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClo
 		</Modal>
 	)
 }
+
