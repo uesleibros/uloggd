@@ -1,16 +1,30 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Bell } from "lucide-react"
-import { useNotifications } from "../../..//hooks/useNotifications"
+import { useNotifications } from "../../hooks/useNotifications"
 import NotificationPanel from "./NotificationPanel"
 
 export default function NotificationBell() {
   const { unreadCount, refetch } = useNotifications()
   const [open, setOpen] = useState(false)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      requestAnimationFrame(() => setVisible(true))
+    } else {
+      setVisible(false)
+    }
+  }, [open])
+
+  const handleClose = () => {
+    setVisible(false)
+    setTimeout(() => setOpen(false), 200)
+  }
 
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => open ? handleClose() : setOpen(true)}
         className="relative p-2 text-zinc-400 hover:text-white transition-colors cursor-pointer"
       >
         <Bell className="w-5 h-5" />
@@ -23,7 +37,8 @@ export default function NotificationBell() {
 
       {open && (
         <NotificationPanel
-          onClose={() => setOpen(false)}
+          visible={visible}
+          onClose={handleClose}
           onRead={refetch}
         />
       )}
