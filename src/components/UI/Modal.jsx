@@ -118,7 +118,7 @@ export default function Modal({
 				onClick={handleOverlayClick}
 			>
 				<div
-					className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-200 ${
+					className={`absolute inset-0 bg-black/70 backdrop-blur-sm pointer-events-none transition-opacity duration-200 ${
 						visible ? "opacity-100" : "opacity-0"
 					}`}
 				/>
@@ -165,7 +165,7 @@ export default function Modal({
 				onClick={handleOverlayClick}
 			>
 				<div
-					className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-200 ${
+					className={`absolute inset-0 bg-black/70 backdrop-blur-sm pointer-events-none transition-opacity duration-200 ${
 						visible ? "opacity-100" : "opacity-0"
 					}`}
 				/>
