@@ -64,7 +64,7 @@ function NotificationItem({ notification, users, onClose, onAction }) {
   )
 }
 
-export default function NotificationPanel({ onClose, onRead }) {
+export default function NotificationPanel({ visible, onClose, onRead }) {
   const [notifications, setNotifications] = useState([])
   const [users, setUsers] = useState({})
   const [loading, setLoading] = useState(true)
@@ -153,7 +153,11 @@ export default function NotificationPanel({ onClose, onRead }) {
   return (
     <div
       ref={panelRef}
-      className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden"
+      className={`absolute right-0 top-full mt-2 w-80 sm:w-96 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden origin-top-right transition-all duration-200 ${
+        visible
+          ? "opacity-100 scale-100 translate-y-0"
+          : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+      }`}
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
         <h3 className="text-sm font-semibold text-white">Notificações</h3>
