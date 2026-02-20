@@ -2,21 +2,20 @@ import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { UserPlus, ThumbsUp, Check, Trash2, X, Bell } from "lucide-react"
 import { supabase } from "../../lib/supabase"
-import AvatarWithDecoration from "../User/AvatarWithDecoration"
 
 const NOTIFICATION_CONFIG = {
   follow: {
     icon: UserPlus,
     color: "text-indigo-400",
     bg: "bg-indigo-500/10",
-    getMessage: (data) => `${data.follower_username} começou a te seguir`,
-    getLink: (data) => `/u/${data.follower_username}`,
+    getMessage: (data, users) => `${users[data.follower_id]?.username || "Alguém"} começou a te seguir`,
+    getLink: (data, users) => `/u/${users[data.follower_id]?.username}`,
   },
   log_like: {
     icon: ThumbsUp,
     color: "text-amber-400",
     bg: "bg-amber-500/10",
-    getMessage: (data) => `${data.liker_username} curtiu sua review`,
+    getMessage: (data, users) => `${users[data.liker_id]?.username || "Alguém"} curtiu sua review`,
     getLink: (data) => `/game/${data.game_slug}`,
   },
 }
@@ -30,13 +29,13 @@ function getTimeAgo(dateStr) {
   return `${Math.floor(diff / 2592000)}m`
 }
 
-function NotificationItem({ notification, onClose, onAction }) {
+function NotificationItem({ notification, users, onClose, onAction }) {
   const config = NOTIFICATION_CONFIG[notification.type]
   if (!config) return null
 
   const Icon = config.icon
-  const link = config.getLink(notification.data)
-  const message = config.getMessage(notification.data)
+  const link = config.getLink(notification.data, users)
+  const message = config.getMessage(notification.data, users)
 
   return (
     <Link
@@ -67,6 +66,7 @@ function NotificationItem({ notification, onClose, onAction }) {
 
 export default function NotificationPanel({ onClose, onRead }) {
   const [notifications, setNotifications] = useState([])
+  const [users, setUsers] = useState({})
   const [loading, setLoading] = useState(true)
   const panelRef = useRef(null)
 
@@ -92,7 +92,26 @@ export default function NotificationPanel({ onClose, onRead }) {
           },
         })
         const data = await r.json()
+
+        const userIds = [...new Set(data.flatMap(n => {
+          if (n.type === "follow") return [n.data.follower_id]
+          if (n.type === "log_like") return [n.data.liker_id]
+          return []
+        }))]
+
+        let usersMap = {}
+        if (userIds.length > 0) {
+          const uRes = await fetch("/api/user?action=batch", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userIds }),
+          })
+          const uData = await uRes.json()
+          uData.forEach(u => { usersMap[u.id] = u })
+        }
+
         setNotifications(data || [])
+        setUsers(usersMap)
       } catch {}
       setLoading(false)
     }
@@ -185,6 +204,7 @@ export default function NotificationPanel({ onClose, onRead }) {
               <NotificationItem
                 key={n.id}
                 notification={n}
+                users={users}
                 onClose={onClose}
                 onAction={handleAction}
               />
