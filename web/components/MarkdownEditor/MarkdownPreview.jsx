@@ -15,6 +15,22 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content, authorRa
         }
       )
       .replace(
+        /!game:mini\(([^)\n]+)\)/g,
+        (match, slug) => `<game-card slug="${slug}" variant="mini"></game-card>`
+      )
+      .replace(
+        /!game:grid-auto\(([^)\n]+)\)/g,
+        (match, slugs) => `<game-grid-auto slugs="${slugs}"></game-grid-auto>`
+      )
+      .replace(
+        /!game:grid\(([^)\n]+)\)/g,
+        (match, slugs) => `<game-grid slugs="${slugs}"></game-grid>`
+      )
+      .replace(
+        /!game\(([^)\n]+)\)/g,
+        (match, slug) => `<game-card slug="${slug}"></game-card>`
+      )
+      .replace(
         /(```[\s\S]*?```|`[^`\n]+`)|\|\|(.+?)\|\|/g,
         (match, code, spoiler) => {
           if (code) return code
