@@ -1,5 +1,5 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { DEFAULT_AVATAR_URL } from "../constants.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { DEFAULT_AVATAR_URL } from "#services/user/constants.js"
 
 export async function handleProfile(req, res) {
   const { userId, username } = req.body

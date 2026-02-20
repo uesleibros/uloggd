@@ -1,4 +1,4 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
+import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleStats(req, res) {
   const { gameId } = req.body

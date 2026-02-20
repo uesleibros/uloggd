@@ -1,7 +1,7 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { getUser } from "../../../utils/auth.js"
-import { createNotification } from "../../notifications/create.js"
-import { VALID_FOLLOW_ACTIONS } from "../constants.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { getUser } from "#utils/auth.js"
+import { createNotification } from "#services/notifications/create.js"
+import { VALID_FOLLOW_ACTIONS } from "#services/user/constants.js"
 
 export async function handleFollow(req, res) {
   const user = await getUser(req)

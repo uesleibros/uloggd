@@ -1,6 +1,6 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { getUser } from "../../../utils/auth.js"
-import  { AVATAR_DECORATIONS } from "../../../data/avatarDecorations.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { getUser } from "#utils/auth.js"
+import  { AVATAR_DECORATIONS } from "#data/avatarDecorations.js"
 
 const VALID_DECORATIONS = AVATAR_DECORATIONS.map(d => d.id)
 

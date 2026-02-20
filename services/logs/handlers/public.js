@@ -1,5 +1,5 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { DEFAULT_AVATAR_URL } from "../../user/constants.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { DEFAULT_AVATAR_URL } from "#services/user/constants.js"
 
 export async function handlePublic(req, res) {
   const { gameId, sortBy = "recent", page = 1, limit = 20 } = req.body

@@ -1,6 +1,6 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { getUser } from "../../../utils/auth.js"
-import { VALID_STATUSES, ALLOWED_FIELDS, BOOLEAN_FIELDS, DEFAULT_GAME_STATE, MAX_SLUG } from "../constants.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { getUser } from "#utils/auth.js"
+import { VALID_STATUSES, ALLOWED_FIELDS, BOOLEAN_FIELDS, DEFAULT_GAME_STATE, MAX_SLUG } from "#services/userGames/constants.js"
 
 export async function handleUpdate(req, res) {
   const user = await getUser(req)

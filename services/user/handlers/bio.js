@@ -1,6 +1,6 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { getUser } from "../../../utils/auth.js"
-import { MAX_BIO } from "../constants.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { getUser } from "#utils/auth.js"
+import { MAX_BIO } from "#services/user/constants.js"
 
 export async function handleBio(req, res) {
   const user = await getUser(req)

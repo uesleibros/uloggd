@@ -1,4 +1,4 @@
-import { query } from "../../../lib/igdb-wrapper.js"
+import { query } from "#lib/igdb-wrapper.js"
 
 export async function handleGamesBatch(req, res) {
   const { slugs } = req.body

@@ -1,5 +1,5 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { getUser } from "../../../utils/auth.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { getUser } from "#utils/auth.js"
 
 const BATCH_SIZE = 25
 

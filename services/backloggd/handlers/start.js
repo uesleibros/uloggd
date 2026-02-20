@@ -1,6 +1,6 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { getUser } from "../../../utils/auth.js"
-import { scrapeUser, verifyUser } from "../scraper.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { getUser } from "#utils/auth.js"
+import { scrapeUser, verifyUser } from "#services/backloggd/scraper.js"
 
 export async function handleStart(req, res) {
   const user = await getUser(req)

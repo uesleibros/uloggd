@@ -1,7 +1,7 @@
-import { handleStart } from "../services/backloggd/handlers/start.js"
-import { handleStatus } from "../services/backloggd/handlers/status.js"
-import { handleProcess } from "../services/backloggd/handlers/process.js"
-import { handleCancel } from "../services/backloggd/handlers/cancel.js"
+import { handleStart } from "#services/backloggd/handlers/start.js"
+import { handleStatus } from "#services/backloggd/handlers/status.js"
+import { handleProcess } from "#services/backloggd/handlers/process.js"
+import { handleCancel } from "#services/backloggd/handlers/cancel.js"
 
 const ACTIONS = {
   start: handleStart,

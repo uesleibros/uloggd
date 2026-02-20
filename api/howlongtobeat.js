@@ -1,6 +1,6 @@
-import { fetchFinderWithRetry } from "../services/howlongtobeat/client.js"
-import { buildQueries, scoreGame } from "../services/howlongtobeat/matcher.js"
-import { HLTB_BASE, MIN_NAME_SCORE } from "../services/howlongtobeat/constants.js"
+import { fetchFinderWithRetry } from "#services/howlongtobeat/client.js"
+import { buildQueries, scoreGame } from "#services/howlongtobeat/matcher.js"
+import { HLTB_BASE, MIN_NAME_SCORE } from "#services/howlongtobeat/constants.js"
 
 const secToHours = (s) => (s > 0 ? +(s / 3600).toFixed(1) : null)
 

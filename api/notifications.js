@@ -1,7 +1,7 @@
-import { handleNotificationCount } from "../services/notifications/handlers/count.js"
-import { handleNotificationList } from "../services/notifications/handlers/list.js"
-import { handleNotificationRead } from "../services/notifications/handlers/read.js"
-import { handleNotificationDelete } from "../services/notifications/handlers/delete.js"
+import { handleNotificationCount } from "#services/notifications/handlers/count.js"
+import { handleNotificationList } from "#services/notifications/handlers/list.js"
+import { handleNotificationRead } from "#services/notifications/handlers/read.js"
+import { handleNotificationDelete } from "#services/notifications/handlers/delete.js"
 
 const ACTIONS = {
   count: handleNotificationCount,

@@ -1,4 +1,4 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
+import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleLikeStatus(req, res) {
   const { logId, currentUserId } = req.body

@@ -1,8 +1,8 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { getUser } from "../../../utils/auth.js"
-import { sanitize, safePlatform, sanitizeAspects } from "../utils/sanitize.js"
-import { validateDates, validateTime, validateRating, validateAspectRatings } from "../utils/validators.js"
-import { VALID_STATUSES, VALID_RATING_MODES, LIMITS } from "../constants.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { getUser } from "#utils/auth.js"
+import { sanitize, safePlatform, sanitizeAspects } from "#services/logs/utils/sanitize.js"
+import { validateDates, validateTime, validateRating, validateAspectRatings } from "#services/logs/utils/validators.js"
+import { VALID_STATUSES, VALID_RATING_MODES, LIMITS } from "#services/logs/constants.js"
 
 export async function handleUpdate(req, res) {
   const user = await getUser(req)

@@ -1,7 +1,7 @@
-import { handleGet } from "../services/userGames/handlers/get.js"
-import { handleUpdate } from "../services/userGames/handlers/update.js"
-import { handleProfileGames } from "../services/userGames/handlers/profileGames.js"
-import { handleMyGames } from "../services/userGames/handlers/myGames.js"
+import { handleGet } from "#services/userGames/handlers/get.js"
+import { handleUpdate } from "#services/userGames/handlers/update.js"
+import { handleProfileGames } from "#services/userGames/handlers/profileGames.js"
+import { handleMyGames } from "#services/userGames/handlers/myGames.js"
 
 const ACTIONS = {
   get: handleGet,

@@ -1,4 +1,4 @@
-import { supabase } from "../../lib/supabase-ssr.js"
+import { supabase } from "#lib/supabase-ssr.js"
 
 export async function createNotification({ userId, type, data, dedupeKey }) {
   if (!userId || !type) return

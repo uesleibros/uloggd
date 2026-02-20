@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabase-ssr.js"
+import { supabase } from "#lib/supabase-ssr.js"
 
 export async function getUser(req) {
   const token = req.headers.authorization?.replace("Bearer ", "")

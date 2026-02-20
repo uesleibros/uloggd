@@ -1,4 +1,4 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
+import { supabase } from "#lib/supabase-ssr.js"
 
 function buildGameMap(userGames, logs) {
   const gameMap = {}

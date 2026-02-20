@@ -1,15 +1,15 @@
-import { handleProfile } from "../services/user/handlers/profile.js"
-import { handleBio } from "../services/user/handlers/bio.js"
-import { handleDelete } from "../services/user/handlers/delete.js"
-import { handleFollow } from "../services/user/handlers/follow.js"
-import { handleFollowStatus } from "../services/user/handlers/followStatus.js"
-import { handleFollowers } from "../services/user/handlers/followers.js"
-import { handleBanner } from "../services/user/handlers/banner.js"
-import { handleAvatar } from "../services/user/handlers/avatar.js"
-import { handleThinking } from "../services/user/handlers/thinking.js"
-import { handleDecoration } from "../services/user/handlers/decoration.js"
-import { handlePronoun } from "../services/user/handlers/pronoun.js"
-import { handleBatch } from "../services/user/handlers/batch.js"
+import { handleProfile } from "#services/user/handlers/profile.js"
+import { handleBio } from "#services/user/handlers/bio.js"
+import { handleDelete } from "#services/user/handlers/delete.js"
+import { handleFollow } from "#services/user/handlers/follow.js"
+import { handleFollowStatus } from "#services/user/handlers/followStatus.js"
+import { handleFollowers } from "#services/user/handlers/followers.js"
+import { handleBanner } from "#services/user/handlers/banner.js"
+import { handleAvatar } from "#services/user/handlers/avatar.js"
+import { handleThinking } from "#services/user/handlers/thinking.js"
+import { handleDecoration } from "#services/user/handlers/decoration.js"
+import { handlePronoun } from "#services/user/handlers/pronoun.js"
+import { handleBatch } from "#services/user/handlers/batch.js"
 
 const ACTIONS = {
   profile: handleProfile,
@@ -34,4 +34,3 @@ export default async function handler(req, res) {
 
   return fn(req, res)
 }
-

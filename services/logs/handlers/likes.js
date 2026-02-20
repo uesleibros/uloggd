@@ -1,5 +1,5 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { DEFAULT_AVATAR_URL } from "../../user/constants.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { DEFAULT_AVATAR_URL } from "#services/user/constants.js"
 
 export async function handleLikes(req, res) {
   const { logId } = req.body

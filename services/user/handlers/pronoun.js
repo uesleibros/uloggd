@@ -1,6 +1,6 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { getUser } from "../../../utils/auth.js"
-import { MAX_PRONOUN } from "../constants.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { getUser } from "#utils/auth.js"
+import { MAX_PRONOUN } from "#services/user/constants.js"
 
 export async function handlePronoun(req, res) {
   const user = await getUser(req)

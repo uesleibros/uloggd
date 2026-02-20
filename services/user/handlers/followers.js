@@ -1,5 +1,5 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { DEFAULT_AVATAR_URL, VALID_LIST_TYPES } from "../constants.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { DEFAULT_AVATAR_URL, VALID_LIST_TYPES } from "#services/user/constants.js"
 
 export async function handleFollowers(req, res) {
   const { userId, type } = req.body

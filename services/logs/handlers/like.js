@@ -1,6 +1,6 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { getUser } from "../../../utils/auth.js"
-import { createNotification } from "../../notifications/create.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { getUser } from "#utils/auth.js"
+import { createNotification } from "#services/notifications/create.js"
 
 export async function handleLike(req, res) {
   const user = await getUser(req)

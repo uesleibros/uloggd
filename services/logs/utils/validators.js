@@ -2,7 +2,7 @@ import {
   VALID_RATING_MODES,
   RATING_STEPS,
   LIMITS,
-} from "../constants.js"
+} from "#services/logs/constants.js"
 
 export function validateDates(startedOn, finishedOn) {
   const today = new Date().toISOString().split("T")[0]

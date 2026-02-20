@@ -1,4 +1,4 @@
-import { NOISE_WORDS, MIN_NAME_SCORE } from "./constants.js"
+import { NOISE_WORDS, MIN_NAME_SCORE } from "#services/howlongtobeat/constants.js"
 
 function norm(str) {
   if (!str) return ""

@@ -1,6 +1,6 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { getUser } from "../../../utils/auth.js"
-import { DEFAULT_GAME_STATE } from "../constants.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { getUser } from "#utils/auth.js"
+import { DEFAULT_GAME_STATE } from "#services/userGames/constants.js"
 
 export async function handleGet(req, res) {
   const user = await getUser(req)

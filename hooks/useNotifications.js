@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
-import { supabase } from "../lib/supabase"
-import { useAuth } from "./useAuth"
+import { supabase } from "#lib/supabase"
+import { useAuth } from "#hooks/useAuth"
 
 const POLL_INTERVAL = 10000
 

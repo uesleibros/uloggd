@@ -1,7 +1,7 @@
-import { supabase } from "../../../lib/supabase-ssr.js"
-import { getUser } from "../../../utils/auth.js"
-import { uploadToImgchest } from "../utils/imgchest.js"
-import { VALID_AVATAR_ACTIONS } from "../constants.js"
+import { supabase } from "#lib/supabase-ssr.js"
+import { getUser } from "#utils/auth.js"
+import { uploadToImgchest } from "#services/user/utils/imgchest.js"
+import { VALID_AVATAR_ACTIONS } from "#services/user/constants.js"
 
 export async function handleAvatar(req, res) {
   const user = await getUser(req)

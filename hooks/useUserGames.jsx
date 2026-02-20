@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react"
-import { useAuth } from "./useAuth"
-import { supabase } from "../lib/supabase"
+import { useAuth } from "#hooks/useAuth"
+import { supabase } from "#lib/supabase"
 
 const UserGamesContext = createContext(null)
 

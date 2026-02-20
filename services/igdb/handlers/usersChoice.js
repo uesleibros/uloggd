@@ -1,5 +1,5 @@
-import { query } from "../../../lib/igdb-wrapper.js"
-import { FEATURED_SLUGS } from "../constants.js"
+import { query } from "#lib/igdb-wrapper.js"
+import { FEATURED_SLUGS } from "#services/igdb/constants.js"
 
 export async function handleUsersChoice(req, res) {
   try {

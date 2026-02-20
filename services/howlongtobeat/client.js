@@ -1,4 +1,4 @@
-import { HLTB_BASE, USER_AGENT, TOKEN_TTL, FINDER_BODY_TEMPLATE } from "./constants.js"
+import { HLTB_BASE, USER_AGENT, TOKEN_TTL, FINDER_BODY_TEMPLATE } from "#services/howlongtobeat/constants.js"
 
 let cachedToken = null
 let cachedAt = 0

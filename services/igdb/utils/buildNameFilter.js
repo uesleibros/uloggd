@@ -1,5 +1,5 @@
-import { escapeIGDB } from "./escapeIGDB.js"
-import { generateVariations } from "./generateVariations.js"
+import { escapeIGDB } from "#services/igdb/utils/escapeIGDB.js"
+import { generateVariations } from "#services/igdb/utils/generateVariations.js"
 
 export function buildNameFilter(raw) {
   const q = raw.trim()

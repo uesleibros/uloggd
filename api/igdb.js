@@ -1,7 +1,7 @@
-import { handleAutocomplete } from "../services/igdb/handlers/autocomplete.js"
-import { handleGame } from "../services/igdb/handlers/game.js"
-import { handleGamesBatch } from "../services/igdb/handlers/gamesBatch.js"
-import { handleUsersChoice } from "../services/igdb/handlers/usersChoice.js"
+import { handleAutocomplete } from "#services/igdb/handlers/autocomplete.js"
+import { handleGame } from "#services/igdb/handlers/game.js"
+import { handleGamesBatch } from "#services/igdb/handlers/gamesBatch.js"
+import { handleUsersChoice } from "#services/igdb/handlers/usersChoice.js"
 
 const ACTIONS = {
   autocomplete: handleAutocomplete,
