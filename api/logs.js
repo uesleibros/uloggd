@@ -18,7 +18,7 @@ const ACTIONS = {
   update: handleUpdate,
   user: handleUser,
   like: handleLike,
-  likeStatus: handkeLikeStatus,
+  likeStatus: handleLikeStatus,
   likes: handleLikes
 }
 
