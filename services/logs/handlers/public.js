@@ -37,7 +37,7 @@ export async function handlePublic(req, res) {
           .in("user_id", userIds),
         supabase
           .from("user_badges")
-          .select("user_id, badge:badges(id, title, description, icon_url, color, assigned_at)")
+          .select("user_id, assigned_at, badge:badges(id, title, description, icon_url, color)")
           .in("user_id", userIds),
       ])
 
@@ -77,3 +77,4 @@ export async function handlePublic(req, res) {
     res.status(500).json({ error: "failed to fetch reviews" })
   }
 }
+
