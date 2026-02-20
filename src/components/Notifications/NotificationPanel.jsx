@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { UserPlus, ThumbsUp, Check, Trash2, X, Bell } from "lucide-react"
 import { supabase } from "../../../lib/supabase"
+import AvatarWithDecoration from "../User/AvatarWithDecoration"
 
 const NOTIFICATION_CONFIG = {
   follow: {
@@ -10,6 +11,7 @@ const NOTIFICATION_CONFIG = {
     bg: "bg-indigo-500/10",
     getMessage: (data, users) => `${users[data.follower_id]?.username || "Alguém"} começou a te seguir`,
     getLink: (data, users) => `/u/${users[data.follower_id]?.username}`,
+    getUserId: (data) => data.follower_id,
   },
   log_like: {
     icon: ThumbsUp,
@@ -17,6 +19,7 @@ const NOTIFICATION_CONFIG = {
     bg: "bg-amber-500/10",
     getMessage: (data, users) => `${users[data.liker_id]?.username || "Alguém"} curtiu sua review`,
     getLink: (data) => `/game/${data.game_slug}`,
+    getUserId: (data) => data.liker_id,
   },
 }
 
@@ -36,6 +39,8 @@ function NotificationItem({ notification, users, onClose, onAction }) {
   const Icon = config.icon
   const link = config.getLink(notification.data, users)
   const message = config.getMessage(notification.data, users)
+  const actorId = config.getUserId(notification.data)
+  const actor = users[actorId]
 
   return (
     <Link
@@ -48,8 +53,16 @@ function NotificationItem({ notification, users, onClose, onAction }) {
         !notification.read ? "bg-zinc-800/30" : ""
       }`}
     >
-      <div className={`w-8 h-8 rounded-full ${config.bg} flex items-center justify-center flex-shrink-0 mt-0.5`}>
-        <Icon className={`w-4 h-4 ${config.color}`} />
+      <div className="relative flex-shrink-0">
+        <AvatarWithDecoration
+          src={actor?.avatar}
+          alt={actor?.username}
+          decoration={actor?.avatar_decoration}
+          size="sm"
+        />
+        <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${config.bg} border-2 border-zinc-900 flex items-center justify-center`}>
+          <Icon className={`w-2.5 h-2.5 ${config.color}`} />
+        </div>
       </div>
       <div className="flex-1 min-w-0">
         <p className={`text-sm leading-snug ${!notification.read ? "text-zinc-200" : "text-zinc-400"}`}>
