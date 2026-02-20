@@ -7,7 +7,7 @@ const NOTIFICATION_CONFIG = {
   follow: {
     icon: UserPlus,
     color: "text-indigo-400",
-    bg: "bg-indigo-500",
+    bg: "bg-indigo-500/10",
     getActor: (data, users) => users[data.follower_id]?.username || "Alguém",
     getText: () => "começou a te seguir",
     getLink: (data, users) => `/u/${users[data.follower_id]?.username}`,
@@ -16,7 +16,7 @@ const NOTIFICATION_CONFIG = {
   log_like: {
     icon: ThumbsUp,
     color: "text-amber-400",
-    bg: "bg-amber-500",
+    bg: "bg-amber-500/10",
     getActor: (data, users) => users[data.liker_id]?.username || "Alguém",
     getText: () => "curtiu sua review",
     getLink: (data) => `/game/${data.game_slug}`,
