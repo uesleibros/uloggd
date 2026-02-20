@@ -211,6 +211,10 @@ export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeh
 			spoilerimage: () => insertNewBlock('<spoilerimg src="https://url-da-imagem.com" alt="descrição" width="400" />'),
 			hr: () => insertNewBlock("---"),
 			mention: () => insertText("@", "", "username"),
+			desktop: () =>
+			  insertNewBlock("<desktop>\n\nconteúdo para desktop\n\n</desktop>"),
+			mobile: () =>
+			  insertNewBlock("<mobile>\n\nconteúdo para mobile\n\n</mobile>"),
 			center: () => insertNewBlock("<center>\n\nconteúdo centralizado\n\n</center>"),
 			table: () => insertNewBlock("| Coluna 1 | Coluna 2 | Coluna 3 |\n| --- | --- | --- |\n| dado | dado | dado |"),
 		}

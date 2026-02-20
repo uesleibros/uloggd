@@ -5,7 +5,7 @@ import { showConsoleWarning } from "#utils/consoleWarning"
 
 import App from "#web/App"
 import "#web/index.css"
-import "#web/styles/avatar.css"
+import "@styles/avatar.css"
 
 showConsoleWarning()
 

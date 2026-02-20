@@ -86,3 +86,13 @@ img.emoji {
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
+
+::selection {
+  background: rgba(99, 102, 241, 0.25); /* indigo suave */
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background: rgba(99, 102, 241, 0.25);
+  color: #ffffff;
+}

@@ -3,18 +3,28 @@ import remarkGfm from "remark-gfm"
 import rehypeRaw from "rehype-raw"
 import remarkBreaks from "remark-breaks"
 import rehypeSanitize from "rehype-sanitize"
+import remarkDirective from "remark-directive"
+import { remarkAlert } from "@components/MarkdownEditor/remarkAlert"
 import { SpoilerText } from "@components/MarkdownEditor/SpoilerText"
 import { SpoilerImage } from "@components/MarkdownEditor/SpoilerImage"
 import { Mention } from "@components/MarkdownEditor/Mention"
 import { MarkdownGameCard } from "@components/MarkdownEditor/MarkdownGameCard"
 import { MarkdownGameGrid } from "@components/MarkdownEditor/MarkdownGameGrid"
+import {
+  Info,
+  Lightbulb,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react"
 
 export const customSchema = {
   ...defaultSchema,
   tagNames: [
     ...(defaultSchema.tagNames || []), 
     "details", "summary", "iframe", "img", "spoiler", "spoilerimg", 
-    "div", "center", "mention", "game-card", "game-grid", "game-grid-auto", "svg", "path", "hr"
+    "div", "center", "mention", "game-card", "game-grid", "game-grid-auto",
+    "svg", "path", "hr", "alert-box", "desktop", "mobile",
   ],
   attributes: {
     ...defaultSchema.attributes,
@@ -35,6 +45,9 @@ export const customSchema = {
     center: [],
     mention: [],
     spoiler: [],
+    desktop: [],
+    mobile: [],
+    "alert-box": ["type"],
     "game-card": ["slug", "variant"],
     "game-grid": ["slugs"],
     "game-grid-auto": ["slugs"],
@@ -47,7 +60,7 @@ export const customSchema = {
   },
 }
 
-export const remarkPlugins = [remarkGfm, remarkBreaks]
+export const remarkPlugins = [remarkGfm, remarkBreaks, remarkDirective, remarkAlert]
 export const rehypePlugins = [rehypeRaw, [rehypeSanitize, customSchema]]
 
 export function createMarkdownComponents(authorRatings = {}) {
@@ -157,6 +170,94 @@ export function createMarkdownComponents(authorRatings = {}) {
         <table className="w-full text-sm border-collapse border border-zinc-700 rounded-lg overflow-hidden">{children}</table>
       </div>
     ),
+    "alert-box": ({ type = "info", children }) => {
+      const variants = {
+        info: {
+          icon: Info,
+          color: "text-sky-400",
+          border: "border-sky-500/30",
+          bg: "bg-sky-500/5",
+          label: "Info",
+        },
+        note: {
+          icon: Info,
+          color: "text-zinc-400",
+          border: "border-zinc-500/30",
+          bg: "bg-zinc-500/5",
+          label: "Nota",
+        },
+        tip: {
+          icon: Lightbulb,
+          color: "text-sky-400",
+          border: "border-sky-500/30",
+          bg: "bg-sky-500/5",
+          label: "Dica",
+        },
+        warning: {
+          icon: AlertTriangle,
+          color: "text-amber-400",
+          border: "border-amber-500/30",
+          bg: "bg-amber-500/5",
+          label: "Cuidado",
+        },
+        danger: {
+          icon: AlertCircle,
+          color: "text-red-400",
+          border: "border-red-500/30",
+          bg: "bg-red-500/5",
+          label: "Perigoso",
+        },
+        success: {
+          icon: CheckCircle2,
+          color: "text-emerald-400",
+          border: "border-emerald-500/30",
+          bg: "bg-emerald-500/5",
+          label: "Sucesso",
+        },
+      }
+
+      const variant = variants[type] || variants.info
+      const Icon = variant.icon
+
+      return (
+        <div
+          className={`my-6 rounded-xl border ${variant.border} ${variant.bg} overflow-hidden`}
+        >
+          <div className="flex gap-3 p-4">
+            <div
+              className={`flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-900/60 border border-white/5`}
+            >
+              <Icon className={`w-4 h-4 ${variant.color}`} strokeWidth={2} />
+            </div>
+
+            <div className="flex-1">
+              <div className={`text-sm font-semibold mb-1 ${variant.color}`}>
+                {variant.label}
+              </div>
+
+              <div className="text-sm text-zinc-300 leading-relaxed">
+                {children}
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    desktop: ({ children }) => {
+      return (
+        <div className="hidden md:block">
+          {children}
+        </div>
+      )
+    },
+
+    mobile: ({ children }) => {
+      return (
+        <div className="block md:hidden">
+          {children}
+        </div>
+      )
+    },
     "game-card": ({ slug, variant }) => <MarkdownGameCard authorRatings={authorRatings} slug={slug} variant={variant} />,
     "game-grid": ({ slugs }) => <MarkdownGameGrid authorRatings={authorRatings} slugs={slugs} />,
     "game-grid-auto": ({ slugs }) => <MarkdownGameGrid authorRatings={authorRatings} slugs={slugs} autoScroll />,
@@ -167,6 +268,3 @@ export function createMarkdownComponents(authorRatings = {}) {
   }
 
 }
-
-
-
