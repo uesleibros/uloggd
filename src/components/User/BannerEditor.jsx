@@ -4,6 +4,7 @@ import { notify } from "../UI/Notification"
 import ImageCropModal from "../UI/ImageCropModal"
 
 const BANNER_ASPECT = 16 / 4
+const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export default function BannerEditor({ currentBanner, onSave, saving = false }) {
 	const [mode, setMode] = useState(null)
@@ -14,8 +15,21 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
 	const [preview, setPreview] = useState(currentBanner || null)
 	const [pendingBlob, setPendingBlob] = useState(null)
 	const fileRef = useRef(null)
+	const previewUrlRef = useRef(null)
 
 	useEffect(() => {
+		return () => {
+			if (previewUrlRef.current) {
+				URL.revokeObjectURL(previewUrlRef.current)
+			}
+		}
+	}, [])
+
+	useEffect(() => {
+		if (previewUrlRef.current) {
+			URL.revokeObjectURL(previewUrlRef.current)
+			previewUrlRef.current = null
+		}
 		setPreview(currentBanner)
 		setPendingBlob(null)
 		setMode(null)
@@ -25,13 +39,19 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
 		const file = e.target.files?.[0]
 		if (!file) return
 
-		if (!file.type.startsWith("image/")) return
-		if (file.size > 10 * 1024 * 1024) return
+		if (!file.type.startsWith("image/")) {
+			notify("Selecione um arquivo de imagem válido.", "error")
+			return
+		}
+
+		if (file.size > MAX_FILE_SIZE) {
+			notify("A imagem deve ter no máximo 10MB.", "error")
+			return
+		}
 
 		const reader = new FileReader()
-		reader.onload = () => {
-			setCropSrc(reader.result)
-		}
+		reader.onload = () => setCropSrc(reader.result)
+		reader.onerror = () => notify("Erro ao ler o arquivo.", "error")
 		reader.readAsDataURL(file)
 		e.target.value = ""
 	}
@@ -43,7 +63,7 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
 		setUrlLoading(true)
 
 		try {
-			const res = await fetch(urlInput.trim())
+			const res = await fetch(urlInput.trim(), { mode: "cors" })
 			if (!res.ok) throw new Error()
 
 			const contentType = res.headers.get("content-type")
@@ -54,11 +74,22 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
 			}
 
 			const blob = await res.blob()
+
+			if (blob.size > MAX_FILE_SIZE) {
+				setUrlError("A imagem é muito grande (máximo 10MB).")
+				setUrlLoading(false)
+				return
+			}
+
 			const reader = new FileReader()
 			reader.onload = () => {
 				setCropSrc(reader.result)
 				setUrlLoading(false)
 				setMode(null)
+			}
+			reader.onerror = () => {
+				setUrlError("Erro ao processar a imagem.")
+				setUrlLoading(false)
 			}
 			reader.readAsDataURL(blob)
 		} catch {
@@ -68,23 +99,37 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
 	}
 
 	function handleCropComplete({ blob, url }) {
+		if (previewUrlRef.current) {
+			URL.revokeObjectURL(previewUrlRef.current)
+		}
+		previewUrlRef.current = url
+
 		setPreview(url)
 		setPendingBlob(blob)
 		setCropSrc(null)
+		setMode(null)
 	}
 
 	function handleSave() {
 		if (!pendingBlob) return
 
-		const reader = new FileReader()
-		reader.onload = () => {
-			onSave(reader.result)
-			notify("Banner salvo com sucesso!")
+		if (pendingBlob.size > 5 * 1024 * 1024) {
+			notify("A imagem processada é muito grande. Tente uma imagem menor.", "error")
+			return
 		}
+
+		const reader = new FileReader()
+		reader.onload = () => onSave(reader.result)
+		reader.onerror = () => notify("Erro ao processar a imagem.", "error")
 		reader.readAsDataURL(pendingBlob)
 	}
 
 	function handleRemove() {
+		if (previewUrlRef.current) {
+			URL.revokeObjectURL(previewUrlRef.current)
+			previewUrlRef.current = null
+		}
+
 		setPreview(null)
 		setPendingBlob(null)
 		setMode(null)
@@ -108,6 +153,7 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
 								src={preview}
 								alt="Banner"
 								className="w-full aspect-[16/4] select-none object-cover"
+								draggable={false}
 							/>
 						</div>
 
@@ -229,7 +275,14 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
 				<div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2 sm:gap-3 pt-2">
 					<button
 						type="button"
-						onClick={() => { setPreview(currentBanner); setPendingBlob(null) }}
+						onClick={() => {
+							if (previewUrlRef.current) {
+								URL.revokeObjectURL(previewUrlRef.current)
+								previewUrlRef.current = null
+							}
+							setPreview(currentBanner)
+							setPendingBlob(null)
+						}}
 						className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors cursor-pointer"
 					>
 						Descartar
