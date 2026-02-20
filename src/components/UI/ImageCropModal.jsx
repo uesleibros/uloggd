@@ -16,8 +16,8 @@ function getCroppedCanvas(image, crop) {
 		height: Math.round(crop.height * scaleY),
 	}
 
-	const MAX_WIDTH = 1920
-	const scale = pixelCrop.width > MAX_WIDTH ? MAX_WIDTH / pixelCrop.width : 1
+	const MAX_SIZE = 512
+	const scale = Math.min(1, MAX_SIZE / Math.max(pixelCrop.width, pixelCrop.height))
 
 	canvas.width = Math.round(pixelCrop.width * scale)
 	canvas.height = Math.round(pixelCrop.height * scale)
@@ -81,7 +81,7 @@ export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClo
 			if (!blob) return
 			const url = URL.createObjectURL(blob)
 			onCrop({ blob, url })
-		}, "image/png", 0.95)
+		}, "image/webp", 0.85)
 	}
 
 	return (
