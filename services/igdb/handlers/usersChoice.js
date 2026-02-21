@@ -1,4 +1,4 @@
-import { query } from "#lib/igdb-wrapper.js"
+import { query } from "#lib/igdbWrapper.js"
 import { FEATURED_SLUGS } from "#services/igdb/constants.js"
 
 export async function handleUsersChoice(req, res) {
@@ -20,4 +20,5 @@ export async function handleUsersChoice(req, res) {
     console.error(e)
     res.status(500).json({ error: "fail" })
   }
+
 }
