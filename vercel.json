@@ -2,6 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/api/:service/:scope/:action",
+      "destination": "/api/service?service=:service&scope=:scope&action=:action"
+    },
+    {
+      "source": "/api/:service/:action",
+      "destination": "/api/service?service=:service&action=:action"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
@@ -11,4 +19,3 @@
     }
   ]
 }
-
