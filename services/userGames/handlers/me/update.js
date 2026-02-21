@@ -1,11 +1,7 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
 import { VALID_STATUSES, ALLOWED_FIELDS, BOOLEAN_FIELDS, DEFAULT_GAME_STATE, MAX_SLUG } from "#services/userGames/constants.js"
 
 export async function handleUpdate(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
-
   const { gameId, gameSlug, field, value } = req.body
 
   if (!gameId || !gameSlug)
@@ -24,7 +20,7 @@ export async function handleUpdate(req, res) {
     const { data: existing } = await supabase
       .from("user_games")
       .select("id")
-      .eq("user_id", user.id)
+      .eq("user_id", req.user.id)
       .eq("game_id", gameId)
       .maybeSingle()
 
@@ -44,7 +40,7 @@ export async function handleUpdate(req, res) {
       const { data, error } = await supabase
         .from("user_games")
         .insert({
-          user_id: user.id,
+          user_id: req.user.id,
           game_id: gameId,
           game_slug: gameSlug.trim().slice(0, MAX_SLUG),
           ...DEFAULT_GAME_STATE,
@@ -60,6 +56,6 @@ export async function handleUpdate(req, res) {
     res.json(result)
   } catch (e) {
     console.error(e)
-    res.status(500).json({ error: "failed to update" })
+    res.status(500).json({ error: "fail" })
   }
 }
