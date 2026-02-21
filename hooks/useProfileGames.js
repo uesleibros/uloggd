@@ -27,7 +27,7 @@ export function useProfileGames(profileId) {
     setLoadingGames(true)
 
     try {
-      const res = await fetch("/api/userGames?action=profileGames", {
+      const res = await fetch("/api/userGames/profileGames", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: profileId }),
@@ -74,4 +74,3 @@ export function filterGamesByTab(profileGames, igdbGames, tabKey) {
       return new Date(gb?.latestAt || 0) - new Date(ga?.latestAt || 0)
     })
 }
-
