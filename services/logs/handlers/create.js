@@ -1,14 +1,10 @@
 import { supabase } from "#lib/supabase-ssr.js"
 import { query } from "#lib/igdb-wrapper.js"
-import { getUser } from "#utils/auth.js"
-import { sanitize, safePlatform, sanitizeAspects } from "#services/logs/utils/sanitize.js"
-import { validateDates, validateTime, validateRating, validateAspectRatings, runValidations } from "#services/logs/utils/validators.js"
-import { VALID_STATUSES, VALID_RATING_MODES, LIMITS } from "#services/logs/constants.js"
+import { sanitize, safePlatform, sanitizeAspects } from "#services/reviews/utils/sanitize.js"
+import { validateDates, validateTime, validateRating, validateAspectRatings, runValidations } from "#services/reviews/utils/validators.js"
+import { VALID_STATUSES, VALID_RATING_MODES, LIMITS } from "#services/reviews/constants.js"
 
 export async function handleCreate(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "Não autorizado" })
-
   const {
     gameId, gameSlug, logTitle, rating, ratingMode,
     review, containSpoilers, mastered, liked,
@@ -19,9 +15,9 @@ export async function handleCreate(req, res) {
   } = req.body
 
   if (!gameId || typeof gameId !== "number")
-    return res.status(400).json({ error: "gameId inválido" })
+    return res.status(400).json({ error: "invalid gameId" })
   if (!gameSlug || typeof gameSlug !== "string")
-    return res.status(400).json({ error: "gameSlug inválido" })
+    return res.status(400).json({ error: "invalid gameSlug" })
 
   try {
     const games = await query(
@@ -29,10 +25,10 @@ export async function handleCreate(req, res) {
       `fields id, game_type; where id = ${Math.floor(gameId)}; limit 1;`
     )
     if (!games.length)
-      return res.status(404).json({ error: "Jogo não encontrado" })
+      return res.status(404).json({ error: "game not found" })
   } catch (e) {
     console.error(e)
-    return res.status(502).json({ error: "Falha ao validar o jogo" })
+    return res.status(502).json({ error: "fail" })
   }
 
   const safeStatus = VALID_STATUSES.includes(status) ? status : LIMITS.DEFAULT_STATUS
@@ -52,7 +48,7 @@ export async function handleCreate(req, res) {
     const { data, error } = await supabase
       .from("logs")
       .insert({
-        user_id: user.id,
+        user_id: req.user.id,
         game_id: gameId,
         game_slug: gameSlug.trim().slice(0, LIMITS.MAX_SLUG),
         log_title: sanitize(logTitle, LIMITS.MAX_LOG_TITLE) || LIMITS.DEFAULT_LOG_TITLE,
@@ -82,7 +78,6 @@ export async function handleCreate(req, res) {
     res.json(data)
   } catch (e) {
     console.error(e)
-    res.status(500).json({ error: "Falha ao criar log" })
+    res.status(500).json({ error: "fail" })
   }
-
 }
