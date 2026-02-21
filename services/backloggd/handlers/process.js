@@ -1,12 +1,8 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
 
 const BATCH_SIZE = 25
 
 export async function handleProcess(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
-
   const { job_id } = req.body
   if (!job_id) return res.status(400).json({ error: "missing job_id" })
 
@@ -14,7 +10,7 @@ export async function handleProcess(req, res) {
     .from("import_jobs")
     .select("*")
     .eq("id", job_id)
-    .eq("user_id", user.id)
+    .eq("user_id", req.user.id)
     .single()
 
   if (fetchError || !job) return res.status(404).json({ error: "job not found" })
@@ -54,7 +50,7 @@ export async function handleProcess(req, res) {
   for (const game of batch) {
     try {
       const row = {
-        user_id: user.id,
+        user_id: req.user.id,
         game_id: game.game_id,
         game_slug: game.slug,
         status: game.played ? "played" : null,
