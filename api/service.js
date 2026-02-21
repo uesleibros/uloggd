@@ -1,11 +1,13 @@
 import { usersHandler } from "#routers/users.js"
 import { userGamesHandler } from "#routers/userGames.js"
 import { backloggdHandler } from "#routers/backloggd.js"
+import { notificationsHandler } from "#routers/notifications.js"
 
 const SERVICES = {
-  users: usersHandler,
+  users: userHandler,
   userGames: userGamesHandler,
-  backloggd: backloggdHandler
+  backloggd: backloggdHandler,
+  notifications: notificationsHandler,
 }
 
 export default async function handler(req, res) {
