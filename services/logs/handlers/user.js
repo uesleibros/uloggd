@@ -8,7 +8,7 @@ export async function handleUser(req, res) {
 
   try {
     let q = supabase
-      .from("logs")
+      .from("reviews")
       .select("*", { count: "exact" })
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
@@ -20,13 +20,13 @@ export async function handleUser(req, res) {
     if (error) throw error
 
     res.json({
-      logs: data || [],
+      reviews: data || [],
       total: count,
       page,
       totalPages: Math.ceil((count || 0) / limit),
     })
   } catch (e) {
     console.error(e)
-    res.status(500).json({ error: "failed to fetch logs" })
+    res.status(500).json({ error: "fail" })
   }
 }
