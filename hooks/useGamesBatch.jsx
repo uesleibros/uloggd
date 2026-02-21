@@ -22,7 +22,7 @@ export function GamesBatchProvider({ children }) {
     const id = ++fetchId.current
 
     try {
-      const res = await fetch("/api/igdb?action=gamesBatch", {
+      const res = await fetch("/api/igdb/gamesBatch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slugs: newSlugs }),
@@ -77,7 +77,7 @@ export function useGamesBatch(slugs = []) {
       if (slugs.length === 0) { setLoading(false); return }
 
       let active = true
-      fetch("/api/igdb?action=gamesBatch", {
+      fetch("/api/igdb/gamesBatch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slugs }),
