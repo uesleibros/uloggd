@@ -390,7 +390,7 @@ export default function Header() {
 
     timeoutRef.current = setTimeout(async () => {
       try {
-        const res = await fetch("/api/igdb?action=autocomplete", {
+        const res = await fetch("/api/igdb/autocomplete", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ query }),
@@ -519,3 +519,4 @@ export default function Header() {
     </header>
   )
 }
+
