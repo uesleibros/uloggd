@@ -16,8 +16,16 @@ import BioSection from "@components/Profile/BioSection"
 import ListsSection from "@components/Profile/ListsSection"
 import FollowListModal from "@components/Profile/FollowListModal"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
+import { User, Gamepad2, ListChecks, Activity } from "lucide-react"
 
 const GAMES_PER_PAGE = 24
+
+const PROFILE_SECTIONS = [
+	{ id: "profile", label: "Perfil", icon: User },
+	{ id: "games", label: "Jogos", icon: Gamepad2 },
+	{ id: "lists", label: "Listas", icon: ListChecks },
+	{ id: "activity", label: "Atividade", icon: Activity },
+]
 
 export default function Profile() {
 	const { username } = useParams()
@@ -25,6 +33,7 @@ export default function Profile() {
 	const [profile, setProfile] = useState(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
+	const [activeSection, setActiveSection] = useState("profile")
 	const [activeTab, setActiveTab] = useState("playing")
 	const [currentPage, setCurrentPage] = useState(1)
 	const [isFollowing, setIsFollowing] = useState(false)
@@ -36,6 +45,7 @@ export default function Profile() {
 	const [settingsOpen, setSettingsOpen] = useState(false)
 
 	const tabsRef = useRef(null)
+	const sectionNavRef = useRef(null)
 
 	const isOwnProfile = currentUser?.username?.toLowerCase() === username?.toLowerCase()
 	const { profileGames, counts, igdbGames, loadingGames } = useProfileGames(profile?.id)
@@ -47,6 +57,10 @@ export default function Profile() {
 	} : undefined)
 
 	useEffect(() => { setCurrentPage(1) }, [activeTab])
+
+	useEffect(() => {
+		setActiveSection("profile")
+	}, [username])
 
 	useEffect(() => {
 		setLoading(true)
@@ -113,6 +127,14 @@ export default function Profile() {
 		}
 	}
 
+	function handleSectionChange(sectionId) {
+		setActiveSection(sectionId)
+		if (sectionNavRef.current) {
+			const y = sectionNavRef.current.getBoundingClientRect().top + window.scrollY - 16
+			window.scrollTo({ top: y, behavior: "smooth" })
+		}
+	}
+
 	if (loading) return <ProfileSkeleton />
 
 	if (error || !profile) {
@@ -132,6 +154,8 @@ export default function Profile() {
 	const memberSince = profile.created_at
 		? new Date(profile.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
 		: null
+
+	const listsCount = profile.lists?.length || 0
 
 	return (
 		<div>
@@ -186,29 +210,88 @@ export default function Profile() {
 					</div>
 				</div>
 
-				<BioSection 
-					bio={profile.bio} 
-					isOwnProfile={isOwnProfile} 
-					onEdit={() => setSettingsOpen(true)} 
-					profileGames={profileGames}
-				/>
+				<div ref={sectionNavRef} className="mt-8 border-b border-zinc-800/80">
+					<nav className="flex gap-1 overflow-x-auto scrollbar-hide -mb-px">
+						{PROFILE_SECTIONS.map(({ id, label, icon: Icon }) => {
+							const isActive = activeSection === id
+							let badge = null
+							if (id === "games" && counts.total > 0) badge = counts.total
+							if (id === "lists" && listsCount > 0) badge = listsCount
 
-				<ProfileTabs
-					ref={tabsRef}
-					activeTab={activeTab}
-					onTabChange={setActiveTab}
-					counts={counts}
-					games={tabGames}
-					profileGames={profileGames}
-					loading={loadingGames}
-					isOwnProfile={isOwnProfile}
-					username={profile.username}
-					currentPage={currentPage}
-					totalPages={totalPages}
-					onPageChange={handlePageChange}
-				/>
+							return (
+								<button
+									key={id}
+									onClick={() => handleSectionChange(id)}
+									className={`group relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all cursor-pointer whitespace-nowrap ${
+										isActive
+											? "text-indigo-400"
+											: "text-zinc-500 hover:text-zinc-300"
+									}`}
+								>
+									<Icon className={`w-4 h-4 transition-colors ${
+										isActive ? "text-indigo-400" : "text-zinc-600 group-hover:text-zinc-400"
+									}`} />
+									{label}
+									{badge != null && (
+										<span className={`text-[11px] px-1.5 py-0.5 rounded-full tabular-nums transition-colors ${
+											isActive
+												? "bg-indigo-500/15 text-indigo-400"
+												: "bg-zinc-800 text-zinc-500 group-hover:text-zinc-400"
+										}`}>
+											{badge}
+										</span>
+									)}
+									{isActive && (
+										<div className="absolute bottom-0 left-2 right-2 h-[2px] bg-indigo-500 rounded-t-full" />
+									)}
+								</button>
+							)
+						})}
+					</nav>
+				</div>
 
-				<ListsSection lists={profile.lists || []} isOwnProfile={isOwnProfile} username={profile.username} />
+				<div className="mt-6">
+					{activeSection === "profile" && (
+						<BioSection
+							bio={profile.bio}
+							isOwnProfile={isOwnProfile}
+							onEdit={() => setSettingsOpen(true)}
+							profileGames={profileGames}
+						/>
+					)}
+
+					{activeSection === "games" && (
+						<ProfileTabs
+							ref={tabsRef}
+							activeTab={activeTab}
+							onTabChange={setActiveTab}
+							counts={counts}
+							games={tabGames}
+							profileGames={profileGames}
+							loading={loadingGames}
+							isOwnProfile={isOwnProfile}
+							username={profile.username}
+							currentPage={currentPage}
+							totalPages={totalPages}
+							onPageChange={handlePageChange}
+						/>
+					)}
+
+					{activeSection === "lists" && (
+						<ListsSection
+							lists={profile.lists || []}
+							isOwnProfile={isOwnProfile}
+							username={profile.username}
+						/>
+					)}
+
+					{activeSection === "activity" && (
+						<div className="flex flex-col items-center justify-center py-16 gap-3">
+							<Activity className="w-10 h-10 text-zinc-700" />
+							<p className="text-sm text-zinc-600">Atividade em breve</p>
+						</div>
+					)}
+				</div>
 			</div>
 
 			<FollowListModal
