@@ -118,11 +118,9 @@ export async function handleProfileGames(req, res) {
     if (logsRes.error) throw logsRes.error
 
     const gameMap = buildGameMap(userGamesRes.data, logsRes.data)
-    const result = aggregateGames(gameMap)
-
-    res.json(result)
+    res.json(aggregateGames(gameMap))
   } catch (e) {
     console.error(e)
-    res.status(500).json({ error: "failed to fetch profile games" })
+    res.status(500).json({ error: "fail" })
   }
 }
