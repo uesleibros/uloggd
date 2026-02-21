@@ -2,6 +2,7 @@
 logs
 !api/logs/
 !services/logs/
+!routers/logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -142,4 +143,5 @@ vite.config.ts.timestamp-*
 
 .vercel
 .env*.local
+
 
