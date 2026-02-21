@@ -1,11 +1,7 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
 import { scrapeUser, verifyUser } from "#services/backloggd/scraper.js"
 
 export async function handleStart(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
-
   const { username } = req.body
   if (!username || typeof username !== "string" || username.length > 50) {
     return res.status(400).json({ error: "invalid username" })
@@ -17,7 +13,7 @@ export async function handleStart(req, res) {
   const { data: existing } = await supabase
     .from("import_jobs")
     .select("id, status")
-    .eq("user_id", user.id)
+    .eq("user_id", req.user.id)
     .in("status", ["scraping", "running"])
     .maybeSingle()
 
@@ -33,7 +29,7 @@ export async function handleStart(req, res) {
   const { data: job, error: createError } = await supabase
     .from("import_jobs")
     .insert({
-      user_id: user.id,
+      user_id: req.user.id,
       source: "backloggd",
       source_username: cleanUsername,
       status: "scraping",
@@ -43,7 +39,7 @@ export async function handleStart(req, res) {
 
   if (createError) {
     console.error(createError)
-    return res.status(500).json({ error: "failed to create job" })
+    return res.status(500).json({ error: "fail" })
   }
 
   try {
