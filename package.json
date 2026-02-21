@@ -17,6 +17,7 @@
     "#services/*": "./services/*",
     "#data/*": "./data/*",
     "#api/*": "./api/*",
+    "#routers/*": "./routers/*",
     "#web/*": "./web/*"
   },
   "dependencies": {
