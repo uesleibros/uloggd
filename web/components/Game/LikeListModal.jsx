@@ -14,7 +14,7 @@ export default function LikeListModal({ isOpen, logId, onClose }) {
     setUsers([])
     setSearch("")
 
-    fetch("/api/logs?action=likes", {
+    fetch("/api/logs/likes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ logId }),
@@ -83,3 +83,4 @@ export default function LikeListModal({ isOpen, logId, onClose }) {
     </Modal>
   )
 }
+
