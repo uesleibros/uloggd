@@ -20,7 +20,7 @@ export function UserGamesProvider({ children }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const res = await fetch("/api/userGames?action=myGames", {
+      const res = await fetch("/api/userGames/@me/library", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,4 +74,5 @@ export function useUserGames() {
   }
   
   return ctx
+
 }
