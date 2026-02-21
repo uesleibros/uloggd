@@ -133,11 +133,11 @@ function StatusBadge({ status }) {
 	)
 }
 
-function LogIndicators({ log }) {
+function ReviewIndicators({ review }) {
 	return (
 		<>
-			{log.liked && <Heart className="w-5 h-5 text-red-500 fill-current flex-shrink-0" />}
-			{log.mastered && <Trophy className="w-5 h-5 text-amber-400 fill-current flex-shrink-0" />}
+			{review.liked && <Heart className="w-5 h-5 text-red-500 fill-current flex-shrink-0" />}
+			{review.mastered && <Trophy className="w-5 h-5 text-amber-400 fill-current flex-shrink-0" />}
 		</>
 	)
 }
@@ -178,17 +178,17 @@ function SpoilerOverlay({ onReveal }) {
 	)
 }
 
-function LikeButton({ logId, currentUserId }) {
+function LikeButton({ reviewId, currentUserId }) {
 	const [isLiked, setIsLiked] = useState(false)
 	const [count, setCount] = useState(0)
 	const [loading, setLoading] = useState(false)
 	const [showLikes, setShowLikes] = useState(false)
 
 	useEffect(() => {
-		fetch("/api/logs/likeStatus", {
+		fetch("/api/reviews/likeStatus", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ logId, currentUserId }),
+			body: JSON.stringify({ reviewId, currentUserId }),
 		})
 			.then(r => r.json())
 			.then(data => {
@@ -196,7 +196,7 @@ function LikeButton({ logId, currentUserId }) {
 				setIsLiked(data.isLiked || false)
 			})
 			.catch(() => {})
-	}, [logId, currentUserId])
+	}, [reviewId, currentUserId])
 
 	const handleLike = async () => {
 		if (!currentUserId || loading) return
@@ -217,13 +217,13 @@ function LikeButton({ logId, currentUserId }) {
 				return
 			}
 
-			const r = await fetch("/api/logs/like", {
+			const r = await fetch("/api/reviews/@me/like", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${session.access_token}`,
 				},
-				body: JSON.stringify({ logId, action }),
+				body: JSON.stringify({ reviewId, action }),
 			})
 			if (!r.ok) {
 				setIsLiked(!newLiked)
@@ -268,14 +268,14 @@ function LikeButton({ logId, currentUserId }) {
 
 			<LikeListModal
 				isOpen={showLikes}
-				logId={logId}
+				reviewId={reviewId}
 				onClose={() => setShowLikes(false)}
 			/>
 		</>
 	)
 }
 
-function ReviewModalHeader({ log, user, currentUserId, onClose }) {
+function ReviewModalHeader({ review, user, currentUserId, onClose }) {
 	return (
 		<div className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
 			<div className="flex items-center gap-3.5 min-w-0">
@@ -293,26 +293,26 @@ function ReviewModalHeader({ log, user, currentUserId, onClose }) {
 							{user?.username || "Usuário"}
 						</Link>
 						<UserBadges user={user} size="md" clickable />
-						<StatusBadge status={log.status} />
-						<LogIndicators log={log} />
+						<StatusBadge status={review.status} />
+						<ReviewIndicators review={review} />
 					</div>
 					<div className="flex items-center gap-3 mt-1.5">
-						<ReviewRating rating={log.rating} ratingMode={log.rating_mode} />
-						<span className="text-sm text-zinc-600">{getTimeAgo(log.created_at)}</span>
+						<ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
+						<span className="text-sm text-zinc-600">{getTimeAgo(review.created_at)}</span>
 					</div>
 				</div>
 			</div>
-			<LikeButton logId={log.id} currentUserId={currentUserId} />
+			<LikeButton reviewId={review.id} currentUserId={currentUserId} />
 		</div>
 	)
 }
 
-function ReviewModalContent({ log }) {
-	const aspects = log.aspect_ratings || []
+function ReviewModalContent({ review }) {
+	const aspects = review.aspect_ratings || []
 
 	return (
 		<div className="flex-1 overflow-y-auto overscroll-contain p-5 md:p-7">
-			{log.contain_spoilers && (
+			{review.contain_spoilers && (
 				<div className="flex items-center gap-2.5 px-4 py-2.5 mb-5 bg-amber-500/10 border border-amber-500/20 rounded-lg">
 					<AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
 					<span className="text-sm text-amber-400 font-medium">Esta review contém spoilers</span>
@@ -340,21 +340,21 @@ function ReviewModalContent({ log }) {
 				</div>
 			)}
 
-			<MarkdownPreview content={log.review || ""} />
+			<MarkdownPreview content={review.review || ""} />
 
-			<Playtime hours={log.hours_played} minutes={log.minutes_played} className="mt-6 pt-5 border-t border-zinc-700/50" />
+			<Playtime hours={review.hours_played} minutes={review.minutes_played} className="mt-6 pt-5 border-t border-zinc-700/50" />
 		</div>
 	)
 }
 
-function ReviewCard({ log, user, currentUserId }) {
+function ReviewCard({ review, user, currentUserId }) {
 	const [spoilerRevealed, setSpoilerRevealed] = useState(false)
 	const [showModal, setShowModal] = useState(false)
 
-	const hasReview = !!log.review
-	const isLong = hasReview && log.review.length > 300
-	const isSpoilerHidden = log.contain_spoilers && !spoilerRevealed
-	const aspects = log.aspect_ratings || []
+	const hasReview = !!review.review
+	const isLong = hasReview && review.review.length > 300
+	const isSpoilerHidden = review.contain_spoilers && !spoilerRevealed
+	const aspects = review.aspect_ratings || []
 	const hasAspects = aspects.length > 0
 
 	return (
@@ -376,13 +376,13 @@ function ReviewCard({ log, user, currentUserId }) {
 								{user?.username || "Usuário"}
 							</Link>
 							<UserBadges user={user} size="md" clickable />
-							<StatusBadge status={log.status} />
-							<LogIndicators log={log} />
+							<StatusBadge status={review.status} />
+							<ReviewIndicators review={review} />
 						</div>
 
 						<div className="flex items-center gap-3 mt-1.5">
-							<ReviewRating rating={log.rating} ratingMode={log.rating_mode} />
-							<span className="text-sm text-zinc-600">{getTimeAgo(log.created_at)}</span>
+							<ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
+							<span className="text-sm text-zinc-600">{getTimeAgo(review.created_at)}</span>
 						</div>
 
 						{hasAspects && (
@@ -398,7 +398,7 @@ function ReviewCard({ log, user, currentUserId }) {
 								) : isLong ? (
 									<div className="relative">
 										<div className="max-h-36 overflow-hidden">
-											<MarkdownPreview content={log.review} />
+											<MarkdownPreview content={review.review} />
 										</div>
 										<div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-zinc-800/90 to-transparent pointer-events-none rounded-b-lg" />
 										<button
@@ -410,14 +410,14 @@ function ReviewCard({ log, user, currentUserId }) {
 										</button>
 									</div>
 								) : (
-									<MarkdownPreview content={log.review} />
+									<MarkdownPreview content={review.review} />
 								)}
 							</div>
 						)}
 
 						<div className="flex items-center justify-between mt-4">
-							<Playtime hours={log.hours_played} minutes={log.minutes_played} />
-							<LikeButton logId={log.id} currentUserId={currentUserId} />
+							<Playtime hours={review.hours_played} minutes={review.minutes_played} />
+							<LikeButton reviewId={review.id} currentUserId={currentUserId} />
 						</div>
 					</div>
 				</div>
@@ -431,8 +431,8 @@ function ReviewCard({ log, user, currentUserId }) {
 				maxWidth="max-w-2xl"
 				className="!bg-zinc-900 !border-zinc-700 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
 			>
-				<ReviewModalHeader log={log} user={user} currentUserId={currentUserId} onClose={() => setShowModal(false)} />
-				<ReviewModalContent log={log} />
+				<ReviewModalHeader review={review} user={user} currentUserId={currentUserId} onClose={() => setShowModal(false)} />
+				<ReviewModalContent review={review} />
 			</Modal>
 		</>
 	)
@@ -476,7 +476,7 @@ function EmptyState() {
 
 export default function GameReviews({ gameId }) {
 	const { user: currentUser } = useAuth()
-	const [logs, setLogs] = useState([])
+	const [reviews, setReviews] = useState([])
 	const [users, setUsers] = useState({})
 	const [loading, setLoading] = useState(true)
 	const [sortBy, setSortBy] = useState("recent")
@@ -485,14 +485,14 @@ export default function GameReviews({ gameId }) {
 		if (!gameId) return
 		setLoading(true)
 
-		fetch("/api/logs/public", {
+		fetch("/api/reviews/public", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ gameId, sortBy }),
 		})
-			.then((r) => r.ok ? r.json() : { logs: [], users: {} })
+			.then((r) => r.ok ? r.json() : { reviews: [], users: {} })
 			.then((data) => {
-				setLogs(data.logs || [])
+				setReviews(data.reviews || [])
 				setUsers(data.users || {})
 			})
 			.catch(() => {})
@@ -510,7 +510,7 @@ export default function GameReviews({ gameId }) {
 		)
 	}
 
-	if (!logs.length) {
+	if (!reviews.length) {
 		return (
 			<div>
 				<h2 className="text-lg font-semibold text-white mb-5">{title}</h2>
@@ -524,7 +524,7 @@ export default function GameReviews({ gameId }) {
 			<div className="flex items-center justify-between mb-5">
 				<h2 className="text-lg font-semibold text-white">
 					{title}
-					<span className="text-sm text-zinc-500 font-normal ml-2">{logs.length}</span>
+					<span className="text-sm text-zinc-500 font-normal ml-2">{reviews.length}</span>
 				</h2>
 				<div className="flex gap-1">
 					{SORT_OPTIONS.map((option) => (
@@ -544,15 +544,10 @@ export default function GameReviews({ gameId }) {
 			</div>
 
 			<div className="space-y-3">
-				{logs.map((log) => (
-					<ReviewCard key={log.id} log={log} user={users[log.user_id]} currentUserId={currentUser?.id} />
+				{reviews.map((review) => (
+					<ReviewCard key={review.id} review={review} user={users[review.user_id]} currentUserId={currentUser?.id} />
 				))}
 			</div>
 		</div>
 	)
 }
-
-
-
-
-
