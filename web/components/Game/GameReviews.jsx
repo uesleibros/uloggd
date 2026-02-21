@@ -185,7 +185,7 @@ function LikeButton({ logId, currentUserId }) {
 	const [showLikes, setShowLikes] = useState(false)
 
 	useEffect(() => {
-		fetch("/api/logs?action=likeStatus", {
+		fetch("/api/logs/likeStatus", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ logId, currentUserId }),
@@ -217,7 +217,7 @@ function LikeButton({ logId, currentUserId }) {
 				return
 			}
 
-			const r = await fetch("/api/logs?action=like", {
+			const r = await fetch("/api/logs/like", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -485,7 +485,7 @@ export default function GameReviews({ gameId }) {
 		if (!gameId) return
 		setLoading(true)
 
-		fetch("/api/logs?action=public", {
+		fetch("/api/logs/public", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ gameId, sortBy }),
@@ -551,6 +551,7 @@ export default function GameReviews({ gameId }) {
 		</div>
 	)
 }
+
 
 
 
