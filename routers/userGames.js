@@ -8,7 +8,7 @@ const ACTIONS = {
   get:          { handler: handleGet,          scopes: ["@me"],  auth: true },
   update:       { handler: handleUpdate,       scopes: ["@me"],  auth: true },
   profileGames: { handler: handleProfileGames, scopes: null,     auth: false },
-  myGames:      { handler: handleMyGames,      scopes: ["@me"],  auth: true },
+  library:      { handler: handleMyGames,      scopes: ["@me"],  auth: true },
 }
 
 export async function userGamesHandler(req, res) {
