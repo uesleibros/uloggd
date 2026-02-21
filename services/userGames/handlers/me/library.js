@@ -46,7 +46,7 @@ function buildGameMap(userGames, logs) {
   return gameMap
 }
 
-export async function handleMyGames(req, res) {
+export async function handleLibrary(req, res) {
   try {
     const [userGamesRes, logsRes] = await Promise.all([
       supabase
@@ -91,3 +91,4 @@ export async function handleMyGames(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
