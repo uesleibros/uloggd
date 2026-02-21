@@ -71,7 +71,7 @@ export default function Profile() {
 		setFollowingCount(0)
 
 		const controller = new AbortController()
-		fetch("/api/user?action=profile", {
+		fetch("/api/users/profile", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ username }),
@@ -88,7 +88,7 @@ export default function Profile() {
 		if (!profile || authLoading) return
 		const controller = new AbortController()
 
-		fetch("/api/user?action=followStatus", {
+		fetch("/api/users/followStatus", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ userId: profile.id, currentUserId: currentUser?.id || null }),
@@ -107,7 +107,7 @@ export default function Profile() {
 		try {
 			const { data: { session } } = await supabase.auth.getSession()
 			if (!session) return
-			const res = await fetch("/api/user?action=follow", {
+			const res = await fetch("/api/users/follow", {
 				method: "POST",
 				headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
 				body: JSON.stringify({ followingId: profile.id, action: isFollowing ? "unfollow" : "follow" }),
@@ -307,3 +307,4 @@ export default function Profile() {
 		</div>
 	)
 }
+
