@@ -1,12 +1,7 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
-
-const MAX_THINKING = 50
+import { MAX_THINKING } from "#services/users/constants.js"
 
 export async function handleThinking(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
-
   const { thinking } = req.body
 
   if (thinking !== null && thinking !== undefined) {
@@ -20,7 +15,7 @@ export async function handleThinking(req, res) {
     const { error } = await supabase
       .from("users")
       .update({ thinking: value })
-      .eq("user_id", user.id)
+      .eq("user_id", req.user.id)
 
     if (error) throw error
     res.json({ thinking: value })
