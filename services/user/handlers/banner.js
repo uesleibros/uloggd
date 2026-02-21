@@ -1,12 +1,8 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
-import { uploadToImgchest } from "#services/user/utils/imgchest.js"
-import { VALID_BANNER_ACTIONS } from "#services/user/constants.js"
+import { uploadToImgchest } from "#services/users/utils/imgchest.js"
+import { VALID_BANNER_ACTIONS } from "#services/users/constants.js"
 
 export async function handleBanner(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
-
   const { action, image } = req.body
 
   if (!VALID_BANNER_ACTIONS.includes(action))
@@ -17,7 +13,7 @@ export async function handleBanner(req, res) {
       const { error } = await supabase
         .from("users")
         .update({ banner: null })
-        .eq("user_id", user.id)
+        .eq("user_id", req.user.id)
 
       if (error) throw error
       return res.json({ banner: null })
@@ -30,7 +26,7 @@ export async function handleBanner(req, res) {
     const { error } = await supabase
       .from("users")
       .update({ banner: bannerUrl })
-      .eq("user_id", user.id)
+      .eq("user_id", req.user.id)
 
     if (error) throw error
     res.json({ banner: bannerUrl })
