@@ -1,16 +1,12 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
 import { createNotification } from "#services/notifications/create.js"
-import { VALID_FOLLOW_ACTIONS } from "#services/user/constants.js"
+import { VALID_FOLLOW_ACTIONS } from "#services/users/constants.js"
 
 export async function handleFollow(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
-
   const { followingId, action } = req.body
 
   if (!followingId) return res.status(400).json({ error: "missing followingId" })
-  if (user.id === followingId) return res.status(400).json({ error: "cannot follow yourself" })
+  if (req.user.id === followingId) return res.status(400).json({ error: "cannot follow yourself" })
   if (!VALID_FOLLOW_ACTIONS.includes(action)) return res.status(400).json({ error: "invalid action" })
 
   try {
@@ -18,7 +14,7 @@ export async function handleFollow(req, res) {
       const { error } = await supabase
         .from("follows")
         .upsert(
-          { follower_id: user.id, following_id: followingId },
+          { follower_id: req.user.id, following_id: followingId },
           { onConflict: "follower_id,following_id" }
         )
 
@@ -27,8 +23,8 @@ export async function handleFollow(req, res) {
       await createNotification({
         userId: followingId,
         type: "follow",
-        data: { follower_id: user.id },
-        dedupeKey: { follower_id: user.id },
+        data: { follower_id: req.user.id },
+        dedupeKey: { follower_id: req.user.id },
       })
 
       return res.json({ followed: true })
@@ -37,7 +33,7 @@ export async function handleFollow(req, res) {
     const { error } = await supabase
       .from("follows")
       .delete()
-      .eq("follower_id", user.id)
+      .eq("follower_id", req.user.id)
       .eq("following_id", followingId)
 
     if (error) throw error
@@ -47,4 +43,3 @@ export async function handleFollow(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
-
