@@ -1,30 +1,22 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
 
 export async function handleNotificationRead(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
-
   const { notificationId } = req.body
 
   try {
+    let query = supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("user_id", req.user.id)
+
     if (notificationId) {
-      const { error } = await supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("id", notificationId)
-        .eq("user_id", user.id)
-
-      if (error) throw error
+      query = query.eq("id", notificationId)
     } else {
-      const { error } = await supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("user_id", user.id)
-        .eq("read", false)
-
-      if (error) throw error
+      query = query.eq("read", false)
     }
+
+    const { error } = await query
+    if (error) throw error
 
     res.json({ success: true })
   } catch (e) {
