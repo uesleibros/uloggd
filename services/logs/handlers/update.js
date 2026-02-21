@@ -1,15 +1,11 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
-import { sanitize, safePlatform, sanitizeAspects } from "#services/logs/utils/sanitize.js"
-import { validateDates, validateTime, validateRating, validateAspectRatings } from "#services/logs/utils/validators.js"
-import { VALID_STATUSES, VALID_RATING_MODES, LIMITS } from "#services/logs/constants.js"
+import { sanitize, safePlatform, sanitizeAspects } from "#services/reviews/utils/sanitize.js"
+import { validateDates, validateTime, validateRating, validateAspectRatings } from "#services/reviews/utils/validators.js"
+import { VALID_STATUSES, VALID_RATING_MODES, LIMITS } from "#services/reviews/constants.js"
 
 export async function handleUpdate(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "Não autorizado" })
-
   const {
-    logId, logTitle, rating, ratingMode,
+    reviewId, reviewTitle, rating, ratingMode,
     review, containSpoilers, mastered, liked,
     status, playing, backlog, wishlist,
     startedOn, finishedOn, replay,
@@ -17,7 +13,7 @@ export async function handleUpdate(req, res) {
     platformId, playedPlatformId, aspectRatings,
   } = req.body
 
-  if (!logId) return res.status(400).json({ error: "logId é obrigatório" })
+  if (!reviewId) return res.status(400).json({ error: "reviewId required" })
 
   const safeStatus = status != null
     ? (VALID_STATUSES.includes(status) ? status : LIMITS.DEFAULT_STATUS)
@@ -47,7 +43,7 @@ export async function handleUpdate(req, res) {
   const safeReview = review !== undefined ? sanitize(review, LIMITS.MAX_REVIEW) : undefined
 
   const fieldMap = {
-    logTitle: ["log_title", sanitize(logTitle, LIMITS.MAX_LOG_TITLE) || LIMITS.DEFAULT_LOG_TITLE],
+    reviewTitle: ["title", sanitize(reviewTitle, LIMITS.MAX_TITLE) || LIMITS.DEFAULT_TITLE],
     rating: ["rating", rating ?? null],
     ratingMode: ["rating_mode", rating != null ? safeRatingMode : null],
     review: ["review", safeReview],
@@ -76,22 +72,22 @@ export async function handleUpdate(req, res) {
   }
 
   if (Object.keys(updateData).length === 0)
-    return res.status(400).json({ error: "Nada para atualizar" })
+    return res.status(400).json({ error: "nothing to update" })
 
   try {
     const { data, error } = await supabase
-      .from("logs")
+      .from("reviews")
       .update(updateData)
-      .eq("id", logId)
-      .eq("user_id", user.id)
+      .eq("id", reviewId)
+      .eq("user_id", req.user.id)
       .select()
       .single()
 
     if (error) throw error
-    if (!data) return res.status(404).json({ error: "Log não encontrado" })
+    if (!data) return res.status(404).json({ error: "review not found" })
     res.json(data)
   } catch (e) {
     console.error(e)
-    res.status(500).json({ error: "Falha ao atualizar log" })
+    res.status(500).json({ error: "fail" })
   }
 }
