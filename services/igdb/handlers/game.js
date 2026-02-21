@@ -1,4 +1,4 @@
-import { query } from "#lib/igdb-wrapper.js"
+import { query } from "#lib/igdbWrapper.js"
 import { AGE_RATINGS_MAP } from "#data/ageRatingsMapper.js"
 import { WEBSITE_MAP } from "#data/websitesMapper.js"
 import { mapCovers } from "#services/igdb/utils/mapCovers.js"
@@ -76,4 +76,5 @@ export async function handleGame(req, res) {
     console.error(e)
     res.status(500).json({ error: "fail" })
   }
+
 }
