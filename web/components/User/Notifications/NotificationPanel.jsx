@@ -96,7 +96,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
       if (!session) return
 
       try {
-        const r = await fetch("/api/notifications?action=list", {
+        const r = await fetch("/api/notifications/@me/list", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -113,7 +113,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
 
         let usersMap = {}
         if (userIds.length > 0) {
-          const uRes = await fetch("/api/user?action=batch", {
+          const uRes = await fetch("/api/users/batch", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userIds }),
@@ -135,7 +135,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
     if (!session) return
 
     try {
-      await fetch(`/api/notifications?action=${action}`, {
+      await fetch(`/api/notifications/@me/${action}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
