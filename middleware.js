@@ -97,11 +97,12 @@ async function handleProfile(url, username) {
 
   const title = `${profile.username} - uloggd`
   const description = `Perfil de ${profile.username}`
+  const image = ensureAbsoluteUrl(profile.avatar, url.origin)
 
-  return buildResponse(title, description, null, url.href, true)
+  return buildResponse(title, description, image, url.href)
 }
 
-function buildResponse(title, description, image, pageUrl, isProfile = false) {
+function buildResponse(title, description, image, pageUrl) {
   const safeTitle = escapeHtml(title)
   const safeDesc = escapeHtml(description)
   const safeImage = escapeHtml(image)
