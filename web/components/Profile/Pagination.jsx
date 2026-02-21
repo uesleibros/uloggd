@@ -1,5 +1,3 @@
-import { ChevronLeft, ChevronRight } from "lucide-react"
-
 export default function Pagination({ currentPage, totalPages, onPageChange }) {
   if (totalPages <= 1) return null
 
@@ -19,9 +17,9 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
     if (currentPage <= 3) { start = 2; end = Math.min(max, totalPages - 1) }
     else if (currentPage >= totalPages - 2) { start = Math.max(2, totalPages - max + 1); end = totalPages - 1 }
 
-    if (start > 2) pages.push("@components/Profile/...")
+    if (start > 2) pages.push("...")
     for (let i = start; i <= end; i++) pages.push(i)
-    if (end < totalPages - 1) pages.push("@components/Profile/...")
+    if (end < totalPages - 1) pages.push("...")
     pages.push(totalPages)
     return pages
   }
@@ -32,7 +30,9 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
       disabled={disabled}
       className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
     >
-      {direction === -1 ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={direction === -1 ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
+      </svg>
     </button>
   )
 
@@ -40,7 +40,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
     <div className="flex items-center justify-center gap-1.5 mt-8">
       <Arrow direction={-1} disabled={currentPage === 1} />
       {getPages().map((page, i) =>
-        page === "@components/Profile/..." ? (
+        page === "..." ? (
           <span key={`dots-${i}`} className="px-2 text-zinc-600 text-sm">...</span>
         ) : (
           <button
