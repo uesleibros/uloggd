@@ -1,39 +1,35 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
 import { createNotification } from "#services/notifications/create.js"
 
 export async function handleLike(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
+  const { reviewId, action } = req.body
 
-  const { logId, action } = req.body
-
-  if (!logId) return res.status(400).json({ error: "missing logId" })
+  if (!reviewId) return res.status(400).json({ error: "missing reviewId" })
   if (!["like", "unlike"].includes(action)) return res.status(400).json({ error: "invalid action" })
 
   try {
     if (action === "like") {
       const { error } = await supabase
-        .from("log_likes")
+        .from("review_likes")
         .upsert(
-          { user_id: user.id, log_id: logId },
-          { onConflict: "user_id,log_id" }
+          { user_id: req.user.id, review_id: reviewId },
+          { onConflict: "user_id,review_id" }
         )
 
       if (error) throw error
 
-      const { data: log } = await supabase
-        .from("logs")
+      const { data: review } = await supabase
+        .from("reviews")
         .select("user_id, game_slug")
-        .eq("id", logId)
+        .eq("id", reviewId)
         .single()
 
-      if (log && log.user_id !== user.id) {
+      if (review && review.user_id !== req.user.id) {
         await createNotification({
-          userId: log.user_id,
-          type: "log_like",
-          data: { liker_id: user.id, log_id: logId, game_slug: log.game_slug },
-          dedupeKey: { liker_id: user.id, log_id: logId },
+          userId: review.user_id,
+          type: "review_like",
+          data: { liker_id: req.user.id, review_id: reviewId, game_slug: review.game_slug },
+          dedupeKey: { liker_id: req.user.id, review_id: reviewId },
         })
       }
 
@@ -41,10 +37,10 @@ export async function handleLike(req, res) {
     }
 
     const { error } = await supabase
-      .from("log_likes")
+      .from("review_likes")
       .delete()
-      .eq("user_id", user.id)
-      .eq("log_id", logId)
+      .eq("user_id", req.user.id)
+      .eq("review_id", reviewId)
 
     if (error) throw error
     res.json({ liked: false })
