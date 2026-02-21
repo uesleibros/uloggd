@@ -1,5 +1,4 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
 
 function buildGameMap(userGames, logs) {
   const gameMap = {}
@@ -48,19 +47,16 @@ function buildGameMap(userGames, logs) {
 }
 
 export async function handleMyGames(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
-
   try {
     const [userGamesRes, logsRes] = await Promise.all([
       supabase
         .from("user_games")
         .select("game_id, game_slug, status, playing, backlog, wishlist, liked, updated_at")
-        .eq("user_id", user.id),
+        .eq("user_id", req.user.id),
       supabase
         .from("logs")
         .select("game_id, game_slug, rating, status, playing, backlog, wishlist, liked, created_at")
-        .eq("user_id", user.id)
+        .eq("user_id", req.user.id)
         .order("created_at", { ascending: false }),
     ])
 
@@ -92,6 +88,6 @@ export async function handleMyGames(req, res) {
     res.json({ games })
   } catch (e) {
     console.error(e)
-    res.status(500).json({ error: "failed to fetch games" })
+    res.status(500).json({ error: "fail" })
   }
 }
