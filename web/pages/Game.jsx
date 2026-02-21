@@ -247,7 +247,7 @@ function HowLongToBeat({ hltb, loading }) {
 
 	const bars = hltb ? [
 		{ label: "História", hours: hltb.times?.main, color: "bg-blue-500", hoverColor: "group-hover:bg-blue-400" },
-		{ label: "História +", hours: hltb.times?.mainExtra, color: "bg-purple-500", hoverColor: "group-hover:bg-purple-400" },
+		{ label: "História+", hours: hltb.times?.mainExtra, color: "bg-purple-500", hoverColor: "group-hover:bg-purple-400" },
 		{ label: "Completista", hours: hltb.times?.completionist, color: "bg-amber-500", hoverColor: "group-hover:bg-amber-400" },
 	].filter(b => b.hours) : []
 
@@ -496,7 +496,7 @@ export default function Game() {
 		setHltb(null)
 		setHltbLoading(true)
 
-		fetch("/api/igdb?action=game", {
+		fetch("/api/igdb/game", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ slug })
@@ -720,6 +720,4 @@ export default function Game() {
 			/>
 		</div>
 	)
-
 }
-
