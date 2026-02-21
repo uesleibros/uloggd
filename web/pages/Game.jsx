@@ -509,7 +509,7 @@ export default function Game() {
 				setGame(data)
 				setLoading(false)
 
-				fetch("/api/howlongtobeat", {
+				fetch("/api/howlongtobeat/search", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
@@ -721,3 +721,4 @@ export default function Game() {
 		</div>
 	)
 }
+
