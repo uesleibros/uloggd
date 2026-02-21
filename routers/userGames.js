@@ -1,11 +1,11 @@
-import { handleGet } from "#services/userGames/handlers/get.js"
-import { handleUpdate } from "#services/userGames/handlers/update.js"
+import { handleGet } from "#services/userGames/handlers/me/get.js"
+import { handleUpdate } from "#services/userGames/handlers/me/update.js"
 import { handleProfileGames } from "#services/userGames/handlers/profileGames.js"
-import { handleMyGames } from "#services/userGames/handlers/myGames.js"
+import { handleMyGames } from "#services/userGames/handlers/me/myGames.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
-  get:          { handler: handleGet,          scopes: null,     auth: false },
+  get:          { handler: handleGet,          scopes: ["@me"],  auth: true },
   update:       { handler: handleUpdate,       scopes: ["@me"],  auth: true },
   profileGames: { handler: handleProfileGames, scopes: null,     auth: false },
   myGames:      { handler: handleMyGames,      scopes: ["@me"],  auth: true },
