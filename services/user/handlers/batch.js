@@ -1,5 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { DEFAULT_AVATAR_URL } from "#services/user/constants.js"
+import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
 
 export async function handleBatch(req, res) {
   const { userIds } = req.body
