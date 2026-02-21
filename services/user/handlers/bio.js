@@ -1,11 +1,7 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
-import { MAX_BIO } from "#services/user/constants.js"
+import { MAX_BIO } from "#services/users/constants.js"
 
 export async function handleBio(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
-
   const { bio } = req.body
 
   if (bio === undefined) return res.status(400).json({ error: "missing bio" })
@@ -16,7 +12,7 @@ export async function handleBio(req, res) {
     const { error } = await supabase
       .from("users")
       .update({ bio })
-      .eq("user_id", user.id)
+      .eq("user_id", req.user.id)
 
     if (error) throw error
     res.json({ success: true })
