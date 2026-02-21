@@ -6,7 +6,7 @@ import { VALID_STATUSES, VALID_RATING_MODES, LIMITS } from "#services/reviews/co
 
 export async function handleCreate(req, res) {
   const {
-    gameId, gameSlug, logTitle, rating, ratingMode,
+    gameId, gameSlug, reviewTitle, rating, ratingMode,
     review, containSpoilers, mastered, liked,
     status, playing, backlog, wishlist,
     startedOn, finishedOn, replay,
@@ -46,12 +46,12 @@ export async function handleCreate(req, res) {
 
   try {
     const { data, error } = await supabase
-      .from("logs")
+      .from("reviews")
       .insert({
         user_id: req.user.id,
         game_id: gameId,
         game_slug: gameSlug.trim().slice(0, LIMITS.MAX_SLUG),
-        log_title: sanitize(logTitle, LIMITS.MAX_LOG_TITLE) || LIMITS.DEFAULT_LOG_TITLE,
+        title: sanitize(reviewTitle, LIMITS.MAX_TITLE) || LIMITS.DEFAULT_TITLE,
         rating: rating ?? null,
         rating_mode: rating != null ? safeRatingMode : null,
         review: safeReview,
