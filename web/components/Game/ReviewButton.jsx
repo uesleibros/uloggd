@@ -173,7 +173,7 @@ function PlatformSelect({ platforms, value, onChange, placeholder = "Selecionar 
 	)
 }
 
-function LogSection({ title, description, children }) {
+function ReviewSection({ title, description, children }) {
 	return (
 		<div className="rounded-xl p-4 sm:p-5 bg-zinc-800/50 border border-zinc-700">
 			<h3 className="text-sm font-semibold text-white mb-0.5">{title}</h3>
@@ -281,7 +281,7 @@ function AspectRatings({ aspects, setAspects }) {
 	}
 
 	return (
-		<LogSection title="Avaliação por aspecto" description="Avalie partes específicas do jogo.">
+		<ReviewSection title="Avaliação por aspecto" description="Avalie partes específicas do jogo.">
 			{aspects.length > 0 && (
 				<div className="space-y-2 mb-3">
 					{aspects.map((aspect) => (
@@ -316,7 +316,7 @@ function AspectRatings({ aspects, setAspects }) {
 					)}
 				</div>
 			)}
-		</LogSection>
+		</ReviewSection>
 	)
 }
 
@@ -347,7 +347,7 @@ function ReviewTabContent({ rating, setRating, ratingMode, setRatingMode, platfo
 
 	return (
 		<div className="space-y-4">
-			<LogSection title="Nota geral" description="Escolha o formato e dê sua nota.">
+			<ReviewSection title="Nota geral" description="Escolha o formato e dê sua nota.">
 				<div className="flex items-center justify-between mb-3 gap-2">
 					<RatingModeSelector mode={ratingMode} setMode={handleModeChange} />
 					<button type="button" onClick={() => setMastered(!mastered)} className={`cursor-pointer p-2.5 rounded-lg transition-all duration-200 flex-shrink-0 ${mastered ? "text-amber-400 bg-amber-400/10 border border-amber-400/20" : "text-zinc-600 hover:text-zinc-400 border border-transparent"}`} title="Masterizado">
@@ -359,21 +359,21 @@ function ReviewTabContent({ rating, setRating, ratingMode, setRatingMode, platfo
 				) : (
 					<PointsRatingInput value={rating} onChange={setRating} mode={ratingMode} />
 				)}
-			</LogSection>
+			</ReviewSection>
 
 			<AspectRatings aspects={aspects} setAspects={setAspects} />
 
-			<LogSection title="Plataforma" description="Em qual plataforma você jogou?">
+			<ReviewSection title="Plataforma" description="Em qual plataforma você jogou?">
 				<PlatformSelect platforms={platforms} value={platform} onChange={setPlatform} />
-			</LogSection>
+			</ReviewSection>
 
-			<LogSection title="Review" description="Escreva sobre sua experiência. Suporta Markdown.">
+			<ReviewSection title="Review" description="Escreva sobre sua experiência. Suporta Markdown.">
 				<MarkdownEditor value={review} onChange={setReview} maxLength={10000} placeholder="O que achou do jogo?" />
 				<label htmlFor="spoilers-check" className="flex items-center mt-3 cursor-pointer select-none py-1">
 					<input type="checkbox" id="spoilers-check" checked={spoilers} onChange={(e) => setSpoilers(e.target.checked)} className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 accent-white cursor-pointer" />
 					<span className="text-sm text-zinc-500 ml-2">Contém spoilers</span>
 				</label>
-			</LogSection>
+			</ReviewSection>
 		</div>
 	)
 }
@@ -386,7 +386,7 @@ function DatesTabContent({ startedOn, setStartedOn, finishedOn, setFinishedOn })
 	const orderError = startedOn && finishedOn && finishedOn < startedOn ? "Término antes do início" : null
 
 	return (
-		<LogSection title="Período" description="Quando você começou e terminou de jogar?">
+		<ReviewSection title="Período" description="Quando você começou e terminou de jogar?">
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<div>
 					<label className="text-sm text-zinc-400 mb-1.5 block">Começou em</label>
@@ -400,20 +400,20 @@ function DatesTabContent({ startedOn, setStartedOn, finishedOn, setFinishedOn })
 					{!finishError && orderError && <p className="text-xs text-red-400 mt-1">{orderError}</p>}
 				</div>
 			</div>
-		</LogSection>
+		</ReviewSection>
 	)
 }
 
-function DetailsTabContent({ logTitle, setLogTitle, replay, setReplay, hoursPlayed, setHoursPlayed, minutesPlayed, setMinutesPlayed, playedPlatform, setPlayedPlatform, platforms, onDelete, deleting, isEditing }) {
+function DetailsTabContent({ reviewTitle, setReviewTitle, replay, setReplay, hoursPlayed, setHoursPlayed, minutesPlayed, setMinutesPlayed, playedPlatform, setPlayedPlatform, platforms, onDelete, deleting, isEditing }) {
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
 	return (
 		<div className="space-y-4">
-			<LogSection title="Informações do log">
+			<ReviewSection title="Informações da review">
 				<div className="flex gap-3 sm:gap-4">
 					<div className="flex-1 min-w-0">
-						<label className="text-sm text-zinc-400 mb-1.5 block">Título do log</label>
-						<input type="text" value={logTitle} onChange={(e) => setLogTitle(e.target.value)} placeholder="Nomeie seu log" maxLength={24} className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-700/50 rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors" />
+						<label className="text-sm text-zinc-400 mb-1.5 block">Título da review</label>
+						<input type="text" value={reviewTitle} onChange={(e) => setReviewTitle(e.target.value)} placeholder="Nomeie sua review" maxLength={24} className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-700/50 rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors" />
 						<p className="text-xs text-zinc-600 mt-1">Máximo de 24 caracteres</p>
 					</div>
 					<div className="flex-shrink-0">
@@ -423,9 +423,9 @@ function DetailsTabContent({ logTitle, setLogTitle, replay, setReplay, hoursPlay
 						</button>
 					</div>
 				</div>
-			</LogSection>
+			</ReviewSection>
 
-			<LogSection title="Tempo jogado" description="Quanto tempo você passou jogando?">
+			<ReviewSection title="Tempo jogado" description="Quanto tempo você passou jogando?">
 				<div className="flex gap-3">
 					<div className="flex items-center gap-1.5">
 						<input type="number" inputMode="numeric" value={hoursPlayed} onChange={(e) => { const v = e.target.value; if (v === "") { setHoursPlayed(""); return }; const n = parseInt(v); if (!isNaN(n) && n >= 0 && n <= 99999) setHoursPlayed(n.toString()) }} min="0" max="99999" placeholder="0" className="w-16 px-2 py-2.5 bg-zinc-900/50 border border-zinc-700/50 rounded-lg text-sm text-white text-center focus:outline-none focus:border-zinc-500 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
@@ -436,11 +436,11 @@ function DetailsTabContent({ logTitle, setLogTitle, replay, setReplay, hoursPlay
 						<span className="text-sm text-zinc-500">m</span>
 					</div>
 				</div>
-			</LogSection>
+			</ReviewSection>
 
-			<LogSection title="Jogou em" description="A plataforma física que você usou.">
+			<ReviewSection title="Jogou em" description="A plataforma física que você usou.">
 				<PlatformSelect platforms={platforms} value={playedPlatform} onChange={setPlayedPlatform} />
-			</LogSection>
+			</ReviewSection>
 
 			{isEditing && (
 				<div className="rounded-xl p-4 sm:p-5 bg-red-500/5 border border-red-500/20">
@@ -449,7 +449,7 @@ function DetailsTabContent({ logTitle, setLogTitle, replay, setReplay, hoursPlay
 					{!showDeleteConfirm ? (
 						<button type="button" onClick={() => setShowDeleteConfirm(true)} className="w-full px-4 py-3 text-sm font-medium text-red-400 hover:text-white bg-red-500/5 hover:bg-red-500 border border-red-500/20 hover:border-red-500 rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center gap-2">
 							<Trash2 className="w-4 h-4" />
-							Excluir este log
+							Excluir esta review
 						</button>
 					) : (
 						<div className="p-3 sm:p-4 bg-zinc-900/30 border border-red-500/20 rounded-lg space-y-4">
@@ -459,7 +459,7 @@ function DetailsTabContent({ logTitle, setLogTitle, replay, setReplay, hoursPlay
 								</div>
 								<div>
 									<p className="text-sm font-semibold text-red-400">Tem certeza?</p>
-									<p className="text-xs text-zinc-500 mt-1 leading-relaxed">Todos os dados deste log serão permanentemente excluídos.</p>
+									<p className="text-xs text-zinc-500 mt-1 leading-relaxed">Todos os dados desta review serão permanentemente excluídos.</p>
 								</div>
 							</div>
 							<div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -476,27 +476,27 @@ function DetailsTabContent({ logTitle, setLogTitle, replay, setReplay, hoursPlay
 	)
 }
 
-function LogModalContent({ game, onClose, existingLog, onDeleted }) {
-	const isEditing = !!existingLog
+function ReviewModalContent({ game, onClose, existingReview, onDeleted }) {
+	const isEditing = !!existingReview
 	const [activeTab, setActiveTab] = useState("review")
 	const [submitting, setSubmitting] = useState(false)
 	const [deleting, setDeleting] = useState(false)
 
-	const [rating, setRating] = useState(existingLog?.rating ?? null)
-	const [ratingMode, setRatingMode] = useState(existingLog?.rating_mode || "stars_5h")
-	const [platform, setPlatform] = useState(existingLog?.platform_id?.toString() || "")
-	const [review, setReview] = useState(existingLog?.review || "")
-	const [spoilers, setSpoilers] = useState(existingLog?.contain_spoilers || false)
-	const [mastered, setMastered] = useState(existingLog?.mastered || false)
-	const [startedOn, setStartedOn] = useState(existingLog?.started_on || "")
-	const [finishedOn, setFinishedOn] = useState(existingLog?.finished_on || "")
-	const [logTitle, setLogTitle] = useState(existingLog?.log_title || "Log")
-	const [replay, setReplay] = useState(existingLog?.replay || false)
-	const [hoursPlayed, setHoursPlayed] = useState(existingLog?.hours_played?.toString() || "")
-	const [minutesPlayed, setMinutesPlayed] = useState(existingLog?.minutes_played?.toString() || "")
-	const [playedPlatform, setPlayedPlatform] = useState(existingLog?.played_platform_id?.toString() || "")
+	const [rating, setRating] = useState(existingReview?.rating ?? null)
+	const [ratingMode, setRatingMode] = useState(existingReview?.rating_mode || "stars_5h")
+	const [platform, setPlatform] = useState(existingReview?.platform_id?.toString() || "")
+	const [review, setReview] = useState(existingReview?.review || "")
+	const [spoilers, setSpoilers] = useState(existingReview?.contain_spoilers || false)
+	const [mastered, setMastered] = useState(existingReview?.mastered || false)
+	const [startedOn, setStartedOn] = useState(existingReview?.started_on || "")
+	const [finishedOn, setFinishedOn] = useState(existingReview?.finished_on || "")
+	const [reviewTitle, setReviewTitle] = useState(existingReview?.title || "Review")
+	const [replay, setReplay] = useState(existingReview?.replay || false)
+	const [hoursPlayed, setHoursPlayed] = useState(existingReview?.hours_played?.toString() || "")
+	const [minutesPlayed, setMinutesPlayed] = useState(existingReview?.minutes_played?.toString() || "")
+	const [playedPlatform, setPlayedPlatform] = useState(existingReview?.played_platform_id?.toString() || "")
 	const [aspects, setAspects] = useState(
-		existingLog?.aspect_ratings?.map(a => ({ id: crypto.randomUUID(), label: a.label || "", rating: a.rating ?? null, ratingMode: a.ratingMode || "stars_5h", review: a.review || "" })) || []
+		existingReview?.aspect_ratings?.map(a => ({ id: crypto.randomUUID(), label: a.label || "", rating: a.rating ?? null, ratingMode: a.ratingMode || "stars_5h", review: a.review || "" })) || []
 	)
 
 	async function getToken() {
@@ -529,7 +529,7 @@ function LogModalContent({ game, onClose, existingLog, onDeleted }) {
 			const payload = {
 				gameId: game.id,
 				gameSlug: game.slug,
-				logTitle: logTitle || "Log",
+				reviewTitle: reviewTitle || "Review",
 				rating: rating ?? null,
 				ratingMode,
 				review: review.trim() || null,
@@ -545,8 +545,8 @@ function LogModalContent({ game, onClose, existingLog, onDeleted }) {
 				aspectRatings: validAspects.length > 0 ? validAspects : null,
 			}
 
-			const url = isEditing ? "/api/logs/@me/update" : "/api/logs/@me/create"
-			if (isEditing) payload.logId = existingLog.id
+			const url = isEditing ? "/api/reviews/@me/update" : "/api/reviews/@me/create"
+			if (isEditing) payload.reviewId = existingReview.id
 
 			const res = await fetch(url, {
 				method: "POST",
@@ -554,7 +554,7 @@ function LogModalContent({ game, onClose, existingLog, onDeleted }) {
 				body: JSON.stringify(payload),
 			})
 
-			if (res.ok) { notify(isEditing ? "Log atualizado!" : "Log criado!"); onClose() }
+			if (res.ok) { notify(isEditing ? "Review atualizada!" : "Review criada!"); onClose() }
 			else { const err = await res.json().catch(() => ({})); notify(err.error || "Falha ao salvar.", "error") }
 		} catch { notify("Falha ao salvar.", "error") }
 		finally { setSubmitting(false) }
@@ -566,8 +566,8 @@ function LogModalContent({ game, onClose, existingLog, onDeleted }) {
 		try {
 			const token = await getToken()
 			if (!token) return
-			const res = await fetch("/api/logs/@me/delete", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify({ logId: existingLog.id }) })
-			if (res.ok) { notify("Log excluído!"); onDeleted?.(); onClose() }
+			const res = await fetch("/api/reviews/@me/delete", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify({ reviewId: existingReview.id }) })
+			if (res.ok) { notify("Review excluída!"); onDeleted?.(); onClose() }
 			else notify("Falha ao excluir.", "error")
 		} catch { notify("Falha ao excluir.", "error") }
 		finally { setDeleting(false) }
@@ -597,21 +597,21 @@ function LogModalContent({ game, onClose, existingLog, onDeleted }) {
 				<div className="mb-4"><TabNav activeTab={activeTab} setActiveTab={setActiveTab} /></div>
 				{activeTab === "review" && <ReviewTabContent rating={rating} setRating={setRating} ratingMode={ratingMode} setRatingMode={setRatingMode} platform={platform} setPlatform={setPlatform} platforms={game.platforms} review={review} setReview={setReview} spoilers={spoilers} setSpoilers={setSpoilers} mastered={mastered} setMastered={setMastered} aspects={aspects} setAspects={setAspects} />}
 				{activeTab === "dates" && <DatesTabContent startedOn={startedOn} setStartedOn={setStartedOn} finishedOn={finishedOn} setFinishedOn={setFinishedOn} />}
-				{activeTab === "details" && <DetailsTabContent logTitle={logTitle} setLogTitle={setLogTitle} replay={replay} setReplay={setReplay} hoursPlayed={hoursPlayed} setHoursPlayed={setHoursPlayed} minutesPlayed={minutesPlayed} setMinutesPlayed={setMinutesPlayed} playedPlatform={playedPlatform} setPlayedPlatform={setPlayedPlatform} platforms={game.platforms} onDelete={handleDelete} deleting={deleting} isEditing={isEditing} />}
+				{activeTab === "details" && <DetailsTabContent reviewTitle={reviewTitle} setReviewTitle={setReviewTitle} replay={replay} setReplay={setReplay} hoursPlayed={hoursPlayed} setHoursPlayed={setHoursPlayed} minutesPlayed={minutesPlayed} setMinutesPlayed={setMinutesPlayed} playedPlatform={playedPlatform} setPlayedPlatform={setPlayedPlatform} platforms={game.platforms} onDelete={handleDelete} deleting={deleting} isEditing={isEditing} />}
 			</div>
 
 			<div className="flex items-center justify-end gap-2 sm:gap-3 px-4 md:px-5 py-3 border-t border-zinc-700 flex-shrink-0" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))" }}>
 				<button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer active:bg-zinc-600">Cancelar</button>
 				<button type="button" onClick={handleSave} disabled={submitting} className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2 ${submitting ? "bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50" : "bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white cursor-pointer shadow-lg shadow-indigo-500/20"}`}>
 					{submitting ? <div className="w-4 h-4 border-2 border-indigo-300 border-t-white rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
-					{isEditing ? "Salvar" : "Criar Log"}
+					{isEditing ? "Salvar" : "Criar Review"}
 				</button>
 			</div>
 		</div>
 	)
 }
 
-function UserLogRating({ rating, ratingMode }) {
+function UserReviewRating({ rating, ratingMode }) {
 	if (rating == null) return null
 	const isStars = ratingMode === "stars_5" || ratingMode === "stars_5h"
 
@@ -642,7 +642,7 @@ function UserLogRating({ rating, ratingMode }) {
 	)
 }
 
-function UserLogStatusBadge({ status }) {
+function UserReviewStatusBadge({ status }) {
 	const config = STATUS_CONFIG[status]
 	if (!config) return null
 	return (
@@ -679,20 +679,20 @@ function AspectRatingDisplay({ aspect }) {
 	return <span className="text-xs font-semibold text-zinc-300 tabular-nums">{formatted.display}<span className="text-zinc-600">/{formatted.max}</span></span>
 }
 
-export function UserLogCard({ log, onEdit }) {
-	if (!log) return null
+export function UserReviewCard({ review, onEdit }) {
+	if (!review) return null
 
 	const playtime = []
-	if (log.hours_played) playtime.push(`${log.hours_played}h`)
-	if (log.minutes_played) playtime.push(`${log.minutes_played}m`)
-	const aspects = log.aspect_ratings || []
+	if (review.hours_played) playtime.push(`${review.hours_played}h`)
+	if (review.minutes_played) playtime.push(`${review.minutes_played}m`)
+	const aspects = review.aspect_ratings || []
 
 	return (
 		<div className="rounded-xl bg-zinc-800/60 border border-zinc-700 overflow-hidden">
 			<div className="px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between border-b border-zinc-700/50">
 				<div className="flex items-center gap-2.5">
 					<User className="w-4 h-4 text-indigo-400" />
-					<span className="text-sm font-semibold text-white">{log.log_title || "Log"}</span>
+					<span className="text-sm font-semibold text-white">{review.title || "Review"}</span>
 				</div>
 				<button onClick={onEdit} className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white active:text-white bg-zinc-700/50 hover:bg-zinc-700 active:bg-zinc-600 rounded-lg transition-all duration-200 cursor-pointer border border-zinc-600/50 hover:border-zinc-500">
 					<Pencil className="w-3.5 h-3.5" />
@@ -703,13 +703,13 @@ export function UserLogCard({ log, onEdit }) {
 			<div className="p-4 sm:p-5">
 				<div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5">
 					<div className="flex-shrink-0">
-						{log.rating != null ? <UserLogRating rating={log.rating} ratingMode={log.rating_mode} /> : <span className="text-sm text-zinc-600 italic">Sem nota</span>}
+						{review.rating != null ? <UserReviewRating rating={review.rating} ratingMode={review.rating_mode} /> : <span className="text-sm text-zinc-600 italic">Sem nota</span>}
 					</div>
 
 					<div className="flex-1 min-w-0 space-y-3">
 						<div className="flex flex-wrap items-center gap-3">
-							{log.mastered && <div className="flex items-center gap-1.5"><Trophy className="w-4 h-4 text-amber-400 fill-current" /><span className="text-xs text-amber-400 font-medium">Masterizado</span></div>}
-							{log.replay && <div className="flex items-center gap-1.5"><RotateCcw className="w-4 h-4 text-zinc-400" /><span className="text-xs text-zinc-400 font-medium">Replay</span></div>}
+							{review.mastered && <div className="flex items-center gap-1.5"><Trophy className="w-4 h-4 text-amber-400 fill-current" /><span className="text-xs text-amber-400 font-medium">Masterizado</span></div>}
+							{review.replay && <div className="flex items-center gap-1.5"><RotateCcw className="w-4 h-4 text-zinc-400" /><span className="text-xs text-zinc-400 font-medium">Replay</span></div>}
 						</div>
 
 						{aspects.length > 0 && (
@@ -725,13 +725,13 @@ export function UserLogCard({ log, onEdit }) {
 
 						<div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-zinc-500">
 							{playtime.length > 0 && <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{playtime.join(" ")}</div>}
-							{log.started_on && <span>Início: {new Date(log.started_on).toLocaleDateString("pt-BR")}</span>}
-							{log.finished_on && <span>Fim: {new Date(log.finished_on).toLocaleDateString("pt-BR")}</span>}
+							{review.started_on && <span>Início: {new Date(review.started_on).toLocaleDateString("pt-BR")}</span>}
+							{review.finished_on && <span>Fim: {new Date(review.finished_on).toLocaleDateString("pt-BR")}</span>}
 						</div>
 
-						{log.review && (
+						{review.review && (
 							<div className="mt-2 pt-3 border-t border-zinc-700/50">
-								<p className="text-sm text-zinc-400 leading-relaxed line-clamp-2">{log.review}</p>
+								<p className="text-sm text-zinc-400 leading-relaxed line-clamp-2">{review.review}</p>
 							</div>
 						)}
 					</div>
@@ -741,18 +741,18 @@ export function UserLogCard({ log, onEdit }) {
 	)
 }
 
-function LogSelector({ logs, selectedId, onSelect, onNew }) {
-	if (logs.length === 0) return null
+function ReviewSelector({ reviews, selectedId, onSelect, onNew }) {
+	if (reviews.length === 0) return null
 	return (
 		<div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
-			{logs.map((log) => (
-				<button key={log.id} type="button" onClick={() => onSelect(log)} className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 ${selectedId === log.id ? "bg-white text-black" : "bg-zinc-800/50 text-zinc-500 hover:text-white border border-zinc-700 hover:border-zinc-600"}`}>
-					{log.log_title || "Log"}
+			{reviews.map((r) => (
+				<button key={r.id} type="button" onClick={() => onSelect(r)} className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 ${selectedId === r.id ? "bg-white text-black" : "bg-zinc-800/50 text-zinc-500 hover:text-white border border-zinc-700 hover:border-zinc-600"}`}>
+					{r.title || "Review"}
 				</button>
 			))}
 			<button type="button" onClick={onNew} className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-zinc-500 hover:text-white border border-dashed border-zinc-700 hover:border-zinc-500 cursor-pointer transition-all duration-200">
 				<Plus className="w-3 h-3" />
-				Novo
+				Nova
 			</button>
 		</div>
 	)
@@ -761,58 +761,58 @@ function LogSelector({ logs, selectedId, onSelect, onNew }) {
 export default function ReviewButton({ game }) {
 	const { user } = useAuth()
 	const [showModal, setShowModal] = useState(false)
-	const [logs, setLogs] = useState([])
+	const [reviews, setReviews] = useState([])
 	const [loading, setLoading] = useState(false)
-	const [selectedLog, setSelectedLog] = useState(null)
+	const [selectedReview, setSelectedReview] = useState(null)
 
-	const fetchLogs = useCallback(async () => {
+	const fetchReviews = useCallback(async () => {
 		if (!user || !game?.id) return
 		setLoading(true)
 		try {
 			const { data: { session } } = await supabase.auth.getSession()
 			if (!session) return
-			const res = await fetch("/api/logs/@me/game", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` }, body: JSON.stringify({ gameId: game.id }) })
-			if (res.ok) { const data = await res.json(); setLogs(data); if (data.length > 0 && !selectedLog) setSelectedLog(data[0]) }
+			const res = await fetch("/api/reviews/@me/game", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` }, body: JSON.stringify({ gameId: game.id }) })
+			if (res.ok) { const data = await res.json(); setReviews(data); if (data.length > 0 && !selectedReview) setSelectedReview(data[0]) }
 		} catch {} finally { setLoading(false) }
 	}, [user, game?.id])
 
-	useEffect(() => { fetchLogs() }, [fetchLogs])
+	useEffect(() => { fetchReviews() }, [fetchReviews])
 
 	if (!user) return null
 
-	const hasLogs = logs.length > 0
-	const activeLog = selectedLog || logs[0] || null
+	const hasReviews = reviews.length > 0
+	const activeReview = selectedReview || reviews[0] || null
 
-	function openModal(log = activeLog) { setSelectedLog(log); setShowModal(true) }
-	function openNewLog() { setSelectedLog(null); setShowModal(true) }
+	function openModal(review = activeReview) { setSelectedReview(review); setShowModal(true) }
+	function openNewReview() { setSelectedReview(null); setShowModal(true) }
 
 	function handleClose() {
 		setShowModal(false)
-		fetchLogs()
+		fetchReviews()
 	}
 
 	function handleDeleted() {
-		setSelectedLog(null)
-		fetchLogs()
+		setSelectedReview(null)
+		fetchReviews()
 	}
 
 	return (
 		<>
-			{hasLogs ? (
+			{hasReviews ? (
 				<div className="space-y-3">
-					{logs.length > 1 && <LogSelector logs={logs} selectedId={activeLog?.id} onSelect={(log) => setSelectedLog(log)} onNew={openNewLog} />}
-					<UserLogCard log={activeLog} onEdit={() => openModal(activeLog)} />
-					{logs.length === 1 && (
-						<button type="button" onClick={openNewLog} className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-zinc-700 hover:border-zinc-500 rounded-xl text-sm text-zinc-500 hover:text-zinc-300 transition-all duration-200 cursor-pointer">
+					{reviews.length > 1 && <ReviewSelector reviews={reviews} selectedId={activeReview?.id} onSelect={(r) => setSelectedReview(r)} onNew={openNewReview} />}
+					<UserReviewCard review={activeReview} onEdit={() => openModal(activeReview)} />
+					{reviews.length === 1 && (
+						<button type="button" onClick={openNewReview} className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-zinc-700 hover:border-zinc-500 rounded-xl text-sm text-zinc-500 hover:text-zinc-300 transition-all duration-200 cursor-pointer">
 							<Plus className="w-4 h-4" />
-							Criar outro log
+							Criar outra review
 						</button>
 					)}
 				</div>
 			) : (
 				<button onClick={() => openModal(null)} disabled={loading} className="inline-flex items-center gap-2.5 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20">
 					{loading ? <div className="w-4 h-4 border-2 border-indigo-300 border-t-white rounded-full animate-spin" /> : <Plus className="w-5 h-5" />}
-					Criar Log
+					Criar Review
 				</button>
 			)}
 
@@ -824,9 +824,9 @@ export default function ReviewButton({ game }) {
 				className="w-full md:max-w-2xl"
 			>
 				{showModal && (
-					<LogModalContent
+					<ReviewModalContent
 						game={game}
-						existingLog={selectedLog}
+						existingReview={selectedReview}
 						onClose={handleClose}
 						onDeleted={handleDeleted}
 					/>
@@ -834,6 +834,4 @@ export default function ReviewButton({ game }) {
 			</Modal>
 		</>
 	)
-
 }
-
