@@ -14,7 +14,7 @@ import SettingsSection from "@components/User/Settings/ui/SettingsSection"
 import { notify } from "@components/UI/Notification"
 import { supabase } from "#lib/supabase"
 
-const API_BASE = "/api/backloggd"
+const API_BASE = "/api/backloggd/@me"
 
 async function getAuthHeaders() {
   const { data: { session } } = await supabase.auth.getSession()
@@ -27,7 +27,7 @@ async function getAuthHeaders() {
 
 async function apiCall(action, body = {}) {
   const headers = await getAuthHeaders()
-  const res = await fetch(`${API_BASE}?action=${action}`, {
+  const res = await fetch(`${API_BASE}/${action}`, {
     method: "POST",
     headers,
     body: JSON.stringify(body),
@@ -397,4 +397,5 @@ export default function BackloggdSection() {
       </div>
     </SettingsSection>
   )
+
 }
