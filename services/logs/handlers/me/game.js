@@ -1,18 +1,14 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
 
 export async function handleGame(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
-
   const { gameId } = req.body
   if (!gameId) return res.status(400).json({ error: "gameId required" })
 
   try {
     const { data, error } = await supabase
-      .from("logs")
+      .from("reviews")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", req.user.id)
       .eq("game_id", gameId)
       .order("created_at", { ascending: false })
 
@@ -20,6 +16,6 @@ export async function handleGame(req, res) {
     res.json(data || [])
   } catch (e) {
     console.error(e)
-    res.status(500).json({ error: "failed to fetch logs" })
+    res.status(500).json({ error: "fail" })
   }
 }
