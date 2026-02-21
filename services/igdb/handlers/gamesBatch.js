@@ -1,4 +1,4 @@
-import { query } from "#lib/igdb-wrapper.js"
+import { query } from "#lib/igdbWrapper.js"
 
 export async function handleGamesBatch(req, res) {
   const { slugs } = req.body
@@ -42,3 +42,4 @@ export async function handleGamesBatch(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
