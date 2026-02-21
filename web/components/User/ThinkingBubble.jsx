@@ -15,7 +15,7 @@ function ThinkingModalContent({ currentThinking, onClose, onSave }) {
 		try {
 			const { data: { session } } = await supabase.auth.getSession()
 			if (!session) return
-			const res = await fetch("/api/user?action=thinking", {
+			const res = await fetch("/api/users/@me/thinking", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -161,4 +161,5 @@ export default function ThinkingBubble({ text, isOwnProfile, onSave }) {
 			</Modal>
 		</>
 	)
+
 }
