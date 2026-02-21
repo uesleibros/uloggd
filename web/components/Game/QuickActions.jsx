@@ -92,7 +92,7 @@ export default function QuickActions({ game }) {
 			const { data: { session } } = await supabase.auth.getSession()
 			if (!session) return
 
-			const res = await fetch("/api/userGames?action=get", {
+			const res = await fetch("/api/userGames/@me/get", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -129,7 +129,7 @@ export default function QuickActions({ game }) {
 			const { data: { session } } = await supabase.auth.getSession()
 			if (!session) { setState(prev); return }
 
-			const res = await fetch("/api/userGames?action=update", {
+			const res = await fetch("/api/userGames/@me/update", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -242,4 +242,5 @@ export default function QuickActions({ game }) {
 			</Modal>
 		</>
 	)
+
 }
