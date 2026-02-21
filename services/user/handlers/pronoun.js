@@ -1,11 +1,7 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
-import { MAX_PRONOUN } from "#services/user/constants.js"
+import { MAX_PRONOUN } from "#services/users/constants.js"
 
 export async function handlePronoun(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
-
   const { pronoun } = req.body
 
   if (pronoun === undefined) return res.status(400).json({ error: "missing pronoun" })
@@ -17,7 +13,7 @@ export async function handlePronoun(req, res) {
     const { error } = await supabase
       .from("users")
       .update({ pronoun: trimmed || null })
-      .eq("user_id", user.id)
+      .eq("user_id", req.user.id)
 
     if (error) throw error
     res.json({ success: true })
