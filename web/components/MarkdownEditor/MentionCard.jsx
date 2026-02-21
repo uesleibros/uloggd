@@ -23,7 +23,7 @@ export function MentionCard({ username, onClose }) {
 
   useEffect(() => {
     const controller = new AbortController()
-    fetch("/api/user?action=profile", {
+    fetch("/api/users/profile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username }),
@@ -172,4 +172,5 @@ export function MentionCard({ username, onClose }) {
     </div>,
     document.body
   )
+
 }
