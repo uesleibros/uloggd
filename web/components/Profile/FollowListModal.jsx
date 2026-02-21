@@ -14,7 +14,7 @@ export default function FollowListModal({ isOpen, title, userId, onClose }) {
     setUsers([])
     setSearch("")
 
-    fetch("/api/user?action=followers", {
+    fetch("/api/users/followers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, type: title === "Seguidores" ? "followers" : "following" }),
