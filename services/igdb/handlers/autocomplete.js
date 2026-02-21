@@ -1,4 +1,4 @@
-import { query } from "#lib/igdb-wrapper.js"
+import { query } from "#lib/igdbWrapper.js"
 import { PLATFORMS_MAP } from "#data/platformsMapper.js"
 import { buildNameFilter } from "#services/igdb/utils/buildNameFilter.js"
 
@@ -59,5 +59,6 @@ export async function handleAutocomplete(req, res) {
 		console.error(e)
 		res.status(500).json({ error: "fail" })
 	}
+
 
 }
