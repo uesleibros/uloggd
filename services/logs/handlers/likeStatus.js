@@ -1,22 +1,22 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleLikeStatus(req, res) {
-  const { logId, currentUserId } = req.body
+  const { reviewId, currentUserId } = req.body
 
-  if (!logId) return res.status(400).json({ error: "missing logId" })
+  if (!reviewId) return res.status(400).json({ error: "missing reviewId" })
 
   try {
     const [countRes, isLikedRes] = await Promise.all([
       supabase
-        .from("log_likes")
+        .from("review_likes")
         .select("*", { count: "exact", head: true })
-        .eq("log_id", logId),
+        .eq("review_id", reviewId),
 
       currentUserId
         ? supabase
-            .from("log_likes")
+            .from("review_likes")
             .select("id")
-            .eq("log_id", logId)
+            .eq("review_id", reviewId)
             .eq("user_id", currentUserId)
             .maybeSingle()
         : Promise.resolve({ data: null }),
