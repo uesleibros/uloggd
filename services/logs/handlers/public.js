@@ -1,5 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { DEFAULT_AVATAR_URL } from "#services/user/constants.js"
+import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
 
 export async function handlePublic(req, res) {
   const { gameId, sortBy = "recent", page = 1, limit = 20 } = req.body
@@ -9,7 +9,7 @@ export async function handlePublic(req, res) {
 
   try {
     let q = supabase
-      .from("logs")
+      .from("reviews")
       .select("*", { count: "exact" })
       .eq("game_id", gameId)
       .range(offset, offset + limit - 1)
@@ -22,10 +22,10 @@ export async function handlePublic(req, res) {
       q = q.order("created_at", { ascending: false })
     }
 
-    const { data: logs, count, error } = await q
+    const { data: reviews, count, error } = await q
     if (error) throw error
 
-    const userIds = [...new Set((logs || []).map(l => l.user_id))]
+    const userIds = [...new Set((reviews || []).map(r => r.user_id))]
     const users = {}
 
     if (userIds.length > 0) {
@@ -66,7 +66,7 @@ export async function handlePublic(req, res) {
     }
 
     res.json({
-      logs: logs || [],
+      reviews: reviews || [],
       users,
       total: count,
       page,
@@ -74,7 +74,6 @@ export async function handlePublic(req, res) {
     })
   } catch (e) {
     console.error(e)
-    res.status(500).json({ error: "failed to fetch reviews" })
+    res.status(500).json({ error: "fail" })
   }
 }
-
