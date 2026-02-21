@@ -9,7 +9,7 @@ async function request(action, body = {}) {
   const session = await getSession()
   if (!session) return null
 
-  const res = await fetch(`/api/user?action=${action}`, {
+  const res = await fetch(`/api/users/@me/${action}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
