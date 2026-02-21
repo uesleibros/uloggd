@@ -1,24 +1,20 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { getUser } from "#utils/auth.js"
 
 export async function handleDelete(req, res) {
-  const user = await getUser(req)
-  if (!user) return res.status(401).json({ error: "unauthorized" })
-
-  const { logId } = req.body
-  if (!logId) return res.status(400).json({ error: "logId required" })
+  const { reviewId } = req.body
+  if (!reviewId) return res.status(400).json({ error: "reviewId required" })
 
   try {
     const { error } = await supabase
-      .from("logs")
+      .from("reviews")
       .delete()
-      .eq("id", logId)
-      .eq("user_id", user.id)
+      .eq("id", reviewId)
+      .eq("user_id", req.user.id)
 
     if (error) throw error
     res.json({ success: true })
   } catch (e) {
     console.error(e)
-    res.status(500).json({ error: "failed to delete log" })
+    res.status(500).json({ error: "fail" })
   }
 }
