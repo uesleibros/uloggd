@@ -27,7 +27,7 @@ async function loadUser(session) {
 
   loadingPromise = (async () => {
     try {
-      const res = await fetch("/api/user?action=profile", {
+      const res = await fetch("/api/users/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: session.user.id }),
