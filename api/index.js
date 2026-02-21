@@ -1,7 +1,9 @@
 import { usersHandler } from "#routers/users.js"
+import { userGamesHandler } from "#routers/userGames.js"
 
 const SERVICES = {
   users: usersHandler,
+  userGames: userGamesHandler
 }
 
 export default async function handler(req, res) {
