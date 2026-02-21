@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import { Star } from "lucide-react"
-import { useUserGames } from "#hooks/useUserGames"
+import { useMyLibrary } from "#hooks/useMyLibrary"
 
 const COVER_FALLBACK = "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"
 
@@ -55,7 +55,7 @@ export default function GameCard({
 	showRating = true,
 	className = "",
 }) {
-	const { getRating } = useUserGames()
+	const { getRating } = useMyLibrary()
 	
 	const rating = propRating ?? getRating(game.slug)
 	const hasRating = showRating && rating != null && rating > 0

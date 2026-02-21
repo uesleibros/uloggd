@@ -186,7 +186,7 @@ function UserDropdown({ user, onSignOut }) {
             open ? "bg-zinc-800 ring-1 ring-zinc-700" : "hover:bg-zinc-800/60"
           }`}
         >
-          <UserDisplay user={user} size="sm" showBadges={false} showUsername={false} />
+          <UserDisplay user={user} size="sm" showBadges={false} showStatus={true} showUsername={false} />
           <span className="text-sm text-white hidden sm:block max-w-[120px] truncate">{user.username}</span>
           <ChevronDown className={`w-3.5 h-3.5 text-zinc-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
         </button>
@@ -200,7 +200,7 @@ function UserDropdown({ user, onSignOut }) {
         >
           <div className="p-3 border-b border-zinc-800">
             <div className="flex items-center gap-3">
-              <UserDisplay user={user} size="md" showBadges={true} showUsername={false} />
+              <UserDisplay user={user} size="md" showBadges={true} showStatus={true} showUsername={false} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-medium text-white truncate">{user.username}</span>

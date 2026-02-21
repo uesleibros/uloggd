@@ -10,7 +10,7 @@ export default function Footer() {
               <Link to="/" className="text-lg font-bold text-white">
                 uloggd
               </Link>
-              <span className="text-xs mb-1 text-zinc-600">v1.0.8</span>
+              <span className="text-xs mb-1 text-zinc-600">v1.0.9</span>
             </div>
             <p className="mt-2 text-sm text-zinc-500 max-w-sm">
               Dados de jogos fornecidos por{" "}

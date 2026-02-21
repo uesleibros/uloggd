@@ -15,7 +15,7 @@ export function useNotifications() {
     if (!session) return
 
     try {
-      const r = await fetch("/api/notifications?action=count", {
+      const r = await fetch("/api/notifications/@me/count", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -17,3 +17,12 @@ export function formatDateLong(unixSeconds) {
     year: "numeric"
   })
 }
+
+export function getTimeAgo(dateStr) {
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000)
+  if (diff < 60) return "agora"
+  if (diff < 3600) return `${Math.floor(diff / 60)}min`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h`
+  if (diff < 2592000) return `${Math.floor(diff / 86400)}d`
+  return `${Math.floor(diff / 2592000)}m`
+}

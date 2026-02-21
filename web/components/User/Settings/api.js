@@ -18,7 +18,10 @@ async function request(action, body = {}) {
     body: JSON.stringify(body),
   })
 
-  if (!res.ok) return null
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error || "fail")
+  }
 
   try {
     return await res.json()
@@ -34,11 +37,8 @@ export const uploadImage = (type, base64) =>
   })
 
 export const updateBio = (bio) => request("bio", { bio })
-
 export const updateDecoration = (decoration) => request("decoration", { decoration })
-
-export const deleteAccount = () => request("delete")
-
-export const signOut = () => supabase.auth.signOut()
-
 export const updatePronoun = (pronoun) => request("pronoun", { pronoun })
+export const updateUsername = (username) => request("username", { username })
+export const deleteAccount = () => request("delete")
+export const signOut = () => supabase.auth.signOut()

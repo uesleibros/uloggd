@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { UserPlus, ThumbsUp, Check, Trash2, X, Bell } from "lucide-react"
 import { supabase } from "#lib/supabase"
+import { getTimeAgo } from "#utils/formatDate"
 
 const NOTIFICATION_CONFIG = {
   follow: {
@@ -22,15 +23,6 @@ const NOTIFICATION_CONFIG = {
     getLink: (data) => `/game/${data.game_slug}`,
     getUserId: (data) => data.liker_id,
   },
-}
-
-function getTimeAgo(dateStr) {
-  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000)
-  if (diff < 60) return "agora"
-  if (diff < 3600) return `${Math.floor(diff / 60)}min`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`
-  if (diff < 2592000) return `${Math.floor(diff / 86400)}d`
-  return `${Math.floor(diff / 2592000)}m`
 }
 
 function NotificationItem({ notification, users, onClose, onAction }) {

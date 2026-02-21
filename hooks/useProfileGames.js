@@ -42,7 +42,7 @@ export function useProfileGames(profileId) {
       const slugs = Object.keys(data.games || {})
       if (slugs.length === 0) return
 
-      const batchRes = await fetch("/api/igdb?action=gamesBatch", {
+      const batchRes = await fetch("/api/igdb/gamesBatch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slugs }),

@@ -1,5 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { query } from "#lib/igdb-wrapper.js"
+import { query } from "#lib/igdbWrapper.js"
 import { sanitize, safePlatform, sanitizeAspects } from "#services/reviews/utils/sanitize.js"
 import { validateDates, validateTime, validateRating, validateAspectRatings, runValidations } from "#services/reviews/utils/validators.js"
 import { VALID_STATUSES, VALID_RATING_MODES, LIMITS } from "#services/reviews/constants.js"

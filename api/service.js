@@ -7,7 +7,7 @@ import { igdbHandler } from "#routers/igdb.js"
 import { reviewsHandler } from "#routers/reviews.js"
 
 const SERVICES = {
-  users: userHandler,
+  users: usersHandler,
   userGames: userGamesHandler,
   backloggd: backloggdHandler,
   notifications: notificationsHandler,

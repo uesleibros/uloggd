@@ -2,6 +2,7 @@ import usePageMeta from "#hooks/usePageMeta"
 import UsersChoiceCarousel from "@components/Home/UsersChoiceCarousel"
 import { useAuth } from "#hooks/useAuth"
 import PageBanner from "@components/Layout/PageBanner"
+import { getStatus } from "#utils/onlineStatus"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 
 function WelcomeBackSkeleton() {
@@ -29,6 +30,7 @@ function WelcomeBack({ user }) {
           src={user.avatar}
           alt={user.username}
           decoration={user.avatar_decoration}
+          status={getStatus(user.last_seen, user.status)}
           size="lg"
         />
         <div>

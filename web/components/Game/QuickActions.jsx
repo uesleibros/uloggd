@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Check, ChevronDown, Play, Clock, Gift, Heart } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
-import { useUserGames } from "#hooks/useUserGames"
+import { useMyLibrary } from "#hooks/useMyLibrary"
 import Modal from "@components/UI/Modal"
 
 const STATUS_OPTIONS = [
@@ -73,7 +73,7 @@ function ActionButton({ active, onClick, icon, label, activeClass = "bg-white te
 
 export default function QuickActions({ game }) {
 	const { user } = useAuth()
-	const { refresh } = useUserGames()
+	const { refresh } = useMyLibrary()
 	const [state, setState] = useState({
 		status: null,
 		playing: false,

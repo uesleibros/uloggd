@@ -1,4 +1,4 @@
-import { VALID_RATING_MODES, LIMITS } from "#services/logs/constants.js"
+import { VALID_RATING_MODES, LIMITS } from "#services/reviews/constants.js"
 
 export function sanitize(str, max) {
   if (!str || typeof str !== "string") return null

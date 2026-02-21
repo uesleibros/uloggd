@@ -2,9 +2,9 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
 
-const UserGamesContext = createContext(null)
+const MyLibraryContext = createContext(null)
 
-export function UserGamesProvider({ children }) {
+export function MyLibraryProvider({ children }) {
   const { user } = useAuth()
   const [games, setGames] = useState({})
   const [loaded, setLoaded] = useState(false)
@@ -54,15 +54,15 @@ export function UserGamesProvider({ children }) {
   }, [fetchGames])
 
   return (
-    <UserGamesContext.Provider value={{ games, loaded, getGameData, getRating, refresh }}>
+    <MyLibraryContext.Provider value={{ games, loaded, getGameData, getRating, refresh }}>
       {children}
-    </UserGamesContext.Provider>
+    </MyLibraryContext.Provider>
   )
 }
 
-export function useUserGames() {
-  const ctx = useContext(UserGamesContext)
-  
+export function useMyLibrary() {
+  const ctx = useContext(MyLibraryContext)
+
   if (!ctx) {
     return {
       games: {},
@@ -72,7 +72,6 @@ export function useUserGames() {
       refresh: () => {},
     }
   }
-  
-  return ctx
 
+  return ctx
 }

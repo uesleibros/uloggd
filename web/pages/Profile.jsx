@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useMemo } from "react"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
 import { supabase } from "#lib/supabase"
@@ -16,6 +16,8 @@ import BioSection from "@components/Profile/BioSection"
 import ListsSection from "@components/Profile/ListsSection"
 import FollowListModal from "@components/Profile/FollowListModal"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
+import { getStatus } from "#utils/onlineStatus"
+import { getTimeAgo } from "#utils/formatDate"
 import { User, Gamepad2, ListChecks, Activity } from "lucide-react"
 
 const GAMES_PER_PAGE = 24
@@ -30,8 +32,8 @@ const PROFILE_SECTIONS = [
 export default function Profile() {
 	const { username } = useParams()
 	const { user: currentUser, loading: authLoading } = useAuth()
-	const [profile, setProfile] = useState(null)
-	const [loading, setLoading] = useState(true)
+	const [fetchedProfile, setFetchedProfile] = useState(null)
+	const [fetching, setFetching] = useState(false)
 	const [error, setError] = useState(null)
 	const [activeSection, setActiveSection] = useState("profile")
 	const [activeTab, setActiveTab] = useState("playing")
@@ -46,8 +48,15 @@ export default function Profile() {
 
 	const tabsRef = useRef(null)
 	const sectionNavRef = useRef(null)
+	const lastFetchedUsername = useRef(null)
 
-	const isOwnProfile = currentUser?.username?.toLowerCase() === username?.toLowerCase()
+	const isOwnProfile = !authLoading && currentUser?.username?.toLowerCase() === username?.toLowerCase()
+	
+	const profile = useMemo(() => {
+		if (isOwnProfile && currentUser) return currentUser
+		return fetchedProfile
+	}, [isOwnProfile, currentUser, fetchedProfile])
+
 	const { profileGames, counts, igdbGames, loadingGames } = useProfileGames(profile?.id)
 
 	usePageMeta(profile ? {
@@ -60,12 +69,19 @@ export default function Profile() {
 
 	useEffect(() => {
 		setActiveSection("profile")
+		setFetchedProfile(null)
+		setError(null)
+		lastFetchedUsername.current = null
 	}, [username])
 
 	useEffect(() => {
-		setLoading(true)
+		if (authLoading) return
+		if (isOwnProfile) return
+		if (lastFetchedUsername.current === username) return
+
+		lastFetchedUsername.current = username
+		setFetching(true)
 		setError(null)
-		setProfile(null)
 		setIsFollowing(false)
 		setFollowersCount(0)
 		setFollowingCount(0)
@@ -78,14 +94,15 @@ export default function Profile() {
 			signal: controller.signal,
 		})
 			.then(res => { if (!res.ok) throw new Error(); return res.json() })
-			.then(data => { setProfile(data); setLoading(false) })
-			.catch(err => { if (err.name !== "AbortError") { setError(true); setLoading(false) } })
+			.then(data => { setFetchedProfile(data); setFetching(false) })
+			.catch(err => { if (err.name !== "AbortError") { setError(true); setFetching(false) } })
 
 		return () => controller.abort()
-	}, [username])
+	}, [username, authLoading, isOwnProfile])
 
 	useEffect(() => {
-		if (!profile || authLoading) return
+		if (!profile?.id || authLoading || isOwnProfile) return
+
 		const controller = new AbortController()
 
 		fetch("/api/users/followStatus", {
@@ -99,7 +116,7 @@ export default function Profile() {
 			.catch(() => {})
 
 		return () => controller.abort()
-	}, [profile, currentUser?.id, authLoading])
+	}, [profile?.id, currentUser?.id, authLoading, isOwnProfile])
 
 	async function handleFollow() {
 		if (!currentUser || !profile) return
@@ -128,14 +145,17 @@ export default function Profile() {
 	}
 
 	function handleSectionChange(sectionId) {
+		if (sectionId === activeSection) return
 		setActiveSection(sectionId)
-		if (sectionNavRef.current) {
-			const y = sectionNavRef.current.getBoundingClientRect().top + window.scrollY - 16
-			window.scrollTo({ top: y, behavior: "smooth" })
-		}
 	}
 
-	if (loading) return <ProfileSkeleton />
+	function handleProfileUpdate(partial) {
+		setFetchedProfile(prev => prev ? { ...prev, ...partial } : prev)
+	}
+
+	const showSkeleton = authLoading || (fetching && !profile)
+
+	if (showSkeleton) return <ProfileSkeleton />
 
 	if (error || !profile) {
 		return (
@@ -168,13 +188,14 @@ export default function Profile() {
 								src={profile.avatar}
 								alt={profile.username}
 								decoration={profile.avatar_decoration}
+								status={getStatus(profile.last_seen, profile.status)}
 								size="profile"
 							/>
 							<div className="absolute z-20 left-[15%] sm:left-[13%] md:left-[65%]" style={{ bottom: 'calc(100% - 1px)' }}>
 								<ThinkingBubble
 									text={profile.thinking}
 									isOwnProfile={isOwnProfile}
-									onSave={t => setProfile(prev => ({ ...prev, thinking: t }))}
+									onSave={t => handleProfileUpdate({ thinking: t })}
 								/>
 							</div>
 						</div>
@@ -197,6 +218,9 @@ export default function Profile() {
 						</div>
 						{profile.pronoun && (
 							<span className="text-xs mt-1 bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-md border border-zinc-700">{profile.pronoun}</span>
+						)}
+						{getStatus(profile.last_seen, profile.status) === "offline" && getTimeAgo(profile.last_seen, profile.status) && (
+						  <span className="text-xs text-zinc-500 mt-1 block">Última vez visto: {getTimeAgo(profile.last_seen, profile.status)}</span>
 						)}
 						<ProfileStats
 							counts={counts}
@@ -307,4 +331,3 @@ export default function Profile() {
 		</div>
 	)
 }
-

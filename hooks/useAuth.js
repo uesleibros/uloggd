@@ -61,6 +61,24 @@ async function loadUser(session) {
   return loadingPromise
 }
 
+async function refreshUser() {
+  if (!cachedUser) return
+  
+  try {
+    const res = await fetch("/api/users/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: cachedUser.id }),
+    })
+
+    if (res.ok) {
+      const profile = await res.json()
+      cachedUser = { ...cachedUser, ...profile }
+      notify()
+    }
+  } catch {}
+}
+
 function updateUser(partial) {
   if (!cachedUser) return
   cachedUser = { ...cachedUser, ...partial }
@@ -95,5 +113,5 @@ export function useAuth() {
     return () => listeners.delete(handler)
   }, [])
 
-  return { ...state, updateUser }
+  return { ...state, updateUser, refreshUser }
 }

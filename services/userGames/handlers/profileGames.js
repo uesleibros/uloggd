@@ -108,7 +108,7 @@ export async function handleProfileGames(req, res) {
         .select("game_id, game_slug, status, playing, backlog, wishlist, liked, updated_at")
         .eq("user_id", userId),
       supabase
-        .from("logs")
+        .from("reviews")
         .select("game_id, game_slug, rating, status, playing, backlog, wishlist, liked, created_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
