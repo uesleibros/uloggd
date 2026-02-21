@@ -1,4 +1,5 @@
 export const MAX_BIO = 10000
+export const MAX_THINKING = 50
 export const MAX_PRONOUN = 30
 export const MAX_BANNER_SIZE = 5 * 1024 * 1024
 export const VALID_FOLLOW_ACTIONS = ["follow", "unfollow"]
@@ -6,3 +7,4 @@ export const VALID_LIST_TYPES = ["followers", "following"]
 export const VALID_BANNER_ACTIONS = ["upload", "remove"]
 export const VALID_AVATAR_ACTIONS = ["upload", "remove"]
 export const DEFAULT_AVATAR_URL = "https://cdn.imgchest.com/files/ef68461049cb.jpg"
+
