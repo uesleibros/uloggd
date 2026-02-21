@@ -1,16 +1,16 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { DEFAULT_AVATAR_URL } from "#services/user/constants.js"
+import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
 
 export async function handleLikes(req, res) {
-  const { logId } = req.body
+  const { reviewId } = req.body
 
-  if (!logId) return res.status(400).json({ error: "missing logId" })
+  if (!reviewId) return res.status(400).json({ error: "missing reviewId" })
 
   try {
     const { data } = await supabase
-      .from("log_likes")
+      .from("review_likes")
       .select("user_id")
-      .eq("log_id", logId)
+      .eq("review_id", reviewId)
       .order("created_at", { ascending: false })
 
     const userIds = data?.map(r => r.user_id) || []
