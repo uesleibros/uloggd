@@ -31,7 +31,7 @@ export async function handleGamesBatch(req, res) {
           developers: g.involved_companies?.filter(c => c.developer).map(c => c.company.name) || [],
           platforms: g.platforms?.slice().sort((a, b) => a.name.localeCompare(b.name)) || [],
           cover: g.cover?.url ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_cover_big") } : null,
-          artworks: g.artworks?.map(a => ({ ...a, url: a.url.replace("t_thumb", "t_1080p") })) || [],
+          artworks: g.artworks?.map(a => ({ ...a, url: a.url.replace("t_thumb", "t_original") })) || [],
         }
       }
     }
@@ -42,4 +42,3 @@ export async function handleGamesBatch(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
-
