@@ -43,8 +43,8 @@ export function MarkdownGameCard({ slug, variant = "default", isFavorite = false
 
 function MiniCardSkeleton() {
   return (
-    <div className="flex items-center gap-3 p-2 bg-zinc-900 border border-zinc-800 rounded-lg w-full max-w-md my-2 animate-pulse">
-      <div className="w-10 h-14 bg-zinc-800 rounded flex-shrink-0" />
+    <div className="flex items-center gap-3 p-3 bg-zinc-900 border border-zinc-800 rounded-lg w-full max-w-sm my-2 animate-pulse">
+      <div className="w-12 h-16 bg-zinc-800 rounded flex-shrink-0" />
       <div className="flex-1 space-y-2">
         <div className="h-4 bg-zinc-800 rounded w-3/4" />
         <div className="h-3 bg-zinc-800 rounded w-1/2" />
@@ -84,31 +84,38 @@ function MiniCard({ game, rating, showRating }) {
   const hasRating = showRating && rating != null && rating > 0
 
   return (
-    <div className="flex items-center gap-3 p-2 bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-700/50 hover:border-zinc-600 rounded-lg w-full max-w-md my-2 transition-all group">
-      <Link to={`/game/${game.slug}`} className="flex-shrink-0">
+    <div className="flex items-center gap-4 p-3 bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800 hover:border-zinc-700 rounded-xl w-full max-w-sm my-2 transition-all group shadow-md hover:shadow-lg">
+      <Link to={`/game/${game.slug}`} className="flex-shrink-0 relative group/img overflow-hidden rounded-lg">
+        <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors z-10" />
         <img
           src={coverUrl}
           alt={game.name}
-          className="w-10 h-14 rounded object-cover shadow-sm bg-zinc-800"
+          className="w-12 h-16 object-cover shadow-md bg-zinc-800 transition-transform group-hover/img:scale-105"
         />
       </Link>
-      <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+      
+      <div className="flex-1 min-w-0 flex flex-col justify-center gap-1 text-left">
         <Link
           to={`/game/${game.slug}`}
-          className="text-sm font-semibold text-white hover:text-indigo-400 truncate transition-colors"
+          className="text-[15px] font-bold text-zinc-100 hover:text-indigo-400 truncate transition-colors leading-tight"
         >
           {game.name}
         </Link>
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
+        
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500">
           {hasRating && (
-            <>
-              <MiniStars rating={rating} />
-              <span className="text-zinc-600">•</span>
-            </>
+            <div className="flex items-center gap-1.5 bg-zinc-800/80 px-1.5 py-0.5 rounded border border-zinc-700/50">
+              <MiniStars rating={rating} size={10} />
+            </div>
           )}
-          {year && <span>{year}</span>}
-          {year && game.genres?.[0] && <span>•</span>}
-          {game.genres?.[0] && <span className="truncate">{game.genres[0].name}</span>}
+          
+          {(year || game.genres?.[0]) && (
+            <div className="flex items-center gap-1.5 truncate">
+              {year && <span>{year}</span>}
+              {year && game.genres?.[0] && <span className="text-zinc-700">•</span>}
+              {game.genres?.[0] && <span className="truncate text-zinc-400">{game.genres[0].name}</span>}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -124,7 +131,7 @@ function DefaultCard({ game, rating, showRating }) {
   const hasRating = showRating && rating != null && rating > 0
 
   return (
-    <div className="my-8 text-start group relative w-full max-w-2xl overflow-hidden rounded-xl bg-zinc-900 border border-zinc-700/50 hover:border-zinc-600 transition-all duration-300 shadow-lg">
+    <div className="my-8 text-left mx-auto group relative w-full max-w-2xl overflow-hidden rounded-xl bg-zinc-900 border border-zinc-700/50 hover:border-zinc-600 transition-all duration-300 shadow-lg">
       <div className="absolute inset-0 z-0">
         {game.artworks?.[0]?.url ? (
           <div
@@ -146,7 +153,7 @@ function DefaultCard({ game, rating, showRating }) {
           />
         </Link>
 
-        <div className="flex-1 min-w-0 flex flex-col h-full justify-between gap-2">
+        <div className="flex-1 min-w-0 flex flex-col h-full justify-between gap-2 text-left">
           <div>
             <div className="flex items-center gap-3">
               <h4 className="text-lg sm:text-xl font-bold text-white leading-tight truncate">
