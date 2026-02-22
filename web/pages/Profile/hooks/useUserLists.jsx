@@ -5,9 +5,13 @@ export function useUserLists(profileId) {
   const [loadingLists, setLoadingLists] = useState(false)
 
   useEffect(() => {
-    if (!profileId) return
-    setLoadingLists(true)
+    if (!profileId) {
+      setUserLists([])
+      setLoadingLists(false)
+      return
+    }
 
+    setLoadingLists(true)
     const controller = new AbortController()
 
     fetch("/api/lists/@me/get", {
@@ -16,17 +20,14 @@ export function useUserLists(profileId) {
       body: JSON.stringify({ userId: profileId }),
       signal: controller.signal,
     })
-      .then((r) => {
-        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`)
-        return r.json()
-      })
+      .then((r) => r.ok ? r.json() : Promise.reject())
       .then((data) => {
         setUserLists(Array.isArray(data) ? data : [])
         setLoadingLists(false)
       })
       .catch((err) => {
-        if (err.name !== "AbortError") {
-          console.error("[useUserLists] error:", err)
+        if (err?.name !== "AbortError") {
+          setUserLists([])
           setLoadingLists(false)
         }
       })
