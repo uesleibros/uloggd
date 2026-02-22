@@ -59,8 +59,11 @@ function StatusIcon({ status, size }) {
     const inner = half * 0.45
     return (
       <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-        <circle cx={half} cy={half} r={half} fill={statusColors.offline} />
-        <circle cx={half} cy={half} r={inner} fill="currentColor" className="text-zinc-900" />
+        <mask id={`offline-${s}`}>
+          <rect width={s} height={s} fill="white" />
+          <circle cx={half} cy={half} r={inner} fill="black" />
+        </mask>
+        <circle cx={half} cy={half} r={half} fill={statusColors.offline} mask={`url(#offline-${s})`} />
       </svg>
     )
   }
@@ -68,8 +71,11 @@ function StatusIcon({ status, size }) {
   if (status === 'idle') {
     return (
       <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-        <circle cx={half} cy={half} r={half} fill={statusColors.idle} />
-        <circle cx={half * 0.7} cy={half * 0.7} r={half * 0.6} fill="currentColor" className="text-zinc-900" />
+        <mask id={`idle-${s}`}>
+          <rect width={s} height={s} fill="white" />
+          <circle cx={half * 0.7} cy={half * 0.7} r={half * 0.6} fill="black" />
+        </mask>
+        <circle cx={half} cy={half} r={half} fill={statusColors.idle} mask={`url(#idle-${s})`} />
       </svg>
     )
   }
@@ -79,8 +85,11 @@ function StatusIcon({ status, size }) {
     const barW = s * 0.5
     return (
       <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-        <circle cx={half} cy={half} r={half} fill={statusColors.dnd} />
-        <rect x={half - barW / 2} y={half - barH / 2} width={barW} height={barH} rx={barH / 2} fill="currentColor" className="text-zinc-900" />
+        <mask id={`dnd-${s}`}>
+          <rect width={s} height={s} fill="white" />
+          <rect x={half - barW / 2} y={half - barH / 2} width={barW} height={barH} rx={barH / 2} fill="black" />
+        </mask>
+        <circle cx={half} cy={half} r={half} fill={statusColors.dnd} mask={`url(#dnd-${s})`} />
       </svg>
     )
   }
@@ -92,29 +101,42 @@ function StatusIcon({ status, size }) {
   )
 }
 
-export default function AvatarWithDecoration({ 
-  src, 
-  alt, 
+function getAvatarMask(size, status) {
+  if (!status) return undefined
+
+  const iconSize = indicatorSizes[size] || 18
+  const padding = cutoutPadding[size] || 3
+  const offset = indicatorOffset[size] || -2
+  const cutoutRadius = (iconSize / 2) + padding
+
+  const bottomPx = offset + cutoutRadius
+  const rightPx = offset + cutoutRadius
+
+  return `radial-gradient(circle ${cutoutRadius}px at calc(100% - ${rightPx}px) calc(100% - ${bottomPx}px), transparent ${cutoutRadius}px, black ${cutoutRadius}px)`
+}
+
+export default function AvatarWithDecoration({
+  src,
+  alt,
   decoration = null,
   size = 'xl',
   status = null,
-  className = '' 
+  className = ''
 }) {
   const currentDecorationUrl = AVATAR_DECORATIONS.find(d => d.id === decoration)?.url || null
   const offset = indicatorOffset[size] || -2
-  const padding = cutoutPadding[size] || 3
-  const iconSize = indicatorSizes[size] || 18
-  const totalSize = iconSize + padding * 2
-  
+  const mask = getAvatarMask(size, status)
+
   return (
     <div className={`avatar-wrapper ${sizeClasses[size]} ${className}`}>
       <img
         src={src || "https://cdn.discordapp.com/embed/avatars/0.png"}
         alt={alt}
         className="w-full h-full rounded-full bg-zinc-800 select-none object-cover relative z-10"
+        style={mask ? { WebkitMaskImage: mask, maskImage: mask } : undefined}
         draggable={false}
       />
-      
+
       {decoration && currentDecorationUrl && (
         <img
           src={currentDecorationUrl}
@@ -127,12 +149,10 @@ export default function AvatarWithDecoration({
 
       {status && (
         <div
-          className="absolute z-30 flex items-center justify-center rounded-full bg-zinc-900"
+          className="absolute z-30 flex items-center justify-center"
           style={{
             bottom: offset,
             right: offset,
-            width: totalSize,
-            height: totalSize,
           }}
         >
           <StatusIcon status={status} size={size} />
