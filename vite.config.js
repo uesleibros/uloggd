@@ -17,6 +17,7 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
+			"#constants": "/constants",
 			"#utils": "/utils",
 			"#web": "/web",
 			"#hooks": "/hooks",
