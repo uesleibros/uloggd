@@ -1,5 +1,5 @@
 export const config = {
-  matcher: ['/game/:slug*', '/u/:username*'],
+  matcher: ['/game/:slug*', '/u/:username*', '/list/:id*'],
 }
 
 const BOT_REGEX = /Discordbot|Twitterbot|facebookexternalhit|LinkedInBot|TelegramBot|Slackbot/i
@@ -19,6 +19,10 @@ export default async function middleware(req) {
 
     if (segments[0] === 'u' && segments[1]) {
       return handleProfile(url, segments[1])
+    }
+
+    if (segments[0] === 'list' && segments[1]) {
+      return handleList(url, segments[1])
     }
   } catch {
     return
@@ -80,7 +84,7 @@ async function handleGame(url, slug) {
 
   const image = game.cover?.url
     ? ensureAbsoluteUrl(game.cover.url.replace('t_thumb', 't_720p'), url.origin)
-    : `${url.origin}/default-share.png`
+    : `${url.origin}/banner.png`
 
   return buildResponse(title, description, image, url.href)
 }
@@ -98,6 +102,27 @@ async function handleProfile(url, username) {
   const title = `${profile.username} - uloggd`
   const description = `Perfil de ${profile.username}`
   const image = ensureAbsoluteUrl(profile.avatar, url.origin)
+
+  return buildResponse(title, description, image, url.href)
+}
+
+async function handleList(url, listId) {
+  const res = await fetch(`${url.origin}/api/lists/get`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ listId }),
+  })
+
+  if (!res.ok) return
+  const list = await res.json()
+
+  const title = `${list.title} - uloggd`
+  const gamesCount = list.games_count || list.game_slugs?.length || 0
+  const description = list.description
+    ? stripMarkdown(list.description).substring(0, 160)
+    : `Lista com ${gamesCount} jogo${gamesCount !== 1 ? 's' : ''}`
+
+  const image = `${url.origin}/banner.png`
 
   return buildResponse(title, description, image, url.href)
 }
