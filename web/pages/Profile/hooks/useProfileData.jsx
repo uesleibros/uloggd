@@ -8,7 +8,11 @@ export function useProfileData(username) {
   const [error, setError] = useState(null)
   const lastFetchedUsername = useRef(null)
 
-  const isOwnProfile = !authLoading && currentUser?.username?.toLowerCase() === username?.toLowerCase()
+  const isOwnProfile = useMemo(() => {
+    if (authLoading) return false
+    if (!currentUser?.id || !currentUser?.username) return false
+    return currentUser.username.toLowerCase() === username?.toLowerCase()
+  }, [authLoading, currentUser?.id, currentUser?.username, username])
 
   const profile = useMemo(() => {
     if (isOwnProfile && currentUser?.id) return currentUser
@@ -28,6 +32,7 @@ export function useProfileData(username) {
       setFetching(false)
       return
     }
+    if (!username) return
     if (lastFetchedUsername.current === username) return
 
     lastFetchedUsername.current = username
