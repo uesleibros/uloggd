@@ -16,7 +16,7 @@ import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
 	profile:      { handler: handleProfile,      scopes: null,       auth: false },
-	username: 	  { handler: handleUsername, 	 scopes: ["@me"],	 auth: true	 },
+	username:     { handler: handleUsername,     scopes: ["@me"],    auth: true  },
 	bio:          { handler: handleBio,          scopes: ["@me"],    auth: true  },
 	delete:       { handler: handleDelete,       scopes: ["@me"],    auth: true  },
 	follow:       { handler: handleFollow,       scopes: null,       auth: true  },
@@ -27,7 +27,7 @@ const ACTIONS = {
 	thinking:     { handler: handleThinking,     scopes: ["@me"],    auth: true  },
 	decoration:   { handler: handleDecoration,   scopes: ["@me"],    auth: true  },
 	pronoun:      { handler: handlePronoun,      scopes: ["@me"],    auth: true  },
-	heartbeat:    { handler: handleHeartbeat,    scopes: ["@me"],    auth: true  },
+	heartbeat:    { handler: handleHeartbeat,    scopes: ["@me"],    auth: false },
 	batch:        { handler: handleBatch,        scopes: null,       auth: false },
 }
 
