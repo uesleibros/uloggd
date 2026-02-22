@@ -1,10 +1,11 @@
-import { useEffect, useState, useSyncExternalStore, useCallback } from "react"
+import { useSyncExternalStore } from "react"
 import { supabase } from "#lib/supabase"
 
 let cachedUser = null
 let loading = true
 let listeners = new Set()
 let loadingPromise = null
+let initialized = false
 
 function notify() {
   listeners.forEach(fn => fn())
@@ -17,20 +18,26 @@ function getSnapshot() {
 let snapshotRef = getSnapshot()
 
 function updateSnapshot() {
-  snapshotRef = getSnapshot()
+  const next = getSnapshot()
+  if (next.user === snapshotRef.user && next.loading === snapshotRef.loading) return
+  snapshotRef = next
   notify()
 }
 
 async function fetchProfile(session) {
-  const res = await fetch("/api/users/profile", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session.access_token}`,
-    },
-    body: JSON.stringify({ userId: session.user.id }),
-  })
-  return res.ok ? res.json() : null
+  try {
+    const res = await fetch("/api/users/profile", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ userId: session.user.id }),
+    })
+    return res.ok ? await res.json() : null
+  } catch {
+    return null
+  }
 }
 
 function buildUser(session, profile = null) {
@@ -54,33 +61,46 @@ async function loadUser(session) {
     return
   }
 
+  if (cachedUser?.id === session.user.id && initialized) {
+    loading = false
+    updateSnapshot()
+    return
+  }
+
   if (loadingPromise) return loadingPromise
 
   loading = true
   updateSnapshot()
 
-  loadingPromise = fetchProfile(session)
-    .then(profile => {
+  loadingPromise = (async () => {
+    try {
+      const profile = await fetchProfile(session)
       cachedUser = buildUser(session, profile)
-    })
-    .catch(() => {
+    } catch {
       cachedUser = buildUser(session)
-    })
-    .finally(() => {
+    } finally {
       loading = false
+      initialized = true
       loadingPromise = null
       updateSnapshot()
-    })
+    }
+  })()
 
   return loadingPromise
 }
 
+function reset() {
+  cachedUser = null
+  loading = false
+  initialized = true
+  loadingPromise = null
+  updateSnapshot()
+}
+
 async function refreshUser() {
   if (!cachedUser) return
-
   const { data: { session } } = await supabase.auth.getSession()
   if (!session?.access_token) return
-
   const profile = await fetchProfile(session)
   if (profile) {
     cachedUser = { ...cachedUser, ...profile }
@@ -94,14 +114,7 @@ function updateUser(partial) {
   updateSnapshot()
 }
 
-function reset() {
-  cachedUser = null
-  loading = false
-  loadingPromise = null
-  updateSnapshot()
-}
-
-const initPromise = supabase.auth.getSession().then(({ data: { session } }) => {
+supabase.auth.getSession().then(({ data: { session } }) => {
   return session ? loadUser(session) : reset()
 }).catch(() => reset())
 
@@ -111,8 +124,11 @@ supabase.auth.onAuthStateChange((event, session) => {
     return
   }
 
+  if (event === "INITIAL_SESSION") return
+
   if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
-    if (session.user.id !== cachedUser?.id) {
+    if (cachedUser?.id !== session.user.id) {
+      initialized = false
       loadUser(session)
     }
   }
@@ -125,7 +141,6 @@ function subscribe(callback) {
 
 export function useAuth() {
   const snapshot = useSyncExternalStore(subscribe, () => snapshotRef)
-
   return {
     user: snapshot.user,
     loading: snapshot.loading,
