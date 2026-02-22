@@ -3,10 +3,7 @@ import { useParams, Link } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
 import PageBanner from "@components/Layout/PageBanner"
 import Lightbox from "@components/UI/Lightbox"
-import QuickActions from "@components/Game/QuickActions"
-import ReviewButton from "@components/Game/Review"
 import { GameSkeleton } from "./GameSkeleton"
-import { GameHeader } from "./sections/GameHeader"
 import { GameSidebar } from "./sections/GameSidebar"
 import { GameContent } from "./sections/GameContent"
 import { RelatedGamesSection } from "./sections/RelatedGames"
@@ -46,8 +43,7 @@ export default function Game() {
     )
   }
 
-  const bannerImage =
-    game.screenshots?.length > 0 ? `https:${game.screenshots[0].url}` : null
+  const bannerImage = game.screenshots?.length > 0 ? `https:${game.screenshots[0].url}` : null
 
   return (
     <div>
@@ -55,25 +51,6 @@ export default function Game() {
       <div className="mx-auto pt-[22vw] sm:pt-[20vw] md:pt-32 pb-16">
         <div className="flex flex-col md:flex-row gap-6 md:gap-8">
           <GameSidebar game={game} />
-
-          <div className="flex flex-row md:hidden gap-4">
-            <div className="flex-shrink-0">
-              {game.cover && (
-                <img
-                  src={`https:${game.cover.url}`}
-                  alt={game.name}
-                  className="w-32 sm:w-48 rounded-lg shadow-2xl bg-zinc-800 select-none"
-                />
-              )}
-            </div>
-            <GameHeader game={game} isMobile />
-          </div>
-
-          <div className="md:hidden">
-            <QuickActions game={game} />
-            <ReviewButton game={game} />
-          </div>
-
           <GameContent
             game={game}
             hltb={hltb}
@@ -88,14 +65,9 @@ export default function Game() {
         images={lightboxImages}
         index={lightboxIndex}
         onClose={() => setLightboxIndex(null)}
-        onPrev={() =>
-          setLightboxIndex((i) => (i > 0 ? i - 1 : lightboxImages.length - 1))
-        }
-        onNext={() =>
-          setLightboxIndex((i) => (i < lightboxImages.length - 1 ? i + 1 : 0))
-        }
+        onPrev={() => setLightboxIndex((i) => (i > 0 ? i - 1 : lightboxImages.length - 1))}
+        onNext={() => setLightboxIndex((i) => (i < lightboxImages.length - 1 ? i + 1 : 0))}
       />
     </div>
   )
-
 }
