@@ -18,7 +18,7 @@ import SplashScreen from "@components/UI/SplashScreen"
 import "#web/App.css"
 
 export default function App() {
-	// useHeartbeat()
+	useHeartbeat()
 
 	return (
 		<ErrorBoundary>
@@ -48,3 +48,4 @@ export default function App() {
 		</ErrorBoundary>
 	)
 }
+
