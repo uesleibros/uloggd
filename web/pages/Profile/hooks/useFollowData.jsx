@@ -19,7 +19,10 @@ export function useFollowData(profile, currentUser, authLoading, isOwnProfile) {
       body: JSON.stringify({ userId: profile.id, currentUserId: currentUser?.id || null }),
       signal: controller.signal,
     })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`)
+        return r.json()
+      })
       .then((s) => {
         setFollowersCount(s.followers)
         setFollowingCount(s.following)
@@ -28,7 +31,11 @@ export function useFollowData(profile, currentUser, authLoading, isOwnProfile) {
           setFollowsYou(s.followsYou)
         }
       })
-      .catch(() => {})
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("[useFollowData] error:", err)
+        }
+      })
 
     return () => controller.abort()
   }, [profile?.id, currentUser?.id, authLoading, isOwnProfile])
