@@ -1,37 +1,45 @@
 import { useState, useEffect, useRef, useMemo } from "react"
 import { useAuth } from "#hooks/useAuth"
-import { supabase } from "#lib/supabase"
 
 export function useProfileData(username) {
   const { user: currentUser, loading: authLoading } = useAuth()
   const [fetchedProfile, setFetchedProfile] = useState(null)
-  const [fetching, setFetching] = useState(false)
+  const [fetching, setFetching] = useState(true)
   const [error, setError] = useState(null)
   const lastFetchedUsername = useRef(null)
 
-  const isOwnProfile = !authLoading && currentUser?.username?.toLowerCase() === username?.toLowerCase()
+  const isOwnProfile = useMemo(() => {
+    if (authLoading) return false
+    if (!currentUser?.id || !currentUser?.username) return false
+    return currentUser.username.toLowerCase() === username?.toLowerCase()
+  }, [authLoading, currentUser?.id, currentUser?.username, username])
 
   const profile = useMemo(() => {
-    if (isOwnProfile && currentUser) return currentUser
-    return fetchedProfile
+    if (isOwnProfile && currentUser?.id) return currentUser
+    if (fetchedProfile?.id) return fetchedProfile
+    return null
   }, [isOwnProfile, currentUser, fetchedProfile])
 
   useEffect(() => {
     setFetchedProfile(null)
     setError(null)
+    setFetching(true)
     lastFetchedUsername.current = null
   }, [username])
 
   useEffect(() => {
-    if (authLoading) return
-    if (isOwnProfile) return
-    if (lastFetchedUsername.current === username) return
+    if (!username) return
+    
+    if (isOwnProfile) {
+      setFetching(false)
+      return
+    }
 
+    if (lastFetchedUsername.current === username) return
     lastFetchedUsername.current = username
-    setFetching(true)
-    setError(null)
 
     const controller = new AbortController()
+    
     fetch("/api/users/profile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -47,16 +55,16 @@ export function useProfileData(username) {
         setFetching(false)
       })
       .catch((err) => {
-        if (err.name !== "AbortError") {
-          setError(true)
-          setFetching(false)
-        }
+        if (err.name === "AbortError") return
+        setError(true)
+        setFetching(false)
       })
 
     return () => controller.abort()
-  }, [username, authLoading, isOwnProfile])
+  }, [username, isOwnProfile])
 
   function updateProfile(partial) {
+    if (isOwnProfile) return
     setFetchedProfile((prev) => (prev ? { ...prev, ...partial } : prev))
   }
 
