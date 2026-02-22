@@ -101,20 +101,6 @@ function StatusIcon({ status, size }) {
   )
 }
 
-function getAvatarMask(size, status) {
-  if (!status) return undefined
-
-  const iconSize = indicatorSizes[size] || 18
-  const padding = cutoutPadding[size] || 3
-  const offset = indicatorOffset[size] || -2
-  const cutoutRadius = (iconSize / 2) + padding
-
-  const bottomPx = offset + cutoutRadius
-  const rightPx = offset + cutoutRadius
-
-  return `radial-gradient(circle ${cutoutRadius}px at calc(100% - ${rightPx}px) calc(100% - ${bottomPx}px), transparent ${cutoutRadius}px, black ${cutoutRadius}px)`
-}
-
 export default function AvatarWithDecoration({
   src,
   alt,
@@ -124,15 +110,22 @@ export default function AvatarWithDecoration({
   className = ''
 }) {
   const currentDecorationUrl = AVATAR_DECORATIONS.find(d => d.id === decoration)?.url || null
+  const iconSize = indicatorSizes[size] || 18
+  const padding = cutoutPadding[size] || 3
   const offset = indicatorOffset[size] || -2
-  const mask = getAvatarMask(size, status)
+  const cutoutRadius = (iconSize / 2) + padding
+  const cutoutCenter = -(offset) + (iconSize / 2)
+
+  const mask = status
+    ? `radial-gradient(circle ${cutoutRadius}px at calc(100% - ${cutoutCenter}px) calc(100% - ${cutoutCenter}px), transparent 100%, black 100%)`
+    : undefined
 
   return (
-    <div className={`avatar-wrapper ${sizeClasses[size]} ${className}`}>
+    <div className={`avatar-wrapper relative ${sizeClasses[size]} ${className}`}>
       <img
         src={src || "https://cdn.discordapp.com/embed/avatars/0.png"}
         alt={alt}
-        className="w-full h-full rounded-full bg-zinc-800 select-none object-cover relative z-10"
+        className="w-full h-full rounded-full bg-zinc-800 select-none object-cover"
         style={mask ? { WebkitMaskImage: mask, maskImage: mask } : undefined}
         draggable={false}
       />
@@ -141,18 +134,19 @@ export default function AvatarWithDecoration({
         <img
           src={currentDecorationUrl}
           alt=""
-          className="absolute top-1/2 left-1/2 w-[120%] h-[120%] max-w-none pointer-events-none select-none z-20 object-contain"
-          style={{ transform: 'translate(-50%, -50%)' }}
+          className="absolute top-1/2 left-1/2 w-[120%] h-[120%] max-w-none pointer-events-none select-none object-contain"
+          style={{ transform: 'translate(-50%, -50%)', zIndex: 2 }}
           draggable={false}
         />
       )}
 
       {status && (
         <div
-          className="absolute z-30 flex items-center justify-center"
+          className="absolute flex items-center justify-center"
           style={{
             bottom: offset,
             right: offset,
+            zIndex: 3,
           }}
         >
           <StatusIcon status={status} size={size} />
