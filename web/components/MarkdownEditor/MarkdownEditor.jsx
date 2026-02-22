@@ -7,13 +7,15 @@ import { useSplitPane } from "./hooks/useSplitPane"
 import { useEditorActions } from "./hooks/useEditorActions"
 import { useCodeMirror } from "./hooks/useCodeMirror"
 import { KEYBOARD_SHORTCUTS } from "./constants"
-import { EditorTabs } from "./components/EditorTabs"
-import { EditorToolbar } from "./components/EditorToolbar"
-import { EditorStatusBar } from "./components/EditorStatusBar"
-import { EditorHelpModal } from "./components/EditorHelpModal"
-import { MentionSuggestions } from "./components/MentionSuggestions"
+import {
+  EditorTabs,
+  EditorToolbar,
+  EditorStatusBar,
+  EditorHelpModal,
+  MentionSuggestions,
+  SplitHandle,
+} from "./components"
 import { MarkdownPreview } from "./MarkdownPreview"
-import { SplitHandle } from "./components/SplitHandle"
 
 export function MarkdownEditor({ value = "", onChange, maxLength = 10000, placeholder = "Escreva sobre você..." }) {
   const [tab, setTab] = useState("write")
