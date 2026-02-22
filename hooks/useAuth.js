@@ -97,7 +97,7 @@ function reset() {
   updateSnapshot()
 }
 
-function updateUser(partial) {
+export function updateUser(partial) {
   if (!cachedUser) return
   cachedUser = { ...cachedUser, ...partial }
   updateSnapshot()
@@ -148,3 +148,4 @@ export function useAuth() {
     refreshUser,
   }
 }
+
