@@ -286,7 +286,7 @@ export default function ListPage() {
 
 					<div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-zinc-500">
 						{list.owner && (
-							<Link to={`/${list.owner.username}`} className="flex items-center gap-1.5 hover:text-white active:text-white transition-colors py-0.5">
+							<Link to={`/u/${list.owner.username}`} className="flex items-center gap-1.5 hover:text-white active:text-white transition-colors py-0.5">
 								<AvatarWithDecoration 
 									size="xs"
 									src={list.owner.avatar} 
@@ -483,4 +483,5 @@ export default function ListPage() {
 			/>
 		</div>
 	)
+
 }
