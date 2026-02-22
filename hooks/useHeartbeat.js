@@ -5,6 +5,7 @@ import { useAuth } from "#hooks/useAuth"
 export function useHeartbeat() {
   const { user } = useAuth()
   const intervalRef = useRef(null)
+  const tokenRef = useRef(null)
 
   useEffect(() => {
     if (!user) return
@@ -12,6 +13,8 @@ export function useHeartbeat() {
     const ping = async (status) => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) return
+
+      tokenRef.current = session.access_token
 
       fetch("/api/users/@me/heartbeat", {
         method: "POST",
@@ -23,18 +26,33 @@ export function useHeartbeat() {
       }).catch(() => {})
     }
 
+    const onUnload = () => {
+      if (!tokenRef.current) return
+
+      navigator.sendBeacon(
+        "/api/users/@me/heartbeat",
+        new Blob(
+          [JSON.stringify({ status: "offline", _authToken: tokenRef.current })],
+          { type: "application/json" }
+        )
+      )
+    }
+
+    const onVisibility = () => ping(document.hidden ? "idle" : "online")
+
     ping("online")
 
     intervalRef.current = setInterval(() => {
       ping(document.hidden ? "idle" : "online")
     }, 2 * 60 * 1000)
 
-    const onVisibility = () => ping(document.hidden ? "idle" : "online")
     document.addEventListener("visibilitychange", onVisibility)
+    window.addEventListener("beforeunload", onUnload)
 
     return () => {
       clearInterval(intervalRef.current)
       document.removeEventListener("visibilitychange", onVisibility)
+      window.removeEventListener("beforeunload", onUnload)
     }
   }, [user?.id])
 }
