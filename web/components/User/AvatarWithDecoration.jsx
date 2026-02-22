@@ -1,47 +1,25 @@
 import { AVATAR_DECORATIONS } from "#data/avatarDecorations"
 
-const sizeClasses = {
-  xs: 'w-5 h-5',
-  sm: 'w-7 h-7',
-  md: 'w-9 h-9',
-  lg: 'w-12 h-12',
-  xl: 'w-16 h-16',
-  '2xl': 'w-20 h-20',
-  mention: 'w-20 h-20',
-  profile: 'w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36',
+const sizeMap = {
+  xs: 20,
+  sm: 28,
+  md: 36,
+  lg: 48,
+  xl: 64,
+  '2xl': 80,
+  mention: 80,
+  profile: 128,
 }
 
-const indicatorSizes = {
-  xs: 8,
-  sm: 9,
-  md: 10,
-  lg: 14,
-  xl: 18,
-  '2xl': 22,
-  mention: 22,
-  profile: 26,
-}
-
-const cutoutPadding = {
-  xs: 1.5,
-  sm: 1.5,
-  md: 2,
-  lg: 2.5,
-  xl: 3,
-  '2xl': 3.5,
-  mention: 3.5,
-  profile: 4,
-}
-
-const indicatorOffset = {
-  xs: -1,
-  sm: -1,
-  md: -1,
-  lg: -1,
-  xl: -2,
-  '2xl': -2,
-  mention: -2,
-  profile: -3,
+const statusMap = {
+  xs: { size: 6, x: 14, y: 14, stroke: 1.5 },
+  sm: { size: 10, x: 18, y: 18, stroke: 1.5 },
+  md: { size: 10, x: 26, y: 26, stroke: 1.5 },
+  lg: { size: 12, x: 36, y: 36, stroke: 2 },
+  xl: { size: 16, x: 48, y: 48, stroke: 2 },
+  '2xl': { size: 20, x: 60, y: 60, stroke: 2.5 },
+  mention: { size: 20, x: 60, y: 60, stroke: 2.5 },
+  profile: { size: 24, x: 104, y: 104, stroke: 3 }, // Ajustado
 }
 
 const statusColors = {
@@ -51,53 +29,44 @@ const statusColors = {
   offline: '#80848e',
 }
 
-function StatusIcon({ status, size }) {
-  const s = indicatorSizes[size] || 18
-  const half = s / 2
+function StatusIcon({ status, x, y, size }) {
+  const half = size / 2
+  const center = half
 
   if (status === 'offline') {
-    const inner = half * 0.45
+    const inner = half * 0.5
     return (
-      <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-        <mask id={`offline-${s}`}>
-          <rect width={s} height={s} fill="white" />
-          <circle cx={half} cy={half} r={inner} fill="black" />
-        </mask>
-        <circle cx={half} cy={half} r={half} fill={statusColors.offline} mask={`url(#offline-${s})`} />
-      </svg>
+      <g transform={`translate(${x}, ${y})`}>
+        <circle cx={center} cy={center} r={half} fill={statusColors.offline} />
+        <circle cx={center} cy={center} r={inner} fill="#000" />
+      </g>
     )
   }
 
   if (status === 'idle') {
     return (
-      <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-        <mask id={`idle-${s}`}>
-          <rect width={s} height={s} fill="white" />
-          <circle cx={half * 0.7} cy={half * 0.7} r={half * 0.6} fill="black" />
-        </mask>
-        <circle cx={half} cy={half} r={half} fill={statusColors.idle} mask={`url(#idle-${s})`} />
-      </svg>
+      <g transform={`translate(${x}, ${y})`}>
+        <circle cx={center} cy={center} r={half} fill={statusColors.idle} />
+        <circle cx={center * 0.5} cy={center * 0.5} r={half * 0.5} fill="#000" />
+      </g>
     )
   }
 
   if (status === 'dnd') {
-    const barH = s * 0.18
-    const barW = s * 0.5
+    const barH = size * 0.2
+    const barW = size * 0.6
     return (
-      <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-        <mask id={`dnd-${s}`}>
-          <rect width={s} height={s} fill="white" />
-          <rect x={half - barW / 2} y={half - barH / 2} width={barW} height={barH} rx={barH / 2} fill="black" />
-        </mask>
-        <circle cx={half} cy={half} r={half} fill={statusColors.dnd} mask={`url(#dnd-${s})`} />
-      </svg>
+      <g transform={`translate(${x}, ${y})`}>
+        <circle cx={center} cy={center} r={half} fill={statusColors.dnd} />
+        <rect x={center - barW / 2} y={center - barH / 2} width={barW} height={barH} rx={barH / 2} fill="#000" />
+      </g>
     )
   }
 
   return (
-    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-      <circle cx={half} cy={half} r={half} fill={statusColors.online} />
-    </svg>
+    <g transform={`translate(${x}, ${y})`}>
+      <circle cx={center} cy={center} r={half} fill={statusColors.online} />
+    </g>
   )
 }
 
@@ -110,47 +79,66 @@ export default function AvatarWithDecoration({
   className = ''
 }) {
   const currentDecorationUrl = AVATAR_DECORATIONS.find(d => d.id === decoration)?.url || null
-  const iconSize = indicatorSizes[size] || 18
-  const padding = cutoutPadding[size] || 3
-  const offset = indicatorOffset[size] || -2
-  const cutoutRadius = (iconSize / 2) + padding
-  const cutoutCenter = -(offset) + (iconSize / 2)
+  const pxSize = sizeMap[size] || 64
+  const statusConfig = statusMap[size] || statusMap.xl
 
-  const mask = status
-    ? `radial-gradient(circle ${cutoutRadius}px at calc(100% - ${cutoutCenter}px) calc(100% - ${cutoutCenter}px), transparent 100%, black 100%)`
-    : undefined
+  const maskId = `mask-${size}-${src?.slice(-5) || 'default'}-${status || 'none'}`
 
   return (
-    <div className={`avatar-wrapper relative ${sizeClasses[size]} ${className}`}>
-      <img
-        src={src || "https://cdn.discordapp.com/embed/avatars/0.png"}
-        alt={alt}
-        className="w-full h-full rounded-full bg-zinc-800 select-none object-cover"
-        style={mask ? { WebkitMaskImage: mask, maskImage: mask } : undefined}
-        draggable={false}
-      />
+    <div
+      className={`relative inline-block select-none ${className}`}
+      style={{ width: pxSize, height: pxSize }}
+    >
+      <svg
+        viewBox={`0 0 ${pxSize} ${pxSize}`}
+        className="w-full h-full block"
+        aria-hidden="true"
+      >
+        <mask id={maskId}>
+          <circle cx={pxSize / 2} cy={pxSize / 2} r={pxSize / 2} fill="white" />
+          {status && (
+            <circle
+              cx={statusConfig.x + statusConfig.size / 2}
+              cy={statusConfig.y + statusConfig.size / 2}
+              r={statusConfig.size / 2 + statusConfig.stroke}
+              fill="black"
+            />
+          )}
+        </mask>
+
+        <foreignObject
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          mask={`url(#${maskId})`}
+        >
+          <img
+            src={src || "https://cdn.discordapp.com/embed/avatars/0.png"}
+            alt={alt}
+            className="w-full h-full object-cover bg-zinc-800"
+            draggable={false}
+          />
+        </foreignObject>
+
+        {status && (
+          <StatusIcon
+            status={status}
+            x={statusConfig.x}
+            y={statusConfig.y}
+            size={statusConfig.size}
+          />
+        )}
+      </svg>
 
       {decoration && currentDecorationUrl && (
         <img
           src={currentDecorationUrl}
           alt=""
-          className="absolute top-1/2 left-1/2 w-[120%] h-[120%] max-w-none pointer-events-none select-none object-contain"
-          style={{ transform: 'translate(-50%, -50%)', zIndex: 2 }}
+          className="absolute top-1/2 left-1/2 w-[120%] h-[120%] max-w-none pointer-events-none select-none object-contain z-10"
+          style={{ transform: 'translate(-50%, -50%)' }}
           draggable={false}
         />
-      )}
-
-      {status && (
-        <div
-          className="absolute flex items-center justify-center"
-          style={{
-            bottom: offset,
-            right: offset,
-            zIndex: 3,
-          }}
-        >
-          <StatusIcon status={status} size={size} />
-        </div>
       )}
     </div>
   )
