@@ -5,6 +5,7 @@ import { notificationsHandler } from "#routers/notifications.js"
 import { howlongtobeatHandler } from "#routers/howlongtobeat.js"
 import { igdbHandler } from "#routers/igdb.js"
 import { reviewsHandler } from "#routers/reviews.js"
+import { listsHandler } from "#routers/lists.js"
 
 const SERVICES = {
   users: usersHandler,
@@ -13,7 +14,8 @@ const SERVICES = {
   notifications: notificationsHandler,
   howlongtobeat: howlongtobeatHandler,
   igdb: igdbHandler,
-  reviews: reviewsHandler
+  reviews: reviewsHandler,
+  lists: listsHandler
 }
 
 export default async function handler(req, res) {

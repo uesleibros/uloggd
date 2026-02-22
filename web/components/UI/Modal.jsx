@@ -13,6 +13,17 @@ const mobileSheetStyle = `
 }
 `
 
+const MAX_WIDTH_VALUES = {
+	"max-w-xs": "20rem",
+	"max-w-sm": "24rem",
+	"max-w-md": "28rem",
+	"max-w-lg": "32rem",
+	"max-w-xl": "36rem",
+	"max-w-2xl": "42rem",
+	"max-w-3xl": "48rem",
+	"max-w-4xl": "56rem",
+}
+
 export default function Modal({
 	isOpen,
 	onClose,
@@ -138,21 +149,27 @@ export default function Modal({
 		)
 	}
 
+	const resolvedMaxWidth = MAX_WIDTH_VALUES[maxWidth] || "32rem"
+
 	const contentSizeClasses = fullscreenMobile
-		? `w-full md:w-auto md:${maxWidth}`
+		? "w-full max-h-full md:max-h-[85vh] flex flex-col"
 		: `w-full ${maxWidth} max-h-[80vh] flex flex-col`
 
 	const contentStyleClasses = fullscreenMobile
-		? ""
+		? "bg-zinc-900 rounded-t-2xl md:rounded-xl md:border md:border-zinc-700 md:shadow-2xl"
 		: "bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl"
 
 	const animationClasses = fullscreenMobile
 		? `transition-all duration-250 ease-out ${visible ? "modal-sheet-active" : "modal-sheet-enter"}`
 		: `transition-all duration-200 ${
-			visible
-				? "opacity-100 scale-100 translate-y-0"
-				: "opacity-0 scale-95 translate-y-2"
-		}`
+				visible
+					? "opacity-100 scale-100 translate-y-0"
+					: "opacity-0 scale-95 translate-y-2"
+			}`
+
+	const inlineStyle = fullscreenMobile
+		? { maxWidth: `min(${resolvedMaxWidth}, calc(100vw - 3rem))` }
+		: undefined
 
 	return createPortal(
 		<>
@@ -172,6 +189,7 @@ export default function Modal({
 
 				<div
 					className={`relative ${contentSizeClasses} ${contentStyleClasses} ${animationClasses} ${className}`}
+					style={fullscreenMobile ? inlineStyle : undefined}
 					onPointerDown={(e) => e.stopPropagation()}
 					onClick={(e) => e.stopPropagation()}
 				>
@@ -184,16 +202,14 @@ export default function Modal({
 						</div>
 					)}
 
-					{!fullscreenMobile && (title || showCloseButton) && (
-						<div className="flex items-center justify-between p-4 border-b border-zinc-700 flex-shrink-0">
+					{fullscreenMobile ? (
+						<div className="hidden md:flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
 							<div>
 								{title && (
 									<h3 className="text-lg font-semibold text-white">
 										{title}
 										{subtitle && (
-											<span className="text-sm text-zinc-500 font-normal ml-2">
-												{subtitle}
-											</span>
+											<span className="text-sm text-zinc-500 font-normal ml-2">{subtitle}</span>
 										)}
 									</h3>
 								)}
@@ -207,9 +223,34 @@ export default function Modal({
 								</button>
 							)}
 						</div>
+					) : (
+						(title || showCloseButton) && (
+							<div className="flex items-center justify-between p-4 border-b border-zinc-700 flex-shrink-0">
+								<div>
+									{title && (
+										<h3 className="text-lg font-semibold text-white">
+											{title}
+											{subtitle && (
+												<span className="text-sm text-zinc-500 font-normal ml-2">{subtitle}</span>
+											)}
+										</h3>
+									)}
+								</div>
+								{showCloseButton && (
+									<button
+										onClick={onClose}
+										className="p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+									>
+										<X className="w-5 h-5" />
+									</button>
+								)}
+							</div>
+						)
 					)}
 
-					{children}
+					<div className="flex-1 overflow-y-auto min-h-0">
+						{children}
+					</div>
 				</div>
 			</div>
 		</>,

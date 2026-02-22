@@ -2,39 +2,72 @@ import { useEffect, useRef } from "react"
 import { supabase } from "#lib/supabase"
 import { useAuth } from "#hooks/useAuth"
 
+const HEARTBEAT_INTERVAL = 2 * 60 * 1000
+
 export function useHeartbeat() {
   const { user, refreshUser } = useAuth()
   const intervalRef = useRef(null)
+  const lastStatus = useRef(null)
 
   useEffect(() => {
     if (!user) return
 
-    const ping = async (status = "online") => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+    let tokenCache = null
 
-      await fetch("/api/users/@me/heartbeat", {
+    const getToken = async () => {
+      if (!tokenCache) {
+        const { data: { session } } = await supabase.auth.getSession()
+        tokenCache = session?.access_token
+        setTimeout(() => { tokenCache = null }, 30000)
+      }
+      return tokenCache
+    }
+
+    const ping = async (status) => {
+      if (status === lastStatus.current) return
+      lastStatus.current = status
+
+      const token = await getToken()
+      if (!token) return
+
+      fetch("/api/users/@me/heartbeat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ status }),
-      })
+      }).catch(() => {})
     }
 
-    const handleVisibility = async () => {
-      const status = document.hidden ? "idle" : "online"
-      await ping(status)
-      if (!document.hidden) {
+    const forcePing = async (status) => {
+      lastStatus.current = status
+      const token = await getToken()
+      if (!token) return
+
+      fetch("/api/users/@me/heartbeat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+      }).catch(() => {})
+    }
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        forcePing("idle")
+      } else {
+        forcePing("online")
         refreshUser()
       }
     }
 
-    ping("online")
+    forcePing("online")
     intervalRef.current = setInterval(() => {
-      ping(document.hidden ? "idle" : "online")
-    }, 2 * 60 * 1000)
+      forcePing(document.hidden ? "idle" : "online")
+    }, HEARTBEAT_INTERVAL)
 
     document.addEventListener("visibilitychange", handleVisibility)
 

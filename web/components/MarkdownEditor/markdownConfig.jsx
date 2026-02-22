@@ -167,9 +167,9 @@ export function createMarkdownComponents(authorRatings = {}) {
     },
     mention: ({ children }) => <Mention username={children} />,
     center: ({ children }) => (
-      <div className="flex flex-col items-center break-all text-center w-full min-w-0 [&>*]:min-w-0 [&>*]:max-w-full [&_hr]:w-full">
+      <center>
         {children}
-      </div>
+      </center>
     ),
     table: ({ children }) => (
       <div className="overflow-x-auto my-4">

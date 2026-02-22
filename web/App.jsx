@@ -9,6 +9,7 @@ import { useHeartbeat } from "#hooks/useHeartbeat"
 import Home from "@pages/Home"
 import Game from "@pages/Game"
 import Profile from "@pages/Profile"
+import ListPage from "@pages/ListPage"
 import NotificationContainer from "@components/UI/Notification"
 import NotFound from "@pages/NotFound"
 import SplashScreen from "@components/UI/SplashScreen"
@@ -31,6 +32,7 @@ export default function App() {
 					<Routes>
 						<Route path="/" element={<Home />} />
 						<Route path="/game/:slug" element={<Game />} />
+						<Route path="/list/:id" element={<ListPage />} />
 						<Route path="/u/:username" element={<Profile />} />
 						<Route path="*" element={<NotFound />} />
 					</Routes>

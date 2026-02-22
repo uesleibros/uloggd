@@ -45,13 +45,15 @@ export default function Profile() {
 	const [followingCount, setFollowingCount] = useState(0)
 	const [followModal, setFollowModal] = useState(null)
 	const [settingsOpen, setSettingsOpen] = useState(false)
+	const [userLists, setUserLists] = useState([])
+	const [loadingLists, setLoadingLists] = useState(false)
 
 	const tabsRef = useRef(null)
 	const sectionNavRef = useRef(null)
 	const lastFetchedUsername = useRef(null)
 
 	const isOwnProfile = !authLoading && currentUser?.username?.toLowerCase() === username?.toLowerCase()
-	
+
 	const profile = useMemo(() => {
 		if (isOwnProfile && currentUser) return currentUser
 		return fetchedProfile
@@ -71,6 +73,7 @@ export default function Profile() {
 		setActiveSection("profile")
 		setFetchedProfile(null)
 		setError(null)
+		setUserLists([])
 		lastFetchedUsername.current = null
 	}, [username])
 
@@ -101,7 +104,31 @@ export default function Profile() {
 	}, [username, authLoading, isOwnProfile])
 
 	useEffect(() => {
-		if (!profile?.id || authLoading || isOwnProfile) return
+		if (!profile?.id) return
+		setLoadingLists(true)
+
+		const controller = new AbortController()
+
+		fetch("/api/lists/@me/get", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ userId: profile.id }),
+			signal: controller.signal,
+		})
+			.then(r => r.json())
+			.then(data => {
+				setUserLists(Array.isArray(data) ? data : [])
+				setLoadingLists(false)
+			})
+			.catch(err => {
+				if (err.name !== "AbortError") setLoadingLists(false)
+			})
+
+		return () => controller.abort()
+	}, [profile?.id])
+
+	useEffect(() => {
+		if (!profile?.id || authLoading) return
 
 		const controller = new AbortController()
 
@@ -112,7 +139,14 @@ export default function Profile() {
 			signal: controller.signal,
 		})
 			.then(r => r.json())
-			.then(s => { setFollowersCount(s.followers); setFollowingCount(s.following); setIsFollowing(s.isFollowing); setFollowsYou(s.followsYou) })
+			.then(s => {
+				setFollowersCount(s.followers)
+				setFollowingCount(s.following)
+				if (!isOwnProfile) {
+					setIsFollowing(s.isFollowing)
+					setFollowsYou(s.followsYou)
+				}
+			})
 			.catch(() => {})
 
 		return () => controller.abort()
@@ -175,8 +209,6 @@ export default function Profile() {
 		? new Date(profile.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
 		: null
 
-	const listsCount = profile.lists?.length || 0
-
 	return (
 		<div>
 			<PageBanner image={profile.banner} height="profile" />
@@ -220,7 +252,7 @@ export default function Profile() {
 							<span className="text-xs mt-1 bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-md border border-zinc-700">{profile.pronoun}</span>
 						)}
 						{getStatus(profile.last_seen, profile.status) === "offline" && getTimeAgo(profile.last_seen, profile.status) && (
-						  <span className="text-xs text-zinc-500 mt-1 block">Última vez visto: {getTimeAgo(profile.last_seen, profile.status)}</span>
+							<span className="text-xs text-zinc-500 mt-1 block">Última vez visto: {getTimeAgo(profile.last_seen, profile.status)}</span>
 						)}
 						<ProfileStats
 							counts={counts}
@@ -240,7 +272,7 @@ export default function Profile() {
 							const isActive = activeSection === id
 							let badge = null
 							if (id === "games" && counts.total > 0) badge = counts.total
-							if (id === "lists" && listsCount > 0) badge = listsCount
+							if (id === "lists" && userLists.length > 0) badge = userLists.length
 
 							return (
 								<button
@@ -303,9 +335,11 @@ export default function Profile() {
 
 					{activeSection === "lists" && (
 						<ListsSection
-							lists={profile.lists || []}
+							lists={userLists}
+							setLists={setUserLists}
 							isOwnProfile={isOwnProfile}
 							username={profile.username}
+							loading={loadingLists}
 						/>
 					)}
 
