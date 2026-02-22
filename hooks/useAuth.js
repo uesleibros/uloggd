@@ -66,10 +66,10 @@ async function loadUser(session) {
 
 async function refreshUser() {
   if (!cachedUser) return
-  
+
   try {
     const { data: { session } } = await supabase.auth.getSession()
-    
+
     const res = await fetch("/api/users/profile", {
       method: "POST",
       headers: {
@@ -93,18 +93,23 @@ function updateUser(partial) {
   notify()
 }
 
-if (!initialized) {
+function initialize() {
+  if (initialized) return
   initialized = true
 
-  // Carrega sessão inicial
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) {
-      loadUser(session)
-    } else {
+  supabase.auth.getSession()
+    .then(({ data: { session } }) => {
+      if (session) {
+        loadUser(session)
+      } else {
+        authLoading = false
+        notify()
+      }
+    })
+    .catch(() => {
       authLoading = false
       notify()
-    }
-  })
+    })
 
   supabase.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT") {
@@ -120,6 +125,8 @@ if (!initialized) {
     }
   })
 }
+
+initialize()
 
 export function useAuth() {
   const [state, setState] = useState({ user: cachedUser, loading: authLoading })
