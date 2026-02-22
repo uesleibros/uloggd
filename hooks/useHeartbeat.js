@@ -6,12 +6,15 @@ export function useHeartbeat() {
   const { user, loading } = useAuth()
   const intervalRef = useRef(null)
   const tokenRef = useRef(null)
+  const lastStatusRef = useRef(null)
 
   useEffect(() => {
     if (loading) return
     if (!user?.id) return
 
     const ping = async (status) => {
+      if (lastStatusRef.current === status) return
+
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) return
 
@@ -27,6 +30,7 @@ export function useHeartbeat() {
       }).catch(() => null)
 
       if (res?.ok) {
+        lastStatusRef.current = status
         updateUser({ status, last_seen: new Date().toISOString() })
       }
     }
@@ -48,6 +52,7 @@ export function useHeartbeat() {
     ping("online")
 
     intervalRef.current = setInterval(() => {
+      lastStatusRef.current = null
       ping(document.hidden ? "idle" : "online")
     }, 2 * 60 * 1000)
 
@@ -58,6 +63,7 @@ export function useHeartbeat() {
       clearInterval(intervalRef.current)
       document.removeEventListener("visibilitychange", onVisibility)
       window.removeEventListener("beforeunload", onUnload)
+      lastStatusRef.current = null
     }
   }, [user?.id, loading])
 }
