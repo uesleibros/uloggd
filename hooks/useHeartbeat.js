@@ -5,7 +5,7 @@ import { useAuth } from "#hooks/useAuth"
 const HEARTBEAT_INTERVAL = 2 * 60 * 1000
 
 export function useHeartbeat() {
-  const { user, refreshUser } = useAuth()
+  const { user } = useAuth()
   const intervalRef = useRef(null)
   const lastStatus = useRef(null)
 
@@ -21,23 +21,6 @@ export function useHeartbeat() {
         setTimeout(() => { tokenCache = null }, 30000)
       }
       return tokenCache
-    }
-
-    const ping = async (status) => {
-      if (status === lastStatus.current) return
-      lastStatus.current = status
-
-      const token = await getToken()
-      if (!token) return
-
-      fetch("/api/users/@me/heartbeat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status }),
-      }).catch(() => {})
     }
 
     const forcePing = async (status) => {
@@ -56,12 +39,7 @@ export function useHeartbeat() {
     }
 
     const handleVisibility = () => {
-      if (document.hidden) {
-        forcePing("idle")
-      } else {
-        forcePing("online")
-        refreshUser()
-      }
+      forcePing(document.hidden ? "idle" : "online")
     }
 
     forcePing("online")

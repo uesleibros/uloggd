@@ -48,68 +48,77 @@ function getCoverUrl(game) {
 }
 
 export default function GameCard({ 
-	game, 
-	userRating: propRating,
-	isFavorite = false,
-	newTab = false,
-	showRating = true,
-	className = "",
+  game, 
+  userRating: propRating,
+  isFavorite = false,
+  newTab = false,
+  showRating = true,
+  responsive = false,
+  className = "",
 }) {
-	const { getRating } = useMyLibrary()
-	
-	const rating = propRating ?? getRating(game.slug)
-	const hasRating = showRating && rating != null && rating > 0
-	const coverUrl = getCoverUrl(game)
+  const { getRating } = useMyLibrary()
+  
+  const rating = propRating ?? getRating(game.slug)
+  const hasRating = showRating && rating != null && rating > 0
+  const coverUrl = getCoverUrl(game)
 
-	const cardClasses = isFavorite
-		? "ring-2 ring-amber-500/70 shadow-lg shadow-amber-500/10"
-		: ""
+  const cardClasses = isFavorite
+    ? "ring-2 ring-amber-500/70 shadow-lg shadow-amber-500/10"
+    : ""
 
-	const imageContent = (
-		<>
-			<img
-				src={coverUrl}
-				alt={game.name}
-				draggable={false}
-				className="w-full h-full object-cover select-none rounded-lg bg-zinc-800"
-			/>
-			<div className="absolute inset-0 bg-black/70 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center p-2 gap-1.5 pointer-events-none">
-				<span className="text-white select-none text-xs font-medium text-center leading-tight line-clamp-3">
-					{game.name}
-				</span>
-				{hasRating && <MiniStars rating={rating} />}
-			</div>
-		</>
-	)
+  const sizeClasses = responsive
+    ? "w-full aspect-[3/4]"
+    : "w-34 h-44 flex-shrink-0"
 
-	return (
-		<div className={`flex-shrink-0 w-34 h-44 group relative ${className}`}>
-			{isFavorite && <FavoriteBadge />}
-			
-			{newTab ? (
-				<a
-					href={`/game/${game.slug}`}
-					target="_blank"
-					rel="noopener noreferrer"
-					className={`block relative w-full h-full rounded-lg transition-all ${cardClasses}`}
-					title={game.name}
-				>
-					{imageContent}
-				</a>
-			) : (
-				<Link 
-					to={`/game/${game.slug}`} 
-					className={`block relative w-full h-full rounded-lg ${cardClasses}`}
-				>
-					{imageContent}
-				</Link>
-			)}
-		</div>
-	)
+  const imageContent = (
+    <>
+      <img
+        src={coverUrl}
+        alt={game.name}
+        draggable={false}
+        className="w-full h-full object-cover select-none rounded-lg bg-zinc-800"
+      />
+      <div className="absolute inset-0 bg-black/70 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center p-2 gap-1.5 pointer-events-none">
+        <span className="text-white select-none text-xs font-medium text-center leading-tight line-clamp-3">
+          {game.name}
+        </span>
+        {hasRating && <MiniStars rating={rating} />}
+      </div>
+    </>
+  )
+
+  return (
+    <div className={`group relative ${sizeClasses} ${className}`}>
+      {isFavorite && <FavoriteBadge />}
+      
+      {newTab ? (
+        <a
+          href={`/game/${game.slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`block relative w-full h-full rounded-lg transition-all ${cardClasses}`}
+          title={game.name}
+        >
+          {imageContent}
+        </a>
+      ) : (
+        <Link 
+          to={`/game/${game.slug}`} 
+          className={`block relative w-full h-full rounded-lg ${cardClasses}`}
+        >
+          {imageContent}
+        </Link>
+      )}
+    </div>
+  )
 }
 
-export function GameCardSkeleton({ className = "" }) {
-	return <div className={`w-34 h-44 bg-zinc-800 rounded-lg animate-pulse flex-shrink-0 ${className}`} />
+export function GameCardSkeleton({ responsive = false, className = "" }) {
+  const sizeClasses = responsive
+    ? "w-full aspect-[3/4]"
+    : "w-34 h-44 flex-shrink-0"
+
+  return <div className={`${sizeClasses} bg-zinc-800 rounded-lg animate-pulse ${className}`} />
 }
 
 export { MiniStars }

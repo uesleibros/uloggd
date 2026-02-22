@@ -43,7 +43,6 @@ export function MarkdownGameGrid({ slugs, autoScroll = false, authorRatings = {}
               key={`${slug}-${i}`}
               game={game}
               isFavorite={isFavorite}
-              newTab
               userRating={authorRatings[slug]?.avgRating}
               showRating={true}
             />

@@ -5,7 +5,7 @@ const MAX_DESCRIPTION = 500
 const MAX_LISTS = 50
 
 export async function handleCreate(req, res) {
-  const { title, description, isPublic } = req.body
+  const { title, description, isPublic, ranked } = req.body
 
   if (!title || typeof title !== "string")
     return res.status(400).json({ error: "missing title" })
@@ -29,6 +29,7 @@ export async function handleCreate(req, res) {
         title: title.trim().slice(0, MAX_TITLE),
         description: description?.trim().slice(0, MAX_DESCRIPTION) || null,
         is_public: isPublic ?? true,
+        ranked: ranked ?? true,
       })
       .select()
       .single()

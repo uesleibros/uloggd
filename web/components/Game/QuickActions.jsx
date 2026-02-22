@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react"
-import { Check, ChevronDown, Play, Clock, Gift, Heart } from "lucide-react"
+import { Check, ChevronDown, Play, Clock, Gift, Heart, List } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
 import { useMyLibrary } from "#hooks/useMyLibrary"
 import Modal from "@components/UI/Modal"
+import AddToListModal from "@components/Lists/AddToListModal"
 
 const STATUS_OPTIONS = [
 	{ id: "played", label: "Jogado", sub: "Zerou o objetivo principal", color: "bg-emerald-500" },
@@ -83,6 +84,7 @@ export default function QuickActions({ game }) {
 	})
 	const [loading, setLoading] = useState(true)
 	const [showStatus, setShowStatus] = useState(false)
+	const [showListModal, setShowListModal] = useState(false)
 	const [updating, setUpdating] = useState(null)
 
 	const fetchState = useCallback(async () => {
@@ -159,7 +161,7 @@ export default function QuickActions({ game }) {
 	if (loading) {
 		return (
 			<div className="flex flex-wrap gap-2 mb-4">
-				{[...Array(5)].map((_, i) => (
+				{[...Array(6)].map((_, i) => (
 					<div key={i} className="h-10 w-24 bg-zinc-800 rounded-lg animate-pulse" />
 				))}
 			</div>
@@ -210,6 +212,14 @@ export default function QuickActions({ game }) {
 					label="Wishlist"
 				/>
 
+				<ActionButton
+					active={false}
+					onClick={() => setShowListModal(true)}
+					disabled={!!updating}
+					icon={<List className="w-3.5 h-3.5 flex-shrink-0" />}
+					label="Lista"
+				/>
+
 				<button
 					type="button"
 					onClick={() => toggle("liked", !state.liked)}
@@ -240,7 +250,12 @@ export default function QuickActions({ game }) {
 					}}
 				/>
 			</Modal>
+
+			<AddToListModal
+				isOpen={showListModal}
+				onClose={() => setShowListModal(false)}
+				game={game}
+			/>
 		</>
 	)
-
 }

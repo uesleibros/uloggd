@@ -4,7 +4,7 @@ const MAX_TITLE = 100
 const MAX_DESCRIPTION = 500
 
 export async function handleUpdate(req, res) {
-  const { listId, title, description, isPublic } = req.body
+  const { listId, title, description, isPublic, ranked } = req.body
   if (!listId) return res.status(400).json({ error: "missing listId" })
 
   const updateData = {}
@@ -21,6 +21,10 @@ export async function handleUpdate(req, res) {
 
   if (isPublic !== undefined) {
     updateData.is_public = !!isPublic
+  }
+
+  if (ranked !== undefined) {
+    updateData.ranked = !!ranked
   }
 
   if (Object.keys(updateData).length === 0)

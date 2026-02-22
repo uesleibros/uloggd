@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { Link } from "react-router-dom"
 import { AlertCircle } from "lucide-react"
 import { PlatformList } from "@components/Game/PlatformBadge"
 import GameCard, { GameCardSkeleton, MiniStars } from "@components/Game/GameCard"
@@ -31,7 +32,6 @@ export function MarkdownGameCard({ slug, variant = "default", isFavorite = false
       <GameCard
         game={game}
         isFavorite={isFavorite}
-        newTab
         userRating={authorRating}
         showRating={true}
       />
@@ -85,22 +85,20 @@ function MiniCard({ game, rating, showRating }) {
 
   return (
     <div className="flex items-center gap-3 p-2 bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-700/50 hover:border-zinc-600 rounded-lg w-full max-w-md my-2 transition-all group">
-      <a href={`/game/${game.slug}`} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+      <Link to={`/game/${game.slug}`} className="flex-shrink-0">
         <img
           src={coverUrl}
           alt={game.name}
           className="w-10 h-14 rounded object-cover shadow-sm bg-zinc-800"
         />
-      </a>
+      </Link>
       <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-        <a
-          href={`/game/${game.slug}`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          to={`/game/${game.slug}`}
           className="text-sm font-semibold text-white hover:text-indigo-400 truncate transition-colors"
         >
           {game.name}
-        </a>
+        </Link>
         <div className="flex items-center gap-2 text-xs text-zinc-500">
           {hasRating && (
             <>
@@ -140,21 +138,21 @@ function DefaultCard({ game, rating, showRating }) {
       </div>
 
       <div className="relative z-10 p-4 sm:p-5 flex gap-4 sm:gap-6 items-start">
-        <a href={`/game/${game.slug}`} target="_blank" rel="noopener noreferrer" className="shrink-0 relative group/cover">
+        <Link to={`/game/${game.slug}`} className="shrink-0 relative group/cover">
           <img
             src={coverUrl}
             alt={game.name}
             className="w-20 sm:w-24 rounded-lg shadow-xl shadow-black/50 border border-zinc-700/50 group-hover/cover:ring-2 ring-indigo-500/50 transition-all aspect-[3/4] object-cover"
           />
-        </a>
+        </Link>
 
         <div className="flex-1 min-w-0 flex flex-col h-full justify-between gap-2">
           <div>
             <div className="flex items-center gap-3">
               <h4 className="text-lg sm:text-xl font-bold text-white leading-tight truncate">
-                <a href={`/game/${game.slug}`} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">
+                <Link to={`/game/${game.slug}`} className="hover:text-indigo-400 transition-colors">
                   {game.name}
-                </a>
+                </Link>
               </h4>
               {hasRating && <MiniStars rating={rating} />}
             </div>
