@@ -27,7 +27,7 @@ const ACTIONS = {
 	thinking:     { handler: handleThinking,     scopes: ["@me"],    auth: true  },
 	decoration:   { handler: handleDecoration,   scopes: ["@me"],    auth: true  },
 	pronoun:      { handler: handlePronoun,      scopes: ["@me"],    auth: true  },
-	heartbeat:    { handler: handleHeartbeat,    scopes: ["@me"],    auth: false },
+	heartbeat:    { handler: handleHeartbeat,    scopes: ["@me"],    auth: true  },
 	batch:        { handler: handleBatch,        scopes: null,       auth: false },
 }
 
