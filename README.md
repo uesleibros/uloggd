@@ -23,6 +23,17 @@ Uma plataforma para catalogar, avaliar e compartilhar sua coleção de jogos.
 <img src="https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=ffffff" alt="Vercel" />
 <img src="https://img.shields.io/badge/Discord_OAuth-5865f2?logo=discord&logoColor=ffffff" alt="Discord OAuth" />
 
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=uesleibros_uloggd&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=uesleibros_uloggd&metric=bugs)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=uesleibros_uloggd&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=uesleibros_uloggd&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=uesleibros_uloggd&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=uesleibros_uloggd&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=uesleibros_uloggd&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=uesleibros_uloggd&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
+
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
+
 </div>
 
 ## Sobre
