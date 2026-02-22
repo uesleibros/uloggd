@@ -167,7 +167,7 @@ export function createMarkdownComponents(authorRatings = {}) {
     },
     mention: ({ children }) => <Mention username={children} />,
     center: ({ children }) => (
-      <center>
+      <center className="break-all">
         {children}
       </center>
     ),
