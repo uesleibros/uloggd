@@ -4,8 +4,8 @@ export default function SplashScreen({ children }) {
   const [phase, setPhase] = useState("visible")
 
   useEffect(() => {
-    const showTimer = setTimeout(() => setPhase("fading"), 2500)
-    const hideTimer = setTimeout(() => setPhase("hidden"), 3000)
+    const showTimer = setTimeout(() => setPhase("fading"), 2000)
+    const hideTimer = setTimeout(() => setPhase("hidden"), 2500)
 
     return () => {
       clearTimeout(showTimer)
@@ -24,47 +24,28 @@ export default function SplashScreen({ children }) {
         }`}
       >
         <div
-          className={`flex flex-col items-center transition-all duration-500 ${
-            phase === "fading" ? "opacity-0 scale-95 blur-sm" : "opacity-100 scale-100 blur-0"
+          className={`flex flex-col items-center gap-4 transition-all duration-500 ${
+            phase === "fading" ? "opacity-0 scale-95" : "opacity-100 scale-100"
           }`}
         >
           <div className="relative">
-            <div className="absolute inset-0 bg-indigo-500/30 blur-3xl rounded-full scale-150 animate-pulse" />
-            <div className="absolute inset-0 bg-purple-500/20 blur-2xl rounded-full scale-125 animate-pulse" style={{ animationDelay: "300ms" }} />
-            
-            <h1 className="relative z-10 text-5xl sm:text-6xl font-bold tracking-tight">
-              <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent bg-[length:200%_100%] animate-[shimmer_2s_ease-in-out_infinite]">
-                uloggd
-              </span>
+            <h1 className="text-4xl font-bold text-white tracking-tight">
+              uloggd
             </h1>
+            <div className="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-full animate-pulse" />
           </div>
 
-          <div className="flex gap-1.5 mt-8">
-            {[0, 1, 2, 3, 4].map((i) => (
+          <div className="flex gap-1 mt-2">
+            {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="w-2 h-2 bg-indigo-500/60 rounded-full animate-[wave_1.2s_ease-in-out_infinite]"
-                style={{ animationDelay: `${i * 100}ms` }}
+                className="w-1.5 h-1.5 bg-zinc-600 rounded-full animate-bounce"
+                style={{ animationDelay: `${i * 150}ms` }}
               />
             ))}
           </div>
-
-          <p className="mt-6 text-sm text-zinc-600 tracking-widest uppercase animate-pulse">
-            carregando
-          </p>
         </div>
       </div>
-
-      <style>{`
-        @keyframes shimmer {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        @keyframes wave {
-          0%, 100% { transform: translateY(0); opacity: 0.6; }
-          50% { transform: translateY(-8px); opacity: 1; }
-        }
-      `}</style>
     </>
   )
 }
