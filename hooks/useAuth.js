@@ -1,66 +1,76 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useSyncExternalStore, useCallback } from "react"
 import { supabase } from "#lib/supabase"
 
 let cachedUser = null
-let authLoading = true
-let initialized = false
+let loading = true
 let listeners = new Set()
 let loadingPromise = null
 
 function notify() {
-  listeners.forEach(fn => fn({ user: cachedUser, loading: authLoading }))
+  listeners.forEach(fn => fn())
+}
+
+function getSnapshot() {
+  return { user: cachedUser, loading }
+}
+
+let snapshotRef = getSnapshot()
+
+function updateSnapshot() {
+  snapshotRef = getSnapshot()
+  notify()
+}
+
+async function fetchProfile(session) {
+  const res = await fetch("/api/users/profile", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ userId: session.user.id }),
+  })
+  return res.ok ? res.json() : null
+}
+
+function buildUser(session, profile = null) {
+  const { user } = session
+  return {
+    id: user.id,
+    discordId: user.user_metadata.provider_id,
+    username: user.user_metadata.full_name,
+    avatar: user.user_metadata.avatar_url,
+    email: user.email,
+    ...profile,
+  }
 }
 
 async function loadUser(session) {
   if (!session?.user) {
     cachedUser = null
-    authLoading = false
+    loading = false
     loadingPromise = null
-    notify()
+    updateSnapshot()
     return
   }
 
   if (loadingPromise) return loadingPromise
 
-  authLoading = true
-  notify()
+  loading = true
+  updateSnapshot()
 
-  loadingPromise = (async () => {
-    try {
-      const res = await fetch("/api/users/profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ userId: session.user.id }),
-      })
-
-      const profile = res.ok ? await res.json() : null
-
-      cachedUser = {
-        id: session.user.id,
-        discordId: session.user.user_metadata.provider_id,
-        username: session.user.user_metadata.full_name,
-        avatar: session.user.user_metadata.avatar_url,
-        email: session.user.email,
-        ...profile,
-      }
-    } catch (err) {
-      console.warn("[useAuth] loadUser error:", err)
-      cachedUser = {
-        id: session.user.id,
-        discordId: session.user.user_metadata.provider_id,
-        username: session.user.user_metadata.full_name,
-        avatar: session.user.user_metadata.avatar_url,
-        email: session.user.email,
-      }
-    } finally {
-      authLoading = false
+  loadingPromise = fetchProfile(session)
+    .then(profile => {
+      cachedUser = buildUser(session, profile)
+    })
+    .catch(() => {
+      cachedUser = buildUser(session)
+    })
+    .finally(() => {
+      loading = false
       loadingPromise = null
-      notify()
-    }
-  })()
+      updateSnapshot()
+    })
 
   return loadingPromise
 }
@@ -68,97 +78,58 @@ async function loadUser(session) {
 async function refreshUser() {
   if (!cachedUser) return
 
-  try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session?.access_token) return
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.access_token) return
 
-    const res = await fetch("/api/users/profile", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ userId: cachedUser.id }),
-    })
-
-    if (res.ok) {
-      const profile = await res.json()
-      cachedUser = { ...cachedUser, ...profile }
-      notify()
-    }
-  } catch (err) {
-    console.warn("[useAuth] refreshUser error:", err)
+  const profile = await fetchProfile(session)
+  if (profile) {
+    cachedUser = { ...cachedUser, ...profile }
+    updateSnapshot()
   }
 }
 
 function updateUser(partial) {
   if (!cachedUser) return
   cachedUser = { ...cachedUser, ...partial }
-  notify()
+  updateSnapshot()
 }
 
-function resetAuth() {
+function reset() {
   cachedUser = null
-  authLoading = false
+  loading = false
   loadingPromise = null
-  notify()
+  updateSnapshot()
 }
 
-function initialize() {
-  if (initialized) return
-  initialized = true
+const initPromise = supabase.auth.getSession().then(({ data: { session } }) => {
+  return session ? loadUser(session) : reset()
+}).catch(() => reset())
 
-  supabase.auth.getSession()
-    .then(({ data: { session }, error }) => {
-      if (error) {
-        console.warn("[useAuth] getSession error:", error)
-        resetAuth()
-        return
-      }
-      
-      if (session) {
-        loadUser(session)
-      } else {
-        resetAuth()
-      }
-    })
-    .catch((err) => {
-      console.error("[useAuth] getSession catch:", err)
-      resetAuth()
-    })
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_OUT") {
+    reset()
+    return
+  }
 
-  supabase.auth.onAuthStateChange((event, session) => {
-    console.log("[useAuth] auth state change:", event)
-    
-    if (event === "SIGNED_OUT") {
-      resetAuth()
-      return
+  if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
+    if (session.user.id !== cachedUser?.id) {
+      loadUser(session)
     }
+  }
+})
 
-    if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-      if (!session) {
-        resetAuth()
-        return
-      }
-      
-      if (session.user.id !== cachedUser?.id) {
-        loadUser(session)
-      }
-    }
-  })
+function subscribe(callback) {
+  listeners.add(callback)
+  return () => listeners.delete(callback)
 }
-
-initialize()
 
 export function useAuth() {
-  const [state, setState] = useState({ user: cachedUser, loading: authLoading })
+  const snapshot = useSyncExternalStore(subscribe, () => snapshotRef)
 
-  useEffect(() => {
-    const handler = (s) => setState(s)
-    listeners.add(handler)
-    setState({ user: cachedUser, loading: authLoading })
-    return () => listeners.delete(handler)
-  }, [])
-
-  return { ...state, updateUser, refreshUser }
+  return {
+    user: snapshot.user,
+    loading: snapshot.loading,
+    updateUser,
+    refreshUser,
+  }
 }
