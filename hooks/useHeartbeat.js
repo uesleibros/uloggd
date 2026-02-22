@@ -3,33 +3,52 @@ import { supabase } from "#lib/supabase"
 import { useAuth } from "#hooks/useAuth"
 
 const HEARTBEAT_INTERVAL = 2 * 60 * 1000
+const DEBOUNCE_DELAY = 2000
+const TOKEN_CACHE_TTL = 30000
 
 export function useHeartbeat() {
   const { user } = useAuth()
   const intervalRef = useRef(null)
   const debounceRef = useRef(null)
+  const abortRef = useRef(null)
+  const tokenCacheRef = useRef({ token: null, promise: null })
 
   useEffect(() => {
     if (!user) return
 
-    let tokenCache = null
-    let tokenPromise = null
-
     const getToken = async () => {
-      if (tokenCache) return tokenCache
-      if (!tokenPromise) {
-        tokenPromise = supabase.auth.getSession().then(({ data: { session } }) => {
-          tokenCache = session?.access_token
-          setTimeout(() => { tokenCache = null; tokenPromise = null }, 30000)
-          return tokenCache
+      const cache = tokenCacheRef.current
+      if (cache.token) return cache.token
+
+      if (!cache.promise) {
+        cache.promise = supabase.auth.getSession().then(({ data: { session } }) => {
+          cache.token = session?.access_token
+          setTimeout(() => {
+            cache.token = null
+            cache.promise = null
+          }, TOKEN_CACHE_TTL)
+          return cache.token
         })
       }
-      return tokenPromise
+      return cache.promise
     }
 
-    const forcePing = async (status) => {
+    const forcePing = async (status, useBeacon = false) => {
       const token = await getToken()
       if (!token) return
+
+      if (useBeacon) {
+        const blob = new Blob(
+          [JSON.stringify({ status, _authToken: token })],
+          { type: "application/json" }
+        )
+        navigator.sendBeacon("/api/users/@me/heartbeat", blob)
+        return
+      }
+
+      if (abortRef.current) abortRef.current.abort()
+      abortRef.current = new AbortController()
+
       fetch("/api/users/@me/heartbeat", {
         method: "POST",
         headers: {
@@ -37,6 +56,7 @@ export function useHeartbeat() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ status }),
+        signal: abortRef.current.signal,
       }).catch(() => {})
     }
 
@@ -44,15 +64,15 @@ export function useHeartbeat() {
       clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(() => {
         forcePing(document.hidden ? "idle" : "online")
-      }, 500)
+      }, DEBOUNCE_DELAY)
     }
 
     const handleUnload = () => {
-      navigator.sendBeacon("/api/users/@me/heartbeat",
-        JSON.stringify({ status: "offline" }))
+      forcePing("offline", true)
     }
 
-    forcePing("online")
+    debounceRef.current = setTimeout(() => forcePing("online"), DEBOUNCE_DELAY)
+
     intervalRef.current = setInterval(() => {
       forcePing(document.hidden ? "idle" : "online")
     }, HEARTBEAT_INTERVAL)
@@ -61,8 +81,10 @@ export function useHeartbeat() {
     window.addEventListener("beforeunload", handleUnload)
 
     return () => {
+      if (abortRef.current) abortRef.current.abort()
       clearInterval(intervalRef.current)
       clearTimeout(debounceRef.current)
+      tokenCacheRef.current = { token: null, promise: null }
       document.removeEventListener("visibilitychange", handleVisibility)
       window.removeEventListener("beforeunload", handleUnload)
     }
