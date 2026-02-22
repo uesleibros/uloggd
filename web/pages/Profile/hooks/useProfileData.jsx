@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react"
 import { useAuth } from "#hooks/useAuth"
-import { supabase } from "#lib/supabase"
 
 export function useProfileData(username) {
   const { user: currentUser, loading: authLoading } = useAuth()
@@ -12,8 +11,9 @@ export function useProfileData(username) {
   const isOwnProfile = !authLoading && currentUser?.username?.toLowerCase() === username?.toLowerCase()
 
   const profile = useMemo(() => {
-    if (isOwnProfile && currentUser) return currentUser
-    return fetchedProfile
+    if (isOwnProfile && currentUser?.id) return currentUser
+    if (fetchedProfile?.id) return fetchedProfile
+    return null
   }, [isOwnProfile, currentUser, fetchedProfile])
 
   useEffect(() => {
@@ -24,7 +24,10 @@ export function useProfileData(username) {
 
   useEffect(() => {
     if (authLoading) return
-    if (isOwnProfile) return
+    if (isOwnProfile) {
+      setFetching(false)
+      return
+    }
     if (lastFetchedUsername.current === username) return
 
     lastFetchedUsername.current = username
@@ -57,6 +60,7 @@ export function useProfileData(username) {
   }, [username, authLoading, isOwnProfile])
 
   function updateProfile(partial) {
+    if (isOwnProfile) return
     setFetchedProfile((prev) => (prev ? { ...prev, ...partial } : prev))
   }
 
