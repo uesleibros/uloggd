@@ -4,7 +4,7 @@ import usePageMeta from "#hooks/usePageMeta"
 import PageBanner from "@components/Layout/PageBanner"
 import Lightbox from "@components/UI/Lightbox"
 import QuickActions from "@components/Game/QuickActions"
-import ReviewButton from "@components/Game/ReviewButton"
+import ReviewButton from "@components/Game/Review"
 import { GameSkeleton } from "./GameSkeleton"
 import { GameHeader } from "./sections/GameHeader"
 import { GameSidebar } from "./sections/GameSidebar"
@@ -97,4 +97,5 @@ export default function Game() {
       />
     </div>
   )
+
 }
