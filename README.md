@@ -119,6 +119,21 @@ Para desenvolvimento com as funções serverless da Vercel:
 npm run dev:vercel
 ```
 
+### Banco de Dados
+
+O projeto usa **Supabase** (PostgreSQL). Para configurar o banco:
+
+1. **Crie um projeto** no [Supabase Dashboard](https://app.supabase.com)
+
+2. **Importe o schema** do banco de dados:
+   - Acesse **SQL Editor** no dashboard do Supabase
+   - Copie todo o conteúdo de [`database/schema.sql`](/database/schema.sql)
+   - Cole no editor e clique em **RUN**
+
+3. **Configure a autenticação Discord:**
+   - No Supabase, vá em **Authentication** > **Providers**
+   - Habilite **Discord** e preencha Client ID e Secret
+
 ### Scripts disponíveis
 
 | Comando | Descrição |
