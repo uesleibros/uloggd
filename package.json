@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "imports": {
+    "#constants/*": "./constants/*",
     "#lib/*": "./lib/*",
     "#utils/*": "./utils/*",
     "#hooks/*": "./hooks/*",
