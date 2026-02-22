@@ -46,7 +46,8 @@ async function loadUser(session) {
         email: session.user.email,
         ...profile,
       }
-    } catch {
+    } catch (err) {
+      console.warn("[useAuth] loadUser error:", err)
       cachedUser = {
         id: session.user.id,
         discordId: session.user.user_metadata.provider_id,
@@ -69,12 +70,13 @@ async function refreshUser() {
 
   try {
     const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) return
 
     const res = await fetch("/api/users/profile", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${session?.access_token}`,
+        "Authorization": `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({ userId: cachedUser.id }),
     })
@@ -84,7 +86,9 @@ async function refreshUser() {
       cachedUser = { ...cachedUser, ...profile }
       notify()
     }
-  } catch {}
+  } catch (err) {
+    console.warn("[useAuth] refreshUser error:", err)
+  }
 }
 
 function updateUser(partial) {
@@ -93,35 +97,53 @@ function updateUser(partial) {
   notify()
 }
 
+function resetAuth() {
+  cachedUser = null
+  authLoading = false
+  loadingPromise = null
+  notify()
+}
+
 function initialize() {
   if (initialized) return
   initialized = true
 
   supabase.auth.getSession()
-    .then(({ data: { session } }) => {
+    .then(({ data: { session }, error }) => {
+      if (error) {
+        console.warn("[useAuth] getSession error:", error)
+        resetAuth()
+        return
+      }
+      
       if (session) {
         loadUser(session)
       } else {
-        authLoading = false
-        notify()
+        resetAuth()
       }
     })
-    .catch(() => {
-      authLoading = false
-      notify()
+    .catch((err) => {
+      console.error("[useAuth] getSession catch:", err)
+      resetAuth()
     })
 
   supabase.auth.onAuthStateChange((event, session) => {
+    console.log("[useAuth] auth state change:", event)
+    
     if (event === "SIGNED_OUT") {
-      cachedUser = null
-      authLoading = false
-      loadingPromise = null
-      notify()
+      resetAuth()
       return
     }
 
-    if (session?.user?.id !== cachedUser?.id) {
-      loadUser(session)
+    if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+      if (!session) {
+        resetAuth()
+        return
+      }
+      
+      if (session.user.id !== cachedUser?.id) {
+        loadUser(session)
+      }
     }
   })
 }
