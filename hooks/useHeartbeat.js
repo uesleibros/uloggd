@@ -3,12 +3,13 @@ import { supabase } from "#lib/supabase"
 import { useAuth } from "#hooks/useAuth"
 
 export function useHeartbeat() {
-  const { user, updateUser } = useAuth()
+  const { user, loading, updateUser } = useAuth()
   const intervalRef = useRef(null)
   const tokenRef = useRef(null)
 
   useEffect(() => {
-    if (!user) return
+    if (loading) return
+    if (!user?.id) return
 
     const ping = async (status) => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -58,5 +59,5 @@ export function useHeartbeat() {
       document.removeEventListener("visibilitychange", onVisibility)
       window.removeEventListener("beforeunload", onUnload)
     }
-  }, [user?.id, updateUser])
+  }, [user?.id, loading, updateUser])
 }
