@@ -4,6 +4,8 @@
 
 Uma plataforma para catalogar, avaliar e compartilhar sua coleção de jogos.
 
+[![Made with Supabase](https://supabase.com/badge-made-with-supabase.svg)](https://supabase.com)
+
 <a href="https://github.com/uesleibros/uloggd/commits/main"><img src="https://img.shields.io/github/last-commit/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Ultimo commit." /></a>
 <a href="https://github.com/uesleibros/uloggd/stargazers"><img src="https://img.shields.io/github/stars/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Stars." /></a>
 <a href="https://github.com/uesleibros/uloggd/issues"><img src="https://img.shields.io/github/issues/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Issues." /></a>
