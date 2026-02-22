@@ -99,6 +99,13 @@ function reset() {
 
 export function updateUser(partial) {
   if (!cachedUser) return
+
+  const hasChanges = Object.keys(partial).some(
+    (key) => cachedUser[key] !== partial[key]
+  )
+
+  if (!hasChanges) return
+
   cachedUser = { ...cachedUser, ...partial }
   updateSnapshot()
 }
@@ -148,4 +155,5 @@ export function useAuth() {
     refreshUser,
   }
 }
+
 
