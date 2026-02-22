@@ -16,13 +16,19 @@ export function useUserLists(profileId) {
       body: JSON.stringify({ userId: profileId }),
       signal: controller.signal,
     })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`)
+        return r.json()
+      })
       .then((data) => {
         setUserLists(Array.isArray(data) ? data : [])
         setLoadingLists(false)
       })
       .catch((err) => {
-        if (err.name !== "AbortError") setLoadingLists(false)
+        if (err.name !== "AbortError") {
+          console.error("[useUserLists] error:", err)
+          setLoadingLists(false)
+        }
       })
 
     return () => controller.abort()
