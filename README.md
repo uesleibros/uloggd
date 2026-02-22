@@ -4,10 +4,6 @@
 
 Uma plataforma para catalogar, avaliar e compartilhar sua coleção de jogos.
 
-<a href="https://vercel.com/?utm_source=uloggd&utm_campaign=oss">
-<img src="/.github/powered-by-vercel.svg" alt="Vercel">
-</a>
-
 <a href="https://github.com/uesleibros/uloggd/commits/main"><img src="https://img.shields.io/github/last-commit/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Ultimo commit." /></a>
 <a href="https://github.com/uesleibros/uloggd/stargazers"><img src="https://img.shields.io/github/stars/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Stars." /></a>
 <a href="https://github.com/uesleibros/uloggd/issues"><img src="https://img.shields.io/github/issues/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Issues." /></a>
@@ -33,6 +29,10 @@ Uma plataforma para catalogar, avaliar e compartilhar sua coleção de jogos.
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=uesleibros_uloggd&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
 
 [![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
+\
+<a href="https://vercel.com/?utm_source=uloggd&utm_campaign=oss">
+<img src="/.github/powered-by-vercel.svg" alt="Vercel">
+</a>
 
 </div>
 
