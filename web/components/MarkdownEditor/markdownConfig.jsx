@@ -167,7 +167,7 @@ export function createMarkdownComponents(authorRatings = {}) {
     },
     mention: ({ children }) => <Mention username={children} />,
     center: ({ children }) => (
-      <center className="break-all">
+      <center className="break-all [&_.game-grid-wrapper>div]:!justify-center [&_table]:mx-auto">
         {children}
       </center>
     ),
@@ -318,3 +318,4 @@ export function createMarkdownComponents(authorRatings = {}) {
     tr: ({ children }) => <tr className="hover:bg-zinc-800/30 transition-colors">{children}</tr>,
   }
 }
+
