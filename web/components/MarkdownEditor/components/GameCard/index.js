@@ -1,0 +1,1 @@
+export { MarkdownGameCard } from "./MarkdownGameCard"
