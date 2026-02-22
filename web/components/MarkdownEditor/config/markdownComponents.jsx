@@ -1,7 +1,4 @@
-import { Mention } from "../components"
-import { SpoilerText, SpoilerImage } from "../components"
-import { MarkdownGameCard, MarkdownGameGrid } from "../components"
-import { AlertBox } from "../components"
+import { Mention, SpoilerText, SpoilerImage, MarkdownGameCard, MarkdownGameGrid, AlertBox } from "../components"
 
 const YOUTUBE_REGEX = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/
 
