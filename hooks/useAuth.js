@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react"
+import { useSyncExternalStore, useCallback } from "react"
 import { supabase } from "#lib/supabase"
 
 let cachedUser = null
@@ -97,6 +97,12 @@ function reset() {
   updateSnapshot()
 }
 
+function updateUser(partial) {
+  if (!cachedUser) return
+  cachedUser = { ...cachedUser, ...partial }
+  updateSnapshot()
+}
+
 async function refreshUser() {
   if (!cachedUser) return
   const { data: { session } } = await supabase.auth.getSession()
@@ -106,12 +112,6 @@ async function refreshUser() {
     cachedUser = { ...cachedUser, ...profile }
     updateSnapshot()
   }
-}
-
-function updateUser(partial) {
-  if (!cachedUser) return
-  cachedUser = { ...cachedUser, ...partial }
-  updateSnapshot()
 }
 
 supabase.auth.getSession().then(({ data: { session } }) => {
