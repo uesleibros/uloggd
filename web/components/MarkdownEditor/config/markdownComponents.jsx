@@ -1,9 +1,7 @@
-import { Mention } from "../components/Mention"
-import { SpoilerText } from "../components/SpoilerText"
-import { SpoilerImage } from "../components/SpoilerImage"
-import { MarkdownGameCard } from "../components/MarkdownGameCard"
-import { MarkdownGameGrid } from "../components/MarkdownGameGrid"
-import { AlertBox } from "../components/AlertBox"
+import { Mention } from "../components"
+import { SpoilerText, SpoilerImage } from "../components"
+import { MarkdownGameCard, MarkdownGameGrid } from "../components"
+import { AlertBox } from "../components"
 
 const YOUTUBE_REGEX = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/
 
