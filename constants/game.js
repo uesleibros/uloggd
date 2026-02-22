@@ -38,3 +38,22 @@ export const GAME_STATUS = {
 }
 
 export const STATUS_OPTIONS = Object.values(GAME_STATUS)
+
+export const RATING_MODES = [
+  { id: "stars_5", label: "★5", labelFull: "5 Estrelas" },
+  { id: "stars_5h", label: "★5½", labelFull: "5 Estrelas (meia)" },
+  { id: "points_10", label: "0–10", labelFull: "0–10" },
+  { id: "points_10d", label: "0–10.0", labelFull: "0–10.0" },
+  { id: "points_100", label: "0–100", labelFull: "0–100" },
+]
+
+export const ASPECT_SUGGESTIONS = [
+  "Gameplay", "História", "Personagens", "Trilha sonora", "Gráficos",
+  "Level design", "Rejogabilidade", "Multiplayer", "Performance", "UI/UX"
+]
+
+export const MAX_ASPECTS = 10
+export const MAX_ASPECT_LABEL = 30
+export const MAX_ASPECT_REVIEW = 500
+export const MAX_REVIEW_LENGTH = 10000
+export const MAX_TITLE_LENGTH = 24
