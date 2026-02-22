@@ -9,15 +9,7 @@ export function useFollowData(profile, currentUser, authLoading, isOwnProfile) {
   const [followingCount, setFollowingCount] = useState(0)
 
   useEffect(() => {
-    if (!profile?.id) {
-      setFollowersCount(0)
-      setFollowingCount(0)
-      setIsFollowing(false)
-      setFollowsYou(false)
-      return
-    }
-
-    if (authLoading) return
+    if (!profile?.id || authLoading) return
 
     const controller = new AbortController()
 
@@ -27,21 +19,16 @@ export function useFollowData(profile, currentUser, authLoading, isOwnProfile) {
       body: JSON.stringify({ userId: profile.id, currentUserId: currentUser?.id || null }),
       signal: controller.signal,
     })
-      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((r) => r.json())
       .then((s) => {
-        setFollowersCount(s.followers ?? 0)
-        setFollowingCount(s.following ?? 0)
+        setFollowersCount(s.followers)
+        setFollowingCount(s.following)
         if (!isOwnProfile) {
-          setIsFollowing(s.isFollowing ?? false)
-          setFollowsYou(s.followsYou ?? false)
+          setIsFollowing(s.isFollowing)
+          setFollowsYou(s.followsYou)
         }
       })
-      .catch((err) => {
-        if (err?.name !== "AbortError") {
-          setFollowersCount(0)
-          setFollowingCount(0)
-        }
-      })
+      .catch(() => {})
 
     return () => controller.abort()
   }, [profile?.id, currentUser?.id, authLoading, isOwnProfile])
