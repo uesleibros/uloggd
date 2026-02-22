@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import { Play, CheckCircle, Clock, Gift, Heart, Ban, Archive, Star } from "lucide-react"
 import DragScrollRow from "@components/UI/DragScrollRow"
 import GameCard from "@components/Game/GameCard"
-import Pagination from "@components/Profile/Pagination"
+import Pagination from "@components/UI/Pagination"
 
 const TAB_ICONS = {
   playing: Play,

@@ -4,7 +4,7 @@ import usePageMeta from "#hooks/usePageMeta"
 import { supabase } from "#lib/supabase"
 import { useAuth } from "#hooks/useAuth"
 import { useGamesBatch } from "#hooks/useGamesBatch"
-import Pagination from "@components/Profile/Pagination"
+import Pagination from "@components/UI/Pagination"
 import Modal from "@components/UI/Modal"
 import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
 import PlatformIcons from "@components/Game/PlatformIcons"
@@ -389,39 +389,39 @@ export default function ListPage() {
 				) : (
 					<>
 						<div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-						  {paginatedItems.map((item, index) => {
-						    const game = getGame(item.game_slug)
-						    const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index + 1
-						    const showRank = list.ranked !== false
+							{paginatedItems.map((item, index) => {
+								const game = getGame(item.game_slug)
+								const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index + 1
+								const showRank = list.ranked !== false
 
-						    return (
-						      <div key={item.id} className={`relative ${showRank ? "pt-2 pl-2" : ""}`}>
-						        {showRank && (
-						          <div className="absolute top-0 left-0 z-10 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[9px] sm:text-[10px] font-bold text-zinc-400 tabular-nums">
-						            {globalIndex}
-						          </div>
-						        )}
+								return (
+									<div key={item.id} className={`relative ${showRank ? "pt-2 pl-2" : ""}`}>
+										{showRank && (
+											<div className="absolute top-0 left-0 z-10 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[9px] sm:text-[10px] font-bold text-zinc-400 tabular-nums">
+												{globalIndex}
+											</div>
+										)}
 
-						        <div className="group relative">
-						          {game ? (
-						            <GameCard game={game} responsive />
-						          ) : (
-						            <GameCardSkeleton responsive />
-						          )}
+										<div className="group relative">
+											{game ? (
+												<GameCard game={game} responsive />
+											) : (
+												<GameCardSkeleton responsive />
+											)}
 
-						          {isOwner && game && (
-						            <button
-						              onClick={() => setRemovingItem({ ...item, list_id: list.id })}
-						              className="absolute top-1 right-1 z-10 p-1.5 bg-black/70 hover:bg-red-500 active:bg-red-600 rounded-lg text-zinc-400 hover:text-white opacity-0 group-hover:opacity-100 transition-all cursor-pointer touch-manipulation"
-						              title="Remover"
-						            >
-						              <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-						            </button>
-						          )}
-						        </div>
-						      </div>
-						    )
-						  })}
+											{isOwner && game && (
+												<button
+													onClick={() => setRemovingItem({ ...item, list_id: list.id })}
+													className="absolute top-1 right-1 z-10 p-1.5 bg-black/70 hover:bg-red-500 active:bg-red-600 rounded-lg text-zinc-400 hover:text-white opacity-0 group-hover:opacity-100 transition-all cursor-pointer touch-manipulation"
+													title="Remover"
+												>
+													<X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+												</button>
+											)}
+										</div>
+									</div>
+								)
+							})}
 						</div>
 						<Pagination
 							currentPage={currentPage}

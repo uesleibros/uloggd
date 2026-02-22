@@ -29,7 +29,10 @@ async function loadUser(session) {
     try {
       const res = await fetch("/api/users/profile", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({ userId: session.user.id }),
       })
 
@@ -51,11 +54,11 @@ async function loadUser(session) {
         avatar: session.user.user_metadata.avatar_url,
         email: session.user.email,
       }
+    } finally {
+      authLoading = false
+      loadingPromise = null
+      notify()
     }
-
-    authLoading = false
-    loadingPromise = null
-    notify()
   })()
 
   return loadingPromise
@@ -65,9 +68,14 @@ async function refreshUser() {
   if (!cachedUser) return
   
   try {
+    const { data: { session } } = await supabase.auth.getSession()
+    
     const res = await fetch("/api/users/profile", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session?.access_token}`,
+      },
       body: JSON.stringify({ userId: cachedUser.id }),
     })
 
@@ -88,6 +96,16 @@ function updateUser(partial) {
 if (!initialized) {
   initialized = true
 
+  // Carrega sessão inicial
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      loadUser(session)
+    } else {
+      authLoading = false
+      notify()
+    }
+  })
+
   supabase.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT") {
       cachedUser = null
@@ -97,9 +115,9 @@ if (!initialized) {
       return
     }
 
-    if (cachedUser && session?.user?.id === cachedUser.id) return
-
-    loadUser(session)
+    if (session?.user?.id !== cachedUser?.id) {
+      loadUser(session)
+    }
   })
 }
 

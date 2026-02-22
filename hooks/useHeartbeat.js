@@ -7,27 +7,29 @@ const HEARTBEAT_INTERVAL = 2 * 60 * 1000
 export function useHeartbeat() {
   const { user } = useAuth()
   const intervalRef = useRef(null)
-  const lastStatus = useRef(null)
+  const debounceRef = useRef(null)
 
   useEffect(() => {
     if (!user) return
 
     let tokenCache = null
+    let tokenPromise = null
 
     const getToken = async () => {
-      if (!tokenCache) {
-        const { data: { session } } = await supabase.auth.getSession()
-        tokenCache = session?.access_token
-        setTimeout(() => { tokenCache = null }, 30000)
+      if (tokenCache) return tokenCache
+      if (!tokenPromise) {
+        tokenPromise = supabase.auth.getSession().then(({ data: { session } }) => {
+          tokenCache = session?.access_token
+          setTimeout(() => { tokenCache = null; tokenPromise = null }, 30000)
+          return tokenCache
+        })
       }
-      return tokenCache
+      return tokenPromise
     }
 
     const forcePing = async (status) => {
-      lastStatus.current = status
       const token = await getToken()
       if (!token) return
-
       fetch("/api/users/@me/heartbeat", {
         method: "POST",
         headers: {
@@ -39,7 +41,15 @@ export function useHeartbeat() {
     }
 
     const handleVisibility = () => {
-      forcePing(document.hidden ? "idle" : "online")
+      clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(() => {
+        forcePing(document.hidden ? "idle" : "online")
+      }, 500)
+    }
+
+    const handleUnload = () => {
+      navigator.sendBeacon("/api/users/@me/heartbeat",
+        JSON.stringify({ status: "offline" }))
     }
 
     forcePing("online")
@@ -48,10 +58,13 @@ export function useHeartbeat() {
     }, HEARTBEAT_INTERVAL)
 
     document.addEventListener("visibilitychange", handleVisibility)
+    window.addEventListener("beforeunload", handleUnload)
 
     return () => {
       clearInterval(intervalRef.current)
+      clearTimeout(debounceRef.current)
       document.removeEventListener("visibilitychange", handleVisibility)
+      window.removeEventListener("beforeunload", handleUnload)
     }
   }, [user?.id])
 }
