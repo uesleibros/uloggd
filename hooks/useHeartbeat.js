@@ -6,6 +6,11 @@ export function useHeartbeat() {
   const { user, loading, updateUser } = useAuth()
   const intervalRef = useRef(null)
   const tokenRef = useRef(null)
+  const updateUserRef = useRef(updateUser)
+
+  useEffect(() => {
+    updateUserRef.current = updateUser
+  }, [updateUser])
 
   useEffect(() => {
     if (loading) return
@@ -27,7 +32,7 @@ export function useHeartbeat() {
       }).catch(() => null)
 
       if (res?.ok) {
-        updateUser({ status, last_seen: new Date().toISOString() })
+        updateUserRef.current({ status, last_seen: new Date().toISOString() })
       }
     }
 
@@ -59,5 +64,5 @@ export function useHeartbeat() {
       document.removeEventListener("visibilitychange", onVisibility)
       window.removeEventListener("beforeunload", onUnload)
     }
-  }, [user?.id, loading, updateUser])
+  }, [user?.id, loading])
 }
