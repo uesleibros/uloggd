@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react"
 import { supabase } from "#lib/supabase"
-import { useAuth } from "#hooks/useAuth"
+import { useAuth, updateUser } from "#hooks/useAuth"
 
 export function useHeartbeat() {
-  const { user, loading, updateUser } = useAuth()
+  const { user, loading } = useAuth()
   const intervalRef = useRef(null)
   const tokenRef = useRef(null)
 
@@ -59,5 +59,5 @@ export function useHeartbeat() {
       document.removeEventListener("visibilitychange", onVisibility)
       window.removeEventListener("beforeunload", onUnload)
     }
-  }, [user?.id, loading, updateUser])
+  }, [user?.id, loading])
 }
