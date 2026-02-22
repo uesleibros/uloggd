@@ -2,24 +2,24 @@ import { AVATAR_DECORATIONS } from "#data/avatarDecorations"
 
 const sizeMap = {
   xs: 20,
-  sm: 28,
-  md: 36,
+  sm: 32,
+  md: 40,
   lg: 48,
-  xl: 64,
-  '2xl': 80,
-  mention: 80,
-  profile: 128,
+  xl: 80,
+  '2xl': 96,
+  mention: 96,
+  profile: 120,
 }
 
 const statusMap = {
-  xs: { size: 6, x: 14, y: 14, stroke: 1.5 },
-  sm: { size: 10, x: 18, y: 18, stroke: 1.5 },
-  md: { size: 10, x: 26, y: 26, stroke: 1.5 },
-  lg: { size: 12, x: 36, y: 36, stroke: 2 },
-  xl: { size: 16, x: 48, y: 48, stroke: 2 },
-  '2xl': { size: 20, x: 60, y: 60, stroke: 2.5 },
-  mention: { size: 20, x: 60, y: 60, stroke: 2.5 },
-  profile: { size: 24, x: 104, y: 104, stroke: 3 }, // Ajustado
+  xs: { size: 8, x: 12, y: 12, stroke: 1.5 },
+  sm: { size: 12, x: 20, y: 20, stroke: 2 },
+  md: { size: 14, x: 26, y: 26, stroke: 2 },
+  lg: { size: 16, x: 32, y: 32, stroke: 2.5 },
+  xl: { size: 24, x: 56, y: 56, stroke: 3.5 },
+  '2xl': { size: 28, x: 68, y: 68, stroke: 4 },
+  mention: { size: 28, x: 68, y: 68, stroke: 4 },
+  profile: { size: 34, x: 86, y: 86, stroke: 5 },
 }
 
 const statusColors = {
@@ -30,15 +30,18 @@ const statusColors = {
 }
 
 function StatusIcon({ status, x, y, size }) {
-  const half = size / 2
-  const center = half
+  const radius = size / 2
+  const center = radius
 
   if (status === 'offline') {
-    const inner = half * 0.5
+    const inner = radius * 0.5
     return (
       <g transform={`translate(${x}, ${y})`}>
-        <circle cx={center} cy={center} r={half} fill={statusColors.offline} />
-        <circle cx={center} cy={center} r={inner} fill="#000" />
+        <mask id={`status-mask-${status}-${size}-${x}`}>
+          <rect width={size} height={size} fill="white" />
+          <circle cx={center} cy={center} r={inner} fill="black" />
+        </mask>
+        <circle cx={center} cy={center} r={radius} fill={statusColors.offline} mask={`url(#status-mask-${status}-${size}-${x})`} />
       </g>
     )
   }
@@ -46,26 +49,32 @@ function StatusIcon({ status, x, y, size }) {
   if (status === 'idle') {
     return (
       <g transform={`translate(${x}, ${y})`}>
-        <circle cx={center} cy={center} r={half} fill={statusColors.idle} />
-        <circle cx={center * 0.5} cy={center * 0.5} r={half * 0.5} fill="#000" />
+        <mask id={`status-mask-${status}-${size}-${x}`}>
+          <rect width={size} height={size} fill="white" />
+          <circle cx={0} cy={0} r={radius * 0.85} fill="black" />
+        </mask>
+        <circle cx={center} cy={center} r={radius} fill={statusColors.idle} mask={`url(#status-mask-${status}-${size}-${x})`} />
       </g>
     )
   }
 
   if (status === 'dnd') {
-    const barH = size * 0.2
-    const barW = size * 0.6
+    const barH = size * 0.25
+    const barW = size * 0.7
     return (
       <g transform={`translate(${x}, ${y})`}>
-        <circle cx={center} cy={center} r={half} fill={statusColors.dnd} />
-        <rect x={center - barW / 2} y={center - barH / 2} width={barW} height={barH} rx={barH / 2} fill="#000" />
+        <mask id={`status-mask-${status}-${size}-${x}`}>
+          <rect width={size} height={size} fill="white" />
+          <rect x={center - barW / 2} y={center - barH / 2} width={barW} height={barH} rx={barH / 2} fill="black" />
+        </mask>
+        <circle cx={center} cy={center} r={radius} fill={statusColors.dnd} mask={`url(#status-mask-${status}-${size}-${x})`} />
       </g>
     )
   }
 
   return (
     <g transform={`translate(${x}, ${y})`}>
-      <circle cx={center} cy={center} r={half} fill={statusColors.online} />
+      <circle cx={center} cy={center} r={radius} fill={statusColors.online} />
     </g>
   )
 }
@@ -79,10 +88,10 @@ export default function AvatarWithDecoration({
   className = ''
 }) {
   const currentDecorationUrl = AVATAR_DECORATIONS.find(d => d.id === decoration)?.url || null
-  const pxSize = sizeMap[size] || 64
+  const pxSize = sizeMap[size] || 80
   const statusConfig = statusMap[size] || statusMap.xl
 
-  const maskId = `mask-${size}-${src?.slice(-5) || 'default'}-${status || 'none'}`
+  const maskId = `avatar-mask-${size}-${status ? status : 'none'}-${Math.random().toString(36).substr(2, 9)}`
 
   return (
     <div
@@ -91,35 +100,54 @@ export default function AvatarWithDecoration({
     >
       <svg
         viewBox={`0 0 ${pxSize} ${pxSize}`}
-        className="w-full h-full block"
+        className="w-full h-full block overflow-visible"
         aria-hidden="true"
       >
-        <mask id={maskId}>
-          <circle cx={pxSize / 2} cy={pxSize / 2} r={pxSize / 2} fill="white" />
-          {status && (
-            <circle
-              cx={statusConfig.x + statusConfig.size / 2}
-              cy={statusConfig.y + statusConfig.size / 2}
-              r={statusConfig.size / 2 + statusConfig.stroke}
-              fill="black"
-            />
-          )}
-        </mask>
+        <defs>
+          <mask id={maskId}>
+            <rect x="0" y="0" width={pxSize} height={pxSize} fill="white" />
+            {status && (
+              <circle
+                cx={statusConfig.x + statusConfig.size / 2}
+                cy={statusConfig.y + statusConfig.size / 2}
+                r={(statusConfig.size / 2) + statusConfig.stroke}
+                fill="black"
+              />
+            )}
+          </mask>
+        </defs>
 
         <foreignObject
           x="0"
           y="0"
-          width="100%"
-          height="100%"
+          width={pxSize}
+          height={pxSize}
           mask={`url(#${maskId})`}
         >
           <img
             src={src || "https://cdn.discordapp.com/embed/avatars/0.png"}
             alt={alt}
-            className="w-full h-full object-cover bg-zinc-800"
+            className="w-full h-full object-cover rounded-full bg-zinc-800"
             draggable={false}
           />
         </foreignObject>
+
+        {decoration && currentDecorationUrl && (
+          <foreignObject
+            x={-(pxSize * 0.2 / 2)}
+            y={-(pxSize * 0.2 / 2)}
+            width={pxSize * 1.2}
+            height={pxSize * 1.2}
+            style={{ pointerEvents: 'none' }}
+          >
+            <img
+              src={currentDecorationUrl}
+              alt=""
+              className="w-full h-full object-contain"
+              draggable={false}
+            />
+          </foreignObject>
+        )}
 
         {status && (
           <StatusIcon
@@ -130,16 +158,6 @@ export default function AvatarWithDecoration({
           />
         )}
       </svg>
-
-      {decoration && currentDecorationUrl && (
-        <img
-          src={currentDecorationUrl}
-          alt=""
-          className="absolute top-1/2 left-1/2 w-[120%] h-[120%] max-w-none pointer-events-none select-none object-contain z-10"
-          style={{ transform: 'translate(-50%, -50%)' }}
-          draggable={false}
-        />
-      )}
     </div>
   )
 }
