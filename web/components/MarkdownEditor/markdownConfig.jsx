@@ -129,13 +129,16 @@ export function createMarkdownComponents(authorRatings = {}) {
         {children}
       </summary>
     ),
-    code: ({ inline, className, children }) => {
-      if (inline) return <code className="px-[0.4em] py-[0.2em] bg-zinc-800 border border-zinc-700 rounded-md text-[85%] text-pink-400 font-mono">{children}</code>
-      return (
-        <pre className="bg-zinc-900 border border-zinc-700 rounded-md p-4 my-4 overflow-x-auto">
-          <code className={`text-sm text-zinc-300 font-mono leading-snug ${className || ""}`}>{children}</code>
-        </pre>
-      )
+    pre: ({ children }) => (
+      <pre className="bg-zinc-900 border border-zinc-700 rounded-md p-4 my-4 overflow-x-auto">
+        {children}
+      </pre>
+    ),
+    code: ({ className, children }) => {
+      if (className) {
+        return <code className={`text-sm text-zinc-300 font-mono leading-snug ${className}`}>{children}</code>
+      }
+      return <code className="px-[0.4em] py-[0.2em] bg-zinc-800 border border-zinc-700 rounded-md text-[85%] text-pink-400 font-mono">{children}</code>
     },
     ul: ({ children }) => <ul className="list-disc pl-[2em] my-4 space-y-0.5 text-zinc-300">{children}</ul>,
     ol: ({ children }) => <ol className="list-decimal pl-[2em] my-4 space-y-0.5 text-zinc-300">{children}</ol>,
@@ -318,4 +321,5 @@ export function createMarkdownComponents(authorRatings = {}) {
     tr: ({ children }) => <tr className="hover:bg-zinc-800/30 transition-colors">{children}</tr>,
   }
 }
+
 
