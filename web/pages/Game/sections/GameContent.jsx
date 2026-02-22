@@ -1,6 +1,6 @@
 import { useState } from "react"
 import QuickActions from "@components/Game/QuickActions"
-import ReviewButton from "@components/Game/ReviewButton"
+import ReviewButton from "@components/Game/Review"
 import GameReviews from "@components/Game/GameReviews"
 import { StatCard } from "../components/StatCard"
 import { InfoRow } from "../components/InfoRow"
@@ -95,4 +95,5 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
       <GameReviews gameId={game.id} />
     </div>
   )
+
 }
