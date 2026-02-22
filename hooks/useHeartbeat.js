@@ -3,7 +3,7 @@ import { supabase } from "#lib/supabase"
 import { useAuth } from "#hooks/useAuth"
 
 export function useHeartbeat() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const intervalRef = useRef(null)
   const tokenRef = useRef(null)
 
@@ -16,14 +16,18 @@ export function useHeartbeat() {
 
       tokenRef.current = session.access_token
 
-      fetch("/api/users/@me/heartbeat", {
+      const res = await fetch("/api/users/@me/heartbeat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ status }),
-      }).catch(() => {})
+      }).catch(() => null)
+
+      if (res?.ok) {
+        updateUser({ status, last_seen: new Date().toISOString() })
+      }
     }
 
     const onUnload = () => {
@@ -54,5 +58,5 @@ export function useHeartbeat() {
       document.removeEventListener("visibilitychange", onVisibility)
       window.removeEventListener("beforeunload", onUnload)
     }
-  }, [user?.id])
+  }, [user?.id, updateUser])
 }
