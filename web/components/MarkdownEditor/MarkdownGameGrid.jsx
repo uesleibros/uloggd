@@ -25,7 +25,7 @@ export function MarkdownGameGrid({ slugs, autoScroll = false, authorRatings = {}
   const items = autoScroll ? [...slugList, ...slugList, ...slugList] : slugList
 
   return (
-    <div className="my-2">
+    <div className="my-2 game-grid-wrapper w-full">
       <DragScrollRow
         className={`gap-3 pb-4 pt-4 px-1 items-end ${autoScroll ? "overflow-x-hidden" : ""}`}
         autoScroll={autoScroll}
