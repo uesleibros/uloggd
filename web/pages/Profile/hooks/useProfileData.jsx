@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useAuth } from "#hooks/useAuth"
 
 export function useProfileData(username) {
@@ -6,41 +6,45 @@ export function useProfileData(username) {
   const [fetchedProfile, setFetchedProfile] = useState(null)
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState(null)
+  const fetchIdRef = useRef(0)
+
+  const normalizedUsername = username?.toLowerCase()
 
   const isOwnProfile = useMemo(() => {
-    if (authLoading) return false
-    if (!currentUser?.id || !currentUser?.username) return false
-    return currentUser.username.toLowerCase() === username?.toLowerCase()
-  }, [authLoading, currentUser?.id, currentUser?.username, username])
+    if (authLoading || !currentUser?.id || !currentUser?.username) return false
+    return currentUser.username.toLowerCase() === normalizedUsername
+  }, [authLoading, currentUser?.id, currentUser?.username, normalizedUsername])
 
   const profile = useMemo(() => {
     if (authLoading) return null
     if (isOwnProfile && currentUser?.id) return currentUser
-    if (fetchedProfile?.id) return fetchedProfile
-    return null
+    return fetchedProfile
   }, [isOwnProfile, currentUser, fetchedProfile, authLoading])
 
   useEffect(() => {
+    const id = ++fetchIdRef.current
+
     setFetchedProfile(null)
     setError(null)
+    setFetching(true)
 
     if (!username) {
       setFetching(false)
       return
     }
 
-    if (authLoading) {
-      setFetching(true)
-      return
-    }
+    if (authLoading) return
 
-    if (isOwnProfile) {
+    if (
+      currentUser?.id &&
+      currentUser?.username &&
+      currentUser.username.toLowerCase() === normalizedUsername
+    ) {
       setFetching(false)
       return
     }
 
     const controller = new AbortController()
-    setFetching(true)
 
     fetch("/api/users/profile", {
       method: "POST",
@@ -53,18 +57,23 @@ export function useProfileData(username) {
         return res.json()
       })
       .then((data) => {
+        if (fetchIdRef.current !== id) return
         setFetchedProfile(data)
         setError(null)
         setFetching(false)
       })
       .catch((err) => {
         if (err.name === "AbortError") return
+        if (fetchIdRef.current !== id) return
         setError(true)
         setFetching(false)
       })
 
-    return () => controller.abort()
-  }, [username, authLoading, isOwnProfile])
+    return () => {
+      fetchIdRef.current++
+      controller.abort()
+    }
+  }, [username, normalizedUsername, authLoading, currentUser?.id, currentUser?.username])
 
   const updateProfile = useCallback(
     (partial) => {
