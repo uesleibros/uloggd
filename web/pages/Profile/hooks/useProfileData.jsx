@@ -6,7 +6,7 @@ export function useProfileData(username) {
   const [fetchedProfile, setFetchedProfile] = useState(null)
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState(null)
-  const fetchIdRef = useRef(0)
+  const abortRef = useRef(null)
 
   const normalizedUsername = username?.toLowerCase()
 
@@ -22,7 +22,10 @@ export function useProfileData(username) {
   }, [isOwnProfile, currentUser, fetchedProfile, authLoading])
 
   useEffect(() => {
-    const id = ++fetchIdRef.current
+    if (abortRef.current) {
+      abortRef.current.abort()
+      abortRef.current = null
+    }
 
     setFetchedProfile(null)
     setError(null)
@@ -45,6 +48,7 @@ export function useProfileData(username) {
     }
 
     const controller = new AbortController()
+    abortRef.current = controller
 
     fetch("/api/users/profile", {
       method: "POST",
@@ -57,21 +61,21 @@ export function useProfileData(username) {
         return res.json()
       })
       .then((data) => {
-        if (fetchIdRef.current !== id) return
+        if (controller.signal.aborted) return
         setFetchedProfile(data)
         setError(null)
         setFetching(false)
       })
       .catch((err) => {
         if (err.name === "AbortError") return
-        if (fetchIdRef.current !== id) return
+        if (controller.signal.aborted) return
         setError(true)
         setFetching(false)
       })
 
     return () => {
-      fetchIdRef.current++
       controller.abort()
+      abortRef.current = null
     }
   }, [username, normalizedUsername, authLoading, currentUser?.id, currentUser?.username])
 
