@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useAuth } from "#hooks/useAuth"
 
 export function useProfileData(username) {
@@ -14,22 +14,25 @@ export function useProfileData(username) {
   }, [authLoading, currentUser?.id, currentUser?.username, username])
 
   const profile = useMemo(() => {
+    if (authLoading) return null
     if (isOwnProfile && currentUser?.id) return currentUser
     if (fetchedProfile?.id) return fetchedProfile
     return null
-  }, [isOwnProfile, currentUser, fetchedProfile])
+  }, [isOwnProfile, currentUser, fetchedProfile, authLoading])
 
-  // Reset quando username muda
   useEffect(() => {
     setFetchedProfile(null)
     setError(null)
-    setFetching(true)
-  }, [username])
 
-  // Fetch principal - SÓ roda depois que auth terminou de carregar
-  useEffect(() => {
-    if (!username) return
-    if (authLoading) return // <-- ESPERA o auth resolver primeiro
+    if (!username) {
+      setFetching(false)
+      return
+    }
+
+    if (authLoading) {
+      setFetching(true)
+      return
+    }
 
     if (isOwnProfile) {
       setFetching(false)
@@ -37,7 +40,6 @@ export function useProfileData(username) {
     }
 
     const controller = new AbortController()
-
     setFetching(true)
 
     fetch("/api/users/profile", {
@@ -47,7 +49,7 @@ export function useProfileData(username) {
       signal: controller.signal,
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Profile not found")
+        if (!res.ok) throw new Error("Not found")
         return res.json()
       })
       .then((data) => {
