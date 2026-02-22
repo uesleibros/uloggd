@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useAuth } from "#hooks/useAuth"
 
 export function useProfileData(username) {
@@ -6,7 +6,6 @@ export function useProfileData(username) {
   const [fetchedProfile, setFetchedProfile] = useState(null)
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState(null)
-  const lastFetchedUsername = useRef(null)
 
   const isOwnProfile = useMemo(() => {
     if (authLoading) return false
@@ -20,26 +19,27 @@ export function useProfileData(username) {
     return null
   }, [isOwnProfile, currentUser, fetchedProfile])
 
+  // Reset quando username muda
   useEffect(() => {
     setFetchedProfile(null)
     setError(null)
     setFetching(true)
-    lastFetchedUsername.current = null
   }, [username])
 
+  // Fetch principal - SÓ roda depois que auth terminou de carregar
   useEffect(() => {
     if (!username) return
-    
+    if (authLoading) return // <-- ESPERA o auth resolver primeiro
+
     if (isOwnProfile) {
       setFetching(false)
       return
     }
 
-    if (lastFetchedUsername.current === username) return
-    lastFetchedUsername.current = username
-
     const controller = new AbortController()
-    
+
+    setFetching(true)
+
     fetch("/api/users/profile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -47,11 +47,12 @@ export function useProfileData(username) {
       signal: controller.signal,
     })
       .then((res) => {
-        if (!res.ok) throw new Error()
+        if (!res.ok) throw new Error("Profile not found")
         return res.json()
       })
       .then((data) => {
         setFetchedProfile(data)
+        setError(null)
         setFetching(false)
       })
       .catch((err) => {
@@ -61,12 +62,15 @@ export function useProfileData(username) {
       })
 
     return () => controller.abort()
-  }, [username, isOwnProfile])
+  }, [username, authLoading, isOwnProfile])
 
-  function updateProfile(partial) {
-    if (isOwnProfile) return
-    setFetchedProfile((prev) => (prev ? { ...prev, ...partial } : prev))
-  }
+  const updateProfile = useCallback(
+    (partial) => {
+      if (isOwnProfile) return
+      setFetchedProfile((prev) => (prev ? { ...prev, ...partial } : prev))
+    },
+    [isOwnProfile]
+  )
 
   return {
     profile,
