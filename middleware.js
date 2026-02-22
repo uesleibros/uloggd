@@ -64,7 +64,7 @@ function stripMarkdown(str) {
 }
 
 async function handleGame(url, slug) {
-  const res = await fetch(`${url.origin}/api/igdb?action=game`, {
+  const res = await fetch(`${url.origin}/api/igdb/game`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ slug }),
@@ -86,7 +86,7 @@ async function handleGame(url, slug) {
 }
 
 async function handleProfile(url, username) {
-  const res = await fetch(`${url.origin}/api/user?action=profile`, {
+  const res = await fetch(`${url.origin}/api/users/profile`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username }),
