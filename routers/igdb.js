@@ -2,11 +2,13 @@ import { handleAutocomplete } from "#services/igdb/handlers/autocomplete.js"
 import { handleGame } from "#services/igdb/handlers/game.js"
 import { handleGamesBatch } from "#services/igdb/handlers/gamesBatch.js"
 import { handleUsersChoice } from "#services/igdb/handlers/usersChoice.js"
+import { handleSearch } from "#services/igdb/handlers/search.js"
 
 const ACTIONS = {
   autocomplete: { handler: handleAutocomplete, scopes: null, auth: false },
   game:         { handler: handleGame,         scopes: null, auth: false },
   gamesBatch:   { handler: handleGamesBatch,   scopes: null, auth: false },
+  search:       { handler: handleSearch,       scopes: null, auth: false },
   usersChoice:  { handler: handleUsersChoice,  scopes: null, auth: false },
 }
 
