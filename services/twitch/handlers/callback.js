@@ -2,6 +2,8 @@ import { supabase } from "#lib/supabase-ssr.js"
 import { getRedirectUri, decodeState, exchangeCode, fetchTwitchUser } from "../utils.js"
 
 export async function handleCallback(req, res) {
+	res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
+	
 	const { code, state, error: oauthError } = req.query
 
 	if (oauthError || !code || !state) {
@@ -45,9 +47,11 @@ export async function handleCallback(req, res) {
 
 		if (error) throw error
 
-		res.redirect(`${returnUrl}?twitch=connected`)
+		const safeReturnUrl = returnUrl ? returnUrl.split("?")[0] : "/"
+		res.redirect(safeReturnUrl)
 	} catch (err) {
 		console.error("Twitch OAuth error:", err)
-		res.redirect(`${returnUrl || "/"}?error=twitch_auth_failed`)
+		const safeReturnUrl = returnUrl ? returnUrl.split("?")[0] : "/"
+		res.redirect(`${safeReturnUrl}?error=twitch_auth_failed`)
 	}
 }
