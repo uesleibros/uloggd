@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react"
+import { useSyncExternalStore, useCallback } from "react"
 import { supabase } from "#lib/supabase"
 
 let cachedUser = null
@@ -52,7 +52,7 @@ function buildUser(session, profile = null) {
   }
 }
 
-async function loadUser(session, force = false) {
+async function loadUser(session) {
   if (!session?.user) {
     cachedUser = null
     loading = false
@@ -61,7 +61,7 @@ async function loadUser(session, force = false) {
     return
   }
 
-  if (!force && cachedUser?.id === session.user.id && initialized) {
+  if (cachedUser?.id === session.user.id && initialized) {
     loading = false
     updateSnapshot()
     return
@@ -110,7 +110,7 @@ export function updateUser(partial) {
   updateSnapshot()
 }
 
-async function refreshUser() {
+export async function refreshUser() {
   if (!cachedUser) return
   const { data: { session } } = await supabase.auth.getSession()
   if (!session?.access_token) return
@@ -122,7 +122,7 @@ async function refreshUser() {
 }
 
 supabase.auth.getSession().then(({ data: { session } }) => {
-  return session ? loadUser(session, true) : reset()
+  return session ? loadUser(session) : reset()
 }).catch(() => reset())
 
 supabase.auth.onAuthStateChange((event, session) => {
@@ -134,7 +134,10 @@ supabase.auth.onAuthStateChange((event, session) => {
   if (event === "INITIAL_SESSION") return
 
   if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
-    loadUser(session, true)
+    if (cachedUser?.id !== session.user.id) {
+      initialized = false
+      loadUser(session)
+    }
   }
 })
 
