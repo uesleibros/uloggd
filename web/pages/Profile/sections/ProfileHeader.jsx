@@ -14,6 +14,8 @@ import {
   Github,
   Linkedin,
   ExternalLink,
+  Check,
+  Copy,
 } from "lucide-react"
 
 function NintendoIcon({ className }) {
@@ -106,13 +108,12 @@ const CONNECTION_PLATFORMS = {
     getUrl: (username) => `https://twitch.tv/${username}`,
     getDisplay: (username) => username,
   },
-
   nintendo: {
     icon: NintendoIcon,
     label: "Nintendo Switch",
     color: "hover:text-red-500",
     getUrl: () => null,
-    getDisplay: (code) => code,
+    getDisplay: (code, displayName) => displayName || code,
   },
 }
 
@@ -127,7 +128,6 @@ function normalizeUrl(url, baseUrl) {
   }
   return `https://${trimmed}`
 }
-
 
 function SocialLinks({ links, connections }) {
   const [copied, setCopied] = useState(null)
@@ -144,7 +144,7 @@ function SocialLinks({ links, connections }) {
           label: platform.label,
           color: platform.color,
           href: platform.getUrl(conn.provider_username),
-          display: platform.getDisplay(conn.provider_username),
+          display: conn.display_name || conn.provider_username,
           raw: conn.provider_username,
         })
       }
@@ -184,6 +184,7 @@ function SocialLinks({ links, connections }) {
         const Icon = item.icon
         const isNintendo = item.provider === "nintendo"
         const isTwitch = item.provider === "twitch"
+        const isCopied = copied === item.key
 
         if (isNintendo) {
           return (
@@ -193,18 +194,25 @@ function SocialLinks({ links, connections }) {
               className={`
                 inline-flex items-center gap-1.5
                 px-2.5 py-1.5 rounded-lg
-                bg-red-500/10 border border-red-500/30
-                text-red-400 text-xs
+                ${isCopied 
+                  ? "bg-green-500/20 border-green-500/50 text-green-400" 
+                  : "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+                }
+                border text-xs
                 transition-all duration-200
-                hover:bg-red-500/20
                 cursor-pointer
               `}
               title="Clique para copiar"
             >
-              <Icon className="w-3.5 h-3.5" />
-              <span className="max-w-[120px] truncate hidden sm:inline">
-                {copied === item.key ? "Copiado!" : item.display}
+              {isCopied ? (
+                <Check className="w-3.5 h-3.5" />
+              ) : (
+                <Icon className="w-3.5 h-3.5" />
+              )}
+              <span className="truncate">
+                {isCopied ? "Copiado!" : item.display}
               </span>
+              {!isCopied && <Copy className="w-3 h-3 opacity-50 flex-shrink-0" />}
             </button>
           )
         }
@@ -227,10 +235,10 @@ function SocialLinks({ links, connections }) {
               "
             >
               <Icon className="w-3.5 h-3.5" />
-              <span className="max-w-[120px] truncate hidden sm:inline">
+              <span className="truncate">
                 {item.display}
               </span>
-              <ExternalLink className="w-2.5 h-2.5 opacity-0 group-hover:opacity-60 transition-opacity hidden sm:block" />
+              <ExternalLink className="w-2.5 h-2.5 opacity-50 group-hover:opacity-80 transition-opacity flex-shrink-0" />
             </a>
           )
         }
@@ -253,10 +261,10 @@ function SocialLinks({ links, connections }) {
             `}
           >
             <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-            <span className="max-w-[120px] truncate hidden sm:inline">
+            <span className="truncate">
               {item.display}
             </span>
-            <ExternalLink className="w-2.5 h-2.5 opacity-0 group-hover/social:opacity-50 transition-opacity flex-shrink-0 hidden sm:block" />
+            <ExternalLink className="w-2.5 h-2.5 opacity-50 group-hover/social:opacity-80 transition-opacity flex-shrink-0" />
           </a>
         )
       })}

@@ -156,7 +156,3 @@ export default function ImageCropModal({ isOpen, imageSrc, aspect, onCrop, onClo
 		</Modal>
 	)
 }
-
-
-
-

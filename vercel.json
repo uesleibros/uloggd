@@ -14,7 +14,7 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/((?!assets|platforms_out|favicon|.*\\..*).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]

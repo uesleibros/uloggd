@@ -13,21 +13,23 @@ function formatSwitchCode(code) {
 }
 
 function NintendoIcon({ className }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-    >
-      <path d="M7 2C4.79 2 3 3.79 3 6v12c0 2.21 1.79 4 4 4h3V2H7zm10 0h-3v20h3c2.21 0 4-1.79 4-4V6c0-2.21-1.79-4-4-4zM7 6.5A1.5 1.5 0 1 1 7 9.5 1.5 1.5 0 0 1 7 6.5zm10 8a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
-    </svg>
-  )
+	return (
+		<svg
+			viewBox="0 0 24 24"
+			fill="currentColor"
+			className={className}
+		>
+			<path d="M7 2C4.79 2 3 3.79 3 6v12c0 2.21 1.79 4 4 4h3V2H7zm10 0h-3v20h3c2.21 0 4-1.79 4-4V6c0-2.21-1.79-4-4-4zM7 6.5A1.5 1.5 0 1 1 7 9.5 1.5 1.5 0 0 1 7 6.5zm10 8a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
+		</svg>
+	)
 }
 
 export default function NintendoSection() {
 	const { user } = useAuth()
 	const [code, setCode] = useState("")
+	const [nickname, setNickname] = useState("")
 	const [savedCode, setSavedCode] = useState(null)
+	const [savedNickname, setSavedNickname] = useState(null)
 	const [loading, setLoading] = useState(true)
 	const [saving, setSaving] = useState(false)
 	const [removing, setRemoving] = useState(false)
@@ -48,12 +50,16 @@ export default function NintendoSection() {
 
 			if (data.connected) {
 				setSavedCode(data.code)
+				setSavedNickname(data.nickname || null)
 				setCode(data.code)
+				setNickname(data.nickname || "")
 			} else {
 				setSavedCode(null)
+				setSavedNickname(null)
 			}
 		} catch {
 			setSavedCode(null)
+			setSavedNickname(null)
 		} finally {
 			setLoading(false)
 		}
@@ -73,14 +79,16 @@ export default function NintendoSection() {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${session.access_token}`,
 				},
-				body: JSON.stringify({ code }),
+				body: JSON.stringify({ code, nickname: nickname.trim() || null }),
 			})
 
 			const data = await res.json()
 
 			if (res.ok && data.connected) {
 				setSavedCode(data.code)
+				setSavedNickname(data.nickname || null)
 				setCode(data.code)
+				setNickname(data.nickname || "")
 			}
 		} finally {
 			setSaving(false)
@@ -103,7 +111,9 @@ export default function NintendoSection() {
 
 			if (res.ok) {
 				setSavedCode(null)
+				setSavedNickname(null)
 				setCode("")
+				setNickname("")
 			}
 		} finally {
 			setRemoving(false)
@@ -128,13 +138,13 @@ export default function NintendoSection() {
 					: "bg-zinc-800/30 border-zinc-700/50"
 			}`}>
 				<div className="flex items-start gap-4">
-					<div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+					<div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
 						isConnected ? "bg-red-500" : "bg-zinc-700"
 					}`}>
 						<NintendoIcon className="w-8 h-8 text-white" />
 					</div>
 
-					<div className="flex-1">
+					<div className="flex-1 min-w-0">
 						<div className="flex items-center gap-2 mb-2">
 							<span className="text-sm font-medium text-white">
 								Nintendo Switch
@@ -149,9 +159,14 @@ export default function NintendoSection() {
 
 						{isConnected ? (
 							<>
-								<div className="text-sm text-zinc-300 mb-3">
-									{savedCode}
+								<div className="text-sm text-white mb-1">
+									{savedNickname || savedCode}
 								</div>
+								{savedNickname && (
+									<div className="text-xs text-zinc-500 mb-3">
+										{savedCode}
+									</div>
+								)}
 
 								<button
 									onClick={handleRemove}
@@ -167,13 +182,23 @@ export default function NintendoSection() {
 							</>
 						) : (
 							<>
-								<input
-									type="text"
-									placeholder="SW-1234-5678-9012"
-									value={code}
-									onChange={(e) => setCode(formatSwitchCode(e.target.value))}
-									className="w-full mb-3 px-3 py-2 text-sm bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/40"
-								/>
+								<div className="space-y-3 mb-3">
+									<input
+										type="text"
+										placeholder="SW-1234-5678-9012"
+										value={code}
+										onChange={(e) => setCode(formatSwitchCode(e.target.value))}
+										className="w-full px-3 py-2 text-sm bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/40"
+									/>
+									<input
+										type="text"
+										placeholder="Nickname (opcional)"
+										value={nickname}
+										onChange={(e) => setNickname(e.target.value.slice(0, 20))}
+										maxLength={20}
+										className="w-full px-3 py-2 text-sm bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/40"
+									/>
+								</div>
 
 								<button
 									onClick={handleSave}
@@ -184,7 +209,7 @@ export default function NintendoSection() {
 										? <Loader2 className="w-4 h-4 animate-spin" />
 										: <NintendoIcon className="w-4 h-4 text-white" />
 									}
-									Salvar código
+									Salvar
 								</button>
 							</>
 						)}

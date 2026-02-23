@@ -8,7 +8,7 @@ function normalizeSwitchCode(code) {
 }
 
 export async function handleConnect(req, res) {
-	const { code } = req.body
+	const { code, nickname } = req.body
 
 	const formatted = normalizeSwitchCode(code)
 
@@ -22,6 +22,7 @@ export async function handleConnect(req, res) {
 			provider: "nintendo",
 			provider_user_id: formatted,
 			provider_username: formatted,
+			provider_display_name: nickname?.trim() || null,
 		}, { onConflict: "user_id,provider" })
 
 	if (error) {
@@ -31,6 +32,7 @@ export async function handleConnect(req, res) {
 
 	res.json({
 		connected: true,
-		code: formatted
+		code: formatted,
+		nickname: nickname?.trim() || null,
 	})
 }

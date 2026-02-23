@@ -53,12 +53,40 @@ function getCoverUrl(game) {
 	return game.cover.url.startsWith("http") ? game.cover.url : `https:${game.cover.url}`
 }
 
-function useCardActions(game, enabled) {
+function useCardActions(game, enabled, initialState = null) {
 	const { user } = useAuth()
-	const { refresh } = useMyLibrary()
-	const [state, setState] = useState(null)
-	const fetchedRef = useRef(false)
+	const { refresh, getGameData } = useMyLibrary()
+	const cachedData = getGameData(game?.slug)
+	
+	const [state, setState] = useState(() => {
+		if (initialState) return initialState
+		if (cachedData) {
+			return {
+				status: cachedData.status || null,
+				playing: cachedData.playing || false,
+				backlog: cachedData.backlog || false,
+				wishlist: cachedData.wishlist || false,
+				liked: cachedData.liked || false,
+			}
+		}
+		return null
+	})
+	
+	const fetchedRef = useRef(!!initialState || !!cachedData)
 	const [updating, setUpdating] = useState(null)
+
+	useEffect(() => {
+		if (!initialState && cachedData && !fetchedRef.current) {
+			setState({
+				status: cachedData.status || null,
+				playing: cachedData.playing || false,
+				backlog: cachedData.backlog || false,
+				wishlist: cachedData.wishlist || false,
+				liked: cachedData.liked || false,
+			})
+			fetchedRef.current = true
+		}
+	}, [cachedData, initialState])
 
 	const prefetch = useCallback(async () => {
 		if (!enabled || !user || fetchedRef.current || !game?.id) return
@@ -117,7 +145,6 @@ function useCardActions(game, enabled) {
 	return { user, state, prefetch, toggle, updating }
 }
 
-// Helper to stop both mouse and click events from reaching the Link
 function stopEvent(e) {
 	e.preventDefault()
 	e.stopPropagation()

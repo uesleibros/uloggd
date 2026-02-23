@@ -4,6 +4,7 @@ const CONTENT_TRANSFORMS = [
   { pattern: /!game:grid-auto\(([^)\n]+)\)/g, replace: '<game-grid-auto slugs="$1"></game-grid-auto>' },
   { pattern: /!game:grid\(([^)\n]+)\)/g, replace: '<game-grid slugs="$1"></game-grid>' },
   { pattern: /!game\(([^)\n]+)\)/g, replace: '<game-card slug="$1"></game-card>' },
+  { pattern: /@(\w+)/g, replace: '<mention>$1</mention>' },
 ]
 
 export function processContent(content) {

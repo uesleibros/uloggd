@@ -1,1 +1,0 @@
-export { MentionCard } from "./MentionCard"
