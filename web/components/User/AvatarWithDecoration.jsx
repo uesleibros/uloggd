@@ -100,6 +100,7 @@ export default function AvatarWithDecoration({
   decoration = null,
   size = 'xl',
   status = null,
+  isStreaming = false,
   className = '' 
 }) {
   const currentDecorationUrl = AVATAR_DECORATIONS.find(d => d.id === decoration)?.url || null
@@ -107,6 +108,8 @@ export default function AvatarWithDecoration({
   const padding = cutoutPadding[size] || 3
   const iconSize = indicatorSizes[size] || 18
   const totalSize = iconSize + padding * 2
+  
+  const finalStatus = isStreaming ? 'streaming' : status
   
   return (
     <div className={`avatar-wrapper ${sizeClasses[size]} ${className}`}>
@@ -127,7 +130,7 @@ export default function AvatarWithDecoration({
         />
       )}
 
-      {status && (
+      {finalStatus && (
         <div
           className="absolute z-30 flex items-center justify-center rounded-full bg-zinc-900"
           style={{
@@ -137,7 +140,7 @@ export default function AvatarWithDecoration({
             height: totalSize,
           }}
         >
-          <StatusIcon status={status} size={size} />
+          <StatusIcon status={finalStatus} size={size} />
         </div>
       )}
     </div>
