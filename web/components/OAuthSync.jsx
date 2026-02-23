@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useAuth } from "#hooks/useAuth"
 
-export function OAuthSync() {
+export default function OAuthSync() {
   const { refreshUser } = useAuth()
 
   useEffect(() => {
