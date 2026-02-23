@@ -32,7 +32,7 @@ export function MarkdownGameGrid({ slugs, autoScroll = false, authorRatings = {}
           if (loading) return <GameCardSkeleton key={`skeleton-${i}`} />
           const game = getGame(slug)
           if (!game) return null
-          return <GameCard key={`${slug}-${i}`} game={game} isFavorite={isFavorite} userRating={authorRatings[slug]?.avgRating} showRating />
+          return <GameCard showQuickActions={false} key={`${slug}-${i}`} game={game} isFavorite={isFavorite} userRating={authorRatings[slug]?.avgRating} showRating />
         })}
       </DragScrollRow>
     </div>
