@@ -52,6 +52,7 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
           alt={user.username}
           decoration={user.avatar_decoration}
           status={getStatus(user.last_seen, user.status)}
+          isStreaming={!!user.stream}
           size="xl"
         />
         <div className="flex-1 min-w-0">
