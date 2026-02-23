@@ -15,6 +15,7 @@ import ListPage from "@pages/ListPage"
 import NotificationContainer from "@components/UI/Notification"
 import NotFound from "@pages/NotFound"
 import SplashScreen from "@components/UI/SplashScreen"
+import OAuthSync from "@components/OAuthSync"
 
 import "#web/App.css"
 
@@ -25,6 +26,7 @@ export default function App() {
 		<ErrorBoundary>
 			<SplashScreen>
 				<MyLibraryProvider>
+					<OAuthSync />
 					<ScrollToTop />
 					<RouteLoader />
 					<NotificationContainer />
@@ -50,4 +52,3 @@ export default function App() {
 		</ErrorBoundary>
 	)
 }
-
