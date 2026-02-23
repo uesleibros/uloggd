@@ -1,4 +1,4 @@
-import { useSyncExternalStore, useCallback } from "react"
+import { useSyncExternalStore } from "react"
 import { supabase } from "#lib/supabase"
 
 let cachedUser = null
@@ -141,6 +141,23 @@ supabase.auth.onAuthStateChange((event, session) => {
   }
 })
 
+if (typeof window !== "undefined") {
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      loadingPromise = null
+      initialized = false
+
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          loadUser(session)
+        } else {
+          reset()
+        }
+      }).catch(() => {})
+    }
+  })
+}
+
 function subscribe(callback) {
   listeners.add(callback)
   return () => listeners.delete(callback)
@@ -155,4 +172,3 @@ export function useAuth() {
     refreshUser,
   }
 }
-
