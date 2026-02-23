@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useParams, Link } from "react-router-dom"
-import { Tv } from "lucide-react"
+import { ExternalLink } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useProfileGames } from "#hooks/useProfileGames"
 import PageBanner from "@components/Layout/PageBanner"
@@ -13,6 +13,60 @@ import { ProfileNavigation } from "./sections/ProfileNavigation"
 import { ProfileContent } from "./sections/ProfileContent"
 import ProfileSkeleton from "./components/ProfileSkeleton"
 import FollowListModal from "./components/FollowListModal"
+
+function TwitchIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+    </svg>
+  )
+}
+
+function StreamCard({ stream }) {
+  return (
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 mb-6">
+      <a
+        href={`https://twitch.tv/${stream.twitch_username}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block rounded-xl overflow-hidden border border-purple-500/20 bg-zinc-900 hover:border-purple-500/40 transition-all group"
+      >
+        <div className="relative">
+          <img
+            src={stream.thumbnail}
+            alt={stream.title}
+            className="w-full aspect-video object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/20 to-transparent" />
+          <div className="absolute top-3 left-3 flex items-center gap-2">
+            <span className="flex items-center gap-1 px-2 py-0.5 bg-red-600 text-white text-[11px] font-bold uppercase tracking-wide rounded">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              Ao Vivo
+            </span>
+            <span className="px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium rounded">
+              {stream.viewers.toLocaleString()} assistindo
+            </span>
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            <div className="flex items-center gap-2 mb-1.5">
+              <TwitchIcon className="w-4 h-4 text-purple-400 shrink-0" />
+              <span className="text-xs font-medium text-purple-400">
+                {stream.twitch_username}
+              </span>
+            </div>
+            <h3 className="text-sm font-semibold text-white leading-snug line-clamp-1 group-hover:text-purple-200 transition-colors">
+              {stream.title}
+            </h3>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="text-xs text-zinc-400">{stream.game}</span>
+              <ExternalLink className="w-3 h-3 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  )
+}
 
 export default function Profile() {
   const { username } = useParams()
@@ -88,44 +142,7 @@ export default function Profile() {
           onFollowingClick={() => setFollowModal("Seguindo")}
         />
 
-        {profile?.stream && (
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 mb-6">
-            <a
-              href={`https://twitch.tv/${profile.stream.twitch_username}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl hover:bg-purple-500/15 transition-colors group"
-            >
-              <div className="relative shrink-0 w-full sm:w-auto">
-                <img
-                  src={profile.stream.thumbnail}
-                  alt="Stream"
-                  className="w-full sm:w-40 aspect-video object-cover rounded-lg shadow-md border border-purple-500/20"
-                />
-                <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider rounded flex items-center gap-1">
-                  <Tv className="w-3 h-3" />
-                  Ao Vivo
-                </div>
-              </div>
-              <div className="flex-1 min-w-0 w-full">
-                <span className="text-xs font-medium text-purple-400 mb-1 block">
-                  {profile.stream.twitch_username} está ao vivo na Twitch
-                </span>
-                <h3 className="text-sm sm:text-base font-semibold text-white truncate mb-2">
-                  {profile.stream.title}
-                </h3>
-                <div className="flex items-center gap-3 text-xs text-zinc-400">
-                  <span className="text-purple-300 font-medium truncate">{profile.stream.game}</span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                    {profile.stream.viewers.toLocaleString()} assistindo
-                  </span>
-                </div>
-              </div>
-            </a>
-          </div>
-        )}
+        {profile?.stream && <StreamCard stream={profile.stream} />}
 
         <ProfileNavigation
           activeSection={activeSection}
