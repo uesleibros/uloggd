@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useParams, Link } from "react-router-dom"
-import { ExternalLink } from "lucide-react"
+import { Twitch, Radio } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useProfileGames } from "#hooks/useProfileGames"
 import PageBanner from "@components/Layout/PageBanner"
@@ -14,57 +14,39 @@ import { ProfileContent } from "./sections/ProfileContent"
 import ProfileSkeleton from "./components/ProfileSkeleton"
 import FollowListModal from "./components/FollowListModal"
 
-function TwitchIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
-    </svg>
-  )
-}
-
 function StreamCard({ stream }) {
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 mb-6">
-      <a
-        href={`https://twitch.tv/${stream.twitch_username}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block rounded-xl overflow-hidden border border-purple-500/20 bg-zinc-900 hover:border-purple-500/40 transition-all group"
-      >
-        <div className="relative">
-          <img
-            src={stream.thumbnail}
-            alt={stream.title}
-            className="w-full aspect-video object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/20 to-transparent" />
-          <div className="absolute top-3 left-3 flex items-center gap-2">
-            <span className="flex items-center gap-1 px-2 py-0.5 bg-red-600 text-white text-[11px] font-bold uppercase tracking-wide rounded">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              Ao Vivo
+    <a
+      href={`https://twitch.tv/${stream.twitch_username}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="bg-zinc-800/50 border border-purple-500/30 hover:border-purple-500/50 rounded-lg px-4 py-3 transition-colors block mt-6"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <Twitch className="w-4 h-4 text-purple-400" />
+            <span className="text-xs font-medium text-purple-400">
+              {stream.twitch_username}
             </span>
-            <span className="px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium rounded">
-              {stream.viewers.toLocaleString()} assistindo
+            <span className="flex items-center gap-1 text-[10px] bg-red-600/90 text-white px-1.5 py-0.5 rounded">
+              <Radio className="w-3 h-3" />
+              AO VIVO
             </span>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <div className="flex items-center gap-2 mb-1.5">
-              <TwitchIcon className="w-4 h-4 text-purple-400 shrink-0" />
-              <span className="text-xs font-medium text-purple-400">
-                {stream.twitch_username}
-              </span>
-            </div>
-            <h3 className="text-sm font-semibold text-white leading-snug line-clamp-1 group-hover:text-purple-200 transition-colors">
-              {stream.title}
-            </h3>
-            <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-xs text-zinc-400">{stream.game}</span>
-              <ExternalLink className="w-3 h-3 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
+
+          <div className="text-sm font-semibold text-white truncate">
+            {stream.title}
+          </div>
+
+          <div className="text-xs text-zinc-400 mt-1 flex items-center gap-2">
+            <span>{stream.game}</span>
+            <span>•</span>
+            <span>{stream.viewers.toLocaleString()} assistindo</span>
           </div>
         </div>
-      </a>
-    </div>
+      </div>
+    </a>
   )
 }
 
