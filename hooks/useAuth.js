@@ -141,6 +141,26 @@ supabase.auth.onAuthStateChange((event, session) => {
   }
 })
 
+if (typeof window !== "undefined") {
+  window.addEventListener("focus", async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session && !cachedUser) {
+      initialized = false
+      loadUser(session)
+    }
+  })
+
+  window.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState === "visible") {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session && !cachedUser) {
+        initialized = false
+        loadUser(session)
+      }
+    }
+  })
+}
+
 function subscribe(callback) {
   listeners.add(callback)
   return () => listeners.delete(callback)
@@ -155,5 +175,3 @@ export function useAuth() {
     refreshUser,
   }
 }
-
-
