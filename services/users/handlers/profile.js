@@ -30,7 +30,7 @@ async function getProfileByUsername(username) {
 	return data
 }
 
-function formatProfile(profile, stream = null) {
+function formatProfile(profile, stream = null, reviewsCount = 0, likedReviewsCount = 0) {
 	if (!profile) return null
 
 	const badges = profile.user_badges?.map(ub => ({
@@ -56,43 +56,74 @@ function formatProfile(profile, stream = null) {
 		last_seen: profile.last_seen,
 		status: profile.status,
 		username_changed_at: profile.username_changed_at,
-		social_links: profile.social_links || {},
 		connections,
 		badges,
 		stream,
+		counts: {
+			reviews: reviewsCount,
+			likedReviews: likedReviewsCount,
+		}
 	}
 }
 
 export async function handleProfile(req, res) {
 	const { userId, username } = req.body
-	if (!userId && !username) return res.status(400).json({ error: "missing userId or username" })
+	if (!userId && !username)
+		return res.status(400).json({ error: "missing userId or username" })
 
 	try {
 		const profile = userId
 			? await getProfileByUserId(userId)
 			: await getProfileByUsername(username)
 
-		if (!profile) return res.status(404).json({ error: "user not found" })
+		if (!profile)
+			return res.status(404).json({ error: "user not found" })
+
+		const userIdReal = profile.user_id
+
+		const [reviewsRes, likedReviewsRes] = await Promise.all([
+			supabase
+				.from("reviews")
+				.select("*", { count: "exact", head: true })
+				.eq("user_id", userIdReal),
+			supabase
+				.from("review_likes")
+				.select("*", { count: "exact", head: true })
+				.eq("user_id", userIdReal),
+		])
 
 		let stream = null
-		const twitchConnection = profile.user_connections?.find(c => c.provider === "twitch")
+		const twitchConnection = profile.user_connections?.find(
+			c => c.provider === "twitch"
+		)
 
 		if (twitchConnection?.provider_username) {
 			try {
-				const streamData = await twitchClient.getStream(twitchConnection.provider_username)
+				const streamData = await twitchClient.getStream(
+					twitchConnection.provider_username
+				)
 				if (streamData) {
 					stream = {
 						twitch_username: twitchConnection.provider_username,
 						title: streamData.title,
 						game: streamData.game_name,
 						viewers: streamData.viewer_count,
-						thumbnail: streamData.thumbnail_url.replace("{width}", "320").replace("{height}", "180")
+						thumbnail: streamData.thumbnail_url
+							.replace("{width}", "320")
+							.replace("{height}", "180"),
 					}
 				}
 			} catch {}
 		}
 
-		res.json(formatProfile(profile, stream))
+		res.json(
+			formatProfile(
+				profile,
+				stream,
+				reviewsRes.count || 0,
+				likedReviewsRes.count || 0
+			)
+		)
 	} catch (e) {
 		console.error(e)
 		res.status(500).json({ error: "fail" })

@@ -7,8 +7,7 @@ const TAB_FILTERS = {
   wishlist: g => g.wishlist,
   dropped: g => g.status === "abandoned",
   shelved: g => g.status === "shelved",
-  liked: g => g.liked,
-  rated: g => g.ratingCount > 0,
+  rated: g => g.hasLog,
 }
 
 const EMPTY_COUNTS = {

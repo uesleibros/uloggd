@@ -1,18 +1,14 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Heart, Trophy, ThumbsUp, AlertTriangle, Eye, FileText, MessageSquare } from "lucide-react"
+import { Heart, Trophy, AlertTriangle, Eye, FileText, MessageSquare } from "lucide-react"
 import { MarkdownPreview } from "@components/MarkdownEditor"
-import UserBadges from "@components/User/UserBadges"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import StatusBadge from "@components/Game/StatusBadge"
 import ReviewRating from "@components/Game/ReviewRating"
 import StarsDisplay from "@components/Game/StarsDisplay"
 import Playtime from "@components/Game/Playtime"
 import Modal from "@components/UI/Modal"
-import LikeListModal from "@components/Game/LikeListModal"
-import CountUp from "@components/UI/CountUp"
-import { supabase } from "#lib/supabase"
-import { useAuth } from "#hooks/useAuth"
+import Pagination from "@components/UI/Pagination"
 import { getTimeAgo } from "#utils/formatDate"
 import { formatRating } from "#utils/rating"
 import { SORT_OPTIONS } from "#constants/game"
@@ -35,11 +31,11 @@ function AspectRatingDisplay({ aspect }) {
 	)
 }
 
-function AspectRatingsPreview({ aspects, compact = false }) {
+function AspectRatingsPreview({ aspects }) {
 	if (!aspects?.length) return null
 
 	return (
-		<div className={`space-y-1.5 ${compact ? "" : "pt-1"}`}>
+		<div className="space-y-1.5">
 			{aspects.map((aspect, i) => (
 				<div key={i} className="flex items-center justify-between gap-3">
 					<span className="text-xs text-zinc-500 truncate">{aspect.label}</span>
@@ -80,121 +76,30 @@ function SpoilerOverlay({ onReveal }) {
 	)
 }
 
-function LikeButton({ reviewId, currentUserId }) {
-	const [isLiked, setIsLiked] = useState(false)
-	const [count, setCount] = useState(0)
-	const [loading, setLoading] = useState(false)
-	const [showLikes, setShowLikes] = useState(false)
-
-	useEffect(() => {
-		fetch("/api/reviews/likeStatus", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ reviewId, currentUserId }),
-		})
-			.then(r => r.json())
-			.then(data => {
-				setCount(data.count || 0)
-				setIsLiked(data.isLiked || false)
-			})
-			.catch(() => {})
-	}, [reviewId, currentUserId])
-
-	const handleLike = async () => {
-		if (!currentUserId || loading) return
-		setLoading(true)
-
-		const action = isLiked ? "unlike" : "like"
-		const newLiked = !isLiked
-		const newCount = newLiked ? count + 1 : count - 1
-
-		setIsLiked(newLiked)
-		setCount(newCount)
-
-		try {
-			const { data: { session } } = await supabase.auth.getSession()
-			if (!session) {
-				setIsLiked(!newLiked)
-				setCount(count)
-				return
-			}
-
-			const r = await fetch("/api/reviews/@me/like", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${session.access_token}`,
-				},
-				body: JSON.stringify({ reviewId, action }),
-			})
-			if (!r.ok) {
-				setIsLiked(!newLiked)
-				setCount(count)
-			}
-		} catch {
-			setIsLiked(!newLiked)
-			setCount(count)
-		} finally {
-			setLoading(false)
-		}
-	}
-
-	const label = count === 1 ? "curtida" : "curtidas"
-
-	return (
-		<>
-			<div className="flex items-center gap-2">
-				<button
-					onClick={handleLike}
-					disabled={!currentUserId || loading}
-					className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer disabled:cursor-default ${
-						isLiked
-							? "bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/15"
-							: "bg-zinc-800/50 border border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50 hover:border-zinc-600/50"
-					}`}
-				>
-					<ThumbsUp className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${isLiked ? "fill-current" : ""}`} />
-					<span className="text-sm font-medium">
-						{isLiked ? "Curtido" : "Curtir"}
-					</span>
-				</button>
-				{count > 0 && (
-					<button
-						onClick={() => setShowLikes(true)}
-						className="text-sm text-zinc-500 hover:text-zinc-300 tabular-nums cursor-pointer transition-colors hover:underline"
-					>
-						<CountUp end={count} /> {label}
-					</button>
-				)}
-			</div>
-
-			<LikeListModal
-				isOpen={showLikes}
-				reviewId={reviewId}
-				onClose={() => setShowLikes(false)}
-			/>
-		</>
-	)
-}
-
-function ReviewModalHeader({ review, user, currentUserId, onClose }) {
+function ReviewModalHeader({ review, game, user, onClose }) {
 	return (
 		<div className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
 			<div className="flex items-center gap-3.5 min-w-0">
-				<Link to={`/u/${user?.username}`} onClick={onClose} className="flex-shrink-0">
-					<AvatarWithDecoration
-						src={user.avatar}
-						alt={user.username}
-						decoration={user.avatar_decoration}
-						size="lg"
+				<Link to={`/game/${game?.slug}`} onClick={onClose} className="flex-shrink-0">
+					<img
+						src={game?.cover?.url}
+						alt={game?.name}
+						className="w-12 h-16 object-cover rounded-lg border border-zinc-700"
 					/>
 				</Link>
 				<div className="min-w-0">
 					<div className="flex items-center gap-2 flex-wrap">
-						<Link to={`/u/${user?.username}`} onClick={onClose} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors">
-							{user?.username || "Usuário"}
+						{user && (
+							<>
+								<Link to={`/u/${user.username}`} onClick={onClose} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors">
+									{user.username}
+								</Link>
+								<span className="text-zinc-600">•</span>
+							</>
+						)}
+						<Link to={`/game/${game?.slug}`} onClick={onClose} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors">
+							{game?.name || "Jogo"}
 						</Link>
-						<UserBadges user={user} size="md" clickable />
 						<StatusBadge status={review.status} />
 						<ReviewIndicators review={review} />
 					</div>
@@ -204,7 +109,6 @@ function ReviewModalHeader({ review, user, currentUserId, onClose }) {
 					</div>
 				</div>
 			</div>
-			<LikeButton reviewId={review.id} currentUserId={currentUserId} />
 		</div>
 	)
 }
@@ -213,7 +117,7 @@ function ReviewModalContent({ review }) {
 	const aspects = review.aspect_ratings || []
 
 	return (
-		<div className="flex-1 overflow-y-auto overscroll-contain p-5 md:p-7">
+		<div className="p-5 md:p-7">
 			{review.contain_spoilers && (
 				<div className="flex items-center gap-2.5 px-4 py-2.5 mb-5 bg-amber-500/10 border border-amber-500/20 rounded-lg">
 					<AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
@@ -249,7 +153,7 @@ function ReviewModalContent({ review }) {
 	)
 }
 
-export function ReviewCard({ review, user, currentUserId }) {
+export function ProfileReviewCard({ review, game, user }) {
 	const [spoilerRevealed, setSpoilerRevealed] = useState(false)
 	const [showModal, setShowModal] = useState(false)
 
@@ -263,21 +167,38 @@ export function ReviewCard({ review, user, currentUserId }) {
 		<>
 			<div className="rounded-xl p-5 sm:p-6 bg-zinc-800/50 border border-zinc-700 hover:border-zinc-600 transition-all duration-200">
 				<div className="flex items-start gap-3.5">
-					<Link to={`/u/${user?.username}`} className="flex-shrink-0">
-						<AvatarWithDecoration
-							src={user.avatar}
-							alt={user.username}
-							decoration={user.avatar_decoration}
-							size="lg"
-						/>
-					</Link>
+					{user ? (
+						<Link to={`/u/${user.username}`} className="flex-shrink-0">
+							<AvatarWithDecoration
+								src={user.avatar}
+								alt={user.username}
+								decoration={user.avatar_decoration}
+								size="lg"
+							/>
+						</Link>
+					) : (
+						<Link to={`/game/${game?.slug}`} className="flex-shrink-0">
+							<img
+								src={game?.cover?.url}
+								alt={game?.name}
+								className="w-16 h-20 object-cover rounded-lg border border-zinc-700 hover:border-zinc-500 transition-colors"
+							/>
+						</Link>
+					)}
 
 					<div className="flex-1 min-w-0">
 						<div className="flex items-center gap-2 flex-wrap">
-							<Link to={`/u/${user?.username}`} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate">
-								{user?.username || "Usuário"}
+							{user && (
+								<>
+									<Link to={`/u/${user.username}`} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors">
+										{user.username}
+									</Link>
+									<span className="text-zinc-600 text-sm">avaliou</span>
+								</>
+							)}
+							<Link to={`/game/${game?.slug}`} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate">
+								{game?.name || "Jogo"}
 							</Link>
-							<UserBadges user={user} size="md" clickable />
 							<StatusBadge status={review.status} />
 							<ReviewIndicators review={review} />
 						</div>
@@ -289,7 +210,7 @@ export function ReviewCard({ review, user, currentUserId }) {
 
 						{hasAspects && (
 							<div className="mt-3 p-3 bg-zinc-900/40 border border-zinc-700/30 rounded-lg">
-								<AspectRatingsPreview aspects={aspects} compact />
+								<AspectRatingsPreview aspects={aspects} />
 							</div>
 						)}
 
@@ -317,11 +238,20 @@ export function ReviewCard({ review, user, currentUserId }) {
 							</div>
 						)}
 
-						<div className="flex items-center justify-between mt-4">
+						<div className="mt-4">
 							<Playtime hours={review.hours_played} minutes={review.minutes_played} />
-							<LikeButton reviewId={review.id} currentUserId={currentUserId} />
 						</div>
 					</div>
+
+					{user && game?.cover?.url && (
+						<Link to={`/game/${game?.slug}`} className="flex-shrink-0 hidden sm:block">
+							<img
+								src={game.cover.url}
+								alt={game.name}
+								className="w-12 h-16 object-cover rounded-lg border border-zinc-700 hover:border-zinc-500 transition-colors"
+							/>
+						</Link>
+					)}
 				</div>
 			</div>
 
@@ -331,22 +261,27 @@ export function ReviewCard({ review, user, currentUserId }) {
 				fullscreenMobile
 				showCloseButton={false}
 				maxWidth="max-w-2xl"
+				noScroll
 				className="!bg-zinc-900 !border-zinc-700 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
 			>
-				<ReviewModalHeader review={review} user={user} currentUserId={currentUserId} onClose={() => setShowModal(false)} />
-				<ReviewModalContent review={review} />
+				<div className="flex flex-col h-full max-h-[85vh]">
+					<ReviewModalHeader review={review} game={game} user={user} onClose={() => setShowModal(false)} />
+					<div className="flex-1 min-h-0 overflow-y-auto">
+						<ReviewModalContent review={review} />
+					</div>
+				</div>
 			</Modal>
 		</>
 	)
 }
 
-export function ReviewsSkeleton() {
+function ReviewsSkeleton() {
 	return (
 		<div className="space-y-4">
 			{Array.from({ length: 3 }, (_, i) => (
 				<div key={i} className="rounded-xl p-5 sm:p-6 bg-zinc-800/50 border border-zinc-700 animate-pulse">
 					<div className="flex items-start gap-3.5">
-						<div className="w-12 h-12 rounded-full bg-zinc-700 flex-shrink-0" />
+						<div className="w-16 h-20 rounded-lg bg-zinc-700 flex-shrink-0" />
 						<div className="flex-1 space-y-3">
 							<div className="h-4 w-36 bg-zinc-700 rounded" />
 							<div className="h-8 w-28 bg-zinc-700 rounded-lg" />
@@ -362,7 +297,7 @@ export function ReviewsSkeleton() {
 	)
 }
 
-export function EmptyState() {
+function EmptyState() {
 	return (
 		<div className="rounded-xl p-10 sm:p-14 bg-zinc-800/50 border border-zinc-700 flex flex-col items-center justify-center gap-4">
 			<div className="w-14 h-14 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
@@ -370,69 +305,67 @@ export function EmptyState() {
 			</div>
 			<div className="text-center">
 				<p className="text-sm text-zinc-400 font-medium">Nenhuma review ainda</p>
-				<p className="text-sm text-zinc-600 mt-1">Seja o primeiro a avaliar este jogo!</p>
+				<p className="text-sm text-zinc-600 mt-1">As reviews escritas aparecerão aqui</p>
 			</div>
 		</div>
 	)
 }
 
-export default function GameReviews({ gameId }) {
-	const { user: currentUser } = useAuth()
+export default function ProfileReviews({ userId }) {
 	const [reviews, setReviews] = useState([])
-	const [users, setUsers] = useState({})
+	const [games, setGames] = useState({})
 	const [loading, setLoading] = useState(true)
 	const [sortBy, setSortBy] = useState("recent")
+	const [page, setPage] = useState(1)
+	const [totalPages, setTotalPages] = useState(1)
+	const [total, setTotal] = useState(0)
 
 	useEffect(() => {
-		if (!gameId) return
+		if (!userId) return
 		setLoading(true)
 
-		fetch("/api/reviews/public", {
+		fetch("/api/reviews/byUser", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ gameId, sortBy }),
+			body: JSON.stringify({ userId, sortBy, page, limit: 10 }),
 		})
-			.then((r) => r.ok ? r.json() : { reviews: [], users: {} })
+			.then((r) => r.ok ? r.json() : { reviews: [], games: {} })
 			.then((data) => {
 				setReviews(data.reviews || [])
-				setUsers(data.users || {})
+				setGames(data.games || {})
+				setTotalPages(data.totalPages || 1)
+				setTotal(data.total || 0)
 			})
 			.catch(() => {})
 			.finally(() => setLoading(false))
-	}, [gameId, sortBy])
+	}, [userId, sortBy, page])
 
-	const title = "Reviews da comunidade"
-
-	if (loading) {
-		return (
-			<div>
-				<h2 className="text-lg font-semibold text-white mb-5">{title}</h2>
-				<ReviewsSkeleton />
-			</div>
-		)
+	function handleSortChange(newSort) {
+		setSortBy(newSort)
+		setPage(1)
 	}
 
-	if (!reviews.length) {
-		return (
-			<div>
-				<h2 className="text-lg font-semibold text-white mb-5">{title}</h2>
-				<EmptyState />
-			</div>
-		)
+	function handlePageChange(newPage) {
+		setPage(newPage)
+		window.scrollTo({ top: 0, behavior: "smooth" })
 	}
+
+	if (loading) return <ReviewsSkeleton />
+
+	if (!reviews.length) return <EmptyState />
 
 	return (
 		<div>
 			<div className="flex items-center justify-between mb-5">
 				<h2 className="text-lg font-semibold text-white">
-					{title}
-					<span className="text-sm text-zinc-500 font-normal ml-2">{reviews.length}</span>
+					Reviews
+					<span className="text-sm text-zinc-500 font-normal ml-2">{total}</span>
 				</h2>
 				<div className="flex gap-1">
 					{SORT_OPTIONS.map((option) => (
 						<button
 							key={option.key}
-							onClick={() => setSortBy(option.key)}
+							onClick={() => handleSortChange(option.key)}
 							className={`px-3.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 ${
 								sortBy === option.key
 									? "bg-white text-black"
@@ -447,9 +380,23 @@ export default function GameReviews({ gameId }) {
 
 			<div className="space-y-3">
 				{reviews.map((review) => (
-					<ReviewCard key={review.id} review={review} user={users[review.user_id]} currentUserId={currentUser?.id} />
+					<ProfileReviewCard
+						key={review.id}
+						review={review}
+						game={games[review.game_id]}
+					/>
 				))}
 			</div>
+
+			{totalPages > 1 && (
+				<div className="mt-6">
+					<Pagination
+						currentPage={page}
+						totalPages={totalPages}
+						onPageChange={handlePageChange}
+					/>
+				</div>
+			)}
 		</div>
 	)
 }

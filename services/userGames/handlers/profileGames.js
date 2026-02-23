@@ -62,6 +62,7 @@ function aggregateGames(gameMap) {
     shelved: 0,
     liked: 0,
     rated: 0,
+    reviewed: 0,
   }
 
   for (const [slug, g] of Object.entries(gameMap)) {
@@ -91,7 +92,8 @@ function aggregateGames(gameMap) {
     if (g.status === "abandoned") counts.dropped++
     if (g.status === "shelved") counts.shelved++
     if (g.liked) counts.liked++
-    if (g.ratings.length > 0) counts.rated++
+    if (g.hasLog) counts.rated++
+    if (g.hasLog) counts.reviewed++
   }
 
   return { games, counts }

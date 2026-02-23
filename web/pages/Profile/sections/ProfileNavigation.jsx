@@ -1,21 +1,33 @@
-import { User, Gamepad2, ListChecks, Activity } from "lucide-react"
+import { User, Gamepad2, ListChecks, Activity, MessageSquare, Heart } from "lucide-react"
 
 const PROFILE_SECTIONS = [
 	{ id: "profile", label: "Perfil", icon: User },
 	{ id: "games", label: "Jogos", icon: Gamepad2 },
 	{ id: "lists", label: "Listas", icon: ListChecks },
+	{ id: "reviews", label: "Reviews", icon: MessageSquare },
+	{ id: "likes", label: "Curtidas", icon: Heart },
 	{ id: "activity", label: "Atividade", icon: Activity },
 ]
 
-export function ProfileNavigation({ activeSection, onSectionChange, counts, listsCount }) {
+export function ProfileNavigation({
+	activeSection,
+	onSectionChange,
+	counts,
+	listsCount,
+	reviewsCount,
+	likesCount,
+}) {
 	return (
 		<div className="mt-8 border-b border-zinc-800/80">
 			<nav className="flex gap-1 overflow-x-auto scrollbar-hide -mb-px">
 				{PROFILE_SECTIONS.map(({ id, label, icon: Icon }) => {
 					const isActive = activeSection === id
 					let badge = null
-					if (id === "games" && counts.total > 0) badge = counts.total
+
+					if (id === "games" && counts?.total > 0) badge = counts.total
 					if (id === "lists" && listsCount > 0) badge = listsCount
+					if (id === "reviews" && reviewsCount > 0) badge = reviewsCount
+					if (id === "likes" && likesCount > 0) badge = likesCount
 
 					return (
 						<button

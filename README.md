@@ -97,6 +97,7 @@ As variáveis necessárias:
 
 | Variável | Descrição | Onde obter |
 |----------|-----------|------------|
+| `STEAM_WEB_API_KEY` | Chave de API da Steam para acessar dados públicos | [Steam Web API Key](https://steamcommunity.com/dev/apikey) |
 | `TWITCH_CLIENT_ID` | Client ID da aplicacao Twitch | [Twitch Dev Console](https://dev.twitch.tv/console/apps) |
 | `TWITCH_CLIENT_SECRET` | Client Secret da aplicacao Twitch | [Twitch Dev Console](https://dev.twitch.tv/console/apps) |
 | `TWITCH_REDIRECT_URI` | URL de callback do OAuth da Twitch (ex: `https://seusite.com/api/twitch/callback`) | Definida por você e registrada em [Twitch Dev Console](https://dev.twitch.tv/console/apps) > Seu App > OAuth Redirect URLs |

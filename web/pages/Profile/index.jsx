@@ -137,6 +137,8 @@ export default function Profile() {
 					onSectionChange={handleSectionChange}
 					counts={counts}
 					listsCount={userLists.length}
+					reviewsCount={profile?.counts?.reviews || 0}
+					likesCount={(counts?.liked || 0) + (profile?.counts?.likedReviews || 0)}
 				/>
 
 				<ProfileContent

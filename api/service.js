@@ -8,6 +8,8 @@ import { reviewsHandler } from "#routers/reviews.js"
 import { listsHandler } from "#routers/lists.js"
 import { twitchHandler } from "#routers/twitch.js"
 import { nintendoHandler } from "#routers/nintendo.js"
+import { translateHandler } from "#routers/translate.js"
+import { likesHandler } from "#routers/likes.js"
 
 const SERVICES = {
 	users: usersHandler,
@@ -19,7 +21,9 @@ const SERVICES = {
 	reviews: reviewsHandler,
 	lists: listsHandler,
 	twitch: twitchHandler,
-	nintendo: nintendoHandler
+	nintendo: nintendoHandler,
+	translate: translateHandler,
+	likes: likesHandler
 }
 
 export default async function handler(req, res) {
@@ -27,6 +31,15 @@ export default async function handler(req, res) {
 
 	const fn = SERVICES[service]
 	if (!fn) return res.status(404).json({ error: "service not found" })
+
+	const allowedOrigin = process.env.BASE_URL
+	const origin = req.headers.origin || req.headers.referer
+
+	if (allowedOrigin) {
+		if (!origin || !origin.startsWith(allowedOrigin)) {
+			return res.status(403).json({ error: "forbidden" })
+		}
+	}
 
 	req.action = action
 	req.scope = scope ?? null

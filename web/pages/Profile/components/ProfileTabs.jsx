@@ -1,6 +1,6 @@
 import { forwardRef } from "react"
 import { Link } from "react-router-dom"
-import { Play, CheckCircle, Clock, Gift, Heart, Ban, Archive, Star } from "lucide-react"
+import { Play, CheckCircle, Clock, Gift, Ban, Archive, Star } from "lucide-react"
 import DragScrollRow from "@components/UI/DragScrollRow"
 import GameCard from "@components/Game/GameCard"
 import Pagination from "@components/UI/Pagination"
@@ -10,7 +10,6 @@ const TAB_ICONS = {
   played: CheckCircle,
   backlog: Clock,
   wishlist: Gift,
-  liked: Heart,
   dropped: Ban,
   shelved: Archive,
   rated: Star,
@@ -21,7 +20,6 @@ const TABS = [
   { key: "played", label: "Jogados" },
   { key: "backlog", label: "Backlog" },
   { key: "wishlist", label: "Wishlist" },
-  { key: "liked", label: "Curtidos" },
   { key: "dropped", label: "Largados" },
   { key: "shelved", label: "Engavetados" },
   { key: "rated", label: "Avaliados" },
@@ -34,7 +32,6 @@ const EMPTY_MESSAGES = {
   wishlist: { own: "Sua wishlist está vazia.", other: (u) => `${u} não tem jogos na wishlist.` },
   dropped: { own: "Você não abandonou nenhum jogo.", other: (u) => `${u} não abandonou nenhum jogo.` },
   shelved: { own: "Você não engavetou nenhum jogo.", other: (u) => `${u} não engavetou nenhum jogo.` },
-  liked: { own: "Você ainda não curtiu nenhum jogo.", other: (u) => `${u} ainda não curtiu nenhum jogo.` },
   rated: { own: "Você ainda não avaliou nenhum jogo.", other: (u) => `${u} ainda não avaliou nenhum jogo.` },
 }
 
