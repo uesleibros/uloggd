@@ -59,9 +59,6 @@ function UserResult({ item, onSelect }) {
 					<span className="group-hover:text-indigo-400 transition-colors font-medium text-sm text-white truncate block">
 						{item.username}
 					</span>
-					{item.is_moderator && (
-						<span className="text-xs text-indigo-400">Moderador</span>
-					)}
 				</div>
 			</div>
 		</li>

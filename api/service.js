@@ -7,6 +7,7 @@ import { igdbHandler } from "#routers/igdb.js"
 import { reviewsHandler } from "#routers/reviews.js"
 import { listsHandler } from "#routers/lists.js"
 import { twitchHandler } from "#routers/twitch.js"
+import { nintendoHandler } from "#routers/nintendo.js"
 
 const SERVICES = {
 	users: usersHandler,
@@ -17,7 +18,8 @@ const SERVICES = {
 	igdb: igdbHandler,
 	reviews: reviewsHandler,
 	lists: listsHandler,
-	twitch: twitchHandler
+	twitch: twitchHandler,
+	nintendo: nintendoHandler
 }
 
 export default async function handler(req, res) {

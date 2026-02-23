@@ -117,6 +117,12 @@ function useCardActions(game, enabled) {
 	return { user, state, prefetch, toggle, updating }
 }
 
+// Helper to stop both mouse and click events from reaching the Link
+function stopEvent(e) {
+	e.preventDefault()
+	e.stopPropagation()
+}
+
 function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, position, onMouseEnter, onMouseLeave }) {
 	const [showStatus, setShowStatus] = useState(false)
 	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
@@ -125,7 +131,8 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 		<div className="w-44 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden pointer-events-auto">
 			<button
 				type="button"
-				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatus(false) }}
+				onMouseDown={stopEvent}
+				onClick={(e) => { stopEvent(e); setShowStatus(false) }}
 				className="w-full flex items-center gap-1.5 px-2.5 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer border-b border-zinc-700/50"
 			>
 				<ChevronRight className="w-3 h-3 rotate-180" />
@@ -135,7 +142,8 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 				<button
 					key={s.id}
 					type="button"
-					onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onStatusSelect(s.id); setShowStatus(false) }}
+					onMouseDown={stopEvent}
+					onClick={(e) => { stopEvent(e); onStatusSelect(s.id); setShowStatus(false) }}
 					className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer transition-colors ${
 						state?.status === s.id ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
 					}`}
@@ -148,7 +156,8 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 			{state?.status && (
 				<button
 					type="button"
-					onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onStatusSelect(null); setShowStatus(false) }}
+					onMouseDown={stopEvent}
+					onClick={(e) => { stopEvent(e); onStatusSelect(null); setShowStatus(false) }}
 					className="w-full px-2.5 py-2 text-[11px] text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 cursor-pointer text-left border-t border-zinc-700/50"
 				>
 					Remover status
@@ -159,7 +168,8 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 		<div className="w-44 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden pointer-events-auto">
 			<button
 				type="button"
-				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatus(true) }}
+				onMouseDown={stopEvent}
+				onClick={(e) => { stopEvent(e); setShowStatus(true) }}
 				disabled={!!updating}
 				className="w-full flex items-center gap-2 px-2.5 py-2 text-[11px] text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer disabled:opacity-50"
 			>
@@ -172,7 +182,8 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 			<button
 				type="button"
-				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("playing", !state?.playing) }}
+				onMouseDown={stopEvent}
+				onClick={(e) => { stopEvent(e); onToggle("playing", !state?.playing) }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.playing ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -185,7 +196,8 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 			<button
 				type="button"
-				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("wishlist", !state?.wishlist) }}
+				onMouseDown={stopEvent}
+				onClick={(e) => { stopEvent(e); onToggle("wishlist", !state?.wishlist) }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.wishlist ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -200,7 +212,8 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 			<button
 				type="button"
-				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onAddToList() }}
+				onMouseDown={stopEvent}
+				onClick={(e) => { stopEvent(e); onAddToList() }}
 				disabled={!!updating}
 				className="w-full flex items-center gap-2 px-2.5 py-2 text-[11px] text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer disabled:opacity-50"
 			>
@@ -212,7 +225,8 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 			<button
 				type="button"
-				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("liked", !state?.liked) }}
+				onMouseDown={stopEvent}
+				onClick={(e) => { stopEvent(e); onToggle("liked", !state?.liked) }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.liked ? "text-red-400 bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -236,6 +250,8 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 			}}
 			onMouseEnter={onMouseEnter}
 			onMouseLeave={onMouseLeave}
+			onClick={stopEvent}
+			onMouseDown={stopEvent}
 		>
 			{menuContent}
 		</div>,
@@ -285,12 +301,16 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 	}, [])
 
 	return (
-		<div className="absolute bottom-0 inset-x-0 flex items-center gap-0.5 p-1 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg pointer-events-auto">
+		<div
+			className="absolute bottom-0 inset-x-0 flex items-center gap-0.5 p-1 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg pointer-events-auto"
+			onClick={stopEvent}
+			onMouseDown={stopEvent}
+		>
 			<button
 				type="button"
-				onMouseDown={(e) => { 
-					e.preventDefault()
-					e.stopPropagation()
+				onMouseDown={stopEvent}
+				onClick={(e) => {
+					stopEvent(e)
 					onStatusSelect(state?.status ? null : STATUS_OPTIONS[0].id)
 				}}
 				disabled={!!updating}
@@ -306,9 +326,9 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 
 			<button
 				type="button"
-				onMouseDown={(e) => { 
-					e.preventDefault()
-					e.stopPropagation()
+				onMouseDown={stopEvent}
+				onClick={(e) => {
+					stopEvent(e)
 					onToggle("backlog", !state?.backlog)
 				}}
 				disabled={!!updating}
@@ -328,7 +348,8 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 				<button
 					ref={moreButtonRef}
 					type="button"
-					onMouseDown={(e) => { e.preventDefault(); e.stopPropagation() }}
+					onMouseDown={stopEvent}
+					onClick={stopEvent}
 					className={`p-1.5 rounded cursor-pointer transition-all ${
 						showMore ? "text-white bg-white/20" : "text-zinc-400 hover:text-white hover:bg-white/10"
 					}`}

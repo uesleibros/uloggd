@@ -38,6 +38,10 @@ function formatProfile(profile, stream = null) {
 		assigned_at: ub.assigned_at,
 	})) || []
 
+	const connections = profile.user_connections?.filter(c =>
+		c.provider_username
+	) || []
+
 	return {
 		id: profile.user_id,
 		username: profile.username,
@@ -52,6 +56,8 @@ function formatProfile(profile, stream = null) {
 		last_seen: profile.last_seen,
 		status: profile.status,
 		username_changed_at: profile.username_changed_at,
+		social_links: profile.social_links || {},
+		connections,
 		badges,
 		stream,
 	}
