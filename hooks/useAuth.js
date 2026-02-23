@@ -1,6 +1,16 @@
 import { useSyncExternalStore } from "react"
 import { supabase } from "#lib/supabase"
 
+if (typeof window !== "undefined") {
+  const url = new URL(window.location.href)
+  if (url.searchParams.has("code") || url.searchParams.has("error") || url.searchParams.has("state")) {
+    url.searchParams.delete("code")
+    url.searchParams.delete("error")
+    url.searchParams.delete("state")
+    window.history.replaceState({}, document.title, url.pathname + url.search)
+  }
+}
+
 let cachedUser = null
 let loading = true
 let listeners = new Set()
@@ -18,6 +28,31 @@ function updateSnapshot() {
   if (next.user === snapshotRef.user && next.loading === snapshotRef.loading) return
   snapshotRef = next
   notify()
+}
+
+async function safeGetSession() {
+  try {
+    const { data, error } = await Promise.race([
+      supabase.auth.getSession(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 2000))
+    ])
+    return { data, error }
+  } catch (err) {
+    if (typeof window !== "undefined") {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && key.startsWith("sb-") && key.endsWith("-auth-token")) {
+          try {
+            const fallbackSession = JSON.parse(localStorage.getItem(key))
+            if (fallbackSession?.access_token) {
+              return { data: { session: fallbackSession }, error: null }
+            }
+          } catch (e) {}
+        }
+      }
+    }
+    return { data: { session: null }, error: err }
+  }
 }
 
 async function fetchProfile(session) {
@@ -46,9 +81,9 @@ function buildUser(session, profile = null) {
   const { user } = session
   return {
     id: user.id,
-    discordId: user.user_metadata.provider_id,
-    username: user.user_metadata.full_name,
-    avatar: user.user_metadata.avatar_url,
+    discordId: user.user_metadata?.provider_id,
+    username: user.user_metadata?.full_name,
+    avatar: user.user_metadata?.avatar_url,
     email: user.email,
     ...profile,
   }
@@ -70,15 +105,12 @@ async function loadUser(session) {
   }
 
   const myId = ++currentLoadId
-
   loading = true
   updateSnapshot()
 
   try {
     const profile = await fetchProfile(session)
-
     if (myId !== currentLoadId) return
-
     cachedUser = buildUser(session, profile)
   } catch {
     if (myId !== currentLoadId) return
@@ -101,9 +133,7 @@ function reset() {
 
 export function updateUser(partial) {
   if (!cachedUser) return
-  const hasChanges = Object.keys(partial).some(
-    (key) => cachedUser[key] !== partial[key]
-  )
+  const hasChanges = Object.keys(partial).some((key) => cachedUser[key] !== partial[key])
   if (!hasChanges) return
   cachedUser = { ...cachedUser, ...partial }
   updateSnapshot()
@@ -111,7 +141,7 @@ export function updateUser(partial) {
 
 export async function refreshUser() {
   if (!cachedUser) return
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { session } } = await safeGetSession()
   if (!session?.access_token) return
   const profile = await fetchProfile(session)
   if (profile) {
@@ -125,9 +155,7 @@ supabase.auth.onAuthStateChange((event, session) => {
     reset()
     return
   }
-
   if (event === "INITIAL_SESSION") return
-
   if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
     if (cachedUser?.id !== session.user.id) {
       initialized = false
@@ -136,7 +164,7 @@ supabase.auth.onAuthStateChange((event, session) => {
   }
 })
 
-supabase.auth.getSession().then(({ data: { session } }) => {
+safeGetSession().then(({ data: { session } }) => {
   return session ? loadUser(session) : reset()
 }).catch(() => reset())
 
