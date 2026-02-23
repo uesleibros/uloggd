@@ -88,7 +88,7 @@ img.emoji {
 }
 
 ::selection {
-  background: rgba(99, 102, 241, 0.25); /* indigo suave */
+  background: rgba(99, 102, 241, 0.25);
   color: #ffffff;
 }
 

@@ -1,4 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
+import { decode } from "#utils/shortId.js"
 
 export async function handleGet(req, res) {
   const { listId, userId } = req.body
@@ -13,7 +14,7 @@ export async function handleGet(req, res) {
           list_items ( id, game_id, game_slug, position, note, added_at ),
           owner:user_id ( id, username, avatar, avatar_decoration )
         `)
-        .eq("id", listId)
+        .eq("id", decode(listId))
         .single()
 
       if (error) throw error

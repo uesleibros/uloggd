@@ -35,6 +35,7 @@ export default function Modal({
 	closeOnOverlay = true,
 	fullscreenMobile = false,
 	showMobileGrip = false,
+	noScroll = false,
 	raw = false,
 	zIndex = 9999,
 	className = "",
@@ -248,9 +249,9 @@ export default function Modal({
 						)
 					)}
 
-					<div className="flex-1 overflow-y-auto min-h-0">
-						{children}
-					</div>
+					<div className={`flex-1 min-h-0 ${noScroll ? "overflow-hidden flex flex-col" : "overflow-y-auto"}`}>
+				    {children}
+				  </div>
 				</div>
 			</div>
 		</>,

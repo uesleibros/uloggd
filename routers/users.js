@@ -12,24 +12,26 @@ import { handlePronoun } from "#services/users/handlers/me/pronoun.js"
 import { handleHeartbeat } from "#services/users/handlers/me/heartbeat.js"
 import { handleUsername } from "#services/users/handlers/me/username.js"
 import { handleBatch } from "#services/users/handlers/batch.js"
+import { handleSearch } from "#services/users/handlers/search.js"
 import { getUser } from "#lib/auth.js"
 import { supabase } from "#lib/supabase-ssr.js"
 
 const ACTIONS = {
-  profile:      { handler: handleProfile,      scopes: null,       auth: false    },
-  username:     { handler: handleUsername,     scopes: ["@me"],    auth: true     },
-  bio:          { handler: handleBio,          scopes: ["@me"],    auth: true     },
-  delete:       { handler: handleDelete,       scopes: ["@me"],    auth: true     },
-  follow:       { handler: handleFollow,       scopes: null,       auth: true     },
-  followStatus: { handler: handleFollowStatus, scopes: null,       auth: false    },
-  followers:    { handler: handleFollowers,    scopes: null,       auth: false    },
-  banner:       { handler: handleBanner,       scopes: ["@me"],    auth: true     },
-  avatar:       { handler: handleAvatar,       scopes: ["@me"],    auth: true     },
-  thinking:     { handler: handleThinking,     scopes: ["@me"],    auth: true     },
-  decoration:   { handler: handleDecoration,   scopes: ["@me"],    auth: true     },
-  pronoun:      { handler: handlePronoun,      scopes: ["@me"],    auth: true     },
+  profile:      { handler: handleProfile,      scopes: null,       auth: false      },
+  username:     { handler: handleUsername,     scopes: ["@me"],    auth: true       },
+  bio:          { handler: handleBio,          scopes: ["@me"],    auth: true       },
+  delete:       { handler: handleDelete,       scopes: ["@me"],    auth: true       },
+  follow:       { handler: handleFollow,       scopes: null,       auth: true       },
+  followStatus: { handler: handleFollowStatus, scopes: null,       auth: false      },
+  followers:    { handler: handleFollowers,    scopes: null,       auth: false      },
+  banner:       { handler: handleBanner,       scopes: ["@me"],    auth: true       },
+  avatar:       { handler: handleAvatar,       scopes: ["@me"],    auth: true       },
+  thinking:     { handler: handleThinking,     scopes: ["@me"],    auth: true       },
+  decoration:   { handler: handleDecoration,   scopes: ["@me"],    auth: true       },
+  pronoun:      { handler: handlePronoun,      scopes: ["@me"],    auth: true       },
   heartbeat:    { handler: handleHeartbeat,    scopes: ["@me"],    auth: "flexible" },
-  batch:        { handler: handleBatch,        scopes: null,       auth: false    },
+  batch:        { handler: handleBatch,        scopes: null,       auth: false      },
+  search:       { handler: handleSearch,       scopes: null,       auth: false      }
 }
 
 export async function usersHandler(req, res) {

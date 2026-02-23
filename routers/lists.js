@@ -5,16 +5,18 @@ import { handleGet } from "#services/lists/handlers/get.js"
 import { handleAddItem } from "#services/lists/handlers/me/addItem.js"
 import { handleRemoveItem } from "#services/lists/handlers/me/removeItem.js"
 import { handleReorder } from "#services/lists/handlers/me/reorder.js"
+import { handleSearch } from "#services/lists/handlers/search.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
-  create:     { handler: handleCreate,     scopes: ["@me"], auth: true },
-  delete:     { handler: handleDelete,     scopes: ["@me"], auth: true },
-  update:     { handler: handleUpdate,     scopes: ["@me"], auth: true },
+  create:     { handler: handleCreate,     scopes: ["@me"], auth: true  },
+  delete:     { handler: handleDelete,     scopes: ["@me"], auth: true  },
+  update:     { handler: handleUpdate,     scopes: ["@me"], auth: true  },
   get:        { handler: handleGet,        scopes: null,    auth: false },
-  addItem:    { handler: handleAddItem,    scopes: ["@me"], auth: true },
-  removeItem: { handler: handleRemoveItem, scopes: ["@me"], auth: true },
-  reorder:    { handler: handleReorder,    scopes: ["@me"], auth: true },
+  addItem:    { handler: handleAddItem,    scopes: ["@me"], auth: true  },
+  removeItem: { handler: handleRemoveItem, scopes: ["@me"], auth: true  },
+  reorder:    { handler: handleReorder,    scopes: ["@me"], auth: true  },
+  search:     { handler: handleSearch,     scopes: null,    auth: false },
 }
 
 export async function listsHandler(req, res) {

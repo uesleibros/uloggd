@@ -21,6 +21,7 @@ import {
 	Link as LinkIcon, Check, GripVertical, ArrowUpDown,
 	Hash
 } from "lucide-react"
+import { encode } from "#utils/shortId.js"
 
 const ITEMS_PER_PAGE = 24
 
@@ -313,7 +314,7 @@ export default function ListPage() {
 				</div>
 
 				<div className="hidden sm:flex items-center gap-2">
-					<ShareButton listId={list.id} />
+					<ShareButton listId={encode(list.id)} />
 
 					{isOwner && (
 						<>

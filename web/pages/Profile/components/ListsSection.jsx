@@ -10,6 +10,7 @@ import {
   List, Plus, Lock, Globe, ChevronRight,
   MoreHorizontal, Pencil, Trash2, Gamepad2,
 } from "lucide-react"
+import { encode } from "#utils/shortId.js"
 
 const LISTS_PER_PAGE = 12
 
@@ -139,7 +140,7 @@ function ListCard({ list, isOwnProfile, onEdit, onDelete }) {
 
   return (
     <div className="group relative rounded-xl overflow-visible">
-      <Link to={`/list/${list.id}`} className="block rounded-xl overflow-hidden bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 transition-all duration-200">
+      <Link to={`/list/${encode(list.id)}`} className="block rounded-xl overflow-hidden bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 transition-all duration-200">
         <div className="relative h-20 sm:h-24 overflow-hidden">
           <CoverStrip slugs={list.game_slugs || []} />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/30 to-zinc-900/10" />

@@ -72,7 +72,7 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
             {allMedia.slice(0, 9).map((img, i) => (
               <img
                 key={img.image_id}
-                src={`https:${img.url}`}
+                src={img.url}
                 alt=""
                 onClick={() => onOpenLightbox(allMedia, i)}
                 className="rounded-lg w-full object-cover aspect-video bg-zinc-800 cursor-pointer hover:brightness-75 transition-all"

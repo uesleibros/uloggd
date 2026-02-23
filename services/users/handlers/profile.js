@@ -1,5 +1,6 @@
 import { supabase } from "#lib/supabase-ssr.js"
 import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
+import { decode } from "#utils/shortId.js"
 
 const PROFILE_SELECT = `
 	username, banner, bio, pronoun, thinking, avatar, avatar_decoration,
@@ -11,7 +12,7 @@ async function getProfileByUserId(userId) {
 	const { data } = await supabase
 		.from("users")
 		.select(PROFILE_SELECT)
-		.eq("user_id", userId)
+		.eq("user_id", decode(userId))
 		.single()
 
 	return data

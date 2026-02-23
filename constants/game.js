@@ -57,3 +57,8 @@ export const MAX_ASPECT_LABEL = 30
 export const MAX_ASPECT_REVIEW = 500
 export const MAX_REVIEW_LENGTH = 10000
 export const MAX_TITLE_LENGTH = 24
+
+export const SORT_OPTIONS = [
+  { key: "recent", label: "Recentes" },
+  { key: "rating", label: "Nota" },
+]

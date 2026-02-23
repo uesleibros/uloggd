@@ -128,26 +128,46 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
 
   const scrollToSection = useCallback((id) => {
     const el = sectionRefs.current[id]
-    if (!el || !contentRef.current) return
+    const container = contentRef.current
+    if (!el || !container) return
+    
     isScrollingTo.current = true
     setActiveSection(id)
-    const container = contentRef.current
-    container.scrollTo({ top: el.offsetTop - container.offsetTop - 8, behavior: "smooth" })
+    
+    const containerRect = container.getBoundingClientRect()
+    const elRect = el.getBoundingClientRect()
+    const offset = elRect.top - containerRect.top + container.scrollTop - 16
+    
+    container.scrollTo({ 
+      top: offset, 
+      behavior: "smooth" 
+    })
+    
     setTimeout(() => { isScrollingTo.current = false }, 500)
   }, [])
 
   const handleScroll = useCallback(() => {
     if (isScrollingTo.current || !contentRef.current || search.trim()) return
+    
     const container = contentRef.current
-    const scrollTop = container.scrollTop + 24
+    const containerRect = container.getBoundingClientRect()
 
     let current = visibleSections[0]?.id
+    
     for (const section of visibleSections) {
       const el = sectionRefs.current[section.id]
-      if (el && el.offsetTop - container.offsetTop <= scrollTop) current = section.id
+      if (!el) continue
+      
+      const elRect = el.getBoundingClientRect()
+      if (elRect.top <= containerRect.top + 50) {
+        current = section.id
+      }
     }
-    if (current) setActiveSection(current)
-  }, [visibleSections, search])
+    
+    if (current && current !== activeSection) {
+      setActiveSection(current)
+    }
+  }, [visibleSections, search, activeSection])
 
   const handleKeyDown = useCallback((e) => {
     if (!search.trim() || filtered.length === 0) return
@@ -178,6 +198,7 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
   return (
     <Modal
       isOpen={isOpen}
+      noScroll={true}
       onClose={onClose}
       title={<span className="flex items-center gap-2"><Info className="w-5 h-5 text-indigo-400" />Guia de Formatação</span>}
       maxWidth="max-w-3xl"
