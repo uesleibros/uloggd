@@ -1,12 +1,9 @@
 import { TWITCH_CONFIG } from "./config.js"
 
-export function getRedirectUri(req) {
-	const isLocal = process.env.NODE_ENV === "development" || req.headers.host?.includes("localhost")
-	if (isLocal) {
-		const port = req.headers.host?.split(":")[1] || "3000"
-		return `http://localhost:${port}/api/twitch/callback`
-	}
-	return "https://uloggd.vercel.app"
+const REDIRECT_URI = "https://uloggd.vercel.app/api/twitch/callback"
+
+export function getRedirectUri() {
+	return REDIRECT_URI
 }
 
 export function encodeState(data) {
@@ -67,14 +64,4 @@ export async function fetchTwitchUser(accessToken) {
 
 	const data = await response.json()
 	return data.data[0] || null
-}
-
-export function formatTwitchUser(twitchUser) {
-	return {
-		id: twitchUser.id,
-		username: twitchUser.login,
-		displayName: twitchUser.display_name,
-		avatar: twitchUser.profile_image_url,
-		email: twitchUser.email
-	}
 }
