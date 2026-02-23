@@ -123,7 +123,7 @@ const markdownComponents = {
   
   center: ({ children }) => (
     <div className="
-      flex flex-col items-center text-center w-full break-words
+      flex flex-col items-center text-center w-full break-all
       [&_p]:w-full [&_p]:flex [&_p]:justify-center
       [&_img]:mx-auto
       [&_table]:mx-auto
