@@ -1,17 +1,19 @@
 import { supabase } from "#lib/supabase-ssr.js"
+import twitchClient from "#lib/twitch.js"
 import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
 import { decode } from "#utils/shortId.js"
 
 const PROFILE_SELECT = `
 	username, banner, bio, pronoun, thinking, avatar, avatar_decoration,
 	created_at, is_moderator, last_seen, status, username_changed_at,
-	user_badges ( assigned_at, badge:badges ( id, title, description, icon_url, color ) )
+	user_badges ( assigned_at, badge:badges ( id, title, description, icon_url, color ) ),
+	user_connections ( provider, provider_username )
 `
 
 async function getProfileByUserId(userId) {
 	const { data } = await supabase
 		.from("users")
-		.select(PROFILE_SELECT)
+		.select(`user_id, ${PROFILE_SELECT}`)
 		.eq("user_id", decode(userId))
 		.single()
 
@@ -28,7 +30,7 @@ async function getProfileByUsername(username) {
 	return data
 }
 
-function formatProfile(profile) {
+function formatProfile(profile, stream = null) {
 	if (!profile) return null
 
 	const badges = profile.user_badges?.map(ub => ({
@@ -51,6 +53,7 @@ function formatProfile(profile) {
 		status: profile.status,
 		username_changed_at: profile.username_changed_at,
 		badges,
+		stream,
 	}
 }
 
@@ -65,7 +68,25 @@ export async function handleProfile(req, res) {
 
 		if (!profile) return res.status(404).json({ error: "user not found" })
 
-		res.json(formatProfile(profile))
+		let stream = null
+		const twitchConnection = profile.user_connections?.find(c => c.provider === "twitch")
+
+		if (twitchConnection?.provider_username) {
+			try {
+				const streamData = await twitchClient.getStream(twitchConnection.provider_username)
+				if (streamData) {
+					stream = {
+						twitch_username: twitchConnection.provider_username,
+						title: streamData.title,
+						game: streamData.game_name,
+						viewers: streamData.viewer_count,
+						thumbnail: streamData.thumbnail_url.replace("{width}", "320").replace("{height}", "180")
+					}
+				}
+			} catch {}
+		}
+
+		res.json(formatProfile(profile, stream))
 	} catch (e) {
 		console.error(e)
 		res.status(500).json({ error: "fail" })
