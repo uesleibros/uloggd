@@ -114,7 +114,7 @@ function useCardActions(game, enabled) {
 	return { user, state, prefetch, toggle, updating }
 }
 
-function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, position, onClose }) {
+function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, position, onMouseEnter, onMouseLeave }) {
 	const [showStatus, setShowStatus] = useState(false)
 	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
 
@@ -122,7 +122,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 		<div className="w-44 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden">
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatus(false) }}
+				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatus(false) }}
 				className="w-full flex items-center gap-1.5 px-2.5 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer border-b border-zinc-700/50"
 			>
 				<ChevronRight className="w-3 h-3 rotate-180" />
@@ -132,7 +132,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 				<button
 					key={s.id}
 					type="button"
-					onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStatusSelect(s.id); setShowStatus(false); onClose() }}
+					onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onStatusSelect(s.id); setShowStatus(false) }}
 					className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer transition-colors ${
 						state?.status === s.id ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
 					}`}
@@ -145,7 +145,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 			{state?.status && (
 				<button
 					type="button"
-					onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStatusSelect(null); setShowStatus(false); onClose() }}
+					onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onStatusSelect(null); setShowStatus(false) }}
 					className="w-full px-2.5 py-2 text-[11px] text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 cursor-pointer text-left border-t border-zinc-700/50"
 				>
 					Remover status
@@ -156,7 +156,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 		<div className="w-44 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden">
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatus(true) }}
+				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatus(true) }}
 				disabled={!!updating}
 				className="w-full flex items-center gap-2 px-2.5 py-2 text-[11px] text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer disabled:opacity-50"
 			>
@@ -169,7 +169,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("playing"); onClose() }}
+				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("playing") }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.playing ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -182,7 +182,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("wishlist"); onClose() }}
+				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("wishlist") }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.wishlist ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -197,7 +197,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToList(); onClose() }}
+				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onAddToList() }}
 				disabled={!!updating}
 				className="w-full flex items-center gap-2 px-2.5 py-2 text-[11px] text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer disabled:opacity-50"
 			>
@@ -209,7 +209,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("liked"); onClose() }}
+				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("liked") }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.liked ? "text-red-400 bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -229,8 +229,10 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 				top: position.top,
 				left: position.left,
 				zIndex: 9999,
+				paddingBottom: 16,
 			}}
-			onMouseLeave={onClose}
+			onMouseEnter={onMouseEnter}
+			onMouseLeave={onMouseLeave}
 		>
 			{menuContent}
 		</div>,
@@ -242,31 +244,45 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 	const [showMore, setShowMore] = useState(false)
 	const [menuPos, setMenuPos] = useState(null)
 	const moreButtonRef = useRef(null)
+	const closeTimeoutRef = useRef(null)
 	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
 
 	useEffect(() => {
 		if (showMore && moreButtonRef.current) {
 			const rect = moreButtonRef.current.getBoundingClientRect()
+			const menuHeight = 250
 			setMenuPos({
-				top: rect.top - 8,
+				top: rect.top - menuHeight,
 				left: rect.right - 176,
 			})
 		}
 	}, [showMore])
 
-	const handleMouseEnter = () => {
-		setShowMore(true)
-	}
+	useEffect(() => {
+		return () => {
+			if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current)
+		}
+	}, [])
 
-	const handleMouseLeave = () => {
-		setShowMore(false)
-	}
+	const handleMouseEnter = useCallback(() => {
+		if (closeTimeoutRef.current) {
+			clearTimeout(closeTimeoutRef.current)
+			closeTimeoutRef.current = null
+		}
+		setShowMore(true)
+	}, [])
+
+	const handleMouseLeave = useCallback(() => {
+		closeTimeoutRef.current = setTimeout(() => {
+			setShowMore(false)
+		}, 150)
+	}, [])
 
 	return (
 		<div className="absolute bottom-0 inset-x-0 flex items-center gap-0.5 p-1 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg pointer-events-auto">
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("status", state?.status ? null : "completed") }}
+				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("status", state?.status ? null : "completed") }}
 				disabled={!!updating}
 				title="Jogado"
 				className={`p-1.5 rounded cursor-pointer transition-all disabled:opacity-50 ${
@@ -280,7 +296,7 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("backlog") }}
+				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("backlog") }}
 				disabled={!!updating}
 				title="Backlog"
 				className={`p-1.5 rounded cursor-pointer transition-all disabled:opacity-50 ${
@@ -298,7 +314,7 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 				<button
 					ref={moreButtonRef}
 					type="button"
-					onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+					onMouseDown={(e) => { e.preventDefault(); e.stopPropagation() }}
 					className={`p-1.5 rounded cursor-pointer transition-all ${
 						showMore ? "text-white bg-white/20" : "text-zinc-400 hover:text-white hover:bg-white/10"
 					}`}
@@ -314,7 +330,8 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 						onAddToList={onAddToList}
 						updating={updating}
 						position={menuPos}
-						onClose={() => setShowMore(false)}
+						onMouseEnter={handleMouseEnter}
+						onMouseLeave={handleMouseLeave}
 					/>
 				)}
 			</div>
