@@ -52,7 +52,7 @@ function buildUser(session, profile = null) {
   }
 }
 
-async function loadUser(session) {
+async function loadUser(session, force = false) {
   if (!session?.user) {
     cachedUser = null
     loading = false
@@ -61,7 +61,7 @@ async function loadUser(session) {
     return
   }
 
-  if (cachedUser?.id === session.user.id && initialized) {
+  if (!force && cachedUser?.id === session.user.id && initialized) {
     loading = false
     updateSnapshot()
     return
@@ -122,7 +122,7 @@ async function refreshUser() {
 }
 
 supabase.auth.getSession().then(({ data: { session } }) => {
-  return session ? loadUser(session) : reset()
+  return session ? loadUser(session, true) : reset()
 }).catch(() => reset())
 
 supabase.auth.onAuthStateChange((event, session) => {
@@ -134,29 +134,9 @@ supabase.auth.onAuthStateChange((event, session) => {
   if (event === "INITIAL_SESSION") return
 
   if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
-    if (cachedUser?.id !== session.user.id) {
-      initialized = false
-      loadUser(session)
-    }
+    loadUser(session, true)
   }
 })
-
-if (typeof window !== "undefined") {
-  window.addEventListener("pageshow", (event) => {
-    if (event.persisted) {
-      loadingPromise = null
-      initialized = false
-
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          loadUser(session)
-        } else {
-          reset()
-        }
-      }).catch(() => {})
-    }
-  })
-}
 
 function subscribe(callback) {
   listeners.add(callback)
