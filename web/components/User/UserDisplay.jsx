@@ -22,6 +22,7 @@ export default function UserDisplay({
         decoration={user.avatar_decoration}
         size={size}
         status={showStatus ? getStatus(user.last_seen, user.status) : null}
+        isStreaming={showStatus ? !!user.stream : null}
       />
       {showUsername && (
         <div className="flex items-center gap-1.5 min-w-0">
@@ -46,4 +47,5 @@ export default function UserDisplay({
   }
 
   return content
+
 }
