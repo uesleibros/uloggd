@@ -62,7 +62,7 @@ export async function handleGame(req, res) {
     res.json({
       ...g,
       ageRatings, developers, publishers, websites, platforms,
-      cover: g.cover?.url ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_original") } : null,
+      cover: g.cover?.url ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_1080p") } : null,
       screenshots: g.screenshots?.map(s => ({ ...s, url: s.url.replace("t_thumb", "t_original") })) || [],
       artworks: g.artworks?.map(a => ({ ...a, url: a.url.replace("t_thumb", "t_original") })) || [],
       similar_games: mapCovers(g.similar_games),
@@ -77,3 +77,4 @@ export async function handleGame(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
