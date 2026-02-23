@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react"
+import { useState, useCallback, useRef, useEffect, useLayoutEffect } from "react"
 import { createPortal } from "react-dom"
 import { Link } from "react-router-dom"
 import { Star, Play, Clock, Gift, Heart, List, ChevronRight, Check, MoreHorizontal } from "lucide-react"
@@ -119,7 +119,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
 
 	const menuContent = showStatus ? (
-		<div className="w-44 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden">
+		<div className="w-44 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden pointer-events-auto">
 			<button
 				type="button"
 				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatus(false) }}
@@ -153,7 +153,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 			)}
 		</div>
 	) : (
-		<div className="w-44 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden">
+		<div className="w-44 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden pointer-events-auto">
 			<button
 				type="button"
 				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatus(true) }}
@@ -226,10 +226,10 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 		<div
 			style={{
 				position: "fixed",
-				top: position.top,
 				left: position.left,
+				bottom: position.bottom,
 				zIndex: 9999,
-				paddingBottom: 16,
+				paddingBottom: 8,
 			}}
 			onMouseEnter={onMouseEnter}
 			onMouseLeave={onMouseLeave}
@@ -240,7 +240,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 	)
 }
 
-function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating }) {
+function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onMenuOpen }) {
 	const [showMore, setShowMore] = useState(false)
 	const [menuPos, setMenuPos] = useState(null)
 	const moreButtonRef = useRef(null)
@@ -248,11 +248,14 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
 
 	useEffect(() => {
+		onMenuOpen?.(showMore)
+	}, [showMore, onMenuOpen])
+
+	useEffect(() => {
 		if (showMore && moreButtonRef.current) {
 			const rect = moreButtonRef.current.getBoundingClientRect()
-			const menuHeight = 250
 			setMenuPos({
-				top: rect.top - menuHeight,
+				bottom: window.innerHeight - rect.top,
 				left: rect.right - 176,
 			})
 		}
@@ -275,7 +278,7 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 	const handleMouseLeave = useCallback(() => {
 		closeTimeoutRef.current = setTimeout(() => {
 			setShowMore(false)
-		}, 150)
+		}, 100)
 	}, [])
 
 	return (
@@ -352,6 +355,7 @@ export default function GameCard({
 	const { getRating } = useMyLibrary()
 	const { user, state: actions, prefetch, toggle, updating } = useCardActions(game, showQuickActions)
 	const [showListModal, setShowListModal] = useState(false)
+	const [isMenuOpen, setIsMenuOpen] = useState(false)
 
 	const rating = propRating ?? getRating(game.slug)
 	const hasRating = showRating && rating != null && rating > 0
@@ -383,13 +387,14 @@ export default function GameCard({
 			</div>
 
 			{canShowActions && actions && (
-				<div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+				<div className={`transition-opacity duration-200 ${isMenuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
 					<BottomBar
 						state={actions}
 						onToggle={toggle}
 						onStatusSelect={(val) => toggle("status", val)}
 						onAddToList={() => setShowListModal(true)}
 						updating={updating}
+						onMenuOpen={setIsMenuOpen}
 					/>
 				</div>
 			)}
