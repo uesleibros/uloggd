@@ -38,6 +38,7 @@ export function ProfileHeader({
             alt={profile.username}
             decoration={profile.avatar_decoration}
             status={getStatus(profile.last_seen, profile.status)}
+            isStreaming={!!profile.stream}
             size="profile"
           />
           <div
