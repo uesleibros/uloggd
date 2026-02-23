@@ -23,6 +23,6 @@ export function MarkdownGameCard({ slug, variant = "default", isFavorite = false
   }
 
   if (variant === "mini") return <MiniCard game={game} rating={authorRating} />
-  if (variant === "cover") return <GameCard game={game} isFavorite={isFavorite} userRating={authorRating} showRating />
+  if (variant === "cover") return <GameCard showQuickActions={false} game={game} isFavorite={isFavorite} userRating={authorRating} showRating />
   return <DefaultCard game={game} rating={authorRating} />
 }
