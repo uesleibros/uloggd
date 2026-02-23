@@ -66,7 +66,7 @@ export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) 
               icon={<User className="w-4 h-4" />}
             />
             <DropdownItem
-              onClick={() => { onNavigate?.(); setSettingsOpen(true) }}
+              onClick={() => setSettingsOpen(true)}
               label="Configurações"
               icon={<Settings className="w-4 h-4" />}
             />
@@ -81,7 +81,13 @@ export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) 
             </div>
           </div>
 
-          <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+          <SettingsModal
+            isOpen={settingsOpen}
+            onClose={() => {
+              setSettingsOpen(false)
+              onNavigate?.()
+            }}
+          />
         </>
       )
     }
