@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 export default function Footer() {
   return (
     <footer className="mt-20 border-t border-zinc-800/50">
-      <div className="mx-auto px-4 py-8" style={{ maxWidth: 1180 }}>
+      <div className="mx-auto px-4 py-8" style={{ maxWidth: 1080 }}>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
             <div className="flex items-end gap-2">
@@ -44,5 +44,4 @@ export default function Footer() {
       </div>
     </footer>
   )
-
 }
