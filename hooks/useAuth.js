@@ -64,8 +64,9 @@ async function loadUser(session) {
   try {
     const profile = await fetchProfile(session)
     cachedUser = buildUser(session, profile)
-  } catch {
-    cachedUser = buildUser(session)
+  } catch (err) {
+    console.error("Profile load failed", err)
+    cachedUser = null
   } finally {
     loading = false
     updateSnapshot()
@@ -89,27 +90,32 @@ async function refreshUser() {
   if (session) await loadUser(session)
 }
 
-async function init() {
+(async () => {
   try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session) {
-      await loadUser(session)
+    const { data, error } = await supabase.auth.getSession()
+    
+    if (error) {
+      console.error("Session error", error)
+      await supabase.auth.signOut()
+      reset()
+      return
+    }
+
+    if (data?.session) {
+      await loadUser(data.session)
     } else {
       reset()
     }
-  } catch {
+  } catch (err) {
+    console.error("Init error", err)
     reset()
   }
-}
-
-init()
+})()
 
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === "SIGNED_OUT") {
     reset()
-    return
-  }
-  if (event === "SIGNED_IN" && session) {
+  } else if (event === "SIGNED_IN" && session) {
     loadUser(session)
   }
 })
