@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { createPortal } from "react-dom"
 import { useNavigate } from "react-router-dom"
 import { Search, Gamepad2, Users, ListMusic, ArrowRight } from "lucide-react"
 import PlatformIcons from "@components/Game/PlatformIcons"
@@ -105,7 +106,7 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
 
 	if (loading) return <LoadingSpinner />
 
-	if (results.length === 0) {
+	if (!results || results.length === 0) {
 		return (
 			<div className="px-3 py-6 text-sm text-zinc-500 text-center">
 				Nenhum resultado encontrado
@@ -137,8 +138,13 @@ function TabBar({ activeTab, onChange, counts }) {
 			{TABS.map(({ id, label, icon: Icon }) => (
 				<button
 					key={id}
-					onMouseDown={(e) => { e.preventDefault(); onChange(id) }}
-					className={`flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
+					type="button"
+					onMouseDown={(e) => {
+						e.preventDefault()
+						e.stopPropagation()
+						onChange(id)
+					}}
+					className={`flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
 						activeTab === id
 							? "text-indigo-400 border-b-2 border-indigo-400 -mb-px"
 							: "text-zinc-500 hover:text-zinc-300"
@@ -193,8 +199,32 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 	const [loading, setLoading] = useState(false)
 	const [focused, setFocused] = useState(false)
 	const [activeTab, setActiveTab] = useState("games")
+	const [dropdownPos, setDropdownPos] = useState(null)
 	const timeoutRef = useRef(null)
+	const blurTimeoutRef = useRef(null)
+	const containerRef = useRef(null)
 	const navigate = useNavigate()
+
+	const updateDropdownPos = useCallback(() => {
+		if (variant !== "mobile" || !containerRef.current) return
+		const rect = containerRef.current.getBoundingClientRect()
+		setDropdownPos({
+			top: rect.bottom + 6,
+			left: rect.left,
+			width: rect.width,
+		})
+	}, [variant])
+
+	useEffect(() => {
+		if (!open || variant !== "mobile") return
+		updateDropdownPos()
+		window.addEventListener("scroll", updateDropdownPos, true)
+		window.addEventListener("resize", updateDropdownPos)
+		return () => {
+			window.removeEventListener("scroll", updateDropdownPos, true)
+			window.removeEventListener("resize", updateDropdownPos)
+		}
+	}, [open, variant, updateDropdownPos])
 
 	useEffect(() => {
 		if (!query.trim()) {
@@ -243,9 +273,17 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 		return () => clearTimeout(timeoutRef.current)
 	}, [query])
 
+	useEffect(() => {
+		return () => {
+			clearTimeout(timeoutRef.current)
+			clearTimeout(blurTimeoutRef.current)
+		}
+	}, [])
+
 	function handleNavigate(path) {
 		setQuery("")
 		setOpen(false)
+		clearTimeout(blurTimeoutRef.current)
 		onSelect?.()
 		navigate(path)
 	}
@@ -263,12 +301,14 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 
 	function handleFocus() {
 		setFocused(true)
+		clearTimeout(blurTimeoutRef.current)
 		if (query) setOpen(true)
 	}
 
 	function handleBlur() {
 		setFocused(false)
-		setTimeout(() => setOpen(false), 200)
+		clearTimeout(blurTimeoutRef.current)
+		blurTimeoutRef.current = setTimeout(() => setOpen(false), 200)
 	}
 
 	const counts = {
@@ -278,10 +318,37 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 	}
 
 	const hasResults = query.trim() && (loading || counts.games > 0 || counts.users > 0 || counts.lists > 0)
-	const resultsClass = variant === "desktop" ? "right-0 w-96" : "left-0 right-0"
+
+	const dropdownContent = open && hasResults ? (
+		<div
+			onMouseDown={(e) => e.preventDefault()}
+			className={`rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl overflow-hidden ${
+				variant === "desktop" ? "absolute top-full right-0 w-96 mt-1.5 z-50" : ""
+			}`}
+			style={variant === "mobile" && dropdownPos ? {
+				position: "fixed",
+				top: dropdownPos.top,
+				left: dropdownPos.left,
+				width: dropdownPos.width,
+				zIndex: 9999,
+			} : undefined}
+		>
+			<TabBar activeTab={activeTab} onChange={setActiveTab} counts={counts} />
+			<div className="max-h-80 overflow-y-auto">
+				<SearchResults
+					results={results[activeTab] || []}
+					loading={loading}
+					activeTab={activeTab}
+					onSelect={handleNavigate}
+					onViewAll={handleViewAll}
+					query={query}
+				/>
+			</div>
+		</div>
+	) : null
 
 	return (
-		<div className={`relative ${className}`}>
+		<div ref={containerRef} className={`relative ${className}`}>
 			<SearchInput
 				query={query}
 				onChange={(e) => setQuery(e.target.value)}
@@ -291,22 +358,12 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 				focused={focused}
 				variant={variant}
 			/>
-
-			{open && hasResults && (
-				<div className={`absolute top-full z-50 mt-1.5 rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl overflow-hidden ${resultsClass}`}>
-					<TabBar activeTab={activeTab} onChange={setActiveTab} counts={counts} />
-					<div className="max-h-80 overflow-y-auto">
-						<SearchResults
-							results={results[activeTab]}
-							loading={loading}
-							activeTab={activeTab}
-							onSelect={handleNavigate}
-							onViewAll={handleViewAll}
-							query={query}
-						/>
-					</div>
-				</div>
-			)}
+			{dropdownContent
+				? variant === "mobile"
+					? createPortal(dropdownContent, document.body)
+					: dropdownContent
+				: null
+			}
 		</div>
 	)
 }
