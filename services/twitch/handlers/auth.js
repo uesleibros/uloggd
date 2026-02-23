@@ -8,7 +8,8 @@ export async function handleAuth(req, res) {
 	}
 
 	const state = encodeState({ userId, returnUrl: returnUrl || "/" })
-	const authUrl = buildAuthUrl(process.env.TWITCH_CLIENT_ID, getRedirectUri(req), state)
+	const redirectUri = getRedirectUri()
+	const authUrl = buildAuthUrl(process.env.TWITCH_CLIENT_ID, redirectUri, state)
 
 	res.redirect(authUrl)
 }
