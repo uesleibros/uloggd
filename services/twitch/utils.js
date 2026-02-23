@@ -1,6 +1,6 @@
 import { TWITCH_CONFIG } from "./config.js"
 
-const REDIRECT_URI = "https://uloggd.vercel.app/api/twitch/callback"
+const REDIRECT_URI = process.env.TWITCH_REDIRECT_URI
 
 export function getRedirectUri() {
 	return REDIRECT_URI
