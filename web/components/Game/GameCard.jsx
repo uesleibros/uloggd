@@ -278,14 +278,18 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 	const handleMouseLeave = useCallback(() => {
 		closeTimeoutRef.current = setTimeout(() => {
 			setShowMore(false)
-		}, 100)
+		}, 150)
 	}, [])
 
 	return (
 		<div className="absolute bottom-0 inset-x-0 flex items-center gap-0.5 p-1 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg pointer-events-auto">
 			<button
 				type="button"
-				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("status", state?.status ? null : "completed") }}
+				onMouseDown={(e) => { 
+					e.preventDefault(); 
+					e.stopPropagation(); 
+					onToggle("status", state?.status ? null : "completed") 
+				}}
 				disabled={!!updating}
 				title="Jogado"
 				className={`p-1.5 rounded cursor-pointer transition-all disabled:opacity-50 ${
@@ -299,7 +303,11 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 
 			<button
 				type="button"
-				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("backlog") }}
+				onMouseDown={(e) => { 
+					e.preventDefault(); 
+					e.stopPropagation(); 
+					onToggle("backlog", !state?.backlog) 
+				}}
 				disabled={!!updating}
 				title="Backlog"
 				className={`p-1.5 rounded cursor-pointer transition-all disabled:opacity-50 ${
@@ -328,7 +336,7 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 				{showMore && menuPos && (
 					<MoreMenu
 						state={state}
-						onToggle={onToggle}
+						onToggle={(field) => onToggle(field, !state?.[field])}
 						onStatusSelect={onStatusSelect}
 						onAddToList={onAddToList}
 						updating={updating}
