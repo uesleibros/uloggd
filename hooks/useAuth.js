@@ -121,6 +121,14 @@ async function refreshUser() {
   }
 }
 
+async function ensureUser() {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session && !cachedUser) {
+    initialized = false
+    await loadUser(session)
+  }
+}
+
 supabase.auth.getSession().then(({ data: { session } }) => {
   return session ? loadUser(session) : reset()
 }).catch(() => reset())
@@ -142,22 +150,12 @@ supabase.auth.onAuthStateChange((event, session) => {
 })
 
 if (typeof window !== "undefined") {
-  window.addEventListener("focus", async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session && !cachedUser) {
-      initialized = false
-      loadUser(session)
-    }
+  window.addEventListener("focus", ensureUser)
+  window.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") ensureUser()
   })
-
-  window.addEventListener("visibilitychange", async () => {
-    if (document.visibilityState === "visible") {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session && !cachedUser) {
-        initialized = false
-        loadUser(session)
-      }
-    }
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted) ensureUser()
   })
 }
 
