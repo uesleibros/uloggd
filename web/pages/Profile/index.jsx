@@ -22,8 +22,14 @@ function StreamCard({ stream }) {
       rel="noopener noreferrer"
       className="bg-zinc-800/50 border border-purple-500/30 hover:border-purple-500/50 rounded-lg px-4 py-3 transition-colors block mt-6"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
+      <div className="flex items-center gap-4">
+        <img
+          src={stream.thumbnail}
+          alt={stream.title}
+          className="w-20 h-12 object-cover rounded-md border border-zinc-700 flex-shrink-0"
+        />
+
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
             <Twitch className="w-4 h-4 text-purple-400" />
             <span className="text-xs font-medium text-purple-400">
@@ -40,7 +46,7 @@ function StreamCard({ stream }) {
           </div>
 
           <div className="text-xs text-zinc-400 mt-1 flex items-center gap-2">
-            <span>{stream.game}</span>
+            <span className="truncate">{stream.game}</span>
             <span>•</span>
             <span>{stream.viewers.toLocaleString()} assistindo</span>
           </div>
