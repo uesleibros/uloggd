@@ -48,7 +48,7 @@ export async function handleCallback(req, res) {
 		if (error) throw error
 
 		const safeReturnUrl = returnUrl ? returnUrl.split("?")[0] : "/"
-		res.redirect(safeReturnUrl)
+		res.redirect(`${safeReturnUrl}?connected=twitch`)
 	} catch (err) {
 		console.error("Twitch OAuth error:", err)
 		const safeReturnUrl = returnUrl ? returnUrl.split("?")[0] : "/"
