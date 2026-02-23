@@ -7,6 +7,7 @@ import SettingsLayout from "@components/User/Settings/SettingsLayout"
 import AccountTab from "@components/User/Settings/tabs/AccountTab"
 import SessionsTab from "@components/User/Settings/tabs/SessionsTab"
 import AppearanceTab from "@components/User/Settings/tabs/AppearanceTab"
+import ConnectionsTab from "@components/User/Settings/tabs/ConnectionsTab"
 import IntegrationsTab from "@components/User/Settings/tabs/IntegrationsTab"
 
 export default function SettingsModal({ isOpen, onClose }) {
@@ -196,6 +197,9 @@ export default function SettingsModal({ isOpen, onClose }) {
 						decorationSaving={decorationSaving}
 						decorationIsDirty={decorationIsDirty}
 					/>
+				)}
+				{activeTab === "connections" && (
+					<ConnectionsTab user={user} />
 				)}
 				{activeTab === "integrations" && (
 					<IntegrationsTab />
