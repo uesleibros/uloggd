@@ -1,4 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
+import twitchClient from "#lib/twitch.js"
 import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
 
 export async function handleLikes(req, res) {
@@ -16,7 +17,7 @@ export async function handleLikes(req, res) {
 		const userIds = data?.map(r => r.user_id) || []
 		if (userIds.length === 0) return res.json([])
 
-		const [profilesRes, badgesRes] = await Promise.all([
+		const [profilesRes, badgesRes, connectionsRes] = await Promise.all([
 			supabase
 				.from("users")
 				.select("user_id, username, avatar, is_moderator, avatar_decoration, last_seen, status")
@@ -24,6 +25,11 @@ export async function handleLikes(req, res) {
 			supabase
 				.from("user_badges")
 				.select("user_id, assigned_at, badge:badges ( id, title, description, icon_url, color )")
+				.in("user_id", userIds),
+			supabase
+				.from("user_connections")
+				.select("user_id, provider_username")
+				.eq("provider", "twitch")
 				.in("user_id", userIds),
 		])
 
@@ -41,6 +47,36 @@ export async function handleLikes(req, res) {
 			}
 		})
 
+		const twitchMap = {}
+		const twitchUsernames = []
+
+		connectionsRes.data?.forEach(c => {
+			if (c.provider_username) {
+				twitchMap[c.provider_username.toLowerCase()] = c.user_id
+				twitchUsernames.push(c.provider_username)
+			}
+		})
+
+		const streamsMap = {}
+
+		if (twitchUsernames.length > 0) {
+			try {
+				const streams = await twitchClient.getStreams(twitchUsernames)
+				streams.forEach(s => {
+					const uid = twitchMap[s.user_login.toLowerCase()]
+					if (uid) {
+						streamsMap[uid] = {
+							twitch_username: s.user_login,
+							title: s.title,
+							game: s.game_name,
+							viewers: s.viewer_count,
+							thumbnail: s.thumbnail_url.replace("{width}", "320").replace("{height}", "180"),
+						}
+					}
+				})
+			} catch {}
+		}
+
 		const result = userIds
 			.map(id => {
 				const prof = profileMap[id]
@@ -55,6 +91,7 @@ export async function handleLikes(req, res) {
 					last_seen: prof.last_seen,
 					status: prof.status,
 					badges: badgesMap[id] || [],
+					stream: streamsMap[id] || null,
 				}
 			})
 			.filter(Boolean)
