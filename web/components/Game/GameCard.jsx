@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { Link } from "react-router-dom"
-import { Star, Play, Clock, Gift, Heart, List, Check, MoreHorizontal, ChevronRight } from "lucide-react"
+import { Star, Play, Clock, Gift, Heart, List, ChevronRight, Check, MoreHorizontal } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
 import { useMyLibrary } from "#hooks/useMyLibrary"
@@ -113,50 +114,46 @@ function useCardActions(game, enabled) {
 	return { user, state, prefetch, toggle, updating }
 }
 
-function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating }) {
+function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, position, onClose }) {
 	const [showStatus, setShowStatus] = useState(false)
 	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
 
-	if (showStatus) {
-		return (
-			<div className="absolute bottom-full right-0 mb-1 w-40 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl overflow-hidden z-10">
+	const menuContent = showStatus ? (
+		<div className="w-44 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden">
+			<button
+				type="button"
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatus(false) }}
+				className="w-full flex items-center gap-1.5 px-2.5 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer border-b border-zinc-700/50"
+			>
+				<ChevronRight className="w-3 h-3 rotate-180" />
+				Voltar
+			</button>
+			{STATUS_OPTIONS.map((s) => (
+				<button
+					key={s.id}
+					type="button"
+					onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStatusSelect(s.id); setShowStatus(false); onClose() }}
+					className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer transition-colors ${
+						state?.status === s.id ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
+					}`}
+				>
+					<div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.color}`} />
+					<span className="truncate flex-1 text-left">{s.label}</span>
+					{state?.status === s.id && <Check className="w-3 h-3 flex-shrink-0" />}
+				</button>
+			))}
+			{state?.status && (
 				<button
 					type="button"
-					onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatus(false) }}
-					className="w-full flex items-center gap-1.5 px-2.5 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer border-b border-zinc-700/50"
+					onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStatusSelect(null); setShowStatus(false); onClose() }}
+					className="w-full px-2.5 py-2 text-[11px] text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 cursor-pointer text-left border-t border-zinc-700/50"
 				>
-					<ChevronRight className="w-3 h-3 rotate-180" />
-					Voltar
+					Remover status
 				</button>
-				{STATUS_OPTIONS.map((s) => (
-					<button
-						key={s.id}
-						type="button"
-						onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStatusSelect(s.id); setShowStatus(false) }}
-						className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer transition-colors ${
-							state?.status === s.id ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
-						}`}
-					>
-						<div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.color}`} />
-						<span className="truncate flex-1 text-left">{s.label}</span>
-						{state?.status === s.id && <Check className="w-3 h-3 flex-shrink-0" />}
-					</button>
-				))}
-				{state?.status && (
-					<button
-						type="button"
-						onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStatusSelect(null); setShowStatus(false) }}
-						className="w-full px-2.5 py-2 text-[11px] text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 cursor-pointer text-left border-t border-zinc-700/50"
-					>
-						Remover status
-					</button>
-				)}
-			</div>
-		)
-	}
-
-	return (
-		<div className="absolute bottom-full right-0 mb-1 w-40 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl overflow-hidden z-10">
+			)}
+		</div>
+	) : (
+		<div className="w-44 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden">
 			<button
 				type="button"
 				onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatus(true) }}
@@ -172,7 +169,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("playing") }}
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("playing"); onClose() }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.playing ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -185,7 +182,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("wishlist") }}
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("wishlist"); onClose() }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.wishlist ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -200,7 +197,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToList() }}
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToList(); onClose() }}
 				disabled={!!updating}
 				className="w-full flex items-center gap-2 px-2.5 py-2 text-[11px] text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer disabled:opacity-50"
 			>
@@ -212,7 +209,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("liked") }}
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("liked"); onClose() }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.liked ? "text-red-400 bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -224,11 +221,46 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 			</button>
 		</div>
 	)
+
+	return createPortal(
+		<div
+			style={{
+				position: "fixed",
+				top: position.top,
+				left: position.left,
+				zIndex: 9999,
+			}}
+			onMouseLeave={onClose}
+		>
+			{menuContent}
+		</div>,
+		document.body
+	)
 }
 
 function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 	const [showMore, setShowMore] = useState(false)
+	const [menuPos, setMenuPos] = useState(null)
+	const moreButtonRef = useRef(null)
 	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
+
+	useEffect(() => {
+		if (showMore && moreButtonRef.current) {
+			const rect = moreButtonRef.current.getBoundingClientRect()
+			setMenuPos({
+				top: rect.top - 8,
+				left: rect.right - 176,
+			})
+		}
+	}, [showMore])
+
+	const handleMouseEnter = () => {
+		setShowMore(true)
+	}
+
+	const handleMouseLeave = () => {
+		setShowMore(false)
+	}
 
 	return (
 		<div className="absolute bottom-0 inset-x-0 flex items-center gap-0.5 p-1 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg pointer-events-auto">
@@ -260,10 +292,11 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 
 			<div
 				className="relative ml-auto"
-				onMouseEnter={() => setShowMore(true)}
-				onMouseLeave={() => setShowMore(false)}
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
 			>
 				<button
+					ref={moreButtonRef}
 					type="button"
 					onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
 					className={`p-1.5 rounded cursor-pointer transition-all ${
@@ -273,13 +306,15 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating }) {
 					<MoreHorizontal className="w-4 h-4" />
 				</button>
 
-				{showMore && (
+				{showMore && menuPos && (
 					<MoreMenu
 						state={state}
 						onToggle={onToggle}
 						onStatusSelect={onStatusSelect}
 						onAddToList={onAddToList}
 						updating={updating}
+						position={menuPos}
+						onClose={() => setShowMore(false)}
 					/>
 				)}
 			</div>
