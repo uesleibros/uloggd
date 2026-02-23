@@ -20,7 +20,8 @@ export async function handleCallback(req, res) {
 	}
 
 	try {
-		const tokens = await exchangeCode(code, getRedirectUri(req))
+		const redirectUri = getRedirectUri()
+		const tokens = await exchangeCode(code, redirectUri)
 		const twitchUser = await fetchTwitchUser(tokens.access_token)
 
 		if (!twitchUser) {
