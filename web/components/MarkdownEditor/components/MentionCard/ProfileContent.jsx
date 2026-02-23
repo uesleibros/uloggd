@@ -1,5 +1,6 @@
 import { Calendar, ArrowRight } from "lucide-react"
 import UserBadges from "@components/User/UserBadges"
+import { getStatus } from "#utils/onlineStatus"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 
 export function ProfileContent({ profile }) {
@@ -26,6 +27,8 @@ export function ProfileContent({ profile }) {
         <AvatarWithDecoration
           src={profile.avatar}
           alt={profile.username}
+          status={getStatus(profile.last_seen, profile.status)}
+          isStreaming={!!profile.stream}
           decoration={profile.avatar_decoration}
           size="xl"
         />
