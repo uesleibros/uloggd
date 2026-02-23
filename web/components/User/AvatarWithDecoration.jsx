@@ -47,7 +47,7 @@ const indicatorOffset = {
 const statusColors = {
   online: '#23a55a',
   idle: '#f0b232',
-  dnd: '#f23f43',
+  streaming: '#593695',
   offline: '#80848e',
 }
 
@@ -74,13 +74,15 @@ function StatusIcon({ status, size }) {
     )
   }
 
-  if (status === 'dnd') {
-    const barH = s * 0.18
-    const barW = s * 0.5
+  if (status === 'streaming') {
+    const x1 = s * 0.361
+    const x2 = s * 0.722
+    const y1 = s * 0.25
+    const y2 = s * 0.75
     return (
       <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-        <circle cx={half} cy={half} r={half} fill={statusColors.dnd} />
-        <rect x={half - barW / 2} y={half - barH / 2} width={barW} height={barH} rx={barH / 2} fill="currentColor" className="text-zinc-900" />
+        <circle cx={half} cy={half} r={half} fill={statusColors.streaming} />
+        <path d={`M${x1},${y1} L${x2},${half} L${x1},${y2} Z`} fill="currentColor" className="text-zinc-900" />
       </svg>
     )
   }
