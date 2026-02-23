@@ -123,14 +123,16 @@ const markdownComponents = {
   
   center: ({ children }) => (
     <div className="
-      flex flex-col items-center text-center w-full break-all
-      [&_p]:w-full [&_p]:flex [&_p]:justify-center
-      [&_img]:mx-auto
-      [&_table]:mx-auto
-      [&_iframe]:mx-auto
+      flex flex-col items-center text-center w-full min-w-0 overflow-hidden break-words
+      [&_p]:w-full [&_p]:min-w-0 [&_p]:flex [&_p]:justify-center
+      [&_img]:mx-auto [&_img]:max-w-full
+      [&_table]:mx-auto [&_table]:max-w-full [&_table]:overflow-x-auto
+      [&_iframe]:mx-auto [&_iframe]:max-w-full
       [&_hr]:w-full
       [&_h1]:w-full [&_h2]:w-full [&_h3]:w-full [&_h4]:w-full [&_h5]:w-full [&_h6]:w-full
+      [&_h1]:min-w-0 [&_h2]:min-w-0 [&_h3]:min-w-0 [&_h4]:min-w-0 [&_h5]:min-w-0 [&_h6]:min-w-0
       [&_.game-grid-wrapper]:w-fit [&_.game-grid-wrapper]:mx-auto [&_.game-grid-wrapper]:max-w-full
+      [&>*]:max-w-full [&>*]:min-w-0
     ">
       {children}
     </div>
