@@ -115,9 +115,9 @@ supabase.auth.onAuthStateChange((event, session) => {
 })
 
 if (typeof window !== "undefined") {
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && !cachedUser && !loading) {
-      init()
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted) {
+      window.location.reload()
     }
   })
 }
