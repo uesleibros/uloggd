@@ -31,6 +31,7 @@ function WelcomeBack({ user }) {
           alt={user.username}
           decoration={user.avatar_decoration}
           status={getStatus(user.last_seen, user.status)}
+          isStreaming={!!user.stream}
           size="lg"
         />
         <div>
@@ -83,4 +84,5 @@ export default function Home() {
     </div>
   )
 }
+
 
