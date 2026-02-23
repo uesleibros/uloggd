@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useParams, Link } from "react-router-dom"
+import { Tv } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useProfileGames } from "#hooks/useProfileGames"
 import PageBanner from "@components/Layout/PageBanner"
@@ -86,6 +87,45 @@ export default function Profile() {
           onFollowersClick={() => setFollowModal("Seguidores")}
           onFollowingClick={() => setFollowModal("Seguindo")}
         />
+
+        {profile?.stream && (
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 mb-6">
+            <a
+              href={`https://twitch.tv/${profile.stream.twitch_username}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl hover:bg-purple-500/15 transition-colors group"
+            >
+              <div className="relative shrink-0 w-full sm:w-auto">
+                <img
+                  src={profile.stream.thumbnail}
+                  alt="Stream"
+                  className="w-full sm:w-40 aspect-video object-cover rounded-lg shadow-md border border-purple-500/20"
+                />
+                <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider rounded flex items-center gap-1">
+                  <Tv className="w-3 h-3" />
+                  Ao Vivo
+                </div>
+              </div>
+              <div className="flex-1 min-w-0 w-full">
+                <span className="text-xs font-medium text-purple-400 mb-1 block">
+                  {profile.stream.twitch_username} está ao vivo na Twitch
+                </span>
+                <h3 className="text-sm sm:text-base font-semibold text-white truncate mb-2">
+                  {profile.stream.title}
+                </h3>
+                <div className="flex items-center gap-3 text-xs text-zinc-400">
+                  <span className="text-purple-300 font-medium truncate">{profile.stream.game}</span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                    {profile.stream.viewers.toLocaleString()} assistindo
+                  </span>
+                </div>
+              </div>
+            </a>
+          </div>
+        )}
 
         <ProfileNavigation
           activeSection={activeSection}
