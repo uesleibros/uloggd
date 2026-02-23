@@ -106,7 +106,7 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
 
 	if (loading) return <LoadingSpinner />
 
-	if (results.length === 0) {
+	if (!results || results.length === 0) {
 		return (
 			<div className="px-3 py-6 text-sm text-zinc-500 text-center">
 				Nenhum resultado encontrado
@@ -163,7 +163,7 @@ function TabBar({ activeTab, onChange, counts }) {
 	)
 }
 
-function SearchInput({ query, onChange, onFocus, onBlur, onKeyDown, focused = false, variant = "desktop" }) {
+function SearchInput({ inputRef, query, onChange, onFocus, onBlur, onKeyDown, focused = false, variant = "desktop" }) {
 	const baseClasses = "rounded-md bg-zinc-800 text-sm text-white placeholder-zinc-500 outline-none border"
 
 	const variants = {
@@ -179,6 +179,7 @@ function SearchInput({ query, onChange, onFocus, onBlur, onKeyDown, focused = fa
 		<div className="relative">
 			<Search className={`absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focused ? "text-zinc-300" : "text-zinc-500"}`} />
 			<input
+				ref={inputRef}
 				type="text"
 				value={query}
 				onChange={onChange}
@@ -212,10 +213,24 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 	const [focused, setFocused] = useState(false)
 	const [activeTab, setActiveTab] = useState("games")
 	const [dropdownPos, setDropdownPos] = useState(null)
-	const timeoutRef = useRef(null)
+	
+	const searchTimeoutRef = useRef(null)
 	const blurTimeoutRef = useRef(null)
 	const containerRef = useRef(null)
+	const inputRef = useRef(null)
+	const mountedRef = useRef(true)
+	const lastQueryRef = useRef("")
+	
 	const navigate = useNavigate()
+
+	useEffect(() => {
+		mountedRef.current = true
+		return () => {
+			mountedRef.current = false
+			clearTimeout(searchTimeoutRef.current)
+			clearTimeout(blurTimeoutRef.current)
+		}
+	}, [])
 
 	const updateDropdownPos = useCallback(() => {
 		if (variant !== "mobile" || !containerRef.current) return
@@ -239,64 +254,78 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 	}, [open, variant, updateDropdownPos])
 
 	useEffect(() => {
-		if (!query.trim()) {
+		clearTimeout(searchTimeoutRef.current)
+		
+		const trimmed = query.trim()
+		lastQueryRef.current = trimmed
+		
+		if (!trimmed) {
 			setResults({ games: [], users: [], lists: [] })
 			setLoading(false)
+			setOpen(false)
 			return
 		}
 
 		setLoading(true)
 		setOpen(true)
-		clearTimeout(timeoutRef.current)
 
-		timeoutRef.current = setTimeout(async () => {
+		searchTimeoutRef.current = setTimeout(async () => {
+			if (!mountedRef.current) return
+			if (lastQueryRef.current !== trimmed) return
+			
 			try {
 				const [gamesRaw, usersRaw, listsRaw] = await Promise.all([
 					fetch("/api/igdb/autocomplete", {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ query }),
+						body: JSON.stringify({ query: trimmed }),
 					}).then(r => r.json()).catch(() => []),
 					fetch("/api/users/search", {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ query, limit: 5 }),
+						body: JSON.stringify({ query: trimmed, limit: 5 }),
 					}).then(r => r.json()).catch(() => []),
 					fetch("/api/lists/search", {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ query, limit: 5 }),
+						body: JSON.stringify({ query: trimmed, limit: 5 }),
 					}).then(r => r.json()).catch(() => []),
 				])
+
+				if (!mountedRef.current) return
+				if (lastQueryRef.current !== trimmed) return
 
 				setResults({
 					games: extractArray(gamesRaw),
 					users: extractArray(usersRaw),
 					lists: extractArray(listsRaw),
 				})
-				setOpen(true)
 			} catch (err) {
 				console.error(err)
-				setResults({ games: [], users: [], lists: [] })
+				if (mountedRef.current) {
+					setResults({ games: [], users: [], lists: [] })
+				}
 			} finally {
-				setLoading(false)
+				if (mountedRef.current) {
+					setLoading(false)
+				}
 			}
 		}, 400)
 
-		return () => clearTimeout(timeoutRef.current)
+		return () => clearTimeout(searchTimeoutRef.current)
 	}, [query])
 
-	useEffect(() => {
-		return () => {
-			clearTimeout(timeoutRef.current)
-			clearTimeout(blurTimeoutRef.current)
-		}
+	const closeDropdown = useCallback(() => {
+		if (!mountedRef.current) return
+		if (inputRef.current === document.activeElement) return
+		setOpen(false)
 	}, [])
 
 	function handleNavigate(path) {
+		clearTimeout(blurTimeoutRef.current)
 		setQuery("")
 		setOpen(false)
-		clearTimeout(blurTimeoutRef.current)
+		setResults({ games: [], users: [], lists: [] })
 		onSelect?.()
 		navigate(path)
 	}
@@ -310,18 +339,24 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 			e.preventDefault()
 			handleViewAll()
 		}
+		if (e.key === "Escape") {
+			setOpen(false)
+			inputRef.current?.blur()
+		}
 	}
 
 	function handleFocus() {
-		setFocused(true)
 		clearTimeout(blurTimeoutRef.current)
-		if (query) setOpen(true)
+		setFocused(true)
+		if (query.trim()) {
+			setOpen(true)
+		}
 	}
 
 	function handleBlur() {
 		setFocused(false)
 		clearTimeout(blurTimeoutRef.current)
-		blurTimeoutRef.current = setTimeout(() => setOpen(false), 200)
+		blurTimeoutRef.current = setTimeout(closeDropdown, 150)
 	}
 
 	const counts = {
@@ -331,8 +366,9 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 	}
 
 	const hasResults = query.trim() && (loading || counts.games > 0 || counts.users > 0 || counts.lists > 0)
+	const showDropdown = open && hasResults
 
-	const dropdownContent = open && hasResults ? (
+	const dropdownContent = showDropdown ? (
 		<div
 			onMouseDown={(e) => e.preventDefault()}
 			className={`rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl overflow-hidden ${
@@ -363,6 +399,7 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 	return (
 		<div ref={containerRef} className={`relative ${className}`}>
 			<SearchInput
+				inputRef={inputRef}
 				query={query}
 				onChange={(e) => setQuery(e.target.value)}
 				onFocus={handleFocus}
@@ -371,12 +408,11 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 				focused={focused}
 				variant={variant}
 			/>
-			{dropdownContent
-				? variant === "mobile"
+			{dropdownContent && (
+				variant === "mobile"
 					? createPortal(dropdownContent, document.body)
 					: dropdownContent
-				: null
-			}
+			)}
 		</div>
 	)
 }
