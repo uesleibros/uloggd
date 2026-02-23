@@ -1,28 +1,30 @@
 import { useSyncExternalStore } from "react"
 import { supabase } from "#lib/supabase"
 
-let cachedUser = null
-let loading = true
+const INITIAL_STATE = { user: null, loading: true }
+
+let state = { ...INITIAL_STATE }
 let listeners = new Set()
+let loadingPromise = null
 
 function notify() {
   listeners.forEach(fn => fn())
 }
 
 function getSnapshot() {
-  return { user: cachedUser, loading }
+  return state
 }
 
-let snapshotRef = getSnapshot()
-
-function updateSnapshot() {
-  const next = getSnapshot()
-  if (next.user === snapshotRef.user && next.loading === snapshotRef.loading) return
-  snapshotRef = next
+function setState(newState) {
+  if (state.user === newState.user && state.loading === newState.loading) return
+  state = newState
   notify()
 }
 
 async function fetchProfile(session) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout
+
   try {
     const res = await fetch("/api/users/profile", {
       method: "POST",
@@ -31,9 +33,13 @@ async function fetchProfile(session) {
         Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({ userId: session.user.id }),
+      signal: controller.signal
     })
+    clearTimeout(timeoutId)
     return res.ok ? await res.json() : null
-  } catch {
+  } catch (e) {
+    clearTimeout(timeoutId)
+    console.error("Profile fetch error:", e)
     return null
   }
 }
@@ -42,9 +48,9 @@ function buildUser(session, profile = null) {
   const { user } = session
   return {
     id: user.id,
-    discordId: user.user_metadata.provider_id,
-    username: user.user_metadata.full_name,
-    avatar: user.user_metadata.avatar_url,
+    discordId: user.user_metadata?.provider_id,
+    username: user.user_metadata?.full_name,
+    avatar: user.user_metadata?.avatar_url,
     email: user.email,
     ...profile,
   }
@@ -52,80 +58,99 @@ function buildUser(session, profile = null) {
 
 async function loadUser(session) {
   if (!session?.user) {
-    cachedUser = null
-    loading = false
-    updateSnapshot()
+    loadingPromise = null
+    setState({ user: null, loading: false })
     return
   }
 
-  loading = true
-  updateSnapshot()
-
-  try {
-    const profile = await fetchProfile(session)
-    cachedUser = buildUser(session, profile)
-  } catch (err) {
-    console.error("Profile load failed", err)
-    cachedUser = null
-  } finally {
-    loading = false
-    updateSnapshot()
+  if (state.user?.id === session.user.id && !state.loading) {
+    return
   }
-}
 
-function reset() {
-  cachedUser = null
-  loading = false
-  updateSnapshot()
-}
+  if (loadingPromise) return loadingPromise
 
-export function updateUser(partial) {
-  if (!cachedUser) return
-  cachedUser = { ...cachedUser, ...partial }
-  updateSnapshot()
-}
+  setState({ ...state, loading: true })
 
-async function refreshUser() {
-  const { data: { session } } = await supabase.auth.getSession()
-  if (session) await loadUser(session)
-}
-
-(async () => {
-  try {
-    const { data, error } = await supabase.auth.getSession()
-    
-    if (error) {
-      console.error("Session error", error)
-      await supabase.auth.signOut()
-      reset()
-      return
+  loadingPromise = (async () => {
+    try {
+      const profile = await fetchProfile(session)
+      const user = buildUser(session, profile)
+      setState({ user, loading: false })
+    } catch (e) {
+      const user = buildUser(session)
+      setState({ user, loading: false })
+    } finally {
+      loadingPromise = null
     }
+  })()
 
+  return loadingPromise
+}
+
+function init() {
+  loadingPromise = null
+  
+  supabase.auth.getSession().then(({ data }) => {
     if (data?.session) {
-      await loadUser(data.session)
+      loadUser(data.session)
     } else {
-      reset()
+      setState({ user: null, loading: false })
     }
-  } catch (err) {
-    console.error("Init error", err)
-    reset()
-  }
-})()
+  }).catch(() => {
+    setState({ user: null, loading: false })
+  })
+}
+
+init()
 
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === "SIGNED_OUT") {
-    reset()
-  } else if (event === "SIGNED_IN" && session) {
-    loadUser(session)
+    loadingPromise = null
+    setState({ user: null, loading: false })
+  } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+    if (session) loadUser(session)
   }
 })
 
 if (typeof window !== "undefined") {
-  window.addEventListener("pageshow", (e) => {
-    if (e.persisted) {
-      window.location.reload()
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted || state.loading) {
+      console.log("Page restored, re-initializing auth...")
+      loadingPromise = null
+      init()
     }
   })
+
+  window.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      if (state.loading) {
+        loadingPromise = null
+        init()
+      } else {
+        supabase.auth.getSession().then(({ data }) => {
+          if (data?.session && state.user?.id !== data.session.user.id) {
+            loadUser(data.session)
+          }
+        })
+      }
+    }
+  })
+}
+
+export function updateUser(partial) {
+  if (!state.user) return
+  setState({
+    ...state,
+    user: { ...state.user, ...partial }
+  })
+}
+
+export async function refreshUser() {
+  const { data } = await supabase.auth.getSession()
+  if (data?.session) {
+    loadingPromise = null // Força recarregamento
+    await loadUser(data.session)
+  }
 }
 
 function subscribe(callback) {
@@ -134,7 +159,7 @@ function subscribe(callback) {
 }
 
 export function useAuth() {
-  const snapshot = useSyncExternalStore(subscribe, () => snapshotRef)
+  const snapshot = useSyncExternalStore(subscribe, getSnapshot)
   return {
     user: snapshot.user,
     loading: snapshot.loading,
