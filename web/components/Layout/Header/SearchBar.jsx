@@ -106,7 +106,7 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
 
 	if (loading) return <LoadingSpinner />
 
-	if (!results || results.length === 0) {
+	if (results.length === 0) {
 		return (
 			<div className="px-3 py-6 text-sm text-zinc-500 text-center">
 				Nenhum resultado encontrado
@@ -118,7 +118,7 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
 		<>
 			<ul className="py-1">
 				{results.map((item) => (
-					<ResultComponent key={item.id} item={item} onSelect={onSelect} />
+					<ResultComponent key={item.id || item._id || item.username || item.shortId} item={item} onSelect={onSelect} />
 				))}
 			</ul>
 			<button
@@ -192,6 +192,18 @@ function SearchInput({ query, onChange, onFocus, onBlur, onKeyDown, focused = fa
 	)
 }
 
+function extractArray(res) {
+	if (Array.isArray(res)) return res
+	if (res && typeof res === "object") {
+		if (Array.isArray(res.results)) return res.results
+		if (Array.isArray(res.data)) return res.data
+		if (Array.isArray(res.users)) return res.users
+		if (Array.isArray(res.lists)) return res.lists
+		if (Array.isArray(res.games)) return res.games
+	}
+	return []
+}
+
 export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 	const [query, setQuery] = useState("")
 	const [results, setResults] = useState({ games: [], users: [], lists: [] })
@@ -239,32 +251,33 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 
 		timeoutRef.current = setTimeout(async () => {
 			try {
-				const [gamesRes, usersRes, listsRes] = await Promise.all([
+				const [gamesRaw, usersRaw, listsRaw] = await Promise.all([
 					fetch("/api/igdb/autocomplete", {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({ query }),
-					}).then(r => r.json()),
+					}).then(r => r.json()).catch(() => []),
 					fetch("/api/users/search", {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({ query, limit: 5 }),
-					}).then(r => r.json()),
+					}).then(r => r.json()).catch(() => []),
 					fetch("/api/lists/search", {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({ query, limit: 5 }),
-					}).then(r => r.json()),
+					}).then(r => r.json()).catch(() => []),
 				])
 
 				setResults({
-					games: gamesRes || [],
-					users: usersRes || [],
-					lists: listsRes || [],
+					games: extractArray(gamesRaw),
+					users: extractArray(usersRaw),
+					lists: extractArray(listsRaw),
 				})
 				setOpen(true)
 			} catch (err) {
 				console.error(err)
+				setResults({ games: [], users: [], lists: [] })
 			} finally {
 				setLoading(false)
 			}
@@ -336,7 +349,7 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 			<TabBar activeTab={activeTab} onChange={setActiveTab} counts={counts} />
 			<div className="max-h-80 overflow-y-auto">
 				<SearchResults
-					results={results[activeTab] || []}
+					results={results[activeTab]}
 					loading={loading}
 					activeTab={activeTab}
 					onSelect={handleNavigate}
