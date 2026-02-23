@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, useLayoutEffect } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { Link } from "react-router-dom"
 import { Star, Play, Clock, Gift, Heart, List, ChevronRight, Check, MoreHorizontal } from "lucide-react"
@@ -88,20 +88,23 @@ function useCardActions(game, enabled) {
 		}
 	}, [enabled, user, game?.id])
 
-	const toggle = useCallback(async (field, value) => {
+	async function toggle(field, value) {
 		if (!user || !state || updating) return
-		const newValue = value !== undefined ? value : !state[field]
-		const prev = { ...state }
-		setState((s) => ({ ...s, [field]: newValue }))
 		setUpdating(field)
+
+		const prev = { ...state }
+		setState(s => ({ ...s, [field]: value }))
+
 		try {
 			const { data: { session } } = await supabase.auth.getSession()
 			if (!session) { setState(prev); return }
+
 			const res = await fetch("/api/userGames/@me/update", {
 				method: "POST",
 				headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-				body: JSON.stringify({ gameId: game.id, gameSlug: game.slug, field, value: newValue }),
+				body: JSON.stringify({ gameId: game.id, gameSlug: game.slug, field, value }),
 			})
+
 			if (res.ok) refresh()
 			else setState(prev)
 		} catch {
@@ -109,7 +112,7 @@ function useCardActions(game, enabled) {
 		} finally {
 			setUpdating(null)
 		}
-	}, [user, state, updating, game?.id, game?.slug, refresh])
+	}
 
 	return { user, state, prefetch, toggle, updating }
 }
@@ -169,7 +172,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 			<button
 				type="button"
-				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("playing") }}
+				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("playing", !state?.playing) }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.playing ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -182,7 +185,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 			<button
 				type="button"
-				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("wishlist") }}
+				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("wishlist", !state?.wishlist) }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.wishlist ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -209,7 +212,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 			<button
 				type="button"
-				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("liked") }}
+				onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("liked", !state?.liked) }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.liked ? "text-red-400 bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -286,9 +289,9 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 			<button
 				type="button"
 				onMouseDown={(e) => { 
-					e.preventDefault(); 
-					e.stopPropagation(); 
-					onToggle("status", state?.status ? null : "completed") 
+					e.preventDefault()
+					e.stopPropagation()
+					onStatusSelect(state?.status ? null : STATUS_OPTIONS[0].id)
 				}}
 				disabled={!!updating}
 				title="Jogado"
@@ -304,9 +307,9 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 			<button
 				type="button"
 				onMouseDown={(e) => { 
-					e.preventDefault(); 
-					e.stopPropagation(); 
-					onToggle("backlog", !state?.backlog) 
+					e.preventDefault()
+					e.stopPropagation()
+					onToggle("backlog", !state?.backlog)
 				}}
 				disabled={!!updating}
 				title="Backlog"
@@ -336,7 +339,7 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 				{showMore && menuPos && (
 					<MoreMenu
 						state={state}
-						onToggle={(field) => onToggle(field, !state?.[field])}
+						onToggle={onToggle}
 						onStatusSelect={onStatusSelect}
 						onAddToList={onAddToList}
 						updating={updating}
