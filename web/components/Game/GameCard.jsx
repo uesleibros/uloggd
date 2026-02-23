@@ -115,7 +115,7 @@ function useCardActions(game, enabled) {
 
 function StatusSubmenu({ status, onSelect, onBack }) {
 	return (
-		<div className="absolute inset-0 bg-black/90 rounded-lg flex flex-col">
+		<div className="absolute inset-0 bg-black/95 rounded-lg flex flex-col">
 			<button
 				type="button"
 				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBack() }}
@@ -153,94 +153,142 @@ function StatusSubmenu({ status, onSelect, onBack }) {
 	)
 }
 
-function CardActionsMenu({ state, onToggle, onStatusSelect, onAddToList, updating }) {
-	const [showStatusSubmenu, setShowStatusSubmenu] = useState(false)
-	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
-
-	if (showStatusSubmenu) {
-		return (
-			<StatusSubmenu
-				status={state?.status}
-				onSelect={(val) => { onStatusSelect(val); setShowStatusSubmenu(false) }}
-				onBack={() => setShowStatusSubmenu(false)}
-			/>
-		)
-	}
-
+function MoreSubmenu({ state, onToggle, onAddToList, updating, onBack }) {
 	return (
-		<div className="absolute inset-0 bg-black/90 rounded-lg flex flex-col py-1 overflow-y-auto">
+		<div className="absolute inset-0 bg-black/95 rounded-lg flex flex-col">
 			<button
 				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatusSubmenu(true) }}
-				disabled={!!updating}
-				className="w-full flex items-center gap-2 px-2 py-1.5 text-[10px] text-zinc-300 hover:text-white hover:bg-zinc-700/30 cursor-pointer transition-colors disabled:opacity-50"
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBack() }}
+				className="flex items-center gap-1 px-2 py-1.5 text-[10px] text-zinc-400 hover:text-white transition-colors cursor-pointer border-b border-zinc-700/50"
 			>
-				<div className={`w-2 h-2 rounded-full flex-shrink-0 ${statusConfig?.color || "bg-zinc-600"}`} />
-				<span className="truncate">{statusConfig?.label || "Status"}</span>
-				<ChevronRight className="w-3 h-3 ml-auto flex-shrink-0 opacity-50" />
+				<ChevronRight className="w-3 h-3 rotate-180" />
+				Voltar
 			</button>
+			<div className="flex-1 overflow-y-auto py-1">
+				<button
+					type="button"
+					onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("playing") }}
+					disabled={!!updating}
+					className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] cursor-pointer transition-colors disabled:opacity-50 ${
+						state?.playing ? "text-white bg-zinc-700/50" : "text-zinc-300 hover:text-white hover:bg-zinc-700/30"
+					}`}
+				>
+					<Play className="w-3 h-3 flex-shrink-0 fill-current" />
+					<span>Jogando</span>
+					{state?.playing && <Check className="w-3 h-3 ml-auto flex-shrink-0" />}
+				</button>
 
-			<button
-				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("playing") }}
-				disabled={!!updating}
-				className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] cursor-pointer transition-colors disabled:opacity-50 ${
-					state?.playing ? "text-white bg-zinc-700/50" : "text-zinc-300 hover:text-white hover:bg-zinc-700/30"
-				}`}
-			>
-				<Play className="w-3 h-3 flex-shrink-0 fill-current" />
-				<span>Jogando</span>
-				{state?.playing && <Check className="w-3 h-3 ml-auto flex-shrink-0" />}
-			</button>
-
-			<button
-				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("backlog") }}
-				disabled={!!updating}
-				className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] cursor-pointer transition-colors disabled:opacity-50 ${
-					state?.backlog ? "text-white bg-zinc-700/50" : "text-zinc-300 hover:text-white hover:bg-zinc-700/30"
-				}`}
-			>
-				<Clock className="w-3 h-3 flex-shrink-0" />
-				<span>Backlog</span>
-				{state?.backlog && <Check className="w-3 h-3 ml-auto flex-shrink-0" />}
-			</button>
-
-			<button
-				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("wishlist") }}
-				disabled={!!updating}
-				className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] cursor-pointer transition-colors disabled:opacity-50 ${
-					state?.wishlist ? "text-white bg-zinc-700/50" : "text-zinc-300 hover:text-white hover:bg-zinc-700/30"
-				}`}
-			>
-				<Gift className="w-3 h-3 flex-shrink-0" />
-				<span>Wishlist</span>
-				{state?.wishlist && <Check className="w-3 h-3 ml-auto flex-shrink-0" />}
-			</button>
-
-			<button
-				type="button"
-				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToList() }}
-				disabled={!!updating}
-				className="w-full flex items-center gap-2 px-2 py-1.5 text-[10px] text-zinc-300 hover:text-white hover:bg-zinc-700/30 cursor-pointer transition-colors disabled:opacity-50"
-			>
-				<List className="w-3 h-3 flex-shrink-0" />
-				<span>Adicionar à lista</span>
-			</button>
-
-			<div className="border-t border-zinc-700/50 mt-1 pt-1">
 				<button
 					type="button"
 					onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("liked") }}
 					disabled={!!updating}
 					className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] cursor-pointer transition-colors disabled:opacity-50 ${
-						state?.liked ? "text-red-400" : "text-zinc-300 hover:text-white hover:bg-zinc-700/30"
+						state?.liked ? "text-red-400 bg-red-500/10" : "text-zinc-300 hover:text-white hover:bg-zinc-700/30"
 					}`}
 				>
 					<Heart className={`w-3 h-3 flex-shrink-0 ${state?.liked ? "fill-current" : ""}`} />
 					<span>Curtir</span>
 					{state?.liked && <Check className="w-3 h-3 ml-auto flex-shrink-0" />}
+				</button>
+
+				<button
+					type="button"
+					onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToList() }}
+					disabled={!!updating}
+					className="w-full flex items-center gap-2 px-2 py-1.5 text-[10px] text-zinc-300 hover:text-white hover:bg-zinc-700/30 cursor-pointer transition-colors disabled:opacity-50"
+				>
+					<List className="w-3 h-3 flex-shrink-0" />
+					<span>Adicionar à lista</span>
+				</button>
+			</div>
+		</div>
+	)
+}
+
+function QuickActionButton({ active, onClick, icon, disabled, activeClass = "bg-white/20 text-white" }) {
+	return (
+		<button
+			type="button"
+			onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClick() }}
+			disabled={disabled}
+			className={`p-2 rounded-md cursor-pointer transition-all disabled:opacity-50 ${
+				active ? activeClass : "bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700 hover:text-white"
+			}`}
+		>
+			{icon}
+		</button>
+	)
+}
+
+function CardActionsOverlay({ state, onToggle, onStatusSelect, onAddToList, updating }) {
+	const [submenu, setSubmenu] = useState(null)
+	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
+
+	if (submenu === "status") {
+		return (
+			<StatusSubmenu
+				status={state?.status}
+				onSelect={(val) => { onStatusSelect(val); setSubmenu(null) }}
+				onBack={() => setSubmenu(null)}
+			/>
+		)
+	}
+
+	if (submenu === "more") {
+		return (
+			<MoreSubmenu
+				state={state}
+				onToggle={onToggle}
+				onAddToList={onAddToList}
+				updating={updating}
+				onBack={() => setSubmenu(null)}
+			/>
+		)
+	}
+
+	const hasMoreActive = state?.playing || state?.liked
+
+	return (
+		<div className="absolute inset-0 bg-black/90 rounded-lg flex flex-col items-center justify-center gap-2 p-2">
+			<button
+				type="button"
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSubmenu("status") }}
+				disabled={!!updating}
+				className={`w-full flex items-center justify-center gap-1.5 px-2 py-2 rounded-md text-[11px] font-medium cursor-pointer transition-all disabled:opacity-50 ${
+					state?.status
+						? `${statusConfig?.color || "bg-zinc-600"} text-white`
+						: "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+				}`}
+			>
+				<Check className={`w-3.5 h-3.5 ${state?.status ? "" : "opacity-50"}`} />
+				{statusConfig?.label || "Jogado"}
+				<ChevronRight className="w-3 h-3 opacity-50 ml-auto" />
+			</button>
+
+			<div className="flex items-center gap-1.5 w-full">
+				<QuickActionButton
+					active={state?.backlog}
+					onClick={() => onToggle("backlog")}
+					disabled={!!updating}
+					icon={<Clock className="w-4 h-4" />}
+				/>
+				<QuickActionButton
+					active={state?.wishlist}
+					onClick={() => onToggle("wishlist")}
+					disabled={!!updating}
+					icon={<Gift className="w-4 h-4" />}
+				/>
+				<button
+					type="button"
+					onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSubmenu("more") }}
+					disabled={!!updating}
+					className={`flex-1 p-2 rounded-md cursor-pointer transition-all disabled:opacity-50 flex items-center justify-center ${
+						hasMoreActive
+							? "bg-zinc-700 text-white"
+							: "bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700 hover:text-white"
+					}`}
+				>
+					<MoreHorizontal className="w-4 h-4" />
 				</button>
 			</div>
 		</div>
@@ -291,7 +339,7 @@ export default function GameCard({
 			/>
 			
 			{showMenu && canShowActions ? (
-				<CardActionsMenu
+				<CardActionsOverlay
 					state={actions}
 					onToggle={toggle}
 					onStatusSelect={(val) => toggle("status", val)}
