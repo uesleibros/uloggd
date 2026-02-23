@@ -99,6 +99,7 @@ As variáveis necessárias:
 |----------|-----------|------------|
 | `TWITCH_CLIENT_ID` | Client ID da aplicacao Twitch | [Twitch Dev Console](https://dev.twitch.tv/console/apps) |
 | `TWITCH_CLIENT_SECRET` | Client Secret da aplicacao Twitch | [Twitch Dev Console](https://dev.twitch.tv/console/apps) |
+| `TWITCH_REDIRECT_URI` | URL de callback do OAuth da Twitch (ex: `https://seusite.com/api/connections/twitch/callback`) | Definida por você e registrada em [Twitch Dev Console](https://dev.twitch.tv/console/apps) > Seu App > OAuth Redirect URLs |
 | `VITE_SUPABASE_URL` | URL do projeto Supabase (frontend) | Supabase Dashboard > Settings > API |
 | `VITE_SUPABASE_ANON_KEY` | Anon key publica do Supabase (frontend) | Supabase Dashboard > Settings > API |
 | `SUPABASE_URL` | URL do projeto Supabase (backend) | Supabase Dashboard > Settings > API |
