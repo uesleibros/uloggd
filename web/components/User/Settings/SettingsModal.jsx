@@ -199,7 +199,7 @@ export default function SettingsModal({ isOpen, onClose }) {
 					/>
 				)}
 				{activeTab === "connections" && (
-					<ConnectionsTab user={user} />
+					<ConnectionsTab />
 				)}
 				{activeTab === "integrations" && (
 					<IntegrationsTab />
@@ -208,3 +208,4 @@ export default function SettingsModal({ isOpen, onClose }) {
 		</Modal>
 	)
 }
+
