@@ -1,9 +1,11 @@
 import { useState, useCallback, useRef } from "react"
 import { Link } from "react-router-dom"
-import { Star, Play, Clock, Gift, Heart } from "lucide-react"
+import { Star, Play, Clock, Gift, Heart, List, ChevronRight, Check, MoreHorizontal } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
 import { useMyLibrary } from "#hooks/useMyLibrary"
+import AddToListModal from "@components/Lists/AddToListModal"
+import { STATUS_OPTIONS, GAME_STATUS } from "#constants/game"
 
 const COVER_FALLBACK = "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"
 
@@ -70,20 +72,26 @@ function useCardActions(game, enabled) {
 			})
 			if (res.ok) {
 				const d = await res.json()
-				setState({ playing: d.playing || false, backlog: d.backlog || false, wishlist: d.wishlist || false, liked: d.liked || false })
+				setState({
+					status: d.status || null,
+					playing: d.playing || false,
+					backlog: d.backlog || false,
+					wishlist: d.wishlist || false,
+					liked: d.liked || false,
+				})
 			} else {
-				setState({ playing: false, backlog: false, wishlist: false, liked: false })
+				setState({ status: null, playing: false, backlog: false, wishlist: false, liked: false })
 			}
 		} catch {
-			setState({ playing: false, backlog: false, wishlist: false, liked: false })
+			setState({ status: null, playing: false, backlog: false, wishlist: false, liked: false })
 		}
 	}, [enabled, user, game?.id])
 
-	const toggle = useCallback(async (field) => {
+	const toggle = useCallback(async (field, value) => {
 		if (!user || !state || updating) return
-		const value = !state[field]
+		const newValue = value !== undefined ? value : !state[field]
 		const prev = { ...state }
-		setState((s) => ({ ...s, [field]: value }))
+		setState((s) => ({ ...s, [field]: newValue }))
 		setUpdating(field)
 		try {
 			const { data: { session } } = await supabase.auth.getSession()
@@ -91,7 +99,7 @@ function useCardActions(game, enabled) {
 			const res = await fetch("/api/userGames/@me/update", {
 				method: "POST",
 				headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-				body: JSON.stringify({ gameId: game.id, gameSlug: game.slug, field, value }),
+				body: JSON.stringify({ gameId: game.id, gameSlug: game.slug, field, value: newValue }),
 			})
 			if (res.ok) refresh()
 			else setState(prev)
@@ -105,22 +113,137 @@ function useCardActions(game, enabled) {
 	return { user, state, prefetch, toggle, updating }
 }
 
-function CardAction({ active, onClick, icon, activeClass = "text-white bg-white/20", title }) {
+function StatusSubmenu({ status, onSelect, onBack }) {
 	return (
-		<button
-			type="button"
-			onClick={(e) => {
-				e.preventDefault()
-				e.stopPropagation()
-				onClick()
-			}}
-			title={title}
-			className={`p-1.5 rounded-md cursor-pointer transition-all duration-150 ${
-				active ? activeClass : "text-zinc-400 hover:text-white hover:bg-white/10"
-			}`}
-		>
-			{icon}
-		</button>
+		<div className="absolute inset-0 bg-black/90 rounded-lg flex flex-col">
+			<button
+				type="button"
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBack() }}
+				className="flex items-center gap-1 px-2 py-1.5 text-[10px] text-zinc-400 hover:text-white transition-colors cursor-pointer border-b border-zinc-700/50"
+			>
+				<ChevronRight className="w-3 h-3 rotate-180" />
+				Voltar
+			</button>
+			<div className="flex-1 overflow-y-auto py-1">
+				{STATUS_OPTIONS.map((s) => (
+					<button
+						key={s.id}
+						type="button"
+						onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelect(s.id) }}
+						className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] cursor-pointer transition-colors ${
+							status === s.id ? "text-white bg-zinc-700/50" : "text-zinc-300 hover:text-white hover:bg-zinc-700/30"
+						}`}
+					>
+						<div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.color}`} />
+						<span className="truncate">{s.label}</span>
+						{status === s.id && <Check className="w-3 h-3 ml-auto flex-shrink-0" />}
+					</button>
+				))}
+				{status && (
+					<button
+						type="button"
+						onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelect(null) }}
+						className="w-full px-2 py-1.5 text-[10px] text-zinc-500 hover:text-zinc-300 cursor-pointer transition-colors text-left"
+					>
+						Remover
+					</button>
+				)}
+			</div>
+		</div>
+	)
+}
+
+function CardActionsMenu({ state, onToggle, onStatusSelect, onAddToList, updating }) {
+	const [showStatusSubmenu, setShowStatusSubmenu] = useState(false)
+	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
+
+	if (showStatusSubmenu) {
+		return (
+			<StatusSubmenu
+				status={state?.status}
+				onSelect={(val) => { onStatusSelect(val); setShowStatusSubmenu(false) }}
+				onBack={() => setShowStatusSubmenu(false)}
+			/>
+		)
+	}
+
+	return (
+		<div className="absolute inset-0 bg-black/90 rounded-lg flex flex-col py-1 overflow-y-auto">
+			<button
+				type="button"
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowStatusSubmenu(true) }}
+				disabled={!!updating}
+				className="w-full flex items-center gap-2 px-2 py-1.5 text-[10px] text-zinc-300 hover:text-white hover:bg-zinc-700/30 cursor-pointer transition-colors disabled:opacity-50"
+			>
+				<div className={`w-2 h-2 rounded-full flex-shrink-0 ${statusConfig?.color || "bg-zinc-600"}`} />
+				<span className="truncate">{statusConfig?.label || "Status"}</span>
+				<ChevronRight className="w-3 h-3 ml-auto flex-shrink-0 opacity-50" />
+			</button>
+
+			<button
+				type="button"
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("playing") }}
+				disabled={!!updating}
+				className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] cursor-pointer transition-colors disabled:opacity-50 ${
+					state?.playing ? "text-white bg-zinc-700/50" : "text-zinc-300 hover:text-white hover:bg-zinc-700/30"
+				}`}
+			>
+				<Play className="w-3 h-3 flex-shrink-0 fill-current" />
+				<span>Jogando</span>
+				{state?.playing && <Check className="w-3 h-3 ml-auto flex-shrink-0" />}
+			</button>
+
+			<button
+				type="button"
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("backlog") }}
+				disabled={!!updating}
+				className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] cursor-pointer transition-colors disabled:opacity-50 ${
+					state?.backlog ? "text-white bg-zinc-700/50" : "text-zinc-300 hover:text-white hover:bg-zinc-700/30"
+				}`}
+			>
+				<Clock className="w-3 h-3 flex-shrink-0" />
+				<span>Backlog</span>
+				{state?.backlog && <Check className="w-3 h-3 ml-auto flex-shrink-0" />}
+			</button>
+
+			<button
+				type="button"
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("wishlist") }}
+				disabled={!!updating}
+				className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] cursor-pointer transition-colors disabled:opacity-50 ${
+					state?.wishlist ? "text-white bg-zinc-700/50" : "text-zinc-300 hover:text-white hover:bg-zinc-700/30"
+				}`}
+			>
+				<Gift className="w-3 h-3 flex-shrink-0" />
+				<span>Wishlist</span>
+				{state?.wishlist && <Check className="w-3 h-3 ml-auto flex-shrink-0" />}
+			</button>
+
+			<button
+				type="button"
+				onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToList() }}
+				disabled={!!updating}
+				className="w-full flex items-center gap-2 px-2 py-1.5 text-[10px] text-zinc-300 hover:text-white hover:bg-zinc-700/30 cursor-pointer transition-colors disabled:opacity-50"
+			>
+				<List className="w-3 h-3 flex-shrink-0" />
+				<span>Adicionar à lista</span>
+			</button>
+
+			<div className="border-t border-zinc-700/50 mt-1 pt-1">
+				<button
+					type="button"
+					onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle("liked") }}
+					disabled={!!updating}
+					className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] cursor-pointer transition-colors disabled:opacity-50 ${
+						state?.liked ? "text-red-400" : "text-zinc-300 hover:text-white hover:bg-zinc-700/30"
+					}`}
+				>
+					<Heart className={`w-3 h-3 flex-shrink-0 ${state?.liked ? "fill-current" : ""}`} />
+					<span>Curtir</span>
+					{state?.liked && <Check className="w-3 h-3 ml-auto flex-shrink-0" />}
+				</button>
+			</div>
+		</div>
 	)
 }
 
@@ -135,7 +258,9 @@ export default function GameCard({
 	className = "",
 }) {
 	const { getRating } = useMyLibrary()
-	const { user, state: actions, prefetch, toggle } = useCardActions(game, showQuickActions)
+	const { user, state: actions, prefetch, toggle, updating } = useCardActions(game, showQuickActions)
+	const [showMenu, setShowMenu] = useState(false)
+	const [showListModal, setShowListModal] = useState(false)
 
 	const rating = propRating ?? getRating(game.slug)
 	const hasRating = showRating && rating != null && rating > 0
@@ -150,6 +275,12 @@ export default function GameCard({
 		? "w-full aspect-[3/4]"
 		: "w-34 h-44 flex-shrink-0"
 
+	const handleMenuToggle = (e) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setShowMenu(!showMenu)
+	}
+
 	const imageContent = (
 		<>
 			<img
@@ -158,69 +289,86 @@ export default function GameCard({
 				draggable={false}
 				className="w-full h-full object-cover select-none rounded-lg bg-zinc-800"
 			/>
-			<div className={`absolute inset-0 bg-black/70 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center p-2 ${canShowActions ? "pb-10" : ""} gap-1.5 pointer-events-none`}>
-				<span className="text-white select-none text-xs font-medium text-center leading-tight line-clamp-3">
-					{game.name}
-				</span>
-				{hasRating && <MiniStars rating={rating} />}
-				{canShowActions && actions && (
-					<div className="absolute bottom-0 inset-x-0 flex items-center justify-center gap-0.5 p-1.5 rounded-b-lg pointer-events-auto">
-						<CardAction
-							active={actions.playing}
-							onClick={() => toggle("playing")}
-							icon={<Play className="w-3.5 h-3.5 fill-current" />}
-							title="Jogando"
-						/>
-						<CardAction
-							active={actions.backlog}
-							onClick={() => toggle("backlog")}
-							icon={<Clock className="w-3.5 h-3.5" />}
-							title="Backlog"
-						/>
-						<CardAction
-							active={actions.wishlist}
-							onClick={() => toggle("wishlist")}
-							icon={<Gift className="w-3.5 h-3.5" />}
-							title="Wishlist"
-						/>
-						<CardAction
-							active={actions.liked}
-							onClick={() => toggle("liked")}
-							icon={<Heart className={`w-3.5 h-3.5 ${actions.liked ? "fill-current" : ""}`} />}
-							activeClass="text-red-500 bg-red-500/20"
-							title="Curtir"
-						/>
-					</div>
-				)}
-			</div>
+			
+			{showMenu && canShowActions ? (
+				<CardActionsMenu
+					state={actions}
+					onToggle={toggle}
+					onStatusSelect={(val) => toggle("status", val)}
+					onAddToList={() => { setShowMenu(false); setShowListModal(true) }}
+					updating={updating}
+				/>
+			) : (
+				<div className="absolute inset-0 bg-black/70 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center p-2 gap-1.5 pointer-events-none">
+					<span className="text-white select-none text-xs font-medium text-center leading-tight line-clamp-3">
+						{game.name}
+					</span>
+					{hasRating && <MiniStars rating={rating} />}
+				</div>
+			)}
+
+			{canShowActions && (
+				<button
+					type="button"
+					onClick={handleMenuToggle}
+					className={`absolute top-1 right-1 p-1 rounded-md cursor-pointer transition-all duration-150 pointer-events-auto ${
+						showMenu
+							? "bg-white/20 text-white opacity-100"
+							: "bg-black/50 text-white opacity-0 group-hover:opacity-100 hover:bg-black/70"
+					}`}
+				>
+					<MoreHorizontal className="w-4 h-4" />
+				</button>
+			)}
+
+			{actions?.liked && !showMenu && (
+				<div className="absolute bottom-1 right-1 p-1 pointer-events-none">
+					<Heart className="w-3.5 h-3.5 text-red-500 fill-current drop-shadow-md" />
+				</div>
+			)}
+
+			{actions?.status && !showMenu && (
+				<div className="absolute bottom-1 left-1 pointer-events-none">
+					<div className={`w-2.5 h-2.5 rounded-full ${GAME_STATUS[actions.status]?.color || "bg-zinc-500"} ring-1 ring-black/30`} />
+				</div>
+			)}
 		</>
 	)
 
 	return (
-		<div
-			className={`group relative ${sizeClasses} ${className}`}
-			onMouseEnter={canShowActions ? prefetch : undefined}
-		>
-			{isFavorite && <FavoriteBadge />}
-			{newTab ? (
-				<a
-					href={`/game/${game.slug}`}
-					target="_blank"
-					rel="noopener noreferrer"
-					className={`block relative w-full h-full rounded-lg transition-all ${cardClasses}`}
-					title={game.name}
-				>
-					{imageContent}
-				</a>
-			) : (
-				<Link
-					to={`/game/${game.slug}`}
-					className={`block relative w-full h-full rounded-lg ${cardClasses}`}
-				>
-					{imageContent}
-				</Link>
-			)}
-		</div>
+		<>
+			<div
+				className={`group relative ${sizeClasses} ${className}`}
+				onMouseEnter={canShowActions ? prefetch : undefined}
+				onMouseLeave={() => setShowMenu(false)}
+			>
+				{isFavorite && <FavoriteBadge />}
+				{newTab ? (
+					<a
+						href={`/game/${game.slug}`}
+						target="_blank"
+						rel="noopener noreferrer"
+						className={`block relative w-full h-full rounded-lg transition-all ${cardClasses}`}
+						title={game.name}
+					>
+						{imageContent}
+					</a>
+				) : (
+					<Link
+						to={`/game/${game.slug}`}
+						className={`block relative w-full h-full rounded-lg ${cardClasses}`}
+					>
+						{imageContent}
+					</Link>
+				)}
+			</div>
+
+			<AddToListModal
+				isOpen={showListModal}
+				onClose={() => setShowListModal(false)}
+				game={game}
+			/>
+		</>
 	)
 }
 
