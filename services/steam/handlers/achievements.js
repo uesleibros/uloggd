@@ -55,6 +55,7 @@ export async function handleAchievements(req, res) {
             description: a.description || "",
             icon: a.icon,
             iconGray: a.icongray,
+            hidden: a.hidden === 1,
           }
         })
 
@@ -70,6 +71,7 @@ export async function handleAchievements(req, res) {
               name: info.displayName,
               description: info.description,
               icon: info.icon,
+              hidden: info.hidden,
               unlockedAt: a.unlocktime,
             })
           })
