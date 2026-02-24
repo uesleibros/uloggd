@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Trophy } from "lucide-react"
+import { Trophy, EyeOff, Eye } from "lucide-react"
 import Modal from "@components/UI/Modal"
 
 function SteamIcon({ className }) {
@@ -19,7 +19,15 @@ function timeAgo(timestamp) {
 }
 
 function AchievementModal({ achievement, isOpen, onClose }) {
+  const [revealed, setRevealed] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen) setRevealed(false)
+  }, [isOpen])
+
   if (!achievement) return null
+
+  const isHidden = achievement.hidden && !revealed
 
   return (
     <Modal
@@ -31,22 +39,56 @@ function AchievementModal({ achievement, isOpen, onClose }) {
     >
       <div className="p-5">
         <div className="flex items-start gap-4">
-          <img
-            src={achievement.icon}
-            alt={achievement.name}
-            className="w-16 h-16 rounded-lg border border-zinc-700 flex-shrink-0"
-          />
+          <div className="relative flex-shrink-0">
+            <img
+              src={achievement.icon}
+              alt={isHidden ? "Conquista secreta" : achievement.name}
+              className={`w-16 h-16 rounded-lg border border-zinc-700 ${
+                isHidden ? "blur-md" : ""
+              }`}
+            />
+            {isHidden && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <EyeOff className="w-5 h-5 text-zinc-400" />
+              </div>
+            )}
+          </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-base font-bold text-white">
-              {achievement.name}
+              {isHidden ? "Conquista secreta" : achievement.name}
             </h3>
-            {achievement.description && (
-              <p className="text-sm text-zinc-400 mt-1">
-                {achievement.description}
+            {isHidden ? (
+              <p className="text-sm text-zinc-500 mt-1">
+                Esta conquista contém spoilers
               </p>
+            ) : (
+              achievement.description && (
+                <p className="text-sm text-zinc-400 mt-1">
+                  {achievement.description}
+                </p>
+              )
             )}
           </div>
         </div>
+
+        {achievement.hidden && (
+          <button
+            onClick={() => setRevealed(!revealed)}
+            className="mt-3 flex items-center gap-2 w-full py-2 px-3 bg-yellow-500/10 hover:bg-yellow-500/15 border border-yellow-500/30 rounded-lg text-sm text-yellow-400 transition-colors cursor-pointer"
+          >
+            {revealed ? (
+              <>
+                <EyeOff className="w-4 h-4" />
+                Esconder detalhes
+              </>
+            ) : (
+              <>
+                <Eye className="w-4 h-4" />
+                Revelar conquista (pode conter spoilers)
+              </>
+            )}
+          </button>
+        )}
 
         <div className="mt-4 bg-zinc-800/50 rounded-lg border border-zinc-700/50 divide-y divide-zinc-700/50">
           <div className="flex items-center justify-between px-4 py-2.5">
@@ -75,6 +117,15 @@ function AchievementModal({ achievement, isOpen, onClose }) {
               <span className="text-xs text-[#66c0f4]">Steam</span>
             </div>
           </div>
+          {achievement.hidden && (
+            <div className="flex items-center justify-between px-4 py-2.5">
+              <span className="text-xs text-zinc-500">Tipo</span>
+              <span className="text-xs text-yellow-400 flex items-center gap-1">
+                <EyeOff className="w-3 h-3" />
+                Secreta
+              </span>
+            </div>
+          )}
         </div>
 
         <a
@@ -145,10 +196,17 @@ export default function SteamAchievements({ userId }) {
           >
             <img
               src={achievement.icon}
-              alt={achievement.name}
-              className="w-full h-full object-cover"
+              alt={achievement.hidden ? "Conquista secreta" : achievement.name}
+              className={`w-full h-full object-cover ${
+                achievement.hidden ? "blur-sm" : ""
+              }`}
               loading="lazy"
             />
+            {achievement.hidden && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                <EyeOff className="w-3 h-3 text-zinc-400" />
+              </div>
+            )}
           </button>
         ))}
       </div>
