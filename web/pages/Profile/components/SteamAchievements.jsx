@@ -54,7 +54,7 @@ function AchievementModal({ achievement, isOpen, onClose }) {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-base font-bold text-white">
+            <h3 className="text-base font-bold text-white break-words">
               {isHidden ? "Conquista secreta" : achievement.name}
             </h3>
             {isHidden ? (
@@ -63,7 +63,7 @@ function AchievementModal({ achievement, isOpen, onClose }) {
               </p>
             ) : (
               achievement.description && (
-                <p className="text-sm text-zinc-400 mt-1">
+                <p className="text-sm text-zinc-400 mt-1 break-words">
                   {achievement.description}
                 </p>
               )
@@ -78,12 +78,12 @@ function AchievementModal({ achievement, isOpen, onClose }) {
           >
             {revealed ? (
               <>
-                <EyeOff className="w-4 h-4" />
+                <EyeOff className="w-4 h-4 flex-shrink-0" />
                 Esconder detalhes
               </>
             ) : (
               <>
-                <Eye className="w-4 h-4" />
+                <Eye className="w-4 h-4 flex-shrink-0" />
                 Revelar conquista (pode conter spoilers)
               </>
             )}
@@ -91,37 +91,37 @@ function AchievementModal({ achievement, isOpen, onClose }) {
         )}
 
         <div className="mt-4 bg-zinc-800/50 rounded-lg border border-zinc-700/50 divide-y divide-zinc-700/50">
-          <div className="flex items-center justify-between px-4 py-2.5">
-            <span className="text-xs text-zinc-500">Jogo</span>
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+            <span className="text-xs text-zinc-500 flex-shrink-0">Jogo</span>
+            <div className="flex items-center gap-2 min-w-0">
               <img
                 src={`https://cdn.cloudflare.steamstatic.com/steam/apps/${achievement.appId}/header.jpg`}
                 alt={achievement.game}
-                className="w-8 h-4 object-cover rounded"
+                className="w-8 h-4 object-cover rounded flex-shrink-0"
               />
-              <span className="text-xs text-white font-medium">
+              <span className="text-xs text-white font-medium truncate">
                 {achievement.game}
               </span>
             </div>
           </div>
-          <div className="flex items-center justify-between px-4 py-2.5">
-            <span className="text-xs text-zinc-500">Desbloqueada</span>
-            <span className="text-xs text-white">
+          <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+            <span className="text-xs text-zinc-500 flex-shrink-0">Desbloqueada</span>
+            <span className="text-xs text-white truncate">
               {timeAgo(achievement.unlockedAt)}
             </span>
           </div>
-          <div className="flex items-center justify-between px-4 py-2.5">
-            <span className="text-xs text-zinc-500">Plataforma</span>
+          <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+            <span className="text-xs text-zinc-500 flex-shrink-0">Plataforma</span>
             <div className="flex items-center gap-1.5">
-              <SteamIcon className="w-3.5 h-3.5 text-[#66c0f4]" />
+              <SteamIcon className="w-3.5 h-3.5 text-[#66c0f4] flex-shrink-0" />
               <span className="text-xs text-[#66c0f4]">Steam</span>
             </div>
           </div>
           {achievement.hidden && (
-            <div className="flex items-center justify-between px-4 py-2.5">
-              <span className="text-xs text-zinc-500">Tipo</span>
+            <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+              <span className="text-xs text-zinc-500 flex-shrink-0">Tipo</span>
               <span className="text-xs text-yellow-400 flex items-center gap-1">
-                <EyeOff className="w-3 h-3" />
+                <EyeOff className="w-3 h-3 flex-shrink-0" />
                 Secreta
               </span>
             </div>
@@ -134,7 +134,7 @@ function AchievementModal({ achievement, isOpen, onClose }) {
           rel="noopener noreferrer"
           className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-sm text-zinc-300 hover:text-white transition-colors"
         >
-          <SteamIcon className="w-4 h-4" />
+          <SteamIcon className="w-4 h-4 flex-shrink-0" />
           Ver na Steam
         </a>
       </div>
