@@ -1,9 +1,30 @@
 import { supabase } from "#lib/supabase-ssr.js"
 import { query } from "#lib/igdbWrapper.js"
 
+const cache = new Map()
+const CACHE_TTL = 60 * 1000 // 1 minuto
+
+function getCached(key) {
+  const entry = cache.get(key)
+  if (!entry) return null
+  if (Date.now() - entry.time > CACHE_TTL) {
+    cache.delete(key)
+    return null
+  }
+  return entry.data
+}
+
+function setCache(key, data) {
+  cache.set(key, { data, time: Date.now() })
+}
+
 export async function handlePresence(req, res) {
   const { userId } = req.body
   if (!userId) return res.status(400).json({ error: "userId required" })
+
+  const cacheKey = `presence:${userId}`
+  const cached = getCached(cacheKey)
+  if (cached) return res.json(cached)
 
   const { data: connection } = await supabase
     .from("user_connections")
@@ -13,7 +34,9 @@ export async function handlePresence(req, res) {
     .maybeSingle()
 
   if (!connection?.provider_user_id) {
-    return res.json({ playing: false })
+    const result = { playing: false }
+    setCache(cacheKey, result)
+    return res.json(result)
   }
 
   const steamId = connection.provider_user_id
@@ -26,21 +49,24 @@ export async function handlePresence(req, res) {
   const player = steamData.response.players?.[0]
 
   if (!player || !player.gameid) {
-    return res.json({
+    const result = {
       playing: false,
       profile: {
         name: player?.personaname,
         avatar: player?.avatarfull,
         status: player?.personastate ?? 0
       }
-    })
+    }
+
+    setCache(cacheKey, result)
+    return res.json(result)
   }
 
   const externalResult = await query(
     "external_games",
     `fields game;
-    where uid = "${player.gameid}" & external_game_source = 1;
-    limit 1;`
+     where uid = "${player.gameid}" & external_game_source = 1;
+     limit 1;`
   )
 
   let igdbGame = null
@@ -49,13 +75,13 @@ export async function handlePresence(req, res) {
     const gameResult = await query(
       "games",
       `fields name, slug, cover.url;
-      where id = ${externalResult[0].game};
-      limit 1;`
+       where id = ${externalResult[0].game};
+       limit 1;`
     )
     igdbGame = gameResult?.[0] || null
   }
 
-  res.json({
+  const result = {
     playing: true,
     profile: {
       name: player.personaname,
@@ -76,5 +102,9 @@ export async function handlePresence(req, res) {
             : null
         }
       : null
-  })
+  }
+
+  setCache(cacheKey, result)
+
+  res.json(result)
 }
