@@ -20,7 +20,7 @@ export async function handleAchievements(req, res) {
 
   try {
     const recentGamesRes = await fetch(
-      `https://api.steampowered.com{apiKey}&steamid=${steamId}`
+      `https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v1/?key=${apiKey}&steamid=${steamId}&count=10`
     )
     const recentGamesData = await recentGamesRes.json()
     const games = recentGamesData.response?.games || []
@@ -31,8 +31,12 @@ export async function handleAchievements(req, res) {
       games.map(async (game) => {
         try {
           const [statsRes, schemaRes] = await Promise.all([
-            fetch(`https://api.steampowered.com{game.appid}&key=${apiKey}&steamid=${steamId}`),
-            fetch(`https://api.steampowered.com{game.appid}&key=${apiKey}`)
+            fetch(
+              `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?appid=${game.appid}&key=${apiKey}&steamid=${steamId}`
+            ),
+            fetch(
+              `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?appid=${game.appid}&key=${apiKey}`
+            )
           ])
 
           const stats = await statsRes.json()
@@ -41,7 +45,7 @@ export async function handleAchievements(req, res) {
           if (!stats.playerstats?.achievements) return []
 
           const schemaMap = new Map(
-            schema.game?.availableGameStats?.achievements?.map(a => [a.name, a])
+            (schema.game?.availableGameStats?.achievements || []).map(a => [a.name, a])
           )
 
           return stats.playerstats.achievements
@@ -49,26 +53,27 @@ export async function handleAchievements(req, res) {
             .map(a => {
               const info = schemaMap.get(a.apiname)
               return {
-                game: game.name,
+                game: stats.playerstats.gameName || game.name || `App ${game.appid}`,
+                appid: game.appid,
                 name: info?.displayName || a.apiname,
                 description: info?.description || "",
-                icon: info?.icon,
+                icon: info?.icon || "",
                 unlockedAt: a.unlocktime
               }
             })
-        } catch { return [] }
+        } catch {
+          return []
+        }
       })
     )
 
-    const result = achievementsData
+    const achievements = achievementsData
       .flat()
       .sort((a, b) => b.unlockedAt - a.unlockedAt)
-      .slice(0, 50)
 
-    res.setHeader("Cache-Control", `s-maxage=${CACHE_TTL}, stale-while-revalidate`)
-    return res.json({ achievements: result })
-    
-  } catch (error) {
-    return res.status(500).json({ error: "Steam API Fetch Failed" })
+    return res.json({ achievements })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ error: "Failed to fetch achievements" })
   }
 }
