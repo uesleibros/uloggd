@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
 import { Twitch, Radio } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
@@ -53,6 +53,84 @@ function StreamCard({ stream }) {
 				</div>
 			</div>
 		</a>
+	)
+}
+
+function SteamPresenceCard({ userId }) {
+	const [presence, setPresence] = useState(null)
+	const [loading, setLoading] = useState(true)
+
+	useEffect(() => {
+		if (!userId) return
+
+		const fetchPresence = async () => {
+			try {
+				const res = await fetch("/api/steam/presence", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ userId }),
+				})
+				const data = await res.json()
+				if (data.playing) {
+					setPresence(data)
+				} else {
+					setPresence(null)
+				}
+			} catch {
+				setPresence(null)
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		fetchPresence()
+	}, [userId])
+
+	if (loading || !presence) return null
+
+	return (
+		<div className="mt-4 bg-[#171a21]/80 border border-[#2a475e]/50 rounded-lg p-3 flex items-center gap-4 relative overflow-hidden group hover:bg-[#171a21] transition-colors">
+			<div 
+				className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity bg-cover bg-center pointer-events-none"
+				style={{ backgroundImage: `url(${presence.steam.header})` }}
+			/>
+			
+			<div className="relative z-10 flex items-center gap-3 w-full">
+				<div className="relative flex-shrink-0">
+					<img 
+						src={presence.game?.cover || presence.steam.header} 
+						alt={presence.steam.name}
+						className="w-12 h-16 object-cover rounded shadow-lg bg-[#0f1116]"
+					/>
+					<div className="absolute -bottom-1 -right-1 bg-[#171a21] rounded-full p-0.5 shadow-sm">
+						<svg viewBox="0 0 24 24" className="w-4 h-4 text-[#66c0f4] fill-current">
+							<path d="M11.979 0C5.361 0 0 5.367 0 11.987c0 2.59.814 4.978 2.195 6.941l3.522-5.118a5.195 5.195 0 0 1-.225-1.517A5.203 5.203 0 0 1 10.697 7.1a5.203 5.203 0 0 1 5.205 5.193 5.203 5.203 0 0 1-5.205 5.192 5.122 5.122 0 0 1-2.072-.446l-4.965 7.182A11.936 11.936 0 0 0 11.979 24c6.618 0 11.986-5.367 11.986-11.987C24 5.367 18.597 0 11.979 0zm5.132 12.234a3.398 3.398 0 0 0-3.394-3.385 3.398 3.398 0 0 0-3.394 3.385 3.398 3.398 0 0 0 3.394 3.386 3.398 3.398 0 0 0 3.394-3.386zm-4.706 0a1.314 1.314 0 0 1 1.312-1.312 1.314 1.314 0 0 1 1.312 1.312 1.314 1.314 0 0 1-1.312 1.312 1.314 1.314 0 0 1-1.312-1.312zm-3.048 2.257c-.158.552-.39 1.07-.678 1.543l-3.238-1.259a2.41 2.41 0 0 1 1.096-2.502 2.398 2.398 0 0 1 2.721-.137l3.203 4.67c-.206.182-.424.348-.654.498L8.711 15.03l.646-.539z"/>
+						</svg>
+					</div>
+				</div>
+
+				<div className="flex-1 min-w-0">
+					<div className="text-[10px] uppercase font-bold text-[#66c0f4] tracking-wide mb-0.5">
+						Jogando agora
+					</div>
+					<div className="text-sm font-bold text-white truncate leading-tight">
+						{presence.game?.name || presence.steam.name}
+					</div>
+					<div className="text-xs text-zinc-400 mt-0.5 truncate">
+						{presence.profile.name} • Steam
+					</div>
+				</div>
+
+				{presence.game?.slug && (
+					<Link
+						to={`/game/${presence.game.slug}`}
+						className="px-3 py-1.5 bg-[#2a475e] hover:bg-[#66c0f4] hover:text-[#171a21] text-[#66c0f4] text-xs font-bold rounded transition-colors z-10 whitespace-nowrap"
+					>
+						Ver Jogo
+					</Link>
+				)}
+			</div>
+		</div>
 	)
 }
 
@@ -131,6 +209,8 @@ export default function Profile() {
 				/>
 
 				{profile?.stream && <StreamCard stream={profile.stream} />}
+				
+				<SteamPresenceCard userId={profile.id} />
 
 				<ProfileNavigation
 					activeSection={activeSection}
