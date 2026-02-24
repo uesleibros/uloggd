@@ -7,7 +7,7 @@ export async function handleStatus(req, res) {
 	try {
 		const { data, error } = await supabase
 			.from("user_connections")
-			.select("provider_username, provider_display_name, provider_avatar_url")
+			.select("provider_username, provider_user_id, provider_display_name, provider_avatar_url")
 			.eq("user_id", userId)
 			.eq("provider", "steam")
 			.maybeSingle()
@@ -17,7 +17,7 @@ export async function handleStatus(req, res) {
 		if (data) {
 			res.json({ 
 				connected: true, 
-				steamId: data.provider_username, 
+				steamId: data.provider_user_id, 
 				nickname: data.provider_display_name,
 				avatar: data.provider_avatar_url
 			})
@@ -28,4 +28,5 @@ export async function handleStatus(req, res) {
 		console.error("Erro no status da Steam:", err)
 		res.json({ connected: false })
 	}
+
 }
