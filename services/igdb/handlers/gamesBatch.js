@@ -1,5 +1,5 @@
 import { query } from "#lib/igdbWrapper.js"
-import { getCache, setCache } from "#lib/cache.js"
+import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleGamesBatch(req, res) {
   const { slugs } = req.body
@@ -9,19 +9,22 @@ export async function handleGamesBatch(req, res) {
 
   const uniqueSlugs = [...new Set(slugs)]
   const games = {}
-  const uncached = []
+  const now = new Date().toISOString()
 
-  const cacheResults = await Promise.all(
-    uniqueSlugs.map(slug => getCache(`igdb_game_${slug}`).then(data => ({ slug, data })))
-  )
+  const { data: cached } = await supabase
+    .from("api_cache")
+    .select("key, data")
+    .in("key", uniqueSlugs.map(s => `igdb_game_${s}`))
+    .gt("expires_at", now)
 
-  for (const { slug, data } of cacheResults) {
-    if (data) {
-      games[slug] = data
-    } else {
-      uncached.push(slug)
-    }
+  const cachedSlugs = new Set()
+  for (const row of (cached || [])) {
+    const slug = row.key.replace("igdb_game_", "")
+    games[slug] = row.data
+    cachedSlugs.add(slug)
   }
+
+  const uncached = uniqueSlugs.filter(s => !cachedSlugs.has(s))
 
   if (uncached.length === 0) {
     return res.json(games)
@@ -51,6 +54,7 @@ export async function handleGamesBatch(req, res) {
     )
 
     const toCache = []
+    const expiresAt = new Date(Date.now() + 86400 * 1000).toISOString()
 
     for (const data of results) {
       for (const g of data) {
@@ -63,11 +67,18 @@ export async function handleGamesBatch(req, res) {
         }
 
         games[g.slug] = game
-        toCache.push({ key: `igdb_game_${g.slug}`, data: game })
+        toCache.push({
+          key: `igdb_game_${g.slug}`,
+          data: game,
+          created_at: now,
+          expires_at: expiresAt
+        })
       }
     }
 
-    Promise.all(toCache.map(({ key, data }) => setCache(key, data)))
+    if (toCache.length > 0) {
+      supabase.from("api_cache").upsert(toCache)
+    }
 
     res.json(games)
   } catch (e) {
