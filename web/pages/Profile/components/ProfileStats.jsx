@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Calendar, Twitch, Radio, Gamepad2 } from "lucide-react"
 import CountUp from "@components/UI/CountUp"
+import SteamAchievements from "./SteamAchievements"
 
 function SteamIcon({ className }) {
 	return (
@@ -183,6 +184,8 @@ export default function ProfileStats({
 			</div>
 
 			<ActivitySection stream={stream} userId={userId} />
+			<SteamAchievements userId={userId} />
 		</>
 	)
 }
+
