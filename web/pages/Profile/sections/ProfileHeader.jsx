@@ -147,19 +147,21 @@ function SocialLinks({ links, connections }) {
   if (connections && Array.isArray(connections)) {
     connections.forEach((conn) => {
       const platform = CONNECTION_PLATFORMS[conn.provider]
-      if (platform && conn.provider_username) {
+      const id = conn.provider_user_id || conn.provider_username
+
+      if (platform && id) {
         items.push({
           key: `conn-${conn.provider}`,
           provider: conn.provider,
           icon: platform.icon,
           label: platform.label,
           color: platform.color,
-          href: platform.getUrl?.(conn.provider_username),
+          href: platform.getUrl?.(id),
           display: platform.getDisplay(
-            conn.provider_username,
-            conn.display_name
+            id,
+            conn.provider_display_name
           ),
-          raw: conn.provider_username,
+          raw: id,
         })
       }
     })
@@ -209,9 +211,10 @@ function SocialLinks({ links, connections }) {
               className={`
                 inline-flex items-center gap-1.5
                 px-2.5 py-1.5 rounded-lg
-                ${isCopied 
-                  ? "bg-green-500/20 border-green-500/50 text-green-400" 
-                  : "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+                ${
+                  isCopied
+                    ? "bg-green-500/20 border-green-500/50 text-green-400"
+                    : "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
                 }
                 border text-xs transition-all duration-200 cursor-pointer
               `}
@@ -399,3 +402,4 @@ export function ProfileHeader({
   )
 
 }
+
