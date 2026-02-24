@@ -7,7 +7,7 @@ const PROFILE_SELECT = `
 	username, banner, bio, pronoun, thinking, avatar, avatar_decoration,
 	created_at, is_moderator, last_seen, status, username_changed_at,
 	user_badges ( assigned_at, badge:badges ( id, title, description, icon_url, color ) ),
-	user_connections ( provider, provider_username )
+	user_connections ( provider, provider_user_id, provider_username, provider_display_name )
 `
 
 async function getProfileByUserId(userId) {
@@ -38,9 +38,7 @@ function formatProfile(profile, stream = null, reviewsCount = 0, likedReviewsCou
 		assigned_at: ub.assigned_at,
 	})) || []
 
-	const connections = profile.user_connections?.filter(c =>
-		c.provider_username
-	) || []
+	const connections = profile.user_connections || []
 
 	return {
 		id: profile.user_id,
