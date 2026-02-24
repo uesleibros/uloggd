@@ -1,10 +1,13 @@
 import { supabase } from "#lib/supabase-ssr.js"
-
-const CACHE_TTL = 10 * 60
+import { getCache, setCache } from "#lib/cache.js"
 
 export async function handleAchievements(req, res) {
   const { userId } = req.body
   if (!userId) return res.status(400).json({ error: "Missing userId" })
+
+  const cacheKey = `steam_achievements_${userId}`
+  const cached = await getCache(cacheKey)
+  if (cached) return res.json({ achievements: cached })
 
   const { data: connection } = await supabase
     .from("user_connections")
@@ -30,23 +33,30 @@ export async function handleAchievements(req, res) {
     const achievementsData = await Promise.all(
       games.map(async (game) => {
         try {
-          const [statsRes, schemaRes] = await Promise.all([
+          const [statsRes, schemaRes, storeRes] = await Promise.all([
             fetch(
               `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?appid=${game.appid}&key=${apiKey}&steamid=${steamId}`
             ),
             fetch(
               `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?appid=${game.appid}&key=${apiKey}`
+            ),
+            fetch(
+              `https://store.steampowered.com/api/appdetails?appids=${game.appid}`
             )
           ])
 
           const stats = await statsRes.json()
           const schema = await schemaRes.json()
+          const store = await storeRes.json()
 
           if (!stats.playerstats?.achievements) return []
 
           const schemaMap = new Map(
             (schema.game?.availableGameStats?.achievements || []).map(a => [a.name, a])
           )
+
+          const banner = store[game.appid]?.data?.header_image ||
+            `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/header.jpg`
 
           return stats.playerstats.achievements
             .filter(a => a.achieved === 1)
@@ -55,7 +65,7 @@ export async function handleAchievements(req, res) {
               return {
                 game: stats.playerstats.gameName || game.name || `App ${game.appid}`,
                 appId: game.appid,
-                banner: `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
+                banner,
                 name: info?.displayName || a.apiname,
                 description: info?.description || "",
                 icon: info?.icon || "",
@@ -74,8 +84,7 @@ export async function handleAchievements(req, res) {
       .sort((a, b) => b.unlockedAt - a.unlockedAt)
       .slice(0, 50)
 
-    res.setHeader("Cache-Control", `s-maxage=${CACHE_TTL}, stale-while-revalidate=${CACHE_TTL / 2}`)
-
+    await setCache(cacheKey, achievements)
     return res.json({ achievements })
   } catch (err) {
     console.error(err)
