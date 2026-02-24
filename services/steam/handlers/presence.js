@@ -58,7 +58,7 @@ export async function handlePresence(req, res) {
       game: igdbGame ? {
         name: igdbGame.name,
         slug: igdbGame.slug,
-        cover: igdbGame.cover?.url?.replace("t_thumb", "t_cover_big_2x") || null
+        cover: igdbGame.cover?.url?.replace("t_thumb", "t_cover_big") || null
       } : null
     }
 
