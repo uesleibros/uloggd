@@ -36,14 +36,24 @@ export async function handlePresence(req, res) {
     })
   }
 
-  const igdbResult = await query(
-    "games",
-    `fields name, slug, cover.url;
-    where external_games.uid = "${player.gameid}" & external_games.category = 1;
+  const externalResult = await query(
+    "external_games",
+    `fields game;
+    where uid = "${player.gameid}" & category = 1;
     limit 1;`
   )
 
-  const igdbGame = igdbResult?.[0] || null
+  let igdbGame = null
+
+  if (externalResult?.[0]?.game) {
+    const gameResult = await query(
+      "games",
+      `fields name, slug, cover.url;
+      where id = ${externalResult[0].game};
+      limit 1;`
+    )
+    igdbGame = gameResult?.[0] || null
+  }
 
   res.json({
     playing: true,
