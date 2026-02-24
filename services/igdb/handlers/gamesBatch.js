@@ -1,4 +1,5 @@
 import { query } from "#lib/igdbWrapper.js"
+import { getCache, setCache } from "#lib/cache.js"
 
 export async function handleGamesBatch(req, res) {
   const { slugs } = req.body
@@ -7,12 +8,27 @@ export async function handleGamesBatch(req, res) {
   }
 
   const uniqueSlugs = [...new Set(slugs)]
-  const CHUNK_SIZE = 50
   const games = {}
+  const uncached = []
+
+  for (const slug of uniqueSlugs) {
+    const cached = await getCache(`igdb_game_${slug}`)
+    if (cached) {
+      games[slug] = cached
+    } else {
+      uncached.push(slug)
+    }
+  }
+
+  if (uncached.length === 0) {
+    return res.json(games)
+  }
+
+  const CHUNK_SIZE = 50
 
   try {
-    for (let i = 0; i < uniqueSlugs.length; i += CHUNK_SIZE) {
-      const chunk = uniqueSlugs.slice(i, i + CHUNK_SIZE)
+    for (let i = 0; i < uncached.length; i += CHUNK_SIZE) {
+      const chunk = uncached.slice(i, i + CHUNK_SIZE)
       const slugCondition = chunk.map(s => `"${s}"`).join(",")
 
       const data = await query("games", `
@@ -26,13 +42,16 @@ export async function handleGamesBatch(req, res) {
       `)
 
       for (const g of data) {
-        games[g.slug] = {
+        const game = {
           ...g,
           developers: g.involved_companies?.filter(c => c.developer).map(c => c.company.name) || [],
           platforms: g.platforms?.slice().sort((a, b) => a.name.localeCompare(b.name)) || [],
           cover: g.cover?.url ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_1080p") } : null,
-          artworks: g.artworks?.map(a => ({ ...a, url: a.url.replace("t_thumb", "t_original") })) || [],
+          artworks: g.artworks?.map(a => ({ ...a, url: a.url.replace("t_thumb", "t_original") })) || []
         }
+
+        games[g.slug] = game
+        await setCache(`igdb_game_${g.slug}`, game)
       }
     }
 
@@ -42,4 +61,3 @@ export async function handleGamesBatch(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
-
