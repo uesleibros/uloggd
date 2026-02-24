@@ -19,7 +19,8 @@ export async function handleCallback(req, res) {
 			.upsert({
 				user_id: userId,
 				provider: "steam",
-				provider_username: user.steamid,
+				provider_user_id: user.steamid,
+				provider_username: user.username,
 				provider_display_name: user.username,
 				provider_avatar_url: user.avatar.large,
 				connected_at: new Date().toISOString()
@@ -32,3 +33,4 @@ export async function handleCallback(req, res) {
 	}
 
 }
+
