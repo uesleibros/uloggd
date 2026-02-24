@@ -41,7 +41,7 @@ export async function handlePresence(req, res) {
     const igdbResult = await query(
       "games",
       `fields name, slug, cover.url;
-       where external_games.uid = "${player.gameid}" & external_games.category = 1;
+       where external_games.uid = "${player.gameid}" & external_games.external_game_source = 1;
        limit 1;`
     )
 
