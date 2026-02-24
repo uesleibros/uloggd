@@ -11,10 +11,13 @@ export async function handleGamesBatch(req, res) {
   const games = {}
   const uncached = []
 
-  for (const slug of uniqueSlugs) {
-    const cached = await getCache(`igdb_game_${slug}`)
-    if (cached) {
-      games[slug] = cached
+  const cacheResults = await Promise.all(
+    uniqueSlugs.map(slug => getCache(`igdb_game_${slug}`).then(data => ({ slug, data })))
+  )
+
+  for (const { slug, data } of cacheResults) {
+    if (data) {
+      games[slug] = data
     } else {
       uncached.push(slug)
     }
@@ -27,20 +30,29 @@ export async function handleGamesBatch(req, res) {
   const CHUNK_SIZE = 50
 
   try {
+    const chunks = []
     for (let i = 0; i < uncached.length; i += CHUNK_SIZE) {
-      const chunk = uncached.slice(i, i + CHUNK_SIZE)
-      const slugCondition = chunk.map(s => `"${s}"`).join(",")
+      chunks.push(uncached.slice(i, i + CHUNK_SIZE))
+    }
 
-      const data = await query("games", `
-        fields name, slug, summary, first_release_date,
-               cover.url, cover.image_id,
-               artworks.url, artworks.image_id,
-               platforms.name, platforms.id, genres.name,
-               involved_companies.company.name, involved_companies.developer;
-        where slug = (${slugCondition});
-        limit ${chunk.length};
-      `)
+    const results = await Promise.all(
+      chunks.map(chunk => {
+        const slugCondition = chunk.map(s => `"${s}"`).join(",")
+        return query("games", `
+          fields name, slug, summary, first_release_date,
+                 cover.url, cover.image_id,
+                 artworks.url, artworks.image_id,
+                 platforms.name, platforms.id, genres.name,
+                 involved_companies.company.name, involved_companies.developer;
+          where slug = (${slugCondition});
+          limit ${chunk.length};
+        `)
+      })
+    )
 
+    const toCache = []
+
+    for (const data of results) {
       for (const g of data) {
         const game = {
           ...g,
@@ -51,9 +63,11 @@ export async function handleGamesBatch(req, res) {
         }
 
         games[g.slug] = game
-        await setCache(`igdb_game_${g.slug}`, game)
+        toCache.push({ key: `igdb_game_${g.slug}`, data: game })
       }
     }
+
+    Promise.all(toCache.map(({ key, data }) => setCache(key, data)))
 
     res.json(games)
   } catch (e) {
