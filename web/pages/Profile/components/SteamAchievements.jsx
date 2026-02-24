@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { Trophy } from "lucide-react"
+import Modal from "@components/UI/Modal"
 
 function SteamIcon({ className }) {
   return (
@@ -11,16 +12,90 @@ function SteamIcon({ className }) {
 
 function timeAgo(timestamp) {
   const seconds = Math.floor(Date.now() / 1000 - timestamp)
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}min`
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`
-  if (seconds < 2592000) return `${Math.floor(seconds / 86400)}d`
-  return `${Math.floor(seconds / 2592000)}m`
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}min atrás`
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h atrás`
+  if (seconds < 2592000) return `${Math.floor(seconds / 86400)}d atrás`
+  return new Date(timestamp * 1000).toLocaleDateString("pt-BR")
+}
+
+function AchievementModal({ achievement, isOpen, onClose }) {
+  if (!achievement) return null
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-sm"
+      fullscreenMobile
+      showMobileGrip
+    >
+      <div className="p-5">
+        <div className="flex items-start gap-4">
+          <img
+            src={achievement.icon}
+            alt={achievement.name}
+            className="w-16 h-16 rounded-lg border border-zinc-700 flex-shrink-0"
+          />
+          <div className="min-w-0 flex-1">
+            <h3 className="text-base font-bold text-white">
+              {achievement.name}
+            </h3>
+            {achievement.description && (
+              <p className="text-sm text-zinc-400 mt-1">
+                {achievement.description}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-4 bg-zinc-800/50 rounded-lg border border-zinc-700/50 divide-y divide-zinc-700/50">
+          <div className="flex items-center justify-between px-4 py-2.5">
+            <span className="text-xs text-zinc-500">Jogo</span>
+            <div className="flex items-center gap-2">
+              <img
+                src={`https://cdn.cloudflare.steamstatic.com/steam/apps/${achievement.appId}/header.jpg`}
+                alt={achievement.game}
+                className="w-8 h-4 object-cover rounded"
+              />
+              <span className="text-xs text-white font-medium">
+                {achievement.game}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between px-4 py-2.5">
+            <span className="text-xs text-zinc-500">Desbloqueada</span>
+            <span className="text-xs text-white">
+              {timeAgo(achievement.unlockedAt)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between px-4 py-2.5">
+            <span className="text-xs text-zinc-500">Plataforma</span>
+            <div className="flex items-center gap-1.5">
+              <SteamIcon className="w-3.5 h-3.5 text-[#66c0f4]" />
+              <span className="text-xs text-[#66c0f4]">Steam</span>
+            </div>
+          </div>
+        </div>
+
+        <a
+          href={`https://store.steampowered.com/app/${achievement.appId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-sm text-zinc-300 hover:text-white transition-colors"
+        >
+          <SteamIcon className="w-4 h-4" />
+          Ver na Steam
+        </a>
+      </div>
+    </Modal>
+  )
 }
 
 export default function SteamAchievements({ userId }) {
   const [achievements, setAchievements] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAll, setShowAll] = useState(false)
+  const [selected, setSelected] = useState(null)
 
   useEffect(() => {
     if (!userId) return
@@ -47,7 +122,7 @@ export default function SteamAchievements({ userId }) {
   const visible = showAll ? achievements : achievements.slice(0, 12)
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 overflow-hidden">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Trophy className="w-4 h-4 text-yellow-500" />
@@ -61,43 +136,20 @@ export default function SteamAchievements({ userId }) {
         </span>
       </div>
 
-      <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-2">
+      <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-1.5">
         {visible.map((achievement, i) => (
-          <div
+          <button
             key={`${achievement.appId}-${achievement.name}-${i}`}
-            className="group relative"
+            onClick={() => setSelected(achievement)}
+            className="group relative aspect-square rounded-lg overflow-hidden bg-zinc-800 border border-zinc-700/50 hover:border-yellow-500/50 transition-all hover:scale-105 cursor-pointer"
           >
-            <div className="aspect-square rounded-lg overflow-hidden bg-zinc-800 border border-zinc-700/50 hover:border-yellow-500/50 transition-all hover:scale-105 cursor-default">
-              <img
-                src={achievement.icon}
-                alt={achievement.name}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </div>
-
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50">
-              <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 shadow-xl w-48">
-                <div className="text-[11px] font-bold text-white leading-tight">
-                  {achievement.name}
-                </div>
-                {achievement.description && (
-                  <div className="text-[10px] text-zinc-400 mt-0.5 leading-tight">
-                    {achievement.description}
-                  </div>
-                )}
-                <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-zinc-800">
-                  <span className="text-[10px] text-zinc-500 truncate max-w-[100px]">
-                    {achievement.game}
-                  </span>
-                  <span className="text-[10px] text-zinc-600">
-                    {timeAgo(achievement.unlockedAt)}
-                  </span>
-                </div>
-              </div>
-              <div className="w-2 h-2 bg-zinc-900 border-b border-r border-zinc-700 rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-1" />
-            </div>
-          </div>
+            <img
+              src={achievement.icon}
+              alt={achievement.name}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </button>
         ))}
       </div>
 
@@ -109,6 +161,12 @@ export default function SteamAchievements({ userId }) {
           {showAll ? "Mostrar menos" : `Ver todas (${achievements.length})`}
         </button>
       )}
+
+      <AchievementModal
+        achievement={selected}
+        isOpen={!!selected}
+        onClose={() => setSelected(null)}
+      />
     </div>
   )
 }
