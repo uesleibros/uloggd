@@ -35,6 +35,7 @@
     "cheerio": "^1.2.0",
     "got-scraping": "^4.1.3",
     "lucide-react": "^0.574.0",
+    "node-steam-openid": "^2.0.0",
     "nprogress": "^0.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

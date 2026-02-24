@@ -1,5 +1,6 @@
 import TwitchSection from "@components/User/Settings/sections/TwitchSection"
 import NintendoSection from "@components/User/Settings/sections/NintendoSection"
+import SteamSection from "@components/User/Settings/sections/SteamSection"
 
 export default function ConnectionsTab() {
 	return (
@@ -11,6 +12,7 @@ export default function ConnectionsTab() {
 
 			<div className="space-y-6">
 				<TwitchSection />
+				<SteamSection />
 				<NintendoSection />
 			</div>
 		</div>

@@ -10,6 +10,7 @@ import { twitchHandler } from "#routers/twitch.js"
 import { nintendoHandler } from "#routers/nintendo.js"
 import { translateHandler } from "#routers/translate.js"
 import { likesHandler } from "#routers/likes.js"
+import { steamHandler } from "#routers/steam.js"
 
 const SERVICES = {
 	users: usersHandler,
@@ -23,7 +24,8 @@ const SERVICES = {
 	twitch: twitchHandler,
 	nintendo: nintendoHandler,
 	translate: translateHandler,
-	likes: likesHandler
+	likes: likesHandler,
+	steam: steamHandler
 }
 
 export default async function handler(req, res) {
