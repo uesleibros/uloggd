@@ -39,7 +39,7 @@ export async function handlePresence(req, res) {
   const externalResult = await query(
     "external_games",
     `fields game;
-    where uid = "${player.gameid}" & category = 1;
+    where uid = "${player.gameid}" & external_game_source = 1;
     limit 1;`
   )
 
