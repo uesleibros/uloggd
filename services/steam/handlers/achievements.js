@@ -70,6 +70,7 @@ export async function handleAchievements(req, res) {
     const achievements = achievementsData
       .flat()
       .sort((a, b) => b.unlockedAt - a.unlockedAt)
+      .slice(0, 50)
 
     return res.json({ achievements })
   } catch (err) {
