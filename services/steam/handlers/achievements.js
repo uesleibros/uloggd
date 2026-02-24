@@ -48,6 +48,8 @@ export async function handleAchievements(req, res) {
             (schema.game?.availableGameStats?.achievements || []).map(a => [a.name, a])
           )
 
+          const banner = `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`
+
           return stats.playerstats.achievements
             .filter(a => a.achieved === 1)
             .map(a => {
@@ -55,6 +57,7 @@ export async function handleAchievements(req, res) {
               return {
                 game: stats.playerstats.gameName || game.name || `App ${game.appid}`,
                 appid: game.appid,
+                banner,
                 name: info?.displayName || a.apiname,
                 description: info?.description || "",
                 icon: info?.icon || "",
