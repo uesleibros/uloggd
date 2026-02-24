@@ -1,9 +1,14 @@
 import { supabase } from "#lib/supabase-ssr.js"
 import { query } from "#lib/igdbWrapper.js"
+import { getCache, setCache } from "#lib/cache.js"
 
 export async function handlePresence(req, res) {
   const { userId } = req.body
   if (!userId) return res.status(400).json({ error: "userId required" })
+
+  const cacheKey = `steam_presence_${userId}`
+  const cached = await getCache(cacheKey)
+  if (cached) return res.json(cached)
 
   const { data: connection } = await supabase
     .from("user_connections")
@@ -28,7 +33,9 @@ export async function handlePresence(req, res) {
     }
 
     if (!player?.gameid) {
-      return res.json({ playing: false, profile: baseProfile })
+      const result = { playing: false, profile: baseProfile }
+      await setCache(cacheKey, result, 60)
+      return res.json(result)
     }
 
     const igdbResult = await query(
@@ -37,7 +44,7 @@ export async function handlePresence(req, res) {
        where external_games.uid = "${player.gameid}" & external_games.category = 1;
        limit 1;`
     )
-    
+
     const igdbGame = igdbResult?.[0]
 
     const result = {
@@ -55,10 +62,9 @@ export async function handlePresence(req, res) {
       } : null
     }
 
-    res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=30")
+    await setCache(cacheKey, result, 60)
     return res.json(result)
-
-  } catch (error) {
+  } catch {
     return res.status(500).json({ error: "Presence check failed" })
   }
 }
