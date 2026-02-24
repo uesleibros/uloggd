@@ -1,8 +1,29 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
+const cache = new Map()
+const CACHE_TTL = 10 * 60 * 1000
+
+function getCached(key) {
+  const entry = cache.get(key)
+  if (!entry) return null
+  if (Date.now() - entry.time > CACHE_TTL) {
+    cache.delete(key)
+    return null
+  }
+  return entry.data
+}
+
+function setCache(key, data) {
+  cache.set(key, { data, time: Date.now() })
+}
+
 export async function handleAchievements(req, res) {
   const { userId } = req.body
   if (!userId) return res.status(400).json({ error: "userId required" })
+
+  const cacheKey = `achievements:${userId}`
+  const cached = getCached(cacheKey)
+  if (cached) return res.json(cached)
 
   const { data: connection } = await supabase
     .from("user_connections")
@@ -81,5 +102,9 @@ export async function handleAchievements(req, res) {
 
   allAchievements.sort((a, b) => b.unlockedAt - a.unlockedAt)
 
-  res.json({ achievements: allAchievements.slice(0, 50) })
+  const result = { achievements: allAchievements.slice(0, 50) }
+
+  setCache(cacheKey, result)
+
+  res.json(result)
 }
