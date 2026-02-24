@@ -457,18 +457,6 @@ export default function GameCard({
 					/>
 				</div>
 			)}
-
-			{actions?.liked && (
-				<div className="absolute top-1 right-1 p-1 pointer-events-none">
-					<Heart className="w-3.5 h-3.5 text-red-500 fill-current drop-shadow-md" />
-				</div>
-			)}
-
-			{actions?.status && (
-				<div className="absolute top-1 left-1 pointer-events-none group-hover:opacity-0 transition-opacity">
-					<div className={`w-2.5 h-2.5 rounded-full ${GAME_STATUS[actions.status]?.color || "bg-zinc-500"} ring-1 ring-black/30`} />
-				</div>
-			)}
 		</>
 	)
 
@@ -515,5 +503,6 @@ export function GameCardSkeleton({ responsive = false, className = "" }) {
 
 	return <div className={`${sizeClasses} bg-zinc-800 rounded-lg animate-pulse ${className}`} />
 }
+
 
 export { MiniStars }
