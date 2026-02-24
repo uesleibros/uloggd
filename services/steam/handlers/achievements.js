@@ -1,29 +1,10 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
-const cache = new Map()
-const CACHE_TTL = 10 * 60 * 1000
+const CACHE_TTL = 10 * 60
 
-function getCached(key) {
-  const entry = cache.get(key)
-  if (!entry) return null
-  if (Date.now() - entry.time > CACHE_TTL) {
-    cache.delete(key)
-    return null
-  }
-  return entry.data
-}
-
-function setCache(key, data) {
-  cache.set(key, { data, time: Date.now() })
-}
-
-export async function handleAchievements(req, res) {
+export default async function handler(req, res) {
   const { userId } = req.body
-  if (!userId) return res.status(400).json({ error: "userId required" })
-
-  const cacheKey = `achievements:${userId}`
-  const cached = getCached(cacheKey)
-  if (cached) return res.json(cached)
+  if (!userId) return res.status(400).json({ error: "Missing userId" })
 
   const { data: connection } = await supabase
     .from("user_connections")
@@ -32,83 +13,62 @@ export async function handleAchievements(req, res) {
     .eq("provider", "steam")
     .maybeSingle()
 
-  if (!connection?.provider_user_id) {
-    return res.json({ achievements: [] })
-  }
+  if (!connection?.provider_user_id) return res.json({ achievements: [] })
 
   const steamId = connection.provider_user_id
+  const apiKey = process.env.STEAM_WEB_API_KEY
 
-  const ownedRes = await fetch(
-    `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${process.env.STEAM_WEB_API_KEY}&steamid=${steamId}&include_appinfo=1&include_played_free_games=1`
-  )
+  try {
+    const recentGamesRes = await fetch(
+      `https://api.steampowered.com{apiKey}&steamid=${steamId}`
+    )
+    const recentGamesData = await recentGamesRes.json()
+    const games = recentGamesData.response?.games || []
 
-  const ownedData = await ownedRes.json()
-  const games = ownedData.response?.games || []
+    if (games.length === 0) return res.json({ achievements: [] })
 
-  let candidateGames = games.filter(
-    (g) => g.playtime_forever > 0 && g.has_community_visible_stats
-  )
+    const achievementsData = await Promise.all(
+      games.map(async (game) => {
+        try {
+          const [statsRes, schemaRes] = await Promise.all([
+            fetch(`https://api.steampowered.com{game.appid}&key=${apiKey}&steamid=${steamId}`),
+            fetch(`https://api.steampowered.com{game.appid}&key=${apiKey}`)
+          ])
 
-  if (candidateGames.length > 200) {
-    candidateGames = candidateGames.slice(0, 200)
-  }
+          const stats = await statsRes.json()
+          const schema = await schemaRes.json()
 
-  const allAchievements = []
+          if (!stats.playerstats?.achievements) return []
 
-  await Promise.all(
-    candidateGames.map(async (game) => {
-      try {
-        const [achievementsRes, schemaRes] = await Promise.all([
-          fetch(
-            `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?appid=${game.appid}&key=${process.env.STEAM_WEB_API_KEY}&steamid=${steamId}`
-          ),
-          fetch(
-            `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?appid=${game.appid}&key=${process.env.STEAM_WEB_API_KEY}`
-          ),
-        ])
+          const schemaMap = new Map(
+            schema.game?.availableGameStats?.achievements?.map(a => [a.name, a])
+          )
 
-        const achievements = await achievementsRes.json()
-        const schema = await schemaRes.json()
-
-        if (!achievements.playerstats?.achievements) return
-
-        const schemaMap = {}
-        schema.game?.availableGameStats?.achievements?.forEach((a) => {
-          schemaMap[a.name] = {
-            displayName: a.displayName,
-            description: a.description || "",
-            icon: a.icon,
-            hidden: a.hidden === 1,
-          }
-        })
-
-        achievements.playerstats.achievements
-          .filter((a) => a.achieved === 1 && a.unlocktime > 0)
-          .forEach((a) => {
-            const info = schemaMap[a.apiname]
-            if (!info?.icon) return
-
-            allAchievements.push({
-              game: game.name,
-              appId: game.appid,
-              name: info.displayName,
-              description: info.description,
-              icon: info.icon,
-              hidden: info.hidden,
-              unlockedAt: a.unlocktime,
+          return stats.playerstats.achievements
+            .filter(a => a.achieved === 1)
+            .map(a => {
+              const info = schemaMap.get(a.apiname)
+              return {
+                game: game.name,
+                name: info?.displayName || a.apiname,
+                description: info?.description || "",
+                icon: info?.icon,
+                unlockedAt: a.unlocktime
+              }
             })
-          })
-      } catch {}
-    })
-  )
+        } catch { return [] }
+      })
+    )
 
-  allAchievements.sort((a, b) => b.unlockedAt - a.unlockedAt)
+    const result = achievementsData
+      .flat()
+      .sort((a, b) => b.unlockedAt - a.unlockedAt)
+      .slice(0, 50)
 
-  const result = {
-    achievements: allAchievements.slice(0, 50),
+    res.setHeader("Cache-Control", `s-maxage=${CACHE_TTL}, stale-while-revalidate`)
+    return res.json({ achievements: result })
+    
+  } catch (error) {
+    return res.status(500).json({ error: "Steam API Fetch Failed" })
   }
-
-  setCache(cacheKey, result)
-
-  res.json(result)
 }
