@@ -2,9 +2,7 @@ import SteamAuth from "node-steam-openid"
 
 export async function handleLogin(req, res) {
 	const { userId } = req.body
-	const baseUrl = process.env.VERCEL_URL 
-		? `https://${process.env.VERCEL_URL}` 
-		: "http://localhost:3000";
+	const baseUrl = process.env.APP_URL
 
 	const steam = new SteamAuth({
 		realm: baseUrl,
@@ -19,4 +17,5 @@ export async function handleLogin(req, res) {
 		console.error("Erro ao gerar URL da Steam:", err)
 		res.status(500).json({ error: "Falha ao conectar com a Steam" })
 	}
+
 }
