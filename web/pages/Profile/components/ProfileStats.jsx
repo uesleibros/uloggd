@@ -71,13 +71,13 @@ function ActivitySection({ stream, userId }) {
 						href={`https://twitch.tv/${stream.twitch_username}`}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="group flex items-center gap-3 flex-1 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-purple-500/40 rounded-xl px-3.5 py-2.5 transition-all"
+						className="group flex items-center gap-3 flex-1 bg-purple-500/10 hover:bg-purple-500/15 border border-purple-500/30 hover:border-purple-500/50 rounded-xl px-3.5 py-2.5 transition-all"
 					>
 						<div className="relative flex-shrink-0">
 							<img
 								src={stream.thumbnail}
 								alt={stream.title}
-								className="w-14 h-8 object-cover rounded-md"
+								className="w-14 h-8 object-cover rounded-md border border-purple-500/20"
 							/>
 							<div className="absolute -top-1 -right-1 flex items-center gap-0.5 bg-red-600 text-white text-[8px] font-bold px-1 py-px rounded shadow-lg">
 								<Radio className="w-2 h-2" />
@@ -92,7 +92,7 @@ function ActivitySection({ stream, userId }) {
 									{stream.game}
 								</span>
 							</div>
-							<div className="text-[10px] text-zinc-500 mt-0.5">
+							<div className="text-[10px] text-purple-300/60 mt-0.5">
 								{stream.viewers.toLocaleString()} assistindo
 							</div>
 						</div>
@@ -100,35 +100,43 @@ function ActivitySection({ stream, userId }) {
 				)}
 
 				{presence && (
-					<div className="group flex items-center gap-3 flex-1 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-[#66c0f4]/40 rounded-xl px-3.5 py-2.5 transition-all">
-						<div className="relative flex-shrink-0">
-							<img
-								src={presence.game?.cover || presence.steam.header}
-								alt={presence.game?.name || presence.steam.name}
-								className="w-8 h-11 object-cover rounded-md"
-							/>
-							<div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
-								<SteamIcon className="w-3 h-3 text-[#66c0f4]" />
-							</div>
-						</div>
+					<div className="group relative flex items-center gap-3 flex-1 overflow-hidden rounded-xl px-3.5 py-2.5 transition-all border border-zinc-700/50 hover:border-[#66c0f4]/40">
+						<div
+							className="absolute inset-0 bg-cover bg-center"
+							style={{ backgroundImage: `url(${presence.steam.header})` }}
+						/>
+						<div className="absolute inset-0 bg-gradient-to-r from-zinc-900/95 via-zinc-900/90 to-zinc-900/80" />
 
-						<div className="min-w-0 flex-1">
-							<div className="text-[11px] font-semibold text-white truncate">
-								{presence.game?.name || presence.steam.name}
+						<div className="relative z-10 flex items-center gap-3 w-full">
+							<div className="relative flex-shrink-0">
+								<img
+									src={presence.game?.cover || presence.steam.header}
+									alt={presence.game?.name || presence.steam.name}
+									className="w-8 h-11 object-cover rounded-md shadow-lg"
+								/>
+								<div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
+									<SteamIcon className="w-3 h-3 text-[#66c0f4]" />
+								</div>
 							</div>
-							<div className="text-[10px] text-[#66c0f4] mt-0.5">
-								Jogando agora
-							</div>
-						</div>
 
-						{presence.game?.slug && (
-							<Link
-								to={`/game/${presence.game.slug}`}
-								className="text-[10px] bg-zinc-700/80 hover:bg-[#66c0f4] hover:text-[#171a21] text-zinc-300 px-2.5 py-1 rounded-md font-semibold transition-colors flex-shrink-0"
-							>
-								Ver
-							</Link>
-						)}
+							<div className="min-w-0 flex-1">
+								<div className="text-[11px] font-semibold text-white truncate">
+									{presence.game?.name || presence.steam.name}
+								</div>
+								<div className="text-[10px] text-[#66c0f4] mt-0.5">
+									Jogando agora
+								</div>
+							</div>
+
+							{presence.game?.slug && (
+								<Link
+									to={`/game/${presence.game.slug}`}
+									className="text-[10px] bg-[#66c0f4]/20 hover:bg-[#66c0f4] hover:text-[#171a21] text-[#66c0f4] px-2.5 py-1 rounded-md font-semibold transition-colors flex-shrink-0 backdrop-blur-sm"
+								>
+									Ver
+								</Link>
+							)}
+						</div>
 					</div>
 				)}
 			</div>
