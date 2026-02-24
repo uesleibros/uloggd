@@ -403,9 +403,12 @@ export function ProfileHeader({
           onFollowersClick={onFollowersClick}
           onFollowingClick={onFollowingClick}
           followsYou={followsYou && !isOwnProfile}
+          stream={profile.stream}
+          userId={profile.id}
         />
       </div>
     </div>
   )
 }
+
 
