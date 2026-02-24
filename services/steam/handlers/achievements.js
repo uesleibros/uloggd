@@ -2,7 +2,7 @@ import { supabase } from "#lib/supabase-ssr.js"
 
 const CACHE_TTL = 10 * 60
 
-export default async function handler(req, res) {
+export default async function handleAchievements(req, res) {
   const { userId } = req.body
   if (!userId) return res.status(400).json({ error: "Missing userId" })
 
