@@ -45,15 +45,18 @@ export async function handleAchievements(req, res) {
   const ownedData = await ownedRes.json()
   const games = ownedData.response?.games || []
 
-  const recentGames = games
-    .filter((g) => g.playtime_forever > 0)
-    .sort((a, b) => (b.playtime_2weeks || 0) - (a.playtime_2weeks || 0))
-    .slice(0, 10)
+  let candidateGames = games.filter(
+    (g) => g.playtime_forever > 0 && g.has_community_visible_stats
+  )
+
+  if (candidateGames.length > 200) {
+    candidateGames = candidateGames.slice(0, 200)
+  }
 
   const allAchievements = []
 
   await Promise.all(
-    recentGames.map(async (game) => {
+    candidateGames.map(async (game) => {
       try {
         const [achievementsRes, schemaRes] = await Promise.all([
           fetch(
@@ -75,7 +78,6 @@ export async function handleAchievements(req, res) {
             displayName: a.displayName,
             description: a.description || "",
             icon: a.icon,
-            iconGray: a.icongray,
             hidden: a.hidden === 1,
           }
         })
@@ -102,7 +104,9 @@ export async function handleAchievements(req, res) {
 
   allAchievements.sort((a, b) => b.unlockedAt - a.unlockedAt)
 
-  const result = { achievements: allAchievements.slice(0, 50) }
+  const result = {
+    achievements: allAchievements.slice(0, 50),
+  }
 
   setCache(cacheKey, result)
 
