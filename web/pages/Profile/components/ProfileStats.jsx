@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Calendar, Twitch, Radio } from "lucide-react"
+import { Calendar, Twitch, Radio, Gamepad2 } from "lucide-react"
 import CountUp from "@components/UI/CountUp"
 
 function SteamIcon({ className }) {
@@ -33,40 +33,7 @@ function StatCard({ value, label }) {
 	)
 }
 
-function StreamActivity({ stream }) {
-	if (!stream) return null
-
-	return (
-		<a
-			href={`https://twitch.tv/${stream.twitch_username}`}
-			target="_blank"
-			rel="noopener noreferrer"
-			className="col-span-2 flex items-center gap-3 bg-purple-500/10 hover:bg-purple-500/15 border border-purple-500/30 rounded-lg px-4 py-3 transition-colors"
-		>
-			<img
-				src={stream.thumbnail}
-				alt={stream.title}
-				className="w-16 h-9 object-cover rounded border border-purple-500/30 flex-shrink-0"
-			/>
-			<div className="min-w-0 flex-1">
-				<div className="flex items-center gap-1.5 mb-0.5">
-					<Twitch className="w-3.5 h-3.5 text-purple-400" />
-					<span className="text-xs font-medium text-purple-400">
-						{stream.twitch_username}
-					</span>
-					<span className="flex items-center gap-0.5 text-[9px] bg-red-600 text-white px-1.5 py-0.5 rounded font-medium">
-						<Radio className="w-2.5 h-2.5" />
-						LIVE
-					</span>
-				</div>
-				<div className="text-sm text-white font-medium truncate">{stream.game}</div>
-				<div className="text-xs text-zinc-400">{stream.viewers.toLocaleString()} assistindo</div>
-			</div>
-		</a>
-	)
-}
-
-function SteamActivity({ userId }) {
+function ActivitySection({ stream, userId }) {
 	const [presence, setPresence] = useState(null)
 
 	useEffect(() => {
@@ -80,45 +47,91 @@ function SteamActivity({ userId }) {
 					body: JSON.stringify({ userId }),
 				})
 				const data = await res.json()
-				if (data.playing) {
-					setPresence(data)
-				}
+				if (data.playing) setPresence(data)
 			} catch {}
 		}
 
 		fetchPresence()
 	}, [userId])
 
-	if (!presence) return null
-
-	const gameName = presence.game?.name || presence.steam.name
-	const gameSlug = presence.game?.slug
-	const cover = presence.game?.cover || presence.steam.header
+	if (!stream && !presence) return null
 
 	return (
-		<div className="col-span-2 flex items-center gap-3 bg-[#171a21]/60 border border-[#2a475e]/50 rounded-lg px-4 py-3">
-			<img
-				src={cover}
-				alt={gameName}
-				className="w-9 h-12 object-cover rounded border border-[#2a475e] flex-shrink-0"
-			/>
-			<div className="min-w-0 flex-1">
-				<div className="flex items-center gap-1.5 mb-0.5">
-					<SteamIcon className="w-3.5 h-3.5 text-[#66c0f4]" />
-					<span className="text-[10px] uppercase font-semibold text-[#66c0f4]">
-						Jogando agora
-					</span>
-				</div>
-				<div className="text-sm text-white font-medium truncate">{gameName}</div>
+		<div className="mt-6">
+			<div className="flex items-center gap-2 mb-3">
+				<Gamepad2 className="w-4 h-4 text-zinc-500" />
+				<span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+					Atividade
+				</span>
 			</div>
-			{gameSlug && (
-				<Link
-					to={`/game/${gameSlug}`}
-					className="text-xs bg-[#2a475e] hover:bg-[#66c0f4] hover:text-[#171a21] text-[#66c0f4] px-3 py-1.5 rounded font-medium transition-colors flex-shrink-0"
-				>
-					Ver jogo
-				</Link>
-			)}
+
+			<div className="flex flex-col sm:flex-row gap-2">
+				{stream && (
+					<a
+						href={`https://twitch.tv/${stream.twitch_username}`}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="group flex items-center gap-3 flex-1 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-purple-500/40 rounded-xl px-3.5 py-2.5 transition-all"
+					>
+						<div className="relative flex-shrink-0">
+							<img
+								src={stream.thumbnail}
+								alt={stream.title}
+								className="w-14 h-8 object-cover rounded-md"
+							/>
+							<div className="absolute -top-1 -right-1 flex items-center gap-0.5 bg-red-600 text-white text-[8px] font-bold px-1 py-px rounded shadow-lg">
+								<Radio className="w-2 h-2" />
+								LIVE
+							</div>
+						</div>
+
+						<div className="min-w-0 flex-1">
+							<div className="flex items-center gap-1.5">
+								<Twitch className="w-3 h-3 text-purple-400 flex-shrink-0" />
+								<span className="text-[11px] font-semibold text-white truncate">
+									{stream.game}
+								</span>
+							</div>
+							<div className="text-[10px] text-zinc-500 mt-0.5">
+								{stream.viewers.toLocaleString()} assistindo
+							</div>
+						</div>
+					</a>
+				)}
+
+				{presence && (
+					<div className="group flex items-center gap-3 flex-1 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-[#66c0f4]/40 rounded-xl px-3.5 py-2.5 transition-all">
+						<div className="relative flex-shrink-0">
+							<img
+								src={presence.game?.cover || presence.steam.header}
+								alt={presence.game?.name || presence.steam.name}
+								className="w-8 h-11 object-cover rounded-md"
+							/>
+							<div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
+								<SteamIcon className="w-3 h-3 text-[#66c0f4]" />
+							</div>
+						</div>
+
+						<div className="min-w-0 flex-1">
+							<div className="text-[11px] font-semibold text-white truncate">
+								{presence.game?.name || presence.steam.name}
+							</div>
+							<div className="text-[10px] text-[#66c0f4] mt-0.5">
+								Jogando agora
+							</div>
+						</div>
+
+						{presence.game?.slug && (
+							<Link
+								to={`/game/${presence.game.slug}`}
+								className="text-[10px] bg-zinc-700/80 hover:bg-[#66c0f4] hover:text-[#171a21] text-zinc-300 px-2.5 py-1 rounded-md font-semibold transition-colors flex-shrink-0"
+							>
+								Ver
+							</Link>
+						)}
+					</div>
+				)}
+			</div>
 		</div>
 	)
 }
@@ -159,10 +172,9 @@ export default function ProfileStats({
 				<StatCard value={counts.played} label="Jogados" />
 				<StatCard value={counts.backlog} label="Backlog" />
 				<StatCard value={counts.rated} label="Avaliados" />
-
-				<StreamActivity stream={stream} />
-				<SteamActivity userId={userId} />
 			</div>
+
+			<ActivitySection stream={stream} userId={userId} />
 		</>
 	)
 }
