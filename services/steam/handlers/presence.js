@@ -1,5 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { query } from "#lib/igdb.js"
+import { query } from "#lib/igdbWrapper.js"
 
 export async function handlePresence(req, res) {
   const { userId } = req.body
