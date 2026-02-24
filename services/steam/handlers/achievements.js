@@ -74,6 +74,8 @@ export async function handleAchievements(req, res) {
       .sort((a, b) => b.unlockedAt - a.unlockedAt)
       .slice(0, 50)
 
+    res.setHeader("Cache-Control", `s-maxage=${CACHE_TTL}, stale-while-revalidate=${CACHE_TTL / 2}`)
+
     return res.json({ achievements })
   } catch (err) {
     console.error(err)
