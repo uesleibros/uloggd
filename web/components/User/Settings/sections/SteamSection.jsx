@@ -88,7 +88,8 @@ export default function SteamSection() {
 				method: "POST",
 				headers: {
 					Authorization: `Bearer ${session.access_token}`,
-				}
+				},
+				body: JSON.stringify({ userId: user.id })
 			})
 
 			if (res.ok) {
@@ -185,4 +186,5 @@ export default function SteamSection() {
 			</div>
 		</SettingsSection>
 	)
+
 }
