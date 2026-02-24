@@ -96,6 +96,18 @@ const SOCIAL_PLATFORMS = {
   },
 }
 
+function normalizeUrl(url, baseUrl) {
+  if (!url) return null
+  const trimmed = url.trim()
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed
+  }
+  if (baseUrl) {
+    return `${baseUrl}${trimmed.replace(/^@/, "")}`
+  }
+  return `https://${trimmed}`
+}
+
 const CONNECTION_PLATFORMS = {
   twitch: {
     icon: (props) => (
@@ -108,6 +120,17 @@ const CONNECTION_PLATFORMS = {
     getUrl: (username) => `https://twitch.tv/${username}`,
     getDisplay: (username) => username,
   },
+  steam: {
+    icon: (props) => (
+      <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 259" fill="currentColor">
+        <path d="M127.779 0C57.895 0 .847 55.32.044 124.669l69.07 28.576a36.104 36.104 0 0 1 20.57-6.36c.67 0 1.333.027 1.993.067l30.776-44.573v-.626C122.453 75.088 144.2 53.34 170.864 53.34c26.663 0 48.412 21.748 48.412 48.412 0 26.664-21.749 48.412-48.412 48.412h-1.107l-43.874 31.292c0 .584.033 1.16.033 1.721 0 20.149-16.355 36.503-36.503 36.503-17.55 0-32.352-12.579-35.747-29.292L5.06 163.84C21.26 217.234 70.96 256.3 129.893 256.3c71.222 0 128.893-57.67 128.893-128.893C258.786 57.67 199 0 127.779 0zM80.17 196.07l-15.826-6.552a27.345 27.345 0 0 0 14.143 13.46 27.44 27.44 0 0 0 35.81-14.772 27.253 27.253 0 0 0 .046-20.943 27.108 27.108 0 0 0-14.82-14.865 27.29 27.29 0 0 0-20.152-.339l16.337 6.768c10.283 4.276 15.16 16.128 10.884 26.41-4.275 10.284-16.134 15.16-26.423 10.833zm112.593-94.318c0-13.326-10.85-24.176-24.176-24.176-13.327 0-24.177 10.85-24.177 24.176 0 13.327 10.85 24.177 24.177 24.177 13.326 0 24.176-10.85 24.176-24.177zm-42.3 0c0-10.038 8.093-18.131 18.124-18.131s18.131 8.093 18.131 18.131-8.1 18.131-18.131 18.131-18.124-8.093-18.124-18.131z" />
+      </svg>
+    ),
+    label: "Steam",
+    color: "hover:text-[#66c0f4]",
+    getUrl: (steamId) => `https://steamcommunity.com/profiles/${steamId}`,
+    getDisplay: (steamId, displayName) => displayName || steamId,
+  },
   nintendo: {
     icon: NintendoIcon,
     label: "Nintendo Switch",
@@ -115,18 +138,6 @@ const CONNECTION_PLATFORMS = {
     getUrl: () => null,
     getDisplay: (code, displayName) => displayName || code,
   },
-}
-
-function normalizeUrl(url, baseUrl) {
-  if (!url) return null
-  const trimmed = url.trim()
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    return trimmed
-  }
-  if (baseUrl) {
-    return `${baseUrl}${trimmed.replace(/^@/, "")}`
-  }
-  return `https://${trimmed}`
 }
 
 function SocialLinks({ links, connections }) {
@@ -143,8 +154,11 @@ function SocialLinks({ links, connections }) {
           icon: platform.icon,
           label: platform.label,
           color: platform.color,
-          href: platform.getUrl(conn.provider_username),
-          display: conn.display_name || conn.provider_username,
+          href: platform.getUrl?.(conn.provider_username),
+          display: platform.getDisplay(
+            conn.provider_username,
+            conn.display_name
+          ),
           raw: conn.provider_username,
         })
       }
@@ -183,6 +197,7 @@ function SocialLinks({ links, connections }) {
       {items.map((item) => {
         const Icon = item.icon
         const isNintendo = item.provider === "nintendo"
+        const isSteam = item.provider === "steam"
         const isTwitch = item.provider === "twitch"
         const isCopied = copied === item.key
 
@@ -198,11 +213,8 @@ function SocialLinks({ links, connections }) {
                   ? "bg-green-500/20 border-green-500/50 text-green-400" 
                   : "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
                 }
-                border text-xs
-                transition-all duration-200
-                cursor-pointer
+                border text-xs transition-all duration-200 cursor-pointer
               `}
-              title="Clique para copiar"
             >
               {isCopied ? (
                 <Check className="w-3.5 h-3.5" />
@@ -212,8 +224,31 @@ function SocialLinks({ links, connections }) {
               <span className="truncate">
                 {isCopied ? "Copiado!" : item.display}
               </span>
-              {!isCopied && <Copy className="w-3 h-3 opacity-50 flex-shrink-0" />}
+              {!isCopied && <Copy className="w-3 h-3 opacity-50" />}
             </button>
+          )
+        }
+
+        if (isSteam) {
+          return (
+            <a
+              key={item.key}
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="
+                group inline-flex items-center gap-1.5
+                px-2.5 py-1.5 rounded-lg
+                bg-[#171a21]/50 border border-[#2a475e]/50
+                text-[#66c0f4] text-xs
+                transition-all duration-200
+                hover:bg-[#171a21]/80
+              "
+            >
+              <Icon className="w-3.5 h-3.5" />
+              <span className="truncate">{item.display}</span>
+              <ExternalLink className="w-2.5 h-2.5 opacity-50 group-hover:opacity-80 transition-opacity" />
+            </a>
           )
         }
 
@@ -224,7 +259,6 @@ function SocialLinks({ links, connections }) {
               href={item.href}
               target="_blank"
               rel="noopener noreferrer"
-              title={`${item.label}: ${item.display}`}
               className="
                 group inline-flex items-center gap-1.5
                 px-2.5 py-1.5 rounded-lg
@@ -235,10 +269,8 @@ function SocialLinks({ links, connections }) {
               "
             >
               <Icon className="w-3.5 h-3.5" />
-              <span className="truncate">
-                {item.display}
-              </span>
-              <ExternalLink className="w-2.5 h-2.5 opacity-50 group-hover:opacity-80 transition-opacity flex-shrink-0" />
+              <span className="truncate">{item.display}</span>
+              <ExternalLink className="w-2.5 h-2.5 opacity-50 group-hover:opacity-80 transition-opacity" />
             </a>
           )
         }
@@ -249,9 +281,8 @@ function SocialLinks({ links, connections }) {
             href={item.href}
             target="_blank"
             rel="noopener noreferrer"
-            title={`${item.label}: ${item.display}`}
             className={`
-              group/social inline-flex items-center gap-1.5
+              group inline-flex items-center gap-1.5
               px-2.5 py-1.5 rounded-lg
               bg-zinc-800/60 border border-zinc-700/50
               text-zinc-400 text-xs
@@ -260,11 +291,9 @@ function SocialLinks({ links, connections }) {
               ${item.color}
             `}
           >
-            <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-            <span className="truncate">
-              {item.display}
-            </span>
-            <ExternalLink className="w-2.5 h-2.5 opacity-50 group-hover/social:opacity-80 transition-opacity flex-shrink-0" />
+            <Icon className="w-3.5 h-3.5" />
+            <span className="truncate">{item.display}</span>
+            <ExternalLink className="w-2.5 h-2.5 opacity-50 group-hover:opacity-80 transition-opacity" />
           </a>
         )
       })}
@@ -368,4 +397,5 @@ export function ProfileHeader({
       </div>
     </div>
   )
+
 }
