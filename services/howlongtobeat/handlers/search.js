@@ -1,3 +1,4 @@
+import { getCache, setCache } from "#lib/cache.js"
 import { fetchFinderWithRetry } from "#services/howlongtobeat/client.js"
 import { buildQueries, scoreGame } from "#services/howlongtobeat/matcher.js"
 import { HLTB_BASE, MIN_NAME_SCORE } from "#services/howlongtobeat/constants.js"
@@ -30,11 +31,15 @@ export async function handleSearch(req, res) {
   const { name, altNames, year } = req.body
   if (!name?.trim()) return res.status(400).json({ error: "missing name" })
 
+  const cacheKey = `hltb_${name.trim().toLowerCase().replace(/\s+/g, "_")}`
+  const cached = await getCache(cacheKey)
+  if (cached) return res.json(cached)
+
   try {
     const g = await findGame(name.trim(), altNames || [], year || null)
     if (!g) return res.status(404).json({ error: "not found" })
 
-    res.json({
+    const result = {
       id: g.game_id,
       name: g.game_name,
       image: g.game_image ? `${HLTB_BASE}/games/${g.game_image}` : null,
@@ -45,9 +50,12 @@ export async function handleSearch(req, res) {
         main: secToHours(g.comp_main),
         mainExtra: secToHours(g.comp_plus),
         completionist: secToHours(g.comp_100),
-        allStyles: secToHours(g.comp_all),
-      },
-    })
+        allStyles: secToHours(g.comp_all)
+      }
+    }
+
+    await setCache(cacheKey, result, 86400)
+    res.json(result)
   } catch (e) {
     console.error(e)
     res.status(500).json({ error: "fail" })
