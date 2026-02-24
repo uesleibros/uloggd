@@ -64,13 +64,15 @@ Pense nele como um **diário social de jogos**, inspirado em plataformas como Le
 
 ## Desenvolvimento
 
-### Pré-requisitos 
+### Pré-requisitos
 
 - Node.js 18+
 - Conta no [Supabase](https://supabase.com)
-- Aplicação registrada no [Twitch Developer Console](https://dev.twitch.tv/console/apps) (acesso a API do IGDB)
+- Aplicação registrada no [Twitch Developer Console](https://dev.twitch.tv/console/apps) (acesso à API do IGDB)
+- Steam Web API Key registrada em https://steamcommunity.com/dev/apikey
 - Aplicação OAuth no [Discord Developer Portal](https://discord.com/developers/applications)
 - Chave de API do [imgchest](https://imgchest.com/docs/api)
+- Domínio configurado para OAuth (ex: `http://localhost:3000` para dev ou `https://seusite.com` para produção)
 
 ### Configuração 
 
