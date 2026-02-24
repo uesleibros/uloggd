@@ -3,9 +3,7 @@ import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleCallback(req, res) {
 	const { userId } = req.query
-	const baseUrl = process.env.VERCEL_URL 
-		? `https://${process.env.VERCEL_URL}` 
-		: "http://localhost:3000"; 
+	const baseUrl = process.env.APP_URL
 
 	const steam = new SteamAuth({
 		realm: baseUrl,
@@ -32,4 +30,5 @@ export async function handleCallback(req, res) {
 		console.error("Erro no callback da Steam:", error)
 		res.redirect('/?error=steam_failed')
 	}
+
 }
