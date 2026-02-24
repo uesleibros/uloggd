@@ -1,4 +1,5 @@
 import { query } from "#lib/igdbWrapper.js"
+import { getCache, setCache } from "#lib/cache.js"
 import { AGE_RATINGS_MAP } from "#data/ageRatingsMapper.js"
 import { WEBSITE_MAP } from "#data/websitesMapper.js"
 import { mapCovers } from "#services/igdb/utils/mapCovers.js"
@@ -6,6 +7,10 @@ import { mapCovers } from "#services/igdb/utils/mapCovers.js"
 export async function handleGame(req, res) {
   const { slug } = req.body
   if (!slug?.trim()) return res.status(400).json({ error: "missing slug" })
+
+  const cacheKey = `igdb_game_${slug}`
+  const cached = await getCache(cacheKey)
+  if (cached) return res.json(cached)
 
   try {
     const data = await query("games", `
@@ -59,9 +64,13 @@ export async function handleGame(req, res) {
       g.parent_game.cover.url = g.parent_game.cover.url.replace("t_thumb", "t_logo_med")
     }
 
-    res.json({
+    const result = {
       ...g,
-      ageRatings, developers, publishers, websites, platforms,
+      ageRatings,
+      developers,
+      publishers,
+      websites,
+      platforms,
       cover: g.cover?.url ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_1080p") } : null,
       screenshots: g.screenshots?.map(s => ({ ...s, url: s.url.replace("t_thumb", "t_original") })) || [],
       artworks: g.artworks?.map(a => ({ ...a, url: a.url.replace("t_thumb", "t_original") })) || [],
@@ -70,11 +79,13 @@ export async function handleGame(req, res) {
       expansions: mapCovers(g.expansions),
       standalone_expansions: mapCovers(g.standalone_expansions),
       remakes: mapCovers(g.remakes),
-      remasters: mapCovers(g.remasters),
-    })
+      remasters: mapCovers(g.remasters)
+    }
+
+    await setCache(cacheKey, result)
+    res.json(result)
   } catch (e) {
     console.error(e)
     res.status(500).json({ error: "fail" })
   }
 }
-
