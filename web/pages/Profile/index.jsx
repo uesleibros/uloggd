@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
-import { Twitch, Radio } from "lucide-react"
+import { Twitch, Radio, ExternalLink } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useProfileGames } from "#hooks/useProfileGames"
 import PageBanner from "@components/Layout/PageBanner"
@@ -14,51 +14,16 @@ import { ProfileContent } from "./sections/ProfileContent"
 import ProfileSkeleton from "./components/ProfileSkeleton"
 import FollowListModal from "./components/FollowListModal"
 
-function StreamCard({ stream }) {
+function SteamIcon({ className }) {
 	return (
-		<a
-			href={`https://twitch.tv/${stream.twitch_username}`}
-			target="_blank"
-			rel="noopener noreferrer"
-			className="bg-zinc-800/50 border border-purple-500/30 hover:border-purple-500/50 rounded-lg px-4 py-3 transition-colors block mt-6"
-		>
-			<div className="flex items-center gap-4">
-				<img
-					src={stream.thumbnail}
-					alt={stream.title}
-					className="w-20 h-12 object-cover rounded-md border border-zinc-700 flex-shrink-0"
-				/>
-
-				<div className="min-w-0 flex-1">
-					<div className="flex items-center gap-2 mb-1">
-						<Twitch className="w-4 h-4 text-purple-400" />
-						<span className="text-xs font-medium text-purple-400">
-							{stream.twitch_username}
-						</span>
-						<span className="flex items-center gap-1 text-[10px] bg-red-600/90 text-white px-1.5 py-0.5 rounded">
-							<Radio className="w-3 h-3" />
-							AO VIVO
-						</span>
-					</div>
-
-					<div className="text-sm font-semibold text-white truncate">
-						{stream.title}
-					</div>
-
-					<div className="text-xs text-zinc-400 mt-1 flex items-center gap-2">
-						<span className="truncate">{stream.game}</span>
-						<span>•</span>
-						<span>{stream.viewers.toLocaleString()} assistindo</span>
-					</div>
-				</div>
-			</div>
-		</a>
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 259" className={className} fill="currentColor">
+			<path d="M127.779 0C57.895 0 .847 55.32.044 124.669l69.07 28.576a36.104 36.104 0 0 1 20.57-6.36c.67 0 1.333.027 1.993.067l30.776-44.573v-.626C122.453 75.088 144.2 53.34 170.864 53.34c26.663 0 48.412 21.748 48.412 48.412 0 26.664-21.749 48.412-48.412 48.412h-1.107l-43.874 31.292c0 .584.033 1.16.033 1.721 0 20.149-16.355 36.503-36.503 36.503-17.55 0-32.352-12.579-35.747-29.292L5.06 163.84C21.26 217.234 70.96 256.3 129.893 256.3c71.222 0 128.893-57.67 128.893-128.893C258.786 57.67 199 0 127.779 0zM80.17 196.07l-15.826-6.552a27.345 27.345 0 0 0 14.143 13.46 27.44 27.44 0 0 0 35.81-14.772 27.253 27.253 0 0 0 .046-20.943 27.108 27.108 0 0 0-14.82-14.865 27.29 27.29 0 0 0-20.152-.339l16.337 6.768c10.283 4.276 15.16 16.128 10.884 26.41-4.275 10.284-16.134 15.16-26.423 10.833zm112.593-94.318c0-13.326-10.85-24.176-24.176-24.176-13.327 0-24.177 10.85-24.177 24.176 0 13.327 10.85 24.177 24.177 24.177 13.326 0 24.176-10.85 24.176-24.177zm-42.3 0c0-10.038 8.093-18.131 18.124-18.131s18.131 8.093 18.131 18.131-8.1 18.131-18.131 18.131-18.124-8.093-18.124-18.131z" />
+		</svg>
 	)
 }
 
-function SteamPresenceCard({ userId }) {
-	const [presence, setPresence] = useState(null)
-	const [loading, setLoading] = useState(true)
+function ActivityCards({ stream, userId }) {
+	const [steamPresence, setSteamPresence] = useState(null)
 
 	useEffect(() => {
 		if (!userId) return
@@ -72,64 +37,79 @@ function SteamPresenceCard({ userId }) {
 				})
 				const data = await res.json()
 				if (data.playing) {
-					setPresence(data)
-				} else {
-					setPresence(null)
+					setSteamPresence(data)
 				}
-			} catch {
-				setPresence(null)
-			} finally {
-				setLoading(false)
-			}
+			} catch {}
 		}
 
 		fetchPresence()
 	}, [userId])
 
-	if (loading || !presence) return null
+	if (!stream && !steamPresence) return null
 
 	return (
-		<div className="mt-4 bg-[#171a21]/80 border border-[#2a475e]/50 rounded-lg p-3 flex items-center gap-4 relative overflow-hidden group hover:bg-[#171a21] transition-colors">
-			<div 
-				className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity bg-cover bg-center pointer-events-none"
-				style={{ backgroundImage: `url(${presence.steam.header})` }}
-			/>
-			
-			<div className="relative z-10 flex items-center gap-3 w-full">
-				<div className="relative flex-shrink-0">
-					<img 
-						src={presence.game?.cover || presence.steam.header} 
-						alt={presence.steam.name}
-						className="w-12 h-16 object-cover rounded shadow-lg bg-[#0f1116]"
+		<div className="flex flex-wrap gap-3 mt-4">
+			{stream && (
+				<a
+					href={`https://twitch.tv/${stream.twitch_username}`}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="group flex items-center gap-3 px-3 py-2 bg-zinc-800/50 hover:bg-zinc-800 border border-purple-500/30 hover:border-purple-500/50 rounded-lg transition-all"
+				>
+					<img
+						src={stream.thumbnail}
+						alt={stream.title}
+						className="w-14 h-8 object-cover rounded border border-zinc-700 flex-shrink-0"
 					/>
-					<div className="absolute -bottom-1 -right-1 bg-[#171a21] rounded-full p-0.5 shadow-sm">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 259" className="w-4 h-4 text-[#66c0f4] fill-current">
-							<path d="M127.779 0C57.895 0 .847 55.32.044 124.669l69.07 28.576a36.104 36.104 0 0 1 20.57-6.36c.67 0 1.333.027 1.993.067l30.776-44.573v-.626C122.453 75.088 144.2 53.34 170.864 53.34c26.663 0 48.412 21.748 48.412 48.412 0 26.664-21.749 48.412-48.412 48.412h-1.107l-43.874 31.292c0 .584.033 1.16.033 1.721 0 20.149-16.355 36.503-36.503 36.503-17.55 0-32.352-12.579-35.747-29.292L5.06 163.84C21.26 217.234 70.96 256.3 129.893 256.3c71.222 0 128.893-57.67 128.893-128.893C258.786 57.67 199 0 127.779 0zM80.17 196.07l-15.826-6.552a27.345 27.345 0 0 0 14.143 13.46 27.44 27.44 0 0 0 35.81-14.772 27.253 27.253 0 0 0 .046-20.943 27.108 27.108 0 0 0-14.82-14.865 27.29 27.29 0 0 0-20.152-.339l16.337 6.768c10.283 4.276 15.16 16.128 10.884 26.41-4.275 10.284-16.134 15.16-26.423 10.833zm112.593-94.318c0-13.326-10.85-24.176-24.176-24.176-13.327 0-24.177 10.85-24.177 24.176 0 13.327 10.85 24.177 24.177 24.177 13.326 0 24.176-10.85 24.176-24.177zm-42.3 0c0-10.038 8.093-18.131 18.124-18.131s18.131 8.093 18.131 18.131-8.1 18.131-18.131 18.131-18.124-8.093-18.124-18.131z" />
-						</svg>
+					<div className="min-w-0">
+						<div className="flex items-center gap-1.5">
+							<Twitch className="w-3 h-3 text-purple-400" />
+							<span className="text-xs font-medium text-purple-400">
+								{stream.twitch_username}
+							</span>
+							<span className="flex items-center gap-0.5 text-[9px] bg-red-600 text-white px-1 py-px rounded font-medium">
+								<Radio className="w-2 h-2" />
+								LIVE
+							</span>
+						</div>
+						<div className="text-xs text-zinc-300 truncate max-w-[140px]">
+							{stream.game}
+						</div>
 					</div>
-				</div>
+					<span className="text-[10px] text-zinc-500 ml-1">
+						{stream.viewers.toLocaleString()}
+					</span>
+				</a>
+			)}
 
-				<div className="flex-1 min-w-0">
-					<div className="text-[10px] uppercase font-bold text-[#66c0f4] tracking-wide mb-0.5">
-						Jogando agora
+			{steamPresence && (
+				<div className="group flex items-center gap-3 px-3 py-2 bg-[#171a21]/60 hover:bg-[#171a21] border border-[#2a475e]/50 rounded-lg transition-all">
+					<img
+						src={steamPresence.game?.cover || steamPresence.steam.header}
+						alt={steamPresence.steam.name}
+						className="w-8 h-10 object-cover rounded border border-[#2a475e] flex-shrink-0"
+					/>
+					<div className="min-w-0">
+						<div className="flex items-center gap-1.5">
+							<SteamIcon className="w-3 h-3 text-[#66c0f4]" />
+							<span className="text-[10px] uppercase font-semibold text-[#66c0f4]">
+								Jogando
+							</span>
+						</div>
+						<div className="text-xs text-zinc-300 truncate max-w-[120px]">
+							{steamPresence.game?.name || steamPresence.steam.name}
+						</div>
 					</div>
-					<div className="text-sm font-bold text-white truncate leading-tight">
-						{presence.game?.name || presence.steam.name}
-					</div>
-					<div className="text-xs text-zinc-400 mt-0.5 truncate">
-						{presence.profile.name} • Steam
-					</div>
+					{steamPresence.game?.slug && (
+						<Link
+							to={`/game/${steamPresence.game.slug}`}
+							className="text-[10px] bg-[#2a475e] hover:bg-[#66c0f4] hover:text-[#171a21] text-[#66c0f4] px-2 py-1 rounded font-medium transition-colors ml-1"
+						>
+							Ver
+						</Link>
+					)}
 				</div>
-
-				{presence.game?.slug && (
-					<Link
-						to={`/game/${presence.game.slug}`}
-						className="px-3 py-1.5 bg-[#2a475e] hover:bg-[#66c0f4] hover:text-[#171a21] text-[#66c0f4] text-xs font-bold rounded transition-colors z-10 whitespace-nowrap"
-					>
-						Ver Jogo
-					</Link>
-				)}
-			</div>
+			)}
 		</div>
 	)
 }
@@ -208,9 +188,7 @@ export default function Profile() {
 					onFollowingClick={() => setFollowModal("Seguindo")}
 				/>
 
-				{profile?.stream && <StreamCard stream={profile.stream} />}
-				
-				<SteamPresenceCard userId={profile.id} />
+				<ActivityCards stream={profile?.stream} userId={profile.id} />
 
 				<ProfileNavigation
 					activeSection={activeSection}
@@ -246,5 +224,3 @@ export default function Profile() {
 		</div>
 	)
 }
-
-
