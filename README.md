@@ -93,19 +93,53 @@ npm install
 cp .env.example .env
 ```
 
-As variáveis necessárias:
+#### Variáveis Necessárias
 
 | Variável | Descrição | Onde obter |
 |----------|-----------|------------|
-| `STEAM_WEB_API_KEY` | Chave de API da Steam para acessar dados públicos | [Steam Web API Key](https://steamcommunity.com/dev/apikey) |
-| `TWITCH_CLIENT_ID` | Client ID da aplicacao Twitch | [Twitch Dev Console](https://dev.twitch.tv/console/apps) |
-| `TWITCH_CLIENT_SECRET` | Client Secret da aplicacao Twitch | [Twitch Dev Console](https://dev.twitch.tv/console/apps) |
-| `TWITCH_REDIRECT_URI` | URL de callback do OAuth da Twitch (ex: `https://seusite.com/api/twitch/callback`) | Definida por você e registrada em [Twitch Dev Console](https://dev.twitch.tv/console/apps) > Seu App > OAuth Redirect URLs |
-| `VITE_SUPABASE_URL` | URL do projeto Supabase (frontend) | Supabase Dashboard > Settings > API |
-| `VITE_SUPABASE_ANON_KEY` | Anon key publica do Supabase (frontend) | Supabase Dashboard > Settings > API |
-| `SUPABASE_URL` | URL do projeto Supabase (backend) | Supabase Dashboard > Settings > API |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key do Supabase (backend) | Supabase Dashboard > Settings > API |
-| `IMGCHEST_API_KEY` | Chave de API para upload de imagens | [imgchest](https://imgchest.com/docs/api) |
+| `APP_URL` | URL base da aplicação (usada para OAuth Steam/Twitch e redirects). Ex: `http://localhost:3000` (dev) ou `https://seusite.com` (produção) | Definida por você |
+| `STEAM_WEB_API_KEY` | Chave de API da Steam para acessar dados públicos | https://steamcommunity.com/dev/apikey |
+| `TWITCH_CLIENT_ID` | Client ID da aplicação Twitch | https://dev.twitch.tv/console/apps |
+| `TWITCH_CLIENT_SECRET` | Client Secret da aplicação Twitch | https://dev.twitch.tv/console/apps |
+| `TWITCH_REDIRECT_URI` | URL de callback do OAuth da Twitch (ex: `https://seusite.com/api/twitch/callback`) | Definida por você e registrada no Twitch Dev Console |
+| `VITE_SUPABASE_URL` | URL do projeto Supabase (frontend) | Supabase Dashboard → Settings → API |
+| `VITE_SUPABASE_ANON_KEY` | Anon key pública do Supabase (frontend) | Supabase Dashboard → Settings → API |
+| `SUPABASE_URL` | URL do projeto Supabase (backend) | Supabase Dashboard → Settings → API |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role key do Supabase (backend) | Supabase Dashboard → Settings → API |
+| `IMGCHEST_API_KEY` | Chave de API para upload de imagens | https://imgchest.com/docs/api |
+
+#### Desenvolvimento Local
+
+> [!WARNING]
+> O arquivo `.env.local` **não deve ser commitado**.
+
+#### Produção (Vercel)
+
+Configure as mesmas variáveis no painel da Vercel:
+
+Project → Settings → Environment Variables
+
+Defina:
+
+```
+APP_URL=https://seusite.com
+```
+
+Selecione os ambientes desejados:
+- ✅ Production
+- ✅ Preview (opcional)
+- ✅ Development (opcional)
+
+#### Observações Importantes
+
+- `APP_URL` deve sempre corresponder ao domínio registrado nos provedores OAuth.
+- Nunca exponha `SUPABASE_SERVICE_ROLE_KEY` no frontend.
+- Variáveis que começam com `VITE_` ficam disponíveis no frontend.
+- Evite usar URLs de preview dinâmicas para OAuth (Steam/Twitch).
+- Se uma integração OAuth falhar, verifique:
+  1. Se o domínio está correto.
+  2. Se o callback está registrado no provedor.
+  3. Se `APP_URL` está configurado corretamente.
 
 > Também veja o arquivo [`.env.example`](/.env.example) para aplicar corretamente no seu `.env.local`/`.env`
 
