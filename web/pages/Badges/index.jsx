@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { supabase } from "#lib/supabase.js"
-import { Loader2, CheckCircle, Send } from "lucide-react"
+import { Loader2, CheckCircle, Send, ChevronRight, Award, Users, Shield } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import Modal from "@components/UI/Modal"
 import { useAuth } from "#hooks/useAuth"
@@ -28,6 +28,21 @@ function getBadgeStyles(color) {
   }
 }
 
+const CATEGORY_META = {
+  team: {
+    title: "Equipe",
+    description: "Membros oficiais da equipe uloggd",
+    icon: Shield,
+    order: 0
+  },
+  community: {
+    title: "Comunidade",
+    description: "Reconhecimentos da comunidade",
+    icon: Users,
+    order: 1
+  }
+}
+
 function BadgeModalContent({ badge, onClose }) {
   const s = getBadgeStyles(badge.color)
 
@@ -48,7 +63,7 @@ function BadgeModalContent({ badge, onClose }) {
 
         <div className="relative flex flex-col items-center text-center px-6 pt-8 pb-6">
           <div
-            className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
+            className="w-20 h-20 rounded-2xl flex items-center justify-center mb-5"
             style={{
               background: s.iconBg,
               border: `1px solid ${s.border}`,
@@ -83,6 +98,10 @@ function BadgeModalContent({ badge, onClose }) {
 function VerificationRequestModal({ isOpen, onClose, onSubmit, loading, alreadyRequested }) {
   const [reason, setReason] = useState("")
 
+  useEffect(() => {
+    if (!isOpen) setReason("")
+  }, [isOpen])
+
   function handleSubmit(e) {
     e.preventDefault()
     if (!reason.trim() || loading) return
@@ -100,19 +119,19 @@ function VerificationRequestModal({ isOpen, onClose, onSubmit, loading, alreadyR
       >
         <div className="overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800">
           <div className="flex flex-col items-center text-center px-6 pt-8 pb-6">
-            <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-4">
-              <CheckCircle className="w-8 h-8 text-amber-500" />
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-4">
+              <CheckCircle className="w-7 h-7 text-amber-500" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">Solicitação pendente</h3>
-            <p className="text-sm text-zinc-400">
-              Você já enviou uma solicitação de verificação. Nossa equipe está analisando e entrará em contato em breve.
+            <h3 className="text-lg font-semibold text-white mb-2">Solicitação em análise</h3>
+            <p className="text-sm text-zinc-500 leading-relaxed">
+              Sua solicitação está sendo avaliada pela equipe. Você será notificado quando houver uma atualização.
             </p>
           </div>
 
           <div className="border-t border-zinc-800 px-6 py-4">
             <button
               onClick={onClose}
-              className="w-full px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 cursor-pointer"
+              className="w-full px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer"
             >
               Entendi
             </button>
@@ -132,9 +151,9 @@ function VerificationRequestModal({ isOpen, onClose, onSubmit, loading, alreadyR
     >
       <div className="overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800">
         <div className="px-6 pt-6 pb-4">
-          <h3 className="text-lg font-bold text-white mb-1">Solicitar verificação</h3>
+          <h3 className="text-lg font-semibold text-white mb-1">Solicitar verificação</h3>
           <p className="text-sm text-zinc-500">
-            Conte-nos por que você deveria receber o selo de verificado.
+            Descreva sua atuação na comunidade de games.
           </p>
         </div>
 
@@ -142,12 +161,12 @@ function VerificationRequestModal({ isOpen, onClose, onSubmit, loading, alreadyR
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="Ex: Sou criador de conteúdo com X seguidores, meu perfil é..."
+            placeholder="Ex: Criador de conteúdo no YouTube com 50k inscritos, canal focado em análises de jogos indie..."
             rows={4}
             maxLength={500}
-            className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 resize-none focus:outline-none focus:border-zinc-600 transition-colors"
+            className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-600 resize-none focus:outline-none focus:border-violet-500/50 transition-colors"
           />
-          <div className="flex justify-between items-center mt-2">
+          <div className="flex justify-end mt-2">
             <span className="text-xs text-zinc-600">{reason.length}/500</span>
           </div>
 
@@ -155,14 +174,14 @@ function VerificationRequestModal({ isOpen, onClose, onSubmit, loading, alreadyR
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl transition-all cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={!reason.trim() || loading}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg transition-all duration-200 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -191,19 +210,19 @@ function SuccessModal({ isOpen, onClose }) {
     >
       <div className="overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800">
         <div className="flex flex-col items-center text-center px-6 pt-8 pb-6">
-          <div className="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center mb-4">
-            <CheckCircle className="w-8 h-8 text-green-500" />
+          <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4">
+            <CheckCircle className="w-7 h-7 text-emerald-500" />
           </div>
-          <h3 className="text-lg font-bold text-white mb-2">Solicitação enviada!</h3>
-          <p className="text-sm text-zinc-400">
-            Nossa equipe irá analisar sua solicitação. Você receberá uma resposta em breve.
+          <h3 className="text-lg font-semibold text-white mb-2">Solicitação enviada</h3>
+          <p className="text-sm text-zinc-500 leading-relaxed">
+            Você receberá uma notificação quando sua solicitação for analisada.
           </p>
         </div>
 
         <div className="border-t border-zinc-800 px-6 py-4">
           <button
             onClick={onClose}
-            className="w-full px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 cursor-pointer"
+            className="w-full px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer"
           >
             Fechar
           </button>
@@ -219,10 +238,10 @@ function BadgeItem({ badge, onClick }) {
   return (
     <button
       onClick={() => onClick(badge)}
-      className="w-full flex items-center gap-4 p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50 transition-all cursor-pointer text-left group"
+      className="group w-full flex items-center gap-4 p-4 rounded-xl bg-zinc-800/20 hover:bg-zinc-800/40 border border-transparent hover:border-zinc-700/50 transition-all cursor-pointer text-left"
     >
       <div
-        className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
+        className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform"
         style={{
           background: s.iconBg,
           border: `1px solid ${s.border}`
@@ -237,45 +256,104 @@ function BadgeItem({ badge, onClick }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-semibold text-white">{badge.title}</h3>
-        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{badge.description}</p>
+        <h3 className="text-sm font-medium text-white group-hover:text-white/90">{badge.title}</h3>
+        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1">{badge.description}</p>
       </div>
+
+      <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 transition-colors flex-shrink-0" />
     </button>
   )
 }
 
-function VerificationCard({ onClick, isVerified, hasPendingRequest }) {
+function BadgeCategory({ categoryKey, badges, onBadgeClick }) {
+  const meta = CATEGORY_META[categoryKey] || {
+    title: categoryKey,
+    description: "",
+    icon: Award
+  }
+  const Icon = meta.icon
+
+  if (badges.length === 0) return null
+
+  return (
+    <div className="mb-8 last:mb-0">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+          <Icon className="w-4 h-4 text-zinc-400" />
+        </div>
+        <div>
+          <h2 className="text-sm font-semibold text-white">{meta.title}</h2>
+          <p className="text-xs text-zinc-600">{meta.description}</p>
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        {badges.map((badge) => (
+          <BadgeItem
+            key={badge.id}
+            badge={badge}
+            onClick={onBadgeClick}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function VerificationBanner({ onClick, isVerified, hasPendingRequest }) {
   if (isVerified) return null
 
   return (
-    <div className="p-5 rounded-xl bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-transparent border border-violet-500/20">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center">
-          <CheckCircle className="w-5 h-5 text-violet-400" />
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-zinc-900 border border-violet-500/20 p-6 mb-10">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full blur-3xl" />
+
+      <div className="relative">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <Award className="w-5 h-5 text-violet-400" />
+              <h3 className="text-base font-semibold text-white">Verificação de perfil</h3>
+            </div>
+            <p className="text-sm text-zinc-400 leading-relaxed max-w-md">
+              Criadores de conteúdo, streamers e figuras públicas podem solicitar o selo de verificação.
+            </p>
+          </div>
+
+          <button
+            onClick={onClick}
+            className="flex-shrink-0 px-4 py-2.5 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 rounded-xl transition-colors cursor-pointer flex items-center gap-2"
+          >
+            {hasPendingRequest ? (
+              <>
+                <CheckCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">Em análise</span>
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4" />
+                <span className="hidden sm:inline">Solicitar</span>
+              </>
+            )}
+          </button>
         </div>
-        <h3 className="text-base font-semibold text-white">Quer ser verificado?</h3>
       </div>
-      <p className="text-sm text-zinc-400 mb-4">
-        Se você é um criador de conteúdo, personalidade ou figura reconhecida na comunidade de jogos, solicite seu selo.
-      </p>
-      <button
-        onClick={onClick}
-        className="px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-2"
-      >
-        {hasPendingRequest ? (
-          <>
-            <CheckCircle className="w-4 h-4" />
-            Ver status
-          </>
-        ) : (
-          <>
-            <Send className="w-4 h-4" />
-            Solicitar verificação
-          </>
-        )}
-      </button>
     </div>
   )
+}
+
+function groupBadgesByCategory(badges) {
+  const grouped = badges.reduce((acc, badge) => {
+    const cat = badge.category || "community"
+    if (!acc[cat]) acc[cat] = []
+    acc[cat].push(badge)
+    return acc
+  }, {})
+
+  return Object.entries(grouped).sort((a, b) => {
+    const orderA = CATEGORY_META[a[0]]?.order ?? 99
+    const orderB = CATEGORY_META[b[0]]?.order ?? 99
+    return orderA - orderB
+  })
 }
 
 export default function Badges() {
@@ -351,36 +429,37 @@ export default function Badges() {
     setSubmitting(false)
   }
 
+  const groupedBadges = groupBadgesByCategory(badges)
+
   return (
     <div className="py-12">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Selos</h1>
-        <p className="text-sm text-zinc-500 mt-2">
-          Distintivos especiais que aparecem no perfil dos usuários, representando conquistas, funções ou reconhecimentos.
+      <div className="mb-10">
+        <h1 className="text-2xl font-bold text-white mb-2">Selos</h1>
+        <p className="text-sm text-zinc-500">
+          Distintivos que representam funções, conquistas e reconhecimentos na plataforma.
         </p>
       </div>
 
       {user && (
-        <div className="mb-8">
-          <VerificationCard
-            onClick={() => setShowVerificationModal(true)}
-            isVerified={isVerified}
-            hasPendingRequest={hasPendingRequest}
-          />
-        </div>
+        <VerificationBanner
+          onClick={() => setShowVerificationModal(true)}
+          isVerified={isVerified}
+          hasPendingRequest={hasPendingRequest}
+        />
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-6 h-6 text-zinc-600 animate-spin" />
         </div>
       ) : (
-        <div className="grid gap-3">
-          {badges.map((badge) => (
-            <BadgeItem
-              key={badge.id}
-              badge={badge}
-              onClick={setActiveBadge}
+        <div>
+          {groupedBadges.map(([categoryKey, categoryBadges]) => (
+            <BadgeCategory
+              key={categoryKey}
+              categoryKey={categoryKey}
+              badges={categoryBadges}
+              onBadgeClick={setActiveBadge}
             />
           ))}
         </div>
