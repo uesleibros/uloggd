@@ -2,6 +2,8 @@ import { supabase } from "#lib/supabase-ssr.js"
 import { query } from "#lib/igdbWrapper.js"
 import { getCache, setCache } from "#lib/cache.js"
 
+const STEAM_SOURCE_ID = 1
+
 export async function handlePresence(req, res) {
   const { userId } = req.body
   if (!userId) return res.status(400).json({ error: "userId required" })
@@ -53,14 +55,26 @@ export async function handlePresence(req, res) {
       return res.json(result)
     }
 
-    const igdbResult = await query(
-      "games",
-      `fields name, slug, cover.url;
-      where external_games.uid = "${player.gameid}" & external_games.category = 1;
+    let igdbGame = null
+
+    const externalResult = await query(
+      "external_games",
+      `fields game;
+      where uid = "${player.gameid}" & external_game_source = ${STEAM_SOURCE_ID};
       limit 1;`
     )
 
-    const igdbGame = igdbResult?.[0]
+    const gameId = externalResult?.[0]?.game
+
+    if (gameId) {
+      const gameResult = await query(
+        "games",
+        `fields name, slug, cover.url;
+        where id = ${gameId};
+        limit 1;`
+      )
+      igdbGame = gameResult?.[0]
+    }
 
     const result = {
       playing: true,
