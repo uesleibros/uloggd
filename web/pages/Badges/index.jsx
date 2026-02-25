@@ -4,7 +4,7 @@ import { Loader2, CheckCircle, Send } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import Modal from "@components/UI/Modal"
 import { useAuth } from "#hooks/useAuth"
-import { notify } from "@components/UI/Notifications"
+import { notify } from "@components/UI/Notification"
 
 function colorToRGB(colorName) {
   if (typeof document === "undefined") return { r: 161, g: 161, b: 170 }
