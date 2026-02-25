@@ -2,34 +2,62 @@ import { useState, useEffect } from "react"
 import { supabase } from "#lib/supabase"
 import { useAuth } from "#hooks/useAuth"
 import Modal from "@components/UI/Modal"
-import { List, Check, Plus, Lock, Loader2 } from "lucide-react"
+import { List, Check, Lock } from "lucide-react"
 
 export default function AddToListModal({ isOpen, onClose, game }) {
 	const { user } = useAuth()
 	const [lists, setLists] = useState([])
 	const [loading, setLoading] = useState(true)
+	const [loadingMore, setLoadingMore] = useState(false)
 	const [toggling, setToggling] = useState(null)
+	const [page, setPage] = useState(1)
+	const [hasMore, setHasMore] = useState(false)
+
+	async function fetchLists(pageNum, append = false) {
+		if (pageNum === 1) setLoading(true)
+		else setLoadingMore(true)
+
+		try {
+			const r = await fetch("/api/lists/@me/get", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ userId: user.id, page: pageNum, limit: 20 }),
+			})
+			const data = await r.json()
+
+			const mapped = (data.lists || []).map(list => ({
+				...list,
+				hasGame: (list.game_slugs || []).includes(game?.slug),
+			}))
+
+			if (append) {
+				setLists(prev => [...prev, ...mapped])
+			} else {
+				setLists(mapped)
+			}
+
+			setHasMore(pageNum < data.totalPages)
+		} catch {
+			if (!append) setLists([])
+		} finally {
+			setLoading(false)
+			setLoadingMore(false)
+		}
+	}
 
 	useEffect(() => {
 		if (!isOpen || !user) return
-		setLoading(true)
-
-		fetch("/api/lists/@me/get", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ userId: user.id }),
-		})
-			.then(r => r.json())
-			.then(data => {
-				const mapped = (Array.isArray(data) ? data : []).map(list => ({
-					...list,
-					hasGame: (list.game_slugs || []).includes(game?.slug),
-				}))
-				setLists(mapped)
-				setLoading(false)
-			})
-			.catch(() => setLoading(false))
+		setPage(1)
+		setLists([])
+		fetchLists(1)
 	}, [isOpen, user, game?.slug])
+
+	function handleLoadMore() {
+		if (loadingMore || !hasMore) return
+		const nextPage = page + 1
+		setPage(nextPage)
+		fetchLists(nextPage, true)
+	}
 
 	async function handleToggle(list) {
 		if (toggling) return
@@ -156,6 +184,20 @@ export default function AddToListModal({ isOpen, onClose, game }) {
 								</button>
 							)
 						})}
+
+						{hasMore && (
+							<button
+								onClick={handleLoadMore}
+								disabled={loadingMore}
+								className="w-full py-3 text-sm text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+							>
+								{loadingMore ? (
+									<div className="w-4 h-4 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin mx-auto" />
+								) : (
+									"Carregar mais"
+								)}
+							</button>
+						)}
 					</div>
 				)}
 			</div>
