@@ -4,6 +4,7 @@ import { Loader2, CheckCircle, Send } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import Modal from "@components/UI/Modal"
 import { useAuth } from "#hooks/useAuth"
+import { notify } from "@components/UI/Notifications"
 
 function colorToRGB(colorName) {
   if (typeof document === "undefined") return { r: 161, g: 161, b: 170 }
@@ -331,20 +332,27 @@ export default function Badges() {
         body: JSON.stringify({ reason })
       })
 
-      if (res.ok) {
-        setShowVerificationModal(false)
-        setShowSuccessModal(true)
-        setHasPendingRequest(true)
+      const data = await res.json()
+
+      if (!res.ok) {
+        notify(data.error, "error")
+        setSubmitting(false)
+        return
       }
+
+      setShowVerificationModal(false)
+      setShowSuccessModal(true)
+      setHasPendingRequest(true)
     } catch (e) {
       console.error(e)
+      notify("Erro ao enviar solicitação.", "error")
     }
 
     setSubmitting(false)
   }
 
   return (
-    <div className="py-12">
+    <div className="max-w-2xl mx-auto px-4 py-12">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Selos</h1>
         <p className="text-sm text-zinc-500 mt-2">
