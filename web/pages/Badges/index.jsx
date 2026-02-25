@@ -333,7 +333,7 @@ export default function Badges() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
+    <div className="py-12">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Selos</h1>
         <p className="text-sm text-zinc-500 mt-2">
