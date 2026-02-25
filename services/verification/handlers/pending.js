@@ -2,6 +2,7 @@ import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handlePending(req, res) {
   const reviewerId = req.user.id
+  const { userId } = req.body
 
   try {
     const { data: reviewer } = await supabase
@@ -14,7 +15,7 @@ export async function handlePending(req, res) {
       return res.status(403).json({ error: "forbidden" })
     }
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("verification_requests")
       .select(`
         id,
@@ -26,28 +27,15 @@ export async function handlePending(req, res) {
       .eq("status", "pending")
       .order("created_at", { ascending: true })
 
-    if (error) throw error
-
-    const userIds = data.map(r => r.user_id)
-    
-    let users = {}
-    if (userIds.length > 0) {
-      const { data: usersData } = await supabase
-        .from("users")
-        .select("user_id, username, display_name, avatar_url")
-        .in("user_id", userIds)
-
-      usersData?.forEach(u => {
-        users[u.user_id] = u
-      })
+    if (userId) {
+      query = query.eq("user_id", userId)
     }
 
-    const requests = data.map(r => ({
-      ...r,
-      users: users[r.user_id] || null
-    }))
+    const { data, error } = await query
 
-    res.json({ requests })
+    if (error) throw error
+
+    res.json({ request: userId ? (data?.[0] || null) : null, requests: userId ? null : data })
   } catch (e) {
     console.error(e)
     res.status(500).json({ error: "fail" })
