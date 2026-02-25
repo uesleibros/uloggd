@@ -11,6 +11,7 @@ import { nintendoHandler } from "#routers/nintendo.js"
 import { translateHandler } from "#routers/translate.js"
 import { likesHandler } from "#routers/likes.js"
 import { steamHandler } from "#routers/steam.js"
+import { verificationHandler } from "#routers/verification.js"
 
 const SERVICES = {
 	users: usersHandler,
@@ -25,7 +26,8 @@ const SERVICES = {
 	nintendo: nintendoHandler,
 	translate: translateHandler,
 	likes: likesHandler,
-	steam: steamHandler
+	steam: steamHandler,
+	verification: verificationHandler
 }
 
 export default async function handler(req, res) {
