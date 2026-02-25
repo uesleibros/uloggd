@@ -5,7 +5,7 @@ export async function handleList(req, res) {
     const { data, error } = await supabase
       .from("badges")
       .select("*")
-      .order("idx", { ascending: true })
+      .order("id", { ascending: true })
 
     if (error) throw error
 
