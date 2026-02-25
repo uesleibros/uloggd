@@ -13,6 +13,7 @@ import { likesHandler } from "#routers/likes.js"
 import { steamHandler } from "#routers/steam.js"
 import { verificationHandler } from "#routers/verification.js"
 import { badgesHandler } from "#routers/badges.js"
+import { moderationHandler } from "#routers/moderation.js"
 import { getUser } from "#lib/auth.js"
 
 const SERVICES = {
@@ -30,7 +31,8 @@ const SERVICES = {
 	likes: likesHandler,
 	steam: steamHandler,
 	verification: verificationHandler,
-	badges: badgesHandler
+	badges: badgesHandler,
+	moderation: moderationHandler
 }
 
 export default async function handler(req, res) {
@@ -52,7 +54,7 @@ export default async function handler(req, res) {
 	if (authHeader) {
 		const user = await getUser(req)
 
-		if (user?.banned) {
+		if (user?.is_banned) {
 			return res.status(403).json({ error: "banned" })
 		}
 	}
