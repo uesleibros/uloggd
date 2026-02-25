@@ -24,6 +24,15 @@ export default function Footer() {
               </a>
             </p>
           </div>
+
+          <div className="flex gap-6">
+            <Link
+              to="/about/badges"
+              className="text-sm text-zinc-500 hover:text-white transition-colors"
+            >
+              Selos
+            </Link>
+          </div>
         </div>
 
         <div className="mt-8 pt-4 border-t border-zinc-800/50 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
