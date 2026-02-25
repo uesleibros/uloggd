@@ -20,6 +20,8 @@ export function formatFullProfile(profile, { stream = null, counts = {} } = {}) 
 		pronoun: profile.pronoun,
 		is_moderator: profile.is_moderator,
 		is_banned: profile.is_banned,
+		ban_reason: ban?.reason || null,
+		expires_at: ban?.expires_at || null,
 		created_at: profile.created_at,
 		last_seen: profile.last_seen,
 		status: profile.status,
