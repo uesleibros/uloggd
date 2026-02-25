@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { UserPlus, ThumbsUp, Check, Trash2, X, Bell, BadgeCheck, XCircle } from "lucide-react"
 import { supabase } from "#lib/supabase"
-import { getTimeAgo } from "#utils/formatDate"
+import { getTimeAgo, formatDateLong } from "#utils/formatDate"
+import Modal from "@components/UI/Modal"
 
 const NOTIFICATION_CONFIG = {
   follow: {
@@ -27,49 +28,109 @@ const NOTIFICATION_CONFIG = {
     icon: BadgeCheck,
     color: "text-emerald-400",
     bg: "bg-emerald-500/10",
-    getActor: () => "uloggd",
-    getText: () => "Sua solicitação de verificação foi aprovada! Você agora tem o selo de verificado.",
-    getLink: () => "/about/badges",
-    getUserId: () => null,
+    borderColor: "border-emerald-500/30",
+    getText: () => "Verificação aprovada",
+    getFullText: () => "Parabéns! Sua solicitação de verificação foi aprovada. O selo de verificado já está visível no seu perfil.",
+    getUserId: (data) => data.reviewed_by,
     isSystem: true,
   },
   verification_rejected: {
     icon: XCircle,
     color: "text-red-400",
     bg: "bg-red-500/10",
-    getActor: () => "uloggd",
-    getText: (data) => data.rejection_reason
-      ? `Sua solicitação de verificação foi rejeitada: ${data.rejection_reason}`
-      : "Sua solicitação de verificação foi rejeitada.",
-    getLink: () => "/about/badges",
-    getUserId: () => null,
+    borderColor: "border-red-500/30",
+    getText: () => "Verificação rejeitada",
+    getFullText: (data) => data.rejection_reason
+      ? `Sua solicitação de verificação foi rejeitada.\n\nMotivo: ${data.rejection_reason}`
+      : "Sua solicitação de verificação foi rejeitada. Você pode enviar uma nova solicitação a qualquer momento.",
+    getUserId: (data) => data.reviewed_by,
     isSystem: true,
   },
 }
 
-function NotificationItem({ notification, users, onClose, onAction }) {
+function SystemNotificationModal({ notification, users, isOpen, onClose }) {
+  if (!notification) return null
+
   const config = NOTIFICATION_CONFIG[notification.type]
   if (!config) return null
 
   const Icon = config.icon
-  const link = config.getLink(notification.data, users)
-  const actor = config.getActor(notification.data, users)
+  const title = config.getText(notification.data)
+  const message = config.getFullText(notification.data)
+  const reviewerId = config.getUserId(notification.data)
+  const reviewer = reviewerId ? users[reviewerId] : null
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-sm"
+      showCloseButton={false}
+      className="!border-0 !bg-transparent !shadow-none"
+    >
+      <div className={`overflow-hidden rounded-2xl bg-zinc-900 border ${config.borderColor}`}>
+        <div className="flex flex-col items-center text-center px-6 pt-8 pb-6">
+          <div className={`w-16 h-16 rounded-2xl ${config.bg} border ${config.borderColor} flex items-center justify-center mb-5`}>
+            <Icon className={`w-8 h-8 ${config.color}`} />
+          </div>
+
+          <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
+          <p className="text-sm text-zinc-400 leading-relaxed whitespace-pre-line">{message}</p>
+
+          {reviewer && (
+            <div className="flex items-center gap-2 mt-5 px-3 py-2 bg-zinc-800/50 rounded-lg">
+              <img
+                src={reviewer.avatar}
+                alt={reviewer.username}
+                className="w-6 h-6 rounded-full object-cover bg-zinc-700"
+              />
+              <span className="text-xs text-zinc-400">
+                Revisado por <span className="text-zinc-300 font-medium">{reviewer.username}</span>
+              </span>
+            </div>
+          )}
+
+          <p className="text-xs text-zinc-600 mt-4">
+            {formatDateLong(new Date(notification.created_at).getTime() / 1000)}
+          </p>
+        </div>
+
+        <div className="border-t border-zinc-800 px-6 py-4">
+          <button
+            onClick={onClose}
+            className="w-full px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer"
+          >
+            Fechar
+          </button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
+function NotificationItem({ notification, users, onClose, onAction, onSystemClick }) {
+  const config = NOTIFICATION_CONFIG[notification.type]
+  if (!config) return null
+
+  const Icon = config.icon
   const text = config.getText(notification.data, users)
   const actorId = config.getUserId(notification.data)
   const actorUser = actorId ? users[actorId] : null
   const isSystem = config.isSystem
 
-  return (
-    <Link
-      to={link}
-      onClick={() => {
-        onAction("read", notification.id)
-        onClose()
-      }}
-      className={`flex items-start gap-3 px-4 py-3 hover:bg-zinc-800/50 transition-colors ${
-        !notification.read ? "bg-zinc-800/30" : ""
-      }`}
-    >
+  function handleClick(e) {
+    onAction("read", notification.id)
+
+    if (isSystem) {
+      e.preventDefault()
+      onSystemClick(notification)
+    } else {
+      onClose()
+    }
+  }
+
+  const content = (
+    <>
       {isSystem ? (
         <div className={`w-9 h-9 rounded-full ${config.bg} flex items-center justify-center flex-shrink-0`}>
           <Icon className={`w-5 h-5 ${config.color}`} />
@@ -77,13 +138,13 @@ function NotificationItem({ notification, users, onClose, onAction }) {
       ) : (
         <img
           src={actorUser?.avatar}
-          alt={actor}
+          alt={actorUser?.username}
           className="w-9 h-9 rounded-full object-cover bg-zinc-800 flex-shrink-0"
         />
       )}
       <div className="flex-1 min-w-0">
         <p className={`text-sm leading-snug ${!notification.read ? "text-zinc-200" : "text-zinc-400"}`}>
-          {!isSystem && <span className="font-semibold text-white">{actor}</span>} {text}
+          {!isSystem && <span className="font-semibold text-white">{actorUser?.username || "Alguém"}</span>} {text}
         </p>
         <div className="flex items-center gap-1.5 mt-1">
           <Icon className={`w-3 h-3 ${config.color}`} />
@@ -93,6 +154,31 @@ function NotificationItem({ notification, users, onClose, onAction }) {
       {!notification.read && (
         <div className="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0 mt-2" />
       )}
+    </>
+  )
+
+  if (isSystem) {
+    return (
+      <button
+        onClick={handleClick}
+        className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-zinc-800/50 transition-colors text-left cursor-pointer ${
+          !notification.read ? "bg-zinc-800/30" : ""
+        }`}
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return (
+    <Link
+      to={config.getLink(notification.data, users)}
+      onClick={handleClick}
+      className={`flex items-start gap-3 px-4 py-3 hover:bg-zinc-800/50 transition-colors ${
+        !notification.read ? "bg-zinc-800/30" : ""
+      }`}
+    >
+      {content}
     </Link>
   )
 }
@@ -101,6 +187,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
   const [notifications, setNotifications] = useState([])
   const [users, setUsers] = useState({})
   const [loading, setLoading] = useState(true)
+  const [systemNotification, setSystemNotification] = useState(null)
   const panelRef = useRef(null)
 
   useEffect(() => {
@@ -128,7 +215,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
 
         const userIds = [...new Set(data.flatMap(n => {
           const config = NOTIFICATION_CONFIG[n.type]
-          if (!config || config.isSystem) return []
+          if (!config) return []
           const userId = config.getUserId(n.data)
           return userId ? [userId] : []
         }))]
@@ -185,76 +272,86 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
   const hasUnread = notifications.some(n => !n.read)
 
   return (
-    <div
-      ref={panelRef}
-      className={`absolute right-0 top-full mt-2 w-80 sm:w-96 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden origin-top-right transition-all duration-200 ${
-        visible
-          ? "opacity-100 scale-100 translate-y-0"
-          : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-      }`}
-    >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-        <h3 className="text-sm font-semibold text-white">Notificações</h3>
-        <div className="flex items-center gap-1">
-          {hasUnread && (
+    <>
+      <div
+        ref={panelRef}
+        className={`absolute right-0 top-full mt-2 w-80 sm:w-96 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden origin-top-right transition-all duration-200 ${
+          visible
+            ? "opacity-100 scale-100 translate-y-0"
+            : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+          <h3 className="text-sm font-semibold text-white">Notificações</h3>
+          <div className="flex items-center gap-1">
+            {hasUnread && (
+              <button
+                onClick={handleReadAll}
+                className="p-1.5 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                title="Marcar todas como lidas"
+              >
+                <Check className="w-4 h-4" />
+              </button>
+            )}
+            {notifications.length > 0 && (
+              <button
+                onClick={handleDeleteAll}
+                className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors cursor-pointer"
+                title="Limpar todas"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
             <button
-              onClick={handleReadAll}
+              onClick={onClose}
               className="p-1.5 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
-              title="Marcar todas como lidas"
             >
-              <Check className="w-4 h-4" />
+              <X className="w-4 h-4" />
             </button>
+          </div>
+        </div>
+
+        <div className="max-h-96 overflow-y-auto">
+          {loading ? (
+            <div className="p-4 space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 animate-pulse" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3.5 w-3/4 bg-zinc-800 rounded animate-pulse" />
+                    <div className="h-3 w-1/4 bg-zinc-800 rounded animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : notifications.length > 0 ? (
+            <div className="divide-y divide-zinc-800/50">
+              {notifications.map(n => (
+                <NotificationItem
+                  key={n.id}
+                  notification={n}
+                  users={users}
+                  onClose={onClose}
+                  onAction={handleAction}
+                  onSystemClick={setSystemNotification}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Bell className="w-8 h-8 text-zinc-700 mb-3" />
+              <p className="text-sm text-zinc-500">Nenhuma notificação</p>
+            </div>
           )}
-          {notifications.length > 0 && (
-            <button
-              onClick={handleDeleteAll}
-              className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors cursor-pointer"
-              title="Limpar todas"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          )}
-          <button
-            onClick={onClose}
-            className="p-1.5 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
-      <div className="max-h-96 overflow-y-auto">
-        {loading ? (
-          <div className="p-4 space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-zinc-800 animate-pulse" />
-                <div className="flex-1 space-y-1.5">
-                  <div className="h-3.5 w-3/4 bg-zinc-800 rounded animate-pulse" />
-                  <div className="h-3 w-1/4 bg-zinc-800 rounded animate-pulse" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : notifications.length > 0 ? (
-          <div className="divide-y divide-zinc-800/50">
-            {notifications.map(n => (
-              <NotificationItem
-                key={n.id}
-                notification={n}
-                users={users}
-                onClose={onClose}
-                onAction={handleAction}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Bell className="w-8 h-8 text-zinc-700 mb-3" />
-            <p className="text-sm text-zinc-500">Nenhuma notificação</p>
-          </div>
-        )}
-      </div>
-    </div>
+      <SystemNotificationModal
+        notification={systemNotification}
+        users={users}
+        isOpen={!!systemNotification}
+        onClose={() => setSystemNotification(null)}
+      />
+    </>
   )
 }
