@@ -3,11 +3,15 @@ import { createNotification } from "#services/notifications/create.js"
 import { sendDiscordNotification } from "#lib/discord.js"
 
 export async function handleBan(req, res) {
-  const { userId, reason, deleteContent } = req.body
+  const { userId, reason, durationHours } = req.body
   const moderatorId = req.user.id
 
   if (!userId) return res.status(400).json({ error: "userId required" })
   if (!reason?.trim()) return res.status(400).json({ error: "reason required" })
+
+  const expiresAt = durationHours
+      ? new Date(Date.now() + durationHours * 60 * 60 * 1000).toISOString()
+      : null
 
   try {
     const { data: moderator } = await supabase
@@ -48,7 +52,7 @@ export async function handleBan(req, res) {
         user_id: userId,
         banned_by: moderatorId,
         reason: reason.trim(),
-        delete_content: deleteContent || false
+        expires_at: expiresAt
       })
 
     if (banError) throw banError
@@ -59,10 +63,6 @@ export async function handleBan(req, res) {
       .eq("user_id", userId)
 
     if (updateError) throw updateError
-
-    if (deleteContent) {
-      await supabase.from("reviews").delete().eq("user_id", userId)
-    }
 
     await createNotification({
       userId,
