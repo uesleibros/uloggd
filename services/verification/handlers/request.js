@@ -1,4 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
+import { sendDiscordNotification } from "#lib/discord.js"
 
 export async function handleRequest(req, res) {
   const { reason } = req.body
@@ -35,6 +36,12 @@ export async function handleRequest(req, res) {
       return res.status(400).json({ error: "already_verified" })
     }
 
+    const { data: user } = await supabase
+      .from("users")
+      .select("username")
+      .eq("user_id", userId)
+      .single()
+
     const { error } = await supabase
       .from("verification_requests")
       .insert({
@@ -44,6 +51,12 @@ export async function handleRequest(req, res) {
       })
 
     if (error) throw error
+
+    await sendDiscordNotification("verification_request", {
+      userId,
+      username: user?.username,
+      reason: reason.trim()
+    })
 
     res.json({ success: true })
   } catch (e) {
