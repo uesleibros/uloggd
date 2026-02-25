@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { ArrowLeft, Loader2, CheckCircle, Send } from "lucide-react"
-import { supabase } from "#lib/supabase-ssr.js"
+import { supabase } from "#lib/supabase.js"
 import usePageMeta from "#hooks/usePageMeta"
 import Modal from "@components/UI/Modal"
 import { useAuth } from "#hooks/useAuth"
