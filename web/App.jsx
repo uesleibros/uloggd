@@ -22,40 +22,47 @@ import BannedScreen from "@components/BannedScreen"
 import "#web/App.css"
 
 export default function App() {
-	const { banned } = useAuth()
+	const { banned, loading } = useAuth()
 	useHeartbeat()
 
+	if (loading) {
+		return <SplashScreen />
+	}
+
 	if (banned) {
-		return <BannedScreen reason={banned.reason} expires_at={banned.expires_at} />
+		return (
+			<BannedScreen
+				reason={banned.reason}
+				expires_at={banned.expires_at}
+			/>
+		)
 	}
 
 	return (
 		<ErrorBoundary>
-			<SplashScreen>
-				<MyLibraryProvider>
-					<ScrollToTop />
-					<RouteLoader />
-					<NotificationContainer />
-					<TwemojiProvider />
-					<Header />
+			<MyLibraryProvider>
+				<ScrollToTop />
+				<RouteLoader />
+				<NotificationContainer />
+				<TwemojiProvider />
+				<Header />
 
-					<main className="main-content">
-						<ErrorBoundary>
-							<Routes>
-								<Route path="/" element={<Home />} />
-								<Route path="/game/:slug" element={<Game />} />
-								<Route path="/list/:id" element={<ListPage />} />
-								<Route path="/u/:username" element={<Profile />} />
-								<Route path="/about/badges" element={<Badges />} />
-								<Route path="/search" element={<SearchPage />} />
-								<Route path="*" element={<NotFound />} />
-							</Routes>
-						</ErrorBoundary>
-					</main>
+				<main className="main-content">
+					<ErrorBoundary>
+						<Routes>
+							<Route path="/" element={<Home />} />
+							<Route path="/game/:slug" element={<Game />} />
+							<Route path="/list/:id" element={<ListPage />} />
+							<Route path="/u/:username" element={<Profile />} />
+							<Route path="/about/badges" element={<Badges />} />
+							<Route path="/search" element={<SearchPage />} />
+							<Route path="*" element={<NotFound />} />
+						</Routes>
+					</ErrorBoundary>
+				</main>
 
-					<Footer />
-				</MyLibraryProvider>
-			</SplashScreen>
+				<Footer />
+			</MyLibraryProvider>
 		</ErrorBoundary>
 	)
 }

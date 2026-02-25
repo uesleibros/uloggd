@@ -62,8 +62,6 @@ async function handleBan(profile) {
   banned = profile
   cachedUser = null
 
-  await supabase.auth.signOut()
-
   loading = false
   initialized = true
   updateSnapshot()
