@@ -6,34 +6,37 @@ function formatBadges(userBadges) {
 		.map(ub => ({ ...ub.badge, assigned_at: ub.assigned_at }))
 }
 
-export function formatFullProfile(profile, { stream = null, counts = {} } = {}) {
-	if (!profile) return null
+export function formatFullProfile(
+  profile,
+  { stream = null, counts = {}, ban = null } = {}
+) {
+  if (!profile) return null
 
-	return {
-		id: profile.user_id,
-		username: profile.username,
-		avatar: profile.avatar || DEFAULT_AVATAR_URL,
-		banner: profile.banner,
-		bio: profile.bio,
-		avatar_decoration: profile.avatar_decoration,
-		thinking: profile.thinking,
-		pronoun: profile.pronoun,
-		is_moderator: profile.is_moderator,
-		is_banned: profile.is_banned,
-		ban_reason: ban?.reason || null,
-		expires_at: ban?.expires_at || null,
-		created_at: profile.created_at,
-		last_seen: profile.last_seen,
-		status: profile.status,
-		username_changed_at: profile.username_changed_at,
-		connections: profile.user_connections || [],
-		badges: formatBadges(profile.user_badges),
-		stream,
-		counts: {
-			reviews: counts.reviews || 0,
-			likedReviews: counts.likedReviews || 0,
-		},
-	}
+  return {
+    id: profile.user_id,
+    username: profile.username,
+    avatar: profile.avatar || DEFAULT_AVATAR_URL,
+    banner: profile.banner,
+    bio: profile.bio,
+    avatar_decoration: profile.avatar_decoration,
+    thinking: profile.thinking,
+    pronoun: profile.pronoun,
+    is_moderator: profile.is_moderator,
+    is_banned: profile.is_banned,
+    ban_reason: ban?.reason || null,
+    expires_at: ban?.expires_at || null,
+    created_at: profile.created_at,
+    last_seen: profile.last_seen,
+    status: profile.status,
+    username_changed_at: profile.username_changed_at,
+    connections: profile.user_connections || [],
+    badges: formatBadges(profile.user_badges),
+    stream,
+    counts: {
+      reviews: counts.reviews || 0,
+      likedReviews: counts.likedReviews || 0,
+    },
+  }
 }
 
 export function formatListProfile(profile, { stream = null } = {}) {
