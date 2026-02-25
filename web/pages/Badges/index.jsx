@@ -340,9 +340,9 @@ export default function Badges() {
         return
       }
 
-      setShowVerificationModal(false)
-      setShowSuccessModal(true)
       setHasPendingRequest(true)
+      setShowVerificationModal(false)
+      setTimeout(() => setShowSuccessModal(true), 150)
     } catch (e) {
       console.error(e)
       notify("Erro ao enviar solicitação.", "error")
