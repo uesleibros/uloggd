@@ -1,10 +1,14 @@
 import { handleRequest } from "#services/verification/handlers/request.js"
 import { handleStatus } from "#services/verification/handlers/status.js"
+import { handleReview } from "#services/verification/handlers/review.js"
+import { handlePending } from "#services/verification/handlers/pending.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
   request: { handler: handleRequest, auth: true },
   status:  { handler: handleStatus,  auth: true },
+  review:  { handler: handleReview,  auth: true },
+  pending: { handler: handlePending, auth: true },
 }
 
 export async function verificationHandler(req, res) {
