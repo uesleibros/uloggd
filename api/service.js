@@ -50,15 +50,6 @@ export default async function handler(req, res) {
 		}
 	}
 
-	const authHeader = req.headers.authorization
-	if (authHeader) {
-		const user = await getUser(req)
-
-		if (user?.is_banned) {
-			return res.status(403).json({ error: "banned" })
-		}
-	}
-
 	req.action = action
 	req.scope = scope ?? null
 
