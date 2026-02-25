@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
-import { UserPlus, ThumbsUp, Check, Trash2, X, Bell } from "lucide-react"
+import { UserPlus, ThumbsUp, Check, Trash2, X, Bell, BadgeCheck, XCircle } from "lucide-react"
 import { supabase } from "#lib/supabase"
 import { getTimeAgo } from "#utils/formatDate"
 
@@ -23,6 +23,28 @@ const NOTIFICATION_CONFIG = {
     getLink: (data) => `/game/${data.game_slug}`,
     getUserId: (data) => data.liker_id,
   },
+  verification_approved: {
+    icon: BadgeCheck,
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    getActor: () => "uloggd",
+    getText: () => "Sua solicitação de verificação foi aprovada! Você agora tem o selo de verificado.",
+    getLink: () => "/about/badges",
+    getUserId: () => null,
+    isSystem: true,
+  },
+  verification_rejected: {
+    icon: XCircle,
+    color: "text-red-400",
+    bg: "bg-red-500/10",
+    getActor: () => "uloggd",
+    getText: (data) => data.rejection_reason
+      ? `Sua solicitação de verificação foi rejeitada: ${data.rejection_reason}`
+      : "Sua solicitação de verificação foi rejeitada.",
+    getLink: () => "/about/badges",
+    getUserId: () => null,
+    isSystem: true,
+  },
 }
 
 function NotificationItem({ notification, users, onClose, onAction }) {
@@ -34,7 +56,8 @@ function NotificationItem({ notification, users, onClose, onAction }) {
   const actor = config.getActor(notification.data, users)
   const text = config.getText(notification.data, users)
   const actorId = config.getUserId(notification.data)
-  const actorUser = users[actorId]
+  const actorUser = actorId ? users[actorId] : null
+  const isSystem = config.isSystem
 
   return (
     <Link
@@ -47,14 +70,20 @@ function NotificationItem({ notification, users, onClose, onAction }) {
         !notification.read ? "bg-zinc-800/30" : ""
       }`}
     >
-      <img
-        src={actorUser?.avatar}
-        alt={actor}
-        className="w-9 h-9 rounded-full object-cover bg-zinc-800 flex-shrink-0"
-      />
+      {isSystem ? (
+        <div className={`w-9 h-9 rounded-full ${config.bg} flex items-center justify-center flex-shrink-0`}>
+          <Icon className={`w-5 h-5 ${config.color}`} />
+        </div>
+      ) : (
+        <img
+          src={actorUser?.avatar}
+          alt={actor}
+          className="w-9 h-9 rounded-full object-cover bg-zinc-800 flex-shrink-0"
+        />
+      )}
       <div className="flex-1 min-w-0">
         <p className={`text-sm leading-snug ${!notification.read ? "text-zinc-200" : "text-zinc-400"}`}>
-          <span className="font-semibold text-white">{actor}</span> {text}
+          {!isSystem && <span className="font-semibold text-white">{actor}</span>} {text}
         </p>
         <div className="flex items-center gap-1.5 mt-1">
           <Icon className={`w-3 h-3 ${config.color}`} />
@@ -98,9 +127,10 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         const data = await r.json()
 
         const userIds = [...new Set(data.flatMap(n => {
-          if (n.type === "follow") return [n.data.follower_id]
-          if (n.type === "log_like") return [n.data.liker_id]
-          return []
+          const config = NOTIFICATION_CONFIG[n.type]
+          if (!config || config.isSystem) return []
+          const userId = config.getUserId(n.data)
+          return userId ? [userId] : []
         }))]
 
         let usersMap = {}
