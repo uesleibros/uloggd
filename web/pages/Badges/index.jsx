@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { supabase } from "#lib/supabase.js"
 import { Loader2, CheckCircle, Send } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import Modal from "@components/UI/Modal"
@@ -295,10 +296,15 @@ export default function Badges() {
 
   useEffect(() => {
     async function fetchData() {
+      const { data: { session } } = await supabase.auth.getSession()
+
       const [badgesRes, statusRes] = await Promise.all([
         fetch("/api/badges/list", { method: "POST" }).then(r => r.json()),
-        user
-          ? fetch("/api/verification/status", { method: "POST" }).then(r => r.json())
+        session
+          ? fetch("/api/verification/status", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            }).then(r => r.json())
           : Promise.resolve({ request: null })
       ])
 
@@ -310,13 +316,18 @@ export default function Badges() {
   }, [user])
 
   async function handleSubmitRequest(reason) {
-    if (!user) return
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+
     setSubmitting(true)
 
     try {
       const res = await fetch("/api/verification/request", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({ reason })
       })
 
