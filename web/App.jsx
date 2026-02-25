@@ -8,6 +8,7 @@ import { MyLibraryProvider } from "#hooks/useMyLibrary"
 import { useHeartbeat } from "#hooks/useHeartbeat"
 import ErrorBoundary from "@components/ErrorBoundary"
 import Home from "@pages/Home"
+import Badges from "@pages/Badges"
 import SearchPage from "@pages/SearchPage"
 import Game from "@pages/Game"
 import Profile from "@pages/Profile"
@@ -38,6 +39,7 @@ export default function App() {
 								<Route path="/game/:slug" element={<Game />} />
 								<Route path="/list/:id" element={<ListPage />} />
 								<Route path="/u/:username" element={<Profile />} />
+								<Route path="/about/badges" element={<Badges />} />
 								<Route path="/search" element={<SearchPage />} />
 								<Route path="*" element={<NotFound />} />
 							</Routes>
@@ -50,4 +52,3 @@ export default function App() {
 		</ErrorBoundary>
 	)
 }
-
