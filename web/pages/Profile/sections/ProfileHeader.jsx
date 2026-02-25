@@ -336,16 +336,25 @@ function VerificationRequestCard({ request, onApprove, onReject, reviewing }) {
   )
 }
 
-function VerificationRequestsModal({ isOpen, onClose }) {
-  const [requests, setRequests] = useState([])
+function VerificationRequestsModal({ isOpen, onClose, profile }) {
+  const [request, setRequest] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [reviewing, setReviewing] = useState(null)
+  const [reviewing, setReviewing] = useState(false)
+  const [showReject, setShowReject] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState("")
 
   useEffect(() => {
-    if (isOpen) fetchRequests()
+    if (isOpen) fetchRequest()
   }, [isOpen])
 
-  async function fetchRequests() {
+  useEffect(() => {
+    if (!isOpen) {
+      setShowReject(false)
+      setRejectionReason("")
+    }
+  }, [isOpen])
+
+  async function fetchRequest() {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
 
@@ -353,11 +362,15 @@ function VerificationRequestsModal({ isOpen, onClose }) {
     try {
       const res = await fetch("/api/verification/pending", {
         method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}` }
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ userId: profile.id })
       })
       if (res.ok) {
         const data = await res.json()
-        setRequests(data.requests || [])
+        setRequest(data.request || null)
       }
     } catch (e) {
       console.error(e)
@@ -365,11 +378,11 @@ function VerificationRequestsModal({ isOpen, onClose }) {
     setLoading(false)
   }
 
-  async function handleReview(requestId, action, reason) {
+  async function handleReview(action) {
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
+    if (!session || !request) return
 
-    setReviewing(requestId)
+    setReviewing(true)
     try {
       const res = await fetch("/api/verification/review", {
         method: "POST",
@@ -377,12 +390,16 @@ function VerificationRequestsModal({ isOpen, onClose }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ requestId, action, rejectionReason: reason })
+        body: JSON.stringify({
+          requestId: request.id,
+          action,
+          rejectionReason: action === "reject" ? rejectionReason : null
+        })
       })
 
       if (res.ok) {
-        setRequests(prev => prev.filter(r => r.id !== requestId))
         notify(action === "approve" ? "Usuário verificado!" : "Solicitação rejeitada.", action === "approve" ? "success" : "info")
+        onClose()
       } else {
         notify("Erro ao processar.", "error")
       }
@@ -390,7 +407,7 @@ function VerificationRequestsModal({ isOpen, onClose }) {
       console.error(e)
       notify("Erro ao processar.", "error")
     }
-    setReviewing(null)
+    setReviewing(false)
   }
 
   return (
@@ -402,8 +419,8 @@ function VerificationRequestsModal({ isOpen, onClose }) {
               <BadgeCheck className="w-5 h-5 text-violet-400" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">Verificações</h3>
-              <p className="text-xs text-zinc-500">{requests.length} pendente{requests.length !== 1 ? "s" : ""}</p>
+              <h3 className="text-sm font-semibold text-white">Verificação</h3>
+              <p className="text-xs text-zinc-500">@{profile.username}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer">
@@ -411,29 +428,71 @@ function VerificationRequestsModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        <div className="max-h-[60vh] overflow-y-auto p-4">
+        <div className="p-4">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-5 h-5 text-zinc-600 animate-spin" />
             </div>
-          ) : requests.length === 0 ? (
+          ) : !request ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center mb-3">
-                <Check className="w-6 h-6 text-zinc-600" />
+                <X className="w-6 h-6 text-zinc-600" />
               </div>
-              <p className="text-sm text-zinc-500">Nenhuma solicitação</p>
+              <p className="text-sm text-zinc-500">Nenhuma solicitação pendente</p>
+            </div>
+          ) : showReject ? (
+            <div className="space-y-3">
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Motivo da rejeição (opcional)..."
+                rows={3}
+                className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-600 resize-none focus:outline-none focus:border-zinc-600"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setShowReject(false)
+                    setRejectionReason("")
+                  }}
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl transition-all cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => handleReview("reject")}
+                  disabled={reviewing}
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-400 disabled:opacity-50 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {reviewing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Rejeitar"}
+                </button>
+              </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              {requests.map((request) => (
-                <VerificationRequestCard
-                  key={request.id}
-                  request={request}
-                  onApprove={(id) => handleReview(id, "approve")}
-                  onReject={(id, reason) => handleReview(id, "reject", reason)}
-                  reviewing={reviewing === request.id}
-                />
-              ))}
+            <div className="space-y-4">
+              <div className="p-4 bg-zinc-800/30 rounded-xl border border-zinc-700/50">
+                <p className="text-sm text-zinc-300 leading-relaxed">{request.reason}</p>
+                <div className="flex items-center gap-1.5 mt-3 text-zinc-600">
+                  <Clock className="w-3 h-3" />
+                  <span className="text-xs">{formatDateLong(new Date(request.created_at).getTime() / 1000)}</span>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleReview("approve")}
+                  disabled={reviewing}
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-emerald-400 hover:text-white bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 hover:border-emerald-500 rounded-xl transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {reviewing ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> Aprovar</>}
+                </button>
+                <button
+                  onClick={() => setShowReject(true)}
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500 border border-red-500/30 hover:border-red-500 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <X className="w-4 h-4" /> Rejeitar
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -631,6 +690,7 @@ function ModeratorMenu({ profile, currentUser }) {
       <VerificationRequestsModal
         isOpen={showVerifications}
         onClose={() => setShowVerifications(false)}
+        profile={profile}
       />
 
       <BanUserModal
@@ -741,4 +801,3 @@ export function ProfileHeader({
     </div>
   )
 }
-
