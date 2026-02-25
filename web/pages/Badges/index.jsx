@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
-import { ArrowLeft, Loader2, CheckCircle, Send } from "lucide-react"
 import { supabase } from "#lib/supabase.js"
+import { Loader2, CheckCircle, Send } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import Modal from "@components/UI/Modal"
 import { useAuth } from "#hooks/useAuth"
@@ -219,10 +218,10 @@ function BadgeItem({ badge, onClick }) {
   return (
     <button
       onClick={() => onClick(badge)}
-      className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-zinc-800/50 transition-colors cursor-pointer text-left group"
+      className="w-full flex items-center gap-4 p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50 transition-all cursor-pointer text-left group"
     >
       <div
-        className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform"
+        className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
         style={{
           background: s.iconBg,
           border: `1px solid ${s.border}`
@@ -238,7 +237,7 @@ function BadgeItem({ badge, onClick }) {
 
       <div className="flex-1 min-w-0">
         <h3 className="text-sm font-semibold text-white">{badge.title}</h3>
-        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1">{badge.description}</p>
+        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{badge.description}</p>
       </div>
     </button>
   )
@@ -248,34 +247,32 @@ function VerificationCard({ onClick, isVerified, hasPendingRequest }) {
   if (isVerified) return null
 
   return (
-    <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/20">
-      <div className="flex items-start gap-4">
-        <div className="w-10 h-10 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center flex-shrink-0">
+    <div className="p-5 rounded-xl bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-transparent border border-violet-500/20">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-10 h-10 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center">
           <CheckCircle className="w-5 h-5 text-violet-400" />
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-white">Quer ser verificado?</h3>
-          <p className="text-xs text-zinc-400 mt-1">
-            Se você é um criador de conteúdo, personalidade ou figura reconhecida na comunidade de jogos, solicite seu selo de verificação.
-          </p>
-          <button
-            onClick={onClick}
-            className="mt-3 px-4 py-2 text-xs font-medium text-white bg-violet-600 hover:bg-violet-500 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-2"
-          >
-            {hasPendingRequest ? (
-              <>
-                <CheckCircle className="w-3.5 h-3.5" />
-                Ver status
-              </>
-            ) : (
-              <>
-                <Send className="w-3.5 h-3.5" />
-                Solicitar verificação
-              </>
-            )}
-          </button>
-        </div>
+        <h3 className="text-base font-semibold text-white">Quer ser verificado?</h3>
       </div>
+      <p className="text-sm text-zinc-400 mb-4">
+        Se você é um criador de conteúdo, personalidade ou figura reconhecida na comunidade de jogos, solicite seu selo.
+      </p>
+      <button
+        onClick={onClick}
+        className="px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-2"
+      >
+        {hasPendingRequest ? (
+          <>
+            <CheckCircle className="w-4 h-4" />
+            Ver status
+          </>
+        ) : (
+          <>
+            <Send className="w-4 h-4" />
+            Solicitar verificação
+          </>
+        )}
+      </button>
     </div>
   )
 }
@@ -336,48 +333,39 @@ export default function Badges() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
-      <header className="sticky top-0 z-10 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800">
-        <div className="max-w-xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link
-            to="/"
-            className="w-9 h-9 rounded-full border border-zinc-700 hover:border-zinc-500 text-zinc-500 hover:text-white flex items-center justify-center transition-all duration-200"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <h1 className="text-lg font-bold text-white">Selos</h1>
-        </div>
-      </header>
-
-      <main className="max-w-xl mx-auto px-4 py-6">
-        <p className="text-sm text-zinc-500 mb-6">
-          Selos são distintivos especiais que aparecem no perfil dos usuários, representando conquistas, funções ou reconhecimentos na comunidade.
+    <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-white">Selos</h1>
+        <p className="text-sm text-zinc-500 mt-2">
+          Distintivos especiais que aparecem no perfil dos usuários, representando conquistas, funções ou reconhecimentos.
         </p>
+      </div>
 
-        {user && (
+      {user && (
+        <div className="mb-8">
           <VerificationCard
             onClick={() => setShowVerificationModal(true)}
             isVerified={isVerified}
             hasPendingRequest={hasPendingRequest}
           />
-        )}
+        </div>
+      )}
 
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {badges.map((badge) => (
-              <BadgeItem
-                key={badge.id}
-                badge={badge}
-                onClick={setActiveBadge}
-              />
-            ))}
-          </div>
-        )}
-      </main>
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+        </div>
+      ) : (
+        <div className="grid gap-3">
+          {badges.map((badge) => (
+            <BadgeItem
+              key={badge.id}
+              badge={badge}
+              onClick={setActiveBadge}
+            />
+          ))}
+        </div>
+      )}
 
       <Modal
         isOpen={!!activeBadge}
