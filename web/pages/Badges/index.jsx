@@ -161,7 +161,7 @@ function VerificationRequestModal({ isOpen, onClose, onSubmit, loading, alreadyR
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="Ex: Criador de conteúdo no YouTube com 50k inscritos, canal focado em análises de jogos indie..."
+            placeholder="Ex: Sou jogador ativo há 5 anos, participo de comunidades de RPG, criador de conteúdo com 10k seguidores..."
             rows={4}
             maxLength={500}
             className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-600 resize-none focus:outline-none focus:border-violet-500/50 transition-colors"
@@ -315,7 +315,7 @@ function VerificationBanner({ onClick, isVerified, hasPendingRequest }) {
               <h3 className="text-base font-semibold text-white">Verificação de perfil</h3>
             </div>
             <p className="text-sm text-zinc-400 leading-relaxed max-w-md">
-              Criadores de conteúdo, streamers e figuras públicas podem solicitar o selo de verificação.
+              Criadores de conteúdo, membros ativos da comunidade e figuras públicas podem solicitar o selo de verificação.
             </p>
           </div>
 
