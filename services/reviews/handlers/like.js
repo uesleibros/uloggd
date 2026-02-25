@@ -4,10 +4,35 @@ import { createNotification } from "#services/notifications/create.js"
 export async function handleLike(req, res) {
   const { reviewId, action } = req.body
 
-  if (!reviewId) return res.status(400).json({ error: "missing reviewId" })
-  if (!["like", "unlike"].includes(action)) return res.status(400).json({ error: "invalid action" })
+  if (!reviewId) {
+    return res.status(400).json({ error: "missing reviewId" })
+  }
+
+  if (!["like", "unlike"].includes(action)) {
+    return res.status(400).json({ error: "invalid action" })
+  }
 
   try {
+    const { data: review } = await supabase
+      .from("reviews")
+      .select("user_id, game_slug")
+      .eq("id", reviewId)
+      .single()
+
+    if (!review) {
+      return res.status(404).json({ error: "review not found" })
+    }
+
+    const { data: reviewOwner } = await supabase
+      .from("users")
+      .select("is_banned")
+      .eq("user_id", review.user_id)
+      .single()
+
+    if (reviewOwner?.is_banned) {
+      return res.status(400).json({ error: "cannot interact with banned user" })
+    }
+
     if (action === "like") {
       const { error } = await supabase
         .from("review_likes")
@@ -18,18 +43,19 @@ export async function handleLike(req, res) {
 
       if (error) throw error
 
-      const { data: review } = await supabase
-        .from("reviews")
-        .select("user_id, game_slug")
-        .eq("id", reviewId)
-        .single()
-
-      if (review && review.user_id !== req.user.id) {
+      if (review.user_id !== req.user.id) {
         await createNotification({
           userId: review.user_id,
           type: "review_like",
-          data: { liker_id: req.user.id, review_id: reviewId, game_slug: review.game_slug },
-          dedupeKey: { liker_id: req.user.id, review_id: reviewId },
+          data: {
+            liker_id: req.user.id,
+            review_id: reviewId,
+            game_slug: review.game_slug
+          },
+          dedupeKey: {
+            liker_id: req.user.id,
+            review_id: reviewId
+          },
         })
       }
 
@@ -43,7 +69,9 @@ export async function handleLike(req, res) {
       .eq("review_id", reviewId)
 
     if (error) throw error
-    res.json({ liked: false })
+
+    return res.json({ liked: false })
+
   } catch (e) {
     console.error(e)
     res.status(500).json({ error: "fail" })

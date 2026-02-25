@@ -22,12 +22,8 @@ import BannedScreen from "@components/BannedScreen"
 import "#web/App.css"
 
 export default function App() {
-	const { banned, loading } = useAuth()
+	const { banned } = useAuth()
 	useHeartbeat()
-
-	if (loading) {
-		return <SplashScreen />
-	}
 
 	if (banned) {
 		return (
@@ -41,6 +37,7 @@ export default function App() {
 	return (
 		<ErrorBoundary>
 			<MyLibraryProvider>
+				<SplashScreen />
 				<ScrollToTop />
 				<RouteLoader />
 				<NotificationContainer />

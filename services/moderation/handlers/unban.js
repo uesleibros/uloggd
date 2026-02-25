@@ -32,14 +32,7 @@ export async function handleUnban(req, res) {
       return res.status(400).json({ error: "user not banned" })
     }
 
-    const { error: updateError } = await supabase
-      .from("users")
-      .update({ is_banned: false })
-      .eq("user_id", userId)
-
-    if (updateError) throw updateError
-
-    const { error: banError } = await supabase
+    await supabase
       .from("bans")
       .update({
         unbanned_at: new Date().toISOString(),
@@ -48,7 +41,10 @@ export async function handleUnban(req, res) {
       .eq("user_id", userId)
       .is("unbanned_at", null)
 
-    if (banError) throw banError
+    await supabase
+      .from("users")
+      .update({ is_banned: false })
+      .eq("user_id", userId)
 
     await createNotification({
       userId,

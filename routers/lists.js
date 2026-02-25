@@ -31,7 +31,15 @@ export async function listsHandler(req, res) {
 
   if (entry.auth) {
     const user = await getUser(req)
-    if (!user) return res.status(401).json({ error: "unauthorized" })
+
+    if (!user) {
+      return res.status(401).json({ error: "unauthorized" })
+    }
+
+    if (user.is_banned) {
+      return res.status(403).json({ error: "banned" })
+    }
+
     req.user = user
   }
 

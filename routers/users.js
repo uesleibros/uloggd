@@ -15,6 +15,7 @@ import { handleBatch } from "#services/users/handlers/batch.js"
 import { handleSearch } from "#services/users/handlers/search.js"
 import { getUser } from "#lib/auth.js"
 import { supabase } from "#lib/supabase-ssr.js"
+import { ensureUserNotBanned } from "#lib/moderation.js"
 
 const ACTIONS = {
   profile:      { handler: handleProfile,      scopes: null,       auth: false      },
@@ -44,18 +45,50 @@ export async function usersHandler(req, res) {
     return res.status(400).json({ error: "invalid scope" })
   }
 
+  let user = null
+
   if (entry.auth === true) {
-    const user = await getUser(req)
+    user = await getUser(req)
     if (!user) return res.status(401).json({ error: "unauthorized" })
     req.user = user
   } else if (entry.auth === "flexible") {
-    let user = await getUser(req)
+    user = await getUser(req)
     if (!user && req.body?._authToken) {
       const { data, error } = await supabase.auth.getUser(req.body._authToken)
       if (!error && data?.user) user = data.user
     }
     if (!user) return res.status(401).json({ error: "unauthorized" })
     req.user = user
+  }
+
+  const writeActions = [
+    "follow",
+    "bio",
+    "delete",
+    "banner",
+    "avatar",
+    "thinking",
+    "decoration",
+    "pronoun",
+    "username"
+  ]
+
+  if (writeActions.includes(req.action)) {
+    try {
+      const targetId =
+        req.body?.userId ||
+        req.body?.followingId ||
+        req.body?.targetUserId
+
+      if (targetId) {
+        await ensureUserNotBanned(targetId)
+      }
+    } catch (e) {
+      if (e.message === "target_banned") {
+        return res.status(400).json({ error: "cannot interact with banned user" })
+      }
+      return res.status(500).json({ error: "fail" })
+    }
   }
 
   return entry.handler(req, res)

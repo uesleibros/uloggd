@@ -1,5 +1,4 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { createNotification } from "#services/notifications/create.js"
 import { sendDiscordNotification } from "#lib/discord.js"
 
 export async function handleBan(req, res) {
@@ -63,15 +62,6 @@ export async function handleBan(req, res) {
       .eq("user_id", userId)
 
     if (updateError) throw updateError
-
-    await createNotification({
-      userId,
-      type: "account_banned",
-      data: {
-        reason: reason.trim(),
-        banned_by: moderatorId
-      }
-    })
 
     await sendDiscordNotification("user_banned", {
       username: targetUser.username,
