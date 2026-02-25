@@ -7,6 +7,7 @@ export function useProfileData(username) {
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState(null)
   const abortRef = useRef(null)
+  const lastUsernameRef = useRef(null)
 
   const normalizedUsername = username?.toLowerCase()
 
@@ -15,20 +16,18 @@ export function useProfileData(username) {
     return currentUser.username.toLowerCase() === normalizedUsername
   }, [authLoading, currentUser?.id, currentUser?.username, normalizedUsername])
 
-  const profile = useMemo(() => {
-    if (authLoading) return null
-    if (isOwnProfile && currentUser?.id) return currentUser
-    return fetchedProfile
-  }, [isOwnProfile, currentUser, fetchedProfile, authLoading])
-
   useEffect(() => {
+    if (lastUsernameRef.current !== normalizedUsername) {
+      setFetchedProfile(null)
+      setError(null)
+      lastUsernameRef.current = normalizedUsername
+    }
+
     if (abortRef.current) {
       abortRef.current.abort()
       abortRef.current = null
     }
 
-    setFetchedProfile(null)
-    setError(null)
     setFetching(true)
 
     if (!username) {
@@ -37,15 +36,6 @@ export function useProfileData(username) {
     }
 
     if (authLoading) return
-
-    if (
-      currentUser?.id &&
-      currentUser?.username &&
-      currentUser.username.toLowerCase() === normalizedUsername
-    ) {
-      setFetching(false)
-      return
-    }
 
     const controller = new AbortController()
     abortRef.current = controller
@@ -77,15 +67,16 @@ export function useProfileData(username) {
       controller.abort()
       abortRef.current = null
     }
-  }, [username, normalizedUsername, authLoading, currentUser?.id, currentUser?.username])
+  }, [username, normalizedUsername, authLoading])
 
-  const updateProfile = useCallback(
-    (partial) => {
-      if (isOwnProfile) return
-      setFetchedProfile((prev) => (prev ? { ...prev, ...partial } : prev))
-    },
-    [isOwnProfile]
-  )
+  const profile = useMemo(() => {
+    if (authLoading) return null
+    return fetchedProfile
+  }, [fetchedProfile, authLoading])
+
+  const updateProfile = useCallback((partial) => {
+    setFetchedProfile((prev) => (prev ? { ...prev, ...partial } : prev))
+  }, [])
 
   return {
     profile,

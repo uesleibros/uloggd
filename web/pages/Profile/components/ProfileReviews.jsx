@@ -1,80 +1,22 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Heart, Trophy, AlertTriangle, Eye, FileText, MessageSquare } from "lucide-react"
 import { MarkdownPreview } from "@components/MarkdownEditor"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import StatusBadge from "@components/Game/StatusBadge"
 import ReviewRating from "@components/Game/ReviewRating"
-import StarsDisplay from "@components/Game/StarsDisplay"
 import Playtime from "@components/Game/Playtime"
 import Modal from "@components/UI/Modal"
 import Pagination from "@components/UI/Pagination"
+import {
+	AspectRatingsPreview,
+	ReviewIndicators,
+	ReviewModalContent,
+	ReviewContent,
+	ReviewEmptyState,
+	ReviewSkeleton,
+} from "@components/Game/Review"
 import { getTimeAgo } from "#utils/formatDate"
-import { formatRating } from "#utils/rating"
 import { SORT_OPTIONS } from "#constants/game"
-
-function AspectRatingDisplay({ aspect }) {
-	const mode = aspect.ratingMode || "stars_5h"
-	const isStars = mode === "stars_5" || mode === "stars_5h"
-
-	if (aspect.rating == null) return <span className="text-xs text-zinc-700">—</span>
-
-	if (isStars) return <StarsDisplay rating={aspect.rating} ratingMode={mode} size="sm" />
-
-	const formatted = formatRating(aspect.rating, mode)
-	if (!formatted) return null
-
-	return (
-		<span className="text-xs font-semibold text-zinc-300 tabular-nums">
-			{formatted.display}<span className="text-zinc-600">/{formatted.max}</span>
-		</span>
-	)
-}
-
-function AspectRatingsPreview({ aspects }) {
-	if (!aspects?.length) return null
-
-	return (
-		<div className="space-y-1.5">
-			{aspects.map((aspect, i) => (
-				<div key={i} className="flex items-center justify-between gap-3">
-					<span className="text-xs text-zinc-500 truncate">{aspect.label}</span>
-					<AspectRatingDisplay aspect={aspect} />
-				</div>
-			))}
-		</div>
-	)
-}
-
-function ReviewIndicators({ review }) {
-	return (
-		<>
-			{review.liked && <Heart className="w-5 h-5 text-red-500 fill-current flex-shrink-0" />}
-			{review.mastered && <Trophy className="w-5 h-5 text-amber-400 fill-current flex-shrink-0" />}
-		</>
-	)
-}
-
-function SpoilerOverlay({ onReveal }) {
-	return (
-		<div className="relative rounded-xl bg-zinc-800/50 border border-zinc-700 p-6 flex flex-col items-center justify-center gap-4">
-			<div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-				<AlertTriangle className="w-5 h-5 text-amber-400" />
-			</div>
-			<div className="text-center">
-				<p className="text-sm font-medium text-zinc-300">Esta review contém spoilers</p>
-				<p className="text-xs text-zinc-500 mt-1">O conteúdo está oculto para proteger sua experiência.</p>
-			</div>
-			<button
-				onClick={onReveal}
-				className="px-4 py-2 bg-zinc-700/50 hover:bg-zinc-700 border border-zinc-600 hover:border-zinc-500 rounded-lg text-sm text-zinc-300 hover:text-white font-medium cursor-pointer transition-all duration-200 flex items-center gap-2"
-			>
-				<Eye className="w-4 h-4" />
-				Revelar conteúdo
-			</button>
-		</div>
-	)
-}
 
 function ReviewModalHeader({ review, game, user, onClose }) {
 	return (
@@ -113,55 +55,9 @@ function ReviewModalHeader({ review, game, user, onClose }) {
 	)
 }
 
-function ReviewModalContent({ review }) {
-	const aspects = review.aspect_ratings || []
-
-	return (
-		<div className="p-5 md:p-7">
-			{review.contain_spoilers && (
-				<div className="flex items-center gap-2.5 px-4 py-2.5 mb-5 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-					<AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
-					<span className="text-sm text-amber-400 font-medium">Esta review contém spoilers</span>
-				</div>
-			)}
-
-			{aspects.length > 0 && (
-				<div className="mb-5 p-4 bg-zinc-800/50 border border-zinc-700/50 rounded-xl">
-					<h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Avaliação por aspecto</h4>
-					<div className="space-y-2.5">
-						{aspects.map((aspect, i) => (
-							<div key={i}>
-								<div className="flex items-center justify-between gap-3">
-									<span className="text-sm text-zinc-300">{aspect.label}</span>
-									<AspectRatingDisplay aspect={aspect} />
-								</div>
-								{aspect.review && (
-									<div className="mt-1.5 pl-0 text-xs text-zinc-500 leading-relaxed">
-										<MarkdownPreview content={aspect.review} />
-									</div>
-								)}
-							</div>
-						))}
-					</div>
-				</div>
-			)}
-
-			<MarkdownPreview content={review.review || ""} />
-
-			<Playtime hours={review.hours_played} minutes={review.minutes_played} className="mt-6 pt-5 border-t border-zinc-700/50" />
-		</div>
-	)
-}
-
 export function ProfileReviewCard({ review, game, user }) {
-	const [spoilerRevealed, setSpoilerRevealed] = useState(false)
 	const [showModal, setShowModal] = useState(false)
-
-	const hasReview = !!review.review
-	const isLong = hasReview && review.review.length > 300
-	const isSpoilerHidden = review.contain_spoilers && !spoilerRevealed
 	const aspects = review.aspect_ratings || []
-	const hasAspects = aspects.length > 0
 
 	return (
 		<>
@@ -208,33 +104,15 @@ export function ProfileReviewCard({ review, game, user }) {
 							<span className="text-sm text-zinc-600">{getTimeAgo(review.created_at)}</span>
 						</div>
 
-						{hasAspects && (
+						{aspects.length > 0 && (
 							<div className="mt-3 p-3 bg-zinc-900/40 border border-zinc-700/30 rounded-lg">
 								<AspectRatingsPreview aspects={aspects} />
 							</div>
 						)}
 
-						{hasReview && (
+						{review.review && (
 							<div className="mt-4">
-								{isSpoilerHidden ? (
-									<SpoilerOverlay onReveal={() => setSpoilerRevealed(true)} />
-								) : isLong ? (
-									<div className="relative">
-										<div className="max-h-36 overflow-hidden">
-											<MarkdownPreview content={review.review} />
-										</div>
-										<div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-zinc-800/90 to-transparent pointer-events-none rounded-b-lg" />
-										<button
-											onClick={() => setShowModal(true)}
-											className="relative z-10 mt-2 px-4 py-2 text-sm text-indigo-400 hover:text-indigo-300 cursor-pointer transition-all duration-200 flex items-center gap-2 font-medium bg-zinc-800/50 hover:bg-zinc-700/50 rounded-lg border border-zinc-700/50"
-										>
-											<FileText className="w-4 h-4" />
-											Ler review completa
-										</button>
-									</div>
-								) : (
-									<MarkdownPreview content={review.review} />
-								)}
+								<ReviewContent review={review} onOpenModal={() => setShowModal(true)} />
 							</div>
 						)}
 
@@ -272,42 +150,6 @@ export function ProfileReviewCard({ review, game, user }) {
 				</div>
 			</Modal>
 		</>
-	)
-}
-
-function ReviewsSkeleton() {
-	return (
-		<div className="space-y-4">
-			{Array.from({ length: 3 }, (_, i) => (
-				<div key={i} className="rounded-xl p-5 sm:p-6 bg-zinc-800/50 border border-zinc-700 animate-pulse">
-					<div className="flex items-start gap-3.5">
-						<div className="w-16 h-20 rounded-lg bg-zinc-700 flex-shrink-0" />
-						<div className="flex-1 space-y-3">
-							<div className="h-4 w-36 bg-zinc-700 rounded" />
-							<div className="h-8 w-28 bg-zinc-700 rounded-lg" />
-							<div className="space-y-2 mt-1">
-								<div className="h-3.5 w-full bg-zinc-700 rounded" />
-								<div className="h-3.5 w-3/4 bg-zinc-700 rounded" />
-							</div>
-						</div>
-					</div>
-				</div>
-			))}
-		</div>
-	)
-}
-
-function EmptyState() {
-	return (
-		<div className="rounded-xl p-10 sm:p-14 bg-zinc-800/50 border border-zinc-700 flex flex-col items-center justify-center gap-4">
-			<div className="w-14 h-14 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-				<MessageSquare className="w-6 h-6 text-zinc-600" />
-			</div>
-			<div className="text-center">
-				<p className="text-sm text-zinc-400 font-medium">Nenhuma review ainda</p>
-				<p className="text-sm text-zinc-600 mt-1">As reviews escritas aparecerão aqui</p>
-			</div>
-		</div>
 	)
 }
 
@@ -350,9 +192,9 @@ export default function ProfileReviews({ userId }) {
 		window.scrollTo({ top: 0, behavior: "smooth" })
 	}
 
-	if (loading) return <ReviewsSkeleton />
+	if (loading) return <ReviewSkeleton count={3} showCover />
 
-	if (!reviews.length) return <EmptyState />
+	if (!reviews.length) return <ReviewEmptyState title="Nenhuma review ainda" subtitle="As reviews escritas aparecerão aqui" />
 
 	return (
 		<div>
@@ -388,15 +230,11 @@ export default function ProfileReviews({ userId }) {
 				))}
 			</div>
 
-			{totalPages > 1 && (
-				<div className="mt-6">
-					<Pagination
-						currentPage={page}
-						totalPages={totalPages}
-						onPageChange={handlePageChange}
-					/>
-				</div>
-			)}
+			<Pagination
+				currentPage={page}
+				totalPages={totalPages}
+				onPageChange={handlePageChange}
+			/>
 		</div>
 	)
 }

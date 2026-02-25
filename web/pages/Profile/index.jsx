@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
 import { useProfileGames } from "#hooks/useProfileGames"
@@ -18,8 +18,27 @@ export default function Profile() {
 	const { profile, isOwnProfile, currentUser, authLoading, fetching, error, updateProfile } =
 		useProfileData(username)
 
-	const { profileGames, counts, igdbGames, loadingGames } = useProfileGames(profile?.id)
-	const { userLists, setUserLists, loadingLists } = useUserLists(profile?.id)
+	const {
+		games,
+		counts,
+		loading: loadingGames,
+		activeTab,
+		page: gamesPage,
+		totalPages: gamesTotalPages,
+		handleTabChange,
+		handlePageChange: handleGamesPageChange,
+	} = useProfileGames(profile?.id)
+
+	const {
+		lists,
+		setLists,
+		loading: loadingLists,
+		total: listsTotal,
+		page: listsPage,
+		totalPages: listsTotalPages,
+		handlePageChange: handleListsPageChange,
+	} = useUserLists(profile?.id)
+
 	const {
 		isFollowing,
 		followLoading,
@@ -61,11 +80,6 @@ export default function Profile() {
 		)
 	}
 
-	function handleSectionChange(sectionId) {
-		if (sectionId === activeSection) return
-		setActiveSection(sectionId)
-	}
-
 	return (
 		<div>
 			<PageBanner image={profile.banner} height="profile" />
@@ -89,9 +103,9 @@ export default function Profile() {
 
 				<ProfileNavigation
 					activeSection={activeSection}
-					onSectionChange={handleSectionChange}
+					onSectionChange={setActiveSection}
 					counts={counts}
-					listsCount={userLists.length}
+					listsCount={listsTotal}
 					reviewsCount={profile?.counts?.reviews || 0}
 					likesCount={(counts?.liked || 0) + (profile?.counts?.likedReviews || 0)}
 				/>
@@ -99,14 +113,22 @@ export default function Profile() {
 				<ProfileContent
 					activeSection={activeSection}
 					profile={profile}
-					profileGames={profileGames}
-					igdbGames={igdbGames}
-					loadingGames={loadingGames}
-					counts={counts}
 					isOwnProfile={isOwnProfile}
-					userLists={userLists}
-					setUserLists={setUserLists}
+					games={games}
+					counts={counts}
+					loadingGames={loadingGames}
+					activeTab={activeTab}
+					gamesPage={gamesPage}
+					gamesTotalPages={gamesTotalPages}
+					onTabChange={handleTabChange}
+					onGamesPageChange={handleGamesPageChange}
+					lists={lists}
+					setLists={setLists}
 					loadingLists={loadingLists}
+					listsPage={listsPage}
+					listsTotalPages={listsTotalPages}
+					listsTotal={listsTotal}
+					onListsPageChange={handleListsPageChange}
 					onEditProfile={() => setSettingsOpen(true)}
 				/>
 			</div>

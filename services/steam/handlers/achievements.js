@@ -9,26 +9,37 @@ export async function handleAchievements(req, res) {
   const cached = await getCache(cacheKey)
   if (cached) return res.json({ achievements: cached })
 
-  const { data: connection } = await supabase
-    .from("user_connections")
-    .select("provider_user_id")
-    .eq("user_id", userId)
-    .eq("provider", "steam")
-    .maybeSingle()
-
-  if (!connection?.provider_user_id) return res.json({ achievements: [] })
-
-  const steamId = connection.provider_user_id
-  const apiKey = process.env.STEAM_WEB_API_KEY
-
   try {
+    const { data: connection } = await supabase
+      .from("user_connections")
+      .select("provider_user_id")
+      .eq("user_id", userId)
+      .eq("provider", "steam")
+      .maybeSingle()
+
+    if (!connection?.provider_user_id) {
+      await setCache(cacheKey, [], 300)
+      return res.json({ achievements: [] })
+    }
+
+    const steamId = connection.provider_user_id
+    const apiKey = process.env.STEAM_WEB_API_KEY
+
     const recentGamesRes = await fetch(
       `https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v1/?key=${apiKey}&steamid=${steamId}&count=10`
     )
+
+    if (!recentGamesRes.ok) {
+      return res.status(500).json({ error: "Steam API error" })
+    }
+
     const recentGamesData = await recentGamesRes.json()
     const games = recentGamesData.response?.games || []
 
-    if (games.length === 0) return res.json({ achievements: [] })
+    if (games.length === 0) {
+      await setCache(cacheKey, [], 300)
+      return res.json({ achievements: [] })
+    }
 
     const achievementsData = await Promise.all(
       games.map(async (game) => {
@@ -45,9 +56,11 @@ export async function handleAchievements(req, res) {
             )
           ])
 
+          if (!statsRes.ok || !schemaRes.ok) return []
+
           const stats = await statsRes.json()
           const schema = await schemaRes.json()
-          const store = await storeRes.json()
+          const store = storeRes.ok ? await storeRes.json() : {}
 
           if (!stats.playerstats?.achievements) return []
 
@@ -84,10 +97,10 @@ export async function handleAchievements(req, res) {
       .sort((a, b) => b.unlockedAt - a.unlockedAt)
       .slice(0, 50)
 
-    await setCache(cacheKey, achievements)
+    await setCache(cacheKey, achievements, 300)
     return res.json({ achievements })
-  } catch (err) {
-    console.error(err)
+  } catch (e) {
+    console.error(e)
     return res.status(500).json({ error: "Failed to fetch achievements" })
   }
 }

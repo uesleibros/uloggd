@@ -1,18 +1,15 @@
 import { useState, useEffect, useRef, useMemo } from "react"
 import { Link } from "react-router-dom"
 import { useGamesBatch } from "#hooks/useGamesBatch"
-import Modal from "@components/UI/Modal"
 import Pagination from "@components/UI/Pagination"
 import CreateListModal from "@components/Lists/CreateListModal"
 import EditListModal from "@components/Lists/EditListModal"
 import DeleteListModal from "@components/Lists/DeleteListModal"
 import {
-  List, Plus, Lock, Globe, ChevronRight,
+  List, Plus, Lock, ChevronRight,
   MoreHorizontal, Pencil, Trash2, Gamepad2,
 } from "lucide-react"
 import { encode } from "#utils/shortId.js"
-
-const LISTS_PER_PAGE = 12
 
 function ListActionMenu({ list, onEdit, onDelete }) {
   const [open, setOpen] = useState(false)
@@ -187,61 +184,6 @@ function ListCard({ list, isOwnProfile, onEdit, onDelete }) {
   )
 }
 
-function SortDropdown({ value, onChange }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-
-  const options = [
-    { value: "updated", label: "Última atualização" },
-    { value: "created", label: "Data de criação" },
-    { value: "name", label: "Nome (A-Z)" },
-    { value: "name-desc", label: "Nome (Z-A)" },
-    { value: "games", label: "Mais jogos" },
-  ]
-
-  useEffect(() => {
-    if (!open) return
-    function handle(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
-    }
-    document.addEventListener("mousedown", handle)
-    return () => document.removeEventListener("mousedown", handle)
-  }, [open])
-
-  const current = options.find(o => o.value === value) || options[0]
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer"
-      >
-        <span className="hidden sm:inline">{current.label}</span>
-        <span className="sm:hidden">Ordenar</span>
-        <ChevronRight className={`w-3 h-3 transition-transform ${open ? "rotate-90" : ""}`} />
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 min-w-[170px]">
-          {options.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => { onChange(opt.value); setOpen(false) }}
-              className={`w-full text-left px-3 py-2.5 sm:py-2 text-sm transition-colors cursor-pointer ${
-                opt.value === value
-                  ? "text-indigo-400 bg-indigo-500/10"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-700/50"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
 function ListsSkeleton() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -262,50 +204,24 @@ function ListsSkeleton() {
   )
 }
 
-export default function ListsSection({ lists: externalLists = [], setLists: setExternalLists, isOwnProfile, username, loading }) {
-  const [sortBy, setSortBy] = useState("updated")
-  const [currentPage, setCurrentPage] = useState(1)
+export default function ListsSection({
+  lists,
+  setLists,
+  isOwnProfile,
+  username,
+  loading,
+  currentPage,
+  totalPages,
+  total,
+  onPageChange,
+}) {
   const [createOpen, setCreateOpen] = useState(false)
   const [editingList, setEditingList] = useState(null)
   const [deletingList, setDeletingList] = useState(null)
   const sectionRef = useRef(null)
 
-  const lists = externalLists
-
-  const sortedLists = useMemo(() => {
-    const sorted = [...lists]
-    switch (sortBy) {
-      case "updated":
-        return sorted.sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
-      case "created":
-        return sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      case "name":
-        return sorted.sort((a, b) => (a.title || "").localeCompare(b.title || "", "pt-BR"))
-      case "name-desc":
-        return sorted.sort((a, b) => (b.title || "").localeCompare(a.title || "", "pt-BR"))
-      case "games":
-        return sorted.sort((a, b) => (b.games_count || 0) - (a.games_count || 0))
-      default:
-        return sorted
-    }
-  }, [lists, sortBy])
-
-  const totalPages = Math.ceil(sortedLists.length / LISTS_PER_PAGE)
-  const paginatedLists = sortedLists.slice(
-    (currentPage - 1) * LISTS_PER_PAGE,
-    currentPage * LISTS_PER_PAGE
-  )
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [sortBy])
-
-  useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages)
-  }, [totalPages, currentPage])
-
   function handlePageChange(page) {
-    setCurrentPage(page)
+    onPageChange(page)
     if (sectionRef.current) {
       const y = sectionRef.current.getBoundingClientRect().top + window.scrollY - 24
       window.scrollTo({ top: y, behavior: "smooth" })
@@ -313,18 +229,18 @@ export default function ListsSection({ lists: externalLists = [], setLists: setE
   }
 
   function handleCreated(newList) {
-    setExternalLists(prev => [newList, ...prev])
+    setLists(prev => [newList, ...prev])
   }
 
   function handleUpdated(updatedList) {
-    setExternalLists(prev => prev.map(l => l.id === updatedList.id ? { ...l, ...updatedList } : l))
+    setLists(prev => prev.map(l => l.id === updatedList.id ? { ...l, ...updatedList } : l))
   }
 
   function handleDeleted(listId) {
-    setExternalLists(prev => prev.filter(l => l.id !== listId))
+    setLists(prev => prev.filter(l => l.id !== listId))
   }
 
-  const isEmpty = lists.length === 0
+  const isEmpty = !lists || lists.length === 0
 
   if (loading) {
     return (
@@ -348,15 +264,14 @@ export default function ListsSection({ lists: externalLists = [], setLists: setE
             <List className="w-5 h-5 text-zinc-400" />
             Listas
           </h2>
-          {!isEmpty && (
+          {total > 0 && (
             <span className="text-xs text-zinc-500 bg-zinc-800/80 px-2 py-0.5 rounded-full tabular-nums">
-              {lists.length}
+              {total}
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-2">
-          {!isEmpty && <SortDropdown value={sortBy} onChange={setSortBy} />}
           {isOwnProfile && (
             <button
               onClick={() => setCreateOpen(true)}
@@ -397,7 +312,7 @@ export default function ListsSection({ lists: externalLists = [], setLists: setE
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {paginatedLists.map(list => (
+            {lists.map(list => (
               <ListCard
                 key={list.id}
                 list={list}

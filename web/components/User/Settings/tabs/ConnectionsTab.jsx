@@ -1,6 +1,6 @@
-import TwitchSection from "@components/User/Settings/sections/TwitchSection"
-import NintendoSection from "@components/User/Settings/sections/NintendoSection"
-import SteamSection from "@components/User/Settings/sections/SteamSection"
+import TwitchSection from "@components/User/Settings/sections/connections/TwitchSection"
+import NintendoSection from "@components/User/Settings/sections/connections/NintendoSection"
+import SteamSection from "@components/User/Settings/sections/connections/SteamSection"
 
 export default function ConnectionsTab() {
 	return (

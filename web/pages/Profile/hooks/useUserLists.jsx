@@ -1,32 +1,50 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 
 export function useUserLists(profileId) {
-  const [userLists, setUserLists] = useState([])
-  const [loadingLists, setLoadingLists] = useState(false)
+  const [lists, setLists] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
 
-  useEffect(() => {
+  const fetchLists = useCallback(async (pageNum) => {
     if (!profileId) return
-    setLoadingLists(true)
+    setLoading(true)
 
-    const controller = new AbortController()
-
-    fetch("/api/lists/@me/get", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: profileId }),
-      signal: controller.signal,
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        setUserLists(Array.isArray(data) ? data : [])
-        setLoadingLists(false)
+    try {
+      const r = await fetch("/api/lists/@me/get", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: profileId, page: pageNum, limit: 20 }),
       })
-      .catch((err) => {
-        if (err.name !== "AbortError") setLoadingLists(false)
-      })
+      const data = await r.json()
 
-    return () => controller.abort()
+      setLists(data.lists || [])
+      setTotal(data.total || 0)
+      setTotalPages(data.totalPages || 1)
+    } catch {
+      setLists([])
+    } finally {
+      setLoading(false)
+    }
   }, [profileId])
 
-  return { userLists, setUserLists, loadingLists }
+  useEffect(() => {
+    fetchLists(page)
+  }, [fetchLists, page])
+
+  const handlePageChange = useCallback((newPage) => {
+    setPage(newPage)
+  }, [])
+
+  return {
+    lists,
+    setLists,
+    loading,
+    page,
+    totalPages,
+    total,
+    handlePageChange,
+    refetch: () => fetchLists(page),
+  }
 }

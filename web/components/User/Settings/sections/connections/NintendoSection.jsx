@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { CheckCircle2, Unlink, Loader2 } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
+import { NintendoIcon } from "#constants/customIcons"
 import SettingsSection from "@components/User/Settings/ui/SettingsSection"
 
 function formatSwitchCode(code) {
@@ -10,18 +11,6 @@ function formatSwitchCode(code) {
 	if (cleaned.length > 12) return code.slice(0, 17)
 	if (cleaned.length !== 12) return cleaned
 	return `SW-${cleaned.slice(0,4)}-${cleaned.slice(4,8)}-${cleaned.slice(8,12)}`
-}
-
-function NintendoIcon({ className }) {
-	return (
-		<svg
-			viewBox="0 0 24 24"
-			fill="currentColor"
-			className={className}
-		>
-			<path d="M7 2C4.79 2 3 3.79 3 6v12c0 2.21 1.79 4 4 4h3V2H7zm10 0h-3v20h3c2.21 0 4-1.79 4-4V6c0-2.21-1.79-4-4-4zM7 6.5A1.5 1.5 0 1 1 7 9.5 1.5 1.5 0 0 1 7 6.5zm10 8a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
-		</svg>
-	)
 }
 
 export default function NintendoSection() {

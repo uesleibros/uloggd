@@ -26,6 +26,7 @@ export default defineConfig({
 			"#data": "/data",
 			"#api": "/api",
 			"#routers": "/routers",
+			"#models": "/models",
 			"@styles": "/web/styles",
 			"@pages": "/web/pages",
 			"@components": "/web/components"

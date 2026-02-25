@@ -50,9 +50,9 @@ function buildGameMap(userGames, logs) {
   return gameMap
 }
 
-function aggregateGames(gameMap) {
-  const games = {}
+function aggregateGames(gameMap, { page = 1, limit = 20, filter = null } = {}) {
   const counts = {
+    total: 0,
     playing: 0,
     played: 0,
     completed: 0,
@@ -65,12 +65,14 @@ function aggregateGames(gameMap) {
     reviewed: 0,
   }
 
+  const allGames = []
+
   for (const [slug, g] of Object.entries(gameMap)) {
     const avgRating = g.ratings.length > 0
       ? Math.round(g.ratings.reduce((a, b) => a + b, 0) / g.ratings.length)
       : null
 
-    games[slug] = {
+    const game = {
       gameId: g.gameId,
       slug,
       avgRating,
@@ -84,6 +86,7 @@ function aggregateGames(gameMap) {
       latestAt: g.latestAt,
     }
 
+    counts.total++
     if (g.playing) counts.playing++
     if (g.status === "played") counts.played++
     if (g.status === "completed") counts.completed++
@@ -94,13 +97,34 @@ function aggregateGames(gameMap) {
     if (g.liked) counts.liked++
     if (g.hasLog) counts.rated++
     if (g.hasLog) counts.reviewed++
+
+    const matchesFilter = !filter || (
+      (filter === "playing" && g.playing) ||
+      (filter === "played" && g.status === "played") ||
+      (filter === "completed" && g.status === "completed") ||
+      (filter === "backlog" && g.backlog) ||
+      (filter === "wishlist" && g.wishlist) ||
+      (filter === "dropped" && g.status === "abandoned") ||
+      (filter === "shelved" && g.status === "shelved") ||
+      (filter === "liked" && g.liked) ||
+      (filter === "rated" && g.hasLog)
+    )
+
+    if (matchesFilter) allGames.push(game)
   }
 
-  return { games, counts }
+  allGames.sort((a, b) => new Date(b.latestAt) - new Date(a.latestAt))
+
+  const total = allGames.length
+  const totalPages = Math.ceil(total / limit)
+  const offset = (page - 1) * limit
+  const games = allGames.slice(offset, offset + limit)
+
+  return { games, counts, total, page, totalPages }
 }
 
 export async function handleProfileGames(req, res) {
-  const { userId } = req.body
+  const { userId, page = 1, limit = 20, filter = null } = req.body
   if (!userId) return res.status(400).json({ error: "userId required" })
 
   try {
@@ -120,7 +144,7 @@ export async function handleProfileGames(req, res) {
     if (logsRes.error) throw logsRes.error
 
     const gameMap = buildGameMap(userGamesRes.data, logsRes.data)
-    res.json(aggregateGames(gameMap))
+    res.json(aggregateGames(gameMap, { page, limit, filter }))
   } catch (e) {
     console.error(e)
     res.status(500).json({ error: "fail" })

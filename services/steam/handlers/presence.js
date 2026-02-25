@@ -10,29 +10,44 @@ export async function handlePresence(req, res) {
   const cached = await getCache(cacheKey)
   if (cached) return res.json(cached)
 
-  const { data: connection } = await supabase
-    .from("user_connections")
-    .select("provider_user_id")
-    .eq("user_id", userId)
-    .eq("provider", "steam")
-    .maybeSingle()
-
-  if (!connection?.provider_user_id) return res.json({ playing: false })
-
   try {
+    const { data: connection } = await supabase
+      .from("user_connections")
+      .select("provider_user_id")
+      .eq("user_id", userId)
+      .eq("provider", "steam")
+      .maybeSingle()
+
+    if (!connection?.provider_user_id) {
+      const result = { playing: false }
+      await setCache(cacheKey, result, 60)
+      return res.json(result)
+    }
+
     const steamRes = await fetch(
       `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${process.env.STEAM_WEB_API_KEY}&steamids=${connection.provider_user_id}`
     )
-    const { response } = await steamRes.json()
-    const player = response.players?.[0]
 
-    const baseProfile = {
-      name: player?.personaname,
-      avatar: player?.avatarfull,
-      status: player?.personastate ?? 0
+    if (!steamRes.ok) {
+      return res.status(500).json({ error: "Steam API error" })
     }
 
-    if (!player?.gameid) {
+    const { response } = await steamRes.json()
+    const player = response?.players?.[0]
+
+    if (!player) {
+      const result = { playing: false }
+      await setCache(cacheKey, result, 60)
+      return res.json(result)
+    }
+
+    const baseProfile = {
+      name: player.personaname,
+      avatar: player.avatarfull,
+      status: player.personastate ?? 0
+    }
+
+    if (!player.gameid) {
       const result = { playing: false, profile: baseProfile }
       await setCache(cacheKey, result, 60)
       return res.json(result)
@@ -41,8 +56,8 @@ export async function handlePresence(req, res) {
     const igdbResult = await query(
       "games",
       `fields name, slug, cover.url;
-       where external_games.uid = "${player.gameid}" & external_games.external_game_source = 1;
-       limit 1;`
+      where external_games.uid = "${player.gameid}" & external_games.category = 1;
+      limit 1;`
     )
 
     const igdbGame = igdbResult?.[0]
@@ -64,7 +79,8 @@ export async function handlePresence(req, res) {
 
     await setCache(cacheKey, result, 60)
     return res.json(result)
-  } catch {
+  } catch (e) {
+    console.error(e)
     return res.status(500).json({ error: "Presence check failed" })
   }
 }

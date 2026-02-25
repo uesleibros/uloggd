@@ -1,5 +1,6 @@
 import { supabase } from "#lib/supabase-ssr.js"
 import { encode } from "#utils/shortId.js"
+import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
 
 export async function handleSearch(req, res) {
 	const { query, limit = 20, offset = 0, sort = "relevance" } = req.body
@@ -18,11 +19,9 @@ export async function handleSearch(req, res) {
 			.ilike("title", `%${query}%`)
 
 		if (sort === "title") q = q.order("title", { ascending: true })
-		else if (sort === "newest") q = q.order("created_at", { ascending: false })
 		else q = q.order("created_at", { ascending: false })
 
 		const { data, count, error } = await q.range(offset, offset + limit - 1)
-
 		if (error) throw error
 
 		const results = (data || []).map(list => ({
@@ -31,7 +30,10 @@ export async function handleSearch(req, res) {
 			title: list.title,
 			description: list.description,
 			games_count: list.list_items?.length || 0,
-			owner: list.owner,
+			owner: list.owner ? {
+				username: list.owner.username,
+				avatar: list.owner.avatar || DEFAULT_AVATAR_URL,
+			} : null,
 			created_at: list.created_at,
 		}))
 

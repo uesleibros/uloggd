@@ -1,68 +1,11 @@
-import { supabase } from "#lib/supabase-ssr.js"
-import twitchClient from "#lib/twitch.js"
-import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
 import { decode } from "#utils/shortId.js"
-
-const PROFILE_SELECT = `
-	username, banner, bio, pronoun, thinking, avatar, avatar_decoration,
-	created_at, is_moderator, last_seen, status, username_changed_at,
-	user_badges ( assigned_at, badge:badges ( id, title, description, icon_url, color ) ),
-	user_connections ( provider, provider_user_id, provider_username, provider_display_name )
-`
-
-async function getProfileByUserId(userId) {
-	const { data } = await supabase
-		.from("users")
-		.select(`user_id, ${PROFILE_SELECT}`)
-		.eq("user_id", decode(userId))
-		.single()
-
-	return data
-}
-
-async function getProfileByUsername(username) {
-	const { data } = await supabase
-		.from("users")
-		.select(`user_id, ${PROFILE_SELECT}`)
-		.ilike("username", username)
-		.single()
-
-	return data
-}
-
-function formatProfile(profile, stream = null, reviewsCount = 0, likedReviewsCount = 0) {
-	if (!profile) return null
-
-	const badges = profile.user_badges?.map(ub => ({
-		...ub.badge,
-		assigned_at: ub.assigned_at,
-	})) || []
-
-	const connections = profile.user_connections || []
-
-	return {
-		id: profile.user_id,
-		username: profile.username,
-		avatar: profile.avatar || DEFAULT_AVATAR_URL,
-		banner: profile.banner,
-		bio: profile.bio,
-		avatar_decoration: profile.avatar_decoration,
-		thinking: profile.thinking,
-		pronoun: profile.pronoun,
-		is_moderator: profile.is_moderator,
-		created_at: profile.created_at,
-		last_seen: profile.last_seen,
-		status: profile.status,
-		username_changed_at: profile.username_changed_at,
-		connections,
-		badges,
-		stream,
-		counts: {
-			reviews: reviewsCount,
-			likedReviews: likedReviewsCount,
-		}
-	}
-}
+import {
+	findByUserId,
+	findByUsername,
+	getProfileCounts,
+	resolveStream,
+	formatFullProfile,
+} from "#models/users/index.js"
 
 export async function handleProfile(req, res) {
 	const { userId, username } = req.body
@@ -71,57 +14,18 @@ export async function handleProfile(req, res) {
 
 	try {
 		const profile = userId
-			? await getProfileByUserId(userId)
-			: await getProfileByUsername(username)
+			? await findByUserId(decode(userId))
+			: await findByUsername(username)
 
 		if (!profile)
 			return res.status(404).json({ error: "user not found" })
 
-		const userIdReal = profile.user_id
-
-		const [reviewsRes, likedReviewsRes] = await Promise.all([
-			supabase
-				.from("reviews")
-				.select("*", { count: "exact", head: true })
-				.eq("user_id", userIdReal),
-			supabase
-				.from("review_likes")
-				.select("*", { count: "exact", head: true })
-				.eq("user_id", userIdReal),
+		const [counts, stream] = await Promise.all([
+			getProfileCounts(profile.user_id),
+			resolveStream(profile.user_connections),
 		])
 
-		let stream = null
-		const twitchConnection = profile.user_connections?.find(
-			c => c.provider === "twitch"
-		)
-
-		if (twitchConnection?.provider_username) {
-			try {
-				const streamData = await twitchClient.getStream(
-					twitchConnection.provider_username
-				)
-				if (streamData) {
-					stream = {
-						twitch_username: twitchConnection.provider_username,
-						title: streamData.title,
-						game: streamData.game_name,
-						viewers: streamData.viewer_count,
-						thumbnail: streamData.thumbnail_url
-							.replace("{width}", "320")
-							.replace("{height}", "180"),
-					}
-				}
-			} catch {}
-		}
-
-		res.json(
-			formatProfile(
-				profile,
-				stream,
-				reviewsRes.count || 0,
-				likedReviewsRes.count || 0
-			)
-		)
+		res.json(formatFullProfile(profile, { stream, counts }))
 	} catch (e) {
 		console.error(e)
 		res.status(500).json({ error: "fail" })

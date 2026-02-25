@@ -17,18 +17,7 @@ import {
   Check,
   Copy,
 } from "lucide-react"
-
-function NintendoIcon({ className }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-    >
-      <path d="M7 2C4.79 2 3 3.79 3 6v12c0 2.21 1.79 4 4 4h3V2H7zm10 0h-3v20h3c2.21 0 4-1.79 4-4V6c0-2.21-1.79-4-4-4zM7 6.5A1.5 1.5 0 1 1 7 9.5 1.5 1.5 0 0 1 7 6.5zm10 8a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
-    </svg>
-  )
-}
+import { TwitchIcon, SteamIcon, NintendoIcon } from "#constants/customIcons"
 
 const SOCIAL_PLATFORMS = {
   twitter: {
@@ -110,22 +99,14 @@ function normalizeUrl(url, baseUrl) {
 
 const CONNECTION_PLATFORMS = {
   twitch: {
-    icon: (props) => (
-      <svg {...props} viewBox="0 0 24 24" fill="currentColor">
-        <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z" />
-      </svg>
-    ),
+    icon: TwitchIcon,
     label: "Twitch",
     color: "hover:text-purple-400",
     getUrl: (username) => `https://twitch.tv/${username}`,
     getDisplay: (username) => username,
   },
   steam: {
-    icon: (props) => (
-      <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 259" fill="currentColor">
-        <path d="M127.779 0C57.895 0 .847 55.32.044 124.669l69.07 28.576a36.104 36.104 0 0 1 20.57-6.36c.67 0 1.333.027 1.993.067l30.776-44.573v-.626C122.453 75.088 144.2 53.34 170.864 53.34c26.663 0 48.412 21.748 48.412 48.412 0 26.664-21.749 48.412-48.412 48.412h-1.107l-43.874 31.292c0 .584.033 1.16.033 1.721 0 20.149-16.355 36.503-36.503 36.503-17.55 0-32.352-12.579-35.747-29.292L5.06 163.84C21.26 217.234 70.96 256.3 129.893 256.3c71.222 0 128.893-57.67 128.893-128.893C258.786 57.67 199 0 127.779 0zM80.17 196.07l-15.826-6.552a27.345 27.345 0 0 0 14.143 13.46 27.44 27.44 0 0 0 35.81-14.772 27.253 27.253 0 0 0 .046-20.943 27.108 27.108 0 0 0-14.82-14.865 27.29 27.29 0 0 0-20.152-.339l16.337 6.768c10.283 4.276 15.16 16.128 10.884 26.41-4.275 10.284-16.134 15.16-26.423 10.833zm112.593-94.318c0-13.326-10.85-24.176-24.176-24.176-13.327 0-24.177 10.85-24.177 24.176 0 13.327 10.85 24.177 24.177 24.177 13.326 0 24.176-10.85 24.176-24.177zm-42.3 0c0-10.038 8.093-18.131 18.124-18.131s18.131 8.093 18.131 18.131-8.1 18.131-18.131 18.131-18.124-8.093-18.124-18.131z" />
-      </svg>
-    ),
+    icon: SteamIcon,
     label: "Steam",
     color: "hover:text-[#66c0f4]",
     getUrl: (steamId) => `https://steamcommunity.com/profiles/${steamId}`,

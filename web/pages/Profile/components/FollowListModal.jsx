@@ -1,28 +1,82 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Link } from "react-router-dom"
 import UserDisplay from "@components/User/UserDisplay"
 import Modal from "@components/UI/Modal"
 
+const LIMIT = 20
+
 export default function FollowListModal({ isOpen, title, userId, onClose }) {
 	const [users, setUsers] = useState([])
 	const [loading, setLoading] = useState(true)
+	const [loadingMore, setLoadingMore] = useState(false)
 	const [search, setSearch] = useState("")
+	const [page, setPage] = useState(1)
+	const [hasMore, setHasMore] = useState(false)
+	const [total, setTotal] = useState(0)
+	const observerRef = useRef(null)
+	const loaderRef = useRef(null)
+
+	const type = title === "Seguidores" ? "followers" : "following"
+
+	const fetchUsers = useCallback(async (pageNum, append = false) => {
+		if (pageNum === 1) setLoading(true)
+		else setLoadingMore(true)
+
+		try {
+			const r = await fetch("/api/users/followers", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ userId, type, page: pageNum, limit: LIMIT }),
+			})
+			const data = await r.json()
+
+			if (append) {
+				setUsers(prev => [...prev, ...(data.users || [])])
+			} else {
+				setUsers(data.users || [])
+			}
+
+			setTotal(data.total || 0)
+			setHasMore(pageNum < data.totalPages)
+		} catch {
+			if (!append) setUsers([])
+		} finally {
+			setLoading(false)
+			setLoadingMore(false)
+		}
+	}, [userId, type])
 
 	useEffect(() => {
 		if (!isOpen) return
-		setLoading(true)
 		setUsers([])
 		setSearch("")
+		setPage(1)
+		setHasMore(false)
+		fetchUsers(1)
+	}, [isOpen, userId, title, fetchUsers])
 
-		fetch("/api/users/followers", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ userId, type: title === "Seguidores" ? "followers" : "following" }),
-		})
-			.then(r => r.json())
-			.then(data => { setUsers(data || []); setLoading(false) })
-			.catch(() => setLoading(false))
-	}, [isOpen, userId, title])
+	useEffect(() => {
+		if (!isOpen || !hasMore || loadingMore || search.trim()) return
+
+		const observer = new IntersectionObserver(
+			entries => {
+				if (entries[0].isIntersecting) {
+					const nextPage = page + 1
+					setPage(nextPage)
+					fetchUsers(nextPage, true)
+				}
+			},
+			{ threshold: 0.1 }
+		)
+
+		observerRef.current = observer
+
+		if (loaderRef.current) {
+			observer.observe(loaderRef.current)
+		}
+
+		return () => observer.disconnect()
+	}, [isOpen, hasMore, loadingMore, page, search, fetchUsers])
 
 	const filtered = search.trim()
 		? users.filter(u => u.username.toLowerCase().includes(search.toLowerCase()))
@@ -33,7 +87,7 @@ export default function FollowListModal({ isOpen, title, userId, onClose }) {
 			isOpen={isOpen}
 			onClose={onClose}
 			title={title}
-			subtitle={!loading ? String(users.length) : undefined}
+			subtitle={!loading ? String(total) : undefined}
 			maxWidth="max-w-md"
 		>
 			{!loading && users.length > 0 && (
@@ -71,6 +125,14 @@ export default function FollowListModal({ isOpen, title, userId, onClose }) {
 								<UserDisplay user={u} size="md" showBadges={true} showStatus={true} linkToProfile={false} />
 							</Link>
 						))}
+
+						{hasMore && !search.trim() && (
+							<div ref={loaderRef} className="flex justify-center py-4">
+								{loadingMore && (
+									<div className="w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+								)}
+							</div>
+						)}
 					</div>
 				) : (
 					<div className="flex flex-col items-center justify-center py-12">

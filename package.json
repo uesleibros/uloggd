@@ -19,7 +19,8 @@
     "#data/*": "./data/*",
     "#api/*": "./api/*",
     "#routers/*": "./routers/*",
-    "#web/*": "./web/*"
+    "#web/*": "./web/*",
+    "#models/*": "./models/*"
   },
   "dependencies": {
     "@codemirror/commands": "^6.7.0",

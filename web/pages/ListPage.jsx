@@ -1,25 +1,20 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
-import { supabase } from "#lib/supabase"
 import { useAuth } from "#hooks/useAuth"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import Pagination from "@components/UI/Pagination"
-import Modal from "@components/UI/Modal"
 import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
-import PlatformIcons from "@components/Game/PlatformIcons"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import AddGameModal from "@components/Lists/AddGameModal"
 import EditListModal from "@components/Lists/EditListModal"
 import ReorderModal from "@components/Lists/ReorderModal"
 import RemoveItemModal from "@components/Lists/RemoveItemModal"
 import DeleteListModal from "@components/Lists/DeleteListModal"
-import { formatDateShort } from "#utils/formatDate"
 import {
-	List, Lock, Globe, ArrowLeft, Pencil, Trash2, Plus,
-	MoreHorizontal, Search, X, Gamepad2, Calendar, User,
-	Link as LinkIcon, Check, GripVertical, ArrowUpDown,
-	Hash
+	List, Lock, ArrowLeft, Pencil, Trash2, Plus,
+	MoreHorizontal, X, Gamepad2, Calendar,
+	Link as LinkIcon, Check, ArrowUpDown,
 } from "lucide-react"
 import { encode } from "#utils/shortId.js"
 
@@ -113,9 +108,12 @@ export default function ListPage() {
 	const navigate = useNavigate()
 	const { user: currentUser, loading: authLoading } = useAuth()
 	const [list, setList] = useState(null)
+	const [items, setItems] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 	const [currentPage, setCurrentPage] = useState(1)
+	const [totalPages, setTotalPages] = useState(1)
+	const [totalItems, setTotalItems] = useState(0)
 	const [editOpen, setEditOpen] = useState(false)
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [addGameOpen, setAddGameOpen] = useState(false)
@@ -125,47 +123,56 @@ export default function ListPage() {
 	const menuRef = useRef(null)
 	const gridRef = useRef(null)
 
-	const items = list?.list_items || []
 	const slugs = useMemo(() => items.map(i => i.game_slug), [items])
 	const { getGame } = useGamesBatch(slugs)
 
 	const isOwner = !authLoading && currentUser?.id && list?.user_id === currentUser.id
+	const encodedId = list ? encode(list.id) : id
 
 	usePageMeta(list ? {
 		title: `${list.title} - uloggd`,
 		description: list.description || "Lista de jogos",
 	} : undefined)
 
-	useEffect(() => {
+	const fetchList = useCallback(async (pageNum) => {
 		setLoading(true)
 		setError(null)
-		setCurrentPage(1)
 
-		const controller = new AbortController()
-
-		fetch("/api/lists/@me/get", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ listId: id }),
-			signal: controller.signal,
-		})
-			.then(r => {
-				if (!r.ok) throw new Error("not found")
-				return r.json()
-			})
-			.then(data => {
-				setList(data)
-				setLoading(false)
-			})
-			.catch(err => {
-				if (err.name !== "AbortError") {
-					setError(true)
-					setLoading(false)
-				}
+		try {
+			const r = await fetch("/api/lists/@me/get", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ listId: id, page: pageNum, limit: ITEMS_PER_PAGE }),
 			})
 
-		return () => controller.abort()
+			if (!r.ok) throw new Error("not found")
+
+			const data = await r.json()
+			setList({
+				id: data.id,
+				user_id: data.user_id,
+				title: data.title,
+				description: data.description,
+				is_public: data.is_public,
+				ranked: data.ranked,
+				created_at: data.created_at,
+				updated_at: data.updated_at,
+				owner: data.owner,
+			})
+			setItems(data.list_items || [])
+			setTotalItems(data.items_total || 0)
+			setTotalPages(data.items_totalPages || 1)
+		} catch {
+			setError(true)
+		} finally {
+			setLoading(false)
+		}
 	}, [id])
+
+	useEffect(() => {
+		setCurrentPage(1)
+		fetchList(1)
+	}, [id, fetchList])
 
 	useEffect(() => {
 		function handle(e) {
@@ -175,14 +182,9 @@ export default function ListPage() {
 		return () => document.removeEventListener("mousedown", handle)
 	}, [])
 
-	const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE)
-	const paginatedItems = items.slice(
-		(currentPage - 1) * ITEMS_PER_PAGE,
-		currentPage * ITEMS_PER_PAGE
-	)
-
 	function handlePageChange(page) {
 		setCurrentPage(page)
+		fetchList(page)
 		if (gridRef.current) {
 			const y = gridRef.current.getBoundingClientRect().top + window.scrollY - 24
 			window.scrollTo({ top: y, behavior: "smooth" })
@@ -195,31 +197,24 @@ export default function ListPage() {
 
 	function handleDeleted() {
 		const ownerUsername = list?.owner?.username || currentUser?.username
-		navigate(ownerUsername ? `/${ownerUsername}` : "/")
+		navigate(ownerUsername ? `/u/${ownerUsername}` : "/")
 	}
 
 	function handleItemAdded(item) {
-		setList(prev => ({
-			...prev,
-			list_items: [...(prev.list_items || []), item],
-		}))
+		setItems(prev => [...prev, item])
+		setTotalItems(prev => prev + 1)
 	}
 
 	function handleItemRemoved(itemId) {
-		setList(prev => ({
-			...prev,
-			list_items: (prev.list_items || []).filter(i => i.id !== itemId),
-		}))
+		setItems(prev => prev.filter(i => i.id !== itemId))
+		setTotalItems(prev => prev - 1)
 	}
 
 	function handleReordered(newItems) {
-		setList(prev => ({
-			...prev,
-			list_items: newItems,
-		}))
+		setItems(newItems)
 	}
 
-	if (loading) return <ListPageSkeleton />
+	if (loading && !list) return <ListPageSkeleton />
 
 	if (error || !list) {
 		return (
@@ -288,18 +283,18 @@ export default function ListPage() {
 					<div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-zinc-500">
 						{list.owner && (
 							<Link to={`/u/${list.owner.username}`} className="flex items-center gap-1.5 hover:text-white active:text-white transition-colors py-0.5">
-								<AvatarWithDecoration 
+								<AvatarWithDecoration
 									size="xs"
-									src={list.owner.avatar} 
+									src={list.owner.avatar}
 									alt={list.owner.username}
-									decoration={list.owner.avatar_decoration} 
+									decoration={list.owner.avatar_decoration}
 								/>
 								{list.owner.username}
 							</Link>
 						)}
 						<span className="flex items-center gap-1.5">
 							<Gamepad2 className="w-3.5 h-3.5" />
-							{items.length} jogo{items.length !== 1 ? "s" : ""}
+							{totalItems} jogo{totalItems !== 1 ? "s" : ""}
 						</span>
 						{createdAt && (
 							<span className="flex items-center gap-1.5">
@@ -314,7 +309,7 @@ export default function ListPage() {
 				</div>
 
 				<div className="hidden sm:flex items-center gap-2">
-					<ShareButton listId={encode(list.id)} />
+					<ShareButton listId={encodedId} />
 
 					{isOwner && (
 						<>
@@ -326,7 +321,7 @@ export default function ListPage() {
 								Adicionar
 							</button>
 
-							{items.length > 1 && (
+							{totalItems > 1 && (
 								<button
 									onClick={() => setReorderOpen(true)}
 									className="px-3 py-2 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
@@ -369,7 +364,7 @@ export default function ListPage() {
 			</div>
 
 			<div className="border-t border-zinc-800 pt-5 sm:pt-6" ref={gridRef}>
-				{items.length === 0 ? (
+				{totalItems === 0 ? (
 					<div className="flex flex-col items-center justify-center py-16 sm:py-20 gap-4">
 						<div className="w-14 h-14 rounded-full bg-zinc-800/50 border border-zinc-700 flex items-center justify-center text-zinc-600">
 							<Gamepad2 className="w-6 h-6" />
@@ -390,7 +385,7 @@ export default function ListPage() {
 				) : (
 					<>
 						<div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-							{paginatedItems.map((item, index) => {
+							{items.map((item, index) => {
 								const game = getGame(item.game_slug)
 								const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index + 1
 								const showRank = list.ranked !== false
@@ -435,12 +430,12 @@ export default function ListPage() {
 
 			{isOwner && (
 				<MobileActionBar
-					listId={list.id}
+					listId={encodedId}
 					onAdd={() => setAddGameOpen(true)}
 					onEdit={() => setEditOpen(true)}
 					onDelete={() => setDeleteOpen(true)}
 					onReorder={() => setReorderOpen(true)}
-					itemCount={items.length}
+					itemCount={totalItems}
 				/>
 			)}
 
@@ -484,5 +479,4 @@ export default function ListPage() {
 			/>
 		</div>
 	)
-
 }

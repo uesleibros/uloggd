@@ -154,3 +154,12 @@ export default function ReviewButton({ game }) {
 }
 
 export { UserReviewCard } from "./ReviewCard"
+export { default as AspectRatingDisplay } from "./AspectRatingDisplay"
+export { default as AspectRatingsPreview } from "./AspectRatingsPreview"
+export { default as ReviewIndicators } from "./ReviewIndicators"
+export { default as SpoilerOverlay } from "./SpoilerOverlay"
+export { default as SpoilerBanner } from "./SpoilerBanner"
+export { default as ReviewContent } from "./ReviewContent"
+export { default as ReviewModalContent } from "./ReviewModalContent"
+export { default as ReviewEmptyState } from "./ReviewEmptyState"
+export { default as ReviewSkeleton } from "./ReviewSkeleton"

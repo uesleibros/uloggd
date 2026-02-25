@@ -1,50 +1,41 @@
-import { useRef, useState } from "react"
+import { useRef } from "react"
 import { Activity } from "lucide-react"
 import BioSection from "../components/BioSection"
 import ProfileTabs from "../components/ProfileTabs"
 import ProfileReviews from "../components/ProfileReviews"
 import ProfileLikes from "../components/ProfileLikes"
 import ListsSection from "../components/ListsSection"
-import { filterGamesByTab } from "#hooks/useProfileGames"
-
-const GAMES_PER_PAGE = 24
 
 export function ProfileContent({
 	activeSection,
 	profile,
-	profileGames,
-	igdbGames,
-	loadingGames,
-	counts,
 	isOwnProfile,
-	userLists,
-	setUserLists,
+	games,
+	counts,
+	loadingGames,
+	activeTab,
+	gamesPage,
+	gamesTotalPages,
+	onTabChange,
+	onGamesPageChange,
+	lists,
+	setLists,
 	loadingLists,
+	listsPage,
+	listsTotalPages,
+	listsTotal,
+	onListsPageChange,
 	onEditProfile,
 }) {
-	const [activeTab, setActiveTab] = useState("playing")
-	const [currentPage, setCurrentPage] = useState(1)
 	const tabsRef = useRef(null)
 
-	const allTabGames = filterGamesByTab(profileGames, igdbGames, activeTab)
-	const totalPages = Math.ceil(allTabGames.length / GAMES_PER_PAGE)
-	const tabGames = allTabGames.slice(
-		(currentPage - 1) * GAMES_PER_PAGE,
-		currentPage * GAMES_PER_PAGE
-	)
-
-	function handlePageChange(page) {
-		setCurrentPage(page)
+	function handleGamesPageChange(newPage) {
+		onGamesPageChange(newPage)
 		const el = tabsRef.current
 		if (el) {
 			const y = el.getBoundingClientRect().top + window.scrollY - 24
 			window.scrollTo({ top: y, behavior: "smooth" })
 		}
-	}
-
-	function handleTabChange(tab) {
-		setActiveTab(tab)
-		setCurrentPage(1)
 	}
 
 	return (
@@ -54,7 +45,6 @@ export function ProfileContent({
 					bio={profile.bio}
 					isOwnProfile={isOwnProfile}
 					onEdit={onEditProfile}
-					profileGames={profileGames}
 				/>
 			)}
 
@@ -62,26 +52,29 @@ export function ProfileContent({
 				<ProfileTabs
 					ref={tabsRef}
 					activeTab={activeTab}
-					onTabChange={handleTabChange}
+					onTabChange={onTabChange}
 					counts={counts}
-					games={tabGames}
-					profileGames={profileGames}
+					games={games}
 					loading={loadingGames}
 					isOwnProfile={isOwnProfile}
 					username={profile.username}
-					currentPage={currentPage}
-					totalPages={totalPages}
-					onPageChange={handlePageChange}
+					currentPage={gamesPage}
+					totalPages={gamesTotalPages}
+					onPageChange={handleGamesPageChange}
 				/>
 			)}
 
 			{activeSection === "lists" && (
 				<ListsSection
-					lists={userLists}
-					setLists={setUserLists}
+					lists={lists}
+					setLists={setLists}
 					isOwnProfile={isOwnProfile}
 					username={profile.username}
 					loading={loadingLists}
+					currentPage={listsPage}
+					totalPages={listsTotalPages}
+					total={listsTotal}
+					onPageChange={onListsPageChange}
 				/>
 			)}
 
