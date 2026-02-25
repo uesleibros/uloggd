@@ -58,6 +58,17 @@ function buildUser(session, profile = null) {
   }
 }
 
+async function handleBan(profile) {
+  banned = profile
+  cachedUser = null
+
+  await supabase.auth.signOut()
+
+  loading = false
+  initialized = true
+  updateSnapshot()
+}
+
 async function loadUser(session) {
   if (!session?.user) {
     cachedUser = null
@@ -84,8 +95,13 @@ async function loadUser(session) {
       const profile = await fetchProfile(session)
 
       if (profile?.is_banned) {
-        banned = profile
-        cachedUser = null
+        if (profile.expires_at && new Date(profile.expires_at) <= new Date()) {
+          banned = null
+          cachedUser = buildUser(session, profile)
+        } else {
+          await handleBan(profile)
+          return
+        }
       } else {
         banned = null
         cachedUser = buildUser(session, profile)
@@ -121,13 +137,20 @@ export function updateUser(partial) {
 
 async function refreshUser() {
   if (!cachedUser) return
+
   const { data: { session } } = await supabase.auth.getSession()
   if (!session?.access_token) return
+
   const profile = await fetchProfile(session)
 
   if (profile?.is_banned) {
-    banned = profile
-    cachedUser = null
+    if (profile.expires_at && new Date(profile.expires_at) <= new Date()) {
+      banned = null
+      cachedUser = { ...cachedUser, ...profile }
+    } else {
+      await handleBan(profile)
+      return
+    }
   } else if (profile) {
     cachedUser = { ...cachedUser, ...profile }
   }
@@ -135,9 +158,11 @@ async function refreshUser() {
   updateSnapshot()
 }
 
-supabase.auth.getSession().then(({ data: { session } }) => {
-  return session ? loadUser(session) : reset()
-}).catch(() => reset())
+supabase.auth.getSession()
+  .then(({ data: { session } }) => {
+    return session ? loadUser(session) : reset()
+  })
+  .catch(() => reset())
 
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === "SIGNED_OUT") {

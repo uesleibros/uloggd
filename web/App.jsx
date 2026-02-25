@@ -26,7 +26,7 @@ export default function App() {
 	useHeartbeat()
 
 	if (banned) {
-		return <BannedScreen reason={banned.reason} />
+		return <BannedScreen reason={banned.reason} expires_at={banned.expires_at} />
 	}
 
 	return (
