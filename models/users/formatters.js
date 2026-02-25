@@ -19,6 +19,7 @@ export function formatFullProfile(profile, { stream = null, counts = {} } = {}) 
 		thinking: profile.thinking,
 		pronoun: profile.pronoun,
 		is_moderator: profile.is_moderator,
+		is_banned: profile.is_banned,
 		created_at: profile.created_at,
 		last_seen: profile.last_seen,
 		status: profile.status,

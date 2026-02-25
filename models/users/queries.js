@@ -6,7 +6,7 @@ const CONNECTIONS_TWITCH = `user_connections ( provider, provider_username )`
 
 const FULL_FIELDS = `
 	user_id, username, banner, bio, pronoun, thinking, avatar, avatar_decoration,
-	created_at, is_moderator, last_seen, status, username_changed_at
+	created_at, is_moderator, is_banned, last_seen, status, username_changed_at
 `
 
 const LIST_FIELDS = `user_id, username, avatar, is_moderator, avatar_decoration, last_seen, status`

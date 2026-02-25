@@ -13,6 +13,7 @@ import { likesHandler } from "#routers/likes.js"
 import { steamHandler } from "#routers/steam.js"
 import { verificationHandler } from "#routers/verification.js"
 import { badgesHandler } from "#routers/badges.js"
+import { getUser } from "#lib/auth.js"
 
 const SERVICES = {
 	users: usersHandler,
@@ -44,6 +45,15 @@ export default async function handler(req, res) {
 	if (allowedOrigin) {
 		if (!origin || !origin.startsWith(allowedOrigin)) {
 			return res.status(403).json({ error: "forbidden" })
+		}
+	}
+
+	const authHeader = req.headers.authorization
+	if (authHeader) {
+		const user = await getUser(req)
+
+		if (user?.banned) {
+			return res.status(403).json({ error: "banned" })
 		}
 	}
 

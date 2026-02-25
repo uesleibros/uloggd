@@ -13,12 +13,20 @@ export default function BanUserModal({ isOpen, onClose, profile }) {
   }, [isOpen])
 
   async function handleBan() {
+    if (loading) return
+
+    if (!profile?.id) {
+      notify("Erro interno.", "error")
+      return
+    }
+
     if (!reason.trim()) {
       notify("Informe o motivo.", "error")
       return
     }
 
     setLoading(true)
+
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
       setLoading(false)
@@ -43,6 +51,8 @@ export default function BanUserModal({ isOpen, onClose, profile }) {
         notify(
           data.error === "cannot ban moderator"
             ? "Não é possível banir moderadores."
+            : data.error === "user already banned"
+            ? "Usuário já está banido."
             : "Erro ao banir.",
           "error"
         )
@@ -51,6 +61,7 @@ export default function BanUserModal({ isOpen, onClose, profile }) {
       console.error(e)
       notify("Erro ao banir.", "error")
     }
+
     setLoading(false)
   }
 

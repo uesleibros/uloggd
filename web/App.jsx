@@ -4,6 +4,7 @@ import ScrollToTop from "@components/Layout/ScrollToTop"
 import Header from "@components/Layout/Header"
 import Footer from "@components/Layout/Footer"
 import TwemojiProvider from "@components/UI/Twemoji"
+import { useAuth } from "#hooks/useAuth"
 import { MyLibraryProvider } from "#hooks/useMyLibrary"
 import { useHeartbeat } from "#hooks/useHeartbeat"
 import ErrorBoundary from "@components/ErrorBoundary"
@@ -16,11 +17,17 @@ import ListPage from "@pages/ListPage"
 import NotificationContainer from "@components/UI/Notification"
 import NotFound from "@pages/NotFound"
 import SplashScreen from "@components/UI/SplashScreen"
+import BannedScreen from "@components/BannedScreen"
 
 import "#web/App.css"
 
 export default function App() {
+	const { banned } = useAuth()
 	useHeartbeat()
+
+	if (banned) {
+		return <BannedScreen reason={banned.reason} />
+	}
 
 	return (
 		<ErrorBoundary>

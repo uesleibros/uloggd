@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
-import { UserPlus, ThumbsUp, Check, Trash2, X, Bell, BadgeCheck, XCircle } from "lucide-react"
+import { UserPlus, ThumbsUp, Check, Trash2, X, Bell, BadgeCheck, XCircle, Ban, CheckCircle } from "lucide-react"
 import { supabase } from "#lib/supabase"
 import { getTimeAgo, formatDateLong } from "#utils/formatDate"
 import Modal from "@components/UI/Modal"
@@ -44,6 +44,26 @@ const NOTIFICATION_CONFIG = {
       ? `Sua solicitação de verificação foi rejeitada.\n\nMotivo: ${data.rejection_reason}`
       : "Sua solicitação de verificação foi rejeitada. Você pode enviar uma nova solicitação a qualquer momento.",
     getUserId: (data) => data.reviewed_by,
+    isSystem: true,
+  },
+  account_banned: {
+    icon: Ban,
+    color: "text-red-400",
+    bg: "bg-red-500/10",
+    borderColor: "border-red-500/30",
+    getText: () => "Conta suspensa",
+    getFullText: (data) => `Sua conta foi suspensa.\n\nMotivo: ${data.reason}`,
+    getUserId: (data) => data.banned_by,
+    isSystem: true,
+  },
+  account_unbanned: {
+    icon: CheckCircle,
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    borderColor: "border-emerald-500/30",
+    getText: () => "Conta restaurada",
+    getFullText: () => "Sua conta foi restaurada. Bem-vindo de volta!",
+    getUserId: (data) => data.unbanned_by,
     isSystem: true,
   },
 }

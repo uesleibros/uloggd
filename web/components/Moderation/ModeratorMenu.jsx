@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react"
-import { Shield, BadgeCheck, Ban, ChevronRight } from "lucide-react"
+import { Shield, BadgeCheck, Ban, CheckCircle, ChevronRight } from "lucide-react"
 import VerificationRequestsModal from "./VerificationRequestsModal"
 import BanUserModal from "./BanUserModal"
+import { supabase } from "#lib/supabase"
+import { notify } from "@components/UI/Notification"
 
 export default function ModeratorMenu({ profile, currentUser }) {
   const [open, setOpen] = useState(false)
@@ -10,6 +12,7 @@ export default function ModeratorMenu({ profile, currentUser }) {
   const menuRef = useRef(null)
 
   const isModerator = currentUser?.is_moderator
+  const isBanned = profile?.is_banned
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -22,6 +25,31 @@ export default function ModeratorMenu({ profile, currentUser }) {
   }, [])
 
   if (!isModerator) return null
+
+  async function handleUnban() {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+
+    try {
+      const res = await fetch("/api/moderation/unban", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ userId: profile.id }),
+      })
+
+      if (res.ok) {
+        notify("Usuário desbanido.", "success")
+        window.location.reload()
+      } else {
+        notify("Erro ao desbanir.", "error")
+      }
+    } catch {
+      notify("Erro ao desbanir.", "error")
+    }
+  }
 
   return (
     <>
@@ -69,19 +97,35 @@ export default function ModeratorMenu({ profile, currentUser }) {
 
             <div className="my-1.5 mx-3 h-px bg-zinc-800/80" />
 
-            <button
-              onClick={() => {
-                setOpen(false)
-                setShowBan(true)
-              }}
-              className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all cursor-pointer group"
-            >
-              <div className="flex items-center gap-2.5">
-                <Ban className="w-4 h-4" />
-                <span>Banir usuário</span>
-              </div>
-              <ChevronRight className="w-3.5 h-3.5 text-red-500/50 group-hover:text-red-400 transition-colors" />
-            </button>
+            {isBanned ? (
+              <button
+                onClick={() => {
+                  setOpen(false)
+                  handleUnban()
+                }}
+                className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-lg transition-all cursor-pointer group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Desbanir usuário</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-emerald-500/50 group-hover:text-emerald-400 transition-colors" />
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setOpen(false)
+                  setShowBan(true)
+                }}
+                className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all cursor-pointer group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Ban className="w-4 h-4" />
+                  <span>Banir usuário</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-red-500/50 group-hover:text-red-400 transition-colors" />
+              </button>
+            )}
           </div>
         </div>
       </div>

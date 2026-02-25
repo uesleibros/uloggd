@@ -1,8 +1,9 @@
-import { useSyncExternalStore, useCallback } from "react"
+import { useSyncExternalStore } from "react"
 import { supabase } from "#lib/supabase"
 
 let cachedUser = null
 let loading = true
+let banned = null
 let listeners = new Set()
 let loadingPromise = null
 let initialized = false
@@ -12,14 +13,19 @@ function notify() {
 }
 
 function getSnapshot() {
-  return { user: cachedUser, loading }
+  return { user: cachedUser, loading, banned }
 }
 
 let snapshotRef = getSnapshot()
 
 function updateSnapshot() {
   const next = getSnapshot()
-  if (next.user === snapshotRef.user && next.loading === snapshotRef.loading) return
+  if (
+    next.user === snapshotRef.user &&
+    next.loading === snapshotRef.loading &&
+    next.banned === snapshotRef.banned
+  ) return
+
   snapshotRef = next
   notify()
 }
@@ -55,6 +61,7 @@ function buildUser(session, profile = null) {
 async function loadUser(session) {
   if (!session?.user) {
     cachedUser = null
+    banned = null
     loading = false
     loadingPromise = null
     updateSnapshot()
@@ -75,8 +82,16 @@ async function loadUser(session) {
   loadingPromise = (async () => {
     try {
       const profile = await fetchProfile(session)
-      cachedUser = buildUser(session, profile)
+
+      if (profile?.is_banned) {
+        banned = profile
+        cachedUser = null
+      } else {
+        banned = null
+        cachedUser = buildUser(session, profile)
+      }
     } catch {
+      banned = null
       cachedUser = buildUser(session)
     } finally {
       loading = false
@@ -91,6 +106,7 @@ async function loadUser(session) {
 
 function reset() {
   cachedUser = null
+  banned = null
   loading = false
   initialized = true
   loadingPromise = null
@@ -99,13 +115,6 @@ function reset() {
 
 export function updateUser(partial) {
   if (!cachedUser) return
-
-  const hasChanges = Object.keys(partial).some(
-    (key) => cachedUser[key] !== partial[key]
-  )
-
-  if (!hasChanges) return
-
   cachedUser = { ...cachedUser, ...partial }
   updateSnapshot()
 }
@@ -115,10 +124,15 @@ async function refreshUser() {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session?.access_token) return
   const profile = await fetchProfile(session)
-  if (profile) {
+
+  if (profile?.is_banned) {
+    banned = profile
+    cachedUser = null
+  } else if (profile) {
     cachedUser = { ...cachedUser, ...profile }
-    updateSnapshot()
   }
+
+  updateSnapshot()
 }
 
 supabase.auth.getSession().then(({ data: { session } }) => {
@@ -134,10 +148,8 @@ supabase.auth.onAuthStateChange((event, session) => {
   if (event === "INITIAL_SESSION") return
 
   if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
-    if (cachedUser?.id !== session.user.id) {
-      initialized = false
-      loadUser(session)
-    }
+    initialized = false
+    loadUser(session)
   }
 })
 
@@ -151,6 +163,7 @@ export function useAuth() {
   return {
     user: snapshot.user,
     loading: snapshot.loading,
+    banned: snapshot.banned,
     updateUser,
     refreshUser,
   }
