@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { supabase } from "#lib/supabase.js"
 import { Loader2, CheckCircle, Send } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import Modal from "@components/UI/Modal"
@@ -296,21 +295,15 @@ export default function Badges() {
 
   useEffect(() => {
     async function fetchData() {
-      const [badgesRes, requestRes] = await Promise.all([
-        supabase
-          .from("badges")
-          .select("*")
-          .order("idx", { ascending: true }),
-        user ? supabase
-          .from("verification_requests")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("status", "pending")
-          .maybeSingle() : Promise.resolve({ data: null })
+      const [badgesRes, statusRes] = await Promise.all([
+        fetch("/api/badges/list", { method: "POST" }).then(r => r.json()),
+        user
+          ? fetch("/api/verification/status", { method: "POST" }).then(r => r.json())
+          : Promise.resolve({ request: null })
       ])
 
-      setBadges(badgesRes.data || [])
-      setHasPendingRequest(!!requestRes.data)
+      setBadges(badgesRes.badges || [])
+      setHasPendingRequest(statusRes.request?.status === "pending")
       setLoading(false)
     }
     fetchData()
@@ -320,16 +313,23 @@ export default function Badges() {
     if (!user) return
     setSubmitting(true)
 
-    await supabase.from("verification_requests").insert({
-      user_id: user.id,
-      reason,
-      status: "pending"
-    })
+    try {
+      const res = await fetch("/api/verification/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason })
+      })
+
+      if (res.ok) {
+        setShowVerificationModal(false)
+        setShowSuccessModal(true)
+        setHasPendingRequest(true)
+      }
+    } catch (e) {
+      console.error(e)
+    }
 
     setSubmitting(false)
-    setShowVerificationModal(false)
-    setShowSuccessModal(true)
-    setHasPendingRequest(true)
   }
 
   return (
