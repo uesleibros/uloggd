@@ -68,11 +68,7 @@ function stripMarkdown(str) {
 }
 
 async function handleGame(url, slug) {
-  const res = await fetch(`${url.origin}/api/igdb/game`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ slug }),
-  })
+  const res = await fetch(`${url.origin}/api/igdb/game?slug=${encodeURIComponent(slug)}`)
 
   if (!res.ok) return
   const game = await res.json()
@@ -90,11 +86,7 @@ async function handleGame(url, slug) {
 }
 
 async function handleProfile(url, username) {
-  const res = await fetch(`${url.origin}/api/users/profile`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username }),
-  })
+  const res = await fetch(`${url.origin}/api/users/profile?username=${encodeURIComponent(username)}`)
 
   if (!res.ok) return
   const profile = await res.json()
@@ -107,11 +99,7 @@ async function handleProfile(url, username) {
 }
 
 async function handleList(url, listId) {
-  const res = await fetch(`${url.origin}/api/lists/get`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ listId }),
-  })
+  const res = await fetch(`${url.origin}/api/lists/get?listId=${encodeURIComponent(listId)}`)
 
   if (!res.ok) return
   const list = await res.json()
