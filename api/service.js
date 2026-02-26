@@ -14,6 +14,7 @@ import { steamHandler } from "#routers/steam.js"
 import { verificationHandler } from "#routers/verification.js"
 import { badgesHandler } from "#routers/badges.js"
 import { moderationHandler } from "#routers/moderation.js"
+import { pricesHandler } from "#routers/prices.js"
 import { getUser } from "#lib/auth.js"
 
 const SERVICES = {
@@ -32,7 +33,8 @@ const SERVICES = {
 	steam: steamHandler,
 	verification: verificationHandler,
 	badges: badgesHandler,
-	moderation: moderationHandler
+	moderation: moderationHandler,
+	prices: pricesHandler
 }
 
 export default async function handler(req, res) {
