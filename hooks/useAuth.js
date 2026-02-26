@@ -58,13 +58,12 @@ function buildUser(session, profile = null) {
 async function handleBan(profile) {
   banned = profile
   cachedUser = null
-
   loading = false
   initialized = true
   updateSnapshot()
 }
 
-async function loadUser(session) {
+async function loadUser(session, silent = false) {
   if (!session?.user) {
     cachedUser = null
     banned = null
@@ -82,8 +81,10 @@ async function loadUser(session) {
 
   if (loadingPromise) return loadingPromise
 
-  loading = true
-  updateSnapshot()
+  if (!silent) {
+    loading = true
+    updateSnapshot()
+  }
 
   loadingPromise = (async () => {
     try {
@@ -126,6 +127,13 @@ function reset() {
 
 export function updateUser(partial) {
   if (!cachedUser) return
+
+  const hasChanges = Object.keys(partial).some(
+    (key) => cachedUser[key] !== partial[key]
+  )
+
+  if (!hasChanges) return
+
   cachedUser = { ...cachedUser, ...partial }
   updateSnapshot()
 }
@@ -167,9 +175,15 @@ supabase.auth.onAuthStateChange((event, session) => {
 
   if (event === "INITIAL_SESSION") return
 
-  if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
-    initialized = false
+  if (event === "SIGNED_IN" && session) {
+    if (cachedUser?.id !== session.user.id) {
+      initialized = false
+    }
     loadUser(session)
+  }
+
+  if (event === "TOKEN_REFRESHED" && session) {
+    loadUser(session, true)
   }
 })
 
