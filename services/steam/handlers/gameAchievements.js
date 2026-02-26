@@ -2,6 +2,13 @@ import { supabase } from "#lib/supabase-ssr.js"
 import { getCache, setCache } from "#lib/cache.js"
 
 const STEAM_API = "https://api.steampowered.com"
+const CACHE_TTL = {
+  SCHEMA: 86400,
+  GLOBAL: 3600,
+  CONNECTION: 600,
+  RESULT: 300,
+  PUBLIC: 3600
+}
 
 async function getGameSchema(appId, apiKey) {
   const cacheKey = `steam_schema_${appId}`
@@ -18,7 +25,7 @@ async function getGameSchema(appId, apiKey) {
   const schema = data.game?.availableGameStats?.achievements || []
 
   if (schema.length > 0) {
-    await setCache(cacheKey, schema, 86400)
+    await setCache(cacheKey, schema, CACHE_TTL.SCHEMA)
   }
 
   return schema
@@ -36,15 +43,22 @@ async function getGlobalPercentages(appId) {
   if (!res.ok) return new Map()
 
   const data = await res.json()
-  const entries = (data.achievementpercentages?.achievements || []).map(a => [a.name, a.percent])
+  const entries = (data.achievementpercentages?.achievements || []).map(a => [
+    a.name,
+    Number(a.percent) || 0
+  ])
 
-  await setCache(cacheKey, entries, 3600)
+  await setCache(cacheKey, entries, CACHE_TTL.GLOBAL)
 
   return new Map(entries)
 }
 
 async function getSteamConnection(userId) {
   if (!userId) return null
+
+  const cacheKey = `steam_connection_${userId}`
+  const cached = await getCache(cacheKey)
+  if (cached !== undefined) return cached
 
   const { data } = await supabase
     .from("user_connections")
@@ -53,9 +67,58 @@ async function getSteamConnection(userId) {
     .eq("provider", "steam")
     .maybeSingle()
 
-  console.log("Steam connection para", userId, ":", data)
+  const steamId = data?.provider_user_id || null
+  await setCache(cacheKey, steamId, CACHE_TTL.CONNECTION)
 
-  return data?.provider_user_id || null
+  return steamId
+}
+
+async function getPlayerAchievements(appId, steamId, apiKey) {
+  const res = await fetch(
+    `${STEAM_API}/ISteamUserStats/GetPlayerAchievements/v1/?appid=${appId}&key=${apiKey}&steamid=${steamId}`
+  )
+
+  if (!res.ok) return { playerMap: new Map(), gameName: null }
+
+  const data = await res.json()
+  const playerMap = new Map(
+    (data.playerstats?.achievements || []).map(a => [a.apiname, a])
+  )
+
+  return {
+    playerMap,
+    gameName: data.playerstats?.gameName || null
+  }
+}
+
+function buildAchievements(schema, playerMap, globalPercentages) {
+  let unlocked = 0
+
+  const achievements = schema.map(a => {
+    const player = playerMap.get(a.name)
+    const achieved = player?.achieved === 1
+
+    if (achieved) unlocked++
+
+    return {
+      name: a.displayName,
+      description: a.description || "",
+      iconUnlocked: a.icon,
+      iconLocked: a.icongray,
+      hidden: a.hidden === 1,
+      achieved,
+      unlockedAt: player?.unlocktime || null,
+      globalPercent: Number(globalPercentages.get(a.name)) || 0
+    }
+  })
+
+  achievements.sort((a, b) => {
+    if (a.achieved !== b.achieved) return a.achieved ? -1 : 1
+    if (a.achieved) return b.unlockedAt - a.unlockedAt
+    return b.globalPercent - a.globalPercent
+  })
+
+  return { achievements, unlocked }
 }
 
 export async function handleGameAchievements(req, res) {
@@ -81,9 +144,9 @@ export async function handleGameAchievements(req, res) {
       getGlobalPercentages(appId)
     ])
 
-    if (!schema || schema.length === 0) {
+    if (!schema?.length) {
       const empty = { achievements: [], unlocked: 0, total: 0, percentage: 0 }
-      await setCache(cacheKey, empty, 300)
+      await setCache(cacheKey, empty, CACHE_TTL.RESULT)
       return res.json(empty)
     }
 
@@ -91,46 +154,14 @@ export async function handleGameAchievements(req, res) {
     let gameName = `App ${appId}`
 
     if (steamId) {
-      const statsRes = await fetch(
-        `${STEAM_API}/ISteamUserStats/GetPlayerAchievements/v1/?appid=${appId}&key=${apiKey}&steamid=${steamId}`
-      )
-
-      if (statsRes.ok) {
-        const stats = await statsRes.json()
-        playerMap = new Map(
-          (stats.playerstats?.achievements || []).map(a => [a.apiname, a])
-        )
-        gameName = stats.playerstats?.gameName || gameName
-      }
+      const playerData = await getPlayerAchievements(appId, steamId, apiKey)
+      playerMap = playerData.playerMap
+      gameName = playerData.gameName || gameName
     }
 
-    let unlocked = 0
-
-    const achievements = schema.map(a => {
-      const player = playerMap.get(a.name)
-      const achieved = player?.achieved === 1
-
-      if (achieved) unlocked++
-
-      return {
-        name: a.displayName,
-        description: a.description || "",
-        iconUnlocked: a.icon,
-        iconLocked: a.icongray,
-        hidden: a.hidden === 1,
-        achieved,
-        unlockedAt: player?.unlocktime || null,
-        globalPercent: globalPercentages.get(a.name) || 0
-      }
-    })
-
-    achievements.sort((a, b) => {
-      if (a.achieved !== b.achieved) return a.achieved ? -1 : 1
-      if (a.achieved) return b.unlockedAt - a.unlockedAt
-      return b.globalPercent - a.globalPercent
-    })
-
+    const { achievements, unlocked } = buildAchievements(schema, playerMap, globalPercentages)
     const total = achievements.length
+
     const result = {
       gameName,
       achievements,
@@ -140,10 +171,10 @@ export async function handleGameAchievements(req, res) {
       notConnected: !steamId
     }
 
-    await setCache(cacheKey, result, steamId ? 300 : 3600)
+    await setCache(cacheKey, result, steamId ? CACHE_TTL.RESULT : CACHE_TTL.PUBLIC)
     return res.json(result)
   } catch (e) {
-    console.error(e)
+    console.error("handleGameAchievements error:", e.message)
     return res.status(500).json({ error: "Failed to fetch achievements" })
   }
 }
