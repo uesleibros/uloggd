@@ -2,9 +2,26 @@ import { getCache, setCache } from "#lib/cache.js"
 
 const ITAD_API = "https://api.isthereanydeal.com"
 
-async function searchITADGame(gameName, apiKey) {
+async function searchBySteamAppId(steamId, apiKey) {
   const res = await fetch(
-    `${ITAD_API}/games/search/v1?key=${apiKey}&title=${encodeURIComponent(gameName)}&limit=1`
+    `${ITAD_API}/games/lookup/v1?key=${apiKey}&appid=${steamId}`
+  )
+  
+  if (!res.ok) return null
+  
+  const data = await res.json()
+  return data?.game?.id || null
+}
+
+async function searchByName(gameName, apiKey) {
+  const normalized = gameName
+    .toLowerCase()
+    .replace(/[™®©:]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  const res = await fetch(
+    `${ITAD_API}/games/search/v1?key=${apiKey}&title=${encodeURIComponent(normalized)}&limit=1`
   )
   
   if (!res.ok) return null
@@ -72,10 +89,10 @@ async function getCurrentPrices(gameUuid, apiKey) {
 }
 
 export async function handleHistory(req, res) {
-  const { gameName, fresh } = req.query
+  const { gameName, steamId, fresh } = req.query
 
-  if (!gameName) {
-    return res.status(400).json({ error: "Missing gameName" })
+  if (!gameName && !steamId) {
+    return res.status(400).json({ error: "Missing gameName or steamId" })
   }
 
   const apiKey = process.env.ISTHEREANYDEAL_API_KEY
@@ -83,7 +100,9 @@ export async function handleHistory(req, res) {
     return res.status(500).json({ error: "API Key missing" })
   }
 
-  const cacheKey = `price_history_${gameName.toLowerCase().replace(/\s+/g, '_')}`
+  const cacheKey = steamId 
+    ? `price_history_steam_${steamId}`
+    : `price_history_${gameName.toLowerCase().replace(/\s+/g, '_')}`
   
   if (fresh !== "1") {
     const cached = await getCache(cacheKey)
@@ -91,7 +110,15 @@ export async function handleHistory(req, res) {
   }
 
   try {
-    const gameUuid = await searchITADGame(gameName, apiKey)
+    let gameUuid = null
+
+    if (steamId) {
+      gameUuid = await searchBySteamAppId(steamId, apiKey)
+    }
+
+    if (!gameUuid && gameName) {
+      gameUuid = await searchByName(gameName, apiKey)
+    }
 
     if (!gameUuid) {
       const empty = { storeLows: [], deals: [], historyLow: null, notFound: true }
