@@ -80,6 +80,7 @@ export function useUserLists(profileId) {
 
   return {
     lists,
+    setLists,
     loading,
     page,
     totalPages,
