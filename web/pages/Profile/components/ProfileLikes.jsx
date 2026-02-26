@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Heart, Gamepad2, MessageSquare } from "lucide-react"
 import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
 import Pagination from "@components/UI/Pagination"
@@ -45,6 +45,7 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
 	const [users, setUsers] = useState({})
 	const [loading, setLoading] = useState(true)
 	const [counts, setCounts] = useState({ games: 0, reviews: 0 })
+	const containerRef = useRef(null)
 
 	useEffect(() => {
 		if (!userId) return
@@ -98,6 +99,15 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
 		setPage(1)
 	}
 
+	function handlePageChange(newPage) {
+		setPage(newPage)
+		const el = containerRef.current
+		if (el) {
+			const y = el.getBoundingClientRect().top + window.scrollY - 24
+			window.scrollTo({ top: y, behavior: "smooth" })
+		}
+	}
+
 	if (loading && page === 1) return <LikesSkeleton />
 
 	if (!counts.games && !counts.reviews && !loading) {
@@ -105,7 +115,7 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
 	}
 
 	return (
-		<div className="space-y-8">
+		<div className="space-y-8" ref={containerRef}>
 			<div className="flex gap-2">
 				<button
 					onClick={() => handleTabChange("games")}
@@ -168,7 +178,7 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
 					<Pagination
 						currentPage={page}
 						totalPages={data.totalPages}
-						onPageChange={setPage}
+						onPageChange={handlePageChange}
 					/>
 				</>
 			) : (
