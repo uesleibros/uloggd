@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
-import { TrendingDown, TrendingUp, DollarSign, Loader2, Store, ExternalLink } from "lucide-react"
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { TrendingDown, TrendingUp, DollarSign, Loader2, Store, ExternalLink, BarChart3 } from "lucide-react"
 
 function StatCard({ icon: Icon, label, value, subValue }) {
   return (
@@ -10,6 +11,31 @@ function StatCard({ icon: Icon, label, value, subValue }) {
       </div>
       <p className="text-2xl font-bold text-white">{value}</p>
       {subValue && <p className="text-xs text-zinc-500 mt-1">{subValue}</p>}
+    </div>
+  )
+}
+
+function CustomTooltip({ active, payload }) {
+  if (!active || !payload?.length) return null
+
+  const data = payload[0].payload
+
+  return (
+    <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-3 shadow-xl">
+      <p className="text-xs text-zinc-400 mb-1">
+        {new Date(data.date).toLocaleDateString("pt-BR", {
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        })}
+      </p>
+      <p className="text-sm font-semibold text-white">
+        R$ {data.price.toFixed(2)}
+      </p>
+      <p className="text-xs text-zinc-500">{data.store}</p>
+      {data.discount > 0 && (
+        <p className="text-xs text-green-400">-{data.discount}% off</p>
+      )}
     </div>
   )
 }
@@ -54,6 +80,16 @@ export default function PriceHistory({ gameName }) {
 
   const { stats, deals, storeLows } = data
 
+  const chartData = storeLows
+    ?.filter(item => item.date && item.price)
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .map(item => ({
+      date: item.date,
+      price: item.price,
+      store: item.store,
+      discount: item.discount
+    })) || []
+
   return (
     <>
       <hr className="my-6 border-zinc-700" />
@@ -86,6 +122,48 @@ export default function PriceHistory({ gameName }) {
             value={stats?.lowestMonth ? `R$ ${stats.lowestMonth.toFixed(2)}` : "—"}
           />
         </div>
+
+        {chartData.length > 1 && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 className="w-4 h-4 text-zinc-500" />
+              <h3 className="text-sm font-semibold text-white">Menores preços ao longo do tempo</h3>
+            </div>
+            <div className="bg-zinc-800/30 border border-zinc-700 rounded-lg p-4">
+              <ResponsiveContainer width="100%" height={250}>
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(date) => new Date(date).toLocaleDateString("pt-BR", { month: "short", year: "2-digit" })}
+                    stroke="#71717a"
+                    style={{ fontSize: 11 }}
+                  />
+                  <YAxis
+                    stroke="#71717a"
+                    style={{ fontSize: 11 }}
+                    tickFormatter={(value) => `R$${value}`}
+                    width={60}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="price"
+                    stroke="#22c55e"
+                    strokeWidth={2}
+                    fill="url(#colorPrice)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
 
         {deals?.length > 0 && (
           <div className="mb-6">
@@ -134,7 +212,7 @@ export default function PriceHistory({ gameName }) {
 
         {storeLows?.length > 0 && (
           <div>
-            <h3 className="text-sm font-semibold text-white mb-3">Menores preços históricos por loja</h3>
+            <h3 className="text-sm font-semibold text-white mb-3">Menores preços por loja</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
               {storeLows
                 .sort((a, b) => a.price - b.price)
