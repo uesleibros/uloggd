@@ -15,10 +15,10 @@ const NOTIFICATION_CONFIG = {
     getLink: (data, users) => `/u/${users[data.follower_id]?.username}`,
     getUserId: (data) => data.follower_id,
   },
-  log_like: {
+  review_like: {
     icon: ThumbsUp,
-    color: "text-amber-400",
-    bg: "bg-amber-500/10",
+    color: "text-pink-400",
+    bg: "bg-pink-500/10",
     getActor: (data, users) => users[data.liker_id]?.username || "Alguém",
     getText: () => "curtiu sua review",
     getLink: (data) => `/game/${data.game_slug}`,
@@ -371,4 +371,5 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
       />
     </>
   )
+
 }
