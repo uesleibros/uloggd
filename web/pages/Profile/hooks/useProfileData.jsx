@@ -18,10 +18,14 @@ export function useProfileData(username) {
   }, [authLoading, currentUser?.username, normalizedUsername])
 
   useEffect(() => {
-    if (!username) return
-
-    if (authLoading) {
+    if (!username || authLoading) {
       setFetching(true)
+      return
+    }
+
+    if (isOwnProfile && currentUser) {
+      setFetchedProfile(currentUser)
+      setFetching(false)
       return
     }
 
@@ -59,7 +63,7 @@ export function useProfileData(username) {
     return () => {
       controller.abort()
     }
-  }, [username, normalizedUsername, authLoading])
+  }, [username, normalizedUsername, authLoading, isOwnProfile, currentUser])
 
   const profile = useMemo(() => {
     if (authLoading) return null
@@ -70,10 +74,12 @@ export function useProfileData(username) {
     setFetchedProfile((prev) => {
       if (!prev) return prev
       const updated = { ...prev, ...partial }
-      profileCache.set(normalizedUsername, updated)
+      if (!isOwnProfile) {
+        profileCache.set(normalizedUsername, updated)
+      }
       return updated
     })
-  }, [normalizedUsername])
+  }, [normalizedUsername, isOwnProfile])
 
   return {
     profile,
