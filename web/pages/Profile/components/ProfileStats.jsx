@@ -35,11 +35,7 @@ function ActivitySection({ stream, userId }) {
 
 		const fetchPresence = async () => {
 			try {
-				const res = await fetch("/api/steam/presence", {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ userId }),
-				})
+				const res = await fetch(`/api/steam/presence?userId=${userId}`)
 				const data = await res.json()
 				if (data.playing) setPresence(data)
 			} catch {}
@@ -183,4 +179,3 @@ export default function ProfileStats({
 		</>
 	)
 }
-

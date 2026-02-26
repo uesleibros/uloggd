@@ -5,7 +5,7 @@ import { WEBSITE_MAP } from "#data/websitesMapper.js"
 import { mapCovers } from "#services/igdb/utils/mapCovers.js"
 
 export async function handleGame(req, res) {
-  const { slug } = req.body
+  const { slug } = req.query
   if (!slug?.trim()) return res.status(400).json({ error: "missing slug" })
 
   const cacheKey = `igdb_game_${slug}`

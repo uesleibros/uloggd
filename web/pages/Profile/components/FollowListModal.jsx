@@ -23,11 +23,14 @@ export default function FollowListModal({ isOpen, title, userId, onClose }) {
 		else setLoadingMore(true)
 
 		try {
-			const r = await fetch("/api/users/followers", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ userId, type, page: pageNum, limit: LIMIT }),
+			const params = new URLSearchParams({
+				userId,
+				type,
+				page: pageNum,
+				limit: LIMIT,
 			})
+
+			const r = await fetch(`/api/users/followers?${params}`)
 			const data = await r.json()
 
 			if (append) {

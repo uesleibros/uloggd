@@ -13,11 +13,7 @@ export function useGameData(slug) {
     setHltb(null)
     setHltbLoading(true)
 
-    fetch("/api/igdb/game", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug }),
-    })
+    fetch(`/api/igdb/game?slug=${encodeURIComponent(slug)}`)
       .then((res) => {
         if (!res.ok) throw new Error("not found")
         return res.json()
@@ -26,18 +22,19 @@ export function useGameData(slug) {
         setGame(data)
         setLoading(false)
 
-        fetch("/api/howlongtobeat/search", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: data.name,
-            altNames: data.alternative_names?.map((a) => a.name) || [],
-            year: data.first_release_date
-              ? new Date(data.first_release_date * 1000).getFullYear()
-              : null,
-            platforms: data.platforms?.map((p) => p.name) || null,
-          }),
+        const params = new URLSearchParams({
+          name: data.name,
         })
+
+        if (data.alternative_names?.length > 0) {
+          params.append('altNames', JSON.stringify(data.alternative_names.map(a => a.name)))
+        }
+
+        if (data.first_release_date) {
+          params.append('year', new Date(data.first_release_date * 1000).getFullYear())
+        }
+
+        fetch(`/api/howlongtobeat/search?${params}`)
           .then((r) => (r.ok ? r.json() : null))
           .then((h) => {
             setHltb(h)

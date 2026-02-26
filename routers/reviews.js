@@ -12,24 +12,24 @@ import { handleByUser } from "#services/reviews/handlers/byUser.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
-  create:      { handler: handleCreate,      scopes: ["@me"], auth: true  },
-  delete:      { handler: handleDelete,      scopes: ["@me"], auth: true  },
-  update:      { handler: handleUpdate,      scopes: ["@me"], auth: true  },
-  like:        { handler: handleLike,        scopes: ["@me"], auth: true  },
-  likeStatus:  { handler: handleLikeStatus,  scopes: null,    auth: false },
-  likes:       { handler: handleLikes,       scopes: null,    auth: false },
-  game:        { handler: handleGame,        scopes: ["@me"], auth: true  },
-  public:      { handler: handlePublic,      scopes: null,    auth: false },
-  stats:       { handler: handleStats,       scopes: null,    auth: false },
-  user:        { handler: handleUser,        scopes: null,    auth: false },
-  byUser:      { handler: handleByUser,      scopes: null,    auth: false },
+  create:      { handler: handleCreate,      method: "POST", scopes: ["@me"], auth: true  },
+  delete:      { handler: handleDelete,      method: "POST", scopes: ["@me"], auth: true  },
+  update:      { handler: handleUpdate,      method: "POST", scopes: ["@me"], auth: true  },
+  like:        { handler: handleLike,        method: "POST", scopes: ["@me"], auth: true  },
+  likeStatus:  { handler: handleLikeStatus,  method: "GET",  scopes: null,    auth: false },
+  likes:       { handler: handleLikes,       method: "GET",  scopes: null,    auth: false },
+  game:        { handler: handleGame,        method: "GET",  scopes: ["@me"], auth: true  },
+  public:      { handler: handlePublic,      method: "GET",  scopes: null,    auth: false },
+  stats:       { handler: handleStats,       method: "GET",  scopes: null,    auth: false },
+  user:        { handler: handleUser,        method: "GET",  scopes: null,    auth: false },
+  byUser:      { handler: handleByUser,      method: "GET",  scopes: null,    auth: false },
 }
 
 export async function reviewsHandler(req, res) {
-  if (req.method !== "POST") return res.status(405).end()
-
   const entry = ACTIONS[req.action]
   if (!entry) return res.status(404).json({ error: "action not found" })
+
+  if (req.method !== entry.method) return res.status(405).end()
 
   if (entry.scopes && !entry.scopes.includes(req.scope)) {
     return res.status(400).json({ error: "invalid scope" })

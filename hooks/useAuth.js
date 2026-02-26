@@ -32,13 +32,10 @@ function updateSnapshot() {
 
 async function fetchProfile(session) {
   try {
-    const res = await fetch("/api/users/profile", {
-      method: "POST",
+    const res = await fetch(`/api/users/profile?userId=${session.user.id}`, {
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({ userId: session.user.id }),
     })
     return res.ok ? await res.json() : null
   } catch {

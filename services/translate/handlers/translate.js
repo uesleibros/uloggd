@@ -1,7 +1,7 @@
 import { getCache, setCache } from "#lib/cache.js"
 
 export async function handleTranslate(req, res) {
-  const { text, target = "pt" } = req.body
+  const { text, target = "pt" } = req.query
 
   if (!text || typeof text !== "string") {
     return res.status(400).json({ error: "missing text" })

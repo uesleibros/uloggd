@@ -14,7 +14,6 @@ export function useHeartbeat() {
 		if (loading) return
 		if (!user?.id) return
 
-		// Já tem um heartbeat ativo? Não cria outro
 		if (activeHeartbeat && activeHeartbeat !== user.id) {
 			return
 		}

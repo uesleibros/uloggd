@@ -3,10 +3,12 @@ import { query } from "#lib/igdbWrapper.js"
 import { findManyByIdsMinimal, formatMinimalUserMap } from "#models/users/index.js"
 
 export async function handleByUser(req, res) {
-	const { userId, type = "games", page = 1, limit = 24 } = req.body
+	const { userId, type = "games", page = 1, limit = 24 } = req.query
 	if (!userId) return res.status(400).json({ error: "userId required" })
 
-	const offset = (page - 1) * limit
+	const pageNum = Number(page)
+	const limitNum = Number(limit)
+	const offset = (pageNum - 1) * limitNum
 
 	try {
 		if (type === "games") {
@@ -16,7 +18,7 @@ export async function handleByUser(req, res) {
 				.eq("user_id", userId)
 				.eq("liked", true)
 				.order("updated_at", { ascending: false })
-				.range(offset, offset + limit - 1)
+				.range(offset, offset + limitNum - 1)
 
 			const gameIds = likedGamesData?.map(g => g.game_id) || []
 			const gamesMap = {}
@@ -47,8 +49,8 @@ export async function handleByUser(req, res) {
 			res.json({
 				games: likedGames,
 				total: count || 0,
-				page,
-				totalPages: Math.ceil((count || 0) / limit),
+				page: pageNum,
+				totalPages: Math.ceil((count || 0) / limitNum),
 			})
 		} else if (type === "reviews") {
 			const { data: likedReviewsData, count } = await supabase
@@ -56,7 +58,7 @@ export async function handleByUser(req, res) {
 				.select("review_id", { count: "exact" })
 				.eq("user_id", userId)
 				.order("created_at", { ascending: false })
-				.range(offset, offset + limit - 1)
+				.range(offset, offset + limitNum - 1)
 
 			const reviewIds = likedReviewsData?.map(l => l.review_id) || []
 			let reviews = []
@@ -104,8 +106,8 @@ export async function handleByUser(req, res) {
 				games: gamesMap,
 				users,
 				total: count || 0,
-				page,
-				totalPages: Math.ceil((count || 0) / limit),
+				page: pageNum,
+				totalPages: Math.ceil((count || 0) / limitNum),
 			})
 		} else {
 			res.status(400).json({ error: "invalid type" })

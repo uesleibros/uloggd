@@ -7,21 +7,24 @@ import {
 } from "#models/users/index.js"
 
 export async function handleFollowers(req, res) {
-	const { userId, type, page = 1, limit = 20 } = req.body
+	const { userId, type, page = 1, limit = 20 } = req.query
+
 	if (!userId || !type) return res.status(400).json({ error: "missing params" })
 	if (!VALID_LIST_TYPES.includes(type)) return res.status(400).json({ error: "invalid type" })
 
-	const offset = (page - 1) * limit
+	const pageNum = Number(page)
+	const limitNum = Number(limit)
+	const offset = (pageNum - 1) * limitNum
 
 	try {
-		const { ids: userIds, total } = await getFollowIds(userId, type, { limit, offset })
+		const { ids: userIds, total } = await getFollowIds(userId, type, { limit: limitNum, offset })
 
 		if (!userIds.length) {
 			return res.json({
 				users: [],
 				total,
-				page,
-				totalPages: Math.ceil(total / limit),
+				page: pageNum,
+				totalPages: Math.ceil(total / limitNum),
 			})
 		}
 
@@ -37,8 +40,8 @@ export async function handleFollowers(req, res) {
 		res.json({
 			users: result,
 			total,
-			page,
-			totalPages: Math.ceil(total / limit),
+			page: pageNum,
+			totalPages: Math.ceil(total / limitNum),
 		})
 	} catch (e) {
 		console.error(e)

@@ -124,7 +124,7 @@ function aggregateGames(gameMap, { page = 1, limit = 20, filter = null } = {}) {
 }
 
 export async function handleProfileGames(req, res) {
-  const { userId, page = 1, limit = 20, filter = null } = req.body
+  const { userId, page = 1, limit = 20, filter = null } = req.query
   if (!userId) return res.status(400).json({ error: "userId required" })
 
   try {
@@ -144,7 +144,11 @@ export async function handleProfileGames(req, res) {
     if (logsRes.error) throw logsRes.error
 
     const gameMap = buildGameMap(userGamesRes.data, logsRes.data)
-    res.json(aggregateGames(gameMap, { page, limit, filter }))
+    res.json(aggregateGames(gameMap, {
+      page: Number(page),
+      limit: Number(limit),
+      filter: filter || null
+    }))
   } catch (e) {
     console.error(e)
     res.status(500).json({ error: "fail" })

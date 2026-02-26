@@ -21,9 +21,7 @@ export function MyLibraryProvider({ children }) {
       if (!session) return
 
       const res = await fetch("/api/userGames/@me/library", {
-        method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
       })

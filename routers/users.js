@@ -18,28 +18,28 @@ import { supabase } from "#lib/supabase-ssr.js"
 import { ensureUserNotBanned } from "#lib/moderation.js"
 
 const ACTIONS = {
-  profile:      { handler: handleProfile,      scopes: null,       auth: false      },
-  username:     { handler: handleUsername,     scopes: ["@me"],    auth: true       },
-  bio:          { handler: handleBio,          scopes: ["@me"],    auth: true       },
-  delete:       { handler: handleDelete,       scopes: ["@me"],    auth: true       },
-  follow:       { handler: handleFollow,       scopes: null,       auth: true       },
-  followStatus: { handler: handleFollowStatus, scopes: null,       auth: false      },
-  followers:    { handler: handleFollowers,    scopes: null,       auth: false      },
-  banner:       { handler: handleBanner,       scopes: ["@me"],    auth: true       },
-  avatar:       { handler: handleAvatar,       scopes: ["@me"],    auth: true       },
-  thinking:     { handler: handleThinking,     scopes: ["@me"],    auth: true       },
-  decoration:   { handler: handleDecoration,   scopes: ["@me"],    auth: true       },
-  pronoun:      { handler: handlePronoun,      scopes: ["@me"],    auth: true       },
-  heartbeat:    { handler: handleHeartbeat,    scopes: ["@me"],    auth: "flexible" },
-  batch:        { handler: handleBatch,        scopes: null,       auth: false      },
-  search:       { handler: handleSearch,       scopes: null,       auth: false      }
+  profile:      { handler: handleProfile,      method: "GET",  scopes: null,    auth: false      },
+  username:     { handler: handleUsername,     method: "POST", scopes: ["@me"], auth: true       },
+  bio:          { handler: handleBio,          method: "POST", scopes: ["@me"], auth: true       },
+  delete:       { handler: handleDelete,       method: "POST", scopes: ["@me"], auth: true       },
+  follow:       { handler: handleFollow,       method: "POST", scopes: null,    auth: true       },
+  followStatus: { handler: handleFollowStatus, method: "GET",  scopes: null,    auth: false      },
+  followers:    { handler: handleFollowers,    method: "GET",  scopes: null,    auth: false      },
+  banner:       { handler: handleBanner,       method: "POST", scopes: ["@me"], auth: true       },
+  avatar:       { handler: handleAvatar,       method: "POST", scopes: ["@me"], auth: true       },
+  thinking:     { handler: handleThinking,     method: "POST", scopes: ["@me"], auth: true       },
+  decoration:   { handler: handleDecoration,   method: "POST", scopes: ["@me"], auth: true       },
+  pronoun:      { handler: handlePronoun,      method: "POST", scopes: ["@me"], auth: true       },
+  heartbeat:    { handler: handleHeartbeat,    method: "POST", scopes: ["@me"], auth: "flexible" },
+  batch:        { handler: handleBatch,        method: "POST", scopes: null,    auth: false      },
+  search:       { handler: handleSearch,       method: "GET",  scopes: null,    auth: false      }
 }
 
 export async function usersHandler(req, res) {
-  if (req.method !== "POST") return res.status(405).end()
-
   const entry = ACTIONS[req.action]
   if (!entry) return res.status(404).json({ error: "action not found" })
+
+  if (req.method !== entry.method) return res.status(405).end()
 
   if (entry.scopes && !entry.scopes.includes(req.scope)) {
     return res.status(400).json({ error: "invalid scope" })
@@ -50,6 +50,7 @@ export async function usersHandler(req, res) {
   if (entry.auth === true) {
     user = await getUser(req)
     if (!user) return res.status(401).json({ error: "unauthorized" })
+    if (user.is_banned) return res.status(403).json({ error: "banned" })
     req.user = user
   } else if (entry.auth === "flexible") {
     user = await getUser(req)
@@ -58,6 +59,7 @@ export async function usersHandler(req, res) {
       if (!error && data?.user) user = data.user
     }
     if (!user) return res.status(401).json({ error: "unauthorized" })
+    if (user.is_banned) return res.status(403).json({ error: "banned" })
     req.user = user
   }
 

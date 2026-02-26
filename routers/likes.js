@@ -1,7 +1,7 @@
 import { handleByUser } from "#services/likes/handlers/byUser.js"
 
 const ACTIONS = {
-	byUser: { handler: handleByUser, method: "POST", auth: false }
+	byUser: { handler: handleByUser, method: "GET", auth: false }
 }
 
 export async function likesHandler(req, res) {

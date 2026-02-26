@@ -5,17 +5,17 @@ import { handlePending } from "#services/verification/handlers/pending.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
-  request: { handler: handleRequest, auth: true },
-  status:  { handler: handleStatus,  auth: true },
-  review:  { handler: handleReview,  auth: true },
-  pending: { handler: handlePending, auth: true },
+  request: { handler: handleRequest, method: "POST", auth: true },
+  status:  { handler: handleStatus,  method: "GET",  auth: true },
+  review:  { handler: handleReview,  method: "POST", auth: true },
+  pending: { handler: handlePending, method: "GET",  auth: true },
 }
 
 export async function verificationHandler(req, res) {
-  if (req.method !== "POST") return res.status(405).end()
-
   const entry = ACTIONS[req.action]
   if (!entry) return res.status(404).json({ error: "action not found" })
+
+  if (req.method !== entry.method) return res.status(405).end()
 
   if (entry.auth) {
     const user = await getUser(req)

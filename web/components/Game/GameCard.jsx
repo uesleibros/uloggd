@@ -94,11 +94,11 @@ function useCardActions(game, enabled, initialState = null) {
 		try {
 			const { data: { session } } = await supabase.auth.getSession()
 			if (!session) return
-			const res = await fetch("/api/userGames/@me/get", {
-				method: "POST",
-				headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-				body: JSON.stringify({ gameId: game.id }),
+			
+			const res = await fetch(`/api/userGames/@me/get?gameId=${game.id}`, {
+				headers: { Authorization: `Bearer ${session.access_token}` },
 			})
+			
 			if (res.ok) {
 				const d = await res.json()
 				setState({

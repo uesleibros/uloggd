@@ -166,11 +166,14 @@ export default function ProfileReviews({ userId }) {
 		if (!userId) return
 		setLoading(true)
 
-		fetch("/api/reviews/byUser", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ userId, sortBy, page, limit: 10 }),
+		const params = new URLSearchParams({
+			userId,
+			sortBy,
+			page,
+			limit: 10,
 		})
+
+		fetch(`/api/reviews/byUser?${params}`)
 			.then((r) => r.ok ? r.json() : { reviews: [], games: {} })
 			.then((data) => {
 				setReviews(data.reviews || [])

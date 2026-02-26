@@ -12,7 +12,7 @@ function LikesSkeleton() {
 		<div className="space-y-6">
 			<div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
 				{[...Array(8)].map((_, i) => (
-					<GameCardSkeleton responsive />
+					<GameCardSkeleton key={i} responsive />
 				))}
 			</div>
 		</div>
@@ -49,17 +49,12 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
 	useEffect(() => {
 		if (!userId) return
 
+		const gamesParams = new URLSearchParams({ userId, type: "games", page: 1, limit: 1 })
+		const reviewsParams = new URLSearchParams({ userId, type: "reviews", page: 1, limit: 1 })
+
 		Promise.all([
-			fetch("/api/likes/byUser", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ userId, type: "games", page: 1, limit: 1 }),
-			}).then(r => r.json()),
-			fetch("/api/likes/byUser", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ userId, type: "reviews", page: 1, limit: 1 }),
-			}).then(r => r.json()),
+			fetch(`/api/likes/byUser?${gamesParams}`).then(r => r.json()),
+			fetch(`/api/likes/byUser?${reviewsParams}`).then(r => r.json()),
 		]).then(([gamesRes, reviewsRes]) => {
 			setCounts({
 				games: gamesRes.total || 0,
@@ -73,12 +68,9 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
 		setLoading(true)
 
 		const limit = activeTab === "games" ? GAMES_PER_PAGE : REVIEWS_PER_PAGE
+		const params = new URLSearchParams({ userId, type: activeTab, page, limit })
 
-		fetch("/api/likes/byUser", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ userId, type: activeTab, page, limit }),
-		})
+		fetch(`/api/likes/byUser?${params}`)
 			.then((r) => r.ok ? r.json() : {})
 			.then((res) => {
 				if (activeTab === "games") {

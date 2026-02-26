@@ -9,7 +9,7 @@ import {
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleProfile(req, res) {
-	const { userId, username } = req.body
+	const { userId, username } = req.query
 
 	if (!userId && !username) {
 		return res.status(400).json({ error: "missing userId or username" })

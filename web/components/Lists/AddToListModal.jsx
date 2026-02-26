@@ -3,6 +3,7 @@ import { supabase } from "#lib/supabase"
 import { useAuth } from "#hooks/useAuth"
 import Modal from "@components/UI/Modal"
 import { List, Check, Lock } from "lucide-react"
+import { encode } from "#utils/shortId.js"
 
 export default function AddToListModal({ isOpen, onClose, game }) {
 	const { user } = useAuth()
@@ -18,11 +19,13 @@ export default function AddToListModal({ isOpen, onClose, game }) {
 		else setLoadingMore(true)
 
 		try {
-			const r = await fetch("/api/lists/@me/get", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ userId: user.id, page: pageNum, limit: 20 }),
+			const params = new URLSearchParams({
+				userId: user.id,
+				page: pageNum,
+				limit: 20,
 			})
+
+			const r = await fetch(`/api/lists/get?${params}`)
 			const data = await r.json()
 
 			const mapped = (data.lists || []).map(list => ({
@@ -68,11 +71,10 @@ export default function AddToListModal({ isOpen, onClose, game }) {
 			if (!session) return
 
 			if (list.hasGame) {
-				const fullList = await fetch("/api/lists/@me/get", {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ listId: list.id }),
-				}).then(r => r.json())
+				const listId = encode(list.id)
+				
+				const fullList = await fetch(`/api/lists/get?listId=${listId}`)
+					.then(r => r.json())
 
 				const item = fullList.list_items?.find(i => i.game_slug === game.slug)
 				if (!item) return

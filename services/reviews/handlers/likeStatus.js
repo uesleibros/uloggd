@@ -1,7 +1,7 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleLikeStatus(req, res) {
-  const { reviewId, currentUserId } = req.body
+  const { reviewId, currentUserId } = req.query
 
   if (!reviewId) return res.status(400).json({ error: "missing reviewId" })
 

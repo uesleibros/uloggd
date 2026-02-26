@@ -31,11 +31,10 @@ function LikeButton({ reviewId, currentUserId }) {
 	const [showLikes, setShowLikes] = useState(false)
 
 	useEffect(() => {
-		fetch("/api/reviews/likeStatus", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ reviewId, currentUserId }),
-		})
+		const params = new URLSearchParams({ reviewId })
+		if (currentUserId) params.append("currentUserId", currentUserId)
+
+		fetch(`/api/reviews/likeStatus?${params}`)
 			.then(r => r.json())
 			.then(data => {
 				setCount(data.count || 0)
@@ -236,11 +235,14 @@ export default function GameReviews({ gameId }) {
 		if (!gameId) return
 		setLoading(true)
 
-		fetch("/api/reviews/public", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ gameId, sortBy, page, limit: 20 }),
+		const params = new URLSearchParams({
+			gameId,
+			sortBy,
+			page,
+			limit: 20,
 		})
+
+		fetch(`/api/reviews/public?${params}`)
 			.then((r) => r.ok ? r.json() : { reviews: [], users: {} })
 			.then((data) => {
 				setReviews(data.reviews || [])

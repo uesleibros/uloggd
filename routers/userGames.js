@@ -5,17 +5,17 @@ import { handleLibrary } from "#services/userGames/handlers/me/library.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
-  get:          { handler: handleGet,          scopes: ["@me"],  auth: true },
-  update:       { handler: handleUpdate,       scopes: ["@me"],  auth: true },
-  profileGames: { handler: handleProfileGames, scopes: null,     auth: false },
-  library:      { handler: handleLibrary,      scopes: ["@me"],  auth: true },
+  get:          { handler: handleGet,          method: "GET",  scopes: ["@me"], auth: true  },
+  update:       { handler: handleUpdate,       method: "POST", scopes: ["@me"], auth: true  },
+  profileGames: { handler: handleProfileGames, method: "GET",  scopes: null,    auth: false },
+  library:      { handler: handleLibrary,      method: "GET",  scopes: ["@me"], auth: true  },
 }
 
 export async function userGamesHandler(req, res) {
-  if (req.method !== "POST") return res.status(405).end()
-
   const entry = ACTIONS[req.action]
   if (!entry) return res.status(404).json({ error: "action not found" })
+
+  if (req.method !== entry.method) return res.status(405).end()
 
   if (entry.scopes && !entry.scopes.includes(req.scope)) {
     return res.status(400).json({ error: "invalid scope" })

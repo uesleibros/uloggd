@@ -39,16 +39,14 @@ export function useSearch(initialQuery = "", initialTab = "games") {
     }
 
     try {
-      const response = await fetch(ENDPOINTS[tab], {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: debouncedQuery,
-          limit: PER_PAGE,
-          offset: (pageNum - 1) * PER_PAGE,
-          ...filters,
-        }),
+      const params = new URLSearchParams({
+        query: debouncedQuery,
+        limit: PER_PAGE,
+        offset: (pageNum - 1) * PER_PAGE,
+        ...filters,
       })
+
+      const response = await fetch(`${ENDPOINTS[tab]}?${params}`)
 
       if (!response.ok) throw new Error()
 

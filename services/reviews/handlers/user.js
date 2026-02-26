@@ -1,10 +1,12 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleUser(req, res) {
-  const { userId, status, page = 1, limit = 20 } = req.body
+  const { userId, status, page = 1, limit = 20 } = req.query
   if (!userId) return res.status(400).json({ error: "userId required" })
 
-  const offset = (page - 1) * limit
+  const pageNum = Number(page)
+  const limitNum = Number(limit)
+  const offset = (pageNum - 1) * limitNum
 
   try {
     let q = supabase
@@ -12,7 +14,7 @@ export async function handleUser(req, res) {
       .select("*", { count: "exact" })
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1)
+      .range(offset, offset + limitNum - 1)
 
     if (status) q = q.eq("status", status)
 
@@ -22,8 +24,8 @@ export async function handleUser(req, res) {
     res.json({
       reviews: data || [],
       total: count,
-      page,
-      totalPages: Math.ceil((count || 0) / limit),
+      page: pageNum,
+      totalPages: Math.ceil((count || 0) / limitNum),
     })
   } catch (e) {
     console.error(e)

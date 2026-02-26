@@ -2,8 +2,11 @@ import { query } from "#lib/igdbWrapper.js"
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleGamesBatch(req, res) {
-  const { slugs } = req.body
-  if (!Array.isArray(slugs) || slugs.length === 0) {
+  const rawSlugs = req.query.slugs
+  
+  const slugs = Array.isArray(rawSlugs) ? rawSlugs : rawSlugs ? [rawSlugs] : []
+  
+  if (slugs.length === 0) {
     return res.status(400).json({ error: "missing slugs array" })
   }
 

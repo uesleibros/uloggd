@@ -25,9 +25,7 @@ async function fetchCount() {
 
 	try {
 		const r = await fetch("/api/notifications/@me/count", {
-			method: "POST",
 			headers: {
-				"Content-Type": "application/json",
 				Authorization: `Bearer ${session.access_token}`,
 			},
 		})

@@ -272,21 +272,12 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 			
 			try {
 				const [gamesRaw, usersRaw, listsRaw] = await Promise.all([
-					fetch("/api/igdb/autocomplete", {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ query: trimmed }),
-					}).then(r => r.json()).catch(() => []),
-					fetch("/api/users/search", {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ query: trimmed, limit: 5 }),
-					}).then(r => r.json()).catch(() => []),
-					fetch("/api/lists/search", {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ query: trimmed, limit: 5 }),
-					}).then(r => r.json()).catch(() => []),
+					fetch(`/api/igdb/autocomplete?query=${encodeURIComponent(trimmed)}`)
+						.then(r => r.json()).catch(() => []),
+					fetch(`/api/users/search?query=${encodeURIComponent(trimmed)}&limit=5`)
+						.then(r => r.json()).catch(() => []),
+					fetch(`/api/lists/search?query=${encodeURIComponent(trimmed)}&limit=5`)
+						.then(r => r.json()).catch(() => []),
 				])
 
 				if (!mountedRef.current) return

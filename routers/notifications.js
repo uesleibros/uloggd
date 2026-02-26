@@ -5,17 +5,17 @@ import { handleNotificationDelete } from "#services/notifications/handlers/delet
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
-  count:  { handler: handleNotificationCount,  scopes: ["@me"], auth: true },
-  list:   { handler: handleNotificationList,   scopes: ["@me"], auth: true },
-  read:   { handler: handleNotificationRead,   scopes: ["@me"], auth: true },
-  delete: { handler: handleNotificationDelete, scopes: ["@me"], auth: true },
+  count:  { handler: handleNotificationCount,  method: "GET",  scopes: ["@me"], auth: true },
+  list:   { handler: handleNotificationList,   method: "GET",  scopes: ["@me"], auth: true },
+  read:   { handler: handleNotificationRead,   method: "POST", scopes: ["@me"], auth: true },
+  delete: { handler: handleNotificationDelete, method: "POST", scopes: ["@me"], auth: true },
 }
 
 export async function notificationsHandler(req, res) {
-  if (req.method !== "POST") return res.status(405).end()
-
   const entry = ACTIONS[req.action]
   if (!entry) return res.status(404).json({ error: "action not found" })
+
+  if (req.method !== entry.method) return res.status(405).end()
 
   if (entry.scopes && !entry.scopes.includes(req.scope)) {
     return res.status(400).json({ error: "invalid scope" })
@@ -24,6 +24,7 @@ export async function notificationsHandler(req, res) {
   if (entry.auth) {
     const user = await getUser(req)
     if (!user) return res.status(401).json({ error: "unauthorized" })
+    if (user.is_banned) return res.status(403).json({ error: "banned" })
     req.user = user
   }
 

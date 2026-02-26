@@ -7,7 +7,7 @@ export default function UsersChoiceCarousel() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/igdb/usersChoice", { method: "POST" })
+    fetch("/api/igdb/usersChoice")
       .then(res => res.json())
       .then(data => {
         setGames(data)

@@ -28,7 +28,7 @@ async function findGame(name, altNames, year) {
 }
 
 export async function handleSearch(req, res) {
-  const { name, altNames, year } = req.body
+  const { name, altNames, year } = req.query
   if (!name?.trim()) return res.status(400).json({ error: "missing name" })
 
   const cacheKey = `hltb_${name.trim().toLowerCase().replace(/\s+/g, "_")}`
@@ -36,7 +36,19 @@ export async function handleSearch(req, res) {
   if (cached) return res.json(cached)
 
   try {
-    const g = await findGame(name.trim(), altNames || [], year || null)
+    // Parseia altNames se vier como string (array em query param)
+    const parsedAltNames = Array.isArray(altNames) 
+      ? altNames 
+      : altNames 
+        ? JSON.parse(altNames) 
+        : []
+
+    const g = await findGame(
+      name.trim(), 
+      parsedAltNames, 
+      year ? Number(year) : null
+    )
+    
     if (!g) return res.status(404).json({ error: "not found" })
 
     const result = {

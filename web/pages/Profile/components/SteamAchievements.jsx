@@ -146,11 +146,7 @@ export default function SteamAchievements({ userId }) {
 
     const fetchAchievements = async () => {
       try {
-        const res = await fetch("/api/steam/achievements", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
-        })
+        const res = await fetch(`/api/steam/achievements?userId=${userId}`)
         const data = await res.json()
         setAchievements(data.achievements || [])
       } catch {} finally {

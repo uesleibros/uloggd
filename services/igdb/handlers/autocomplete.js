@@ -3,7 +3,7 @@ import { PLATFORMS_MAP } from "#data/platformsMapper.js"
 import { buildNameFilter } from "#services/igdb/utils/buildNameFilter.js"
 
 export async function handleAutocomplete(req, res) {
-	const { query: q } = req.body
+	const { query: q } = req.query
 	if (!q?.trim()) return res.status(400).json({ error: "missing query" })
 
 	try {

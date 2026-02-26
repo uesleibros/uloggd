@@ -34,10 +34,13 @@ export function useUserLists(profileId) {
     setLoading(true)
 
     try {
-      const r = await fetch("/api/lists/@me/get", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: profileId, page: pageNum, limit: 20 }),
+      const params = new URLSearchParams({
+        userId: profileId,
+        page: pageNum,
+        limit: 20,
+      })
+
+      const r = await fetch(`/api/lists/@me/get?${params}`, {
         signal: controller.signal,
       })
 

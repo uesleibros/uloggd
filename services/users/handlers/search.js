@@ -5,11 +5,16 @@ import {
 } from "#models/users/index.js"
 
 export async function handleSearch(req, res) {
-	const { query, limit = 20, offset = 0, sort = "relevance" } = req.body
+	const { query, limit = 20, offset = 0, sort = "relevance" } = req.query
+
 	if (!query?.trim()) return res.json({ results: [], total: 0 })
 
 	try {
-		const { data, total } = await searchByUsername(query, { limit, offset, sort })
+		const { data, total } = await searchByUsername(query, {
+			limit: Number(limit),
+			offset: Number(offset),
+			sort
+		})
 		const streamsMap = await resolveStreams(data)
 
 		const results = data.map(u =>

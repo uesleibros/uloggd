@@ -22,11 +22,10 @@ export function GamesBatchProvider({ children }) {
     const id = ++fetchId.current
 
     try {
-      const res = await fetch("/api/igdb/gamesBatch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slugs: newSlugs }),
-      })
+      const params = new URLSearchParams()
+      newSlugs.forEach(slug => params.append("slugs", slug))
+
+      const res = await fetch(`/api/igdb/gamesBatch?${params}`)
 
       if (!res.ok) throw new Error()
       const data = await res.json()
@@ -77,11 +76,11 @@ export function useGamesBatch(slugs = []) {
       if (slugs.length === 0) { setLoading(false); return }
 
       let active = true
-      fetch("/api/igdb/gamesBatch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slugs }),
-      })
+      
+      const params = new URLSearchParams()
+      slugs.forEach(slug => params.append("slugs", slug))
+
+      fetch(`/api/igdb/gamesBatch?${params}`)
         .then(r => r.ok ? r.json() : Promise.reject())
         .then(data => { if (active) { setGames(data); setLoading(false) } })
         .catch(() => { if (active) setLoading(false) })

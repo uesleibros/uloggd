@@ -2,17 +2,19 @@ import { supabase } from "#lib/supabase-ssr.js"
 import { query } from "#lib/igdbWrapper.js"
 
 export async function handleByUser(req, res) {
-	const { userId, sortBy = "recent", page = 1, limit = 20 } = req.body
+	const { userId, sortBy = "recent", page = 1, limit = 20 } = req.query
 	if (!userId) return res.status(400).json({ error: "userId required" })
 
-	const offset = (page - 1) * limit
+	const pageNum = Number(page)
+	const limitNum = Number(limit)
+	const offset = (pageNum - 1) * limitNum
 
 	try {
 		let q = supabase
 			.from("reviews")
 			.select("*", { count: "exact" })
 			.eq("user_id", userId)
-			.range(offset, offset + limit - 1)
+			.range(offset, offset + limitNum - 1)
 
 		if (sortBy === "rating") {
 			q = q
@@ -51,8 +53,8 @@ export async function handleByUser(req, res) {
 			reviews: reviews || [],
 			games,
 			total: count,
-			page,
-			totalPages: Math.ceil((count || 0) / limit),
+			page: pageNum,
+			totalPages: Math.ceil((count || 0) / limitNum),
 		})
 	} catch (e) {
 		console.error(e)

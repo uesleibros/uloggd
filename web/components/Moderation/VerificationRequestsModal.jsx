@@ -29,13 +29,10 @@ export default function VerificationRequestsModal({ isOpen, onClose, profile }) 
 
     setLoading(true)
     try {
-      const res = await fetch("/api/verification/pending", {
-        method: "POST",
+      const res = await fetch(`/api/verification/pending?userId=${profile.id}`, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ userId: profile.id }),
       })
       if (res.ok) {
         const data = await res.json()

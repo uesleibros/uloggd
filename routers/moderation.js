@@ -4,16 +4,16 @@ import { handleList } from "#services/moderation/handlers/list.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
-  ban: { handler: handleBan, auth: true },
-  unban: { handler: handleUnban, auth: true },
-  list: { handler: handleList, auth: true },
+  ban:   { handler: handleBan,   method: "POST", auth: true },
+  unban: { handler: handleUnban, method: "POST", auth: true },
+  list:  { handler: handleList,  method: "GET",  auth: true },
 }
 
 export async function moderationHandler(req, res) {
-  if (req.method !== "POST") return res.status(405).end()
-
   const entry = ACTIONS[req.action]
   if (!entry) return res.status(404).json({ error: "action not found" })
+
+  if (req.method !== entry.method) return res.status(405).end()
 
   if (entry.auth) {
     const user = await getUser(req)

@@ -225,9 +225,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
 
       try {
         const r = await fetch("/api/notifications/@me/list", {
-          method: "POST",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${session.access_token}`,
           },
         })
@@ -242,11 +240,10 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
 
         let usersMap = {}
         if (userIds.length > 0) {
-          const uRes = await fetch("/api/users/batch", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userIds }),
-          })
+          const params = new URLSearchParams()
+          userIds.forEach(id => params.append("userIds", id))
+
+          const uRes = await fetch(`/api/users/batch?${params}`)
           const uData = await uRes.json()
           uData.forEach(u => { usersMap[u.id] = u })
         }

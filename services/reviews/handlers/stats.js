@@ -1,7 +1,7 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleStats(req, res) {
-  const { gameId } = req.body
+  const { gameId } = req.query
   if (!gameId) return res.status(400).json({ error: "gameId required" })
 
   try {

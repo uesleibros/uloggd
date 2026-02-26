@@ -9,21 +9,21 @@ import { handleSearch } from "#services/lists/handlers/search.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
-  create:     { handler: handleCreate,     scopes: ["@me"], auth: true  },
-  delete:     { handler: handleDelete,     scopes: ["@me"], auth: true  },
-  update:     { handler: handleUpdate,     scopes: ["@me"], auth: true  },
-  get:        { handler: handleGet,        scopes: null,    auth: false },
-  addItem:    { handler: handleAddItem,    scopes: ["@me"], auth: true  },
-  removeItem: { handler: handleRemoveItem, scopes: ["@me"], auth: true  },
-  reorder:    { handler: handleReorder,    scopes: ["@me"], auth: true  },
-  search:     { handler: handleSearch,     scopes: null,    auth: false },
+  create:     { handler: handleCreate,     method: "POST", scopes: ["@me"], auth: true  },
+  delete:     { handler: handleDelete,     method: "POST", scopes: ["@me"], auth: true  },
+  update:     { handler: handleUpdate,     method: "POST", scopes: ["@me"], auth: true  },
+  get:        { handler: handleGet,        method: "GET",  scopes: null,    auth: false },
+  addItem:    { handler: handleAddItem,    method: "POST", scopes: ["@me"], auth: true  },
+  removeItem: { handler: handleRemoveItem, method: "POST", scopes: ["@me"], auth: true  },
+  reorder:    { handler: handleReorder,    method: "POST", scopes: ["@me"], auth: true  },
+  search:     { handler: handleSearch,     method: "GET",  scopes: null,    auth: false },
 }
 
 export async function listsHandler(req, res) {
-  if (req.method !== "POST") return res.status(405).end()
-
   const entry = ACTIONS[req.action]
   if (!entry) return res.status(404).json({ error: "action not found" })
+
+  if (req.method !== entry.method) return res.status(405).end()
 
   if (entry.scopes && !entry.scopes.includes(req.scope)) {
     return res.status(400).json({ error: "invalid scope" })

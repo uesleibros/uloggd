@@ -306,10 +306,9 @@ export default function Badges() {
 			const { data: { session } } = await supabase.auth.getSession()
 
 			const [badgesRes, statusRes] = await Promise.all([
-				fetch("/api/badges/list", { method: "POST" }).then((r) => r.json()),
+				fetch("/api/badges/list").then((r) => r.json()),
 				session
 					? fetch("/api/verification/status", {
-							method: "POST",
 							headers: { Authorization: `Bearer ${session.access_token}` },
 						}).then((r) => r.json())
 					: Promise.resolve({ request: null }),

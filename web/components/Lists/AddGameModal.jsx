@@ -36,11 +36,7 @@ export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = 
 
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch("/api/igdb/autocomplete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: query.trim() }),
-        })
+        const res = await fetch(`/api/igdb/autocomplete?query=${encodeURIComponent(query.trim())}`)
         const data = await res.json()
         setResults(Array.isArray(data) ? data : [])
       } catch {

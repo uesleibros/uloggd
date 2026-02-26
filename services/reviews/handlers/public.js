@@ -6,17 +6,19 @@ import {
 } from "#models/users/index.js"
 
 export async function handlePublic(req, res) {
-	const { gameId, sortBy = "recent", page = 1, limit = 20 } = req.body
+	const { gameId, sortBy = "recent", page = 1, limit = 20 } = req.query
 	if (!gameId) return res.status(400).json({ error: "gameId required" })
 
-	const offset = (page - 1) * limit
+	const pageNum = Number(page)
+	const limitNum = Number(limit)
+	const offset = (pageNum - 1) * limitNum
 
 	try {
 		let q = supabase
 			.from("reviews")
 			.select("*", { count: "exact" })
 			.eq("game_id", gameId)
-			.range(offset, offset + limit - 1)
+			.range(offset, offset + limitNum - 1)
 
 		if (sortBy === "rating") {
 			q = q
@@ -42,8 +44,8 @@ export async function handlePublic(req, res) {
 			reviews: reviews || [],
 			users,
 			total: count,
-			page,
-			totalPages: Math.ceil((count || 0) / limit),
+			page: pageNum,
+			totalPages: Math.ceil((count || 0) / limitNum),
 		})
 	} catch (e) {
 		console.error(e)

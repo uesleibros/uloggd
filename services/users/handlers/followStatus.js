@@ -1,7 +1,8 @@
 import { getFollowStatus } from "#models/users/index.js"
 
 export async function handleFollowStatus(req, res) {
-	const { userId, currentUserId } = req.body
+	const { userId, currentUserId } = req.query
+
 	if (!userId) return res.status(400).json({ error: "missing userId" })
 
 	try {

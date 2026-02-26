@@ -32,10 +32,7 @@ export function useProfileData(username) {
     const controller = new AbortController()
     abortRef.current = controller
 
-    fetch("/api/users/profile", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
+    fetch(`/api/users/profile?username=${encodeURIComponent(username)}`, {
       signal: controller.signal,
     })
       .then((res) => {

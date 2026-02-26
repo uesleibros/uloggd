@@ -50,14 +50,13 @@ export default function ReviewButton({ game }) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
-      const res = await fetch("/api/reviews/@me/game", {
-        method: "POST",
+      
+      const res = await fetch(`/api/reviews/@me/game?gameId=${game.id}`, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ gameId: game.id }),
       })
+      
       if (res.ok) {
         const data = await res.json()
         setReviews(data)

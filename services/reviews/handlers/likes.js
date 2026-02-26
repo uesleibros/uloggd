@@ -6,10 +6,12 @@ import {
 } from "#models/users/index.js"
 
 export async function handleLikes(req, res) {
-	const { reviewId, page = 1, limit = 20 } = req.body
+	const { reviewId, page = 1, limit = 20 } = req.query
 	if (!reviewId) return res.status(400).json({ error: "missing reviewId" })
 
-	const offset = (page - 1) * limit
+	const pageNum = Number(page)
+	const limitNum = Number(limit)
+	const offset = (pageNum - 1) * limitNum
 
 	try {
 		const { data, count } = await supabase
@@ -17,7 +19,7 @@ export async function handleLikes(req, res) {
 			.select("user_id", { count: "exact" })
 			.eq("review_id", reviewId)
 			.order("created_at", { ascending: false })
-			.range(offset, offset + limit - 1)
+			.range(offset, offset + limitNum - 1)
 
 		const userIds = data?.map(r => r.user_id) || []
 
@@ -25,8 +27,8 @@ export async function handleLikes(req, res) {
 			return res.json({
 				users: [],
 				total: count || 0,
-				page,
-				totalPages: Math.ceil((count || 0) / limit),
+				page: pageNum,
+				totalPages: Math.ceil((count || 0) / limitNum),
 			})
 		}
 
@@ -42,8 +44,8 @@ export async function handleLikes(req, res) {
 		res.json({
 			users: result,
 			total: count || 0,
-			page,
-			totalPages: Math.ceil((count || 0) / limit),
+			page: pageNum,
+			totalPages: Math.ceil((count || 0) / limitNum),
 		})
 	} catch (e) {
 		console.error(e)

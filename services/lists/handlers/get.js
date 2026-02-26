@@ -3,10 +3,12 @@ import { decode } from "#utils/shortId.js"
 import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
 
 export async function handleGet(req, res) {
-	const { listId, userId, page = 1, limit = 24 } = req.body
+	const { listId, userId, page = 1, limit = 24 } = req.query
 	if (!listId && !userId) return res.status(400).json({ error: "missing listId or userId" })
 
-	const offset = (page - 1) * limit
+	const pageNum = Number(page)
+	const limitNum = Number(limit)
+	const offset = (pageNum - 1) * limitNum
 
 	try {
 		if (listId) {
@@ -27,7 +29,7 @@ export async function handleGet(req, res) {
 					.select("id, game_id, game_slug, position, note, added_at", { count: "exact" })
 					.eq("list_id", decodedId)
 					.order("position", { ascending: true })
-					.range(offset, offset + limit - 1),
+					.range(offset, offset + limitNum - 1),
 			])
 
 			if (listRes.error?.code === "PGRST116") return res.status(404).json({ error: "list not found" })
@@ -43,8 +45,8 @@ export async function handleGet(req, res) {
 				...list,
 				list_items: itemsRes.data || [],
 				items_total: itemsRes.count || 0,
-				items_page: page,
-				items_totalPages: Math.ceil((itemsRes.count || 0) / limit),
+				items_page: pageNum,
+				items_totalPages: Math.ceil((itemsRes.count || 0) / limitNum),
 			})
 		}
 
@@ -56,7 +58,7 @@ export async function handleGet(req, res) {
 			`, { count: "exact" })
 			.eq("user_id", userId)
 			.order("created_at", { ascending: false })
-			.range(offset, offset + limit - 1)
+			.range(offset, offset + limitNum - 1)
 
 		if (error) throw error
 
@@ -72,8 +74,8 @@ export async function handleGet(req, res) {
 		res.json({
 			lists,
 			total: count || 0,
-			page,
-			totalPages: Math.ceil((count || 0) / limit),
+			page: pageNum,
+			totalPages: Math.ceil((count || 0) / limitNum),
 		})
 	} catch (e) {
 		console.error(e)

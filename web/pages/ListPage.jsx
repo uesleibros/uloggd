@@ -139,11 +139,13 @@ export default function ListPage() {
 		setError(null)
 
 		try {
-			const r = await fetch("/api/lists/@me/get", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ listId: id, page: pageNum, limit: ITEMS_PER_PAGE }),
+			const params = new URLSearchParams({
+				listId: id,
+				page: pageNum,
+				limit: ITEMS_PER_PAGE,
 			})
+
+			const r = await fetch(`/api/lists/get?${params}`)
 
 			if (!r.ok) throw new Error("not found")
 

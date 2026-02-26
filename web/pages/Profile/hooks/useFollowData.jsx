@@ -20,13 +20,15 @@ export function useFollowData(profile, currentUser, authLoading, isOwnProfile) {
     const controller = new AbortController()
     abortRef.current = controller
 
-    fetch("/api/users/followStatus", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: profile.id,
-        currentUserId: currentUser?.id || null
-      }),
+    const params = new URLSearchParams({
+      userId: profile.id,
+    })
+
+    if (currentUser?.id) {
+      params.append("currentUserId", currentUser.id)
+    }
+
+    fetch(`/api/users/followStatus?${params}`, {
       signal: controller.signal,
     })
       .then((r) => r.json())

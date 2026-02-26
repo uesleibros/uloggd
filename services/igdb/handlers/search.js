@@ -3,11 +3,14 @@ import { PLATFORMS_MAP } from "#data/platformsMapper.js"
 import { buildNameFilter } from "#services/igdb/utils/buildNameFilter.js"
 
 export async function handleSearch(req, res) {
-	const { query: q, limit = 20, offset = 0, sort = "relevance" } = req.body
+	const { query: q, limit = 20, offset = 0, sort = "relevance" } = req.query
 	if (!q?.trim()) return res.status(400).json({ results: [], total: 0 })
 
 	try {
 		const nameFilter = buildNameFilter(q)
+		
+		const limitNum = Math.min(Number(limit), 50)
+		const offsetNum = Number(offset)
 		
 		let orderBy = "total_rating_count desc"
 		if (sort === "name") orderBy = "name asc"
@@ -23,8 +26,8 @@ export async function handleSearch(req, res) {
 					summary;
 				where ${nameFilter};
 				sort ${orderBy};
-				limit ${Math.min(limit, 50)};
-				offset ${offset};
+				limit ${limitNum};
+				offset ${offsetNum};
 			`),
 			query("games/count", `where ${nameFilter};`)
 		])

@@ -3,9 +3,12 @@ import { encode } from "#utils/shortId.js"
 import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
 
 export async function handleSearch(req, res) {
-	const { query, limit = 20, offset = 0, sort = "relevance" } = req.body
+	const { query, limit = 20, offset = 0, sort = "relevance" } = req.query
 
 	if (!query?.trim()) return res.json({ results: [], total: 0 })
+
+	const limitNum = Number(limit)
+	const offsetNum = Number(offset)
 
 	try {
 		let q = supabase
@@ -21,7 +24,7 @@ export async function handleSearch(req, res) {
 		if (sort === "title") q = q.order("title", { ascending: true })
 		else q = q.order("created_at", { ascending: false })
 
-		const { data, count, error } = await q.range(offset, offset + limit - 1)
+		const { data, count, error } = await q.range(offsetNum, offsetNum + limitNum - 1)
 		if (error) throw error
 
 		const results = (data || []).map(list => ({
