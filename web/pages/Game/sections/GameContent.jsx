@@ -159,7 +159,7 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
 
 			<HowLongToBeat hltb={hltb} loading={hltbLoading} />
 
-			{game.steam_id && <GameSteamAchievements appId={game.steam_id} />}
+			{game.steamId && <GameSteamAchievements appId={game.steamId} />}
 
 			{allMedia.length > 0 && (
 				<div>
@@ -201,4 +201,5 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
 		</div>
 	)
 }
+
 
