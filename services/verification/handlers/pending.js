@@ -2,7 +2,7 @@ import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handlePending(req, res) {
   const reviewerId = req.user.id
-  const { userId } = req.body
+  const { userId } = req.query
 
   try {
     const { data: reviewer } = await supabase
