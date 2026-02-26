@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import { Calendar, Twitch, Radio, Gamepad2 } from "lucide-react"
 import CountUp from "@components/UI/CountUp"
 import { SteamIcon } from "#constants/customIcons"
-import SteamAchievements from "./SteamAchievements"
+import SteamAchievements from "@components/Game/SteamAchievements"
 
 function SocialCount({ value, label, onClick }) {
 	return (
@@ -181,3 +181,4 @@ export default function ProfileStats({
 		</>
 	)
 }
+
