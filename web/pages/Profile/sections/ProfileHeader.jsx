@@ -94,7 +94,7 @@ export function ProfileHeader({
             <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
               {profile.username}
             </h1>
-            <div className="flex-wrap sm:mb-2 items-center gap-1.5">
+            <div className="flex-wrap mb-2 sm:mb-0 items-center gap-1.5">
               <UserBadges user={profile} clickable size="xl" />
             </div>
           </div>
@@ -153,4 +153,5 @@ export function ProfileHeader({
     </div>
   )
 }
+
 
