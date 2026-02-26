@@ -26,7 +26,7 @@ export async function handleGame(req, res) {
         game_modes.name, game_engines.name,
         total_rating, total_rating_count, aggregated_rating, rating, hypes,
         keywords.name, keywords.slug,
-        external_games.uid, external_games.source,
+        external_games,
         similar_games.name, similar_games.slug, similar_games.cover.url, similar_games.cover.image_id,
         dlcs.name, dlcs.slug, dlcs.cover.url, dlcs.cover.image_id,
         expansions.name, expansions.slug, expansions.cover.url, expansions.cover.image_id,
@@ -61,7 +61,7 @@ export async function handleGame(req, res) {
     const publishers = g.involved_companies?.filter(c => c.publisher).map(c => c.company.name) || []
     const platforms = g.platforms?.slice().sort((a, b) => a.name.localeCompare(b.name)) || []
 
-    const steamGame = g.external_games?.find(eg => eg.source === 1)
+    const steamGame = g.external_games?.find(eg => eg.external_game_source === 1)
     const steamId = steamGame?.uid || null
 
     if (g.parent_game?.cover?.url) {
@@ -96,3 +96,4 @@ export async function handleGame(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
