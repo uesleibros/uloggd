@@ -77,7 +77,6 @@ export function ProfileHeader({
                 <p className="text-xs text-red-400/70 mt-1">
                   Este usuário foi suspenso por violar os termos da plataforma.
                 </p>
-
                 {isModerator && profile.ban_reason && (
                   <p className="text-xs text-red-400/60 mt-2">
                     Motivo: {profile.ban_reason}
@@ -88,9 +87,9 @@ export function ProfileHeader({
           </div>
         )}
 
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div
-            className={`flex items-center gap-2 min-w-0 flex-1 ${
+            className={`flex items-center gap-2 min-w-0 ${
               isBanned ? "opacity-60" : ""
             }`}
           >
@@ -98,11 +97,7 @@ export function ProfileHeader({
               {profile.username}
             </h1>
 
-            <UserBadges
-              user={profile}
-              clickable
-              size="xl"
-            />
+            <UserBadges user={profile} clickable size="xl" />
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
