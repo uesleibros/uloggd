@@ -46,8 +46,8 @@ async function fetchProfile(session) {
 function buildUser(session, profile = null) {
   const { user } = session
   return {
-    id: user.id,
-    user_id: user.user_metadata.provider_id,
+    user_id: user.id,
+    discordId: user.user_metadata.provider_id,
     username: user.user_metadata.full_name,
     avatar: user.user_metadata.avatar_url,
     email: user.email,
@@ -203,3 +203,4 @@ export function useAuth() {
   }
 
 }
+
