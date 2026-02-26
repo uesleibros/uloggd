@@ -40,19 +40,23 @@ function CustomTooltip({ active, payload }) {
   )
 }
 
-export default function PriceHistory({ gameName }) {
+export default function PriceHistory({ gameName, steamId }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!gameName) return
+    if (!gameName && !steamId) return
 
     setLoading(true)
     setData(null)
 
     const fetchPrices = async () => {
       try {
-        const res = await fetch(`/api/prices/history?gameName=${encodeURIComponent(gameName)}`)
+        const params = new URLSearchParams()
+        if (steamId) params.append('steamId', steamId)
+        if (gameName) params.append('gameName', gameName)
+
+        const res = await fetch(`/api/prices/history?${params}`)
         const json = await res.json()
         setData(json)
       } catch (e) {
@@ -63,7 +67,7 @@ export default function PriceHistory({ gameName }) {
     }
 
     fetchPrices()
-  }, [gameName])
+  }, [gameName, steamId])
 
   if (loading) {
     return (
