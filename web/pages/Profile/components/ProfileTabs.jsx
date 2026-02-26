@@ -2,7 +2,7 @@ import { forwardRef } from "react"
 import { Link } from "react-router-dom"
 import { Play, CheckCircle, Clock, Gift, Ban, Archive, Star } from "lucide-react"
 import DragScrollRow from "@components/UI/DragScrollRow"
-import GameCard, { GameSkeleton } from "@components/Game/GameCard"
+import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
 import Pagination from "@components/UI/Pagination"
 
 const TAB_ICONS = {
