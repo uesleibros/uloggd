@@ -13,12 +13,17 @@ export function useProfileData(username) {
   const normalizedUsername = username?.toLowerCase()
 
   const isOwnProfile = useMemo(() => {
-    if (authLoading || !currentUser?.username) return false
+    if (authLoading || !currentUser?.username || !normalizedUsername) return false
     return currentUser.username.toLowerCase() === normalizedUsername
   }, [authLoading, currentUser?.username, normalizedUsername])
 
   useEffect(() => {
-    if (!username || authLoading) return
+    if (!username) return
+
+    if (authLoading) {
+      setFetching(true)
+      return
+    }
 
     if (profileCache.has(normalizedUsername)) {
       setFetchedProfile(profileCache.get(normalizedUsername))
@@ -41,7 +46,6 @@ export function useProfileData(username) {
       })
       .then((data) => {
         if (controller.signal.aborted) return
-
         profileCache.set(normalizedUsername, data)
         setFetchedProfile(data)
         setFetching(false)
@@ -55,7 +59,7 @@ export function useProfileData(username) {
     return () => {
       controller.abort()
     }
-  }, [normalizedUsername, authLoading])
+  }, [username, normalizedUsername, authLoading])
 
   const profile = useMemo(() => {
     if (authLoading) return null
