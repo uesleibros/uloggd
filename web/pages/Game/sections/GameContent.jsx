@@ -8,6 +8,7 @@ import { StatCard } from "../components/StatCard"
 import { InfoRow } from "../components/InfoRow"
 import { HowLongToBeat } from "../components/HowLongToBeat"
 import { GameHeader } from "./GameHeader"
+import PriceHistory from "@components/Game/PriceHistory"
 
 export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
 	const [showFullSummary, setShowFullSummary] = useState(false)
@@ -161,6 +162,8 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
 
 			{game.steamId && <GameSteamAchievements appId={game.steamId} />}
 
+			<PriceHistory gameName={game.name} />
+			
 			{allMedia.length > 0 && (
 				<div>
 					<hr className="my-6 border-zinc-700" />
@@ -201,5 +204,6 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
 		</div>
 	)
 }
+
 
 
