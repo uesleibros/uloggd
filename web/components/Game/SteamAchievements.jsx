@@ -598,101 +598,104 @@ export function GameSteamAchievements({ appId }) {
   const visible = showAll ? filtered : filtered.slice(0, 12)
 
   return (
-    <div className="mt-6">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-zinc-600" />
-          <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-            Conquistas
-          </span>
-          <SteamIcon className="w-3.5 h-3.5 text-[#66c0f4]" />
-        </div>
-        {!data.notConnected && (
-          <span className="text-xs text-zinc-500">
-            {data.unlocked}/{data.total} ({data.percentage}%)
-          </span>
-        )}
-      </div>
-
-      {data.notConnected && (
-        <div className="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-lg mb-4">
-          <SteamIcon className="w-4 h-4 text-zinc-500" />
-          <span className="text-xs text-zinc-400">
-            Conecte sua Steam para ver seu progresso
-          </span>
-        </div>
-      )}
-
-      {!data.notConnected && (
-        <div className="flex items-center gap-2 mb-4">
-          <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all"
-              style={{ width: `${data.percentage}%` }}
-            />
+    <>
+      <hr className="my-6 border-zinc-700" />
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-zinc-600" />
+            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              Conquistas
+            </span>
+            <SteamIcon className="w-3.5 h-3.5 text-[#66c0f4]" />
           </div>
+          {!data.notConnected && (
+            <span className="text-xs text-zinc-500">
+              {data.unlocked}/{data.total} ({data.percentage}%)
+            </span>
+          )}
         </div>
-      )}
 
-      <div className="flex items-center gap-2 mb-4">
-        {["all", "unlocked", "locked"].map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
-              filter === f
-                ? "bg-zinc-700 text-white"
-                : "bg-zinc-800/50 text-zinc-500 hover:text-white"
-            }`}
-          >
-            {f === "all" ? `Todas (${data.total})` : f === "unlocked" ? `Desbloqueadas (${data.unlocked})` : `Bloqueadas (${data.total - data.unlocked})`}
-          </button>
-        ))}
-      </div>
+        {data.notConnected && (
+          <div className="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-lg mb-4">
+            <SteamIcon className="w-4 h-4 text-zinc-500" />
+            <span className="text-xs text-zinc-400">
+              Conecte sua Steam para ver seu progresso
+            </span>
+          </div>
+        )}
 
-      <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-1.5">
-        {visible.map((achievement, i) => {
-          const isHidden = achievement.hidden && !achievement.achieved
-
-          return (
-            <button
-              key={`${achievement.name}-${i}`}
-              onClick={() => setSelected(achievement)}
-              className={`group relative aspect-square rounded-lg overflow-hidden bg-zinc-800 border border-zinc-700/50 hover:border-zinc-500 transition-all hover:scale-105 cursor-pointer ${!achievement.achieved ? "grayscale opacity-60" : ""}`}
-            >
-              <img
-                src={achievement.achieved ? achievement.iconUnlocked : achievement.iconLocked}
-                alt={isHidden ? "Conquista secreta" : achievement.name}
-                className={`w-full h-full object-cover ${isHidden ? "blur-sm" : ""}`}
-                loading="lazy"
+        {!data.notConnected && (
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all"
+                style={{ width: `${data.percentage}%` }}
               />
-              {isHidden && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                  <EyeOff className="w-3 h-3 text-zinc-400" />
-                </div>
-              )}
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 mb-4">
+          {["all", "unlocked", "locked"].map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                filter === f
+                  ? "bg-zinc-700 text-white"
+                  : "bg-zinc-800/50 text-zinc-500 hover:text-white"
+              }`}
+            >
+              {f === "all" ? `Todas (${data.total})` : f === "unlocked" ? `Desbloqueadas (${data.unlocked})` : `Bloqueadas (${data.total - data.unlocked})`}
             </button>
-          )
-        })}
+          ))}
+        </div>
+
+        <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-1.5">
+          {visible.map((achievement, i) => {
+            const isHidden = achievement.hidden && !achievement.achieved
+
+            return (
+              <button
+                key={`${achievement.name}-${i}`}
+                onClick={() => setSelected(achievement)}
+                className={`group relative aspect-square rounded-lg overflow-hidden bg-zinc-800 border border-zinc-700/50 hover:border-zinc-500 transition-all hover:scale-105 cursor-pointer ${!achievement.achieved ? "grayscale opacity-60" : ""}`}
+              >
+                <img
+                  src={achievement.achieved ? achievement.iconUnlocked : achievement.iconLocked}
+                  alt={isHidden ? "Conquista secreta" : achievement.name}
+                  className={`w-full h-full object-cover ${isHidden ? "blur-sm" : ""}`}
+                  loading="lazy"
+                />
+                {isHidden && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <EyeOff className="w-3 h-3 text-zinc-400" />
+                  </div>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {filtered.length > 12 && (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="mt-3 text-xs text-zinc-500 hover:text-white transition-colors cursor-pointer"
+          >
+            {showAll ? "Mostrar menos" : `Ver todas (${filtered.length})`}
+          </button>
+        )}
+
+        <AchievementDetailModal
+          achievement={selected}
+          gameName={data.gameName}
+          appId={appId}
+          isOpen={!!selected}
+          onClose={() => setSelected(null)}
+          showGame={false}
+        />
       </div>
-
-      {filtered.length > 12 && (
-        <button
-          onClick={() => setShowAll(!showAll)}
-          className="mt-3 text-xs text-zinc-500 hover:text-white transition-colors cursor-pointer"
-        >
-          {showAll ? "Mostrar menos" : `Ver todas (${filtered.length})`}
-        </button>
-      )}
-
-      <AchievementDetailModal
-        achievement={selected}
-        gameName={data.gameName}
-        appId={appId}
-        isOpen={!!selected}
-        onClose={() => setSelected(null)}
-        showGame={false}
-      />
-    </div>
+    </>
   )
 }
