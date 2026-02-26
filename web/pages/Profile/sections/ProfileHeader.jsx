@@ -101,10 +101,6 @@ export function ProfileHeader({
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
-            {!isOwnProfile && isModerator && (
-              <ModeratorMenu profile={profile} currentUser={currentUser} />
-            )}
-
             {!isBanned && (
               <ProfileActions
                 isOwnProfile={isOwnProfile}
@@ -114,6 +110,10 @@ export function ProfileHeader({
                 onEditProfile={onEditProfile}
                 isLoggedIn={!!currentUser}
               />
+            )}
+
+            {!isOwnProfile && isModerator && (
+              <ModeratorMenu profile={profile} currentUser={currentUser} />
             )}
           </div>
         </div>
