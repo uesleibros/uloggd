@@ -410,7 +410,7 @@ export default function ListPage() {
 											{isOwner && game && (
 												<button
 													onClick={() => setRemovingItem({ ...item, list_id: list.id })}
-													className="absolute top-1 right-1 z-10 p-1.5 bg-black/70 hover:bg-red-500 active:bg-red-600 rounded-lg text-zinc-400 hover:text-white opacity-0 group-hover:opacity-100 transition-all cursor-pointer touch-manipulation"
+													className="absolute top-1 right-1 z-10 p-1.5 bg-black/70 hover:bg-red-500 active:bg-red-600 rounded-lg text-zinc-400 hover:text-white transition-all cursor-pointer touch-manipulation opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
 													title="Remover"
 												>
 													<X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -481,4 +481,5 @@ export default function ListPage() {
 			/>
 		</div>
 	)
+
 }
