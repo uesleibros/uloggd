@@ -53,7 +53,7 @@ async function getCurrentPrices(gameId) {
   }))
 }
 
-export async function handlePriceHistory(req, res) {
+export async function handleHistory(req, res) {
   const { gameName } = req.query
 
   if (!gameName) {
