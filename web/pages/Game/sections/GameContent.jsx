@@ -159,11 +159,14 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
 			</div>
 
 			<HowLongToBeat hltb={hltb} loading={hltbLoading} />
-			
-			<PriceHistory gameName={game.name} steamId={game.steamId} />
-			
-			{game.steamId && <GameSteamAchievements appId={game.steamId} />}
-			
+
+			{game.steamId && (
+				<>
+					<PriceHistory steamId={game.steamId} />
+					<GameSteamAchievements appId={game.steamId} />
+				</>
+			)}
+						
 			{allMedia.length > 0 && (
 				<div>
 					<hr className="my-6 border-zinc-700" />
@@ -204,6 +207,7 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
 		</div>
 	)
 }
+
 
 
 
