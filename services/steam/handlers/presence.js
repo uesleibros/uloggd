@@ -5,7 +5,7 @@ import { getCache, setCache } from "#lib/cache.js"
 const STEAM_SOURCE_ID = 1
 
 export async function handlePresence(req, res) {
-  const { userId } = req.body
+  const { userId } = req.query
   if (!userId) return res.status(400).json({ error: "userId required" })
 
   const cacheKey = `steam_presence_${userId}`

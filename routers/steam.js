@@ -10,8 +10,8 @@ const ACTIONS = {
 	login:        { handler: handleLogin,          method: "POST", auth: true   },
 	callback:     { handler: handleCallback,       method: "GET",  auth: false  },
 	status:       { handler: handleStatus,         method: "POST", auth: false  },
-	presence:     { handler: handlePresence,       method: "POST", auth: false  },
-	achievements: { handler: handleAchievements,   method: "POST", auth: false  },
+	presence:     { handler: handlePresence,       method: "GET", auth: false  },
+	achievements: { handler: handleAchievements,   method: "GET", auth: false  },
 	disconnect:   { handler: handleDisconnect,	   method: "POST", auth: true	}
 }
 

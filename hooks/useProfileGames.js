@@ -27,11 +27,14 @@ export function useProfileGames(profileId, onCountsUpdate) {
 		setLoading(true)
 
 		try {
-			const res = await fetch("/api/userGames/profileGames", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ userId: profileId, filter, page: pageNum, limit: LIMIT }),
+			const params = new URLSearchParams({
+				userId: profileId,
+				filter,
+				page: pageNum,
+				limit: LIMIT,
 			})
+
+			const res = await fetch(`/api/userGames/profileGames?${params}`)
 
 			if (!res.ok) throw new Error()
 			const data = await res.json()
@@ -47,11 +50,10 @@ export function useProfileGames(profileId, onCountsUpdate) {
 				return
 			}
 
-			const batchRes = await fetch("/api/igdb/gamesBatch", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ slugs }),
-			})
+			const batchParams = new URLSearchParams()
+			slugs.forEach(slug => batchParams.append("slugs", slug))
+
+			const batchRes = await fetch(`/api/igdb/gamesBatch?${batchParams}`)
 
 			if (batchRes.ok) {
 				const igdbGames = await batchRes.json()

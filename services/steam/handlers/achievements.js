@@ -2,7 +2,7 @@ import { supabase } from "#lib/supabase-ssr.js"
 import { getCache, setCache } from "#lib/cache.js"
 
 export async function handleAchievements(req, res) {
-  const { userId } = req.body
+  const { userId } = req.query
   if (!userId) return res.status(400).json({ error: "Missing userId" })
 
   const cacheKey = `steam_achievements_${userId}`
