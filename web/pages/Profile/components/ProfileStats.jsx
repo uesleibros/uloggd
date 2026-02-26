@@ -31,6 +31,8 @@ function ActivitySection({ stream, userId }) {
 	const [presence, setPresence] = useState(null)
 
 	useEffect(() => {
+		setPresence(null)
+
 		if (!userId) return
 
 		const fetchPresence = async () => {
