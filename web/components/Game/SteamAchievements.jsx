@@ -557,7 +557,7 @@ export function GameSteamAchievements({ appId }) {
     const fetchAchievements = async () => {
       try {
         const params = new URLSearchParams({ appId })
-        if (user?.id) params.append("userId", user.id)
+        if (user?.user_id) params.append("userId", user.user_id)
 
         const res = await fetch(`/api/steam/gameAchievements?${params}`)
         const json = await res.json()
@@ -568,7 +568,7 @@ export function GameSteamAchievements({ appId }) {
     }
 
     fetchAchievements()
-  }, [appId, user?.id])
+  }, [appId, user?.user_id])
 
   if (loading) {
     return (
