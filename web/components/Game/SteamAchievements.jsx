@@ -3,7 +3,7 @@ import { Trophy, EyeOff, Eye, ChevronLeft, Loader2 } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import Modal from "@components/UI/Modal"
 import { SteamIcon } from "#constants/customIcons"
-import { getTimeAgo } from "#utils/formatDate"
+import { getTimeAgoFromTimestamp } from "#utils/formatDate"
 
 function AchievementDetailModal({ achievement, gameName, appId, isOpen, onClose, onBack, showGame = true }) {
   const [revealed, setRevealed] = useState(false)
@@ -98,7 +98,7 @@ function AchievementDetailModal({ achievement, gameName, appId, isOpen, onClose,
           {achievement.achieved && achievement.unlockedAt && (
             <div className="flex items-center justify-between gap-3 px-4 py-2.5">
               <span className="text-xs text-zinc-500 flex-shrink-0">Desbloqueada</span>
-              <span className="text-xs text-white truncate">{getTimeAgo(achievement.unlockedAt)}</span>
+              <span className="text-xs text-white truncate">{getTimeAgoFromTimestamp(achievement.unlockedAt)}</span>
             </div>
           )}
           {achievement.globalPercent !== undefined && (
@@ -390,7 +390,7 @@ function RecentAchievementModal({ achievement, isOpen, onClose, onViewAll }) {
           </div>
           <div className="flex items-center justify-between gap-3 px-4 py-2.5">
             <span className="text-xs text-zinc-500 flex-shrink-0">Desbloqueada</span>
-            <span className="text-xs text-white truncate">{getTimeAgo(achievement.unlockedAt)}</span>
+            <span className="text-xs text-white truncate">{getTimeAgoFromTimestamp(achievement.unlockedAt)}</span>
           </div>
           <div className="flex items-center justify-between gap-3 px-4 py-2.5">
             <span className="text-xs text-zinc-500 flex-shrink-0">Plataforma</span>
