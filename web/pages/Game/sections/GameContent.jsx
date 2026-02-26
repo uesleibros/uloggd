@@ -3,6 +3,7 @@ import { Languages, Loader2 } from "lucide-react"
 import QuickActions from "@components/Game/QuickActions"
 import ReviewButton from "@components/Game/Review"
 import GameReviews from "@components/Game/GameReviews"
+import SteamAchievements from "@components/Game/SteamAchievements"
 import { StatCard } from "../components/StatCard"
 import { InfoRow } from "../components/InfoRow"
 import { HowLongToBeat } from "../components/HowLongToBeat"
@@ -157,6 +158,8 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
 			</div>
 
 			<HowLongToBeat hltb={hltb} loading={hltbLoading} />
+
+			{game.steam_id && <SteamAchievements appId={game.steam_id} />}
 
 			{allMedia.length > 0 && (
 				<div>
