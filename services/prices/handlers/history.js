@@ -3,58 +3,72 @@ import { getCache, setCache } from "#lib/cache.js"
 const ITAD_API = "https://api.isthereanydeal.com"
 
 async function searchITADGame(gameName, apiKey) {
-  const url = `${ITAD_API}/games/search/v1?key=${apiKey}&title=${encodeURIComponent(gameName)}&limit=1`
-  console.log("[ITAD Search] Fetching:", url.replace(apiKey, "HIDDEN_KEY"))
+  const res = await fetch(
+    `${ITAD_API}/games/search/v1?key=${apiKey}&title=${encodeURIComponent(gameName)}&limit=1`
+  )
   
-  const res = await fetch(url)
-  if (!res.ok) {
-    console.error("[ITAD Search] Falhou:", res.status, await res.text())
-    return null
-  }
+  if (!res.ok) return null
   
   const data = await res.json()
-  console.log("[ITAD Search] Resultado:", data)
   return data[0]?.id || null
 }
 
-async function getPriceHistory(gameId, apiKey, months = 12) {
+async function getStoreLows(gameUuid, apiKey, months = 12) {
   const since = Math.floor(Date.now() / 1000) - (months * 30 * 24 * 60 * 60)
-  const url = `${ITAD_API}/games/history/v2?key=${apiKey}&id=${gameId}&country=BR&since=${since}`
   
-  const res = await fetch(url)
-  if (!res.ok) {
-    console.error("[ITAD History] Falhou:", res.status, await res.text())
-    return []
-  }
+  const res = await fetch(
+    `${ITAD_API}/games/storelow/v2?key=${apiKey}&country=BR&since=${since}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify([gameUuid])
+    }
+  )
+  
+  if (!res.ok) return []
   
   const data = await res.json()
-  return (data.history || []).map(item => ({
-    date: new Date(item.timestamp * 1000).toISOString().split('T')[0],
-    price: item.deal.price.amount,
-    store: item.deal.shop.name,
-    regular: item.deal.regular.amount,
-    discount: item.deal.cut
+  const lows = data[0]?.lows || []
+  
+  return lows.map(item => ({
+    date: item.timestamp.split('T')[0],
+    price: item.price.amount,
+    store: item.shop.name,
+    storeId: item.shop.id,
+    regular: item.regular.amount,
+    discount: item.cut
   }))
 }
 
-async function getCurrentPrices(gameId, apiKey) {
-  const url = `${ITAD_API}/games/prices/v2?key=${apiKey}&id=${gameId}&country=BR&shops=steam,nuuvem,greenmangaming,epicgames`
+async function getCurrentPrices(gameUuid, apiKey) {
+  const res = await fetch(
+    `${ITAD_API}/games/prices/v3?key=${apiKey}&country=BR&shops=steam,nuuvem,greenmangaming,epicgames`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify([gameUuid])
+    }
+  )
   
-  const res = await fetch(url)
-  if (!res.ok) {
-    console.error("[ITAD Prices] Falhou:", res.status, await res.text())
-    return []
-  }
+  if (!res.ok) return { deals: [], historyLow: null }
   
   const data = await res.json()
-  return (data.deals || []).map(deal => ({
+  const gameData = data[0] || {}
+  
+  const deals = (gameData.deals || []).map(deal => ({
     store: deal.shop.name,
     storeId: deal.shop.id,
     price: deal.price.amount,
     oldPrice: deal.regular.amount,
     discount: deal.cut,
-    url: deal.url
+    url: deal.url,
+    storeLow: deal.storeLow?.amount || null
   }))
+  
+  return {
+    deals,
+    historyLow: gameData.historyLow || null
+  }
 }
 
 export async function handleHistory(req, res) {
@@ -66,53 +80,53 @@ export async function handleHistory(req, res) {
 
   const apiKey = process.env.ISTHEREANYDEAL_API_KEY
   if (!apiKey) {
-    console.error("[ITAD] API KEY ESTÁ FALTANDO!")
     return res.status(500).json({ error: "API Key missing" })
   }
 
   const cacheKey = `price_history_${gameName.toLowerCase().replace(/\s+/g, '_')}`
   
-  // Se passar &fresh=1 na URL, ele ignora o cache antigo
   if (fresh !== "1") {
     const cached = await getCache(cacheKey)
-    if (cached) {
-      console.log("[ITAD] Retornando do cache para:", gameName)
-      return res.json(cached)
-    }
+    if (cached) return res.json(cached)
   }
 
   try {
-    const itadId = await searchITADGame(gameName, apiKey)
+    const gameUuid = await searchITADGame(gameName, apiKey)
 
-    if (!itadId) {
-      const empty = { history: [], deals: [], notFound: true }
+    if (!gameUuid) {
+      const empty = { storeLows: [], deals: [], historyLow: null, notFound: true }
       await setCache(cacheKey, empty, 86400)
       return res.json(empty)
     }
 
-    const [history, deals] = await Promise.all([
-      getPriceHistory(itadId, apiKey, 12),
-      getCurrentPrices(itadId, apiKey)
+    const [storeLows, priceData] = await Promise.all([
+      getStoreLows(gameUuid, apiKey, 12),
+      getCurrentPrices(gameUuid, apiKey)
     ])
 
-    if (!history.length && !deals.length) {
-      const empty = { history: [], deals: [], notFound: true }
+    const { deals, historyLow } = priceData
+
+    if (!storeLows.length && !deals.length) {
+      const empty = { storeLows: [], deals: [], historyLow: null, notFound: true }
       await setCache(cacheKey, empty, 86400)
       return res.json(empty)
     }
 
-    const prices = history.map(h => h.price).filter(p => p > 0)
+    const currentPrice = deals[0]?.price || null
+    const lowestEver = historyLow?.all?.amount || null
+    const lowestYear = historyLow?.y1?.amount || null
 
     const result = {
-      itadId,
-      current: deals[0] || (history.length ? { price: history[history.length - 1].price } : null),
-      history,
+      itadId: gameUuid,
+      current: deals[0] || null,
+      storeLows,
       deals,
-      stats: prices.length ? {
-        lowest: Math.min(...prices),
-        highest: Math.max(...prices),
-        average: prices.reduce((a, b) => a + b, 0) / prices.length
-      } : null
+      stats: {
+        currentPrice,
+        lowestEver,
+        lowestYear,
+        lowestMonth: historyLow?.m3?.amount || null
+      }
     }
 
     await setCache(cacheKey, result, 43200)
