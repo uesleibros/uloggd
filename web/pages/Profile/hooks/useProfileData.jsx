@@ -1,41 +1,33 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useAuth } from "#hooks/useAuth"
 
+const profileCache = new Map()
+
 export function useProfileData(username) {
   const { user: currentUser, loading: authLoading } = useAuth()
   const [fetchedProfile, setFetchedProfile] = useState(null)
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState(null)
   const abortRef = useRef(null)
-  const lastUsernameRef = useRef(null)
 
   const normalizedUsername = username?.toLowerCase()
 
   const isOwnProfile = useMemo(() => {
-    if (authLoading || !currentUser?.id || !currentUser?.username) return false
+    if (authLoading || !currentUser?.username) return false
     return currentUser.username.toLowerCase() === normalizedUsername
-  }, [authLoading, currentUser?.id, currentUser?.username, normalizedUsername])
+  }, [authLoading, currentUser?.username, normalizedUsername])
 
   useEffect(() => {
-    if (lastUsernameRef.current !== normalizedUsername) {
-      setFetchedProfile(null)
-      setError(null)
-      lastUsernameRef.current = normalizedUsername
-    }
+    if (!username || authLoading) return
 
-    if (abortRef.current) {
-      abortRef.current.abort()
-      abortRef.current = null
-    }
-
-    setFetching(true)
-
-    if (!username) {
+    if (profileCache.has(normalizedUsername)) {
+      setFetchedProfile(profileCache.get(normalizedUsername))
       setFetching(false)
       return
     }
 
-    if (authLoading) return
+    setFetching(true)
+    setError(null)
 
     const controller = new AbortController()
     abortRef.current = controller
@@ -52,22 +44,21 @@ export function useProfileData(username) {
       })
       .then((data) => {
         if (controller.signal.aborted) return
+
+        profileCache.set(normalizedUsername, data)
         setFetchedProfile(data)
-        setError(null)
         setFetching(false)
       })
       .catch((err) => {
         if (err.name === "AbortError") return
-        if (controller.signal.aborted) return
         setError(true)
         setFetching(false)
       })
 
     return () => {
       controller.abort()
-      abortRef.current = null
     }
-  }, [username, normalizedUsername, authLoading])
+  }, [normalizedUsername, authLoading])
 
   const profile = useMemo(() => {
     if (authLoading) return null
@@ -75,8 +66,13 @@ export function useProfileData(username) {
   }, [fetchedProfile, authLoading])
 
   const updateProfile = useCallback((partial) => {
-    setFetchedProfile((prev) => (prev ? { ...prev, ...partial } : prev))
-  }, [])
+    setFetchedProfile((prev) => {
+      if (!prev) return prev
+      const updated = { ...prev, ...partial }
+      profileCache.set(normalizedUsername, updated)
+      return updated
+    })
+  }, [normalizedUsername])
 
   return {
     profile,
