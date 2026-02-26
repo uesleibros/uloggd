@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Heart, Gamepad2, MessageSquare } from "lucide-react"
-import GameCard from "@components/Game/GameCard"
+import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
 import Pagination from "@components/UI/Pagination"
 import { ProfileReviewCard } from "./ProfileReviews"
 
@@ -10,9 +10,9 @@ const REVIEWS_PER_PAGE = 10
 function LikesSkeleton() {
 	return (
 		<div className="space-y-6">
-			<div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+			<div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
 				{[...Array(8)].map((_, i) => (
-					<div key={i} className="aspect-[3/4] bg-zinc-800 rounded-lg animate-pulse" />
+					<GameCardSkeleton responsive />
 				))}
 			</div>
 		</div>
@@ -150,12 +150,13 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
 			) : data.items.length > 0 ? (
 				<>
 					{activeTab === "games" ? (
-						<div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+						<div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
 							{data.items.map((game) => (
-								<div key={game.slug} className="aspect-[3/4]">
+								<div key={game.slug}>
 									<GameCard
 										game={game}
-										className="!w-full !h-full"
+										userRating={game.avgRating}
+										responsive
 									/>
 								</div>
 							))}
