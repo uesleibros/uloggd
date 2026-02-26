@@ -64,6 +64,7 @@ export function ProfileHeader({
       </div>
 
       <div className="flex-1 min-w-0">
+
         {isBanned && (
           <div className="mb-6 p-4 rounded-xl bg-red-500/5 border border-red-500/20">
             <div className="flex items-start gap-3">
@@ -88,22 +89,17 @@ export function ProfileHeader({
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div
-            className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2.5 min-w-0 ${
-              isBanned ? "opacity-60" : ""
-            }`}
-          >
+        <div className="flex items-start justify-between gap-3">
+          <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 min-w-0 ${isBanned ? "opacity-60" : ""}`}>
             <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
               {profile.username}
             </h1>
-
-            <div className="flex flex-wrap items-center gap-1.5 max-w-full">
+            <div className="flex flex-wrap items-center gap-1.5">
               <UserBadges user={profile} clickable size="xl" />
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             {!isOwnProfile && isModerator && (
               <ModeratorMenu profile={profile} currentUser={currentUser} />
             )}
@@ -122,8 +118,9 @@ export function ProfileHeader({
         </div>
 
         <div className={`${isBanned ? "opacity-50 pointer-events-none" : ""}`}>
+
           {profile.pronoun && (
-            <span className="text-xs mt-2 bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-md border border-zinc-700 inline-block">
+            <span className="text-xs mt-1 bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-md border border-zinc-700 inline-block">
               {profile.pronoun}
             </span>
           )}
@@ -131,31 +128,26 @@ export function ProfileHeader({
           {getStatus(profile.last_seen, profile.status) === "offline" &&
             getTimeAgo(profile.last_seen, profile.status) && (
               <span className="text-xs text-zinc-500 mt-1 block">
-                Última vez visto:{" "}
-                {getTimeAgo(profile.last_seen, profile.status)}
+                Última vez visto: {getTimeAgo(profile.last_seen, profile.status)}
               </span>
             )}
 
-          <div className="mt-3">
-            <SocialLinks
-              links={profile.social_links}
-              connections={profile.connections}
-            />
-          </div>
+          <SocialLinks
+            links={profile.social_links}
+            connections={profile.connections}
+          />
 
-          <div className="mt-4">
-            <ProfileStats
-              counts={counts}
-              followersCount={followersCount}
-              followingCount={followingCount}
-              memberSince={memberSince}
-              onFollowersClick={onFollowersClick}
-              onFollowingClick={onFollowingClick}
-              followsYou={followsYou && !isOwnProfile}
-              stream={profile.stream}
-              userId={profile.id}
-            />
-          </div>
+          <ProfileStats
+            counts={counts}
+            followersCount={followersCount}
+            followingCount={followingCount}
+            memberSince={memberSince}
+            onFollowersClick={onFollowersClick}
+            onFollowingClick={onFollowingClick}
+            followsYou={followsYou && !isOwnProfile}
+            stream={profile.stream}
+            userId={profile.id}
+          />
         </div>
       </div>
     </div>
