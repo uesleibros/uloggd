@@ -88,13 +88,11 @@ export default function QuickActions({ game }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const res = await fetch("/api/userGames/@me/get", {
-        method: "POST",
+      const res = await fetch(`/api/userGames/@me/get?gameId=${game.id}`, {
+        method: "GET",
         headers: {
-          "Content-Type": "application/json",
           "Authorization": `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ gameId: game.id }),
+        }
       })
 
       if (res.ok) {
@@ -253,3 +251,4 @@ export default function QuickActions({ game }) {
     </>
   )
 }
+
