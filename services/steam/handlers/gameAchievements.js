@@ -46,10 +46,6 @@ async function getGlobalPercentages(appId) {
 async function getSteamConnection(userId) {
   if (!userId) return null
 
-  const cacheKey = `steam_connection_${userId}`
-  const cached = await getCache(cacheKey)
-  if (cached !== undefined) return cached
-
   const { data } = await supabase
     .from("user_connections")
     .select("provider_user_id")
@@ -57,10 +53,9 @@ async function getSteamConnection(userId) {
     .eq("provider", "steam")
     .maybeSingle()
 
-  const steamId = data?.provider_user_id || null
-  await setCache(cacheKey, steamId, 600)
+  console.log("Steam connection para", userId, ":", data)
 
-  return steamId
+  return data?.provider_user_id || null
 }
 
 export async function handleGameAchievements(req, res) {
