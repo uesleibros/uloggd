@@ -4,6 +4,19 @@ import { AGE_RATINGS_MAP } from "#data/ageRatingsMapper.js"
 import { WEBSITE_MAP } from "#data/websitesMapper.js"
 import { mapCovers } from "#services/igdb/utils/mapCovers.js"
 
+async function getSteamId(gameId) {
+  try {
+    const data = await query("external_games", `
+      fields uid, external_game_source;
+      where game = ${gameId} & external_game_source = 1;
+      limit 1;
+    `)
+    return data[0]?.uid || null
+  } catch {
+    return null
+  }
+}
+
 export async function handleGame(req, res) {
   const { slug } = req.query
   if (!slug?.trim()) return res.status(400).json({ error: "missing slug" })
@@ -26,7 +39,6 @@ export async function handleGame(req, res) {
         game_modes.name, game_engines.name,
         total_rating, total_rating_count, aggregated_rating, rating, hypes,
         keywords.name, keywords.slug,
-        external_games,
         similar_games.name, similar_games.slug, similar_games.cover.url, similar_games.cover.image_id,
         dlcs.name, dlcs.slug, dlcs.cover.url, dlcs.cover.image_id,
         expansions.name, expansions.slug, expansions.cover.url, expansions.cover.image_id,
@@ -44,6 +56,10 @@ export async function handleGame(req, res) {
 
     const g = data[0]
 
+    const [steamId, ...rest] = await Promise.all([
+      getSteamId(g.id)
+    ])
+
     const ageRatings = g.age_ratings?.map(ar => {
       const orgData = AGE_RATINGS_MAP[ar.organization]
       if (!orgData) return null
@@ -60,9 +76,6 @@ export async function handleGame(req, res) {
     const developers = g.involved_companies?.filter(c => c.developer).map(c => c.company.name) || []
     const publishers = g.involved_companies?.filter(c => c.publisher).map(c => c.company.name) || []
     const platforms = g.platforms?.slice().sort((a, b) => a.name.localeCompare(b.name)) || []
-
-    const steamGame = g.external_games?.find(eg => eg.external_game_source === 1)
-    const steamId = steamGame?.uid || null
 
     if (g.parent_game?.cover?.url) {
       g.parent_game.cover.url = g.parent_game.cover.url.replace("t_thumb", "t_logo_med")
@@ -87,8 +100,6 @@ export async function handleGame(req, res) {
       remasters: mapCovers(g.remasters)
     }
 
-    delete result.external_games
-
     await setCache(cacheKey, result)
     res.json(result)
   } catch (e) {
@@ -96,4 +107,3 @@ export async function handleGame(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
-
