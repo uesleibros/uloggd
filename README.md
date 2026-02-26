@@ -110,6 +110,7 @@ cp .env.example .env
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key do Supabase (backend) | Supabase Dashboard → Settings → API |
 | `IMGCHEST_API_KEY` | Chave de API para upload de imagens | https://imgchest.com/docs/api |
 | `DISCORD_WEBHOOK_URL` | URL do webhook para notificações da equipe | Discord → Canal → Editar Canal → Integrações → Webhooks |
+| `ISTHEREANYDEAL_API_KEY` | Chave de API para histórico de preços de jogos | https://isthereanydeal.com/dev/app/ |
 
 #### Desenvolvimento Local
 
