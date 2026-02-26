@@ -31,7 +31,7 @@ const ACTIONS = {
   decoration:   { handler: handleDecoration,   method: "POST", scopes: ["@me"], auth: true       },
   pronoun:      { handler: handlePronoun,      method: "POST", scopes: ["@me"], auth: true       },
   heartbeat:    { handler: handleHeartbeat,    method: "POST", scopes: ["@me"], auth: "flexible" },
-  batch:        { handler: handleBatch,        method: "POST", scopes: null,    auth: false      },
+  batch:        { handler: handleBatch,        method: "GET",  scopes: null,    auth: false      },
   search:       { handler: handleSearch,       method: "GET",  scopes: null,    auth: false      }
 }
 
