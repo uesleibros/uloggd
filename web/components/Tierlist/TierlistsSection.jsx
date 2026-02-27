@@ -257,6 +257,7 @@ export default function TierlistsSection({
 
   function handleDeleted(tierlistId) {
     setTierlists(prev => prev.filter(t => t.id !== tierlistId))
+    setTotal(prev => Math.max(0, prev - 1))
   }
 
   const isEmpty = !tierlists || tierlists.length === 0
@@ -371,4 +372,5 @@ export default function TierlistsSection({
       />
     </div>
   )
+
 }
