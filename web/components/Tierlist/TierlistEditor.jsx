@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, forwardRef } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import {
   DndContext,
   DragOverlay,
@@ -21,13 +21,9 @@ import { CSS } from "@dnd-kit/utilities"
 import { restrictToWindowEdges } from "@dnd-kit/modifiers"
 import {
   Plus, Trash2, Palette, Gamepad2, Search, X,
-  ChevronUp, ChevronDown, ArrowUpDown, GripVertical,
-  ArrowDownAZ, ArrowUpAZ, Clock, Star,
+  ArrowUpDown, GripVertical,
 } from "lucide-react"
 import GameCard from "@components/Game/GameCard"
-
-const CARD_HEIGHT = 100
-const CARD_WIDTH = Math.round(CARD_HEIGHT * 3 / 4)
 
 const PRESET_COLORS = [
   "#ef4444", "#f97316", "#eab308", "#22c55e",
@@ -42,6 +38,9 @@ const TIER_SORT_OPTIONS = [
   { value: "newest", label: "Mais recentes" },
   { value: "oldest", label: "Mais antigos" },
 ]
+
+const CARD_SIZE = "w-[56px] h-[75px] sm:w-[75px] sm:h-[100px]"
+const TIER_MIN_H = "min-h-[91px] sm:min-h-[116px]"
 
 function getCoverUrl(game) {
   if (!game?.cover?.url) return null
@@ -74,19 +73,14 @@ function tierlistCollisionDetection(args) {
 }
 
 function CardSkeleton() {
-  return (
-    <div
-      className="rounded-lg bg-zinc-800 animate-pulse"
-      style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
-    />
-  )
+  return <div className={`${CARD_SIZE} rounded-lg bg-zinc-800 animate-pulse flex-shrink-0`} />
 }
 
 function TierSkeleton() {
   return (
     <div className="flex border rounded-xl overflow-hidden bg-zinc-900/50 border-zinc-700/80">
-      <div className="w-20 sm:w-28 md:w-32 flex-shrink-0 bg-zinc-700 animate-pulse" />
-      <div className="flex-1 p-2 sm:p-2.5 bg-zinc-800/40 flex items-center gap-2">
+      <div className={`w-20 sm:w-28 md:w-32 flex-shrink-0 bg-zinc-700 animate-pulse ${TIER_MIN_H}`} />
+      <div className="flex-1 p-2 sm:p-2.5 bg-zinc-800/40 flex items-center gap-2 flex-wrap">
         {Array.from({ length: 5 }).map((_, i) => (
           <CardSkeleton key={i} />
         ))}
@@ -107,21 +101,14 @@ export function TierlistSkeleton() {
 
 function DropIndicator() {
   return (
-    <div
-      className="rounded-lg border-2 border-dashed border-indigo-400/40 bg-indigo-500/10 flex-shrink-0"
-      style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
-    />
+    <div className={`${CARD_SIZE} rounded-lg border-2 border-dashed border-indigo-400/40 bg-indigo-500/10 flex-shrink-0`} />
   )
 }
 
-function GameCover({ game, className = "" }) {
+function GameCover({ game }) {
   const coverUrl = getCoverUrl(game)
   return (
-    <div
-      className={`rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0 ${className}`}
-      style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
-      title={game?.name}
-    >
+    <div className={`${CARD_SIZE} rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0`} title={game?.name}>
       {coverUrl ? (
         <img
           src={coverUrl}
@@ -153,8 +140,6 @@ function SortableGameItem({ id, game, isDragging }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
   }
 
   const coverUrl = getCoverUrl(game)
@@ -165,7 +150,7 @@ function SortableGameItem({ id, game, isDragging }) {
       style={style}
       {...attributes}
       {...listeners}
-      className={`rounded-lg overflow-hidden bg-zinc-800 select-none cursor-grab active:cursor-grabbing flex-shrink-0 ${
+      className={`${CARD_SIZE} rounded-lg overflow-hidden bg-zinc-800 select-none cursor-grab active:cursor-grabbing flex-shrink-0 ${
         isActive
           ? "opacity-30 ring-2 ring-indigo-500/40 z-10"
           : "hover:ring-2 hover:ring-zinc-500"
@@ -203,8 +188,6 @@ function SortableUntieredItem({ id, game, isDragging }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
   }
 
   const coverUrl = getCoverUrl(game)
@@ -215,7 +198,7 @@ function SortableUntieredItem({ id, game, isDragging }) {
       style={style}
       {...attributes}
       {...listeners}
-      className={`relative rounded-lg overflow-hidden bg-zinc-800 select-none cursor-grab active:cursor-grabbing flex-shrink-0 ${
+      className={`${CARD_SIZE} relative rounded-lg overflow-hidden bg-zinc-800 select-none cursor-grab active:cursor-grabbing flex-shrink-0 ${
         isActive
           ? "opacity-30 ring-2 ring-indigo-500/40 z-10"
           : "hover:ring-2 hover:ring-zinc-500"
@@ -252,8 +235,8 @@ function ViewTier({ tier, items, getGame }) {
       onDragStart={(e) => e.preventDefault()}
     >
       <div
-        className="w-16 sm:w-24 md:w-28 flex-shrink-0 flex items-center justify-center text-white p-1.5"
-        style={{ backgroundColor: tier.color, minHeight: CARD_HEIGHT + 16 }}
+        className={`w-16 sm:w-24 md:w-28 flex-shrink-0 flex items-center justify-center text-white p-1.5 ${TIER_MIN_H}`}
+        style={{ backgroundColor: tier.color }}
       >
         <span className="select-none text-center leading-tight break-words hyphens-auto font-bold text-[11px] sm:text-sm md:text-base max-w-full overflow-hidden">
           {tier.label}
@@ -273,10 +256,7 @@ function ViewTier({ tier, items, getGame }) {
             })}
           </div>
         ) : (
-          <div
-            className="w-full flex items-center justify-center"
-            style={{ minHeight: CARD_HEIGHT }}
-          >
+          <div className={`w-full flex items-center justify-center ${TIER_MIN_H}`}>
             <span className="text-xs text-zinc-600 select-none">Vazio</span>
           </div>
         )}
@@ -331,8 +311,8 @@ function SortableTierRow({
       }`}
     >
       <div
-        className="w-20 sm:w-28 md:w-32 flex-shrink-0 flex flex-col items-center justify-center text-white p-1.5 gap-1"
-        style={{ backgroundColor: tier.color, minHeight: CARD_HEIGHT + 16 }}
+        className={`w-20 sm:w-28 md:w-32 flex-shrink-0 flex flex-col items-center justify-center text-white p-1.5 gap-1 ${TIER_MIN_H}`}
+        style={{ backgroundColor: tier.color }}
       >
         <div
           {...attributes}
@@ -395,10 +375,7 @@ function SortableTierRow({
               {isTargeted && <DropIndicator />}
             </div>
           ) : (
-            <div
-              className="w-full flex items-center justify-center"
-              style={{ minHeight: CARD_HEIGHT }}
-            >
+            <div className={`w-full flex items-center justify-center ${TIER_MIN_H}`}>
               <span className="text-xs text-zinc-600 select-none">
                 Arraste jogos para cá
               </span>
@@ -752,7 +729,6 @@ export default function TierlistEditor({
 
   function handleSortTier(tierId, sortMode) {
     setTierSorts((prev) => ({ ...prev, [tierId]: sortMode }))
-
     if (sortMode !== "manual") {
       setItems((prev) => {
         const tierItems = prev.filter((i) => i.tier_id === tierId)
@@ -765,8 +741,7 @@ export default function TierlistEditor({
   }
 
   function getDragType(id) {
-    const idStr = String(id)
-    if (idStr.startsWith("tier-row-")) return "tier"
+    if (String(id).startsWith("tier-row-")) return "tier"
     return "game"
   }
 
@@ -778,7 +753,6 @@ export default function TierlistEditor({
 
   function handleDragOver(event) {
     const { active, over } = event
-
     if (activeDragType === "tier") return
 
     if (!over) {
@@ -850,7 +824,6 @@ export default function TierlistEditor({
     if (dragType === "tier") {
       const activeIdStr = String(active.id)
       const overIdStr = String(over.id)
-
       const activeTierId = activeIdStr.replace("tier-row-", "")
       let overTierId = null
 
@@ -1093,9 +1066,7 @@ export default function TierlistEditor({
             const rawItems = items
               .filter((i) => i.tier_id === tier.id)
               .sort((a, b) => a.position - b.position)
-
             const tierItems = sortTierItems(rawItems, tier.id)
-
             const isFromUntiered = activeIdStr?.startsWith("untiered-")
             const activeInThisTier =
               !isFromUntiered &&
@@ -1148,8 +1119,7 @@ export default function TierlistEditor({
       <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
         {activeDragType === "game" && activeGame && (
           <div
-            className="rounded-lg overflow-hidden shadow-lg ring-1 ring-indigo-400/60 opacity-80"
-            style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
+            className={`${CARD_SIZE} rounded-lg overflow-hidden shadow-lg ring-1 ring-indigo-400/60 opacity-80`}
           >
             {activeCoverUrl ? (
               <img
