@@ -446,7 +446,11 @@ export default function GameCard({
 			</div>
 
 			{canShowActions && actions && (
-				<div className={`transition-opacity duration-200 ${isMenuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
+				<div className={`transition-opacity duration-200 ${
+					isMenuOpen 
+						? "opacity-100 pointer-events-auto" 
+						: "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
+				}`}>
 					<BottomBar
 						state={actions}
 						onToggle={toggle}
