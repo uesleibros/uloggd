@@ -199,7 +199,7 @@ export default function ListPage() {
 		try {
 			const token = (await supabase.auth.getSession())?.data?.session?.access_token
 
-			const r = await fetch("/api/lists/toggleMark", {
+			const r = await fetch("/api/lists/@me/toggleMark", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
