@@ -48,6 +48,30 @@ export async function handleUpdate(req, res) {
 
         if (error) throw error
 
+        const { data: tierlists } = await supabase
+          .from("tierlists")
+          .select("id")
+          .eq("user_id", req.user.id)
+
+        const tierlistIds = tierlists?.map(t => t.id) || []
+
+        if (tierlistIds.length > 0) {
+          const { data: tiers } = await supabase
+            .from("tierlist_tiers")
+            .select("id")
+            .in("tierlist_id", tierlistIds)
+
+          const tierIds = tiers?.map(t => t.id) || []
+
+          if (tierIds.length > 0) {
+            await supabase
+              .from("tierlist_items")
+              .delete()
+              .eq("game_slug", gameSlug)
+              .in("tier_id", tierIds)
+          }
+        }
+
         return res.json({ deleted: true, gameId, gameSlug })
       }
 
