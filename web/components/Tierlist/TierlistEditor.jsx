@@ -18,6 +18,7 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import { restrictToWindowEdges } from "@dnd-kit/modifiers"
 import { Plus, Trash2, Palette, Gamepad2, Search, X, ChevronUp, ChevronDown } from "lucide-react"
+import GameCard from "@components/Game/GameCard"
 
 const PRESET_COLORS = [
   "#ef4444", "#f97316", "#eab308", "#22c55e",
@@ -31,7 +32,8 @@ function getCoverUrl(game) {
   return url.replace("t_thumb", "t_cover_small")
 }
 
-function SortableGameItem({ id, game, isDragging, disabled, showName = false }) {
+/* ─── Drag mode: small cover for tier rows ─── */
+function SortableGameItem({ id, game, isDragging }) {
   const {
     attributes,
     listeners,
@@ -39,12 +41,12 @@ function SortableGameItem({ id, game, isDragging, disabled, showName = false }) 
     transform,
     transition,
     isDragging: isSortableDragging,
-  } = useSortable({ id, disabled })
+  } = useSortable({ id })
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    touchAction: disabled ? "auto" : "none",
+    touchAction: "none",
   }
 
   const coverUrl = getCoverUrl(game)
@@ -55,12 +57,10 @@ function SortableGameItem({ id, game, isDragging, disabled, showName = false }) 
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...(disabled ? {} : listeners)}
-      className={`relative flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 ${
-        disabled ? "cursor-default" : "cursor-grab active:cursor-grabbing"
-      } ${isActive ? "opacity-40 scale-95 ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-zinc-600"} ${
-        showName ? "w-16 h-24 sm:w-20 sm:h-28" : "w-12 h-16 sm:w-14 sm:h-[4.5rem] md:w-16 md:h-20"
-      }`}
+      {...listeners}
+      className={`relative flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 cursor-grab active:cursor-grabbing
+        ${isActive ? "opacity-40 scale-95 ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-zinc-500"}
+        w-12 h-16 sm:w-14 sm:h-[4.5rem] md:w-16 md:h-20`}
       title={game?.name}
     >
       {coverUrl ? (
@@ -75,7 +75,54 @@ function SortableGameItem({ id, game, isDragging, disabled, showName = false }) 
           <Gamepad2 className="w-4 h-4 text-zinc-500" />
         </div>
       )}
-      {showName && game?.name && (
+    </div>
+  )
+}
+
+/* ─── Drag mode: larger cover + name for untiered zone ─── */
+function SortableUntieredItem({ id, game, isDragging }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging: isSortableDragging,
+  } = useSortable({ id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    touchAction: "none",
+  }
+
+  const coverUrl = getCoverUrl(game)
+  const isActive = isDragging || isSortableDragging
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`relative flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 cursor-grab active:cursor-grabbing
+        ${isActive ? "opacity-40 scale-95 ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-zinc-500"}
+        w-16 h-24 sm:w-20 sm:h-28`}
+      title={game?.name}
+    >
+      {coverUrl ? (
+        <img
+          src={coverUrl}
+          alt={game?.name || ""}
+          className="w-full h-full object-cover select-none pointer-events-none"
+          draggable={false}
+        />
+      ) : (
+        <div className="w-full h-full bg-zinc-700 flex items-center justify-center">
+          <Gamepad2 className="w-4 h-4 text-zinc-500" />
+        </div>
+      )}
+      {game?.name && (
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-1.5 pt-4">
           <p className="text-[9px] sm:text-[10px] text-white font-medium leading-tight line-clamp-2 text-center">
             {game.name}
@@ -86,13 +133,48 @@ function SortableGameItem({ id, game, isDragging, disabled, showName = false }) 
   )
 }
 
-function DroppableTier({ tier, items, getGame, activeId, isEditing, onEditTier, onDeleteTier, onMoveTier, canMoveUp, canMoveDown }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `tier-${tier.id}`, disabled: !isEditing })
+/* ─── View mode: GameCard with link to /game/:slug ─── */
+function ViewGameItem({ game }) {
+  if (!game) return null
+  return (
+    <div className="w-12 sm:w-14 md:w-16 flex-shrink-0">
+      <GameCard
+        game={game}
+        showRating={false}
+        showQuickActions={false}
+        responsive
+      />
+    </div>
+  )
+}
+
+/* ─── Tier row ─── */
+function DroppableTier({
+  tier,
+  items,
+  getGame,
+  activeId,
+  isEditing,
+  onEditTier,
+  onDeleteTier,
+  onMoveTier,
+  canMoveUp,
+  canMoveDown,
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `tier-${tier.id}`,
+    disabled: !isEditing,
+  })
 
   return (
-    <div className={`flex border rounded-xl overflow-hidden bg-zinc-900/50 transition-all duration-200 ${
-      isOver && isEditing ? "border-indigo-500/50 bg-indigo-500/5 scale-[1.01]" : "border-zinc-700/80"
-    }`}>
+    <div
+      className={`flex border rounded-xl overflow-hidden bg-zinc-900/50 transition-all duration-200 ${
+        isOver && isEditing
+          ? "border-indigo-500/50 bg-indigo-500/5 scale-[1.005]"
+          : "border-zinc-700/80"
+      }`}
+    >
+      {/* Tier label */}
       <div
         className="w-16 sm:w-24 md:w-28 flex-shrink-0 flex flex-col items-center justify-center font-bold text-xs sm:text-sm md:text-base text-white relative group"
         style={{ backgroundColor: tier.color }}
@@ -141,45 +223,72 @@ function DroppableTier({ tier, items, getGame, activeId, isEditing, onEditTier, 
         )}
       </div>
 
+      {/* Tier content */}
       <div
         ref={setNodeRef}
         className="flex-1 min-h-[4.5rem] sm:min-h-[5rem] md:min-h-[5.5rem] p-2 sm:p-2.5 bg-zinc-800/40"
       >
-        <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
+        {isEditing ? (
+          <SortableContext
+            items={items.map((i) => i.id)}
+            strategy={rectSortingStrategy}
+          >
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 content-start min-h-full">
+              {items.map((item) => {
+                const game = getGame(item.game_slug)
+                return (
+                  <SortableGameItem
+                    key={item.id}
+                    id={item.id}
+                    game={game}
+                    isDragging={activeId === item.id}
+                  />
+                )
+              })}
+              {items.length === 0 && (
+                <div className="w-full h-full min-h-[3.5rem] flex items-center justify-center">
+                  <span className="text-xs text-zinc-600 select-none">
+                    Arraste jogos para cá
+                  </span>
+                </div>
+              )}
+            </div>
+          </SortableContext>
+        ) : (
           <div className="flex flex-wrap gap-1.5 sm:gap-2 content-start min-h-full">
-            {items.map(item => {
-              const game = getGame(item.game_slug)
-              return (
-                <SortableGameItem
-                  key={item.id}
-                  id={item.id}
-                  game={game}
-                  isDragging={activeId === item.id}
-                  disabled={!isEditing}
-                />
-              )
-            })}
+            {items.map((item) => (
+              <ViewGameItem key={item.id} game={getGame(item.game_slug)} />
+            ))}
             {items.length === 0 && (
               <div className="w-full h-full min-h-[3.5rem] flex items-center justify-center">
-                <span className="text-xs text-zinc-600 select-none">
-                  {isEditing ? "Arraste jogos para cá" : "Vazio"}
-                </span>
+                <span className="text-xs text-zinc-600 select-none">Vazio</span>
               </div>
             )}
           </div>
-        </SortableContext>
+        )}
       </div>
     </div>
   )
 }
 
-function UntieredZone({ games, getGame, activeId, isEditing, searchQuery, onSearchChange }) {
-  const { setNodeRef, isOver } = useDroppable({ id: "untiered-zone", disabled: !isEditing })
+/* ─── Untiered zone (edit mode only) ─── */
+function UntieredZone({
+  games,
+  getGame,
+  activeId,
+  isEditing,
+  searchQuery,
+  onSearchChange,
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: "untiered-zone",
+    disabled: !isEditing,
+  })
 
   const filteredGames = useMemo(() => {
     if (!searchQuery.trim()) return games
     const query = searchQuery.toLowerCase()
-    return games.filter(g => {
+    return games.filter((g) => {
       const game = getGame(g.game_slug)
       return game?.name?.toLowerCase().includes(query)
     })
@@ -194,16 +303,19 @@ function UntieredZone({ games, getGame, activeId, isEditing, searchQuery, onSear
           <Gamepad2 className="w-4 h-4 text-zinc-500" />
           <p className="text-sm text-zinc-400 font-medium">
             Jogos não classificados
-            <span className="text-zinc-600 ml-1.5">({filteredGames.length}{searchQuery && ` de ${games.length}`})</span>
+            <span className="text-zinc-600 ml-1.5">
+              ({filteredGames.length}
+              {searchQuery && ` de ${games.length}`})
+            </span>
           </p>
         </div>
-        
+
         <div className="relative flex-1 sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
           <input
             type="text"
             value={searchQuery}
-            onChange={e => onSearchChange(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscar jogo..."
             className="w-full pl-9 pr-9 py-2.5 sm:py-2 bg-zinc-800/80 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
           />
@@ -221,26 +333,26 @@ function UntieredZone({ games, getGame, activeId, isEditing, searchQuery, onSear
       <div
         ref={setNodeRef}
         className={`border-2 border-dashed rounded-xl p-3 sm:p-4 transition-all duration-200 ${
-          isOver ? "border-indigo-500/50 bg-indigo-500/5" : "border-zinc-700/60 bg-zinc-800/20"
+          isOver
+            ? "border-indigo-500/50 bg-indigo-500/5"
+            : "border-zinc-700/60 bg-zinc-800/20"
         }`}
       >
         {filteredGames.length > 0 ? (
           <SortableContext
-            items={filteredGames.map(g => `untiered-${g.game_slug}`)}
+            items={filteredGames.map((g) => `untiered-${g.game_slug}`)}
             strategy={rectSortingStrategy}
           >
             <div className="flex flex-wrap gap-2 sm:gap-2.5">
-              {filteredGames.map(g => {
+              {filteredGames.map((g) => {
                 const game = getGame(g.game_slug)
                 const itemId = `untiered-${g.game_slug}`
                 return (
-                  <SortableGameItem
+                  <SortableUntieredItem
                     key={itemId}
                     id={itemId}
                     game={game}
                     isDragging={activeId === itemId}
-                    disabled={!isEditing}
-                    showName
                   />
                 )
               })}
@@ -262,7 +374,9 @@ function UntieredZone({ games, getGame, activeId, isEditing, searchQuery, onSear
             ) : (
               <>
                 <Gamepad2 className="w-8 h-8 text-zinc-700" />
-                <p className="text-sm text-zinc-600">Todos os jogos foram classificados!</p>
+                <p className="text-sm text-zinc-600">
+                  Todos os jogos foram classificados!
+                </p>
               </>
             )}
           </div>
@@ -272,6 +386,7 @@ function UntieredZone({ games, getGame, activeId, isEditing, searchQuery, onSear
   )
 }
 
+/* ─── Edit tier modal ─── */
 function EditTierModal({ isOpen, onClose, tier, onSave }) {
   const [label, setLabel] = useState("")
   const [color, setColor] = useState(PRESET_COLORS[0])
@@ -292,15 +407,18 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70"
+      onClick={onClose}
+    >
       <div
         className="w-full sm:max-w-sm bg-zinc-900 border border-zinc-700 sm:rounded-xl rounded-t-2xl p-5 animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-center sm:hidden mb-3">
           <div className="w-10 h-1 bg-zinc-700 rounded-full" />
         </div>
-        
+
         <h3 className="text-lg font-semibold text-white mb-4">Editar tier</h3>
 
         <div className="space-y-4">
@@ -309,24 +427,28 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
             <input
               type="text"
               value={label}
-              onChange={e => setLabel(e.target.value)}
+              onChange={(e) => setLabel(e.target.value)}
               maxLength={15}
               className="w-full px-4 py-3 sm:py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-center text-lg font-bold focus:outline-none focus:border-indigo-500 transition-colors"
               autoFocus
             />
-            <span className="text-xs text-zinc-600 mt-1.5 block text-right">{label.length}/15</span>
+            <span className="text-xs text-zinc-600 mt-1.5 block text-right">
+              {label.length}/15
+            </span>
           </div>
 
           <div>
             <label className="block text-sm text-zinc-400 mb-2">Cor</label>
             <div className="grid grid-cols-6 gap-2">
-              {PRESET_COLORS.map(c => (
+              {PRESET_COLORS.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setColor(c)}
                   className={`aspect-square rounded-lg transition-all cursor-pointer ${
-                    color === c ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-900 scale-110" : "hover:scale-105"
+                    color === c
+                      ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-900 scale-110"
+                      : "hover:scale-105"
                   }`}
                   style={{ backgroundColor: c }}
                 />
@@ -337,7 +459,7 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
               <input
                 type="color"
                 value={color}
-                onChange={e => setColor(e.target.value)}
+                onChange={(e) => setColor(e.target.value)}
                 className="w-10 h-8 rounded cursor-pointer border-0 bg-transparent"
               />
             </div>
@@ -366,6 +488,7 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
   )
 }
 
+/* ─── Main component ─── */
 export default function TierlistEditor({
   tiers,
   setTiers,
@@ -380,9 +503,7 @@ export default function TierlistEditor({
   const [searchQuery, setSearchQuery] = useState("")
 
   const sensors = useSensors(
-    useSensor(MouseSensor, { 
-      activationConstraint: { distance: 5 } 
-    }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor)
   )
 
@@ -403,12 +524,13 @@ export default function TierlistEditor({
     const isFromUntiered = activeIdStr.startsWith("untiered-")
     const gameSlug = isFromUntiered
       ? activeIdStr.replace("untiered-", "")
-      : items.find(i => i.id === activeIdStr)?.game_slug
+      : items.find((i) => i.id === activeIdStr)?.game_slug
 
     if (!gameSlug) return
 
+    // Dropping back to untiered
     if (overIdStr === "untiered-zone" || overIdStr.startsWith("untiered-")) {
-      setItems(prev => prev.filter(i => i.game_slug !== gameSlug))
+      setItems((prev) => prev.filter((i) => i.game_slug !== gameSlug))
       return
     }
 
@@ -418,44 +540,49 @@ export default function TierlistEditor({
     if (overIdStr.startsWith("tier-")) {
       targetTierId = overIdStr.replace("tier-", "")
     } else {
-      const overItem = items.find(i => i.id === overIdStr)
+      const overItem = items.find((i) => i.id === overIdStr)
       if (overItem) {
         targetTierId = overItem.tier_id
-        overItemIndex = items.findIndex(i => i.id === overIdStr)
+        overItemIndex = items.findIndex((i) => i.id === overIdStr)
       }
     }
 
     if (!targetTierId) return
 
-    const existingItem = items.find(i => i.game_slug === gameSlug)
+    const existingItem = items.find((i) => i.game_slug === gameSlug)
 
     if (existingItem) {
-      const activeIndex = items.findIndex(i => i.id === existingItem.id)
+      const activeIndex = items.findIndex((i) => i.id === existingItem.id)
       const sameTier = existingItem.tier_id === targetTierId
 
       if (sameTier && overItemIndex !== -1 && activeIndex !== overItemIndex) {
-        setItems(prev => {
+        setItems((prev) => {
           const newItems = arrayMove(prev, activeIndex, overItemIndex)
           return newItems.map((item, idx) => ({ ...item, position: idx }))
         })
       } else if (!sameTier) {
-        setItems(prev => {
-          const updated = prev.map(i =>
+        setItems((prev) => {
+          const updated = prev.map((i) =>
             i.game_slug === gameSlug ? { ...i, tier_id: targetTierId } : i
           )
           if (overItemIndex !== -1) {
-            const itemToMove = updated.find(i => i.game_slug === gameSlug)
-            const withoutItem = updated.filter(i => i.game_slug !== gameSlug)
+            const itemToMove = updated.find((i) => i.game_slug === gameSlug)
+            const withoutItem = updated.filter(
+              (i) => i.game_slug !== gameSlug
+            )
             withoutItem.splice(overItemIndex, 0, itemToMove)
-            return withoutItem.map((item, idx) => ({ ...item, position: idx }))
+            return withoutItem.map((item, idx) => ({
+              ...item,
+              position: idx,
+            }))
           }
           return updated.map((item, idx) => ({ ...item, position: idx }))
         })
       }
     } else {
-      const game = untieredGames.find(g => g.game_slug === gameSlug)
+      const game = untieredGames.find((g) => g.game_slug === gameSlug)
       if (game) {
-        setItems(prev => {
+        setItems((prev) => {
           const newItem = {
             id: crypto.randomUUID(),
             game_id: game.game_id,
@@ -463,14 +590,17 @@ export default function TierlistEditor({
             tier_id: targetTierId,
             position: prev.length,
           }
-          
+
           if (overItemIndex !== -1) {
             const newItems = [...prev]
             newItems.splice(overItemIndex, 0, newItem)
             return newItems.map((item, idx) => ({ ...item, position: idx }))
           }
-          
-          return [...prev, newItem].map((item, idx) => ({ ...item, position: idx }))
+
+          return [...prev, newItem].map((item, idx) => ({
+            ...item,
+            position: idx,
+          }))
         })
       }
     }
@@ -479,30 +609,35 @@ export default function TierlistEditor({
   function handleAddTier() {
     const newTier = {
       id: crypto.randomUUID(),
-      label: tiers.length < 26 ? String.fromCharCode(65 + tiers.length) : `T${tiers.length + 1}`,
+      label:
+        tiers.length < 26
+          ? String.fromCharCode(65 + tiers.length)
+          : `T${tiers.length + 1}`,
       color: PRESET_COLORS[tiers.length % PRESET_COLORS.length],
       position: tiers.length,
     }
-    setTiers(prev => [...prev, newTier])
+    setTiers((prev) => [...prev, newTier])
   }
 
   function handleEditTier(updatedTier) {
-    setTiers(prev => prev.map(t => t.id === updatedTier.id ? updatedTier : t))
+    setTiers((prev) =>
+      prev.map((t) => (t.id === updatedTier.id ? updatedTier : t))
+    )
   }
 
   function handleDeleteTier(tierId) {
-    setTiers(prev => prev.filter(t => t.id !== tierId))
-    setItems(prev => prev.filter(i => i.tier_id !== tierId))
+    setTiers((prev) => prev.filter((t) => t.id !== tierId))
+    setItems((prev) => prev.filter((i) => i.tier_id !== tierId))
   }
 
   function handleMoveTier(tierId, direction) {
-    setTiers(prev => {
-      const index = prev.findIndex(t => t.id === tierId)
+    setTiers((prev) => {
+      const index = prev.findIndex((t) => t.id === tierId)
       if (index === -1) return prev
-      
+
       const newIndex = direction === "up" ? index - 1 : index + 1
       if (newIndex < 0 || newIndex >= prev.length) return prev
-      
+
       const newTiers = arrayMove(prev, index, newIndex)
       return newTiers.map((t, idx) => ({ ...t, position: idx }))
     })
@@ -511,18 +646,19 @@ export default function TierlistEditor({
   const activeGameSlug = activeId
     ? String(activeId).startsWith("untiered-")
       ? String(activeId).replace("untiered-", "")
-      : items.find(i => i.id === activeId)?.game_slug
+      : items.find((i) => i.id === activeId)?.game_slug
     : null
 
   const activeGame = activeGameSlug ? getGame(activeGameSlug) : null
   const activeCoverUrl = getCoverUrl(activeGame)
 
+  /* ── View mode (no DnD) ── */
   if (!isEditing) {
     return (
       <div className="space-y-2 sm:space-y-2.5">
-        {tiers.map(tier => {
+        {tiers.map((tier) => {
           const tierItems = items
-            .filter(i => i.tier_id === tier.id)
+            .filter((i) => i.tier_id === tier.id)
             .sort((a, b) => a.position - b.position)
           return (
             <DroppableTier
@@ -540,7 +676,7 @@ export default function TierlistEditor({
             />
           )
         })}
-        
+
         {tiers.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <Gamepad2 className="w-12 h-12 text-zinc-700" />
@@ -551,6 +687,7 @@ export default function TierlistEditor({
     )
   }
 
+  /* ── Edit mode ── */
   return (
     <DndContext
       sensors={sensors}
@@ -562,7 +699,7 @@ export default function TierlistEditor({
       <div className="space-y-2 sm:space-y-2.5">
         {tiers.map((tier, index) => {
           const tierItems = items
-            .filter(i => i.tier_id === tier.id)
+            .filter((i) => i.tier_id === tier.id)
             .sort((a, b) => a.position - b.position)
 
           return (
@@ -572,7 +709,7 @@ export default function TierlistEditor({
               items={tierItems}
               getGame={getGame}
               activeId={activeId}
-              isEditing={isEditing}
+              isEditing
               onEditTier={setEditingTier}
               onDeleteTier={handleDeleteTier}
               onMoveTier={handleMoveTier}
@@ -596,7 +733,7 @@ export default function TierlistEditor({
         games={untieredGames}
         getGame={getGame}
         activeId={activeId}
-        isEditing={isEditing}
+        isEditing
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
