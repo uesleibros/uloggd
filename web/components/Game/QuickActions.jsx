@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Check, ChevronDown, Play, Clock, Gift, Heart, List } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
@@ -80,37 +80,46 @@ export default function QuickActions({ game }) {
   const [showStatus, setShowStatus] = useState(false)
   const [showListModal, setShowListModal] = useState(false)
   const [updating, setUpdating] = useState(null)
+  const fetchedRef = useRef(null)
 
-  const fetchState = useCallback(async () => {
+  useEffect(() => {
     if (!user || !game?.id) return
-    setLoading(true)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+    if (fetchedRef.current === game.id) return
 
-      const res = await fetch(`/api/userGames/@me/get?gameId=${game.id}`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${session.access_token}`,
-        }
-      })
+    let cancelled = false
 
-      if (res.ok) {
-        const data = await res.json()
-        setState({
-          status: data.status || null,
-          playing: data.playing || false,
-          backlog: data.backlog || false,
-          wishlist: data.wishlist || false,
-          liked: data.liked || false,
+    async function fetchState() {
+      setLoading(true)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session || cancelled) return
+
+        const res = await fetch(`/api/userGames/@me/get?gameId=${game.id}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${session.access_token}`,
+          }
         })
-      }
-    } catch {} finally {
-      setLoading(false)
-    }
-  }, [user, game?.id])
 
-  useEffect(() => { fetchState() }, [fetchState])
+        if (res.ok && !cancelled) {
+          const data = await res.json()
+          setState({
+            status: data.status || null,
+            playing: data.playing || false,
+            backlog: data.backlog || false,
+            wishlist: data.wishlist || false,
+            liked: data.liked || false,
+          })
+          fetchedRef.current = game.id
+        }
+      } catch {} finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    fetchState()
+    return () => { cancelled = true }
+  }, [user?.id, game?.id])
 
   async function toggle(field, value) {
     if (!user || updating) return
@@ -251,4 +260,3 @@ export default function QuickActions({ game }) {
     </>
   )
 }
-
