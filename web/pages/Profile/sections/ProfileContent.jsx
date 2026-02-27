@@ -30,7 +30,6 @@ export function ProfileContent({
 	setTierlists,
 	loadingTierlists,
 	tierlistsPage,
-	refetchTierlists,
 	tierlistsTotalPages,
 	tierlistsTotal,
 	onTierlistsPageChange,
@@ -95,7 +94,6 @@ export function ProfileContent({
 					username={profile.username}
 					loading={loadingTierlists}
 					currentPage={tierlistsPage}
-					refetch={refetchTierlists}
 					totalPages={tierlistsTotalPages}
 					total={tierlistsTotal}
 					onPageChange={onTierlistsPageChange}
@@ -120,5 +118,6 @@ export function ProfileContent({
 	)
 
 }
+
 
 
