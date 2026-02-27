@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import {
   DndContext,
   DragOverlay,
@@ -47,7 +47,7 @@ function tierlistCollisionDetection(args) {
 
 function DropPlaceholder() {
   return (
-    <div className="w-full aspect-[3/4] rounded-lg border-2 border-dashed border-indigo-400/60 bg-indigo-500/10 transition-all duration-150" />
+    <div className="w-full aspect-[3/4] rounded-lg border-2 border-dashed border-indigo-400/50 bg-indigo-500/10 animate-in fade-in zoom-in-95 duration-200" />
   )
 }
 
@@ -61,13 +61,15 @@ function SortableGameItem({ id, game, isDragging }) {
     isDragging: isSortableDragging,
   } = useSortable({ id })
 
+  const isActive = isDragging || isSortableDragging
+
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isActive ? undefined : transition || "transform 200ms ease",
+    willChange: "transform",
   }
 
   const coverUrl = getCoverUrl(game)
-  const isActive = isDragging || isSortableDragging
 
   return (
     <div
@@ -75,8 +77,8 @@ function SortableGameItem({ id, game, isDragging }) {
       style={style}
       {...attributes}
       {...listeners}
-      className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 cursor-grab active:cursor-grabbing ${
-        isActive ? "opacity-40 scale-95 ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-zinc-500"
+      className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-zinc-800 select-none cursor-grab active:cursor-grabbing transition-[opacity,box-shadow] duration-200 ${
+        isActive ? "opacity-30 ring-2 ring-indigo-500/50" : "hover:ring-2 hover:ring-zinc-500"
       }`}
       title={game?.name}
     >
@@ -106,13 +108,15 @@ function SortableUntieredItem({ id, game, isDragging }) {
     isDragging: isSortableDragging,
   } = useSortable({ id })
 
+  const isActive = isDragging || isSortableDragging
+
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isActive ? undefined : transition || "transform 200ms ease",
+    willChange: "transform",
   }
 
   const coverUrl = getCoverUrl(game)
-  const isActive = isDragging || isSortableDragging
 
   return (
     <div
@@ -120,8 +124,8 @@ function SortableUntieredItem({ id, game, isDragging }) {
       style={style}
       {...attributes}
       {...listeners}
-      className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 cursor-grab active:cursor-grabbing ${
-        isActive ? "opacity-40 scale-95 ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-zinc-500"
+      className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-zinc-800 select-none cursor-grab active:cursor-grabbing transition-[opacity,box-shadow] duration-200 ${
+        isActive ? "opacity-30 ring-2 ring-indigo-500/50" : "hover:ring-2 hover:ring-zinc-500"
       }`}
       title={game?.name}
     >
@@ -196,7 +200,6 @@ function DroppableTier({
   getGame,
   activeId,
   showPlaceholder,
-  placeholderItemId,
   onEditTier,
   onDeleteTier,
   onMoveTier,
@@ -207,37 +210,13 @@ function DroppableTier({
     id: `tier-${tier.id}`,
   })
 
-  const renderGridContent = () => {
-    const elements = []
-
-    items.forEach((item) => {
-      if (showPlaceholder && placeholderItemId === item.id) {
-        elements.push(<DropPlaceholder key="drop-preview" />)
-      }
-      elements.push(
-        <SortableGameItem
-          key={item.id}
-          id={item.id}
-          game={getGame(item.game_slug)}
-          isDragging={activeId === item.id}
-        />
-      )
-    })
-
-    if (showPlaceholder && !placeholderItemId) {
-      elements.push(<DropPlaceholder key="drop-preview" />)
-    }
-
-    return elements
-  }
-
   const hasContent = items.length > 0 || showPlaceholder
 
   return (
     <div
-      className={`flex border rounded-xl overflow-hidden bg-zinc-900/50 transition-all duration-200 ${
+      className={`flex border rounded-xl overflow-hidden bg-zinc-900/50 transition-[border-color,background-color] duration-200 ${
         isOver
-          ? "border-indigo-500/50 bg-indigo-500/5 scale-[1.005]"
+          ? "border-indigo-500/50 bg-indigo-500/5"
           : "border-zinc-700/80"
       }`}
     >
@@ -289,7 +268,15 @@ function DroppableTier({
         >
           {hasContent ? (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(56px,1fr))] gap-1.5 sm:gap-2">
-              {renderGridContent()}
+              {items.map((item) => (
+                <SortableGameItem
+                  key={item.id}
+                  id={item.id}
+                  game={getGame(item.game_slug)}
+                  isDragging={activeId === item.id}
+                />
+              ))}
+              {showPlaceholder && <DropPlaceholder />}
             </div>
           ) : (
             <div className="w-full h-full min-h-[4rem] flex items-center justify-center">
@@ -396,7 +383,7 @@ function UntieredZone({
 
       <div
         ref={setNodeRef}
-        className={`border-2 border-dashed rounded-xl p-3 sm:p-4 transition-all duration-200 ${
+        className={`border-2 border-dashed rounded-xl p-3 sm:p-4 transition-[border-color,background-color] duration-200 ${
           isOver
             ? "border-indigo-500/50 bg-indigo-500/5"
             : "border-zinc-700/60 bg-zinc-800/20"
@@ -565,7 +552,8 @@ export default function TierlistEditor({
   const [editingTier, setEditingTier] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortOrder, setSortOrder] = useState("default")
-  const [dropPreview, setDropPreview] = useState(null)
+  const [previewTierId, setPreviewTierId] = useState(null)
+  const previewRef = useRef(null)
   const [untieredOrder, setUntieredOrder] = useState(() =>
     untieredGames.map((g) => g.game_slug)
   )
@@ -609,7 +597,10 @@ export default function TierlistEditor({
   function handleDragOver(event) {
     const { active, over } = event
     if (!over) {
-      setDropPreview(null)
+      if (previewRef.current) {
+        previewRef.current = null
+        setPreviewTierId(null)
+      }
       return
     }
 
@@ -618,46 +609,52 @@ export default function TierlistEditor({
     const isFromUntiered = activeIdStr.startsWith("untiered-")
 
     if (overIdStr === "untiered-zone" || overIdStr.startsWith("untiered-")) {
-      setDropPreview(null)
+      if (previewRef.current) {
+        previewRef.current = null
+        setPreviewTierId(null)
+      }
       return
     }
 
     let tierId = null
-    let itemId = null
 
     if (overIdStr.startsWith("tier-")) {
       tierId = overIdStr.replace("tier-", "")
     } else {
       const overItem = items.find((i) => i.id === overIdStr)
-      if (overItem) {
-        tierId = overItem.tier_id
-        itemId = overItem.id
-      }
+      if (overItem) tierId = overItem.tier_id
     }
 
     if (!tierId) {
-      setDropPreview(null)
+      if (previewRef.current) {
+        previewRef.current = null
+        setPreviewTierId(null)
+      }
       return
     }
 
     if (!isFromUntiered) {
       const activeItem = items.find((i) => i.id === activeIdStr)
       if (activeItem && activeItem.tier_id === tierId) {
-        setDropPreview(null)
+        if (previewRef.current) {
+          previewRef.current = null
+          setPreviewTierId(null)
+        }
         return
       }
     }
 
-    setDropPreview((prev) => {
-      if (prev?.tierId === tierId && prev?.itemId === itemId) return prev
-      return { tierId, itemId }
-    })
+    if (previewRef.current !== tierId) {
+      previewRef.current = tierId
+      setPreviewTierId(tierId)
+    }
   }
 
   function handleDragEnd(event) {
     const { active, over } = event
     setActiveId(null)
-    setDropPreview(null)
+    setPreviewTierId(null)
+    previewRef.current = null
 
     if (!over) return
 
@@ -764,7 +761,8 @@ export default function TierlistEditor({
 
   function handleDragCancel() {
     setActiveId(null)
-    setDropPreview(null)
+    setPreviewTierId(null)
+    previewRef.current = null
   }
 
   function handleAddTier() {
@@ -863,13 +861,6 @@ export default function TierlistEditor({
           const isFromUntiered = activeIdStr?.startsWith("untiered-")
           const activeInThisTier =
             !isFromUntiered && tierItems.some((i) => i.id === activeIdStr)
-          const showPlaceholder =
-            !!activeId &&
-            !activeInThisTier &&
-            dropPreview?.tierId === tier.id
-          const placeholderItemId = showPlaceholder
-            ? dropPreview.itemId
-            : null
 
           return (
             <DroppableTier
@@ -878,8 +869,11 @@ export default function TierlistEditor({
               items={tierItems}
               getGame={getGame}
               activeId={activeId}
-              showPlaceholder={showPlaceholder}
-              placeholderItemId={placeholderItemId}
+              showPlaceholder={
+                !!activeId &&
+                !activeInThisTier &&
+                previewTierId === tier.id
+              }
               onEditTier={setEditingTier}
               onDeleteTier={handleDeleteTier}
               onMoveTier={handleMoveTier}
@@ -909,9 +903,9 @@ export default function TierlistEditor({
         onSortChange={setSortOrder}
       />
 
-      <DragOverlay>
+      <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
         {activeGame && (
-          <div className="w-12 sm:w-14 aspect-[3/4] rounded-md overflow-hidden shadow-lg ring-1 ring-indigo-400/80 opacity-70">
+          <div className="w-14 aspect-[3/4] rounded-lg overflow-hidden shadow-lg ring-1 ring-indigo-400/70 opacity-80 scale-[1.1]">
             {activeCoverUrl ? (
               <img
                 src={activeCoverUrl}
