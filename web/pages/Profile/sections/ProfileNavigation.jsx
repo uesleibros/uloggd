@@ -1,9 +1,10 @@
-import { User, Gamepad2, ListChecks, Activity, MessageSquare, Heart } from "lucide-react"
+import { User, Gamepad2, ListChecks, LayoutGrid, Activity, MessageSquare, Heart } from "lucide-react"
 
 const PROFILE_SECTIONS = [
 	{ id: "profile", label: "Perfil", icon: User },
 	{ id: "games", label: "Jogos", icon: Gamepad2 },
 	{ id: "lists", label: "Listas", icon: ListChecks },
+	{ id: "tierlists", label: "Tierlists", icon: LayoutGrid },
 	{ id: "reviews", label: "Reviews", icon: MessageSquare },
 	{ id: "likes", label: "Curtidas", icon: Heart },
 	{ id: "activity", label: "Atividade", icon: Activity },
@@ -14,6 +15,7 @@ export function ProfileNavigation({
 	onSectionChange,
 	counts,
 	listsCount,
+	tierlistsCount,
 	reviewsCount,
 	likesCount,
 }) {
@@ -26,6 +28,7 @@ export function ProfileNavigation({
 
 					if (id === "games" && counts?.total > 0) badge = counts.total
 					if (id === "lists" && listsCount > 0) badge = listsCount
+					if (id === "tierlists" && tierlistsCount > 0) badge = tierlistsCount
 					if (id === "reviews" && reviewsCount > 0) badge = reviewsCount
 					if (id === "likes" && likesCount > 0) badge = likesCount
 

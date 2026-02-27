@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
 import { useProfileGames } from "#hooks/useProfileGames"
@@ -7,6 +7,7 @@ import SettingsModal from "@components/User/Settings/SettingsModal"
 import { useProfileData } from "./hooks/useProfileData"
 import { useFollowData } from "./hooks/useFollowData"
 import { useUserLists } from "./hooks/useUserLists"
+import { useUserTierlists } from "./hooks/useUserTierlists"
 import { ProfileHeader } from "./sections/ProfileHeader"
 import { ProfileNavigation } from "./sections/ProfileNavigation"
 import { ProfileContent } from "./sections/ProfileContent"
@@ -38,6 +39,16 @@ export default function Profile() {
 		totalPages: listsTotalPages,
 		handlePageChange: handleListsPageChange,
 	} = useUserLists(profile?.id)
+
+	const {
+		tierlists,
+		setTierlists,
+		loading: loadingTierlists,
+		total: tierlistsTotal,
+		page: tierlistsPage,
+		totalPages: tierlistsTotalPages,
+		handlePageChange: handleTierlistsPageChange,
+	} = useUserTierlists(profile?.id)
 
 	const {
 		isFollowing,
@@ -106,6 +117,7 @@ export default function Profile() {
 					onSectionChange={setActiveSection}
 					counts={counts}
 					listsCount={listsTotal}
+					tierlistsCount={tierlistsTotal}
 					reviewsCount={profile?.counts?.reviews || 0}
 					likesCount={(counts?.liked || 0) + (profile?.counts?.likedReviews || 0)}
 				/>
@@ -129,6 +141,13 @@ export default function Profile() {
 					listsTotalPages={listsTotalPages}
 					listsTotal={listsTotal}
 					onListsPageChange={handleListsPageChange}
+					tierlists={tierlists}
+					setTierlists={setTierlists}
+					loadingTierlists={loadingTierlists}
+					tierlistsPage={tierlistsPage}
+					tierlistsTotalPages={tierlistsTotalPages}
+					tierlistsTotal={tierlistsTotal}
+					onTierlistsPageChange={handleTierlistsPageChange}
 					onEditProfile={() => setSettingsOpen(true)}
 				/>
 			</div>

@@ -14,6 +14,7 @@ import SearchPage from "@pages/SearchPage"
 import Game from "@pages/Game"
 import Profile from "@pages/Profile"
 import ListPage from "@pages/ListPage"
+import TierlistPage from "@pages/TierlistPage"
 import NotificationContainer from "@components/UI/Notification"
 import NotFound from "@pages/NotFound"
 import SplashScreen from "@components/UI/SplashScreen"
@@ -50,6 +51,7 @@ export default function App() {
 							<Route path="/" element={<Home />} />
 							<Route path="/game/:slug" element={<Game />} />
 							<Route path="/list/:id" element={<ListPage />} />
+							<Route path="/tierlist/:id" element={<TierlistPage />} />
 							<Route path="/u/:username" element={<Profile />} />
 							<Route path="/about/badges" element={<Badges />} />
 							<Route path="/search" element={<SearchPage />} />

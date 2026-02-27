@@ -2,6 +2,7 @@ import { handleGet } from "#services/userGames/handlers/me/get.js"
 import { handleUpdate } from "#services/userGames/handlers/me/update.js"
 import { handleProfileGames } from "#services/userGames/handlers/profileGames.js"
 import { handleLibrary } from "#services/userGames/handlers/me/library.js"
+import { handleGetAll } from "#services/userGames/handlers/me/getAll.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
@@ -9,6 +10,7 @@ const ACTIONS = {
   update:       { handler: handleUpdate,       method: "POST", scopes: ["@me"], auth: true  },
   profileGames: { handler: handleProfileGames, method: "GET",  scopes: null,    auth: false },
   library:      { handler: handleLibrary,      method: "GET",  scopes: ["@me"], auth: true  },
+  getAll:       { handler: handleGetAll,       method: "GET",  scopes: ["@me"], auth: true  },
 }
 
 export async function userGamesHandler(req, res) {

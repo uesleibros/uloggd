@@ -5,6 +5,7 @@ import ProfileTabs from "../components/ProfileTabs"
 import ProfileReviews from "../components/ProfileReviews"
 import ProfileLikes from "../components/ProfileLikes"
 import ListsSection from "../components/ListsSection"
+import TierlistsSection from "@components/Tierlist/TierlistsSection"
 
 export function ProfileContent({
 	activeSection,
@@ -25,6 +26,13 @@ export function ProfileContent({
 	listsTotalPages,
 	listsTotal,
 	onListsPageChange,
+	tierlists,
+	setTierlists,
+	loadingTierlists,
+	tierlistsPage,
+	tierlistsTotalPages,
+	tierlistsTotal,
+	onTierlistsPageChange,
 	onEditProfile,
 }) {
 	const tabsRef = useRef(null)
@@ -75,6 +83,20 @@ export function ProfileContent({
 					totalPages={listsTotalPages}
 					total={listsTotal}
 					onPageChange={onListsPageChange}
+				/>
+			)}
+
+			{activeSection === "tierlists" && (
+				<TierlistsSection
+					tierlists={tierlists}
+					setTierlists={setTierlists}
+					isOwnProfile={isOwnProfile}
+					username={profile.username}
+					loading={loadingTierlists}
+					currentPage={tierlistsPage}
+					totalPages={tierlistsTotalPages}
+					total={tierlistsTotal}
+					onPageChange={onTierlistsPageChange}
 				/>
 			)}
 

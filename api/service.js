@@ -15,6 +15,7 @@ import { verificationHandler } from "#routers/verification.js"
 import { badgesHandler } from "#routers/badges.js"
 import { moderationHandler } from "#routers/moderation.js"
 import { pricesHandler } from "#routers/prices.js"
+import { tierlistsHandler } from "#routers/tierlists.js"
 import { getUser } from "#lib/auth.js"
 
 const SERVICES = {
@@ -34,7 +35,8 @@ const SERVICES = {
 	verification: verificationHandler,
 	badges: badgesHandler,
 	moderation: moderationHandler,
-	prices: pricesHandler
+	prices: pricesHandler,
+	tierlists: tierlistsHandler
 }
 
 export default async function handler(req, res) {
