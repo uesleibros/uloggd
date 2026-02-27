@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
   DndContext,
   DragOverlay,
@@ -86,7 +86,7 @@ function SortableGameItem({ id, game, isDragging, disabled, showName = false }) 
   )
 }
 
-function DroppableTier({ tier, items, getGame, activeId, isEditing, onEditTier, onDeleteTier, onMoveTier, canMoveUp, canMoveDown, compact = false }) {
+function DroppableTier({ tier, items, getGame, activeId, isEditing, onEditTier, onDeleteTier, onMoveTier, canMoveUp, canMoveDown }) {
   const { setNodeRef, isOver } = useDroppable({ id: `tier-${tier.id}`, disabled: !isEditing })
 
   return (
@@ -94,29 +94,29 @@ function DroppableTier({ tier, items, getGame, activeId, isEditing, onEditTier, 
       isOver && isEditing ? "border-indigo-500/50 bg-indigo-500/5 scale-[1.01]" : "border-zinc-700/80"
     }`}>
       <div
-        className={`${compact ? "w-12 sm:w-16" : "w-16 sm:w-24 md:w-28"} flex-shrink-0 flex flex-col items-center justify-center font-bold text-xs sm:text-sm md:text-base text-white relative group`}
+        className="w-16 sm:w-24 md:w-28 flex-shrink-0 flex flex-col items-center justify-center font-bold text-xs sm:text-sm md:text-base text-white relative group"
         style={{ backgroundColor: tier.color }}
       >
         <span className="select-none truncate text-center leading-tight px-1 max-w-full">
           {tier.label}
         </span>
 
-        {isEditing && !compact && (
-          <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex flex-col items-center justify-center gap-1">
+        {isEditing && (
+          <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
             <div className="flex items-center gap-1">
               <button
                 onClick={() => onEditTier(tier)}
-                className="p-1 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 sm:p-1 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
                 title="Editar"
               >
-                <Palette className="w-3 h-3" />
+                <Palette className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
               </button>
               <button
                 onClick={() => onDeleteTier(tier.id)}
-                className="p-1 hover:bg-red-500/50 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 sm:p-1 hover:bg-red-500/50 rounded-lg transition-colors cursor-pointer"
                 title="Remover"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
               </button>
             </div>
             <div className="flex items-center gap-0.5">
@@ -139,75 +139,27 @@ function DroppableTier({ tier, items, getGame, activeId, isEditing, onEditTier, 
             </div>
           </div>
         )}
-        
-        {isEditing && !compact && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/40 sm:hidden">
-            <div className="flex items-center gap-0.5">
-              <button
-                onClick={() => onEditTier(tier)}
-                className="p-1.5 bg-black/50 hover:bg-black/70 rounded-lg transition-colors cursor-pointer"
-              >
-                <Palette className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => onDeleteTier(tier.id)}
-                className="p-1.5 bg-black/50 hover:bg-red-500/70 rounded-lg transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            <div className="flex items-center gap-0.5">
-              <button
-                onClick={() => onMoveTier(tier.id, "up")}
-                disabled={!canMoveUp}
-                className="p-1 bg-black/50 hover:bg-black/70 rounded transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronUp className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => onMoveTier(tier.id, "down")}
-                disabled={!canMoveDown}
-                className="p-1 bg-black/50 hover:bg-black/70 rounded transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronDown className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       <div
         ref={setNodeRef}
-        className={`flex-1 ${compact ? "min-h-[3rem] p-1.5" : "min-h-[4.5rem] sm:min-h-[5rem] md:min-h-[5.5rem] p-2 sm:p-2.5"} bg-zinc-800/40`}
+        className="flex-1 min-h-[4.5rem] sm:min-h-[5rem] md:min-h-[5.5rem] p-2 sm:p-2.5 bg-zinc-800/40"
       >
         <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
-          <div className={`flex flex-wrap ${compact ? "gap-1" : "gap-1.5 sm:gap-2"} content-start min-h-full`}>
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 content-start min-h-full">
             {items.map(item => {
               const game = getGame(item.game_slug)
               return (
-                <div 
-                  key={item.id} 
-                  className={compact ? "w-8 h-10 sm:w-10 sm:h-12 rounded overflow-hidden bg-zinc-700 flex-shrink-0" : ""}
-                >
-                  {compact ? (
-                    <SortableGameItemCompact
-                      id={item.id}
-                      game={game}
-                      isDragging={activeId === item.id}
-                      disabled={!isEditing}
-                    />
-                  ) : (
-                    <SortableGameItem
-                      id={item.id}
-                      game={game}
-                      isDragging={activeId === item.id}
-                      disabled={!isEditing}
-                    />
-                  )}
-                </div>
+                <SortableGameItem
+                  key={item.id}
+                  id={item.id}
+                  game={game}
+                  isDragging={activeId === item.id}
+                  disabled={!isEditing}
+                />
               )
             })}
-            {items.length === 0 && !compact && (
+            {items.length === 0 && (
               <div className="w-full h-full min-h-[3.5rem] flex items-center justify-center">
                 <span className="text-xs text-zinc-600 select-none">
                   {isEditing ? "Arraste jogos para cá" : "Vazio"}
@@ -217,78 +169,6 @@ function DroppableTier({ tier, items, getGame, activeId, isEditing, onEditTier, 
           </div>
         </SortableContext>
       </div>
-    </div>
-  )
-}
-
-function SortableGameItemCompact({ id, game, isDragging, disabled }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging: isSortableDragging,
-  } = useSortable({ id, disabled })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    touchAction: disabled ? "auto" : "none",
-  }
-
-  const coverUrl = getCoverUrl(game)
-  const isActive = isDragging || isSortableDragging
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...(disabled ? {} : listeners)}
-      className={`w-full h-full select-none ${
-        disabled ? "cursor-default" : "cursor-grab active:cursor-grabbing"
-      } ${isActive ? "opacity-40" : ""}`}
-    >
-      {coverUrl ? (
-        <img
-          src={coverUrl}
-          alt=""
-          className="w-full h-full object-cover"
-          draggable={false}
-        />
-      ) : (
-        <div className="w-full h-full bg-zinc-700" />
-      )}
-    </div>
-  )
-}
-
-function StickyTiersBar({ tiers, items, getGame, activeId, isEditing }) {
-  return (
-    <div className="space-y-1.5">
-      {tiers.map(tier => {
-        const tierItems = items
-          .filter(i => i.tier_id === tier.id)
-          .sort((a, b) => a.position - b.position)
-        
-        return (
-          <DroppableTier
-            key={tier.id}
-            tier={tier}
-            items={tierItems}
-            getGame={getGame}
-            activeId={activeId}
-            isEditing={isEditing}
-            onEditTier={() => {}}
-            onDeleteTier={() => {}}
-            onMoveTier={() => {}}
-            canMoveUp={false}
-            canMoveDown={false}
-            compact
-          />
-        )
-      })}
     </div>
   )
 }
@@ -499,7 +379,6 @@ export default function TierlistEditor({
   const [editingTier, setEditingTier] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [isPinned, setIsPinned] = useState(false)
-  const tiersRef = useRef(null)
 
   const sensors = useSensors(
     useSensor(MouseSensor, { 
@@ -681,75 +560,70 @@ export default function TierlistEditor({
       onDragEnd={handleDragEnd}
       modifiers={[restrictToWindowEdges]}
     >
-      {isPinned && tiers.length > 0 && (
-        <div className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur-sm pb-3 -mx-4 px-4 sm:-mx-0 sm:px-0 border-b border-zinc-800 mb-4">
-          <div className="flex items-center justify-between mb-2 pt-2">
-            <span className="text-xs text-zinc-500 font-medium">Tiers fixados</span>
+      <div className={`${isPinned ? "sticky top-0 z-30 bg-zinc-950 pb-4 -mx-4 px-4 sm:-mx-0 sm:px-0" : ""}`}>
+        {isPinned && (
+          <div className="flex items-center justify-between py-2 mb-2 border-b border-zinc-800">
+            <span className="text-xs text-indigo-400 font-medium flex items-center gap-1.5">
+              <Pin className="w-3.5 h-3.5" />
+              Tiers fixados
+            </span>
             <button
               onClick={() => setIsPinned(false)}
-              className="p-1.5 text-zinc-500 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 text-xs"
+              className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+              title="Desafixar"
             >
-              <PinOff className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Desafixar</span>
-            </button>
-          </div>
-          <StickyTiersBar
-            tiers={tiers}
-            items={items}
-            getGame={getGame}
-            activeId={activeId}
-            isEditing={isEditing}
-          />
-        </div>
-      )}
-
-      <div ref={tiersRef} className="space-y-2 sm:space-y-2.5">
-        {!isPinned && isEditing && tiers.length > 0 && untieredGames.length > 0 && (
-          <div className="flex justify-end mb-2">
-            <button
-              onClick={() => setIsPinned(true)}
-              className="p-2 sm:px-3 sm:py-1.5 text-zinc-500 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 text-xs"
-              title="Fixar tiers no topo"
-            >
-              <Pin className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Fixar tiers</span>
+              <PinOff className="w-4 h-4" />
             </button>
           </div>
         )}
 
-        {tiers.map((tier, index) => {
-          const tierItems = items
-            .filter(i => i.tier_id === tier.id)
-            .sort((a, b) => a.position - b.position)
+        <div className="space-y-2 sm:space-y-2.5">
+          {tiers.map((tier, index) => {
+            const tierItems = items
+              .filter(i => i.tier_id === tier.id)
+              .sort((a, b) => a.position - b.position)
 
-          return (
-            <DroppableTier
-              key={tier.id}
-              tier={tier}
-              items={tierItems}
-              getGame={getGame}
-              activeId={activeId}
-              isEditing={isEditing}
-              onEditTier={setEditingTier}
-              onDeleteTier={handleDeleteTier}
-              onMoveTier={handleMoveTier}
-              canMoveUp={index > 0}
-              canMoveDown={index < tiers.length - 1}
-            />
-          )
-        })}
+            return (
+              <DroppableTier
+                key={tier.id}
+                tier={tier}
+                items={tierItems}
+                getGame={getGame}
+                activeId={activeId}
+                isEditing={isEditing}
+                onEditTier={setEditingTier}
+                onDeleteTier={handleDeleteTier}
+                onMoveTier={handleMoveTier}
+                canMoveUp={index > 0}
+                canMoveDown={index < tiers.length - 1}
+              />
+            )
+          })}
 
-        <button
-          type="button"
-          onClick={handleAddTier}
-          className="w-full py-4 sm:py-3 border-2 border-dashed border-zinc-700/60 hover:border-zinc-600 hover:bg-zinc-800/30 rounded-xl text-sm text-zinc-500 hover:text-zinc-300 transition-all flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          Adicionar tier
-        </button>
+          <button
+            type="button"
+            onClick={handleAddTier}
+            className="w-full py-4 sm:py-3 border-2 border-dashed border-zinc-700/60 hover:border-zinc-600 hover:bg-zinc-800/30 rounded-xl text-sm text-zinc-500 hover:text-zinc-300 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Adicionar tier
+          </button>
+        </div>
       </div>
 
       <div className="mt-6 sm:mt-8">
+        {!isPinned && untieredGames.length > 0 && tiers.length > 0 && (
+          <div className="flex justify-end mb-3">
+            <button
+              onClick={() => setIsPinned(true)}
+              className="px-3 py-2 text-xs text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <Pin className="w-3.5 h-3.5" />
+              Fixar tiers no topo
+            </button>
+          </div>
+        )}
+
         <UntieredZone
           games={untieredGames}
           getGame={getGame}
