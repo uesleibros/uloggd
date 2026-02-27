@@ -10,7 +10,6 @@ import {
   MoreHorizontal, Pencil, Trash2, Gamepad2,
 } from "lucide-react"
 import { encode } from "#utils/shortId.js"
-import { useGamesBatch } from "#hooks/useGamesBatch"
 
 function TierlistActionMenu({ tierlist, onEdit, onDelete }) {
   const [open, setOpen] = useState(false)
