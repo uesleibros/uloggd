@@ -57,9 +57,9 @@ function SortableGameItem({ id, game, isDragging }) {
       style={style}
       {...attributes}
       {...listeners}
-      className={`relative flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 cursor-grab active:cursor-grabbing aspect-[3/4]
-        ${isActive ? "opacity-40 scale-95 ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-zinc-500"}
-        w-16 sm:w-[4.5rem] md:w-20`}
+      className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 cursor-grab active:cursor-grabbing ${
+        isActive ? "opacity-40 scale-95 ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-zinc-500"
+      }`}
       title={game?.name}
     >
       {coverUrl ? (
@@ -103,9 +103,9 @@ function SortableUntieredItem({ id, game, isDragging }) {
       style={style}
       {...attributes}
       {...listeners}
-      className={`relative flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 cursor-grab active:cursor-grabbing aspect-[3/4]
-        ${isActive ? "opacity-40 scale-95 ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-zinc-500"}
-        w-20 sm:w-24`}
+      className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 cursor-grab active:cursor-grabbing ${
+        isActive ? "opacity-40 scale-95 ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-zinc-500"
+      }`}
       title={game?.name}
     >
       {coverUrl ? (
@@ -134,14 +134,12 @@ function SortableUntieredItem({ id, game, isDragging }) {
 function ViewGameItem({ game }) {
   if (!game) return null
   return (
-    <div className="w-16 sm:w-[4.5rem] md:w-20 flex-shrink-0">
-      <GameCard
-        game={game}
-        showRating={false}
-        showQuickActions={false}
-        responsive
-      />
-    </div>
+    <GameCard
+      game={game}
+      showRating={false}
+      showQuickActions={false}
+      responsive
+    />
   )
 }
 
@@ -184,14 +182,12 @@ function DroppableTier({
               <button
                 onClick={() => onEditTier(tier)}
                 className="p-1.5 sm:p-1 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-                title="Editar"
               >
                 <Palette className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
               </button>
               <button
                 onClick={() => onDeleteTier(tier.id)}
                 className="p-1.5 sm:p-1 hover:bg-red-500/50 rounded-lg transition-colors cursor-pointer"
-                title="Remover"
               >
                 <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
               </button>
@@ -225,40 +221,42 @@ function DroppableTier({
             items={items.map((i) => i.id)}
             strategy={rectSortingStrategy}
           >
-            <div className="flex flex-wrap gap-1.5 sm:gap-2 content-start min-h-full">
-              {items.map((item) => {
-                const game = getGame(item.game_slug)
-                return (
-                  <SortableGameItem
-                    key={item.id}
-                    id={item.id}
-                    game={game}
-                    isDragging={activeId === item.id}
-                  />
-                )
-              })}
-              {items.length === 0 && (
-                <div className="w-full h-full min-h-[4rem] flex items-center justify-center">
-                  <span className="text-xs text-zinc-600 select-none">
-                    Arraste jogos para cá
-                  </span>
-                </div>
-              )}
-            </div>
-          </SortableContext>
-        ) : (
-          <div className="flex flex-wrap gap-1.5 sm:gap-2 content-start min-h-full">
-            {items.map((item) => (
-              <ViewGameItem key={item.id} game={getGame(item.game_slug)} />
-            ))}
-            {items.length === 0 && (
+            {items.length > 0 ? (
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(56px,1fr))] gap-1.5 sm:gap-2">
+                {items.map((item) => {
+                  const game = getGame(item.game_slug)
+                  return (
+                    <SortableGameItem
+                      key={item.id}
+                      id={item.id}
+                      game={game}
+                      isDragging={activeId === item.id}
+                    />
+                  )
+                })}
+              </div>
+            ) : (
               <div className="w-full h-full min-h-[4rem] flex items-center justify-center">
                 <span className="text-xs text-zinc-600 select-none">
-                  Vazio
+                  Arraste jogos para cá
                 </span>
               </div>
             )}
-          </div>
+          </SortableContext>
+        ) : (
+          <>
+            {items.length > 0 ? (
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(56px,1fr))] gap-1.5 sm:gap-2">
+                {items.map((item) => (
+                  <ViewGameItem key={item.id} game={getGame(item.game_slug)} />
+                ))}
+              </div>
+            ) : (
+              <div className="w-full h-full min-h-[4rem] flex items-center justify-center">
+                <span className="text-xs text-zinc-600 select-none">Vazio</span>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -336,7 +334,7 @@ function UntieredZone({
             items={filteredGames.map((g) => `untiered-${g.game_slug}`)}
             strategy={rectSortingStrategy}
           >
-            <div className="flex flex-wrap gap-2 sm:gap-2.5">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(68px,1fr))] gap-2 sm:gap-2.5">
               {filteredGames.map((g) => {
                 const game = getGame(g.game_slug)
                 const itemId = `untiered-${g.game_slug}`
