@@ -115,6 +115,7 @@ export default function ListPage() {
 	const [currentPage, setCurrentPage] = useState(1)
 	const [totalPages, setTotalPages] = useState(1)
 	const [totalItems, setTotalItems] = useState(0)
+	const [markedTotal, setMarkedTotal] = useState(0)
 	const [editOpen, setEditOpen] = useState(false)
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [addGameOpen, setAddGameOpen] = useState(false)
@@ -166,6 +167,7 @@ export default function ListPage() {
 			setItems(data.list_items || [])
 			setTotalItems(data.items_total || 0)
 			setTotalPages(data.items_totalPages || 1)
+			setMarkedTotal(data.items_marked || 0)
 		} catch {
 			setError(true)
 		} finally {
@@ -195,6 +197,7 @@ export default function ListPage() {
 		setItems(prev => prev.map(i =>
 			i.id === item.id ? { ...i, marked: newMarked } : i
 		))
+		setMarkedTotal(prev => newMarked ? prev + 1 : prev - 1)
 
 		try {
 			const token = (await supabase.auth.getSession())?.data?.session?.access_token
@@ -213,6 +216,7 @@ export default function ListPage() {
 			setItems(prev => prev.map(i =>
 				i.id === item.id ? { ...i, marked: !newMarked } : i
 			))
+			setMarkedTotal(prev => newMarked ? prev - 1 : prev + 1)
 		} finally {
 			setTogglingMark(null)
 		}
@@ -242,8 +246,10 @@ export default function ListPage() {
 	}
 
 	function handleItemRemoved(itemId) {
+		const item = items.find(i => i.id === itemId)
 		setItems(prev => prev.filter(i => i.id !== itemId))
 		setTotalItems(prev => prev - 1)
+		if (item?.marked) setMarkedTotal(prev => prev - 1)
 	}
 
 	function handleReordered(newItems) {
@@ -287,8 +293,6 @@ export default function ListPage() {
 		: null
 
 	const removingGame = removingItem ? getGame(removingItem.game_slug) : null
-
-	const markedCount = items.filter(i => i.marked).length
 
 	return (
 		<div className={`py-6 sm:py-8 pb-16 ${isOwner ? "pb-24 sm:pb-16" : ""}`}>
@@ -334,10 +338,10 @@ export default function ListPage() {
 							<Gamepad2 className="w-3.5 h-3.5" />
 							{totalItems} jogo{totalItems !== 1 ? "s" : ""}
 						</span>
-						{markedCount > 0 && (
+						{markedTotal > 0 && (
 							<span className="flex items-center gap-1.5 text-zinc-600">
 								<Check className="w-3.5 h-3.5" />
-								{markedCount} marcado{markedCount !== 1 ? "s" : ""}
+								{markedTotal} marcado{markedTotal !== 1 ? "s" : ""}
 							</span>
 						)}
 						{createdAt && (
@@ -457,7 +461,7 @@ export default function ListPage() {
 														onClick={() => handleToggleMark(item)}
 														className={`absolute bottom-1 left-1 z-10 p-1.5 rounded-lg transition-all cursor-pointer touch-manipulation opacity-100 sm:opacity-0 sm:group-hover:opacity-100 ${
 															item.marked
-																? "bg-white/90 text-zinc-900 hover:bg-white sm:opacity-100"
+																? "bg-white/90 text-zinc-900 hover:bg-white sm:!opacity-100"
 																: "bg-black/70 hover:bg-black/90 text-zinc-400 hover:text-white"
 														}`}
 														title={item.marked ? "Desmarcar" : "Marcar"}
@@ -475,7 +479,6 @@ export default function ListPage() {
 												</>
 											)}
 
-											{/* Visitante vê o check se marcado */}
 											{!isOwner && item.marked && (
 												<div className="absolute bottom-1 left-1 z-10 p-1.5 bg-white/90 text-zinc-900 rounded-lg">
 													<Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />

@@ -15,7 +15,7 @@ export async function handleGet(req, res) {
 			const decodedId = decode(listId)
 			if (!decodedId) return res.status(400).json({ error: "invalid listId" })
 
-			const [listRes, itemsRes] = await Promise.all([
+			const [listRes, itemsRes, markedRes] = await Promise.all([
 				supabase
 					.from("lists")
 					.select(`
@@ -30,6 +30,11 @@ export async function handleGet(req, res) {
 					.eq("list_id", decodedId)
 					.order("position", { ascending: true })
 					.range(offset, offset + limitNum - 1),
+				supabase
+					.from("list_items")
+					.select("*", { count: "exact", head: true })
+					.eq("list_id", decodedId)
+					.eq("marked", true),
 			])
 
 			if (listRes.error?.code === "PGRST116") return res.status(404).json({ error: "list not found" })
@@ -45,6 +50,7 @@ export async function handleGet(req, res) {
 				...list,
 				list_items: itemsRes.data || [],
 				items_total: itemsRes.count || 0,
+				items_marked: markedRes.count || 0,
 				items_page: pageNum,
 				items_totalPages: Math.ceil((itemsRes.count || 0) / limitNum),
 			})

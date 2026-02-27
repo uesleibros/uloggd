@@ -136,22 +136,22 @@ function ListCard({ list, isOwnProfile, onEdit, onDelete }) {
   const gamesCount = list.games_count || 0
 
   return (
-    <div className="group relative rounded-xl overflow-visible">
-      <Link to={`/list/${encode(list.id)}`} className="block rounded-xl overflow-hidden bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 transition-all duration-200">
-        <div className="relative h-20 sm:h-24 overflow-hidden">
+    <div className="group relative rounded-xl overflow-visible h-full">
+      <Link to={`/list/${encode(list.id)}`} className="block rounded-xl overflow-hidden bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 transition-all duration-200 h-full flex flex-col">
+        <div className="relative h-20 sm:h-24 overflow-hidden flex-shrink-0">
           <CoverStrip slugs={list.game_slugs || []} />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/30 to-zinc-900/10" />
         </div>
 
-        <div className="p-3 sm:p-3.5">
-          <div className="flex items-start justify-between gap-2">
+        <div className="p-3 sm:p-3.5 flex flex-col flex-1">
+          <div className="flex items-start justify-between gap-2 flex-1">
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold text-white truncate group-hover:text-indigo-400 transition-colors">
                 {list.title}
               </h3>
-              {list.description && (
-                <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1 sm:line-clamp-2">{list.description}</p>
-              )}
+              <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1 sm:line-clamp-2 min-h-[1rem] sm:min-h-[2rem]">
+                {list.description || ""}
+              </p>
             </div>
           </div>
 
