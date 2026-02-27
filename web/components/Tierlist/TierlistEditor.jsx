@@ -15,6 +15,7 @@ import {
   sortableKeyboardCoordinates,
   rectSortingStrategy,
   useSortable,
+  arrayMove,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { restrictToWindowEdges } from "@dnd-kit/modifiers"
@@ -31,14 +32,14 @@ function getCoverUrl(game) {
   return url.replace("t_thumb", "t_cover_small")
 }
 
-function SortableGameItem({ id, game, isDragging }) {
+function SortableGameItem({ id, game, isDragging, disabled }) {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
-  } = useSortable({ id })
+  } = useSortable({ id, disabled })
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -52,10 +53,10 @@ function SortableGameItem({ id, game, isDragging }) {
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
-      className={`w-12 h-16 sm:w-14 sm:h-[4.5rem] md:w-16 md:h-20 flex-shrink-0 cursor-grab active:cursor-grabbing touch-manipulation rounded overflow-hidden bg-zinc-800 ${
-        isDragging ? "opacity-40 scale-95" : ""
-      }`}
+      {...(disabled ? {} : listeners)}
+      className={`w-12 h-16 sm:w-14 sm:h-[4.5rem] md:w-16 md:h-20 flex-shrink-0 rounded overflow-hidden bg-zinc-800 ${
+        disabled ? "cursor-default" : "cursor-grab active:cursor-grabbing"
+      } ${isDragging ? "opacity-40 scale-95" : ""}`}
       title={game?.name}
     >
       {coverUrl ? (
@@ -75,11 +76,11 @@ function SortableGameItem({ id, game, isDragging }) {
 }
 
 function DroppableTier({ tier, items, getGame, activeId, isEditing, onEditTier, onDeleteTier }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `tier-${tier.id}` })
+  const { setNodeRef, isOver } = useDroppable({ id: `tier-${tier.id}`, disabled: !isEditing })
 
   return (
     <div className={`flex border rounded-lg overflow-hidden bg-zinc-900/50 transition-colors ${
-      isOver ? "border-zinc-500 bg-zinc-800/50" : "border-zinc-700"
+      isOver && isEditing ? "border-zinc-500 bg-zinc-800/50" : "border-zinc-700"
     }`}>
       <div
         className="w-12 sm:w-14 md:w-16 flex-shrink-0 flex items-center justify-center font-bold text-base sm:text-lg md:text-xl text-white relative group"
@@ -121,12 +122,15 @@ function DroppableTier({ tier, items, getGame, activeId, isEditing, onEditTier, 
                   id={item.id}
                   game={game}
                   isDragging={activeId === item.id}
+                  disabled={!isEditing}
                 />
               )
             })}
             {items.length === 0 && (
               <div className="w-full h-full min-h-[3rem] flex items-center justify-center">
-                <span className="text-xs text-zinc-600 select-none">Arraste jogos aqui</span>
+                <span className="text-xs text-zinc-600 select-none">
+                  {isEditing ? "Arraste jogos aqui" : "Nenhum jogo"}
+                </span>
               </div>
             )}
           </div>
@@ -136,8 +140,8 @@ function DroppableTier({ tier, items, getGame, activeId, isEditing, onEditTier, 
   )
 }
 
-function UntieredZone({ games, getGame, activeId }) {
-  const { setNodeRef, isOver } = useDroppable({ id: "untiered-zone" })
+function UntieredZone({ games, getGame, activeId, isEditing }) {
+  const { setNodeRef, isOver } = useDroppable({ id: "untiered-zone", disabled: !isEditing })
 
   if (games.length === 0) return null
 
@@ -150,7 +154,7 @@ function UntieredZone({ games, getGame, activeId }) {
       <div
         ref={setNodeRef}
         className={`border border-dashed rounded-lg p-3 transition-colors ${
-          isOver ? "border-zinc-500 bg-zinc-800/50" : "border-zinc-700 bg-zinc-800/30"
+          isOver && isEditing ? "border-zinc-500 bg-zinc-800/50" : "border-zinc-700 bg-zinc-800/30"
         }`}
       >
         <SortableContext
@@ -167,6 +171,7 @@ function UntieredZone({ games, getGame, activeId }) {
                   id={itemId}
                   game={game}
                   isDragging={activeId === itemId}
+                  disabled={!isEditing}
                 />
               )
             })}
@@ -276,12 +281,22 @@ export default function TierlistEditor({
   const [editingTier, setEditingTier] = useState(null)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(PointerSensor, { 
+      activationConstraint: { distance: 8 } 
+    }),
+    useSensor(TouchSensor, { 
+      activationConstraint: { 
+        delay: 100,
+        tolerance: 8,
+      } 
+    }),
+    useSensor(KeyboardSensor, { 
+      coordinateGetter: sortableKeyboardCoordinates 
+    })
   )
 
   function handleDragStart(event) {
+    if (!isEditing) return
     setActiveId(event.active.id)
   }
 
@@ -289,7 +304,7 @@ export default function TierlistEditor({
     const { active, over } = event
     setActiveId(null)
 
-    if (!over) return
+    if (!isEditing || !over) return
 
     const activeIdStr = String(active.id)
     const overIdStr = String(over.id)
@@ -301,12 +316,15 @@ export default function TierlistEditor({
 
     if (!gameSlug) return
 
+    // Soltou na zona de não classificados
     if (overIdStr === "untiered-zone" || overIdStr.startsWith("untiered-")) {
       setItems(prev => prev.filter(i => i.game_slug !== gameSlug))
       return
     }
 
+    // Determina o tier de destino
     let targetTierId = null
+    let overItemIndex = -1
 
     if (overIdStr.startsWith("tier-")) {
       targetTierId = overIdStr.replace("tier-", "")
@@ -314,6 +332,7 @@ export default function TierlistEditor({
       const overItem = items.find(i => i.id === overIdStr)
       if (overItem) {
         targetTierId = overItem.tier_id
+        overItemIndex = items.findIndex(i => i.id === overIdStr)
       }
     }
 
@@ -322,19 +341,52 @@ export default function TierlistEditor({
     const existingItem = items.find(i => i.game_slug === gameSlug)
 
     if (existingItem) {
-      setItems(prev => prev.map(i =>
-        i.game_slug === gameSlug ? { ...i, tier_id: targetTierId } : i
-      ))
+      const activeIndex = items.findIndex(i => i.id === existingItem.id)
+      const sameTier = existingItem.tier_id === targetTierId
+
+      if (sameTier && overItemIndex !== -1 && activeIndex !== overItemIndex) {
+        // Reordenação dentro do mesmo tier
+        setItems(prev => {
+          const newItems = arrayMove(prev, activeIndex, overItemIndex)
+          return newItems.map((item, idx) => ({ ...item, position: idx }))
+        })
+      } else if (!sameTier) {
+        // Movendo para outro tier
+        setItems(prev => {
+          const updated = prev.map(i =>
+            i.game_slug === gameSlug ? { ...i, tier_id: targetTierId } : i
+          )
+          // Se soltou em cima de um item, insere na posição correta
+          if (overItemIndex !== -1) {
+            const itemToMove = updated.find(i => i.game_slug === gameSlug)
+            const withoutItem = updated.filter(i => i.game_slug !== gameSlug)
+            withoutItem.splice(overItemIndex, 0, itemToMove)
+            return withoutItem.map((item, idx) => ({ ...item, position: idx }))
+          }
+          return updated.map((item, idx) => ({ ...item, position: idx }))
+        })
+      }
     } else {
+      // Adicionando do untiered
       const game = untieredGames.find(g => g.game_slug === gameSlug)
       if (game) {
-        setItems(prev => [...prev, {
-          id: crypto.randomUUID(),
-          game_id: game.game_id,
-          game_slug: game.game_slug,
-          tier_id: targetTierId,
-          position: prev.length,
-        }])
+        setItems(prev => {
+          const newItem = {
+            id: crypto.randomUUID(),
+            game_id: game.game_id,
+            game_slug: game.game_slug,
+            tier_id: targetTierId,
+            position: prev.length,
+          }
+          
+          if (overItemIndex !== -1) {
+            const newItems = [...prev]
+            newItems.splice(overItemIndex, 0, newItem)
+            return newItems.map((item, idx) => ({ ...item, position: idx }))
+          }
+          
+          return [...prev, newItem].map((item, idx) => ({ ...item, position: idx }))
+        })
       }
     }
   }
@@ -367,6 +419,29 @@ export default function TierlistEditor({
   const activeGame = activeGameSlug ? getGame(activeGameSlug) : null
   const activeCoverUrl = getCoverUrl(activeGame)
 
+  // Se não é editing, renderiza sem DnD
+  if (!isEditing) {
+    return (
+      <div className="space-y-2">
+        {tiers.map(tier => {
+          const tierItems = items.filter(i => i.tier_id === tier.id)
+          return (
+            <DroppableTier
+              key={tier.id}
+              tier={tier}
+              items={tierItems}
+              getGame={getGame}
+              activeId={null}
+              isEditing={false}
+              onEditTier={() => {}}
+              onDeleteTier={() => {}}
+            />
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -393,25 +468,22 @@ export default function TierlistEditor({
           )
         })}
 
-        {isEditing && (
-          <button
-            type="button"
-            onClick={handleAddTier}
-            className="w-full py-3 border border-dashed border-zinc-700 hover:border-zinc-600 rounded-lg text-sm text-zinc-500 hover:text-zinc-300 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            Adicionar tier
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handleAddTier}
+          className="w-full py-3 border border-dashed border-zinc-700 hover:border-zinc-600 rounded-lg text-sm text-zinc-500 hover:text-zinc-300 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          Adicionar tier
+        </button>
       </div>
 
-      {isEditing && (
-        <UntieredZone
-          games={untieredGames}
-          getGame={getGame}
-          activeId={activeId}
-        />
-      )}
+      <UntieredZone
+        games={untieredGames}
+        getGame={getGame}
+        activeId={activeId}
+        isEditing={isEditing}
+      />
 
       <DragOverlay>
         {activeGame && (

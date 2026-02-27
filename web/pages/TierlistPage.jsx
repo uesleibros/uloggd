@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
@@ -11,6 +11,9 @@ import {
   ArrowLeft, Save, Lock, Loader2,
   Link as LinkIcon, Check, Calendar, Gamepad2, List,
 } from "lucide-react"
+
+const tierlistCache = new Map()
+const userGamesCache = new Map()
 
 function TierlistSkeleton() {
   return (
@@ -72,6 +75,9 @@ export default function TierlistPage() {
   const [hasChanges, setHasChanges] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
 
+  const fetchedRef = useRef(false)
+  const fetchedGamesRef = useRef(false)
+
   const isOwner = !authLoading && currentUser?.id && tierlist?.user_id === currentUser.id
   const encodedId = tierlist ? encode(tierlist.id) : id
 
@@ -94,6 +100,19 @@ export default function TierlistPage() {
   } : undefined)
 
   const fetchTierlist = useCallback(async () => {
+    if (fetchedRef.current) return
+
+    if (tierlistCache.has(id)) {
+      const cached = tierlistCache.get(id)
+      setTierlist(cached.tierlist)
+      setTiers(cached.tiers)
+      setItems(cached.items)
+      setLoading(false)
+      setInitialLoad(false)
+      fetchedRef.current = true
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -103,7 +122,7 @@ export default function TierlistPage() {
 
       const data = await r.json()
 
-      setTierlist({
+      const tierlistData = {
         id: data.id,
         user_id: data.user_id,
         title: data.title,
@@ -112,7 +131,7 @@ export default function TierlistPage() {
         created_at: data.created_at,
         updated_at: data.updated_at,
         owner: data.owner,
-      })
+      }
 
       const sortedTiers = (data.tierlist_tiers || []).map(t => ({
         id: t.id,
@@ -120,12 +139,21 @@ export default function TierlistPage() {
         color: t.color,
         position: t.position,
       }))
-      setTiers(sortedTiers)
 
       const allItems = (data.tierlist_tiers || []).flatMap(t =>
         (t.tierlist_items || []).map(i => ({ ...i, tier_id: t.id }))
       )
+
+      tierlistCache.set(id, {
+        tierlist: tierlistData,
+        tiers: sortedTiers,
+        items: allItems,
+      })
+
+      setTierlist(tierlistData)
+      setTiers(sortedTiers)
       setItems(allItems)
+      fetchedRef.current = true
     } catch {
       setError(true)
     } finally {
@@ -135,7 +163,15 @@ export default function TierlistPage() {
   }, [id])
 
   const fetchUserGames = useCallback(async () => {
-    if (!currentUser) return
+    if (!currentUser || fetchedGamesRef.current) return
+
+    const cacheKey = currentUser.id
+
+    if (userGamesCache.has(cacheKey)) {
+      setUserGames(userGamesCache.get(cacheKey))
+      fetchedGamesRef.current = true
+      return
+    }
 
     setLoadingGames(true)
     try {
@@ -146,7 +182,9 @@ export default function TierlistPage() {
 
       if (r.ok) {
         const data = await r.json()
+        userGamesCache.set(cacheKey, data)
         setUserGames(data)
+        fetchedGamesRef.current = true
       }
     } catch (e) {
       console.error("Failed to fetch user games:", e)
@@ -156,8 +194,9 @@ export default function TierlistPage() {
   }, [currentUser])
 
   useEffect(() => {
+    fetchedRef.current = false
     fetchTierlist()
-  }, [fetchTierlist])
+  }, [id, fetchTierlist])
 
   useEffect(() => {
     if (!authLoading && currentUser && tierlist?.user_id === currentUser.id) {
@@ -192,6 +231,14 @@ export default function TierlistPage() {
       })
 
       if (!r.ok) throw new Error()
+      
+      // Atualiza o cache após salvar
+      tierlistCache.set(id, {
+        tierlist,
+        tiers,
+        items,
+      })
+      
       setHasChanges(false)
     } catch (e) {
       console.error(e)
