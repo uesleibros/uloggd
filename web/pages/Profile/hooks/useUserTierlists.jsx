@@ -78,11 +78,6 @@ export function useUserTierlists(profileId) {
     setPage(newPage)
   }, [])
 
-  const refetch = useCallback(() => {
-    tierlistCache.clear()
-    fetchTierlists(page)
-  }, [fetchTierlists, page])
-
   return {
     tierlists,
     setTierlists,
@@ -91,6 +86,5 @@ export function useUserTierlists(profileId) {
     totalPages,
     total,
     handlePageChange,
-    refetch,
   }
 }
