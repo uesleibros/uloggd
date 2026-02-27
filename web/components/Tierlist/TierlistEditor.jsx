@@ -45,6 +45,12 @@ function tierlistCollisionDetection(args) {
   return closestCenter(args)
 }
 
+function DropPlaceholder() {
+  return (
+    <div className="w-full aspect-[3/4] rounded-lg border-2 border-dashed border-indigo-400/60 bg-indigo-500/10 transition-all duration-150" />
+  )
+}
+
 function SortableGameItem({ id, game, isDragging }) {
   const {
     attributes,
@@ -191,6 +197,8 @@ function DroppableTier({
   items,
   getGame,
   activeId,
+  showPlaceholder,
+  placeholderItemId,
   onEditTier,
   onDeleteTier,
   onMoveTier,
@@ -200,6 +208,32 @@ function DroppableTier({
   const { setNodeRef, isOver } = useDroppable({
     id: `tier-${tier.id}`,
   })
+
+  const renderGridContent = () => {
+    const elements = []
+
+    items.forEach((item) => {
+      if (showPlaceholder && placeholderItemId === item.id) {
+        elements.push(<DropPlaceholder key="drop-preview" />)
+      }
+      elements.push(
+        <SortableGameItem
+          key={item.id}
+          id={item.id}
+          game={getGame(item.game_slug)}
+          isDragging={activeId === item.id}
+        />
+      )
+    })
+
+    if (showPlaceholder && !placeholderItemId) {
+      elements.push(<DropPlaceholder key="drop-preview" />)
+    }
+
+    return elements
+  }
+
+  const hasContent = items.length > 0 || showPlaceholder
 
   return (
     <div
@@ -255,19 +289,9 @@ function DroppableTier({
           items={items.map((i) => i.id)}
           strategy={rectSortingStrategy}
         >
-          {items.length > 0 ? (
+          {hasContent ? (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(56px,1fr))] gap-1.5 sm:gap-2">
-              {items.map((item) => {
-                const game = getGame(item.game_slug)
-                return (
-                  <SortableGameItem
-                    key={item.id}
-                    id={item.id}
-                    game={game}
-                    isDragging={activeId === item.id}
-                  />
-                )
-              })}
+              {renderGridContent()}
             </div>
           ) : (
             <div className="w-full h-full min-h-[4rem] flex items-center justify-center">
@@ -543,6 +567,27 @@ export default function TierlistEditor({
   const [editingTier, setEditingTier] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortOrder, setSortOrder] = useState("default")
+  const [dropPreview, setDropPreview] = useState(null)
+  const [untieredOrder, setUntieredOrder] = useState(() =>
+    untieredGames.map((g) => g.game_slug)
+  )
+
+  useEffect(() => {
+    setUntieredOrder((prev) => {
+      const currentSlugs = new Set(untieredGames.map((g) => g.game_slug))
+      const kept = prev.filter((slug) => currentSlugs.has(slug))
+      const keptSet = new Set(kept)
+      const added = untieredGames
+        .filter((g) => !keptSet.has(g.game_slug))
+        .map((g) => g.game_slug)
+      return [...kept, ...added]
+    })
+  }, [untieredGames])
+
+  const orderedUntieredGames = useMemo(() => {
+    const slugMap = new Map(untieredGames.map((g) => [g.game_slug, g]))
+    return untieredOrder.map((slug) => slugMap.get(slug)).filter(Boolean)
+  }, [untieredGames, untieredOrder])
 
   useEffect(() => {
     if (!isEditing) return
@@ -563,9 +608,58 @@ export default function TierlistEditor({
     setActiveId(event.active.id)
   }
 
+  function handleDragOver(event) {
+    const { active, over } = event
+    if (!over) {
+      setDropPreview(null)
+      return
+    }
+
+    const activeIdStr = String(active.id)
+    const overIdStr = String(over.id)
+    const isFromUntiered = activeIdStr.startsWith("untiered-")
+
+    if (overIdStr === "untiered-zone" || overIdStr.startsWith("untiered-")) {
+      setDropPreview(null)
+      return
+    }
+
+    let tierId = null
+    let itemId = null
+
+    if (overIdStr.startsWith("tier-")) {
+      tierId = overIdStr.replace("tier-", "")
+    } else {
+      const overItem = items.find((i) => i.id === overIdStr)
+      if (overItem) {
+        tierId = overItem.tier_id
+        itemId = overItem.id
+      }
+    }
+
+    if (!tierId) {
+      setDropPreview(null)
+      return
+    }
+
+    if (!isFromUntiered) {
+      const activeItem = items.find((i) => i.id === activeIdStr)
+      if (activeItem && activeItem.tier_id === tierId) {
+        setDropPreview(null)
+        return
+      }
+    }
+
+    setDropPreview((prev) => {
+      if (prev?.tierId === tierId && prev?.itemId === itemId) return prev
+      return { tierId, itemId }
+    })
+  }
+
   function handleDragEnd(event) {
     const { active, over } = event
     setActiveId(null)
+    setDropPreview(null)
 
     if (!over) return
 
@@ -580,7 +674,19 @@ export default function TierlistEditor({
     if (!gameSlug) return
 
     if (overIdStr === "untiered-zone" || overIdStr.startsWith("untiered-")) {
-      setItems((prev) => prev.filter((i) => i.game_slug !== gameSlug))
+      if (!isFromUntiered) {
+        setItems((prev) => prev.filter((i) => i.game_slug !== gameSlug))
+      } else if (overIdStr.startsWith("untiered-")) {
+        const overSlug = overIdStr.replace("untiered-", "")
+        if (gameSlug !== overSlug) {
+          setUntieredOrder((prev) => {
+            const from = prev.indexOf(gameSlug)
+            const to = prev.indexOf(overSlug)
+            if (from === -1 || to === -1) return prev
+            return arrayMove(prev, from, to)
+          })
+        }
+      }
       return
     }
 
@@ -656,6 +762,11 @@ export default function TierlistEditor({
 
       return newItems.map((item, idx) => ({ ...item, position: idx }))
     })
+  }
+
+  function handleDragCancel() {
+    setActiveId(null)
+    setDropPreview(null)
   }
 
   function handleAddTier() {
@@ -739,7 +850,9 @@ export default function TierlistEditor({
       sensors={sensors}
       collisionDetection={tierlistCollisionDetection}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
       modifiers={[restrictToWindowEdges]}
     >
       <div className="space-y-2 sm:space-y-2.5">
@@ -747,6 +860,19 @@ export default function TierlistEditor({
           const tierItems = items
             .filter((i) => i.tier_id === tier.id)
             .sort((a, b) => a.position - b.position)
+
+          const activeIdStr = activeId ? String(activeId) : null
+          const isFromUntiered = activeIdStr?.startsWith("untiered-")
+          const activeInThisTier =
+            !isFromUntiered && tierItems.some((i) => i.id === activeIdStr)
+          const showPlaceholder =
+            !!activeId &&
+            !activeInThisTier &&
+            dropPreview?.tierId === tier.id
+          const placeholderItemId = showPlaceholder
+            ? dropPreview.itemId
+            : null
+
           return (
             <DroppableTier
               key={tier.id}
@@ -754,6 +880,8 @@ export default function TierlistEditor({
               items={tierItems}
               getGame={getGame}
               activeId={activeId}
+              showPlaceholder={showPlaceholder}
+              placeholderItemId={placeholderItemId}
               onEditTier={setEditingTier}
               onDeleteTier={handleDeleteTier}
               onMoveTier={handleMoveTier}
@@ -774,7 +902,7 @@ export default function TierlistEditor({
       </div>
 
       <UntieredZone
-        games={untieredGames}
+        games={orderedUntieredGames}
         getGame={getGame}
         activeId={activeId}
         searchQuery={searchQuery}
