@@ -64,7 +64,6 @@ function SortableGameItem({ id, game, isDragging }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    touchAction: "none",
   }
 
   const coverUrl = getCoverUrl(game)
@@ -110,7 +109,6 @@ function SortableUntieredItem({ id, game, isDragging }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    touchAction: "none",
   }
 
   const coverUrl = getCoverUrl(game)
@@ -601,7 +599,7 @@ export default function TierlistEditor({
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 12 } })
   )
 
   function handleDragStart(event) {
@@ -913,7 +911,7 @@ export default function TierlistEditor({
 
       <DragOverlay>
         {activeGame && (
-          <div className="w-16 sm:w-20 aspect-[3/4] rounded-lg overflow-hidden shadow-2xl ring-2 ring-indigo-500 rotate-2 scale-110">
+          <div className="w-12 sm:w-14 aspect-[3/4] rounded-md overflow-hidden shadow-lg ring-1 ring-indigo-400/80 opacity-70">
             {activeCoverUrl ? (
               <img
                 src={activeCoverUrl}
@@ -923,7 +921,7 @@ export default function TierlistEditor({
               />
             ) : (
               <div className="w-full h-full bg-zinc-700 flex items-center justify-center">
-                <Gamepad2 className="w-4 h-4 text-zinc-500" />
+                <Gamepad2 className="w-3 h-3 text-zinc-500" />
               </div>
             )}
           </div>
