@@ -35,19 +35,33 @@ function getCoverUrl(game) {
 
 function tierlistCollisionDetection(args) {
   const pointerCollisions = pointerWithin(args)
+
   if (pointerCollisions.length > 0) {
-    const itemCollisions = pointerCollisions.filter(
+    const itemHits = pointerCollisions.filter(
       (c) => !String(c.id).startsWith("tier-") && c.id !== "untiered-zone"
     )
-    if (itemCollisions.length > 0) return itemCollisions
+
+    if (itemHits.length > 0) {
+      if (itemHits.length === 1) return itemHits
+      const subset = args.droppableContainers.filter((c) =>
+        itemHits.some((h) => h.id === c.id)
+      )
+      return closestCenter({ ...args, droppableContainers: subset })
+    }
+
     return pointerCollisions
   }
-  return closestCenter(args)
+
+  const containers = args.droppableContainers.filter(
+    (c) => String(c.id).startsWith("tier-") || c.id === "untiered-zone"
+  )
+  if (containers.length === 0) return []
+  return closestCenter({ ...args, droppableContainers: containers })
 }
 
-function DropPlaceholder() {
+function DropIndicator() {
   return (
-    <div className="w-full aspect-[3/4] rounded-lg border-2 border-dashed border-indigo-400/50 bg-indigo-500/10 animate-in fade-in zoom-in-95 duration-200" />
+    <div className="w-full aspect-[3/4] rounded-lg border-2 border-dashed border-indigo-400/40 bg-indigo-500/10" />
   )
 }
 
@@ -65,8 +79,7 @@ function SortableGameItem({ id, game, isDragging }) {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: isActive ? undefined : transition || "transform 200ms ease",
-    willChange: "transform",
+    transition,
   }
 
   const coverUrl = getCoverUrl(game)
@@ -77,8 +90,10 @@ function SortableGameItem({ id, game, isDragging }) {
       style={style}
       {...attributes}
       {...listeners}
-      className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-zinc-800 select-none cursor-grab active:cursor-grabbing transition-[opacity,box-shadow] duration-200 ${
-        isActive ? "opacity-30 ring-2 ring-indigo-500/50" : "hover:ring-2 hover:ring-zinc-500"
+      className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-zinc-800 select-none cursor-grab active:cursor-grabbing ${
+        isActive
+          ? "opacity-30 z-10 ring-2 ring-indigo-500/40"
+          : "hover:ring-2 hover:ring-zinc-500"
       }`}
       title={game?.name}
     >
@@ -112,8 +127,7 @@ function SortableUntieredItem({ id, game, isDragging }) {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: isActive ? undefined : transition || "transform 200ms ease",
-    willChange: "transform",
+    transition,
   }
 
   const coverUrl = getCoverUrl(game)
@@ -124,8 +138,10 @@ function SortableUntieredItem({ id, game, isDragging }) {
       style={style}
       {...attributes}
       {...listeners}
-      className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-zinc-800 select-none cursor-grab active:cursor-grabbing transition-[opacity,box-shadow] duration-200 ${
-        isActive ? "opacity-30 ring-2 ring-indigo-500/50" : "hover:ring-2 hover:ring-zinc-500"
+      className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-zinc-800 select-none cursor-grab active:cursor-grabbing ${
+        isActive
+          ? "opacity-30 z-10 ring-2 ring-indigo-500/40"
+          : "hover:ring-2 hover:ring-zinc-500"
       }`}
       title={game?.name}
     >
@@ -199,7 +215,7 @@ function DroppableTier({
   items,
   getGame,
   activeId,
-  showPlaceholder,
+  isTargeted,
   onEditTier,
   onDeleteTier,
   onMoveTier,
@@ -210,13 +226,14 @@ function DroppableTier({
     id: `tier-${tier.id}`,
   })
 
-  const hasContent = items.length > 0 || showPlaceholder
+  const isHighlighted = isTargeted || isOver
+  const hasContent = items.length > 0 || isTargeted
 
   return (
     <div
-      className={`flex border rounded-xl overflow-hidden bg-zinc-900/50 transition-[border-color,background-color] duration-200 ${
-        isOver
-          ? "border-indigo-500/50 bg-indigo-500/5"
+      className={`flex border rounded-xl overflow-hidden bg-zinc-900/50 transition-[border-color,background-color,box-shadow] duration-200 ${
+        isHighlighted
+          ? "border-indigo-400/70 bg-indigo-500/5 shadow-[0_0_12px_rgba(99,102,241,0.08)]"
           : "border-zinc-700/80"
       }`}
     >
@@ -276,7 +293,7 @@ function DroppableTier({
                   isDragging={activeId === item.id}
                 />
               ))}
-              {showPlaceholder && <DropPlaceholder />}
+              {isTargeted && <DropIndicator />}
             </div>
           ) : (
             <div className="w-full h-full min-h-[4rem] flex items-center justify-center">
@@ -552,8 +569,8 @@ export default function TierlistEditor({
   const [editingTier, setEditingTier] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortOrder, setSortOrder] = useState("default")
-  const [previewTierId, setPreviewTierId] = useState(null)
-  const previewRef = useRef(null)
+  const [targetTier, setTargetTier] = useState(null)
+  const targetRef = useRef(null)
   const [untieredOrder, setUntieredOrder] = useState(() =>
     untieredGames.map((g) => g.game_slug)
   )
@@ -590,71 +607,71 @@ export default function TierlistEditor({
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 12 } })
   )
 
+  function resolveOverTier(overIdStr) {
+    if (overIdStr.startsWith("tier-")) return overIdStr.replace("tier-", "")
+    if (overIdStr === "untiered-zone" || overIdStr.startsWith("untiered-")) return null
+    const overItem = items.find((i) => i.id === overIdStr)
+    return overItem?.tier_id || null
+  }
+
   function handleDragStart(event) {
     setActiveId(event.active.id)
   }
 
   function handleDragOver(event) {
     const { active, over } = event
+
     if (!over) {
-      if (previewRef.current) {
-        previewRef.current = null
-        setPreviewTierId(null)
+      if (targetRef.current !== null) {
+        targetRef.current = null
+        setTargetTier(null)
       }
       return
     }
 
     const activeIdStr = String(active.id)
     const overIdStr = String(over.id)
-    const isFromUntiered = activeIdStr.startsWith("untiered-")
 
     if (overIdStr === "untiered-zone" || overIdStr.startsWith("untiered-")) {
-      if (previewRef.current) {
-        previewRef.current = null
-        setPreviewTierId(null)
+      if (targetRef.current !== null) {
+        targetRef.current = null
+        setTargetTier(null)
       }
       return
     }
 
-    let tierId = null
-
-    if (overIdStr.startsWith("tier-")) {
-      tierId = overIdStr.replace("tier-", "")
-    } else {
-      const overItem = items.find((i) => i.id === overIdStr)
-      if (overItem) tierId = overItem.tier_id
-    }
-
+    const tierId = resolveOverTier(overIdStr)
     if (!tierId) {
-      if (previewRef.current) {
-        previewRef.current = null
-        setPreviewTierId(null)
+      if (targetRef.current !== null) {
+        targetRef.current = null
+        setTargetTier(null)
       }
       return
     }
 
+    const isFromUntiered = activeIdStr.startsWith("untiered-")
     if (!isFromUntiered) {
       const activeItem = items.find((i) => i.id === activeIdStr)
-      if (activeItem && activeItem.tier_id === tierId) {
-        if (previewRef.current) {
-          previewRef.current = null
-          setPreviewTierId(null)
+      if (activeItem?.tier_id === tierId) {
+        if (targetRef.current !== null) {
+          targetRef.current = null
+          setTargetTier(null)
         }
         return
       }
     }
 
-    if (previewRef.current !== tierId) {
-      previewRef.current = tierId
-      setPreviewTierId(tierId)
+    if (targetRef.current !== tierId) {
+      targetRef.current = tierId
+      setTargetTier(tierId)
     }
   }
 
   function handleDragEnd(event) {
     const { active, over } = event
     setActiveId(null)
-    setPreviewTierId(null)
-    previewRef.current = null
+    setTargetTier(null)
+    targetRef.current = null
 
     if (!over) return
 
@@ -685,48 +702,59 @@ export default function TierlistEditor({
       return
     }
 
-    let targetTierId = null
+    let dropTierId = null
     let overItemId = null
 
     if (overIdStr.startsWith("tier-")) {
-      targetTierId = overIdStr.replace("tier-", "")
+      dropTierId = overIdStr.replace("tier-", "")
     } else {
       const overItem = items.find((i) => i.id === overIdStr)
       if (overItem) {
-        targetTierId = overItem.tier_id
+        dropTierId = overItem.tier_id
         overItemId = overItem.id
       }
     }
 
-    if (!targetTierId) return
+    if (!dropTierId || !tiers.some((t) => t.id === dropTierId)) return
+
+    if (overItemId) {
+      const verifyItem = items.find((i) => i.id === overItemId)
+      if (!verifyItem || verifyItem.tier_id !== dropTierId) {
+        overItemId = null
+      }
+    }
 
     setItems((prev) => {
       const existingItem = prev.find((i) => i.game_slug === gameSlug)
 
       if (existingItem) {
-        if (existingItem.tier_id === targetTierId) {
+        if (existingItem.tier_id === dropTierId) {
           if (!overItemId || existingItem.id === overItemId) return prev
-          const activeIdx = prev.findIndex((i) => i.id === existingItem.id)
-          const overIdx = prev.findIndex((i) => i.id === overItemId)
-          if (activeIdx === -1 || overIdx === -1) return prev
-          return arrayMove(prev, activeIdx, overIdx).map((item, idx) => ({
+          const fromIdx = prev.findIndex((i) => i.id === existingItem.id)
+          const toIdx = prev.findIndex((i) => i.id === overItemId)
+          if (fromIdx === -1 || toIdx === -1) return prev
+          return arrayMove(prev, fromIdx, toIdx).map((item, idx) => ({
             ...item,
             position: idx,
           }))
         }
 
         const withoutItem = prev.filter((i) => i.id !== existingItem.id)
-        const movedItem = { ...existingItem, tier_id: targetTierId }
+        const movedItem = { ...existingItem, tier_id: dropTierId }
 
         if (overItemId) {
-          const insertIdx = withoutItem.findIndex((i) => i.id === overItemId)
-          if (insertIdx !== -1) {
-            withoutItem.splice(insertIdx, 0, movedItem)
+          const insertAt = withoutItem.findIndex((i) => i.id === overItemId)
+          if (insertAt !== -1) {
+            withoutItem.splice(insertAt, 0, movedItem)
           } else {
             withoutItem.push(movedItem)
           }
         } else {
-          withoutItem.push(movedItem)
+          const lastInTier = withoutItem.reduce(
+            (last, item, idx) => (item.tier_id === dropTierId ? idx : last),
+            -1
+          )
+          withoutItem.splice(lastInTier + 1, 0, movedItem)
         }
 
         return withoutItem.map((item, idx) => ({ ...item, position: idx }))
@@ -739,20 +767,24 @@ export default function TierlistEditor({
         id: crypto.randomUUID(),
         game_id: game.game_id,
         game_slug: game.game_slug,
-        tier_id: targetTierId,
+        tier_id: dropTierId,
         position: 0,
       }
 
       const newItems = [...prev]
       if (overItemId) {
-        const insertIdx = newItems.findIndex((i) => i.id === overItemId)
-        if (insertIdx !== -1) {
-          newItems.splice(insertIdx, 0, newItem)
+        const insertAt = newItems.findIndex((i) => i.id === overItemId)
+        if (insertAt !== -1) {
+          newItems.splice(insertAt, 0, newItem)
         } else {
           newItems.push(newItem)
         }
       } else {
-        newItems.push(newItem)
+        const lastInTier = newItems.reduce(
+          (last, item, idx) => (item.tier_id === dropTierId ? idx : last),
+          -1
+        )
+        newItems.splice(lastInTier + 1, 0, newItem)
       }
 
       return newItems.map((item, idx) => ({ ...item, position: idx }))
@@ -761,8 +793,8 @@ export default function TierlistEditor({
 
   function handleDragCancel() {
     setActiveId(null)
-    setPreviewTierId(null)
-    previewRef.current = null
+    setTargetTier(null)
+    targetRef.current = null
   }
 
   function handleAddTier() {
@@ -869,11 +901,7 @@ export default function TierlistEditor({
               items={tierItems}
               getGame={getGame}
               activeId={activeId}
-              showPlaceholder={
-                !!activeId &&
-                !activeInThisTier &&
-                previewTierId === tier.id
-              }
+              isTargeted={!!activeId && !activeInThisTier && targetTier === tier.id}
               onEditTier={setEditingTier}
               onDeleteTier={handleDeleteTier}
               onMoveTier={handleMoveTier}
@@ -905,7 +933,7 @@ export default function TierlistEditor({
 
       <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
         {activeGame && (
-          <div className="w-14 aspect-[3/4] rounded-lg overflow-hidden shadow-lg ring-1 ring-indigo-400/70 opacity-80 scale-[1.1]">
+          <div className="w-14 aspect-[3/4] rounded-lg overflow-hidden shadow-lg ring-1 ring-indigo-400/60 opacity-80 scale-110">
             {activeCoverUrl ? (
               <img
                 src={activeCoverUrl}
