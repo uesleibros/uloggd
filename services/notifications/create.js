@@ -14,20 +14,29 @@ function generateDedupeHash(userId, type, dedupeKey) {
 export async function createNotification({ userId, type, data, dedupeKey }) {
   if (!userId || !type) return
 
-  const payload = { user_id: userId, type, data }
-
   if (dedupeKey) {
-    payload.dedupe_hash = generateDedupeHash(userId, type, dedupeKey)
-  }
+    const { error } = await supabase
+      .from("notifications")
+      .upsert({
+        user_id: userId,
+        type,
+        data,
+        dedupe_hash: generateDedupeHash(userId, type, dedupeKey)
+      }, {
+        onConflict: "dedupe_hash",
+        ignoreDuplicates: true
+      })
 
-  const { error } = await supabase
-    .from("notifications")
-    .upsert(payload, {
-      onConflict: "dedupe_hash",
-      ignoreDuplicates: true
-    })
+    if (error && error.code !== "23505") {
+      console.error("notification error:", error)
+    }
+  } else {
+    const { error } = await supabase
+      .from("notifications")
+      .insert({ user_id: userId, type, data })
 
-  if (error && error.code !== "23505") {
-    console.error("notification error:", error)
+    if (error) {
+      console.error("notification error:", error)
+    }
   }
 }
