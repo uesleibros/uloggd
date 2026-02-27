@@ -53,7 +53,6 @@ export default function CreateTierlistModal({ isOpen, onClose, onCreated }) {
       const tierlist = await res.json()
       onCreated?.({ ...tierlist, games_count: 0, tiers_preview: [] })
       onClose()
-      navigate(`/tierlist/${encode(tierlist.id)}`)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -147,4 +146,5 @@ export default function CreateTierlistModal({ isOpen, onClose, onCreated }) {
       </form>
     </Modal>
   )
+
 }
