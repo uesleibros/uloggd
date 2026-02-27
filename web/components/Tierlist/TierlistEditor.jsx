@@ -191,6 +191,8 @@ function DroppableTier({
   items,
   getGame,
   activeId,
+  isActionsOpen,
+  onToggleActions,
   onEditTier,
   onDeleteTier,
   onMoveTier,
@@ -210,22 +212,35 @@ function DroppableTier({
       }`}
     >
       <div
-        className="w-16 sm:w-24 md:w-28 flex-shrink-0 flex items-center justify-center text-white relative group p-1.5"
+        className="w-16 sm:w-24 md:w-28 flex-shrink-0 flex items-center justify-center text-white relative group p-1.5 cursor-pointer"
         style={{ backgroundColor: tier.color }}
+        onClick={() => onToggleActions(tier.id)}
       >
         <span className="select-none text-center leading-tight break-words hyphens-auto font-bold text-[11px] sm:text-sm md:text-base max-w-full overflow-hidden">
           {tier.label}
         </span>
-        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+        <div
+          className={`absolute inset-0 bg-black/70 transition-opacity flex flex-col items-center justify-center gap-1 ${
+            isActionsOpen ? "opacity-100" : "opacity-0 sm:group-hover:opacity-100"
+          }`}
+        >
           <div className="flex items-center gap-1">
             <button
-              onClick={() => onEditTier(tier)}
+              onClick={(e) => {
+                e.stopPropagation()
+                onEditTier(tier)
+                onToggleActions(null)
+              }}
               className="p-1.5 sm:p-1 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
             >
               <Palette className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
             </button>
             <button
-              onClick={() => onDeleteTier(tier.id)}
+              onClick={(e) => {
+                e.stopPropagation()
+                onDeleteTier(tier.id)
+                onToggleActions(null)
+              }}
               className="p-1.5 sm:p-1 hover:bg-red-500/50 rounded-lg transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
@@ -233,14 +248,20 @@ function DroppableTier({
           </div>
           <div className="flex items-center gap-0.5">
             <button
-              onClick={() => onMoveTier(tier.id, "up")}
+              onClick={(e) => {
+                e.stopPropagation()
+                onMoveTier(tier.id, "up")
+              }}
               disabled={!canMoveUp}
               className="p-1 hover:bg-white/20 rounded transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <ChevronUp className="w-3 h-3" />
             </button>
             <button
-              onClick={() => onMoveTier(tier.id, "down")}
+              onClick={(e) => {
+                e.stopPropagation()
+                onMoveTier(tier.id, "down")
+              }}
               disabled={!canMoveDown}
               className="p-1 hover:bg-white/20 rounded transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
             >
@@ -546,6 +567,7 @@ export default function TierlistEditor({
   const [editingTier, setEditingTier] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortOrder, setSortOrder] = useState("default")
+  const [openTierId, setOpenTierId] = useState(null)
 
   useEffect(() => {
     if (!isEditing) return
@@ -557,13 +579,29 @@ export default function TierlistEditor({
     return () => window.removeEventListener("beforeunload", handleBeforeUnload)
   }, [isEditing])
 
+  useEffect(() => {
+    if (!openTierId) return
+    function handleClickOutside(e) {
+      if (!e.target.closest("[data-tier-label]")) {
+        setOpenTierId(null)
+      }
+    }
+    document.addEventListener("pointerdown", handleClickOutside)
+    return () => document.removeEventListener("pointerdown", handleClickOutside)
+  }, [openTierId])
+
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
   )
 
+  function handleToggleTierActions(tierId) {
+    setOpenTierId((prev) => (prev === tierId ? null : tierId))
+  }
+
   function handleDragStart(event) {
     setActiveId(event.active.id)
+    setOpenTierId(null)
   }
 
   function handleDragEnd(event) {
@@ -757,6 +795,8 @@ export default function TierlistEditor({
               items={tierItems}
               getGame={getGame}
               activeId={activeId}
+              isActionsOpen={openTierId === tier.id}
+              onToggleActions={handleToggleTierActions}
               onEditTier={setEditingTier}
               onDeleteTier={handleDeleteTier}
               onMoveTier={handleMoveTier}
