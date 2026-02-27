@@ -1,19 +1,31 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
 import DragScrollRow from "@components/UI/DragScrollRow"
 
 export default function UsersChoiceCarousel() {
   const [games, setGames] = useState([])
   const [loading, setLoading] = useState(true)
+  const fetchedRef = useRef(false)
 
   useEffect(() => {
+    if (fetchedRef.current) return
+
+    let cancelled = false
+
     fetch("/api/igdb/usersChoice")
       .then(res => res.json())
       .then(data => {
-        setGames(data)
-        setLoading(false)
+        if (!cancelled) {
+          setGames(data)
+          setLoading(false)
+          fetchedRef.current = true
+        }
       })
-      .catch(() => setLoading(false))
+      .catch(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => { cancelled = true }
   }, [])
 
   if (loading) {
@@ -50,5 +62,3 @@ export default function UsersChoiceCarousel() {
     </DragScrollRow>
   )
 }
-
-
