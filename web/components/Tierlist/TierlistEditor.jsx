@@ -26,7 +26,7 @@ import {
 } from "lucide-react"
 import GameCard from "@components/Game/GameCard"
 
-const CARD_HEIGHT = 80
+const CARD_HEIGHT = 100
 const CARD_WIDTH = Math.round(CARD_HEIGHT * 3 / 4)
 
 const PRESET_COLORS = [
