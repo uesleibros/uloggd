@@ -17,7 +17,7 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { restrictToWindowEdges } from "@dnd-kit/modifiers"
-import { Plus, Trash2, Palette, Gamepad2, Search, X, ChevronUp, ChevronDown, Pin, PinOff } from "lucide-react"
+import { Plus, Trash2, Palette, Gamepad2, Search, X, ChevronUp, ChevronDown } from "lucide-react"
 
 const PRESET_COLORS = [
   "#ef4444", "#f97316", "#eab308", "#22c55e",
@@ -188,7 +188,7 @@ function UntieredZone({ games, getGame, activeId, isEditing, searchQuery, onSear
   if (!isEditing) return null
 
   return (
-    <div>
+    <div className="mt-6 sm:mt-8">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
         <div className="flex items-center gap-2">
           <Gamepad2 className="w-4 h-4 text-zinc-500" />
@@ -378,7 +378,6 @@ export default function TierlistEditor({
   const [activeId, setActiveId] = useState(null)
   const [editingTier, setEditingTier] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [isPinned, setIsPinned] = useState(false)
 
   const sensors = useSensors(
     useSensor(MouseSensor, { 
@@ -560,79 +559,47 @@ export default function TierlistEditor({
       onDragEnd={handleDragEnd}
       modifiers={[restrictToWindowEdges]}
     >
-      <div className={`${isPinned ? "sticky top-0 z-30 bg-zinc-950 pb-4 -mx-4 px-4 sm:-mx-0 sm:px-0" : ""}`}>
-        {isPinned && (
-          <div className="flex items-center justify-between py-2 mb-2 border-b border-zinc-800">
-            <span className="text-xs text-indigo-400 font-medium flex items-center gap-1.5">
-              <Pin className="w-3.5 h-3.5" />
-              Tiers fixados
-            </span>
-            <button
-              onClick={() => setIsPinned(false)}
-              className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
-              title="Desafixar"
-            >
-              <PinOff className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+      <div className="space-y-2 sm:space-y-2.5">
+        {tiers.map((tier, index) => {
+          const tierItems = items
+            .filter(i => i.tier_id === tier.id)
+            .sort((a, b) => a.position - b.position)
 
-        <div className="space-y-2 sm:space-y-2.5">
-          {tiers.map((tier, index) => {
-            const tierItems = items
-              .filter(i => i.tier_id === tier.id)
-              .sort((a, b) => a.position - b.position)
+          return (
+            <DroppableTier
+              key={tier.id}
+              tier={tier}
+              items={tierItems}
+              getGame={getGame}
+              activeId={activeId}
+              isEditing={isEditing}
+              onEditTier={setEditingTier}
+              onDeleteTier={handleDeleteTier}
+              onMoveTier={handleMoveTier}
+              canMoveUp={index > 0}
+              canMoveDown={index < tiers.length - 1}
+            />
+          )
+        })}
 
-            return (
-              <DroppableTier
-                key={tier.id}
-                tier={tier}
-                items={tierItems}
-                getGame={getGame}
-                activeId={activeId}
-                isEditing={isEditing}
-                onEditTier={setEditingTier}
-                onDeleteTier={handleDeleteTier}
-                onMoveTier={handleMoveTier}
-                canMoveUp={index > 0}
-                canMoveDown={index < tiers.length - 1}
-              />
-            )
-          })}
-
-          <button
-            type="button"
-            onClick={handleAddTier}
-            className="w-full py-4 sm:py-3 border-2 border-dashed border-zinc-700/60 hover:border-zinc-600 hover:bg-zinc-800/30 rounded-xl text-sm text-zinc-500 hover:text-zinc-300 transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            Adicionar tier
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleAddTier}
+          className="w-full py-4 sm:py-3 border-2 border-dashed border-zinc-700/60 hover:border-zinc-600 hover:bg-zinc-800/30 rounded-xl text-sm text-zinc-500 hover:text-zinc-300 transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          Adicionar tier
+        </button>
       </div>
 
-      <div className="mt-6 sm:mt-8">
-        {!isPinned && untieredGames.length > 0 && tiers.length > 0 && (
-          <div className="flex justify-end mb-3">
-            <button
-              onClick={() => setIsPinned(true)}
-              className="px-3 py-2 text-xs text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
-            >
-              <Pin className="w-3.5 h-3.5" />
-              Fixar tiers no topo
-            </button>
-          </div>
-        )}
-
-        <UntieredZone
-          games={untieredGames}
-          getGame={getGame}
-          activeId={activeId}
-          isEditing={isEditing}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-        />
-      </div>
+      <UntieredZone
+        games={untieredGames}
+        getGame={getGame}
+        activeId={activeId}
+        isEditing={isEditing}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
 
       <DragOverlay>
         {activeGame && (
