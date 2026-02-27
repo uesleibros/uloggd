@@ -45,9 +45,11 @@ export default function Profile() {
 		setTierlists,
 		loading: loadingTierlists,
 		total: tierlistsTotal,
+		setTotal: setTierlistsTotal,
 		page: tierlistsPage,
 		totalPages: tierlistsTotalPages,
 		handlePageChange: handleTierlistsPageChange,
+		refetch: refetchTierlists,
 	} = useUserTierlists(profile?.id)
 
 	const {
@@ -161,4 +163,5 @@ export default function Profile() {
 			<SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
 		</div>
 	)
+
 }
