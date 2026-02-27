@@ -3,8 +3,7 @@ import {
   DndContext,
   DragOverlay,
   closestCenter,
-  KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
   TouchSensor,
   useSensor,
   useSensors,
@@ -12,7 +11,6 @@ import {
 } from "@dnd-kit/core"
 import {
   SortableContext,
-  sortableKeyboardCoordinates,
   rectSortingStrategy,
   useSortable,
   arrayMove,
@@ -39,11 +37,13 @@ function SortableGameItem({ id, game, isDragging, disabled }) {
     setNodeRef,
     transform,
     transition,
+    isDragging: isSortableDragging,
   } = useSortable({ id, disabled })
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    touchAction: disabled ? "auto" : "none",
   }
 
   const coverUrl = getCoverUrl(game)
@@ -54,9 +54,9 @@ function SortableGameItem({ id, game, isDragging, disabled }) {
       style={style}
       {...attributes}
       {...(disabled ? {} : listeners)}
-      className={`w-12 h-16 sm:w-14 sm:h-[4.5rem] md:w-16 md:h-20 flex-shrink-0 rounded overflow-hidden bg-zinc-800 ${
+      className={`w-12 h-16 sm:w-14 sm:h-[4.5rem] md:w-16 md:h-20 flex-shrink-0 rounded overflow-hidden bg-zinc-800 select-none ${
         disabled ? "cursor-default" : "cursor-grab active:cursor-grabbing"
-      } ${isDragging ? "opacity-40 scale-95" : ""}`}
+      } ${isDragging || isSortableDragging ? "opacity-40 scale-95" : ""}`}
       title={game?.name}
     >
       {coverUrl ? (
@@ -83,10 +83,10 @@ function DroppableTier({ tier, items, getGame, activeId, isEditing, onEditTier, 
       isOver && isEditing ? "border-zinc-500 bg-zinc-800/50" : "border-zinc-700"
     }`}>
       <div
-        className="w-12 sm:w-14 md:w-16 flex-shrink-0 flex items-center justify-center font-bold text-base sm:text-lg md:text-xl text-white relative group"
+        className="w-14 sm:w-20 md:w-24 flex-shrink-0 flex items-center justify-center font-bold text-xs sm:text-sm md:text-base text-white relative group px-1"
         style={{ backgroundColor: tier.color }}
       >
-        <span className="select-none">{tier.label}</span>
+        <span className="select-none truncate text-center leading-tight">{tier.label}</span>
 
         {isEditing && (
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-0.5">
@@ -216,10 +216,11 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
               type="text"
               value={label}
               onChange={e => setLabel(e.target.value)}
-              maxLength={3}
-              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-center text-xl font-bold focus:outline-none focus:border-zinc-500"
+              maxLength={15}
+              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-center text-lg font-bold focus:outline-none focus:border-zinc-500"
               autoFocus
             />
+            <span className="text-xs text-zinc-600 mt-1 block text-right">{label.length}/15</span>
           </div>
 
           <div>
@@ -281,18 +282,10 @@ export default function TierlistEditor({
   const [editingTier, setEditingTier] = useState(null)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { 
-      activationConstraint: { distance: 8 } 
+    useSensor(MouseSensor, { 
+      activationConstraint: { distance: 5 } 
     }),
-    useSensor(TouchSensor, { 
-      activationConstraint: { 
-        delay: 100,
-        tolerance: 8,
-      } 
-    }),
-    useSensor(KeyboardSensor, { 
-      coordinateGetter: sortableKeyboardCoordinates 
-    })
+    useSensor(TouchSensor)
   )
 
   function handleDragStart(event) {
@@ -316,13 +309,11 @@ export default function TierlistEditor({
 
     if (!gameSlug) return
 
-    // Soltou na zona de não classificados
     if (overIdStr === "untiered-zone" || overIdStr.startsWith("untiered-")) {
       setItems(prev => prev.filter(i => i.game_slug !== gameSlug))
       return
     }
 
-    // Determina o tier de destino
     let targetTierId = null
     let overItemIndex = -1
 
@@ -345,18 +336,15 @@ export default function TierlistEditor({
       const sameTier = existingItem.tier_id === targetTierId
 
       if (sameTier && overItemIndex !== -1 && activeIndex !== overItemIndex) {
-        // Reordenação dentro do mesmo tier
         setItems(prev => {
           const newItems = arrayMove(prev, activeIndex, overItemIndex)
           return newItems.map((item, idx) => ({ ...item, position: idx }))
         })
       } else if (!sameTier) {
-        // Movendo para outro tier
         setItems(prev => {
           const updated = prev.map(i =>
             i.game_slug === gameSlug ? { ...i, tier_id: targetTierId } : i
           )
-          // Se soltou em cima de um item, insere na posição correta
           if (overItemIndex !== -1) {
             const itemToMove = updated.find(i => i.game_slug === gameSlug)
             const withoutItem = updated.filter(i => i.game_slug !== gameSlug)
@@ -367,7 +355,6 @@ export default function TierlistEditor({
         })
       }
     } else {
-      // Adicionando do untiered
       const game = untieredGames.find(g => g.game_slug === gameSlug)
       if (game) {
         setItems(prev => {
@@ -419,7 +406,6 @@ export default function TierlistEditor({
   const activeGame = activeGameSlug ? getGame(activeGameSlug) : null
   const activeCoverUrl = getCoverUrl(activeGame)
 
-  // Se não é editing, renderiza sem DnD
   if (!isEditing) {
     return (
       <div className="space-y-2">

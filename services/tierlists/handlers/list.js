@@ -14,7 +14,10 @@ export async function handleList(req, res) {
       .from("tierlists")
       .select(`
         id, title, description, is_public, created_at, updated_at,
-        tierlist_tiers ( id, label, color, position, tierlist_items ( id ) )
+        tierlist_tiers ( 
+          id, label, color, position, 
+          tierlist_items ( id, game_slug, position ) 
+        )
       `, { count: "exact" })
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
@@ -34,10 +37,17 @@ export async function handleList(req, res) {
         created_at: t.created_at,
         updated_at: t.updated_at,
         games_count: gamesCount,
-        tiers_preview: sortedTiers.slice(0, 6).map(tier => ({
+        tiers_preview: sortedTiers.slice(0, 4).map(tier => ({
           id: tier.id,
           label: tier.label,
           color: tier.color,
+          items: (tier.tierlist_items || [])
+            .sort((a, b) => a.position - b.position)
+            .slice(0, 6)
+            .map(item => ({
+              id: item.id,
+              game_slug: item.game_slug,
+            })),
         })),
       }
     })

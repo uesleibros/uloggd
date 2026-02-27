@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo  } from "react"
 import { Link } from "react-router-dom"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import Pagination from "@components/UI/Pagination"
@@ -10,6 +10,7 @@ import {
   MoreHorizontal, Pencil, Trash2, Gamepad2,
 } from "lucide-react"
 import { encode } from "#utils/shortId.js"
+import { useGamesBatch } from "#hooks/useGamesBatch"
 
 function TierlistActionMenu({ tierlist, onEdit, onDelete }) {
   const [open, setOpen] = useState(false)
@@ -87,7 +88,7 @@ function TierlistActionMenu({ tierlist, onEdit, onDelete }) {
   )
 }
 
-function TierPreview({ tiers }) {
+function TierPreview({ tiers, getGame }) {
   if (!tiers || tiers.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-zinc-800/30">
@@ -101,12 +102,35 @@ function TierPreview({ tiers }) {
       {tiers.slice(0, 4).map((tier, i) => (
         <div
           key={tier.id || i}
-          className="flex-1 flex items-center"
+          className="flex-1 flex items-center overflow-hidden"
           style={{ backgroundColor: tier.color }}
         >
-          <span className="px-2 text-[10px] font-bold text-white/90 truncate">
+          <span className="w-6 sm:w-8 flex-shrink-0 text-[8px] sm:text-[10px] font-bold text-white/90 text-center truncate px-0.5">
             {tier.label}
           </span>
+          <div className="flex-1 flex items-center gap-px bg-zinc-800/30 h-full py-px pr-px overflow-hidden">
+            {(tier.items || []).slice(0, 6).map((item, j) => {
+              const game = getGame?.(item.game_slug)
+              const coverUrl = game?.cover?.url
+                ? `https:${game.cover.url.replace("t_thumb", "t_cover_small")}`
+                : null
+
+              return (
+                <div key={item.id || j} className="h-full aspect-[3/4] flex-shrink-0">
+                  {coverUrl ? (
+                    <img
+                      src={coverUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-zinc-700" />
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
       ))}
       {tiers.length < 4 && Array.from({ length: 4 - tiers.length }).map((_, i) => (
@@ -118,6 +142,15 @@ function TierPreview({ tiers }) {
 
 function TierlistCard({ tierlist, isOwnProfile, onEdit, onDelete }) {
   const gamesCount = tierlist.games_count || 0
+  
+  const allSlugs = useMemo(() => {
+    if (!tierlist.tiers_preview) return []
+    return tierlist.tiers_preview.flatMap(t => 
+      (t.items || []).slice(0, 6).map(i => i.game_slug)
+    )
+  }, [tierlist.tiers_preview])
+
+  const { getGame } = useGamesBatch(allSlugs)
 
   return (
     <div className="group relative rounded-xl overflow-visible h-full">
@@ -125,9 +158,9 @@ function TierlistCard({ tierlist, isOwnProfile, onEdit, onDelete }) {
         to={`/tierlist/${encode(tierlist.id)}`}
         className="block rounded-xl overflow-hidden bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 transition-all duration-200 h-full flex flex-col"
       >
-        <div className="relative h-20 sm:h-24 overflow-hidden flex-shrink-0">
-          <TierPreview tiers={tierlist.tiers_preview} />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/30 to-zinc-900/10" />
+        <div className="relative h-24 sm:h-28 overflow-hidden flex-shrink-0">
+          <TierPreview tiers={tierlist.tiers_preview} getGame={getGame} />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/20 to-transparent" />
         </div>
 
         <div className="p-3 sm:p-3.5 flex flex-col flex-1">
