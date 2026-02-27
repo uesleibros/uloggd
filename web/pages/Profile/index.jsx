@@ -117,7 +117,7 @@ export default function Profile() {
 					onSectionChange={setActiveSection}
 					counts={counts}
 					listsCount={listsTotal}
-					tierlistsCount={tierlistsTotal}
+					tierlistsCount={tierlists.length}
 					reviewsCount={profile?.counts?.reviews || 0}
 					likesCount={(counts?.liked || 0) + (profile?.counts?.likedReviews || 0)}
 				/>
@@ -162,3 +162,4 @@ export default function Profile() {
 		</div>
 	)
 }
+
