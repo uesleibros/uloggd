@@ -7,8 +7,7 @@ function isEmptyGameState(record) {
     record.playing === false &&
     record.backlog === false &&
     record.wishlist === false &&
-    record.liked === false &&
-    record.rating === null
+    record.liked === false
   )
 }
 
@@ -115,3 +114,4 @@ export async function handleUpdate(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
