@@ -232,6 +232,7 @@ export default function TierlistsSection({
   currentPage,
   totalPages,
   total,
+  setTotal,
   onPageChange,
 }) {
   const [createOpen, setCreateOpen] = useState(false)
@@ -374,3 +375,4 @@ export default function TierlistsSection({
   )
 
 }
+
