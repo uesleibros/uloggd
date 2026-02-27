@@ -145,6 +145,7 @@ export default function Profile() {
 					onListsPageChange={handleListsPageChange}
 					tierlists={tierlists}
 					setTierlists={setTierlists}
+					refetchTierlists={refetchTierlists}
 					loadingTierlists={loadingTierlists}
 					tierlistsPage={tierlistsPage}
 					tierlistsTotalPages={tierlistsTotalPages}
@@ -166,4 +167,5 @@ export default function Profile() {
 	)
 
 }
+
 
