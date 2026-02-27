@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 
+const tierlistCache = new Map()
+
 export function useUserTierlists(profileId) {
   const [tierlists, setTierlists] = useState([])
   const [loading, setLoading] = useState(false)
@@ -11,6 +13,16 @@ export function useUserTierlists(profileId) {
 
   const fetchTierlists = useCallback(async (pageNum) => {
     if (!profileId) return
+
+    const cacheKey = `${profileId}-${pageNum}`
+
+    if (tierlistCache.has(cacheKey)) {
+      const cached = tierlistCache.get(cacheKey)
+      setTierlists(cached.tierlists)
+      setTotal(cached.total)
+      setTotalPages(cached.totalPages)
+      return
+    }
 
     if (abortRef.current) {
       abortRef.current.abort()
@@ -36,9 +48,17 @@ export function useUserTierlists(profileId) {
 
       if (controller.signal.aborted) return
 
-      setTierlists(data.tierlists || [])
-      setTotal(data.total || 0)
-      setTotalPages(data.totalPages || 1)
+      const result = {
+        tierlists: data.tierlists || [],
+        total: data.total || 0,
+        totalPages: data.totalPages || 1,
+      }
+
+      tierlistCache.set(cacheKey, result)
+
+      setTierlists(result.tierlists)
+      setTotal(result.total)
+      setTotalPages(result.totalPages)
     } catch {
       if (!controller.signal.aborted) {
         setTierlists([])
@@ -65,7 +85,7 @@ export function useUserTierlists(profileId) {
     page,
     totalPages,
     total,
-    setTotal,
     handlePageChange,
+    refetch: () => fetchTierlists(page),
   }
 }
