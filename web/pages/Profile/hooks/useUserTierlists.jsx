@@ -3,11 +3,12 @@ import { useState, useEffect, useCallback, useRef } from "react"
 const tierlistCache = new Map()
 
 export function useUserTierlists(profileId) {
-  const [tierlists, setTierlists] = useState([])
+  const [tierlists, _setTierlists] = useState([])
   const [loading, setLoading] = useState(false)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [version, setVersion] = useState(0)
 
   const abortRef = useRef(null)
 
@@ -18,7 +19,7 @@ export function useUserTierlists(profileId) {
 
     if (!force && tierlistCache.has(cacheKey)) {
       const cached = tierlistCache.get(cacheKey)
-      setTierlists(cached.tierlists)
+      _setTierlists(cached.tierlists)
       setTotal(cached.total)
       setTotalPages(cached.totalPages)
       return
@@ -56,12 +57,12 @@ export function useUserTierlists(profileId) {
 
       tierlistCache.set(cacheKey, result)
 
-      setTierlists(result.tierlists)
+      _setTierlists(result.tierlists)
       setTotal(result.total)
       setTotalPages(result.totalPages)
     } catch {
       if (!controller.signal.aborted) {
-        setTierlists([])
+        _setTierlists([])
       }
     } finally {
       if (!controller.signal.aborted) {
@@ -71,17 +72,28 @@ export function useUserTierlists(profileId) {
   }, [profileId])
 
   useEffect(() => {
+    if (!profileId) return
+    tierlistCache.clear()
+    setPage(1)
+    fetchTierlists(1, true)
+  }, [profileId])
+
+  useEffect(() => {
+    if (!profileId) return
     fetchTierlists(page)
-  }, [fetchTierlists, page])
+  }, [page, version])
 
   const handlePageChange = useCallback((newPage) => {
     setPage(newPage)
   }, [])
 
-  const refetch = useCallback(() => {
-    tierlistCache.clear()
-    fetchTierlists(page, true)
-  }, [fetchTierlists, page])
+  const setTierlists = useCallback((updater) => {
+    _setTierlists(prev => {
+      const next = typeof updater === "function" ? updater(prev) : updater
+      return next
+    })
+    setVersion(v => v + 1)
+  }, [])
 
   return {
     tierlists,
@@ -90,8 +102,6 @@ export function useUserTierlists(profileId) {
     page,
     totalPages,
     total,
-    setTotal,
     handlePageChange,
-    refetch,
   }
 }
