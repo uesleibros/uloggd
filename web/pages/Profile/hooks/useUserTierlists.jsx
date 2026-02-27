@@ -11,12 +11,12 @@ export function useUserTierlists(profileId) {
 
   const abortRef = useRef(null)
 
-  const fetchTierlists = useCallback(async (pageNum) => {
+  const fetchTierlists = useCallback(async (pageNum, force = false) => {
     if (!profileId) return
 
     const cacheKey = `${profileId}-${pageNum}`
 
-    if (tierlistCache.has(cacheKey)) {
+    if (!force && tierlistCache.has(cacheKey)) {
       const cached = tierlistCache.get(cacheKey)
       setTierlists(cached.tierlists)
       setTotal(cached.total)
@@ -78,6 +78,11 @@ export function useUserTierlists(profileId) {
     setPage(newPage)
   }, [])
 
+  const refetch = useCallback(() => {
+    tierlistCache.clear()
+    fetchTierlists(page, true)
+  }, [fetchTierlists, page])
+
   return {
     tierlists,
     setTierlists,
@@ -85,7 +90,8 @@ export function useUserTierlists(profileId) {
     page,
     totalPages,
     total,
+    setTotal,
     handlePageChange,
-    refetch: () => fetchTierlists(page),
+    refetch,
   }
 }
