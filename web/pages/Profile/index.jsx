@@ -47,8 +47,7 @@ export default function Profile() {
 		total: tierlistsTotal,
 		page: tierlistsPage,
 		totalPages: tierlistsTotalPages,
-		handlePageChange: handleTierlistsPageChange,
-		refetch: refetchTierlists,
+		handlePageChange: handleTierlistsPageChange
 	} = useUserTierlists(profile?.id)
 
 	const {
@@ -144,7 +143,6 @@ export default function Profile() {
 					onListsPageChange={handleListsPageChange}
 					tierlists={tierlists}
 					setTierlists={setTierlists}
-					refetchTierlists={refetchTierlists}
 					loadingTierlists={loadingTierlists}
 					tierlistsPage={tierlistsPage}
 					tierlistsTotalPages={tierlistsTotalPages}
@@ -163,8 +161,4 @@ export default function Profile() {
 			<SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
 		</div>
 	)
-
 }
-
-
-
