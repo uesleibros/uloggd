@@ -26,7 +26,7 @@ export async function handleGet(req, res) {
 					.single(),
 				supabase
 					.from("list_items")
-					.select("id, game_id, game_slug, position, note, added_at", { count: "exact" })
+					.select("id, game_id, game_slug, position, marked, note, added_at", { count: "exact" })
 					.eq("list_id", decodedId)
 					.order("position", { ascending: true })
 					.range(offset, offset + limitNum - 1),

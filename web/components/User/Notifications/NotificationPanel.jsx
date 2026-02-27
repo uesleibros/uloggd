@@ -226,7 +226,6 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
       try {
         const r = await fetch("/api/notifications/@me/list", {
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${session.access_token}`,
           },
         })
