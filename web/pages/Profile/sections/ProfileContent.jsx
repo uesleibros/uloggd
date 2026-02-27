@@ -34,7 +34,6 @@ export function ProfileContent({
 	tierlistsTotalPages,
 	tierlistsTotal,
 	onTierlistsPageChange,
-	setTierlistsTotal,
 	onEditProfile,
 }) {
 	const tabsRef = useRef(null)
@@ -99,7 +98,6 @@ export function ProfileContent({
 					refetch={refetchTierlists}
 					totalPages={tierlistsTotalPages}
 					total={tierlistsTotal}
-					setTotal={setTierlistsTotal}
 					onPageChange={onTierlistsPageChange}
 				/>
 			)}
@@ -122,4 +120,5 @@ export function ProfileContent({
 	)
 
 }
+
 
