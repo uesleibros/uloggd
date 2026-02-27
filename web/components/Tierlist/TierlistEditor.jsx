@@ -32,7 +32,6 @@ function getCoverUrl(game) {
   return url.replace("t_thumb", "t_cover_small")
 }
 
-/* ─── Drag mode: small cover for tier rows ─── */
 function SortableGameItem({ id, game, isDragging }) {
   const {
     attributes,
@@ -58,9 +57,9 @@ function SortableGameItem({ id, game, isDragging }) {
       style={style}
       {...attributes}
       {...listeners}
-      className={`relative flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 cursor-grab active:cursor-grabbing
+      className={`relative flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 cursor-grab active:cursor-grabbing aspect-[3/4]
         ${isActive ? "opacity-40 scale-95 ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-zinc-500"}
-        w-12 h-16 sm:w-14 sm:h-[4.5rem] md:w-16 md:h-20`}
+        w-16 sm:w-[4.5rem] md:w-20`}
       title={game?.name}
     >
       {coverUrl ? (
@@ -79,7 +78,6 @@ function SortableGameItem({ id, game, isDragging }) {
   )
 }
 
-/* ─── Drag mode: larger cover + name for untiered zone ─── */
 function SortableUntieredItem({ id, game, isDragging }) {
   const {
     attributes,
@@ -105,9 +103,9 @@ function SortableUntieredItem({ id, game, isDragging }) {
       style={style}
       {...attributes}
       {...listeners}
-      className={`relative flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 cursor-grab active:cursor-grabbing
+      className={`relative flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800 select-none transition-all duration-150 cursor-grab active:cursor-grabbing aspect-[3/4]
         ${isActive ? "opacity-40 scale-95 ring-2 ring-indigo-500" : "hover:ring-2 hover:ring-zinc-500"}
-        w-16 h-24 sm:w-20 sm:h-28`}
+        w-20 sm:w-24`}
       title={game?.name}
     >
       {coverUrl ? (
@@ -133,11 +131,10 @@ function SortableUntieredItem({ id, game, isDragging }) {
   )
 }
 
-/* ─── View mode: GameCard with link to /game/:slug ─── */
 function ViewGameItem({ game }) {
   if (!game) return null
   return (
-    <div className="w-12 sm:w-14 md:w-16 flex-shrink-0">
+    <div className="w-16 sm:w-[4.5rem] md:w-20 flex-shrink-0">
       <GameCard
         game={game}
         showRating={false}
@@ -148,7 +145,6 @@ function ViewGameItem({ game }) {
   )
 }
 
-/* ─── Tier row ─── */
 function DroppableTier({
   tier,
   items,
@@ -174,12 +170,11 @@ function DroppableTier({
           : "border-zinc-700/80"
       }`}
     >
-      {/* Tier label */}
       <div
-        className="w-16 sm:w-24 md:w-28 flex-shrink-0 flex flex-col items-center justify-center font-bold text-xs sm:text-sm md:text-base text-white relative group"
+        className="w-16 sm:w-24 md:w-28 flex-shrink-0 flex items-center justify-center text-white relative group p-1.5"
         style={{ backgroundColor: tier.color }}
       >
-        <span className="select-none truncate text-center leading-tight px-1 max-w-full">
+        <span className="select-none text-center leading-tight break-words hyphens-auto font-bold text-[11px] sm:text-sm md:text-base max-w-full overflow-hidden">
           {tier.label}
         </span>
 
@@ -206,7 +201,6 @@ function DroppableTier({
                 onClick={() => onMoveTier(tier.id, "up")}
                 disabled={!canMoveUp}
                 className="p-1 hover:bg-white/20 rounded transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Mover para cima"
               >
                 <ChevronUp className="w-3 h-3" />
               </button>
@@ -214,7 +208,6 @@ function DroppableTier({
                 onClick={() => onMoveTier(tier.id, "down")}
                 disabled={!canMoveDown}
                 className="p-1 hover:bg-white/20 rounded transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Mover para baixo"
               >
                 <ChevronDown className="w-3 h-3" />
               </button>
@@ -223,10 +216,9 @@ function DroppableTier({
         )}
       </div>
 
-      {/* Tier content */}
       <div
         ref={setNodeRef}
-        className="flex-1 min-h-[4.5rem] sm:min-h-[5rem] md:min-h-[5.5rem] p-2 sm:p-2.5 bg-zinc-800/40"
+        className="flex-1 min-h-[5.5rem] sm:min-h-[6rem] md:min-h-[7rem] p-2 sm:p-2.5 bg-zinc-800/40"
       >
         {isEditing ? (
           <SortableContext
@@ -246,7 +238,7 @@ function DroppableTier({
                 )
               })}
               {items.length === 0 && (
-                <div className="w-full h-full min-h-[3.5rem] flex items-center justify-center">
+                <div className="w-full h-full min-h-[4rem] flex items-center justify-center">
                   <span className="text-xs text-zinc-600 select-none">
                     Arraste jogos para cá
                   </span>
@@ -260,8 +252,10 @@ function DroppableTier({
               <ViewGameItem key={item.id} game={getGame(item.game_slug)} />
             ))}
             {items.length === 0 && (
-              <div className="w-full h-full min-h-[3.5rem] flex items-center justify-center">
-                <span className="text-xs text-zinc-600 select-none">Vazio</span>
+              <div className="w-full h-full min-h-[4rem] flex items-center justify-center">
+                <span className="text-xs text-zinc-600 select-none">
+                  Vazio
+                </span>
               </div>
             )}
           </div>
@@ -271,7 +265,6 @@ function DroppableTier({
   )
 }
 
-/* ─── Untiered zone (edit mode only) ─── */
 function UntieredZone({
   games,
   getGame,
@@ -386,7 +379,6 @@ function UntieredZone({
   )
 }
 
-/* ─── Edit tier modal ─── */
 function EditTierModal({ isOpen, onClose, tier, onSave }) {
   const [label, setLabel] = useState("")
   const [color, setColor] = useState(PRESET_COLORS[0])
@@ -488,7 +480,6 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
   )
 }
 
-/* ─── Main component ─── */
 export default function TierlistEditor({
   tiers,
   setTiers,
@@ -528,7 +519,6 @@ export default function TierlistEditor({
 
     if (!gameSlug) return
 
-    // Dropping back to untiered
     if (overIdStr === "untiered-zone" || overIdStr.startsWith("untiered-")) {
       setItems((prev) => prev.filter((i) => i.game_slug !== gameSlug))
       return
@@ -567,14 +557,9 @@ export default function TierlistEditor({
           )
           if (overItemIndex !== -1) {
             const itemToMove = updated.find((i) => i.game_slug === gameSlug)
-            const withoutItem = updated.filter(
-              (i) => i.game_slug !== gameSlug
-            )
+            const withoutItem = updated.filter((i) => i.game_slug !== gameSlug)
             withoutItem.splice(overItemIndex, 0, itemToMove)
-            return withoutItem.map((item, idx) => ({
-              ...item,
-              position: idx,
-            }))
+            return withoutItem.map((item, idx) => ({ ...item, position: idx }))
           }
           return updated.map((item, idx) => ({ ...item, position: idx }))
         })
@@ -652,7 +637,6 @@ export default function TierlistEditor({
   const activeGame = activeGameSlug ? getGame(activeGameSlug) : null
   const activeCoverUrl = getCoverUrl(activeGame)
 
-  /* ── View mode (no DnD) ── */
   if (!isEditing) {
     return (
       <div className="space-y-2 sm:space-y-2.5">
@@ -687,7 +671,6 @@ export default function TierlistEditor({
     )
   }
 
-  /* ── Edit mode ── */
   return (
     <DndContext
       sensors={sensors}
@@ -740,7 +723,7 @@ export default function TierlistEditor({
 
       <DragOverlay>
         {activeGame && (
-          <div className="w-14 h-[4.5rem] sm:w-16 sm:h-20 rounded-lg overflow-hidden shadow-2xl ring-2 ring-indigo-500 rotate-2 scale-110">
+          <div className="w-16 sm:w-20 aspect-[3/4] rounded-lg overflow-hidden shadow-2xl ring-2 ring-indigo-500 rotate-2 scale-110">
             {activeCoverUrl ? (
               <img
                 src={activeCoverUrl}
