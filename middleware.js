@@ -1,5 +1,5 @@
 export const config = {
-  matcher: ['/game/:slug*', '/u/:username*', '/list/:id*'],
+  matcher: ['/game/:slug*', '/u/:username*', '/list/:id*', '/tierlist/:id*'],
 }
 
 const BOT_REGEX = /Discordbot|Twitterbot|facebookexternalhit|LinkedInBot|TelegramBot|Slackbot/i
@@ -23,6 +23,10 @@ export default async function middleware(req) {
 
     if (segments[0] === 'list' && segments[1]) {
       return handleList(url, segments[1])
+    }
+
+    if (segments[0] === 'tierlist' && segments[1]) {
+      return handleTierlist(url, segments[1])
     }
   } catch {
     return
@@ -109,6 +113,29 @@ async function handleList(url, listId) {
   const description = list.description
     ? stripMarkdown(list.description).substring(0, 160)
     : `Lista com ${gamesCount} jogo${gamesCount !== 1 ? 's' : ''}`
+
+  const image = `${url.origin}/banner.png`
+
+  return buildResponse(title, description, image, url.href)
+}
+
+async function handleTierlist(url, tierlistId) {
+  const res = await fetch(`${url.origin}/api/tierlists/get?tierlistId=${encodeURIComponent(tierlistId)}`)
+
+  if (!res.ok) return
+  const tierlist = await res.json()
+
+  const title = `${tierlist.title} - uloggd`
+  
+  const gamesCount = (tierlist.tierlist_tiers || []).reduce((acc, tier) => 
+    acc + (tier.tierlist_items?.length || 0), 0
+  )
+  
+  const tiersCount = tierlist.tierlist_tiers?.length || 0
+  
+  const description = tierlist.description
+    ? stripMarkdown(tierlist.description).substring(0, 160)
+    : `Tierlist com ${gamesCount} jogo${gamesCount !== 1 ? 's' : ''} em ${tiersCount} tier${tiersCount !== 1 ? 's' : ''}`
 
   const image = `${url.origin}/banner.png`
 
