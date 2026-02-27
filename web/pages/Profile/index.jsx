@@ -149,6 +149,7 @@ export default function Profile() {
 					tierlistsPage={tierlistsPage}
 					tierlistsTotalPages={tierlistsTotalPages}
 					tierlistsTotal={tierlistsTotal}
+					setTierlistsTotal={setTierlistsTotal}
 					onTierlistsPageChange={handleTierlistsPageChange}
 					onEditProfile={() => setSettingsOpen(true)}
 				/>
@@ -165,3 +166,4 @@ export default function Profile() {
 	)
 
 }
+
