@@ -3,23 +3,22 @@ import { useState, useEffect, useCallback, useRef } from "react"
 const tierlistCache = new Map()
 
 export function useUserTierlists(profileId) {
-  const [tierlists, _setTierlists] = useState([])
+  const [tierlists, setTierlists] = useState([])
   const [loading, setLoading] = useState(false)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
-  const [version, setVersion] = useState(0)
 
   const abortRef = useRef(null)
 
-  const fetchTierlists = useCallback(async (pageNum, force = false) => {
+  const fetchTierlists = useCallback(async (pageNum) => {
     if (!profileId) return
 
     const cacheKey = `${profileId}-${pageNum}`
 
-    if (!force && tierlistCache.has(cacheKey)) {
+    if (tierlistCache.has(cacheKey)) {
       const cached = tierlistCache.get(cacheKey)
-      _setTierlists(cached.tierlists)
+      setTierlists(cached.tierlists)
       setTotal(cached.total)
       setTotalPages(cached.totalPages)
       return
@@ -57,12 +56,12 @@ export function useUserTierlists(profileId) {
 
       tierlistCache.set(cacheKey, result)
 
-      _setTierlists(result.tierlists)
+      setTierlists(result.tierlists)
       setTotal(result.total)
       setTotalPages(result.totalPages)
     } catch {
       if (!controller.signal.aborted) {
-        _setTierlists([])
+        setTierlists([])
       }
     } finally {
       if (!controller.signal.aborted) {
@@ -72,28 +71,17 @@ export function useUserTierlists(profileId) {
   }, [profileId])
 
   useEffect(() => {
-    if (!profileId) return
-    tierlistCache.clear()
-    setPage(1)
-    fetchTierlists(1, true)
-  }, [profileId])
-
-  useEffect(() => {
-    if (!profileId) return
     fetchTierlists(page)
-  }, [page, version])
+  }, [fetchTierlists, page])
 
   const handlePageChange = useCallback((newPage) => {
     setPage(newPage)
   }, [])
 
-  const setTierlists = useCallback((updater) => {
-    _setTierlists(prev => {
-      const next = typeof updater === "function" ? updater(prev) : updater
-      return next
-    })
-    setVersion(v => v + 1)
-  }, [])
+  const refetch = useCallback(() => {
+    tierlistCache.clear()
+    fetchTierlists(page)
+  }, [fetchTierlists, page])
 
   return {
     tierlists,
@@ -103,5 +91,6 @@ export function useUserTierlists(profileId) {
     totalPages,
     total,
     handlePageChange,
+    refetch,
   }
 }
