@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react"
 import {
   DndContext,
   DragOverlay,
+  pointerWithin,
   closestCenter,
   MouseSensor,
   TouchSensor,
@@ -17,7 +18,7 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { restrictToWindowEdges } from "@dnd-kit/modifiers"
-import { Plus, Trash2, Palette, Gamepad2, Search, X, ChevronUp, ChevronDown } from "lucide-react"
+import { Plus, Trash2, Palette, Gamepad2, Search, X, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react"
 import GameCard from "@components/Game/GameCard"
 
 const PRESET_COLORS = [
@@ -30,6 +31,18 @@ function getCoverUrl(game) {
   if (!game?.cover?.url) return null
   const url = game.cover.url.startsWith("http") ? game.cover.url : `https:${game.cover.url}`
   return url.replace("t_thumb", "t_cover_small")
+}
+
+function tierlistCollisionDetection(args) {
+  const pointerCollisions = pointerWithin(args)
+  if (pointerCollisions.length > 0) {
+    const itemCollisions = pointerCollisions.filter(
+      (c) => !String(c.id).startsWith("tier-") && c.id !== "untiered-zone"
+    )
+    if (itemCollisions.length > 0) return itemCollisions
+    return pointerCollisions
+  }
+  return closestCenter(args)
 }
 
 function SortableGameItem({ id, game, isDragging }) {
@@ -131,15 +144,45 @@ function SortableUntieredItem({ id, game, isDragging }) {
   )
 }
 
-function ViewGameItem({ game }) {
-  if (!game) return null
+function ViewTier({ tier, items, getGame }) {
   return (
-    <GameCard
-      game={game}
-      showRating={false}
-      showQuickActions={false}
-      responsive
-    />
+    <div
+      className="flex border rounded-xl overflow-hidden bg-zinc-900/50 border-zinc-700/80"
+      onDragStart={(e) => e.preventDefault()}
+    >
+      <div
+        className="w-16 sm:w-24 md:w-28 flex-shrink-0 flex items-center justify-center text-white p-1.5"
+        style={{ backgroundColor: tier.color }}
+      >
+        <span className="select-none text-center leading-tight break-words hyphens-auto font-bold text-[11px] sm:text-sm md:text-base max-w-full overflow-hidden">
+          {tier.label}
+        </span>
+      </div>
+      <div className="flex-1 min-h-[5.5rem] sm:min-h-[6rem] md:min-h-[7rem] p-2 sm:p-2.5 bg-zinc-800/40">
+        {items.length > 0 ? (
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(56px,1fr))] gap-1.5 sm:gap-2">
+            {items.map((item) => {
+              const game = getGame(item.game_slug)
+              if (!game) return null
+              return (
+                <div key={item.id} draggable={false} className="select-none">
+                  <GameCard
+                    game={game}
+                    showRating={false}
+                    showQuickActions={false}
+                    responsive
+                  />
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="w-full h-full min-h-[4rem] flex items-center justify-center">
+            <span className="text-xs text-zinc-600 select-none">Vazio</span>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -148,7 +191,6 @@ function DroppableTier({
   items,
   getGame,
   activeId,
-  isEditing,
   onEditTier,
   onDeleteTier,
   onMoveTier,
@@ -157,13 +199,12 @@ function DroppableTier({
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `tier-${tier.id}`,
-    disabled: !isEditing,
   })
 
   return (
     <div
       className={`flex border rounded-xl overflow-hidden bg-zinc-900/50 transition-all duration-200 ${
-        isOver && isEditing
+        isOver
           ? "border-indigo-500/50 bg-indigo-500/5 scale-[1.005]"
           : "border-zinc-700/80"
       }`}
@@ -175,89 +216,70 @@ function DroppableTier({
         <span className="select-none text-center leading-tight break-words hyphens-auto font-bold text-[11px] sm:text-sm md:text-base max-w-full overflow-hidden">
           {tier.label}
         </span>
-
-        {isEditing && (
-          <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => onEditTier(tier)}
-                className="p-1.5 sm:p-1 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-              >
-                <Palette className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
-              </button>
-              <button
-                onClick={() => onDeleteTier(tier.id)}
-                className="p-1.5 sm:p-1 hover:bg-red-500/50 rounded-lg transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
-              </button>
-            </div>
-            <div className="flex items-center gap-0.5">
-              <button
-                onClick={() => onMoveTier(tier.id, "up")}
-                disabled={!canMoveUp}
-                className="p-1 hover:bg-white/20 rounded transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronUp className="w-3 h-3" />
-              </button>
-              <button
-                onClick={() => onMoveTier(tier.id, "down")}
-                disabled={!canMoveDown}
-                className="p-1 hover:bg-white/20 rounded transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronDown className="w-3 h-3" />
-              </button>
-            </div>
+        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onEditTier(tier)}
+              className="p-1.5 sm:p-1 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+            >
+              <Palette className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+            </button>
+            <button
+              onClick={() => onDeleteTier(tier.id)}
+              className="p-1.5 sm:p-1 hover:bg-red-500/50 rounded-lg transition-colors cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+            </button>
           </div>
-        )}
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={() => onMoveTier(tier.id, "up")}
+              disabled={!canMoveUp}
+              className="p-1 hover:bg-white/20 rounded transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronUp className="w-3 h-3" />
+            </button>
+            <button
+              onClick={() => onMoveTier(tier.id, "down")}
+              disabled={!canMoveDown}
+              className="p-1 hover:bg-white/20 rounded transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronDown className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
       </div>
 
       <div
         ref={setNodeRef}
         className="flex-1 min-h-[5.5rem] sm:min-h-[6rem] md:min-h-[7rem] p-2 sm:p-2.5 bg-zinc-800/40"
       >
-        {isEditing ? (
-          <SortableContext
-            items={items.map((i) => i.id)}
-            strategy={rectSortingStrategy}
-          >
-            {items.length > 0 ? (
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(56px,1fr))] gap-1.5 sm:gap-2">
-                {items.map((item) => {
-                  const game = getGame(item.game_slug)
-                  return (
-                    <SortableGameItem
-                      key={item.id}
-                      id={item.id}
-                      game={game}
-                      isDragging={activeId === item.id}
-                    />
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="w-full h-full min-h-[4rem] flex items-center justify-center">
-                <span className="text-xs text-zinc-600 select-none">
-                  Arraste jogos para cá
-                </span>
-              </div>
-            )}
-          </SortableContext>
-        ) : (
-          <>
-            {items.length > 0 ? (
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(56px,1fr))] gap-1.5 sm:gap-2">
-                {items.map((item) => (
-                  <ViewGameItem key={item.id} game={getGame(item.game_slug)} />
-                ))}
-              </div>
-            ) : (
-              <div className="w-full h-full min-h-[4rem] flex items-center justify-center">
-                <span className="text-xs text-zinc-600 select-none">Vazio</span>
-              </div>
-            )}
-          </>
-        )}
+        <SortableContext
+          items={items.map((i) => i.id)}
+          strategy={rectSortingStrategy}
+        >
+          {items.length > 0 ? (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(56px,1fr))] gap-1.5 sm:gap-2">
+              {items.map((item) => {
+                const game = getGame(item.game_slug)
+                return (
+                  <SortableGameItem
+                    key={item.id}
+                    id={item.id}
+                    game={game}
+                    isDragging={activeId === item.id}
+                  />
+                )
+              })}
+            </div>
+          ) : (
+            <div className="w-full h-full min-h-[4rem] flex items-center justify-center">
+              <span className="text-xs text-zinc-600 select-none">
+                Arraste jogos para cá
+              </span>
+            </div>
+          )}
+        </SortableContext>
       </div>
     </div>
   )
@@ -267,25 +289,42 @@ function UntieredZone({
   games,
   getGame,
   activeId,
-  isEditing,
   searchQuery,
   onSearchChange,
+  sortOrder,
+  onSortChange,
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: "untiered-zone",
-    disabled: !isEditing,
   })
 
-  const filteredGames = useMemo(() => {
-    if (!searchQuery.trim()) return games
-    const query = searchQuery.toLowerCase()
-    return games.filter((g) => {
-      const game = getGame(g.game_slug)
-      return game?.name?.toLowerCase().includes(query)
-    })
-  }, [games, searchQuery, getGame])
+  const sortedAndFilteredGames = useMemo(() => {
+    let result = [...games]
 
-  if (!isEditing) return null
+    if (sortOrder === "az") {
+      result.sort((a, b) => {
+        const nameA = getGame(a.game_slug)?.name || ""
+        const nameB = getGame(b.game_slug)?.name || ""
+        return nameA.localeCompare(nameB)
+      })
+    } else if (sortOrder === "za") {
+      result.sort((a, b) => {
+        const nameA = getGame(a.game_slug)?.name || ""
+        const nameB = getGame(b.game_slug)?.name || ""
+        return nameB.localeCompare(nameA)
+      })
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter((g) => {
+        const game = getGame(g.game_slug)
+        return game?.name?.toLowerCase().includes(query)
+      })
+    }
+
+    return result
+  }, [games, searchQuery, sortOrder, getGame])
 
   return (
     <div className="mt-6 sm:mt-8">
@@ -295,29 +334,44 @@ function UntieredZone({
           <p className="text-sm text-zinc-400 font-medium">
             Jogos não classificados
             <span className="text-zinc-600 ml-1.5">
-              ({filteredGames.length}
+              ({sortedAndFilteredGames.length}
               {searchQuery && ` de ${games.length}`})
             </span>
           </p>
         </div>
 
-        <div className="relative flex-1 sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Buscar jogo..."
-            className="w-full pl-9 pr-9 py-2.5 sm:py-2 bg-zinc-800/80 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => onSearchChange("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+        <div className="flex items-center gap-2 flex-1">
+          <div className="relative flex-1 sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Buscar jogo..."
+              className="w-full pl-9 pr-9 py-2.5 sm:py-2 bg-zinc-800/80 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => onSearchChange("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          <div className="relative flex-shrink-0">
+            <ArrowUpDown className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
+            <select
+              value={sortOrder}
+              onChange={(e) => onSortChange(e.target.value)}
+              className="pl-8 pr-3 py-2.5 sm:py-2 bg-zinc-800/80 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:border-zinc-500 transition-colors cursor-pointer"
             >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+              <option value="default">Padrão</option>
+              <option value="az">A → Z</option>
+              <option value="za">Z → A</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -329,13 +383,13 @@ function UntieredZone({
             : "border-zinc-700/60 bg-zinc-800/20"
         }`}
       >
-        {filteredGames.length > 0 ? (
+        {sortedAndFilteredGames.length > 0 ? (
           <SortableContext
-            items={filteredGames.map((g) => `untiered-${g.game_slug}`)}
+            items={sortedAndFilteredGames.map((g) => `untiered-${g.game_slug}`)}
             strategy={rectSortingStrategy}
           >
             <div className="grid grid-cols-[repeat(auto-fill,minmax(68px,1fr))] gap-2 sm:gap-2.5">
-              {filteredGames.map((g) => {
+              {sortedAndFilteredGames.map((g) => {
                 const game = getGame(g.game_slug)
                 const itemId = `untiered-${g.game_slug}`
                 return (
@@ -418,12 +472,13 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
               type="text"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              maxLength={15}
+              onKeyDown={(e) => e.key === "Enter" && handleSave()}
+              maxLength={30}
               className="w-full px-4 py-3 sm:py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-center text-lg font-bold focus:outline-none focus:border-indigo-500 transition-colors"
               autoFocus
             />
             <span className="text-xs text-zinc-600 mt-1.5 block text-right">
-              {label.length}/15
+              {label.length}/30
             </span>
           </div>
 
@@ -490,14 +545,24 @@ export default function TierlistEditor({
   const [activeId, setActiveId] = useState(null)
   const [editingTier, setEditingTier] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [sortOrder, setSortOrder] = useState("default")
+
+  useEffect(() => {
+    if (!isEditing) return
+    function handleBeforeUnload(e) {
+      e.preventDefault()
+      e.returnValue = ""
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  }, [isEditing])
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor)
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
   )
 
   function handleDragStart(event) {
-    if (!isEditing) return
     setActiveId(event.active.id)
   }
 
@@ -505,7 +570,7 @@ export default function TierlistEditor({
     const { active, over } = event
     setActiveId(null)
 
-    if (!isEditing || !over) return
+    if (!over) return
 
     const activeIdStr = String(active.id)
     const overIdStr = String(over.id)
@@ -523,7 +588,7 @@ export default function TierlistEditor({
     }
 
     let targetTierId = null
-    let overItemIndex = -1
+    let overItemId = null
 
     if (overIdStr.startsWith("tier-")) {
       targetTierId = overIdStr.replace("tier-", "")
@@ -531,62 +596,69 @@ export default function TierlistEditor({
       const overItem = items.find((i) => i.id === overIdStr)
       if (overItem) {
         targetTierId = overItem.tier_id
-        overItemIndex = items.findIndex((i) => i.id === overIdStr)
+        overItemId = overItem.id
       }
     }
 
     if (!targetTierId) return
 
-    const existingItem = items.find((i) => i.game_slug === gameSlug)
+    setItems((prev) => {
+      const existingItem = prev.find((i) => i.game_slug === gameSlug)
 
-    if (existingItem) {
-      const activeIndex = items.findIndex((i) => i.id === existingItem.id)
-      const sameTier = existingItem.tier_id === targetTierId
-
-      if (sameTier && overItemIndex !== -1 && activeIndex !== overItemIndex) {
-        setItems((prev) => {
-          const newItems = arrayMove(prev, activeIndex, overItemIndex)
-          return newItems.map((item, idx) => ({ ...item, position: idx }))
-        })
-      } else if (!sameTier) {
-        setItems((prev) => {
-          const updated = prev.map((i) =>
-            i.game_slug === gameSlug ? { ...i, tier_id: targetTierId } : i
-          )
-          if (overItemIndex !== -1) {
-            const itemToMove = updated.find((i) => i.game_slug === gameSlug)
-            const withoutItem = updated.filter((i) => i.game_slug !== gameSlug)
-            withoutItem.splice(overItemIndex, 0, itemToMove)
-            return withoutItem.map((item, idx) => ({ ...item, position: idx }))
-          }
-          return updated.map((item, idx) => ({ ...item, position: idx }))
-        })
-      }
-    } else {
-      const game = untieredGames.find((g) => g.game_slug === gameSlug)
-      if (game) {
-        setItems((prev) => {
-          const newItem = {
-            id: crypto.randomUUID(),
-            game_id: game.game_id,
-            game_slug: game.game_slug,
-            tier_id: targetTierId,
-            position: prev.length,
-          }
-
-          if (overItemIndex !== -1) {
-            const newItems = [...prev]
-            newItems.splice(overItemIndex, 0, newItem)
-            return newItems.map((item, idx) => ({ ...item, position: idx }))
-          }
-
-          return [...prev, newItem].map((item, idx) => ({
+      if (existingItem) {
+        if (existingItem.tier_id === targetTierId) {
+          if (!overItemId || existingItem.id === overItemId) return prev
+          const activeIdx = prev.findIndex((i) => i.id === existingItem.id)
+          const overIdx = prev.findIndex((i) => i.id === overItemId)
+          if (activeIdx === -1 || overIdx === -1) return prev
+          return arrayMove(prev, activeIdx, overIdx).map((item, idx) => ({
             ...item,
             position: idx,
           }))
-        })
+        }
+
+        const withoutItem = prev.filter((i) => i.id !== existingItem.id)
+        const movedItem = { ...existingItem, tier_id: targetTierId }
+
+        if (overItemId) {
+          const insertIdx = withoutItem.findIndex((i) => i.id === overItemId)
+          if (insertIdx !== -1) {
+            withoutItem.splice(insertIdx, 0, movedItem)
+          } else {
+            withoutItem.push(movedItem)
+          }
+        } else {
+          withoutItem.push(movedItem)
+        }
+
+        return withoutItem.map((item, idx) => ({ ...item, position: idx }))
       }
-    }
+
+      const game = untieredGames.find((g) => g.game_slug === gameSlug)
+      if (!game) return prev
+
+      const newItem = {
+        id: crypto.randomUUID(),
+        game_id: game.game_id,
+        game_slug: game.game_slug,
+        tier_id: targetTierId,
+        position: 0,
+      }
+
+      const newItems = [...prev]
+      if (overItemId) {
+        const insertIdx = newItems.findIndex((i) => i.id === overItemId)
+        if (insertIdx !== -1) {
+          newItems.splice(insertIdx, 0, newItem)
+        } else {
+          newItems.push(newItem)
+        }
+      } else {
+        newItems.push(newItem)
+      }
+
+      return newItems.map((item, idx) => ({ ...item, position: idx }))
+    })
   }
 
   function handleAddTier() {
@@ -617,12 +689,12 @@ export default function TierlistEditor({
     setTiers((prev) => {
       const index = prev.findIndex((t) => t.id === tierId)
       if (index === -1) return prev
-
       const newIndex = direction === "up" ? index - 1 : index + 1
       if (newIndex < 0 || newIndex >= prev.length) return prev
-
-      const newTiers = arrayMove(prev, index, newIndex)
-      return newTiers.map((t, idx) => ({ ...t, position: idx }))
+      return arrayMove(prev, index, newIndex).map((t, idx) => ({
+        ...t,
+        position: idx,
+      }))
     })
   }
 
@@ -637,24 +709,20 @@ export default function TierlistEditor({
 
   if (!isEditing) {
     return (
-      <div className="space-y-2 sm:space-y-2.5">
+      <div
+        className="space-y-2 sm:space-y-2.5"
+        onDragStart={(e) => e.preventDefault()}
+      >
         {tiers.map((tier) => {
           const tierItems = items
             .filter((i) => i.tier_id === tier.id)
             .sort((a, b) => a.position - b.position)
           return (
-            <DroppableTier
+            <ViewTier
               key={tier.id}
               tier={tier}
               items={tierItems}
               getGame={getGame}
-              activeId={null}
-              isEditing={false}
-              onEditTier={() => {}}
-              onDeleteTier={() => {}}
-              onMoveTier={() => {}}
-              canMoveUp={false}
-              canMoveDown={false}
             />
           )
         })}
@@ -672,7 +740,7 @@ export default function TierlistEditor({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={tierlistCollisionDetection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       modifiers={[restrictToWindowEdges]}
@@ -682,7 +750,6 @@ export default function TierlistEditor({
           const tierItems = items
             .filter((i) => i.tier_id === tier.id)
             .sort((a, b) => a.position - b.position)
-
           return (
             <DroppableTier
               key={tier.id}
@@ -690,7 +757,6 @@ export default function TierlistEditor({
               items={tierItems}
               getGame={getGame}
               activeId={activeId}
-              isEditing
               onEditTier={setEditingTier}
               onDeleteTier={handleDeleteTier}
               onMoveTier={handleMoveTier}
@@ -714,9 +780,10 @@ export default function TierlistEditor({
         games={untieredGames}
         getGame={getGame}
         activeId={activeId}
-        isEditing
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        sortOrder={sortOrder}
+        onSortChange={setSortOrder}
       />
 
       <DragOverlay>
