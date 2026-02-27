@@ -6,7 +6,7 @@ import { handleAddItem } from "#services/lists/handlers/me/addItem.js"
 import { handleRemoveItem } from "#services/lists/handlers/me/removeItem.js"
 import { handleReorder } from "#services/lists/handlers/me/reorder.js"
 import { handleSearch } from "#services/lists/handlers/search.js"
-import { handleToggleMark } from "#services/lists/handlers/metoggleMark.js"
+import { handleToggleMark } from "#services/lists/handlers/me/toggleMark.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
