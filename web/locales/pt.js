@@ -656,5 +656,13 @@ export default {
       description: "Conecte sua conta Steam para exibir seus jogos e estatísticas no seu perfil.",
       idLabel: "ID:",
     },
+    nintendo: {
+      title: "Nintendo Switch",
+      connected: "Conectado",
+      remove: "Remover",
+      save: "Salvar",
+      codePlaceholder: "SW-1234-5678-9012",
+      nicknamePlaceholder: "Nickname (opcional)",
+    },
   },
 }
