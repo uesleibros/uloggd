@@ -78,7 +78,7 @@ export default function TierlistPage() {
   const fetchedRef = useRef(false)
   const fetchedGamesRef = useRef(false)
 
-  const isOwner = !authLoading && currentUser?.id && tierlist?.user_id === currentUser.id
+  const isOwner = !!(currentUser?.id && !authLoading && tierlist?.user_id === currentUser.id)
   const encodedId = tierlist ? encode(tierlist.id) : id
 
   const allSlugs = useMemo(() => {
