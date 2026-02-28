@@ -676,6 +676,14 @@ export default {
       title: "Minha conta",
       description: "Informações da sua conta vinculada ao Discord."
     },
+    appearance: {
+      title: "Aparência",
+      description: "Personalize como seu perfil aparece."
+    },
+    connections: {
+      title: "Conexões",
+      description: "Conecte suas contas para sincronizar dados e desbloquear recursos."
+    },
     pronoun: {
       title: "Pronome",
       description: "Exibido no seu perfil ao lado do seu nome.",
@@ -1444,4 +1452,5 @@ export default {
     },
   },
 }
+
 
