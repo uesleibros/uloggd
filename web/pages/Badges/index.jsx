@@ -160,7 +160,11 @@ function SuccessModal({ isOpen, onClose }) {
 }
 
 function BadgeItem({ badge, onClick }) {
+  const { t } = useTranslation()
   const s = getBadgeStyles(badge.color)
+
+  const title = t(`badges.${badge.id}.title`)
+  const description = t(`badges.${badge.id}.description`)
 
   return (
     <button
@@ -176,15 +180,15 @@ function BadgeItem({ badge, onClick }) {
       >
         <img
           src={badge.icon_url}
-          alt={badge.title}
+          alt={title}
           className="w-6 h-6 select-none"
           draggable={false}
         />
       </div>
 
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-medium text-white group-hover:text-white/90">{badge.title}</h3>
-        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1">{badge.description}</p>
+        <h3 className="text-sm font-medium text-white group-hover:text-white/90">{title}</h3>
+        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1">{description}</p>
       </div>
 
       <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 transition-colors flex-shrink-0" />
