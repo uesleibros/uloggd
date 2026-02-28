@@ -5,7 +5,7 @@ import { PointsRatingInput } from "../inputs/PointsRating"
 import { RatingModeSelector } from "../inputs/RatingModeSelector"
 import { MarkdownEditor } from "@components/MarkdownEditor"
 import { MAX_ASPECT_LABEL, MAX_ASPECT_REVIEW } from "../constants"
-import { useTranslation } from "#lib/i18n"
+import { useTranslation } from "#hooks/useTranslation"
 
 export function AspectRatingItem({ aspect, onUpdate, onRemove }) {
   const { t } = useTranslation()
@@ -116,3 +116,4 @@ export function AspectRatingItem({ aspect, onUpdate, onRemove }) {
     </div>
   )
 }
+
