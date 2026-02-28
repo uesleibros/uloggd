@@ -18,8 +18,8 @@ import {
   getLanguageDirection,
 } from "./utils"
 
-import pt from "@/locales/pt.json" with { type: "json" }
-import en from "@/locales/en.json" with { type: "json" }
+import pt from "@/locales/pt"
+import en from "@/locales/en"
 
 const translations = { pt, en }
 
