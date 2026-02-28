@@ -7,6 +7,9 @@ function BadgeModalContent({ badge, showAssignedDate = false, onClose }) {
   const { t } = useTranslation()
   const s = getBadgeStyles(badge.color)
 
+  const title = t(`badges.${badge.id}.title`)
+  const description = t(`badges.${badge.id}.description`)
+
   return (
     <div
       className="overflow-hidden rounded-2xl bg-zinc-900"
@@ -33,17 +36,17 @@ function BadgeModalContent({ badge, showAssignedDate = false, onClose }) {
           >
             <img
               src={badge.icon_url}
-              alt={badge.title}
+              alt={title}
               className="w-10 h-10 select-none"
               draggable={false}
             />
           </div>
 
           <h3 className="text-lg font-bold text-white mb-2">
-            {badge.title}
+            {title}
           </h3>
           <p className="text-sm text-zinc-400 leading-relaxed">
-            {badge.description}
+            {description}
           </p>
 
           {showAssignedDate && badge.assigned_at && (
