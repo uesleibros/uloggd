@@ -757,5 +757,11 @@ export default {
       cancel: "Cancelar",
       remove: "Remover",
     },
+    reorder: {
+      title: "Reordenar jogos",
+      hint: "Arraste para reordenar ou use as setas.",
+      cancel: "Cancelar",
+      save: "Salvar ordem",
+    },
   },
 }
