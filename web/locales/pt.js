@@ -352,5 +352,13 @@ export default {
         viewAll: "Ver todas ({{count}})",
       },
     },
+    header: {
+      ratings: {
+        total: "Total",
+        critics: "Crítica",
+        users: "Usuários",
+      },
+      parentGame: "Jogo principal",
+    },
   },
 }
