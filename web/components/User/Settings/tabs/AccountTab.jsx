@@ -20,7 +20,7 @@ export default function AccountTab({
 	return (
 		<div>
 			<h2 className="text-lg font-semibold text-white">
-				{t("layout.tabs.account")}
+				{t("account.title")}
 			</h2>
 
 			<p className="text-sm text-zinc-500 mt-1 mb-6">
@@ -28,8 +28,18 @@ export default function AccountTab({
 			</p>
 
 			<div className="space-y-4 sm:space-y-6">
-				<AvatarSection avatar={user.avatar || null} onSave={onAvatarSave} saving={avatarSaving} />
-				<BannerSection banner={user.banner || null} onSave={onBannerSave} saving={bannerSaving} />
+				<AvatarSection
+					avatar={user.avatar || null}
+					onSave={onAvatarSave}
+					saving={avatarSaving}
+				/>
+
+				<BannerSection
+					banner={user.banner || null}
+					onSave={onBannerSave}
+					saving={bannerSaving}
+				/>
+
 				<BioSection
 					bio={bio}
 					onChange={onBioChange}
@@ -38,6 +48,7 @@ export default function AccountTab({
 					saving={bioSaving}
 					isDirty={bioIsDirty}
 				/>
+
 				<PronounSection
 					pronoun={pronoun}
 					onChange={onPronounChange}
@@ -46,12 +57,17 @@ export default function AccountTab({
 					saving={pronounSaving}
 					isDirty={pronounIsDirty}
 				/>
+
 				<ProfileSection
 					user={user}
 					onUsernameSave={onUsernameSave}
 					usernameSaving={usernameSaving}
 				/>
-				<DangerZoneSection onDelete={onDelete} loading={deleteLoading} />
+
+				<DangerZoneSection
+					onDelete={onDelete}
+					loading={deleteLoading}
+				/>
 			</div>
 		</div>
 	)
