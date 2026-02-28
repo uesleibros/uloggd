@@ -346,6 +346,7 @@ export default {
     },
   },
   game: {
+    playtime: "de jogo",
     meta: {
       description: "Veja informações sobre {{name}} no uloggd",
     },
@@ -867,3 +868,4 @@ export default {
     },
   },
 }
+
