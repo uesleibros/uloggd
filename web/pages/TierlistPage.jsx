@@ -13,6 +13,7 @@ import {
   ArrowLeft, Save, Lock, Loader2,
   Link as LinkIcon, Check, Calendar, Gamepad2, List,
 } from "lucide-react"
+import { useDateTime } from "#hooks/useDateTime"
 
 const tierlistCache = new Map()
 
@@ -65,6 +66,7 @@ export default function TierlistPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const { formatDateLong } = useDateTime()
   const { user: currentUser, loading: authLoading } = useAuth()
   const { games: libraryGames, loaded: libraryLoaded } = useMyLibrary()
 
@@ -82,7 +84,6 @@ export default function TierlistPage() {
   const isOwner = !!(currentUser?.id && !authLoading && tierlist?.user_id === currentUser.id)
   const encodedId = tierlist ? encode(tierlist.id) : id
 
-  // Converte os jogos da biblioteca para o formato esperado
   const userGames = useMemo(() => {
     if (!libraryLoaded || !isOwner) return []
     return Object.entries(libraryGames).map(([slug, data]) => ({
@@ -249,9 +250,7 @@ export default function TierlistPage() {
     )
   }
 
-  const createdAt = tierlist.created_at
-    ? new Date(tierlist.created_at).toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" })
-    : null
+  const createdAt = formatDateLong(tierlist.created_at)
 
   const totalGames = items.length
 

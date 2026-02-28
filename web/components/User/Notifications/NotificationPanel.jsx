@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import { UserPlus, ThumbsUp, Check, Trash2, X, Bell, BadgeCheck, XCircle, Ban, CheckCircle } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
-import { getTimeAgo, formatDateLong } from "#utils/formatDate"
+import { useDateTime } from "#hooks/useDateTime"
 import Modal from "@components/UI/Modal"
 
 const NOTIFICATION_ICONS = {
@@ -69,6 +69,7 @@ function getNotificationFullText(type, data, t) {
 
 function SystemNotificationModal({ notification, users, isOpen, onClose }) {
   const { t } = useTranslation()
+  const { formatDateLong } = useDateTime()
 
   if (!notification) return null
 
@@ -112,7 +113,7 @@ function SystemNotificationModal({ notification, users, isOpen, onClose }) {
           )}
 
           <p className="text-xs text-zinc-600 mt-4">
-            {formatDateLong(new Date(notification.created_at).getTime() / 1000)}
+            {formatDateLong(notification.created_at)}
           </p>
         </div>
 
@@ -131,6 +132,8 @@ function SystemNotificationModal({ notification, users, isOpen, onClose }) {
 
 function NotificationItem({ notification, users, onClose, onAction, onSystemClick, t }) {
   const config = NOTIFICATION_ICONS[notification.type]
+  const { getTimeAgoFromTimestamp } = useDateTime()
+
   if (!config) return null
 
   const Icon = config.icon
@@ -169,7 +172,7 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
         </p>
         <div className="flex items-center gap-1.5 mt-1">
           <Icon className={`w-3 h-3 ${config.color}`} />
-          <span className="text-xs text-zinc-600">{getTimeAgo(notification.created_at)}</span>
+          <span className="text-xs text-zinc-600">{getTimeAgoFromTimestamp(notification.created_at)}</span>
         </div>
       </div>
       {!notification.read && (

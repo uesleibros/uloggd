@@ -1,10 +1,11 @@
 import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 import { getBadgeStyles } from "#utils/badgeStyles"
-import { formatDateLong } from "#utils/formatDate"
+import { useDateTime } from "#hooks/useDateTime"
 
 function BadgeModalContent({ badge, showAssignedDate = false, onClose }) {
   const { t } = useTranslation()
+  const { formatDateLong } = useDateTime()
   const s = getBadgeStyles(badge.color)
 
   const title = t(`badges.${badge.id}.title`)
@@ -52,7 +53,7 @@ function BadgeModalContent({ badge, showAssignedDate = false, onClose }) {
           {showAssignedDate && badge.assigned_at && (
             <p className="text-xs text-zinc-500 mt-3">
               {t("badges.modal.assignedAt", {
-                date: formatDateLong(new Date(badge.assigned_at).getTime() / 1000),
+                date: formatDateLong(badge.assigned_at),
               })}
             </p>
           )}

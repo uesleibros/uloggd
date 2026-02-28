@@ -19,7 +19,7 @@ export default function SplashScreen({ children }) {
     <>
       {phase === "fading" && children}
       <div
-        className={`fixed inset-0 z-50 bg-zinc-950 flex items-center justify-center transition-all duration-500 ${
+        className={`fixed inset-0 z-[9999] bg-zinc-950 flex items-center justify-center transition-all duration-500 ${
           phase === "fading" ? "opacity-0" : "opacity-100"
         }`}
       >

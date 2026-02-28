@@ -19,7 +19,6 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
   const [detectedLang, setDetectedLang] = useState(null)
   const [translating, setTranslating] = useState(false)
 
-  // Reset translation when language changes
   useEffect(() => {
     setTranslatedSummary(null)
     setShowTranslated(false)

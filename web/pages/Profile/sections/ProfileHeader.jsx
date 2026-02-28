@@ -8,7 +8,7 @@ import ModeratorMenu from "@components/Moderation/ModeratorMenu"
 import ProfileActions from "../components/ProfileActions"
 import ProfileStats from "../components/ProfileStats"
 import { getStatus } from "#utils/onlineStatus"
-import { getTimeAgo } from "#utils/formatDate"
+import { useDateTime } from "#hooks/useDateTime"
 
 export function ProfileHeader({
   profile,
@@ -27,13 +27,9 @@ export function ProfileHeader({
   onFollowingClick,
 }) {
   const { t } = useTranslation("profile")
+  const { getTimeAgo, formatDateLong } = useDateTime()
 
-  const memberSince = profile.created_at
-    ? new Date(profile.created_at).toLocaleDateString("pt-BR", {
-        month: "long",
-        year: "numeric",
-      })
-    : null
+  const memberSince = formatDateLong(profile.created_at)
 
   const isBanned = profile.is_banned
   const isModerator = currentUser?.is_moderator

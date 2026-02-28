@@ -2,10 +2,11 @@ import { Link } from "react-router-dom"
 import { ChevronRight } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import RatingBadge from "@components/Game/RatingBadge"
-import { formatDateLong } from "#utils/formatDate"
+import { useDateTime } from "#hooks/useDateTime"
 
 export function GameHeader({ game, isMobile = false }) {
   const { t } = useTranslation("game")
+  const { formatDateLong } = useDateTime()
 
   if (isMobile) {
     return (

@@ -8,7 +8,7 @@ import ReviewButton from "@components/Game/Review"
 import { AgeRatings } from "../components/AgeRatings"
 import { Websites } from "../components/Websites"
 import { Keywords } from "../components/Keywords"
-import { formatDateLong } from "#utils/formatDate"
+import { useDateTime } from "#hooks/useDateTime"
 
 function GameCover({ game }) {
   if (game.cover) {
@@ -30,6 +30,7 @@ function GameCover({ game }) {
 
 function MobileHeader({ game }) {
   const { t } = useTranslation("game")
+  const { formatDateLong } = useDateTime()
 
   return (
     <div className="flex-1 min-w-0 md:hidden">

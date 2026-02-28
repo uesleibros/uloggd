@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { supabase } from "#lib/supabase.js"
 import { encode } from "#utils/shortId.js"
+import { useDateTime } from "#hooks/useDateTime"
 
 const ITEMS_PER_PAGE = 24
 
@@ -112,6 +113,7 @@ export default function ListPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const { formatDateLong } = useDateTime()
   const { user: currentUser, loading: authLoading } = useAuth()
   const [list, setList] = useState(null)
   const [items, setItems] = useState([])
@@ -289,13 +291,8 @@ export default function ListPage() {
     )
   }
 
-  const createdAt = list.created_at
-    ? new Date(list.created_at).toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" })
-    : null
-
-  const updatedAt = list.updated_at
-    ? new Date(list.updated_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short" })
-    : null
+  const createdAt = formatDateLong(list.created_at)
+  const updatedAt = formatDateLong(list.updated_at)
 
   const removingGame = removingItem ? getGame(removingItem.game_slug) : null
 

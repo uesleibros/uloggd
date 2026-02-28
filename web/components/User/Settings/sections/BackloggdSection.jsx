@@ -14,6 +14,7 @@ import { useTranslation } from "#hooks/useTranslation"
 import SettingsSection from "@components/User/Settings/ui/SettingsSection"
 import { notify } from "@components/UI/Notification"
 import { supabase } from "#lib/supabase"
+import { useDateTime } from "#hooks/useDateTime"
 
 const API_BASE = "/api/backloggd/@me"
 
@@ -73,15 +74,11 @@ function ProgressBar({ progress }) {
 
 function ImportResult({ job }) {
   const { t } = useTranslation()
+  const { getTimeAgoFromTimestamp } = useDateTime()
 
   if (!job || job.status === "running" || job.status === "scraping") return null
 
-  const timeAgo = job.finished_at
-    ? new Date(job.finished_at).toLocaleString("pt-BR", {
-        day: "2-digit", month: "2-digit", year: "numeric",
-        hour: "2-digit", minute: "2-digit",
-      })
-    : null
+  const timeAgo = getTimeAgoFromTimestamp(job.finished_at)
 
   return (
     <div className="mt-3 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50 space-y-2">

@@ -23,10 +23,9 @@ export default function LikeListModal({ isOpen, reviewId, onClose }) {
 		else setLoadingMore(true)
 
 		try {
-			const r = await fetch("/api/reviews/likes", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ reviewId, page: pageNum, limit: LIMIT }),
+			const r = await fetch(`/api/reviews/likes?reviewId=${reviewId}&page=${pageNum}&limit=${LIMIT}`, {
+				method: "GET",
+				headers: { "Content-Type": "application/json" }
 			})
 			const data = await r.json()
 

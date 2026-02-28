@@ -1,22 +1,18 @@
 import { useTranslation } from "#hooks/useTranslation"
 import { Check } from "lucide-react"
-
-const LANGUAGES = {
-  pt: { name: "Português", nativeName: "Português", flag: "🇧🇷" },
-  en: { name: "English", nativeName: "English", flag: "🇺🇸" },
-}
+import { LANGUAGE_CONFIG } from "#lib/i18n/constants"
 
 export default function LanguageTab() {
-  const { language, setLanguage, languages } = useTranslation()
+  const { t, language, setLanguage, languages } = useTranslation()
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-white">Idioma</h2>
-      <p className="text-sm text-zinc-500 mt-1 mb-6">Escolha o idioma da interface.</p>
+      <h2 className="text-lg font-semibold text-white">{t("settings.language.title")}</h2>
+      <p className="text-sm text-zinc-500 mt-1 mb-6">{t("settings.language.description")}</p>
 
       <div className="space-y-2">
         {languages.map((lang) => {
-          const config = LANGUAGES[lang]
+          const config = LANGUAGE_CONFIG[lang]
           const isActive = language === lang
 
           return (

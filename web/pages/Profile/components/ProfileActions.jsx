@@ -42,5 +42,4 @@ export default function ProfileActions({ isOwnProfile, isFollowing, followLoadin
       )}
     </button>
   )
-
 }
