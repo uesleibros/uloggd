@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Info,
 } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 import SettingsSection from "@components/User/Settings/ui/SettingsSection"
 import { notify } from "@components/UI/Notification"
 import { supabase } from "#lib/supabase"
@@ -38,12 +39,14 @@ async function apiCall(action, body = {}) {
 }
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation()
+
   const config = {
-    scraping: { icon: Loader2, text: "Buscando jogos...", color: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20", spin: true },
-    running: { icon: Loader2, text: "Importando...", color: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20", spin: true },
-    completed: { icon: CheckCircle2, text: "Concluída", color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
-    failed: { icon: XCircle, text: "Falhou", color: "text-red-400 bg-red-500/10 border-red-500/20" },
-    cancelled: { icon: AlertTriangle, text: "Cancelada", color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
+    scraping: { icon: Loader2, text: t("settings.backloggd.info.status.scraping"), color: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20", spin: true },
+    running: { icon: Loader2, text: t("settings.backloggd.info.status.running"), color: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20", spin: true },
+    completed: { icon: CheckCircle2, text: t("settings.backloggd.info.status.completed"), color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
+    failed: { icon: XCircle, text: t("settings.backloggd.info.status.failed"), color: "text-red-400 bg-red-500/10 border-red-500/20" },
+    cancelled: { icon: AlertTriangle, text: t("settings.backloggd.info.status.cancelled"), color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
   }
 
   const c = config[status] || config.failed
@@ -69,6 +72,8 @@ function ProgressBar({ progress }) {
 }
 
 function ImportResult({ job }) {
+  const { t } = useTranslation()
+
   if (!job || job.status === "running" || job.status === "scraping") return null
 
   const timeAgo = job.finished_at
@@ -93,19 +98,19 @@ function ImportResult({ job }) {
           {job.imported > 0 && (
             <span className="flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-              {job.imported} importados
+              {t("settings.backloggd.info.imported", { count: job.imported })}
             </span>
           )}
           {job.skipped > 0 && (
             <span className="flex items-center gap-1">
               <AlertTriangle className="w-3 h-3 text-amber-400" />
-              {job.skipped} ignorados
+              {t("settings.backloggd.info.skipped", { count: job.skipped })}
             </span>
           )}
           {job.failed > 0 && (
             <span className="flex items-center gap-1">
               <XCircle className="w-3 h-3 text-red-400" />
-              {job.failed} erros
+              {t("settings.backloggd.info.failed", { count: job.failed })}
             </span>
           )}
         </div>
@@ -119,6 +124,7 @@ function ImportResult({ job }) {
 }
 
 export default function BackloggdSection() {
+  const { t } = useTranslation()
   const [username, setUsername] = useState("")
   const [loading, setLoading] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
@@ -150,7 +156,7 @@ export default function BackloggdSection() {
         setIsRunning(false)
         setLoading(false)
         if (data.status === "completed") {
-          notify(`Importação concluída! ${data.imported} jogos importados.`)
+          notify(t("settings.backloggd.info.completed", { count: data.imported }))
         }
       }
     } catch {
@@ -158,7 +164,7 @@ export default function BackloggdSection() {
       setIsRunning(false)
       setLoading(false)
     }
-  }, [])
+  }, [t])
 
   const pollScraping = useCallback(async (jobId) => {
     if (!mountedRef.current) return
@@ -236,18 +242,18 @@ export default function BackloggdSection() {
         processLoop(data.job_id)
       } else if (data.status === "completed") {
         setLoading(false)
-        notify("Nenhum jogo encontrado para importar.")
+        notify(t("settings.backloggd.info.noGames"))
       } else {
         setLoading(false)
       }
     } catch (e) {
       setLoading(false)
       if (e.status === 404) {
-        notify("Usuário não encontrado no Backloggd.", "error")
+        notify(t("settings.backloggd.info.userNotFound"), "error")
       } else if (e.status === 409) {
-        notify("Já existe uma importação em andamento.", "error")
+        notify(t("settings.backloggd.info.alreadyRunning"), "error")
       } else {
-        notify("Erro ao iniciar importação.", "error")
+        notify(t("settings.backloggd.info.startError"), "error")
       }
     }
   }
@@ -261,9 +267,9 @@ export default function BackloggdSection() {
       setIsRunning(false)
       setLoading(false)
       setJob((prev) => prev ? { ...prev, status: "cancelled", finished_at: new Date().toISOString() } : prev)
-      notify("Importação cancelada.")
+      notify(t("settings.backloggd.info.cancelled"))
     } catch {
-      notify("Erro ao cancelar.", "error")
+      notify(t("settings.backloggd.info.cancelError"), "error")
     }
   }
 
@@ -275,13 +281,13 @@ export default function BackloggdSection() {
   }
 
   return (
-    <SettingsSection title="Backloggd">
+    <SettingsSection title={t("settings.backloggd.title")}>
       <div className="space-y-4">
         <div className="flex items-start gap-3 p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/10">
           <Info className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
           <div className="text-sm text-zinc-400 space-y-1">
             <p>
-              Importe seus jogos do{" "}
+              {t("settings.backloggd.info.text")}{" "}
               <a
                 href="https://www.backloggd.com"
                 target="_blank"
@@ -291,11 +297,9 @@ export default function BackloggdSection() {
                 Backloggd
                 <ExternalLink className="w-3 h-3" />
               </a>
-              {" "}para o uloggd.
             </p>
             <p className="text-xs text-zinc-500">
-              Serão importados jogos marcados como jogados, jogando, backlog e lista de desejos.
-              Jogos já existentes na sua conta serão ignorados.
+              {t("settings.backloggd.info.subtext")}
             </p>
           </div>
         </div>
@@ -303,7 +307,7 @@ export default function BackloggdSection() {
         {!fetchingStatus && (
           <div className="space-y-2">
             <label className="text-sm font-medium text-zinc-300">
-              Username do Backloggd
+              {t("settings.backloggd.info.usernameLabel")}
             </label>
             <div className="flex gap-2">
               <div className="flex-1 relative">
@@ -333,7 +337,7 @@ export default function BackloggdSection() {
                 ) : (
                   <Download className="w-4 h-4" />
                 )}
-                <span className="hidden sm:inline">Importar</span>
+                <span className="hidden sm:inline">{t("settings.backloggd.info.importButton")}</span>
               </button>
             </div>
           </div>
@@ -346,15 +350,15 @@ export default function BackloggdSection() {
                 <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
                 <span className="text-sm text-zinc-300">
                   {job.status === "scraping"
-                    ? `Buscando jogos de @${job.source_username}...`
-                    : `Importando de @${job.source_username}...`
+                    ? `${t("settings.backloggd.info.searching")} @${job.source_username}...`
+                    : `${t("settings.backloggd.info.importing")} @${job.source_username}...`
                   }
                 </span>
               </div>
               <button
                 onClick={handleCancel}
                 className="p-1 rounded-md text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
-                title="Cancelar importação"
+                title={t("settings.backloggd.info.cancel")}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -365,8 +369,8 @@ export default function BackloggdSection() {
                 <ProgressBar progress={job.total > 0 ? (job.progress / job.total) * 100 : 0} />
                 <div className="flex items-center justify-between text-xs text-zinc-500">
                   <span>
-                    {job.imported || 0} importados
-                    {job.skipped > 0 && ` · ${job.skipped} ignorados`}
+                    {t("settings.backloggd.info.imported", { count: job.imported || 0 })}
+                    {job.skipped > 0 && ` · ${t("settings.backloggd.info.skipped", { count: job.skipped })}`}
                   </span>
                   {job.total > 0 && (
                     <span>{job.progress || 0}/{job.total}</span>
@@ -385,7 +389,7 @@ export default function BackloggdSection() {
             className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-indigo-400 transition-colors cursor-pointer"
           >
             <RefreshCw className="w-3 h-3" />
-            Tentar novamente
+            {t("settings.backloggd.info.retry")}
           </button>
         )}
 
@@ -397,5 +401,4 @@ export default function BackloggdSection() {
       </div>
     </SettingsSection>
   )
-
 }
