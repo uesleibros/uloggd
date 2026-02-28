@@ -21,7 +21,7 @@ const TABS = [
 	{ key: "backlog", label: "Backlog" },
 	{ key: "wishlist", label: "Wishlist" },
 	{ key: "dropped", label: "Largados" },
-	{ key: "shelved", label: "Engavetados" },
+	{ key: "shelved", label: "Na prateleira" },
 	{ key: "rated", label: "Avaliados" },
 ]
 

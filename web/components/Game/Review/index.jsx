@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Plus } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
@@ -43,6 +43,7 @@ export default function ReviewButton({ game }) {
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedReview, setSelectedReview] = useState(null)
+  const fetchedRef = useRef(false)
 
   const fetchReviews = useCallback(async () => {
     if (!user || !game?.id) return
@@ -50,13 +51,13 @@ export default function ReviewButton({ game }) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
-      
+
       const res = await fetch(`/api/reviews/@me/game?gameId=${game.id}`, {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       })
-      
+
       if (res.ok) {
         const data = await res.json()
         setReviews(data)
@@ -68,9 +69,11 @@ export default function ReviewButton({ game }) {
     } finally {
       setLoading(false)
     }
-  }, [user, game?.id])
+  }, [user?.id, game?.id])
 
   useEffect(() => {
+    if (fetchedRef.current) return
+    fetchedRef.current = true
     fetchReviews()
   }, [fetchReviews])
 
@@ -91,12 +94,18 @@ export default function ReviewButton({ game }) {
 
   function handleClose() {
     setShowModal(false)
-    fetchReviews()
+    fetchedRef.current = false
+    fetchReviews().then(() => {
+      fetchedRef.current = true
+    })
   }
 
   function handleDeleted() {
     setSelectedReview(null)
-    fetchReviews()
+    fetchedRef.current = false
+    fetchReviews().then(() => {
+      fetchedRef.current = true
+    })
   }
 
   return (
