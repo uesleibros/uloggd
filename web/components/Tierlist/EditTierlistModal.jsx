@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react"
 import { supabase } from "#lib/supabase"
+import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 import { Globe, Lock } from "lucide-react"
 
 export default function EditTierlistModal({ isOpen, onClose, tierlist, onUpdated }) {
+  const { t } = useTranslation("tierlist.edit")
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [isPublic, setIsPublic] = useState(true)
@@ -21,13 +23,13 @@ export default function EditTierlistModal({ isOpen, onClose, tierlist, onUpdated
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!title.trim()) return setError("Título é obrigatório")
+    if (!title.trim()) return setError(t("errors.titleRequired"))
     setLoading(true)
     setError(null)
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error("Não autenticado")
+      if (!session) throw new Error(t("errors.notAuthenticated"))
 
       const res = await fetch("/api/tierlists/@me/update", {
         method: "POST",
@@ -45,7 +47,7 @@ export default function EditTierlistModal({ isOpen, onClose, tierlist, onUpdated
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Erro ao atualizar")
+        throw new Error(data.error || t("errors.updateFailed"))
       }
 
       onUpdated?.({
@@ -63,10 +65,10 @@ export default function EditTierlistModal({ isOpen, onClose, tierlist, onUpdated
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Editar tierlist" maxWidth="max-w-lg" fullscreenMobile showMobileGrip>
+    <Modal isOpen={isOpen} onClose={onClose} title={t("title")} maxWidth="max-w-lg" fullscreenMobile showMobileGrip>
       <form onSubmit={handleSubmit} className="p-5 sm:p-6 flex flex-col gap-5">
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">Título</label>
+          <label className="block text-sm font-medium text-zinc-300 mb-2">{t("fields.title")}</label>
           <input
             type="text"
             value={title}
@@ -80,7 +82,7 @@ export default function EditTierlistModal({ isOpen, onClose, tierlist, onUpdated
 
         <div>
           <label className="block text-sm font-medium text-zinc-300 mb-2">
-            Descrição <span className="text-zinc-600 font-normal">(opcional)</span>
+            {t("fields.description")} <span className="text-zinc-600 font-normal">{t("fields.optional")}</span>
           </label>
           <textarea
             value={description}
@@ -93,7 +95,7 @@ export default function EditTierlistModal({ isOpen, onClose, tierlist, onUpdated
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2.5">Visibilidade</label>
+          <label className="block text-sm font-medium text-zinc-300 mb-2.5">{t("fields.visibility")}</label>
           <div className="flex gap-3">
             <button
               type="button"
@@ -105,7 +107,7 @@ export default function EditTierlistModal({ isOpen, onClose, tierlist, onUpdated
               }`}
             >
               <Globe className="w-4 h-4" />
-              Pública
+              {t("visibility.public")}
             </button>
             <button
               type="button"
@@ -117,7 +119,7 @@ export default function EditTierlistModal({ isOpen, onClose, tierlist, onUpdated
               }`}
             >
               <Lock className="w-4 h-4" />
-              Privada
+              {t("visibility.private")}
             </button>
           </div>
         </div>
@@ -128,14 +130,14 @@ export default function EditTierlistModal({ isOpen, onClose, tierlist, onUpdated
 
         <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-zinc-800">
           <button type="button" onClick={onClose} className="px-5 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors cursor-pointer rounded-lg">
-            Cancelar
+            {t("cancel")}
           </button>
           <button
             type="submit"
             disabled={loading || !title.trim()}
             className="px-5 py-2.5 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer"
           >
-            {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" /> : "Salvar alterações"}
+            {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" /> : t("submit")}
           </button>
         </div>
       </form>
