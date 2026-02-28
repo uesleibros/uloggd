@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import { ListMusic, Gamepad2, ExternalLink } from "lucide-react"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 
 export function ListResult({ list }) {
   const { t } = useTranslation("search")
@@ -43,4 +43,5 @@ export function ListResult({ list }) {
       </div>
     </Link>
   )
+
 }
