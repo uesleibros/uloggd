@@ -886,6 +886,24 @@ export default {
     },
   },
   review: {
+    modal: {
+      cancel: "Cancelar",
+      save: "Salvar",
+      create: "Criar Review",
+      errors: {
+        invalidStartDate: "Data de início inválida.",
+        invalidEndDate: "Data de término inválida.",
+        endBeforeStart: "Data de término não pode ser antes do início.",
+        notLoggedIn: "Você precisa estar logado.",
+        saveFailed: "Falha ao salvar.",
+        deleteFailed: "Falha ao excluir.",
+      },
+      success: {
+        created: "Review criada!",
+        updated: "Review atualizada!",
+        deleted: "Review excluída!",
+      },
+    },
     aspects: {
       title: "Avaliação por aspecto",
       description: "Avalie partes específicas do jogo.",
