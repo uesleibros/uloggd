@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "#hooks/useTranslation"
 import { useAuth } from "#hooks/useAuth"
 import { notify } from "@components/UI/Notification"
 import * as api from "@components/User/Settings/api"
@@ -12,204 +13,208 @@ import IntegrationsTab from "@components/User/Settings/tabs/IntegrationsTab"
 import LanguageTab from "@components/User/Settings/tabs/LanguageTab"
 
 export default function SettingsModal({ isOpen, onClose }) {
-	const { user, updateUser } = useAuth()
-	const [activeTab, setActiveTab] = useState("account")
-	const [avatarSaving, setAvatarSaving] = useState(false)
-	const [bannerSaving, setBannerSaving] = useState(false)
-	const [bio, setBio] = useState(user?.bio || "")
-	const [bioSaving, setBioSaving] = useState(false)
-	const [pronoun, setPronoun] = useState(user?.pronoun || "")
-	const [pronounSaving, setPronounSaving] = useState(false)
-	const [selectedDecoration, setSelectedDecoration] = useState(user?.avatar_decoration || null)
-	const [decorationSaving, setDecorationSaving] = useState(false)
-	const [usernameSaving, setUsernameSaving] = useState(false)
-	const [signOutLoading, setSignOutLoading] = useState(false)
-	const [deleteLoading, setDeleteLoading] = useState(false)
+  const { t } = useTranslation()
+  const { user, updateUser } = useAuth()
+  const [activeTab, setActiveTab] = useState("account")
+  const [avatarSaving, setAvatarSaving] = useState(false)
+  const [bannerSaving, setBannerSaving] = useState(false)
+  const [bio, setBio] = useState(user?.bio || "")
+  const [bioSaving, setBioSaving] = useState(false)
+  const [pronoun, setPronoun] = useState(user?.pronoun || "")
+  const [pronounSaving, setPronounSaving] = useState(false)
+  const [selectedDecoration, setSelectedDecoration] = useState(user?.avatar_decoration || null)
+  const [decorationSaving, setDecorationSaving] = useState(false)
+  const [usernameSaving, setUsernameSaving] = useState(false)
+  const [signOutLoading, setSignOutLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
-	const bioIsDirty = bio !== (user?.bio || "")
-	const pronounIsDirty = pronoun !== (user?.pronoun || "")
-	const decorationIsDirty = selectedDecoration !== (user?.avatar_decoration || null)
+  const bioIsDirty = bio !== (user?.bio || "")
+  const pronounIsDirty = pronoun !== (user?.pronoun || "")
+  const decorationIsDirty = selectedDecoration !== (user?.avatar_decoration || null)
 
-	async function handleImageSave(type, base64) {
-		const setter = type === "avatar" ? setAvatarSaving : setBannerSaving
-		const field = type
-		setter(true)
-		try {
-			const data = await api.uploadImage(type, base64)
-			if (data) {
-				const newValue = base64 === null ? null : (data.url || data[field] || base64)
-				updateUser({ [field]: newValue })
-				notify(base64 === null ? `${type === "avatar" ? "Avatar" : "Banner"} removido com sucesso!` : `${type === "avatar" ? "Avatar" : "Banner"} atualizado com sucesso!`)
-			} else {
-				notify(`Erro ao salvar o ${type}. Tente novamente.`, "error")
-			}
-		} catch {
-			notify(`Erro ao salvar o ${type}. Tente novamente.`, "error")
-		} finally {
-			setter(false)
-		}
-	}
+  async function handleImageSave(type, base64) {
+    const setter = type === "avatar" ? setAvatarSaving : setBannerSaving
+    const field = type
+    setter(true)
+    try {
+      const data = await api.uploadImage(type, base64)
+      if (data) {
+        const newValue = base64 === null ? null : (data.url || data[field] || base64)
+        updateUser({ [field]: newValue })
+        notify(
+          base64 === null
+            ? t(`settings.success.${type}Removed`)
+            : t(`settings.success.${type}Updated`)
+        )
+      } else {
+        notify(t(`settings.errors.${type}Save`), "error")
+      }
+    } catch {
+      notify(t(`settings.errors.${type}Save`), "error")
+    } finally {
+      setter(false)
+    }
+  }
 
-	async function handleBioSave() {
-		if (!bioIsDirty) return
-		setBioSaving(true)
-		try {
-			const data = await api.updateBio(bio)
-			if (data) {
-				updateUser({ bio })
-				notify("Bio atualizada com sucesso!")
-			} else {
-				notify("Erro ao salvar a bio.", "error")
-			}
-		} catch {
-			notify("Erro ao salvar a bio.", "error")
-		} finally {
-			setBioSaving(false)
-		}
-	}
+  async function handleBioSave() {
+    if (!bioIsDirty) return
+    setBioSaving(true)
+    try {
+      const data = await api.updateBio(bio)
+      if (data) {
+        updateUser({ bio })
+        notify(t("settings.success.bioUpdated"))
+      } else {
+        notify(t("settings.errors.bioSave"), "error")
+      }
+    } catch {
+      notify(t("settings.errors.bioSave"), "error")
+    } finally {
+      setBioSaving(false)
+    }
+  }
 
-	async function handlePronounSave() {
-		if (!pronounIsDirty) return
-		setPronounSaving(true)
-		try {
-			const data = await api.updatePronoun(pronoun)
-			if (data) {
-				updateUser({ pronoun })
-				notify("Pronome atualizado com sucesso!")
-			} else {
-				notify("Erro ao salvar o pronome.", "error")
-			}
-		} catch {
-			notify("Erro ao salvar o pronome.", "error")
-		} finally {
-			setPronounSaving(false)
-		}
-	}
+  async function handlePronounSave() {
+    if (!pronounIsDirty) return
+    setPronounSaving(true)
+    try {
+      const data = await api.updatePronoun(pronoun)
+      if (data) {
+        updateUser({ pronoun })
+        notify(t("settings.success.pronounUpdated"))
+      } else {
+        notify(t("settings.errors.pronounSave"), "error")
+      }
+    } catch {
+      notify(t("settings.errors.pronounSave"), "error")
+    } finally {
+      setPronounSaving(false)
+    }
+  }
 
-	async function handleDecorationSave() {
-		if (!decorationIsDirty) return
-		setDecorationSaving(true)
-		try {
-			const data = await api.updateDecoration(selectedDecoration)
-			if (data) {
-				updateUser({ avatar_decoration: selectedDecoration })
-				notify("Decoração atualizada com sucesso!")
-			} else {
-				notify("Erro ao salvar a decoração.", "error")
-			}
-		} catch {
-			notify("Erro ao salvar a decoração.", "error")
-		} finally {
-			setDecorationSaving(false)
-		}
-	}
+  async function handleDecorationSave() {
+    if (!decorationIsDirty) return
+    setDecorationSaving(true)
+    try {
+      const data = await api.updateDecoration(selectedDecoration)
+      if (data) {
+        updateUser({ avatar_decoration: selectedDecoration })
+        notify(t("settings.success.decorationUpdated"))
+      } else {
+        notify(t("settings.errors.decorationSave"), "error")
+      }
+    } catch {
+      notify(t("settings.errors.decorationSave"), "error")
+    } finally {
+      setDecorationSaving(false)
+    }
+  }
 
-	async function handleUsernameSave(newUsername) {
-		setUsernameSaving(true)
-		try {
-			const data = await api.updateUsername(newUsername)
-			if (data) {
-				updateUser({ username: data.username, username_changed_at: new Date().toISOString() })
-				notify("Nome alterado!")
-				return true
-			}
-		} catch (e) {
-			const msg = e?.message || "Falha ao alterar."
-			notify(msg, "error")
-		} finally {
-			setUsernameSaving(false)
-		}
-		return false
-	}
+  async function handleUsernameSave(newUsername) {
+    setUsernameSaving(true)
+    try {
+      const data = await api.updateUsername(newUsername)
+      if (data) {
+        updateUser({ username: data.username, username_changed_at: new Date().toISOString() })
+        notify(t("settings.success.usernameUpdated"))
+        return true
+      }
+    } catch (e) {
+      const msg = e?.message || t("settings.errors.usernameSave")
+      notify(msg, "error")
+    } finally {
+      setUsernameSaving(false)
+    }
+    return false
+  }
 
-	async function handleSignOut() {
-		setSignOutLoading(true)
-		await api.signOut()
-		onClose()
-	}
+  async function handleSignOut() {
+    setSignOutLoading(true)
+    await api.signOut()
+    onClose()
+  }
 
-	async function handleDelete() {
-		setDeleteLoading(true)
-		try {
-			const data = await api.deleteAccount()
-			if (data) {
-				await api.signOut()
-				window.location.href = "/"
-			} else {
-				notify("Erro ao excluir a conta. Tente novamente.", "error")
-			}
-		} catch {
-			notify("Erro ao excluir a conta. Tente novamente.", "error")
-		} finally {
-			setDeleteLoading(false)
-		}
-	}
+  async function handleDelete() {
+    setDeleteLoading(true)
+    try {
+      const data = await api.deleteAccount()
+      if (data) {
+        await api.signOut()
+        window.location.href = "/"
+      } else {
+        notify(t("settings.errors.accountDelete"), "error")
+      }
+    } catch {
+      notify(t("settings.errors.accountDelete"), "error")
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
 
-	if (!user) return null
+  if (!user) return null
 
-	return (
-		<Modal
-			isOpen={isOpen}
-			onClose={onClose}
-			raw
-		>
-			<SettingsLayout
-				activeTab={activeTab}
-				onTabChange={setActiveTab}
-				onClose={onClose}
-				onSignOut={handleSignOut}
-				signOutLoading={signOutLoading}
-			>
-				{activeTab === "account" && (
-					<AccountTab
-						user={user}
-						onAvatarSave={(b64) => handleImageSave("avatar", b64)}
-						avatarSaving={avatarSaving}
-						onBannerSave={(b64) => handleImageSave("banner", b64)}
-						bannerSaving={bannerSaving}
-						bio={bio}
-						onBioChange={setBio}
-						onBioSave={handleBioSave}
-						onBioReset={() => setBio(user?.bio || "")}
-						bioSaving={bioSaving}
-						bioIsDirty={bioIsDirty}
-						pronoun={pronoun}
-						onPronounChange={setPronoun}
-						onPronounSave={handlePronounSave}
-						onPronounReset={() => setPronoun(user?.pronoun || "")}
-						pronounSaving={pronounSaving}
-						pronounIsDirty={pronounIsDirty}
-						onUsernameSave={handleUsernameSave}
-						usernameSaving={usernameSaving}
-						onDelete={handleDelete}
-						deleteLoading={deleteLoading}
-					/>
-				)}
-				{activeTab === "sessions" && (
-					<SessionsTab onSignOut={handleSignOut} loading={signOutLoading} />
-				)}
-				{activeTab === "appearance" && (
-					<AppearanceTab
-						user={user}
-						selectedDecoration={selectedDecoration}
-						onSelectDecoration={setSelectedDecoration}
-						onDecorationSave={handleDecorationSave}
-						onDecorationReset={() => setSelectedDecoration(user?.avatar_decoration || null)}
-						decorationSaving={decorationSaving}
-						decorationIsDirty={decorationIsDirty}
-					/>
-				)}
-				{activeTab === "language" && (
-				  <LanguageTab />
-				)}
-				{activeTab === "connections" && (
-					<ConnectionsTab />
-				)}
-				{activeTab === "integrations" && (
-					<IntegrationsTab />
-				)}
-			</SettingsLayout>
-		</Modal>
-	)
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      raw
+    >
+      <SettingsLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onClose={onClose}
+        onSignOut={handleSignOut}
+        signOutLoading={signOutLoading}
+      >
+        {activeTab === "account" && (
+          <AccountTab
+            user={user}
+            onAvatarSave={(b64) => handleImageSave("avatar", b64)}
+            avatarSaving={avatarSaving}
+            onBannerSave={(b64) => handleImageSave("banner", b64)}
+            bannerSaving={bannerSaving}
+            bio={bio}
+            onBioChange={setBio}
+            onBioSave={handleBioSave}
+            onBioReset={() => setBio(user?.bio || "")}
+            bioSaving={bioSaving}
+            bioIsDirty={bioIsDirty}
+            pronoun={pronoun}
+            onPronounChange={setPronoun}
+            onPronounSave={handlePronounSave}
+            onPronounReset={() => setPronoun(user?.pronoun || "")}
+            pronounSaving={pronounSaving}
+            pronounIsDirty={pronounIsDirty}
+            onUsernameSave={handleUsernameSave}
+            usernameSaving={usernameSaving}
+            onDelete={handleDelete}
+            deleteLoading={deleteLoading}
+          />
+        )}
+        {activeTab === "sessions" && (
+          <SessionsTab onSignOut={handleSignOut} loading={signOutLoading} />
+        )}
+        {activeTab === "appearance" && (
+          <AppearanceTab
+            user={user}
+            selectedDecoration={selectedDecoration}
+            onSelectDecoration={setSelectedDecoration}
+            onDecorationSave={handleDecorationSave}
+            onDecorationReset={() => setSelectedDecoration(user?.avatar_decoration || null)}
+            decorationSaving={decorationSaving}
+            decorationIsDirty={decorationIsDirty}
+          />
+        )}
+        {activeTab === "language" && (
+          <LanguageTab />
+        )}
+        {activeTab === "connections" && (
+          <ConnectionsTab />
+        )}
+        {activeTab === "integrations" && (
+          <IntegrationsTab />
+        )}
+      </SettingsLayout>
+    </Modal>
+  )
 }
-
