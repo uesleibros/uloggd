@@ -665,4 +665,10 @@ export default {
       nicknamePlaceholder: "Nickname (opcional)",
     },
   },
+  imageCrop: {
+    title: "Recortar imagem",
+    adjustHint: "Arraste para ajustar a área do recorte",
+    cancel: "Cancelar",
+    apply: "Aplicar",
+  },
 }
