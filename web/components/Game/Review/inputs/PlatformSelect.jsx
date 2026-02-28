@@ -1,4 +1,4 @@
-export function PlatformSelect({ platforms, value, onChange, placeholder = "Selecionar plataforma..." }) {
+export function PlatformSelect({ platforms, value, onChange, placeholder = "Select a platform..." }) {
   if (!platforms || platforms.length === 0) return null
 
   return (
@@ -18,4 +18,5 @@ export function PlatformSelect({ platforms, value, onChange, placeholder = "Sele
       ))}
     </select>
   )
+
 }
