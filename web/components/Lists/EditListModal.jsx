@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
 import Modal from "@components/UI/Modal"
 import { Globe, Lock, Hash } from "lucide-react"
 
 export default function EditListModal({ isOpen, onClose, list, onUpdated }) {
+  const { t } = useTranslation()
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [isPublic, setIsPublic] = useState(true)
@@ -23,13 +25,13 @@ export default function EditListModal({ isOpen, onClose, list, onUpdated }) {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!title.trim()) return setError("Título é obrigatório")
+    if (!title.trim()) return setError(t("lists.edit.errors.requiredTitle"))
     setLoading(true)
     setError(null)
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error("Não autenticado")
+      if (!session) throw new Error(t("lists.edit.errors.notAuthenticated"))
 
       const res = await fetch("/api/lists/@me/update", {
         method: "POST",
@@ -48,7 +50,7 @@ export default function EditListModal({ isOpen, onClose, list, onUpdated }) {
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Erro ao atualizar")
+        throw new Error(data.error || t("lists.edit.errors.updateError"))
       }
 
       const updated = await res.json()
@@ -62,37 +64,55 @@ export default function EditListModal({ isOpen, onClose, list, onUpdated }) {
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Editar lista" maxWidth="max-w-lg" fullscreenMobile showMobileGrip>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t("lists.edit.title")}
+      maxWidth="max-w-lg"
+      fullscreenMobile
+      showMobileGrip
+    >
       <form onSubmit={handleSubmit} className="p-5 sm:p-6 flex flex-col gap-5">
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">Título</label>
+          <label className="block text-sm font-medium text-zinc-300 mb-2">
+            {t("lists.edit.fields.title")}
+          </label>
           <input
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
             maxLength={100}
-            className="w-full px-4 py-3 sm:py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full px-4 py-3 sm:py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors"
             autoFocus
           />
-          <span className="text-xs text-zinc-600 mt-1.5 block text-right">{title.length}/100</span>
+          <span className="text-xs text-zinc-600 mt-1.5 block text-right">
+            {title.length}/100
+          </span>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-zinc-300 mb-2">
-            Descrição <span className="text-zinc-600 font-normal">(opcional)</span>
+            {t("lists.edit.fields.description")}{" "}
+            <span className="text-zinc-600 font-normal">
+              {t("lists.edit.fields.optional")}
+            </span>
           </label>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
             maxLength={500}
             rows={4}
-            className="w-full px-4 py-3 sm:py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+            className="w-full px-4 py-3 sm:py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors resize-none"
           />
-          <span className="text-xs text-zinc-600 mt-1.5 block text-right">{description.length}/500</span>
+          <span className="text-xs text-zinc-600 mt-1.5 block text-right">
+            {description.length}/500
+          </span>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2.5">Visibilidade</label>
+          <label className="block text-sm font-medium text-zinc-300 mb-2.5">
+            {t("lists.edit.fields.visibility")}
+          </label>
           <div className="flex gap-3">
             <button
               type="button"
@@ -104,7 +124,7 @@ export default function EditListModal({ isOpen, onClose, list, onUpdated }) {
               }`}
             >
               <Globe className="w-4 h-4" />
-              Pública
+              {t("lists.edit.fields.public")}
             </button>
             <button
               type="button"
@@ -116,7 +136,7 @@ export default function EditListModal({ isOpen, onClose, list, onUpdated }) {
               }`}
             >
               <Lock className="w-4 h-4" />
-              Privada
+              {t("lists.edit.fields.private")}
             </button>
           </div>
         </div>
@@ -125,8 +145,12 @@ export default function EditListModal({ isOpen, onClose, list, onUpdated }) {
           <div className="flex items-center gap-3">
             <Hash className="w-4 h-4 text-zinc-500" />
             <div>
-              <p className="text-sm font-medium text-zinc-300">Numeração</p>
-              <p className="text-xs text-zinc-500">Mostrar posição dos jogos</p>
+              <p className="text-sm font-medium text-zinc-300">
+                {t("lists.edit.fields.numbering")}
+              </p>
+              <p className="text-xs text-zinc-500">
+                {t("lists.edit.fields.numberingDesc")}
+              </p>
             </div>
           </div>
           <button
@@ -136,26 +160,38 @@ export default function EditListModal({ isOpen, onClose, list, onUpdated }) {
               ranked ? "bg-indigo-500" : "bg-zinc-700"
             }`}
           >
-            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
-              ranked ? "translate-x-[22px]" : "translate-x-0.5"
-            }`} />
+            <div
+              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+                ranked ? "translate-x-[22px]" : "translate-x-0.5"
+              }`}
+            />
           </button>
         </div>
 
         {error && (
-          <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{error}</p>
+          <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">
+            {error}
+          </p>
         )}
 
         <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-zinc-800">
-          <button type="button" onClick={onClose} className="px-5 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors cursor-pointer rounded-lg">
-            Cancelar
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors cursor-pointer rounded-lg"
+          >
+            {t("lists.edit.actions.cancel")}
           </button>
           <button
             type="submit"
             disabled={loading || !title.trim()}
             className="px-5 py-2.5 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer"
           >
-            {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" /> : "Salvar alterações"}
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
+            ) : (
+              t("lists.edit.actions.save")
+            )}
           </button>
         </div>
       </form>
