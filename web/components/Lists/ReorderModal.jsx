@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from "react"
+import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
 import Modal from "@components/UI/Modal"
 import { GripVertical, Check } from "lucide-react"
 
 export default function ReorderModal({ isOpen, onClose, items, getGame, listId, onReordered }) {
+  const { t } = useTranslation()
   const [orderedItems, setOrderedItems] = useState([])
   const [saving, setSaving] = useState(false)
   const [dragIndex, setDragIndex] = useState(null)
@@ -127,10 +129,19 @@ export default function ReorderModal({ isOpen, onClose, items, getGame, listId, 
   }, [orderedItems, items])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Reordenar jogos" maxWidth="max-w-lg" fullscreenMobile showMobileGrip>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t("lists.reorder.title")}
+      maxWidth="max-w-lg"
+      fullscreenMobile
+      showMobileGrip
+    >
       <div className="flex flex-col h-full">
         <div className="px-5 sm:px-6 pt-2 pb-3">
-          <p className="text-xs text-zinc-500">Arraste para reordenar ou use as setas.</p>
+          <p className="text-xs text-zinc-500">
+            {t("lists.reorder.hint")}
+          </p>
         </div>
 
         <div
@@ -205,8 +216,11 @@ export default function ReorderModal({ isOpen, onClose, items, getGame, listId, 
         </div>
 
         <div className="px-5 sm:px-6 py-4 border-t border-zinc-800 flex flex-col-reverse sm:flex-row justify-end gap-2">
-          <button onClick={onClose} className="px-5 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors cursor-pointer rounded-lg">
-            Cancelar
+          <button
+            onClick={onClose}
+            className="px-5 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors cursor-pointer rounded-lg"
+          >
+            {t("lists.reorder.cancel")}
           </button>
           <button
             onClick={handleSave}
@@ -218,7 +232,7 @@ export default function ReorderModal({ isOpen, onClose, items, getGame, listId, 
             ) : (
               <Check className="w-4 h-4" />
             )}
-            Salvar ordem
+            {t("lists.reorder.save")}
           </button>
         </div>
       </div>
