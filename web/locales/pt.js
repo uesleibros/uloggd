@@ -716,5 +716,18 @@ export default {
         create: "Criar lista",
       },
     },
+    delete: {
+      title: "Excluir lista",
+      confirm: "Tem certeza que deseja excluir \"{{title}}\"?",
+      irreversible: "Esta ação não pode ser desfeita.",
+      removingGames: "{{count}} jogo será removido.",
+      removingGames_plural: "{{count}} jogos serão removidos.",
+      cancel: "Cancelar",
+      confirmButton: "Excluir lista",
+      errors: {
+        notAuthenticated: "Não autenticado",
+        deleteError: "Erro ao excluir",
+      },
+    },
   },
 }
