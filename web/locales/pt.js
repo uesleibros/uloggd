@@ -1099,4 +1099,13 @@ export default {
       viewAll: "Ver todas ({{count}})",
     },
   },
+  editor: {
+    tabs: {
+      write: "Escrever",
+      preview: "Visualizar",
+      sidebyside: "Lado a lado",
+      fullscreen: "Tela cheia",
+      exitFullscreen: "Sair da tela cheia (Esc)",
+    },
+  },
 }
