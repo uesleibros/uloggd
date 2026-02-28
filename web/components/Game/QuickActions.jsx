@@ -3,16 +3,19 @@ import { Check, ChevronDown, Play, Clock, Gift, Heart, List } from "lucide-react
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
 import { useMyLibrary } from "#hooks/useMyLibrary"
+import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 import AddToListModal from "@components/Lists/AddToListModal"
 import { STATUS_OPTIONS, GAME_STATUS } from "#constants/game"
 
 function StatusDropdownContent({ status, onSelect }) {
+  const { t } = useTranslation("quickActions")
+
   return (
     <>
       <div className="px-4 pt-3 pb-3 sm:p-4 border-b border-zinc-700">
-        <h4 className="text-sm font-semibold text-white">Definir status</h4>
-        <p className="text-xs text-zinc-500 mt-0.5">Como você finalizou esse jogo?</p>
+        <h4 className="text-sm font-semibold text-white">{t("statusModal.title")}</h4>
+        <p className="text-xs text-zinc-500 mt-0.5">{t("statusModal.subtitle")}</p>
       </div>
       <div className="p-2 max-h-[60vh] overflow-y-auto overscroll-contain">
         {STATUS_OPTIONS.map((s) => (
@@ -28,8 +31,8 @@ function StatusDropdownContent({ status, onSelect }) {
               status === s.id ? "ring-2 ring-offset-1 ring-offset-zinc-900 ring-white/20" : ""
             }`} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white">{s.label}</p>
-              <p className="text-xs text-zinc-500 mt-0.5">{s.sub}</p>
+              <p className="text-sm font-medium text-white">{t(`status.${s.id}.label`)}</p>
+              <p className="text-xs text-zinc-500 mt-0.5">{t(`status.${s.id}.sub`)}</p>
             </div>
             {status === s.id && <Check className="w-4 h-4 text-white ml-auto mt-0.5 flex-shrink-0" />}
           </button>
@@ -40,7 +43,7 @@ function StatusDropdownContent({ status, onSelect }) {
             onClick={() => onSelect(null)}
             className="w-full px-3 py-3 mt-1 rounded-lg text-left text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 active:bg-zinc-800 cursor-pointer transition-all"
           >
-            Remover status
+            {t("removeStatus")}
           </button>
         )}
       </div>
@@ -67,6 +70,7 @@ function ActionButton({ active, onClick, icon, label, activeClass = "bg-white te
 }
 
 export default function QuickActions({ game }) {
+  const { t } = useTranslation("quickActions")
   const { user } = useAuth()
   const { refresh } = useMyLibrary()
   const [state, setState] = useState({
@@ -185,7 +189,7 @@ export default function QuickActions({ game }) {
           }`}
         >
           <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${state.status ? "bg-white/30" : "bg-zinc-600"}`} />
-          {statusConfig?.label || "Status"}
+          {state.status ? t(`status.${state.status}.label`) : t("statusButton")}
           <ChevronDown className="w-3.5 h-3.5 opacity-50 -mr-0.5" />
         </button>
 
@@ -194,7 +198,7 @@ export default function QuickActions({ game }) {
           onClick={() => toggle("playing", !state.playing)}
           disabled={!!updating}
           icon={<Play className="w-3.5 h-3.5 flex-shrink-0 fill-current" />}
-          label="Jogando"
+          label={t("playing")}
         />
 
         <ActionButton
@@ -202,7 +206,7 @@ export default function QuickActions({ game }) {
           onClick={() => toggle("backlog", !state.backlog)}
           disabled={!!updating}
           icon={<Clock className="w-3.5 h-3.5 flex-shrink-0" />}
-          label="Backlog"
+          label={t("backlog")}
         />
 
         <ActionButton
@@ -210,7 +214,7 @@ export default function QuickActions({ game }) {
           onClick={() => toggle("wishlist", !state.wishlist)}
           disabled={!!updating}
           icon={<Gift className="w-3.5 h-3.5 flex-shrink-0" />}
-          label="Wishlist"
+          label={t("wishlist")}
         />
 
         <ActionButton
@@ -218,7 +222,7 @@ export default function QuickActions({ game }) {
           onClick={() => setShowListModal(true)}
           disabled={!!updating}
           icon={<List className="w-3.5 h-3.5 flex-shrink-0" />}
-          label="Lista"
+          label={t("list")}
         />
 
         <button
@@ -230,7 +234,7 @@ export default function QuickActions({ game }) {
           <Heart
             className={`w-4.5 h-4.5 transition-all duration-200 ${state.liked ? "text-red-500 scale-110 fill-current" : "text-zinc-600"}`}
           />
-          <span className={state.liked ? "text-red-400" : "text-zinc-500"}>Curtir</span>
+          <span className={state.liked ? "text-red-400" : "text-zinc-500"}>{t("like")}</span>
         </button>
       </div>
 
