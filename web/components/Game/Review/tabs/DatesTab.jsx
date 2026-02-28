@@ -1,24 +1,27 @@
+import { useTranslation } from "#hooks/useTranslation"
 import { ReviewSection } from "../shared/ReviewSection"
 
 const TODAY = new Date().toISOString().split("T")[0]
 const MIN_DATE = "2000-01-01"
 
 export function DatesTab({ startedOn, setStartedOn, finishedOn, setFinishedOn }) {
+  const { t } = useTranslation("review.dates")
+
   const startError = startedOn && (startedOn < MIN_DATE || startedOn > TODAY)
-    ? (startedOn > TODAY ? "Data no futuro" : "Data muito antiga")
+    ? (startedOn > TODAY ? t("errors.future") : t("errors.tooOld"))
     : null
   const finishError = finishedOn && (finishedOn < MIN_DATE || finishedOn > TODAY)
-    ? (finishedOn > TODAY ? "Data no futuro" : "Data muito antiga")
+    ? (finishedOn > TODAY ? t("errors.future") : t("errors.tooOld"))
     : null
   const orderError = startedOn && finishedOn && finishedOn < startedOn
-    ? "Término antes do início"
+    ? t("errors.finishBeforeStart")
     : null
 
   return (
-    <ReviewSection title="Período" description="Quando você começou e terminou de jogar?">
+    <ReviewSection title={t("title")} description={t("description")}>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-sm text-zinc-400 mb-1.5 block">Começou em</label>
+          <label className="text-sm text-zinc-400 mb-1.5 block">{t("startedOn")}</label>
           <input
             type="date"
             value={startedOn}
@@ -32,7 +35,7 @@ export function DatesTab({ startedOn, setStartedOn, finishedOn, setFinishedOn })
           {startError && <p className="text-xs text-red-400 mt-1">{startError}</p>}
         </div>
         <div>
-          <label className="text-sm text-zinc-400 mb-1.5 block">Terminou em</label>
+          <label className="text-sm text-zinc-400 mb-1.5 block">{t("finishedOn")}</label>
           <input
             type="date"
             value={finishedOn}
