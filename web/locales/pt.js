@@ -671,4 +671,16 @@ export default {
     cancel: "Cancelar",
     apply: "Aplicar",
   },
+  lists: {
+    addGame: {
+      title: "Adicionar jogo",
+      searchPlaceholder: "Procurar jogos...",
+      noResults: "Nenhum resultado encontrado",
+      typeToSearch: "Digite para buscar jogos",
+      added: "Adicionado",
+      add: "Adicionar",
+      addedCount: "{{count}} jogo adicionado",
+      addedCount_plural: "{{count}} jogos adicionados",
+    },
+  },
 }
