@@ -220,15 +220,6 @@ export default {
       results: "resultados",
       sortBy: "Ordenar:",
     },
-    sort: {
-      relevance: "Relevância",
-      newest: "Mais recentes",
-      oldest: "Mais antigos",
-      nameAsc: "Nome A-Z",
-      nameDesc: "Nome Z-A",
-      popular: "Populares",
-      rating: "Melhor avaliados",
-    },
     tabs: {
       games: "Jogos",
       users: "Usuários",
@@ -242,8 +233,12 @@ export default {
       release_asc: "Mais antigos",
       username: "Nome (A-Z)",
       newest: "Mais recentes",
+      oldest: "Mais antigos",
       title: "Título (A-Z)",
       games_count: "Mais jogos",
+      popular: "Populares",
+      nameAsc: "Nome A-Z",
+      nameDesc: "Nome Z-A",
     },
     header: {
       title: "Explorar",
@@ -1494,4 +1489,5 @@ export default {
     },
   },
 }
+
 
