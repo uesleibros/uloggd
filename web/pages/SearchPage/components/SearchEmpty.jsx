@@ -1,5 +1,5 @@
 import { SearchX, Gamepad2, Users, ListMusic } from "lucide-react"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 
 const ICONS = {
   games: Gamepad2,
@@ -57,4 +57,5 @@ export function SearchLoading() {
       ))}
     </div>
   )
+
 }
