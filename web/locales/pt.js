@@ -167,6 +167,36 @@ export default {
     },
     rankedGames: "{{count}} jogo classificado",
     rankedGames_plural: "{{count}} jogos classificados",
+    editor: {
+      empty: "Vazio",
+      dragHere: "Arraste jogos para cá",
+      untieredGames: "Jogos não classificados",
+      of: "de",
+      searchPlaceholder: "Buscar jogo...",
+      sortDefault: "Padrão",
+      noResults: "Nenhum jogo encontrado",
+      clearSearch: "Limpar busca",
+      allClassified: "Todos os jogos foram classificados!",
+      editTier: "Editar tier",
+      tierName: "Nome",
+      tierColor: "Cor",
+      customColor: "Cor personalizada:",
+      cancel: "Cancelar",
+      save: "Salvar",
+      noTiers: "Nenhum tier criado ainda",
+      hideOptions: "Ocultar opções",
+      showOptions: "Opções dos tiers",
+      addTier: "Adicionar tier",
+      gamesCount: "{{count}} jogo",
+      gamesCount_plural: "{{count}} jogos",
+      sort: {
+        manual: "Manual",
+        az: "A → Z",
+        za: "Z → A",
+        newest: "Mais recentes",
+        oldest: "Mais antigos",
+      },
+    },
   },
   search: {
     meta: {
@@ -1464,9 +1494,3 @@ export default {
     },
   },
 }
-
-
-
-
-
-
