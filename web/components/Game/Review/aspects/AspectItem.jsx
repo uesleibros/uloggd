@@ -5,8 +5,10 @@ import { PointsRatingInput } from "../inputs/PointsRating"
 import { RatingModeSelector } from "../inputs/RatingModeSelector"
 import { MarkdownEditor } from "@components/MarkdownEditor"
 import { MAX_ASPECT_LABEL, MAX_ASPECT_REVIEW } from "../constants"
+import { useTranslation } from "#lib/i18n"
 
 export function AspectRatingItem({ aspect, onUpdate, onRemove }) {
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
   const isStars = aspect.ratingMode === "stars_5" || aspect.ratingMode === "stars_5h"
 
@@ -41,6 +43,10 @@ export function AspectRatingItem({ aspect, onUpdate, onRemove }) {
 
   const hasReview = !!aspect.review?.trim()
 
+  const placeholder = aspect.label?.trim()
+    ? t("review.aspects.commentPlaceholder", { label: aspect.label })
+    : t("review.aspects.commentPlaceholderDefault")
+
   return (
     <div className="bg-zinc-900/50 border border-zinc-700/50 rounded-xl overflow-hidden">
       <div className="p-3 flex items-start gap-3">
@@ -50,7 +56,7 @@ export function AspectRatingItem({ aspect, onUpdate, onRemove }) {
               type="text"
               value={aspect.label}
               onChange={(e) => onUpdate({ ...aspect, label: e.target.value.slice(0, MAX_ASPECT_LABEL) })}
-              placeholder="Nome do aspecto"
+              placeholder={t("review.aspects.namePlaceholder")}
               className="flex-1 min-w-0 px-0 py-0 bg-transparent text-sm font-medium text-white placeholder-zinc-600 focus:outline-none border-none"
             />
             <span className="text-[10px] text-zinc-700 flex-shrink-0">
@@ -102,7 +108,7 @@ export function AspectRatingItem({ aspect, onUpdate, onRemove }) {
               value={aspect.review || ""}
               onChange={(val) => onUpdate({ ...aspect, review: val })}
               maxLength={MAX_ASPECT_REVIEW}
-              placeholder={`Comentário sobre ${aspect.label || "este aspecto"}...`}
+              placeholder={placeholder}
             />
           </div>
         </div>
