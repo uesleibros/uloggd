@@ -21,7 +21,6 @@ import { SORT_OPTIONS } from "#constants/game"
 
 function ReviewModalHeader({ review, game, user, onClose }) {
   const { t } = useTranslation("profile")
-  const { treviews: t } = useTranslation("reviews")
 
   return (
     <div className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
@@ -160,6 +159,7 @@ export function ProfileReviewCard({ review, game, user }) {
 
 export default function ProfileReviews({ userId }) {
   const { t } = useTranslation("profile")
+  const { t: tReviews } = useTranslation("reviews")
   const [reviews, setReviews] = useState([])
   const [games, setGames] = useState({})
   const [loading, setLoading] = useState(true)
@@ -223,7 +223,7 @@ export default function ProfileReviews({ userId }) {
                   : "text-zinc-500 hover:text-white hover:bg-zinc-800/50"
               }`}
             >
-              {treviews(`sort.${option.key}`)}
+              {tReviews(`sort.${option.key}`)}
             </button>
           ))}
         </div>
@@ -247,5 +247,6 @@ export default function ProfileReviews({ userId }) {
     </div>
   )
 }
+
 
 
