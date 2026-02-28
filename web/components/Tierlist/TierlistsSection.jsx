@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react"
 import { Link } from "react-router-dom"
+import { useTranslation } from "#hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import Pagination from "@components/UI/Pagination"
 import CreateTierlistModal from "@components/Tierlist/CreateTierlistModal"
@@ -17,6 +18,7 @@ import {
 import { encode } from "#utils/shortId.js"
 
 function TierlistActionMenu({ tierlist, onEdit, onDelete }) {
+  const { t } = useTranslation("tierlist.actions")
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -63,7 +65,7 @@ function TierlistActionMenu({ tierlist, onEdit, onDelete }) {
               className="w-full flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 active:bg-zinc-700/50 rounded-xl transition-colors cursor-pointer"
             >
               <Pencil className="w-4 h-4 text-zinc-500" />
-              Editar tierlist
+              {t("edit")}
             </button>
 
             <button
@@ -74,7 +76,7 @@ function TierlistActionMenu({ tierlist, onEdit, onDelete }) {
               className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 active:bg-red-500/10 rounded-xl transition-colors cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
-              Excluir tierlist
+              {t("delete")}
             </button>
           </div>
 
@@ -87,7 +89,7 @@ function TierlistActionMenu({ tierlist, onEdit, onDelete }) {
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-700/50 transition-colors cursor-pointer"
             >
               <Pencil className="w-3.5 h-3.5" />
-              Editar
+              {t("edit")}
             </button>
 
             <button
@@ -98,7 +100,7 @@ function TierlistActionMenu({ tierlist, onEdit, onDelete }) {
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              Excluir
+              {t("delete")}
             </button>
           </div>
         </>
@@ -152,6 +154,7 @@ function TierPreview({ tiers, getGame }) {
 }
 
 function TierlistCard({ tierlist, isOwnProfile, onEdit, onDelete }) {
+  const { t } = useTranslation("tierlist.card")
   const gamesCount = tierlist.games_count || 0
 
   const allSlugs = useMemo(() => {
@@ -192,7 +195,7 @@ function TierlistCard({ tierlist, isOwnProfile, onEdit, onDelete }) {
             {tierlist.is_public === false && (
               <span className="text-xs text-zinc-600 flex items-center gap-1">
                 <Lock className="w-3 h-3" />
-                <span className="hidden sm:inline">Privada</span>
+                <span className="hidden sm:inline">{t("private")}</span>
               </span>
             )}
           </div>
@@ -219,6 +222,7 @@ export default function TierlistsSection({
   total,
   onPageChange,
 }) {
+  const { t } = useTranslation("tierlist.section")
   const [createOpen, setCreateOpen] = useState(false)
   const [editingTierlist, setEditingTierlist] = useState(null)
   const [deletingTierlist, setDeletingTierlist] = useState(null)
@@ -239,7 +243,7 @@ export default function TierlistsSection({
   }
 
   if (loading) {
-    return <div className="py-10 text-center text-zinc-500">Carregando...</div>
+    return <div className="py-10 text-center text-zinc-500">{t("loading")}</div>
   }
 
   return (
@@ -247,7 +251,7 @@ export default function TierlistsSection({
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-lg font-semibold text-white flex items-center gap-2">
           <LayoutGrid className="w-5 h-5 text-zinc-400" />
-          Tierlists
+          {t("title")}
         </h2>
 
         {isOwnProfile && (
@@ -256,16 +260,14 @@ export default function TierlistsSection({
             className="px-3 py-1.5 text-sm text-zinc-400 hover:text-white bg-zinc-800/50 border border-zinc-700 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Criar tierlist
+            {t("create")}
           </button>
         )}
       </div>
 
       {tierlists.length === 0 ? (
         <div className="text-center text-zinc-500 py-12">
-          {isOwnProfile
-            ? "Você ainda não criou nenhuma tierlist."
-            : `${username} ainda não criou nenhuma tierlist.`}
+          {isOwnProfile ? t("empty.own") : t("empty.other", { username })}
         </div>
       ) : (
         <>
