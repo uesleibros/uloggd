@@ -594,5 +594,9 @@ export default {
       description: "Escreva uma bio para o seu perfil. Suporta Markdown.",
       placeholder: "Escreva sobre você...",
     },
+    bannerSection: {
+      title: "Banner",
+      description: "Personalize o banner do seu perfil. Recomendado: 1500x375px.",
+    },
   },
 }
