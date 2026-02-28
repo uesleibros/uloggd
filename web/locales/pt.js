@@ -1355,5 +1355,17 @@ export default {
       success: "Usuário banido.",
       error: "Erro ao banir.",
     },
+    verification: {
+      title: "Verificação",
+      noPending: "Nenhuma solicitação pendente",
+      approve: "Aprovar",
+      reject: "Rejeitar",
+      rejectButton: "Rejeitar",
+      cancel: "Cancelar",
+      rejectPlaceholder: "Motivo da rejeição (opcional)...",
+      approveSuccess: "Usuário verificado!",
+      rejectSuccess: "Solicitação rejeitada.",
+      error: "Erro ao processar.",
+    },
   },
 }
