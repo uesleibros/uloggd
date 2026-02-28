@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react"
 import { supabase } from "#lib/supabase.js"
+import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 import { notify } from "@components/UI/Notification"
 import { formatDateLong } from "#utils/formatDate"
 import { BadgeCheck, X, Check, Clock, Loader2 } from "lucide-react"
 
 export default function VerificationRequestsModal({ isOpen, onClose, profile }) {
+  const { t } = useTranslation("moderation.verification")
   const [request, setRequest] = useState(null)
   const [loading, setLoading] = useState(true)
   const [reviewing, setReviewing] = useState(false)
@@ -65,16 +67,16 @@ export default function VerificationRequestsModal({ isOpen, onClose, profile }) 
 
       if (res.ok) {
         notify(
-          action === "approve" ? "Usuário verificado!" : "Solicitação rejeitada.",
+          action === "approve" ? t("approveSuccess") : t("rejectSuccess"),
           action === "approve" ? "success" : "info"
         )
         onClose()
       } else {
-        notify("Erro ao processar.", "error")
+        notify(t("error"), "error")
       }
     } catch (e) {
       console.error(e)
-      notify("Erro ao processar.", "error")
+      notify(t("error"), "error")
     }
     setReviewing(false)
   }
@@ -94,7 +96,7 @@ export default function VerificationRequestsModal({ isOpen, onClose, profile }) 
               <BadgeCheck className="w-5 h-5 text-violet-400" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">Verificação</h3>
+              <h3 className="text-sm font-semibold text-white">{t("title")}</h3>
               <p className="text-xs text-zinc-500">@{profile.username}</p>
             </div>
           </div>
@@ -116,14 +118,14 @@ export default function VerificationRequestsModal({ isOpen, onClose, profile }) 
               <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center mb-3">
                 <X className="w-6 h-6 text-zinc-600" />
               </div>
-              <p className="text-sm text-zinc-500">Nenhuma solicitação pendente</p>
+              <p className="text-sm text-zinc-500">{t("noPending")}</p>
             </div>
           ) : showReject ? (
             <div className="space-y-3">
               <textarea
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Motivo da rejeição (opcional)..."
+                placeholder={t("rejectPlaceholder")}
                 rows={3}
                 className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-600 resize-none focus:outline-none focus:border-zinc-600"
               />
@@ -135,14 +137,14 @@ export default function VerificationRequestsModal({ isOpen, onClose, profile }) 
                   }}
                   className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl transition-all cursor-pointer"
                 >
-                  Cancelar
+                  {t("cancel")}
                 </button>
                 <button
                   onClick={() => handleReview("reject")}
                   disabled={reviewing}
                   className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-400 disabled:opacity-50 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
-                  {reviewing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Rejeitar"}
+                  {reviewing ? <Loader2 className="w-4 h-4 animate-spin" /> : t("rejectButton")}
                 </button>
               </div>
             </div>
@@ -168,7 +170,7 @@ export default function VerificationRequestsModal({ isOpen, onClose, profile }) 
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <>
-                      <Check className="w-4 h-4" /> Aprovar
+                      <Check className="w-4 h-4" /> {t("approve")}
                     </>
                   )}
                 </button>
@@ -176,7 +178,7 @@ export default function VerificationRequestsModal({ isOpen, onClose, profile }) 
                   onClick={() => setShowReject(true)}
                   className="flex-1 px-4 py-2.5 text-sm font-medium text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500 border border-red-500/30 hover:border-red-500 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
-                  <X className="w-4 h-4" /> Rejeitar
+                  <X className="w-4 h-4" /> {t("reject")}
                 </button>
               </div>
             </div>
