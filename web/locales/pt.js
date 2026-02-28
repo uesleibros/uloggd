@@ -1107,5 +1107,14 @@ export default {
       fullscreen: "Tela cheia",
       exitFullscreen: "Sair da tela cheia (Esc)",
     },
+    statusBar: {
+      markdownSupported: "Markdown suportado",
+      words: "{{count}} palavra",
+      words_plural: "{{count}} palavras",
+      lines: "{{count}} linha",
+      lines_plural: "{{count}} linhas",
+      help: "Ajuda",
+      helpTitle: "Ver guia de formatação",
+    },
   },
 }
