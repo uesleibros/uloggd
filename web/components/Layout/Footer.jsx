@@ -1,12 +1,15 @@
 import { Link } from "react-router-dom"
+import { useTranslation } from "#hooks/useTranslation"
 
 const LINKS = {
   sobre: [
-    { label: "Selos", to: "/about/badges" },
+    { key: "badges", to: "/about/badges" },
   ],
 }
 
 export default function Footer() {
+  const { t } = useTranslation()
+
   return (
     <footer className="mt-20 border-t border-zinc-800/50">
       <div className="mx-auto px-4 py-12" style={{ maxWidth: 1080 }}>
@@ -16,7 +19,7 @@ export default function Footer() {
               uloggd
             </Link>
             <p className="mt-3 text-sm text-zinc-500 leading-relaxed">
-              Sua biblioteca de jogos pessoal. Acompanhe, avalie e descubra novos jogos.
+              {t("footer.description")}
             </p>
             <a
               href="https://www.igdb.com/"
@@ -24,13 +27,13 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 mt-4 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
             >
-              Dados fornecidos por IGDB
+              {t("footer.igdb")}
             </a>
           </div>
 
           <div>
             <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4">
-              Sobre
+              {t("footer.about")}
             </h3>
             <ul className="space-y-2.5">
               {LINKS.sobre.map((link) => (
@@ -39,7 +42,7 @@ export default function Footer() {
                     to={link.to}
                     className="text-sm text-zinc-500 hover:text-white transition-colors"
                   >
-                    {link.label}
+                    {t(`footer.${link.key}`)}
                   </Link>
                 </li>
               ))}
@@ -50,7 +53,7 @@ export default function Footer() {
         <div className="mt-12 pt-6 border-t border-zinc-800/50 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
             <p className="text-xs text-zinc-600">
-              © {new Date().getFullYear()} uloggd
+              {t("footer.rights", { year: new Date().getFullYear() })}
             </p>
             <span className="text-zinc-800">·</span>
             <span className="text-xs text-zinc-700">v1.1.0</span>
