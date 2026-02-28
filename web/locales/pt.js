@@ -149,6 +149,22 @@ export default {
         updateFailed: "Erro ao atualizar",
       },
     },
+    actions: {
+      edit: "Editar tierlist",
+      delete: "Excluir tierlist",
+    },
+    card: {
+      private: "Privada",
+    },
+    section: {
+      title: "Tierlists",
+      create: "Criar tierlist",
+      loading: "Carregando...",
+      empty: {
+        own: "Você ainda não criou nenhuma tierlist.",
+        other: "{{username}} ainda não criou nenhuma tierlist.",
+      },
+    },
     rankedGames: "{{count}} jogo classificado",
     rankedGames_plural: "{{count}} jogos classificados",
   },
@@ -1424,6 +1440,7 @@ export default {
     },
   },
 }
+
 
 
 
