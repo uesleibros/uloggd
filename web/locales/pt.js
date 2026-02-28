@@ -831,4 +831,39 @@ export default {
       empty: "Nenhuma curtida",
     },
   },
+  quickActions: {
+    statusButton: "Status",
+    playing: "Jogando",
+    backlog: "Backlog",
+    wishlist: "Wishlist",
+    list: "Lista",
+    like: "Curtir",
+    removeStatus: "Remover status",
+    statusModal: {
+      title: "Definir status",
+      subtitle: "Como você finalizou esse jogo?",
+    },
+    status: {
+      played: {
+        label: "Jogado",
+        sub: "Você jogou, mas não terminou",
+      },
+      completed: {
+        label: "Completo",
+        sub: "Terminou a história principal",
+      },
+      mastered: {
+        label: "Masterizado",
+        sub: "100% ou platinado",
+      },
+      dropped: {
+        label: "Abandonado",
+        sub: "Parou de jogar",
+      },
+      shelved: {
+        label: "Engavetado",
+        sub: "Pausado, mas pretende voltar",
+      },
+    },
+  },
 }
