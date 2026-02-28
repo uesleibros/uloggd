@@ -1056,6 +1056,9 @@ export default {
       suggestions: "Suggestions",
       emptyField: "Empty field",
       close: "Close",
+      namePlaceholder: "Aspect name",
+      commentPlaceholder: "Comment on {{label}}...",
+      commentPlaceholderDefault: "Comment on this aspect...",
       suggestion: {
         gameplay: "Gameplay",
         story: "Story",
