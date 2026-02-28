@@ -571,5 +571,14 @@ export default {
       cancel: "Cancelar",
       confirm: "Confirmar",
     },
+    decoration: {
+      title: "Decoração do Avatar",
+      description: "Escolha uma decoração para o seu avatar.",
+      searchPlaceholder: "Pesquisar decoração...",
+      none: "Nenhuma",
+      categories: {
+        todas: "todas",
+      },
+    },
   },
 }
