@@ -1,5 +1,5 @@
 import { SlidersHorizontal, ChevronDown } from "lucide-react"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 import { SORT_OPTIONS } from "../constants"
 
 export function SearchFilters({ activeTab, filters, onChange, totalResults }) {
@@ -34,4 +34,5 @@ export function SearchFilters({ activeTab, filters, onChange, totalResults }) {
       </div>
     </div>
   )
+
 }
