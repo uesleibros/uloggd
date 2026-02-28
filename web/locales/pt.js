@@ -885,6 +885,31 @@ export default {
       },
     },
   },
+  review: {
+    aspects: {
+      title: "Avaliação por aspecto",
+      description: "Avalie partes específicas do jogo.",
+      addButton: "Adicionar aspecto",
+      suggestions: "Sugestões",
+      emptyField: "Campo vazio",
+      close: "Fechar",
+      suggestion: {
+        História: "História",
+        Gameplay: "Gameplay",
+        Gráficos: "Gráficos",
+        Som: "Som",
+        Música: "Música",
+        Dublagem: "Dublagem",
+        Performance: "Performance",
+        Jogabilidade: "Jogabilidade",
+        Controles: "Controles",
+        Dificuldade: "Dificuldade",
+        Replay: "Replay",
+        Conteúdo: "Conteúdo",
+        Otimização: "Otimização",
+        Design: "Design",
+        Personagens: "Personagens",
+      },
+    },
+  },
 }
-
-
