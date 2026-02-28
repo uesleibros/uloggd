@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
+import { useTranslation } from "@hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import { supabase } from "#lib/supabase"
 import { encode } from "#utils/shortId.js"
@@ -38,6 +39,7 @@ function TierlistSkeleton() {
 }
 
 function ShareButton({ tierlistId }) {
+  const { t } = useTranslation("common")
   const [copied, setCopied] = useState(false)
 
   function handleCopy() {
@@ -52,7 +54,7 @@ function ShareButton({ tierlistId }) {
     <button
       onClick={handleCopy}
       className="p-2.5 sm:p-2 text-zinc-500 hover:text-white active:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer"
-      title="Copiar link"
+      title={t("copyLink")}
     >
       {copied ? <Check className="w-4 h-4 text-green-400" /> : <LinkIcon className="w-4 h-4" />}
     </button>
@@ -62,6 +64,7 @@ function ShareButton({ tierlistId }) {
 export default function TierlistPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { user: currentUser, loading: authLoading } = useAuth()
 
   const [tierlist, setTierlist] = useState(null)
@@ -231,14 +234,13 @@ export default function TierlistPage() {
       })
 
       if (!r.ok) throw new Error()
-      
-      // Atualiza o cache após salvar
+
       tierlistCache.set(id, {
         tierlist,
         tiers,
         items,
       })
-      
+
       setHasChanges(false)
     } catch (e) {
       console.error(e)
@@ -255,9 +257,9 @@ export default function TierlistPage() {
         <div className="w-14 h-14 rounded-full bg-zinc-800/50 border border-zinc-700 flex items-center justify-center">
           <List className="w-6 h-6 text-zinc-600" />
         </div>
-        <h1 className="text-xl font-bold text-white">Tierlist não encontrada</h1>
-        <p className="text-sm text-zinc-500">Esta tierlist não existe, foi removida ou é privada.</p>
-        <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">Voltar ao início</Link>
+        <h1 className="text-xl font-bold text-white">{t("tierlist.notFound.title")}</h1>
+        <p className="text-sm text-zinc-500">{t("tierlist.notFound.message")}</p>
+        <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("common.backToHome")}</Link>
       </div>
     )
   }
@@ -268,9 +270,9 @@ export default function TierlistPage() {
         <div className="w-14 h-14 rounded-full bg-zinc-800/50 border border-zinc-700 flex items-center justify-center">
           <Lock className="w-6 h-6 text-zinc-600" />
         </div>
-        <h1 className="text-xl font-bold text-white">Tierlist privada</h1>
-        <p className="text-sm text-zinc-500">Esta tierlist é privada e só pode ser vista pelo autor.</p>
-        <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">Voltar ao início</Link>
+        <h1 className="text-xl font-bold text-white">{t("tierlist.private.title")}</h1>
+        <p className="text-sm text-zinc-500">{t("tierlist.private.message")}</p>
+        <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("common.backToHome")}</Link>
       </div>
     )
   }
@@ -289,7 +291,7 @@ export default function TierlistPage() {
           className="text-sm text-zinc-500 hover:text-white active:text-white transition-colors flex items-center gap-1.5 cursor-pointer py-1"
         >
           <ArrowLeft className="w-4 h-4" />
-          Voltar
+          {t("common.back")}
         </button>
       </div>
 
@@ -300,7 +302,7 @@ export default function TierlistPage() {
             {tierlist.is_public === false && (
               <span className="flex items-center gap-1 text-xs text-zinc-500 bg-zinc-800 border border-zinc-700 px-2 py-0.5 rounded-md flex-shrink-0 mt-1.5">
                 <Lock className="w-3 h-3" />
-                Privada
+                {t("common.private")}
               </span>
             )}
           </div>
@@ -323,7 +325,7 @@ export default function TierlistPage() {
             )}
             <span className="flex items-center gap-1.5">
               <Gamepad2 className="w-3.5 h-3.5" />
-              {totalGames} jogo{totalGames !== 1 ? "s" : ""} classificado{totalGames !== 1 ? "s" : ""}
+              {t("tierlist.rankedGames", { count: totalGames })}
             </span>
             {createdAt && (
               <span className="flex items-center gap-1.5">
@@ -348,7 +350,7 @@ export default function TierlistPage() {
               ) : (
                 <Save className="w-4 h-4" />
               )}
-              <span className="hidden sm:inline">Salvar</span>
+              <span className="hidden sm:inline">{t("common.save")}</span>
             </button>
           )}
         </div>

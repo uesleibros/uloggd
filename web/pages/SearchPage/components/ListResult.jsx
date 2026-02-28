@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom"
 import { ListMusic, Gamepad2, ExternalLink } from "lucide-react"
+import { useTranslation } from "@hooks/useTranslation"
 
 export function ListResult({ list }) {
+  const { t } = useTranslation("search")
+
   return (
     <Link
       to={`/list/${list.shortId}`}
@@ -28,12 +31,12 @@ export function ListResult({ list }) {
         <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-zinc-400">
           <span className="flex items-center gap-1.5">
             <Gamepad2 className="w-3.5 h-3.5 text-zinc-500" />
-            {list.games_count} {list.games_count === 1 ? "jogo" : "jogos"}
+            {t("results.games", { count: list.games_count })}
           </span>
 
           {list.owner && (
             <span className="text-zinc-500">
-              por <span className="text-zinc-400">{list.owner.username}</span>
+              {t("results.by")} <span className="text-zinc-400">{list.owner.username}</span>
             </span>
           )}
         </div>

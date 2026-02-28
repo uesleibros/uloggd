@@ -1,4 +1,5 @@
 import { Ban } from "lucide-react"
+import { useTranslation } from "@hooks/useTranslation"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import UserBadges from "@components/User/UserBadges"
 import SocialLinks from "@components/User/SocialLinks"
@@ -25,6 +26,8 @@ export function ProfileHeader({
   onFollowersClick,
   onFollowingClick,
 }) {
+  const { t } = useTranslation("profile")
+
   const memberSince = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString("pt-BR", {
         month: "long",
@@ -73,15 +76,15 @@ export function ProfileHeader({
               </div>
               <div>
                 <p className="text-sm font-medium text-red-300">
-                  Conta suspensa
+                  {t("header.banned.title")}
                 </p>
                 <p className="text-xs text-red-400/70 mt-1">
-                  Este usuário foi suspenso por violar os termos da plataforma.
+                  {t("header.banned.description")}
                 </p>
 
                 {isModerator && profile.ban_reason && (
                   <p className="text-xs text-red-400/60 mt-2">
-                    Motivo: {profile.ban_reason}
+                    {t("header.banned.reason", { reason: profile.ban_reason })}
                   </p>
                 )}
               </div>
@@ -131,7 +134,7 @@ export function ProfileHeader({
           {getStatus(profile.last_seen, profile.status) === "offline" &&
             getTimeAgo(profile.last_seen, profile.status) && (
               <span className="text-xs text-zinc-500 mt-1 block">
-                Última vez visto: {getTimeAgo(profile.last_seen, profile.status)}
+                {t("header.lastSeen", { time: getTimeAgo(profile.last_seen, profile.status) })}
               </span>
             )}
 
@@ -156,6 +159,3 @@ export function ProfileHeader({
     </div>
   )
 }
-
-
-

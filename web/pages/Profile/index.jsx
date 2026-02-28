@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
+import { useTranslation } from "@hooks/useTranslation"
 import { useProfileGames } from "#hooks/useProfileGames"
 import PageBanner from "@components/Layout/PageBanner"
 import SettingsModal from "@components/User/Settings/SettingsModal"
@@ -15,151 +16,151 @@ import ProfileSkeleton from "./components/ProfileSkeleton"
 import FollowListModal from "./components/FollowListModal"
 
 export default function Profile() {
-	const { username } = useParams()
-	const { profile, isOwnProfile, currentUser, authLoading, fetching, error, updateProfile } =
-		useProfileData(username)
+  const { username } = useParams()
+  const { t } = useTranslation()
+  const { profile, isOwnProfile, currentUser, authLoading, fetching, error, updateProfile } =
+    useProfileData(username)
 
-	const {
-		games,
-		counts,
-		loading: loadingGames,
-		activeTab,
-		page: gamesPage,
-		totalPages: gamesTotalPages,
-		handleTabChange,
-		handlePageChange: handleGamesPageChange,
-	} = useProfileGames(profile?.id)
+  const {
+    games,
+    counts,
+    loading: loadingGames,
+    activeTab,
+    page: gamesPage,
+    totalPages: gamesTotalPages,
+    handleTabChange,
+    handlePageChange: handleGamesPageChange,
+  } = useProfileGames(profile?.id)
 
-	const {
-		lists,
-		setLists,
-		loading: loadingLists,
-		total: listsTotal,
-		page: listsPage,
-		totalPages: listsTotalPages,
-		handlePageChange: handleListsPageChange,
-	} = useUserLists(profile?.id)
+  const {
+    lists,
+    setLists,
+    loading: loadingLists,
+    total: listsTotal,
+    page: listsPage,
+    totalPages: listsTotalPages,
+    handlePageChange: handleListsPageChange,
+  } = useUserLists(profile?.id)
 
-	const {
-		tierlists,
-		setTierlists,
-		loading: loadingTierlists,
-		total: tierlistsTotal,
-		page: tierlistsPage,
-		totalPages: tierlistsTotalPages,
-		handlePageChange: handleTierlistsPageChange
-	} = useUserTierlists(profile?.id)
+  const {
+    tierlists,
+    setTierlists,
+    loading: loadingTierlists,
+    total: tierlistsTotal,
+    page: tierlistsPage,
+    totalPages: tierlistsTotalPages,
+    handlePageChange: handleTierlistsPageChange
+  } = useUserTierlists(profile?.id)
 
-	const {
-		isFollowing,
-		followLoading,
-		followsYou,
-		followersCount,
-		followingCount,
-		handleFollow,
-	} = useFollowData(profile, currentUser, authLoading, isOwnProfile)
+  const {
+    isFollowing,
+    followLoading,
+    followsYou,
+    followersCount,
+    followingCount,
+    handleFollow,
+  } = useFollowData(profile, currentUser, authLoading, isOwnProfile)
 
-	const [activeSection, setActiveSection] = useState("profile")
-	const [followModal, setFollowModal] = useState(null)
-	const [settingsOpen, setSettingsOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState("profile")
+  const [followModal, setFollowModal] = useState(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
-	usePageMeta(
-		profile
-			? {
-					title: `${profile.username} - uloggd`,
-					description: `Perfil de ${profile.username} no uloggd`,
-					image: profile.avatar || undefined,
-				}
-			: undefined
-	)
+  usePageMeta(
+    profile
+      ? {
+          title: `${profile.username} - uloggd`,
+          description: `Perfil de ${profile.username} no uloggd`,
+          image: profile.avatar || undefined,
+        }
+      : undefined
+  )
 
-	const showSkeleton = authLoading || (fetching && !profile)
+  const showSkeleton = authLoading || (fetching && !profile)
 
-	if (showSkeleton) return <ProfileSkeleton />
+  if (showSkeleton) return <ProfileSkeleton />
 
-	if (error || !profile) {
-		return (
-			<div className="flex flex-col items-center justify-center py-32 gap-4">
-				<h1 className="text-2xl font-bold text-white">Usuário não encontrado</h1>
-				<p className="text-sm text-zinc-500">
-					O usuário &quot;{username}&quot; não existe ou foi removido.
-				</p>
-				<Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">
-					Voltar ao início
-				</Link>
-			</div>
-		)
-	}
+  if (error || !profile) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 gap-4">
+        <h1 className="text-2xl font-bold text-white">{t("profile.notFound.title")}</h1>
+        <p className="text-sm text-zinc-500">
+          {t("profile.notFound.message", { username })}
+        </p>
+        <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">
+          {t("common.backToHome")}
+        </Link>
+      </div>
+    )
+  }
 
-	return (
-		<div>
-			<PageBanner image={profile.banner} height="profile" />
-			<div className="pt-[22vw] sm:pt-[20vw] md:pt-36 pb-16">
-				<ProfileHeader
-					profile={profile}
-					isOwnProfile={isOwnProfile}
-					currentUser={currentUser}
-					isFollowing={isFollowing}
-					followLoading={followLoading}
-					followsYou={followsYou}
-					followersCount={followersCount}
-					followingCount={followingCount}
-					counts={counts}
-					onFollow={handleFollow}
-					onEditProfile={() => setSettingsOpen(true)}
-					onProfileUpdate={updateProfile}
-					onFollowersClick={() => setFollowModal("Seguidores")}
-					onFollowingClick={() => setFollowModal("Seguindo")}
-				/>
+  return (
+    <div>
+      <PageBanner image={profile.banner} height="profile" />
+      <div className="pt-[22vw] sm:pt-[20vw] md:pt-36 pb-16">
+        <ProfileHeader
+          profile={profile}
+          isOwnProfile={isOwnProfile}
+          currentUser={currentUser}
+          isFollowing={isFollowing}
+          followLoading={followLoading}
+          followsYou={followsYou}
+          followersCount={followersCount}
+          followingCount={followingCount}
+          counts={counts}
+          onFollow={handleFollow}
+          onEditProfile={() => setSettingsOpen(true)}
+          onProfileUpdate={updateProfile}
+          onFollowersClick={() => setFollowModal(t("profile.followModal.followers"))}
+          onFollowingClick={() => setFollowModal(t("profile.followModal.following"))}
+        />
 
-				<ProfileNavigation
-					activeSection={activeSection}
-					onSectionChange={setActiveSection}
-					counts={counts}
-					listsCount={listsTotal}
-					tierlistsCount={tierlists.length}
-					reviewsCount={profile?.counts?.reviews || 0}
-					likesCount={(counts?.liked || 0) + (profile?.counts?.likedReviews || 0)}
-				/>
+        <ProfileNavigation
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+          counts={counts}
+          listsCount={listsTotal}
+          tierlistsCount={tierlists.length}
+          reviewsCount={profile?.counts?.reviews || 0}
+          likesCount={(counts?.liked || 0) + (profile?.counts?.likedReviews || 0)}
+        />
 
-				<ProfileContent
-					activeSection={activeSection}
-					profile={profile}
-					isOwnProfile={isOwnProfile}
-					games={games}
-					counts={counts}
-					loadingGames={loadingGames}
-					activeTab={activeTab}
-					gamesPage={gamesPage}
-					gamesTotalPages={gamesTotalPages}
-					onTabChange={handleTabChange}
-					onGamesPageChange={handleGamesPageChange}
-					lists={lists}
-					setLists={setLists}
-					loadingLists={loadingLists}
-					listsPage={listsPage}
-					listsTotalPages={listsTotalPages}
-					listsTotal={listsTotal}
-					onListsPageChange={handleListsPageChange}
-					tierlists={tierlists}
-					setTierlists={setTierlists}
-					loadingTierlists={loadingTierlists}
-					tierlistsPage={tierlistsPage}
-					tierlistsTotalPages={tierlistsTotalPages}
-					tierlistsTotal={tierlistsTotal}
-					onTierlistsPageChange={handleTierlistsPageChange}
-					onEditProfile={() => setSettingsOpen(true)}
-				/>
-			</div>
+        <ProfileContent
+          activeSection={activeSection}
+          profile={profile}
+          isOwnProfile={isOwnProfile}
+          games={games}
+          counts={counts}
+          loadingGames={loadingGames}
+          activeTab={activeTab}
+          gamesPage={gamesPage}
+          gamesTotalPages={gamesTotalPages}
+          onTabChange={handleTabChange}
+          onGamesPageChange={handleGamesPageChange}
+          lists={lists}
+          setLists={setLists}
+          loadingLists={loadingLists}
+          listsPage={listsPage}
+          listsTotalPages={listsTotalPages}
+          listsTotal={listsTotal}
+          onListsPageChange={handleListsPageChange}
+          tierlists={tierlists}
+          setTierlists={setTierlists}
+          loadingTierlists={loadingTierlists}
+          tierlistsPage={tierlistsPage}
+          tierlistsTotalPages={tierlistsTotalPages}
+          tierlistsTotal={tierlistsTotal}
+          onTierlistsPageChange={handleTierlistsPageChange}
+          onEditProfile={() => setSettingsOpen(true)}
+        />
+      </div>
 
-			<FollowListModal
-				isOpen={!!followModal}
-				title={followModal || ""}
-				userId={profile.id}
-				onClose={() => setFollowModal(null)}
-			/>
-			<SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
-		</div>
-	)
+      <FollowListModal
+        isOpen={!!followModal}
+        title={followModal || ""}
+        userId={profile.id}
+        onClose={() => setFollowModal(null)}
+      />
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+    </div>
+  )
 }
-

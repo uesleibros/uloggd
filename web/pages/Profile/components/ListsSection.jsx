@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
+import { useTranslation } from "@hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import Pagination from "@components/UI/Pagination"
 import CreateListModal from "@components/Lists/CreateListModal"
@@ -12,6 +13,7 @@ import {
 import { encode } from "#utils/shortId.js"
 
 function ListActionMenu({ list, onEdit, onDelete }) {
+  const { t } = useTranslation("profile")
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -48,20 +50,20 @@ function ListActionMenu({ list, onEdit, onDelete }) {
               className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-zinc-300 active:bg-zinc-700/50 rounded-xl transition-colors cursor-pointer"
             >
               <Pencil className="w-4 h-4 text-zinc-500" />
-              Editar lista
+              {t("lists.editList")}
             </button>
             <button
               onClick={() => { onDelete(list); setOpen(false) }}
               className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-red-400 active:bg-red-500/10 rounded-xl transition-colors cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
-              Excluir lista
+              {t("lists.deleteList")}
             </button>
             <button
               onClick={() => setOpen(false)}
               className="w-full mt-1 py-3 text-sm text-zinc-500 active:bg-zinc-700/30 rounded-xl transition-colors cursor-pointer"
             >
-              Cancelar
+              {t("lists.cancel")}
             </button>
           </div>
 
@@ -71,14 +73,14 @@ function ListActionMenu({ list, onEdit, onDelete }) {
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-700/50 transition-colors cursor-pointer"
             >
               <Pencil className="w-3.5 h-3.5" />
-              Editar
+              {t("lists.edit")}
             </button>
             <button
               onClick={() => { onDelete(list); setOpen(false) }}
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              Excluir
+              {t("lists.delete")}
             </button>
           </div>
         </>
@@ -133,6 +135,7 @@ function CoverStrip({ slugs = [] }) {
 }
 
 function ListCard({ list, isOwnProfile, onEdit, onDelete }) {
+  const { t } = useTranslation("profile")
   const gamesCount = list.games_count || 0
 
   return (
@@ -163,7 +166,7 @@ function ListCard({ list, isOwnProfile, onEdit, onDelete }) {
             {list.is_public === false && (
               <span className="text-xs text-zinc-600 flex items-center gap-1">
                 <Lock className="w-3 h-3" />
-                <span className="hidden sm:inline">Privada</span>
+                <span className="hidden sm:inline">{t("lists.private")}</span>
               </span>
             )}
             {list.updated_at && (
@@ -215,6 +218,7 @@ export default function ListsSection({
   total,
   onPageChange,
 }) {
+  const { t } = useTranslation("profile")
   const [createOpen, setCreateOpen] = useState(false)
   const [editingList, setEditingList] = useState(null)
   const [deletingList, setDeletingList] = useState(null)
@@ -248,7 +252,7 @@ export default function ListsSection({
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
             <List className="w-5 h-5 text-zinc-400" />
-            Listas
+            {t("lists.title")}
           </h2>
         </div>
         <ListsSkeleton />
@@ -262,7 +266,7 @@ export default function ListsSection({
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
             <List className="w-5 h-5 text-zinc-400" />
-            Listas
+            {t("lists.title")}
           </h2>
           {total > 0 && (
             <span className="text-xs text-zinc-500 bg-zinc-800/80 px-2 py-0.5 rounded-full tabular-nums">
@@ -278,7 +282,7 @@ export default function ListsSection({
               className="px-3 py-1.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Criar lista</span>
+              <span className="hidden sm:inline">{t("lists.create")}</span>
             </button>
           )}
         </div>
@@ -292,11 +296,11 @@ export default function ListsSection({
           <div className="text-center px-4">
             <p className="text-sm text-zinc-500">
               {isOwnProfile
-                ? "Você ainda não criou nenhuma lista."
-                : `${username} ainda não criou nenhuma lista.`}
+                ? t("lists.empty.own")
+                : t("lists.empty.other", { username })}
             </p>
             {isOwnProfile && (
-              <p className="text-xs text-zinc-600 mt-1">Organize seus jogos em listas personalizadas.</p>
+              <p className="text-xs text-zinc-600 mt-1">{t("lists.empty.hint")}</p>
             )}
           </div>
           {isOwnProfile && (
@@ -305,7 +309,7 @@ export default function ListsSection({
               className="mt-1 px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors cursor-pointer flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              Criar primeira lista
+              {t("lists.createFirst")}
             </button>
           )}
         </div>

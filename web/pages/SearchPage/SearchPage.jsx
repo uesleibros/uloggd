@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
+import { useTranslation } from "@hooks/useTranslation"
 import { useSearch } from "./hooks/useSearch"
 import { SearchHeader } from "./components/SearchHeader"
 import { SearchTabs } from "./components/SearchTabs"
@@ -9,6 +10,7 @@ import { SearchResults } from "./components/SearchResults"
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const { t } = useTranslation()
   const initialQuery = searchParams.get("q") || ""
   const initialTab = searchParams.get("tab") || "games"
 
@@ -29,8 +31,8 @@ export default function SearchPage() {
   } = useSearch(initialQuery, initialTab)
 
   usePageMeta({
-    title: query ? `${query} - Busca - uloggd` : "Busca - uloggd",
-    description: "Busque jogos, usuários e listas no uloggd",
+    title: query ? t("search.meta.title", { query }) : t("search.meta.titleDefault"),
+    description: t("search.meta.description"),
   })
 
   useEffect(() => {

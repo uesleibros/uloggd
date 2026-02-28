@@ -1,7 +1,9 @@
 import { SlidersHorizontal, ChevronDown } from "lucide-react"
+import { useTranslation } from "@hooks/useTranslation"
 import { SORT_OPTIONS } from "../constants"
 
 export function SearchFilters({ activeTab, filters, onChange, totalResults }) {
+  const { t } = useTranslation("search")
   const sortOptions = SORT_OPTIONS[activeTab] || []
 
   return (
@@ -9,12 +11,12 @@ export function SearchFilters({ activeTab, filters, onChange, totalResults }) {
       <div className="flex items-center gap-2 text-sm text-zinc-500">
         <SlidersHorizontal className="w-4 h-4" />
         <span>
-          Mostrando <span className="text-white font-medium">{totalResults}</span> resultados
+          {t("filters.showing")} <span className="text-white font-medium">{totalResults}</span> {t("filters.results")}
         </span>
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="text-sm text-zinc-500">Ordenar:</span>
+        <span className="text-sm text-zinc-500">{t("filters.sortBy")}</span>
         <div className="relative">
           <select
             value={filters.sort || "relevance"}
@@ -23,7 +25,7 @@ export function SearchFilters({ activeTab, filters, onChange, totalResults }) {
           >
             {sortOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
-                {opt.label}
+                {t(`sort.${opt.value}`)}
               </option>
             ))}
           </select>

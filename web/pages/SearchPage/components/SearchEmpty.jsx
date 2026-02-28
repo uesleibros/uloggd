@@ -1,4 +1,5 @@
 import { SearchX, Gamepad2, Users, ListMusic } from "lucide-react"
+import { useTranslation } from "@hooks/useTranslation"
 
 const ICONS = {
   games: Gamepad2,
@@ -7,6 +8,7 @@ const ICONS = {
 }
 
 export function SearchEmpty({ query, activeTab }) {
+  const { t } = useTranslation("search")
   const Icon = ICONS[activeTab] || SearchX
 
   if (!query) {
@@ -16,10 +18,10 @@ export function SearchEmpty({ query, activeTab }) {
           <Icon className="w-10 h-10 text-indigo-400" />
         </div>
         <h3 className="text-xl font-semibold text-white mb-2">
-          Comece a buscar
+          {t("empty.startTitle")}
         </h3>
         <p className="text-sm text-zinc-500 max-w-sm">
-          Digite algo no campo de busca para encontrar jogos, usuários ou listas
+          {t("empty.startDescription")}
         </p>
       </div>
     )
@@ -31,11 +33,10 @@ export function SearchEmpty({ query, activeTab }) {
         <SearchX className="w-10 h-10 text-zinc-600" />
       </div>
       <h3 className="text-xl font-semibold text-white mb-2">
-        Nenhum resultado
+        {t("empty.noResultsTitle")}
       </h3>
       <p className="text-sm text-zinc-500 max-w-sm">
-        Não encontramos nada para "<span className="text-zinc-300">{query}</span>".
-        <br />Tente usar palavras diferentes.
+        {t("empty.noResultsDescription", { query })}
       </p>
     </div>
   )
