@@ -42,7 +42,7 @@ const TIER_SORT_OPTIONS = [
 const CARD_SIZE = "w-[56px] h-[75px] sm:w-[75px] sm:h-[100px]"
 const TIER_MIN_H = "min-h-[91px] sm:min-h-[116px]"
 const LABEL_W_VIEW = "w-16 sm:w-24 md:w-28"
-const LABEL_W_EDIT = "w-20 sm:w-28 md:w-32"
+const LABEL_W_EDIT = "w-16 sm:w-24 md:w-28"
 
 function getCoverUrl(game) {
   if (!game?.cover?.url) return null
