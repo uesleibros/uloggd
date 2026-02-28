@@ -1,6 +1,6 @@
 const WEBSITE_MAP = {
-  1: { type: "official-website", label: "Site Oficial" },
-  2: { type: "community-wiki", label: "Wiki da Comunidade" },
+  1: { type: "official-website", label: "Website" },
+  2: { type: "community-wiki", label: "Co-Wiki" },
   3: { type: "wikipedia", label: "Wikipédia" },
   4: { type: "facebook", label: "Facebook" },
   5: { type: "twitter", label: "Twitter/X" },
@@ -19,7 +19,4 @@ const WEBSITE_MAP = {
   19: { type: "bluesky", label: "Bluesky" }
 }
 
-
 export { WEBSITE_MAP }
-
-
