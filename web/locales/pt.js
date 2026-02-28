@@ -543,5 +543,9 @@ export default {
         integrationsMobile: "Integrações",
       },
     },
+    actions: {
+      save: "Salvar",
+      reset: "Resetar",
+    },
   },
 }
