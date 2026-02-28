@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
 import Modal from "@components/UI/Modal"
 import { Plus, Globe, Lock, Hash } from "lucide-react"
 
 export default function CreateListModal({ isOpen, onClose, onCreated }) {
+  const { t } = useTranslation()
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [isPublic, setIsPublic] = useState(true)
@@ -23,13 +25,13 @@ export default function CreateListModal({ isOpen, onClose, onCreated }) {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!title.trim()) return setError("Título é obrigatório")
+    if (!title.trim()) return setError(t("lists.create.errors.requiredTitle"))
     setLoading(true)
     setError(null)
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error("Não autenticado")
+      if (!session) throw new Error(t("lists.create.errors.notAuthenticated"))
 
       const res = await fetch("/api/lists/@me/create", {
         method: "POST",
@@ -47,7 +49,7 @@ export default function CreateListModal({ isOpen, onClose, onCreated }) {
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Erro ao criar lista")
+        throw new Error(data.error || t("lists.create.errors.createError"))
       }
 
       const list = await res.json()
@@ -61,39 +63,57 @@ export default function CreateListModal({ isOpen, onClose, onCreated }) {
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Criar nova lista" maxWidth="max-w-lg" fullscreenMobile showMobileGrip>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t("lists.create.title")}
+      maxWidth="max-w-lg"
+      fullscreenMobile
+      showMobileGrip
+    >
       <form onSubmit={handleSubmit} className="p-5 sm:p-6 flex flex-col gap-5">
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">Título</label>
+          <label className="block text-sm font-medium text-zinc-300 mb-2">
+            {t("lists.create.fields.title")}
+          </label>
           <input
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
             maxLength={100}
-            placeholder="Minha lista de jogos..."
+            placeholder={t("lists.create.placeholders.title")}
             className="w-full px-4 py-3 sm:py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors"
             autoFocus
           />
-          <span className="text-xs text-zinc-600 mt-1.5 block text-right">{title.length}/100</span>
+          <span className="text-xs text-zinc-600 mt-1.5 block text-right">
+            {title.length}/100
+          </span>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-zinc-300 mb-2">
-            Descrição <span className="text-zinc-600 font-normal">(opcional)</span>
+            {t("lists.create.fields.description")}{" "}
+            <span className="text-zinc-600 font-normal">
+              {t("lists.create.fields.optional")}
+            </span>
           </label>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
             maxLength={500}
             rows={4}
-            placeholder="Descreva sua lista..."
+            placeholder={t("lists.create.placeholders.description")}
             className="w-full px-4 py-3 sm:py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none"
           />
-          <span className="text-xs text-zinc-600 mt-1.5 block text-right">{description.length}/500</span>
+          <span className="text-xs text-zinc-600 mt-1.5 block text-right">
+            {description.length}/500
+          </span>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2.5">Visibilidade</label>
+          <label className="block text-sm font-medium text-zinc-300 mb-2.5">
+            {t("lists.create.fields.visibility")}
+          </label>
           <div className="flex gap-3">
             <button
               type="button"
@@ -105,7 +125,7 @@ export default function CreateListModal({ isOpen, onClose, onCreated }) {
               }`}
             >
               <Globe className="w-4 h-4" />
-              Pública
+              {t("lists.create.fields.public")}
             </button>
             <button
               type="button"
@@ -117,7 +137,7 @@ export default function CreateListModal({ isOpen, onClose, onCreated }) {
               }`}
             >
               <Lock className="w-4 h-4" />
-              Privada
+              {t("lists.create.fields.private")}
             </button>
           </div>
         </div>
@@ -126,8 +146,12 @@ export default function CreateListModal({ isOpen, onClose, onCreated }) {
           <div className="flex items-center gap-3">
             <Hash className="w-4 h-4 text-zinc-500" />
             <div>
-              <p className="text-sm font-medium text-zinc-300">Numeração</p>
-              <p className="text-xs text-zinc-500">Mostrar posição dos jogos</p>
+              <p className="text-sm font-medium text-zinc-300">
+                {t("lists.create.fields.numbering")}
+              </p>
+              <p className="text-xs text-zinc-500">
+                {t("lists.create.fields.numberingDesc")}
+              </p>
             </div>
           </div>
           <button
@@ -137,19 +161,27 @@ export default function CreateListModal({ isOpen, onClose, onCreated }) {
               ranked ? "bg-indigo-500" : "bg-zinc-700"
             }`}
           >
-            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
-              ranked ? "translate-x-[22px]" : "translate-x-0.5"
-            }`} />
+            <div
+              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+                ranked ? "translate-x-[22px]" : "translate-x-0.5"
+              }`}
+            />
           </button>
         </div>
 
         {error && (
-          <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{error}</p>
+          <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">
+            {error}
+          </p>
         )}
 
         <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-zinc-800">
-          <button type="button" onClick={onClose} className="px-5 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors cursor-pointer rounded-lg">
-            Cancelar
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors cursor-pointer rounded-lg"
+          >
+            {t("lists.create.actions.cancel")}
           </button>
           <button
             type="submit"
@@ -161,7 +193,7 @@ export default function CreateListModal({ isOpen, onClose, onCreated }) {
             ) : (
               <Plus className="w-4 h-4" />
             )}
-            Criar lista
+            {t("lists.create.actions.create")}
           </button>
         </div>
       </form>
