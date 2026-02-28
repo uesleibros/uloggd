@@ -204,5 +204,14 @@ export default {
         other: "{{username}} ainda não curtiu nenhuma review",
       },
     },
+    reviews: {
+      title: "Reviews",
+      rated: "avaliou",
+      game: "Jogo",
+      empty: {
+        title: "Nenhuma review ainda",
+        subtitle: "As reviews escritas aparecerão aqui",
+      },
+    },
   },
 }
