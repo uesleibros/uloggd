@@ -394,6 +394,26 @@ export default {
     },
   },
   badges: {
+    bugHunter: {
+      title: "Caçador de Bugs",
+      description: "Contribuiu ativamente para a segurança da plataforma identificando e reportando vulnerabilidades."
+    },
+    developer: {
+      title: "Desenvolvedor",
+      description: "Membro da equipe de desenvolvimento responsável pela criação e manutenção da plataforma."
+    },
+    moderator: {
+      title: "Moderador",
+      description: "Membro da equipe de moderação responsável por garantir o cumprimento das diretrizes da comunidade."
+    },
+    trainee_moderator: {
+      title: "Moderador Estagiário",
+      description: "Membro em treinamento da equipe de moderação."
+    },
+    verified: {
+      title: "Verificado",
+      description: "Identidade confirmada como criador de conteúdo, personalidade ou figura pública da comunidade."
+    },
     meta: {
       title: "Selos - uloggd",
       description: "Conheça todos os selos disponíveis no uloggd e o que cada um representa.",
@@ -1489,5 +1509,6 @@ export default {
     },
   },
 }
+
 
 
