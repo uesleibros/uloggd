@@ -441,4 +441,14 @@ export default {
     reviewedBy: "Revisado por {{username}}",
     someone: "Alguém",
   },
+  thinking: {
+    title: "Pensamento",
+    placeholder: "No que você está pensando...",
+    addThought: "Pensamento...",
+    remove: "Remover",
+    cancel: "Cancelar",
+    save: "Salvar",
+    saving: "Salvando...",
+    updated: "Pensamento atualizado.",
+  },
 }
