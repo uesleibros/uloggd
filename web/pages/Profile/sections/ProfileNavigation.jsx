@@ -1,5 +1,5 @@
 import { User, Gamepad2, ListChecks, LayoutGrid, Activity, MessageSquare, Heart } from "lucide-react"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 
 const PROFILE_SECTIONS = [
   { id: "profile", icon: User },
@@ -69,4 +69,5 @@ export function ProfileNavigation({
       </nav>
     </div>
   )
+
 }
