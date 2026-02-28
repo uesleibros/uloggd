@@ -1312,4 +1312,10 @@ export default {
       },
     },
   },
+  banned: {
+    title: "Conta suspensa",
+    reason: "Motivo",
+    expiresIn: "Suspensão termina em aproximadamente {{hours}} hora(s).",
+    permanent: "Suspensão permanente.",
+  },
 }
