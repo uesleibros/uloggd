@@ -1262,7 +1262,7 @@ export default {
       code: "Código",
       preview: "Preview",
       noResults: "Nenhum resultado para",
-      shortcuts: '<span class="text-zinc-400">Ctrl+B</span> negrito · <span class="text-zinc-400">Ctrl+I</span> itálico · <span class="text-zinc-400">Ctrl+K</span> link · <span class="text-zinc-400">Ctrl+Shift+C</span> bloco · <span class="text-zinc-400">Tab</span> indentação',
+      shortcuts: `<span class="text-zinc-400">Ctrl+B</span> negrito · <span class="text-zinc-400">Ctrl+I</span> itálico · <span class="text-zinc-400">Ctrl+K</span> link · <span class="text-zinc-400">Ctrl+Shift+C</span> bloco · <span class="text-zinc-400">Tab</span> indentação`,
       sections: {
         text: "Texto",
         headings: "Títulos",
@@ -1494,3 +1494,4 @@ export default {
     },
   },
 }
+
