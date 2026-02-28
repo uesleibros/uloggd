@@ -400,5 +400,11 @@ export default {
       showLess: "Mostrar menos",
       viewAll: "Ver todos ({{count}})",
     },
+    keywords: {
+      title: "Palavras-chaves",
+      viewAll: "Ver todas {{count}}",
+      searchPlaceholder: "Buscar palavra-chave...",
+      noResults: "Nenhuma palavra-chave encontrada",
+    },
   },
 }
