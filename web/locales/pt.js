@@ -911,5 +911,16 @@ export default {
         Personagens: "Personagens",
       },
     },
+    dates: {
+      title: "Período",
+      description: "Quando você começou e terminou de jogar?",
+      startedOn: "Começou em",
+      finishedOn: "Terminou em",
+      errors: {
+        future: "Data no futuro",
+        tooOld: "Data muito antiga",
+        finishBeforeStart: "Término antes do início",
+      },
+    },
   },
 }
