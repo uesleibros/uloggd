@@ -628,5 +628,9 @@ export default {
         failed: "{{count}} erros",
       },
     },
+    avatarSection: {
+      title: "Avatar",
+      description: "Personalize o avatar do seu perfil. Recomendado: 512x512px.",
+    },
   },
 }
