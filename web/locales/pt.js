@@ -690,5 +690,31 @@ export default {
       gamesCount: "{{count}} jogo",
       gamesCount_plural: "{{count}} jogos",
     },
+    create: {
+      title: "Criar nova lista",
+      fields: {
+        title: "Título",
+        description: "Descrição",
+        optional: "(opcional)",
+        visibility: "Visibilidade",
+        public: "Pública",
+        private: "Privada",
+        numbering: "Numeração",
+        numberingDesc: "Mostrar posição dos jogos",
+      },
+      placeholders: {
+        title: "Minha lista de jogos...",
+        description: "Descreva sua lista...",
+      },
+      errors: {
+        requiredTitle: "Título é obrigatório",
+        createError: "Erro ao criar lista",
+        notAuthenticated: "Não autenticado",
+      },
+      actions: {
+        cancel: "Cancelar",
+        create: "Criar lista",
+      },
+    },
   },
 }
