@@ -226,5 +226,46 @@ export default {
       backlog: "Backlog",
       rated: "Avaliados",
     },
+    tabs: {
+      playing: "Jogando",
+      played: "Jogados",
+      backlog: "Backlog",
+      wishlist: "Wishlist",
+      dropped: "Largados",
+      shelved: "Na prateleira",
+      rated: "Avaliados",
+      exploreGames: "Explorar jogos",
+      empty: {
+        fallback: "Nenhum jogo aqui.",
+        playing: {
+          own: "Você não está jogando nada no momento.",
+          other: "{{username}} não está jogando nada no momento.",
+        },
+        played: {
+          own: "Você ainda não jogou nenhum jogo.",
+          other: "{{username}} ainda não jogou nenhum jogo.",
+        },
+        backlog: {
+          own: "Seu backlog está vazio.",
+          other: "{{username}} não tem jogos no backlog.",
+        },
+        wishlist: {
+          own: "Sua wishlist está vazia.",
+          other: "{{username}} não tem jogos na wishlist.",
+        },
+        dropped: {
+          own: "Você não abandonou nenhum jogo.",
+          other: "{{username}} não abandonou nenhum jogo.",
+        },
+        shelved: {
+          own: "Você não engavetou nenhum jogo.",
+          other: "{{username}} não engavetou nenhum jogo.",
+        },
+        rated: {
+          own: "Você ainda não avaliou nenhum jogo.",
+          other: "{{username}} ainda não avaliou nenhum jogo.",
+        },
+      },
+    },
   },
 }
