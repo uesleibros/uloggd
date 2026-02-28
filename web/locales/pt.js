@@ -684,10 +684,23 @@ export default {
       title: "Conexões",
       description: "Conecte suas contas para sincronizar dados e desbloquear recursos."
     },
+    integrations: {
+      title: "Integrações",
+      description: "Importe seus dados de outras plataformas."
+    },
     pronoun: {
       title: "Pronome",
       description: "Exibido no seu perfil ao lado do seu nome.",
       placeholder: "ex: ele/dele, she/her...",
+    },
+    sessions: {
+      title: "Sessão",
+      description: "Gerencie sua sessão ativa.",
+      currentSession: "Sessão atual",
+      activeSession: "Sessão ativa",
+      currentBrowser: "Navegador atual",
+      active: "Ativa",
+      signOut: "Encerrar sessão",
     },
     profile: {
       title: "Perfil",
@@ -1452,5 +1465,6 @@ export default {
     },
   },
 }
+
 
 
