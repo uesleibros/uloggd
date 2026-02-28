@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { FileText, Copy, Check } from "lucide-react"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 import { MarkdownPreview } from "@components/MarkdownEditor"
 
 export default function BioSection({ bio, isOwnProfile, onEdit, profileGames = {} }) {
@@ -41,4 +41,5 @@ export default function BioSection({ bio, isOwnProfile, onEdit, profileGames = {
       </div>
     </div>
   )
+
 }
