@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { User, Settings, LogOut } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
 import UserDisplay from "@components/User/UserDisplay"
 import UserBadges from "@components/User/UserBadges"
@@ -8,6 +9,7 @@ import { UserDropdown, DropdownItem } from "./UserDropdown"
 import { DiscordIcon } from "./icons"
 
 export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) {
+  const { t } = useTranslation()
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   const handleSignIn = async () => {
@@ -62,19 +64,19 @@ export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) 
             <DropdownItem
               to={`/u/${user.username}`}
               onClick={onNavigate}
-              label="Meu perfil"
+              label={t("auth.profile")}
               icon={<User className="w-4 h-4" />}
             />
             <DropdownItem
               onClick={() => setSettingsOpen(true)}
-              label="Configurações"
+              label={t("auth.settings")}
               icon={<Settings className="w-4 h-4" />}
             />
 
             <div className="pt-1 mt-1 border-t border-zinc-800">
               <DropdownItem
                 onClick={() => { onNavigate?.(); handleSignOut() }}
-                label="Sair"
+                label={t("auth.signOut")}
                 variant="danger"
                 icon={<LogOut className="w-4 h-4" />}
               />
@@ -99,7 +101,7 @@ export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) 
           className="h-10 w-full rounded-md bg-indigo-500 text-sm font-medium text-white flex items-center justify-center gap-2 hover:bg-indigo-600 transition-colors cursor-pointer"
         >
           <DiscordIcon className="h-5 w-5" />
-          Entrar com Discord
+          {t("auth.signInWithDiscord")}
         </button>
       </div>
     )
@@ -115,7 +117,7 @@ export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) 
       className="h-8 cursor-pointer px-4 rounded-md bg-indigo-500 hover:bg-indigo-600 text-sm font-medium text-white flex items-center gap-2 transition-colors"
     >
       <DiscordIcon className="h-4 w-4" />
-      Entrar
+      {t("auth.signIn")}
     </button>
   )
 }
