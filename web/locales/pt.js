@@ -19,7 +19,19 @@ export default {
     backHome: "Voltar para a home",
   },
   header: {
-    search: "Buscar...",
+    search: {
+      placeholder: "Buscar jogos, usuários, listas...",
+      tabs: {
+        games: "Jogos",
+        users: "Usuários",
+        lists: "Listas",
+      },
+      noResults: "Nenhum resultado encontrado",
+      viewAll: "Ver todos os resultados para \"{{query}}\"",
+      gamesCount: "{{count}} jogo",
+      gamesCount_plural: "{{count}} jogos",
+      byUser: "por {{username}}",
+    },
   },
   auth: {
     profile: "Meu perfil",
@@ -784,6 +796,7 @@ export default {
     },
   },
 }
+
 
 
 
