@@ -1100,6 +1100,19 @@ export default {
     },
   },
   editor: {
+    alerts: {
+      info: "Informação",
+      note: "Nota",
+      tip: "Dica",
+      important: "Importante",
+      warning: "Aviso",
+      danger: "Perigo",
+      success: "Sucesso",
+      question: "Pergunta",
+      example: "Exemplo",
+      bug: "Bug",
+      neutral: "Observação",
+    },
     tabs: {
       write: "Escrever",
       preview: "Visualizar",
