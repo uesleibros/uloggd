@@ -1,6 +1,9 @@
+import { useTranslation } from "#hooks/useTranslation"
 import { RATING_MODES } from "../constants"
 
 export function RatingModeSelector({ mode, setMode, compact = false }) {
+  const { t } = useTranslation("review.ratingModes")
+
   return (
     <div className="flex flex-wrap gap-1.5">
       {RATING_MODES.map((m) => (
@@ -16,7 +19,7 @@ export function RatingModeSelector({ mode, setMode, compact = false }) {
               : "bg-zinc-800/50 text-zinc-500 hover:text-zinc-300 border border-zinc-700 hover:border-zinc-600"
           }`}
         >
-          {compact ? m.label : m.labelFull}
+          {compact ? t(`${m.id}.label`) : t(`${m.id}.labelFull`)}
         </button>
       ))}
     </div>
