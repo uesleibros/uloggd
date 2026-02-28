@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
+import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
 import Modal from "@components/UI/Modal"
 import PlatformIcons from "@components/Game/PlatformIcons"
@@ -7,6 +8,7 @@ import { formatDateShort } from "#utils/formatDate"
 import { Search, X, Plus, Check, Gamepad2 } from "lucide-react"
 
 export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = [], onAdded }) {
+  const { t } = useTranslation()
   const [query, setQuery] = useState("")
   const [results, setResults] = useState([])
   const [searching, setSearching] = useState(false)
@@ -76,7 +78,14 @@ export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = 
   const allAdded = [...existingSlugs, ...recentlyAdded]
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Adicionar jogo" maxWidth="max-w-lg" fullscreenMobile showMobileGrip>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t("lists.addGame.title")}
+      maxWidth="max-w-lg"
+      fullscreenMobile
+      showMobileGrip
+    >
       <div className="flex flex-col h-full">
         <div className="p-5 pb-4 sm:p-6 sm:pb-4">
           <div className="relative">
@@ -86,7 +95,7 @@ export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = 
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Procurar jogos..."
+              placeholder={t("lists.addGame.searchPlaceholder")}
               className="w-full pl-10 pr-10 py-3 sm:py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors"
             />
             {query && (
@@ -108,13 +117,17 @@ export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = 
           )}
 
           {!searching && query.trim() && results.length === 0 && (
-            <p className="text-sm text-zinc-500 text-center py-16">Nenhum resultado encontrado</p>
+            <p className="text-sm text-zinc-500 text-center py-16">
+              {t("lists.addGame.noResults")}
+            </p>
           )}
 
           {!searching && !query.trim() && (
             <div className="flex flex-col items-center justify-center py-16 gap-2">
               <Search className="w-8 h-8 text-zinc-700" />
-              <p className="text-sm text-zinc-600">Digite para buscar jogos</p>
+              <p className="text-sm text-zinc-600">
+                {t("lists.addGame.typeToSearch")}
+              </p>
             </div>
           )}
 
@@ -143,7 +156,9 @@ export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = 
                   </Link>
                   <div className="flex items-center gap-2 mt-0.5">
                     {game.first_release_date && (
-                      <span className="text-xs text-zinc-500">{formatDateShort(game.first_release_date)}</span>
+                      <span className="text-xs text-zinc-500">
+                        {formatDateShort(game.first_release_date)}
+                      </span>
                     )}
                     <PlatformIcons icons={game.platformIcons} />
                   </div>
@@ -152,7 +167,9 @@ export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = 
                 {alreadyAdded ? (
                   <span className="flex items-center gap-1 text-xs text-emerald-500 px-2.5 py-2 sm:py-1.5 bg-emerald-500/10 rounded-lg flex-shrink-0">
                     <Check className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Adicionado</span>
+                    <span className="hidden sm:inline">
+                      {t("lists.addGame.added")}
+                    </span>
                   </span>
                 ) : (
                   <button
@@ -165,7 +182,9 @@ export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = 
                     ) : (
                       <Plus className="w-3.5 h-3.5" />
                     )}
-                    <span className="hidden sm:inline">Adicionar</span>
+                    <span className="hidden sm:inline">
+                      {t("lists.addGame.add")}
+                    </span>
                   </button>
                 )}
               </div>
@@ -176,7 +195,7 @@ export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = 
         {recentlyAdded.length > 0 && (
           <div className="px-5 sm:px-6 py-3 border-t border-zinc-800">
             <p className="text-xs text-zinc-500">
-              {recentlyAdded.length} jogo{recentlyAdded.length !== 1 ? "s" : ""} adicionado{recentlyAdded.length !== 1 ? "s" : ""}
+              {t("lists.addGame.addedCount", { count: recentlyAdded.length })}
             </p>
           </div>
         )}
