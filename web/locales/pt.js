@@ -407,4 +407,38 @@ export default {
       noResults: "Nenhuma palavra-chave encontrada",
     },
   },
+  notifications: {
+    title: "Notificações",
+    markAllAsRead: "Marcar todas como lidas",
+    clearAll: "Limpar todas",
+    empty: "Nenhuma notificação",
+    close: "Fechar",
+    types: {
+      follow: {
+        text: "começou a te seguir",
+      },
+      review_like: {
+        text: "curtiu sua review",
+      },
+      verification_approved: {
+        title: "Verificação aprovada",
+        message: "Parabéns! Sua solicitação de verificação foi aprovada. O selo de verificado já está visível no seu perfil.",
+      },
+      verification_rejected: {
+        title: "Verificação rejeitada",
+        messageWithReason: "Sua solicitação de verificação foi rejeitada.\n\nMotivo: {{reason}}",
+        messageDefault: "Sua solicitação de verificação foi rejeitada. Você pode enviar uma nova solicitação a qualquer momento.",
+      },
+      account_banned: {
+        title: "Conta suspensa",
+        message: "Sua conta foi suspensa.\n\nMotivo: {{reason}}",
+      },
+      account_unbanned: {
+        title: "Conta restaurada",
+        message: "Sua conta foi restaurada. Bem-vindo de volta!",
+      },
+    },
+    reviewedBy: "Revisado por {{username}}",
+    someone: "Alguém",
+  },
 }
