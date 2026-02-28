@@ -1,4 +1,4 @@
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 import { TABS } from "../constants"
 
 export function SearchTabs({ activeTab, onChange, counts }) {
@@ -38,4 +38,5 @@ export function SearchTabs({ activeTab, onChange, counts }) {
       </div>
     </div>
   )
+
 }
