@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { User, Mail, Hash, ShieldCheck, Pencil, Check, X, Loader2, AlertTriangle } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 import SettingsSection from "@components/User/Settings/ui/SettingsSection"
 import InfoField from "@components/User/Settings/ui/InfoField"
 import Badge from "@components/User/Settings/ui/Badge"
@@ -16,6 +17,7 @@ function getCooldownDays(changedAt) {
 }
 
 export default function ProfileSection({ user, onUsernameSave, usernameSaving }) {
+  const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [newUsername, setNewUsername] = useState(user.username)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -45,7 +47,7 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
   }
 
   return (
-    <SettingsSection title="Perfil">
+    <SettingsSection title={t("settings.profile.title")}>
       <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-zinc-900/50 rounded-lg border border-zinc-700/50 mb-4 sm:mb-5">
         <AvatarWithDecoration
           src={user.avatar}
@@ -66,7 +68,7 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
 
       <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-zinc-700/50 bg-zinc-800/30 mb-2">
         <User className="w-4 h-4 text-zinc-500 flex-shrink-0" />
-        <span className="text-xs text-zinc-500 flex-shrink-0">Nome de usuário</span>
+        <span className="text-xs text-zinc-500 flex-shrink-0">{t("settings.profile.username")}</span>
         <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
           {editing ? (
             <>
@@ -102,7 +104,7 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
               <span className="text-sm text-white truncate">{user.username}</span>
               {cooldown > 0 ? (
                 <span className="text-[10px] text-zinc-600 flex-shrink-0">
-                  {cooldown}d restantes
+                  {t("settings.profile.usernameRemaining", { days: cooldown })}
                 </span>
               ) : (
                 <button
@@ -117,13 +119,13 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
         </div>
       </div>
 
-      <InfoField label="Email" value={user.email.replace(/(.{2})(.*)(@.*)/, "$1****$3")} icon={<Mail className="w-4 h-4" />} />
-      <InfoField label="ID Discord" value={user.discordId} icon={<Hash className="w-4 h-4" />} />
+      <InfoField label={t("settings.profile.email")} value={user.email.replace(/(.{2})(.*)(@.*)/, "$1****$3")} icon={<Mail className="w-4 h-4" />} />
+      <InfoField label={t("settings.profile.discordId")} value={user.discordId} icon={<Hash className="w-4 h-4" />} />
       <InfoField
-        label="Verificação"
+        label={t("settings.profile.verification")}
         value={
           <div className="flex items-center gap-2">
-            {isModerator && <Badge text="Moderador" color="blue" />}
+            {isModerator && <Badge text={t("settings.profile.moderatorBadge")} color="blue" />}
           </div>
         }
         icon={<ShieldCheck className="w-4 h-4" />}
@@ -140,8 +142,8 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
               <AlertTriangle className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-white">Alterar nome de usuário</h3>
-              <p className="text-xs text-zinc-500">Essa ação tem cooldown</p>
+              <h3 className="text-base font-semibold text-white">{t("settings.profile.changeUsernameTitle")}</h3>
+              <p className="text-xs text-zinc-500">{t("settings.profile.changeUsernameCooldown")}</p>
             </div>
           </div>
 
@@ -154,7 +156,7 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
           </div>
 
           <p className="text-sm text-zinc-400 mb-5">
-            Após confirmar, você só poderá alterar seu nome de usuário novamente depois de <span className="text-amber-400 font-medium">30 dias</span>.
+            {t("settings.profile.changeUsernameWarning")} <span className="text-amber-400 font-medium">{t("settings.profile.changeUsernameDays")}</span>.
           </p>
 
           <div className="flex gap-3">
@@ -163,7 +165,7 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
               disabled={usernameSaving}
               className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
             >
-              Cancelar
+              {t("settings.profile.cancel")}
             </button>
             <button
               onClick={handleConfirmSave}
@@ -173,7 +175,7 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
               {usernameSaving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                "Confirmar"
+                t("settings.profile.confirm")
               )}
             </button>
           </div>
