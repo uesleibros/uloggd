@@ -116,6 +116,19 @@ export default {
         createFailed: "Erro ao criar tierlist",
       },
     },
+    delete: {
+      title: "Excluir tierlist",
+      confirmMessage: "Tem certeza que deseja excluir",
+      irreversible: "Esta ação não pode ser desfeita.",
+      gamesWarning: "{{count}} jogo classificado será removido.",
+      gamesWarning_plural: "{{count}} jogos classificados serão removidos.",
+      cancel: "Cancelar",
+      submit: "Excluir tierlist",
+      errors: {
+        notAuthenticated: "Não autenticado",
+        deleteFailed: "Erro ao excluir",
+      },
+    },
     rankedGames: "{{count}} jogo classificado",
     rankedGames_plural: "{{count}} jogos classificados",
   },
@@ -1391,4 +1404,5 @@ export default {
     },
   },
 }
+
 
