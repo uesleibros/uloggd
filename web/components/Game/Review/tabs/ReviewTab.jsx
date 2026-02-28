@@ -1,4 +1,5 @@
 import { Trophy } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 import { ReviewSection } from "../shared/ReviewSection"
 import { StarRatingInput } from "../inputs/StarRating"
 import { PointsRatingInput } from "../inputs/PointsRating"
@@ -18,6 +19,7 @@ export function ReviewTab({
   mastered, setMastered,
   aspects, setAspects,
 }) {
+  const { t } = useTranslation("review.main")
   const isStars = ratingMode === "stars_5" || ratingMode === "stars_5h"
 
   function handleStarChange(starVal) {
@@ -47,7 +49,7 @@ export function ReviewTab({
 
   return (
     <div className="space-y-4">
-      <ReviewSection title="Nota geral" description="Escolha o formato e dê sua nota.">
+      <ReviewSection title={t("rating.title")} description={t("rating.description")}>
         <div className="flex items-center justify-between mb-3 gap-2">
           <RatingModeSelector mode={ratingMode} setMode={handleModeChange} />
           <button
@@ -58,7 +60,7 @@ export function ReviewTab({
                 ? "text-amber-400 bg-amber-400/10 border border-amber-400/20"
                 : "text-zinc-600 hover:text-zinc-400 border border-transparent"
             }`}
-            title="Masterizado"
+            title={t("rating.mastered")}
           >
             <Trophy className="w-5 h-5 fill-current" />
           </button>
@@ -72,16 +74,16 @@ export function ReviewTab({
 
       <AspectRatings aspects={aspects} setAspects={setAspects} />
 
-      <ReviewSection title="Plataforma" description="Em qual plataforma você jogou?">
+      <ReviewSection title={t("platform.title")} description={t("platform.description")}>
         <PlatformSelect platforms={platforms} value={platform} onChange={setPlatform} />
       </ReviewSection>
 
-      <ReviewSection title="Review" description="Escreva sobre sua experiência. Suporta Markdown.">
+      <ReviewSection title={t("review.title")} description={t("review.description")}>
         <MarkdownEditor
           value={review}
           onChange={setReview}
           maxLength={MAX_REVIEW_LENGTH}
-          placeholder="O que achou do jogo?"
+          placeholder={t("review.placeholder")}
         />
         <label htmlFor="spoilers-check" className="flex items-center mt-3 cursor-pointer select-none py-1">
           <input
@@ -91,7 +93,7 @@ export function ReviewTab({
             onChange={(e) => setSpoilers(e.target.checked)}
             className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 accent-white cursor-pointer"
           />
-          <span className="text-sm text-zinc-500 ml-2">Contém spoilers</span>
+          <span className="text-sm text-zinc-500 ml-2">{t("review.spoilers")}</span>
         </label>
       </ReviewSection>
     </div>
