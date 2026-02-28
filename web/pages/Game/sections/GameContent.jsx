@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Languages, Loader2 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import QuickActions from "@components/Game/QuickActions"
@@ -12,12 +12,19 @@ import { GameHeader } from "./GameHeader"
 import PriceHistory from "@components/Game/PriceHistory"
 
 export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
-  const { t } = useTranslation("game")
+  const { t, language } = useTranslation("game")
   const [showFullSummary, setShowFullSummary] = useState(false)
   const [translatedSummary, setTranslatedSummary] = useState(null)
   const [showTranslated, setShowTranslated] = useState(false)
   const [detectedLang, setDetectedLang] = useState(null)
   const [translating, setTranslating] = useState(false)
+
+  // Reset translation when language changes
+  useEffect(() => {
+    setTranslatedSummary(null)
+    setShowTranslated(false)
+    setDetectedLang(null)
+  }, [language])
 
   const allMedia = [...(game.screenshots || []), ...(game.artworks || [])]
   const summaryTruncated = game.summary?.length > 500
@@ -26,6 +33,9 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
     showTranslated && translatedSummary
       ? translatedSummary
       : game.summary
+
+  const shouldShowTranslateButton =
+    game.summary && detectedLang !== language
 
   async function handleTranslate() {
     if (translatedSummary) {
@@ -41,7 +51,7 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: game.summary,
-          target: "pt",
+          target: language,
         }),
       })
 
@@ -50,7 +60,12 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
       if (res.ok) {
         setTranslatedSummary(data.translation)
         setDetectedLang(data.detectedLang)
-        setShowTranslated(true)
+
+        if (data.detectedLang === language) {
+          setShowTranslated(false)
+        } else {
+          setShowTranslated(true)
+        }
       }
     } catch (e) {
       console.error(e)
@@ -95,7 +110,7 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
               </button>
             )}
 
-            {detectedLang !== "pt" && (
+            {shouldShowTranslateButton && (
               <button
                 onClick={handleTranslate}
                 disabled={translating}
