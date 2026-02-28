@@ -1,8 +1,10 @@
+import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 import { getBadgeStyles } from "#utils/badgeStyles"
 import { formatDateLong } from "#utils/formatDate"
 
 function BadgeModalContent({ badge, showAssignedDate = false, onClose }) {
+  const { t } = useTranslation()
   const s = getBadgeStyles(badge.color)
 
   return (
@@ -37,12 +39,18 @@ function BadgeModalContent({ badge, showAssignedDate = false, onClose }) {
             />
           </div>
 
-          <h3 className="text-lg font-bold text-white mb-2">{badge.title}</h3>
-          <p className="text-sm text-zinc-400 leading-relaxed">{badge.description}</p>
+          <h3 className="text-lg font-bold text-white mb-2">
+            {badge.title}
+          </h3>
+          <p className="text-sm text-zinc-400 leading-relaxed">
+            {badge.description}
+          </p>
 
           {showAssignedDate && badge.assigned_at && (
             <p className="text-xs text-zinc-500 mt-3">
-              Atribuído em {formatDateLong(new Date(badge.assigned_at).getTime() / 1000)}
+              {t("badges.modal.assignedAt", {
+                date: formatDateLong(new Date(badge.assigned_at).getTime() / 1000),
+              })}
             </p>
           )}
         </div>
@@ -53,7 +61,7 @@ function BadgeModalContent({ badge, showAssignedDate = false, onClose }) {
           onClick={onClose}
           className="w-full px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 cursor-pointer"
         >
-          Fechar
+          {t("badges.modal.close")}
         </button>
       </div>
     </div>
