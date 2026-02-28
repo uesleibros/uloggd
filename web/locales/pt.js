@@ -1014,5 +1014,8 @@ export default {
         labelFull: "0–100",
       },
     },
+    modalContent: {
+      aspectsTitle: "Avaliação por aspecto",
+    },
   },
 }
