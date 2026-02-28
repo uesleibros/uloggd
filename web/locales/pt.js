@@ -648,5 +648,13 @@ export default {
         channelLink: "Link direto para seu canal no perfil",
       },
     },
+    steam: {
+      title: "Steam",
+      connected: "Conectado",
+      disconnect: "Desconectar",
+      connect: "Conectar com a Steam",
+      description: "Conecte sua conta Steam para exibir seus jogos e estatísticas no seu perfil.",
+      idLabel: "ID:",
+    },
   },
 }
