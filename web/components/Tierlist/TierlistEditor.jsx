@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import GameCard from "@components/Game/GameCard"
+import { Link } from "react-router-dom"
 
 const PRESET_COLORS = [
   "#ef4444", "#f97316", "#eab308", "#22c55e",
@@ -108,9 +109,10 @@ function DropIndicator() {
   )
 }
 
-function GameCover({ game }) {
+function GameCover({ game, linkTo }) {
   const coverUrl = getCoverUrl(game)
-  return (
+  
+  const content = (
     <div className={`${CARD_SIZE} rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0`} title={game?.name}>
       {coverUrl ? (
         <img
@@ -126,6 +128,16 @@ function GameCover({ game }) {
       )}
     </div>
   )
+
+  if (linkTo) {
+    return (
+      <Link to={linkTo} className="block">
+        {content}
+      </Link>
+    )
+  }
+
+  return content
 }
 
 function SortableGameItem({ id, game, isDragging }) {
@@ -255,7 +267,7 @@ function ViewTier({ tier, items, getGame }) {
               if (!game) return null
               return (
                 <div key={item.id} draggable={false} className="select-none">
-                  <GameCover game={game} />
+                  <GameCover game={game} linkTo={`/game/${item.game_slug}`} />
                 </div>
               )
             })}
@@ -1198,7 +1210,3 @@ export default function TierlistEditor({
     </DndContext>
   )
 }
-
-
-
-
