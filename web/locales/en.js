@@ -220,15 +220,6 @@ export default {
       results: "results",
       sortBy: "Sort by:",
     },
-    sort: {
-      relevance: "Relevance",
-      newest: "Newest",
-      oldest: "Oldest",
-      nameAsc: "Name A-Z",
-      nameDesc: "Name Z-A",
-      popular: "Popular",
-      rating: "Top rated",
-    },
     tabs: {
       games: "Games",
       users: "Users",
@@ -242,8 +233,12 @@ export default {
       release_asc: "Oldest",
       username: "Name (A-Z)",
       newest: "Newest",
+      oldest: "Oldest",
       title: "Title (A-Z)",
       games_count: "Most games",
+      popular: "Popular",
+      nameAsc: "Name A-Z",
+      nameDesc: "Name Z-A",
     },
     header: {
       title: "Explore",
