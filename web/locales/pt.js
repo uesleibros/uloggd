@@ -94,6 +94,28 @@ export default {
       title: "Tierlist privada",
       message: "Esta tierlist é privada e só pode ser vista pelo autor.",
     },
+    create: {
+      title: "Criar nova tierlist",
+      fields: {
+        title: "Título",
+        titlePlaceholder: "Minha tierlist de jogos...",
+        description: "Descrição",
+        descriptionPlaceholder: "Descreva sua tierlist...",
+        optional: "(opcional)",
+        visibility: "Visibilidade",
+      },
+      visibility: {
+        public: "Pública",
+        private: "Privada",
+      },
+      cancel: "Cancelar",
+      submit: "Criar tierlist",
+      errors: {
+        titleRequired: "Título é obrigatório",
+        notAuthenticated: "Não autenticado",
+        createFailed: "Erro ao criar tierlist",
+      },
+    },
     rankedGames: "{{count}} jogo classificado",
     rankedGames_plural: "{{count}} jogos classificados",
   },
@@ -1369,3 +1391,4 @@ export default {
     },
   },
 }
+
