@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 import { useSearch } from "./hooks/useSearch"
 import { SearchHeader } from "./components/SearchHeader"
 import { SearchTabs } from "./components/SearchTabs"
@@ -85,4 +85,5 @@ export default function SearchPage() {
       </div>
     </div>
   )
+
 }
