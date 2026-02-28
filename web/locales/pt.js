@@ -1318,4 +1318,12 @@ export default {
     expiresIn: "Suspensão termina em aproximadamente {{hours}} hora(s).",
     permanent: "Suspensão permanente.",
   },
+  errorBoundary: {
+    title: "Algo deu muito errado!",
+    description: "Parece que algo quebrou por aqui. Tenta recarregar a página.",
+    imageAlt: "Erro",
+    reload: "Recarregar",
+    back: "Voltar",
+    hint: "Se o problema persistir, tenta limpar o cache do navegador.",
+  },
 }
