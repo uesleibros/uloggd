@@ -396,5 +396,9 @@ export default {
       hours: "h",
       source: "via HowLongToBeat",
     },
+    videos: {
+      showLess: "Mostrar menos",
+      viewAll: "Ver todos ({{count}})",
+    },
   },
 }
