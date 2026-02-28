@@ -729,5 +729,27 @@ export default {
         deleteError: "Erro ao excluir",
       },
     },
+    edit: {
+      title: "Editar lista",
+      fields: {
+        title: "Título",
+        description: "Descrição",
+        optional: "(opcional)",
+        visibility: "Visibilidade",
+        public: "Pública",
+        private: "Privada",
+        numbering: "Numeração",
+        numberingDesc: "Mostrar posição dos jogos",
+      },
+      errors: {
+        requiredTitle: "Título é obrigatório",
+        notAuthenticated: "Não autenticado",
+        updateError: "Erro ao atualizar",
+      },
+      actions: {
+        cancel: "Cancelar",
+        save: "Salvar alterações",
+      },
+    },
   },
 }
