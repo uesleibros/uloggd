@@ -1,64 +1,68 @@
 import { query } from "#lib/igdbWrapper.js"
 import { PLATFORMS_MAP } from "#data/platformsMapper.js"
-import { buildNameFilter } from "#services/igdb/utils/buildNameFilter.js"
+import { escapeIGDB } from "#services/igdb/utils/escapeIGDB.js"
 
 export async function handleAutocomplete(req, res) {
-	const { query: q } = req.query
-	if (!q?.trim()) return res.status(400).json({ error: "missing query" })
+  const { query: q } = req.query
+  if (!q?.trim()) return res.status(400).json({ error: "missing query" })
 
-	try {
-		const nameFilter = buildNameFilter(q)
-		const data = await query("games", `
-			fields name, slug, first_release_date,
-				cover.url, cover.image_id,
-				platforms.id, platforms.name, platforms.abbreviation,
-				total_rating, total_rating_count, game_type;
-				where ${nameFilter} & cover != null;
-			sort total_rating_count desc;
-			limit 30;
-		`)
+  const input = q.trim()
+  if (input.length < 2) return res.json([])
 
-		const input = q.toLowerCase().trim()
+  try {
+    const escaped = escapeIGDB(input)
 
-		const games = data.map(g => {
-			const name = g.name.toLowerCase()
-			let relevance = 0
+    const data = await query("games", `
+      search "${escaped}";
+      fields name, slug, first_release_date,
+        cover.image_id,
+        platforms.id,
+        total_rating, total_rating_count, game_type;
+      where cover != null & game_type = (0, 2, 4, 8, 9);
+      limit 15;
+    `)
 
-			if (name === input) relevance = 100
-			else if (name.startsWith(input)) relevance = 80
-			else if (name.includes(input)) relevance = 60
-			else {
-				const inputWords = input.split(/\s+/)
-				const matched = inputWords.filter(w => name.includes(w)).length
-				relevance = (matched / inputWords.length) * 40
-			}
+    const inputLower = input.toLowerCase()
 
-			relevance += Math.min((g.total_rating_count || 0) / 100, 20)
+    const games = data.map((g, i) => {
+      const name = g.name.toLowerCase()
+      let relevance = 1000 - i * 10
 
-			const slugs = new Set()
-			g.platforms?.forEach(p => {
-				const slug = PLATFORMS_MAP[String(p.id)]
-				if (slug) slugs.add(slug)
-			})
+      if (name === inputLower) relevance += 500
+      else if (name.startsWith(inputLower)) relevance += 300
+      else if (name.includes(inputLower)) relevance += 100
 
-			return {
-				...g,
-				relevance,
-				platformIcons: [...slugs].sort().map(slug => ({
-					name: slug,
-					icon: `/platforms/result/${slug}.png`
-				})),
-				cover: g.cover?.url
-					? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_cover_big") }
-					: null
-			}
-		}).sort((a, b) => b.relevance - a.relevance)
+      relevance += Math.min((g.total_rating_count || 0) / 50, 30)
 
-		res.json(games)
-	} catch (e) {
-		console.error(e)
-		res.status(500).json({ error: "fail" })
-	}
+      const slugs = new Set()
+      g.platforms?.forEach(p => {
+        const slug = PLATFORMS_MAP[String(p.id)]
+        if (slug) slugs.add(slug)
+      })
 
+      return {
+        id: g.id,
+        name: g.name,
+        slug: g.slug,
+        year: g.first_release_date
+          ? new Date(g.first_release_date * 1000).getFullYear()
+          : null,
+        relevance,
+        cover: g.cover?.image_id
+          ? `https://images.igdb.com/igdb/image/upload/t_cover_small/${g.cover.image_id}.jpg`
+          : null,
+        platformIcons: [...slugs].sort().map(slug => ({
+          name: slug,
+          icon: `/platforms/result/${slug}.png`,
+        })),
+      }
+    })
+      .sort((a, b) => b.relevance - a.relevance)
+      .slice(0, 10)
 
+    res.json(games)
+  } catch (e) {
+    console.error("autocomplete error:", e)
+    res.status(500).json({ error: "autocomplete failed" })
+  }
 }
