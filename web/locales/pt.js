@@ -18,6 +18,13 @@ export default {
     message: "Essa página não existe ou foi movida.",
     backHome: "Voltar para a home",
   },
+  footer: {
+    description: "Sua biblioteca de jogos pessoal. Acompanhe, avalie e descubra novos jogos.",
+    igdb: "Dados fornecidos por IGDB",
+    about: "Sobre",
+    badges: "Selos",
+    rights: "© {{year}} uloggd",
+  },
   common: {
     back: "Voltar",
     backToHome: "Voltar ao início",
@@ -767,4 +774,5 @@ export default {
     },
   },
 }
+
 
