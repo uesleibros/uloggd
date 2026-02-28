@@ -40,7 +40,7 @@ const TIER_SORT_OPTIONS = [
   { value: "oldest" },
 ]
 
-const CARD_SIZE = "w-[69px] h-[92px] sm:w-[75px] sm:h-[100px]"
+const CARD_SIZE = "w-[calc(25%-4.5px)] h-[92px] sm:w-[75px] sm:h-[100px]"
 const TIER_MIN_H = "min-h-[108px] sm:min-h-[116px]"
 const LABEL_W_VIEW = "w-16 sm:w-24 md:w-28"
 const LABEL_W_EDIT = "w-16 sm:w-24 md:w-28"
@@ -1198,5 +1198,6 @@ export default function TierlistEditor({
     </DndContext>
   )
 }
+
 
 
