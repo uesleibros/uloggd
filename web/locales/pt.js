@@ -812,4 +812,17 @@ export default {
       mastered: "Masterizado",
     },
   },
+  reviews: {
+    communityReviews: "Reviews da comunidade",
+    like: "Curtir",
+    liked: "Curtido",
+    likesCount: "curtida",
+    likesCount_plural: "curtidas",
+    unknownUser: "Usuário",
+    sort: {
+      recent: "Recentes",
+      popular: "Populares",
+      rating: "Avaliação",
+    },
+  },
 }
