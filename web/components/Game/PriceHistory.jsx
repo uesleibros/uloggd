@@ -3,8 +3,11 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from "recharts"
 import { TrendingDown, DollarSign, Loader2, Store, ExternalLink } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 
 function CustomTooltip({ active, payload }) {
+  const { t } = useTranslation("game.prices")
+
   if (!active || !payload?.length) return null
   const data = payload[0].payload
   return (
@@ -12,7 +15,9 @@ function CustomTooltip({ active, payload }) {
       <p className="text-xs font-medium text-white mb-1">{data.store}</p>
       <p className="text-sm font-bold text-green-400">R$ {data.price.toFixed(2)}</p>
       {data.discount > 0 && (
-        <p className="text-[11px] text-zinc-400">-{data.discount}% de R$ {data.regular.toFixed(2)}</p>
+        <p className="text-[11px] text-zinc-400">
+          {t("tooltip.discount", { discount: data.discount, regular: data.regular.toFixed(2) })}
+        </p>
       )}
       <p className="text-[11px] text-zinc-500 mt-1">{data.date}</p>
     </div>
@@ -20,6 +25,7 @@ function CustomTooltip({ active, payload }) {
 }
 
 export default function PriceHistory({ steamId }) {
+  const { t, language } = useTranslation("game.prices")
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -54,13 +60,13 @@ export default function PriceHistory({ steamId }) {
         price: item.price,
         regular: item.regular,
         discount: item.discount,
-        date: new Date(item.date).toLocaleDateString("pt-BR", {
+        date: new Date(item.date).toLocaleDateString(language === "pt" ? "pt-BR" : "en-US", {
           day: "numeric",
           month: "short",
           year: "numeric"
         })
       }))
-  }, [data?.storeLows])
+  }, [data?.storeLows, language])
 
   if (loading) {
     return (
@@ -89,35 +95,35 @@ export default function PriceHistory({ steamId }) {
       <div>
         <div className="flex items-center gap-2 mb-5">
           <DollarSign className="w-4 h-4 text-zinc-500" />
-          <h2 className="text-lg font-semibold text-white">Preços</h2>
+          <h2 className="text-lg font-semibold text-white">{t("title")}</h2>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3.5">
-            <span className="text-[11px] text-zinc-500 block mb-1">Atual</span>
+            <span className="text-[11px] text-zinc-500 block mb-1">{t("stats.current")}</span>
             <span className="text-xl font-bold text-white">
               {currentPrice ? `R$ ${currentPrice.toFixed(2)}` : "—"}
             </span>
           </div>
           <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3.5">
-            <span className="text-[11px] text-zinc-500 block mb-1">Menor histórico</span>
+            <span className="text-[11px] text-zinc-500 block mb-1">{t("stats.lowestEver")}</span>
             <span className="text-xl font-bold text-green-400">
               {lowestEver ? `R$ ${lowestEver.toFixed(2)}` : "—"}
             </span>
             {savingsPercent > 0 && (
               <span className="text-[10px] text-zinc-500 block mt-0.5">
-                {savingsPercent}% abaixo do atual
+                {t("stats.belowCurrent", { percent: savingsPercent })}
               </span>
             )}
           </div>
           <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3.5">
-            <span className="text-[11px] text-zinc-500 block mb-1">Menor (12 meses)</span>
+            <span className="text-[11px] text-zinc-500 block mb-1">{t("stats.lowest12m")}</span>
             <span className="text-xl font-bold text-white">
               {stats?.lowestYear ? `R$ ${stats.lowestYear.toFixed(2)}` : "—"}
             </span>
           </div>
           <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3.5">
-            <span className="text-[11px] text-zinc-500 block mb-1">Menor (3 meses)</span>
+            <span className="text-[11px] text-zinc-500 block mb-1">{t("stats.lowest3m")}</span>
             <span className="text-xl font-bold text-white">
               {stats?.lowestMonth ? `R$ ${stats.lowestMonth.toFixed(2)}` : "—"}
             </span>
@@ -127,7 +133,7 @@ export default function PriceHistory({ steamId }) {
         {chartData.length > 1 && (
           <div className="mb-6">
             <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">
-              Menor preço por loja
+              {t("chartTitle")}
             </h3>
             <div className="bg-zinc-800/30 border border-zinc-700 rounded-lg p-4">
               <ResponsiveContainer width="100%" height={chartData.length * 40 + 20}>
@@ -165,7 +171,7 @@ export default function PriceHistory({ steamId }) {
         {deals?.length > 0 && (
           <div>
             <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">
-              Onde comprar agora
+              {t("dealsTitle")}
             </h3>
             <div className="space-y-2">
               {deals.map((deal, i) => (
@@ -182,7 +188,7 @@ export default function PriceHistory({ steamId }) {
                       <span className="text-sm font-medium text-white block">{deal.store}</span>
                       {deal.storeLow != null && (
                         <span className="text-[11px] text-zinc-500">
-                          Menor nessa loja: R$ {deal.storeLow.toFixed(2)}
+                          {t("deal.storeLowest", { price: deal.storeLow.toFixed(2) })}
                         </span>
                       )}
                     </div>
