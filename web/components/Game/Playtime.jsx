@@ -1,6 +1,9 @@
 import { Clock } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 
 export default function Playtime({ hours, minutes, className = "" }) {
+  const { t } = useTranslation("game")
+
   if (!hours && !minutes) return null
 
   const parts = []
@@ -10,7 +13,7 @@ export default function Playtime({ hours, minutes, className = "" }) {
   return (
     <div className={`flex items-center gap-2 text-sm text-zinc-500 ${className}`}>
       <Clock className="w-4 h-4 flex-shrink-0" />
-      <span>{parts.join(" ")} de jogo</span>
+      <span>{parts.join(" ")} {t("playtime")}</span>
     </div>
   )
 }
