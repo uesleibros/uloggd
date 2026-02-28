@@ -632,5 +632,21 @@ export default {
       title: "Avatar",
       description: "Personalize o avatar do seu perfil. Recomendado: 512x512px.",
     },
+    twitch: {
+      title: "Twitch",
+      connected: "Conectado",
+      live: "Ao vivo",
+      viewChannel: "Ver canal",
+      disconnect: "Desconectar",
+      connect: "Conectar Twitch",
+      viewers: "{{count}} viewers",
+      connectedDescription: "Sua conta da Twitch está conectada. Mostramos quando você está ao vivo no seu perfil.",
+      disconnectedDescription: "Conecte sua conta da Twitch para mostrar quando você está ao vivo e sincronizar seus dados.",
+      benefitsTitle: "O que você ganha:",
+      benefits: {
+        liveIndicator: "Indicador de \"Ao vivo\" quando estiver streamando",
+        channelLink: "Link direto para seu canal no perfil",
+      },
+    },
   },
 }
