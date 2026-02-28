@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react"
 import { Trophy, EyeOff, Eye, ChevronLeft, Loader2 } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
+import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 import { SteamIcon } from "#constants/customIcons"
 import { getTimeAgoFromTimestamp } from "#utils/formatDate"
 
 function AchievementDetailModal({ achievement, gameName, appId, isOpen, onClose, onBack, showGame = true }) {
+  const { t } = useTranslation("achievements.detail")
   const [revealed, setRevealed] = useState(false)
 
   useEffect(() => {
@@ -25,7 +27,7 @@ function AchievementDetailModal({ achievement, gameName, appId, isOpen, onClose,
             className="flex items-center gap-1 text-xs text-zinc-500 hover:text-white transition-colors mb-4 cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
-            Voltar
+            {t("back")}
           </button>
         )}
 
@@ -33,7 +35,7 @@ function AchievementDetailModal({ achievement, gameName, appId, isOpen, onClose,
           <div className="relative flex-shrink-0">
             <img
               src={achievement.iconUnlocked || achievement.icon}
-              alt={isHidden ? "Conquista secreta" : achievement.name}
+              alt={isHidden ? t("hiddenAlt") : achievement.name}
               className={`w-16 h-16 rounded-lg border border-zinc-700 ${isHidden ? "blur-md" : ""} ${!achievement.achieved ? "grayscale opacity-60" : ""}`}
             />
             {isHidden && (
@@ -44,10 +46,10 @@ function AchievementDetailModal({ achievement, gameName, appId, isOpen, onClose,
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-base font-bold text-white break-words">
-              {isHidden ? "Conquista secreta" : achievement.name}
+              {isHidden ? t("hiddenTitle") : achievement.name}
             </h3>
             {isHidden ? (
-              <p className="text-sm text-zinc-500 mt-1">Esta conquista contém spoilers</p>
+              <p className="text-sm text-zinc-500 mt-1">{t("hiddenDescription")}</p>
             ) : (
               achievement.description && (
                 <p className="text-sm text-zinc-400 mt-1 break-words">{achievement.description}</p>
@@ -64,12 +66,12 @@ function AchievementDetailModal({ achievement, gameName, appId, isOpen, onClose,
             {revealed ? (
               <>
                 <EyeOff className="w-4 h-4 flex-shrink-0" />
-                Esconder detalhes
+                {t("hideDetails")}
               </>
             ) : (
               <>
                 <Eye className="w-4 h-4 flex-shrink-0" />
-                Revelar conquista (pode conter spoilers)
+                {t("revealWarning")}
               </>
             )}
           </button>
@@ -78,7 +80,7 @@ function AchievementDetailModal({ achievement, gameName, appId, isOpen, onClose,
         <div className="mt-4 bg-zinc-800/50 rounded-lg border border-zinc-700/50 divide-y divide-zinc-700/50">
           {showGame && (gameName || achievement.game) && (
             <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-              <span className="text-xs text-zinc-500 flex-shrink-0">Jogo</span>
+              <span className="text-xs text-zinc-500 flex-shrink-0">{t("game")}</span>
               <div className="flex items-center gap-2 min-w-0">
                 <img
                   src={`https://cdn.cloudflare.steamstatic.com/steam/apps/${appId || achievement.appId}/header.jpg`}
@@ -90,40 +92,40 @@ function AchievementDetailModal({ achievement, gameName, appId, isOpen, onClose,
             </div>
           )}
           <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-            <span className="text-xs text-zinc-500 flex-shrink-0">Status</span>
+            <span className="text-xs text-zinc-500 flex-shrink-0">{t("status")}</span>
             <span className={`text-xs font-medium ${achievement.achieved ? "text-green-400" : "text-zinc-500"}`}>
-              {achievement.achieved ? "Desbloqueada" : "Bloqueada"}
+              {achievement.achieved ? t("unlocked") : t("locked")}
             </span>
           </div>
           {achievement.achieved && achievement.unlockedAt && (
             <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-              <span className="text-xs text-zinc-500 flex-shrink-0">Desbloqueada</span>
+              <span className="text-xs text-zinc-500 flex-shrink-0">{t("unlockedAt")}</span>
               <span className="text-xs text-white truncate">{getTimeAgoFromTimestamp(achievement.unlockedAt)}</span>
             </div>
           )}
           {achievement.globalPercent !== undefined && (
             <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-              <span className="text-xs text-zinc-500 flex-shrink-0">Raridade</span>
+              <span className="text-xs text-zinc-500 flex-shrink-0">{t("rarity")}</span>
               <span className={`text-xs font-medium ${
                 achievement.globalPercent < 5 ? "text-yellow-400" :
                 achievement.globalPercent < 20 ? "text-purple-400" :
                 achievement.globalPercent < 50 ? "text-blue-400" : "text-zinc-400"
               }`}>
-                {achievement.globalPercent.toFixed(1)}% dos jogadores
+                {t("rarityPercent", { percent: achievement.globalPercent.toFixed(1) })}
               </span>
             </div>
           )}
           {achievement.hidden && (
             <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-              <span className="text-xs text-zinc-500 flex-shrink-0">Tipo</span>
+              <span className="text-xs text-zinc-500 flex-shrink-0">{t("type")}</span>
               <span className="text-xs text-yellow-400 flex items-center gap-1">
                 <EyeOff className="w-3 h-3 flex-shrink-0" />
-                Secreta
+                {t("secret")}
               </span>
             </div>
           )}
           <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-            <span className="text-xs text-zinc-500 flex-shrink-0">Plataforma</span>
+            <span className="text-xs text-zinc-500 flex-shrink-0">{t("platform")}</span>
             <div className="flex items-center gap-1.5">
               <SteamIcon className="w-3.5 h-3.5 text-[#66c0f4] flex-shrink-0" />
               <span className="text-xs text-[#66c0f4]">Steam</span>
@@ -138,7 +140,7 @@ function AchievementDetailModal({ achievement, gameName, appId, isOpen, onClose,
           className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-sm text-zinc-300 hover:text-white transition-colors"
         >
           <SteamIcon className="w-4 h-4 flex-shrink-0" />
-          Ver na Steam
+          {t("viewOnSteam")}
         </a>
       </div>
     </Modal>
@@ -146,6 +148,7 @@ function AchievementDetailModal({ achievement, gameName, appId, isOpen, onClose,
 }
 
 function GameAchievementsModal({ game, userId, isOpen, onClose }) {
+  const { t } = useTranslation("achievements.gameModal")
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
@@ -231,7 +234,7 @@ function GameAchievementsModal({ game, userId, isOpen, onClose }) {
         ) : data?.achievements?.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Trophy className="w-8 h-8 text-zinc-700 mb-2" />
-            <p className="text-sm text-zinc-500">Nenhuma conquista encontrada</p>
+            <p className="text-sm text-zinc-500">{t("noAchievements")}</p>
           </div>
         ) : (
           <>
@@ -246,7 +249,7 @@ function GameAchievementsModal({ game, userId, isOpen, onClose }) {
                       : "bg-zinc-800/50 text-zinc-500 hover:text-white"
                   }`}
                 >
-                  {f === "all" ? "Todas" : f === "unlocked" ? "Desbloqueadas" : "Bloqueadas"}
+                  {t(`filter.${f}`)}
                 </button>
               ))}
             </div>
@@ -264,7 +267,7 @@ function GameAchievementsModal({ game, userId, isOpen, onClose }) {
                     <div className="relative flex-shrink-0">
                       <img
                         src={achievement.achieved ? achievement.iconUnlocked : achievement.iconLocked}
-                        alt={isHidden ? "Conquista secreta" : achievement.name}
+                        alt={isHidden ? t("hiddenAlt") : achievement.name}
                         className={`w-10 h-10 rounded-md ${isHidden ? "blur-sm" : ""} ${!achievement.achieved ? "grayscale opacity-60" : ""}`}
                       />
                       {isHidden && (
@@ -276,7 +279,7 @@ function GameAchievementsModal({ game, userId, isOpen, onClose }) {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-white truncate">
-                          {isHidden ? "Conquista secreta" : achievement.name}
+                          {isHidden ? t("hiddenTitle") : achievement.name}
                         </span>
                         {achievement.hidden && (
                           <EyeOff className="w-3 h-3 text-yellow-500 flex-shrink-0" />
@@ -291,7 +294,7 @@ function GameAchievementsModal({ game, userId, isOpen, onClose }) {
                           {achievement.globalPercent.toFixed(1)}%
                         </span>
                         {achievement.achieved && (
-                          <span className="text-xs text-green-400">✓ Desbloqueada</span>
+                          <span className="text-xs text-green-400">✓ {t("unlocked")}</span>
                         )}
                       </div>
                     </div>
@@ -309,7 +312,7 @@ function GameAchievementsModal({ game, userId, isOpen, onClose }) {
           className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-sm text-zinc-300 hover:text-white transition-colors"
         >
           <SteamIcon className="w-4 h-4 flex-shrink-0" />
-          Ver na Steam
+          {t("viewOnSteam")}
         </a>
       </div>
     </Modal>
@@ -317,6 +320,7 @@ function GameAchievementsModal({ game, userId, isOpen, onClose }) {
 }
 
 function RecentAchievementModal({ achievement, isOpen, onClose, onViewAll }) {
+  const { t } = useTranslation("achievements.recent")
   const [revealed, setRevealed] = useState(false)
 
   useEffect(() => {
@@ -334,7 +338,7 @@ function RecentAchievementModal({ achievement, isOpen, onClose, onViewAll }) {
           <div className="relative flex-shrink-0">
             <img
               src={achievement.icon}
-              alt={isHidden ? "Conquista secreta" : achievement.name}
+              alt={isHidden ? t("hiddenAlt") : achievement.name}
               className={`w-16 h-16 rounded-lg border border-zinc-700 ${isHidden ? "blur-md" : ""}`}
             />
             {isHidden && (
@@ -345,10 +349,10 @@ function RecentAchievementModal({ achievement, isOpen, onClose, onViewAll }) {
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-base font-bold text-white break-words">
-              {isHidden ? "Conquista secreta" : achievement.name}
+              {isHidden ? t("hiddenTitle") : achievement.name}
             </h3>
             {isHidden ? (
-              <p className="text-sm text-zinc-500 mt-1">Esta conquista contém spoilers</p>
+              <p className="text-sm text-zinc-500 mt-1">{t("hiddenDescription")}</p>
             ) : (
               achievement.description && (
                 <p className="text-sm text-zinc-400 mt-1 break-words">{achievement.description}</p>
@@ -365,12 +369,12 @@ function RecentAchievementModal({ achievement, isOpen, onClose, onViewAll }) {
             {revealed ? (
               <>
                 <EyeOff className="w-4 h-4 flex-shrink-0" />
-                Esconder detalhes
+                {t("hideDetails")}
               </>
             ) : (
               <>
                 <Eye className="w-4 h-4 flex-shrink-0" />
-                Revelar conquista (pode conter spoilers)
+                {t("revealWarning")}
               </>
             )}
           </button>
@@ -378,7 +382,7 @@ function RecentAchievementModal({ achievement, isOpen, onClose, onViewAll }) {
 
         <div className="mt-4 bg-zinc-800/50 rounded-lg border border-zinc-700/50 divide-y divide-zinc-700/50">
           <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-            <span className="text-xs text-zinc-500 flex-shrink-0">Jogo</span>
+            <span className="text-xs text-zinc-500 flex-shrink-0">{t("game")}</span>
             <div className="flex items-center gap-2 min-w-0">
               <img
                 src={`https://cdn.cloudflare.steamstatic.com/steam/apps/${achievement.appId}/header.jpg`}
@@ -389,11 +393,11 @@ function RecentAchievementModal({ achievement, isOpen, onClose, onViewAll }) {
             </div>
           </div>
           <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-            <span className="text-xs text-zinc-500 flex-shrink-0">Desbloqueada</span>
+            <span className="text-xs text-zinc-500 flex-shrink-0">{t("unlockedAt")}</span>
             <span className="text-xs text-white truncate">{getTimeAgoFromTimestamp(achievement.unlockedAt)}</span>
           </div>
           <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-            <span className="text-xs text-zinc-500 flex-shrink-0">Plataforma</span>
+            <span className="text-xs text-zinc-500 flex-shrink-0">{t("platform")}</span>
             <div className="flex items-center gap-1.5">
               <SteamIcon className="w-3.5 h-3.5 text-[#66c0f4] flex-shrink-0" />
               <span className="text-xs text-[#66c0f4]">Steam</span>
@@ -401,10 +405,10 @@ function RecentAchievementModal({ achievement, isOpen, onClose, onViewAll }) {
           </div>
           {achievement.hidden && (
             <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-              <span className="text-xs text-zinc-500 flex-shrink-0">Tipo</span>
+              <span className="text-xs text-zinc-500 flex-shrink-0">{t("type")}</span>
               <span className="text-xs text-yellow-400 flex items-center gap-1">
                 <EyeOff className="w-3 h-3 flex-shrink-0" />
-                Secreta
+                {t("secret")}
               </span>
             </div>
           )}
@@ -415,7 +419,7 @@ function RecentAchievementModal({ achievement, isOpen, onClose, onViewAll }) {
           className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-[#66c0f4]/10 hover:bg-[#66c0f4]/20 border border-[#66c0f4]/30 rounded-lg text-sm text-[#66c0f4] transition-colors cursor-pointer"
         >
           <Trophy className="w-4 h-4 flex-shrink-0" />
-          Ver todas conquistas do jogo
+          {t("viewAllInGame")}
         </button>
 
         <a
@@ -425,7 +429,7 @@ function RecentAchievementModal({ achievement, isOpen, onClose, onViewAll }) {
           className="mt-2 flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-sm text-zinc-300 hover:text-white transition-colors"
         >
           <SteamIcon className="w-4 h-4 flex-shrink-0" />
-          Ver na Steam
+          {t("viewOnSteam")}
         </a>
       </div>
     </Modal>
@@ -433,6 +437,7 @@ function RecentAchievementModal({ achievement, isOpen, onClose, onViewAll }) {
 }
 
 export default function SteamAchievements({ userId }) {
+  const { t } = useTranslation("achievements.list")
   const [achievements, setAchievements] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAll, setShowAll] = useState(false)
@@ -471,11 +476,11 @@ export default function SteamAchievements({ userId }) {
         <div className="flex items-center gap-2">
           <Trophy className="w-4 h-4 text-zinc-600" />
           <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-            Conquistas recentes
+            {t("title")}
           </span>
           <SteamIcon className="w-3.5 h-3.5 text-[#66c0f4]" />
         </div>
-        <span className="text-xs text-zinc-600">{achievements.length} conquistas</span>
+        <span className="text-xs text-zinc-600">{t("count", { count: achievements.length })}</span>
       </div>
 
       <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-1.5">
@@ -487,7 +492,7 @@ export default function SteamAchievements({ userId }) {
           >
             <img
               src={achievement.icon}
-              alt={achievement.hidden ? "Conquista secreta" : achievement.name}
+              alt={achievement.hidden ? t("hiddenAlt") : achievement.name}
               className={`w-full h-full object-cover ${achievement.hidden ? "blur-sm" : ""}`}
               loading="lazy"
             />
@@ -505,7 +510,7 @@ export default function SteamAchievements({ userId }) {
           onClick={() => setShowAll(!showAll)}
           className="mt-3 text-xs text-zinc-500 hover:text-white transition-colors cursor-pointer"
         >
-          {showAll ? "Mostrar menos" : `Ver todas (${achievements.length})`}
+          {showAll ? t("showLess") : t("viewAll", { count: achievements.length })}
         </button>
       )}
 
@@ -538,6 +543,7 @@ export default function SteamAchievements({ userId }) {
 }
 
 export function GameSteamAchievements({ appId }) {
+  const { t } = useTranslation("achievements.gameSection")
   const { user } = useAuth()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -576,7 +582,7 @@ export function GameSteamAchievements({ appId }) {
         <div className="flex items-center gap-2 mb-3">
           <Trophy className="w-4 h-4 text-zinc-600" />
           <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-            Conquistas
+            {t("title")}
           </span>
           <SteamIcon className="w-3.5 h-3.5 text-[#66c0f4]" />
         </div>
@@ -605,7 +611,7 @@ export function GameSteamAchievements({ appId }) {
           <div className="flex items-center gap-2">
             <Trophy className="w-4 h-4 text-zinc-600" />
             <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              Conquistas
+              {t("title")}
             </span>
             <SteamIcon className="w-3.5 h-3.5 text-[#66c0f4]" />
           </div>
@@ -620,7 +626,7 @@ export function GameSteamAchievements({ appId }) {
           <div className="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-lg mb-4">
             <SteamIcon className="w-4 h-4 text-zinc-500" />
             <span className="text-xs text-zinc-400">
-              Conecte sua Steam para ver seu progresso
+              {t("connectSteam")}
             </span>
           </div>
         )}
@@ -647,7 +653,9 @@ export function GameSteamAchievements({ appId }) {
                   : "bg-zinc-800/50 text-zinc-500 hover:text-white"
               }`}
             >
-              {f === "all" ? `Todas (${data.total})` : f === "unlocked" ? `Desbloqueadas (${data.unlocked})` : `Bloqueadas (${data.total - data.unlocked})`}
+              {t(`filter.${f}`, { 
+                count: f === "all" ? data.total : f === "unlocked" ? data.unlocked : data.total - data.unlocked 
+              })}
             </button>
           ))}
         </div>
@@ -664,7 +672,7 @@ export function GameSteamAchievements({ appId }) {
               >
                 <img
                   src={achievement.achieved ? achievement.iconUnlocked : achievement.iconLocked}
-                  alt={isHidden ? "Conquista secreta" : achievement.name}
+                  alt={isHidden ? t("hiddenAlt") : achievement.name}
                   className={`w-full h-full object-cover ${isHidden ? "blur-sm" : ""}`}
                   loading="lazy"
                 />
@@ -683,7 +691,7 @@ export function GameSteamAchievements({ appId }) {
             onClick={() => setShowAll(!showAll)}
             className="mt-3 text-xs text-zinc-500 hover:text-white transition-colors cursor-pointer"
           >
-            {showAll ? "Mostrar menos" : `Ver todas (${filtered.length})`}
+            {showAll ? t("showLess") : t("viewAll", { count: filtered.length })}
           </button>
         )}
 
