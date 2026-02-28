@@ -21,7 +21,7 @@ import { CSS } from "@dnd-kit/utilities"
 import { restrictToWindowEdges } from "@dnd-kit/modifiers"
 import {
   Plus, Trash2, Palette, Gamepad2, Search, X,
-  ArrowUpDown, GripVertical,
+  ArrowUpDown, GripVertical, Eye, EyeOff,
 } from "lucide-react"
 import GameCard from "@components/Game/GameCard"
 
@@ -41,6 +41,8 @@ const TIER_SORT_OPTIONS = [
 
 const CARD_SIZE = "w-[56px] h-[75px] sm:w-[75px] sm:h-[100px]"
 const TIER_MIN_H = "min-h-[91px] sm:min-h-[116px]"
+const LABEL_W_VIEW = "w-16 sm:w-24 md:w-28"
+const LABEL_W_EDIT = "w-20 sm:w-28 md:w-32"
 
 function getCoverUrl(game) {
   if (!game?.cover?.url) return null
@@ -79,7 +81,7 @@ function CardSkeleton() {
 function TierSkeleton() {
   return (
     <div className="flex border rounded-xl overflow-hidden bg-zinc-900/50 border-zinc-700/80">
-      <div className={`w-20 sm:w-28 md:w-32 flex-shrink-0 bg-zinc-700 animate-pulse ${TIER_MIN_H}`} />
+      <div className={`${LABEL_W_VIEW} flex-shrink-0 bg-zinc-700 animate-pulse ${TIER_MIN_H}`} />
       <div className="flex-1 p-2 sm:p-2.5 bg-zinc-800/40 flex items-center gap-2 flex-wrap">
         {Array.from({ length: 5 }).map((_, i) => (
           <CardSkeleton key={i} />
@@ -235,7 +237,7 @@ function ViewTier({ tier, items, getGame }) {
       onDragStart={(e) => e.preventDefault()}
     >
       <div
-        className={`w-16 sm:w-24 md:w-28 flex-shrink-0 flex items-center justify-center text-white p-1.5 ${TIER_MIN_H}`}
+        className={`${LABEL_W_VIEW} flex-shrink-0 flex items-center justify-center text-white p-1.5 ${TIER_MIN_H}`}
         style={{ backgroundColor: tier.color }}
       >
         <span className="select-none text-center leading-tight break-words hyphens-auto font-bold text-[11px] sm:text-sm md:text-base max-w-full overflow-hidden">
@@ -276,6 +278,7 @@ function SortableTierRow({
   onDeleteTier,
   onSortTier,
   tierSort,
+  showOptions,
 }) {
   const {
     attributes,
@@ -311,47 +314,53 @@ function SortableTierRow({
       }`}
     >
       <div
-        className={`w-20 sm:w-28 md:w-32 flex-shrink-0 flex flex-col items-center justify-center text-white p-1.5 gap-1 ${TIER_MIN_H}`}
+        className={`${showOptions ? LABEL_W_EDIT : LABEL_W_VIEW} flex-shrink-0 flex flex-col items-center justify-center text-white p-1.5 gap-1 transition-[width] duration-200 ${TIER_MIN_H}`}
         style={{ backgroundColor: tier.color }}
       >
-        <div
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-black/20 rounded transition-colors touch-none"
-        >
-          <GripVertical className="w-3.5 h-3.5 opacity-60" />
-        </div>
+        {showOptions && (
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-black/20 rounded transition-colors touch-none"
+          >
+            <GripVertical className="w-3.5 h-3.5 opacity-60" />
+          </div>
+        )}
 
         <span className="select-none text-center leading-tight break-words hyphens-auto font-bold text-[11px] sm:text-sm md:text-base max-w-full overflow-hidden">
           {tier.label}
         </span>
 
-        <div className="flex items-center gap-0.5 flex-wrap justify-center">
-          <button
-            onClick={() => onEditTier(tier)}
-            className="p-1 hover:bg-black/30 rounded transition-colors cursor-pointer"
-          >
-            <Palette className="w-3 h-3" />
-          </button>
-          <button
-            onClick={() => onDeleteTier(tier.id)}
-            className="p-1 hover:bg-red-500/50 rounded transition-colors cursor-pointer"
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
-        </div>
+        {showOptions && (
+          <>
+            <div className="flex items-center gap-0.5 flex-wrap justify-center">
+              <button
+                onClick={() => onEditTier(tier)}
+                className="p-1 hover:bg-black/30 rounded transition-colors cursor-pointer"
+              >
+                <Palette className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => onDeleteTier(tier.id)}
+                className="p-1 hover:bg-red-500/50 rounded transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
 
-        <select
-          value={tierSort}
-          onChange={(e) => onSortTier(tier.id, e.target.value)}
-          className="w-full max-w-[5rem] text-[9px] sm:text-[10px] bg-black/30 border border-white/10 rounded px-0.5 py-0.5 text-white cursor-pointer focus:outline-none"
-        >
-          {TIER_SORT_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+            <select
+              value={tierSort}
+              onChange={(e) => onSortTier(tier.id, e.target.value)}
+              className="w-full max-w-[5rem] text-[9px] sm:text-[10px] bg-black/30 border border-white/10 rounded px-0.5 py-0.5 text-white cursor-pointer focus:outline-none"
+            >
+              {TIER_SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
       </div>
 
       <div
@@ -652,6 +661,7 @@ export default function TierlistEditor({
   const [sortOrder, setSortOrder] = useState("default")
   const [targetTier, setTargetTier] = useState(null)
   const [tierSorts, setTierSorts] = useState({})
+  const [showTierOptions, setShowTierOptions] = useState(false)
   const targetRef = useRef(null)
   const [untieredOrder, setUntieredOrder] = useState(() =>
     untieredGames.map((g) => g.game_slug)
@@ -1061,6 +1071,21 @@ export default function TierlistEditor({
       modifiers={[restrictToWindowEdges]}
     >
       <div className="space-y-2 sm:space-y-2.5">
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowTierOptions((prev) => !prev)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] sm:text-xs text-zinc-500 hover:text-zinc-300 bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/50 rounded-lg transition-colors cursor-pointer"
+          >
+            {showTierOptions ? (
+              <EyeOff className="w-3.5 h-3.5" />
+            ) : (
+              <Eye className="w-3.5 h-3.5" />
+            )}
+            {showTierOptions ? "Ocultar opções" : "Opções dos tiers"}
+          </button>
+        </div>
+
         <SortableContext items={tierRowIds} strategy={verticalListSortingStrategy}>
           {tiers.map((tier) => {
             const rawItems = items
@@ -1091,6 +1116,7 @@ export default function TierlistEditor({
                 onDeleteTier={handleDeleteTier}
                 onSortTier={handleSortTier}
                 tierSort={tierSorts[tier.id] || "manual"}
+                showOptions={showTierOptions}
               />
             )
           })}

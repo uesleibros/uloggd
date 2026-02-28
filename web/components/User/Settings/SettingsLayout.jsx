@@ -1,4 +1,4 @@
-import { User, Monitor, Palette, LogOut, X, Loader2, ArrowDownToLine, Link2 } from "lucide-react"
+import { User, Monitor, Palette, LogOut, X, Loader2, ArrowDownToLine, Link2, Globe } from "lucide-react"
 import SidebarItem from "@components/User/Settings/ui/SidebarItem"
 import MobileTabButton from "@components/User/Settings/ui/MobileTabButton"
 
@@ -6,6 +6,7 @@ const TABS = [
   { id: "account", label: "Minha conta", mobile: "Conta", icon: User },
   { id: "sessions", label: "Sessão", mobile: "Sessão", icon: Monitor },
   { id: "appearance", label: "Aparência", mobile: "Aparência", icon: Palette },
+  { id: "language", label: "Idioma", mobile: "Idioma", icon: Globe },
   { id: "connections", label: "Conexões", mobile: "Conexões", icon: Link2 },
   { id: "integrations", label: "Integrações", mobile: "Integrações", icon: ArrowDownToLine },
 ]

@@ -6,17 +6,19 @@ import { howlongtobeatHandler } from "#routers/howlongtobeat.js"
 import { igdbHandler } from "#routers/igdb.js"
 import { reviewsHandler } from "#routers/reviews.js"
 import { listsHandler } from "#routers/lists.js"
-import { twitchHandler } from "#routers/twitch.js"
-import { nintendoHandler } from "#routers/nintendo.js"
 import { translateHandler } from "#routers/translate.js"
 import { likesHandler } from "#routers/likes.js"
-import { steamHandler } from "#routers/steam.js"
 import { verificationHandler } from "#routers/verification.js"
 import { badgesHandler } from "#routers/badges.js"
 import { moderationHandler } from "#routers/moderation.js"
 import { pricesHandler } from "#routers/prices.js"
 import { tierlistsHandler } from "#routers/tierlists.js"
 import { getUser } from "#lib/auth.js"
+
+// Connections
+import { steamHandler } from "#routers/connections/steam.js"
+import { twitchHandler } from "#routers/connections/twitch.js"
+import { nintendoHandler } from "#routers/connections/nintendo.js"
 
 const SERVICES = {
 	users: usersHandler,

@@ -9,6 +9,7 @@ import SessionsTab from "@components/User/Settings/tabs/SessionsTab"
 import AppearanceTab from "@components/User/Settings/tabs/AppearanceTab"
 import ConnectionsTab from "@components/User/Settings/tabs/ConnectionsTab"
 import IntegrationsTab from "@components/User/Settings/tabs/IntegrationsTab"
+import LanguageTab from "@components/User/Settings/tabs/LanguageTab"
 
 export default function SettingsModal({ isOpen, onClose }) {
 	const { user, updateUser } = useAuth()
@@ -197,6 +198,9 @@ export default function SettingsModal({ isOpen, onClose }) {
 						decorationSaving={decorationSaving}
 						decorationIsDirty={decorationIsDirty}
 					/>
+				)}
+				{activeTab === "language" && (
+				  <LanguageTab />
 				)}
 				{activeTab === "connections" && (
 					<ConnectionsTab />

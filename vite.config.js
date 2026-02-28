@@ -29,7 +29,8 @@ export default defineConfig({
 			"#models": "/models",
 			"@styles": "/web/styles",
 			"@pages": "/web/pages",
-			"@components": "/web/components"
+			"@components": "/web/components",
+			"@locales": "/web/locales"
 		}
 	}
 })
