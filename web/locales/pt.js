@@ -1022,5 +1022,14 @@ export default {
       description: "O conteúdo está oculto para proteger sua experiência.",
       revealButton: "Revelar conteúdo",
     },
+    userCard: {
+      defaultTitle: "Review",
+      editButton: "Editar",
+      noRating: "Sem nota",
+      mastered: "Masterizado",
+      replay: "Replay",
+      started: "Início",
+      finished: "Fim",
+    },
   },
 }
