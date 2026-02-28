@@ -751,5 +751,11 @@ export default {
         save: "Salvar alterações",
       },
     },
+    removeItem: {
+      title: "Remover jogo",
+      confirm: "Remover {{name}} desta lista?",
+      cancel: "Cancelar",
+      remove: "Remover",
+    },
   },
 }
