@@ -18,6 +18,13 @@ export default {
     message: "Essa página não existe ou foi movida.",
     backHome: "Voltar para a home",
   },
+  auth: {
+    profile: "Meu perfil",
+    settings: "Configurações",
+    signOut: "Sair",
+    signIn: "Entrar",
+    signInWithDiscord: "Entrar com Discord",
+  },
   footer: {
     description: "Sua biblioteca de jogos pessoal. Acompanhe, avalie e descubra novos jogos.",
     igdb: "Dados fornecidos por IGDB",
@@ -774,5 +781,6 @@ export default {
     },
   },
 }
+
 
 
