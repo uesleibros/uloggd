@@ -992,5 +992,27 @@ export default {
       title: "Nenhuma review ainda",
       subtitle: "Seja o primeiro a avaliar este jogo!",
     },
+    ratingModes: {
+      stars_5: {
+        label: "★5",
+        labelFull: "5 Estrelas",
+      },
+      stars_5h: {
+        label: "★5½",
+        labelFull: "5 Estrelas (meia)",
+      },
+      points_10: {
+        label: "0–10",
+        labelFull: "0–10",
+      },
+      points_10d: {
+        label: "0–10.0",
+        labelFull: "0–10.0",
+      },
+      points_100: {
+        label: "0–100",
+        labelFull: "0–100",
+      },
+    },
   },
 }
