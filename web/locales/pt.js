@@ -383,5 +383,18 @@ export default {
         similar: "Similares",
       },
     },
+    hltb: {
+      title: "Tempo para zerar",
+      disclaimer: "Os tempos exibidos são estimativas baseadas em dados reportados pela comunidade do HowLongToBeat e podem não refletir com precisão a sua experiência.",
+      disclaimerFull: "Os tempos exibidos são estimativas baseadas em dados reportados pela comunidade do HowLongToBeat e podem não refletir com precisão a sua experiência. O tempo real pode variar de acordo com o estilo de jogo, nível de dificuldade e outros fatores individuais.",
+      noData: "Sem dados de tempo disponíveis",
+      categories: {
+        main: "História",
+        mainExtra: "História+",
+        completionist: "Completista",
+      },
+      hours: "h",
+      source: "via HowLongToBeat",
+    },
   },
 }
