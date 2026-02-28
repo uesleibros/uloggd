@@ -18,6 +18,9 @@ export default {
     message: "Essa página não existe ou foi movida.",
     backHome: "Voltar para a home",
   },
+  header: {
+    search: "Buscar...",
+  },
   auth: {
     profile: "Meu perfil",
     settings: "Configurações",
@@ -781,6 +784,7 @@ export default {
     },
   },
 }
+
 
 
 
