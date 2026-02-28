@@ -1,4 +1,5 @@
 import { Star, Trophy, RotateCcw, Clock, User, Pencil } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 import { formatRating } from "#utils/rating"
 import { HalfStar } from "./inputs/StarRating"
 
@@ -72,6 +73,8 @@ function AspectDisplay({ aspect }) {
 }
 
 export function UserReviewCard({ review, onEdit }) {
+  const { t, language } = useTranslation("review.userCard")
+  
   if (!review) return null
 
   const playtime = []
@@ -79,19 +82,21 @@ export function UserReviewCard({ review, onEdit }) {
   if (review.minutes_played) playtime.push(`${review.minutes_played}m`)
   const aspects = review.aspect_ratings || []
 
+  const locale = language === "pt" ? "pt-BR" : "en-US"
+
   return (
     <div className="rounded-xl bg-zinc-800/60 border border-zinc-700 overflow-hidden">
       <div className="px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between border-b border-zinc-700/50">
         <div className="flex items-center gap-2.5">
           <User className="w-4 h-4 text-indigo-400" />
-          <span className="text-sm font-semibold text-white">{review.title || "Review"}</span>
+          <span className="text-sm font-semibold text-white">{review.title || t("defaultTitle")}</span>
         </div>
         <button
           onClick={onEdit}
           className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white active:text-white bg-zinc-700/50 hover:bg-zinc-700 active:bg-zinc-600 rounded-lg transition-all duration-200 cursor-pointer border border-zinc-600/50 hover:border-zinc-500"
         >
           <Pencil className="w-3.5 h-3.5" />
-          Editar
+          {t("editButton")}
         </button>
       </div>
 
@@ -101,7 +106,7 @@ export function UserReviewCard({ review, onEdit }) {
             {review.rating != null ? (
               <RatingDisplay rating={review.rating} ratingMode={review.rating_mode} />
             ) : (
-              <span className="text-sm text-zinc-600 italic">Sem nota</span>
+              <span className="text-sm text-zinc-600 italic">{t("noRating")}</span>
             )}
           </div>
 
@@ -110,13 +115,13 @@ export function UserReviewCard({ review, onEdit }) {
               {review.mastered && (
                 <div className="flex items-center gap-1.5">
                   <Trophy className="w-4 h-4 text-amber-400 fill-current" />
-                  <span className="text-xs text-amber-400 font-medium">Masterizado</span>
+                  <span className="text-xs text-amber-400 font-medium">{t("mastered")}</span>
                 </div>
               )}
               {review.replay && (
                 <div className="flex items-center gap-1.5">
                   <RotateCcw className="w-4 h-4 text-zinc-400" />
-                  <span className="text-xs text-zinc-400 font-medium">Replay</span>
+                  <span className="text-xs text-zinc-400 font-medium">{t("replay")}</span>
                 </div>
               )}
             </div>
@@ -140,10 +145,10 @@ export function UserReviewCard({ review, onEdit }) {
                 </div>
               )}
               {review.started_on && (
-                <span>Início: {new Date(review.started_on).toLocaleDateString("pt-BR")}</span>
+                <span>{t("started")}: {new Date(review.started_on).toLocaleDateString(locale)}</span>
               )}
               {review.finished_on && (
-                <span>Fim: {new Date(review.finished_on).toLocaleDateString("pt-BR")}</span>
+                <span>{t("finished")}: {new Date(review.finished_on).toLocaleDateString(locale)}</span>
               )}
             </div>
 
