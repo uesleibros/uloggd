@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import { supabase } from "#lib/supabase"
 import { encode } from "#utils/shortId.js"
@@ -375,4 +375,5 @@ export default function TierlistPage() {
       </div>
     </div>
   )
+
 }
