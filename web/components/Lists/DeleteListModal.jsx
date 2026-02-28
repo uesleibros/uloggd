@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
 import Modal from "@components/UI/Modal"
 import { Trash2, Gamepad2 } from "lucide-react"
 
 export default function DeleteListModal({ isOpen, onClose, list, onDeleted }) {
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -17,7 +19,7 @@ export default function DeleteListModal({ isOpen, onClose, list, onDeleted }) {
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error("Não autenticado")
+      if (!session) throw new Error(t("lists.delete.errors.notAuthenticated"))
 
       const res = await fetch("/api/lists/@me/delete", {
         method: "POST",
@@ -28,7 +30,7 @@ export default function DeleteListModal({ isOpen, onClose, list, onDeleted }) {
         body: JSON.stringify({ listId: list.id }),
       })
 
-      if (!res.ok) throw new Error("Erro ao excluir")
+      if (!res.ok) throw new Error(t("lists.delete.errors.deleteError"))
       onDeleted(list.id)
       onClose()
     } catch (err) {
@@ -41,7 +43,14 @@ export default function DeleteListModal({ isOpen, onClose, list, onDeleted }) {
   const itemCount = list?.list_items?.length || list?.games_count || 0
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Excluir lista" maxWidth="max-w-md" fullscreenMobile showMobileGrip>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t("lists.delete.title")}
+      maxWidth="max-w-md"
+      fullscreenMobile
+      showMobileGrip
+    >
       <div className="p-5 sm:p-6 flex flex-col gap-4">
         <div className="flex items-start gap-4">
           <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
@@ -49,9 +58,11 @@ export default function DeleteListModal({ isOpen, onClose, list, onDeleted }) {
           </div>
           <div>
             <p className="text-sm text-zinc-300 leading-relaxed">
-              Tem certeza que deseja excluir <span className="text-white font-semibold">&quot;{list?.title}&quot;</span>?
+              {t("lists.delete.confirm", { title: list?.title })}
             </p>
-            <p className="text-xs text-zinc-500 mt-1">Esta ação não pode ser desfeita.</p>
+            <p className="text-xs text-zinc-500 mt-1">
+              {t("lists.delete.irreversible")}
+            </p>
           </div>
         </div>
 
@@ -59,26 +70,35 @@ export default function DeleteListModal({ isOpen, onClose, list, onDeleted }) {
           <div className="flex items-center gap-3 px-4 py-3 bg-amber-500/5 border border-amber-500/20 rounded-lg">
             <Gamepad2 className="w-4 h-4 text-amber-400 flex-shrink-0" />
             <p className="text-xs text-amber-400">
-              {itemCount} jogo{itemCount !== 1 ? "s" : ""} será{itemCount !== 1 ? "ão" : ""} removido{itemCount !== 1 ? "s" : ""}.
+              {t("lists.delete.removingGames", { count: itemCount })}
             </p>
           </div>
         )}
 
         {error && (
-          <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">{error}</p>
+          <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">
+            {error}
+          </p>
         )}
 
         <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-zinc-800">
-          <button onClick={onClose} className="px-5 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors cursor-pointer rounded-lg">
-            Cancelar
+          <button
+            onClick={onClose}
+            className="px-5 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors cursor-pointer rounded-lg"
+          >
+            {t("lists.delete.cancel")}
           </button>
           <button
             onClick={handleDelete}
             disabled={loading}
             className="px-5 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2"
           >
-            {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
-            Excluir lista
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Trash2 className="w-4 h-4" />
+            )}
+            {t("lists.delete.confirmButton")}
           </button>
         </div>
       </div>
