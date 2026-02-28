@@ -1,147 +1,93 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react"
-import { useAuth } from "#hooks/useAuth"
-import { supabase } from "#lib/supabase"
+import { supabase } from "#lib/supabase-ssr.js"
 
-const MyLibraryContext = createContext(null)
+function buildGameMap(userGames, logs) {
+  const gameMap = {}
 
-export function MyLibraryProvider({ children }) {
-  const { user } = useAuth()
-  const [games, setGames] = useState({})
-  const [loaded, setLoaded] = useState(false)
-  const [refreshing, setRefreshing] = useState(false)
-  const refreshTimeoutRef = useRef(null)
-  const abortControllerRef = useRef(null)
-
-  const fetchGames = useCallback(async (signal) => {
-    if (!user) {
-      setGames({})
-      setLoaded(true)
-      return
-    }
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session || signal?.aborted) return
-
-      const res = await fetch("/api/userGames/@me/library", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        signal,
-      })
-
-      if (res.ok && !signal?.aborted) {
-        const data = await res.json()
-        setGames(data.games || {})
-      }
-    } catch (e) {
-      if (e.name !== "AbortError") {
-        console.error("Failed to fetch library:", e)
-      }
-    } finally {
-      if (!signal?.aborted) {
-        setLoaded(true)
-        setRefreshing(false)
-      }
-    }
-  }, [user])
-
-  useEffect(() => {
-    abortControllerRef.current?.abort()
-    abortControllerRef.current = new AbortController()
-    fetchGames(abortControllerRef.current.signal)
-
-    return () => {
-      abortControllerRef.current?.abort()
-      if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current)
-      }
-    }
-  }, [fetchGames])
-
-  const refresh = useCallback((options = {}) => {
-    const { delay = 400, optimistic = null } = options
-
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current)
-    }
-
-    if (optimistic) {
-      setGames(prev => ({
-        ...prev,
-        [optimistic.slug]: {
-          ...prev[optimistic.slug],
-          ...optimistic.data,
-        },
-      }))
-    }
-
-    setRefreshing(true)
-
-    refreshTimeoutRef.current = setTimeout(() => {
-      abortControllerRef.current?.abort()
-      abortControllerRef.current = new AbortController()
-      fetchGames(abortControllerRef.current.signal)
-    }, delay)
-  }, [fetchGames])
-
-  const updateGame = useCallback((slug, data) => {
-    setGames(prev => ({
-      ...prev,
-      [slug]: {
-        ...prev[slug],
-        ...data,
-      },
-    }))
-  }, [])
-
-  const removeGame = useCallback((slug) => {
-    setGames(prev => {
-      const next = { ...prev }
-      delete next[slug]
-      return next
-    })
-  }, [])
-
-  const getGameData = useCallback((slug) => {
-    return games[slug] || null
-  }, [games])
-
-  const getRating = useCallback((slug) => {
-    return games[slug]?.avgRating || null
-  }, [games])
-
-  return (
-    <MyLibraryContext.Provider value={{
-      games,
-      loaded,
-      refreshing,
-      getGameData,
-      getRating,
-      refresh,
-      updateGame,
-      removeGame,
-    }}>
-      {children}
-    </MyLibraryContext.Provider>
-  )
-}
-
-export function useMyLibrary() {
-  const ctx = useContext(MyLibraryContext)
-
-  if (!ctx) {
-    return {
-      games: {},
-      loaded: true,
-      refreshing: false,
-      getGameData: () => null,
-      getRating: () => null,
-      refresh: () => {},
-      updateGame: () => {},
-      removeGame: () => {},
+  for (const ug of (userGames || [])) {
+    gameMap[ug.game_slug] = {
+      gameId: ug.game_id,
+      slug: ug.game_slug,
+      status: ug.status,
+      playing: ug.playing,
+      backlog: ug.backlog,
+      wishlist: ug.wishlist,
+      liked: ug.liked,
+      ratings: [],
+      latestAt: ug.updated_at,
     }
   }
 
-  return ctx
+  for (const log of (logs || [])) {
+    const slug = log.game_slug
+    if (!gameMap[slug]) {
+      gameMap[slug] = {
+        gameId: log.game_id,
+        slug,
+        status: log.status,
+        playing: log.playing || false,
+        backlog: log.backlog || false,
+        wishlist: log.wishlist || false,
+        liked: log.liked || false,
+        ratings: [],
+        latestAt: log.created_at,
+      }
+    } else {
+      if (log.playing) gameMap[slug].playing = true
+      if (log.backlog) gameMap[slug].backlog = true
+      if (log.wishlist) gameMap[slug].wishlist = true
+      if (log.liked) gameMap[slug].liked = true
+      if (!gameMap[slug].status && log.status) gameMap[slug].status = log.status
+    }
+
+    if (log.rating != null) gameMap[slug].ratings.push(log.rating)
+    if (log.created_at > gameMap[slug].latestAt) gameMap[slug].latestAt = log.created_at
+  }
+
+  return gameMap
+}
+
+export async function handleLibrary(req, res) {
+  try {
+    const [userGamesRes, logsRes] = await Promise.all([
+      supabase
+        .from("user_games")
+        .select("game_id, game_slug, status, playing, backlog, wishlist, liked, updated_at")
+        .eq("user_id", req.user.id),
+      supabase
+        .from("reviews")
+        .select("game_id, game_slug, rating, status, playing, backlog, wishlist, liked, created_at")
+        .eq("user_id", req.user.id)
+        .order("created_at", { ascending: false }),
+    ])
+
+    if (userGamesRes.error) throw userGamesRes.error
+    if (logsRes.error) throw logsRes.error
+
+    const gameMap = buildGameMap(userGamesRes.data, logsRes.data)
+    const games = {}
+
+    for (const [slug, g] of Object.entries(gameMap)) {
+      const avgRating = g.ratings.length > 0
+        ? Math.round(g.ratings.reduce((a, b) => a + b, 0) / g.ratings.length)
+        : null
+
+      games[slug] = {
+        gameId: g.gameId,
+        slug,
+        avgRating,
+        ratingCount: g.ratings.length,
+        status: g.status,
+        playing: g.playing,
+        backlog: g.backlog,
+        wishlist: g.wishlist,
+        liked: g.liked,
+        latestAt: g.latestAt,
+      }
+    }
+
+    res.json({ games })
+  } catch (e) {
+    console.error(e)
+    res.status(500).json({ error: "fail" })
+  }
 }
