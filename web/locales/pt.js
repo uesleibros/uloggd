@@ -129,6 +129,26 @@ export default {
         deleteFailed: "Erro ao excluir",
       },
     },
+    edit: {
+      title: "Editar tierlist",
+      fields: {
+        title: "Título",
+        description: "Descrição",
+        optional: "(opcional)",
+        visibility: "Visibilidade",
+      },
+      visibility: {
+        public: "Pública",
+        private: "Privada",
+      },
+      cancel: "Cancelar",
+      submit: "Salvar alterações",
+      errors: {
+        titleRequired: "Título é obrigatório",
+        notAuthenticated: "Não autenticado",
+        updateFailed: "Erro ao atualizar",
+      },
+    },
     rankedGames: "{{count}} jogo classificado",
     rankedGames_plural: "{{count}} jogos classificados",
   },
@@ -1404,5 +1424,6 @@ export default {
     },
   },
 }
+
 
 
