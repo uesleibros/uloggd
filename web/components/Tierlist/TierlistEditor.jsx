@@ -23,6 +23,7 @@ import {
   Plus, Trash2, Palette, Gamepad2, Search, X,
   ArrowUpDown, GripVertical, Eye, EyeOff,
 } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 import GameCard from "@components/Game/GameCard"
 
 const PRESET_COLORS = [
@@ -32,11 +33,11 @@ const PRESET_COLORS = [
 ]
 
 const TIER_SORT_OPTIONS = [
-  { value: "manual", label: "Manual" },
-  { value: "az", label: "A → Z" },
-  { value: "za", label: "Z → A" },
-  { value: "newest", label: "Mais recentes" },
-  { value: "oldest", label: "Mais antigos" },
+  { value: "manual" },
+  { value: "az" },
+  { value: "za" },
+  { value: "newest" },
+  { value: "oldest" },
 ]
 
 const CARD_SIZE = "w-[56px] h-[75px] sm:w-[75px] sm:h-[100px]"
@@ -231,6 +232,8 @@ function SortableUntieredItem({ id, game, isDragging }) {
 }
 
 function ViewTier({ tier, items, getGame }) {
+  const { t } = useTranslation("tierlist")
+
   return (
     <div
       className="flex border rounded-xl overflow-hidden bg-zinc-900/50 border-zinc-700/80"
@@ -259,7 +262,7 @@ function ViewTier({ tier, items, getGame }) {
           </div>
         ) : (
           <div className={`w-full flex items-center justify-center ${TIER_MIN_H}`}>
-            <span className="text-xs text-zinc-600 select-none">Vazio</span>
+            <span className="text-xs text-zinc-600 select-none">{t("editor.empty")}</span>
           </div>
         )}
       </div>
@@ -280,6 +283,8 @@ function SortableTierRow({
   tierSort,
   showOptions,
 }) {
+  const { t } = useTranslation("tierlist")
+
   const {
     attributes,
     listeners,
@@ -355,7 +360,7 @@ function SortableTierRow({
             >
               {TIER_SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {t(`editor.sort.${opt.value}`)}
                 </option>
               ))}
             </select>
@@ -386,7 +391,7 @@ function SortableTierRow({
           ) : (
             <div className={`w-full flex items-center justify-center ${TIER_MIN_H}`}>
               <span className="text-xs text-zinc-600 select-none">
-                Arraste jogos para cá
+                {t("editor.dragHere")}
               </span>
             </div>
           )}
@@ -405,6 +410,8 @@ function UntieredZone({
   sortOrder,
   onSortChange,
 }) {
+  const { t } = useTranslation("tierlist")
+
   const { setNodeRef, isOver } = useDroppable({
     id: "untiered-zone",
   })
@@ -443,10 +450,10 @@ function UntieredZone({
         <div className="flex items-center gap-2">
           <Gamepad2 className="w-4 h-4 text-zinc-500" />
           <p className="text-sm text-zinc-400 font-medium">
-            Jogos não classificados
+            {t("editor.untieredGames")}
             <span className="text-zinc-600 ml-1.5">
               ({sortedAndFilteredGames.length}
-              {searchQuery && ` de ${games.length}`})
+              {searchQuery && ` ${t("editor.of")} ${games.length}`})
             </span>
           </p>
         </div>
@@ -458,7 +465,7 @@ function UntieredZone({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Buscar jogo..."
+              placeholder={t("editor.searchPlaceholder")}
               className="w-full pl-9 pr-9 py-2.5 sm:py-2 bg-zinc-800/80 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
             />
             {searchQuery && (
@@ -478,9 +485,9 @@ function UntieredZone({
               onChange={(e) => onSortChange(e.target.value)}
               className="pl-8 pr-3 py-2.5 sm:py-2 bg-zinc-800/80 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:border-zinc-500 transition-colors cursor-pointer"
             >
-              <option value="default">Padrão</option>
-              <option value="az">A → Z</option>
-              <option value="za">Z → A</option>
+              <option value="default">{t("editor.sortDefault")}</option>
+              <option value="az">{t("editor.sort.az")}</option>
+              <option value="za">{t("editor.sort.za")}</option>
             </select>
           </div>
         </div>
@@ -519,19 +526,19 @@ function UntieredZone({
             {searchQuery ? (
               <>
                 <Search className="w-8 h-8 text-zinc-700" />
-                <p className="text-sm text-zinc-600">Nenhum jogo encontrado</p>
+                <p className="text-sm text-zinc-600">{t("editor.noResults")}</p>
                 <button
                   onClick={() => onSearchChange("")}
                   className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
                 >
-                  Limpar busca
+                  {t("editor.clearSearch")}
                 </button>
               </>
             ) : (
               <>
                 <Gamepad2 className="w-8 h-8 text-zinc-700" />
                 <p className="text-sm text-zinc-600">
-                  Todos os jogos foram classificados!
+                  {t("editor.allClassified")}
                 </p>
               </>
             )}
@@ -543,6 +550,7 @@ function UntieredZone({
 }
 
 function EditTierModal({ isOpen, onClose, tier, onSave }) {
+  const { t } = useTranslation("tierlist")
   const [label, setLabel] = useState("")
   const [color, setColor] = useState(PRESET_COLORS[0])
 
@@ -574,11 +582,11 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
           <div className="w-10 h-1 bg-zinc-700 rounded-full" />
         </div>
 
-        <h3 className="text-lg font-semibold text-white mb-4">Editar tier</h3>
+        <h3 className="text-lg font-semibold text-white mb-4">{t("editor.editTier")}</h3>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-zinc-400 mb-1.5">Nome</label>
+            <label className="block text-sm text-zinc-400 mb-1.5">{t("editor.tierName")}</label>
             <input
               type="text"
               value={label}
@@ -594,7 +602,7 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
           </div>
 
           <div>
-            <label className="block text-sm text-zinc-400 mb-2">Cor</label>
+            <label className="block text-sm text-zinc-400 mb-2">{t("editor.tierColor")}</label>
             <div className="grid grid-cols-6 gap-2">
               {PRESET_COLORS.map((c) => (
                 <button
@@ -611,7 +619,7 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
               ))}
             </div>
             <div className="mt-3 flex items-center gap-2">
-              <span className="text-xs text-zinc-500">Cor personalizada:</span>
+              <span className="text-xs text-zinc-500">{t("editor.customColor")}</span>
               <input
                 type="color"
                 value={color}
@@ -628,7 +636,7 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
             onClick={onClose}
             className="flex-1 py-3 sm:py-2.5 text-sm text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer"
           >
-            Cancelar
+            {t("editor.cancel")}
           </button>
           <button
             type="button"
@@ -636,7 +644,7 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
             disabled={!label.trim()}
             className="flex-1 py-3 sm:py-2.5 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer"
           >
-            Salvar
+            {t("editor.save")}
           </button>
         </div>
       </div>
@@ -654,6 +662,7 @@ export default function TierlistEditor({
   isEditing = true,
   isLoading = false,
 }) {
+  const { t } = useTranslation("tierlist")
   const [activeId, setActiveId] = useState(null)
   const [activeDragType, setActiveDragType] = useState(null)
   const [editingTier, setEditingTier] = useState(null)
@@ -699,8 +708,7 @@ export default function TierlistEditor({
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 12 } })
   )
 
-  function sortTierItems(tierItems, tierId) {
-    const sortMode = tierSorts[tierId] || "manual"
+  function sortTierItems(tierItems, sortMode) {
     if (sortMode === "manual") return tierItems
 
     const sorted = [...tierItems]
@@ -743,7 +751,7 @@ export default function TierlistEditor({
       setItems((prev) => {
         const tierItems = prev.filter((i) => i.tier_id === tierId)
         const rest = prev.filter((i) => i.tier_id !== tierId)
-        const sorted = sortTierItems(tierItems, tierId)
+        const sorted = sortTierItems(tierItems, sortMode)
         const reindexed = sorted.map((item, idx) => ({ ...item, position: idx }))
         return [...rest, ...reindexed].map((item, idx) => ({ ...item, position: idx }))
       })
@@ -1051,7 +1059,7 @@ export default function TierlistEditor({
         {tiers.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <Gamepad2 className="w-12 h-12 text-zinc-700" />
-            <p className="text-sm text-zinc-500">Nenhum tier criado ainda</p>
+            <p className="text-sm text-zinc-500">{t("editor.noTiers")}</p>
           </div>
         )}
       </div>
@@ -1082,7 +1090,7 @@ export default function TierlistEditor({
             ) : (
               <Eye className="w-3.5 h-3.5" />
             )}
-            {showTierOptions ? "Ocultar opções" : "Opções dos tiers"}
+            {showTierOptions ? t("editor.hideOptions") : t("editor.showOptions")}
           </button>
         </div>
 
@@ -1091,7 +1099,8 @@ export default function TierlistEditor({
             const rawItems = items
               .filter((i) => i.tier_id === tier.id)
               .sort((a, b) => a.position - b.position)
-            const tierItems = sortTierItems(rawItems, tier.id)
+            const tierSort = tierSorts[tier.id] || "manual"
+            const tierItems = sortTierItems(rawItems, tierSort)
             const isFromUntiered = activeIdStr?.startsWith("untiered-")
             const activeInThisTier =
               !isFromUntiered &&
@@ -1115,7 +1124,7 @@ export default function TierlistEditor({
                 onEditTier={setEditingTier}
                 onDeleteTier={handleDeleteTier}
                 onSortTier={handleSortTier}
-                tierSort={tierSorts[tier.id] || "manual"}
+                tierSort={tierSort}
                 showOptions={showTierOptions}
               />
             )
@@ -1128,7 +1137,7 @@ export default function TierlistEditor({
           className="w-full py-4 sm:py-3 border-2 border-dashed border-zinc-700/60 hover:border-zinc-600 hover:bg-zinc-800/30 rounded-xl text-sm text-zinc-500 hover:text-zinc-300 transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          Adicionar tier
+          {t("editor.addTier")}
         </button>
       </div>
 
@@ -1173,7 +1182,7 @@ export default function TierlistEditor({
             </div>
             <div className="flex-1 p-2 bg-zinc-800/60 flex items-center">
               <span className="text-xs text-zinc-500">
-                {items.filter((i) => i.tier_id === activeTierForOverlay.id).length} jogos
+                {t("editor.gamesCount", { count: items.filter((i) => i.tier_id === activeTierForOverlay.id).length })}
               </span>
             </div>
           </div>
