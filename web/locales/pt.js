@@ -370,5 +370,18 @@ export default {
         users: "Usuários",
       },
     },
+    related: {
+      title: "Conteúdo relacionado",
+      tabs: {
+        dlcs: "DLCs",
+        expansions: "Expansões",
+        standalone: "Standalone",
+        remakes: "Remakes",
+        remasters: "Remasters",
+        altNames: "Nomes Alternativos",
+        videos: "Vídeos",
+        similar: "Similares",
+      },
+    },
   },
 }
