@@ -321,5 +321,36 @@ export default {
     notFound: {
       title: "Jogo não encontrado",
     },
+    content: {
+      stats: {
+        ratings: "Avaliações",
+        hype: "Hype",
+        platforms: "Plataforma(s)",
+      },
+      about: "Sobre",
+      showLess: "Mostrar menos",
+      readMore: "Ler mais",
+      translate: {
+        button: "Traduzir",
+        translating: "Traduzindo...",
+        showOriginal: "Ver original",
+        showTranslation: "Ver tradução",
+        autoTranslated: "Traduzido automaticamente",
+      },
+      info: {
+        developer: "Desenvolvedora",
+        publisher: "Publicadora",
+        genres: "Gêneros",
+        themes: "Temas",
+        modes: "Modos",
+        engine: "Engine",
+      },
+      media: {
+        title: "Capturas de tela/Artes",
+        image: "{{count}} imagem",
+        image_plural: "{{count}} imagens",
+        viewAll: "Ver todas ({{count}})",
+      },
+    },
   },
 }
