@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Link } from "react-router-dom"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 import UserDisplay from "@components/User/UserDisplay"
 import Modal from "@components/UI/Modal"
 
@@ -149,4 +149,5 @@ export default function FollowListModal({ isOpen, title, userId, onClose }) {
       </div>
     </Modal>
   )
+
 }
