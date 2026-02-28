@@ -78,7 +78,7 @@ export function MobileMenu({ isOpen, scrolled, navItems, user, authLoading, onCl
             isOpen ? "translate-y-0 opacity-100" : "-translate-y-3 opacity-0"
           }`}
         >
-          <SearchBar variant="mobile" onSelect={onClose} placeholder={t("header.search")} />
+          <SearchBar variant="mobile" onSelect={onClose} placeholder={t("header.search.placeholder")} />
         </div>
 
         <nav className="flex flex-col gap-1">
@@ -113,3 +113,4 @@ export function MobileMenu({ isOpen, scrolled, navItems, user, authLoading, onCl
 }
 
 export { NavLink }
+
