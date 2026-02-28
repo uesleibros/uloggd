@@ -961,23 +961,19 @@ export default {
     status: {
       played: {
         label: "Jogado",
-        sub: "Você jogou, mas não terminou",
+        sub: "Zerou o objetivo principal",
       },
-      completed: {
-        label: "Completo",
-        sub: "Terminou a história principal",
-      },
-      mastered: {
-        label: "Masterizado",
-        sub: "100% ou platinado",
-      },
-      dropped: {
-        label: "Abandonado",
-        sub: "Parou de jogar",
+      retired: {
+        label: "Aposentado",
+        sub: "Terminou um jogo sem final",
       },
       shelved: {
-        label: "Engavetado",
-        sub: "Pausado, mas pretende voltar",
+        label: "Na prateleira",
+        sub: "Não terminou mas pode voltar",
+      },
+      abandoned: {
+        label: "Abandonado",
+        sub: "Não terminou e não vai voltar",
       },
     },
   },
@@ -1473,6 +1469,7 @@ export default {
     },
   },
 }
+
 
 
 
