@@ -2,34 +2,48 @@ export const config = {
   matcher: ['/game/:slug*', '/u/:username*', '/list/:id*', '/tierlist/:id*'],
 }
 
-const BOT_REGEX = /Discordbot|Twitterbot|facebookexternalhit|LinkedInBot|TelegramBot|Slackbot/i
+const BOT_REGEX = /Discordbot|Twitterbot|facebookexternalhit|LinkedInBot|TelegramBot|Slackbot|WhatsApp|Embedly|Pinterest|Slack-ImgProxy/i
+
+const SITE_NAME = 'uloggd'
+const THEME_COLOR = '#5865F2'
+const FETCH_TIMEOUT = 4000
 
 export default async function middleware(req) {
   const userAgent = req.headers.get('user-agent') || ''
-
   if (!BOT_REGEX.test(userAgent)) return
 
   const url = new URL(req.url)
-  const segments = url.pathname.split('/').filter(Boolean)
+  const [, type, id] = url.pathname.split('/')
+
+  const handlers = {
+    game: handleGame,
+    u: handleProfile,
+    list: handleList,
+    tierlist: handleTierlist,
+  }
+
+  const handler = handlers[type]
+  if (!handler || !id) return
 
   try {
-    if (segments[0] === 'game' && segments[1]) {
-      return handleGame(url, segments[1])
-    }
-
-    if (segments[0] === 'u' && segments[1]) {
-      return handleProfile(url, segments[1])
-    }
-
-    if (segments[0] === 'list' && segments[1]) {
-      return handleList(url, segments[1])
-    }
-
-    if (segments[0] === 'tierlist' && segments[1]) {
-      return handleTierlist(url, segments[1])
-    }
+    return await handler(url, id)
   } catch {
-    return
+    return buildFallbackResponse(url)
+  }
+}
+
+async function safeFetch(fetchUrl) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
+
+  try {
+    const res = await fetch(fetchUrl, { signal: controller.signal })
+    if (!res.ok) return null
+    return await res.json()
+  } catch {
+    return null
+  } finally {
+    clearTimeout(timeout)
   }
 }
 
@@ -71,105 +85,149 @@ function stripMarkdown(str) {
     .trim()
 }
 
+function truncate(str, max = 160) {
+  if (!str || str.length <= max) return str || ''
+  return str.substring(0, max).trimEnd() + '...'
+}
+
+function pluralize(count, singular, plural) {
+  return `${count} ${count === 1 ? singular : plural}`
+}
+
 async function handleGame(url, slug) {
-  const res = await fetch(`${url.origin}/api/igdb/game?slug=${encodeURIComponent(slug)}`)
+  const game = await safeFetch(
+    `${url.origin}/api/igdb/game?slug=${encodeURIComponent(slug)}`
+  )
+  if (!game) return buildFallbackResponse(url)
 
-  if (!res.ok) return
-  const game = await res.json()
-
-  const title = `${game.name} - uloggd`
+  const title = `${game.name} - ${SITE_NAME}`
   const description = game.summary
-    ? stripMarkdown(game.summary).substring(0, 160) + '...'
-    : 'Veja detalhes do jogo no uloggd'
+    ? truncate(stripMarkdown(game.summary))
+    : `View details about ${game.name}`
 
   const image = game.cover?.url
     ? ensureAbsoluteUrl(game.cover.url.replace('t_thumb', 't_720p'), url.origin)
-    : `${url.origin}/banner.png`
+    : null
 
-  return buildResponse(title, description, image, url.href)
+  return buildResponse({
+    title,
+    description,
+    image,
+    url: url.href,
+    twitterCard: 'summary_large_image',
+  })
 }
 
 async function handleProfile(url, username) {
-  const res = await fetch(`${url.origin}/api/users/profile?username=${encodeURIComponent(username)}`)
+  const profile = await safeFetch(
+    `${url.origin}/api/users/profile?username=${encodeURIComponent(username)}`
+  )
+  if (!profile) return buildFallbackResponse(url)
 
-  if (!res.ok) return
-  const profile = await res.json()
-
-  const title = `${profile.username} - uloggd`
-  const description = `Perfil de ${profile.username}`
+  const title = `${profile.username} - ${SITE_NAME}`
+  const description = profile.bio
+    ? truncate(stripMarkdown(profile.bio))
+    : `${profile.username}'s profile`
   const image = ensureAbsoluteUrl(profile.avatar, url.origin)
 
-  return buildResponse(title, description, image, url.href)
+  return buildResponse({
+    title,
+    description,
+    image,
+    url: url.href,
+    twitterCard: 'summary',
+  })
 }
 
 async function handleList(url, listId) {
-  const res = await fetch(`${url.origin}/api/lists/get?listId=${encodeURIComponent(listId)}`)
+  const list = await safeFetch(
+    `${url.origin}/api/lists/get?listId=${encodeURIComponent(listId)}`
+  )
+  if (!list) return buildFallbackResponse(url)
 
-  if (!res.ok) return
-  const list = await res.json()
-
-  const title = `${list.title} - uloggd`
   const gamesCount = list.games_count || list.game_slugs?.length || 0
+  const title = `${list.title} - ${SITE_NAME}`
   const description = list.description
-    ? stripMarkdown(list.description).substring(0, 160)
-    : `Lista com ${gamesCount} jogo${gamesCount !== 1 ? 's' : ''}`
+    ? truncate(stripMarkdown(list.description))
+    : `List with ${pluralize(gamesCount, 'game', 'games')}`
 
-  const image = `${url.origin}/banner.png`
-
-  return buildResponse(title, description, image, url.href)
+  return buildResponse({
+    title,
+    description,
+    image: null,
+    url: url.href,
+    twitterCard: 'summary',
+  })
 }
 
 async function handleTierlist(url, tierlistId) {
-  const res = await fetch(`${url.origin}/api/tierlists/get?tierlistId=${encodeURIComponent(tierlistId)}`)
-
-  if (!res.ok) return
-  const tierlist = await res.json()
-
-  const title = `${tierlist.title} - uloggd`
-  
-  const gamesCount = (tierlist.tierlist_tiers || []).reduce((acc, tier) => 
-    acc + (tier.tierlist_items?.length || 0), 0
+  const tierlist = await safeFetch(
+    `${url.origin}/api/tierlists/get?tierlistId=${encodeURIComponent(tierlistId)}`
   )
-  
+  if (!tierlist) return buildFallbackResponse(url)
+
+  const gamesCount = (tierlist.tierlist_tiers || []).reduce(
+    (acc, tier) => acc + (tier.tierlist_items?.length || 0),
+    0
+  )
   const tiersCount = tierlist.tierlist_tiers?.length || 0
-  
+
+  const title = `${tierlist.title} - ${SITE_NAME}`
   const description = tierlist.description
-    ? stripMarkdown(tierlist.description).substring(0, 160)
-    : `Tierlist com ${gamesCount} jogo${gamesCount !== 1 ? 's' : ''} em ${tiersCount} tier${tiersCount !== 1 ? 's' : ''}`
+    ? truncate(stripMarkdown(tierlist.description))
+    : `Tierlist with ${pluralize(gamesCount, 'game', 'games')} in ${pluralize(tiersCount, 'tier', 'tiers')}`
 
-  const image = `${url.origin}/banner.png`
-
-  return buildResponse(title, description, image, url.href)
+  return buildResponse({
+    title,
+    description,
+    image: null,
+    url: url.href,
+    twitterCard: 'summary',
+  })
 }
 
-function buildResponse(title, description, image, pageUrl) {
+function buildFallbackResponse(url) {
+  return buildResponse({
+    title: SITE_NAME,
+    description: 'Track, rate and discover games.',
+    image: null,
+    url: url.href,
+    twitterCard: 'summary',
+  })
+}
+
+function buildResponse({ title, description, image, url, twitterCard = 'summary' }) {
   const safeTitle = escapeHtml(title)
   const safeDesc = escapeHtml(description)
-  const safeImage = escapeHtml(image)
-  const safeUrl = escapeHtml(pageUrl)
+  const safeUrl = escapeHtml(url)
+  const fallbackImage = `${new URL(url).origin}/banner.png`
+  const safeImage = escapeHtml(image || fallbackImage)
 
   const html = `<!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>${safeTitle}</title>
-  <meta name="description" content="${safeDesc}" />
-  <meta property="og:title" content="${safeTitle}" />
-  <meta property="og:description" content="${safeDesc}" />
-  <meta property="og:image" content="${safeImage}" />
-  <meta property="og:url" content="${safeUrl}" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="uloggd" />
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="${safeTitle}" />
-  <meta name="twitter:description" content="${safeDesc}" />
-  <meta name="twitter:image" content="${safeImage}" />
-  <meta name="theme-color" content="#5865F2" />
+  <meta name="description" content="${safeDesc}">
+  <meta property="og:title" content="${safeTitle}">
+  <meta property="og:description" content="${safeDesc}">
+  <meta property="og:image" content="${safeImage}">
+  <meta property="og:url" content="${safeUrl}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="${SITE_NAME}">
+  <meta name="twitter:card" content="${twitterCard}">
+  <meta name="twitter:title" content="${safeTitle}">
+  <meta name="twitter:description" content="${safeDesc}">
+  <meta name="twitter:image" content="${safeImage}">
+  <meta name="theme-color" content="${THEME_COLOR}">
 </head>
 <body></body>
 </html>`
 
   return new Response(html, {
-    headers: { 'Content-Type': 'text/html; charset=UTF-8' },
+    headers: {
+      'Content-Type': 'text/html; charset=UTF-8',
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+    },
   })
 }
