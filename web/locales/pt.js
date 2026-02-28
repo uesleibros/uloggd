@@ -982,6 +982,14 @@ export default {
     },
   },
   review: {
+    selector: {
+      defaultTitle: "Review",
+      new: "Nova",
+    },
+    button: {
+      create: "Criar Review",
+      createAnother: "Criar outra review",
+    },
     modal: {
       cancel: "Cancelar",
       save: "Salvar",
@@ -1465,6 +1473,7 @@ export default {
     },
   },
 }
+
 
 
 
