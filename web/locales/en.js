@@ -1257,7 +1257,7 @@ export default {
       code: "Code",
       preview: "Preview",
       noResults: "No results for",
-      shortcuts: '<span class="text-zinc-400">Ctrl+B</span> bold · <span class="text-zinc-400">Ctrl+I</span> italic · <span class="text-zinc-400">Ctrl+K</span> link · <span class="text-zinc-400">Ctrl+Shift+C</span> block · <span class="text-zinc-400">Tab</span> indent',
+      shortcuts: `<span class="text-zinc-400">Ctrl+B</span> bold · <span class="text-zinc-400">Ctrl+I</span> italic · <span class="text-zinc-400">Ctrl+K</span> link · <span class="text-zinc-400">Ctrl+Shift+C</span> block · <span class="text-zinc-400">Tab</span> indent`,
       sections: {
         text: "Text",
         headings: "Headings",
