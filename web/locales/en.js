@@ -167,6 +167,36 @@ export default {
     },
     rankedGames: "{{count}} ranked game",
     rankedGames_plural: "{{count}} ranked games",
+    editor: {
+      empty: "Empty",
+      dragHere: "Drag games here",
+      untieredGames: "Unranked games",
+      of: "of",
+      searchPlaceholder: "Search game...",
+      sortDefault: "Default",
+      noResults: "No games found",
+      clearSearch: "Clear search",
+      allClassified: "All games have been ranked!",
+      editTier: "Edit tier",
+      tierName: "Name",
+      tierColor: "Color",
+      customColor: "Custom color:",
+      cancel: "Cancel",
+      save: "Save",
+      noTiers: "No tiers created yet",
+      hideOptions: "Hide options",
+      showOptions: "Tier options",
+      addTier: "Add tier",
+      gamesCount: "{{count}} game",
+      gamesCount_plural: "{{count}} games",
+      sort: {
+        manual: "Manual",
+        az: "A → Z",
+        za: "Z → A",
+        newest: "Newest",
+        oldest: "Oldest",
+      },
+    },
   },
   search: {
     meta: {
@@ -190,6 +220,15 @@ export default {
       results: "results",
       sortBy: "Sort by:",
     },
+    sort: {
+      relevance: "Relevance",
+      newest: "Newest",
+      oldest: "Oldest",
+      nameAsc: "Name A-Z",
+      nameDesc: "Name Z-A",
+      popular: "Popular",
+      rating: "Top rated",
+    },
     tabs: {
       games: "Games",
       users: "Users",
@@ -203,10 +242,6 @@ export default {
       release_asc: "Oldest",
       username: "Name (A-Z)",
       newest: "Newest",
-      oldest: "Oldest",
-      nameAsc: "Name A-Z",
-      nameDesc: "Name Z-A",
-      popular: "Popular",
       title: "Title (A-Z)",
       games_count: "Most games",
     },
@@ -226,9 +261,6 @@ export default {
     followModal: {
       followers: "Followers",
       following: "Following",
-      searchPlaceholder: "Search user...",
-      noResults: "No users found",
-      empty: "No users",
     },
     navigation: {
       profile: "Profile",
@@ -241,8 +273,8 @@ export default {
     },
     header: {
       banned: {
-        title: "Account suspended",
-        description: "This user was suspended for violating platform terms.",
+        title: "Suspended account",
+        description: "This user has been suspended for violating the platform's terms.",
         reason: "Reason: {{reason}}",
       },
       lastSeen: "Last seen: {{time}}",
@@ -253,6 +285,13 @@ export default {
     bio: {
       title: "About",
       copyMarkdown: "Copy Markdown code",
+    },
+    followModal: {
+      followers: "Followers",
+      following: "Following",
+      searchPlaceholder: "Search user...",
+      noResults: "No users found",
+      empty: "No users",
     },
     lists: {
       title: "Lists",
@@ -338,11 +377,11 @@ export default {
         },
         backlog: {
           own: "Your backlog is empty.",
-          other: "{{username}} doesn't have any games in backlog.",
+          other: "{{username}} has no games in the backlog.",
         },
         wishlist: {
           own: "Your wishlist is empty.",
-          other: "{{username}} doesn't have any games in wishlist.",
+          other: "{{username}} has no games in the wishlist.",
         },
         dropped: {
           own: "You haven't dropped any games.",
@@ -362,7 +401,7 @@ export default {
   badges: {
     meta: {
       title: "Badges - uloggd",
-      description: "Discover all badges available on uloggd and what each one represents.",
+      description: "Discover all available badges on uloggd and what each one represents.",
     },
     title: "Badges",
     subtitle: "Badges that represent roles, achievements, and recognition on the platform.",
@@ -378,7 +417,7 @@ export default {
     },
     verification: {
       title: "Profile verification",
-      description: "Content creators, active community members, and public figures can request the verification badge.",
+      description: "Content creators, active community members, and public figures can request a verification badge.",
       request: "Request",
       inReview: "Under review",
     },
@@ -387,14 +426,14 @@ export default {
       assignedAt: "Assigned on {{date}}",
       request: {
         title: "Request verification",
-        subtitle: "Describe your involvement in the gaming community.",
+        subtitle: "Describe your role in the gaming community.",
         placeholder: "E.g.: I've been an active gamer for 5 years, I participate in RPG communities, content creator with 10k followers...",
         cancel: "Cancel",
         submit: "Submit",
       },
       pending: {
         title: "Request under review",
-        description: "Your request is being evaluated by the team. You will be notified when there's an update.",
+        description: "Your request is being reviewed by the team. You will be notified when there's an update.",
         confirm: "Got it",
       },
       success: {
@@ -408,7 +447,7 @@ export default {
     },
   },
   game: {
-    playtime: "played",
+    playtime: "of gameplay",
     prices: {
       title: "Prices",
       stats: {
@@ -470,10 +509,10 @@ export default {
         critics: "Critics",
         users: "Users",
       },
-      parentGame: "Main game",
+      parentGame: "Parent game",
     },
     sidebar: {
-      parentGame: "Main game",
+      parentGame: "Parent game",
       ageRatings: "Age Ratings",
       platforms: "Platforms",
       ratings: {
@@ -497,8 +536,8 @@ export default {
     },
     hltb: {
       title: "How long to beat",
-      disclaimer: "Times shown are estimates based on data reported by the HowLongToBeat community and may not accurately reflect your experience.",
-      disclaimerFull: "Times shown are estimates based on data reported by the HowLongToBeat community and may not accurately reflect your experience. Actual time may vary according to playstyle, difficulty level, and other individual factors.",
+      disclaimer: "The times shown are estimates based on data reported by the HowLongToBeat community and may not accurately reflect your experience.",
+      disclaimerFull: "The times shown are estimates based on data reported by the HowLongToBeat community and may not accurately reflect your experience. Actual time may vary depending on play style, difficulty level, and other individual factors.",
       noData: "No time data available",
       categories: {
         main: "Main Story",
@@ -534,12 +573,12 @@ export default {
       },
       verification_approved: {
         title: "Verification approved",
-        message: "Congratulations! Your verification request was approved. The verified badge is now visible on your profile.",
+        message: "Congratulations! Your verification request has been approved. The verified badge is now visible on your profile.",
       },
       verification_rejected: {
         title: "Verification rejected",
-        messageWithReason: "Your verification request was rejected.\n\nReason: {{reason}}",
-        messageDefault: "Your verification request was rejected. You can submit a new request at any time.",
+        messageWithReason: "Your verification request has been rejected.\n\nReason: {{reason}}",
+        messageDefault: "Your verification request has been rejected. You can submit a new request at any time.",
       },
       account_banned: {
         title: "Account suspended",
@@ -555,7 +594,7 @@ export default {
   },
   thinking: {
     title: "Thought",
-    placeholder: "What are you thinking...",
+    placeholder: "What are you thinking about...",
     addThought: "Thought...",
     remove: "Remove",
     cancel: "Cancel",
@@ -581,12 +620,12 @@ export default {
     errors: {
       invalidFile: "Please select a valid image file.",
       fileTooLarge: "Image must be 10MB or less.",
-      fileReadError: "Error reading file.",
-      invalidUrl: "The URL doesn't point to a valid image.",
-      urlTooLarge: "Image is too large (maximum 10MB).",
-      urlProcessError: "Error processing image.",
-      urlLoadError: "Couldn't load image from this URL.",
-      processedTooLarge: "Processed image is too large. Try a smaller image.",
+      fileReadError: "Error reading the file.",
+      invalidUrl: "The URL does not point to a valid image.",
+      urlTooLarge: "The image is too large (10MB max).",
+      urlProcessError: "Error processing the image.",
+      urlLoadError: "Could not load the image from this URL.",
+      processedTooLarge: "The processed image is too large. Try a smaller image.",
     },
     discarded: "Change discarded.",
   },
@@ -606,12 +645,12 @@ export default {
     errors: {
       invalidFile: "Please select a valid image file.",
       fileTooLarge: "Image must be 10MB or less.",
-      fileReadError: "Error reading file.",
-      invalidUrl: "The URL doesn't point to a valid image.",
-      urlTooLarge: "Image is too large (maximum 10MB).",
-      urlProcessError: "Error processing image.",
-      urlLoadError: "Couldn't load image from this URL.",
-      processedTooLarge: "Processed image is too large. Try a smaller image.",
+      fileReadError: "Error reading the file.",
+      invalidUrl: "The URL does not point to a valid image.",
+      urlTooLarge: "The image is too large (10MB max).",
+      urlProcessError: "Error processing the image.",
+      urlLoadError: "Could not load the image from this URL.",
+      processedTooLarge: "The processed image is too large. Try a smaller image.",
     },
     discarded: "Change discarded.",
   },
@@ -663,10 +702,35 @@ export default {
       title: "Theme",
       comingSoon: "Appearance settings coming soon.",
     },
+    account: {
+      title: "My account",
+      description: "Information about your account linked to Discord.",
+    },
+    appearance: {
+      title: "Appearance",
+      description: "Customize how your profile looks.",
+    },
+    connections: {
+      title: "Connections",
+      description: "Connect your accounts to sync data and unlock features.",
+    },
+    integrations: {
+      title: "Integrations",
+      description: "Import your data from other platforms.",
+    },
     pronoun: {
       title: "Pronoun",
       description: "Displayed on your profile next to your name.",
       placeholder: "e.g.: he/him, she/her...",
+    },
+    sessions: {
+      title: "Session",
+      description: "Manage your active session.",
+      currentSession: "Current session",
+      activeSession: "Active session",
+      currentBrowser: "Current browser",
+      active: "Active",
+      signOut: "End session",
     },
     profile: {
       title: "Profile",
@@ -756,8 +820,8 @@ export default {
       disconnectedDescription: "Connect your Twitch account to show when you're live and sync your data.",
       benefitsTitle: "What you get:",
       benefits: {
-        liveIndicator: "\"Live\" indicator when streaming",
-        channelLink: "Direct link to your channel on profile",
+        liveIndicator: "\"Live\" indicator when you're streaming",
+        channelLink: "Direct link to your channel on your profile",
       },
     },
     steam: {
@@ -927,27 +991,31 @@ export default {
     status: {
       played: {
         label: "Played",
-        sub: "You played but didn't finish",
+        sub: "Completed the main objective",
       },
-      completed: {
-        label: "Completed",
-        sub: "Finished the main story",
-      },
-      mastered: {
-        label: "Mastered",
-        sub: "100% or platinum",
-      },
-      dropped: {
-        label: "Dropped",
-        sub: "Stopped playing",
+      retired: {
+        label: "Retired",
+        sub: "Finished a game with no ending",
       },
       shelved: {
         label: "Shelved",
-        sub: "Paused, but plan to return",
+        sub: "Didn't finish but might come back",
+      },
+      abandoned: {
+        label: "Abandoned",
+        sub: "Didn't finish and won't come back",
       },
     },
   },
   review: {
+    selector: {
+      defaultTitle: "Review",
+      new: "New",
+    },
+    button: {
+      create: "Create Review",
+      createAnother: "Create another review",
+    },
     modal: {
       cancel: "Cancel",
       save: "Save",
@@ -974,21 +1042,16 @@ export default {
       emptyField: "Empty field",
       close: "Close",
       suggestion: {
-        História: "Story",
-        Gameplay: "Gameplay",
-        Gráficos: "Graphics",
-        Som: "Sound",
-        Música: "Music",
-        Dublagem: "Voice Acting",
-        Performance: "Performance",
-        Jogabilidade: "Gameplay",
-        Controles: "Controls",
-        Dificuldade: "Difficulty",
-        Replay: "Replay",
-        Conteúdo: "Content",
-        Otimização: "Optimization",
-        Design: "Design",
-        Personagens: "Characters",
+        gameplay: "Gameplay",
+        story: "Story",
+        characters: "Characters",
+        soundtrack: "Soundtrack",
+        graphics: "Graphics",
+        levelDesign: "Level design",
+        replayability: "Replayability",
+        multiplayer: "Multiplayer",
+        performance: "Performance",
+        uiux: "UI/UX",
       },
     },
     dates: {
@@ -999,7 +1062,7 @@ export default {
       errors: {
         future: "Date in the future",
         tooOld: "Date too old",
-        finishBeforeStart: "End before start",
+        finishBeforeStart: "Finish before start",
       },
     },
     details: {
@@ -1012,7 +1075,7 @@ export default {
       },
       playtime: {
         title: "Time played",
-        description: "How much time did you spend playing?",
+        description: "How long did you spend playing?",
       },
       platform: {
         title: "Played on",
@@ -1137,7 +1200,7 @@ export default {
       platform: "Platform",
       type: "Type",
       secret: "Secret",
-      viewAllInGame: "View all achievements in game",
+      viewAllInGame: "View all game achievements",
       viewOnSteam: "View on Steam",
     },
     list: {
@@ -1199,7 +1262,7 @@ export default {
       code: "Code",
       preview: "Preview",
       noResults: "No results for",
-      shortcuts: '<span class="text-zinc-400">Ctrl+B</span> bold · <span class="text-zinc-400">Ctrl+I</span> italic · <span class="text-zinc-400">Ctrl+K</span> link · <span class="text-zinc-400">Ctrl+Shift+C</span> code block · <span class="text-zinc-400">Tab</span> indent',
+      shortcuts: '<span class="text-zinc-400">Ctrl+B</span> bold · <span class="text-zinc-400">Ctrl+I</span> italic · <span class="text-zinc-400">Ctrl+K</span> link · <span class="text-zinc-400">Ctrl+Shift+C</span> block · <span class="text-zinc-400">Tab</span> indent',
       sections: {
         text: "Text",
         headings: "Headings",
@@ -1234,7 +1297,7 @@ export default {
         },
         headings: {
           description: "Headings from H1 (largest) to H6 (smallest). More # means smaller heading.",
-          example: "# Large Title\n## Subtitle\n### Even Smaller",
+          example: "# Big Title\n## Subtitle\n### Even Smaller",
         },
         unorderedList: {
           description: "Unordered list (with bullets).",
@@ -1248,8 +1311,8 @@ export default {
         },
         checklist: {
           description: "Checklist with checkable items.",
-          example: "- [ ] Pending\n- [x] Completed",
-          preview: "- [ ] Pending\n- [x] Completed",
+          example: "- [ ] Pending\n- [x] Done",
+          preview: "- [ ] Pending\n- [x] Done",
         },
         link: {
           description: "Creates a clickable link.",
@@ -1265,7 +1328,7 @@ export default {
           example: "<img src=\"https://example.com/img.png\" alt=\"desc\" width=\"400\" />",
         },
         youtube: {
-          description: "Paste a YouTube link and it becomes a player automatically.",
+          description: "Paste a YouTube link and it automatically becomes a player.",
           example: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         },
         codeBlock: {
@@ -1278,7 +1341,7 @@ export default {
           preview: "> This is a quote",
         },
         hr: {
-          description: "Horizontal line separator.",
+          description: "Horizontal separator line.",
           preview: "---",
         },
         table: {
@@ -1312,7 +1375,7 @@ export default {
         },
         alertSuccess: {
           description: "Success or completion message.",
-          example: ":::success\nMission complete!\n:::",
+          example: ":::success\nMission accomplished!\n:::",
         },
         alertQuestion: {
           description: "Highlighted question or reflection.",
@@ -1351,7 +1414,7 @@ export default {
           example: "@username",
         },
         spoiler: {
-          description: "Hides text as spoiler. User needs to click to reveal.",
+          description: "Hides text as a spoiler. The user needs to click to reveal.",
           example: "The killer is ||the butler||",
         },
         spoilerImg: {
@@ -1359,17 +1422,17 @@ export default {
           example: "<spoilerimg src=\"https://example.com/img.png\" alt=\"desc\" width=\"400\" />",
         },
         center: {
-          description: "Centers content (text or images).",
+          description: "Centers the content (text or images).",
           example: "<center>Centered text</center>",
           preview: "<center>Centered text</center>",
         },
         desktop: {
           description: "Content visible only on desktop.",
-          example: "<desktop>\nThis only appears on PC\n</desktop>",
+          example: "<desktop>\nThis only shows on PC\n</desktop>",
         },
         mobile: {
           description: "Content visible only on mobile.",
-          example: "<mobile>\nThis only appears on mobile\n</mobile>",
+          example: "<mobile>\nThis only shows on mobile\n</mobile>",
         },
       },
     },
@@ -1382,7 +1445,7 @@ export default {
   },
   errorBoundary: {
     title: "Something went very wrong!",
-    description: "Looks like something broke here. Try reloading the page.",
+    description: "Looks like something broke. Try reloading the page.",
     imageAlt: "Error",
     reload: "Reload",
     back: "Back",
@@ -1400,7 +1463,7 @@ export default {
     ban: {
       title: "Ban @{{username}}",
       subtitle: "Irreversible action until manual unban",
-      warning: "User will immediately lose access to the platform.",
+      warning: "The user will immediately lose access to the platform.",
       reasonLabel: "Ban reason",
       reasonPlaceholder: "Describe the reason for the ban...",
       durationLabel: "Duration",
