@@ -1,6 +1,6 @@
 import { useRef } from "react"
 import { Activity } from "lucide-react"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 import BioSection from "../components/BioSection"
 import ProfileTabs from "../components/ProfileTabs"
 import ProfileReviews from "../components/ProfileReviews"
@@ -118,4 +118,5 @@ export function ProfileContent({
       )}
     </div>
   )
+
 }
