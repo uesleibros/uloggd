@@ -1017,5 +1017,10 @@ export default {
     modalContent: {
       aspectsTitle: "Avaliação por aspecto",
     },
+    spoiler: {
+      title: "Esta review contém spoilers",
+      description: "O conteúdo está oculto para proteger sua experiência.",
+      revealButton: "Revelar conteúdo",
+    },
   },
 }
