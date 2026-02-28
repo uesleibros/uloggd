@@ -21,7 +21,7 @@ import { SORT_OPTIONS } from "#constants/game"
 
 function ReviewModalHeader({ review, game, user, onClose }) {
   const { t } = useTranslation("profile")
-  const { t: treviews } = useTranslation("reviews")
+  const { treviews: t } = useTranslation("reviews")
 
   return (
     <div className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
@@ -247,4 +247,5 @@ export default function ProfileReviews({ userId }) {
     </div>
   )
 }
+
 
