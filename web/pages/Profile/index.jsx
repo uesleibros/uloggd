@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 import { useProfileGames } from "#hooks/useProfileGames"
 import PageBanner from "@components/Layout/PageBanner"
 import SettingsModal from "@components/User/Settings/SettingsModal"
@@ -163,4 +163,5 @@ export default function Profile() {
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   )
+
 }
