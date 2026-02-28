@@ -922,5 +922,31 @@ export default {
         finishBeforeStart: "Término antes do início",
       },
     },
+    details: {
+      info: {
+        title: "Informações da review",
+        titleLabel: "Título da review",
+        titlePlaceholder: "Nomeie sua review",
+        maxChars: "Máximo de {{max}} caracteres",
+        replay: "Replay",
+      },
+      playtime: {
+        title: "Tempo jogado",
+        description: "Quanto tempo você passou jogando?",
+      },
+      platform: {
+        title: "Jogou em",
+        description: "A plataforma física que você usou.",
+      },
+      danger: {
+        title: "Zona de perigo",
+        warning: "Essa ação é irreversível.",
+        deleteButton: "Excluir esta review",
+        confirmTitle: "Tem certeza?",
+        confirmMessage: "Todos os dados desta review serão permanentemente excluídos.",
+        cancel: "Cancelar",
+        confirmButton: "Excluir permanentemente",
+      },
+    },
   },
 }
