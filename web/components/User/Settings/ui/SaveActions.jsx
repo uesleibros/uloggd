@@ -1,6 +1,9 @@
 import { Check, Loader2 } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 
 export default function SaveActions({ onSave, onReset, saving, isDirty }) {
+  const { t } = useTranslation()
+
   return (
     <div className="flex justify-end items-center gap-3 mt-3">
       {isDirty && (
@@ -9,7 +12,7 @@ export default function SaveActions({ onSave, onReset, saving, isDirty }) {
           disabled={saving}
           className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Resetar
+          {t("settings.actions.reset")}
         </button>
       )}
       <button
@@ -22,7 +25,7 @@ export default function SaveActions({ onSave, onReset, saving, isDirty }) {
         }`}
       >
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-        Salvar
+        {t("settings.actions.save")}
       </button>
     </div>
   )
