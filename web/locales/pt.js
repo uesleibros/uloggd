@@ -589,5 +589,10 @@ export default {
       cancel: "Cancelar",
       deletePermanent: "Excluir permanentemente",
     },
+    bio: {
+      title: "Sobre mim",
+      description: "Escreva uma bio para o seu perfil. Suporta Markdown.",
+      placeholder: "Escreva sobre você...",
+    },
   },
 }
