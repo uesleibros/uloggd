@@ -347,6 +347,24 @@ export default {
   },
   game: {
     playtime: "de jogo",
+    prices: {
+      title: "Preços",
+      stats: {
+        current: "Atual",
+        lowestEver: "Menor histórico",
+        lowest12m: "Menor (12 meses)",
+        lowest3m: "Menor (3 meses)",
+        belowCurrent: "{{percent}}% abaixo do atual",
+      },
+      chartTitle: "Menor preço por loja",
+      dealsTitle: "Onde comprar agora",
+      tooltip: {
+        discount: "-{{discount}}% de R$ {{regular}}",
+      },
+      deal: {
+        storeLowest: "Menor nessa loja: R$ {{price}}",
+      },
+    },
     meta: {
       description: "Veja informações sobre {{name}} no uloggd",
     },
@@ -868,4 +886,5 @@ export default {
     },
   },
 }
+
 
