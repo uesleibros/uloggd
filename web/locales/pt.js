@@ -1012,21 +1012,16 @@ export default {
       emptyField: "Campo vazio",
       close: "Fechar",
       suggestion: {
-        História: "História",
-        Gameplay: "Gameplay",
-        Gráficos: "Gráficos",
-        Som: "Som",
-        Música: "Música",
-        Dublagem: "Dublagem",
-        Performance: "Performance",
-        Jogabilidade: "Jogabilidade",
-        Controles: "Controles",
-        Dificuldade: "Dificuldade",
-        Replay: "Replay",
-        Conteúdo: "Conteúdo",
-        Otimização: "Otimização",
-        Design: "Design",
-        Personagens: "Personagens",
+        gameplay: "Gameplay",
+        story: "História",
+        characters: "Personagens",
+        soundtrack: "Trilha sonora",
+        graphics: "Gráficos",
+        levelDesign: "Level design",
+        replayability: "Rejogabilidade",
+        multiplayer: "Multiplayer",
+        performance: "Performance",
+        uiux: "UI/UX",
       },
     },
     dates: {
@@ -1469,6 +1464,7 @@ export default {
     },
   },
 }
+
 
 
 
