@@ -10,7 +10,7 @@ function escapeRegex(str) {
 }
 
 function Highlight({ text, query }) {
-  if (!query.trim()) return <>{text}</>
+  if (!query.trim() || !text) return <>{text}</>
   const regex = new RegExp(`(${escapeRegex(query)})`, "gi")
   const parts = text.split(regex)
   return (
@@ -84,6 +84,15 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
   const itemRefs = useRef([])
   const isScrollingTo = useRef(false)
 
+  const featuresWithTranslations = useMemo(() => {
+    return HELP_FEATURES.map(f => ({
+      ...f,
+      description: t(`features.${f.id}.description`),
+      example: t(`features.${f.id}.example`, { defaultValue: "" }) || "",
+      preview: t(`features.${f.id}.preview`, { defaultValue: "" }) || "",
+    }))
+  }, [t])
+
   useEffect(() => {
     if (!isOpen) {
       setSearch("")
@@ -99,14 +108,14 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
   }, [isOpen])
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return HELP_FEATURES
+    if (!search.trim()) return featuresWithTranslations
     const q = search.toLowerCase()
-    return HELP_FEATURES.filter(f =>
+    return featuresWithTranslations.filter(f =>
       f.syntax.toLowerCase().includes(q) ||
       f.description.toLowerCase().includes(q) ||
       (f.example || "").toLowerCase().includes(q)
     )
-  }, [search])
+  }, [search, featuresWithTranslations])
 
   const visibleSections = useMemo(() => {
     const ids = new Set(filtered.map(f => f.section))
@@ -235,7 +244,7 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
 
       {!search && (
         <div ref={mobileNavRef} className="flex sm:hidden overflow-x-auto border-b border-zinc-800 px-2 py-1.5 gap-1 flex-shrink-0 scrollbar-hide">
-          {HELP_SECTIONS.map(({ id, label, icon: Icon }) => (
+          {HELP_SECTIONS.map(({ id, icon: Icon }) => (
             <button
               key={id}
               ref={(el) => { navBtnRefs.current[id] = el }}
@@ -253,7 +262,7 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {!search && (
           <nav className="w-44 flex-shrink-0 border-r border-zinc-800 overflow-y-auto py-2 hidden sm:block">
-            {HELP_SECTIONS.map(({ id, label, icon: Icon }) => (
+            {HELP_SECTIONS.map(({ id, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => scrollToSection(id)}
@@ -283,7 +292,18 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
                 <div className="space-y-3">
                   {filtered.filter(f => f.section === section.id).map((item, i) => {
                     const idx = globalIndex++
-                    return <FeatureItem key={i} {...item} query={search} isActive={idx === activeIndex} itemRef={(el) => { itemRefs.current[idx] = el }} />
+                    return (
+                      <FeatureItem
+                        key={item.id}
+                        syntax={item.syntax}
+                        description={item.description}
+                        example={item.example}
+                        preview={item.preview}
+                        query={search}
+                        isActive={idx === activeIndex}
+                        itemRef={(el) => { itemRefs.current[idx] = el }}
+                      />
+                    )
                   })}
                 </div>
               </div>
