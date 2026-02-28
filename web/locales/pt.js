@@ -213,5 +213,18 @@ export default {
         subtitle: "As reviews escritas aparecerão aqui",
       },
     },
+    stats: {
+      followers: "seguidores",
+      following: "seguindo",
+      followsYou: "Segue você",
+      activity: "Atividade",
+      watching: "assistindo",
+      playingNow: "Jogando agora",
+      view: "Ver",
+      playing: "Jogando",
+      played: "Jogados",
+      backlog: "Backlog",
+      rated: "Avaliados",
+    },
   },
 }
