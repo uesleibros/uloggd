@@ -1,6 +1,8 @@
+import { useTranslation } from "#hooks/useTranslation"
 import { ALERT_VARIANTS } from "../constants"
 
 export function AlertBox({ type = "info", children }) {
+  const { t } = useTranslation("editor.alerts")
   const variant = ALERT_VARIANTS[type] || ALERT_VARIANTS.info
   const Icon = variant.icon
 
@@ -11,7 +13,7 @@ export function AlertBox({ type = "info", children }) {
           <Icon className={`w-4 h-4 ${variant.color}`} strokeWidth={2} />
         </div>
         <div className="flex-1">
-          <div className={`text-sm font-semibold mb-1 ${variant.color}`}>{variant.label}</div>
+          <div className={`text-sm font-semibold mb-1 ${variant.color}`}>{t(type)}</div>
           <div className="text-sm text-zinc-300 leading-relaxed">{children}</div>
         </div>
       </div>
