@@ -22,7 +22,7 @@ import {
 import { supabase } from "#lib/supabase"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
-import { getTimeAgo } from "#utils/formatDate"
+import { useDateTime } from "#hooks/useDateTime"
 import { SORT_OPTIONS } from "#constants/game"
 
 function LikeButton({ reviewId, currentUserId }) {
@@ -122,6 +122,7 @@ function LikeButton({ reviewId, currentUserId }) {
 
 function ReviewModalHeader({ review, user, currentUserId, onClose }) {
 	const { t } = useTranslation("reviews")
+	const { getTimeAgo } = useDateTime()
 
 	return (
 		<div className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
@@ -156,6 +157,7 @@ function ReviewModalHeader({ review, user, currentUserId, onClose }) {
 
 export function ReviewCard({ review, user, currentUserId }) {
 	const { t } = useTranslation("reviews")
+	const { getTimeAgo } = useDateTime()
 	const [showModal, setShowModal] = useState(false)
 	const aspects = review.aspect_ratings || []
 

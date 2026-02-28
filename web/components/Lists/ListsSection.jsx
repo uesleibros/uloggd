@@ -1,19 +1,16 @@
 import { useState, useEffect, useRef } from "react"
-import { Link } from "react-router-dom"
 import { useTranslation } from "#hooks/useTranslation"
-import { useGamesBatch } from "#hooks/useGamesBatch"
 import Pagination from "@components/UI/Pagination"
 import CreateListModal from "@components/Lists/CreateListModal"
 import EditListModal from "@components/Lists/EditListModal"
 import DeleteListModal from "@components/Lists/DeleteListModal"
+import { ListCard } from "@components/Lists/ListCard"
 import {
-  List, Plus, Lock, ChevronRight,
-  MoreHorizontal, Pencil, Trash2, Gamepad2,
+  List, Plus, MoreHorizontal, Pencil, Trash2,
 } from "lucide-react"
-import { encode } from "#utils/shortId.js"
 
 function ListActionMenu({ list, onEdit, onDelete }) {
-  const { t } = useTranslation("profile")
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -50,20 +47,20 @@ function ListActionMenu({ list, onEdit, onDelete }) {
               className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-zinc-300 active:bg-zinc-700/50 rounded-xl transition-colors cursor-pointer"
             >
               <Pencil className="w-4 h-4 text-zinc-500" />
-              {t("lists.editList")}
+              {t("profile.lists.editList")}
             </button>
             <button
               onClick={() => { onDelete(list); setOpen(false) }}
               className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-red-400 active:bg-red-500/10 rounded-xl transition-colors cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
-              {t("lists.deleteList")}
+              {t("profile.lists.deleteList")}
             </button>
             <button
               onClick={() => setOpen(false)}
               className="w-full mt-1 py-3 text-sm text-zinc-500 active:bg-zinc-700/30 rounded-xl transition-colors cursor-pointer"
             >
-              {t("lists.cancel")}
+              {t("profile.lists.cancel")}
             </button>
           </div>
 
@@ -73,115 +70,17 @@ function ListActionMenu({ list, onEdit, onDelete }) {
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-700/50 transition-colors cursor-pointer"
             >
               <Pencil className="w-3.5 h-3.5" />
-              {t("lists.edit")}
+              {t("profile.lists.edit")}
             </button>
             <button
               onClick={() => { onDelete(list); setOpen(false) }}
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              {t("lists.delete")}
+              {t("profile.lists.delete")}
             </button>
           </div>
         </>
-      )}
-    </div>
-  )
-}
-
-function CoverStrip({ slugs = [] }) {
-  const { getGame } = useGamesBatch(slugs)
-
-  if (slugs.length === 0) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-zinc-800/30">
-        <Gamepad2 className="w-6 h-6 text-zinc-700" />
-      </div>
-    )
-  }
-
-  const covers = slugs
-    .map(s => {
-      const g = getGame(s)
-      if (!g?.cover?.url) return null
-      return `https:${g.cover.url.replace("t_thumb", "t_cover_big")}`
-    })
-    .filter(Boolean)
-
-  if (covers.length === 0 && slugs.length > 0) {
-    return <div className="w-full h-full bg-zinc-800 animate-pulse" />
-  }
-
-  if (covers.length === 0) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-zinc-800/30">
-        <Gamepad2 className="w-6 h-6 text-zinc-700" />
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex h-full">
-      {covers.map((url, i) => (
-        <div key={i} className="h-full flex-1 min-w-0 overflow-hidden">
-          <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
-        </div>
-      ))}
-      {covers.length < 4 && Array.from({ length: 4 - covers.length }).map((_, i) => (
-        <div key={`empty-${i}`} className="h-full flex-1 min-w-0 bg-zinc-800/60" />
-      ))}
-    </div>
-  )
-}
-
-function ListCard({ list, isOwnProfile, onEdit, onDelete }) {
-  const { t } = useTranslation("profile")
-  const gamesCount = list.games_count || 0
-
-  return (
-    <div className="group relative rounded-xl overflow-visible h-full">
-      <Link to={`/list/${encode(list.id)}`} className="block rounded-xl overflow-hidden bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 transition-all duration-200 h-full flex flex-col">
-        <div className="relative h-20 sm:h-24 overflow-hidden flex-shrink-0">
-          <CoverStrip slugs={list.game_slugs || []} />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/30 to-zinc-900/10" />
-        </div>
-
-        <div className="p-3 sm:p-3.5 flex flex-col flex-1">
-          <div className="flex items-start justify-between gap-2 flex-1">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-white truncate group-hover:text-indigo-400 transition-colors">
-                {list.title}
-              </h3>
-              <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1 sm:line-clamp-2 min-h-[1rem] sm:min-h-[2rem]">
-                {list.description || ""}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 mt-2">
-            <span className="text-xs text-zinc-500 flex items-center gap-1">
-              <Gamepad2 className="w-3 h-3" />
-              {gamesCount}
-            </span>
-            {list.is_public === false && (
-              <span className="text-xs text-zinc-600 flex items-center gap-1">
-                <Lock className="w-3 h-3" />
-                <span className="hidden sm:inline">{t("lists.private")}</span>
-              </span>
-            )}
-            {list.updated_at && (
-              <span className="text-[11px] text-zinc-600 ml-auto hidden sm:block">
-                {new Date(list.updated_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short" })}
-              </span>
-            )}
-          </div>
-        </div>
-      </Link>
-
-      {isOwnProfile && (
-        <div className="absolute top-2 right-2 z-10">
-          <ListActionMenu list={list} onEdit={onEdit} onDelete={onDelete} />
-        </div>
       )}
     </div>
   )
@@ -218,7 +117,7 @@ export default function ListsSection({
   total,
   onPageChange,
 }) {
-  const { t } = useTranslation("profile")
+  const { t } = useTranslation()
   const [createOpen, setCreateOpen] = useState(false)
   const [editingList, setEditingList] = useState(null)
   const [deletingList, setDeletingList] = useState(null)
@@ -252,7 +151,7 @@ export default function ListsSection({
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
             <List className="w-5 h-5 text-zinc-400" />
-            {t("lists.title")}
+            {t("profile.lists.title")}
           </h2>
         </div>
         <ListsSkeleton />
@@ -266,7 +165,7 @@ export default function ListsSection({
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
             <List className="w-5 h-5 text-zinc-400" />
-            {t("lists.title")}
+            {t("profile.lists.title")}
           </h2>
           {total > 0 && (
             <span className="text-xs text-zinc-500 bg-zinc-800/80 px-2 py-0.5 rounded-full tabular-nums">
@@ -282,7 +181,7 @@ export default function ListsSection({
               className="px-3 py-1.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("lists.create")}</span>
+              <span className="hidden sm:inline">{t("profile.lists.create")}</span>
             </button>
           )}
         </div>
@@ -296,11 +195,11 @@ export default function ListsSection({
           <div className="text-center px-4">
             <p className="text-sm text-zinc-500">
               {isOwnProfile
-                ? t("lists.empty.own")
-                : t("lists.empty.other", { username })}
+                ? t("profile.lists.empty.own")
+                : t("profile.lists.empty.other", { username })}
             </p>
             {isOwnProfile && (
-              <p className="text-xs text-zinc-600 mt-1">{t("lists.empty.hint")}</p>
+              <p className="text-xs text-zinc-600 mt-1">{t("profile.lists.empty.hint")}</p>
             )}
           </div>
           {isOwnProfile && (
@@ -309,7 +208,7 @@ export default function ListsSection({
               className="mt-1 px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors cursor-pointer flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              {t("lists.createFirst")}
+              {t("profile.lists.createFirst")}
             </button>
           )}
         </div>
@@ -320,9 +219,13 @@ export default function ListsSection({
               <ListCard
                 key={list.id}
                 list={list}
-                isOwnProfile={isOwnProfile}
-                onEdit={setEditingList}
-                onDelete={setDeletingList}
+                actions={isOwnProfile && (
+                  <ListActionMenu 
+                    list={list} 
+                    onEdit={setEditingList} 
+                    onDelete={setDeletingList} 
+                  />
+                )}
               />
             ))}
           </div>
@@ -356,5 +259,4 @@ export default function ListsSection({
       />
     </div>
   )
-
 }
