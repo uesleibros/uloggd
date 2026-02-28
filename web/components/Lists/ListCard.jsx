@@ -36,6 +36,8 @@ function CoverStrip({ slugs = [] }) {
     )
   }
 
+  const emptySlots = 4 - covers.length
+
   return (
     <div className="flex h-full">
       {covers.map((url, i) => (
@@ -43,8 +45,13 @@ function CoverStrip({ slugs = [] }) {
           <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
         </div>
       ))}
-      {covers.length < 4 && Array.from({ length: 4 - covers.length }).map((_, i) => (
-        <div key={`empty-${i}`} className="h-full flex-1 min-w-0 bg-zinc-800/60" />
+      {emptySlots > 0 && Array.from({ length: emptySlots }).map((_, i) => (
+        <div 
+          key={`empty-${i}`} 
+          className="h-full flex-1 min-w-0 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center border-l border-zinc-700/30"
+        >
+          <Gamepad2 className="w-4 h-4 text-zinc-700/50" />
+        </div>
       ))}
     </div>
   )

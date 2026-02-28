@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom"
 import { Search, Gamepad2, Users, ListMusic, ArrowRight } from "lucide-react"
 import PlatformIcons from "@components/Game/PlatformIcons"
 import UserDisplay from "@components/User/UserDisplay"
-import { formatDateShort } from "#utils/formatDate"
+import { CoverStrip } from "@components/Lists/ListCard"
+import { useDateTime } from "#hooks/useDateTime"
 import { useTranslation } from "#hooks/useTranslation"
 import { LoadingSpinner } from "./icons"
 
@@ -15,6 +16,8 @@ const TABS = [
 ]
 
 function GameResult({ item, onSelect }) {
+	const { formatDateShort } = useDateTime()
+
 	return (
 		<li
 			onMouseDown={() => onSelect(`/game/${item.slug}`)}
@@ -67,7 +70,7 @@ function UserResult({ item, onSelect }) {
 }
 
 function ListResult({ item, onSelect }) {
-	const { t } = useTranslation("header.search")
+	const { t } = useTranslation()
 
 	return (
 		<li
@@ -75,19 +78,19 @@ function ListResult({ item, onSelect }) {
 			className="group cursor-pointer px-3 py-2.5 hover:bg-indigo-500/10 transition-colors"
 		>
 			<div className="flex items-center gap-3">
-				<div className="h-10 w-10 rounded-lg bg-zinc-800 flex items-center justify-center flex-shrink-0">
-					<ListMusic className="w-5 h-5 text-zinc-500" />
+				<div className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0 border border-zinc-700/50">
+					<CoverStrip slugs={(item.game_slugs || []).slice(0, 4)} />
 				</div>
 				<div className="flex-1 min-w-0">
 					<span className="group-hover:text-indigo-400 transition-colors font-medium text-sm text-white truncate block">
 						{item.title}
 					</span>
 					<div className="flex items-center gap-2 text-xs text-zinc-500">
-						<span>{t("gamesCount", { count: item.games_count })}</span>
+						<span>{t("header.search.gamesCount", { count: item.games_count })}</span>
 						{item.owner && (
 							<>
 								<span>•</span>
-								<span>{t("byUser", { username: item.owner.username })}</span>
+								<span>{t("header.search.byUser", { username: item.owner.username })}</span>
 							</>
 						)}
 					</div>
@@ -98,7 +101,7 @@ function ListResult({ item, onSelect }) {
 }
 
 function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query }) {
-	const { t } = useTranslation("header.search")
+	const { t } = useTranslation()
 
 	const ResultComponent = {
 		games: GameResult,
@@ -111,7 +114,7 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
 	if (!results || results.length === 0) {
 		return (
 			<div className="px-3 py-6 text-sm text-zinc-500 text-center">
-				{t("noResults")}
+				{t("header.search.noResults")}
 			</div>
 		)
 	}
@@ -127,7 +130,7 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
 				onMouseDown={onViewAll}
 				className="w-full px-3 py-2.5 border-t border-zinc-800 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors flex items-center justify-center gap-2"
 			>
-				{t("viewAll", { query })}
+				{t("header.search.viewAll", { query })}
 				<ArrowRight className="w-4 h-4" />
 			</button>
 		</>
@@ -135,7 +138,7 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
 }
 
 function TabBar({ activeTab, onChange, counts }) {
-	const { t } = useTranslation("header.search.tabs")
+	const { t } = useTranslation()
 
 	return (
 		<div className="flex border-b border-zinc-800">
@@ -155,7 +158,7 @@ function TabBar({ activeTab, onChange, counts }) {
 					}`}
 				>
 					<Icon className="w-3.5 h-3.5" />
-					{t(id)}
+					{t(`header.search.tabs.${id}`)}
 					{counts[id] > 0 && (
 						<span className="text-[10px] bg-zinc-800 px-1.5 py-0.5 rounded-full">
 							{counts[id]}
@@ -168,7 +171,7 @@ function TabBar({ activeTab, onChange, counts }) {
 }
 
 function SearchInput({ inputRef, query, onChange, onFocus, onBlur, onKeyDown, focused = false, variant = "desktop" }) {
-	const { t } = useTranslation("header.search")
+	const { t } = useTranslation()
 
 	const baseClasses = "rounded-md bg-zinc-800 text-sm text-white placeholder-zinc-500 outline-none border"
 
@@ -192,7 +195,7 @@ function SearchInput({ inputRef, query, onChange, onFocus, onBlur, onKeyDown, fo
 				onFocus={onFocus}
 				onBlur={onBlur}
 				onKeyDown={onKeyDown}
-				placeholder={t("placeholder")}
+				placeholder={t("header.search.placeholder")}
 				className={`${baseClasses} ${variants[variant]}`}
 			/>
 		</div>
