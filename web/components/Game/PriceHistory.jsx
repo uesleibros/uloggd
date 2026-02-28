@@ -5,18 +5,44 @@ import {
 import { TrendingDown, DollarSign, Loader2, Store, ExternalLink } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 
-function CustomTooltip({ active, payload }) {
+const LANG_TO_COUNTRY = {
+  pt: "BR",
+  en: "US",
+  es: "ES",
+  fr: "FR",
+  de: "DE",
+  ja: "JP",
+  ko: "KR",
+  zh: "CN",
+  ru: "RU",
+  pl: "PL",
+  tr: "TR",
+  it: "IT",
+}
+
+function formatPrice(value, symbol = "$") {
+  if (value == null) return "—"
+  return `${symbol} ${value.toFixed(2)}`
+}
+
+function CustomTooltip({ active, payload, currencySymbol }) {
   const { t } = useTranslation("game.prices")
 
   if (!active || !payload?.length) return null
   const data = payload[0].payload
+
   return (
     <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-3 shadow-xl">
       <p className="text-xs font-medium text-white mb-1">{data.store}</p>
-      <p className="text-sm font-bold text-green-400">R$ {data.price.toFixed(2)}</p>
+      <p className="text-sm font-bold text-green-400">
+        {formatPrice(data.price, currencySymbol)}
+      </p>
       {data.discount > 0 && (
         <p className="text-[11px] text-zinc-400">
-          {t("tooltip.discount", { discount: data.discount, regular: data.regular.toFixed(2) })}
+          {t("tooltip.discount", { 
+            discount: data.discount, 
+            regular: formatPrice(data.regular, currencySymbol) 
+          })}
         </p>
       )}
       <p className="text-[11px] text-zinc-500 mt-1">{data.date}</p>
@@ -29,29 +55,45 @@ export default function PriceHistory({ steamId }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  const country = LANG_TO_COUNTRY[language] || "US"
+
   useEffect(() => {
     if (!steamId) return
 
     setLoading(true)
     setData(null)
 
+    const controller = new AbortController()
+
     const fetchPrices = async () => {
       try {
-        const res = await fetch(`/api/prices/history?steamId=${steamId}`)
+        const res = await fetch(
+          `/api/prices/history?steamId=${steamId}&country=${country}`,
+          { signal: controller.signal }
+        )
         const json = await res.json()
         setData(json)
       } catch (e) {
-        console.error(e)
+        if (e.name !== "AbortError") {
+          console.error(e)
+        }
       } finally {
         setLoading(false)
       }
     }
 
     fetchPrices()
-  }, [steamId])
+
+    return () => controller.abort()
+  }, [steamId, country])
+
+  const currencySymbol = data?.currencySymbol || "$"
 
   const chartData = useMemo(() => {
     if (!data?.storeLows?.length) return []
+
+    const locale = language === "pt" ? "pt-BR" : language === "es" ? "es-ES" : "en-US"
+
     return data.storeLows
       .sort((a, b) => a.price - b.price)
       .slice(0, 10)
@@ -60,7 +102,7 @@ export default function PriceHistory({ steamId }) {
         price: item.price,
         regular: item.regular,
         discount: item.discount,
-        date: new Date(item.date).toLocaleDateString(language === "pt" ? "pt-BR" : "en-US", {
+        date: new Date(item.date).toLocaleDateString(locale, {
           day: "numeric",
           month: "short",
           year: "numeric"
@@ -102,13 +144,13 @@ export default function PriceHistory({ steamId }) {
           <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3.5">
             <span className="text-[11px] text-zinc-500 block mb-1">{t("stats.current")}</span>
             <span className="text-xl font-bold text-white">
-              {currentPrice ? `R$ ${currentPrice.toFixed(2)}` : "—"}
+              {formatPrice(currentPrice, currencySymbol)}
             </span>
           </div>
           <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3.5">
             <span className="text-[11px] text-zinc-500 block mb-1">{t("stats.lowestEver")}</span>
             <span className="text-xl font-bold text-green-400">
-              {lowestEver ? `R$ ${lowestEver.toFixed(2)}` : "—"}
+              {formatPrice(lowestEver, currencySymbol)}
             </span>
             {savingsPercent > 0 && (
               <span className="text-[10px] text-zinc-500 block mt-0.5">
@@ -119,13 +161,13 @@ export default function PriceHistory({ steamId }) {
           <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3.5">
             <span className="text-[11px] text-zinc-500 block mb-1">{t("stats.lowest12m")}</span>
             <span className="text-xl font-bold text-white">
-              {stats?.lowestYear ? `R$ ${stats.lowestYear.toFixed(2)}` : "—"}
+              {formatPrice(stats?.lowestYear, currencySymbol)}
             </span>
           </div>
           <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3.5">
             <span className="text-[11px] text-zinc-500 block mb-1">{t("stats.lowest3m")}</span>
             <span className="text-xl font-bold text-white">
-              {stats?.lowestMonth ? `R$ ${stats.lowestMonth.toFixed(2)}` : "—"}
+              {formatPrice(stats?.lowestMonth, currencySymbol)}
             </span>
           </div>
         </div>
@@ -143,7 +185,7 @@ export default function PriceHistory({ steamId }) {
                     type="number"
                     stroke="#52525b"
                     style={{ fontSize: 11 }}
-                    tickFormatter={(v) => `R$${v}`}
+                    tickFormatter={(v) => `${currencySymbol}${v}`}
                   />
                   <YAxis
                     type="category"
@@ -153,13 +195,13 @@ export default function PriceHistory({ steamId }) {
                     width={120}
                     tick={{ fill: "#a1a1aa" }}
                   />
-                  <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
+                  <Tooltip
+                    content={<CustomTooltip currencySymbol={currencySymbol} />}
+                    cursor={{ fill: "rgba(255,255,255,0.03)" }}
+                  />
                   <Bar dataKey="price" radius={[0, 4, 4, 0]} barSize={20}>
                     {chartData.map((entry, i) => (
-                      <Cell
-                        key={i}
-                        fill={i === 0 ? "#22c55e" : "#3f3f46"}
-                      />
+                      <Cell key={i} fill={i === 0 ? "#22c55e" : "#3f3f46"} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -188,7 +230,7 @@ export default function PriceHistory({ steamId }) {
                       <span className="text-sm font-medium text-white block">{deal.store}</span>
                       {deal.storeLow != null && (
                         <span className="text-[11px] text-zinc-500">
-                          {t("deal.storeLowest", { price: deal.storeLow.toFixed(2) })}
+                          {t("deal.storeLowest", { price: formatPrice(deal.storeLow, currencySymbol) })}
                         </span>
                       )}
                     </div>
@@ -197,7 +239,7 @@ export default function PriceHistory({ steamId }) {
                     {deal.discount > 0 && (
                       <>
                         <span className="text-xs text-zinc-500 line-through hidden sm:inline">
-                          R$ {deal.oldPrice.toFixed(2)}
+                          {formatPrice(deal.oldPrice, currencySymbol)}
                         </span>
                         <span className="px-1.5 py-0.5 text-[11px] font-semibold bg-green-500/20 text-green-400 rounded">
                           -{deal.discount}%
@@ -205,7 +247,7 @@ export default function PriceHistory({ steamId }) {
                       </>
                     )}
                     <span className="text-sm font-bold text-green-400">
-                      R$ {deal.price.toFixed(2)}
+                      {formatPrice(deal.price, currencySymbol)}
                     </span>
                     <ExternalLink className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
                   </div>
