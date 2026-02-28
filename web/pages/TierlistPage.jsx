@@ -4,6 +4,7 @@ import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
+import { useMyLibrary } from "#hooks/useMyLibrary"
 import { supabase } from "#lib/supabase"
 import { encode } from "#utils/shortId.js"
 import TierlistEditor from "@components/Tierlist/TierlistEditor"
@@ -14,7 +15,6 @@ import {
 } from "lucide-react"
 
 const tierlistCache = new Map()
-const userGamesCache = new Map()
 
 function TierlistSkeleton() {
   return (
@@ -66,23 +66,30 @@ export default function TierlistPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { user: currentUser, loading: authLoading } = useAuth()
+  const { games: libraryGames, loaded: libraryLoaded } = useMyLibrary()
 
   const [tierlist, setTierlist] = useState(null)
   const [tiers, setTiers] = useState([])
   const [items, setItems] = useState([])
-  const [userGames, setUserGames] = useState([])
   const [loading, setLoading] = useState(true)
-  const [loadingGames, setLoadingGames] = useState(false)
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
 
   const fetchedRef = useRef(false)
-  const fetchedGamesRef = useRef(false)
 
   const isOwner = !!(currentUser?.id && !authLoading && tierlist?.user_id === currentUser.id)
   const encodedId = tierlist ? encode(tierlist.id) : id
+
+  // Converte os jogos da biblioteca para o formato esperado
+  const userGames = useMemo(() => {
+    if (!libraryLoaded || !isOwner) return []
+    return Object.entries(libraryGames).map(([slug, data]) => ({
+      game_slug: slug,
+      game_id: data.gameId,
+    }))
+  }, [libraryGames, libraryLoaded, isOwner])
 
   const allSlugs = useMemo(() => {
     const fromItems = items.map(i => i.game_slug)
@@ -165,47 +172,10 @@ export default function TierlistPage() {
     }
   }, [id])
 
-  const fetchUserGames = useCallback(async () => {
-    if (!currentUser || fetchedGamesRef.current) return
-
-    const cacheKey = currentUser.id
-
-    if (userGamesCache.has(cacheKey)) {
-      setUserGames(userGamesCache.get(cacheKey))
-      fetchedGamesRef.current = true
-      return
-    }
-
-    setLoadingGames(true)
-    try {
-      const token = (await supabase.auth.getSession())?.data?.session?.access_token
-      const r = await fetch("/api/userGames/@me/getAll", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-
-      if (r.ok) {
-        const data = await r.json()
-        userGamesCache.set(cacheKey, data)
-        setUserGames(data)
-        fetchedGamesRef.current = true
-      }
-    } catch (e) {
-      console.error("Failed to fetch user games:", e)
-    } finally {
-      setLoadingGames(false)
-    }
-  }, [currentUser])
-
   useEffect(() => {
     fetchedRef.current = false
     fetchTierlist()
   }, [id, fetchTierlist])
-
-  useEffect(() => {
-    if (!authLoading && currentUser && tierlist?.user_id === currentUser.id) {
-      fetchUserGames()
-    }
-  }, [authLoading, currentUser, tierlist?.user_id, fetchUserGames])
 
   useEffect(() => {
     if (!initialLoad && tierlist) {
@@ -249,7 +219,9 @@ export default function TierlistPage() {
     }
   }
 
-  if (loading) return <TierlistSkeleton />
+  const isLoading = loading || (isOwner && !libraryLoaded)
+
+  if (isLoading) return <TierlistSkeleton />
 
   if (error || !tierlist) {
     return (
@@ -357,23 +329,16 @@ export default function TierlistPage() {
       </div>
 
       <div className="border-t border-zinc-800 pt-5 sm:pt-6">
-        {loadingGames && isOwner ? (
-          <div className="flex items-center justify-center py-10">
-            <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
-          </div>
-        ) : (
-          <TierlistEditor
-            tiers={tiers}
-            setTiers={setTiers}
-            items={items}
-            setItems={setItems}
-            untieredGames={untieredGames}
-            getGame={getGame}
-            isEditing={isOwner}
-          />
-        )}
+        <TierlistEditor
+          tiers={tiers}
+          setTiers={setTiers}
+          items={items}
+          setItems={setItems}
+          untieredGames={untieredGames}
+          getGame={getGame}
+          isEditing={isOwner}
+        />
       </div>
     </div>
   )
-
 }
