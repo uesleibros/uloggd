@@ -965,5 +965,10 @@ export default {
         spoilers: "Contém spoilers",
       },
     },
+    tabs: {
+      review: "Review",
+      dates: "Datas",
+      details: "Detalhes",
+    },
   },
 }
