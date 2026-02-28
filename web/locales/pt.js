@@ -682,5 +682,13 @@ export default {
       addedCount: "{{count}} jogo adicionado",
       addedCount_plural: "{{count}} jogos adicionados",
     },
+    addToList: {
+      title: "Adicionar à lista",
+      emptyTitle: "Você ainda não tem listas.",
+      emptySubtitle: "Crie uma lista no seu perfil para começar.",
+      loadMore: "Carregar mais",
+      gamesCount: "{{count}} jogo",
+      gamesCount_plural: "{{count}} jogos",
+    },
   },
 }
