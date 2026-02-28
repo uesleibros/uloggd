@@ -1,6 +1,8 @@
 import { useState } from "react"
+import { useTranslation } from "#hooks/useTranslation"
 
 export function VideoGrid({ videos }) {
+  const { t } = useTranslation("game")
   const [showAll, setShowAll] = useState(false)
   const visible = showAll ? videos : videos.slice(0, 4)
 
@@ -27,7 +29,7 @@ export function VideoGrid({ videos }) {
           onClick={() => setShowAll(!showAll)}
           className="mt-3 cursor-pointer text-sm text-zinc-500 hover:text-white transition-colors"
         >
-          {showAll ? "Mostrar menos" : `Ver todos (${videos.length})`}
+          {showAll ? t("videos.showLess") : t("videos.viewAll", { count: videos.length })}
         </button>
       )}
     </>
