@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react"
 import { supabase } from "#lib/supabase.js"
+import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 import { notify } from "@components/UI/Notification"
 import { Ban, AlertTriangle, Loader2 } from "lucide-react"
 
 export default function BanUserModal({ isOpen, onClose, profile }) {
+  const { t } = useTranslation("moderation.ban")
   const [reason, setReason] = useState("")
-  const [duration, setDuration] = useState("") // horas
+  const [duration, setDuration] = useState("")
   const [confirmText, setConfirmText] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -49,14 +51,14 @@ export default function BanUserModal({ isOpen, onClose, profile }) {
       })
 
       if (res.ok) {
-        notify("Usuário banido.", "success")
+        notify(t("success"), "success")
         onClose()
       } else {
         const data = await res.json()
-        notify(data.error || "Erro ao banir.", "error")
+        notify(data.error || t("error"), "error")
       }
     } catch {
-      notify("Erro ao banir.", "error")
+      notify(t("error"), "error")
     }
 
     setLoading(false)
@@ -77,10 +79,10 @@ export default function BanUserModal({ isOpen, onClose, profile }) {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-white">
-              Banir @{profile.username}
+              {t("title", { username: profile.username })}
             </h3>
             <p className="text-xs text-red-400/70">
-              Ação irreversível até desbanimento manual
+              {t("subtitle")}
             </p>
           </div>
         </div>
@@ -89,46 +91,48 @@ export default function BanUserModal({ isOpen, onClose, profile }) {
           <div className="flex items-start gap-3 p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
             <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5" />
             <p className="text-xs text-red-300/80 leading-relaxed">
-              O usuário perderá acesso imediato à plataforma.
+              {t("warning")}
             </p>
           </div>
 
           <div>
             <label className="text-xs text-zinc-400 mb-2 block">
-              Motivo do banimento
+              {t("reasonLabel")}
             </label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 bg-zinc-800/60 border border-zinc-700 rounded-xl text-sm text-white resize-none focus:outline-none focus:border-red-500/50"
+              placeholder={t("reasonPlaceholder")}
+              className="w-full px-4 py-3 bg-zinc-800/60 border border-zinc-700 rounded-xl text-sm text-white resize-none focus:outline-none focus:border-red-500/50 placeholder-zinc-600"
             />
           </div>
 
           <div>
             <label className="text-xs text-zinc-400 mb-2 block">
-              Duração
+              {t("durationLabel")}
             </label>
             <select
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               className="w-full px-4 py-3 bg-zinc-800/60 border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-red-500/50"
             >
-              <option value="">Permanente</option>
-              <option value="24">24 horas</option>
-              <option value="168">7 dias</option>
-              <option value="720">30 dias</option>
+              <option value="">{t("duration.permanent")}</option>
+              <option value="24">{t("duration.hours24")}</option>
+              <option value="168">{t("duration.days7")}</option>
+              <option value="720">{t("duration.days30")}</option>
             </select>
           </div>
 
           <div>
             <label className="text-xs text-zinc-400 mb-2 block">
-              Digite <span className="text-white font-medium">{profile.username}</span> para confirmar
+              {t("confirmLabel")} <span className="text-white font-medium">{profile.username}</span> {t("confirmSuffix")}
             </label>
             <input
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
-              className="w-full px-4 py-3 bg-zinc-800/60 border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-red-500/50"
+              placeholder={profile.username}
+              className="w-full px-4 py-3 bg-zinc-800/60 border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-red-500/50 placeholder-zinc-600"
             />
           </div>
 
@@ -137,7 +141,7 @@ export default function BanUserModal({ isOpen, onClose, profile }) {
               onClick={onClose}
               className="flex-1 px-4 py-2.5 text-sm text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl transition-all"
             >
-              Cancelar
+              {t("cancel")}
             </button>
             <button
               onClick={handleBan}
@@ -148,7 +152,7 @@ export default function BanUserModal({ isOpen, onClose, profile }) {
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  <Ban className="w-4 h-4" /> Confirmar Ban
+                  <Ban className="w-4 h-4" /> {t("confirm")}
                 </>
               )}
             </button>
