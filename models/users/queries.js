@@ -1,6 +1,6 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
-const BADGES_REL = `user_badges ( assigned_at, badge:badges ( id, title, description, icon_url, color ) )`
+const BADGES_REL = `user_badges ( assigned_at, badge:badges ( id, icon_url, color ) )`
 const CONNECTIONS_FULL = `user_connections ( provider, provider_user_id, provider_username, provider_display_name )`
 const CONNECTIONS_TWITCH = `user_connections ( provider, provider_username )`
 
@@ -116,4 +116,5 @@ export async function getFollowStatus(userId, currentUserId) {
 		isFollowing: !!isFollowingRes.data,
 		followsYou: !!followsYouRes.data,
 	}
+
 }
