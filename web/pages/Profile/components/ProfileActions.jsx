@@ -1,5 +1,5 @@
 import { Pencil, Check, UserPlus } from "lucide-react"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 
 export default function ProfileActions({ isOwnProfile, isFollowing, followLoading, onFollow, onEditProfile, isLoggedIn }) {
   const { t } = useTranslation("profile")
@@ -42,4 +42,5 @@ export default function ProfileActions({ isOwnProfile, isFollowing, followLoadin
       )}
     </button>
   )
+
 }
