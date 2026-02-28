@@ -503,4 +503,25 @@ export default {
     },
     discarded: "Alteração descartada.",
   },
+  settings: {
+    success: {
+      avatarUpdated: "Avatar atualizado com sucesso!",
+      avatarRemoved: "Avatar removido com sucesso!",
+      bannerUpdated: "Banner atualizado com sucesso!",
+      bannerRemoved: "Banner removido com sucesso!",
+      bioUpdated: "Bio atualizada com sucesso!",
+      pronounUpdated: "Pronome atualizado com sucesso!",
+      decorationUpdated: "Decoração atualizada com sucesso!",
+      usernameUpdated: "Nome alterado!",
+    },
+    errors: {
+      avatarSave: "Erro ao salvar o avatar. Tente novamente.",
+      bannerSave: "Erro ao salvar o banner. Tente novamente.",
+      bioSave: "Erro ao salvar a bio.",
+      pronounSave: "Erro ao salvar o pronome.",
+      decorationSave: "Erro ao salvar a decoração.",
+      usernameSave: "Falha ao alterar.",
+      accountDelete: "Erro ao excluir a conta. Tente novamente.",
+    },
+  },
 }
