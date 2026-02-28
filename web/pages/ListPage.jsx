@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useMemo, useCallback } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import Pagination from "@components/UI/Pagination"
 import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
@@ -554,4 +554,5 @@ export default function ListPage() {
       />
     </div>
   )
+
 }
