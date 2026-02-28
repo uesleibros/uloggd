@@ -1,8 +1,6 @@
 export const GAME_STATUS = {
   played: {
     id: "played",
-    label: "Jogado",
-    sub: "Zerou o objetivo principal",
     color: "bg-emerald-500",
     textColor: "text-emerald-400",
     bgClass: "bg-emerald-500/15",
@@ -10,8 +8,6 @@ export const GAME_STATUS = {
   },
   retired: {
     id: "retired",
-    label: "Aposentado",
-    sub: "Terminou um jogo sem final",
     color: "bg-blue-500",
     textColor: "text-blue-400",
     bgClass: "bg-blue-500/15",
@@ -19,8 +15,6 @@ export const GAME_STATUS = {
   },
   shelved: {
     id: "shelved",
-    label: "Na prateleira",
-    sub: "Não terminou mas pode voltar",
     color: "bg-amber-500",
     textColor: "text-amber-400",
     bgClass: "bg-amber-500/15",
@@ -28,8 +22,6 @@ export const GAME_STATUS = {
   },
   abandoned: {
     id: "abandoned",
-    label: "Abandonado",
-    sub: "Não terminou e não vai voltar",
     color: "bg-red-500",
     textColor: "text-red-400",
     bgClass: "bg-red-500/15",
@@ -40,16 +32,24 @@ export const GAME_STATUS = {
 export const STATUS_OPTIONS = Object.values(GAME_STATUS)
 
 export const RATING_MODES = [
-  { id: "stars_5", label: "★5", labelFull: "5 Estrelas" },
-  { id: "stars_5h", label: "★5½", labelFull: "5 Estrelas (meia)" },
-  { id: "points_10", label: "0–10", labelFull: "0–10" },
-  { id: "points_10d", label: "0–10.0", labelFull: "0–10.0" },
-  { id: "points_100", label: "0–100", labelFull: "0–100" },
+  { id: "stars_5" },
+  { id: "stars_5h" },
+  { id: "points_10" },
+  { id: "points_10d" },
+  { id: "points_100" },
 ]
 
 export const ASPECT_SUGGESTIONS = [
-  "Gameplay", "História", "Personagens", "Trilha sonora", "Gráficos",
-  "Level design", "Rejogabilidade", "Multiplayer", "Performance", "UI/UX"
+  "gameplay",
+  "story",
+  "characters",
+  "soundtrack",
+  "graphics",
+  "levelDesign",
+  "replayability",
+  "multiplayer",
+  "performance",
+  "uiux",
 ]
 
 export const MAX_ASPECTS = 10
@@ -59,6 +59,6 @@ export const MAX_REVIEW_LENGTH = 10000
 export const MAX_TITLE_LENGTH = 24
 
 export const SORT_OPTIONS = [
-  { key: "recent", label: "Recentes" },
-  { key: "rating", label: "Nota" },
+  { key: "recent" },
+  { key: "rating" },
 ]
