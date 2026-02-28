@@ -314,4 +314,12 @@ export default {
       submitFailed: "Erro ao enviar solicitação.",
     },
   },
+  game: {
+    meta: {
+      description: "Veja informações sobre {{name}} no uloggd",
+    },
+    notFound: {
+      title: "Jogo não encontrado",
+    },
+  },
 }
