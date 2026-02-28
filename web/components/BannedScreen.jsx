@@ -1,6 +1,9 @@
 import { Ban } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 
 export default function BannedScreen({ reason, expires_at }) {
+  const { t } = useTranslation("banned")
+  
   const remaining = expires_at
     ? Math.max(0, new Date(expires_at) - new Date())
     : null
@@ -14,21 +17,21 @@ export default function BannedScreen({ reason, expires_at }) {
           <Ban className="w-10 h-10 text-red-400" />
         </div>
 
-        <h1 className="text-2xl font-bold text-white mb-3">Conta suspensa</h1>
+        <h1 className="text-2xl font-bold text-white mb-3">{t("title")}</h1>
 
         {reason && (
           <p className="text-zinc-400 mb-4">
-            Motivo: <span className="text-red-400">{reason}</span>
+            {t("reason")}: <span className="text-red-400">{reason}</span>
           </p>
         )}
 
         {expires_at ? (
           <p className="text-sm text-zinc-500">
-            Suspensão termina em aproximadamente {hours} hora(s).
+            {t("expiresIn", { hours })}
           </p>
         ) : (
           <p className="text-sm text-zinc-500">
-            Suspensão permanente.
+            {t("permanent")}
           </p>
         )}
       </div>
