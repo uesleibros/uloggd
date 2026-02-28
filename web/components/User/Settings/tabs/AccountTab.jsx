@@ -1,3 +1,4 @@
+import { useTranslation } from "#hooks/useTranslation"
 import AvatarSection from "@components/User/Settings/sections/AvatarSection"
 import BannerSection from "@components/User/Settings/sections/BannerSection"
 import BioSection from "@components/User/Settings/sections/BioSection"
@@ -14,17 +15,42 @@ export default function AccountTab({
 	onUsernameSave, usernameSaving,
 	onDelete, deleteLoading,
 }) {
+	const { t } = useTranslation("settings")
+
 	return (
 		<div>
-			<h2 className="text-lg font-semibold text-white">Minha conta</h2>
-			<p className="text-sm text-zinc-500 mt-1 mb-6">Informações da sua conta vinculada ao Discord.</p>
+			<h2 className="text-lg font-semibold text-white">
+				{t("layout.tabs.account")}
+			</h2>
+
+			<p className="text-sm text-zinc-500 mt-1 mb-6">
+				{t("account.description")}
+			</p>
 
 			<div className="space-y-4 sm:space-y-6">
 				<AvatarSection avatar={user.avatar || null} onSave={onAvatarSave} saving={avatarSaving} />
 				<BannerSection banner={user.banner || null} onSave={onBannerSave} saving={bannerSaving} />
-				<BioSection bio={bio} onChange={onBioChange} onSave={onBioSave} onReset={onBioReset} saving={bioSaving} isDirty={bioIsDirty} />
-				<PronounSection pronoun={pronoun} onChange={onPronounChange} onSave={onPronounSave} onReset={onPronounReset} saving={pronounSaving} isDirty={pronounIsDirty} />
-				<ProfileSection user={user} onUsernameSave={onUsernameSave} usernameSaving={usernameSaving} />
+				<BioSection
+					bio={bio}
+					onChange={onBioChange}
+					onSave={onBioSave}
+					onReset={onBioReset}
+					saving={bioSaving}
+					isDirty={bioIsDirty}
+				/>
+				<PronounSection
+					pronoun={pronoun}
+					onChange={onPronounChange}
+					onSave={onPronounSave}
+					onReset={onPronounReset}
+					saving={pronounSaving}
+					isDirty={pronounIsDirty}
+				/>
+				<ProfileSection
+					user={user}
+					onUsernameSave={onUsernameSave}
+					usernameSaving={usernameSaving}
+				/>
 				<DangerZoneSection onDelete={onDelete} loading={deleteLoading} />
 			</div>
 		</div>
