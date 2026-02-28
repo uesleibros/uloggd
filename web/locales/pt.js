@@ -580,5 +580,14 @@ export default {
         todas: "todas",
       },
     },
+    dangerZone: {
+      title: "Zona de perigo",
+      description: "Ações irreversíveis. Tenha certeza antes de prosseguir.",
+      deleteAccount: "Excluir minha conta",
+      confirmTitle: "Tem certeza absoluta?",
+      confirmDescription: "Essa ação é irreversível. Todos os seus dados, incluindo jogos salvos, avaliações, seguidores e listas serão permanentemente excluídos.",
+      cancel: "Cancelar",
+      deletePermanent: "Excluir permanentemente",
+    },
   },
 }
