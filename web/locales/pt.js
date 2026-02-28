@@ -268,4 +268,50 @@ export default {
       },
     },
   },
+  badges: {
+    meta: {
+      title: "Selos - uloggd",
+      description: "Conheça todos os selos disponíveis no uloggd e o que cada um representa.",
+    },
+    title: "Selos",
+    subtitle: "Distintivos que representam funções, conquistas e reconhecimentos na plataforma.",
+    categories: {
+      team: {
+        title: "Equipe",
+        description: "Membros oficiais da equipe uloggd",
+      },
+      community: {
+        title: "Comunidade",
+        description: "Reconhecimentos da comunidade",
+      },
+    },
+    verification: {
+      title: "Verificação de perfil",
+      description: "Criadores de conteúdo, membros ativos da comunidade e figuras públicas podem solicitar o selo de verificação.",
+      request: "Solicitar",
+      inReview: "Em análise",
+    },
+    modal: {
+      request: {
+        title: "Solicitar verificação",
+        subtitle: "Descreva sua atuação na comunidade de games.",
+        placeholder: "Ex: Sou jogador ativo há 5 anos, participo de comunidades de RPG, criador de conteúdo com 10k seguidores...",
+        cancel: "Cancelar",
+        submit: "Enviar",
+      },
+      pending: {
+        title: "Solicitação em análise",
+        description: "Sua solicitação está sendo avaliada pela equipe. Você será notificado quando houver uma atualização.",
+        confirm: "Entendi",
+      },
+      success: {
+        title: "Solicitação enviada",
+        description: "Você receberá uma notificação quando sua solicitação for analisada.",
+        close: "Fechar",
+      },
+    },
+    errors: {
+      submitFailed: "Erro ao enviar solicitação.",
+    },
+  },
 }
