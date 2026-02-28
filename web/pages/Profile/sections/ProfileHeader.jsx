@@ -1,5 +1,5 @@
 import { Ban } from "lucide-react"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import UserBadges from "@components/User/UserBadges"
 import SocialLinks from "@components/User/SocialLinks"
@@ -158,4 +158,5 @@ export function ProfileHeader({
       </div>
     </div>
   )
+
 }
