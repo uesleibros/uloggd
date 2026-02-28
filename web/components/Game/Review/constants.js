@@ -14,16 +14,16 @@ export const RATING_MODES = [
 ]
 
 export const ASPECT_SUGGESTIONS = [
-  "Gameplay",
-  "História",
-  "Personagens",
-  "Trilha sonora",
-  "Gráficos",
-  "Level design",
-  "Rejogabilidade",
-  "Multiplayer",
-  "Performance",
-  "UI/UX"
+  "gameplay",
+  "story", 
+  "characters",
+  "soundtrack",
+  "graphics",
+  "levelDesign",
+  "replayability",
+  "multiplayer",
+  "performance",
+  "uiux",
 ]
 
 export const MAX_ASPECTS = 10
