@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 
 export default function NotFound() {
   const { t } = useTranslation("notFound")
@@ -17,4 +17,5 @@ export default function NotFound() {
       </Link>
     </div>
   )
+
 }
