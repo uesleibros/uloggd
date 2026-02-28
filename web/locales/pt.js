@@ -988,5 +988,9 @@ export default {
       dates: "Datas",
       details: "Detalhes",
     },
+    empty: {
+      title: "Nenhuma review ainda",
+      subtitle: "Seja o primeiro a avaliar este jogo!",
+    },
   },
 }
