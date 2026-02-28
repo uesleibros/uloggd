@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { X, Menu } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 import { SearchBar } from "./SearchBar"
 import { AuthButtons } from "./AuthButtons"
 import { useRef, useEffect, useState } from "react"
@@ -43,6 +44,7 @@ function NavLink({ to, onClick, children, className = "" }) {
 }
 
 export function MobileMenu({ isOpen, scrolled, navItems, user, authLoading, onClose }) {
+  const { t } = useTranslation()
   const contentRef = useRef(null)
   const [height, setHeight] = useState(0)
 
@@ -76,7 +78,7 @@ export function MobileMenu({ isOpen, scrolled, navItems, user, authLoading, onCl
             isOpen ? "translate-y-0 opacity-100" : "-translate-y-3 opacity-0"
           }`}
         >
-          <SearchBar variant="mobile" onSelect={onClose} />
+          <SearchBar variant="mobile" onSelect={onClose} placeholder={t("header.search")} />
         </div>
 
         <nav className="flex flex-col gap-1">
