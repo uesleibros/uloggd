@@ -394,6 +394,26 @@ export default {
     },
   },
   badges: {
+    bugHunter: {
+      title: "Bug Hunter",
+      description: "Actively contributed to platform security by identifying and reporting vulnerabilities."
+    },
+    developer: {
+      title: "Developer",
+      description: "Development team member responsible for creating and maintaining the platform."
+    },
+    moderator: {
+      title: "Moderator",
+      description: "Moderation team member responsible for enforcing community guidelines."
+    },
+    trainee_moderator: {
+      title: "Trainee Moderator",
+      description: "Moderation team member in training."
+    },
+    verified: {
+      title: "Verified",
+      description: "Confirmed identity as a content creator, personality, or public figure."
+    },
     meta: {
       title: "Badges - uloggd",
       description: "Discover all available badges on uloggd and what each one represents.",
