@@ -795,9 +795,13 @@ export default {
       save: "Salvar ordem",
     },
   },
+  gameCard: {
+    markAsPlayed: "Marcar como jogado",
+    removeStatus: "Remover status",
+    playing: "Jogando",
+    wishlist: "Wishlist",
+    addToList: "Adicionar à lista",
+    like: "Curtir",
+    back: "Voltar",
+  },
 }
-
-
-
-
-
