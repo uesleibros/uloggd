@@ -292,6 +292,8 @@ export default {
       inReview: "Em análise",
     },
     modal: {
+      close: "Fechar",
+      assignedAt: "Atribuído em {{date}}",
       request: {
         title: "Solicitar verificação",
         subtitle: "Descreva sua atuação na comunidade de games.",
@@ -765,3 +767,4 @@ export default {
     },
   },
 }
+
