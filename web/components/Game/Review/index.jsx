@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Plus } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
+import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
 import Modal from "@components/UI/Modal"
 import { ReviewModal } from "./ReviewModal"
 import { UserReviewCard } from "./ReviewCard"
 
 function ReviewSelector({ reviews, selectedId, onSelect, onNew }) {
+  const { t } = useTranslation("review")
+  
   if (reviews.length === 0) return null
 
   return (
@@ -22,7 +25,7 @@ function ReviewSelector({ reviews, selectedId, onSelect, onNew }) {
               : "bg-zinc-800/50 text-zinc-500 hover:text-white border border-zinc-700 hover:border-zinc-600"
           }`}
         >
-          {r.title || "Review"}
+          {r.title || t("selector.defaultTitle")}
         </button>
       ))}
       <button
@@ -31,7 +34,7 @@ function ReviewSelector({ reviews, selectedId, onSelect, onNew }) {
         className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-zinc-500 hover:text-white border border-dashed border-zinc-700 hover:border-zinc-500 cursor-pointer transition-all duration-200"
       >
         <Plus className="w-3 h-3" />
-        Nova
+        {t("selector.new")}
       </button>
     </div>
   )
@@ -39,6 +42,7 @@ function ReviewSelector({ reviews, selectedId, onSelect, onNew }) {
 
 export default function ReviewButton({ game }) {
   const { user } = useAuth()
+  const { t } = useTranslation("review")
   const [showModal, setShowModal] = useState(false)
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(false)
@@ -128,7 +132,7 @@ export default function ReviewButton({ game }) {
               className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-zinc-700 hover:border-zinc-500 rounded-xl text-sm text-zinc-500 hover:text-zinc-300 transition-all duration-200 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              Criar outra review
+              {t("button.createAnother")}
             </button>
           )}
         </div>
@@ -143,7 +147,7 @@ export default function ReviewButton({ game }) {
           ) : (
             <Plus className="w-5 h-5" />
           )}
-          Criar Review
+          {t("button.create")}
         </button>
       )}
 
