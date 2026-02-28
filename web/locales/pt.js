@@ -824,5 +824,11 @@ export default {
       popular: "Populares",
       rating: "Avaliação",
     },
+    likeModal: {
+      title: "Curtidas",
+      searchPlaceholder: "Buscar usuário...",
+      noResults: "Nenhum usuário encontrado",
+      empty: "Nenhuma curtida",
+    },
   },
 }
