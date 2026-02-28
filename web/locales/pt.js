@@ -551,5 +551,10 @@ export default {
       title: "Tema",
       comingSoon: "Configurações de aparência em breve.",
     },
+    pronoun: {
+      title: "Pronome",
+      description: "Exibido no seu perfil ao lado do seu nome.",
+      placeholder: "ex: ele/dele, she/her...",
+    },
   },
 }
