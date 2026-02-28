@@ -7,9 +7,14 @@ import { ASPECT_SUGGESTIONS, MAX_ASPECTS } from "../constants"
 
 export function AspectRatings({ aspects, setAspects }) {
   const { t } = useTranslation("review.aspects")
-  const [showSuggestions, setShowSuggestions] = useState(false)
+  
   const usedLabels = aspects.map((a) => a.label.toLowerCase())
-  const availableSuggestions = ASPECT_SUGGESTIONS.filter((s) => !usedLabels.includes(s.toLowerCase()))
+  const availableSuggestions = ASPECT_SUGGESTIONS.filter((key) => {
+    const translated = t(`suggestion.${key}`).toLowerCase()
+    return !usedLabels.includes(translated)
+  })
+
+  const [showSuggestions, setShowSuggestions] = useState(false)
 
   function addAspect(label = "") {
     if (aspects.length >= MAX_ASPECTS) return
@@ -18,6 +23,11 @@ export function AspectRatings({ aspects, setAspects }) {
       { id: crypto.randomUUID(), label, rating: null, ratingMode: "stars_5h", review: "" },
     ])
     setShowSuggestions(false)
+  }
+
+  function addSuggestion(key) {
+    const label = t(`suggestion.${key}`)
+    addAspect(label)
   }
 
   return (
@@ -51,14 +61,14 @@ export function AspectRatings({ aspects, setAspects }) {
                 <>
                   <p className="text-xs text-zinc-500 mb-2">{t("suggestions")}</p>
                   <div className="flex flex-wrap gap-1.5 mb-3">
-                    {availableSuggestions.map((s) => (
+                    {availableSuggestions.map((key) => (
                       <button
-                        key={s}
+                        key={key}
                         type="button"
-                        onClick={() => addAspect(s)}
+                        onClick={() => addSuggestion(key)}
                         className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded-full text-xs text-zinc-400 hover:text-white transition-all duration-200 cursor-pointer"
                       >
-                        {t(`suggestion.${s}`, { defaultValue: s })}
+                        {t(`suggestion.${key}`)}
                       </button>
                     ))}
                   </div>
