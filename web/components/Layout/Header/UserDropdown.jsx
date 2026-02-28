@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { User, Settings, LogOut, ChevronDown } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 import UserDisplay from "@components/User/UserDisplay"
 import UserBadges from "@components/User/UserBadges"
 import SettingsModal from "@components/User/Settings/SettingsModal"
@@ -26,6 +27,7 @@ function DropdownItem({ to, onClick, icon, label, variant = "default" }) {
 }
 
 export function UserDropdown({ user, onSignOut }) {
+  const { t } = useTranslation("auth")
   const [open, setOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const dropdownRef = useRef(null)
@@ -85,12 +87,12 @@ export function UserDropdown({ user, onSignOut }) {
             <DropdownItem
               to={`/u/${user.username}`}
               onClick={() => setOpen(false)}
-              label="Meu perfil"
+              label={t("profile")}
               icon={<User className="w-4 h-4" />}
             />
             <DropdownItem
               onClick={() => { setOpen(false); setSettingsOpen(true) }}
-              label="Configurações"
+              label={t("settings")}
               icon={<Settings className="w-4 h-4" />}
             />
           </div>
@@ -98,7 +100,7 @@ export function UserDropdown({ user, onSignOut }) {
           <div className="p-1.5 border-t border-zinc-800">
             <DropdownItem
               onClick={() => { setOpen(false); onSignOut() }}
-              label="Sair"
+              label={t("signOut")}
               variant="danger"
               icon={<LogOut className="w-4 h-4" />}
             />
