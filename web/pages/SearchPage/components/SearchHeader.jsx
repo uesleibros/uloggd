@@ -1,5 +1,5 @@
 import { Search, X } from "lucide-react"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 
 export function SearchHeader({ query, onChange, onClear, totalResults, loading }) {
   const { t } = useTranslation("search")
@@ -40,4 +40,5 @@ export function SearchHeader({ query, onChange, onClear, totalResults, loading }
       )}
     </div>
   )
+
 }
