@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useParams, Link } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
+import { useTranslation } from "#hooks/useTranslation"
 import PageBanner from "@components/Layout/PageBanner"
 import Lightbox from "@components/UI/Lightbox"
 import { GameSkeleton } from "./GameSkeleton"
@@ -11,6 +12,7 @@ import { useGameData } from "./hooks/useGameData"
 
 export default function Game() {
   const { slug } = useParams()
+  const { t } = useTranslation()
   const { game, hltb, hltbLoading, loading, error } = useGameData(slug)
   const [lightboxIndex, setLightboxIndex] = useState(null)
   const [lightboxImages, setLightboxImages] = useState([])
@@ -19,7 +21,7 @@ export default function Game() {
     game
       ? {
           title: `${game.name} - uloggd`,
-          description: game.summary || `Veja informações sobre ${game.name} no uloggd`,
+          description: game.summary || t("game.meta.description", { name: game.name }),
           image: game.cover?.url ? `https:${game.cover.url}` : undefined,
         }
       : undefined
@@ -35,9 +37,9 @@ export default function Game() {
   if (error || !game) {
     return (
       <div className="flex flex-col items-center justify-center py-32 gap-4">
-        <h1 className="text-2xl font-bold text-white">Jogo não encontrado</h1>
+        <h1 className="text-2xl font-bold text-white">{t("game.notFound.title")}</h1>
         <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">
-          Voltar ao início
+          {t("common.backToHome")}
         </Link>
       </div>
     )
