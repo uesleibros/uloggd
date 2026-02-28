@@ -948,5 +948,22 @@ export default {
         confirmButton: "Excluir permanentemente",
       },
     },
+    main: {
+      rating: {
+        title: "Nota geral",
+        description: "Escolha o formato e dê sua nota.",
+        mastered: "Masterizado",
+      },
+      platform: {
+        title: "Plataforma",
+        description: "Em qual plataforma você jogou?",
+      },
+      review: {
+        title: "Review",
+        description: "Escreva sobre sua experiência. Suporta Markdown.",
+        placeholder: "O que achou do jogo?",
+        spoilers: "Contém spoilers",
+      },
+    },
   },
 }
