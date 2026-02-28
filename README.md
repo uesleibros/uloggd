@@ -2,17 +2,17 @@
 
 # uloggd
 
-Uma plataforma para catalogar, avaliar e compartilhar sua coleção de jogos.
+A platform to catalog, rate and share your game collection.
 
 [![Made with Supabase](https://supabase.com/badge-made-with-supabase.svg)](https://supabase.com)
 
-<a href="https://github.com/uesleibros/uloggd/commits/main"><img src="https://img.shields.io/github/last-commit/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Ultimo commit." /></a>
+<a href="https://github.com/uesleibros/uloggd/commits/main"><img src="https://img.shields.io/github/last-commit/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Last commit." /></a>
 <a href="https://github.com/uesleibros/uloggd/stargazers"><img src="https://img.shields.io/github/stars/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Stars." /></a>
 <a href="https://github.com/uesleibros/uloggd/issues"><img src="https://img.shields.io/github/issues/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Issues." /></a>
 <a href="https://github.com/uesleibros/uloggd/pulls"><img src="https://img.shields.io/github/issues-pr/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Pull requests." /></a>
-<a href="https://github.com/uesleibros/uloggd"><img src="https://img.shields.io/github/repo-size/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Tamanho do repositório." /></a>
-<a href="https://github.com/uesleibros/uloggd"><img src="https://img.shields.io/github/languages/top/uesleibros/uloggd.svg?logo=javascript&logoColor=ffffff" alt="Linguagem principal." /></a>
-<a href="https://github.com/uesleibros/uloggd/graphs/contributors"><img src="https://img.shields.io/github/contributors/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Contribuidores." /></a>
+<a href="https://github.com/uesleibros/uloggd"><img src="https://img.shields.io/github/repo-size/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Repository size." /></a>
+<a href="https://github.com/uesleibros/uloggd"><img src="https://img.shields.io/github/languages/top/uesleibros/uloggd.svg?logo=javascript&logoColor=ffffff" alt="Top language." /></a>
+<a href="https://github.com/uesleibros/uloggd/graphs/contributors"><img src="https://img.shields.io/github/contributors/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Contributors." /></a>
 <a href="https://github.com/uesleibros/uloggd/forks"><img src="https://img.shields.io/github/forks/uesleibros/uloggd.svg?logo=github&logoColor=ffffff" alt="Forks." /></a>
 <img src="https://img.shields.io/badge/React-19-087ea4?logo=react&logoColor=ffffff" alt="React 19" />
 <img src="https://img.shields.io/badge/Vite-7-646cff?logo=vite&logoColor=ffffff" alt="Vite 7" />
@@ -38,19 +38,19 @@ Uma plataforma para catalogar, avaliar e compartilhar sua coleção de jogos.
 
 </div>
 
-## Sobre
+## About
 
-**uloggd** é uma plataforma onde você pode manter uma lista virtual dos jogos da sua coleção, avaliar e comentar os que já jogou e compartilhar tudo com seus amigos.  
-Pense nele como um **diário social de jogos**, inspirado em plataformas como Letterboxd e Backloggd.
+**uloggd** is a platform where you can keep a virtual list of games in your collection, rate and review the ones you've played, and share everything with your friends.  
+Think of it as a **social gaming diary**, inspired by platforms like Letterboxd and Backloggd.
 
-## Funcionalidades
+## Features
 
-- **Catálogo pessoal** - Organize seus jogos em listas personalizadas com status (jogando, completo, dropado, etc.)
-- **Avaliações e comentários** - Avalie jogos e escreva reviews com suporte a Markdown
-- **Perfis customizaveis** - Avatar, banner, bio, decorações de avatar e badges
-- **Sistema social** - Siga outros usuários e acompanhe a atividade deles
-- **Autenticação via Discord** - Login integrado com sua conta do Discord
-- **Dados de jogos via IGDB** - Informações completas dos jogos fornecidas pela API do IGDB/Twitch
+- **Personal catalog** - Organize your games in custom lists with statuses (playing, completed, dropped, etc.)
+- **Ratings and reviews** - Rate games and write reviews with Markdown support
+- **Customizable profiles** - Avatar, banner, bio, avatar decorations, and badges
+- **Social system** - Follow other users and track their activity
+- **Discord authentication** - Integrated login with your Discord account
+- **Game data via IGDB** - Complete game information provided by the IGDB/Twitch API
 
 ## Stack
 
@@ -62,132 +62,132 @@ Pense nele como um **diário social de jogos**, inspirado em plataformas como Le
 - Discord OAuth
 - Vercel Serverless Functions
 
-## Desenvolvimento
+## Development
 
-### Pré-requisitos
+### Prerequisites
 
 - Node.js 18+
-- Conta no [Supabase](https://supabase.com)
-- Aplicação registrada no [Twitch Developer Console](https://dev.twitch.tv/console/apps) (acesso à API do IGDB)
-- Steam Web API Key registrada em https://steamcommunity.com/dev/apikey
-- Aplicação OAuth no [Discord Developer Portal](https://discord.com/developers/applications)
-- Chave de API do [imgchest](https://imgchest.com/docs/api)
-- Domínio configurado para OAuth (ex: `http://localhost:3000` para dev ou `https://seusite.com` para produção)
+- [Supabase](https://supabase.com) account
+- Application registered on [Twitch Developer Console](https://dev.twitch.tv/console/apps) (IGDB API access)
+- Steam Web API Key registered at https://steamcommunity.com/dev/apikey
+- OAuth application on [Discord Developer Portal](https://discord.com/developers/applications)
+- [imgchest](https://imgchest.com/docs/api) API key
+- Configured domain for OAuth (e.g., `http://localhost:3000` for dev or `https://yoursite.com` for production)
 
-### Configuração 
+### Setup
 
-1. Clone o repositorio:
+1. Clone the repository:
 
 ```bash
 git clone https://github.com/uesleibros/uloggd.git
 cd uloggd
 ```
 
-2. Instale as dependencias:
+2. Install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Copie o arquivo de exemplo e preencha com suas credenciais:
+3. Copy the example file and fill in your credentials:
 
 ```bash
 cp .env.example .env
 ```
 
-#### Variáveis Necessárias
+#### Required Variables
 
-| Variável | Descrição | Onde obter |
-|----------|-----------|------------|
-| `APP_URL` | URL base da aplicação (usada para OAuth Steam/Twitch e redirects). Ex: `http://localhost:3000` (dev) ou `https://seusite.com` (produção) | Definida por você |
-| `STEAM_WEB_API_KEY` | Chave de API da Steam para acessar dados públicos | https://steamcommunity.com/dev/apikey |
-| `TWITCH_CLIENT_ID` | Client ID da aplicação Twitch | https://dev.twitch.tv/console/apps |
-| `TWITCH_CLIENT_SECRET` | Client Secret da aplicação Twitch | https://dev.twitch.tv/console/apps |
-| `TWITCH_REDIRECT_URI` | URL de callback do OAuth da Twitch (ex: `https://seusite.com/api/twitch/callback`) | Definida por você e registrada no Twitch Dev Console |
-| `VITE_SUPABASE_URL` | URL do projeto Supabase (frontend) | Supabase Dashboard → Settings → API |
-| `VITE_SUPABASE_ANON_KEY` | Anon key pública do Supabase (frontend) | Supabase Dashboard → Settings → API |
-| `SUPABASE_URL` | URL do projeto Supabase (backend) | Supabase Dashboard → Settings → API |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key do Supabase (backend) | Supabase Dashboard → Settings → API |
-| `IMGCHEST_API_KEY` | Chave de API para upload de imagens | https://imgchest.com/docs/api |
-| `DISCORD_WEBHOOK_URL` | URL do webhook para notificações da equipe | Discord → Canal → Editar Canal → Integrações → Webhooks |
-| `ISTHEREANYDEAL_API_KEY` | Chave de API para histórico de preços de jogos | https://isthereanydeal.com/dev/app/ |
+| Variable | Description | Where to get |
+|----------|-------------|--------------|
+| `APP_URL` | Base application URL (used for Steam/Twitch OAuth and redirects). E.g., `http://localhost:3000` (dev) or `https://yoursite.com` (production) | Defined by you |
+| `STEAM_WEB_API_KEY` | Steam API key to access public data | https://steamcommunity.com/dev/apikey |
+| `TWITCH_CLIENT_ID` | Twitch application Client ID | https://dev.twitch.tv/console/apps |
+| `TWITCH_CLIENT_SECRET` | Twitch application Client Secret | https://dev.twitch.tv/console/apps |
+| `TWITCH_REDIRECT_URI` | Twitch OAuth callback URL (e.g., `https://yoursite.com/api/twitch/callback`) | Defined by you and registered in Twitch Dev Console |
+| `VITE_SUPABASE_URL` | Supabase project URL (frontend) | Supabase Dashboard → Settings → API |
+| `VITE_SUPABASE_ANON_KEY` | Supabase public anon key (frontend) | Supabase Dashboard → Settings → API |
+| `SUPABASE_URL` | Supabase project URL (backend) | Supabase Dashboard → Settings → API |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (backend) | Supabase Dashboard → Settings → API |
+| `IMGCHEST_API_KEY` | API key for image uploads | https://imgchest.com/docs/api |
+| `DISCORD_WEBHOOK_URL` | Webhook URL for team notifications | Discord → Channel → Edit Channel → Integrations → Webhooks |
+| `ISTHEREANYDEAL_API_KEY` | API key for game price history | https://isthereanydeal.com/dev/app/ |
 
-#### Desenvolvimento Local
+#### Local Development
 
 > [!WARNING]
-> O arquivo `.env.local` **não deve ser commitado**.
+> The `.env.local` file **should not be committed**.
 
-#### Produção (Vercel)
+#### Production (Vercel)
 
-Configure as mesmas variáveis no painel da Vercel:
+Configure the same variables in the Vercel panel:
 
 Project → Settings → Environment Variables
 
-Defina:
+Set:
 
 ```
-APP_URL=https://seusite.com
+APP_URL=https://yoursite.com
 ```
 
-Selecione os ambientes desejados:
+Select the desired environments:
 - ✅ Production
-- ✅ Preview (opcional)
-- ✅ Development (opcional)
+- ✅ Preview (optional)
+- ✅ Development (optional)
 
-#### Observações Importantes
+#### Important Notes
 
-- `APP_URL` deve sempre corresponder ao domínio registrado nos provedores OAuth.
-- Nunca exponha `SUPABASE_SERVICE_ROLE_KEY` no frontend.
-- Variáveis que começam com `VITE_` ficam disponíveis no frontend.
-- Evite usar URLs de preview dinâmicas para OAuth (Steam/Twitch).
-- Se uma integração OAuth falhar, verifique:
-  1. Se o domínio está correto.
-  2. Se o callback está registrado no provedor.
-  3. Se `APP_URL` está configurado corretamente.
+- `APP_URL` must always match the domain registered with OAuth providers.
+- Never expose `SUPABASE_SERVICE_ROLE_KEY` on the frontend.
+- Variables starting with `VITE_` are available on the frontend.
+- Avoid using dynamic preview URLs for OAuth (Steam/Twitch).
+- If an OAuth integration fails, check:
+  1. If the domain is correct.
+  2. If the callback is registered with the provider.
+  3. If `APP_URL` is configured correctly.
 
-> Também veja o arquivo [`.env.example`](/.env.example) para aplicar corretamente no seu `.env.local`/`.env`
+> Also see the [`.env.example`](/.env.example) file to apply correctly in your `.env.local`/`.env`
 
-4. Inicie o servidor de desenvolvimento:
+4. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-Para desenvolvimento com as funções serverless da Vercel:
+For development with Vercel serverless functions:
 
 ```bash
 npm run dev:vercel
 ```
 
-### Banco de Dados
+### Database
 
-O projeto usa **Supabase** (PostgreSQL). Para configurar o banco:
+The project uses **Supabase** (PostgreSQL). To set up the database:
 
-1. **Crie um projeto** no [Supabase Dashboard](https://app.supabase.com)
+1. **Create a project** on [Supabase Dashboard](https://app.supabase.com)
 
-2. **Importe o schema** do banco de dados:
-   - Acesse **SQL Editor** no dashboard do Supabase
-   - Copie todo o conteúdo de [`database/schema.sql`](/database/schema.sql)
-   - Cole no editor e clique em **RUN**
+2. **Import the database schema**:
+   - Access **SQL Editor** in the Supabase dashboard
+   - Copy all contents from [`database/schema.sql`](/database/schema.sql)
+   - Paste into the editor and click **RUN**
 
-3. **Configure a autenticação Discord:**
-   - No Supabase, vá em **Authentication** > **Providers**
-   - Habilite **Discord** e preencha Client ID e Secret
+3. **Configure Discord authentication:**
+   - In Supabase, go to **Authentication** > **Providers**
+   - Enable **Discord** and fill in Client ID and Secret
 
-### Scripts disponíveis
+### Available Scripts
 
-| Comando | Descrição |
-|---------|-----------|
-| `npm run dev` | Inicia o servidor de desenvolvimento com Vite |
-| `npm run dev:vercel` | Inicia o ambiente de desenvolvimento com Vercel CLI |
-| `npm run build` | Gera o build de produção |
-| `npm run preview` | Visualiza o build de produção localmente |
-| `npm run lint` | Executa o ESLint no projeto |
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server with Vite |
+| `npm run dev:vercel` | Start development environment with Vercel CLI |
+| `npm run build` | Generate production build |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run ESLint on the project |
 
-## Contribuindo
+## Contributing
 
-Pull requests são bem-vindos. Para mudanças maiores, abra uma issue primeiro.
+Pull requests are welcome. For major changes, please open an issue first.
 
-## Licença 
+## License
 
-Este projeto está sob a licença Apache 2.0. Veja o arquivo [LICENSE](/LICENSE) para mais detalhes.
+This project is licensed under the Apache 2.0 License. See the [LICENSE](/LICENSE) file for more details.
