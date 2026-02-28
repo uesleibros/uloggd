@@ -803,5 +803,13 @@ export default {
     addToList: "Adicionar à lista",
     like: "Curtir",
     back: "Voltar",
+    status: {
+      played: "Jogado",
+      playing: "Jogando",
+      dropped: "Abandonado",
+      shelved: "Engavetado",
+      completed: "Completo",
+      mastered: "Masterizado",
+    },
   },
 }
