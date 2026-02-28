@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react"
 import { Shield, BadgeCheck, Ban, CheckCircle, ChevronRight } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 import VerificationRequestsModal from "./VerificationRequestsModal"
 import BanUserModal from "./BanUserModal"
 import { supabase } from "#lib/supabase"
 import { notify } from "@components/UI/Notification"
 
 export default function ModeratorMenu({ profile, currentUser }) {
+  const { t } = useTranslation("moderation.menu")
   const [open, setOpen] = useState(false)
   const [showVerifications, setShowVerifications] = useState(false)
   const [showBan, setShowBan] = useState(false)
@@ -41,13 +43,13 @@ export default function ModeratorMenu({ profile, currentUser }) {
       })
 
       if (res.ok) {
-        notify("Usuário desbanido.", "success")
+        notify(t("unbanSuccess"), "success")
         window.location.reload()
       } else {
-        notify("Erro ao desbanir.", "error")
+        notify(t("unbanError"), "error")
       }
     } catch {
-      notify("Erro ao desbanir.", "error")
+      notify(t("unbanError"), "error")
     }
   }
 
@@ -63,7 +65,7 @@ export default function ModeratorMenu({ profile, currentUser }) {
               : "text-zinc-500 hover:text-amber-400 hover:bg-amber-500/10"
             }
           `}
-          title="Moderação"
+          title={t("title")}
         >
           <Shield className="w-5 h-5" />
         </button>
@@ -90,7 +92,7 @@ export default function ModeratorMenu({ profile, currentUser }) {
             >
               <div className="flex items-center gap-2.5">
                 <BadgeCheck className="w-4 h-4 text-violet-400" />
-                <span>Verificações</span>
+                <span>{t("verifications")}</span>
               </div>
               <ChevronRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
             </button>
@@ -107,7 +109,7 @@ export default function ModeratorMenu({ profile, currentUser }) {
               >
                 <div className="flex items-center gap-2.5">
                   <CheckCircle className="w-4 h-4" />
-                  <span>Desbanir usuário</span>
+                  <span>{t("unban")}</span>
                 </div>
                 <ChevronRight className="w-3.5 h-3.5 text-emerald-500/50 group-hover:text-emerald-400 transition-colors" />
               </button>
@@ -121,7 +123,7 @@ export default function ModeratorMenu({ profile, currentUser }) {
               >
                 <div className="flex items-center gap-2.5">
                   <Ban className="w-4 h-4" />
-                  <span>Banir usuário</span>
+                  <span>{t("ban")}</span>
                 </div>
                 <ChevronRight className="w-3.5 h-3.5 text-red-500/50 group-hover:text-red-400 transition-colors" />
               </button>
