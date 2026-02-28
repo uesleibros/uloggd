@@ -1055,6 +1055,9 @@ export default {
       addButton: "Adicionar aspecto",
       suggestions: "Sugestões",
       emptyField: "Campo vazio",
+      namePlaceholder: "Nome do aspecto",
+      commentPlaceholder: "Comentário sobre {{label}}...",
+      commentPlaceholderDefault: "Comentário sobre este aspecto...",
       close: "Fechar",
       suggestion: {
         gameplay: "Gameplay",
@@ -1509,6 +1512,7 @@ export default {
     },
   },
 }
+
 
 
 
