@@ -1,9 +1,11 @@
+import { useTranslation } from "#hooks/useTranslation"
 import { MarkdownPreview } from "@components/MarkdownEditor"
 import Playtime from "@components/Game/Playtime"
 import AspectRatingDisplay from "./AspectRatingDisplay"
 import SpoilerBanner from "./SpoilerBanner"
 
 export default function ReviewModalContent({ review }) {
+	const { t } = useTranslation("review.modalContent")
 	const aspects = review.aspect_ratings || []
 
 	return (
@@ -12,7 +14,9 @@ export default function ReviewModalContent({ review }) {
 
 			{aspects.length > 0 && (
 				<div className="mb-5 p-4 bg-zinc-800/50 border border-zinc-700/50 rounded-xl">
-					<h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Avaliação por aspecto</h4>
+					<h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">
+						{t("aspectsTitle")}
+					</h4>
 					<div className="space-y-2.5">
 						{aspects.map((aspect, i) => (
 							<div key={i}>
