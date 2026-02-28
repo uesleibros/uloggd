@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { X, Check } from "lucide-react"
 import { supabase } from "#lib/supabase"
+import { useTranslation } from "#hooks/useTranslation"
 import { notify } from "@components/UI/Notification"
 import { TabNav } from "./tabs/TabNav"
 import { ReviewTab } from "./tabs/ReviewTab"
@@ -11,6 +12,7 @@ import { MAX_ASPECT_LABEL, MAX_ASPECT_REVIEW } from "./constants"
 const TAB_MIN_HEIGHT = "min-h-[480px]"
 
 export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
+  const { t } = useTranslation("review.modal")
   const isEditing = !!existingReview
   const [activeTab, setActiveTab] = useState("review")
   const [submitting, setSubmitting] = useState(false)
@@ -49,15 +51,15 @@ export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
     const minDate = "2000-01-01"
 
     if (startedOn && (startedOn < minDate || startedOn > today)) {
-      notify("Data de início inválida.", "error")
+      notify(t("errors.invalidStartDate"), "error")
       return
     }
     if (finishedOn && (finishedOn < minDate || finishedOn > today)) {
-      notify("Data de término inválida.", "error")
+      notify(t("errors.invalidEndDate"), "error")
       return
     }
     if (startedOn && finishedOn && finishedOn < startedOn) {
-      notify("Data de término não pode ser antes do início.", "error")
+      notify(t("errors.endBeforeStart"), "error")
       return
     }
 
@@ -74,7 +76,7 @@ export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
     try {
       const token = await getToken()
       if (!token) {
-        notify("Você precisa estar logado.", "error")
+        notify(t("errors.notLoggedIn"), "error")
         return
       }
 
@@ -107,14 +109,14 @@ export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
       })
 
       if (res.ok) {
-        notify(isEditing ? "Review atualizada!" : "Review criada!")
+        notify(isEditing ? t("success.updated") : t("success.created"))
         onClose()
       } else {
         const err = await res.json().catch(() => ({}))
-        notify(err.error || "Falha ao salvar.", "error")
+        notify(err.error || t("errors.saveFailed"), "error")
       }
     } catch {
-      notify("Falha ao salvar.", "error")
+      notify(t("errors.saveFailed"), "error")
     } finally {
       setSubmitting(false)
     }
@@ -132,14 +134,14 @@ export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
         body: JSON.stringify({ reviewId: existingReview.id }),
       })
       if (res.ok) {
-        notify("Review excluída!")
+        notify(t("success.deleted"))
         onDeleted?.()
         onClose()
       } else {
-        notify("Falha ao excluir.", "error")
+        notify(t("errors.deleteFailed"), "error")
       }
     } catch {
-      notify("Falha ao excluir.", "error")
+      notify(t("errors.deleteFailed"), "error")
     } finally {
       setDeleting(false)
     }
@@ -245,7 +247,7 @@ export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
           onClick={onClose}
           className="px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer active:bg-zinc-600"
         >
-          Cancelar
+          {t("cancel")}
         </button>
         <button
           type="button"
@@ -262,7 +264,7 @@ export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
           ) : (
             <Check className="w-4 h-4" />
           )}
-          {isEditing ? "Salvar" : "Criar Review"}
+          {isEditing ? t("save") : t("create")}
         </button>
       </div>
     </div>
