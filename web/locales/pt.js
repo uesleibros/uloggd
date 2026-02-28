@@ -1327,6 +1327,14 @@ export default {
     hint: "Se o problema persistir, tenta limpar o cache do navegador.",
   },
   moderation: {
+    menu: {
+      title: "Moderação",
+      verifications: "Verificações",
+      ban: "Banir usuário",
+      unban: "Desbanir usuário",
+      unbanSuccess: "Usuário desbanido.",
+      unbanError: "Erro ao desbanir.",
+    },
     ban: {
       title: "Banir @{{username}}",
       subtitle: "Ação irreversível até desbanimento manual",
