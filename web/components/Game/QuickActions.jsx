@@ -151,7 +151,13 @@ export default function QuickActions({ game }) {
       })
 
       if (res.ok) {
-        refresh()
+        refresh({
+          delay: 300,
+          optimistic: {
+            slug: game.slug,
+            data: { [field]: value },
+          },
+        })
       } else {
         setState(prev)
       }
@@ -264,3 +270,4 @@ export default function QuickActions({ game }) {
     </>
   )
 }
+
