@@ -547,5 +547,9 @@ export default {
       save: "Salvar",
       reset: "Resetar",
     },
+    theme: {
+      title: "Tema",
+      comingSoon: "Configurações de aparência em breve.",
+    },
   },
 }
