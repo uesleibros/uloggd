@@ -1326,4 +1326,26 @@ export default {
     back: "Voltar",
     hint: "Se o problema persistir, tenta limpar o cache do navegador.",
   },
+  moderation: {
+    ban: {
+      title: "Banir @{{username}}",
+      subtitle: "Ação irreversível até desbanimento manual",
+      warning: "O usuário perderá acesso imediato à plataforma.",
+      reasonLabel: "Motivo do banimento",
+      reasonPlaceholder: "Descreva o motivo do banimento...",
+      durationLabel: "Duração",
+      duration: {
+        permanent: "Permanente",
+        hours24: "24 horas",
+        days7: "7 dias",
+        days30: "30 dias",
+      },
+      confirmLabel: "Digite",
+      confirmSuffix: "para confirmar",
+      cancel: "Cancelar",
+      confirm: "Confirmar Ban",
+      success: "Usuário banido.",
+      error: "Erro ao banir.",
+    },
+  },
 }
