@@ -1136,6 +1136,167 @@ export default {
         social: "Social e Spoilers",
         layout: "Layout",
       },
+      features: {
+        bold: {
+          description: "Texto em negrito.",
+          example: "**isso fica em negrito**",
+          preview: "**isso fica em negrito**",
+        },
+        italic: {
+          description: "Texto em itálico.",
+          example: "*isso fica em itálico*",
+          preview: "*isso fica em itálico*",
+        },
+        strikethrough: {
+          description: "Texto riscado (tachado).",
+          example: "~~texto riscado~~",
+          preview: "~~texto riscado~~",
+        },
+        inlineCode: {
+          description: "Código inline.",
+          example: "`console.log('oi')`",
+          preview: "`console.log('oi')`",
+        },
+        headings: {
+          description: "Títulos de H1 (maior) até H6 (menor). Quanto mais #, menor o título.",
+          example: "# Título Grande\n## Subtítulo\n### Menor ainda",
+        },
+        unorderedList: {
+          description: "Lista não ordenada (com bolinhas).",
+          example: "- Primeiro item\n- Segundo item\n- Terceiro item",
+          preview: "- Primeiro\n- Segundo\n- Terceiro",
+        },
+        orderedList: {
+          description: "Lista ordenada (numerada).",
+          example: "1. Primeiro\n2. Segundo\n3. Terceiro",
+          preview: "1. Primeiro\n2. Segundo\n3. Terceiro",
+        },
+        checklist: {
+          description: "Checklist com itens marcáveis.",
+          example: "- [ ] Pendente\n- [x] Concluído",
+          preview: "- [ ] Pendente\n- [x] Concluído",
+        },
+        link: {
+          description: "Cria um link clicável.",
+          example: "[Clique aqui](https://exemplo.com)",
+          preview: "[Clique aqui](https://exemplo.com)",
+        },
+        image: {
+          description: "Insere uma imagem.",
+          example: "![Logo](https://exemplo.com/img.png)",
+        },
+        imageCustom: {
+          description: "Imagem com tamanho customizado.",
+          example: "<img src=\"https://exemplo.com/img.png\" alt=\"desc\" width=\"400\" />",
+        },
+        youtube: {
+          description: "Cole um link do YouTube e ele vira um player automaticamente.",
+          example: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        },
+        codeBlock: {
+          description: "Bloco de código com múltiplas linhas.",
+          example: "```\nfunction oi() {\n  return 'olá'\n}\n```",
+        },
+        blockquote: {
+          description: "Citação / blockquote.",
+          example: "> Isso é uma citação",
+          preview: "> Isso é uma citação",
+        },
+        hr: {
+          description: "Linha horizontal separadora.",
+          preview: "---",
+        },
+        table: {
+          description: "Tabela com colunas e linhas.",
+          example: "| Nome | Nota |\n| --- | --- |\n| Jogo A | 10 |",
+          preview: "| Nome | Nota |\n| --- | --- |\n| Jogo A | 10 |",
+        },
+        alertInfo: {
+          description: "Bloco informativo neutro.",
+          example: ":::info\nInformação importante\n:::",
+        },
+        alertNote: {
+          description: "Nota complementar ou observação.",
+          example: ":::note\nIsso é apenas uma nota.\n:::",
+        },
+        alertTip: {
+          description: "Dica útil para o leitor.",
+          example: ":::tip\nUse arma de gelo contra inimigos de fogo.\n:::",
+        },
+        alertImportant: {
+          description: "Informação importante que merece destaque.",
+          example: ":::important\nIsso é muito relevante.\n:::",
+        },
+        alertWarning: {
+          description: "Aviso importante.",
+          example: ":::warning\nCuidado com esta área.\n:::",
+        },
+        alertDanger: {
+          description: "Alerta crítico ou perigoso.",
+          example: ":::danger\nEssa escolha é irreversível.\n:::",
+        },
+        alertSuccess: {
+          description: "Mensagem de sucesso ou conclusão.",
+          example: ":::success\nMissão concluída!\n:::",
+        },
+        alertQuestion: {
+          description: "Pergunta ou reflexão destacada.",
+          example: ":::question\nVocê já tentou essa abordagem?\n:::",
+        },
+        alertExample: {
+          description: "Exemplo prático ou demonstração.",
+          example: ":::example\nVeja este caso aplicado.\n:::",
+        },
+        alertBug: {
+          description: "Problema conhecido ou comportamento inesperado.",
+          example: ":::bug\nExiste um erro nessa versão.\n:::",
+        },
+        alertNeutral: {
+          description: "Observação neutra sem ênfase emocional.",
+          example: ":::neutral\nApenas uma observação geral.\n:::",
+        },
+        gameCard: {
+          description: "Exibe um card detalhado de um jogo. O slug pode ser encontrado na URL da página do jogo.",
+          example: "!game(the-last-of-us)",
+        },
+        gameMini: {
+          description: "Versão compacta do card de jogo, ideal para listas.",
+          example: "!game:mini(celeste)",
+        },
+        gameGrid: {
+          description: "Vitrine de jogos em carrossel manual. Adicione + no final do slug para destacar como favorito.",
+          example: "!game:grid(celeste, hollow-knight+)",
+        },
+        gameGridAuto: {
+          description: "Vitrine de jogos com carrossel automático infinito. Também suporta + para favoritos.",
+          example: "!game:grid-auto(celeste, hollow-knight+, hades)",
+        },
+        mention: {
+          description: "Menciona um usuário. Digite @ para ver sugestões de pessoas que você segue.",
+          example: "@username",
+        },
+        spoiler: {
+          description: "Esconde o texto como spoiler. O usuário precisa clicar para revelar.",
+          example: "O assassino é ||o mordomo||",
+        },
+        spoilerImg: {
+          description: "Insere uma imagem com desfoque de spoiler.",
+          example: "<spoilerimg src=\"https://exemplo.com/img.png\" alt=\"desc\" width=\"400\" />",
+        },
+        center: {
+          description: "Centraliza o conteúdo (texto ou imagens).",
+          example: "<center>Texto centralizado</center>",
+          preview: "<center>Texto centralizado</center>",
+        },
+        desktop: {
+          description: "Conteúdo visível apenas no desktop.",
+          example: "<desktop>\nIsso só aparece no PC\n</desktop>",
+        },
+        mobile: {
+          description: "Conteúdo visível apenas no celular.",
+          example: "<mobile>\nIsso só aparece no celular\n</mobile>",
+        },
+      },
     },
   },
 }
