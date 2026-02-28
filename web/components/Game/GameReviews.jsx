@@ -21,10 +21,12 @@ import {
 } from "@components/Game/Review"
 import { supabase } from "#lib/supabase"
 import { useAuth } from "#hooks/useAuth"
+import { useTranslation } from "#hooks/useTranslation"
 import { getTimeAgo } from "#utils/formatDate"
 import { SORT_OPTIONS } from "#constants/game"
 
 function LikeButton({ reviewId, currentUserId }) {
+	const { t } = useTranslation("reviews")
 	const [isLiked, setIsLiked] = useState(false)
 	const [count, setCount] = useState(0)
 	const [loading, setLoading] = useState(false)
@@ -82,8 +84,6 @@ function LikeButton({ reviewId, currentUserId }) {
 		}
 	}
 
-	const label = count === 1 ? "curtida" : "curtidas"
-
 	return (
 		<>
 			<div className="flex items-center gap-2">
@@ -98,7 +98,7 @@ function LikeButton({ reviewId, currentUserId }) {
 				>
 					<ThumbsUp className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${isLiked ? "fill-current" : ""}`} />
 					<span className="text-sm font-medium">
-						{isLiked ? "Curtido" : "Curtir"}
+						{isLiked ? t("liked") : t("like")}
 					</span>
 				</button>
 				{count > 0 && (
@@ -106,7 +106,7 @@ function LikeButton({ reviewId, currentUserId }) {
 						onClick={() => setShowLikes(true)}
 						className="text-sm text-zinc-500 hover:text-zinc-300 tabular-nums cursor-pointer transition-colors hover:underline"
 					>
-						<CountUp end={count} /> {label}
+						<CountUp end={count} /> {t("likesCount", { count })}
 					</button>
 				)}
 			</div>
@@ -121,6 +121,8 @@ function LikeButton({ reviewId, currentUserId }) {
 }
 
 function ReviewModalHeader({ review, user, currentUserId, onClose }) {
+	const { t } = useTranslation("reviews")
+
 	return (
 		<div className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
 			<div className="flex items-center gap-3.5 min-w-0">
@@ -135,7 +137,7 @@ function ReviewModalHeader({ review, user, currentUserId, onClose }) {
 				<div className="min-w-0">
 					<div className="flex items-center gap-2 flex-wrap">
 						<Link to={`/u/${user?.username}`} onClick={onClose} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors">
-							{user?.username || "Usuário"}
+							{user?.username || t("unknownUser")}
 						</Link>
 						<UserBadges user={user} size="md" clickable />
 						<StatusBadge status={review.status} />
@@ -153,6 +155,7 @@ function ReviewModalHeader({ review, user, currentUserId, onClose }) {
 }
 
 export function ReviewCard({ review, user, currentUserId }) {
+	const { t } = useTranslation("reviews")
 	const [showModal, setShowModal] = useState(false)
 	const aspects = review.aspect_ratings || []
 
@@ -172,7 +175,7 @@ export function ReviewCard({ review, user, currentUserId }) {
 					<div className="flex-1 min-w-0">
 						<div className="flex items-center gap-2 flex-wrap">
 							<Link to={`/u/${user?.username}`} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate">
-								{user?.username || "Usuário"}
+								{user?.username || t("unknownUser")}
 							</Link>
 							<UserBadges user={user} size="md" clickable />
 							<StatusBadge status={review.status} />
@@ -222,6 +225,7 @@ export function ReviewCard({ review, user, currentUserId }) {
 }
 
 export default function GameReviews({ gameId }) {
+	const { t } = useTranslation("reviews")
 	const { user: currentUser } = useAuth()
 	const [reviews, setReviews] = useState([])
 	const [users, setUsers] = useState({})
@@ -264,12 +268,10 @@ export default function GameReviews({ gameId }) {
 		window.scrollTo({ top: 0, behavior: "smooth" })
 	}
 
-	const title = "Reviews da comunidade"
-
 	if (loading) {
 		return (
 			<div>
-				<h2 className="text-lg font-semibold text-white mb-5">{title}</h2>
+				<h2 className="text-lg font-semibold text-white mb-5">{t("communityReviews")}</h2>
 				<ReviewSkeleton />
 			</div>
 		)
@@ -278,7 +280,7 @@ export default function GameReviews({ gameId }) {
 	if (!reviews.length) {
 		return (
 			<div>
-				<h2 className="text-lg font-semibold text-white mb-5">{title}</h2>
+				<h2 className="text-lg font-semibold text-white mb-5">{t("communityReviews")}</h2>
 				<ReviewEmptyState />
 			</div>
 		)
@@ -288,7 +290,7 @@ export default function GameReviews({ gameId }) {
 		<div>
 			<div className="flex items-center justify-between mb-5">
 				<h2 className="text-lg font-semibold text-white">
-					{title}
+					{t("communityReviews")}
 					<span className="text-sm text-zinc-500 font-normal ml-2">{total}</span>
 				</h2>
 				<div className="flex gap-1">
@@ -302,7 +304,7 @@ export default function GameReviews({ gameId }) {
 									: "text-zinc-500 hover:text-white hover:bg-zinc-800/50"
 							}`}
 						>
-							{option.label}
+							{t(`sort.${option.key}`)}
 						</button>
 					))}
 				</div>
