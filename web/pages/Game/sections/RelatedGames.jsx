@@ -3,19 +3,20 @@ import {
   Puzzle, Package, Box, RefreshCw, Sparkles,
   Languages, Play, Gamepad2
 } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 import GameCard from "@components/Game/GameCard"
 import DragScrollRow from "@components/UI/DragScrollRow"
 import { VideoGrid } from "../components/VideoGrid"
 
-const TAB_CONFIG = {
-  dlcs: { label: "DLCs", icon: Puzzle },
-  expansions: { label: "Expansões", icon: Package },
-  standalone: { label: "Standalone", icon: Box },
-  remakes: { label: "Remakes", icon: RefreshCw },
-  remasters: { label: "Remasters", icon: Sparkles },
-  altNames: { label: "Nomes Alternativos", icon: Languages },
-  videos: { label: "Vídeos", icon: Play },
-  similar: { label: "Similares", icon: Gamepad2 },
+const TAB_ICONS = {
+  dlcs: Puzzle,
+  expansions: Package,
+  standalone: Box,
+  remakes: RefreshCw,
+  remasters: Sparkles,
+  altNames: Languages,
+  videos: Play,
+  similar: Gamepad2,
 }
 
 function RelatedGamesNavigation({ tabs, activeTab, onTabChange }) {
@@ -24,7 +25,7 @@ function RelatedGamesNavigation({ tabs, activeTab, onTabChange }) {
       <nav className="flex gap-1 overflow-x-auto scrollbar-hide -mb-px">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.key
-          const Icon = TAB_CONFIG[tab.key]?.icon
+          const Icon = TAB_ICONS[tab.key]
 
           return (
             <button
@@ -93,26 +94,28 @@ function RelatedGamesContent({ current }) {
 }
 
 export function RelatedGamesSection({ game }) {
+  const { t } = useTranslation("game")
+
   const tabs = [
-    { key: "dlcs", label: "DLCs", data: game.dlcs },
-    { key: "expansions", label: "Expansões", data: game.expansions },
-    { key: "standalone", label: "Standalone", data: game.standalone_expansions },
-    { key: "remakes", label: "Remakes", data: game.remakes },
-    { key: "remasters", label: "Remasters", data: game.remasters },
-    { key: "altNames", label: "Nomes Alternativos", data: game.alternative_names },
-    { key: "videos", label: "Vídeos", data: game.videos },
-    { key: "similar", label: "Similares", data: game.similar_games },
-  ].filter((t) => t.data?.length > 0)
+    { key: "dlcs", label: t("related.tabs.dlcs"), data: game.dlcs },
+    { key: "expansions", label: t("related.tabs.expansions"), data: game.expansions },
+    { key: "standalone", label: t("related.tabs.standalone"), data: game.standalone_expansions },
+    { key: "remakes", label: t("related.tabs.remakes"), data: game.remakes },
+    { key: "remasters", label: t("related.tabs.remasters"), data: game.remasters },
+    { key: "altNames", label: t("related.tabs.altNames"), data: game.alternative_names },
+    { key: "videos", label: t("related.tabs.videos"), data: game.videos },
+    { key: "similar", label: t("related.tabs.similar"), data: game.similar_games },
+  ].filter((tab) => tab.data?.length > 0)
 
   const [activeTab, setActiveTab] = useState(tabs[0]?.key ?? null)
 
   if (!tabs.length) return null
 
-  const current = tabs.find((t) => t.key === activeTab) ?? tabs[0]
+  const current = tabs.find((tab) => tab.key === activeTab) ?? tabs[0]
 
   return (
     <div className="mt-12 md:mt-16">
-      <h2 className="text-lg font-semibold text-white mb-4">Conteúdo relacionado</h2>
+      <h2 className="text-lg font-semibold text-white mb-4">{t("related.title")}</h2>
       <RelatedGamesNavigation
         tabs={tabs}
         activeTab={activeTab}
