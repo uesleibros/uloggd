@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import Pagination from "@components/UI/Pagination"
 import CreateListModal from "@components/Lists/CreateListModal"
@@ -356,4 +356,5 @@ export default function ListsSection({
       />
     </div>
   )
+
 }
