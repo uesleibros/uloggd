@@ -672,6 +672,10 @@ export default {
       title: "Tema",
       comingSoon: "Configurações de aparência em breve.",
     },
+    account: {
+      title: "Minha conta",
+      description: "Informações da sua conta vinculada ao Discord."
+    },
     pronoun: {
       title: "Pronome",
       description: "Exibido no seu perfil ao lado do seu nome.",
@@ -1440,3 +1444,4 @@ export default {
     },
   },
 }
+
