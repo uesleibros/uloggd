@@ -1,12 +1,15 @@
 import { Star, Calendar, SlidersHorizontal } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 
 const TABS = [
-  { key: "review", label: "Review", icon: Star, filled: true },
-  { key: "dates", label: "Datas", icon: Calendar },
-  { key: "details", label: "Detalhes", icon: SlidersHorizontal },
+  { key: "review", icon: Star, filled: true },
+  { key: "dates", icon: Calendar },
+  { key: "details", icon: SlidersHorizontal },
 ]
 
 export function TabNav({ activeTab, setActiveTab }) {
+  const { t } = useTranslation("review.tabs")
+
   return (
     <div className="flex gap-1 pb-0.5">
       {TABS.map((tab) => {
@@ -23,7 +26,7 @@ export function TabNav({ activeTab, setActiveTab }) {
             }`}
           >
             <Icon className={`w-4 h-4 ${tab.filled && activeTab === tab.key ? "fill-current" : ""}`} />
-            {tab.label}
+            {t(tab.key)}
           </button>
         )
       })}
