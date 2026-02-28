@@ -2,10 +2,12 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { Link } from "react-router-dom"
 import UserDisplay from "@components/User/UserDisplay"
 import Modal from "@components/UI/Modal"
+import { useTranslation } from "#hooks/useTranslation"
 
 const LIMIT = 20
 
 export default function LikeListModal({ isOpen, reviewId, onClose }) {
+	const { t } = useTranslation("reviews.likeModal")
 	const [users, setUsers] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [loadingMore, setLoadingMore] = useState(false)
@@ -84,7 +86,7 @@ export default function LikeListModal({ isOpen, reviewId, onClose }) {
 		<Modal
 			isOpen={isOpen}
 			onClose={onClose}
-			title="Curtidas"
+			title={t("title")}
 			subtitle={!loading ? String(total) : undefined}
 			maxWidth="max-w-md"
 		>
@@ -94,7 +96,7 @@ export default function LikeListModal({ isOpen, reviewId, onClose }) {
 						type="text"
 						value={search}
 						onChange={e => setSearch(e.target.value)}
-						placeholder="Buscar usuário..."
+						placeholder={t("searchPlaceholder")}
 						className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
 						autoFocus
 					/>
@@ -135,7 +137,7 @@ export default function LikeListModal({ isOpen, reviewId, onClose }) {
 				) : (
 					<div className="flex flex-col items-center justify-center py-12">
 						<p className="text-sm text-zinc-500">
-							{search.trim() ? "Nenhum usuário encontrado" : "Nenhuma curtida"}
+							{search.trim() ? t("noResults") : t("empty")}
 						</p>
 					</div>
 				)}
