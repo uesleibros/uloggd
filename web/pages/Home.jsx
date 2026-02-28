@@ -1,5 +1,5 @@
 import usePageMeta from "#hooks/usePageMeta"
-import { useTranslation } from "@hooks/useTranslation"
+import { useTranslation } from "#hooks/useTranslation"
 import UsersChoiceCarousel from "@components/Home/UsersChoiceCarousel"
 import { useAuth } from "#hooks/useAuth"
 import PageBanner from "@components/Layout/PageBanner"
@@ -81,4 +81,5 @@ export default function Home() {
       </div>
     </div>
   )
+
 }
