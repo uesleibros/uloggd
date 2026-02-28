@@ -1,83 +1,84 @@
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { UserPlus, ThumbsUp, Check, Trash2, X, Bell, BadgeCheck, XCircle, Ban, CheckCircle } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
 import { getTimeAgo, formatDateLong } from "#utils/formatDate"
 import Modal from "@components/UI/Modal"
 
-const NOTIFICATION_CONFIG = {
-  follow: {
-    icon: UserPlus,
-    color: "text-indigo-400",
-    bg: "bg-indigo-500/10",
-    getActor: (data, users) => users[data.follower_id]?.username || "Alguém",
-    getText: () => "começou a te seguir",
-    getLink: (data, users) => `/u/${users[data.follower_id]?.username}`,
-    getUserId: (data) => data.follower_id,
-  },
-  review_like: {
-    icon: ThumbsUp,
-    color: "text-pink-400",
-    bg: "bg-pink-500/10",
-    getActor: (data, users) => users[data.liker_id]?.username || "Alguém",
-    getText: () => "curtiu sua review",
-    getLink: (data) => `/game/${data.game_slug}`,
-    getUserId: (data) => data.liker_id,
-  },
-  verification_approved: {
-    icon: BadgeCheck,
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-    borderColor: "border-emerald-500/30",
-    getText: () => "Verificação aprovada",
-    getFullText: () => "Parabéns! Sua solicitação de verificação foi aprovada. O selo de verificado já está visível no seu perfil.",
-    getUserId: (data) => data.reviewed_by,
-    isSystem: true,
-  },
-  verification_rejected: {
-    icon: XCircle,
-    color: "text-red-400",
-    bg: "bg-red-500/10",
-    borderColor: "border-red-500/30",
-    getText: () => "Verificação rejeitada",
-    getFullText: (data) => data.rejection_reason
-      ? `Sua solicitação de verificação foi rejeitada.\n\nMotivo: ${data.rejection_reason}`
-      : "Sua solicitação de verificação foi rejeitada. Você pode enviar uma nova solicitação a qualquer momento.",
-    getUserId: (data) => data.reviewed_by,
-    isSystem: true,
-  },
-  account_banned: {
-    icon: Ban,
-    color: "text-red-400",
-    bg: "bg-red-500/10",
-    borderColor: "border-red-500/30",
-    getText: () => "Conta suspensa",
-    getFullText: (data) => `Sua conta foi suspensa.\n\nMotivo: ${data.reason}`,
-    getUserId: (data) => data.banned_by,
-    isSystem: true,
-  },
-  account_unbanned: {
-    icon: CheckCircle,
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-    borderColor: "border-emerald-500/30",
-    getText: () => "Conta restaurada",
-    getFullText: () => "Sua conta foi restaurada. Bem-vindo de volta!",
-    getUserId: (data) => data.unbanned_by,
-    isSystem: true,
-  },
+const NOTIFICATION_ICONS = {
+  follow: { icon: UserPlus, color: "text-indigo-400", bg: "bg-indigo-500/10" },
+  review_like: { icon: ThumbsUp, color: "text-pink-400", bg: "bg-pink-500/10" },
+  verification_approved: { icon: BadgeCheck, color: "text-emerald-400", bg: "bg-emerald-500/10", borderColor: "border-emerald-500/30" },
+  verification_rejected: { icon: XCircle, color: "text-red-400", bg: "bg-red-500/10", borderColor: "border-red-500/30" },
+  account_banned: { icon: Ban, color: "text-red-400", bg: "bg-red-500/10", borderColor: "border-red-500/30" },
+  account_unbanned: { icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10", borderColor: "border-emerald-500/30" },
+}
+
+const NOTIFICATION_USER_ID_MAP = {
+  follow: (data) => data.follower_id,
+  review_like: (data) => data.liker_id,
+  verification_approved: (data) => data.reviewed_by,
+  verification_rejected: (data) => data.reviewed_by,
+  account_banned: (data) => data.banned_by,
+  account_unbanned: (data) => data.unbanned_by,
+}
+
+const NOTIFICATION_LINKS = {
+  follow: (data, users) => `/u/${users[data.follower_id]?.username}`,
+  review_like: (data) => `/game/${data.game_slug}`,
+}
+
+const SYSTEM_NOTIFICATIONS = ["verification_approved", "verification_rejected", "account_banned", "account_unbanned"]
+
+function getNotificationText(type, data, t) {
+  switch (type) {
+    case "follow":
+      return t("notifications.types.follow.text")
+    case "review_like":
+      return t("notifications.types.review_like.text")
+    case "verification_approved":
+      return t("notifications.types.verification_approved.title")
+    case "verification_rejected":
+      return t("notifications.types.verification_rejected.title")
+    case "account_banned":
+      return t("notifications.types.account_banned.title")
+    case "account_unbanned":
+      return t("notifications.types.account_unbanned.title")
+    default:
+      return ""
+  }
+}
+
+function getNotificationFullText(type, data, t) {
+  switch (type) {
+    case "verification_approved":
+      return t("notifications.types.verification_approved.message")
+    case "verification_rejected":
+      return data.rejection_reason
+        ? t("notifications.types.verification_rejected.messageWithReason", { reason: data.rejection_reason })
+        : t("notifications.types.verification_rejected.messageDefault")
+    case "account_banned":
+      return t("notifications.types.account_banned.message", { reason: data.reason })
+    case "account_unbanned":
+      return t("notifications.types.account_unbanned.message")
+    default:
+      return ""
+  }
 }
 
 function SystemNotificationModal({ notification, users, isOpen, onClose }) {
+  const { t } = useTranslation()
+
   if (!notification) return null
 
-  const config = NOTIFICATION_CONFIG[notification.type]
+  const config = NOTIFICATION_ICONS[notification.type]
   if (!config) return null
 
   const Icon = config.icon
-  const title = config.getText(notification.data)
-  const message = config.getFullText(notification.data)
-  const reviewerId = config.getUserId(notification.data)
+  const title = getNotificationText(notification.type, notification.data, t)
+  const message = getNotificationFullText(notification.type, notification.data, t)
+  const reviewerId = NOTIFICATION_USER_ID_MAP[notification.type]?.(notification.data)
   const reviewer = reviewerId ? users[reviewerId] : null
 
   return (
@@ -105,7 +106,7 @@ function SystemNotificationModal({ notification, users, isOpen, onClose }) {
                 className="w-6 h-6 rounded-full object-cover bg-zinc-700"
               />
               <span className="text-xs text-zinc-400">
-                Revisado por <span className="text-zinc-300 font-medium">{reviewer.username}</span>
+                {t("notifications.reviewedBy")} <span className="text-zinc-300 font-medium">{reviewer.username}</span>
               </span>
             </div>
           )}
@@ -120,7 +121,7 @@ function SystemNotificationModal({ notification, users, isOpen, onClose }) {
             onClick={onClose}
             className="w-full px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer"
           >
-            Fechar
+            {t("notifications.close")}
           </button>
         </div>
       </div>
@@ -128,15 +129,15 @@ function SystemNotificationModal({ notification, users, isOpen, onClose }) {
   )
 }
 
-function NotificationItem({ notification, users, onClose, onAction, onSystemClick }) {
-  const config = NOTIFICATION_CONFIG[notification.type]
+function NotificationItem({ notification, users, onClose, onAction, onSystemClick, t }) {
+  const config = NOTIFICATION_ICONS[notification.type]
   if (!config) return null
 
   const Icon = config.icon
-  const text = config.getText(notification.data, users)
-  const actorId = config.getUserId(notification.data)
+  const text = getNotificationText(notification.type, notification.data, t)
+  const actorId = NOTIFICATION_USER_ID_MAP[notification.type]?.(notification.data)
   const actorUser = actorId ? users[actorId] : null
-  const isSystem = config.isSystem
+  const isSystem = SYSTEM_NOTIFICATIONS.includes(notification.type)
 
   function handleClick(e) {
     onAction("read", notification.id)
@@ -164,7 +165,7 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
       )}
       <div className="flex-1 min-w-0">
         <p className={`text-sm leading-snug ${!notification.read ? "text-zinc-200" : "text-zinc-400"}`}>
-          {!isSystem && <span className="font-semibold text-white">{actorUser?.username || "Alguém"}</span>} {text}
+          {!isSystem && <span className="font-semibold text-white">{actorUser?.username || t("notifications.someone")}</span>} {text}
         </p>
         <div className="flex items-center gap-1.5 mt-1">
           <Icon className={`w-3 h-3 ${config.color}`} />
@@ -190,9 +191,12 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
     )
   }
 
+  const getLink = NOTIFICATION_LINKS[notification.type]
+  const link = getLink ? getLink(notification.data, users) : "/"
+
   return (
     <Link
-      to={config.getLink(notification.data, users)}
+      to={link}
       onClick={handleClick}
       className={`flex items-start gap-3 px-4 py-3 hover:bg-zinc-800/50 transition-colors ${
         !notification.read ? "bg-zinc-800/30" : ""
@@ -204,6 +208,7 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
 }
 
 export default function NotificationPanel({ visible, onClose, onRead }) {
+  const { t } = useTranslation()
   const [notifications, setNotifications] = useState([])
   const [users, setUsers] = useState({})
   const [loading, setLoading] = useState(true)
@@ -232,9 +237,9 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         const data = await r.json()
 
         const userIds = [...new Set(data.flatMap(n => {
-          const config = NOTIFICATION_CONFIG[n.type]
-          if (!config) return []
-          const userId = config.getUserId(n.data)
+          const getUserId = NOTIFICATION_USER_ID_MAP[n.type]
+          if (!getUserId) return []
+          const userId = getUserId(n.data)
           return userId ? [userId] : []
         }))]
 
@@ -299,13 +304,13 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         }`}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-          <h3 className="text-sm font-semibold text-white">Notificações</h3>
+          <h3 className="text-sm font-semibold text-white">{t("notifications.title")}</h3>
           <div className="flex items-center gap-1">
             {hasUnread && (
               <button
                 onClick={handleReadAll}
                 className="p-1.5 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
-                title="Marcar todas como lidas"
+                title={t("notifications.markAllAsRead")}
               >
                 <Check className="w-4 h-4" />
               </button>
@@ -314,7 +319,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
               <button
                 onClick={handleDeleteAll}
                 className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors cursor-pointer"
-                title="Limpar todas"
+                title={t("notifications.clearAll")}
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -351,13 +356,14 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
                   onClose={onClose}
                   onAction={handleAction}
                   onSystemClick={setSystemNotification}
+                  t={t}
                 />
               ))}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12">
               <Bell className="w-8 h-8 text-zinc-700 mb-3" />
-              <p className="text-sm text-zinc-500">Nenhuma notificação</p>
+              <p className="text-sm text-zinc-500">{t("notifications.empty")}</p>
             </div>
           )}
         </div>
@@ -371,6 +377,4 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
       />
     </>
   )
-
 }
-
