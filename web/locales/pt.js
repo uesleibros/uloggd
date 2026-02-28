@@ -360,5 +360,15 @@ export default {
       },
       parentGame: "Jogo principal",
     },
+    sidebar: {
+      parentGame: "Jogo principal",
+      ageRatings: "Classificações de Idade",
+      platforms: "Plataformas",
+      ratings: {
+        total: "Total",
+        critics: "Crítica",
+        users: "Usuários",
+      },
+    },
   },
 }
