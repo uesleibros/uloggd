@@ -185,5 +185,24 @@ export default {
       following: "Seguindo",
       follow: "Seguir",
     },
+    likes: {
+      tabs: {
+        games: "Jogos",
+        reviews: "Reviews",
+      },
+      empty: {
+        title: "Nenhuma curtida ainda",
+        own: "Jogos e reviews que você curtir aparecerão aqui",
+        other: "{{username}} ainda não curtiu nada",
+      },
+      emptyGames: {
+        own: "Você ainda não curtiu nenhum jogo",
+        other: "{{username}} ainda não curtiu nenhum jogo",
+      },
+      emptyReviews: {
+        own: "Você ainda não curtiu nenhuma review",
+        other: "{{username}} ainda não curtiu nenhuma review",
+      },
+    },
   },
 }
