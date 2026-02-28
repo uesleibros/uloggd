@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react"
 import { Info, Search, X, Command } from "lucide-react"
+import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 import { MarkdownPreview } from "../MarkdownPreview"
 import { HELP_SECTIONS, HELP_FEATURES } from "../constants"
@@ -24,6 +25,7 @@ function Highlight({ text, query }) {
 }
 
 function FeatureItem({ syntax, description, example, preview, query, isActive, itemRef }) {
+  const { t } = useTranslation("editor.help")
   const [showPreview, setShowPreview] = useState(false)
 
   return (
@@ -49,7 +51,7 @@ function FeatureItem({ syntax, description, example, preview, query, isActive, i
                 : "bg-zinc-800 border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600"
             }`}
           >
-            {showPreview ? "Código" : "Preview"}
+            {showPreview ? t("code") : t("preview")}
           </button>
         )}
       </div>
@@ -70,6 +72,7 @@ function FeatureItem({ syntax, description, example, preview, query, isActive, i
 }
 
 export function EditorHelpModal({ isOpen, onClose, zIndex }) {
+  const { t } = useTranslation("editor.help")
   const [search, setSearch] = useState("")
   const [activeSection, setActiveSection] = useState(HELP_SECTIONS[0].id)
   const [activeIndex, setActiveIndex] = useState(-1)
@@ -200,7 +203,7 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
       isOpen={isOpen}
       noScroll={true}
       onClose={onClose}
-      title={<span className="flex items-center gap-2"><Info className="w-5 h-5 text-indigo-400" />Guia de Formatação</span>}
+      title={<span className="flex items-center gap-2"><Info className="w-5 h-5 text-indigo-400" />{t("title")}</span>}
       maxWidth="max-w-3xl"
       zIndex={zIndex}
     >
@@ -213,12 +216,12 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Buscar formatação..."
+            placeholder={t("searchPlaceholder")}
             className="w-full pl-9 pr-9 py-2.5 bg-zinc-800/80 border border-zinc-700 rounded-lg text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all"
           />
           {search ? (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-              <span className="text-[10px] text-zinc-600 tabular-nums">{filtered.length} {filtered.length === 1 ? "resultado" : "resultados"}</span>
+              <span className="text-[10px] text-zinc-600 tabular-nums">{t("results", { count: filtered.length })}</span>
               <button onClick={() => setSearch("")} className="text-zinc-500 hover:text-white transition-colors cursor-pointer"><X className="w-4 h-4" /></button>
             </div>
           ) : (
@@ -241,7 +244,7 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
                 activeSection === id ? "text-indigo-400 bg-indigo-500/15 font-medium" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
               }`}
             >
-              <Icon className="w-3 h-3 flex-shrink-0" />{label}
+              <Icon className="w-3 h-3 flex-shrink-0" />{t(`sections.${id}`)}
             </button>
           ))}
         </div>
@@ -259,7 +262,7 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
                 }`}
               >
                 {activeSection === id && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 bg-indigo-400 rounded-r" />}
-                <Icon className="w-3.5 h-3.5 flex-shrink-0" />{label}
+                <Icon className="w-3.5 h-3.5 flex-shrink-0" />{t(`sections.${id}`)}
               </button>
             ))}
           </nav>
@@ -269,13 +272,13 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
           {visibleSections.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3 text-zinc-600">
               <Search className="w-8 h-8" />
-              <p className="text-sm">Nenhum resultado para "<span className="text-zinc-400">{search}</span>"</p>
+              <p className="text-sm">{t("noResults")} "<span className="text-zinc-400">{search}</span>"</p>
             </div>
           ) : (
             visibleSections.map(section => (
               <div key={section.id} ref={(el) => { sectionRefs.current[section.id] = el }}>
                 <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mt-8 mb-4 first:mt-0 flex items-center gap-2">
-                  <section.icon className="w-3.5 h-3.5" />{section.label}
+                  <section.icon className="w-3.5 h-3.5" />{t(`sections.${section.id}`)}
                 </h4>
                 <div className="space-y-3">
                   {filtered.filter(f => f.section === section.id).map((item, i) => {
@@ -290,9 +293,7 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
       </div>
 
       <div className="p-3 bg-zinc-900/50 border-t border-zinc-800 rounded-b-xl flex items-center justify-between flex-shrink-0">
-        <p className="text-xs text-zinc-500">
-          <span className="text-zinc-400">Ctrl+B</span> negrito · <span className="text-zinc-400">Ctrl+I</span> itálico · <span className="text-zinc-400">Ctrl+K</span> link · <span className="text-zinc-400">Ctrl+Shift+C</span> bloco · <span className="text-zinc-400">Tab</span> indentação
-        </p>
+        <p className="text-xs text-zinc-500" dangerouslySetInnerHTML={{ __html: t("shortcuts") }} />
         {search.trim() && filtered.length > 0 && <span className="text-[10px] text-zinc-600 tabular-nums">{Math.max(activeIndex + 1, 1)}/{filtered.length}</span>}
       </div>
     </Modal>
