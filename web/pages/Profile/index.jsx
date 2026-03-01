@@ -117,17 +117,15 @@ export default function Profile() {
         />
 
         <div className="flex flex-col lg:flex-row gap-6 mt-6">
-          <div className="lg:w-72 xl:w-80 lg:flex-shrink-0">
-            <ProfileSidebar
-              profile={profile}
-              counts={counts}
-              followersCount={followersCount}
-              followingCount={followingCount}
-              followsYou={followsYou && !isOwnProfile}
-              onFollowersClick={() => setFollowModal(t("profile.followModal.followers"))}
-              onFollowingClick={() => setFollowModal(t("profile.followModal.following"))}
-            />
-          </div>
+          <ProfileSidebar
+            profile={profile}
+            counts={counts}
+            followersCount={followersCount}
+            followingCount={followingCount}
+            followsYou={followsYou && !isOwnProfile}
+            onFollowersClick={() => setFollowModal(t("profile.followModal.followers"))}
+            onFollowingClick={() => setFollowModal(t("profile.followModal.following"))}
+          />
 
           <div className="flex-1 min-w-0">
             <ProfileNavigation
