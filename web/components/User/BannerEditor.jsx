@@ -6,6 +6,8 @@ import ImageCropModal from "@components/UI/ImageCropModal"
 
 const BANNER_ASPECT = 16 / 4
 const MAX_FILE_SIZE = 10 * 1024 * 1024
+const BANNER_MAX_WIDTH = 1200
+const BANNER_MAX_BLOB = 3 * 1024 * 1024
 
 export default function BannerEditor({ currentBanner, onSave, saving = false }) {
   const { t } = useTranslation()
@@ -115,7 +117,7 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
   function handleSave() {
     if (!pendingBlob) return
 
-    if (pendingBlob.size > 5 * 1024 * 1024) {
+    if (pendingBlob.size > BANNER_MAX_BLOB) {
       notify(t("banner.errors.processedTooLarge"), "error")
       return
     }
@@ -236,11 +238,16 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
             <input
               type="text"
               value={urlInput}
-              onChange={(e) => { setUrlInput(e.target.value); setUrlError("") }}
+              onChange={(e) => {
+                setUrlInput(e.target.value)
+                setUrlError("")
+              }}
               placeholder={t("banner.urlPlaceholder")}
               className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
               autoFocus
-              onKeyDown={(e) => { if (e.key === "Enter") handleUrlSubmit() }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleUrlSubmit()
+              }}
             />
             <button
               type="button"
@@ -265,7 +272,11 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
 
           <button
             type="button"
-            onClick={() => { setMode("choose"); setUrlInput(""); setUrlError("") }}
+            onClick={() => {
+              setMode("choose")
+              setUrlInput("")
+              setUrlError("")
+            }}
             className="w-full text-xs text-zinc-500 hover:text-zinc-400 transition-colors cursor-pointer py-1.5"
           >
             {t("banner.back")}
@@ -312,6 +323,8 @@ export default function BannerEditor({ currentBanner, onSave, saving = false }) 
         title={t("banner.cropTitle")}
         onCrop={handleCropComplete}
         onClose={() => setCropSrc(null)}
+        maxWidth={BANNER_MAX_WIDTH}
+        maxBlobSize={BANNER_MAX_BLOB}
       />
     </div>
   )

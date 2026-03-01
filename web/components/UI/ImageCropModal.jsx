@@ -88,7 +88,7 @@ async function cropGif(gifUrl, crop, imageElement, maxWidth = 1920) {
 
     let lastImageData = null
 
-    frames.forEach((frame, index) => {
+    frames.forEach((frame) => {
       const frameCanvas = document.createElement("canvas")
       frameCanvas.width = frame.dims.width
       frameCanvas.height = frame.dims.height
@@ -124,7 +124,6 @@ async function cropGif(gifUrl, crop, imageElement, maxWidth = 1920) {
       )
 
       const delay = frame.delay || 100
-
       encoder.addFrame(cropCtx, { copy: true, delay })
     })
 
@@ -134,7 +133,6 @@ async function cropGif(gifUrl, crop, imageElement, maxWidth = 1920) {
     })
 
     encoder.on("error", reject)
-
     encoder.render()
   })
 }
@@ -146,6 +144,35 @@ function isGifUrl(url) {
   return false
 }
 
+const MAX_BLOB_SIZE = 3 * 1024 * 1024
+
+function compressToLimit(canvas, maxBytes = MAX_BLOB_SIZE, startQuality = 0.85, minQuality = 0.3) {
+  return new Promise((resolve) => {
+    let quality = startQuality
+
+    function attempt() {
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return resolve(null)
+
+          if (blob.size <= maxBytes || quality <= minQuality) {
+            const url = URL.createObjectURL(blob)
+            resolve({ blob, url })
+            return
+          }
+
+          quality -= 0.1
+          attempt()
+        },
+        "image/webp",
+        quality
+      )
+    }
+
+    attempt()
+  })
+}
+
 export default function ImageCropModal({
   isOpen,
   imageSrc,
@@ -154,7 +181,8 @@ export default function ImageCropModal({
   onClose,
   maxWidth = 1920,
   title,
-  circularCrop = false
+  circularCrop = false,
+  maxBlobSize = MAX_BLOB_SIZE,
 }) {
   const { t } = useTranslation()
   const [crop, setCrop] = useState()
@@ -173,25 +201,23 @@ export default function ImageCropModal({
     }
   }, [isOpen, imageSrc])
 
-  const onImageLoad = useCallback((e) => {
-    const { width, height } = e.currentTarget
+  const onImageLoad = useCallback(
+    (e) => {
+      const { width, height } = e.currentTarget
 
-    const percentCrop = centerCrop(
-      makeAspectCrop(
-        { unit: "%", width: 90 },
-        aspect,
+      const percentCrop = centerCrop(
+        makeAspectCrop({ unit: "%", width: 90 }, aspect, width, height),
         width,
         height
-      ),
-      width,
-      height
-    )
+      )
 
-    setCrop(percentCrop)
+      setCrop(percentCrop)
 
-    const pixelCrop = convertToPixelCrop(percentCrop, width, height)
-    setCompletedCrop(pixelCrop)
-  }, [aspect])
+      const pixelCrop = convertToPixelCrop(percentCrop, width, height)
+      setCompletedCrop(pixelCrop)
+    },
+    [aspect]
+  )
 
   async function handleConfirm() {
     if (!completedCrop || !imgRef.current) return
@@ -201,18 +227,24 @@ export default function ImageCropModal({
     try {
       if (isGif) {
         const result = await cropGif(imageSrc, completedCrop, imgRef.current, maxWidth)
+
+        if (result.blob.size > maxBlobSize) {
+          notify?.(t("imageCrop.tooLarge"), "error")
+          setProcessing(false)
+          return
+        }
+
         onCrop(result)
       } else {
         const canvas = getCroppedCanvas(imgRef.current, completedCrop, maxWidth)
+        const result = await compressToLimit(canvas, maxBlobSize)
 
-        canvas.toBlob((blob) => {
-          if (!blob) {
-            setProcessing(false)
-            return
-          }
-          const url = URL.createObjectURL(blob)
-          onCrop({ blob, url })
-        }, "image/webp", 0.85)
+        if (!result) {
+          setProcessing(false)
+          return
+        }
+
+        onCrop(result)
       }
     } catch (error) {
       console.error("Error cropping image:", error)
@@ -221,20 +253,14 @@ export default function ImageCropModal({
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      raw
-    >
+    <Modal isOpen={isOpen} onClose={onClose} raw>
       <div
         data-crop-modal
         className="relative bg-zinc-900 border-t sm:border border-zinc-700 rounded-t-2xl sm:rounded-xl w-full sm:max-w-2xl max-h-[95dvh] sm:max-h-[85vh] flex flex-col shadow-2xl"
       >
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-zinc-700 shrink-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-base sm:text-lg font-semibold text-white">
-              {modalTitle}
-            </h3>
+            <h3 className="text-base sm:text-lg font-semibold text-white">{modalTitle}</h3>
             {isGif && (
               <span className="px-1.5 py-0.5 text-[10px] font-medium bg-purple-500/20 text-purple-400 rounded">
                 GIF
