@@ -179,7 +179,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 					}`}
 				>
 					<div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.color}`} />
-					<span className="truncate flex-1 text-left">{tQuickActions(`status.${s.id}`)}</span>
+					<span className="truncate flex-1 text-left">{tQuickActions(`status.${s.id}.label`)}</span>
 					{state?.status === s.id && <Check className="w-3 h-3 flex-shrink-0" />}
 				</button>
 			))}
@@ -512,3 +512,4 @@ export function GameCardSkeleton({ responsive = false, className = "" }) {
 }
 
 export { MiniStars }
+
