@@ -22,7 +22,7 @@ export function ProfileSidebar({
   const isBanned = profile.is_banned
 
   return (
-    <div className={`lg:w-[280px] xl:w-[300px] flex-shrink-0 ${isBanned ? "opacity-50 pointer-events-none" : ""}`}>
+    <div className={`w-full ${isBanned ? "opacity-50 pointer-events-none" : ""}`}>
       <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl overflow-hidden">
         <div className="grid grid-cols-2 divide-x divide-zinc-700/50">
           <button
