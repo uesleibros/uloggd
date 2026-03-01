@@ -10,6 +10,7 @@ import { useFollowData } from "./hooks/useFollowData"
 import { useUserLists } from "./hooks/useUserLists"
 import { useUserTierlists } from "./hooks/useUserTierlists"
 import { ProfileHeader } from "./sections/ProfileHeader"
+import { ProfileSidebar } from "./sections/ProfileSidebar"
 import { ProfileNavigation } from "./sections/ProfileNavigation"
 import { ProfileContent } from "./sections/ProfileContent"
 import ProfileSkeleton from "./components/ProfileSkeleton"
@@ -49,7 +50,7 @@ export default function Profile() {
     total: tierlistsTotal,
     page: tierlistsPage,
     totalPages: tierlistsTotalPages,
-    handlePageChange: handleTierlistsPageChange
+    handlePageChange: handleTierlistsPageChange,
   } = useUserTierlists(profile?.id)
 
   const {
@@ -96,6 +97,7 @@ export default function Profile() {
   return (
     <div>
       <PageBanner image={profile.banner} height="profile" />
+
       <div className="pt-[22vw] sm:pt-[20vw] md:pt-36 pb-16">
         <ProfileHeader
           profile={profile}
@@ -114,44 +116,58 @@ export default function Profile() {
           onFollowingClick={() => setFollowModal(t("profile.followModal.following"))}
         />
 
-        <ProfileNavigation
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-          counts={counts}
-          listsCount={listsTotal}
-          tierlistsCount={tierlists.length}
-          reviewsCount={profile?.counts?.reviews || 0}
-          likesCount={(counts?.liked || 0) + (profile?.counts?.likedReviews || 0)}
-        />
+        <div className="flex flex-col lg:flex-row gap-6 mt-6">
+          <ProfileSidebar
+            profile={profile}
+            counts={counts}
+            followersCount={followersCount}
+            followingCount={followingCount}
+            followsYou={followsYou && !isOwnProfile}
+            onFollowersClick={() => setFollowModal(t("profile.followModal.followers"))}
+            onFollowingClick={() => setFollowModal(t("profile.followModal.following"))}
+          />
 
-        <ProfileContent
-          activeSection={activeSection}
-          profile={profile}
-          isOwnProfile={isOwnProfile}
-          games={games}
-          counts={counts}
-          loadingGames={loadingGames}
-          activeTab={activeTab}
-          gamesPage={gamesPage}
-          gamesTotalPages={gamesTotalPages}
-          onTabChange={handleTabChange}
-          onGamesPageChange={handleGamesPageChange}
-          lists={lists}
-          setLists={setLists}
-          loadingLists={loadingLists}
-          listsPage={listsPage}
-          listsTotalPages={listsTotalPages}
-          listsTotal={listsTotal}
-          onListsPageChange={handleListsPageChange}
-          tierlists={tierlists}
-          setTierlists={setTierlists}
-          loadingTierlists={loadingTierlists}
-          tierlistsPage={tierlistsPage}
-          tierlistsTotalPages={tierlistsTotalPages}
-          tierlistsTotal={tierlistsTotal}
-          onTierlistsPageChange={handleTierlistsPageChange}
-          onEditProfile={() => setSettingsOpen(true)}
-        />
+          <div className="flex-1 min-w-0">
+            <ProfileNavigation
+              activeSection={activeSection}
+              onSectionChange={setActiveSection}
+              counts={counts}
+              listsCount={listsTotal}
+              tierlistsCount={tierlists.length}
+              reviewsCount={profile?.counts?.reviews || 0}
+              likesCount={(counts?.liked || 0) + (profile?.counts?.likedReviews || 0)}
+            />
+
+            <ProfileContent
+              activeSection={activeSection}
+              profile={profile}
+              isOwnProfile={isOwnProfile}
+              games={games}
+              counts={counts}
+              loadingGames={loadingGames}
+              activeTab={activeTab}
+              gamesPage={gamesPage}
+              gamesTotalPages={gamesTotalPages}
+              onTabChange={handleTabChange}
+              onGamesPageChange={handleGamesPageChange}
+              lists={lists}
+              setLists={setLists}
+              loadingLists={loadingLists}
+              listsPage={listsPage}
+              listsTotalPages={listsTotalPages}
+              listsTotal={listsTotal}
+              onListsPageChange={handleListsPageChange}
+              tierlists={tierlists}
+              setTierlists={setTierlists}
+              loadingTierlists={loadingTierlists}
+              tierlistsPage={tierlistsPage}
+              tierlistsTotalPages={tierlistsTotalPages}
+              tierlistsTotal={tierlistsTotal}
+              onTierlistsPageChange={handleTierlistsPageChange}
+              onEditProfile={() => setSettingsOpen(true)}
+            />
+          </div>
+        </div>
       </div>
 
       <FollowListModal
@@ -163,5 +179,4 @@ export default function Profile() {
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   )
-
 }

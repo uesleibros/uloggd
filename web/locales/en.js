@@ -351,6 +351,8 @@ export default {
       },
     },
     stats: {
+      gameStats: "Game Stats",
+      links: "Links",
       followers: "followers",
       following: "following",
       followsYou: "Follows you",

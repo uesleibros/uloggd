@@ -483,7 +483,7 @@ export default function SteamAchievements({ userId }) {
         <span className="text-xs text-zinc-600">{t("count", { count: achievements.length })}</span>
       </div>
 
-      <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-1.5">
+      <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-8 gap-1.5">
         {visible.map((achievement, i) => (
           <button
             key={`${achievement.appId}-${achievement.name}-${i}`}

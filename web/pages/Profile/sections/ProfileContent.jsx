@@ -49,7 +49,7 @@ export function ProfileContent({
   }
 
   return (
-    <div className="mt-6">
+    <div className="mt-4">
       {activeSection === "profile" && (
         <BioSection
           bio={profile.bio}
@@ -118,5 +118,4 @@ export function ProfileContent({
       )}
     </div>
   )
-
 }
