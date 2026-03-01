@@ -80,7 +80,7 @@ export default function SocialLinks({ links, connections }) {
               `}
             >
               {isCopied ? <Check className="w-3.5 h-3.5" /> : <Icon className="w-3.5 h-3.5" />}
-              <span className="truncate">{isCopied ? "Copiado!" : item.display}</span>
+              <span className="truncate">{item.display}</span>
               {!isCopied && <Copy className="w-3 h-3 opacity-50" />}
             </button>
           )

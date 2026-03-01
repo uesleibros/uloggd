@@ -430,7 +430,7 @@ export default function GameCard({
 
 	const sizeClasses = responsive
 		? "w-full aspect-[3/4]"
-		: "w-34 h-44 flex-shrink-0"
+		: "w-30 h-40 flex-shrink-0"
 
 	const imageContent = (
 		<>
@@ -506,7 +506,7 @@ export default function GameCard({
 export function GameCardSkeleton({ responsive = false, className = "" }) {
 	const sizeClasses = responsive
 		? "w-full aspect-[3/4]"
-		: "w-34 h-44 flex-shrink-0"
+		: "w-30 h-40 flex-shrink-0"
 
 	return <div className={`${sizeClasses} bg-zinc-800 rounded-lg animate-pulse ${className}`} />
 }
