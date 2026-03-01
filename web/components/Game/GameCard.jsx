@@ -153,6 +153,7 @@ function stopEvent(e) {
 
 function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, position, onMouseEnter, onMouseLeave }) {
 	const { t } = useTranslation("gameCard")
+	const { t: tQuickActions } = useTranslation("quickActions")
 	const [showStatus, setShowStatus] = useState(false)
 	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
 
@@ -178,7 +179,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 					}`}
 				>
 					<div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.color}`} />
-					<span className="truncate flex-1 text-left">{t(`status.${s.id}`)}</span>
+					<span className="truncate flex-1 text-left">{tQuickActions(`status.${s.id}`)}</span>
 					{state?.status === s.id && <Check className="w-3 h-3 flex-shrink-0" />}
 				</button>
 			))}
