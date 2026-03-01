@@ -1,5 +1,7 @@
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
+import SteamSalesSection from "@components/Home/SteamSalesSection"
+import EpicFreeGamesSection from "@components/Home/EpicFreeGamesSection"
 import UsersChoiceCarousel from "@components/Home/UsersChoiceCarousel"
 import { useAuth } from "#hooks/useAuth"
 import PageBanner from "@components/Layout/PageBanner"
@@ -78,6 +80,14 @@ export default function Home() {
       <div className="mt-12">
         <h2 className="text-xl font-semibold text-white mb-4">{t("sections.communityFavorites")}</h2>
         <UsersChoiceCarousel />
+      </div>
+
+      <div className="mt-12">
+        <SteamSalesSection />
+      </div>
+
+      <div className="mt-12">
+        <EpicFreeGamesSection />
       </div>
     </div>
   )

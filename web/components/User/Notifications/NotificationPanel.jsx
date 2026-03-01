@@ -107,7 +107,7 @@ function SystemNotificationModal({ notification, users, isOpen, onClose }) {
                 className="w-6 h-6 rounded-full object-cover bg-zinc-700"
               />
               <span className="text-xs text-zinc-400">
-                {t("notifications.reviewedBy")} <span className="text-zinc-300 font-medium">{reviewer.username}</span>
+                {t("notifications.reviewedBy", { username: reviewer.username })}
               </span>
             </div>
           )}

@@ -2,8 +2,9 @@ import { useState, useRef, useCallback, useEffect } from "react"
 import { useTranslation } from "#hooks/useTranslation"
 import ReactCrop, { centerCrop, makeAspectCrop, convertToPixelCrop } from "react-image-crop"
 import "react-image-crop/dist/ReactCrop.css"
-import { X } from "lucide-react"
+import { X, Loader2 } from "lucide-react"
 import Modal from "@components/UI/Modal"
+import { parseGIF, decompressFrames } from "gifuct-js"
 
 function getCroppedCanvas(image, crop, maxWidth = 1920) {
   const canvas = document.createElement("canvas")
@@ -40,6 +41,111 @@ function getCroppedCanvas(image, crop, maxWidth = 1920) {
   return canvas
 }
 
+async function cropGif(gifUrl, crop, imageElement, maxWidth = 1920) {
+  const scaleX = imageElement.naturalWidth / imageElement.width
+  const scaleY = imageElement.naturalHeight / imageElement.height
+
+  const pixelCrop = {
+    x: Math.round(crop.x * scaleX),
+    y: Math.round(crop.y * scaleY),
+    width: Math.round(crop.width * scaleX),
+    height: Math.round(crop.height * scaleY),
+  }
+
+  const scale = Math.min(1, maxWidth / pixelCrop.width)
+  const outputWidth = Math.round(pixelCrop.width * scale)
+  const outputHeight = Math.round(pixelCrop.height * scale)
+
+  const response = await fetch(gifUrl)
+  const arrayBuffer = await response.arrayBuffer()
+  const gif = parseGIF(arrayBuffer)
+  const frames = decompressFrames(gif, true)
+
+  if (frames.length === 0) {
+    throw new Error("No frames found in GIF")
+  }
+
+  const GIF = (await import("gif.js")).default
+
+  return new Promise((resolve, reject) => {
+    const encoder = new GIF({
+      workers: 2,
+      quality: 10,
+      width: outputWidth,
+      height: outputHeight,
+      workerScript: "/gif.worker.js",
+    })
+
+    const tempCanvas = document.createElement("canvas")
+    tempCanvas.width = imageElement.naturalWidth
+    tempCanvas.height = imageElement.naturalHeight
+    const tempCtx = tempCanvas.getContext("2d")
+
+    const cropCanvas = document.createElement("canvas")
+    cropCanvas.width = outputWidth
+    cropCanvas.height = outputHeight
+    const cropCtx = cropCanvas.getContext("2d")
+
+    let lastImageData = null
+
+    frames.forEach((frame, index) => {
+      const frameCanvas = document.createElement("canvas")
+      frameCanvas.width = frame.dims.width
+      frameCanvas.height = frame.dims.height
+      const frameCtx = frameCanvas.getContext("2d")
+
+      const imageData = frameCtx.createImageData(frame.dims.width, frame.dims.height)
+      imageData.data.set(frame.patch)
+      frameCtx.putImageData(imageData, 0, 0)
+
+      if (frame.disposalType === 2) {
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height)
+      } else if (frame.disposalType === 3 && lastImageData) {
+        tempCtx.putImageData(lastImageData, 0, 0)
+      }
+
+      if (frame.disposalType === 3) {
+        lastImageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height)
+      }
+
+      tempCtx.drawImage(frameCanvas, frame.dims.left, frame.dims.top)
+
+      cropCtx.clearRect(0, 0, outputWidth, outputHeight)
+      cropCtx.drawImage(
+        tempCanvas,
+        pixelCrop.x,
+        pixelCrop.y,
+        pixelCrop.width,
+        pixelCrop.height,
+        0,
+        0,
+        outputWidth,
+        outputHeight
+      )
+
+      const delay = frame.delay || 100
+
+      encoder.addFrame(cropCtx, { copy: true, delay })
+    })
+
+    encoder.on("finished", (blob) => {
+      const url = URL.createObjectURL(blob)
+      resolve({ blob, url })
+    })
+
+    encoder.on("error", reject)
+
+    encoder.render()
+  })
+}
+
+function isGifUrl(url) {
+  if (!url) return false
+  if (url.toLowerCase().includes(".gif")) return true
+  if (url.startsWith("data:image/gif")) return true
+  return false
+}
+
 export default function ImageCropModal({
   isOpen,
   imageSrc,
@@ -53,14 +159,17 @@ export default function ImageCropModal({
   const { t } = useTranslation()
   const [crop, setCrop] = useState()
   const [completedCrop, setCompletedCrop] = useState(null)
+  const [processing, setProcessing] = useState(false)
   const imgRef = useRef(null)
 
   const modalTitle = title || t("imageCrop.title")
+  const isGif = isGifUrl(imageSrc)
 
   useEffect(() => {
     if (isOpen) {
       setCrop(undefined)
       setCompletedCrop(null)
+      setProcessing(false)
     }
   }, [isOpen, imageSrc])
 
@@ -84,16 +193,31 @@ export default function ImageCropModal({
     setCompletedCrop(pixelCrop)
   }, [aspect])
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (!completedCrop || !imgRef.current) return
 
-    const canvas = getCroppedCanvas(imgRef.current, completedCrop, maxWidth)
+    setProcessing(true)
 
-    canvas.toBlob((blob) => {
-      if (!blob) return
-      const url = URL.createObjectURL(blob)
-      onCrop({ blob, url })
-    }, "image/webp", 0.85)
+    try {
+      if (isGif) {
+        const result = await cropGif(imageSrc, completedCrop, imgRef.current, maxWidth)
+        onCrop(result)
+      } else {
+        const canvas = getCroppedCanvas(imgRef.current, completedCrop, maxWidth)
+
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            setProcessing(false)
+            return
+          }
+          const url = URL.createObjectURL(blob)
+          onCrop({ blob, url })
+        }, "image/webp", 0.85)
+      }
+    } catch (error) {
+      console.error("Error cropping image:", error)
+      setProcessing(false)
+    }
   }
 
   return (
@@ -107,13 +231,21 @@ export default function ImageCropModal({
         className="relative bg-zinc-900 border-t sm:border border-zinc-700 rounded-t-2xl sm:rounded-xl w-full sm:max-w-2xl max-h-[95dvh] sm:max-h-[85vh] flex flex-col shadow-2xl"
       >
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-zinc-700 shrink-0">
-          <h3 className="text-base sm:text-lg font-semibold text-white">
-            {modalTitle}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white">
+              {modalTitle}
+            </h3>
+            {isGif && (
+              <span className="px-1.5 py-0.5 text-[10px] font-medium bg-purple-500/20 text-purple-400 rounded">
+                GIF
+              </span>
+            )}
+          </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 -mr-1 text-zinc-400 hover:text-white active:text-white transition-colors cursor-pointer"
+            disabled={processing}
+            className="p-2 -mr-1 text-zinc-400 hover:text-white active:text-white transition-colors cursor-pointer disabled:opacity-50"
           >
             <X className="w-5 h-5" />
           </button>
@@ -131,6 +263,7 @@ export default function ImageCropModal({
               minHeight={50}
               className="max-h-[60dvh] sm:max-h-[60vh]"
               style={{ touchAction: "none" }}
+              disabled={processing}
             >
               <img
                 ref={imgRef}
@@ -153,17 +286,25 @@ export default function ImageCropModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm font-medium text-zinc-300 hover:text-white active:text-white bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-700 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer"
+              disabled={processing}
+              className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm font-medium text-zinc-300 hover:text-white active:text-white bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-700 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50"
             >
               {t("imageCrop.cancel")}
             </button>
             <button
               type="button"
               onClick={handleConfirm}
-              disabled={!completedCrop}
-              className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-600 rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!completedCrop || processing}
+              className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-600 rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {t("imageCrop.apply")}
+              {processing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>{t("imageCrop.processing")}</span>
+                </>
+              ) : (
+                t("imageCrop.apply")
+              )}
             </button>
           </div>
         </div>

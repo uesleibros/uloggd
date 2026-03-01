@@ -19,6 +19,7 @@ import { getUser } from "#lib/auth.js"
 import { steamHandler } from "#routers/connections/steam.js"
 import { twitchHandler } from "#routers/connections/twitch.js"
 import { nintendoHandler } from "#routers/connections/nintendo.js"
+import { epicGamesHandler } from "#routers/connections/epicgames.js"
 
 const SERVICES = {
 	users: usersHandler,
@@ -31,6 +32,7 @@ const SERVICES = {
 	lists: listsHandler,
 	twitch: twitchHandler,
 	nintendo: nintendoHandler,
+	epicgames: epicGamesHandler,
 	translate: translateHandler,
 	likes: likesHandler,
 	steam: steamHandler,

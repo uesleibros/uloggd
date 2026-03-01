@@ -17,6 +17,21 @@ export default {
       afternoon: "Good afternoon",
       evening: "Good evening",
     },
+    steam: {
+      spotlights: "Spotlights",
+      dailyDeal: "Daily Deal",
+      specials: "On Sale",
+      topSellers: "Top Sellers",
+      hoursLeft: "{{count}}h left",
+      endingSoon: "Ending soon"
+    },
+    epic: {
+      freeThisWeek: "Free this week",
+      comingSoon: "Coming soon",
+      freeNow: "Free",
+      hoursLeft: "{{count}}h left",
+      daysLeft: "{{count}}d left"
+    },
     hero: {
       title: "Discover, collect, your games.",
       description: "Track everything you've played, are playing, or want to play. Organize your personal library, create tierlists and custom rankings, rate your favorite games, and discover what the community is enjoying. Compare your ratings with other players, explore recommendations based on your tastes, and keep everything automatically updated as you play.",
@@ -879,6 +894,7 @@ export default {
     adjustHint: "Drag to adjust the crop area",
     cancel: "Cancel",
     apply: "Apply",
+    processing: "Processing...",
   },
   lists: {
     addGame: {

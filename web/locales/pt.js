@@ -17,6 +17,21 @@ export default {
       afternoon: "Boa tarde",
       evening: "Boa noite",
     },
+    steam: {
+      spotlights: "Destaques",
+      dailyDeal: "Oferta do dia",
+      specials: "Promoções",
+      topSellers: "Mais vendidos",
+      hoursLeft: "{{count}}h restantes",
+      endingSoon: "Termina em breve"
+    },
+    epic: {
+      freeThisWeek: "Grátis essa semana",
+      comingSoon: "Em breve",
+      freeNow: "Grátis",
+      hoursLeft: "{{count}}h restantes",
+      daysLeft: "{{count}}d restantes"
+    },
     hero: {
       title: "Descubra, colecione, seus jogos.",
       description: "Acompanhe tudo que você já jogou, está jogando ou quer jogar. Organize sua biblioteca pessoal, crie tierlists e rankings personalizados, dê notas aos seus jogos favoritos e descubra o que a comunidade está curtindo. Compare suas classificações com outros jogadores, explore recomendações baseadas nos seus gostos e mantenha tudo atualizado automaticamente conforme você joga.",
@@ -879,6 +894,7 @@ export default {
     adjustHint: "Arraste para ajustar a área do recorte",
     cancel: "Cancelar",
     apply: "Aplicar",
+    processing: "Processando...",
   },
   lists: {
     addGame: {

@@ -5,6 +5,7 @@ import { handleDisconnect } from "#services/steam/handlers/disconnect.js"
 import { handlePresence } from "#services/steam/handlers/presence.js"
 import { handleAchievements } from "#services/steam/handlers/achievements.js"
 import { handleGameAchievements } from "#services/steam/handlers/gameAchievements.js"
+import { handleSales } from "#services/steam/handlers/sales.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
@@ -14,6 +15,7 @@ const ACTIONS = {
 	presence:         { handler: handlePresence,         method: "GET",  auth: false  },
 	achievements:     { handler: handleAchievements,     method: "GET",  auth: false  },
 	gameAchievements: { handler: handleGameAchievements, method: "GET",  auth: false  },
+	sales: 						{ handler: handleSales, 					 method: "GET",  auth: false  },
 	disconnect:       { handler: handleDisconnect,	     method: "POST", auth: true	  }
 }
 
