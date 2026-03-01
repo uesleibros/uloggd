@@ -1,4 +1,16 @@
 export default {
+  minerals: {
+    title: "My Minerals",
+    titleUser: "{{username}}'s Minerals",
+    total: "total",
+    shop: "Go to Shop",
+    copper: "Copper",
+    iron: "Iron",
+    gold: "Gold",
+    emerald: "Emerald",
+    diamond: "Diamond",
+    ruby: "Ruby",
+  },
   time: {
     now: "now",
     minutesAgo: "{{count}}m ago",

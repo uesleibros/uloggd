@@ -96,3 +96,8 @@ img.emoji {
   background: rgba(99, 102, 241, 0.25);
   color: #ffffff;
 }
+
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}

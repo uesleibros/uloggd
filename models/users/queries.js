@@ -56,7 +56,7 @@ export async function findManyByIdsMinimal(userIds) {
 export async function findByUserId(userId) {
 	const { data } = await supabase
 		.from("users")
-		.select(`${FULL_FIELDS}, ${BADGES_REL}, ${CONNECTIONS_FULL} ${MINERALS_REL}`)
+		.select(`${FULL_FIELDS}, ${BADGES_REL}, ${CONNECTIONS_FULL}, ${MINERALS_REL}`)
 		.eq("user_id", userId)
 		.single()
 	return data
@@ -65,7 +65,7 @@ export async function findByUserId(userId) {
 export async function findByUsername(username) {
 	const { data } = await supabase
 		.from("users")
-		.select(`${FULL_FIELDS}, ${BADGES_REL}, ${CONNECTIONS_FULL} ${MINERALS_REL}`)
+		.select(`${FULL_FIELDS}, ${BADGES_REL}, ${CONNECTIONS_FULL}, ${MINERALS_REL}`)
 		.ilike("username", username)
 		.single()
 	return data

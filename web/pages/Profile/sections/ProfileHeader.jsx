@@ -5,6 +5,7 @@ import UserBadges from "@components/User/UserBadges"
 import ThinkingBubble from "@components/User/ThinkingBubble"
 import ModeratorMenu from "@components/Moderation/ModeratorMenu"
 import ProfileActions from "../components/ProfileActions"
+import { MineralsDisplay } from "@components/Minerals/MineralsDisplay"
 import { getStatus } from "#utils/onlineStatus"
 import { useDateTime } from "#hooks/useDateTime"
 
@@ -103,6 +104,13 @@ export function ProfileHeader({
                     {t("stats.followsYou")}
                   </span>
                 )}
+                
+                <MineralsDisplay 
+                  minerals={profile.minerals} 
+                  username={profile.username}
+                  isOwnProfile={isOwnProfile}
+                />
+                
                 {status === "offline" && getTimeAgo(profile.last_seen, profile.status) && (
                   <span className="text-xs text-zinc-500">
                     {t("header.lastSeen", { time: getTimeAgo(profile.last_seen, profile.status) })}
@@ -132,4 +140,3 @@ export function ProfileHeader({
     </div>
   )
 }
-

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "#hooks/useAuth"
 import NotificationBell from "@components/User/Notifications/NotificationBell"
+import MineralsWallet from "@components/Layout/Header/MineralsWallet"
 import { SearchBar } from "./SearchBar"
 import { AuthButtons } from "./AuthButtons"
 import { MobileMenu, MenuToggle, NavLink } from "./MobileMenu"
@@ -55,11 +56,13 @@ export default function Header() {
         <div className="hidden md:flex relative items-center gap-2">
           <SearchBar variant="desktop" />
           {user && <NotificationBell />}
+          {user && <MineralsWallet minerals={user.minerals} />}
           <AuthButtons user={user} loading={authLoading} />
         </div>
 
         <div className="flex md:hidden items-center gap-1 ml-auto">
           {user && <NotificationBell />}
+          {user && <MineralsWallet minerals={user.minerals} />}
           <MenuToggle isOpen={mobileMenuOpen} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} />
         </div>
       </div>
