@@ -63,22 +63,30 @@ function DailyDealCard({ game, language }) {
       href={game.steamUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex gap-4 p-4 bg-gradient-to-r from-zinc-800/90 to-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 rounded-xl transition-all hover:shadow-xl"
+      className="group flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-zinc-800/90 to-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 rounded-xl transition-all hover:shadow-xl"
     >
-      <img
-        src={game.image}
-        alt={game.name}
-        className="w-48 h-22 object-cover rounded-lg flex-shrink-0 group-hover:scale-105 transition-transform duration-300"
-      />
-      <div className="flex flex-col justify-center min-w-0">
-        <span className="text-[10px] uppercase tracking-wider text-amber-400 font-bold mb-1">
+      <div className="relative w-full sm:w-48 flex-shrink-0">
+        <img
+          src={game.image}
+          alt={game.name}
+          className="w-full sm:w-48 h-32 sm:h-22 object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
+        />
+        <span className="absolute top-2 left-2 sm:hidden text-[10px] uppercase tracking-wider text-amber-400 font-bold bg-black/60 px-2 py-1 rounded">
           {t("steam.dailyDeal")}
         </span>
-        <h3 className="text-base font-semibold text-white truncate group-hover:text-blue-400 transition-colors">
+        <span className="absolute top-2 right-2 sm:hidden bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+          -{game.discountPercent}%
+        </span>
+      </div>
+      <div className="flex flex-col justify-center min-w-0">
+        <span className="hidden sm:block text-[10px] uppercase tracking-wider text-amber-400 font-bold mb-1">
+          {t("steam.dailyDeal")}
+        </span>
+        <h3 className="text-sm sm:text-base font-semibold text-white truncate group-hover:text-blue-400 transition-colors">
           {game.name}
         </h3>
-        <div className="flex items-center gap-3 mt-2">
-          <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+        <div className="flex items-center gap-2 sm:gap-3 mt-1.5 sm:mt-2">
+          <span className="hidden sm:inline bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">
             -{game.discountPercent}%
           </span>
           <span className="text-xs text-zinc-500 line-through">
@@ -89,7 +97,7 @@ function DailyDealCard({ game, language }) {
           </span>
         </div>
         {timeLeft !== null && (
-          <div className="flex items-center gap-1 mt-2 text-[11px] text-zinc-500">
+          <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-[11px] text-zinc-500">
             <Clock className="w-3 h-3" />
             <span>
               {timeLeft > 0
