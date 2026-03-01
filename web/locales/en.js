@@ -895,6 +895,9 @@ export default {
     cancel: "Cancel",
     apply: "Apply",
     processing: "Processing...",
+    tooLarge: "Image too large ({{size}}MB). Maximum: {{max}}MB. Try a smaller image.",
+    gifTooLarge: "GIF too large ({{size}}MB). Maximum: {{max}}MB. Try a shorter or smaller GIF.",
+    processingFailed: "Failed to process image. Please try again."
   },
   lists: {
     addGame: {

@@ -4,6 +4,7 @@ import ReactCrop, { centerCrop, makeAspectCrop, convertToPixelCrop } from "react
 import "react-image-crop/dist/ReactCrop.css"
 import { X, Loader2 } from "lucide-react"
 import Modal from "@components/UI/Modal"
+import { notify } from "@components/UI/Notification"
 import { parseGIF, decompressFrames } from "gifuct-js"
 
 function getCroppedCanvas(image, crop, maxWidth = 1920) {
@@ -144,20 +145,28 @@ function isGifUrl(url) {
   return false
 }
 
-const MAX_BLOB_SIZE = 3 * 1024 * 1024
+const DEFAULT_MAX_BLOB_SIZE = 3 * 1024 * 1024
 
-function compressToLimit(canvas, maxBytes = MAX_BLOB_SIZE, startQuality = 0.85, minQuality = 0.3) {
+function compressToLimit(canvas, maxBytes = DEFAULT_MAX_BLOB_SIZE, startQuality = 0.85, minQuality = 0.3) {
   return new Promise((resolve) => {
     let quality = startQuality
 
     function attempt() {
       canvas.toBlob(
         (blob) => {
-          if (!blob) return resolve(null)
+          if (!blob) {
+            resolve({ success: false, error: "blob_failed" })
+            return
+          }
 
-          if (blob.size <= maxBytes || quality <= minQuality) {
+          if (blob.size <= maxBytes) {
             const url = URL.createObjectURL(blob)
-            resolve({ blob, url })
+            resolve({ success: true, blob, url, quality })
+            return
+          }
+
+          if (quality <= minQuality) {
+            resolve({ success: false, error: "too_large", size: blob.size, maxBytes })
             return
           }
 
@@ -182,7 +191,7 @@ export default function ImageCropModal({
   maxWidth = 1920,
   title,
   circularCrop = false,
-  maxBlobSize = MAX_BLOB_SIZE,
+  maxBlobSize = DEFAULT_MAX_BLOB_SIZE,
 }) {
   const { t } = useTranslation()
   const [crop, setCrop] = useState()
@@ -229,25 +238,37 @@ export default function ImageCropModal({
         const result = await cropGif(imageSrc, completedCrop, imgRef.current, maxWidth)
 
         if (result.blob.size > maxBlobSize) {
-          notify?.(t("imageCrop.tooLarge"), "error")
+          const sizeMB = (result.blob.size / 1024 / 1024).toFixed(1)
+          const maxMB = (maxBlobSize / 1024 / 1024).toFixed(1)
+          notify(t("imageCrop.gifTooLarge", { size: sizeMB, max: maxMB }), "error")
           setProcessing(false)
           return
         }
 
         onCrop(result)
+        setProcessing(false)
       } else {
         const canvas = getCroppedCanvas(imgRef.current, completedCrop, maxWidth)
         const result = await compressToLimit(canvas, maxBlobSize)
 
-        if (!result) {
+        if (!result.success) {
+          if (result.error === "too_large") {
+            const sizeMB = (result.size / 1024 / 1024).toFixed(1)
+            const maxMB = (result.maxBytes / 1024 / 1024).toFixed(1)
+            notify(t("imageCrop.tooLarge", { size: sizeMB, max: maxMB }), "error")
+          } else {
+            notify(t("imageCrop.processingFailed"), "error")
+          }
           setProcessing(false)
           return
         }
 
-        onCrop(result)
+        onCrop({ blob: result.blob, url: result.url })
+        setProcessing(false)
       }
     } catch (error) {
       console.error("Error cropping image:", error)
+      notify(t("imageCrop.processingFailed"), "error")
       setProcessing(false)
     }
   }
