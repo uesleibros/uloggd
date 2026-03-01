@@ -5,7 +5,6 @@ import {
 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import GameCard from "@components/Game/GameCard"
-import DragScrollRow from "@components/UI/DragScrollRow"
 import { VideoGrid } from "../components/VideoGrid"
 
 const TAB_ICONS = {
@@ -85,11 +84,11 @@ function RelatedGamesContent({ current }) {
   }
 
   return (
-    <DragScrollRow className="gap-4 pb-2">
+    <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
       {current.data.map((g) => (
-        <GameCard key={g.id} game={g} draggable={false} />
+        <GameCard key={g.id} game={g} draggable={false} responsive />
       ))}
-    </DragScrollRow>
+    </div>
   )
 }
 

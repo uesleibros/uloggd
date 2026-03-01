@@ -100,13 +100,13 @@ export function GameSidebar({ game }) {
       <ParentGameLink parentGame={game.parent_game} />
 
       {game.ageRatings?.length > 0 && (
-        <div className="mt-4 hidden md:block">
+        <div className="mt-4">
           <h2 className="text-lg font-semibold text-white mb-4">{t("sidebar.ageRatings")}</h2>
           <AgeRatings ratings={game.ageRatings} />
         </div>
       )}
 
-      <div className="hidden md:block">
+      <div>
         <Websites websites={game.websites} />
         <hr className="my-6 border-zinc-700" />
 

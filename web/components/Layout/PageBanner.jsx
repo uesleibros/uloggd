@@ -2,6 +2,7 @@ export default function PageBanner({
   image,
   fallbackGradient = "from-indigo-900/30 via-zinc-900 to-zinc-900",
   height = "home",
+  transparentBase = false,
 }) {
   const heightClasses = {
     home: "h-[262px]",
@@ -21,8 +22,24 @@ export default function PageBanner({
       ) : (
         <div className={`absolute inset-0 bg-gradient-to-br ${fallbackGradient}`} />
       )}
-      <div id="main-gradient" />
-      <div id="gradient" />
+      
+      {transparentBase ? (
+        <>
+          <div 
+            className="absolute top-0 left-0 right-0 h-[262px] z-[-1]"
+            style={{ background: "linear-gradient(0deg, transparent 2%, rgba(0,0,0,0.5) 109%)" }}
+          />
+          <div 
+            className="absolute bottom-[-1px] left-0 right-0 h-[80%] z-[-1]"
+            style={{ background: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 100%)" }}
+          />
+        </>
+      ) : (
+        <>
+          <div id="main-gradient" />
+          <div id="gradient" />
+        </>
+      )}
     </div>
   )
 }
