@@ -64,7 +64,7 @@ export function ProfileHeader({
             />
             {!isBanned && (
               <div
-                className="absolute z-20 left-[65%]"
+                className="absolute z-20 left-1/2 -translate-x-1/4 md:left-[65%] md:translate-x-0"
                 style={{ bottom: "calc(100% - 1px)" }}
               >
                 <ThinkingBubble
@@ -132,3 +132,4 @@ export function ProfileHeader({
     </div>
   )
 }
+
