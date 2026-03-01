@@ -70,7 +70,7 @@ const ProfileTabs = forwardRef(function ProfileTabs({
   const { t } = useTranslation("profile")
 
   return (
-    <div className="mt-12" ref={ref}>
+    <div ref={ref}>
       <DragScrollRow className="pb-1">
         <div className="flex gap-2 w-max">
           {TAB_KEYS.map(key => (

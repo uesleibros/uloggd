@@ -8,6 +8,7 @@ import ReviewRating from "@components/Game/ReviewRating"
 import Playtime from "@components/Game/Playtime"
 import Modal from "@components/UI/Modal"
 import Pagination from "@components/UI/Pagination"
+import { MessageSquare } from "lucide-react"
 import {
   AspectRatingsPreview,
   ReviewIndicators,
@@ -208,9 +209,12 @@ export default function ProfileReviews({ userId }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-semibold text-white">
+        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+          <MessageSquare className="w-5 h-5 text-zinc-400" />
           {t("reviews.title")}
-          <span className="text-sm text-zinc-500 font-normal ml-2">{total}</span>
+          {total > 0 && (
+            <span className="text-sm text-zinc-500 font-normal">{total}</span>
+          )}
         </h2>
         <div className="flex gap-1">
           {SORT_OPTIONS.map((option) => (
