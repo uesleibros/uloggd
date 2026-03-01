@@ -66,7 +66,7 @@ function ThinkingModalContent({ currentThinking, onClose, onSave }) {
         </button>
         <button onClick={() => save(text.trim() || null)} disabled={saving || (!text.trim() && !currentThinking)} className="flex-1 px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-all cursor-pointer disabled:opacity-50">
           {saving ? (
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-indigo-300 border-t-white rounded-full animate-spin" />
               {t("thinking.saving")}
             </div>
@@ -104,11 +104,11 @@ export default function ThinkingBubble({ text, isOwnProfile, onSave }) {
         <div style={{ animation: 'tbFloat 4s ease-in-out infinite' }}>
           <div className="group">
             <div
-              className="relative bg-zinc-800/95 backdrop-blur-sm border border-zinc-600/80 rounded-[20px] px-3.5 py-2"
+              className="relative bg-zinc-800/95 backdrop-blur-sm border border-zinc-600/80 rounded-[20px] px-3.5 py-2 max-w-[200px]"
               style={{ animation: 'tbGlow 3s ease-in-out infinite' }}
             >
               <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-zinc-500/30 to-transparent rounded-full" />
-              <p className="text-[13px] text-zinc-100 leading-snug font-medium max-w-[200px]">
+              <p className="text-[13px] text-zinc-100 break-words leading-snug text-center font-medium line-clamp-3">
                 {text}
               </p>
               {isOwnProfile && (
