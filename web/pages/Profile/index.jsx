@@ -117,7 +117,7 @@ export default function Profile() {
         />
 
         <div className="flex flex-col lg:flex-row gap-6 mt-6">
-          <div className="lg:w-52 xl:w-56 lg:flex-shrink-0">
+          <div className="lg:w-64 lg:flex-shrink-0">
             <ProfileSidebar
               profile={profile}
               counts={counts}
@@ -182,3 +182,4 @@ export default function Profile() {
     </div>
   )
 }
+
