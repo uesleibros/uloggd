@@ -10,6 +10,7 @@ import { useHeartbeat } from "#hooks/useHeartbeat"
 import ErrorBoundary from "@components/ErrorBoundary"
 import Home from "@pages/Home"
 import Badges from "@pages/Badges"
+import Minerals from "@pages/Minerals"
 import SearchPage from "@pages/SearchPage"
 import Game from "@pages/Game"
 import Profile from "@pages/Profile"
@@ -54,6 +55,7 @@ export default function App() {
 							<Route path="/tierlist/:id" element={<TierlistPage />} />
 							<Route path="/u/:username" element={<Profile />} />
 							<Route path="/about/badges" element={<Badges />} />
+							<Route path="/about/minerals" element={<Minerals />} />
 							<Route path="/search" element={<SearchPage />} />
 							<Route path="*" element={<NotFound />} />
 						</Routes>

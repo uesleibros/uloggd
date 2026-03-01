@@ -1,15 +1,93 @@
 export default {
   minerals: {
+    meta: {
+      title: "Minerals - uloggd",
+      description: "Discover all minerals available on uloggd and how to obtain them.",
+    },
+    page: {
+      title: "Minerals",
+      subtitle: "Collect minerals to unlock exclusive profile customization items.",
+    },
     title: "My Minerals",
     titleUser: "{{username}}'s Minerals",
     total: "total",
     shop: "Go to Shop",
-    copper: "Copper",
-    iron: "Iron",
-    gold: "Gold",
-    emerald: "Emerald",
-    diamond: "Diamond",
-    ruby: "Ruby",
+    rarity: {
+      common: "Common",
+      uncommon: "Uncommon",
+      rare: "Rare",
+      epic: "Epic",
+      legendary: "Legendary",
+      mythic: "Mythic",
+    },
+    items: {
+      copper: {
+        name: "Copper",
+        description: "The most common mineral. Easy to obtain, essential for basic items.",
+      },
+      iron: {
+        name: "Iron",
+        description: "Slightly rarer than copper. Used for quality items.",
+      },
+      gold: {
+        name: "Gold",
+        description: "Valuable mineral. Required for rare items.",
+      },
+      emerald: {
+        name: "Emerald",
+        description: "Green gemstone. Used for epic items.",
+      },
+      diamond: {
+        name: "Diamond",
+        description: "Extremely rare. Reserved for legendary items.",
+      },
+      ruby: {
+        name: "Ruby",
+        description: "The rarest of all. Only for exclusive mythic items.",
+      },
+    },
+    modal: {
+      dropRate: "Drop rate",
+      close: "Close",
+    },
+    howToObtain: {
+      title: "How to Obtain",
+      subtitle: "Various ways to get minerals",
+      methods: {
+        dailyChest: {
+          title: "Daily Chest",
+          description: "Open a free chest every day with random minerals.",
+        },
+        reviews: {
+          title: "Write Reviews",
+          description: "Earn minerals by publishing game reviews.",
+        },
+        likes: {
+          title: "Receive Likes",
+          description: "Your liked reviews earn extra minerals.",
+        },
+        events: {
+          title: "Events",
+          description: "Participate in special events for rare rewards.",
+        },
+      },
+    },
+    allMinerals: {
+      title: "All Minerals",
+      subtitle: "Learn about each mineral and its rarity",
+    },
+    dailyChest: {
+      title: "Daily Chest",
+      description: "Open your daily chest to earn random minerals!",
+      open: "Open Chest",
+      opening: "Opening...",
+      available: "Available!",
+      nextIn: "Next in:",
+      error: "Error opening chest",
+      opened: "Chest Opened!",
+      youGot: "You got {{count}} minerals!",
+      claim: "Claim Rewards",
+    },
   },
   time: {
     now: "now",
@@ -84,6 +162,7 @@ export default {
     igdb: "Data provided by IGDB",
     about: "About",
     badges: "Badges",
+    minerals: "Minerals",
     rights: "© {{year}} uloggd",
   },
   common: {

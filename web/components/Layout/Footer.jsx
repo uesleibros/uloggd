@@ -4,6 +4,7 @@ import { useTranslation } from "#hooks/useTranslation"
 const LINKS = {
   sobre: [
     { key: "badges", to: "/about/badges" },
+    { key: "minerals", to: "/about/minerals" },
   ],
 }
 

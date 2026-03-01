@@ -97,7 +97,51 @@ img.emoji {
   color: #ffffff;
 }
 
-.pixelated {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
+@keyframes chest-shake {
+  0%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(-5deg) scale(1.02); }
+  20% { transform: rotate(5deg) scale(1.04); }
+  30% { transform: rotate(-5deg) scale(1.06); }
+  40% { transform: rotate(5deg) scale(1.08); }
+  50% { transform: rotate(-5deg) scale(1.1); }
+  60% { transform: rotate(5deg) scale(1.08); }
+  70% { transform: rotate(-5deg) scale(1.06); }
+  80% { transform: rotate(5deg) scale(1.04); }
+  90% { transform: rotate(-5deg) scale(1.02); }
+}
+
+.animate-chest-shake {
+  animation: chest-shake 1.5s ease-in-out;
+}
+
+@keyframes reward-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(20px);
+  }
+  50% {
+    transform: scale(1.2) translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-reward-pop {
+  animation: reward-pop 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(251, 191, 36, 0.6);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
 }

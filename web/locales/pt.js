@@ -1,15 +1,93 @@
 export default {
   minerals: {
+    meta: {
+      title: "Minérios - uloggd",
+      description: "Conheça todos os minérios disponíveis no uloggd e como obtê-los.",
+    },
+    page: {
+      title: "Minérios",
+      subtitle: "Colete minérios para desbloquear itens exclusivos de personalização do perfil.",
+    },
     title: "Meus Minérios",
     titleUser: "Minérios de {{username}}",
     total: "total",
     shop: "Ir para a Loja",
-    copper: "Cobre",
-    iron: "Ferro",
-    gold: "Ouro",
-    emerald: "Esmeralda",
-    diamond: "Diamante",
-    ruby: "Rubi",
+    rarity: {
+      common: "Comum",
+      uncommon: "Incomum",
+      rare: "Raro",
+      epic: "Épico",
+      legendary: "Lendário",
+      mythic: "Mítico",
+    },
+    items: {
+      copper: {
+        name: "Cobre",
+        description: "O minério mais comum. Fácil de obter, essencial para itens básicos.",
+      },
+      iron: {
+        name: "Ferro",
+        description: "Um pouco mais raro que o cobre. Usado em itens de qualidade.",
+      },
+      gold: {
+        name: "Ouro",
+        description: "Minério valioso. Necessário para itens raros.",
+      },
+      emerald: {
+        name: "Esmeralda",
+        description: "Pedra preciosa verde. Usada em itens épicos.",
+      },
+      diamond: {
+        name: "Diamante",
+        description: "Extremamente raro. Reservado para itens lendários.",
+      },
+      ruby: {
+        name: "Rubi",
+        description: "O mais raro de todos. Apenas para itens míticos exclusivos.",
+      },
+    },
+    modal: {
+      dropRate: "Chance de drop",
+      close: "Fechar",
+    },
+    howToObtain: {
+      title: "Como Obter",
+      subtitle: "Diversas formas de conseguir minérios",
+      methods: {
+        dailyChest: {
+          title: "Baú Diário",
+          description: "Abra um baú gratuito todo dia com minérios aleatórios.",
+        },
+        reviews: {
+          title: "Escrever Reviews",
+          description: "Ganhe minérios ao publicar reviews de jogos.",
+        },
+        likes: {
+          title: "Receber Curtidas",
+          description: "Suas reviews curtidas rendem minérios extras.",
+        },
+        events: {
+          title: "Eventos",
+          description: "Participe de eventos especiais para recompensas raras.",
+        },
+      },
+    },
+    allMinerals: {
+      title: "Todos os Minérios",
+      subtitle: "Conheça cada minério e sua raridade",
+    },
+    dailyChest: {
+      title: "Baú Diário",
+      description: "Abra seu baú diário para ganhar minérios aleatórios!",
+      open: "Abrir Baú",
+      opening: "Abrindo...",
+      available: "Disponível!",
+      nextIn: "Próximo em:",
+      error: "Erro ao abrir o baú",
+      opened: "Baú Aberto!",
+      youGot: "Você ganhou {{count}} minérios!",
+      claim: "Coletar Recompensas",
+    },
   },
   time: {
     now: "agora",
@@ -84,6 +162,7 @@ export default {
     igdb: "Dados fornecidos por IGDB",
     about: "Sobre",
     badges: "Selos",
+    minerals: "Minérios",
     rights: "© {{year}} uloggd",
   },
   common: {
