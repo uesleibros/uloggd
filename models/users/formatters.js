@@ -6,6 +6,28 @@ function formatBadges(userBadges) {
 		.map(ub => ({ ...ub.badge, assigned_at: ub.assigned_at }))
 }
 
+function formatMinerals(userMinerals) {
+	if (!userMinerals) {
+		return {
+			copper: 0,
+			iron: 0,
+			gold: 0,
+			emerald: 0,
+			diamond: 0,
+			ruby: 0
+		}
+	}
+
+	return {
+		copper: userMinerals.copper || 0,
+		iron: userMinerals.iron || 0,
+		gold: userMinerals.gold || 0,
+		emerald: userMinerals.emerald || 0,
+		diamond: userMinerals.diamond || 0,
+		ruby: userMinerals.ruby || 0
+	}
+}
+
 export function formatFullProfile(
   profile,
   { stream = null, counts = {}, ban = null } = {}
@@ -31,6 +53,7 @@ export function formatFullProfile(
     username_changed_at: profile.username_changed_at,
     connections: profile.user_connections || [],
     badges: formatBadges(profile.user_badges),
+    minerals: formatMinerals(profile.user_minerals),
     stream,
     counts: {
       reviews: counts.reviews || 0,

@@ -1,6 +1,7 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
 const BADGES_REL = `user_badges ( assigned_at, badge:badges ( id, icon_url, color ) )`
+const MINERALS_REL = `user_minerals ( copper, iron, gold, emerald, diamond, ruby )`
 const CONNECTIONS_FULL = `user_connections ( provider, provider_user_id, provider_username, provider_display_name )`
 const CONNECTIONS_TWITCH = `user_connections ( provider, provider_username )`
 
@@ -12,6 +13,34 @@ const FULL_FIELDS = `
 const LIST_FIELDS = `user_id, username, avatar, is_moderator, avatar_decoration, last_seen, status`
 
 const MINIMAL_FIELDS = `user_id, username, avatar, avatar_decoration`
+
+const MINERALS_FIELDS = `user_id, copper, iron, gold, emerald, diamond, ruby`
+
+export async function getMinerals(userId) {
+	const { data } = await supabase
+		.from("user_minerals")
+		.select(MINERALS_FIELDS)
+		.eq("user_id", userId)
+		.single()
+
+	return data
+}
+
+export async function getMineralsRanking({ limit = 20, offset = 0, sortBy = "ruby" } = {}) {
+	const validSorts = ["copper", "iron", "gold", "emerald", "diamond", "ruby"]
+	const sort = validSorts.includes(sortBy) ? sortBy : "ruby"
+
+	const { data, count } = await supabase
+		.from("user_minerals")
+		.select(`${MINERALS_FIELDS}, users!inner(username, avatar, avatar_decoration)`, { count: "exact" })
+		.order(sort, { ascending: false })
+		.range(offset, offset + limit - 1)
+
+	return {
+		data: data || [],
+		total: count || 0
+	}
+}
 
 export async function findManyByIdsMinimal(userIds) {
 	if (!userIds.length) return []
@@ -27,7 +56,7 @@ export async function findManyByIdsMinimal(userIds) {
 export async function findByUserId(userId) {
 	const { data } = await supabase
 		.from("users")
-		.select(`${FULL_FIELDS}, ${BADGES_REL}, ${CONNECTIONS_FULL}`)
+		.select(`${FULL_FIELDS}, ${BADGES_REL}, ${CONNECTIONS_FULL} ${MINERALS_REL}`)
 		.eq("user_id", userId)
 		.single()
 	return data
@@ -36,7 +65,7 @@ export async function findByUserId(userId) {
 export async function findByUsername(username) {
 	const { data } = await supabase
 		.from("users")
-		.select(`${FULL_FIELDS}, ${BADGES_REL}, ${CONNECTIONS_FULL}`)
+		.select(`${FULL_FIELDS}, ${BADGES_REL}, ${CONNECTIONS_FULL} ${MINERALS_REL}`)
 		.ilike("username", username)
 		.single()
 	return data
