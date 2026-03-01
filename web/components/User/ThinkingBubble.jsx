@@ -108,7 +108,7 @@ export default function ThinkingBubble({ text, isOwnProfile, onSave }) {
               style={{ animation: 'tbGlow 3s ease-in-out infinite' }}
             >
               <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-zinc-500/30 to-transparent rounded-full" />
-              <p className="text-[13px] text-zinc-100 leading-snug font-medium max-w-[240px]">
+              <p className="text-[13px] text-zinc-100 leading-snug font-medium max-w-[200px]">
                 {text}
               </p>
               {isOwnProfile && (
