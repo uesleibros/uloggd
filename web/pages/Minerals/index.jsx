@@ -1,8 +1,10 @@
 import { useState } from "react"
-import { Gem, Package, Gift, MessageSquare, Heart, Trophy, ChevronRight } from "lucide-react"
+import { Gem, Gift, MessageSquare, Heart, Trophy, ChevronRight } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
+import { useAuth } from "#hooks/useAuth"
 import Modal from "@components/UI/Modal"
+import DailyChest from "@components/Minerals/DailyChest"
 
 const MINERALS_DATA = [
   { key: "copper", color: "#B87333", rarity: "common", dropRate: 100 },
@@ -14,7 +16,7 @@ const MINERALS_DATA = [
 ]
 
 const HOW_TO_OBTAIN = [
-  { key: "dailyChest", icon: Package, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30" },
+  { key: "dailyChest", icon: Gift, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30" },
   { key: "reviews", icon: MessageSquare, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/30" },
   { key: "likes", icon: Heart, color: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-500/30" },
   { key: "events", icon: Trophy, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/30" },
@@ -195,6 +197,7 @@ function AllMineralsSection({ onMineralClick }) {
 
 export default function Minerals() {
   const { t } = useTranslation("minerals")
+  const { user } = useAuth()
   const [activeMineral, setActiveMineral] = useState(null)
 
   usePageMeta({
@@ -208,6 +211,8 @@ export default function Minerals() {
         <h1 className="text-2xl font-bold text-white mb-2">{t("page.title")}</h1>
         <p className="text-sm text-zinc-500">{t("page.subtitle")}</p>
       </div>
+
+      {user && <DailyChest />}
 
       <HowToObtainSection />
 

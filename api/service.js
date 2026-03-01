@@ -13,6 +13,7 @@ import { badgesHandler } from "#routers/badges.js"
 import { moderationHandler } from "#routers/moderation.js"
 import { pricesHandler } from "#routers/prices.js"
 import { tierlistsHandler } from "#routers/tierlists.js"
+import { chestHandler } from "#routers/chest.js"
 import { getUser } from "#lib/auth.js"
 
 // Connections
@@ -40,7 +41,8 @@ const SERVICES = {
 	badges: badgesHandler,
 	moderation: moderationHandler,
 	prices: pricesHandler,
-	tierlists: tierlistsHandler
+	tierlists: tierlistsHandler,
+	chest: chestHandler
 }
 
 export default async function handler(req, res) {

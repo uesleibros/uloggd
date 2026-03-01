@@ -87,6 +87,12 @@ export default {
       opened: "Baú Aberto!",
       youGot: "Você ganhou {{count}} minérios!",
       claim: "Coletar Recompensas",
+      errors: {
+        chest_cooldown: "Aguarde o tempo de espera",
+        failed_to_update_minerals: "Erro ao atualizar minérios",
+        failed_to_create_minerals: "Erro ao criar minérios",
+        failed_to_register_chest: "Erro ao registrar baú",
+      },
     },
   },
   time: {

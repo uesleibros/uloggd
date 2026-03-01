@@ -87,6 +87,12 @@ export default {
       opened: "Chest Opened!",
       youGot: "You got {{count}} minerals!",
       claim: "Claim Rewards",
+      errors: {
+        chest_cooldown: "Wait for the cooldown",
+        failed_to_update_minerals: "Failed to update minerals",
+        failed_to_create_minerals: "Failed to create minerals",
+        failed_to_register_chest: "Failed to register chest",
+      },
     },
   },
   time: {
