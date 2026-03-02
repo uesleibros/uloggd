@@ -66,10 +66,7 @@ function RewardCard({ mineralKey, amount, index }) {
           </div>
 
           <div className="text-center">
-            <div
-              className="text-2xl font-bold"
-              style={{ color: mineral.color }}
-            >
+            <div className="text-2xl font-bold" style={{ color: mineral.color }}>
               +{amount}
             </div>
             <div className="text-xs text-zinc-400 font-medium truncate max-w-full">
@@ -95,7 +92,7 @@ function RewardCard({ mineralKey, amount, index }) {
   )
 }
 
-export default function ChestOpenModal({ isOpen, onClose, rewards, onMineralsCollected }) {
+export default function ChestOpenModal({ isOpen, onClose, rewards }) {
   const { t } = useTranslation("minerals")
   const [phase, setPhase] = useState("closed")
   const [showFlying, setShowFlying] = useState(false)
@@ -113,13 +110,18 @@ export default function ChestOpenModal({ isOpen, onClose, rewards, onMineralsCol
     }
   }, [isOpen, rewards])
 
-  function handleClaim() {
-    setShowFlying(true)
+  function handleClose() {
+    if (phase === "revealing") {
+      setShowFlying(true)
+    } else {
+      window.dispatchEvent(new CustomEvent("minerals-updated"))
+      onClose()
+    }
   }
 
   function handleFlyingComplete() {
     setShowFlying(false)
-    onMineralsCollected?.()
+    window.dispatchEvent(new CustomEvent("minerals-updated"))
     onClose()
   }
 
@@ -132,7 +134,7 @@ export default function ChestOpenModal({ isOpen, onClose, rewards, onMineralsCol
     <>
       <Modal
         isOpen={isOpen && !showFlying}
-        onClose={onClose}
+        onClose={handleClose}
         maxWidth="max-w-lg"
         showCloseButton={false}
         className="!border-0 !bg-transparent !shadow-none"
@@ -152,7 +154,7 @@ export default function ChestOpenModal({ isOpen, onClose, rewards, onMineralsCol
             `}
           >
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="absolute top-4 right-4 z-20 p-2 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
@@ -203,7 +205,7 @@ export default function ChestOpenModal({ isOpen, onClose, rewards, onMineralsCol
               </div>
 
               <button
-                onClick={handleClaim}
+                onClick={handleClose}
                 className={`
                   w-full px-6 py-3.5 text-sm font-semibold text-amber-900
                   bg-gradient-to-b from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400
