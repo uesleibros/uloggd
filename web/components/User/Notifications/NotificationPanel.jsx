@@ -300,11 +300,18 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
     <>
       <div
         ref={panelRef}
-        className={`absolute right-0 top-full mt-2 w-80 sm:w-96 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden origin-top-right transition-all duration-200 ${
-          visible
+        className={`
+          fixed sm:absolute 
+          inset-x-4 sm:inset-x-auto sm:right-0 
+          top-16 sm:top-full sm:mt-2 
+          w-auto sm:w-96 
+          bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 
+          overflow-hidden origin-top-right transition-all duration-200 
+          ${visible
             ? "opacity-100 scale-100 translate-y-0"
             : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-        }`}
+          }
+        `}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
           <h3 className="text-sm font-semibold text-white">{t("notifications.title")}</h3>
