@@ -1,5 +1,4 @@
 import { useRef } from "react"
-import { Activity } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import BioSection from "../components/BioSection"
 import ProfileTabs from "../components/ProfileTabs"
@@ -7,6 +6,7 @@ import ProfileReviews from "../components/ProfileReviews"
 import ProfileLikes from "../components/ProfileLikes"
 import ListsSection from "@components/Lists/ListsSection"
 import TierlistsSection from "@components/Tierlist/TierlistsSection"
+import TransactionsSection from "@components/Profile/sections/TransactionsSection"
 
 export function ProfileContent({
   activeSection,
@@ -110,11 +110,8 @@ export function ProfileContent({
         <ProfileLikes userId={profile.id} isOwnProfile={isOwnProfile} username={profile.username} />
       )}
 
-      {activeSection === "activity" && (
-        <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <Activity className="w-10 h-10 text-zinc-700" />
-          <p className="text-sm text-zinc-600">{t("content.activityComingSoon")}</p>
-        </div>
+      {activeSection === "transactions" && (
+        <TransactionsSection userId={profile.id} />
       )}
     </div>
   )

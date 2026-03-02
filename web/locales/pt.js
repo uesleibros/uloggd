@@ -1,4 +1,21 @@
 export default {
+  transactions: {
+    empty: {
+      title: "Nenhuma transação ainda",
+      subtitle: "As transações de minérios aparecerão aqui",
+    },
+    loadMore: "Carregar mais",
+    types: {
+      chest_opened: "Baú aberto",
+      review_reward: "Recompensa por review",
+      like_reward: "Recompensa por curtida",
+      event_reward: "Recompensa de evento",
+      item_purchased: "Item comprado",
+    },
+    descriptions: {
+      daily_chest: "Baú diário",
+    },
+  },
   minerals: {
     meta: {
       title: "Minérios - uloggd",
@@ -388,7 +405,7 @@ export default {
       tierlists: "Tierlists",
       reviews: "Reviews",
       likes: "Curtidas",
-      activity: "Atividade",
+      transactions: "Transações",
     },
     header: {
       banned: {

@@ -9,6 +9,7 @@ import { useProfileData } from "./hooks/useProfileData"
 import { useFollowData } from "./hooks/useFollowData"
 import { useUserLists } from "./hooks/useUserLists"
 import { useUserTierlists } from "./hooks/useUserTierlists"
+import { useUserTransactions } from "./hooks/useUserTransactions"
 import { ProfileHeader } from "./sections/ProfileHeader"
 import { ProfileSidebar } from "./sections/ProfileSidebar"
 import { ProfileNavigation } from "./sections/ProfileNavigation"
@@ -52,6 +53,8 @@ export default function Profile() {
     totalPages: tierlistsTotalPages,
     handlePageChange: handleTierlistsPageChange,
   } = useUserTierlists(profile?.id)
+
+  const { total: transactionsTotal } = useUserTransactions(profile?.id)
 
   const {
     isFollowing,
@@ -138,6 +141,7 @@ export default function Profile() {
               tierlistsCount={tierlists.length}
               reviewsCount={profile?.counts?.reviews || 0}
               likesCount={(counts?.liked || 0) + (profile?.counts?.likedReviews || 0)}
+              transactionsCount={transactionsTotal}
             />
 
             <ProfileContent
@@ -182,4 +186,3 @@ export default function Profile() {
     </div>
   )
 }
-

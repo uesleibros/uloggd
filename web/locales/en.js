@@ -1,4 +1,21 @@
 export default {
+  transactions: {
+    empty: {
+      title: "No transactions yet",
+      subtitle: "Mineral transactions will appear here",
+    },
+    loadMore: "Load more",
+    types: {
+      chest_opened: "Chest opened",
+      review_reward: "Review reward",
+      like_reward: "Like reward",
+      event_reward: "Event reward",
+      item_purchased: "Item purchased",
+    },
+    descriptions: {
+      daily_chest: "Daily chest",
+    },
+  },
   minerals: {
     meta: {
       title: "Minerals - uloggd",
@@ -388,7 +405,7 @@ export default {
       tierlists: "Tierlists",
       reviews: "Reviews",
       likes: "Likes",
-      activity: "Activity",
+      transactions: "Transactions",
     },
     header: {
       banned: {
