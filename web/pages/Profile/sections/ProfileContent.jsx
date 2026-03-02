@@ -6,7 +6,7 @@ import ProfileReviews from "../components/ProfileReviews"
 import ProfileLikes from "../components/ProfileLikes"
 import ListsSection from "@components/Lists/ListsSection"
 import TierlistsSection from "@components/Tierlist/TierlistsSection"
-import TransactionsSection from "@components/Profile/sections/TransactionsSection"
+import TransactionsSection from "./TransactionsSection"
 
 export function ProfileContent({
   activeSection,
