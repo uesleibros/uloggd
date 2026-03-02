@@ -1,4 +1,4 @@
-import CountUp from "@components/UI/CountUp"
+import { useTranslation } from "#hooks/useTranslation"
 
 export const MINERALS = [
   { key: "copper", color: "#B87333" },
@@ -9,26 +9,13 @@ export const MINERALS = [
   { key: "ruby", color: "#E0115F" },
 ]
 
-export function MineralRow({ mineral, amount, name, size = "md" }) {
+export function MineralRow({ mineral, amount, size = "md" }) {
+  const { t } = useTranslation("minerals")
+
   const sizes = {
-    sm: {
-      box: "w-2 h-2",
-      text: "text-xs",
-      gap: "gap-2",
-      padding: "px-2 py-1.5",
-    },
-    md: {
-      box: "w-3 h-3",
-      text: "text-sm",
-      gap: "gap-2.5",
-      padding: "px-3 py-2",
-    },
-    lg: {
-      box: "w-4 h-4",
-      text: "text-sm",
-      gap: "gap-3",
-      padding: "px-4 py-3",
-    },
+    sm: { box: "w-2 h-2", text: "text-xs", gap: "gap-2", padding: "px-2 py-1.5" },
+    md: { box: "w-3 h-3", text: "text-sm", gap: "gap-2.5", padding: "px-3 py-2" },
+    lg: { box: "w-4 h-4", text: "text-sm", gap: "gap-3", padding: "px-4 py-3" },
   }
 
   const s = sizes[size] || sizes.md
@@ -36,17 +23,11 @@ export function MineralRow({ mineral, amount, name, size = "md" }) {
   return (
     <div className={`flex items-center justify-between ${s.padding} rounded-lg hover:bg-zinc-800/50 transition-colors`}>
       <div className={`flex items-center ${s.gap}`}>
-        <span
-          className={`inline-block ${s.box} rounded-sm`}
-          style={{ backgroundColor: mineral.color }}
-        />
-        <span className={`${s.text} text-zinc-300`}>{name}</span>
+        <span className={`inline-block ${s.box} rounded-sm`} style={{ backgroundColor: mineral.color }} />
+        <span className={`${s.text} text-zinc-300`}>{t(`items.${mineral.key}.name`)}</span>
       </div>
-      <span
-        className={`${s.text} font-semibold tabular-nums`}
-        style={{ color: mineral.color }}
-      >
-        <CountUp end={amount} />
+      <span className={`${s.text} font-semibold tabular-nums`} style={{ color: mineral.color }}>
+        {amount.toLocaleString()}
       </span>
     </div>
   )
