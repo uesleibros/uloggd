@@ -14,6 +14,7 @@ import { moderationHandler } from "#routers/moderation.js"
 import { pricesHandler } from "#routers/prices.js"
 import { tierlistsHandler } from "#routers/tierlists.js"
 import { chestHandler } from "#routers/chest.js"
+import { transactionsHandler } from "#routers/transactions.js"
 import { getUser } from "#lib/auth.js"
 
 // Connections
@@ -42,7 +43,8 @@ const SERVICES = {
 	moderation: moderationHandler,
 	prices: pricesHandler,
 	tierlists: tierlistsHandler,
-	chest: chestHandler
+	chest: chestHandler,
+	transactions: transactionsHandler
 }
 
 export default async function handler(req, res) {

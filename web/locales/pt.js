@@ -1,21 +1,4 @@
 export default {
-  transactions: {
-    empty: {
-      title: "Nenhuma transação ainda",
-      subtitle: "As transações de minérios aparecerão aqui",
-    },
-    loadMore: "Carregar mais",
-    types: {
-      chest_opened: "Baú aberto",
-      review_reward: "Recompensa por review",
-      like_reward: "Recompensa por curtida",
-      event_reward: "Recompensa de evento",
-      item_purchased: "Item comprado",
-    },
-    descriptions: {
-      daily_chest: "Baú diário",
-    },
-  },
   minerals: {
     meta: {
       title: "Minérios - uloggd",
@@ -390,6 +373,23 @@ export default {
     },
   },
   profile: {
+    transactions: {
+      empty: {
+        title: "Nenhuma transação ainda",
+        subtitle: "As transações de minérios aparecerão aqui",
+      },
+      loadMore: "Carregar mais",
+      types: {
+        chest_opened: "Baú aberto",
+        review_reward: "Recompensa por review",
+        like_reward: "Recompensa por curtida",
+        event_reward: "Recompensa de evento",
+        item_purchased: "Item comprado",
+      },
+      descriptions: {
+        daily_chest: "Baú diário",
+      },
+    },
     notFound: {
       title: "Usuário não encontrado",
       message: "O usuário \"{{username}}\" não existe ou foi removido.",
@@ -414,9 +414,6 @@ export default {
         reason: "Motivo: {{reason}}",
       },
       lastSeen: "Última vez visto: {{time}}",
-    },
-    content: {
-      activityComingSoon: "Atividade em breve",
     },
     bio: {
       title: "Sobre",
