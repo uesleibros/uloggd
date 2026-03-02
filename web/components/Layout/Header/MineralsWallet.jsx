@@ -1,14 +1,25 @@
 import { useState, useEffect, useRef } from "react"
 import { Gem } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
+import { useAuth } from "#hooks/useAuth"
 import { MINERALS, MineralRow } from "@components/Minerals/MineralRow"
 
 export default function MineralsWallet({ minerals = {} }) {
   const { t } = useTranslation("minerals")
+  const { refreshUser } = useAuth()
   const [open, setOpen] = useState(false)
   const dropdownRef = useRef(null)
 
   const total = MINERALS.reduce((sum, m) => sum + (minerals[m.key] || 0), 0)
+
+  useEffect(() => {
+    function handleMineralsUpdated() {
+      refreshUser()
+    }
+
+    window.addEventListener("minerals-updated", handleMineralsUpdated)
+    return () => window.removeEventListener("minerals-updated", handleMineralsUpdated)
+  }, [refreshUser])
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -26,15 +37,6 @@ export default function MineralsWallet({ minerals = {} }) {
     window.addEventListener("keydown", handleKey)
     return () => window.removeEventListener("keydown", handleKey)
   }, [open])
-
-  useEffect(() => {
-    function handleMineralsUpdated() {
-      window.location.reload()
-    }
-
-    window.addEventListener("minerals-updated", handleMineralsUpdated)
-    return () => window.removeEventListener("minerals-updated", handleMineralsUpdated)
-  }, [])
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -77,7 +79,6 @@ export default function MineralsWallet({ minerals = {} }) {
             <MineralRow
               key={mineral.key}
               mineral={mineral}
-              name={t(mineral.key)}
               amount={minerals[mineral.key] || 0}
               size="md"
             />
@@ -87,8 +88,7 @@ export default function MineralsWallet({ minerals = {} }) {
         <div className="px-3 py-2 border-t border-zinc-800">
           <button
             onClick={() => setOpen(false)}
-            disabled
-            className="w-full text-center text-xs text-purple-400/50"
+            className="w-full text-center text-xs text-purple-400 hover:text-purple-300 transition-colors"
           >
             {t("shop")}
           </button>
