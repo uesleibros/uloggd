@@ -6,7 +6,7 @@ import * as THREE from "three"
 function MinecraftChest({ canOpen, chestState, onClick }) {
   const group = useRef()
   const glowRef = useRef()
-  const { scene, animations } = useGLTF("/models/chest.glb")
+  const { scene, animations } = useGLTF("/models/Chest.glb")
   const { actions, mixer } = useAnimations(animations, group)
   const shakeTime = useRef(0)
   const isAnimating = useRef(false)
