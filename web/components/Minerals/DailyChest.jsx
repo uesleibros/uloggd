@@ -281,6 +281,9 @@ export default function DailyChest() {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         rewards={rewards}
+        onMineralsCollected={() => {
+          window.dispatchEvent(new CustomEvent("minerals-updated"))
+        }}
       />
     </>
   )

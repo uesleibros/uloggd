@@ -27,9 +27,19 @@ export default function MineralsWallet({ minerals = {} }) {
     return () => window.removeEventListener("keydown", handleKey)
   }, [open])
 
+  useEffect(() => {
+    function handleMineralsUpdated() {
+      window.location.reload()
+    }
+
+    window.addEventListener("minerals-updated", handleMineralsUpdated)
+    return () => window.removeEventListener("minerals-updated", handleMineralsUpdated)
+  }, [])
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
+        id="minerals-wallet"
         onClick={() => setOpen(!open)}
         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
           open
