@@ -57,10 +57,7 @@
     "remark-gfm": "^4.0.0",
     "tailwindcss": "^4.1.18",
     "tough-cookie": "^6.0.0",
-    "unist-util-visit": "^5.1.0",
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.5.0",
-    "three": "^0.183.2"
+    "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
