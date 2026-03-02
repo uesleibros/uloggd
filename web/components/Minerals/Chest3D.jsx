@@ -18,7 +18,7 @@ function MinecraftChest({ canOpen, chestState, onClick }) {
     const size = box.getSize(new THREE.Vector3())
     const center = box.getCenter(new THREE.Vector3())
     const maxDim = Math.max(size.x, size.y, size.z)
-    const scale = 1.8 / maxDim
+    const scale = 0.8 / maxDim
 
     scene.scale.setScalar(scale)
     scene.position.set(
@@ -124,10 +124,10 @@ function MinecraftChest({ canOpen, chestState, onClick }) {
       <primitive object={scene} />
       <pointLight
         ref={glowRef}
-        position={[0, 0.9, 0]}
+        position={[0, 0.5, 0]}
         color="#fbbf24"
         intensity={0}
-        distance={5}
+        distance={3}
         decay={2}
       />
     </group>
@@ -148,13 +148,13 @@ function Particles({ active }) {
       const angle = (i / count) * Math.PI * 2
       const speed = 0.8 + Math.random() * 1.5
       particles.current.push({
-        position: new THREE.Vector3(0, 0.7, 0),
+        position: new THREE.Vector3(0, 0.4, 0),
         velocity: new THREE.Vector3(
-          Math.cos(angle) * speed * 0.018,
-          (0.8 + Math.random() * 1.2) * 0.028,
-          Math.sin(angle) * speed * 0.018
+          Math.cos(angle) * speed * 0.012,
+          (0.8 + Math.random() * 1.2) * 0.018,
+          Math.sin(angle) * speed * 0.012
         ),
-        scale: 0.025 + Math.random() * 0.025,
+        scale: 0.015 + Math.random() * 0.015,
         life: 1,
       })
     }
@@ -200,7 +200,7 @@ export default function Chest3DCanvas({ canOpen, chestState, onClick }) {
     <div className="w-32 h-32 sm:w-40 sm:h-40">
       <Canvas
         shadows
-        camera={{ position: [0, 1.3, 3], fov: 32 }}
+        camera={{ position: [0, 0.8, 2.2], fov: 35 }}
         gl={{ antialias: false, alpha: true }}
         style={{ background: "transparent" }}
       >
@@ -214,9 +214,9 @@ export default function Chest3DCanvas({ canOpen, chestState, onClick }) {
         <ContactShadows
           position={[0, 0, 0]}
           opacity={0.45}
-          scale={3}
+          scale={2}
           blur={2.2}
-          far={2}
+          far={1.5}
         />
         <Environment preset="city" />
       </Canvas>
