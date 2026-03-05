@@ -6,6 +6,16 @@ import { supabase } from "#lib/supabase"
 import { notify } from "@components/UI/Notification"
 import ChestOpenModal from "./ChestOpenModal"
 
+function getSecondsUntilMidnightUTC() {
+  const now = new Date()
+  const tomorrow = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + 1
+  ))
+  return Math.floor((tomorrow - now) / 1000)
+}
+
 export default function DailyChest() {
   const { t } = useTranslation("minerals")
   const { user } = useAuth()
@@ -101,7 +111,7 @@ export default function DailyChest() {
       setRewards(data.rewards)
       setShowModal(true)
       setCanOpen(false)
-      setTimeLeft(86400)
+      setTimeLeft(getSecondsUntilMidnightUTC())
     } catch (e) {
       console.error(e)
       notify(t("dailyChest.error"), "error")
