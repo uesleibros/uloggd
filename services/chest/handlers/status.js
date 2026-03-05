@@ -1,7 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
-const COOLDOWN_SECONDS = 86400
-
 export async function handleStatus(req, res) {
   const { data: lastChest } = await supabase
     .from("user_chests")
@@ -16,16 +14,27 @@ export async function handleStatus(req, res) {
     return res.json({ canOpen: true })
   }
 
-  const lastOpened = new Date(lastChest.opened_at)
   const now = new Date()
-  const diffSeconds = Math.floor((now - lastOpened) / 1000)
+  const nextReset = new Date(now)
+  nextReset.setUTCHours(0, 0, 0, 0)
 
-  if (diffSeconds >= COOLDOWN_SECONDS) {
+  if (now >= nextReset) {
+    nextReset.setUTCDate(nextReset.getUTCDate() + 1)
+  }
+
+  const lastOpened = new Date(lastChest.opened_at)
+
+  const todayReset = new Date(now)
+  todayReset.setUTCHours(0, 0, 0, 0)
+
+  if (lastOpened < todayReset) {
     return res.json({ canOpen: true })
   }
 
+  const secondsLeft = Math.floor((nextReset - now) / 1000)
+
   return res.json({
     canOpen: false,
-    secondsLeft: COOLDOWN_SECONDS - diffSeconds,
+    secondsLeft,
   })
 }
