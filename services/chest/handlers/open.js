@@ -1,7 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
-const COOLDOWN_SECONDS = 86400
-
 const DROP_TABLE = {
   copper: { min: 5, max: 15, chance: 1.0 },
   iron: { min: 3, max: 8, chance: 0.8 },
@@ -42,14 +40,22 @@ export async function handleOpen(req, res) {
     .single()
 
   if (lastChest) {
-    const lastOpened = new Date(lastChest.opened_at)
     const now = new Date()
-    const diffSeconds = Math.floor((now - lastOpened) / 1000)
+    const lastOpened = new Date(lastChest.opened_at)
 
-    if (diffSeconds < COOLDOWN_SECONDS) {
+    const todayMidnight = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate()
+    ))
+
+    if (lastOpened >= todayMidnight) {
+      const tomorrowMidnight = new Date(todayMidnight)
+      tomorrowMidnight.setUTCDate(tomorrowMidnight.getUTCDate() + 1)
+
       return res.status(429).json({
         error: "chest_cooldown",
-        secondsLeft: COOLDOWN_SECONDS - diffSeconds,
+        secondsLeft: Math.floor((tomorrowMidnight - now) / 1000),
       })
     }
   }
