@@ -130,9 +130,9 @@ APP_URL=https://yoursite.com
 ```
 
 Select the desired environments:
-- ✅ Production
-- ✅ Preview (optional)
-- ✅ Development (optional)
+- [x] Production
+- [x] Preview (optional)
+- [x] Development (optional)
 
 #### Important Notes
 
