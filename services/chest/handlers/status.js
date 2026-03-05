@@ -15,26 +15,23 @@ export async function handleStatus(req, res) {
   }
 
   const now = new Date()
-  const nextReset = new Date(now)
-  nextReset.setUTCHours(0, 0, 0, 0)
-
-  if (now >= nextReset) {
-    nextReset.setUTCDate(nextReset.getUTCDate() + 1)
-  }
-
   const lastOpened = new Date(lastChest.opened_at)
 
-  const todayReset = new Date(now)
-  todayReset.setUTCHours(0, 0, 0, 0)
+  const todayMidnight = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate()
+  ))
 
-  if (lastOpened < todayReset) {
+  if (lastOpened < todayMidnight) {
     return res.json({ canOpen: true })
   }
 
-  const secondsLeft = Math.floor((nextReset - now) / 1000)
+  const tomorrowMidnight = new Date(todayMidnight)
+  tomorrowMidnight.setUTCDate(tomorrowMidnight.getUTCDate() + 1)
 
   return res.json({
     canOpen: false,
-    secondsLeft,
+    secondsLeft: Math.floor((tomorrowMidnight - now) / 1000),
   })
 }
