@@ -63,8 +63,12 @@ export default function DailyChest() {
 
       const data = await res.json()
       setCanOpen(data.canOpen)
-      if (!data.canOpen && data.secondsLeft) {
-        setTimeLeft(data.secondsLeft)
+
+      if (!data.canOpen) {
+        const seconds = data.secondsLeft != null && data.secondsLeft > 0
+          ? data.secondsLeft
+          : getSecondsUntilMidnightUTC()
+        setTimeLeft(seconds)
       }
     } catch (e) {
       console.error(e)
