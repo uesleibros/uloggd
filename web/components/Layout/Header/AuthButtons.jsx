@@ -1,7 +1,8 @@
 import { useState } from "react"
-import { User, Settings, LogOut } from "lucide-react"
+import { User, Settings, LogOut, Fingerprint } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
+import { authenticateWithPasskey } from "#lib/passkey"
 import UserDisplay from "@components/User/UserDisplay"
 import UserBadges from "@components/User/UserBadges"
 import SettingsModal from "@components/User/Settings/SettingsModal"
@@ -11,8 +12,9 @@ import { DiscordIcon } from "./icons"
 export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) {
   const { t } = useTranslation()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [passkeyLoading, setPasskeyLoading] = useState(false)
 
-  const handleSignIn = async () => {
+  const handleDiscordSignIn = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "discord",
@@ -21,6 +23,37 @@ export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) 
       if (error) throw error
     } catch (error) {
       console.error("Error signing in:", error)
+    }
+  }
+
+  const handlePasskeySignIn = async () => {
+    try {
+      setPasskeyLoading(true)
+      const { token, type } = await authenticateWithPasskey()
+
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: type,
+      })
+
+      if (error) throw error
+      window.location.reload()
+    } catch (error) {
+      console.error("Error signing in with passkey:", error)
+
+      let errorMessage = t("auth.passkeyError.generic")
+
+      if (error.name === "NotAllowedError") {
+        errorMessage = t("auth.passkeyError.cancelled")
+      } else if (error.name === "InvalidStateError") {
+        errorMessage = t("auth.passkeyError.invalidState")
+      } else if (error.message?.includes("not found")) {
+        errorMessage = t("auth.passkeyError.notFound")
+      }
+
+      alert(errorMessage)
+    } finally {
+      setPasskeyLoading(false)
     }
   }
 
@@ -95,13 +128,22 @@ export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) 
     }
 
     return (
-      <div className="pt-2 border-t border-zinc-800">
+      <div className="pt-2 border-t border-zinc-800 space-y-2">
         <button
-          onClick={handleSignIn}
+          onClick={handleDiscordSignIn}
           className="h-10 w-full rounded-md bg-indigo-500 text-sm font-medium text-white flex items-center justify-center gap-2 hover:bg-indigo-600 transition-colors cursor-pointer"
         >
           <DiscordIcon className="h-5 w-5" />
           {t("auth.signInWithDiscord")}
+        </button>
+
+        <button
+          onClick={handlePasskeySignIn}
+          disabled={passkeyLoading}
+          className="h-10 w-full rounded-md bg-zinc-700 text-sm font-medium text-white flex items-center justify-center gap-2 hover:bg-zinc-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Fingerprint className="h-5 w-5" />
+          {passkeyLoading ? t("auth.passkeyLoading") : t("auth.signInWithPasskey")}
         </button>
       </div>
     )
@@ -112,12 +154,24 @@ export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) 
   }
 
   return (
-    <button
-      onClick={handleSignIn}
-      className="h-8 cursor-pointer px-4 rounded-md bg-indigo-500 hover:bg-indigo-600 text-sm font-medium text-white flex items-center gap-2 transition-colors"
-    >
-      <DiscordIcon className="h-4 w-4" />
-      {t("auth.signIn")}
-    </button>
+    <div className="flex gap-2">
+      <button
+        onClick={handleDiscordSignIn}
+        className="h-8 cursor-pointer px-4 rounded-md bg-indigo-500 hover:bg-indigo-600 text-sm font-medium text-white flex items-center gap-2 transition-colors"
+      >
+        <DiscordIcon className="h-4 w-4" />
+        Discord
+      </button>
+
+      <button
+        onClick={handlePasskeySignIn}
+        disabled={passkeyLoading}
+        className="h-8 cursor-pointer px-4 rounded-md bg-zinc-700 hover:bg-zinc-600 text-sm font-medium text-white flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        title={t("auth.signInWithPasskey")}
+      >
+        <Fingerprint className="h-4 w-4" />
+        {passkeyLoading ? "..." : "Passkey"}
+      </button>
+    </div>
   )
 }

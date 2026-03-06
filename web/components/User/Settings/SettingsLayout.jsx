@@ -1,4 +1,4 @@
-import { User, Monitor, Palette, LogOut, X, Loader2, ArrowDownToLine, Link2, Globe } from "lucide-react"
+import { User, Monitor, Palette, LogOut, X, Loader2, ArrowDownToLine, Link2, Globe, Shield } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import SidebarItem from "@components/User/Settings/ui/SidebarItem"
 import MobileTabButton from "@components/User/Settings/ui/MobileTabButton"
@@ -6,13 +6,14 @@ import MobileTabButton from "@components/User/Settings/ui/MobileTabButton"
 const TAB_ICONS = {
   account: User,
   sessions: Monitor,
+  security: Shield,
   appearance: Palette,
   language: Globe,
   connections: Link2,
   integrations: ArrowDownToLine,
 }
 
-const TAB_KEYS = ["account", "sessions", "appearance", "language", "connections", "integrations"]
+const TAB_KEYS = ["account", "sessions", "security", "appearance", "language", "connections", "integrations"]
 
 export default function SettingsLayout({ activeTab, onTabChange, onClose, onSignOut, signOutLoading, children }) {
   const { t } = useTranslation()

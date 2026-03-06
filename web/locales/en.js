@@ -162,6 +162,14 @@ export default {
     signOut: "Sign out",
     signIn: "Sign in",
     signInWithDiscord: "Sign in with Discord",
+    signInWithPasskey: "Sign in with Passkey",
+    passkeyLoading: "Please wait...",
+    passkeyError: {
+      cancelled: "Authentication cancelled or not allowed.",
+      invalidState: "This passkey was already used. Try again.",
+      notFound: "Passkey not found. Make sure you've created a passkey before.",
+      generic: "Failed to sign in with passkey. Try again.",
+    },
   },
   footer: {
     description: "Your personal game library. Track, rate, and discover new games.",
@@ -847,6 +855,43 @@ export default {
         connectionsMobile: "Connections",
         integrations: "Integrations",
         integrationsMobile: "Integrations",
+      },
+    },
+    security: {
+      title: "Security",
+      description: "Manage your passkeys and authentication methods.",
+    },
+    passkey: {
+      title: "Passkeys",
+      description: "Use passkeys to sign in quickly and securely without a password.",
+      empty: {
+        title: "No passkeys added yet",
+        subtitle: "Add a passkey to sign in faster",
+      },
+      createdAt: "Created on {{date}}",
+      lastUsed: "Last used: {{date}}",
+      add: {
+        title: "Add new passkey",
+        placeholder: "Device name (e.g. iPhone 15, MacBook Pro)",
+        button: "Add Passkey",
+        adding: "Adding...",
+      },
+      remove: {
+        confirm: "Are you sure you want to remove \"{{name}}\"?",
+      },
+      hint: "You'll be asked to use your biometrics, PIN or security key.",
+      success: {
+        added: "Passkey added successfully!",
+        removed: "Passkey removed successfully!",
+      },
+      errors: {
+        loadFailed: "Failed to load passkeys",
+        notAuthenticated: "Not authenticated",
+        cancelled: "Operation cancelled or not allowed",
+        notSupported: "Your browser doesn't support passkeys",
+        addFailed: "Failed to add passkey",
+        removeFailed: "Failed to remove passkey",
+        emptyName: "Enter a device name",
       },
     },
     language: {

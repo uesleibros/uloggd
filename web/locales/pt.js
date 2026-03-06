@@ -162,6 +162,14 @@ export default {
     signOut: "Sair",
     signIn: "Entrar",
     signInWithDiscord: "Entrar com Discord",
+    signInWithPasskey: "Entrar com Passkey",
+    passkeyLoading: "Aguarde...",
+    passkeyError: {
+      cancelled: "Autenticação cancelada ou não permitida.",
+      invalidState: "Esta passkey já foi usada. Tente novamente.",
+      notFound: "Passkey não encontrada. Verifique se você criou uma passkey anteriormente.",
+      generic: "Falha ao entrar com passkey. Tente novamente.",
+    },
   },
   footer: {
     description: "Sua biblioteca de jogos pessoal. Acompanhe, avalie e descubra novos jogos.",
@@ -847,6 +855,43 @@ export default {
         connectionsMobile: "Conexões",
         integrations: "Integrações",
         integrationsMobile: "Integrações",
+      },
+    },
+    security: {
+      title: "Segurança",
+      description: "Gerencie suas passkeys e métodos de autenticação.",
+    },
+    passkey: {
+      title: "Passkeys",
+      description: "Use passkeys para fazer login de forma rápida e segura sem precisar de senha.",
+      empty: {
+        title: "Nenhuma passkey adicionada ainda",
+        subtitle: "Adicione uma passkey para fazer login mais rápido",
+      },
+      createdAt: "Criada em {{date}}",
+      lastUsed: "Último uso: {{date}}",
+      add: {
+        title: "Adicionar nova passkey",
+        placeholder: "Nome do dispositivo (ex: iPhone 15, MacBook Pro)",
+        button: "Adicionar Passkey",
+        adding: "Adicionando...",
+      },
+      remove: {
+        confirm: "Tem certeza que deseja remover \"{{name}}\"?",
+      },
+      hint: "Você será solicitado a usar sua biometria, PIN ou chave de segurança do dispositivo.",
+      success: {
+        added: "Passkey adicionada com sucesso!",
+        removed: "Passkey removida com sucesso!",
+      },
+      errors: {
+        loadFailed: "Erro ao carregar passkeys",
+        notAuthenticated: "Não autenticado",
+        cancelled: "Operação cancelada ou não permitida",
+        notSupported: "Seu navegador não suporta passkeys",
+        addFailed: "Erro ao adicionar passkey",
+        removeFailed: "Erro ao remover passkey",
+        emptyName: "Digite um nome para o dispositivo",
       },
     },
     language: {
