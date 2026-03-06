@@ -847,6 +847,8 @@ export default {
         accountMobile: "Conta",
         sessions: "Sessão",
         sessionsMobile: "Sessão",
+        security: "Segurança",
+        securityMobile: "Segurança",
         appearance: "Aparência",
         appearanceMobile: "Aparência",
         language: "Idioma",
