@@ -37,8 +37,12 @@ async function fetchProfile(session) {
         Authorization: `Bearer ${session.access_token}`,
       },
     })
-    res.status = "online"
-    return res.ok ? await res.json() : null
+    if (res.ok) {
+      let data = await res.json()
+      data.status = "online"
+      return data
+    }
+    return null
   } catch {
     return null
   }
@@ -203,3 +207,4 @@ export function useAuth() {
     refreshUser,
   }
 }
+
