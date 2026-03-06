@@ -220,11 +220,8 @@ export function ListCard({ list, showOwner = false, actions = null }) {
             <div className="absolute inset-x-0 top-0 h-[1px] bg-white/[0.04]" />
             <div className="absolute inset-0 flex items-center justify-between px-4">
               <div className="flex items-center gap-1.5">
-                <span className="inline-block text-[13px] font-medium text-white/70 tabular-nums">
-                  {gamesCount}
-                </span>
                 <span className="text-[13px] text-white/60">
-                  {gamesCount === 1 ? t("common.game") : t("common.games")}
+                  {gamesCount === 1 ? t("common.game", { count: gamesCount }) : t("common.games", { count: gamesCount })}
                 </span>
                 {list.is_public === false && (
                   <Lock className="w-3 h-3 text-white/30 ml-1" />
