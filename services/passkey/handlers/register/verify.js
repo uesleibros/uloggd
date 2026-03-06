@@ -11,15 +11,19 @@ export async function handleVerify(req, res) {
   try {
     const registrationInfo = await verifyRegistration(req.user.id, response)
 
-    const { credentialPublicKey, credentialID, counter } = registrationInfo
+    const { credential } = registrationInfo
+
+    if (!credential) {
+      throw new Error("No credential returned")
+    }
 
     const { data, error } = await supabase
       .from("passkeys")
       .insert({
         user_id: req.user.id,
-        credential_id: Buffer.from(credentialID).toString("base64url"),
-        public_key: Buffer.from(credentialPublicKey).toString("base64url"),
-        counter,
+        credential_id: credential.id,
+        public_key: Buffer.from(credential.publicKey).toString("base64url"),
+        counter: credential.counter,
         device_name: deviceName,
       })
       .select("id, device_name, created_at")
