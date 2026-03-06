@@ -19,11 +19,11 @@ const BASE_POSITIONS = [
 ]
 
 const HOVER_POSITIONS = [
-  { x: -100, rotate: -10 },
-  { x: -50, rotate: -5 },
+  { x: -120, rotate: -12 },
+  { x: -60, rotate: -6 },
   { x: 0, rotate: 0 },
-  { x: 50, rotate: 5 },
-  { x: 100, rotate: 10 },
+  { x: 60, rotate: 6 },
+  { x: 120, rotate: 12 },
 ]
 
 function FanImages({ slugs = [], isActive }) {
@@ -46,7 +46,7 @@ function FanImages({ slugs = [], isActive }) {
   }
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center overflow-hidden" style={{ top: "-25px" }}>
+    <div className="absolute inset-0 flex items-center justify-center" style={{ top: "-25px" }}>
       {[...Array(5)].map((_, imgIndex) => {
         const idlePos = BASE_POSITIONS[imgIndex]
         const hoverPos = HOVER_POSITIONS[imgIndex]
@@ -135,7 +135,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
       <div className="relative w-full h-full" style={{ perspective: "1200px" }}>
         
         <motion.div
-          className="relative z-0 rounded-2xl overflow-hidden"
+          className="relative z-0 rounded-2xl"
           animate={{
             rotateX: isHovered ? 12 : 0,
           }}
@@ -151,10 +151,11 @@ export function ListCard({ list, showOwner = false, actions = null }) {
             border: "1px solid rgba(255, 255, 255, 0.06)",
             transformStyle: "preserve-3d",
             transformOrigin: "center bottom",
+            overflow: isHovered ? "visible" : "hidden",
           }}
         >
           <motion.div
-            className="absolute inset-0 overflow-hidden"
+            className="absolute inset-0"
             animate={{
               rotateX: isHovered ? -12 : 0,
             }}
@@ -166,6 +167,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
             }}
             style={{
               transformOrigin: "center bottom",
+              overflow: isHovered ? "visible" : "hidden",
             }}
           >
             <FanImages slugs={list.game_slugs || []} isActive={isHovered} />
