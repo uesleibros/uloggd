@@ -10,6 +10,8 @@ export default function ReorderModal({ isOpen, onClose, items, getGame, listId, 
   const [saving, setSaving] = useState(false)
   const [dragIndex, setDragIndex] = useState(null)
   const [overIndex, setOverIndex] = useState(null)
+  const [editingIndex, setEditingIndex] = useState(null)
+  const [editValue, setEditValue] = useState("")
   const touchItemIndex = useRef(null)
   const listRef = useRef(null)
 
@@ -17,8 +19,26 @@ export default function ReorderModal({ isOpen, onClose, items, getGame, listId, 
     if (isOpen) {
       setOrderedItems([...items])
       setSaving(false)
+      setEditingIndex(null)
     }
   }, [isOpen, items])
+
+  function startEditIndex(index) {
+    setEditingIndex(index)
+    setEditValue(String(index + 1))
+  }
+
+  function commitIndexEdit(fromIndex) {
+    const target = parseInt(editValue, 10)
+    setEditingIndex(null)
+    if (isNaN(target) || target < 1 || target > orderedItems.length || target - 1 === fromIndex) return
+
+    const toIndex = target - 1
+    const updated = [...orderedItems]
+    const [moved] = updated.splice(fromIndex, 1)
+    updated.splice(toIndex, 0, moved)
+    setOrderedItems(updated)
+  }
 
   function handleDragStart(e, index) {
     setDragIndex(index)
@@ -176,9 +196,33 @@ export default function ReorderModal({ isOpen, onClose, items, getGame, listId, 
                   <GripVertical className="w-4 h-4" />
                 </div>
 
-                <span className="text-xs text-zinc-600 tabular-nums w-5 text-center flex-shrink-0">
-                  {index + 1}
-                </span>
+                {editingIndex === index ? (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={editValue}
+                    onChange={e => setEditValue(e.target.value.replace(/\D/g, ""))}
+                    onBlur={() => commitIndexEdit(index)}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") {
+                        e.target.blur()
+                      }
+                      if (e.key === "Escape") {
+                        setEditingIndex(null)
+                      }
+                    }}
+                    autoFocus
+                    onFocus={e => e.target.select()}
+                    className="w-7 h-6 text-xs text-center text-white bg-zinc-800 border border-indigo-500 rounded outline-none tabular-nums flex-shrink-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
+                ) : (
+                  <button
+                    onClick={() => startEditIndex(index)}
+                    className="text-xs text-zinc-600 hover:text-indigo-400 tabular-nums w-7 h-6 text-center flex-shrink-0 cursor-pointer rounded hover:bg-zinc-800/80 transition-colors flex items-center justify-center"
+                  >
+                    {index + 1}
+                  </button>
+                )}
 
                 {coverUrl ? (
                   <img src={coverUrl} alt="" className="h-10 w-7 rounded object-cover bg-zinc-800 flex-shrink-0" />
