@@ -73,7 +73,7 @@ export async function handleGet(req, res) {
 			return {
 				...list,
 				games_count: items.length,
-				game_slugs: items.slice(0, 4).map(i => i.game_slug),
+				game_slugs: items.slice(0, 5).map(i => i.game_slug),
 			}
 		})
 
@@ -87,4 +87,5 @@ export async function handleGet(req, res) {
 		console.error(e)
 		res.status(500).json({ error: "fail" })
 	}
+
 }
