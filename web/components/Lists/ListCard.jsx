@@ -10,21 +10,72 @@ import { encode } from "#utils/shortId.js"
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1]
 const TRANSITION_DURATION = 0.3
 
-const BASE_POSITIONS = [
-  { x: -40, rotate: -6 },
-  { x: -20, rotate: -3 },
-  { x: 0, rotate: 0 },
-  { x: 20, rotate: 3 },
-  { x: 40, rotate: 6 },
-]
-
-const HOVER_POSITIONS = [
-  { x: -120, rotate: -12 },
-  { x: -60, rotate: -6 },
-  { x: 0, rotate: 0 },
-  { x: 60, rotate: 6 },
-  { x: 120, rotate: 12 },
-]
+function getPositions(count) {
+  if (count === 1) {
+    return {
+      base: [{ x: 0, rotate: 0 }],
+      hover: [{ x: 0, rotate: 0 }],
+    }
+  }
+  if (count === 2) {
+    return {
+      base: [
+        { x: -20, rotate: -4 },
+        { x: 20, rotate: 4 },
+      ],
+      hover: [
+        { x: -60, rotate: -8 },
+        { x: 60, rotate: 8 },
+      ],
+    }
+  }
+  if (count === 3) {
+    return {
+      base: [
+        { x: -30, rotate: -5 },
+        { x: 0, rotate: 0 },
+        { x: 30, rotate: 5 },
+      ],
+      hover: [
+        { x: -90, rotate: -10 },
+        { x: 0, rotate: 0 },
+        { x: 90, rotate: 10 },
+      ],
+    }
+  }
+  if (count === 4) {
+    return {
+      base: [
+        { x: -35, rotate: -6 },
+        { x: -12, rotate: -2 },
+        { x: 12, rotate: 2 },
+        { x: 35, rotate: 6 },
+      ],
+      hover: [
+        { x: -100, rotate: -10 },
+        { x: -35, rotate: -4 },
+        { x: 35, rotate: 4 },
+        { x: 100, rotate: 10 },
+      ],
+    }
+  }
+  return {
+    base: [
+      { x: -40, rotate: -6 },
+      { x: -20, rotate: -3 },
+      { x: 0, rotate: 0 },
+      { x: 20, rotate: 3 },
+      { x: 40, rotate: 6 },
+    ],
+    hover: [
+      { x: -120, rotate: -12 },
+      { x: -60, rotate: -6 },
+      { x: 0, rotate: 0 },
+      { x: 60, rotate: 6 },
+      { x: 120, rotate: 12 },
+    ],
+  }
+}
 
 function FanImages({ slugs = [], isActive }) {
   const { getGame } = useGamesBatch(slugs)
@@ -36,6 +87,7 @@ function FanImages({ slugs = [], isActive }) {
       return `https:${g.cover.url.replace("t_thumb", "t_cover_big")}`
     })
     .filter(Boolean)
+    .slice(0, 5)
 
   if (covers.length === 0) {
     return (
@@ -45,15 +97,17 @@ function FanImages({ slugs = [], isActive }) {
     )
   }
 
+  const positions = getPositions(covers.length)
+  const centerIndex = Math.floor(covers.length / 2)
+
   return (
     <div className="absolute inset-0 flex items-center justify-center" style={{ top: "-25px" }}>
-      {[...Array(5)].map((_, imgIndex) => {
-        const idlePos = BASE_POSITIONS[imgIndex]
-        const hoverPos = HOVER_POSITIONS[imgIndex]
-        const imageUrl = covers[imgIndex % covers.length]
+      {covers.map((imageUrl, imgIndex) => {
+        const idlePos = positions.base[imgIndex]
+        const hoverPos = positions.hover[imgIndex]
         
-        const centerIndex = 2
         const distanceFromCenter = Math.abs(imgIndex - centerIndex)
+        const maxDistance = Math.floor(covers.length / 2)
         const zIndex = 10 - distanceFromCenter
 
         const idleBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.6 : 0.4
