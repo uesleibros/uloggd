@@ -31,15 +31,25 @@ export async function handleAuthVerify(req, res) {
       })
       .eq("id", passkey.id)
 
-    const { data, error } = await supabase.auth.admin.createSession({
-      userId: passkey.user_id
+    const { data: authUser } = await supabase.auth.admin.getUserById(passkey.user_id)
+
+    if (!authUser?.user?.email) {
+      return res.status(500).json({ error: "user not found" })
+    }
+
+    const { data, error } = await supabase.auth.admin.generateLink({
+      type: "magiclink",
+      email: authUser.user.email,
     })
 
     if (error) throw error
 
+    const tokenHash = data.properties.hashed_token
+
     res.json({
       success: true,
-      session: data.session,
+      tokenHash,
+      email: authUser.user.email,
     })
   } catch (e) {
     console.error(e)
