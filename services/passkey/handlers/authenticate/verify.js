@@ -1,11 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
 import { verifyAuthentication } from "#lib/passkey.js"
-import { createClient } from "@supabase/supabase-js"
-
-const supabaseAdmin = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
 
 export async function handleAuthVerify(req, res) {
   const { response, authId } = req.body
@@ -37,30 +31,15 @@ export async function handleAuthVerify(req, res) {
       })
       .eq("id", passkey.id)
 
-    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(passkey.user_id)
-
-    if (!authUser?.user?.email) {
-      return res.status(500).json({ error: "user not found" })
-    }
-
-    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: "magiclink",
-      email: authUser.user.email,
-      options: {
-        redirectTo: process.env.APP_URL
-      }
+    const { data, error } = await supabase.auth.admin.createSession({
+      userId: passkey.user_id
     })
 
-    if (linkError) throw linkError
-
-    const url = new URL(linkData.properties.action_link)
-    const token = url.searchParams.get("token")
-    const type = url.searchParams.get("type")
+    if (error) throw error
 
     res.json({
       success: true,
-      token,
-      type,
+      session: data.session,
     })
   } catch (e) {
     console.error(e)
