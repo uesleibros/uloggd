@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { Lock } from "lucide-react"
+import { Lock, Clock } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
@@ -249,7 +249,7 @@ export default function DailyChest() {
                 )}
               </div>
 
-              <p className="text-sm text-zinc-400 mb-5 max-w-sm">
+              <p className="text-sm text-zinc-400 mb-4 max-w-sm">
                 {t("dailyChest.description")}
               </p>
 
@@ -279,6 +279,11 @@ export default function DailyChest() {
                   </div>
                 </div>
               )}
+
+              <div className="flex items-center gap-1.5 mt-3 text-xs text-zinc-500">
+                <Clock className="w-3 h-3" />
+                <span>{t("dailyChest.resetTime")}</span>
+              </div>
             </div>
           </div>
         </div>

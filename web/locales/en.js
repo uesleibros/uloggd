@@ -87,6 +87,7 @@ export default {
       opened: "Chest Opened!",
       youGot: "You got {{count}} minerals!",
       claim: "Claim Rewards",
+      resetTime: "Resets daily at 00:00 (GMT-3)",
       errors: {
         chest_cooldown: "Wait for the cooldown",
         failed_to_update_minerals: "Failed to update minerals",

@@ -87,6 +87,7 @@ export default {
       opened: "Baú Aberto!",
       youGot: "Você ganhou {{count}} minérios!",
       claim: "Coletar Recompensas",
+      resetTime: "Reseta diariamente às 00:00 (Brasília)",
       errors: {
         chest_cooldown: "Aguarde o tempo de espera",
         failed_to_update_minerals: "Erro ao atualizar minérios",

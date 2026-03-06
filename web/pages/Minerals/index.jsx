@@ -8,11 +8,11 @@ import DailyChest from "@components/Minerals/DailyChest"
 
 const MINERALS_DATA = [
   { key: "copper", color: "#B87333", rarity: "common", dropRate: 100 },
-  { key: "iron", color: "#A8A8A8", rarity: "uncommon", dropRate: 80 },
-  { key: "gold", color: "#FFD700", rarity: "rare", dropRate: 50 },
-  { key: "emerald", color: "#50C878", rarity: "epic", dropRate: 20 },
-  { key: "diamond", color: "#B9F2FF", rarity: "legendary", dropRate: 8 },
-  { key: "ruby", color: "#E0115F", rarity: "mythic", dropRate: 2 },
+  { key: "iron", color: "#A8A8A8", rarity: "uncommon", dropRate: 60 },
+  { key: "gold", color: "#FFD700", rarity: "rare", dropRate: 25 },
+  { key: "emerald", color: "#50C878", rarity: "epic", dropRate: 8 },
+  { key: "diamond", color: "#B9F2FF", rarity: "legendary", dropRate: 2 },
+  { key: "ruby", color: "#E0115F", rarity: "mythic", dropRate: 0.5 },
 ]
 
 const HOW_TO_OBTAIN = [

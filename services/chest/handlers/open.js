@@ -1,12 +1,12 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
 const DROP_TABLE = {
-  copper:  { min: 5,  max: 15, chance: 1.0  },
-  iron:    { min: 3,  max: 8,  chance: 0.8  },
-  gold:    { min: 1,  max: 5,  chance: 0.5  },
-  emerald: { min: 1,  max: 3,  chance: 0.2  },
-  diamond: { min: 1,  max: 2,  chance: 0.08 },
-  ruby:    { min: 1,  max: 1,  chance: 0.02 },
+  copper:  { min: 3,  max: 10, chance: 1.0   },
+  iron:    { min: 2,  max: 6,  chance: 0.6   },
+  gold:    { min: 1,  max: 3,  chance: 0.25  },
+  emerald: { min: 1,  max: 2,  chance: 0.08  },
+  diamond: { min: 1,  max: 1,  chance: 0.02  },
+  ruby:    { min: 1,  max: 1,  chance: 0.005 },
 }
 
 const MINERALS = Object.keys(DROP_TABLE)
@@ -29,6 +29,32 @@ function generateRewards() {
   return rewards
 }
 
+function getSecondsUntilMidnightBRT() {
+  const now = new Date()
+  const brt = new Date(now.getTime() - 3 * 60 * 60 * 1000)
+  
+  const tomorrow = new Date(Date.UTC(
+    brt.getUTCFullYear(),
+    brt.getUTCMonth(),
+    brt.getUTCDate() + 1
+  ))
+  
+  tomorrow.setTime(tomorrow.getTime() + 3 * 60 * 60 * 1000)
+  
+  return Math.floor((tomorrow - now) / 1000)
+}
+
+function getTodayBRT() {
+  const now = new Date()
+  const brt = new Date(now.getTime() - 3 * 60 * 60 * 1000)
+  return brt.toISOString().slice(0, 10)
+}
+
+function getDateBRT(date) {
+  const brt = new Date(new Date(date).getTime() - 3 * 60 * 60 * 1000)
+  return brt.toISOString().slice(0, 10)
+}
+
 export async function handleOpen(req, res) {
   const userId = req.user.id
 
@@ -42,14 +68,13 @@ export async function handleOpen(req, res) {
     .single()
 
   if (lastChest) {
-    const now = new Date()
-    const last = new Date(lastChest.opened_at)
-    const remaining = 86400000 - (now.getTime() - last.getTime())
+    const todayBRT = getTodayBRT()
+    const lastBRT = getDateBRT(lastChest.opened_at)
 
-    if (remaining > 0) {
+    if (lastBRT >= todayBRT) {
       return res.status(429).json({
         error: "chest_cooldown",
-        secondsLeft: Math.ceil(remaining / 1000),
+        secondsLeft: getSecondsUntilMidnightBRT(),
       })
     }
   }
