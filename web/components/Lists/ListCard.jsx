@@ -130,13 +130,20 @@ export function ListCard({ list, showOwner = false, actions = null }) {
       style={{
         perspective: "1200px",
         zIndex: isHovered ? 50 : 1,
+        overflow: "visible",
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <Link to={`/list/${shortId}`} className="absolute inset-0 z-40 rounded-2xl" />
 
-      <div className="relative w-full h-full" style={{ perspective: "1200px" }}>
+      <div 
+        className="relative w-full h-full" 
+        style={{ 
+          perspective: "1200px",
+          overflow: "visible",
+        }}
+      >
         
         <motion.div
           className="relative z-0 rounded-2xl"
@@ -155,9 +162,18 @@ export function ListCard({ list, showOwner = false, actions = null }) {
             border: "1px solid rgba(255, 255, 255, 0.06)",
             transformStyle: "preserve-3d",
             transformOrigin: "center bottom",
-            overflow: isHovered ? "visible" : "hidden",
+            overflow: "visible",
           }}
         >
+          <div
+            className="absolute inset-0 rounded-2xl pointer-events-none"
+            style={{
+              background: "#1e1e1e",
+              overflow: "hidden",
+              zIndex: 0,
+            }}
+          />
+          
           <motion.div
             className="absolute inset-0"
             animate={{
@@ -171,7 +187,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
             }}
             style={{
               transformOrigin: "center bottom",
-              overflow: isHovered ? "visible" : "hidden",
+              overflow: "visible",
             }}
           >
             <FanImages slugs={list.game_slugs || []} isActive={isHovered} />
@@ -259,6 +275,12 @@ export function ListCard({ list, showOwner = false, actions = null }) {
           {actions}
         </div>
       )}
+      
+      <style jsx global>{`
+        .list-card-container {
+          overflow: visible !important;
+        }
+      `}</style>
     </motion.div>
   )
 }
