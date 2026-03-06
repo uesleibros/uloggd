@@ -51,21 +51,24 @@ function FanImages({ slugs = [], isActive }) {
   }
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center" style={{ top: "-25px" }}>
+    <div
+      className="absolute inset-0 flex items-center justify-center"
+      style={{ top: "-25px", overflow: "visible" }}
+    >
       {covers.map((imageUrl, imgIndex) => {
         const idlePos = BASE_POSITIONS[imgIndex]
         const hoverPos = HOVER_POSITIONS[imgIndex]
-        
+
         const centerIndex = 2
         const distanceFromCenter = Math.abs(imgIndex - centerIndex)
         const zIndex = 10 - distanceFromCenter
 
         const idleBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.6 : 0.4
         const hoverBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.8 : 0.65
-        
+
         const baseScale = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.95 : 0.9
         const hoverScale = distanceFromCenter === 0 ? 1.02 : distanceFromCenter === 1 ? 0.97 : 0.92
-        
+
         const yOffset = distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 6 : 12
 
         const xPos = isActive ? hoverPos.x : idlePos.x
@@ -137,16 +140,15 @@ export function ListCard({ list, showOwner = false, actions = null }) {
     >
       <Link to={`/list/${shortId}`} className="absolute inset-0 z-40 rounded-2xl" />
 
-      <div 
-        className="relative w-full h-full" 
-        style={{ 
+      <div
+        className="relative w-full h-full"
+        style={{
           perspective: "1200px",
           overflow: "visible",
         }}
       >
-        
         <motion.div
-          className="relative z-0 rounded-2xl"
+          className="relative z-0"
           animate={{
             rotateX: isHovered ? 12 : 0,
           }}
@@ -158,8 +160,6 @@ export function ListCard({ list, showOwner = false, actions = null }) {
           }}
           style={{
             height: "280px",
-            background: "#1e1e1e",
-            border: "1px solid rgba(255, 255, 255, 0.06)",
             transformStyle: "preserve-3d",
             transformOrigin: "center bottom",
             overflow: "visible",
@@ -169,11 +169,12 @@ export function ListCard({ list, showOwner = false, actions = null }) {
             className="absolute inset-0 rounded-2xl pointer-events-none"
             style={{
               background: "#1e1e1e",
+              border: "1px solid rgba(255, 255, 255, 0.06)",
               overflow: "hidden",
               zIndex: 0,
             }}
           />
-          
+
           <motion.div
             className="absolute inset-0"
             animate={{
@@ -238,7 +239,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
                 filter: "blur(0.5px)",
               }}
             />
-            
+
             <h3 className="font-semibold text-white/70 text-base leading-snug line-clamp-1 relative z-0 transition-colors duration-200 group-hover:text-white">
               {list.title}
             </h3>
@@ -275,12 +276,6 @@ export function ListCard({ list, showOwner = false, actions = null }) {
           {actions}
         </div>
       )}
-      
-      <style jsx global>{`
-        .list-card-container {
-          overflow: visible !important;
-        }
-      `}</style>
     </motion.div>
   )
 }
