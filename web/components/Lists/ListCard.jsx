@@ -11,19 +11,19 @@ const EASE_OUT_EXPO = [0.16, 1, 0.3, 1]
 const TRANSITION_DURATION = 0.3
 
 const BASE_POSITIONS = [
-  { x: -20, rotate: -6 },
-  { x: -10, rotate: -3 },
+  { x: -50, rotate: -8 },
+  { x: -25, rotate: -4 },
   { x: 0, rotate: 0 },
-  { x: 10, rotate: 3 },
-  { x: 20, rotate: 6 },
+  { x: 25, rotate: 4 },
+  { x: 50, rotate: 8 },
 ]
 
 const HOVER_POSITIONS = [
-  { x: -110, rotate: -12 },
-  { x: -55, rotate: -6 },
+  { x: -130, rotate: -15 },
+  { x: -65, rotate: -7 },
   { x: 0, rotate: 0 },
-  { x: 55, rotate: 6 },
-  { x: 110, rotate: 12 },
+  { x: 65, rotate: 7 },
+  { x: 130, rotate: 15 },
 ]
 
 function FanImages({ slugs = [], isActive }) {
@@ -40,13 +40,13 @@ function FanImages({ slugs = [], isActive }) {
   if (covers.length === 0) {
     return (
       <div className="absolute inset-0 flex items-center justify-center">
-        <Gamepad2 className="w-12 h-12 text-white/10" />
+        <Gamepad2 className="w-14 h-14 text-white/10" />
       </div>
     )
   }
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+    <div className="absolute inset-0 flex items-center justify-center overflow-hidden" style={{ top: "-60px" }}>
       {[...Array(5)].map((_, imgIndex) => {
         const idlePos = BASE_POSITIONS[imgIndex]
         const hoverPos = HOVER_POSITIONS[imgIndex]
@@ -56,16 +56,16 @@ function FanImages({ slugs = [], isActive }) {
         const distanceFromCenter = Math.abs(imgIndex - centerIndex)
         const zIndex = 10 - distanceFromCenter
 
-        const idleBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.5 : 0.3
-        const hoverBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.7 : 0.5
+        const idleBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.55 : 0.35
+        const hoverBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.75 : 0.55
         
-        const baseScale = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.85 : 0.7
-        const hoverScale = distanceFromCenter === 0 ? 1.02 : distanceFromCenter === 1 ? 0.88 : 0.75
+        const baseScale = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.92 : 0.84
+        const hoverScale = distanceFromCenter === 0 ? 1.03 : distanceFromCenter === 1 ? 0.95 : 0.87
         
-        const yOffset = distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 8 : 16
+        const yOffset = distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 12 : 24
 
         const xPos = isActive ? hoverPos.x : idlePos.x
-        const yPos = isActive ? yOffset - 4 : yOffset
+        const yPos = isActive ? yOffset - 8 : yOffset
         const rotation = isActive ? hoverPos.rotate : idlePos.rotate
         const finalScale = isActive ? hoverScale : baseScale
 
@@ -91,7 +91,7 @@ function FanImages({ slugs = [], isActive }) {
             }}
             style={{ zIndex }}
           >
-            <div className="h-[220px] w-[148px] overflow-hidden rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.6)] bg-zinc-900 border border-white/10">
+            <div className="h-[280px] w-[188px] overflow-hidden rounded-xl shadow-[0_12px_50px_rgba(0,0,0,0.7)] bg-zinc-900 border border-white/10">
               <motion.img
                 src={imageUrl}
                 alt=""
@@ -122,7 +122,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 
   return (
     <motion.div
-      className="group relative w-full cursor-pointer h-[320px]"
+      className="group relative w-full cursor-pointer h-[360px]"
       style={{
         perspective: "1200px",
         zIndex: isHovered ? 50 : 1,
@@ -146,7 +146,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
             mass: 0.8,
           }}
           style={{
-            height: "320px",
+            height: "360px",
             background: "#1e1e1e",
             border: "1px solid rgba(255, 255, 255, 0.06)",
             transformStyle: "preserve-3d",
