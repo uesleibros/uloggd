@@ -11,11 +11,19 @@ const EASE_OUT_EXPO = [0.16, 1, 0.3, 1]
 const TRANSITION_DURATION = 0.3
 
 const BASE_POSITIONS = [
-  { x: -64, rotate: -9 },
-  { x: -32, rotate: -4.5 },
+  { x: -20, rotate: -6 },
+  { x: -10, rotate: -3 },
   { x: 0, rotate: 0 },
-  { x: 32, rotate: 4.5 },
-  { x: 64, rotate: 9 },
+  { x: 10, rotate: 3 },
+  { x: 20, rotate: 6 },
+]
+
+const HOVER_POSITIONS = [
+  { x: -110, rotate: -12 },
+  { x: -55, rotate: -6 },
+  { x: 0, rotate: 0 },
+  { x: 55, rotate: 6 },
+  { x: 110, rotate: 12 },
 ]
 
 function FanImages({ slugs = [], isActive }) {
@@ -32,33 +40,36 @@ function FanImages({ slugs = [], isActive }) {
   if (covers.length === 0) {
     return (
       <div className="absolute inset-0 flex items-center justify-center">
-        <Gamepad2 className="w-10 h-10 text-white/10" />
+        <Gamepad2 className="w-12 h-12 text-white/10" />
       </div>
     )
   }
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center" style={{ top: "-20px" }}>
+    <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
       {[...Array(5)].map((_, imgIndex) => {
-        const pos = BASE_POSITIONS[imgIndex]
+        const idlePos = BASE_POSITIONS[imgIndex]
+        const hoverPos = HOVER_POSITIONS[imgIndex]
         const imageUrl = covers[imgIndex % covers.length]
         
         const centerIndex = 2
         const distanceFromCenter = Math.abs(imgIndex - centerIndex)
         const zIndex = 10 - distanceFromCenter
 
-        const idleBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.65 : 0.45
-        const hoverBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.4 : 0.2
+        const idleBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.5 : 0.3
+        const hoverBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.7 : 0.5
         
-        const yOffset = distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 5 : 10
-        const scale = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.94 : 0.88
+        const baseScale = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.85 : 0.7
+        const hoverScale = distanceFromCenter === 0 ? 1.02 : distanceFromCenter === 1 ? 0.88 : 0.75
+        
+        const yOffset = distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 8 : 16
 
-        const xPos = isActive ? pos.x * 1.12 : pos.x
-        const yPos = isActive ? yOffset - 6 : yOffset
-        const rotation = isActive ? pos.rotate * 1.12 : pos.rotate
-        const finalScale = isActive ? scale * 1.02 : scale
+        const xPos = isActive ? hoverPos.x : idlePos.x
+        const yPos = isActive ? yOffset - 4 : yOffset
+        const rotation = isActive ? hoverPos.rotate : idlePos.rotate
+        const finalScale = isActive ? hoverScale : baseScale
 
-        const staggerDelay = distanceFromCenter * 0.03
+        const staggerDelay = distanceFromCenter * 0.02
 
         return (
           <motion.div
@@ -73,14 +84,14 @@ function FanImages({ slugs = [], isActive }) {
             }}
             transition={{
               type: "spring",
-              stiffness: 150,
-              damping: 20,
-              mass: 0.8,
+              stiffness: 200,
+              damping: 22,
+              mass: 0.7,
               delay: staggerDelay,
             }}
             style={{ zIndex }}
           >
-            <div className="h-[175px] w-[118px] overflow-hidden rounded-lg shadow-[0_8px_30px_rgba(0,0,0,0.5)] bg-zinc-900 border border-white/10">
+            <div className="h-[220px] w-[148px] overflow-hidden rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.6)] bg-zinc-900 border border-white/10">
               <motion.img
                 src={imageUrl}
                 alt=""
@@ -111,7 +122,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 
   return (
     <motion.div
-      className="group relative w-full cursor-pointer h-[280px]"
+      className="group relative w-full cursor-pointer h-[320px]"
       style={{
         perspective: "1200px",
         zIndex: isHovered ? 50 : 1,
@@ -135,7 +146,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
             mass: 0.8,
           }}
           style={{
-            height: "280px",
+            height: "320px",
             background: "#1e1e1e",
             border: "1px solid rgba(255, 255, 255, 0.06)",
             transformStyle: "preserve-3d",
