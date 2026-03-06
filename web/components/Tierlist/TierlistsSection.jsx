@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react"
 import { Link } from "react-router-dom"
-import { motion } from "framer-motion"
 import { useTranslation } from "#hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import Pagination from "@components/UI/Pagination"
@@ -110,75 +109,45 @@ function TierlistActionMenu({ tierlist, onEdit, onDelete }) {
   )
 }
 
-function TierPreview({ tiers, getGame, isHovered }) {
+function TierPreview({ tiers, getGame }) {
   if (!tiers || tiers.length === 0) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        <LayoutGrid className="w-8 h-8 text-white/10" />
+      <div className="w-full h-full flex items-center justify-center bg-zinc-800/30">
+        <LayoutGrid className="w-6 h-6 text-zinc-700" />
       </div>
     )
   }
 
   return (
     <div className="w-full h-full flex flex-col">
-      {tiers.slice(0, 5).map((tier, i) => (
-        <motion.div
+      {tiers.slice(0, 4).map((tier, i) => (
+        <div
           key={tier.id || i}
           className="flex-1 flex items-center overflow-hidden"
-          animate={{
-            opacity: isHovered ? 1 : 0.7,
-          }}
-          transition={{
-            duration: 0.3,
-            delay: i * 0.03,
-          }}
+          style={{ backgroundColor: tier.color }}
         >
-          <motion.span
-            className="flex-shrink-0 text-[9px] font-bold text-white/90 text-center truncate flex items-center justify-center h-full"
-            animate={{
-              width: isHovered ? 36 : 28,
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 200,
-              damping: 25,
-            }}
-            style={{ backgroundColor: tier.color }}
-          >
+          <span className="w-6 sm:w-8 flex-shrink-0 text-[8px] sm:text-[10px] font-bold text-white/90 text-center truncate px-0.5">
             {tier.label}
-          </motion.span>
-          <div className="flex-1 flex items-center gap-px bg-zinc-800/60 h-full py-px pr-px overflow-hidden">
-            {(tier.items || []).slice(0, 8).map((item, j) => {
+          </span>
+          <div className="flex-1 flex items-center gap-px bg-zinc-800/30 h-full py-px pr-px overflow-hidden">
+            {(tier.items || []).slice(0, 6).map((item, j) => {
               const game = getGame?.(item.game_slug)
               const coverUrl = game?.cover?.url
                 ? `https:${game.cover.url.replace("t_thumb", "t_cover_small")}`
                 : null
 
               return (
-                <motion.div
-                  key={item.id || j}
-                  className="h-full aspect-[3/4] flex-shrink-0"
-                  animate={{
-                    scale: isHovered ? 1 : 0.95,
-                    opacity: isHovered ? 1 : 0.8,
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 200,
-                    damping: 25,
-                    delay: j * 0.015,
-                  }}
-                >
+                <div key={item.id || j} className="h-full aspect-[3/4] flex-shrink-0">
                   {coverUrl ? (
                     <img src={coverUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-zinc-700" />
                   )}
-                </motion.div>
+                </div>
               )
             })}
           </div>
-        </motion.div>
+        </div>
       ))}
     </div>
   )
@@ -186,154 +155,59 @@ function TierPreview({ tiers, getGame, isHovered }) {
 
 function TierlistCard({ tierlist, isOwnProfile, onEdit, onDelete }) {
   const { t } = useTranslation("tierlist.card")
-  const [isHovered, setIsHovered] = useState(false)
   const gamesCount = tierlist.games_count || 0
 
   const allSlugs = useMemo(() => {
     if (!tierlist.tiers_preview) return []
-    return tierlist.tiers_preview.flatMap((tier) =>
-      (tier.items || []).slice(0, 8).map((i) => i.game_slug)
+    return tierlist.tiers_preview.flatMap((t) =>
+      (t.items || []).slice(0, 6).map((i) => i.game_slug)
     )
   }, [tierlist.tiers_preview])
 
   const { getGame } = useGamesBatch(allSlugs)
 
   return (
-    <motion.div
-      className="group relative w-full cursor-pointer h-[280px]"
-      style={{
-        perspective: "1200px",
-        zIndex: isHovered ? 50 : 1,
-        overflow: "visible",
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <Link to={`/tierlist/${encode(tierlist.id)}`} className="absolute inset-0 z-40 rounded-2xl" />
-
-      <div
-        className="relative w-full h-full"
-        style={{
-          perspective: "1200px",
-          overflow: "visible",
-        }}
+    <div className="group relative rounded-xl overflow-visible h-full">
+      <Link
+        to={`/tierlist/${encode(tierlist.id)}`}
+        className="block rounded-xl overflow-hidden bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 transition-all duration-200 h-full flex flex-col"
       >
-        <motion.div
-          className="relative z-0"
-          animate={{
-            rotateX: isHovered ? 6 : 0,
-            scale: isHovered ? 1.02 : 1,
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 200,
-            damping: 25,
-            mass: 0.8,
-          }}
-          style={{
-            height: "280px",
-            transformStyle: "preserve-3d",
-            transformOrigin: "center bottom",
-            overflow: "visible",
-          }}
-        >
-          <div
-            className="absolute inset-0 rounded-2xl pointer-events-none"
-            style={{
-              background: "#1a1a1a",
-              border: "1px solid rgba(255, 255, 255, 0.06)",
-              overflow: "hidden",
-              zIndex: 0,
-            }}
-          >
-            <div className="w-full h-full pt-1">
-              <TierPreview tiers={tierlist.tiers_preview} getGame={getGame} isHovered={isHovered} />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/95 via-zinc-900/40 to-transparent pointer-events-none" />
-          </div>
-        </motion.div>
+        <div className="relative h-24 sm:h-28 overflow-hidden flex-shrink-0">
+          <TierPreview tiers={tierlist.tiers_preview} getGame={getGame} />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/20 to-transparent" />
+        </div>
 
-        <motion.div
-          className="absolute bottom-0 left-0 right-0 z-10 rounded-2xl overflow-hidden"
-          animate={{
-            rotateX: isHovered ? -14 : 0,
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 180,
-            damping: 22,
-            mass: 0.8,
-          }}
-          style={{
-            background: "rgba(26, 26, 26, 0.92)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            border: "1px solid rgba(255, 255, 255, 0.06)",
-            transformStyle: "preserve-3d",
-            transformOrigin: "center bottom",
-          }}
-        >
-          <div className="relative py-4 px-4 min-h-[2.75rem]">
-            <div
-              className="absolute -inset-2 transition-all duration-500 rounded-t-2xl pointer-events-none"
-              style={{
-                opacity: isHovered ? 1 : 0,
-                background: "radial-gradient(ellipse 100% 80% at 50% 0%, rgba(129,140,248,0.15) 0%, transparent 60%)",
-                filter: "blur(12px)",
-              }}
-            />
-            <div
-              className="absolute -inset-px transition-all duration-500 rounded-t-lg pointer-events-none overflow-hidden"
-              style={{
-                opacity: isHovered ? 1 : 0,
-                background: "linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
-              }}
-            />
-            <div
-              className="absolute inset-x-2 -top-1 h-px transition-all duration-500 pointer-events-none"
-              style={{
-                opacity: isHovered ? 1 : 0,
-                background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
-                filter: "blur(0.5px)",
-              }}
-            />
+        <div className="p-3 sm:p-3.5 flex flex-col flex-1">
+          <h3 className="text-sm font-semibold text-white truncate group-hover:text-indigo-400 transition-colors">
+            {tierlist.title}
+          </h3>
 
-            <h3 className="font-semibold text-white/70 text-base leading-snug line-clamp-1 relative z-0 transition-colors duration-200 group-hover:text-white">
-              {tierlist.title}
-            </h3>
-            {tierlist.description && (
-              <p className="text-xs text-white/40 mt-1 line-clamp-1 relative z-0 transition-colors duration-200 group-hover:text-white/60">
-                {tierlist.description}
-              </p>
+          <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2 min-h-[1rem] sm:min-h-[2rem]">
+            {tierlist.description || ""}
+          </p>
+
+          <div className="flex items-center gap-2.5 mt-2">
+            <span className="text-xs text-zinc-500 flex items-center gap-1">
+              <Gamepad2 className="w-3 h-3" />
+              {gamesCount}
+            </span>
+
+            {tierlist.is_public === false && (
+              <span className="text-xs text-zinc-600 flex items-center gap-1">
+                <Lock className="w-3 h-3" />
+                <span className="hidden sm:inline">{t("private")}</span>
+              </span>
             )}
           </div>
-
-          <div className="relative h-[48px]">
-            <div className="absolute inset-x-0 top-0 h-[1px] bg-white/[0.04]" />
-            <div className="absolute inset-0 flex items-center justify-between px-4">
-              <div className="flex items-center gap-1.5">
-                <Gamepad2 className="w-3 h-3 text-white/40" />
-                <span className="text-[13px] text-white/60">
-                  {gamesCount}
-                </span>
-                {tierlist.is_public === false && (
-                  <Lock className="w-3 h-3 text-white/30 ml-1" />
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <LayoutGrid className="w-3.5 h-3.5 text-white/30" />
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+        </div>
+      </Link>
 
       {isOwnProfile && (
-        <div className="absolute top-2 right-2 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="absolute top-2 right-2 z-10">
           <TierlistActionMenu tierlist={tierlist} onEdit={onEdit} onDelete={onDelete} />
         </div>
       )}
-    </motion.div>
+    </div>
   )
 }
 
@@ -397,7 +271,7 @@ export default function TierlistsSection({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" style={{ overflow: "visible" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {tierlists.map((tierlist) => (
               <TierlistCard
                 key={tierlist.id}
