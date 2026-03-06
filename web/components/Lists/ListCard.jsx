@@ -1,24 +1,35 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { Gamepad2, Lock } from "lucide-react"
-import { motion } from "framer-motion"
+import { Gamepad2, Lock, MoreVertical } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import { useDateTime } from "#hooks/useDateTime"
 import { encode } from "#utils/shortId.js"
 
-const EASE_OUT_EXPO = [0.16, 1, 0.3, 1]
-const TRANSITION_DURATION = 0.3
-
-const BASE_POSITIONS = [
-  { x: -60, rotate: -10 },
-  { x: -30, rotate: -5 },
-  { x: 0, rotate: 0 },
-  { x: 30, rotate: 5 },
-  { x: 60, rotate: 10 },
+const FAN_POSITIONS = [
+  {
+    idle: { x: -10, y: 20, scale: 0.85, rotate: -4, z: 8, br: 0.4, blur: 1 },
+    hover: { x: -90, y: 15, scale: 0.88, rotate: -12, z: 8, br: 0.3, blur: 1.5 },
+  },
+  {
+    idle: { x: -5, y: 15, scale: 0.9, rotate: -2, z: 9, br: 0.6, blur: 0.5 },
+    hover: { x: -45, y: 5, scale: 0.95, rotate: -6, z: 9, br: 0.55, blur: 0.5 },
+  },
+  {
+    idle: { x: 0, y: 10, scale: 0.95, rotate: 0, z: 10, br: 0.8, blur: 0 },
+    hover: { x: 0, y: -5, scale: 1.05, rotate: 0, z: 10, br: 1, blur: 0 },
+  },
+  {
+    idle: { x: 5, y: 15, scale: 0.9, rotate: 2, z: 9, br: 0.6, blur: 0.5 },
+    hover: { x: 45, y: 5, scale: 0.95, rotate: 6, z: 9, br: 0.55, blur: 0.5 },
+  },
+  {
+    idle: { x: 10, y: 20, scale: 0.85, rotate: 4, z: 8, br: 0.4, blur: 1 },
+    hover: { x: 90, y: 15, scale: 0.88, rotate: 12, z: 8, br: 0.3, blur: 1.5 },
+  },
 ]
 
-function FanImages({ slugs = [], isActive }) {
+function CoverFan({ slugs = [], isHovered }) {
   const { getGame } = useGamesBatch(slugs)
 
   const covers = slugs
@@ -37,67 +48,43 @@ function FanImages({ slugs = [], isActive }) {
     )
   }
 
+  const items = covers.slice(0, 5)
+  const offsetIndex = Math.max(0, Math.floor((5 - items.length) / 2))
+
   return (
-    <>
-      {[...Array(5)].map((_, imgIndex) => {
-        const pos = BASE_POSITIONS[imgIndex]
-        const imageUrl = covers[imgIndex % covers.length]
+    <div className="absolute inset-0" style={{ transformStyle: "flat" }}>
+      {items.map((url, i) => {
+        const posData = FAN_POSITIONS[i + offsetIndex] || FAN_POSITIONS[2]
+        const state = isHovered ? posData.hover : posData.idle
         
-        const centerIndex = 2
-        const distanceFromCenter = Math.abs(imgIndex - centerIndex)
-        const zIndex = 10 - distanceFromCenter
-
-        const brightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.55 : 0.3
-        const blurAmount = distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 0.5 : 1.5
-        const yOffset = -16 * (1 - distanceFromCenter / centerIndex) || 0
-        const scale = distanceFromCenter === 0 ? 1.05 : distanceFromCenter === 1 ? 0.95 : 0.88
-
-        const xPos = isActive ? pos.x * 1.4 : pos.x
-        const yPos = isActive ? -8 + yOffset : 8 + yOffset
-        const rotation = isActive ? pos.rotate * 1.3 : pos.rotate
-        const finalScale = isActive ? scale * 1.02 : scale
-
-        const staggerDelay = distanceFromCenter * 0.08
+        const delay = Math.abs(2 - (i + offsetIndex)) * 50
 
         return (
-          <motion.div
-            key={imgIndex}
-            className="absolute left-1/2 top-4"
-            initial={false}
-            animate={{
-              x: `calc(-50% + ${xPos}px)`,
-              y: yPos,
-              rotate: rotation,
-              scale: finalScale,
-              opacity: 1,
+          <div
+            key={i}
+            className="absolute left-1/2 top-4 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
+            style={{
+              zIndex: state.z,
+              transform: `translateX(calc(-50% + ${state.x}px)) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotate}deg)`,
+              transitionDelay: `${isHovered ? delay : 0}ms`,
             }}
-            transition={{
-              type: "spring",
-              stiffness: 100,
-              damping: 16,
-              mass: 1,
-              delay: staggerDelay,
-            }}
-            style={{ zIndex }}
           >
-            <div className="h-[160px] w-[100px] overflow-hidden rounded-lg shadow-xl bg-zinc-900 border border-white/5">
-              <motion.img
-                src={imageUrl}
+            <div className="h-[160px] w-[100px] overflow-hidden rounded-lg bg-zinc-900 shadow-xl border border-white/5">
+              <img
+                src={url}
                 alt=""
-                className="h-full w-full object-cover"
-                animate={{
-                  filter: `brightness(${isActive ? Math.min(1, brightness + 0.2) : brightness}) contrast(1.08) saturate(${1 - distanceFromCenter * 0.2}) blur(${isActive ? 0 : blurAmount}px)`,
-                }}
-                transition={{
-                  duration: TRANSITION_DURATION,
-                  ease: EASE_OUT_EXPO,
+                className="h-full w-full object-cover transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                loading="lazy"
+                style={{
+                  filter: `brightness(${state.br}) contrast(1.08) saturate(0.8) blur(${state.blur}px)`,
+                  transitionDelay: `${isHovered ? delay : 0}ms`,
                 }}
               />
             </div>
-          </motion.div>
+          </div>
         )
       })}
-    </>
+    </div>
   )
 }
 
@@ -110,74 +97,52 @@ export function ListCard({ list, showOwner = false, actions = null }) {
   const shortId = list.shortId || encode(list.id)
 
   return (
-    <motion.div
-      className="group relative w-full cursor-pointer h-[240px]"
-      style={{
-        perspective: "1200px",
-        transformStyle: "preserve-3d",
-        zIndex: isHovered ? 50 : 1,
-      }}
+    <div
+      className="group relative cursor-pointer w-full max-w-[320px] mx-auto"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link to={`/list/${shortId}`} className="absolute inset-0 z-50 rounded-2xl" />
+      <div 
+        className="relative w-full transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]" 
+        style={{ perspective: "1200px" }}
+      >
+        <Link to={`/list/${shortId}`} className="absolute inset-0 z-50 rounded-2xl" />
 
-      <div className="relative w-full h-full" style={{ perspective: "1200px" }}>
-        
-        <motion.div
-          className="relative z-0 rounded-2xl overflow-hidden"
-          animate={{
-            rotateX: isHovered ? 15 : 0,
-            backgroundColor: "#1e1e1e",
-          }}
-          transition={{
-            rotateX: { type: "spring", stiffness: 200, damping: 25, mass: 0.8 },
-            backgroundColor: { duration: TRANSITION_DURATION, ease: EASE_OUT_EXPO },
-          }}
+        <div
+          className="relative z-0 rounded-2xl transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
           style={{
             height: "224px",
-            border: "1px solid rgba(255, 255, 255, 0.06)",
             transformStyle: "preserve-3d",
             transformOrigin: "center bottom",
+            transform: isHovered ? "rotateX(15deg)" : "rotateX(0deg)",
+            background: "#1e1e1e",
+            border: "1px solid rgba(255, 255, 255, 0.06)",
           }}
         >
-          <motion.div
-            className="absolute inset-0"
-            animate={{
-              rotateX: isHovered ? -15 : 0,
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 200,
-              damping: 25,
-              mass: 0.8,
-            }}
+          <div
+            className="absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
             style={{
               transformStyle: "flat",
               transformOrigin: "center bottom",
+              transform: isHovered ? "rotateX(-15deg)" : "rotateX(0deg)",
             }}
           >
-            <FanImages slugs={list.game_slugs || []} isActive={isHovered} />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1e1e1e] via-transparent to-transparent opacity-80" />
-          </motion.div>
-        </motion.div>
+            <CoverFan slugs={list.game_slugs || []} isHovered={isHovered} />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1e1e1e] to-transparent opacity-80 rounded-2xl pointer-events-none" />
+          </div>
+        </div>
 
-        <motion.div
-          className="absolute bottom-0 left-0 right-0 z-10 rounded-2xl overflow-hidden"
-          animate={{
-            rotateX: isHovered ? -25 : 0,
-            backgroundColor: "rgba(26, 26, 26, 0.8)",
-          }}
-          transition={{
-            rotateX: { type: "spring", stiffness: 180, damping: 22, mass: 0.8 },
-            backgroundColor: { duration: TRANSITION_DURATION, ease: EASE_OUT_EXPO },
-          }}
+        <div
+          className="absolute bottom-0 left-0 right-0 z-10 rounded-2xl overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
           style={{
+            background: "rgba(26, 26, 26, 0.85)",
             backdropFilter: "blur(16px)",
             WebkitBackdropFilter: "blur(16px)",
             border: "1px solid rgba(255, 255, 255, 0.06)",
             transformStyle: "preserve-3d",
             transformOrigin: "center bottom",
+            transform: isHovered ? "rotateX(-25deg)" : "rotateX(0deg)",
+            boxShadow: isHovered ? "0 -20px 40px -20px rgba(0,0,0,0.5)" : "none",
           }}
         >
           <div className="relative py-4 px-4 min-h-[2.75rem]">
@@ -185,7 +150,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
               className="absolute -inset-2 transition-all duration-500 rounded-t-2xl pointer-events-none"
               style={{
                 opacity: isHovered ? 1 : 0,
-                background: "radial-gradient(ellipse 100% 80% at 50% 0%, rgba(129,140,248,0.15) 0%, transparent 60%)",
+                background: "radial-gradient(100% 80% at 50% 0%, rgba(120, 180, 255, 0.15) 0%, transparent 60%)",
                 filter: "blur(12px)",
               }}
             />
@@ -193,23 +158,24 @@ export function ListCard({ list, showOwner = false, actions = null }) {
               className="absolute -inset-px transition-all duration-500 rounded-t-lg pointer-events-none overflow-hidden"
               style={{
                 opacity: isHovered ? 1 : 0,
-                background: "linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+                background: "linear-gradient(rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)",
               }}
             />
             <div
               className="absolute inset-x-2 -top-1 h-px transition-all duration-500 pointer-events-none"
               style={{
                 opacity: isHovered ? 1 : 0,
-                background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
+                background: "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%)",
                 filter: "blur(0.5px)",
               }}
             />
-            
-            <h3 className="font-semibold text-white/70 text-base leading-snug line-clamp-1 relative z-0 transition-colors duration-200 group-hover:text-white">
+
+            <h3 className="font-semibold text-white/70 text-base leading-snug line-clamp-1 transition-colors duration-200 group-hover:text-white relative z-0">
               {list.title}
             </h3>
+            
             {list.description && (
-              <p className="text-xs text-white/40 mt-1 line-clamp-1 relative z-0 transition-colors duration-200 group-hover:text-white/60">
+              <p className="text-xs text-white/40 mt-1 line-clamp-1 transition-colors duration-200 group-hover:text-white/60 relative z-0">
                 {list.description}
               </p>
             )}
@@ -217,11 +183,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 
           <div className="relative h-[48px]">
             <div className="absolute inset-x-0 top-0 h-[1px] bg-white/[0.04]" />
-            <motion.div
-              className="absolute inset-0 flex items-center justify-between px-4"
-              initial={false}
-              animate={{ opacity: 1, y: 0 }}
-            >
+            <div className="absolute inset-0 flex items-center justify-between px-4">
               <div className="flex items-center gap-1.5">
                 <span className="inline-block text-[13px] font-medium text-white/70 tabular-nums">
                   {gamesCount}
@@ -233,22 +195,23 @@ export function ListCard({ list, showOwner = false, actions = null }) {
                   <Lock className="w-3 h-3 text-white/30 ml-1" />
                 )}
               </div>
+
               <div className="flex items-center gap-2">
                 <span className="text-xs text-white/50">
                   {showOwner && list.owner ? list.owner.username : list.updated_at ? formatDateShort(list.updated_at) : ""}
                 </span>
+                
+                {actions && (
+                  <div className="relative z-50">
+                    {actions}
+                  </div>
+                )}
               </div>
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
-      </div>
-
-      {actions && (
-        <div className="absolute top-2 right-2 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          {actions}
         </div>
-      )}
-    </motion.div>
+      </div>
+    </div>
   )
 }
 
