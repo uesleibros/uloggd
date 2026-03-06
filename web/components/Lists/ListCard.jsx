@@ -11,11 +11,11 @@ const EASE_OUT_EXPO = [0.16, 1, 0.3, 1]
 const TRANSITION_DURATION = 0.3
 
 const BASE_POSITIONS = [
-  { x: -80, rotate: -10 },
-  { x: -40, rotate: -5 },
+  { x: -64, rotate: -8 },
+  { x: -32, rotate: -4 },
   { x: 0, rotate: 0 },
-  { x: 40, rotate: 5 },
-  { x: 80, rotate: 10 },
+  { x: 32, rotate: 4 },
+  { x: 64, rotate: 8 },
 ]
 
 function FanImages({ slugs = [], isActive }) {
@@ -38,7 +38,7 @@ function FanImages({ slugs = [], isActive }) {
   }
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center">
+    <div className="absolute inset-0 flex items-center justify-center" style={{ top: "-20px" }}>
       {[...Array(5)].map((_, imgIndex) => {
         const pos = BASE_POSITIONS[imgIndex]
         const imageUrl = covers[imgIndex % covers.length]
@@ -47,17 +47,18 @@ function FanImages({ slugs = [], isActive }) {
         const distanceFromCenter = Math.abs(imgIndex - centerIndex)
         const zIndex = 10 - distanceFromCenter
 
-        const brightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.55 : 0.3
-        const blurAmount = distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 0.5 : 1.5
-        const yOffset = -16 * (1 - distanceFromCenter / centerIndex) || 0
-        const scale = distanceFromCenter === 0 ? 1.05 : distanceFromCenter === 1 ? 0.95 : 0.88
+        const idleBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.7 : 0.5
+        const hoverBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.45 : 0.25
+        
+        const yOffset = distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 4 : 8
+        const scale = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.95 : 0.9
 
-        const xPos = isActive ? pos.x * 1.5 : pos.x * 0.3
-        const yPos = isActive ? -12 + yOffset : yOffset
-        const rotation = isActive ? pos.rotate * 1.3 : pos.rotate * 0.5
-        const finalScale = isActive ? scale * 1.02 : scale * 0.95
+        const xPos = isActive ? pos.x * 1.25 : pos.x
+        const yPos = isActive ? yOffset - 5 : yOffset
+        const rotation = isActive ? pos.rotate * 1.2 : pos.rotate
+        const finalScale = isActive ? scale * 1.03 : scale
 
-        const staggerDelay = distanceFromCenter * 0.06
+        const staggerDelay = distanceFromCenter * 0.04
 
         return (
           <motion.div
@@ -72,20 +73,20 @@ function FanImages({ slugs = [], isActive }) {
             }}
             transition={{
               type: "spring",
-              stiffness: 120,
-              damping: 18,
+              stiffness: 150,
+              damping: 20,
               mass: 0.8,
               delay: staggerDelay,
             }}
             style={{ zIndex }}
           >
-            <div className="h-[140px] w-[90px] overflow-hidden rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-zinc-900 border border-white/10">
+            <div className="h-[130px] w-[85px] overflow-hidden rounded-lg shadow-[0_8px_30px_rgba(0,0,0,0.4)] bg-zinc-900 border border-white/10">
               <motion.img
                 src={imageUrl}
                 alt=""
                 className="h-full w-full object-cover"
                 animate={{
-                  filter: `brightness(${isActive ? Math.min(1, brightness + 0.2) : brightness}) contrast(1.08) saturate(${1 - distanceFromCenter * 0.15}) blur(${isActive ? 0 : blurAmount}px)`,
+                  filter: `brightness(${isActive ? hoverBrightness : idleBrightness}) contrast(1.05) saturate(0.95)`,
                 }}
                 transition={{
                   duration: TRANSITION_DURATION,
@@ -125,7 +126,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
         <motion.div
           className="relative z-0 rounded-2xl"
           animate={{
-            rotateX: isHovered ? 15 : 0,
+            rotateX: isHovered ? 12 : 0,
           }}
           transition={{
             type: "spring",
@@ -144,7 +145,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
           <motion.div
             className="absolute inset-0 overflow-visible"
             animate={{
-              rotateX: isHovered ? -15 : 0,
+              rotateX: isHovered ? -12 : 0,
             }}
             transition={{
               type: "spring",
@@ -163,7 +164,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
         <motion.div
           className="absolute bottom-0 left-0 right-0 z-10 rounded-2xl overflow-hidden"
           animate={{
-            rotateX: isHovered ? -25 : 0,
+            rotateX: isHovered ? -20 : 0,
           }}
           transition={{
             type: "spring",
