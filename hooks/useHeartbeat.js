@@ -1,78 +1,56 @@
 import { useEffect, useRef } from "react"
 import { supabase } from "#lib/supabase"
-import { useAuth, updateUser } from "#hooks/useAuth"
+import { useAuth } from "#hooks/useAuth"
 
 let activeHeartbeat = null
 
 export function useHeartbeat() {
-	const { user, loading } = useAuth()
-	const intervalRef = useRef(null)
-	const tokenRef = useRef(null)
-	const lastStatusRef = useRef(null)
+  const { user, loading } = useAuth()
+  const intervalRef = useRef(null)
+  const tokenRef = useRef(null)
 
-	useEffect(() => {
-		if (loading) return
-		if (!user?.id) return
+  useEffect(() => {
+    if (loading || !user?.id) return
+    if (activeHeartbeat && activeHeartbeat !== user.id) return
 
-		if (activeHeartbeat && activeHeartbeat !== user.id) {
-			return
-		}
+    activeHeartbeat = user.id
 
-		activeHeartbeat = user.id
+    const ping = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) return
 
-		const ping = async (status) => {
-			if (lastStatusRef.current === status) return
+      tokenRef.current = session.access_token
 
-			const { data: { session } } = await supabase.auth.getSession()
-			if (!session?.access_token) return
+      await fetch("/api/users/@me/heartbeat", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      }).catch(() => null)
+    }
 
-			tokenRef.current = session.access_token
+    const onUnload = () => {
+      if (!tokenRef.current) return
 
-			const res = await fetch("/api/users/@me/heartbeat", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${session.access_token}`,
-				},
-				body: JSON.stringify({ status }),
-			}).catch(() => null)
+      navigator.sendBeacon(
+        "/api/users/@me/heartbeat",
+        new Blob(
+          [JSON.stringify({ status: "offline", _authToken: tokenRef.current })],
+          { type: "application/json" }
+        )
+      )
+    }
 
-			if (res?.ok) {
-				lastStatusRef.current = status
-				updateUser({ status, last_seen: new Date().toISOString() })
-			}
-		}
+    ping()
 
-		const onUnload = () => {
-			if (!tokenRef.current) return
+    intervalRef.current = setInterval(ping, 2 * 60 * 1000)
 
-			navigator.sendBeacon(
-				"/api/users/@me/heartbeat",
-				new Blob(
-					[JSON.stringify({ status: "offline", _authToken: tokenRef.current })],
-					{ type: "application/json" }
-				)
-			)
-		}
+    window.addEventListener("beforeunload", onUnload)
 
-		const onVisibility = () => ping(document.hidden ? "idle" : "online")
-
-		ping("online")
-
-		intervalRef.current = setInterval(() => {
-			lastStatusRef.current = null
-			ping(document.hidden ? "idle" : "online")
-		}, 2 * 60 * 1000)
-
-		document.addEventListener("visibilitychange", onVisibility)
-		window.addEventListener("beforeunload", onUnload)
-
-		return () => {
-			clearInterval(intervalRef.current)
-			document.removeEventListener("visibilitychange", onVisibility)
-			window.removeEventListener("beforeunload", onUnload)
-			lastStatusRef.current = null
-			activeHeartbeat = null
-		}
-	}, [user?.id, loading])
+    return () => {
+      clearInterval(intervalRef.current)
+      window.removeEventListener("beforeunload", onUnload)
+      activeHeartbeat = null
+    }
+  }, [user?.id, loading])
 }
