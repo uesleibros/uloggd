@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { Link } from "react-router-dom"
 import { Gamepad2, Lock } from "lucide-react"
 import { motion } from "framer-motion"
@@ -26,7 +27,7 @@ const HOVER_POSITIONS = [
   { x: 120, rotate: 12 },
 ]
 
-function FanImages({ slugs = [], isActive }) {
+function FanImages({ slugs = [], isActive, portalPosition = null }) {
   const { getGame } = useGamesBatch(slugs)
 
   const allCovers = slugs
@@ -50,8 +51,21 @@ function FanImages({ slugs = [], isActive }) {
     covers.push(allCovers[i] || allCovers[i % allCovers.length])
   }
 
-  return (
-    <div className="absolute inset-0 flex items-center justify-center" style={{ top: "-25px" }}>
+  const content = (
+    <div 
+      className="flex items-center justify-center"
+      style={{ 
+        position: portalPosition ? "fixed" : "absolute",
+        top: portalPosition ? portalPosition.top : undefined,
+        left: portalPosition ? portalPosition.left : undefined,
+        width: portalPosition ? portalPosition.width : undefined,
+        height: portalPosition ? portalPosition.height : undefined,
+        inset: portalPosition ? undefined : 0,
+        marginTop: "-25px",
+        pointerEvents: "none",
+        zIndex: portalPosition ? 9999 : undefined,
+      }}
+    >
       {covers.map((imageUrl, imgIndex) => {
         const idlePos = BASE_POSITIONS[imgIndex]
         const hoverPos = HOVER_POSITIONS[imgIndex]
@@ -93,7 +107,7 @@ function FanImages({ slugs = [], isActive }) {
               mass: 0.7,
               delay: staggerDelay,
             }}
-            style={{ zIndex }}
+            style={{ zIndex, pointerEvents: "auto" }}
           >
             <div className="h-[200px] w-[134px] overflow-hidden rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.6)] bg-zinc-900 border border-white/10">
               <motion.img
@@ -114,23 +128,45 @@ function FanImages({ slugs = [], isActive }) {
       })}
     </div>
   )
+
+  if (portalPosition && isActive) {
+    return createPortal(content, document.body)
+  }
+
+  return content
 }
 
 export function ListCard({ list, showOwner = false, actions = null }) {
   const { t } = useTranslation()
   const { formatDateShort } = useDateTime()
   const [isHovered, setIsHovered] = useState(false)
+  const [cardRef, setCardRef] = useState(null)
+  const [portalPosition, setPortalPosition] = useState(null)
 
   const gamesCount = list.games_count || 0
   const shortId = list.shortId || encode(list.id)
 
+  useEffect(() => {
+    if (isHovered && cardRef) {
+      const rect = cardRef.getBoundingClientRect()
+      setPortalPosition({
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height - 92,
+      })
+    } else {
+      setPortalPosition(null)
+    }
+  }, [isHovered, cardRef])
+
   return (
     <motion.div
+      ref={setCardRef}
       className="group relative w-full cursor-pointer h-[280px]"
       style={{
         perspective: "1200px",
         zIndex: isHovered ? 50 : 1,
-        overflow: "visible",
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -139,10 +175,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 
       <div 
         className="relative w-full h-full" 
-        style={{ 
-          perspective: "1200px",
-          overflow: "visible",
-        }}
+        style={{ perspective: "1200px" }}
       >
         
         <motion.div
@@ -162,18 +195,9 @@ export function ListCard({ list, showOwner = false, actions = null }) {
             border: "1px solid rgba(255, 255, 255, 0.06)",
             transformStyle: "preserve-3d",
             transformOrigin: "center bottom",
-            overflow: "visible",
+            overflow: "hidden",
           }}
         >
-          <div
-            className="absolute inset-0 rounded-2xl pointer-events-none"
-            style={{
-              background: "#1e1e1e",
-              overflow: "hidden",
-              zIndex: 0,
-            }}
-          />
-          
           <motion.div
             className="absolute inset-0"
             animate={{
@@ -187,12 +211,21 @@ export function ListCard({ list, showOwner = false, actions = null }) {
             }}
             style={{
               transformOrigin: "center bottom",
-              overflow: "visible",
             }}
           >
-            <FanImages slugs={list.game_slugs || []} isActive={isHovered} />
+            {!isHovered && (
+              <FanImages slugs={list.game_slugs || []} isActive={false} />
+            )}
           </motion.div>
         </motion.div>
+
+        {isHovered && portalPosition && (
+          <FanImages 
+            slugs={list.game_slugs || []} 
+            isActive={true} 
+            portalPosition={portalPosition}
+          />
+        )}
 
         <motion.div
           className="absolute bottom-0 left-0 right-0 z-10 rounded-2xl overflow-hidden"
@@ -275,12 +308,6 @@ export function ListCard({ list, showOwner = false, actions = null }) {
           {actions}
         </div>
       )}
-      
-      <style jsx global>{`
-        .list-card-container {
-          overflow: visible !important;
-        }
-      `}</style>
     </motion.div>
   )
 }
