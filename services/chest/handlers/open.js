@@ -1,12 +1,12 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
 const DROP_TABLE = {
-  copper: { min: 5, max: 15, chance: 1.0 },
-  iron: { min: 3, max: 8, chance: 0.8 },
-  gold: { min: 1, max: 5, chance: 0.5 },
-  emerald: { min: 1, max: 3, chance: 0.2 },
-  diamond: { min: 1, max: 2, chance: 0.08 },
-  ruby: { min: 1, max: 1, chance: 0.02 },
+  copper:  { min: 5,  max: 15, chance: 1.0  },
+  iron:    { min: 3,  max: 8,  chance: 0.8  },
+  gold:    { min: 1,  max: 5,  chance: 0.5  },
+  emerald: { min: 1,  max: 3,  chance: 0.2  },
+  diamond: { min: 1,  max: 2,  chance: 0.08 },
+  ruby:    { min: 1,  max: 1,  chance: 0.02 },
 }
 
 const MINERALS = Object.keys(DROP_TABLE)
@@ -31,13 +31,6 @@ function generateRewards() {
 
 export async function handleOpen(req, res) {
   const userId = req.user.id
-  const now = new Date()
-
-  const todayMidnight = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate()
-  ))
 
   const { data: lastChest } = await supabase
     .from("user_chests")
@@ -48,14 +41,17 @@ export async function handleOpen(req, res) {
     .limit(1)
     .single()
 
-  if (lastChest && new Date(lastChest.opened_at) >= todayMidnight) {
-    const tomorrowMidnight = new Date(todayMidnight)
-    tomorrowMidnight.setUTCDate(tomorrowMidnight.getUTCDate() + 1)
+  if (lastChest) {
+    const now = new Date()
+    const last = new Date(lastChest.opened_at)
+    const remaining = 86400000 - (now.getTime() - last.getTime())
 
-    return res.status(429).json({
-      error: "chest_cooldown",
-      secondsLeft: Math.floor((tomorrowMidnight - now) / 1000),
-    })
+    if (remaining > 0) {
+      return res.status(429).json({
+        error: "chest_cooldown",
+        secondsLeft: Math.ceil(remaining / 1000),
+      })
+    }
   }
 
   const rewards = generateRewards()

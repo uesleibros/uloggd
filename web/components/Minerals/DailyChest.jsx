@@ -6,14 +6,11 @@ import { supabase } from "#lib/supabase"
 import { notify } from "@components/UI/Notification"
 import ChestOpenModal from "./ChestOpenModal"
 
-function getSecondsUntilMidnightUTC() {
-  const now = new Date()
-  const tomorrow = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() + 1
-  ))
-  return Math.floor((tomorrow - now) / 1000)
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
+async function getToken() {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session?.access_token
 }
 
 function formatTime(seconds) {
@@ -21,13 +18,6 @@ function formatTime(seconds) {
   const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0")
   const s = String(seconds % 60).padStart(2, "0")
   return `${h}:${m}:${s}`
-}
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-
-async function getToken() {
-  const { data: { session } } = await supabase.auth.getSession()
-  return session?.access_token
 }
 
 export default function DailyChest() {
@@ -55,10 +45,8 @@ export default function DailyChest() {
       const data = await res.json()
       setCanOpen(data.canOpen)
 
-      if (!data.canOpen) {
-        setTimeLeft(
-          data.secondsLeft > 0 ? data.secondsLeft : getSecondsUntilMidnightUTC()
-        )
+      if (!data.canOpen && data.secondsLeft > 0) {
+        setTimeLeft(data.secondsLeft)
       }
     } catch (e) {
       console.error(e)
@@ -125,7 +113,7 @@ export default function DailyChest() {
       setRewards(result)
       setShowModal(true)
       setCanOpen(false)
-      setTimeLeft(getSecondsUntilMidnightUTC())
+      await fetchStatus()
     } catch (err) {
       const msg = err?.error
         ? t(`dailyChest.errors.${err.error}`) || t("dailyChest.error")

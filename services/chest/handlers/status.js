@@ -10,27 +10,18 @@ export async function handleStatus(req, res) {
     .limit(1)
     .single()
 
-  if (!lastChest) {
+  if (!lastChest)
     return res.json({ canOpen: true })
-  }
 
   const now = new Date()
+  const last = new Date(lastChest.opened_at)
+  const remaining = 86400000 - (now.getTime() - last.getTime())
 
-  const todayMidnight = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate()
-  ))
-
-  if (new Date(lastChest.opened_at) < todayMidnight) {
+  if (remaining <= 0)
     return res.json({ canOpen: true })
-  }
-
-  const tomorrowMidnight = new Date(todayMidnight)
-  tomorrowMidnight.setUTCDate(tomorrowMidnight.getUTCDate() + 1)
 
   return res.json({
     canOpen: false,
-    secondsLeft: Math.floor((tomorrowMidnight - now) / 1000),
+    secondsLeft: Math.ceil(remaining / 1000),
   })
 }
