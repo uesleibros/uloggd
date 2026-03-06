@@ -11,11 +11,11 @@ const EASE_OUT_EXPO = [0.16, 1, 0.3, 1]
 const TRANSITION_DURATION = 0.3
 
 const BASE_POSITIONS = [
-  { x: -72, rotate: -10 },
-  { x: -36, rotate: -5 },
+  { x: -64, rotate: -9 },
+  { x: -32, rotate: -4.5 },
   { x: 0, rotate: 0 },
-  { x: 36, rotate: 5 },
-  { x: 72, rotate: 10 },
+  { x: 32, rotate: 4.5 },
+  { x: 64, rotate: 9 },
 ]
 
 function FanImages({ slugs = [], isActive }) {
@@ -32,13 +32,13 @@ function FanImages({ slugs = [], isActive }) {
   if (covers.length === 0) {
     return (
       <div className="absolute inset-0 flex items-center justify-center">
-        <Gamepad2 className="w-8 h-8 text-white/10" />
+        <Gamepad2 className="w-10 h-10 text-white/10" />
       </div>
     )
   }
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center" style={{ top: "-30px" }}>
+    <div className="absolute inset-0 flex items-center justify-center" style={{ top: "-20px" }}>
       {[...Array(5)].map((_, imgIndex) => {
         const pos = BASE_POSITIONS[imgIndex]
         const imageUrl = covers[imgIndex % covers.length]
@@ -50,12 +50,12 @@ function FanImages({ slugs = [], isActive }) {
         const idleBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.65 : 0.45
         const hoverBrightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.4 : 0.2
         
-        const yOffset = distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 6 : 12
+        const yOffset = distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 5 : 10
         const scale = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.94 : 0.88
 
-        const xPos = isActive ? pos.x * 1.15 : pos.x
-        const yPos = isActive ? yOffset - 8 : yOffset
-        const rotation = isActive ? pos.rotate * 1.15 : pos.rotate
+        const xPos = isActive ? pos.x * 1.12 : pos.x
+        const yPos = isActive ? yOffset - 6 : yOffset
+        const rotation = isActive ? pos.rotate * 1.12 : pos.rotate
         const finalScale = isActive ? scale * 1.02 : scale
 
         const staggerDelay = distanceFromCenter * 0.03
@@ -80,7 +80,7 @@ function FanImages({ slugs = [], isActive }) {
             }}
             style={{ zIndex }}
           >
-            <div className="h-[140px] w-[92px] overflow-hidden rounded-lg shadow-[0_8px_30px_rgba(0,0,0,0.5)] bg-zinc-900 border border-white/10">
+            <div className="h-[175px] w-[118px] overflow-hidden rounded-lg shadow-[0_8px_30px_rgba(0,0,0,0.5)] bg-zinc-900 border border-white/10">
               <motion.img
                 src={imageUrl}
                 alt=""
@@ -111,7 +111,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 
   return (
     <motion.div
-      className="group relative w-full cursor-pointer h-[224px]"
+      className="group relative w-full cursor-pointer h-[280px]"
       style={{
         perspective: "1200px",
         zIndex: isHovered ? 50 : 1,
@@ -135,7 +135,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
             mass: 0.8,
           }}
           style={{
-            height: "224px",
+            height: "280px",
             background: "#1e1e1e",
             border: "1px solid rgba(255, 255, 255, 0.06)",
             transformStyle: "preserve-3d",
@@ -143,7 +143,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
           }}
         >
           <motion.div
-            className="absolute inset-0"
+            className="absolute inset-0 overflow-hidden"
             animate={{
               rotateX: isHovered ? -12 : 0,
             }}
