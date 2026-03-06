@@ -20,6 +20,7 @@ A platform to catalog, rate and share your game collection.
 <img src="https://img.shields.io/badge/Supabase-3fcf8e?logo=supabase&logoColor=ffffff" alt="Supabase" />
 <img src="https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=ffffff" alt="Vercel" />
 <img src="https://img.shields.io/badge/Discord_OAuth-5865f2?logo=discord&logoColor=ffffff" alt="Discord OAuth" />
+<img src="https://img.shields.io/badge/Passkeys-WebAuthn-0f172a?logo=webauthn&logoColor=ffffff" alt="Passkeys / WebAuthn" />
 \
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=uesleibros_uloggd&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=uesleibros_uloggd&metric=bugs)](https://sonarcloud.io/summary/new_code?id=uesleibros_uloggd)
