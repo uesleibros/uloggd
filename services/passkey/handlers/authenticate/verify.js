@@ -37,19 +37,26 @@ export async function handleAuthVerify(req, res) {
       return res.status(500).json({ error: "user not found" })
     }
 
-    const { data, error } = await supabase.auth.admin.generateLink({
+    await supabase.auth.admin.signOut(passkey.user_id, "global")
+
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: "magiclink",
       email: authUser.user.email,
+      options: {
+        redirectTo: process.env.APP_URL
+      }
     })
 
-    if (error) throw error
+    if (linkError) throw linkError
 
-    const tokenHash = data.properties.hashed_token
+    const url = new URL(linkData.properties.action_link)
+    const token = url.searchParams.get("token")
+    const type = url.searchParams.get("type")
 
     res.json({
       success: true,
-      tokenHash,
-      email: authUser.user.email,
+      token,
+      type,
     })
   } catch (e) {
     console.error(e)
