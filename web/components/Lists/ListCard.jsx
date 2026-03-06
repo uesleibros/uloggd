@@ -255,7 +255,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
             <div className="absolute inset-0 flex items-center justify-between px-4">
               <div className="flex items-center gap-1.5">
                 <span className="text-[13px] text-white/60">
-                  {gamesCount === 1 ? t("common.game", { count: gamesCount }) : t("common.games", { count: gamesCount })}
+                  {gamesCount === 1 ? t("common.games", { count: gamesCount }) : t("common.games_plural", { count: gamesCount })}
                 </span>
                 {list.is_public === false && (
                   <Lock className="w-3 h-3 text-white/30 ml-1" />
@@ -337,3 +337,4 @@ export function CoverStrip({ slugs = [] }) {
     </div>
   )
 }
+
