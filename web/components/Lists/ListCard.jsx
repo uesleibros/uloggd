@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Gamepad2, Lock } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
@@ -64,25 +65,59 @@ export function ListCard({
 }) {
   const { t } = useTranslation()
   const { formatDateShort } = useDateTime()
+  const [isHovered, setIsHovered] = useState(false)
   
   const gamesCount = list.games_count || 0
   const shortId = list.shortId || encode(list.id)
 
   return (
-    <div className="group relative rounded-xl overflow-visible h-full">
+    <div 
+      className="group relative h-full"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ perspective: "1000px" }}
+    >
       <Link 
         to={`/list/${shortId}`} 
-        className="block rounded-xl overflow-hidden bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 transition-all duration-200 h-full flex flex-col"
+        className="block rounded-xl overflow-hidden bg-zinc-800/50 border border-zinc-700/50 h-full flex flex-col transition-colors duration-500"
+        style={{
+          transformStyle: "preserve-3d",
+          transform: isHovered ? "rotateX(4deg) translateY(-4px)" : "rotateX(0deg) translateY(0px)",
+          transformOrigin: "center bottom",
+          transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.3s, background-color 0.3s",
+          borderColor: isHovered ? "rgba(113, 113, 122, 0.8)" : undefined,
+          backgroundColor: isHovered ? "rgba(39, 39, 42, 0.8)" : undefined,
+        }}
       >
-        <div className="relative h-20 sm:h-24 overflow-hidden flex-shrink-0">
+        <div 
+          className="relative h-20 sm:h-24 overflow-hidden flex-shrink-0"
+          style={{
+            transformStyle: "preserve-3d",
+            transform: isHovered ? "translateZ(10px)" : "translateZ(0px)",
+            transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)",
+          }}
+        >
           <CoverStrip slugs={list.game_slugs || []} />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/30 to-zinc-900/10" />
+          <div 
+            className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/30 to-zinc-900/10 transition-opacity duration-300"
+            style={{ opacity: isHovered ? 0.7 : 1 }}
+          />
         </div>
 
-        <div className="p-3 sm:p-3.5 flex flex-col flex-1">
+        <div 
+          className="p-3 sm:p-3.5 flex flex-col flex-1"
+          style={{
+            transformStyle: "preserve-3d",
+            transform: isHovered ? "translateZ(20px)" : "translateZ(0px)",
+            transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)",
+          }}
+        >
           <div className="flex items-start justify-between gap-2 flex-1">
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-white truncate group-hover:text-indigo-400 transition-colors">
+              <h3 
+                className="text-sm font-semibold text-white truncate transition-colors duration-300"
+                style={{ color: isHovered ? "rgb(129, 140, 248)" : undefined }}
+              >
                 {list.title}
               </h3>
               <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1 sm:line-clamp-2 min-h-[1rem] sm:min-h-[2rem]">
@@ -115,6 +150,15 @@ export function ListCard({
           </div>
         </div>
       </Link>
+
+      <div 
+        className="absolute inset-x-0 -bottom-2 h-4 rounded-b-xl transition-opacity duration-500 pointer-events-none"
+        style={{
+          background: "linear-gradient(to bottom, rgba(99, 102, 241, 0.15), transparent)",
+          opacity: isHovered ? 1 : 0,
+          filter: "blur(8px)",
+        }}
+      />
 
       {actions && (
         <div className="absolute top-2 right-2 z-10">
