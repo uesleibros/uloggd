@@ -321,7 +321,7 @@ export default function BackloggdSection() {
                   placeholder="username"
                   disabled={isRunning || loading}
                   maxLength={50}
-                  className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg pl-[128px] pr-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg pl-[135px] pr-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <button

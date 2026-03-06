@@ -4,8 +4,6 @@
 CREATE TABLE public.badges (
   id text NOT NULL,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
-  title text,
-  description text,
   icon_url text,
   color text,
   category text DEFAULT 'community'::text,
@@ -77,6 +75,16 @@ CREATE TABLE public.lists (
   CONSTRAINT lists_pkey PRIMARY KEY (id),
   CONSTRAINT lists_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id)
 );
+CREATE TABLE public.mineral_transactions (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  user_id uuid NOT NULL,
+  transaction_type text NOT NULL,
+  minerals_changed jsonb NOT NULL,
+  description text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT mineral_transactions_pkey PRIMARY KEY (id),
+  CONSTRAINT mineral_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id)
+);
 CREATE TABLE public.notifications (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -84,9 +92,27 @@ CREATE TABLE public.notifications (
   data jsonb NOT NULL DEFAULT '{}'::jsonb,
   read boolean NOT NULL DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
-  dedupe_hash text,
+  dedupe_hash text UNIQUE,
   CONSTRAINT notifications_pkey PRIMARY KEY (id),
   CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id)
+);
+CREATE TABLE public.passkey_challenges (
+  key text NOT NULL,
+  challenge text NOT NULL,
+  expires_at timestamp with time zone NOT NULL,
+  CONSTRAINT passkey_challenges_pkey PRIMARY KEY (key)
+);
+CREATE TABLE public.passkeys (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  user_id uuid NOT NULL,
+  credential_id text NOT NULL UNIQUE,
+  public_key text NOT NULL,
+  counter bigint NOT NULL DEFAULT 0,
+  device_name text DEFAULT 'Passkey'::text,
+  last_used_at timestamp with time zone,
+  CONSTRAINT passkeys_pkey PRIMARY KEY (id),
+  CONSTRAINT passkeys_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.review_likes (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -163,6 +189,15 @@ CREATE TABLE public.user_badges (
   CONSTRAINT user_badges_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id),
   CONSTRAINT user_badges_badge_id_fkey FOREIGN KEY (badge_id) REFERENCES public.badges(id)
 );
+CREATE TABLE public.user_chests (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  user_id uuid NOT NULL,
+  chest_type text NOT NULL DEFAULT 'daily'::text,
+  rewards jsonb NOT NULL,
+  opened_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT user_chests_pkey PRIMARY KEY (id),
+  CONSTRAINT user_chests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id)
+);
 CREATE TABLE public.user_connections (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -190,6 +225,20 @@ CREATE TABLE public.user_games (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_games_pkey PRIMARY KEY (id),
   CONSTRAINT user_games_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id)
+);
+CREATE TABLE public.user_minerals (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  user_id uuid NOT NULL UNIQUE,
+  copper integer NOT NULL DEFAULT 0,
+  iron integer NOT NULL DEFAULT 0,
+  gold integer NOT NULL DEFAULT 0,
+  emerald integer NOT NULL DEFAULT 0,
+  diamond integer NOT NULL DEFAULT 0,
+  ruby integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT user_minerals_pkey PRIMARY KEY (id),
+  CONSTRAINT user_minerals_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id)
 );
 CREATE TABLE public.users (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,

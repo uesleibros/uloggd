@@ -15,7 +15,6 @@ export async function handleStatus(req, res) {
   }
 
   const now = new Date()
-  const lastOpened = new Date(lastChest.opened_at)
 
   const todayMidnight = new Date(Date.UTC(
     now.getUTCFullYear(),
@@ -23,7 +22,7 @@ export async function handleStatus(req, res) {
     now.getUTCDate()
   ))
 
-  if (lastOpened < todayMidnight) {
+  if (new Date(lastChest.opened_at) < todayMidnight) {
     return res.json({ canOpen: true })
   }
 

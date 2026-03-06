@@ -9,119 +9,85 @@ const DROP_TABLE = {
   ruby: { min: 1, max: 1, chance: 0.02 },
 }
 
+const MINERALS = Object.keys(DROP_TABLE)
+
+function roll(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
 function generateRewards() {
   const rewards = {}
 
-  for (const [mineral, config] of Object.entries(DROP_TABLE)) {
-    if (Math.random() <= config.chance) {
-      rewards[mineral] = Math.floor(
-        Math.random() * (config.max - config.min + 1) + config.min
-      )
-    } else {
-      rewards[mineral] = 0
-    }
+  for (const [mineral, { min, max, chance }] of Object.entries(DROP_TABLE)) {
+    rewards[mineral] = Math.random() <= chance ? roll(min, max) : 0
   }
 
   if (Object.values(rewards).every((v) => v === 0)) {
-    rewards.copper = Math.floor(Math.random() * 5) + 3
+    rewards.copper = roll(3, 7)
   }
 
   return rewards
 }
 
 export async function handleOpen(req, res) {
+  const userId = req.user.id
+  const now = new Date()
+
+  const todayMidnight = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate()
+  ))
+
   const { data: lastChest } = await supabase
     .from("user_chests")
     .select("opened_at")
-    .eq("user_id", req.user.id)
+    .eq("user_id", userId)
     .eq("chest_type", "daily")
     .order("opened_at", { ascending: false })
     .limit(1)
     .single()
 
-  if (lastChest) {
-    const now = new Date()
-    const lastOpened = new Date(lastChest.opened_at)
+  if (lastChest && new Date(lastChest.opened_at) >= todayMidnight) {
+    const tomorrowMidnight = new Date(todayMidnight)
+    tomorrowMidnight.setUTCDate(tomorrowMidnight.getUTCDate() + 1)
 
-    const todayMidnight = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate()
-    ))
-
-    if (lastOpened >= todayMidnight) {
-      const tomorrowMidnight = new Date(todayMidnight)
-      tomorrowMidnight.setUTCDate(tomorrowMidnight.getUTCDate() + 1)
-
-      return res.status(429).json({
-        error: "chest_cooldown",
-        secondsLeft: Math.floor((tomorrowMidnight - now) / 1000),
-      })
-    }
+    return res.status(429).json({
+      error: "chest_cooldown",
+      secondsLeft: Math.floor((tomorrowMidnight - now) / 1000),
+    })
   }
 
   const rewards = generateRewards()
 
-  const { data: currentMinerals } = await supabase
+  const { data: current } = await supabase
     .from("user_minerals")
     .select("*")
-    .eq("user_id", req.user.id)
+    .eq("user_id", userId)
     .single()
 
-  if (currentMinerals) {
-    const { error: updateError } = await supabase
-      .from("user_minerals")
-      .update({
-        copper: currentMinerals.copper + rewards.copper,
-        iron: currentMinerals.iron + rewards.iron,
-        gold: currentMinerals.gold + rewards.gold,
-        emerald: currentMinerals.emerald + rewards.emerald,
-        diamond: currentMinerals.diamond + rewards.diamond,
-        ruby: currentMinerals.ruby + rewards.ruby,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", req.user.id)
-
-    if (updateError) {
-      console.error(updateError)
-      return res.status(500).json({ error: "failed_to_update_minerals" })
-    }
-  } else {
-    const { error: insertError } = await supabase
-      .from("user_minerals")
-      .insert({
-        user_id: req.user.id,
-        copper: rewards.copper,
-        iron: rewards.iron,
-        gold: rewards.gold,
-        emerald: rewards.emerald,
-        diamond: rewards.diamond,
-        ruby: rewards.ruby,
-      })
-
-    if (insertError) {
-      console.error(insertError)
-      return res.status(500).json({ error: "failed_to_create_minerals" })
-    }
+  const updated = {}
+  for (const m of MINERALS) {
+    updated[m] = (current?.[m] || 0) + rewards[m]
   }
 
-  const { error: transactionError } = await supabase
-    .from("mineral_transactions")
-    .insert({
-      user_id: req.user.id,
-      transaction_type: "chest_opened",
-      minerals_changed: rewards,
-      description: "daily_chest",
-    })
+  const { error: mineralError } = await supabase
+    .from("user_minerals")
+    .upsert({
+      user_id: userId,
+      ...updated,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id" })
 
-  if (transactionError) {
-    console.error(transactionError)
+  if (mineralError) {
+    console.error(mineralError)
+    return res.status(500).json({ error: "failed_to_update_minerals" })
   }
 
   const { error: chestError } = await supabase
     .from("user_chests")
     .insert({
-      user_id: req.user.id,
+      user_id: userId,
       chest_type: "daily",
       rewards,
     })
@@ -130,6 +96,15 @@ export async function handleOpen(req, res) {
     console.error(chestError)
     return res.status(500).json({ error: "failed_to_register_chest" })
   }
+
+  await supabase
+    .from("mineral_transactions")
+    .insert({
+      user_id: userId,
+      transaction_type: "chest_opened",
+      minerals_changed: rewards,
+      description: "daily_chest",
+    })
 
   return res.json({ success: true, rewards })
 }

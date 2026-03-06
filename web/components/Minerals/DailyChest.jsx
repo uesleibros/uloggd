@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Lock } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useAuth } from "#hooks/useAuth"
@@ -16,6 +16,20 @@ function getSecondsUntilMidnightUTC() {
   return Math.floor((tomorrow - now) / 1000)
 }
 
+function formatTime(seconds) {
+  const h = String(Math.floor(seconds / 3600)).padStart(2, "0")
+  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0")
+  const s = String(seconds % 60).padStart(2, "0")
+  return `${h}:${m}:${s}`
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
+async function getToken() {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session?.access_token
+}
+
 export default function DailyChest() {
   const { t } = useTranslation("minerals")
   const { user } = useAuth()
@@ -27,10 +41,35 @@ export default function DailyChest() {
   const [rewards, setRewards] = useState(null)
   const [chestState, setChestState] = useState("idle")
 
+  const fetchStatus = useCallback(async () => {
+    try {
+      const token = await getToken()
+      if (!token) return
+
+      const res = await fetch("/api/chest/@me/status", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      if (!res.ok) throw new Error()
+
+      const data = await res.json()
+      setCanOpen(data.canOpen)
+
+      if (!data.canOpen) {
+        setTimeLeft(
+          data.secondsLeft > 0 ? data.secondsLeft : getSecondsUntilMidnightUTC()
+        )
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
-    if (!user) return
-    fetchStatus()
-  }, [user])
+    if (user) fetchStatus()
+  }, [user, fetchStatus])
 
   useEffect(() => {
     if (timeLeft <= 0) return
@@ -48,88 +87,54 @@ export default function DailyChest() {
     return () => clearInterval(interval)
   }, [timeLeft])
 
-  async function fetchStatus() {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-
-      const res = await fetch("/api/chest/@me/status", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      })
-
-      if (!res.ok) throw new Error()
-
-      const data = await res.json()
-      setCanOpen(data.canOpen)
-
-      if (!data.canOpen) {
-        const seconds = data.secondsLeft != null && data.secondsLeft > 0
-          ? data.secondsLeft
-          : getSecondsUntilMidnightUTC()
-        setTimeLeft(seconds)
-      }
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   async function handleOpenChest() {
     if (!canOpen || opening) return
 
     setOpening(true)
-    setChestState("shaking")
 
-    await new Promise((r) => setTimeout(r, 800))
-    setChestState("glowing")
+    const animate = async () => {
+      setChestState("shaking")
+      await sleep(800)
+      setChestState("glowing")
+      await sleep(600)
+      setChestState("burst")
+      await sleep(400)
+    }
 
-    await new Promise((r) => setTimeout(r, 600))
-    setChestState("burst")
-
-    await new Promise((r) => setTimeout(r, 400))
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+    const fetchRewards = async () => {
+      const token = await getToken()
+      if (!token) return null
 
       const res = await fetch("/api/chest/@me/open", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
 
       const data = await res.json()
+      if (!res.ok) throw data
 
-      if (!res.ok) {
-        notify(t(`dailyChest.errors.${data.error}`) || t("dailyChest.error"), "error")
-        setChestState("idle")
-        setOpening(false)
-        return
-      }
+      return data.rewards
+    }
 
-      setRewards(data.rewards)
+    try {
+      const [, result] = await Promise.all([animate(), fetchRewards()])
+
+      setRewards(result)
       setShowModal(true)
       setCanOpen(false)
       setTimeLeft(getSecondsUntilMidnightUTC())
-    } catch (e) {
-      console.error(e)
-      notify(t("dailyChest.error"), "error")
+    } catch (err) {
+      const msg = err?.error
+        ? t(`dailyChest.errors.${err.error}`) || t("dailyChest.error")
+        : t("dailyChest.error")
+      notify(msg, "error")
     } finally {
       setChestState("idle")
       setOpening(false)
     }
-  }
-
-  function formatTime(seconds) {
-    const h = Math.floor(seconds / 3600)
-    const m = Math.floor((seconds % 3600) / 60)
-    const s = seconds % 60
-    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
   }
 
   if (loading) {
