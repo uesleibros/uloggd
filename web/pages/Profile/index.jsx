@@ -120,7 +120,7 @@ export default function Profile() {
         />
 
         <div className="flex flex-col lg:flex-row gap-6 mt-6">
-          <div className="lg:w-[300px] lg:flex-shrink-0">
+          <div className="lg:w-[300px] lg:flex-shrink-0 lg:self-start lg:sticky">
             <ProfileSidebar
               profile={profile}
               counts={counts}
@@ -185,4 +185,5 @@ export default function Profile() {
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   )
+
 }
