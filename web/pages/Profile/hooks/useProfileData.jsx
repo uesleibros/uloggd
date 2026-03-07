@@ -12,34 +12,41 @@ export function useProfileData(username) {
 
   const normalizedUsername = username?.toLowerCase()
 
-  const isOwnProfile = useMemo(() => {
-    if (authLoading || !currentUser?.username || !normalizedUsername) return false
-    return currentUser.username.toLowerCase() === normalizedUsername
-  }, [authLoading, currentUser?.username, normalizedUsername])
+  const isOwnProfile = !authLoading
+    && !!currentUser?.username
+    && !!normalizedUsername
+    && currentUser.username.toLowerCase() === normalizedUsername
 
   useEffect(() => {
     if (!username || authLoading) {
       setFetching(true)
+      setError(null)
+      setFetchedProfile(null)
       return
     }
 
-    if (isOwnProfile && currentUser) {
+    if (isOwnProfile) {
       setFetchedProfile(currentUser)
       setFetching(false)
+      setError(null)
       return
     }
 
-    if (profileCache.has(normalizedUsername)) {
-      setFetchedProfile(profileCache.get(normalizedUsername))
+    const cached = profileCache.get(normalizedUsername)
+    if (cached) {
+      setFetchedProfile(cached)
       setFetching(false)
+      setError(null)
       return
     }
+
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
 
     setFetching(true)
     setError(null)
-
-    const controller = new AbortController()
-    abortRef.current = controller
+    setFetchedProfile(null)
 
     fetch(`/api/users/profile?username=${encodeURIComponent(username)}`, {
       signal: controller.signal,
@@ -49,7 +56,6 @@ export function useProfileData(username) {
         return res.json()
       })
       .then((data) => {
-        if (controller.signal.aborted) return
         profileCache.set(normalizedUsername, data)
         setFetchedProfile(data)
         setFetching(false)
@@ -60,15 +66,10 @@ export function useProfileData(username) {
         setFetching(false)
       })
 
-    return () => {
-      controller.abort()
-    }
-  }, [username, normalizedUsername, authLoading, isOwnProfile, currentUser])
+    return () => controller.abort()
+  }, [normalizedUsername, authLoading, isOwnProfile, currentUser])
 
-  const profile = useMemo(() => {
-    if (authLoading) return null
-    return fetchedProfile
-  }, [fetchedProfile, authLoading])
+  const profile = authLoading ? null : fetchedProfile
 
   const updateProfile = useCallback((partial) => {
     setFetchedProfile((prev) => {
@@ -81,6 +82,14 @@ export function useProfileData(username) {
     })
   }, [normalizedUsername, isOwnProfile])
 
+  const invalidateCache = useCallback((user) => {
+    if (user) {
+      profileCache.delete(user.toLowerCase())
+    } else {
+      profileCache.delete(normalizedUsername)
+    }
+  }, [normalizedUsername])
+
   return {
     profile,
     isOwnProfile,
@@ -89,5 +98,6 @@ export function useProfileData(username) {
     fetching,
     error,
     updateProfile,
+    invalidateCache,
   }
 }
