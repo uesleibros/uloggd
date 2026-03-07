@@ -92,7 +92,6 @@ function MobileActionBar({ listId, onAdd, onEdit, onDelete, onReorder, itemCount
           <ArrowUpDown className="w-4 h-4" />
         </button>
       )}
-      <ShareButton listId={listId} />
       <button
         onClick={onEdit}
         className="p-2.5 text-zinc-500 hover:text-white bg-zinc-800/50 border border-zinc-700 rounded-lg transition-all cursor-pointer"
@@ -130,6 +129,7 @@ export default function ListPage() {
   const [removingItem, setRemovingItem] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [togglingMark, setTogglingMark] = useState(null)
+  const [editMode, setEditMode] = useState(false)
   const menuRef = useRef(null)
   const gridRef = useRef(null)
 
@@ -297,7 +297,7 @@ export default function ListPage() {
   const removingGame = removingItem ? getGame(removingItem.game_slug) : null
 
   return (
-    <div className={`py-6 sm:py-8 pb-16 ${isOwner ? "pb-24 sm:pb-16" : ""}`}>
+    <div className={`py-6 sm:py-8 pb-16 ${isOwner && editMode ? "pb-24 sm:pb-16" : ""}`}>
       <div className="mb-4">
         <button
           onClick={() => navigate(-1)}
@@ -358,55 +358,71 @@ export default function ListPage() {
           </div>
         </div>
 
-        <div className="hidden sm:flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <ShareButton listId={encodedId} />
 
           {isOwner && (
+            <button
+              onClick={() => setEditMode(!editMode)}
+              className={`px-3 py-2.5 sm:py-2 text-sm font-medium rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                editMode
+                  ? "text-white bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700"
+                  : "text-zinc-400 hover:text-white active:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600"
+              }`}
+            >
+              <Pencil className="w-4 h-4" />
+              {editMode ? t("common.done") : t("common.edit")}
+            </button>
+          )}
+
+          {isOwner && editMode && (
             <>
-              <button
-                onClick={() => setAddGameOpen(true)}
-                className="px-3 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
-              >
-                <Plus className="w-4 h-4" />
-                {t("common.add")}
-              </button>
-
-              {totalItems > 1 && (
+              <div className="hidden sm:flex items-center gap-2">
                 <button
-                  onClick={() => setReorderOpen(true)}
-                  className="px-3 py-2 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                  onClick={() => setAddGameOpen(true)}
+                  className="px-3 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
                 >
-                  <ArrowUpDown className="w-4 h-4" />
-                  {t("common.reorder")}
-                </button>
-              )}
-
-              <div ref={menuRef} className="relative">
-                <button
-                  onClick={() => setMenuOpen(!menuOpen)}
-                  className="p-2 text-zinc-500 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer"
-                >
-                  <MoreHorizontal className="w-4 h-4" />
+                  <Plus className="w-4 h-4" />
+                  {t("common.add")}
                 </button>
 
-                {menuOpen && (
-                  <div className="absolute right-0 top-full mt-1 z-30 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 min-w-[150px]">
-                    <button
-                      onClick={() => { setEditOpen(true); setMenuOpen(false) }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-700/50 transition-colors cursor-pointer"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                      {t("list.actions.editList")}
-                    </button>
-                    <button
-                      onClick={() => { setDeleteOpen(true); setMenuOpen(false) }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      {t("list.actions.deleteList")}
-                    </button>
-                  </div>
+                {totalItems > 1 && (
+                  <button
+                    onClick={() => setReorderOpen(true)}
+                    className="px-3 py-2 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <ArrowUpDown className="w-4 h-4" />
+                    {t("common.reorder")}
+                  </button>
                 )}
+
+                <div ref={menuRef} className="relative">
+                  <button
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className="p-2 text-zinc-500 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer"
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+
+                  {menuOpen && (
+                    <div className="absolute right-0 top-full mt-1 z-30 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 min-w-[150px]">
+                      <button
+                        onClick={() => { setEditOpen(true); setMenuOpen(false) }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-700/50 transition-colors cursor-pointer"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        {t("list.actions.editList")}
+                      </button>
+                      <button
+                        onClick={() => { setDeleteOpen(true); setMenuOpen(false) }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        {t("list.actions.deleteList")}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </>
           )}
@@ -424,7 +440,7 @@ export default function ListPage() {
             </p>
             {isOwner && (
               <button
-                onClick={() => setAddGameOpen(true)}
+                onClick={() => { setEditMode(true); setAddGameOpen(true) }}
                 className="px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 rounded-lg transition-colors cursor-pointer flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
@@ -457,7 +473,7 @@ export default function ListPage() {
                         )}
                       </div>
 
-                      {isOwner && game && (
+                      {isOwner && editMode && game && (
                         <>
                           <button
                             onClick={() => handleToggleMark(item)}
@@ -481,7 +497,7 @@ export default function ListPage() {
                         </>
                       )}
 
-                      {!isOwner && item.marked && (
+                      {!(isOwner && editMode) && item.marked && (
                         <div className="absolute bottom-1 left-1 z-10 p-1.5 bg-white/90 text-zinc-900 rounded-lg">
                           <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         </div>
@@ -500,7 +516,7 @@ export default function ListPage() {
         )}
       </div>
 
-      {isOwner && (
+      {isOwner && editMode && (
         <MobileActionBar
           listId={encodedId}
           onAdd={() => setAddGameOpen(true)}
@@ -551,5 +567,4 @@ export default function ListPage() {
       />
     </div>
   )
-
 }
