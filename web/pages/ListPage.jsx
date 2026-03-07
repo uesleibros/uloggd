@@ -1,5 +1,22 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  rectSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import { restrictToWindowEdges } from "@dnd-kit/modifiers"
 import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
@@ -108,6 +125,88 @@ function MobileActionBar({ listId, onAdd, onEdit, onDelete, onReorder, itemCount
   )
 }
 
+function SortableGameCard({ item, game, editMode, isOwner, globalIndex, showRank, togglingMark, onToggleMark, onRemove }) {
+  const { t } = useTranslation("common")
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`relative ${showRank ? "pt-2 pl-2" : ""} ${isDragging ? "opacity-30 z-10" : ""}`}
+    >
+      {showRank && (
+        <div className="absolute top-0 left-0 z-10 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[9px] sm:text-[10px] font-bold text-zinc-400 tabular-nums">
+          {globalIndex}
+        </div>
+      )}
+
+      <div className="group relative">
+        <div
+          className={`transition-all duration-200 ${item.marked ? "grayscale opacity-50" : ""}`}
+          {...attributes}
+          {...listeners}
+        >
+          {game ? (
+            <GameCard game={game} showQuickActions={!editMode} responsive disableLink={editMode} />
+          ) : (
+            <GameCardSkeleton responsive />
+          )}
+        </div>
+
+        {isOwner && editMode && game && (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleMark(item) }}
+              className={`absolute bottom-1 left-1 z-10 p-1.5 rounded-lg transition-all cursor-pointer touch-manipulation opacity-100 sm:opacity-0 sm:group-hover:opacity-100 ${
+                item.marked
+                  ? "bg-white/90 text-zinc-900 hover:bg-white sm:!opacity-100"
+                  : "bg-black/70 hover:bg-black/90 text-zinc-400 hover:text-white"
+              }`}
+              title={item.marked ? t("unmark") : t("mark")}
+            >
+              <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            </button>
+
+            <button
+              onClick={(e) => { e.stopPropagation(); onRemove(item) }}
+              className="absolute top-1 right-1 z-10 p-1.5 bg-black/70 hover:bg-red-500 active:bg-red-600 rounded-lg text-zinc-400 hover:text-white transition-all cursor-pointer touch-manipulation opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+              title={t("remove")}
+            >
+              <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            </button>
+          </>
+        )}
+
+        {!(isOwner && editMode) && item.marked && (
+          <div className="absolute bottom-1 left-1 z-10 p-1.5 bg-white/90 text-zinc-900 rounded-lg">
+            <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function getCoverUrl(game) {
+  if (!game?.cover?.url) return null
+  const url = game.cover.url.startsWith("http") ? game.cover.url : `https:${game.cover.url}`
+  return url.replace("t_thumb", "t_cover_small")
+}
+
 export default function ListPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -130,6 +229,8 @@ export default function ListPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [togglingMark, setTogglingMark] = useState(null)
   const [editMode, setEditMode] = useState(false)
+  const [activeId, setActiveId] = useState(null)
+  const [savingOrder, setSavingOrder] = useState(false)
   const menuRef = useRef(null)
   const gridRef = useRef(null)
 
@@ -138,6 +239,11 @@ export default function ListPage() {
 
   const isOwner = !authLoading && currentUser?.id && list?.user_id === currentUser.id
   const encodedId = list ? encode(list.id) : id
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 12 } })
+  )
 
   usePageMeta(list ? {
     title: `${list.title} - uloggd`,
@@ -194,6 +300,57 @@ export default function ListPage() {
     document.addEventListener("mousedown", handle)
     return () => document.removeEventListener("mousedown", handle)
   }, [])
+
+  async function saveNewOrder(newItems) {
+    setSavingOrder(true)
+    try {
+      const token = (await supabase.auth.getSession())?.data?.session?.access_token
+
+      const reordered = newItems.map((item, idx) => ({
+        id: item.id,
+        position: (currentPage - 1) * ITEMS_PER_PAGE + idx,
+      }))
+
+      const r = await fetch("/api/lists/@me/reorder", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ listId: list.id, items: reordered }),
+      })
+
+      if (!r.ok) throw new Error()
+    } catch {
+      fetchList(currentPage)
+    } finally {
+      setSavingOrder(false)
+    }
+  }
+
+  function handleDragStart(event) {
+    setActiveId(event.active.id)
+  }
+
+  function handleDragEnd(event) {
+    const { active, over } = event
+    setActiveId(null)
+
+    if (!over || active.id === over.id) return
+
+    const oldIndex = items.findIndex(i => i.id === active.id)
+    const newIndex = items.findIndex(i => i.id === over.id)
+
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const newItems = arrayMove(items, oldIndex, newIndex)
+    setItems(newItems)
+    saveNewOrder(newItems)
+  }
+
+  function handleDragCancel() {
+    setActiveId(null)
+  }
 
   async function handleToggleMark(item) {
     if (togglingMark === item.id) return
@@ -263,6 +420,10 @@ export default function ListPage() {
     setItems(newItems)
   }
 
+  const activeItem = activeId ? items.find(i => i.id === activeId) : null
+  const activeGame = activeItem ? getGame(activeItem.game_slug) : null
+  const activeCoverUrl = activeGame ? getCoverUrl(activeGame) : null
+
   if (loading && !list) return <ListPageSkeleton />
 
   if (error || !list) {
@@ -295,6 +456,8 @@ export default function ListPage() {
   const updatedAt = formatDateLong(list.updated_at)
 
   const removingGame = removingItem ? getGame(removingItem.game_slug) : null
+  const canDrag = isOwner && editMode
+  const showRank = list.ranked !== false
 
   return (
     <div className={`py-6 sm:py-8 pb-16 ${isOwner && editMode ? "pb-24 sm:pb-16" : ""}`}>
@@ -448,13 +611,67 @@ export default function ListPage() {
               </button>
             )}
           </div>
+        ) : canDrag ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+            modifiers={[restrictToWindowEdges]}
+          >
+            <SortableContext
+              items={items.map(i => i.id)}
+              strategy={rectSortingStrategy}
+            >
+              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+                {items.map((item, index) => {
+                  const game = getGame(item.game_slug)
+                  const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index + 1
+
+                  return (
+                    <SortableGameCard
+                      key={item.id}
+                      item={item}
+                      game={game}
+                      editMode={editMode}
+                      isOwner={isOwner}
+                      globalIndex={globalIndex}
+                      showRank={showRank}
+                      togglingMark={togglingMark}
+                      onToggleMark={handleToggleMark}
+                      onRemove={(item) => setRemovingItem({ ...item, list_id: list.id })}
+                    />
+                  )
+                })}
+              </div>
+            </SortableContext>
+
+            <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
+              {activeGame && (
+                <div className="w-[100px] sm:w-[130px] aspect-[3/4] rounded-lg overflow-hidden shadow-lg ring-1 ring-indigo-400/60 opacity-80">
+                  {activeCoverUrl ? (
+                    <img
+                      src={activeCoverUrl}
+                      alt={activeGame.name}
+                      className="w-full h-full object-cover"
+                      draggable={false}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-zinc-700 flex items-center justify-center">
+                      <Gamepad2 className="w-4 h-4 text-zinc-500" />
+                    </div>
+                  )}
+                </div>
+              )}
+            </DragOverlay>
+          </DndContext>
         ) : (
           <>
             <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
               {items.map((item, index) => {
                 const game = getGame(item.game_slug)
                 const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index + 1
-                const showRank = list.ranked !== false
 
                 return (
                   <div key={item.id} className={`relative ${showRank ? "pt-2 pl-2" : ""}`}>
@@ -473,31 +690,7 @@ export default function ListPage() {
                         )}
                       </div>
 
-                      {isOwner && editMode && game && (
-                        <>
-                          <button
-                            onClick={() => handleToggleMark(item)}
-                            className={`absolute bottom-1 left-1 z-10 p-1.5 rounded-lg transition-all cursor-pointer touch-manipulation opacity-100 sm:opacity-0 sm:group-hover:opacity-100 ${
-                              item.marked
-                                ? "bg-white/90 text-zinc-900 hover:bg-white sm:!opacity-100"
-                                : "bg-black/70 hover:bg-black/90 text-zinc-400 hover:text-white"
-                            }`}
-                            title={item.marked ? t("common.unmark") : t("common.mark")}
-                          >
-                            <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                          </button>
-
-                          <button
-                            onClick={() => setRemovingItem({ ...item, list_id: list.id })}
-                            className="absolute top-1 right-1 z-10 p-1.5 bg-black/70 hover:bg-red-500 active:bg-red-600 rounded-lg text-zinc-400 hover:text-white transition-all cursor-pointer touch-manipulation opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                            title={t("common.remove")}
-                          >
-                            <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                          </button>
-                        </>
-                      )}
-
-                      {!(isOwner && editMode) && item.marked && (
+                      {item.marked && (
                         <div className="absolute bottom-1 left-1 z-10 p-1.5 bg-white/90 text-zinc-900 rounded-lg">
                           <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         </div>
@@ -507,13 +700,13 @@ export default function ListPage() {
                 )
               })}
             </div>
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
           </>
         )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
 
       {isOwner && editMode && (
