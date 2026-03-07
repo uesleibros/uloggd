@@ -25,7 +25,9 @@ export function useHeartbeat() {
         method: "POST",
         headers: {
           Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json", 
         },
+        body: JSON.stringify({ status: "online" }),
       }).catch(() => null)
     }
 

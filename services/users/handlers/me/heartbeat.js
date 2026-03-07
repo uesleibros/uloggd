@@ -1,7 +1,7 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleHeartbeat(req, res) {
-  const { status } = req.body
+  const { status } = req.body || {}
 
   await supabase
     .from("users")
