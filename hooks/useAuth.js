@@ -38,8 +38,7 @@ async function fetchProfile(session) {
       },
     })
     if (res.ok) {
-      let data = await res.json()
-      data.status = "online"
+      const data = await res.json()
       return data
     }
     return null
@@ -207,4 +206,5 @@ export function useAuth() {
     refreshUser,
   }
 }
+
 
