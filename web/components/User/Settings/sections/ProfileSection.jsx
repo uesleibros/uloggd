@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { User, Mail, Hash, ShieldCheck, Pencil, Check, X, Loader2, AlertTriangle } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import SettingsSection from "@components/User/Settings/ui/SettingsSection"
@@ -18,6 +19,7 @@ function getCooldownDays(changedAt) {
 
 export default function ProfileSection({ user, onUsernameSave, usernameSaving }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [editing, setEditing] = useState(false)
   const [newUsername, setNewUsername] = useState(user.username)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -34,10 +36,12 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
   }
 
   async function handleConfirmSave() {
-    const success = await onUsernameSave(newUsername.trim())
+    const trimmed = newUsername.trim()
+    const success = await onUsernameSave(trimmed)
     if (success) {
       setShowConfirm(false)
       setEditing(false)
+      navigate(`/u/${trimmed}`, { replace: true })
     }
   }
 
