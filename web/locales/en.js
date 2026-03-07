@@ -187,6 +187,7 @@ export default {
     save: "Save",
     add: "Add",
     edit: "Edit",
+    done: "Done",
     delete: "Delete",
     remove: "Remove",
     reorder: "Reorder",
