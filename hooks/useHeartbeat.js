@@ -25,10 +25,16 @@ export function useHeartbeat() {
         method: "POST",
         headers: {
           Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json", 
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ status: "online" }),
       }).catch(() => null)
+    }
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        ping()
+      }
     }
 
     const onUnload = () => {
@@ -47,10 +53,12 @@ export function useHeartbeat() {
 
     intervalRef.current = setInterval(ping, 2 * 60 * 1000)
 
+    document.addEventListener("visibilitychange", onVisibilityChange)
     window.addEventListener("beforeunload", onUnload)
 
     return () => {
       clearInterval(intervalRef.current)
+      document.removeEventListener("visibilitychange", onVisibilityChange)
       window.removeEventListener("beforeunload", onUnload)
       activeHeartbeat = null
     }
