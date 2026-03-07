@@ -412,6 +412,7 @@ export default function GameCard({
 	showRating = true,
 	showQuickActions = true,
 	responsive = false,
+	disableLink = false,
 	className = "",
 }) {
 	const { getRating } = useMyLibrary()
@@ -474,7 +475,13 @@ export default function GameCard({
 				onMouseEnter={canShowActions ? prefetch : undefined}
 			>
 				{isFavorite && <FavoriteBadge />}
-				{newTab ? (
+				{disableLink ? (
+					<div
+						className={`relative w-full h-full rounded-lg ${cardClasses}`}
+					>
+						{imageContent}
+					</div>
+				) : newTab ? (
 					<a
 						href={`/game/${game.slug}`}
 						target="_blank"

@@ -684,7 +684,7 @@ export default function ListPage() {
                     <div className="group relative">
                       <div className={`transition-all duration-200 ${item.marked ? "grayscale opacity-50" : ""}`}>
                         {game ? (
-                          <GameCard game={game} showQuickActions={!editMode} responsive />
+                          <GameCard game={game} showQuickActions={!editMode} disableLink={editMode} responsive />
                         ) : (
                           <GameCardSkeleton responsive />
                         )}
