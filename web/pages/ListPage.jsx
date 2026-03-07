@@ -306,18 +306,16 @@ export default function ListPage() {
     try {
       const token = (await supabase.auth.getSession())?.data?.session?.access_token
 
-      const reordered = newItems.map((item, idx) => ({
-        id: item.id,
-        position: (currentPage - 1) * ITEMS_PER_PAGE + idx,
-      }))
-
       const r = await fetch("/api/lists/@me/reorder", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify({ listId: list.id, items: reordered }),
+        body: JSON.stringify({
+          listId: list.id,
+          items: newItems.map(item => item.id),
+        }),
       })
 
       if (!r.ok) throw new Error()
