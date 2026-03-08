@@ -56,7 +56,10 @@ async function setFaviconBadge(count) {
   const size = canvas.width
 
   ctx.clearRect(0, 0, size, size)
-  ctx.drawImage(img, 0, 0, size, size)
+
+  const iconSize = 52
+  const iconOffset = 0
+  ctx.drawImage(img, iconOffset, iconOffset, iconSize, iconSize)
 
   if (count <= 0) {
     updateFaviconLink(canvas.toDataURL("image/png"))
@@ -64,21 +67,21 @@ async function setFaviconBadge(count) {
   }
 
   const text = count > 99 ? "99+" : String(count)
-  const fontSize = text.length > 2 ? 20 : 26
+  const fontSize = text.length > 2 ? 24 : 30
   ctx.font = `bold ${fontSize}px -apple-system, "Segoe UI", sans-serif`
 
   const textMetrics = ctx.measureText(text)
   const textWidth = textMetrics.width
-  const badgeSize = 28
-  const badgeWidth = Math.max(badgeSize, textWidth + 10)
-  const badgeHeight = badgeSize
+  const badgeHeight = 34
+  const badgePadding = 10
+  const badgeWidth = Math.max(badgeHeight, textWidth + badgePadding * 2)
 
-  const badgeX = size - badgeWidth + 2
-  const badgeY = size - badgeHeight + 2
+  const badgeX = size - badgeWidth
+  const badgeY = size - badgeHeight
 
   ctx.save()
-  ctx.shadowColor = "rgba(0, 0, 0, 0.5)"
-  ctx.shadowBlur = 3
+  ctx.shadowColor = "rgba(0, 0, 0, 0.6)"
+  ctx.shadowBlur = 4
   ctx.shadowOffsetX = 0
   ctx.shadowOffsetY = 1
 
@@ -103,7 +106,7 @@ async function clearFaviconBadge() {
 
   const { canvas, ctx } = ensureCanvas()
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+  ctx.drawImage(img, 0, 0, 52, 52)
 
   updateFaviconLink(canvas.toDataURL("image/png"))
 }
