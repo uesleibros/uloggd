@@ -6,10 +6,16 @@ const CONNECTIONS_FULL = `user_connections ( provider, provider_user_id, provide
 const CONNECTIONS_TWITCH = `user_connections ( provider, provider_username )`
 
 const EQUIPPED_REL = `
-  user_equipped_items!user_equipped_user_fkey (
+  user_equipped_items (
     slot,
-    inventory:user_inventory!user_equipped_inventory_fkey (
-      item:store_items!inner ( id, slug, name, asset_url, item_type )
+    inventory:user_inventory!inner (
+      item:store_items!inner (
+        id,
+        slug,
+        name,
+        asset_url,
+        item_type
+      )
     )
   )
 `
@@ -184,4 +190,5 @@ export async function getFollowStatus(userId, currentUserId) {
     followsYou: !!followsYouRes.data,
   }
 }
+
 
