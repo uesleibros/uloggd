@@ -58,7 +58,7 @@ export function ProfileHeader({
             <AvatarWithDecoration
               src={profile.avatar}
               alt={profile.username}
-              decoration={profile.avatar_decoration}
+              decorationUrl={profile.equipped?.avatar_decoration?.asset_url}
               status={status}
               isStreaming={!!profile.stream}
               size="profile"
@@ -139,4 +139,5 @@ export function ProfileHeader({
       </div>
     </div>
   )
+
 }
