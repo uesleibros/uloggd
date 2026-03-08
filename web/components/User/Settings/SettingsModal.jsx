@@ -23,15 +23,12 @@ export default function SettingsModal({ isOpen, onClose }) {
   const [bioSaving, setBioSaving] = useState(false)
   const [pronoun, setPronoun] = useState(user?.pronoun || "")
   const [pronounSaving, setPronounSaving] = useState(false)
-  const [selectedDecoration, setSelectedDecoration] = useState(user?.avatar_decoration || null)
-  const [decorationSaving, setDecorationSaving] = useState(false)
   const [usernameSaving, setUsernameSaving] = useState(false)
   const [signOutLoading, setSignOutLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
   const bioIsDirty = bio !== (user?.bio || "")
   const pronounIsDirty = pronoun !== (user?.pronoun || "")
-  const decorationIsDirty = selectedDecoration !== (user?.avatar_decoration || null)
 
   async function handleImageSave(type, base64) {
     const setter = type === "avatar" ? setAvatarSaving : setBannerSaving
@@ -90,24 +87,6 @@ export default function SettingsModal({ isOpen, onClose }) {
       notify(t("settings.errors.pronounSave"), "error")
     } finally {
       setPronounSaving(false)
-    }
-  }
-
-  async function handleDecorationSave() {
-    if (!decorationIsDirty) return
-    setDecorationSaving(true)
-    try {
-      const data = await api.updateDecoration(selectedDecoration)
-      if (data) {
-        updateUser({ avatar_decoration: selectedDecoration })
-        notify(t("settings.success.decorationUpdated"))
-      } else {
-        notify(t("settings.errors.decorationSave"), "error")
-      }
-    } catch {
-      notify(t("settings.errors.decorationSave"), "error")
-    } finally {
-      setDecorationSaving(false)
     }
   }
 
@@ -199,15 +178,7 @@ export default function SettingsModal({ isOpen, onClose }) {
           <SecurityTab />
         )}
         {activeTab === "appearance" && (
-          <AppearanceTab
-            user={user}
-            selectedDecoration={selectedDecoration}
-            onSelectDecoration={setSelectedDecoration}
-            onDecorationSave={handleDecorationSave}
-            onDecorationReset={() => setSelectedDecoration(user?.avatar_decoration || null)}
-            decorationSaving={decorationSaving}
-            decorationIsDirty={decorationIsDirty}
-          />
+          <AppearanceTab />
         )}
         {activeTab === "language" && (
           <LanguageTab />
