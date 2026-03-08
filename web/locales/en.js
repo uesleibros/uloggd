@@ -3,10 +3,10 @@ export default {
 	  title: "Inventory",
 	  description: "Manage your cosmetics and choose what to equip on your profile.",
 	  close: "Close",
-	  unequip: "Unequip",
-	  noneEquipped: "Nothing equipped",
+	  none: "None",
 	  itemCount: "item",
 	  itemsCount: "items",
+	  equippedCount: "equipped",
 	  empty: {
 	    title: "No items yet",
 	    description: "Buy cosmetics in the shop and manage them here.",
@@ -43,7 +43,8 @@ export default {
 	  },
 	  errors: {
 	    loadFailed: "Failed to load inventory.",
-	    equipFailed: "Failed to update item.",
+	    equipFailed: "Failed to equip item.",
+	    unequipFailed: "Failed to remove item.",
 	    loginRequired: "You need to be logged in.",
 	  },
 	},
