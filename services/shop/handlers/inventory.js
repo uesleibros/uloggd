@@ -16,11 +16,10 @@ export async function handleInventory(req, res) {
         slug,
         name,
         description,
-        preview_url,
         asset_url,
         item_type,
         metadata,
-        category:store_categories(slug, name, icon)
+        category:store_categories(slug, name)
       )
     `)
     .eq("user_id", userId)
