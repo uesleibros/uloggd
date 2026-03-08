@@ -120,6 +120,12 @@ export default {
 		  submessage: "Considere apoiar os criadores originais.",
 		  donate: "Apoiar artistas",
 		},
+		artists: {
+		  title: "Artistas parceiros",
+		  subtitle: "A loja só existe graças à permissão dos artistas da Decors.",
+		  visit: "Ver página",
+		  defaultLabel: "Artista",
+		},
   },
   minerals: {
     meta: {
@@ -1834,6 +1840,7 @@ export default {
     },
   },
 }
+
 
 
 
