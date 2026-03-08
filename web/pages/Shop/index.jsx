@@ -87,16 +87,14 @@ function TimeBadge({ availableUntil }) {
 }
 
 function AvatarDecorationPreview({ item, user }) {
-  const avatarUrl = user?.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"
-
   return (
     <div className="flex flex-col items-center gap-3">
       <AvatarWithDecoration
-        src={avatarUrl}
-        alt={user?.display_name || user?.username || "Preview"}
+        src={user.avatar}
+        alt={user.username}
         decorationUrl={item.asset_url}
         size="profile"
-        status="online"
+        showStatus={false}
       />
       <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
         Preview
@@ -881,4 +879,5 @@ export default function ShopPage() {
     </div>
   )
 }
+
 
