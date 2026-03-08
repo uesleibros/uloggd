@@ -56,7 +56,7 @@ function NoneCard({ active, onClick, loading }) {
   )
 }
 
-function InventoryItemCard({ item, active, onClick, loading }) {
+function InventoryItemCard({ entry, active, onClick, loading }) {
   return (
     <button
       onClick={onClick}
@@ -73,10 +73,10 @@ function InventoryItemCard({ item, active, onClick, loading }) {
             <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
           </div>
         )}
-        {item.item?.asset_url ? (
+        {entry.asset_url ? (
           <img
-            src={item.item.asset_url}
-            alt={item.item.name}
+            src={entry.asset_url}
+            alt={entry.name}
             className="w-full h-full object-contain select-none group-hover:scale-105 transition-transform duration-300"
             draggable={false}
           />
@@ -86,7 +86,7 @@ function InventoryItemCard({ item, active, onClick, loading }) {
       </div>
       <div className="px-3 pb-3">
         <div className="flex items-center justify-between gap-2">
-          <h4 className="text-xs font-medium text-zinc-300 truncate">{item.item?.name}</h4>
+          <h4 className="text-xs font-medium text-zinc-300 truncate">{entry.name}</h4>
           {active && <Check className="w-3 h-3 text-violet-400 flex-shrink-0" />}
         </div>
       </div>
@@ -115,13 +115,13 @@ function SlotSection({ slot, items, equippedInventoryId, onEquip, onUnequip, loa
           onClick={() => onUnequip(slot)}
         />
 
-        {items.map(inv => (
+        {items.map(entry => (
           <InventoryItemCard
-            key={inv.inventory_id}
-            item={inv}
-            active={equippedInventoryId === inv.inventory_id}
-            loading={loadingId === inv.inventory_id}
-            onClick={() => onEquip(inv.inventory_id, slot)}
+            key={entry.inventory_id}
+            entry={entry}
+            active={equippedInventoryId === entry.inventory_id}
+            loading={loadingId === entry.inventory_id}
+            onClick={() => onEquip(entry.inventory_id, slot)}
           />
         ))}
       </div>
@@ -134,10 +134,8 @@ function ProfilePreview({ user, inventory }) {
 
   const equippedDecoration = useMemo(() => {
     return inventory.find(
-      e =>
-        e.equipped_slot === "avatar_decoration" &&
-        (e.item?.item_type || e.item_type) === "avatar_decoration"
-    )?.item?.asset_url || null
+      e => e.equipped_slot === "avatar_decoration" && e.item_type === "avatar_decoration"
+    )?.asset_url || null
   }, [inventory])
 
   const equippedCount = useMemo(() => {
@@ -199,7 +197,7 @@ export default function InventoryModal({ isOpen, onClose, user }) {
     for (const s of SLOTS) groups[s] = []
 
     for (const entry of inventory) {
-      const type = entry.item?.item_type || entry.item_type
+      const type = entry.item_type
       if (!groups[type]) groups[type] = []
       groups[type].push(entry)
     }
@@ -249,7 +247,7 @@ export default function InventoryModal({ isOpen, onClose, user }) {
         prev.map(entry => ({
           ...entry,
           equipped_slot:
-            (entry.item?.item_type || entry.item_type) === slot
+            entry.item_type === slot
               ? entry.inventory_id === inventoryId
                 ? slot
                 : null
@@ -330,16 +328,6 @@ export default function InventoryModal({ isOpen, onClose, user }) {
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="w-5 h-5 text-zinc-600 animate-spin" />
-            </div>
-          ) : inventory.length === 0 ? (
-            <div className="py-20 text-center">
-              <div className="w-14 h-14 rounded-full bg-zinc-800/50 mx-auto mb-4" />
-              <h3 className="text-sm font-medium text-zinc-400 mb-1">
-                {t("empty.title")}
-              </h3>
-              <p className="text-xs text-zinc-600">
-                {t("empty.description")}
-              </p>
             </div>
           ) : slotsWithItems.length === 0 ? (
             <div className="py-20 text-center">
