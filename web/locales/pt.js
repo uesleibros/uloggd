@@ -11,6 +11,7 @@ export default {
       limited: "Limitado",
       soldOut: "Esgotado",
       owned: "Adquirido",
+      equipped: "Equipado",
     },
     types: {
       avatar_decoration: "Decoração de avatar",
@@ -32,10 +33,16 @@ export default {
       itemCount: "item",
       itemsCount: "itens",
     },
+    card: {
+      ownedHint: "Clique para equipar",
+      equippedHint: "Em uso",
+    },
     detail: {
       price: "Preço",
       close: "Fechar",
       owned: "Adquirido",
+      equipped: "Equipado",
+      equip: "Equipar",
       soldOut: "Esgotado",
       soldOutLabel: "Esgotado",
       purchase: "Comprar",
@@ -47,10 +54,12 @@ export default {
       title: "Compra realizada!",
       description: "foi adicionado ao seu inventário.",
       continue: "Continuar comprando",
+      equipped: "Item equipado!",
     },
     errors: {
       loginRequired: "Você precisa estar logado.",
       purchaseFailed: "Falha na compra.",
+      equipFailed: "Erro ao equipar.",
       generic: "Algo deu errado.",
     },
     empty: {

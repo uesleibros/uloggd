@@ -119,8 +119,14 @@ function ItemCard({ item, owned, equipped, onSelect }) {
           </span>
         )}
         <TimeBadge availableUntil={item.available_until} />
-        {owned && (
+        {equipped && (
           <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full backdrop-blur-sm flex items-center gap-1">
+            <Check className="w-2.5 h-2.5" />
+            {t("tags.equipped")}
+          </span>
+        )}
+        {owned && !equipped && (
+          <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-zinc-700/50 text-zinc-300 rounded-full backdrop-blur-sm flex items-center gap-1">
             <Check className="w-2.5 h-2.5" />
             {t("tags.owned")}
           </span>
@@ -151,13 +157,19 @@ function ItemCard({ item, owned, equipped, onSelect }) {
           </span>
         </div>
         <h3 className="text-sm font-medium text-white truncate mb-2.5">{item.name}</h3>
-        <PriceDisplay item={item} size="sm" />
+        {!owned && <PriceDisplay item={item} size="sm" />}
+        {owned && !equipped && (
+          <span className="text-xs text-zinc-500">{t("card.ownedHint")}</span>
+        )}
+        {equipped && (
+          <span className="text-xs text-emerald-400">{t("card.equippedHint")}</span>
+        )}
       </div>
     </button>
   )
 }
 
-function CollectionSection({ collection, ownedItemIds, equippedItems, onSelectItem, onViewAll }) {
+function CollectionSection({ collection, ownedItemIds, isEquipped, onSelectItem, onViewAll }) {
   const { t } = useTranslation("shop")
   const items = collection.items || []
   const previewItems = items.slice(0, ITEMS_PREVIEW_COUNT)
@@ -223,7 +235,7 @@ function CollectionSection({ collection, ownedItemIds, equippedItems, onSelectIt
               onClick={() => onViewAll(collection)}
               className="flex items-center gap-1.5 text-sm text-violet-400 hover:text-violet-300 transition-colors cursor-pointer whitespace-nowrap flex-shrink-0"
             >
-              {t("collection.viewAll", "Ver tudo")}
+              {t("collection.viewAll")}
               <ChevronRight className="w-4 h-4" />
             </button>
           )}
@@ -237,7 +249,7 @@ function CollectionSection({ collection, ownedItemIds, equippedItems, onSelectIt
               key={item.id}
               item={item}
               owned={ownedItemIds.has(item.id)}
-              equipped={equippedItems[item.item_type] === item.id}
+              equipped={isEquipped(item.id)}
               onSelect={onSelectItem}
             />
           ))}
@@ -250,7 +262,7 @@ function CollectionSection({ collection, ownedItemIds, equippedItems, onSelectIt
             onClick={() => onViewAll(collection)}
             className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all cursor-pointer"
           >
-            {t("collection.viewAll", "Ver tudo")}
+            {t("collection.viewAll")}
             <span className="text-zinc-600">({items.length})</span>
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -260,7 +272,7 @@ function CollectionSection({ collection, ownedItemIds, equippedItems, onSelectIt
   )
 }
 
-function CollectionFullView({ collection, ownedItemIds, equippedItems, onSelectItem, onBack }) {
+function CollectionFullView({ collection, ownedItemIds, isEquipped, onSelectItem, onBack }) {
   const { t } = useTranslation("shop")
   const items = collection.items || []
 
@@ -274,9 +286,7 @@ function CollectionFullView({ collection, ownedItemIds, equippedItems, onSelectI
         {t("collection.back")}
       </button>
 
-      <div
-        className="relative overflow-hidden rounded-2xl border border-zinc-800/50 mb-8"
-      >
+      <div className="relative overflow-hidden rounded-2xl border border-zinc-800/50 mb-8">
         {collection.banner_url ? (
           <div className="relative h-44 sm:h-56 overflow-hidden">
             <img
@@ -326,10 +336,7 @@ function CollectionFullView({ collection, ownedItemIds, equippedItems, onSelectI
 
       <div className="flex items-center justify-between mb-6">
         <span className="text-sm text-zinc-500">
-          {items.length} {items.length === 1
-            ? t("collection.itemCount", "item")
-            : t("collection.itemsCount", "itens")
-          }
+          {items.length} {items.length === 1 ? t("collection.itemCount") : t("collection.itemsCount")}
         </span>
       </div>
 
@@ -342,7 +349,7 @@ function CollectionFullView({ collection, ownedItemIds, equippedItems, onSelectI
               key={item.id}
               item={item}
               owned={ownedItemIds.has(item.id)}
-              equipped={equippedItems[item.item_type] === item.id}
+              equipped={isEquipped(item.id)}
               onSelect={onSelectItem}
             />
           ))}
@@ -386,7 +393,7 @@ function FeaturedBanner({ collection, onClick }) {
           <div>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-white/10 text-white/70 rounded-full backdrop-blur-sm mb-3">
               <Sparkles className="w-3 h-3" />
-              {t("collection.featured", "Em destaque")}
+              {t("collection.featured")}
             </span>
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">{collection.name}</h2>
             {collection.description && (
@@ -415,12 +422,8 @@ function EmptyState() {
       <div className="w-14 h-14 rounded-2xl bg-zinc-800/50 border border-zinc-800 flex items-center justify-center mb-4">
         <Package className="w-7 h-7 text-zinc-600" />
       </div>
-      <h3 className="text-sm font-medium text-zinc-400 mb-1">
-        {t("empty.title")}
-      </h3>
-      <p className="text-xs text-zinc-600">
-        {t("empty.description")}
-      </p>
+      <h3 className="text-sm font-medium text-zinc-400 mb-1">{t("empty.title")}</h3>
+      <p className="text-xs text-zinc-600">{t("empty.description")}</p>
     </div>
   )
 }
@@ -463,6 +466,12 @@ function ItemDetailModal({ item, owned, equipped, onClose, onPurchase, onEquip, 
                 {t("tags.limited")}
               </span>
             )}
+            {owned && (
+              <span className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full backdrop-blur-sm flex items-center gap-1">
+                <Check className="w-2.5 h-2.5" />
+                {t("tags.owned")}
+              </span>
+            )}
           </div>
         </div>
 
@@ -483,19 +492,18 @@ function ItemDetailModal({ item, owned, equipped, onClose, onPurchase, onEquip, 
             <p className="text-sm text-zinc-400 leading-relaxed mb-5">{item.description}</p>
           )}
 
-          {item.is_limited && item.max_stock != null && (
+          {item.is_limited && item.max_stock != null && !owned && (
             <div className="flex items-center gap-2 mb-5 text-sm text-zinc-400">
               <Package className="w-4 h-4 text-zinc-500" />
               <span>
                 {isSoldOut
                   ? t("detail.soldOutLabel")
-                  : `${item.current_stock} / ${item.max_stock} ${t("detail.remaining")}`
-                }
+                  : `${item.current_stock} / ${item.max_stock} ${t("detail.remaining")}`}
               </span>
             </div>
           )}
 
-          {item.available_until && (
+          {item.available_until && !owned && (
             <div className="flex items-center gap-2 mb-5 text-sm text-zinc-400">
               <Clock className="w-4 h-4 text-zinc-500" />
               <span>
@@ -504,7 +512,7 @@ function ItemDetailModal({ item, owned, equipped, onClose, onPurchase, onEquip, 
             </div>
           )}
 
-          {hasPrice && (
+          {!owned && hasPrice && (
             <div className="p-4 rounded-xl bg-zinc-800/40 border border-zinc-800 mb-6">
               <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold mb-2.5 block">
                 {t("detail.price")}
@@ -537,7 +545,7 @@ function ItemDetailModal({ item, owned, equipped, onClose, onPurchase, onEquip, 
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <>
-                      <ShoppingBag className="w-4 h-4" />
+                      <Sparkles className="w-4 h-4" />
                       {t("detail.equip")}
                     </>
                   )}
@@ -590,9 +598,7 @@ function PurchaseSuccessModal({ isOpen, onClose, item }) {
           <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4">
             <CheckCircle className="w-7 h-7 text-emerald-500" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">
-            {t("success.title")}
-          </h3>
+          <h3 className="text-lg font-semibold text-white mb-2">{t("success.title")}</h3>
           <p className="text-sm text-zinc-500 leading-relaxed">
             <span className="text-zinc-300 font-medium">{item?.name}</span>{" "}
             {t("success.description")}
@@ -617,7 +623,6 @@ export default function ShopPage() {
 
   const [collections, setCollections] = useState([])
   const [inventory, setInventory] = useState([])
-  const [equippedItems, setEquippedItems] = useState({})
 
   const [loading, setLoading] = useState(true)
   const [activeCollection, setActiveCollection] = useState(null)
@@ -646,22 +651,6 @@ export default function ShopPage() {
     }
   }, [])
 
-  const fetchEquipped = useCallback(async () => {
-    const headers = await getAuthHeaders()
-    if (!headers) return {}
-    try {
-      const res = await fetch("/api/shop/equipped?userId=" + user.id, { headers })
-      const data = await res.json()
-      const equippedMap = {}
-      data.equipped.forEach(e => {
-        equippedMap[e.slot] = e.inventory_id
-      })
-      return equippedMap
-    } catch {
-      return {}
-    }
-  }, [user])
-
   useEffect(() => {
     async function load() {
       try {
@@ -679,15 +668,10 @@ export default function ShopPage() {
   useEffect(() => {
     if (!user) {
       setInventory([])
-      setEquippedItems({})
       return
     }
-    
-    Promise.all([
-      fetchInventory().then(setInventory),
-      fetchEquipped().then(setEquippedItems)
-    ])
-  }, [user, fetchInventory, fetchEquipped])
+    fetchInventory().then(setInventory)
+  }, [user, fetchInventory])
 
   async function handleViewAll(collection) {
     setActiveCollection(collection)
@@ -747,7 +731,7 @@ export default function ShopPage() {
     setPurchasing(false)
   }
 
-  async function handleEquip(inventoryItem, itemType) {
+  async function handleEquip(inventoryId, slot) {
     const headers = await getAuthHeaders()
     if (!headers) {
       notify(t("errors.loginRequired"), "error")
@@ -760,10 +744,7 @@ export default function ShopPage() {
       const res = await fetch("/api/shop/@me/equip", {
         method: "POST",
         headers,
-        body: JSON.stringify({ 
-          inventoryId: inventoryItem.id, 
-          slot: itemType 
-        }),
+        body: JSON.stringify({ inventoryId, slot }),
       })
 
       const data = await res.json()
@@ -774,10 +755,11 @@ export default function ShopPage() {
         return
       }
 
-      const equipped = await fetchEquipped()
-      setEquippedItems(equipped)
-      
-      notify(t("success.equip"), "success")
+      const inv = await fetchInventory()
+      setInventory(inv)
+
+      setSelectedItem(null)
+      notify(t("success.equipped"), "success")
     } catch (e) {
       console.error(e)
       notify(t("errors.generic"), "error")
@@ -786,8 +768,10 @@ export default function ShopPage() {
     setEquipping(false)
   }
 
-  const ownedItemIds = new Set(inventory.map(i => i.item_id))
-  
+  const ownedItemIds = new Set(inventory.map(i => i.id))
+  const getInventoryItem = (itemId) => inventory.find(i => i.id === itemId)
+  const isEquipped = (itemId) => getInventoryItem(itemId)?.equipped_slot != null
+
   const featuredCollections = collections.filter(c => c.is_featured)
   const regularCollections = collections.filter(c => !c.is_featured)
 
@@ -817,7 +801,7 @@ export default function ShopPage() {
           <CollectionFullView
             collection={{ ...activeCollection, items: activeCollectionItems }}
             ownedItemIds={ownedItemIds}
-            equippedItems={equippedItems}
+            isEquipped={isEquipped}
             onSelectItem={setSelectedItem}
             onBack={handleBackFromCollection}
           />
@@ -841,7 +825,7 @@ export default function ShopPage() {
               key={col.id}
               collection={col}
               ownedItemIds={ownedItemIds}
-              equippedItems={equippedItems}
+              isEquipped={isEquipped}
               onSelectItem={setSelectedItem}
               onViewAll={handleViewAll}
             />
@@ -854,16 +838,12 @@ export default function ShopPage() {
       <ItemDetailModal
         item={selectedItem}
         owned={selectedItem ? ownedItemIds.has(selectedItem.id) : false}
-        equipped={
-          selectedItem 
-            ? equippedItems[selectedItem.item_type] === inventory.find(i => i.item_id === selectedItem.id)?.inventory_id 
-            : false
-        }
+        equipped={selectedItem ? isEquipped(selectedItem.id) : false}
         onClose={() => setSelectedItem(null)}
         onPurchase={handlePurchase}
         onEquip={() => {
-          const invItem = inventory.find(i => i.item_id === selectedItem.id);
-          if (invItem) handleEquip(invItem, selectedItem.item_type);
+          const invItem = getInventoryItem(selectedItem.id)
+          if (invItem) handleEquip(invItem.inventory_id, selectedItem.item_type)
         }}
         purchasing={purchasing}
         equipping={equipping}

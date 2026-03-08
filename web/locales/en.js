@@ -11,6 +11,7 @@ export default {
       limited: "Limited",
       soldOut: "Sold Out",
       owned: "Owned",
+      equipped: "Equipped",
     },
     types: {
       avatar_decoration: "Avatar Decoration",
@@ -32,10 +33,16 @@ export default {
       itemCount: "item",
       itemsCount: "items",
     },
+    card: {
+      ownedHint: "Click to equip",
+      equippedHint: "In use",
+    },
     detail: {
       price: "Price",
       close: "Close",
       owned: "Owned",
+      equipped: "Equipped",
+      equip: "Equip",
       soldOut: "Sold Out",
       soldOutLabel: "Sold out",
       purchase: "Purchase",
@@ -47,10 +54,12 @@ export default {
       title: "Purchase Complete!",
       description: "has been added to your inventory.",
       continue: "Continue Shopping",
+      equipped: "Item equipped!",
     },
     errors: {
       loginRequired: "You need to be logged in.",
       purchaseFailed: "Purchase failed.",
+      equipFailed: "Failed to equip.",
       generic: "Something went wrong.",
     },
     empty: {
