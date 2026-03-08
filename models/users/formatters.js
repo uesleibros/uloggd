@@ -28,33 +28,13 @@ function formatMinerals(userMinerals) {
   }
 }
 
-function formatEquipped(userEquippedItems) {
-  const equipped = {}
-  
-  if (!userEquippedItems) return equipped
-  
-  for (const eq of userEquippedItems) {
-    if (eq.inventory?.item) {
-      equipped[eq.slot] = {
-        id: eq.inventory.item.id,
-        slug: eq.inventory.item.slug,
-        name: eq.inventory.item.name,
-        asset_url: eq.inventory.item.asset_url,
-        item_type: eq.inventory.item.item_type,
-      }
-    }
-  }
-  
-  return equipped
-}
-
 export function formatFullProfile(
   profile,
   { stream = null, counts = {}, ban = null } = {}
 ) {
   if (!profile) return null
 
-  const equipped = formatEquipped(profile.user_equipped_items)
+  const equipped = profile.user_equipped_items
 
   return {
     id: profile.user_id,
@@ -147,3 +127,4 @@ export function formatMinimalUserMap(users) {
 
   return map
 }
+
