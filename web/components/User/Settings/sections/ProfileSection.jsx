@@ -56,7 +56,7 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
         <AvatarWithDecoration
           src={user.avatar}
           alt={user.username}
-          decoration={user.avatar_decoration}
+          decorationUrl={user.equipped?.avatar_decoration?.asset_url}
           status={getStatus(user.last_seen, user.status)}
           isStreaming={!!user.stream}
           size="xl"
@@ -188,3 +188,4 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
     </SettingsSection>
   )
 }
+
