@@ -3,10 +3,10 @@ export default {
 	  title: "Inventário",
 	  description: "Gerencie seus cosméticos e escolha o que equipar no seu perfil.",
 	  close: "Fechar",
-	  unequip: "Desequipar",
-	  noneEquipped: "Nenhum equipado",
+	  none: "Nenhum",
 	  itemCount: "item",
 	  itemsCount: "itens",
+	  equippedCount: "em uso",
 	  empty: {
 	    title: "Nenhum item ainda",
 	    description: "Compre cosméticos na loja e gerencie aqui.",
@@ -43,7 +43,8 @@ export default {
 	  },
 	  errors: {
 	    loadFailed: "Erro ao carregar inventário.",
-	    equipFailed: "Erro ao atualizar item.",
+	    equipFailed: "Erro ao equipar item.",
+	    unequipFailed: "Erro ao remover item.",
 	    loginRequired: "Você precisa estar logado.",
 	  },
 	},
@@ -1828,6 +1829,7 @@ export default {
     },
   },
 }
+
 
 
 
