@@ -62,6 +62,7 @@ export async function handleCollections(req, res) {
         price_emerald,
         price_diamond,
         price_ruby,
+        is_active,
         is_featured,
         is_limited,
         current_stock,
@@ -73,21 +74,29 @@ export async function handleCollections(req, res) {
     `)
     .in("collection_id", collectionIds)
     .eq("item.is_active", true)
-    .or(`item.available_from.is.null,item.available_from.lte.${now}`)
-    .or(`item.available_until.is.null,item.available_until.gte.${now}`)
     .order("sort_order")
 
   if (itemsError) {
-    console.error(itemsError)
+    console.error("Failed to fetch collection items:", itemsError)
   }
 
   const itemsByCollection = {}
   for (const ci of collectionItems || []) {
     if (!ci.item) continue
+
+    const item = ci.item
+    const itemAvailableFrom = item.available_from ? new Date(item.available_from) : null
+    const itemAvailableUntil = item.available_until ? new Date(item.available_until) : null
+    const nowDate = new Date(now)
+
+    if (itemAvailableFrom && itemAvailableFrom > nowDate) continue
+
+    if (itemAvailableUntil && itemAvailableUntil < nowDate) continue
+
     if (!itemsByCollection[ci.collection_id]) {
       itemsByCollection[ci.collection_id] = []
     }
-    itemsByCollection[ci.collection_id].push(ci.item)
+    itemsByCollection[ci.collection_id].push(item)
   }
 
   const result = collections.map((c) => ({
