@@ -17,14 +17,14 @@ export default function CollectionSection({ collection, ownedItemIds, isEquipped
           onClick={() => onViewAll(collection)}
           className="relative w-full overflow-hidden rounded-xl transition-all cursor-pointer group text-left mb-5 hover:ring-1 hover:ring-zinc-700/50"
         >
-          <div className="relative h-36 sm:h-44 overflow-hidden rounded-xl">
+          <div className="relative overflow-hidden rounded-xl bg-zinc-900">
             <img
               src={collection.banner_url}
               alt={collection.name}
-              className="w-full h-full object-contain group-hover:scale-[1.02] transition-transform duration-500 select-none"
+              className="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-500 select-none"
               draggable={false}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
           </div>
 
           <div className="absolute bottom-0 left-0 right-0 px-5 pb-4">
