@@ -1,4 +1,52 @@
 export default {
+	inventory: {
+	  title: "Inventário",
+	  description: "Gerencie seus cosméticos e escolha o que equipar no seu perfil.",
+	  close: "Fechar",
+	  unequip: "Desequipar",
+	  noneEquipped: "Nenhum equipado",
+	  itemCount: "item",
+	  itemsCount: "itens",
+	  empty: {
+	    title: "Nenhum item ainda",
+	    description: "Compre cosméticos na loja e gerencie aqui.",
+	  },
+	  slots: {
+	    avatar_decoration: {
+	      title: "Decoração de Avatar",
+	      description: "Escolha uma decoração para exibir ao redor do seu avatar.",
+	    },
+	    profile_effect: {
+	      title: "Efeito de Perfil",
+	      description: "Adicione um efeito visual ao seu perfil.",
+	    },
+	    banner: {
+	      title: "Banner do Perfil",
+	      description: "Personalize o banner exibido no topo do seu perfil.",
+	    },
+	    badge: {
+	      title: "Selo",
+	      description: "Exiba um selo especial no seu perfil.",
+	    },
+	    name_color: {
+	      title: "Cor do Nome",
+	      description: "Mude a cor do seu nome de exibição.",
+	    },
+	    theme: {
+	      title: "Tema",
+	      description: "Altere o tema visual do seu perfil.",
+	    },
+	  },
+	  success: {
+	    equipped: "Item equipado!",
+	    unequipped: "Item removido!",
+	  },
+	  errors: {
+	    loadFailed: "Erro ao carregar inventário.",
+	    equipFailed: "Erro ao atualizar item.",
+	    loginRequired: "Você precisa estar logado.",
+	  },
+	},
   shop: {
     meta: {
       title: "Loja - uloggd",
@@ -227,6 +275,7 @@ export default {
   auth: {
     profile: "Meu perfil",
     settings: "Configurações",
+    inventory: "Inventário",
     signOut: "Sair",
     signIn: "Entrar",
     signInWithDiscord: "Entrar com Discord",
@@ -1779,6 +1828,7 @@ export default {
     },
   },
 }
+
 
 
 
