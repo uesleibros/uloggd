@@ -7,7 +7,6 @@ import { handleFollowers } from "#services/users/handlers/followers.js"
 import { handleBanner } from "#services/users/handlers/me/banner.js"
 import { handleAvatar } from "#services/users/handlers/me/avatar.js"
 import { handleThinking } from "#services/users/handlers/me/thinking.js"
-import { handleDecoration } from "#services/users/handlers/me/decoration.js"
 import { handlePronoun } from "#services/users/handlers/me/pronoun.js"
 import { handleHeartbeat } from "#services/users/handlers/me/heartbeat.js"
 import { handleUsername } from "#services/users/handlers/me/username.js"
@@ -28,7 +27,6 @@ const ACTIONS = {
   banner:       { handler: handleBanner,       method: "POST", scopes: ["@me"], auth: true       },
   avatar:       { handler: handleAvatar,       method: "POST", scopes: ["@me"], auth: true       },
   thinking:     { handler: handleThinking,     method: "POST", scopes: ["@me"], auth: true       },
-  decoration:   { handler: handleDecoration,   method: "POST", scopes: ["@me"], auth: true       },
   pronoun:      { handler: handlePronoun,      method: "POST", scopes: ["@me"], auth: true       },
   heartbeat:    { handler: handleHeartbeat,    method: "POST", scopes: ["@me"], auth: "flexible" },
   batch:        { handler: handleBatch,        method: "GET",  scopes: null,    auth: false      },
