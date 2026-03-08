@@ -11,6 +11,14 @@ import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 
 const ITEMS_PREVIEW_COUNT = 6
 
+const artists = [
+  {
+    name: "Jelly",
+    avatar: "https://cdn.jellys-space.vip/artists/jelly-avatar.png",
+    url: "https://discord.com/users/1147940825330876538",
+  },
+]
+
 async function getAuthHeaders() {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return null
@@ -18,6 +26,72 @@ async function getAuthHeaders() {
     Authorization: `Bearer ${session.access_token}`,
     "Content-Type": "application/json",
   }
+}
+
+function ArtistsCarousel() {
+  const fallbackAvatar = "https://cdn.discordapp.com/embed/avatars/0.png"
+  const items = [...artists, ...artists]
+
+  return (
+    <>
+      <style>{`
+        @keyframes artistsMarquee {
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(-50%, 0, 0); }
+        }
+      `}</style>
+
+      <div className="mb-8">
+        <div className="mb-3">
+          <p className="text-xs font-medium text-zinc-400">Artistas parceiros</p>
+          <p className="text-xs text-zinc-600">A loja só existe graças à permissão dos artistas da Decors.</p>
+        </div>
+
+        <div className="relative overflow-hidden rounded-xl border border-zinc-800/60 bg-zinc-900/40">
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-zinc-950 to-transparent z-10" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-zinc-950 to-transparent z-10" />
+
+          <div
+            className="flex w-max gap-3 px-3 py-3"
+            style={{ animation: "artistsMarquee 28s linear infinite" }}
+          >
+            {items.map((artist, index) => {
+              const content = (
+                <div className="flex items-center gap-3 rounded-xl border border-zinc-800/60 bg-zinc-800/40 px-3 py-2 min-w-[180px] hover:bg-zinc-800/70 transition-colors">
+                  <img
+                    src={artist.avatar || fallbackAvatar}
+                    alt={artist.name}
+                    className="w-9 h-9 rounded-full object-cover select-none"
+                    draggable={false}
+                  />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-zinc-200 truncate">{artist.name}</p>
+                    <p className="text-[11px] text-zinc-500 truncate">
+                      {artist.url ? "Ver página" : "Artista"}
+                    </p>
+                  </div>
+                </div>
+              )
+
+              return artist.url ? (
+                <a
+                  key={`${artist.name}-${index}`}
+                  href={artist.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  {content}
+                </a>
+              ) : (
+                <div key={`${artist.name}-${index}`}>{content}</div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </>
+  )
 }
 
 function ArtistCredits() {
@@ -848,3 +922,4 @@ export default function ShopPage() {
     </div>
   )
 }
+
