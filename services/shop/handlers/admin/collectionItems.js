@@ -24,6 +24,22 @@ export async function handleAdminCollectionItems(req, res) {
     return res.status(201).json({ entry: data })
   }
 
+  if (req.method === "PUT") {
+    const { collection_id, item_id, sort_order } = req.body
+    if (!collection_id || !item_id || sort_order === undefined) {
+      return res.status(400).json({ error: "missing_fields" })
+    }
+
+    const { error } = await supabase
+      .from("store_collection_items")
+      .update({ sort_order })
+      .eq("collection_id", collection_id)
+      .eq("item_id", item_id)
+
+    if (error) return res.status(500).json({ error: "update_failed" })
+    return res.json({ success: true })
+  }
+
   if (req.method === "DELETE") {
     const { collection_id, item_id } = req.body
     if (!collection_id || !item_id) return res.status(400).json({ error: "missing_fields" })
