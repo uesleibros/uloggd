@@ -738,12 +738,12 @@ export default function ShopPage() {
   return (
     <div className="py-12">
       <div className="mb-8">
-        <h1 className="text-xl font-bold text-white mb-1">
-          {t("title")}
+        <div className="flex items-center gap-3 mb-1">
+          <h1 className="text-xl font-bold text-white">{t("title")}</h1>
           <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-amber-500/15 text-amber-400 rounded-md">
             Beta
           </span>
-        </h1>
+        </div>
         <p className="text-sm text-zinc-500">{t("subtitle")}</p>
       </div>
 
@@ -813,4 +813,3 @@ export default function ShopPage() {
     </div>
   )
 }
-
