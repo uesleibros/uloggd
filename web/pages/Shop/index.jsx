@@ -12,7 +12,7 @@ import Modal from "@components/UI/Modal"
 import { useAuth } from "#hooks/useAuth"
 import { notify } from "@components/UI/Notification"
 import { MINERALS } from "@components/Minerals/MineralRow"
-import AvatarWithDecoration from "@components/AvatarWithDecoration"
+import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 
 const ITEM_TYPE_ICONS = {
   avatar_decoration: Star,
@@ -881,3 +881,4 @@ export default function ShopPage() {
     </div>
   )
 }
+
