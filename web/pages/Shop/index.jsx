@@ -23,7 +23,7 @@ const ITEM_TYPE_ICONS = {
   theme: Monitor,
 }
 
-const ITEMS_PREVIEW_COUNT = 4
+const ITEMS_PREVIEW_COUNT = 6
 
 async function getAuthHeaders() {
   const { data: { session } } = await supabase.auth.getSession()
@@ -879,5 +879,6 @@ export default function ShopPage() {
     </div>
   )
 }
+
 
 
