@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 
 let originalFavicon = null
 let canvas = null
@@ -64,35 +64,29 @@ async function setFaviconBadge(count) {
   }
 
   const text = count > 99 ? "99+" : String(count)
-  const fontSize = text.length > 2 ? 22 : 28
+  const fontSize = text.length > 2 ? 20 : 26
   ctx.font = `bold ${fontSize}px -apple-system, "Segoe UI", sans-serif`
 
   const textMetrics = ctx.measureText(text)
   const textWidth = textMetrics.width
-  const badgeHeight = 30
-  const badgePadding = 8
-  const badgeWidth = Math.max(badgeHeight, textWidth + badgePadding * 2)
+  const badgeSize = 28
+  const badgeWidth = Math.max(badgeSize, textWidth + 10)
+  const badgeHeight = badgeSize
 
-  const badgeX = size - badgeWidth - 1
-  const badgeY = 1
+  const badgeX = size - badgeWidth + 2
+  const badgeY = size - badgeHeight + 2
 
   ctx.save()
-  ctx.shadowColor = "rgba(0, 0, 0, 0.4)"
-  ctx.shadowBlur = 4
+  ctx.shadowColor = "rgba(0, 0, 0, 0.5)"
+  ctx.shadowBlur = 3
   ctx.shadowOffsetX = 0
-  ctx.shadowOffsetY = 2
+  ctx.shadowOffsetY = 1
 
-  ctx.fillStyle = "#ef4444"
+  ctx.fillStyle = "#ed4245"
   ctx.beginPath()
   ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, badgeHeight / 2)
   ctx.fill()
   ctx.restore()
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.3)"
-  ctx.lineWidth = 2
-  ctx.beginPath()
-  ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, badgeHeight / 2)
-  ctx.stroke()
 
   ctx.fillStyle = "#ffffff"
   ctx.font = `bold ${fontSize}px -apple-system, "Segoe UI", sans-serif`
