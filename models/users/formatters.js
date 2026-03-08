@@ -34,7 +34,7 @@ export function formatFullProfile(
 ) {
   if (!profile) return null
 
-  const equipped = profile.user_equipped_items
+  const equipped = profile.equipped
 
   return {
     id: profile.user_id,
@@ -67,7 +67,7 @@ export function formatFullProfile(
 export function formatListProfile(profile, { stream = null } = {}) {
   if (!profile) return null
 
-  const equipped = formatEquipped(profile.user_equipped_items)
+  const equipped = profile.equipped
 
   return {
     id: profile.user_id,
@@ -96,7 +96,7 @@ export function formatUserMap(users, streamsMap = {}) {
   const map = {}
 
   for (const u of users) {
-    const equipped = formatEquipped(u.user_equipped_items)
+    const equipped = u.equipped
     
     map[u.user_id] = {
       username: u.username,
@@ -116,7 +116,7 @@ export function formatMinimalUserMap(users) {
   const map = {}
 
   for (const u of users) {
-    const equipped = formatEquipped(u.user_equipped_items)
+    const equipped = u.equipped
     
     map[u.user_id] = {
       username: u.username,
@@ -127,9 +127,3 @@ export function formatMinimalUserMap(users) {
 
   return map
 }
-
-
-
-
-
-
