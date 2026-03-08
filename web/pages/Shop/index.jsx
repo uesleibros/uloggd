@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { supabase } from "#lib/supabase.js"
-import {
-  Loader2, ShoppingBag, Check, ChevronRight,
-  Sparkles, Clock, Package, Star,
-  Palette, Image, Award, Monitor,
-  CheckCircle, ArrowLeft
-} from "lucide-react"
+import { Loader2, Check, ChevronRight, ChevronLeft } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
@@ -13,15 +8,6 @@ import { useAuth } from "#hooks/useAuth"
 import { notify } from "@components/UI/Notification"
 import { MINERALS } from "@components/Minerals/MineralRow"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
-
-const ITEM_TYPE_ICONS = {
-  avatar_decoration: Star,
-  banner: Image,
-  profile_effect: Sparkles,
-  badge: Award,
-  name_color: Palette,
-  theme: Monitor,
-}
 
 const ITEMS_PREVIEW_COUNT = 6
 
@@ -43,23 +29,19 @@ function PriceDisplay({ item, size = "md" }) {
     return <span className="text-xs text-emerald-400 font-medium">Free</span>
   }
 
-  const s = {
-    sm: { box: "w-2 h-2", text: "text-xs", gap: "gap-1" },
-    md: { box: "w-2.5 h-2.5", text: "text-sm", gap: "gap-1.5" },
-    lg: { box: "w-3 h-3", text: "text-sm", gap: "gap-2" },
-  }[size] || { box: "w-2.5 h-2.5", text: "text-sm", gap: "gap-1.5" }
+  const isLg = size === "lg"
 
   return (
     <div className="flex items-center flex-wrap gap-2">
       {prices.map((p, i) => (
-        <div key={p.key} className={`flex items-center ${s.gap}`}>
-          {i > 0 && <span className="text-zinc-600 text-xs">+</span>}
+        <div key={p.key} className="flex items-center gap-1">
+          {i > 0 && <span className="text-zinc-600 text-xs mr-0.5">+</span>}
           <span
-            className={`inline-block ${s.box} rounded-sm flex-shrink-0`}
+            className={`inline-block rounded-sm flex-shrink-0 ${isLg ? "w-3 h-3" : "w-2 h-2"}`}
             style={{ backgroundColor: p.color }}
           />
           <span
-            className={`${s.text} font-semibold tabular-nums`}
+            className={`font-semibold tabular-nums ${isLg ? "text-sm" : "text-xs"}`}
             style={{ color: p.color }}
           >
             {p.amount.toLocaleString()}
@@ -76,11 +58,10 @@ function TimeBadge({ availableUntil }) {
   if (diff <= 0) return null
   const days = Math.floor(diff / 86400000)
   const hours = Math.floor((diff % 86400000) / 3600000)
-  const label = days > 0 ? `${days}d` : hours > 0 ? `${hours}h` : "Soon"
+  const label = days > 0 ? `${days}d left` : hours > 0 ? `${hours}h left` : "Ending soon"
 
   return (
-    <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full flex items-center gap-1">
-      <Clock className="w-2.5 h-2.5" />
+    <span className="px-2 py-0.5 text-[10px] font-medium bg-blue-500/15 text-blue-400 rounded-full">
       {label}
     </span>
   )
@@ -88,17 +69,15 @@ function TimeBadge({ availableUntil }) {
 
 function AvatarDecorationPreview({ item, user }) {
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-4">
       <AvatarWithDecoration
-        src={user.avatar}
-        alt={user.username}
+        src={user?.avatar}
+        alt={user?.username || "Preview"}
         decorationUrl={item.asset_url}
         size="profile"
         showStatus={false}
       />
-      <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
-        Preview
-      </span>
+      <span className="text-xs text-zinc-500 font-medium">Preview</span>
     </div>
   )
 }
@@ -110,77 +89,70 @@ function ItemCard({ item, owned, equipped, onSelect }) {
   return (
     <button
       onClick={() => onSelect(item)}
-      className={`group relative w-full text-left rounded-2xl overflow-hidden transition-all cursor-pointer ${
+      className={`group relative w-full text-left rounded-xl overflow-hidden transition-all duration-200 cursor-pointer ${
         isSoldOut
-          ? "bg-zinc-800/20 border border-zinc-800/30 opacity-50"
-          : "bg-zinc-800/30 hover:bg-zinc-800/50 border border-zinc-800/50 hover:border-zinc-700/50"
+          ? "bg-zinc-900/60 opacity-50 pointer-events-none"
+          : "bg-zinc-800/40 hover:bg-zinc-800/70 hover:ring-1 hover:ring-zinc-700/60"
       }`}
     >
-      <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5 items-end">
+      <div className="absolute top-2.5 right-2.5 z-10 flex flex-col gap-1 items-end">
         {item.is_featured && (
-          <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-violet-500/20 text-violet-400 border border-violet-500/30 rounded-full backdrop-blur-sm">
+          <span className="px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider bg-violet-500/20 text-violet-400 rounded">
             ✦ {t("tags.featured")}
           </span>
         )}
         {item.is_limited && !isSoldOut && item.max_stock != null && (
-          <span className={`px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full backdrop-blur-sm ${
+          <span className={`px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider rounded ${
             item.current_stock / item.max_stock <= 0.2
-              ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
-              : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+              ? "bg-rose-500/15 text-rose-400"
+              : "bg-amber-500/15 text-amber-400"
           }`}>
             {item.current_stock}/{item.max_stock}
           </span>
         )}
         {isSoldOut && (
-          <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-zinc-700/50 text-zinc-400 rounded-full backdrop-blur-sm">
+          <span className="px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider bg-zinc-700/60 text-zinc-400 rounded">
             {t("tags.soldOut")}
           </span>
         )}
-        <TimeBadge availableUntil={item.available_until} />
         {equipped && (
-          <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full backdrop-blur-sm flex items-center gap-1">
-            <Check className="w-2.5 h-2.5" />
+          <span className="px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 rounded flex items-center gap-0.5">
+            <Check className="w-2 h-2" />
             {t("tags.equipped")}
           </span>
         )}
         {owned && !equipped && (
-          <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-zinc-700/50 text-zinc-300 rounded-full backdrop-blur-sm flex items-center gap-1">
-            <Check className="w-2.5 h-2.5" />
+          <span className="px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider bg-zinc-700/50 text-zinc-400 rounded flex items-center gap-0.5">
+            <Check className="w-2 h-2" />
             {t("tags.owned")}
           </span>
         )}
       </div>
 
-      <div className="aspect-square bg-gradient-to-b from-zinc-800/20 to-zinc-900/20 flex items-center justify-center p-8">
+      <div className="aspect-square bg-gradient-to-b from-zinc-800/10 to-zinc-900/30 flex items-center justify-center p-6 sm:p-8">
         {item.asset_url ? (
           <img
             src={item.asset_url}
             alt={item.name}
-            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 select-none"
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 select-none"
             draggable={false}
           />
         ) : (
-          <Package className="w-12 h-12 text-zinc-700" />
+          <div className="w-16 h-16 rounded-full bg-zinc-800/60" />
         )}
       </div>
 
-      <div className="p-4 border-t border-zinc-800/30">
-        <div className="flex items-center gap-1.5 mb-1.5">
-          {(() => {
-            const Icon = ITEM_TYPE_ICONS[item.item_type] || Package
-            return <Icon className="w-3 h-3 text-zinc-600" />
-          })()}
-          <span className="text-[10px] uppercase tracking-wider text-zinc-600 font-medium">
-            {t(`types.${item.item_type}`, item.item_type?.replace(/_/g, " "))}
-          </span>
-        </div>
-        <h3 className="text-sm font-medium text-white truncate mb-2.5">{item.name}</h3>
-        {!owned && <PriceDisplay item={item} size="sm" />}
+      <div className="px-3.5 pb-3.5 pt-0">
+        <span className="text-[10px] uppercase tracking-wider text-zinc-600 font-medium">
+          {t(`types.${item.item_type}`, item.item_type?.replace(/_/g, " "))}
+        </span>
+        <h3 className="text-[13px] font-semibold text-zinc-200 truncate mt-0.5 mb-2">{item.name}</h3>
+        {!owned && <PriceDisplay item={item} />}
         {owned && !equipped && (
-          <span className="text-xs text-zinc-500">{t("card.ownedHint")}</span>
+          <span className="text-[11px] text-zinc-600">{t("card.ownedHint")}</span>
         )}
         {equipped && (
-          <span className="text-xs text-emerald-400">{t("card.equippedHint")}</span>
+          <span className="text-[11px] text-emerald-500/80">{t("card.equippedHint")}</span>
         )}
       </div>
     </button>
@@ -194,74 +166,64 @@ function CollectionSection({ collection, ownedItemIds, isEquipped, onSelectItem,
   const hasMore = items.length > ITEMS_PREVIEW_COUNT
 
   return (
-    <section className="mb-12 last:mb-0">
+    <section className="mb-10 last:mb-0">
       {collection.banner_url ? (
         <button
           onClick={() => onViewAll(collection)}
-          className="relative w-full overflow-hidden rounded-2xl border border-zinc-800/50 hover:border-zinc-700/50 transition-all cursor-pointer group text-left mb-6"
+          className="relative w-full overflow-hidden rounded-xl transition-all cursor-pointer group text-left mb-5 hover:ring-1 hover:ring-zinc-700/50"
         >
-          <div className="relative h-40 sm:h-48 overflow-hidden">
+          <div className="relative h-36 sm:h-44 overflow-hidden rounded-xl">
             <img
               src={collection.banner_url}
               alt={collection.name}
-              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 select-none"
+              className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500 select-none"
               draggable={false}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 p-6">
+          <div className="absolute bottom-0 left-0 right-0 px-5 pb-4">
             <div className="flex items-end justify-between gap-4">
               <div>
-                {collection.is_featured && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-white/10 text-white/70 rounded-full backdrop-blur-sm mb-3">
-                    <Sparkles className="w-3 h-3" />
-                    {t("collection.label")}
-                  </span>
-                )}
-                <h2 className="text-lg font-bold text-white mb-0.5">{collection.name}</h2>
+                <h2 className="text-base font-bold text-white mb-0.5">{collection.name}</h2>
                 {collection.description && (
-                  <p className="text-sm text-zinc-400 line-clamp-1">{collection.description}</p>
+                  <p className="text-xs text-zinc-400 line-clamp-1">{collection.description}</p>
                 )}
               </div>
-              <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0 mb-1" />
+              <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
             </div>
           </div>
         </button>
       ) : (
-        <div className="flex items-end justify-between gap-4 mb-5">
+        <div className="flex items-end justify-between gap-4 mb-4">
           <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              {collection.accent_color ? (
-                <span
-                  className="w-1 h-5 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: collection.accent_color }}
-                />
-              ) : (
-                <span className="w-1 h-5 rounded-full bg-violet-500 flex-shrink-0" />
-              )}
-              <h2 className="text-lg font-semibold text-white">{collection.name}</h2>
+            <div className="flex items-center gap-2.5">
+              <span
+                className="w-0.5 h-4 rounded-full flex-shrink-0"
+                style={{ backgroundColor: collection.accent_color || "#8b5cf6" }}
+              />
+              <h2 className="text-base font-semibold text-white">{collection.name}</h2>
               {collection.available_until && <TimeBadge availableUntil={collection.available_until} />}
             </div>
             {collection.description && (
-              <p className="text-sm text-zinc-500 ml-3.5">{collection.description}</p>
+              <p className="text-xs text-zinc-500 mt-1 ml-3">{collection.description}</p>
             )}
           </div>
 
           {hasMore && (
             <button
               onClick={() => onViewAll(collection)}
-              className="flex items-center gap-1.5 text-sm text-violet-400 hover:text-violet-300 transition-colors cursor-pointer whitespace-nowrap flex-shrink-0"
+              className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer whitespace-nowrap flex-shrink-0"
             >
               {t("collection.viewAll")}
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
       )}
 
       {previewItems.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
           {previewItems.map(item => (
             <ItemCard
               key={item.id}
@@ -275,14 +237,13 @@ function CollectionSection({ collection, ownedItemIds, isEquipped, onSelectItem,
       )}
 
       {hasMore && collection.banner_url && (
-        <div className="mt-4 flex justify-center">
+        <div className="mt-3 flex justify-center">
           <button
             onClick={() => onViewAll(collection)}
-            className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-300 bg-zinc-800/40 hover:bg-zinc-800/70 rounded-lg transition-all cursor-pointer"
           >
             {t("collection.viewAll")}
-            <span className="text-zinc-600">({items.length})</span>
-            <ChevronRight className="w-4 h-4" />
+            <span className="text-zinc-600">· {items.length}</span>
           </button>
         </div>
       )}
@@ -298,53 +259,44 @@ function CollectionFullView({ collection, ownedItemIds, isEquipped, onSelectItem
     <div>
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors cursor-pointer mb-6"
+        className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer mb-5"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ChevronLeft className="w-3.5 h-3.5" />
         {t("collection.back")}
       </button>
 
-      <div className="relative overflow-hidden rounded-2xl border border-zinc-800/50 mb-8">
+      <div className="relative overflow-hidden rounded-xl mb-6">
         {collection.banner_url ? (
-          <div className="relative h-44 sm:h-56 overflow-hidden">
+          <div className="relative h-40 sm:h-52 overflow-hidden rounded-xl">
             <img
               src={collection.banner_url}
               alt=""
               className="w-full h-full object-cover select-none"
               draggable={false}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/50 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-white/10 text-white/70 rounded-full backdrop-blur-sm mb-3">
-                <Sparkles className="w-3 h-3" />
-                {t("collection.label")}
-              </span>
-              <h2 className="text-xl font-bold text-white mb-1">{collection.name}</h2>
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/50 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
+              <h2 className="text-lg font-bold text-white mb-0.5">{collection.name}</h2>
               {collection.description && (
                 <p className="text-sm text-zinc-400">{collection.description}</p>
               )}
               {collection.available_until && (
-                <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500">
-                  <Clock className="w-3.5 h-3.5" />
-                  {t("detail.availableUntil")} {new Date(collection.available_until).toLocaleDateString()}
+                <div className="mt-2">
+                  <TimeBadge availableUntil={collection.available_until} />
                 </div>
               )}
             </div>
           </div>
         ) : (
           <div
-            className="p-6"
+            className="px-5 py-6 rounded-xl"
             style={{
               background: collection.accent_color
-                ? `linear-gradient(135deg, ${collection.accent_color}15, transparent)`
-                : "linear-gradient(135deg, rgba(139,92,246,0.08), transparent)",
+                ? `linear-gradient(135deg, ${collection.accent_color}12, transparent)`
+                : "linear-gradient(135deg, rgba(139,92,246,0.06), transparent)",
             }}
           >
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-white/10 text-white/70 rounded-full mb-3">
-              <Sparkles className="w-3 h-3" />
-              {t("collection.label")}
-            </span>
-            <h2 className="text-xl font-bold text-white mb-1">{collection.name}</h2>
+            <h2 className="text-lg font-bold text-white mb-0.5">{collection.name}</h2>
             {collection.description && (
               <p className="text-sm text-zinc-400">{collection.description}</p>
             )}
@@ -352,16 +304,14 @@ function CollectionFullView({ collection, ownedItemIds, isEquipped, onSelectItem
         )}
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <span className="text-sm text-zinc-500">
-          {items.length} {items.length === 1 ? t("collection.itemCount") : t("collection.itemsCount")}
-        </span>
-      </div>
+      <span className="text-xs text-zinc-600 mb-4 block">
+        {items.length} {items.length === 1 ? t("collection.itemCount") : t("collection.itemsCount")}
+      </span>
 
       {items.length === 0 ? (
         <EmptyState />
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
           {items.map(item => (
             <ItemCard
               key={item.id}
@@ -383,48 +333,47 @@ function FeaturedBanner({ collection, onClick }) {
   return (
     <button
       onClick={() => onClick(collection)}
-      className="relative w-full overflow-hidden rounded-2xl border border-zinc-800/50 hover:border-zinc-700/50 transition-all cursor-pointer group text-left"
+      className="relative w-full overflow-hidden rounded-xl transition-all cursor-pointer group text-left hover:ring-1 hover:ring-zinc-700/50"
     >
       {collection.banner_url ? (
-        <div className="relative h-48 sm:h-60 overflow-hidden">
+        <div className="relative h-44 sm:h-56 overflow-hidden rounded-xl">
           <img
             src={collection.banner_url}
             alt={collection.name}
-            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 select-none"
+            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500 select-none"
             draggable={false}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
         </div>
       ) : (
         <div
-          className="h-48 sm:h-60"
+          className="h-44 sm:h-56 rounded-xl"
           style={{
             background: collection.accent_color
-              ? `linear-gradient(135deg, ${collection.accent_color}22, ${collection.accent_color}08, transparent)`
-              : "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04), transparent)",
+              ? `linear-gradient(135deg, ${collection.accent_color}18, ${collection.accent_color}06, transparent)`
+              : "linear-gradient(135deg, rgba(139,92,246,0.09), rgba(139,92,246,0.03), transparent)",
           }}
         />
       )}
 
-      <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+      <div className="absolute bottom-0 left-0 right-0 px-6 pb-6 sm:px-8 sm:pb-7">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-white/10 text-white/70 rounded-full backdrop-blur-sm mb-3">
-              <Sparkles className="w-3 h-3" />
+            <span className="inline-block px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest bg-white/10 text-white/60 rounded mb-2.5 backdrop-blur-sm">
               {t("collection.featured")}
             </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">{collection.name}</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-white mb-0.5">{collection.name}</h2>
             {collection.description && (
-              <p className="text-sm text-zinc-300 line-clamp-2 max-w-lg">{collection.description}</p>
+              <p className="text-sm text-zinc-400 line-clamp-2 max-w-md">{collection.description}</p>
             )}
             {collection.available_until && (
-              <div className="flex items-center gap-1.5 mt-2">
+              <div className="mt-2">
                 <TimeBadge availableUntil={collection.available_until} />
               </div>
             )}
           </div>
-          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-            <ChevronRight className="w-5 h-5 text-white group-hover:translate-x-0.5 transition-transform" />
+          <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-white/8 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/15 transition-colors">
+            <ChevronRight className="w-4 h-4 text-white/70 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </div>
       </div>
@@ -436,12 +385,10 @@ function EmptyState() {
   const { t } = useTranslation("shop")
 
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-zinc-800/50 border border-zinc-800 flex items-center justify-center mb-4">
-        <Package className="w-7 h-7 text-zinc-600" />
-      </div>
+    <div className="flex flex-col items-center justify-center py-24 text-center">
+      <div className="w-12 h-12 rounded-full bg-zinc-800/50 mb-4" />
       <h3 className="text-sm font-medium text-zinc-400 mb-1">{t("empty.title")}</h3>
-      <p className="text-xs text-zinc-600">{t("empty.description")}</p>
+      <p className="text-xs text-zinc-600 max-w-xs">{t("empty.description")}</p>
     </div>
   )
 }
@@ -458,141 +405,123 @@ function ItemDetailModal({ item, owned, equipped, onClose, onPurchase, onEquip, 
     <Modal
       isOpen={!!item}
       onClose={onClose}
-      maxWidth="max-w-lg"
+      maxWidth="max-w-md"
       showCloseButton={false}
       className="!border-0 !bg-transparent !shadow-none"
     >
-      <div className="overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800">
-        <div className="relative aspect-[16/10] bg-gradient-to-b from-zinc-800/40 to-zinc-900 flex items-center justify-center p-12">
-          {isAvatarDecoration && item.asset_url ? (
+      <div className="overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800/80">
+        <div className="relative bg-gradient-to-b from-zinc-800/30 to-zinc-900 flex items-center justify-center p-10 min-h-[220px]">
+          {isAvatarDecoration && item.asset_url && user ? (
             <AvatarDecorationPreview item={item} user={user} />
           ) : item.asset_url ? (
             <img
               src={item.asset_url}
               alt={item.name}
-              className="max-w-full max-h-full object-contain select-none"
+              className="max-w-[160px] max-h-[160px] object-contain select-none"
               draggable={false}
             />
           ) : (
-            <Package className="w-20 h-20 text-zinc-700" />
+            <div className="w-20 h-20 rounded-full bg-zinc-800/40" />
           )}
-          <div className="absolute top-4 left-4 flex gap-2">
+
+          <div className="absolute top-3 left-3 flex gap-1.5">
             {item.is_featured && (
-              <span className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-violet-500/20 text-violet-400 border border-violet-500/30 rounded-full backdrop-blur-sm">
+              <span className="px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-violet-500/15 text-violet-400 rounded">
                 ✦ {t("tags.featured")}
               </span>
             )}
             {item.is_limited && (
-              <span className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full backdrop-blur-sm">
+              <span className="px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-amber-500/15 text-amber-400 rounded">
                 {t("tags.limited")}
               </span>
             )}
             {owned && (
-              <span className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full backdrop-blur-sm flex items-center gap-1">
-                <Check className="w-2.5 h-2.5" />
+              <span className="px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 rounded flex items-center gap-0.5">
+                <Check className="w-2 h-2" />
                 {t("tags.owned")}
               </span>
             )}
           </div>
         </div>
 
-        <div className="p-6">
-          <div className="flex items-center gap-2 mb-2">
-            {(() => {
-              const Icon = ITEM_TYPE_ICONS[item.item_type] || Package
-              return <Icon className="w-4 h-4 text-zinc-500" />
-            })()}
-            <span className="text-xs uppercase tracking-wider text-zinc-500 font-medium">
-              {t(`types.${item.item_type}`, item.item_type?.replace(/_/g, " "))}
-            </span>
-          </div>
-
-          <h2 className="text-xl font-bold text-white mb-2">{item.name}</h2>
+        <div className="p-5">
+          <span className="text-[10px] uppercase tracking-wider text-zinc-600 font-medium">
+            {t(`types.${item.item_type}`, item.item_type?.replace(/_/g, " "))}
+          </span>
+          <h2 className="text-lg font-bold text-white mt-0.5 mb-1.5">{item.name}</h2>
 
           {item.description && (
-            <p className="text-sm text-zinc-400 leading-relaxed mb-5">{item.description}</p>
+            <p className="text-sm text-zinc-500 leading-relaxed mb-4">{item.description}</p>
           )}
 
           {item.is_limited && item.max_stock != null && !owned && (
-            <div className="flex items-center gap-2 mb-5 text-sm text-zinc-400">
-              <Package className="w-4 h-4 text-zinc-500" />
-              <span>
-                {isSoldOut
-                  ? t("detail.soldOutLabel")
-                  : `${item.current_stock} / ${item.max_stock} ${t("detail.remaining")}`}
-              </span>
-            </div>
+            <p className="text-xs text-zinc-500 mb-4">
+              {isSoldOut
+                ? t("detail.soldOutLabel")
+                : `${item.current_stock} / ${item.max_stock} ${t("detail.remaining")}`}
+            </p>
           )}
 
           {item.available_until && !owned && (
-            <div className="flex items-center gap-2 mb-5 text-sm text-zinc-400">
-              <Clock className="w-4 h-4 text-zinc-500" />
-              <span>
-                {t("detail.availableUntil")} {new Date(item.available_until).toLocaleDateString()}
-              </span>
-            </div>
+            <p className="text-xs text-zinc-500 mb-4">
+              {t("detail.availableUntil")} {new Date(item.available_until).toLocaleDateString()}
+            </p>
           )}
 
           {!owned && hasPrice && (
-            <div className="p-4 rounded-xl bg-zinc-800/40 border border-zinc-800 mb-6">
-              <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold mb-2.5 block">
+            <div className="p-3.5 rounded-lg bg-zinc-800/50 mb-5">
+              <span className="text-[10px] uppercase tracking-wider text-zinc-600 font-medium mb-2 block">
                 {t("detail.price")}
               </span>
               <PriceDisplay item={item} size="lg" />
             </div>
           )}
 
-          <div className="flex gap-3">
+          <div className="flex gap-2.5">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-3 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl transition-all cursor-pointer"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800/80 hover:bg-zinc-800 rounded-lg transition-all cursor-pointer"
             >
               {t("detail.close")}
             </button>
 
             {owned ? (
               equipped ? (
-                <div className="flex-1 px-4 py-3 text-sm font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center gap-2">
-                  <Check className="w-4 h-4" />
+                <div className="flex-1 px-4 py-2.5 text-sm font-medium text-emerald-400/80 bg-emerald-500/10 rounded-lg flex items-center justify-center gap-1.5">
+                  <Check className="w-3.5 h-3.5" />
                   {t("detail.equipped")}
                 </div>
               ) : (
                 <button
                   onClick={onEquip}
                   disabled={equipping}
-                  className="flex-1 px-4 py-3 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-800 disabled:text-zinc-600 rounded-lg transition-all cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                 >
                   {equipping ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      {t("detail.equip")}
-                    </>
+                    t("detail.equip")
                   )}
                 </button>
               )
             ) : isSoldOut ? (
-              <div className="flex-1 px-4 py-3 text-sm font-medium text-zinc-500 bg-zinc-800/50 border border-zinc-700 rounded-xl flex items-center justify-center">
+              <div className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-600 bg-zinc-800/50 rounded-lg flex items-center justify-center">
                 {t("detail.soldOut")}
               </div>
             ) : user ? (
               <button
                 onClick={() => onPurchase(item)}
                 disabled={purchasing}
-                className="flex-1 px-4 py-3 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-800 disabled:text-zinc-600 rounded-lg transition-all cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
               >
                 {purchasing ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : (
-                  <>
-                    <ShoppingBag className="w-4 h-4" />
-                    {t("detail.purchase")}
-                  </>
+                  t("detail.purchase")
                 )}
               </button>
             ) : (
-              <div className="flex-1 px-4 py-3 text-sm font-medium text-zinc-500 bg-zinc-800/50 border border-zinc-700 rounded-xl flex items-center justify-center text-center">
+              <div className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-600 bg-zinc-800/50 rounded-lg flex items-center justify-center text-center">
                 {t("detail.loginRequired")}
               </div>
             )}
@@ -614,21 +543,21 @@ function PurchaseSuccessModal({ isOpen, onClose, item }) {
       showCloseButton={false}
       className="!border-0 !bg-transparent !shadow-none"
     >
-      <div className="overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800">
+      <div className="overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800/80">
         <div className="flex flex-col items-center text-center px-6 pt-8 pb-6">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4">
-            <CheckCircle className="w-7 h-7 text-emerald-500" />
+          <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center mb-4">
+            <Check className="w-5 h-5 text-emerald-400" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">{t("success.title")}</h3>
-          <p className="text-sm text-zinc-500 leading-relaxed">
+          <h3 className="text-base font-semibold text-white mb-1.5">{t("success.title")}</h3>
+          <p className="text-sm text-zinc-500">
             <span className="text-zinc-300 font-medium">{item?.name}</span>{" "}
             {t("success.description")}
           </p>
         </div>
-        <div className="border-t border-zinc-800 px-6 py-4">
+        <div className="border-t border-zinc-800/60 px-5 py-3.5">
           <button
             onClick={onClose}
-            className="w-full px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer"
+            className="w-full px-4 py-2 text-sm font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800/60 hover:bg-zinc-800 rounded-lg transition-all cursor-pointer"
           >
             {t("success.continue")}
           </button>
@@ -799,8 +728,8 @@ export default function ShopPage() {
   if (loading) {
     return (
       <div className="py-12">
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 text-zinc-600 animate-spin" />
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="w-5 h-5 text-zinc-600 animate-spin" />
         </div>
       </div>
     )
@@ -808,15 +737,15 @@ export default function ShopPage() {
 
   return (
     <div className="py-12">
-      <div className="mb-10">
-        <h1 className="text-2xl font-bold text-white mb-2">{t("title")}</h1>
+      <div className="mb-8">
+        <h1 className="text-xl font-bold text-white mb-1">{t("title")}</h1>
         <p className="text-sm text-zinc-500">{t("subtitle")}</p>
       </div>
 
       {activeCollection ? (
         collectionLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 text-zinc-600 animate-spin" />
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="w-5 h-5 text-zinc-600 animate-spin" />
           </div>
         ) : (
           <CollectionFullView
@@ -830,7 +759,7 @@ export default function ShopPage() {
       ) : (
         <>
           {featuredCollections.length > 0 && (
-            <div className={`mb-12 ${featuredCollections.length > 1 ? "space-y-4" : ""}`}>
+            <div className={`mb-10 ${featuredCollections.length > 1 ? "space-y-3" : ""}`}>
               {featuredCollections.map(col => (
                 <FeaturedBanner
                   key={col.id}
@@ -879,6 +808,3 @@ export default function ShopPage() {
     </div>
   )
 }
-
-
-
