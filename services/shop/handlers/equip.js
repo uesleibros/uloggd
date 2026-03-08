@@ -46,19 +46,6 @@ export async function handleEquip(req, res) {
     return res.status(500).json({ error: "failed_to_equip" })
   }
 
-  if (slot === "avatar_decoration") {
-    await supabase
-      .from("users")
-      .update({ avatar_decoration: inventory.item.asset_url })
-      .eq("user_id", userId)
-  }
-
-  if (slot === "banner") {
-    await supabase
-      .from("users")
-      .update({ banner: inventory.item.asset_url })
-      .eq("user_id", userId)
-  }
-
   return res.json({ success: true, slot })
+
 }
