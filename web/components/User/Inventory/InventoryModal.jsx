@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { Loader2, Check } from "lucide-react"
+import { Loader2, Check, X } from "lucide-react"
 import Modal from "@components/UI/Modal"
 import { supabase } from "#lib/supabase.js"
 import { notify } from "@components/UI/Notification"
@@ -24,31 +24,33 @@ async function getAuthHeaders() {
   }
 }
 
-function EmptyEquipCard({ label, active, onClick, loading }) {
+function NoneCard({ active, onClick, loading }) {
   const { t } = useTranslation("inventory")
 
   return (
     <button
       onClick={onClick}
-      disabled={loading}
-      className={`w-full text-left rounded-xl border transition-all px-4 py-3 cursor-pointer ${
+      disabled={loading || active}
+      className={`group w-full text-left rounded-xl overflow-hidden border transition-all duration-200 ${
         active
-          ? "border-violet-500/40 bg-violet-500/10"
-          : "border-zinc-800 bg-zinc-800/40 hover:bg-zinc-800/70 hover:border-zinc-700"
-      } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+          ? "border-violet-500/30 bg-violet-500/8"
+          : "border-zinc-800 bg-zinc-800/30 hover:bg-zinc-800/60 hover:border-zinc-700 cursor-pointer"
+      } ${loading ? "opacity-50 cursor-not-allowed" : ""} ${active ? "cursor-default" : ""}`}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <span className="text-[10px] uppercase tracking-wider text-zinc-600 font-medium">
-            {t("unequip")}
-          </span>
-          <p className="text-sm font-medium text-zinc-300 mt-0.5">{label}</p>
-        </div>
+      <div className="aspect-square flex items-center justify-center">
         {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin text-zinc-500" />
-        ) : active ? (
-          <Check className="w-4 h-4 text-violet-400" />
-        ) : null}
+          <Loader2 className="w-5 h-5 animate-spin text-zinc-600" />
+        ) : (
+          <div className="w-12 h-12 rounded-full border-2 border-dashed border-zinc-700 group-hover:border-zinc-600 transition-colors flex items-center justify-center">
+            <X className="w-4 h-4 text-zinc-600" />
+          </div>
+        )}
+      </div>
+      <div className="px-3 pb-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-zinc-500">{t("none")}</span>
+          {active && <Check className="w-3 h-3 text-violet-400" />}
+        </div>
       </div>
     </button>
   )
@@ -58,14 +60,19 @@ function InventoryItemCard({ item, active, onClick, loading }) {
   return (
     <button
       onClick={onClick}
-      disabled={loading}
-      className={`group w-full text-left rounded-xl overflow-hidden border transition-all cursor-pointer ${
+      disabled={loading || active}
+      className={`group w-full text-left rounded-xl overflow-hidden border transition-all duration-200 ${
         active
-          ? "border-violet-500/40 bg-violet-500/10"
-          : "border-zinc-800 bg-zinc-800/40 hover:bg-zinc-800/70 hover:border-zinc-700"
-      } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+          ? "border-violet-500/30 bg-violet-500/8"
+          : "border-zinc-800 bg-zinc-800/30 hover:bg-zinc-800/60 hover:border-zinc-700 cursor-pointer"
+      } ${loading ? "opacity-50 cursor-not-allowed" : ""} ${active ? "cursor-default" : ""}`}
     >
-      <div className="aspect-square bg-gradient-to-b from-zinc-800/10 to-zinc-900/30 flex items-center justify-center p-5">
+      <div className="aspect-square bg-gradient-to-b from-zinc-800/10 to-zinc-900/20 flex items-center justify-center p-5 relative">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/60 z-10">
+            <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
+          </div>
+        )}
         {item.item?.asset_url ? (
           <img
             src={item.item.asset_url}
@@ -77,22 +84,17 @@ function InventoryItemCard({ item, active, onClick, loading }) {
           <div className="w-14 h-14 rounded-full bg-zinc-800/60" />
         )}
       </div>
-
-      <div className="p-3">
+      <div className="px-3 pb-3">
         <div className="flex items-center justify-between gap-2">
-          <h4 className="text-sm font-medium text-white truncate">{item.item?.name}</h4>
-          {loading ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-500 flex-shrink-0" />
-          ) : active ? (
-            <Check className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
-          ) : null}
+          <h4 className="text-xs font-medium text-zinc-300 truncate">{item.item?.name}</h4>
+          {active && <Check className="w-3 h-3 text-violet-400 flex-shrink-0" />}
         </div>
       </div>
     </button>
   )
 }
 
-function SlotSection({ slot, items, equippedInventoryId, onEquip, loadingId }) {
+function SlotSection({ slot, items, equippedInventoryId, onEquip, onUnequip, loadingId }) {
   const { t } = useTranslation("inventory")
 
   return (
@@ -101,17 +103,16 @@ function SlotSection({ slot, items, equippedInventoryId, onEquip, loadingId }) {
         <h3 className="text-sm font-semibold text-white">
           {t(`slots.${slot}.title`)}
         </h3>
-        <p className="text-xs text-zinc-500 mt-0.5">
+        <p className="text-xs text-zinc-600 mt-0.5">
           {t(`slots.${slot}.description`)}
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <EmptyEquipCard
-          label={t("noneEquipped")}
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2.5">
+        <NoneCard
           active={!equippedInventoryId}
           loading={loadingId === `none:${slot}`}
-          onClick={() => onEquip(null, slot)}
+          onClick={() => onUnequip(slot)}
         />
 
         {items.map(inv => (
@@ -128,11 +129,48 @@ function SlotSection({ slot, items, equippedInventoryId, onEquip, loadingId }) {
   )
 }
 
+function ProfilePreview({ user, inventory }) {
+  const { t } = useTranslation("inventory")
+
+  const equippedDecoration = useMemo(() => {
+    return inventory.find(
+      e =>
+        e.equipped_slot === "avatar_decoration" &&
+        (e.item?.item_type || e.item_type) === "avatar_decoration"
+    )?.item?.asset_url || null
+  }, [inventory])
+
+  const equippedCount = useMemo(() => {
+    return inventory.filter(e => e.equipped_slot).length
+  }, [inventory])
+
+  return (
+    <div className="flex items-center gap-4">
+      <AvatarWithDecoration
+        src={user?.avatar}
+        alt={user?.username || "User"}
+        size="lg"
+        showStatus={false}
+        decorationUrl={equippedDecoration}
+      />
+      <div>
+        <p className="text-sm font-semibold text-white">{user?.username}</p>
+        <p className="text-xs text-zinc-500 mt-0.5">
+          {inventory.length} {inventory.length === 1 ? t("itemCount") : t("itemsCount")}
+          {equippedCount > 0 && (
+            <span className="text-zinc-600"> · {equippedCount} {t("equippedCount")}</span>
+          )}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function InventoryModal({ isOpen, onClose, user }) {
   const { t } = useTranslation("inventory")
   const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(false)
-  const [equippingId, setEquippingId] = useState(null)
+  const [actionId, setActionId] = useState(null)
 
   const fetchInventory = useCallback(async () => {
     const headers = await getAuthHeaders()
@@ -179,17 +217,9 @@ export default function InventoryModal({ isOpen, onClose, user }) {
     return equipped
   }, [inventory])
 
-  const equippedDecoration = useMemo(() => {
-    return inventory.find(
-      e =>
-        e.equipped_slot === "avatar_decoration" &&
-        (e.item?.item_type || e.item_type) === "avatar_decoration"
-    )?.item?.asset_url || null
-  }, [inventory])
-
   const slotsWithItems = useMemo(() => {
-    return SLOTS.filter(s => (grouped[s] || []).length > 0 || equippedBySlot[s])
-  }, [grouped, equippedBySlot])
+    return SLOTS.filter(s => (grouped[s] || []).length > 0)
+  }, [grouped])
 
   async function handleEquip(inventoryId, slot) {
     const headers = await getAuthHeaders()
@@ -198,7 +228,7 @@ export default function InventoryModal({ isOpen, onClose, user }) {
       return
     }
 
-    setEquippingId(inventoryId || `none:${slot}`)
+    setActionId(inventoryId)
 
     try {
       const res = await fetch("/api/shop/@me/equip", {
@@ -211,37 +241,75 @@ export default function InventoryModal({ isOpen, onClose, user }) {
 
       if (!res.ok) {
         notify(data.error || t("errors.equipFailed"), "error")
-        setEquippingId(null)
+        setActionId(null)
         return
       }
 
-      const next = inventory.map(entry => ({
-        ...entry,
-        equipped_slot:
-          (entry.item?.item_type || entry.item_type) === slot
-            ? null
-            : entry.equipped_slot,
-      }))
+      setInventory(prev =>
+        prev.map(entry => ({
+          ...entry,
+          equipped_slot:
+            (entry.item?.item_type || entry.item_type) === slot
+              ? entry.inventory_id === inventoryId
+                ? slot
+                : null
+              : entry.equipped_slot,
+        }))
+      )
 
-      if (inventoryId) {
-        const idx = next.findIndex(e => e.inventory_id === inventoryId)
-        if (idx !== -1) next[idx].equipped_slot = slot
-      }
-
-      setInventory(next)
-      notify(inventoryId ? t("success.equipped") : t("success.unequipped"), "success")
+      notify(t("success.equipped"), "success")
     } catch {
       notify(t("errors.equipFailed"), "error")
     }
 
-    setEquippingId(null)
+    setActionId(null)
+  }
+
+  async function handleUnequip(slot) {
+    const headers = await getAuthHeaders()
+    if (!headers) {
+      notify(t("errors.loginRequired"), "error")
+      return
+    }
+
+    setActionId(`none:${slot}`)
+
+    try {
+      const res = await fetch("/api/shop/@me/unequip", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ slot }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        notify(data.error || t("errors.unequipFailed"), "error")
+        setActionId(null)
+        return
+      }
+
+      setInventory(prev =>
+        prev.map(entry => ({
+          ...entry,
+          equipped_slot:
+            entry.equipped_slot === slot ? null : entry.equipped_slot,
+        }))
+      )
+
+      notify(t("success.unequipped"), "success")
+    } catch {
+      notify(t("errors.unequipFailed"), "error")
+    }
+
+    setActionId(null)
   }
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      maxWidth="max-w-5xl"
+      maxWidth="max-w-4xl"
       showCloseButton={false}
       className="!border-0 !bg-transparent !shadow-none"
     >
@@ -252,21 +320,8 @@ export default function InventoryModal({ isOpen, onClose, user }) {
               <h2 className="text-lg font-semibold text-white">{t("title")}</h2>
               <p className="text-sm text-zinc-500 mt-1">{t("description")}</p>
             </div>
-
-            <div className="hidden sm:flex items-center gap-3">
-              <AvatarWithDecoration
-                src={user?.avatar}
-                alt={user?.username || "User"}
-                size="md"
-                showStatus={false}
-                decorationUrl={equippedDecoration}
-              />
-              <div className="text-right">
-                <p className="text-sm font-medium text-white">{user?.username}</p>
-                <p className="text-xs text-zinc-500">
-                  {inventory.length} {inventory.length === 1 ? t("itemCount") : t("itemsCount")}
-                </p>
-              </div>
+            <div className="hidden sm:block">
+              <ProfilePreview user={user} inventory={inventory} />
             </div>
           </div>
         </div>
@@ -286,6 +341,16 @@ export default function InventoryModal({ isOpen, onClose, user }) {
                 {t("empty.description")}
               </p>
             </div>
+          ) : slotsWithItems.length === 0 ? (
+            <div className="py-20 text-center">
+              <div className="w-14 h-14 rounded-full bg-zinc-800/50 mx-auto mb-4" />
+              <h3 className="text-sm font-medium text-zinc-400 mb-1">
+                {t("empty.title")}
+              </h3>
+              <p className="text-xs text-zinc-600">
+                {t("empty.description")}
+              </p>
+            </div>
           ) : (
             slotsWithItems.map(slot => (
               <SlotSection
@@ -293,17 +358,18 @@ export default function InventoryModal({ isOpen, onClose, user }) {
                 slot={slot}
                 items={grouped[slot] || []}
                 equippedInventoryId={equippedBySlot[slot] || null}
-                loadingId={equippingId}
+                loadingId={actionId}
                 onEquip={handleEquip}
+                onUnequip={handleUnequip}
               />
             ))
           )}
         </div>
 
-        <div className="border-t border-zinc-800 px-6 py-4">
+        <div className="border-t border-zinc-800 px-6 py-4 flex justify-end">
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all cursor-pointer"
+            className="px-5 py-2 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all cursor-pointer"
           >
             {t("close")}
           </button>
