@@ -26,7 +26,11 @@ export default {
     },
     collection: {
       label: "Coleção",
+      featured: "Em destaque",
       back: "Voltar para a loja",
+      viewAll: "Ver tudo",
+      itemCount: "item",
+      itemsCount: "itens",
     },
     detail: {
       price: "Preço",

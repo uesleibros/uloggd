@@ -26,7 +26,11 @@ export default {
     },
     collection: {
       label: "Collection",
+      featured: "Featured",
       back: "Back to shop",
+      viewAll: "View all",
+      itemCount: "item",
+      itemsCount: "items",
     },
     detail: {
       price: "Price",

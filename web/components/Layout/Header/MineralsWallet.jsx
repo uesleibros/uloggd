@@ -84,15 +84,6 @@ export default function MineralsWallet({ minerals = {} }) {
             />
           ))}
         </div>
-
-        <div className="px-3 py-2 border-t border-zinc-800">
-          <button
-            onClick={() => setOpen(false)}
-            className="w-full text-center text-xs text-purple-400 hover:text-purple-300 transition-colors"
-          >
-            {t("shop")}
-          </button>
-        </div>
       </div>
     </div>
   )

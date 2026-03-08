@@ -22,6 +22,8 @@ const ITEM_TYPE_ICONS = {
   theme: Monitor,
 }
 
+const ITEMS_PREVIEW_COUNT = 4
+
 async function getAuthHeaders() {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return null
@@ -69,10 +71,8 @@ function PriceDisplay({ item, size = "md" }) {
 
 function TimeBadge({ availableUntil }) {
   if (!availableUntil) return null
-
   const diff = new Date(availableUntil) - new Date()
   if (diff <= 0) return null
-
   const days = Math.floor(diff / 86400000)
   const hours = Math.floor((diff % 86400000) / 3600000)
   const label = days > 0 ? `${days}d` : hours > 0 ? `${hours}h` : "Soon"
@@ -101,7 +101,7 @@ function ItemCard({ item, owned, onSelect }) {
       <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5 items-end">
         {item.is_featured && (
           <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-violet-500/20 text-violet-400 border border-violet-500/30 rounded-full backdrop-blur-sm">
-            ✦ {t("tags.featured", "Featured")}
+            ✦ {t("tags.featured")}
           </span>
         )}
         {item.is_limited && !isSoldOut && item.max_stock != null && (
@@ -115,14 +115,14 @@ function ItemCard({ item, owned, onSelect }) {
         )}
         {isSoldOut && (
           <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-zinc-700/50 text-zinc-400 rounded-full backdrop-blur-sm">
-            {t("tags.soldOut", "Sold Out")}
+            {t("tags.soldOut")}
           </span>
         )}
         <TimeBadge availableUntil={item.available_until} />
         {owned && (
           <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full backdrop-blur-sm flex items-center gap-1">
             <Check className="w-2.5 h-2.5" />
-            {t("tags.owned", "Owned")}
+            {t("tags.owned")}
           </span>
         )}
       </div>
@@ -157,7 +157,200 @@ function ItemCard({ item, owned, onSelect }) {
   )
 }
 
-function CollectionBanner({ collection, onClick }) {
+function CollectionSection({ collection, ownedItemIds, onSelectItem, onViewAll }) {
+  const { t } = useTranslation("shop")
+  const items = collection.items || []
+  const previewItems = items.slice(0, ITEMS_PREVIEW_COUNT)
+  const hasMore = items.length > ITEMS_PREVIEW_COUNT
+
+  return (
+    <section className="mb-12 last:mb-0">
+      {collection.banner_url ? (
+        <button
+          onClick={() => onViewAll(collection)}
+          className="relative w-full overflow-hidden rounded-2xl border border-zinc-800/50 hover:border-zinc-700/50 transition-all cursor-pointer group text-left mb-6"
+        >
+          <div className="relative h-40 sm:h-48 overflow-hidden">
+            <img
+              src={collection.banner_url}
+              alt={collection.name}
+              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 select-none"
+              draggable={false}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/40 to-transparent" />
+          </div>
+
+          <div className="absolute bottom-0 left-0 right-0 p-6">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                {collection.is_featured && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-white/10 text-white/70 rounded-full backdrop-blur-sm mb-3">
+                    <Sparkles className="w-3 h-3" />
+                    {t("collection.label")}
+                  </span>
+                )}
+                <h2 className="text-lg font-bold text-white mb-0.5">{collection.name}</h2>
+                {collection.description && (
+                  <p className="text-sm text-zinc-400 line-clamp-1">{collection.description}</p>
+                )}
+              </div>
+              <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0 mb-1" />
+            </div>
+          </div>
+        </button>
+      ) : (
+        <div className="flex items-end justify-between gap-4 mb-5">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1">
+              {collection.accent_color ? (
+                <span
+                  className="w-1 h-5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: collection.accent_color }}
+                />
+              ) : (
+                <span className="w-1 h-5 rounded-full bg-violet-500 flex-shrink-0" />
+              )}
+              <h2 className="text-lg font-semibold text-white">{collection.name}</h2>
+              {collection.available_until && <TimeBadge availableUntil={collection.available_until} />}
+            </div>
+            {collection.description && (
+              <p className="text-sm text-zinc-500 ml-3.5">{collection.description}</p>
+            )}
+          </div>
+
+          {hasMore && (
+            <button
+              onClick={() => onViewAll(collection)}
+              className="flex items-center gap-1.5 text-sm text-violet-400 hover:text-violet-300 transition-colors cursor-pointer whitespace-nowrap flex-shrink-0"
+            >
+              {t("collection.viewAll", "Ver tudo")}
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      )}
+
+      {previewItems.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {previewItems.map(item => (
+            <ItemCard
+              key={item.id}
+              item={item}
+              owned={ownedItemIds.has(item.id)}
+              onSelect={onSelectItem}
+            />
+          ))}
+        </div>
+      )}
+
+      {hasMore && collection.banner_url && (
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={() => onViewAll(collection)}
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all cursor-pointer"
+          >
+            {t("collection.viewAll", "Ver tudo")}
+            <span className="text-zinc-600">({items.length})</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+    </section>
+  )
+}
+
+function CollectionFullView({ collection, ownedItemIds, onSelectItem, onBack }) {
+  const { t } = useTranslation("shop")
+  const items = collection.items || []
+
+  return (
+    <div>
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors cursor-pointer mb-6"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        {t("collection.back")}
+      </button>
+
+      <div
+        className="relative overflow-hidden rounded-2xl border border-zinc-800/50 mb-8"
+      >
+        {collection.banner_url ? (
+          <div className="relative h-44 sm:h-56 overflow-hidden">
+            <img
+              src={collection.banner_url}
+              alt=""
+              className="w-full h-full object-cover select-none"
+              draggable={false}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/50 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-white/10 text-white/70 rounded-full backdrop-blur-sm mb-3">
+                <Sparkles className="w-3 h-3" />
+                {t("collection.label")}
+              </span>
+              <h2 className="text-xl font-bold text-white mb-1">{collection.name}</h2>
+              {collection.description && (
+                <p className="text-sm text-zinc-400">{collection.description}</p>
+              )}
+              {collection.available_until && (
+                <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500">
+                  <Clock className="w-3.5 h-3.5" />
+                  {t("detail.availableUntil")} {new Date(collection.available_until).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div
+            className="p-6"
+            style={{
+              background: collection.accent_color
+                ? `linear-gradient(135deg, ${collection.accent_color}15, transparent)`
+                : "linear-gradient(135deg, rgba(139,92,246,0.08), transparent)",
+            }}
+          >
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-white/10 text-white/70 rounded-full mb-3">
+              <Sparkles className="w-3 h-3" />
+              {t("collection.label")}
+            </span>
+            <h2 className="text-xl font-bold text-white mb-1">{collection.name}</h2>
+            {collection.description && (
+              <p className="text-sm text-zinc-400">{collection.description}</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between mb-6">
+        <span className="text-sm text-zinc-500">
+          {items.length} {items.length === 1
+            ? t("collection.itemCount", "item")
+            : t("collection.itemsCount", "itens")
+          }
+        </span>
+      </div>
+
+      {items.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {items.map(item => (
+            <ItemCard
+              key={item.id}
+              item={item}
+              owned={ownedItemIds.has(item.id)}
+              onSelect={onSelectItem}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FeaturedBanner({ collection, onClick }) {
   const { t } = useTranslation("shop")
 
   return (
@@ -166,7 +359,7 @@ function CollectionBanner({ collection, onClick }) {
       className="relative w-full overflow-hidden rounded-2xl border border-zinc-800/50 hover:border-zinc-700/50 transition-all cursor-pointer group text-left"
     >
       {collection.banner_url ? (
-        <div className="relative h-44 sm:h-52 overflow-hidden">
+        <div className="relative h-48 sm:h-60 overflow-hidden">
           <img
             src={collection.banner_url}
             alt={collection.name}
@@ -177,7 +370,7 @@ function CollectionBanner({ collection, onClick }) {
         </div>
       ) : (
         <div
-          className="h-44 sm:h-52"
+          className="h-48 sm:h-60"
           style={{
             background: collection.accent_color
               ? `linear-gradient(135deg, ${collection.accent_color}22, ${collection.accent_color}08, transparent)`
@@ -186,66 +379,29 @@ function CollectionBanner({ collection, onClick }) {
         />
       )}
 
-      <div className="absolute bottom-0 left-0 right-0 p-6">
+      <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
         <div className="flex items-end justify-between gap-4">
           <div>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-white/10 text-white/70 rounded-full backdrop-blur-sm mb-3">
               <Sparkles className="w-3 h-3" />
-              {t("collection.label", "Collection")}
+              {t("collection.featured", "Em destaque")}
             </span>
-            <h2 className="text-lg font-bold text-white mb-0.5">{collection.name}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">{collection.name}</h2>
             {collection.description && (
-              <p className="text-sm text-zinc-400 line-clamp-1">{collection.description}</p>
+              <p className="text-sm text-zinc-300 line-clamp-2 max-w-lg">{collection.description}</p>
+            )}
+            {collection.available_until && (
+              <div className="flex items-center gap-1.5 mt-2">
+                <TimeBadge availableUntil={collection.available_until} />
+              </div>
             )}
           </div>
-          <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0 mb-1" />
+          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+            <ChevronRight className="w-5 h-5 text-white group-hover:translate-x-0.5 transition-transform" />
+          </div>
         </div>
       </div>
     </button>
-  )
-}
-
-function CollectionHeader({ collection, onBack }) {
-  const { t } = useTranslation("shop")
-
-  return (
-    <div className="mb-8">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors cursor-pointer mb-4"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        {t("collection.back", "Back to shop")}
-      </button>
-
-      <div
-        className="relative overflow-hidden rounded-2xl border border-zinc-800/50 p-6"
-        style={{
-          background: collection.accent_color
-            ? `linear-gradient(135deg, ${collection.accent_color}15, transparent)`
-            : "linear-gradient(135deg, rgba(139,92,246,0.08), transparent)",
-        }}
-      >
-        {collection.banner_url && (
-          <img
-            src={collection.banner_url}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-10 select-none"
-            draggable={false}
-          />
-        )}
-        <div className="relative">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-white/10 text-white/70 rounded-full mb-3">
-            <Sparkles className="w-3 h-3" />
-            {t("collection.label", "Collection")}
-          </span>
-          <h2 className="text-xl font-bold text-white mb-1">{collection.name}</h2>
-          {collection.description && (
-            <p className="text-sm text-zinc-400">{collection.description}</p>
-          )}
-        </div>
-      </div>
-    </div>
   )
 }
 
@@ -258,10 +414,10 @@ function EmptyState() {
         <Package className="w-7 h-7 text-zinc-600" />
       </div>
       <h3 className="text-sm font-medium text-zinc-400 mb-1">
-        {t("empty.title", "No items found")}
+        {t("empty.title")}
       </h3>
       <p className="text-xs text-zinc-600">
-        {t("empty.description", "Try adjusting your filters")}
+        {t("empty.description")}
       </p>
     </div>
   )
@@ -269,7 +425,6 @@ function EmptyState() {
 
 function ItemDetailModal({ item, owned, onClose, onPurchase, purchasing, user }) {
   const { t } = useTranslation("shop")
-
   if (!item) return null
 
   const isSoldOut = item.is_limited && item.current_stock === 0
@@ -295,16 +450,15 @@ function ItemDetailModal({ item, owned, onClose, onPurchase, purchasing, user })
           ) : (
             <Package className="w-20 h-20 text-zinc-700" />
           )}
-
           <div className="absolute top-4 left-4 flex gap-2">
             {item.is_featured && (
               <span className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-violet-500/20 text-violet-400 border border-violet-500/30 rounded-full backdrop-blur-sm">
-                ✦ {t("tags.featured", "Featured")}
+                ✦ {t("tags.featured")}
               </span>
             )}
             {item.is_limited && (
               <span className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full backdrop-blur-sm">
-                {t("tags.limited", "Limited")}
+                {t("tags.limited")}
               </span>
             )}
           </div>
@@ -332,8 +486,8 @@ function ItemDetailModal({ item, owned, onClose, onPurchase, purchasing, user })
               <Package className="w-4 h-4 text-zinc-500" />
               <span>
                 {isSoldOut
-                  ? t("detail.soldOutLabel", "Sold out")
-                  : `${item.current_stock} / ${item.max_stock} ${t("detail.remaining", "remaining")}`
+                  ? t("detail.soldOutLabel")
+                  : `${item.current_stock} / ${item.max_stock} ${t("detail.remaining")}`
                 }
               </span>
             </div>
@@ -343,7 +497,7 @@ function ItemDetailModal({ item, owned, onClose, onPurchase, purchasing, user })
             <div className="flex items-center gap-2 mb-5 text-sm text-zinc-400">
               <Clock className="w-4 h-4 text-zinc-500" />
               <span>
-                {t("detail.availableUntil", "Available until")} {new Date(item.available_until).toLocaleDateString()}
+                {t("detail.availableUntil")} {new Date(item.available_until).toLocaleDateString()}
               </span>
             </div>
           )}
@@ -351,7 +505,7 @@ function ItemDetailModal({ item, owned, onClose, onPurchase, purchasing, user })
           {hasPrice && (
             <div className="p-4 rounded-xl bg-zinc-800/40 border border-zinc-800 mb-6">
               <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold mb-2.5 block">
-                {t("detail.price", "Price")}
+                {t("detail.price")}
               </span>
               <PriceDisplay item={item} size="lg" />
             </div>
@@ -362,17 +516,17 @@ function ItemDetailModal({ item, owned, onClose, onPurchase, purchasing, user })
               onClick={onClose}
               className="flex-1 px-4 py-3 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl transition-all cursor-pointer"
             >
-              {t("detail.close", "Close")}
+              {t("detail.close")}
             </button>
 
             {owned ? (
               <div className="flex-1 px-4 py-3 text-sm font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center gap-2">
                 <Check className="w-4 h-4" />
-                {t("detail.owned", "Owned")}
+                {t("detail.owned")}
               </div>
             ) : isSoldOut ? (
               <div className="flex-1 px-4 py-3 text-sm font-medium text-zinc-500 bg-zinc-800/50 border border-zinc-700 rounded-xl flex items-center justify-center">
-                {t("detail.soldOut", "Sold Out")}
+                {t("detail.soldOut")}
               </div>
             ) : user ? (
               <button
@@ -385,13 +539,13 @@ function ItemDetailModal({ item, owned, onClose, onPurchase, purchasing, user })
                 ) : (
                   <>
                     <ShoppingBag className="w-4 h-4" />
-                    {t("detail.purchase", "Purchase")}
+                    {t("detail.purchase")}
                   </>
                 )}
               </button>
             ) : (
               <div className="flex-1 px-4 py-3 text-sm font-medium text-zinc-500 bg-zinc-800/50 border border-zinc-700 rounded-xl flex items-center justify-center text-center">
-                {t("detail.loginRequired", "Log in to purchase")}
+                {t("detail.loginRequired")}
               </div>
             )}
           </div>
@@ -418,20 +572,19 @@ function PurchaseSuccessModal({ isOpen, onClose, item }) {
             <CheckCircle className="w-7 h-7 text-emerald-500" />
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">
-            {t("success.title", "Purchase Complete!")}
+            {t("success.title")}
           </h3>
           <p className="text-sm text-zinc-500 leading-relaxed">
             <span className="text-zinc-300 font-medium">{item?.name}</span>{" "}
-            {t("success.description", "has been added to your inventory.")}
+            {t("success.description")}
           </p>
         </div>
-
         <div className="border-t border-zinc-800 px-6 py-4">
           <button
             onClick={onClose}
             className="w-full px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer"
           >
-            {t("success.continue", "Continue Shopping")}
+            {t("success.continue")}
           </button>
         </div>
       </div>
@@ -443,27 +596,21 @@ export default function ShopPage() {
   const { user } = useAuth()
   const { t } = useTranslation("shop")
 
-  const [categories, setCategories] = useState([])
-  const [items, setItems] = useState([])
   const [collections, setCollections] = useState([])
   const [inventory, setInventory] = useState([])
 
-  const [initialLoading, setInitialLoading] = useState(true)
-  const [itemsLoading, setItemsLoading] = useState(true)
-
-  const [selectedCategory, setSelectedCategory] = useState(null)
-  const [selectedType, setSelectedType] = useState(null)
-
+  const [loading, setLoading] = useState(true)
   const [activeCollection, setActiveCollection] = useState(null)
-  const [collectionItems, setCollectionItems] = useState([])
+  const [activeCollectionItems, setActiveCollectionItems] = useState([])
+  const [collectionLoading, setCollectionLoading] = useState(false)
 
   const [selectedItem, setSelectedItem] = useState(null)
   const [purchasing, setPurchasing] = useState(false)
   const [purchasedItem, setPurchasedItem] = useState(null)
 
   usePageMeta({
-    title: t("meta.title", "Shop"),
-    description: t("meta.description", "Browse and purchase items"),
+    title: t("meta.title"),
+    description: t("meta.description"),
   })
 
   const fetchInventory = useCallback(async () => {
@@ -481,16 +628,13 @@ export default function ShopPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [catRes, colRes] = await Promise.all([
-          fetch("/api/shop/categories").then(r => r.json()),
-          fetch("/api/shop/collections").then(r => r.json()),
-        ])
-        setCategories(catRes?.categories || [])
-        setCollections(colRes?.collections || [])
+        const res = await fetch("/api/shop/collections")
+        const data = await res.json()
+        setCollections(data?.collections || [])
       } catch (e) {
-        console.error("Failed to load shop data:", e)
+        console.error("Failed to load collections:", e)
       }
-      setInitialLoading(false)
+      setLoading(false)
     }
     load()
   }, [])
@@ -503,52 +647,31 @@ export default function ShopPage() {
     fetchInventory().then(setInventory)
   }, [user, fetchInventory])
 
-  useEffect(() => {
-    if (activeCollection) return
-
-    async function load() {
-      setItemsLoading(true)
-      const params = new URLSearchParams({ limit: "60" })
-      if (selectedCategory) params.set("category", selectedCategory)
-      if (selectedType) params.set("type", selectedType)
-
-      try {
-        const res = await fetch(`/api/shop/items?${params}`)
-        const data = await res.json()
-        setItems(data?.items || [])
-      } catch (e) {
-        console.error("Failed to fetch items:", e)
-      }
-      setItemsLoading(false)
-    }
-    load()
-  }, [selectedCategory, selectedType, activeCollection])
-
-  async function handleCollectionClick(collection) {
+  async function handleViewAll(collection) {
     setActiveCollection(collection)
-    setItemsLoading(true)
+    setCollectionLoading(true)
 
     try {
       const res = await fetch(`/api/shop/collections?slug=${collection.slug}`)
       const data = await res.json()
       const col = data?.collections?.[0] || data?.collection
-      setCollectionItems(col?.items || [])
+      setActiveCollectionItems(col?.items || collection.items || [])
     } catch (e) {
-      console.error("Failed to fetch collection:", e)
-      setCollectionItems([])
+      console.error("Failed to fetch collection items:", e)
+      setActiveCollectionItems(collection.items || [])
     }
-    setItemsLoading(false)
+    setCollectionLoading(false)
   }
 
   function handleBackFromCollection() {
     setActiveCollection(null)
-    setCollectionItems([])
+    setActiveCollectionItems([])
   }
 
   async function handlePurchase(item) {
     const headers = await getAuthHeaders()
     if (!headers) {
-      notify(t("errors.loginRequired", "You need to be logged in"), "error")
+      notify(t("errors.loginRequired"), "error")
       return
     }
 
@@ -564,7 +687,7 @@ export default function ShopPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        notify(data.error || t("errors.purchaseFailed", "Purchase failed"), "error")
+        notify(data.error || t("errors.purchaseFailed"), "error")
         setPurchasing(false)
         return
       }
@@ -576,18 +699,18 @@ export default function ShopPage() {
       setTimeout(() => setPurchasedItem(item), 150)
     } catch (e) {
       console.error(e)
-      notify(t("errors.generic", "Something went wrong"), "error")
+      notify(t("errors.generic"), "error")
     }
 
     setPurchasing(false)
   }
 
   const ownedItemIds = new Set(inventory.map(i => i.item_id))
-  const displayItems = activeCollection ? collectionItems : items
-  const featuredCollections = collections.filter(c => c.is_featured)
-  const visibleTypes = [...new Set(items.map(i => i.item_type))].filter(Boolean)
 
-  if (initialLoading) {
+  const featuredCollections = collections.filter(c => c.is_featured)
+  const regularCollections = collections.filter(c => !c.is_featured)
+
+  if (loading) {
     return (
       <div className="py-12">
         <div className="flex items-center justify-center py-20">
@@ -600,136 +723,48 @@ export default function ShopPage() {
   return (
     <div className="py-12">
       <div className="mb-10">
-        <h1 className="text-2xl font-bold text-white mb-2">{t("title", "Shop")}</h1>
-        <p className="text-sm text-zinc-500">
-          {t("subtitle", "Browse and customize your profile with unique items")}
-        </p>
+        <h1 className="text-2xl font-bold text-white mb-2">{t("title")}</h1>
+        <p className="text-sm text-zinc-500">{t("subtitle")}</p>
       </div>
 
       {activeCollection ? (
-        <>
-          <CollectionHeader
-            collection={activeCollection}
+        collectionLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-6 h-6 text-zinc-600 animate-spin" />
+          </div>
+        ) : (
+          <CollectionFullView
+            collection={{ ...activeCollection, items: activeCollectionItems }}
+            ownedItemIds={ownedItemIds}
+            onSelectItem={setSelectedItem}
             onBack={handleBackFromCollection}
           />
-
-          {itemsLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-6 h-6 text-zinc-600 animate-spin" />
-            </div>
-          ) : collectionItems.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {collectionItems.map(item => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  owned={ownedItemIds.has(item.id)}
-                  onSelect={setSelectedItem}
-                />
-              ))}
-            </div>
-          )}
-        </>
+        )
       ) : (
         <>
           {featuredCollections.length > 0 && (
-            <div className={`mb-8 ${featuredCollections.length > 1 ? "space-y-4" : ""}`}>
+            <div className={`mb-12 ${featuredCollections.length > 1 ? "space-y-4" : ""}`}>
               {featuredCollections.map(col => (
-                <CollectionBanner
+                <FeaturedBanner
                   key={col.id}
                   collection={col}
-                  onClick={handleCollectionClick}
+                  onClick={handleViewAll}
                 />
               ))}
             </div>
           )}
 
-          {categories.length > 0 && (
-            <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-              <button
-                onClick={() => {
-                  setSelectedCategory(null)
-                  setSelectedType(null)
-                }}
-                className={`px-4 py-2 text-sm font-medium rounded-xl whitespace-nowrap transition-all cursor-pointer ${
-                  !selectedCategory
-                    ? "bg-violet-600 text-white"
-                    : "bg-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800"
-                }`}
-              >
-                {t("filters.all", "All")}
-              </button>
-              {categories.map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => {
-                    setSelectedCategory(cat.slug)
-                    setSelectedType(null)
-                  }}
-                  className={`px-4 py-2 text-sm font-medium rounded-xl whitespace-nowrap transition-all cursor-pointer ${
-                    selectedCategory === cat.slug
-                      ? "bg-violet-600 text-white"
-                      : "bg-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800"
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-          )}
+          {regularCollections.map(col => (
+            <CollectionSection
+              key={col.id}
+              collection={col}
+              ownedItemIds={ownedItemIds}
+              onSelectItem={setSelectedItem}
+              onViewAll={handleViewAll}
+            />
+          ))}
 
-          {visibleTypes.length > 1 && (
-            <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
-              <button
-                onClick={() => setSelectedType(null)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-all cursor-pointer border ${
-                  !selectedType
-                    ? "bg-zinc-700/60 text-white border-zinc-600"
-                    : "bg-transparent text-zinc-500 hover:text-zinc-300 border-zinc-800 hover:border-zinc-700"
-                }`}
-              >
-                {t("filters.allTypes", "All types")}
-              </button>
-              {visibleTypes.map(type => {
-                const Icon = ITEM_TYPE_ICONS[type] || Package
-                return (
-                  <button
-                    key={type}
-                    onClick={() => setSelectedType(selectedType === type ? null : type)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-all cursor-pointer border ${
-                      selectedType === type
-                        ? "bg-zinc-700/60 text-white border-zinc-600"
-                        : "bg-transparent text-zinc-500 hover:text-zinc-300 border-zinc-800 hover:border-zinc-700"
-                    }`}
-                  >
-                    <Icon className="w-3 h-3" />
-                    {t(`types.${type}`, type.replace(/_/g, " "))}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-
-          {itemsLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-6 h-6 text-zinc-600 animate-spin" />
-            </div>
-          ) : displayItems.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {displayItems.map(item => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  owned={ownedItemIds.has(item.id)}
-                  onSelect={setSelectedItem}
-                />
-              ))}
-            </div>
-          )}
+          {collections.length === 0 && <EmptyState />}
         </>
       )}
 

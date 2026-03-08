@@ -7,7 +7,9 @@ import { SearchBar } from "./SearchBar"
 import { AuthButtons } from "./AuthButtons"
 import { MobileMenu, MenuToggle, NavLink } from "./MobileMenu"
 
-const NAV_ITEMS = []
+const NAV_ITEMS = [
+  { "label": "Shop", "to": "/shop" }
+]
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
