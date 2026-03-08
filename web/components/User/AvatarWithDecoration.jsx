@@ -1,5 +1,3 @@
-import { AVATAR_DECORATIONS } from "#data/avatarDecorations"
-
 const sizeClasses = {
   xs: 'w-5 h-5',
   sm: 'w-7 h-7',
@@ -97,13 +95,12 @@ function StatusIcon({ status, size }) {
 export default function AvatarWithDecoration({ 
   src, 
   alt, 
-  decoration = null,
+  decorationUrl = null,
   size = 'xl',
   status = null,
   isStreaming = false,
   className = '' 
 }) {
-  const currentDecorationUrl = AVATAR_DECORATIONS.find(d => d.id === decoration)?.url || null
   const offset = indicatorOffset[size] || -2
   const padding = cutoutPadding[size] || 3
   const iconSize = indicatorSizes[size] || 18
@@ -120,9 +117,9 @@ export default function AvatarWithDecoration({
         draggable={false}
       />
       
-      {decoration && currentDecorationUrl && (
+      {decorationUrl && (
         <img
-          src={currentDecorationUrl}
+          src={decorationUrl}
           alt=""
           className="absolute top-1/2 left-1/2 w-[120%] h-[120%] max-w-none pointer-events-none select-none z-20 object-contain"
           style={{ transform: 'translate(-50%, -50%)' }}
