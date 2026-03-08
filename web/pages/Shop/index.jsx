@@ -854,12 +854,16 @@ export default function ShopPage() {
       <ItemDetailModal
         item={selectedItem}
         owned={selectedItem ? ownedItemIds.has(selectedItem.id) : false}
-        equipped={selectedItem ? equippedItems[selectedItem.item_type] === inventory.find(i => i.item_id === selectedItem.id)?.id : false}
+        equipped={
+          selectedItem 
+            ? equippedItems[selectedItem.item_type] === inventory.find(i => i.item_id === selectedItem.id)?.inventory_id 
+            : false
+        }
         onClose={() => setSelectedItem(null)}
         onPurchase={handlePurchase}
         onEquip={() => {
-          const invItem = inventory.find(i => i.item_id === selectedItem.id)
-          if (invItem) handleEquip(invItem, selectedItem.item_type)
+          const invItem = inventory.find(i => i.item_id === selectedItem.id);
+          if (invItem) handleEquip(invItem, selectedItem.item_type);
         }}
         purchasing={purchasing}
         equipping={equipping}
