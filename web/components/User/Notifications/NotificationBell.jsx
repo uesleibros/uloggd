@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react"
 import { Bell } from "lucide-react"
 import { useNotifications } from "#hooks/useNotifications"
+import { useFaviconBadge } from "#hooks/useFaviconBadge"
 import NotificationPanel from "@components/User/Notifications/NotificationPanel"
 
 export default function NotificationBell() {
   const { unreadCount, refetch } = useNotifications()
   const [open, setOpen] = useState(false)
   const [visible, setVisible] = useState(false)
+
+  useFaviconBadge(unreadCount)
 
   useEffect(() => {
     if (open) {
