@@ -131,7 +131,7 @@ function ReviewModalHeader({ review, user, currentUserId, onClose }) {
 					<AvatarWithDecoration
 						src={user.avatar}
 						alt={user.username}
-						decoration={user.avatar_decoration}
+						decorationUrl={user.equipped?.avatar_decoration?.asset_url}
 						size="lg"
 					/>
 				</Link>
@@ -169,7 +169,7 @@ export function ReviewCard({ review, user, currentUserId }) {
 						<AvatarWithDecoration
 							src={user.avatar}
 							alt={user.username}
-							decoration={user.avatar_decoration}
+							decorationUrl={user.equipped?.avatar_decoration?.asset_url}
 							size="lg"
 						/>
 					</Link>
