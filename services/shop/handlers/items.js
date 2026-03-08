@@ -31,7 +31,7 @@ export async function handleItems(req, res) {
       available_until,
       metadata,
       sort_order,
-      category:store_categories!inner(id, slug, name, icon)
+      category:store_categories!inner(id, slug, name)
     `, { count: "exact" })
     .eq("is_active", true)
 

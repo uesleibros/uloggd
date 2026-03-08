@@ -3,7 +3,7 @@ import { supabase } from "#lib/supabase-ssr.js"
 export async function handleCategories(req, res) {
   const { data, error } = await supabase
     .from("store_categories")
-    .select("id, slug, name, description, icon, sort_order")
+    .select("id, slug, name, description, sort_order")
     .eq("is_active", true)
     .order("sort_order")
 
