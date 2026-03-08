@@ -70,7 +70,6 @@ export default {
     title: "My Minerals",
     titleUser: "{{username}}'s Minerals",
     total: "total",
-    shop: "Go to Shop",
     rarity: {
       common: "Common",
       uncommon: "Uncommon",

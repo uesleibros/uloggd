@@ -70,7 +70,6 @@ export default {
     title: "Meus Minérios",
     titleUser: "Minérios de {{username}}",
     total: "total",
-    shop: "Ir para a Loja",
     rarity: {
       common: "Comum",
       uncommon: "Incomum",

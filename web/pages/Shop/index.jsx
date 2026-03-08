@@ -640,7 +640,7 @@ export default function ShopPage() {
     try {
       const res = await fetch("/api/shop/@me/inventory", { headers })
       const data = await res.json()
-      return data.inventory || []
+      return data.items || []
     } catch {
       return []
     }
