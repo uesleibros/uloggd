@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { Loader2 } from "lucide-react"
+import { Loader2, Settings } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
 import { useAuth } from "#hooks/useAuth"
@@ -13,6 +13,7 @@ import FeaturedBanner from "./components/FeaturedBanner"
 import EmptyState from "./components/EmptyState"
 import ItemDetailModal from "./components/ItemDetailModal"
 import PurchaseSuccessModal from "./components/PurchaseSuccessModal"
+import AdminPanel from "./components/AdminPanel"
 
 export default function ShopPage() {
   const { user } = useAuth()
@@ -31,6 +32,7 @@ export default function ShopPage() {
   const [purchasing, setPurchasing] = useState(false)
   const [equipping, setEquipping] = useState(false)
   const [purchasedItem, setPurchasedItem] = useState(null)
+  const [adminOpen, setAdminOpen] = useState(false)
 
   usePageMeta({
     title: t("meta.title"),
@@ -49,27 +51,25 @@ export default function ShopPage() {
     }
   }, [])
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [collectionsRes, artistsRes] = await Promise.all([
-          fetch("/api/shop/collections"),
-          fetch("/api/shop/artists"),
-        ])
+  const loadShopData = useCallback(async () => {
+    try {
+      const [collectionsRes, artistsRes] = await Promise.all([
+        fetch("/api/shop/collections"),
+        fetch("/api/shop/artists"),
+      ])
 
-        const collectionsData = await collectionsRes.json()
-        const artistsData = await artistsRes.json()
+      const collectionsData = await collectionsRes.json()
+      const artistsData = await artistsRes.json()
 
-        setCollections(collectionsData?.collections || [])
-        setArtists(artistsData?.artists || [])
-      } catch (e) {
-        console.error("Failed to load shop data:", e)
-      }
-      setLoading(false)
+      setCollections(collectionsData?.collections || [])
+      setArtists(artistsData?.artists || [])
+    } catch (e) {
+      console.error("Failed to load shop data:", e)
     }
-
-    load()
+    setLoading(false)
   }, [])
+
+  useEffect(() => { loadShopData() }, [loadShopData])
 
   useEffect(() => {
     if (!user) {
@@ -175,6 +175,11 @@ export default function ShopPage() {
     setEquipping(false)
   }
 
+  function handleAdminClose() {
+    setAdminOpen(false)
+    loadShopData()
+  }
+
   const ownedItemIds = new Set(inventory.map(i => i.id))
   const getInventoryItem = (itemId) => inventory.find(i => i.id === itemId)
   const isEquipped = (itemId) => getInventoryItem(itemId)?.equipped_slot != null
@@ -195,13 +200,27 @@ export default function ShopPage() {
   return (
     <div className="py-12">
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-xl font-bold text-white">{t("title")}</h1>
-          <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-amber-500/15 text-amber-400 rounded-md">
-            Beta
-          </span>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-xl font-bold text-white">{t("title")}</h1>
+              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-amber-500/15 text-amber-400 rounded-md">
+                Beta
+              </span>
+            </div>
+            <p className="text-sm text-zinc-500">{t("subtitle")}</p>
+          </div>
+
+          {user?.is_moderator && (
+            <button
+              onClick={() => setAdminOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800/60 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              Manage
+            </button>
+          )}
         </div>
-        <p className="text-sm text-zinc-500">{t("subtitle")}</p>
       </div>
 
       {!activeCollection && <ArtistCredits />}
@@ -270,6 +289,10 @@ export default function ShopPage() {
         onClose={() => setPurchasedItem(null)}
         item={purchasedItem}
       />
+
+      {user?.is_moderator && (
+        <AdminPanel isOpen={adminOpen} onClose={handleAdminClose} />
+      )}
     </div>
   )
 }
