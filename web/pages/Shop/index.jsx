@@ -12,6 +12,7 @@ import Modal from "@components/UI/Modal"
 import { useAuth } from "#hooks/useAuth"
 import { notify } from "@components/UI/Notification"
 import { MINERALS } from "@components/Minerals/MineralRow"
+import AvatarWithDecoration from "@components/AvatarWithDecoration"
 
 const ITEM_TYPE_ICONS = {
   avatar_decoration: Star,
@@ -82,6 +83,25 @@ function TimeBadge({ availableUntil }) {
       <Clock className="w-2.5 h-2.5" />
       {label}
     </span>
+  )
+}
+
+function AvatarDecorationPreview({ item, user }) {
+  const avatarUrl = user?.avatar || "https://cdn.discordapp.com/embed/avatars/0.png"
+
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <AvatarWithDecoration
+        src={avatarUrl}
+        alt={user?.display_name || user?.username || "Preview"}
+        decorationUrl={item.asset_url}
+        size="profile"
+        status="online"
+      />
+      <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
+        Preview
+      </span>
+    </div>
   )
 }
 
@@ -434,6 +454,7 @@ function ItemDetailModal({ item, owned, equipped, onClose, onPurchase, onEquip, 
 
   const isSoldOut = item.is_limited && item.current_stock === 0
   const hasPrice = MINERALS.some(m => (item[`price_${m.key}`] || 0) > 0)
+  const isAvatarDecoration = item.item_type === "avatar_decoration"
 
   return (
     <Modal
@@ -445,7 +466,9 @@ function ItemDetailModal({ item, owned, equipped, onClose, onPurchase, onEquip, 
     >
       <div className="overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800">
         <div className="relative aspect-[16/10] bg-gradient-to-b from-zinc-800/40 to-zinc-900 flex items-center justify-center p-12">
-          {item.asset_url ? (
+          {isAvatarDecoration && item.asset_url ? (
+            <AvatarDecorationPreview item={item} user={user} />
+          ) : item.asset_url ? (
             <img
               src={item.asset_url}
               alt={item.name}
