@@ -136,7 +136,6 @@ export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) 
               setInventoryOpen(false)
               onNavigate?.()
             }}
-            user={user}
           />
         </>
       )
@@ -190,3 +189,4 @@ export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) 
     </div>
   )
 }
+
