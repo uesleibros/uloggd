@@ -2,7 +2,6 @@ import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleCollections(req, res) {
   const { slug } = req.query
-
   const now = new Date().toISOString()
 
   let query = supabase
@@ -41,7 +40,11 @@ export async function handleCollections(req, res) {
 
   const collectionIds = collections.map((c) => c.id)
 
-  const { data: collectionItems } = await supabase
+  if (collectionIds.length === 0) {
+    return res.json({ collections: [] })
+  }
+
+  const { data: collectionItems, error: itemsError } = await supabase
     .from("store_collection_items")
     .select(`
       collection_id,
@@ -51,7 +54,7 @@ export async function handleCollections(req, res) {
         slug,
         name,
         description,
-        preview_url,
+        asset_url,
         item_type,
         price_copper,
         price_iron,
@@ -63,16 +66,24 @@ export async function handleCollections(req, res) {
         is_limited,
         current_stock,
         max_stock,
+        available_from,
         available_until,
         metadata
       )
     `)
     .in("collection_id", collectionIds)
     .eq("item.is_active", true)
+    .or(`item.available_from.is.null,item.available_from.lte.${now}`)
+    .or(`item.available_until.is.null,item.available_until.gte.${now}`)
     .order("sort_order")
+
+  if (itemsError) {
+    console.error(itemsError)
+  }
 
   const itemsByCollection = {}
   for (const ci of collectionItems || []) {
+    if (!ci.item) continue
     if (!itemsByCollection[ci.collection_id]) {
       itemsByCollection[ci.collection_id] = []
     }
@@ -81,7 +92,6 @@ export async function handleCollections(req, res) {
 
   const result = collections.map((c) => ({
     ...c,
-    expires_at: c.available_until && new Date(c.available_until) > new Date() ? c.available_until : null,
     items: itemsByCollection[c.id] || [],
   }))
 
