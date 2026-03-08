@@ -34,7 +34,7 @@ function formatEquipped(userEquippedItems) {
   if (!userEquippedItems) return equipped
 
   for (const eq of userEquippedItems) {
-    const item = eq.inventory?.item
+    const item = eq.inventory?.store_items
     if (!item) continue
 
     equipped[eq.slot] = item
@@ -142,6 +142,7 @@ export function formatMinimalUserMap(users) {
 
   return map
 }
+
 
 
 
