@@ -9,9 +9,7 @@ const EQUIPPED_REL = `
   user_equipped_items (
     slot,
     inventory:user_inventory (
-      id,
-      item_id,
-      store_items (
+      item:store_items (
         id,
         slug,
         name,
@@ -40,7 +38,7 @@ function formatEquipped(user) {
   
   if (user.user_equipped_items) {
     for (const eq of user.user_equipped_items) {
-      const item = eq.inventory?.store_items
+      const item = eq.inventory?.item
       if (!item) continue
 
       equipped[eq.slot] = item
