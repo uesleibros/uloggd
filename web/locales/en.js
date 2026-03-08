@@ -453,10 +453,13 @@ export default {
         review_reward: "Review reward",
         like_reward: "Like reward",
         event_reward: "Event reward",
-        item_purchased: "Item purchased",
+        shop_purchase: "Item purchased",
+        shop_gift: "Gift purchased"
       },
       descriptions: {
         daily_chest: "Daily chest",
+        shop_item: "Shop item",
+        shop_gift: "Gift to"
       },
     },
     notFound: {

@@ -453,10 +453,13 @@ export default {
         review_reward: "Recompensa por review",
         like_reward: "Recompensa por curtida",
         event_reward: "Recompensa de evento",
-        item_purchased: "Item comprado",
+        shop_purchase: "Item comprado",
+        shop_gift: "Presente comprado"
       },
       descriptions: {
         daily_chest: "Baú diário",
+        shop_item: "Item da loja",
+        shop_gift: "Presente para"
       },
     },
     notFound: {

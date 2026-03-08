@@ -86,7 +86,8 @@ export async function handlePurchase(req, res) {
       user_id: userId,
       transaction_type: "shop_purchase",
       minerals_changed: changed,
-      description: `Compra: ${item.name}`,
+      description: "shop_item",
+      details: item.name
     })
     .select("id")
     .single()

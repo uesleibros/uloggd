@@ -85,7 +85,7 @@ function TimeBadge({ availableUntil }) {
   )
 }
 
-function ItemCard({ item, owned, onSelect }) {
+function ItemCard({ item, owned, equipped, onSelect }) {
   const { t } = useTranslation("shop")
   const isSoldOut = item.is_limited && item.current_stock === 0
 
@@ -157,7 +157,7 @@ function ItemCard({ item, owned, onSelect }) {
   )
 }
 
-function CollectionSection({ collection, ownedItemIds, onSelectItem, onViewAll }) {
+function CollectionSection({ collection, ownedItemIds, equippedItems, onSelectItem, onViewAll }) {
   const { t } = useTranslation("shop")
   const items = collection.items || []
   const previewItems = items.slice(0, ITEMS_PREVIEW_COUNT)
@@ -237,6 +237,7 @@ function CollectionSection({ collection, ownedItemIds, onSelectItem, onViewAll }
               key={item.id}
               item={item}
               owned={ownedItemIds.has(item.id)}
+              equipped={equippedItems[item.item_type] === item.id}
               onSelect={onSelectItem}
             />
           ))}
@@ -259,7 +260,7 @@ function CollectionSection({ collection, ownedItemIds, onSelectItem, onViewAll }
   )
 }
 
-function CollectionFullView({ collection, ownedItemIds, onSelectItem, onBack }) {
+function CollectionFullView({ collection, ownedItemIds, equippedItems, onSelectItem, onBack }) {
   const { t } = useTranslation("shop")
   const items = collection.items || []
 
@@ -341,6 +342,7 @@ function CollectionFullView({ collection, ownedItemIds, onSelectItem, onBack }) 
               key={item.id}
               item={item}
               owned={ownedItemIds.has(item.id)}
+              equipped={equippedItems[item.item_type] === item.id}
               onSelect={onSelectItem}
             />
           ))}
@@ -423,7 +425,7 @@ function EmptyState() {
   )
 }
 
-function ItemDetailModal({ item, owned, onClose, onPurchase, purchasing, user }) {
+function ItemDetailModal({ item, owned, equipped, onClose, onPurchase, onEquip, purchasing, equipping, user }) {
   const { t } = useTranslation("shop")
   if (!item) return null
 
@@ -520,10 +522,27 @@ function ItemDetailModal({ item, owned, onClose, onPurchase, purchasing, user })
             </button>
 
             {owned ? (
-              <div className="flex-1 px-4 py-3 text-sm font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center gap-2">
-                <Check className="w-4 h-4" />
-                {t("detail.owned")}
-              </div>
+              equipped ? (
+                <div className="flex-1 px-4 py-3 text-sm font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center gap-2">
+                  <Check className="w-4 h-4" />
+                  {t("detail.equipped")}
+                </div>
+              ) : (
+                <button
+                  onClick={onEquip}
+                  disabled={equipping}
+                  className="flex-1 px-4 py-3 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {equipping ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-4 h-4" />
+                      {t("detail.equip")}
+                    </>
+                  )}
+                </button>
+              )
             ) : isSoldOut ? (
               <div className="flex-1 px-4 py-3 text-sm font-medium text-zinc-500 bg-zinc-800/50 border border-zinc-700 rounded-xl flex items-center justify-center">
                 {t("detail.soldOut")}
@@ -598,6 +617,7 @@ export default function ShopPage() {
 
   const [collections, setCollections] = useState([])
   const [inventory, setInventory] = useState([])
+  const [equippedItems, setEquippedItems] = useState({})
 
   const [loading, setLoading] = useState(true)
   const [activeCollection, setActiveCollection] = useState(null)
@@ -606,6 +626,7 @@ export default function ShopPage() {
 
   const [selectedItem, setSelectedItem] = useState(null)
   const [purchasing, setPurchasing] = useState(false)
+  const [equipping, setEquipping] = useState(false)
   const [purchasedItem, setPurchasedItem] = useState(null)
 
   usePageMeta({
@@ -625,6 +646,22 @@ export default function ShopPage() {
     }
   }, [])
 
+  const fetchEquipped = useCallback(async () => {
+    const headers = await getAuthHeaders()
+    if (!headers) return {}
+    try {
+      const res = await fetch("/api/shop/equipped?userId=" + user.id, { headers })
+      const data = await res.json()
+      const equippedMap = {}
+      data.equipped.forEach(e => {
+        equippedMap[e.slot] = e.inventory_id
+      })
+      return equippedMap
+    } catch {
+      return {}
+    }
+  }, [user])
+
   useEffect(() => {
     async function load() {
       try {
@@ -642,10 +679,15 @@ export default function ShopPage() {
   useEffect(() => {
     if (!user) {
       setInventory([])
+      setEquippedItems({})
       return
     }
-    fetchInventory().then(setInventory)
-  }, [user, fetchInventory])
+    
+    Promise.all([
+      fetchInventory().then(setInventory),
+      fetchEquipped().then(setEquippedItems)
+    ])
+  }, [user, fetchInventory, fetchEquipped])
 
   async function handleViewAll(collection) {
     setActiveCollection(collection)
@@ -705,8 +747,47 @@ export default function ShopPage() {
     setPurchasing(false)
   }
 
-  const ownedItemIds = new Set(inventory.map(i => i.item_id))
+  async function handleEquip(inventoryItem, itemType) {
+    const headers = await getAuthHeaders()
+    if (!headers) {
+      notify(t("errors.loginRequired"), "error")
+      return
+    }
 
+    setEquipping(true)
+
+    try {
+      const res = await fetch("/api/shop/@me/equip", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ 
+          inventoryId: inventoryItem.id, 
+          slot: itemType 
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        notify(data.error || t("errors.equipFailed"), "error")
+        setEquipping(false)
+        return
+      }
+
+      const equipped = await fetchEquipped()
+      setEquippedItems(equipped)
+      
+      notify(t("success.equip"), "success")
+    } catch (e) {
+      console.error(e)
+      notify(t("errors.generic"), "error")
+    }
+
+    setEquipping(false)
+  }
+
+  const ownedItemIds = new Set(inventory.map(i => i.item_id))
+  
   const featuredCollections = collections.filter(c => c.is_featured)
   const regularCollections = collections.filter(c => !c.is_featured)
 
@@ -736,6 +817,7 @@ export default function ShopPage() {
           <CollectionFullView
             collection={{ ...activeCollection, items: activeCollectionItems }}
             ownedItemIds={ownedItemIds}
+            equippedItems={equippedItems}
             onSelectItem={setSelectedItem}
             onBack={handleBackFromCollection}
           />
@@ -759,6 +841,7 @@ export default function ShopPage() {
               key={col.id}
               collection={col}
               ownedItemIds={ownedItemIds}
+              equippedItems={equippedItems}
               onSelectItem={setSelectedItem}
               onViewAll={handleViewAll}
             />
@@ -771,9 +854,15 @@ export default function ShopPage() {
       <ItemDetailModal
         item={selectedItem}
         owned={selectedItem ? ownedItemIds.has(selectedItem.id) : false}
+        equipped={selectedItem ? equippedItems[selectedItem.item_type] === inventory.find(i => i.item_id === selectedItem.id)?.id : false}
         onClose={() => setSelectedItem(null)}
         onPurchase={handlePurchase}
+        onEquip={() => {
+          const invItem = inventory.find(i => i.item_id === selectedItem.id)
+          if (invItem) handleEquip(invItem, selectedItem.item_type)
+        }}
         purchasing={purchasing}
+        equipping={equipping}
         user={user}
       />
 

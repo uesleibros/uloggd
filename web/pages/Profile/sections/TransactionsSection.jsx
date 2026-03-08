@@ -11,7 +11,7 @@ const TRANSACTION_ICONS = {
   review_reward: { icon: MessageSquare, color: "text-blue-400", bg: "bg-blue-500/10" },
   like_reward: { icon: Heart, color: "text-pink-400", bg: "bg-pink-500/10" },
   event_reward: { icon: Trophy, color: "text-purple-400", bg: "bg-purple-500/10" },
-  item_purchased: { icon: TrendingDown, color: "text-red-400", bg: "bg-red-500/10" },
+  shop_purchase: { icon: TrendingDown, color: "text-red-400", bg: "bg-red-500/10" },
 }
 
 const MINERALS_CONFIG = [
@@ -128,6 +128,7 @@ function TransactionItem({ transaction }) {
         {transaction.description && (
           <p className="text-xs text-zinc-500 mb-2">
             {t(`transactions.descriptions.${transaction.description}`) || transaction.description}
+            {transaction.details && (<span className="ml-2">{transaction.details}</span>)}
           </p>
         )}
 

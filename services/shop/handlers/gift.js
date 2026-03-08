@@ -100,7 +100,8 @@ export async function handleGift(req, res) {
       user_id: userId,
       transaction_type: "shop_gift",
       minerals_changed: changed,
-      description: `Presente para ${recipient.username}: ${item.name}`,
+      description: "shop_gift",
+      details: `${recipient.username}: ${item.name}`
     })
     .select("id")
     .single()
