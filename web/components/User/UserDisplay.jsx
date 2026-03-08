@@ -19,7 +19,7 @@ export default function UserDisplay({
       <AvatarWithDecoration
         src={user.avatar}
         alt={user.username}
-        decoration={user.avatar_decoration}
+        decorationUrl={user.equipped?.avatar_decoration?.asset_url}
         size={size}
         status={showStatus ? getStatus(user.last_seen, user.status) : null}
         isStreaming={showStatus ? !!user.stream : null}
@@ -49,3 +49,4 @@ export default function UserDisplay({
   return content
 
 }
+
