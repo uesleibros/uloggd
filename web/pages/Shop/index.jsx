@@ -217,7 +217,7 @@ export default function ShopPage() {
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800/60 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
             >
               <Settings className="w-3.5 h-3.5" />
-              Manage
+              {t("admin.manage")}
             </button>
           )}
         </div>
