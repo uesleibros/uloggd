@@ -5,7 +5,22 @@ const MINERALS_REL = `user_minerals ( copper, iron, gold, emerald, diamond, ruby
 const CONNECTIONS_FULL = `user_connections ( provider, provider_user_id, provider_username, provider_display_name )`
 const CONNECTIONS_TWITCH = `user_connections ( provider, provider_username )`
 
-const EQUIPPED_REL = `user_equipped_items ( slot, inventory:user_inventory ( item:store_items ( id, slug, name, asset_url, item_type ) ) )`
+const EQUIPPED_REL = `
+  user_equipped_items (
+    slot,
+    inventory:user_inventory (
+      id,
+      item_id,
+      store_items (
+        id,
+        slug,
+        name,
+        asset_url,
+        item_type
+      )
+    )
+  )
+`
 
 const FULL_FIELDS = `
   user_id, username, banner, bio, pronoun, thinking, avatar,
@@ -25,10 +40,12 @@ function formatEquipped(user) {
   
   if (user.user_equipped_items) {
     for (const eq of user.user_equipped_items) {
-      if (eq.inventory?.item) {
-        equipped[eq.slot] = eq.inventory.item
-      }
+      const item = eq.inventory?.store_items
+      if (!item) continue
+
+      equipped[eq.slot] = item
     }
+
     delete user.user_equipped_items
   }
   
@@ -177,6 +194,7 @@ export async function getFollowStatus(userId, currentUserId) {
     followsYou: !!followsYouRes.data,
   }
 }
+
 
 
 
