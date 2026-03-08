@@ -145,8 +145,8 @@ function ProfilePreview({ user, inventory }) {
   return (
     <div className="flex items-center gap-4">
       <AvatarWithDecoration
-        src={user?.avatar}
-        alt={user?.username || "User"}
+        src={user.avatar}
+        alt={user.username}
         size="lg"
         showStatus={false}
         decorationUrl={equippedDecoration}
