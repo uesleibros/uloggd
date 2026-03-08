@@ -3,6 +3,9 @@ import { useEffect } from "react"
 let originalFavicon = null
 let canvas = null
 let ctx = null
+const CANVAS_SIZE = 80
+const ICON_SIZE = 64
+const ICON_OFFSET = 0
 
 function getOriginalFavicon() {
   if (originalFavicon) return Promise.resolve(originalFavicon)
@@ -28,8 +31,8 @@ function getOriginalFavicon() {
 function ensureCanvas() {
   if (!canvas) {
     canvas = document.createElement("canvas")
-    canvas.width = 64
-    canvas.height = 64
+    canvas.width = CANVAS_SIZE
+    canvas.height = CANVAS_SIZE
     ctx = canvas.getContext("2d")
   }
   return { canvas, ctx }
@@ -53,13 +56,9 @@ async function setFaviconBadge(count) {
   if (!img) return
 
   const { canvas, ctx } = ensureCanvas()
-  const size = canvas.width
 
-  ctx.clearRect(0, 0, size, size)
-
-  const iconSize = 52
-  const iconOffset = 0
-  ctx.drawImage(img, iconOffset, iconOffset, iconSize, iconSize)
+  ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+  ctx.drawImage(img, ICON_OFFSET, ICON_OFFSET, ICON_SIZE, ICON_SIZE)
 
   if (count <= 0) {
     updateFaviconLink(canvas.toDataURL("image/png"))
@@ -67,17 +66,17 @@ async function setFaviconBadge(count) {
   }
 
   const text = count > 99 ? "99+" : String(count)
-  const fontSize = text.length > 2 ? 24 : 30
+  const fontSize = text.length > 2 ? 26 : 32
   ctx.font = `bold ${fontSize}px -apple-system, "Segoe UI", sans-serif`
 
   const textMetrics = ctx.measureText(text)
   const textWidth = textMetrics.width
-  const badgeHeight = 34
+  const badgeHeight = 36
   const badgePadding = 10
   const badgeWidth = Math.max(badgeHeight, textWidth + badgePadding * 2)
 
-  const badgeX = size - badgeWidth
-  const badgeY = size - badgeHeight
+  const badgeX = CANVAS_SIZE - badgeWidth
+  const badgeY = CANVAS_SIZE - badgeHeight
 
   ctx.save()
   ctx.shadowColor = "rgba(0, 0, 0, 0.6)"
@@ -104,11 +103,10 @@ async function clearFaviconBadge() {
   const img = await getOriginalFavicon()
   if (!img) return
 
-  const { canvas, ctx } = ensureCanvas()
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  ctx.drawImage(img, 0, 0, 52, 52)
-
-  updateFaviconLink(canvas.toDataURL("image/png"))
+  let link = document.querySelector("link[rel~='icon']")
+  if (link && originalFavicon) {
+    link.href = originalFavicon.src
+  }
 }
 
 export function useFaviconBadge(count) {
