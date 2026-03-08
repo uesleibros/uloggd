@@ -28,28 +28,13 @@ function formatMinerals(userMinerals) {
   }
 }
 
-function formatEquipped(userEquippedItems) {
-  const equipped = {}
-
-  if (!userEquippedItems) return equipped
-
-  for (const eq of userEquippedItems) {
-    const item = eq.inventory?.item
-    if (!item) continue
-
-    equipped[eq.slot] = item
-  }
-
-  return equipped
-}
-
 export function formatFullProfile(
   profile,
   { stream = null, counts = {}, ban = null } = {}
 ) {
   if (!profile) return null
 
-  const equipped = formatEquipped(profile.user_equipped_items)
+  const equipped = profile.user_equipped_items
 
   return {
     id: profile.user_id,
@@ -142,6 +127,7 @@ export function formatMinimalUserMap(users) {
 
   return map
 }
+
 
 
 
