@@ -4,6 +4,7 @@ import Modal from "@components/UI/Modal"
 import { supabase } from "#lib/supabase.js"
 import { notify } from "@components/UI/Notification"
 import { useTranslation } from "#hooks/useTranslation"
+import { useAuth } from "#hooks/useAuth"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 
 const SLOTS = [
@@ -129,18 +130,8 @@ function SlotSection({ slot, items, equippedInventoryId, onEquip, onUnequip, loa
   )
 }
 
-function ProfilePreview({ user, inventory }) {
+function ProfilePreview({ user, equippedDecoration, itemCount, equippedCount }) {
   const { t } = useTranslation("inventory")
-
-  const equippedDecoration = useMemo(() => {
-    return inventory.find(
-      e => e.equipped_slot === "avatar_decoration" && e.item_type === "avatar_decoration"
-    )?.asset_url || null
-  }, [inventory])
-
-  const equippedCount = useMemo(() => {
-    return inventory.filter(e => e.equipped_slot).length
-  }, [inventory])
 
   return (
     <div className="flex items-center gap-4">
@@ -152,9 +143,9 @@ function ProfilePreview({ user, inventory }) {
         decorationUrl={equippedDecoration}
       />
       <div>
-        <p className="text-sm font-semibold text-white">{user?.username}</p>
+        <p className="text-sm font-semibold text-white">{user.username}</p>
         <p className="text-xs text-zinc-500 mt-0.5">
-          {inventory.length} {inventory.length === 1 ? t("itemCount") : t("itemsCount")}
+          {itemCount} {itemCount === 1 ? t("itemCount") : t("itemsCount")}
           {equippedCount > 0 && (
             <span className="text-zinc-600"> · {equippedCount} {t("equippedCount")}</span>
           )}
@@ -164,8 +155,9 @@ function ProfilePreview({ user, inventory }) {
   )
 }
 
-export default function InventoryModal({ isOpen, onClose, user }) {
+export default function InventoryModal({ isOpen, onClose }) {
   const { t } = useTranslation("inventory")
+  const { user } = useAuth()
   const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(false)
   const [actionId, setActionId] = useState(null)
@@ -188,9 +180,9 @@ export default function InventoryModal({ isOpen, onClose, user }) {
   }, [t])
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || !user) return
     fetchInventory()
-  }, [isOpen, fetchInventory])
+  }, [isOpen, user, fetchInventory])
 
   const grouped = useMemo(() => {
     const groups = {}
@@ -218,6 +210,16 @@ export default function InventoryModal({ isOpen, onClose, user }) {
   const slotsWithItems = useMemo(() => {
     return SLOTS.filter(s => (grouped[s] || []).length > 0)
   }, [grouped])
+
+  const equippedDecoration = useMemo(() => {
+    return inventory.find(
+      e => e.equipped_slot === "avatar_decoration" && e.item_type === "avatar_decoration"
+    )?.asset_url || null
+  }, [inventory])
+
+  const equippedCount = useMemo(() => {
+    return inventory.filter(e => e.equipped_slot).length
+  }, [inventory])
 
   async function handleEquip(inventoryId, slot) {
     const headers = await getAuthHeaders()
@@ -303,6 +305,8 @@ export default function InventoryModal({ isOpen, onClose, user }) {
     setActionId(null)
   }
 
+  if (!user) return null
+
   return (
     <Modal
       isOpen={isOpen}
@@ -319,7 +323,12 @@ export default function InventoryModal({ isOpen, onClose, user }) {
               <p className="text-sm text-zinc-500 mt-1">{t("description")}</p>
             </div>
             <div className="hidden sm:block">
-              <ProfilePreview user={user} inventory={inventory} />
+              <ProfilePreview
+                user={user}
+                equippedDecoration={equippedDecoration}
+                itemCount={inventory.length}
+                equippedCount={equippedCount}
+              />
             </div>
           </div>
         </div>
