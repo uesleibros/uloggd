@@ -115,6 +115,11 @@ export default {
       title: "Nenhum item encontrado",
       description: "Tente ajustar seus filtros.",
     },
+		credits: {
+		  message: "Decorações disponíveis graças à permissão dos artistas da Decors.",
+		  submessage: "Considere apoiar os criadores originais.",
+		  donate: "Apoiar artistas",
+		},
   },
   minerals: {
     meta: {
@@ -1829,6 +1834,7 @@ export default {
     },
   },
 }
+
 
 
 
