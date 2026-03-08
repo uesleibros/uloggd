@@ -18,28 +18,14 @@ export default function CollectionFullView({ collection, ownedItemIds, isEquippe
         {t("collection.back")}
       </button>
 
-      <div className="relative overflow-hidden rounded-xl mb-6">
+      <div className="mb-6">
         {collection.banner_url ? (
-          <div className="relative overflow-hidden rounded-xl bg-zinc-900">
-            <img
-              src={collection.banner_url}
-              alt=""
-              className="w-full h-auto block select-none"
-              draggable={false}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
-              <h2 className="text-lg font-bold text-white mb-0.5">{collection.name}</h2>
-              {collection.description && (
-                <p className="text-sm text-zinc-400">{collection.description}</p>
-              )}
-              {collection.available_until && (
-                <div className="mt-2">
-                  <TimeBadge availableUntil={collection.available_until} />
-                </div>
-              )}
-            </div>
-          </div>
+          <img
+            src={collection.banner_url}
+            alt={collection.name}
+            className="w-full h-auto block select-none"
+            draggable={false}
+          />
         ) : (
           <div
             className="px-5 py-6 rounded-xl"

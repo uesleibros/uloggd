@@ -15,29 +15,14 @@ export default function CollectionSection({ collection, ownedItemIds, isEquipped
       {collection.banner_url ? (
         <button
           onClick={() => onViewAll(collection)}
-          className="relative w-full overflow-hidden rounded-xl transition-all cursor-pointer group text-left mb-5 hover:ring-1 hover:ring-zinc-700/50"
+          className="relative w-full cursor-pointer group text-left mb-5"
         >
-          <div className="relative overflow-hidden rounded-xl bg-zinc-900">
-            <img
-              src={collection.banner_url}
-              alt={collection.name}
-              className="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-500 select-none"
-              draggable={false}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
-          </div>
-
-          <div className="absolute bottom-0 left-0 right-0 px-5 pb-4">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <h2 className="text-base font-bold text-white mb-0.5">{collection.name}</h2>
-                {collection.description && (
-                  <p className="text-xs text-zinc-400 line-clamp-1">{collection.description}</p>
-                )}
-              </div>
-              <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
-            </div>
-          </div>
+          <img
+            src={collection.banner_url}
+            alt={collection.name}
+            className="w-full h-auto block group-hover:brightness-110 transition-all duration-300 select-none"
+            draggable={false}
+          />
         </button>
       ) : (
         <div className="flex items-end justify-between gap-4 mb-4">
