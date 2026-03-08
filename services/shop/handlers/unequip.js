@@ -24,19 +24,5 @@ export async function handleUnequip(req, res) {
     return res.status(500).json({ error: "failed_to_unequip" })
   }
 
-  if (slot === "avatar_decoration") {
-    await supabase
-      .from("users")
-      .update({ avatar_decoration: null })
-      .eq("user_id", userId)
-  }
-
-  if (slot === "banner") {
-    await supabase
-      .from("users")
-      .update({ banner: null })
-      .eq("user_id", userId)
-  }
-
   return res.json({ success: true })
 }
