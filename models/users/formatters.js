@@ -34,7 +34,7 @@ export function formatFullProfile(
 ) {
   if (!profile) return null
 
-  const equipped = profile.user_equipped_items
+  const equipped = profile.user_equipped_items || {}
 
   return {
     id: profile.user_id,
@@ -127,4 +127,5 @@ export function formatMinimalUserMap(users) {
 
   return map
 }
+
 
