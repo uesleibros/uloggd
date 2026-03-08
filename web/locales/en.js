@@ -1,4 +1,59 @@
 export default {
+  shop: {
+    meta: {
+      title: "Shop - uloggd",
+      description: "Browse and purchase exclusive items to customize your profile.",
+    },
+    title: "Shop",
+    subtitle: "Browse and customize your profile with unique items.",
+    tags: {
+      featured: "Featured",
+      limited: "Limited",
+      soldOut: "Sold Out",
+      owned: "Owned",
+    },
+    types: {
+      avatar_decoration: "Avatar Decoration",
+      banner: "Banner",
+      profile_effect: "Profile Effect",
+      badge: "Badge",
+      name_color: "Name Color",
+      theme: "Theme",
+    },
+    filters: {
+      all: "All",
+      allTypes: "All types",
+    },
+    collection: {
+      label: "Collection",
+      back: "Back to shop",
+    },
+    detail: {
+      price: "Price",
+      close: "Close",
+      owned: "Owned",
+      soldOut: "Sold Out",
+      soldOutLabel: "Sold out",
+      purchase: "Purchase",
+      loginRequired: "Log in to purchase",
+      remaining: "remaining",
+      availableUntil: "Available until",
+    },
+    success: {
+      title: "Purchase Complete!",
+      description: "has been added to your inventory.",
+      continue: "Continue Shopping",
+    },
+    errors: {
+      loginRequired: "You need to be logged in.",
+      purchaseFailed: "Purchase failed.",
+      generic: "Something went wrong.",
+    },
+    empty: {
+      title: "No items found",
+      description: "Try adjusting your filters.",
+    },
+  },
   minerals: {
     meta: {
       title: "Minerals - uloggd",

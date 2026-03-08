@@ -1,4 +1,59 @@
 export default {
+  shop: {
+    meta: {
+      title: "Loja - uloggd",
+      description: "Navegue e compre itens exclusivos para personalizar seu perfil.",
+    },
+    title: "Loja",
+    subtitle: "Navegue e personalize seu perfil com itens exclusivos.",
+    tags: {
+      featured: "Destaque",
+      limited: "Limitado",
+      soldOut: "Esgotado",
+      owned: "Adquirido",
+    },
+    types: {
+      avatar_decoration: "Decoração de avatar",
+      banner: "Banner",
+      profile_effect: "Efeito de perfil",
+      badge: "Selo",
+      name_color: "Cor do nome",
+      theme: "Tema",
+    },
+    filters: {
+      all: "Todos",
+      allTypes: "Todos os tipos",
+    },
+    collection: {
+      label: "Coleção",
+      back: "Voltar para a loja",
+    },
+    detail: {
+      price: "Preço",
+      close: "Fechar",
+      owned: "Adquirido",
+      soldOut: "Esgotado",
+      soldOutLabel: "Esgotado",
+      purchase: "Comprar",
+      loginRequired: "Entre para comprar",
+      remaining: "restantes",
+      availableUntil: "Disponível até",
+    },
+    success: {
+      title: "Compra realizada!",
+      description: "foi adicionado ao seu inventário.",
+      continue: "Continuar comprando",
+    },
+    errors: {
+      loginRequired: "Você precisa estar logado.",
+      purchaseFailed: "Falha na compra.",
+      generic: "Algo deu errado.",
+    },
+    empty: {
+      title: "Nenhum item encontrado",
+      description: "Tente ajustar seus filtros.",
+    },
+  },
   minerals: {
     meta: {
       title: "Minérios - uloggd",

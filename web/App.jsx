@@ -15,6 +15,7 @@ import SearchPage from "@pages/SearchPage"
 import Game from "@pages/Game"
 import Profile from "@pages/Profile"
 import ListPage from "@pages/ListPage"
+import ShopPage form "@pages/Shop"
 import TierlistPage from "@pages/TierlistPage"
 import NotificationContainer from "@components/UI/Notification"
 import NotFound from "@pages/NotFound"
@@ -57,6 +58,7 @@ export default function App() {
 							<Route path="/about/badges" element={<Badges />} />
 							<Route path="/about/minerals" element={<Minerals />} />
 							<Route path="/search" element={<SearchPage />} />
+							<Route path="/shop" element={<ShopPage />} />
 							<Route path="*" element={<NotFound />} />
 						</Routes>
 					</ErrorBoundary>
