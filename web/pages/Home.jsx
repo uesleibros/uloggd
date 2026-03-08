@@ -33,7 +33,7 @@ function WelcomeBack({ user }) {
         <AvatarWithDecoration
           src={user.avatar}
           alt={user.username}
-          decoration={user.avatar_decoration}
+          decorationUrl={user.equipped?.avatar_decoration?.asset_url}
           status={getStatus(user.last_seen, user.status)}
           isStreaming={!!user.stream}
           size="lg"
@@ -93,3 +93,4 @@ export default function Home() {
   )
 
 }
+
