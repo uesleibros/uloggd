@@ -57,7 +57,7 @@ export default function Footer() {
               {t("footer.rights", { year: new Date().getFullYear() })}
             </p>
             <span className="text-zinc-800">·</span>
-            <span className="text-xs text-zinc-700">v1.1.0</span>
+            <span className="text-xs text-zinc-700">v1.1.1</span>
           </div>
 
           <a
@@ -75,4 +75,5 @@ export default function Footer() {
       </div>
     </footer>
   )
+
 }
