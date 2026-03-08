@@ -6,7 +6,7 @@ const CONNECTIONS_FULL = `user_connections ( provider, provider_user_id, provide
 const CONNECTIONS_TWITCH = `user_connections ( provider, provider_username )`
 
 const EQUIPPED_REL = `
-  user_equipped_items!user_equipped_user_fkey (
+  equipped:user_equipped_items!user_equipped_user_fkey (
     slot,
     inventory:user_inventory!user_equipped_inventory_fkey (
       item:store_items!user_inventory_item_fkey (
@@ -33,20 +33,20 @@ const MINERALS_FIELDS = `user_id, copper, iron, gold, emerald, diamond, ruby`
 
 function formatEquipped(user) {
   if (!user) return user
-  
+
   const equipped = {}
-  
-  if (user.user_equipped_items) {
-    for (const eq of user.user_equipped_items) {
+
+  if (user.equipped) {
+    for (const eq of user.equipped) {
       const item = eq.inventory?.item
       if (!item) continue
 
       equipped[eq.slot] = item
     }
 
-    delete user.user_equipped_items
+    delete user.equipped
   }
-  
+
   user.equipped = equipped
   return user
 }
@@ -192,4 +192,5 @@ export async function getFollowStatus(userId, currentUserId) {
     followsYou: !!followsYouRes.data,
   }
 }
+
 
