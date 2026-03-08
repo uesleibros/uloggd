@@ -17,6 +17,16 @@ const artists = [
     avatar: "https://cdn.jellys-space.vip/artists/jelly-avatar.png",
     url: "https://discord.com/users/1147940825330876538",
   },
+  {
+    name: "Seele",
+    avatar: "https://cdn.jellys-space.vip/artists/seele-avatar.png",
+    url: "https://discord.com/users/334062444718587905",
+  },
+  {
+    name: "Little Glimbo",
+    avatar: null,
+    url: null
+  }
 ]
 
 async function getAuthHeaders() {
@@ -29,8 +39,11 @@ async function getAuthHeaders() {
 }
 
 function ArtistsCarousel() {
+  const { t } = useTranslation("shop")
   const fallbackAvatar = "https://cdn.discordapp.com/embed/avatars/0.png"
-  const items = [...artists, ...artists]
+  const items = artists.length > 0 ? [...artists, ...artists] : []
+
+  if (items.length === 0) return null
 
   return (
     <>
@@ -43,8 +56,8 @@ function ArtistsCarousel() {
 
       <div className="mb-8">
         <div className="mb-3">
-          <p className="text-xs font-medium text-zinc-400">Artistas parceiros</p>
-          <p className="text-xs text-zinc-600">A loja só existe graças à permissão dos artistas da Decors.</p>
+          <p className="text-xs font-medium text-zinc-400">{t("artists.title")}</p>
+          <p className="text-xs text-zinc-600">{t("artists.subtitle")}</p>
         </div>
 
         <div className="relative overflow-hidden rounded-xl border border-zinc-800/60 bg-zinc-900/40">
@@ -67,7 +80,7 @@ function ArtistsCarousel() {
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-zinc-200 truncate">{artist.name}</p>
                     <p className="text-[11px] text-zinc-500 truncate">
-                      {artist.url ? "Ver página" : "Artista"}
+                      {artist.label || t("artists.defaultLabel")}
                     </p>
                   </div>
                 </div>
@@ -80,6 +93,7 @@ function ArtistsCarousel() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block"
+                  aria-label={`${artist.name} - ${t("artists.visit")}`}
                 >
                   {content}
                 </a>
@@ -923,3 +937,4 @@ export default function ShopPage() {
     </div>
   )
 }
+
