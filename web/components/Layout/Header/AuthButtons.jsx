@@ -1,17 +1,19 @@
 import { useState } from "react"
-import { User, Settings, LogOut, Fingerprint } from "lucide-react"
+import { User, Settings, LogOut, Fingerprint, Package } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
 import { authenticateWithPasskey } from "#lib/passkey-client"
 import UserDisplay from "@components/User/UserDisplay"
 import UserBadges from "@components/User/UserBadges"
 import SettingsModal from "@components/User/Settings/SettingsModal"
+import InventoryModal from "@components/User/Inventory/InventoryModal"
 import { UserDropdown, DropdownItem } from "./UserDropdown"
 import { DiscordIcon } from "./icons"
 
 export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) {
   const { t } = useTranslation()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [inventoryOpen, setInventoryOpen] = useState(false)
   const [passkeyLoading, setPasskeyLoading] = useState(false)
 
   const handleDiscordSignIn = async () => {
@@ -101,6 +103,11 @@ export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) 
               icon={<User className="w-4 h-4" />}
             />
             <DropdownItem
+              onClick={() => setInventoryOpen(true)}
+              label={t("auth.inventory")}
+              icon={<Package className="w-4 h-4" />}
+            />
+            <DropdownItem
               onClick={() => setSettingsOpen(true)}
               label={t("auth.settings")}
               icon={<Settings className="w-4 h-4" />}
@@ -122,6 +129,14 @@ export function AuthButtons({ user, loading, onNavigate, variant = "desktop" }) 
               setSettingsOpen(false)
               onNavigate?.()
             }}
+          />
+          <InventoryModal
+            isOpen={inventoryOpen}
+            onClose={() => {
+              setInventoryOpen(false)
+              onNavigate?.()
+            }}
+            user={user}
           />
         </>
       )
