@@ -855,6 +855,7 @@ export default function ShopPage() {
       </div>
 
       {!activeCollection && <ArtistCredits />}
+      {!activeCollection && <ArtistsCarousel />}
 
       {activeCollection ? (
         collectionLoading ? (
@@ -922,4 +923,3 @@ export default function ShopPage() {
     </div>
   )
 }
-
