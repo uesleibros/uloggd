@@ -26,6 +26,11 @@ const artists = [
     name: "Little Glimbo",
     avatar: null,
     url: null
+  },
+  {
+    name: "KURAMA",
+    avatar: null,
+    url: null
   }
 ]
 
@@ -937,4 +942,5 @@ export default function ShopPage() {
     </div>
   )
 }
+
 
