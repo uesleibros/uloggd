@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
-import { User, Settings, LogOut, ChevronDown } from "lucide-react"
+import { User, Settings, LogOut, ChevronDown, Package } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import UserDisplay from "@components/User/UserDisplay"
 import UserBadges from "@components/User/UserBadges"
 import SettingsModal from "@components/User/Settings/SettingsModal"
+import InventoryModal from "@components/User/Inventory/InventoryModal"
 
 function DropdownItem({ to, onClick, icon, label, variant = "default" }) {
   const variants = {
@@ -30,6 +31,7 @@ export function UserDropdown({ user, onSignOut }) {
   const { t } = useTranslation("auth")
   const [open, setOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [inventoryOpen, setInventoryOpen] = useState(false)
   const dropdownRef = useRef(null)
 
   useEffect(() => {
@@ -91,6 +93,11 @@ export function UserDropdown({ user, onSignOut }) {
               icon={<User className="w-4 h-4" />}
             />
             <DropdownItem
+              onClick={() => { setOpen(false); setInventoryOpen(true) }}
+              label={t("inventory")}
+              icon={<Package className="w-4 h-4" />}
+            />
+            <DropdownItem
               onClick={() => { setOpen(false); setSettingsOpen(true) }}
               label={t("settings")}
               icon={<Settings className="w-4 h-4" />}
@@ -109,6 +116,7 @@ export function UserDropdown({ user, onSignOut }) {
       </div>
 
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <InventoryModal isOpen={inventoryOpen} onClose={() => setInventoryOpen(false)} />
     </>
   )
 }
