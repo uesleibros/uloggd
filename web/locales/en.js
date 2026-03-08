@@ -1,4 +1,52 @@
 export default {
+	inventory: {
+	  title: "Inventory",
+	  description: "Manage your cosmetics and choose what to equip on your profile.",
+	  close: "Close",
+	  unequip: "Unequip",
+	  noneEquipped: "Nothing equipped",
+	  itemCount: "item",
+	  itemsCount: "items",
+	  empty: {
+	    title: "No items yet",
+	    description: "Buy cosmetics in the shop and manage them here.",
+	  },
+	  slots: {
+	    avatar_decoration: {
+	      title: "Avatar Decoration",
+	      description: "Choose a decoration to display around your avatar.",
+	    },
+	    profile_effect: {
+	      title: "Profile Effect",
+	      description: "Add a visual effect to your profile.",
+	    },
+	    banner: {
+	      title: "Profile Banner",
+	      description: "Customize the banner displayed at the top of your profile.",
+	    },
+	    badge: {
+	      title: "Badge",
+	      description: "Display a special badge on your profile.",
+	    },
+	    name_color: {
+	      title: "Name Color",
+	      description: "Change your display name color.",
+	    },
+	    theme: {
+	      title: "Theme",
+	      description: "Change the visual theme of your profile.",
+	    },
+	  },
+	  success: {
+	    equipped: "Item equipped!",
+	    unequipped: "Item removed!",
+	  },
+	  errors: {
+	    loadFailed: "Failed to load inventory.",
+	    equipFailed: "Failed to update item.",
+	    loginRequired: "You need to be logged in.",
+	  },
+	},
   shop: {
     meta: {
       title: "Shop - uloggd",
@@ -227,6 +275,7 @@ export default {
   auth: {
     profile: "My profile",
     settings: "Settings",
+    inventory: "Inventory",
     signOut: "Sign out",
     signIn: "Sign in",
     signInWithDiscord: "Sign in with Discord",
