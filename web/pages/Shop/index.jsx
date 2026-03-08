@@ -470,7 +470,7 @@ export default function ShopPage() {
     const headers = await getAuthHeaders()
     if (!headers) return []
     try {
-      const res = await fetch("/api/shop/inventory/@me", { headers })
+      const res = await fetch("/api/shop/@me/inventory", { headers })
       const data = await res.json()
       return data.inventory || []
     } catch {
@@ -555,7 +555,7 @@ export default function ShopPage() {
     setPurchasing(true)
 
     try {
-      const res = await fetch("/api/shop/purchase/@me", {
+      const res = await fetch("/api/shop/@me/purchase", {
         method: "POST",
         headers,
         body: JSON.stringify({ itemId: item.id }),

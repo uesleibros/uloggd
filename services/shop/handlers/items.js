@@ -14,7 +14,6 @@ export async function handleItems(req, res) {
       slug,
       name,
       description,
-      preview_url,
       asset_url,
       item_type,
       price_copper,
