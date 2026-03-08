@@ -8,8 +8,8 @@ const CONNECTIONS_TWITCH = `user_connections ( provider, provider_username )`
 const EQUIPPED_REL = `
   user_equipped_items (
     slot,
-    inventory:user_inventory!inner (
-      item:store_items!inner (
+    inventory:user_inventory (
+      item:store_items (
         id,
         slug,
         name,
@@ -190,5 +190,6 @@ export async function getFollowStatus(userId, currentUserId) {
     followsYou: !!followsYouRes.data,
   }
 }
+
 
 
