@@ -3,6 +3,7 @@ import { supabase } from "#lib/supabase-ssr.js"
 export async function handleCollections(req, res) {
   const { slug } = req.query
   const now = new Date().toISOString()
+  const nowDate = new Date(now)
 
   let query = supabase
     .from("store_collections")
@@ -38,7 +39,7 @@ export async function handleCollections(req, res) {
     return res.status(404).json({ error: "collection_not_found" })
   }
 
-  const collectionIds = collections.map((c) => c.id)
+  const collectionIds = collections.map(c => c.id)
 
   if (collectionIds.length === 0) {
     return res.json({ collections: [] })
@@ -69,7 +70,16 @@ export async function handleCollections(req, res) {
         max_stock,
         available_from,
         available_until,
-        metadata
+        metadata,
+        artists:shop_item_artists(
+          is_primary,
+          artist:shop_artists(
+            id,
+            name,
+            avatar_url,
+            url
+          )
+        )
       )
     `)
     .in("collection_id", collectionIds)
@@ -81,25 +91,32 @@ export async function handleCollections(req, res) {
   }
 
   const itemsByCollection = {}
+
   for (const ci of collectionItems || []) {
     if (!ci.item) continue
 
     const item = ci.item
     const itemAvailableFrom = item.available_from ? new Date(item.available_from) : null
     const itemAvailableUntil = item.available_until ? new Date(item.available_until) : null
-    const nowDate = new Date(now)
 
     if (itemAvailableFrom && itemAvailableFrom > nowDate) continue
-
     if (itemAvailableUntil && itemAvailableUntil < nowDate) continue
+
+    const normalizedItem = {
+      ...item,
+      artists: (item.artists || [])
+        .filter(entry => entry?.artist)
+        .sort((a, b) => Number(b.is_primary) - Number(a.is_primary)),
+    }
 
     if (!itemsByCollection[ci.collection_id]) {
       itemsByCollection[ci.collection_id] = []
     }
-    itemsByCollection[ci.collection_id].push(item)
+
+    itemsByCollection[ci.collection_id].push(normalizedItem)
   }
 
-  const result = collections.map((c) => ({
+  const result = collections.map(c => ({
     ...c,
     items: itemsByCollection[c.id] || [],
   }))

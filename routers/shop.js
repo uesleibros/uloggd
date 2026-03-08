@@ -1,6 +1,7 @@
 import { handleCategories } from "#services/shop/handlers/categories.js"
 import { handleItems } from "#services/shop/handlers/items.js"
 import { handleItem } from "#services/shop/handlers/item.js"
+import { handleArtists } from "#services/shop/handlers/artists.js"
 import { handleCollections } from "#services/shop/handlers/collections.js"
 import { handleInventory } from "#services/shop/handlers/inventory.js"
 import { handleEquipped } from "#services/shop/handlers/equipped.js"
@@ -14,6 +15,7 @@ const ACTIONS = {
   categories:  { handler: handleCategories, method: "GET",  auth: false },
   items:       { handler: handleItems,      method: "GET",  auth: false },
   item:        { handler: handleItem,       method: "GET",  auth: false },
+  artists:     { handler: handleArtists,    method: "GET",  auth: false },
   collections: { handler: handleCollections, method: "GET", auth: false },
   inventory:   { handler: handleInventory,  method: "GET",  scopes: ["@me"], auth: true },
   equipped:    { handler: handleEquipped,   method: "GET",  auth: false },

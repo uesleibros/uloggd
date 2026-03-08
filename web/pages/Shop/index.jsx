@@ -11,29 +11,6 @@ import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 
 const ITEMS_PREVIEW_COUNT = 6
 
-const artists = [
-  {
-    name: "Jelly",
-    avatar: "https://cdn.jellys-space.vip/artists/jelly-avatar.png",
-    url: "https://discord.com/users/1147940825330876538",
-  },
-  {
-    name: "Seele",
-    avatar: "https://cdn.jellys-space.vip/artists/seele-avatar.png",
-    url: "https://discord.com/users/334062444718587905",
-  },
-  {
-    name: "Little Glimbo",
-    avatar: null,
-    url: null
-  },
-  {
-    name: "KURAMA",
-    avatar: null,
-    url: null
-  }
-]
-
 async function getAuthHeaders() {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return null
@@ -43,12 +20,15 @@ async function getAuthHeaders() {
   }
 }
 
-function ArtistsCarousel() {
+function ArtistsCarousel({ artists }) {
   const { t } = useTranslation("shop")
   const fallbackAvatar = "https://cdn.discordapp.com/embed/avatars/0.png"
-  const items = artists.length > 0 ? [...artists, ...artists] : []
 
-  if (items.length === 0) return null
+  if (!artists || artists.length === 0) return null
+
+  const duplicated = artists.length < 6
+    ? [...artists, ...artists, ...artists, ...artists]
+    : [...artists, ...artists]
 
   return (
     <>
@@ -71,13 +51,15 @@ function ArtistsCarousel() {
 
           <div
             className="flex w-max gap-3 px-3 py-3"
-            style={{ animation: "artistsMarquee 28s linear infinite" }}
+            style={{ animation: `artistsMarquee ${Math.max(artists.length * 4, 18)}s linear infinite` }}
+            onMouseEnter={e => { e.currentTarget.style.animationPlayState = "paused" }}
+            onMouseLeave={e => { e.currentTarget.style.animationPlayState = "running" }}
           >
-            {items.map((artist, index) => {
+            {duplicated.map((artist, index) => {
               const content = (
                 <div className="flex items-center gap-3 rounded-xl border border-zinc-800/60 bg-zinc-800/40 px-3 py-2 min-w-[180px] hover:bg-zinc-800/70 transition-colors">
                   <img
-                    src={artist.avatar || fallbackAvatar}
+                    src={artist.avatar_url || fallbackAvatar}
                     alt={artist.name}
                     className="w-9 h-9 rounded-full object-cover select-none"
                     draggable={false}
@@ -85,7 +67,7 @@ function ArtistsCarousel() {
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-zinc-200 truncate">{artist.name}</p>
                     <p className="text-[11px] text-zinc-500 truncate">
-                      {artist.label || t("artists.defaultLabel")}
+                      {t("artists.defaultLabel")}
                     </p>
                   </div>
                 </div>
@@ -93,7 +75,7 @@ function ArtistsCarousel() {
 
               return artist.url ? (
                 <a
-                  key={`${artist.name}-${index}`}
+                  key={`${artist.id}-${index}`}
                   href={artist.url}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -103,7 +85,7 @@ function ArtistsCarousel() {
                   {content}
                 </a>
               ) : (
-                <div key={`${artist.name}-${index}`}>{content}</div>
+                <div key={`${artist.id}-${index}`}>{content}</div>
               )
             })}
           </div>
@@ -124,12 +106,8 @@ function ArtistCredits() {
             <Heart className="w-4 h-4 text-pink-400" />
           </div>
           <div>
-            <p className="text-sm text-zinc-300">
-              {t("credits.message")}
-            </p>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              {t("credits.submessage")}
-            </p>
+            <p className="text-sm text-zinc-300">{t("credits.message")}</p>
+            <p className="text-xs text-zinc-500 mt-0.5">{t("credits.submessage")}</p>
           </div>
         </div>
         <a
@@ -526,6 +504,7 @@ function ItemDetailModal({ item, owned, equipped, onClose, onPurchase, onEquip, 
   const isSoldOut = item.is_limited && item.current_stock === 0
   const hasPrice = MINERALS.some(m => (item[`price_${m.key}`] || 0) > 0)
   const isAvatarDecoration = item.item_type === "avatar_decoration"
+  const artists = (item.artists || []).filter(entry => entry?.artist)
 
   return (
     <Modal
@@ -578,6 +557,47 @@ function ItemDetailModal({ item, owned, equipped, onClose, onPurchase, onEquip, 
 
           {item.description && (
             <p className="text-sm text-zinc-500 leading-relaxed mb-4">{item.description}</p>
+          )}
+
+          {artists.length > 0 && (
+            <div className="mb-4">
+              <span className="text-[10px] uppercase tracking-wider text-zinc-600 font-medium mb-2 block">
+                {t("artists.itemCredits")}
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {artists.map(({ artist, is_primary }) => {
+                  const content = (
+                    <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-800/40 hover:bg-zinc-800/60 transition-colors">
+                      <img
+                        src={artist.avatar_url || "https://cdn.discordapp.com/embed/avatars/0.png"}
+                        alt={artist.name}
+                        className="w-5 h-5 rounded-full object-cover select-none"
+                        draggable={false}
+                      />
+                      <span className="text-xs text-zinc-300">{artist.name}</span>
+                      {is_primary && (
+                        <span className="text-[9px] uppercase tracking-wider text-zinc-500">
+                          {t("artists.primary")}
+                        </span>
+                      )}
+                    </div>
+                  )
+
+                  return artist.url ? (
+                    <a
+                      key={artist.id}
+                      href={artist.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {content}
+                    </a>
+                  ) : (
+                    <div key={artist.id}>{content}</div>
+                  )
+                })}
+              </div>
+            </div>
           )}
 
           {item.is_limited && item.max_stock != null && !owned && (
@@ -698,6 +718,7 @@ export default function ShopPage() {
   const { t } = useTranslation("shop")
 
   const [collections, setCollections] = useState([])
+  const [artists, setArtists] = useState([])
   const [inventory, setInventory] = useState([])
 
   const [loading, setLoading] = useState(true)
@@ -730,14 +751,22 @@ export default function ShopPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/shop/collections")
-        const data = await res.json()
-        setCollections(data?.collections || [])
+        const [collectionsRes, artistsRes] = await Promise.all([
+          fetch("/api/shop/collections"),
+          fetch("/api/shop/artists"),
+        ])
+
+        const collectionsData = await collectionsRes.json()
+        const artistsData = await artistsRes.json()
+
+        setCollections(collectionsData?.collections || [])
+        setArtists(artistsData?.artists || [])
       } catch (e) {
-        console.error("Failed to load collections:", e)
+        console.error("Failed to load shop data:", e)
       }
       setLoading(false)
     }
+
     load()
   }, [])
 
@@ -762,6 +791,7 @@ export default function ShopPage() {
       console.error("Failed to fetch collection items:", e)
       setActiveCollectionItems(collection.items || [])
     }
+
     setCollectionLoading(false)
   }
 
@@ -874,7 +904,7 @@ export default function ShopPage() {
       </div>
 
       {!activeCollection && <ArtistCredits />}
-      {!activeCollection && <ArtistsCarousel />}
+      {!activeCollection && <ArtistsCarousel artists={artists} />}
 
       {activeCollection ? (
         collectionLoading ? (
@@ -942,5 +972,3 @@ export default function ShopPage() {
     </div>
   )
 }
-
-

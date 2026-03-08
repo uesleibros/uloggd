@@ -120,12 +120,14 @@ export default {
 		  submessage: "Consider supporting the original creators.",
 		  donate: "Support artists",
 		},
-		artists: {
-		  title: "Partner artists",
-		  subtitle: "This shop exists thanks to permission from the Decors artists.",
-		  visit: "Visit page",
-		  defaultLabel: "Artist",
-		},
+    artists: {
+      title: "Partner artists",
+      subtitle: "This shop exists thanks to permission from the Decors artists.",
+      defaultLabel: "Artist",
+      visit: "Visit page",
+      itemCredits: "Credits",
+      primary: "primary",
+    },
   },
   minerals: {
     meta: {
