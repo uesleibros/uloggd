@@ -128,7 +128,7 @@ function TransactionItem({ transaction }) {
         {transaction.description && (
           <p className="text-xs text-zinc-500 mb-2">
             {t(`transactions.descriptions.${transaction.description}`) || transaction.description}
-            {transaction.details && (<span className="ml-2">{transaction.details}</span>)}
+            {transaction.details && (<span className="ml-1">{transaction.details}</span>)}
           </p>
         )}
 
