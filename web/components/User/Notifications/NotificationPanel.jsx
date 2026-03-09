@@ -31,7 +31,8 @@ const NOTIFICATION_LINKS = {
   review_like: (data) => `/game/${data.game_slug}`,
 }
 
-const SYSTEM_NOTIFICATIONS = ["verification_approved", "verification_rejected", "account_banned", "account_unbanned", "gift_received"]
+const MODAL_NOTIFICATIONS = ["verification_approved", "verification_rejected", "account_banned", "account_unbanned", "gift_received"]
+const ICON_ONLY_NOTIFICATIONS = ["verification_approved", "verification_rejected", "account_banned", "account_unbanned"]
 
 function getNotificationText(type, data, t) {
   switch (type) {
@@ -152,12 +153,13 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
   const text = getNotificationText(notification.type, notification.data, t)
   const actorId = NOTIFICATION_USER_ID_MAP[notification.type]?.(notification.data)
   const actorUser = actorId ? users[actorId] : null
-  const isSystem = SYSTEM_NOTIFICATIONS.includes(notification.type)
+  const opensModal = MODAL_NOTIFICATIONS.includes(notification.type)
+  const showIconOnly = ICON_ONLY_NOTIFICATIONS.includes(notification.type)
 
   function handleClick(e) {
     onAction("read", notification.id)
 
-    if (isSystem) {
+    if (opensModal) {
       e.preventDefault()
       onSystemClick(notification)
     } else {
@@ -167,7 +169,7 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
 
   const content = (
     <>
-      {isSystem ? (
+      {showIconOnly ? (
         <div className={`w-9 h-9 rounded-full ${config.bg} flex items-center justify-center flex-shrink-0`}>
           <Icon className={`w-5 h-5 ${config.color}`} />
         </div>
@@ -180,7 +182,7 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
       )}
       <div className="flex-1 min-w-0">
         <p className={`text-sm leading-snug ${!notification.read ? "text-zinc-200" : "text-zinc-400"}`}>
-          {!isSystem && <span className="font-semibold text-white">{actorUser?.username || t("notifications.someone")}</span>} {text}
+          {!showIconOnly && <span className="font-semibold text-white">{actorUser?.username || t("notifications.someone")}</span>} {text}
         </p>
         <div className="flex items-center gap-1.5 mt-1">
           <Icon className={`w-3 h-3 ${config.color}`} />
@@ -193,7 +195,7 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
     </>
   )
 
-  if (isSystem) {
+  if (opensModal) {
     return (
       <button
         onClick={handleClick}
