@@ -814,6 +814,10 @@ export default {
       title: "Verified",
       description: "Confirmed identity as a content creator, personality, or public figure."
     },
+		designer: {
+			title: "Designer",
+			description: "Member of the design team, responsible for creating icons and visual elements."
+		},
     meta: {
       title: "Badges - uloggd",
       description: "Discover all available badges on uloggd and what each one represents.",
