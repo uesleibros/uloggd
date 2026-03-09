@@ -99,6 +99,21 @@ export default {
       remaining: "restantes",
       availableUntil: "Disponível até",
     },
+		purchase: {
+      errors: {
+        missingItemId: "Item não especificado.",
+        itemNotFound: "Item não encontrado ou indisponível.",
+        itemNotYetAvailable: "Este item ainda não está disponível.",
+        itemExpired: "Este item não está mais disponível.",
+        outOfStock: "Item esgotado.",
+        alreadyOwned: "Você já possui este item.",
+        noMinerals: "Você não possui minerais suficientes.",
+        insufficientMinerals: "Minerais insuficientes para esta compra.",
+        updateFailed: "Erro ao processar pagamento.",
+        inventoryFailed: "Erro ao adicionar item ao inventário.",
+        failed: "Falha ao realizar compra.",
+      },
+    },
 	  gift: {
 	    buttonTitle: "Presentear um amigo",
 	    selectRecipient: "Escolher destinatário",
@@ -1944,6 +1959,7 @@ export default {
     },
   },
 }
+
 
 
 
