@@ -155,13 +155,21 @@ function ProfilePreview({ user, equippedDecoration, itemCount, equippedCount }) 
   )
 }
 
-function buildEquippedMap(items) {
+function buildEquippedFromInventory(items) {
   const equipped = {}
+
   for (const entry of items) {
-    if (entry.equipped_slot) {
-      equipped[entry.equipped_slot] = entry.asset_url || null
+    if (!entry.equipped_slot) continue
+
+    equipped[entry.equipped_slot] = {
+      id: entry.item_id,
+      slug: entry.slug,
+      name: entry.name,
+      asset_url: entry.asset_url,
+      item_type: entry.item_type,
     }
   }
+
   return equipped
 }
 
@@ -173,16 +181,8 @@ export default function InventoryModal({ isOpen, onClose }) {
   const [actionId, setActionId] = useState(null)
   const hasFetched = useRef(false)
 
-  const syncUserCosmetics = useCallback((items) => {
-    const equipped = buildEquippedMap(items)
-    updateUser({
-      avatar_decoration: equipped.avatar_decoration || null,
-      profile_effect: equipped.profile_effect || null,
-      banner: equipped.banner || null,
-      badge: equipped.badge || null,
-      name_color: equipped.name_color || null,
-      theme: equipped.theme || null,
-    })
+  const syncEquipped = useCallback((items) => {
+    updateUser({ equipped: buildEquippedFromInventory(items) })
   }, [updateUser])
 
   const fetchInventory = useCallback(async () => {
@@ -196,13 +196,13 @@ export default function InventoryModal({ isOpen, onClose }) {
       const data = await res.json()
       const items = data.items || []
       setInventory(items)
-      syncUserCosmetics(items)
+      syncEquipped(items)
     } catch {
       notify(t("errors.loadFailed"), "error")
     }
 
     setLoading(false)
-  }, [t, syncUserCosmetics])
+  }, [t, syncEquipped])
 
   useEffect(() => {
     if (!isOpen || !user) {
@@ -288,7 +288,7 @@ export default function InventoryModal({ isOpen, onClose }) {
       }))
 
       setInventory(updatedItems)
-      syncUserCosmetics(updatedItems)
+      syncEquipped(updatedItems)
 
       notify(t("success.equipped"), "success")
     } catch {
@@ -329,7 +329,7 @@ export default function InventoryModal({ isOpen, onClose }) {
       }))
 
       setInventory(updatedItems)
-      syncUserCosmetics(updatedItems)
+      syncEquipped(updatedItems)
 
       notify(t("success.unequipped"), "success")
     } catch {
