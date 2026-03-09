@@ -1003,7 +1003,12 @@ export default {
         title: "Account restored",
         message: "Your account has been restored. Welcome back!",
       },
+			gift_received: {
+				title: "You received a gift!",
+				message: "You received {{item}}! The item is now available in your inventory.",
+			},
     },
+		sentBy: "Sent by {{username}}",
     reviewedBy: "Reviewed by {{username}}",
     someone: "Someone",
   },
