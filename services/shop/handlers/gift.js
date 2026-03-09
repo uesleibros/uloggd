@@ -1,4 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
+import { createNotification } from "#services/notifications/create.js"
 import { MINERALS } from "../constants.js"
 
 export async function handleGift(req, res) {
@@ -137,8 +138,8 @@ export async function handleGift(req, res) {
       .eq("id", itemId)
   }
 
-  await supabase.from("notifications").insert({
-    user_id: recipientId,
+  await createNotification({
+    userId: recipientId,
     type: "gift_received",
     data: {
       from_user_id: userId,
