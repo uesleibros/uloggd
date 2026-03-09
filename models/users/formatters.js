@@ -70,7 +70,8 @@ export function formatListProfile(profile, { stream = null } = {}) {
   const equipped = profile.equipped
 
   return {
-    id: profile.user_id,
+    id: profile.id,
+    user_id: profile.user_id,
     username: profile.username,
     avatar: profile.avatar || DEFAULT_AVATAR_URL,
     is_moderator: profile.is_moderator,
