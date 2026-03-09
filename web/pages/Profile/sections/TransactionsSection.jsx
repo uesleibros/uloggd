@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { Receipt, Package, MessageSquare, Heart, Trophy, TrendingDown, Loader2 } from "lucide-react"
+import { Receipt, Package, MessageSquare, Heart, Trophy, TrendingDown, Gift, Loader2 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
 import Pagination from "@components/UI/Pagination"
@@ -12,6 +12,7 @@ const TRANSACTION_ICONS = {
   like_reward: { icon: Heart, color: "text-pink-400", bg: "bg-pink-500/10" },
   event_reward: { icon: Trophy, color: "text-purple-400", bg: "bg-purple-500/10" },
   shop_purchase: { icon: TrendingDown, color: "text-red-400", bg: "bg-red-500/10" },
+  shop_gift: { icon: Gift, color: "text-violet-400", bg: "bg-violet-500/10" },
 }
 
 const MINERALS_CONFIG = [
@@ -211,3 +212,4 @@ export default function TransactionsSection({ userId }) {
     </div>
   )
 }
+
