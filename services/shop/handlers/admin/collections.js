@@ -56,8 +56,6 @@ export async function handleAdminCollections(req, res) {
       }
     }
 
-    cleanUpdates.updated_at = new Date().toISOString()
-
     const { data, error } = await supabase
       .from("store_collections")
       .update(cleanUpdates)

@@ -76,7 +76,7 @@ export async function handleAdminItems(req, res) {
   }
 
   if (req.method === "PUT") {
-    const { id, artist_ids, ...updates } = req.body
+    const { id, artist_ids, artists, category, ...updates } = req.body
     if (!id) return res.status(400).json({ error: "id_required" })
 
     const cleanUpdates = {}

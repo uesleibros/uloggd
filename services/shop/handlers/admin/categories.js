@@ -50,8 +50,6 @@ export async function handleAdminCategories(req, res) {
       }
     }
 
-    cleanUpdates.updated_at = new Date().toISOString()
-
     const { data, error } = await supabase
       .from("store_categories")
       .update(cleanUpdates)
