@@ -3,19 +3,11 @@ import { X } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 import FlyingMinerals from "./FlyingMinerals"
-
-const MINERALS_CONFIG = [
-  { key: "copper", color: "#B87333" },
-  { key: "iron", color: "#A8A8A8" },
-  { key: "gold", color: "#FFD700" },
-  { key: "emerald", color: "#50C878" },
-  { key: "diamond", color: "#B9F2FF" },
-  { key: "ruby", color: "#E0115F" },
-]
+import { MINERALS } from "./MineralRow"
 
 function RewardCard({ mineralKey, amount, index }) {
   const { t } = useTranslation("minerals")
-  const mineral = MINERALS_CONFIG.find((m) => m.key === mineralKey)
+  const mineral = MINERALS.find((m) => m.key === mineralKey)
   const [revealed, setRevealed] = useState(false)
 
   useEffect(() => {
@@ -42,31 +34,20 @@ function RewardCard({ mineralKey, amount, index }) {
         style={{ animationDelay: `${index * 150}ms` }}
       >
         {revealed && (
-          <div
-            className="absolute -inset-1 rounded-xl opacity-60 blur-md animate-pulse"
-            style={{ backgroundColor: mineral.color }}
-          />
+          <div className="absolute -inset-1 rounded-xl opacity-40 blur-md animate-pulse bg-amber-400" />
         )}
 
-        <div
-          className="relative w-full h-full rounded-xl p-3 flex flex-col items-center justify-between"
-          style={{
-            background: `linear-gradient(145deg, ${mineral.color}30, ${mineral.color}10)`,
-            border: `2px solid ${mineral.color}60`,
-          }}
-        >
+        <div className="relative w-full h-full rounded-xl p-3 flex flex-col items-center justify-between bg-zinc-800/80 border-2 border-zinc-700/80">
           <div className="flex-1 flex items-center justify-center">
-            <div
-              className="w-12 h-12 rounded-lg shadow-lg"
-              style={{
-                backgroundColor: mineral.color,
-                boxShadow: `0 4px 20px ${mineral.color}50`,
-              }}
+            <img
+              src={mineral.image}
+              alt={t(`items.${mineral.key}.name`)}
+              className="w-12 h-12 object-contain drop-shadow-lg"
             />
           </div>
 
           <div className="text-center">
-            <div className="text-2xl font-bold" style={{ color: mineral.color }}>
+            <div className="text-2xl font-bold text-amber-400">
               +{amount}
             </div>
             <div className="text-xs text-zinc-400 font-medium truncate max-w-full">
@@ -77,13 +58,10 @@ function RewardCard({ mineralKey, amount, index }) {
 
         {revealed && (
           <>
+            <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full animate-ping bg-amber-400" />
             <div
-              className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full animate-ping"
-              style={{ backgroundColor: mineral.color }}
-            />
-            <div
-              className="absolute bottom-2 left-2 w-1 h-1 rounded-full animate-ping"
-              style={{ backgroundColor: mineral.color, animationDelay: "150ms" }}
+              className="absolute bottom-2 left-2 w-1 h-1 rounded-full animate-ping bg-amber-400"
+              style={{ animationDelay: "150ms" }}
             />
           </>
         )}
