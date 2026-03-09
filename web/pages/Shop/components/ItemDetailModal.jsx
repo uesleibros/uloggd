@@ -1,18 +1,40 @@
-import { Loader2, Check } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Loader2, Check, Gift, ShoppingBag } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 import PriceDisplay from "./PriceDisplay"
 import AvatarDecorationPreview from "./AvatarDecorationPreview"
+import GiftRecipientSelect from "./GiftRecipientSelect"
 import { MINERALS } from "@components/Minerals/MineralRow"
 
-export default function ItemDetailModal({ item, owned, equipped, onClose, onPurchase, onEquip, purchasing, equipping, user }) {
+export default function ItemDetailModal({
+  item,
+  owned,
+  equipped,
+  onClose,
+  onPurchase,
+  onEquip,
+  purchasing,
+  equipping,
+  user,
+}) {
   const { t } = useTranslation("shop")
+  const [purchaseMode, setPurchaseMode] = useState("self")
+  const [recipient, setRecipient] = useState(null)
+
+  useEffect(() => {
+    if (!item) return
+    setPurchaseMode("self")
+    setRecipient(null)
+  }, [item])
+
   if (!item) return null
 
   const isSoldOut = item.is_limited && item.current_stock === 0
   const hasPrice = MINERALS.some(m => (item[`price_${m.key}`] || 0) > 0)
   const isAvatarDecoration = item.item_type === "avatar_decoration"
   const artists = (item.artists || []).filter(entry => entry?.artist)
+  const canGift = !!user && !owned
 
   return (
     <Modal
@@ -123,11 +145,49 @@ export default function ItemDetailModal({ item, owned, equipped, onClose, onPurc
           )}
 
           {!owned && hasPrice && (
-            <div className="p-3.5 rounded-lg bg-zinc-800/50 mb-5">
+            <div className="p-3.5 rounded-lg bg-zinc-800/50 mb-4">
               <span className="text-[10px] uppercase tracking-wider text-zinc-600 font-medium mb-2 block">
                 {t("detail.price")}
               </span>
               <PriceDisplay item={item} size="lg" />
+            </div>
+          )}
+
+          {!owned && user && !isSoldOut && (
+            <div className="mb-4">
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <button
+                  onClick={() => setPurchaseMode("self")}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-2 ${
+                    purchaseMode === "self"
+                      ? "bg-violet-600 text-white"
+                      : "bg-zinc-800 text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  <ShoppingBag className="w-4 h-4" />
+                  {t("detail.buyForYourself")}
+                </button>
+
+                <button
+                  onClick={() => setPurchaseMode("gift")}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-2 ${
+                    purchaseMode === "gift"
+                      ? "bg-violet-600 text-white"
+                      : "bg-zinc-800 text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  <Gift className="w-4 h-4" />
+                  {t("detail.gift")}
+                </button>
+              </div>
+
+              {purchaseMode === "gift" && (
+                <GiftRecipientSelect
+                  userId={user.user_id}
+                  recipient={recipient}
+                  onChange={setRecipient}
+                />
+              )}
             </div>
           )}
 
@@ -164,12 +224,20 @@ export default function ItemDetailModal({ item, owned, equipped, onClose, onPurc
               </div>
             ) : user ? (
               <button
-                onClick={() => onPurchase(item)}
-                disabled={purchasing}
+                onClick={() =>
+                  onPurchase({
+                    item,
+                    type: purchaseMode,
+                    recipient,
+                  })
+                }
+                disabled={purchasing || (purchaseMode === "gift" && !recipient)}
                 className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-800 disabled:text-zinc-600 rounded-lg transition-all cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
               >
                 {purchasing ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : purchaseMode === "gift" ? (
+                  t("detail.sendGift")
                 ) : (
                   t("detail.purchase")
                 )}
