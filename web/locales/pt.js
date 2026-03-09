@@ -99,6 +99,33 @@ export default {
       remaining: "restantes",
       availableUntil: "Disponível até",
     },
+	  gift: {
+	    buttonTitle: "Presentear um amigo",
+	    selectRecipient: "Escolher destinatário",
+	    searchPlaceholder: "Buscar por nome de usuário...",
+	    noResults: "Nenhum usuário encontrado",
+	    noFollowing: "Você não segue ninguém ainda",
+	    confirmTitle: "Confirmar presente",
+	    sendingTo: "Enviando para",
+	    disclaimer: "O valor será cobrado dos seus minerais. O destinatário receberá o item e uma notificação. Esta ação não pode ser desfeita.",
+	    confirm: "Enviar presente",
+	    success: {
+	      title: "Presente enviado!",
+	      description: "{{item}} foi enviado para {{recipient}} com sucesso.",
+	    },
+	    errors: {
+	      failed: "Falha ao enviar presente",
+	      cannotGiftYourself: "Você não pode presentear a si mesmo",
+	      recipientNotFound: "Destinatário não encontrado",
+	      itemNotFound: "Item não encontrado",
+	      recipientAlreadyOwns: "O destinatário já possui este item",
+	      insufficientMinerals: "Minerais insuficientes",
+	      noMinerals: "Você não possui minerais",
+	      outOfStock: "Item esgotado",
+	      itemExpired: "Este item não está mais disponível",
+	      itemNotYetAvailable: "Este item ainda não está disponível",
+	    },
+	  },
     success: {
       title: "Compra realizada!",
       description: "foi adicionado ao seu inventário.",
@@ -1917,6 +1944,7 @@ export default {
     },
   },
 }
+
 
 
 
