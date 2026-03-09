@@ -5,15 +5,19 @@ import { useTranslation } from "#hooks/useTranslation"
 import { useAuth } from "#hooks/useAuth"
 import Modal from "@components/UI/Modal"
 import DailyChest from "@components/Minerals/DailyChest"
+import { MINERALS } from "@components/Minerals/MineralRow"
 
-const MINERALS_DATA = [
-  { key: "copper", color: "#B87333", rarity: "common", dropRate: 100 },
-  { key: "iron", color: "#A8A8A8", rarity: "uncommon", dropRate: 60 },
-  { key: "gold", color: "#FFD700", rarity: "rare", dropRate: 25 },
-  { key: "emerald", color: "#50C878", rarity: "epic", dropRate: 8 },
-  { key: "diamond", color: "#B9F2FF", rarity: "legendary", dropRate: 2 },
-  { key: "ruby", color: "#E0115F", rarity: "mythic", dropRate: 0.5 },
-]
+const MINERALS_DATA = MINERALS.map((mineral) => ({
+  ...mineral,
+  ...{
+    copper: { rarity: "common", dropRate: 100 },
+    iron: { rarity: "uncommon", dropRate: 60 },
+    gold: { rarity: "rare", dropRate: 25 },
+    emerald: { rarity: "epic", dropRate: 8 },
+    diamond: { rarity: "legendary", dropRate: 2 },
+    ruby: { rarity: "mythic", dropRate: 0.5 },
+  }[mineral.key],
+}))
 
 const HOW_TO_OBTAIN = [
   { key: "dailyChest", icon: Gift, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30" },
@@ -40,11 +44,8 @@ function MineralCard({ mineral, onClick }) {
       onClick={() => onClick(mineral)}
       className="group w-full flex items-center gap-4 p-4 rounded-xl bg-zinc-800/20 hover:bg-zinc-800/40 border border-transparent hover:border-zinc-700/50 transition-all cursor-pointer text-left"
     >
-      <div
-        className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform"
-        style={{ background: `${mineral.color}15`, border: `1px solid ${mineral.color}40` }}
-      >
-        <span className="inline-block w-5 h-5 rounded-sm" style={{ backgroundColor: mineral.color }} />
+      <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform bg-zinc-800/50 border border-zinc-700/50">
+        <img src={mineral.image} alt={t(`items.${mineral.key}.name`)} className="w-6 h-6 object-contain" />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -83,11 +84,8 @@ function MineralModal({ mineral, isOpen, onClose }) {
     >
       <div className="overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800">
         <div className="flex flex-col items-center text-center px-6 pt-8 pb-6">
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-            style={{ background: `${mineral.color}20`, border: `2px solid ${mineral.color}50` }}
-          >
-            <span className="inline-block w-8 h-8 rounded-md" style={{ backgroundColor: mineral.color }} />
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 bg-zinc-800/50 border border-zinc-700/50">
+            <img src={mineral.image} alt={t(`items.${mineral.key}.name`)} className="w-10 h-10 object-contain" />
           </div>
 
           <h3 className="text-xl font-semibold text-white mb-1">
@@ -105,7 +103,7 @@ function MineralModal({ mineral, isOpen, onClose }) {
           <div className="w-full mt-6 p-4 rounded-xl bg-zinc-800/50 border border-zinc-700/50">
             <div className="flex items-center justify-between text-sm">
               <span className="text-zinc-500">{t("modal.dropRate")}</span>
-              <span className="font-medium" style={{ color: mineral.color }}>
+              <span className="font-medium text-zinc-100">
                 {mineral.dropRate}%
               </span>
             </div>
