@@ -16,14 +16,12 @@ export default function PriceDisplay({ item, size = "md" }) {
       {prices.map((p, i) => (
         <div key={p.key} className="flex items-center gap-1">
           {i > 0 && <span className="text-zinc-600 text-xs mr-0.5">+</span>}
-          <span
-            className={`inline-block rounded-sm flex-shrink-0 ${isLg ? "w-3 h-3" : "w-2 h-2"}`}
-            style={{ backgroundColor: p.color }}
+          <img
+            src={p.image}
+            alt={p.key}
+            className={`object-contain flex-shrink-0 ${isLg ? "w-4 h-4" : "w-3 h-3"}`}
           />
-          <span
-            className={`font-semibold tabular-nums ${isLg ? "text-sm" : "text-xs"}`}
-            style={{ color: p.color }}
-          >
+          <span className={`font-semibold tabular-nums text-zinc-100 ${isLg ? "text-sm" : "text-xs"}`}>
             {p.amount.toLocaleString()}
           </span>
         </div>
