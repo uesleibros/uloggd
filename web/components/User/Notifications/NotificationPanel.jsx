@@ -267,7 +267,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
 
           const uRes = await fetch(`/api/users/batch?${params}`)
           const uData = await uRes.json()
-          uData.forEach(u => { usersMap[u.id] = u })
+          uData.forEach(u => { usersMap[u.user_id] = u })
         }
 
         setNotifications(data || [])
