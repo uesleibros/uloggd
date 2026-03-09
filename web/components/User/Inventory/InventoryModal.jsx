@@ -155,13 +155,35 @@ function ProfilePreview({ user, equippedDecoration, itemCount, equippedCount }) 
   )
 }
 
+function buildEquippedMap(items) {
+  const equipped = {}
+  for (const entry of items) {
+    if (entry.equipped_slot) {
+      equipped[entry.equipped_slot] = entry.asset_url || null
+    }
+  }
+  return equipped
+}
+
 export default function InventoryModal({ isOpen, onClose }) {
   const { t } = useTranslation("inventory")
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(false)
   const [actionId, setActionId] = useState(null)
   const hasFetched = useRef(false)
+
+  const syncUserCosmetics = useCallback((items) => {
+    const equipped = buildEquippedMap(items)
+    updateUser({
+      avatar_decoration: equipped.avatar_decoration || null,
+      profile_effect: equipped.profile_effect || null,
+      banner: equipped.banner || null,
+      badge: equipped.badge || null,
+      name_color: equipped.name_color || null,
+      theme: equipped.theme || null,
+    })
+  }, [updateUser])
 
   const fetchInventory = useCallback(async () => {
     const headers = await getAuthHeaders()
@@ -172,13 +194,15 @@ export default function InventoryModal({ isOpen, onClose }) {
     try {
       const res = await fetch("/api/shop/@me/inventory", { headers })
       const data = await res.json()
-      setInventory(data.items || [])
+      const items = data.items || []
+      setInventory(items)
+      syncUserCosmetics(items)
     } catch {
       notify(t("errors.loadFailed"), "error")
     }
 
     setLoading(false)
-  }, [t])
+  }, [t, syncUserCosmetics])
 
   useEffect(() => {
     if (!isOpen || !user) {
@@ -253,17 +277,18 @@ export default function InventoryModal({ isOpen, onClose }) {
         return
       }
 
-      setInventory(prev =>
-        prev.map(entry => ({
-          ...entry,
-          equipped_slot:
-            entry.item_type === slot
-              ? entry.inventory_id === inventoryId
-                ? slot
-                : null
-              : entry.equipped_slot,
-        }))
-      )
+      const updatedItems = inventory.map(entry => ({
+        ...entry,
+        equipped_slot:
+          entry.item_type === slot
+            ? entry.inventory_id === inventoryId
+              ? slot
+              : null
+            : entry.equipped_slot,
+      }))
+
+      setInventory(updatedItems)
+      syncUserCosmetics(updatedItems)
 
       notify(t("success.equipped"), "success")
     } catch {
@@ -297,13 +322,14 @@ export default function InventoryModal({ isOpen, onClose }) {
         return
       }
 
-      setInventory(prev =>
-        prev.map(entry => ({
-          ...entry,
-          equipped_slot:
-            entry.equipped_slot === slot ? null : entry.equipped_slot,
-        }))
-      )
+      const updatedItems = inventory.map(entry => ({
+        ...entry,
+        equipped_slot:
+          entry.equipped_slot === slot ? null : entry.equipped_slot,
+      }))
+
+      setInventory(updatedItems)
+      syncUserCosmetics(updatedItems)
 
       notify(t("success.unequipped"), "success")
     } catch {
