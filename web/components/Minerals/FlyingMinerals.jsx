@@ -1,16 +1,8 @@
 import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
+import { MINERALS } from "./MineralRow"
 
-const MINERALS_CONFIG = [
-  { key: "copper", color: "#B87333" },
-  { key: "iron", color: "#A8A8A8" },
-  { key: "gold", color: "#FFD700" },
-  { key: "emerald", color: "#50C878" },
-  { key: "diamond", color: "#B9F2FF" },
-  { key: "ruby", color: "#E0115F" },
-]
-
-function FlyingMineral({ color, startX, startY, endX, endY, delay, onComplete }) {
+function FlyingMineral({ image, startX, startY, endX, endY, delay, onComplete }) {
   const [style, setStyle] = useState({
     left: startX,
     top: startY,
@@ -50,16 +42,11 @@ function FlyingMineral({ color, startX, startY, endX, endY, delay, onComplete })
       }}
     >
       <div className="relative">
-        <div
-          className="absolute inset-0 rounded-full blur-md opacity-60 animate-pulse"
-          style={{ backgroundColor: color }}
-        />
-        <div
-          className="relative w-4 h-4 rounded-sm shadow-lg"
-          style={{
-            backgroundColor: color,
-            boxShadow: `0 0 10px ${color}80`,
-          }}
+        <div className="absolute inset-0 rounded-full blur-md opacity-60 animate-pulse bg-amber-400" />
+        <img
+          src={image}
+          alt=""
+          className="relative w-5 h-5 object-contain drop-shadow-lg"
         />
       </div>
     </div>
@@ -92,7 +79,7 @@ export default function FlyingMinerals({ rewards, originRef, destinationId, onCo
     for (const [key, amount] of Object.entries(rewards)) {
       if (amount <= 0) continue
 
-      const config = MINERALS_CONFIG.find((m) => m.key === key)
+      const config = MINERALS.find((m) => m.key === key)
       if (!config) continue
 
       const count = Math.min(amount, 5)
@@ -100,7 +87,7 @@ export default function FlyingMinerals({ rewards, originRef, destinationId, onCo
       for (let i = 0; i < count; i++) {
         mineralList.push({
           id: `${key}-${i}`,
-          color: config.color,
+          image: config.image,
           startX: startX + (Math.random() - 0.5) * 40,
           startY: startY + (Math.random() - 0.5) * 40,
           endX: endX + (Math.random() - 0.5) * 10,
@@ -132,7 +119,7 @@ export default function FlyingMinerals({ rewards, originRef, destinationId, onCo
       {minerals.map((mineral) => (
         <FlyingMineral
           key={mineral.id}
-          color={mineral.color}
+          image={mineral.image}
           startX={mineral.startX}
           startY={mineral.startY}
           endX={mineral.endX}
