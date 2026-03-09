@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
-import { UserPlus, ThumbsUp, Check, Trash2, X, Bell, BadgeCheck, XCircle, Ban, CheckCircle } from "lucide-react"
+import { UserPlus, ThumbsUp, Check, Trash2, X, Bell, BadgeCheck, XCircle, Ban, CheckCircle, Gift } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
 import { useDateTime } from "#hooks/useDateTime"
@@ -9,6 +9,7 @@ import Modal from "@components/UI/Modal"
 const NOTIFICATION_ICONS = {
   follow: { icon: UserPlus, color: "text-indigo-400", bg: "bg-indigo-500/10" },
   review_like: { icon: ThumbsUp, color: "text-pink-400", bg: "bg-pink-500/10" },
+  gift_received: { icon: Gift, color: "text-amber-400", bg: "bg-amber-500/10", borderColor: "border-amber-500/30" },
   verification_approved: { icon: BadgeCheck, color: "text-emerald-400", bg: "bg-emerald-500/10", borderColor: "border-emerald-500/30" },
   verification_rejected: { icon: XCircle, color: "text-red-400", bg: "bg-red-500/10", borderColor: "border-red-500/30" },
   account_banned: { icon: Ban, color: "text-red-400", bg: "bg-red-500/10", borderColor: "border-red-500/30" },
@@ -18,6 +19,7 @@ const NOTIFICATION_ICONS = {
 const NOTIFICATION_USER_ID_MAP = {
   follow: (data) => data.follower_id,
   review_like: (data) => data.liker_id,
+  gift_received: (data) => data.from_user_id,
   verification_approved: (data) => data.reviewed_by,
   verification_rejected: (data) => data.reviewed_by,
   account_banned: (data) => data.banned_by,
@@ -29,7 +31,7 @@ const NOTIFICATION_LINKS = {
   review_like: (data) => `/game/${data.game_slug}`,
 }
 
-const SYSTEM_NOTIFICATIONS = ["verification_approved", "verification_rejected", "account_banned", "account_unbanned"]
+const SYSTEM_NOTIFICATIONS = ["verification_approved", "verification_rejected", "account_banned", "account_unbanned", "gift_received"]
 
 function getNotificationText(type, data, t) {
   switch (type) {
@@ -37,6 +39,8 @@ function getNotificationText(type, data, t) {
       return t("notifications.types.follow.text")
     case "review_like":
       return t("notifications.types.review_like.text")
+    case "gift_received":
+      return t("notifications.types.gift_received.title")
     case "verification_approved":
       return t("notifications.types.verification_approved.title")
     case "verification_rejected":
@@ -52,6 +56,8 @@ function getNotificationText(type, data, t) {
 
 function getNotificationFullText(type, data, t) {
   switch (type) {
+    case "gift_received":
+      return t("notifications.types.gift_received.message", { item: data.item_name })
     case "verification_approved":
       return t("notifications.types.verification_approved.message")
     case "verification_rejected":
@@ -79,8 +85,11 @@ function SystemNotificationModal({ notification, users, isOpen, onClose }) {
   const Icon = config.icon
   const title = getNotificationText(notification.type, notification.data, t)
   const message = getNotificationFullText(notification.type, notification.data, t)
-  const reviewerId = NOTIFICATION_USER_ID_MAP[notification.type]?.(notification.data)
-  const reviewer = reviewerId ? users[reviewerId] : null
+  const actorId = NOTIFICATION_USER_ID_MAP[notification.type]?.(notification.data)
+  const actor = actorId ? users[actorId] : null
+
+  const isGift = notification.type === "gift_received"
+  const showActorAsFrom = isGift
 
   return (
     <Modal
@@ -99,15 +108,18 @@ function SystemNotificationModal({ notification, users, isOpen, onClose }) {
           <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
           <p className="text-sm text-zinc-400 leading-relaxed whitespace-pre-line">{message}</p>
 
-          {reviewer && (
+          {actor && (
             <div className="flex items-center gap-2 mt-5 px-3 py-2 bg-zinc-800/50 rounded-lg">
               <img
-                src={reviewer.avatar}
-                alt={reviewer.username}
+                src={actor.avatar}
+                alt={actor.username}
                 className="w-6 h-6 rounded-full object-cover bg-zinc-700"
               />
               <span className="text-xs text-zinc-400">
-                {t("notifications.reviewedBy", { username: reviewer.username })}
+                {showActorAsFrom
+                  ? t("notifications.sentBy", { username: actor.username })
+                  : t("notifications.reviewedBy", { username: actor.username })
+                }
               </span>
             </div>
           )}
