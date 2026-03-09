@@ -1003,7 +1003,12 @@ export default {
         title: "Conta restaurada",
         message: "Sua conta foi restaurada. Bem-vindo de volta!",
       },
+			gift_received: {
+				title: "Você recebeu um presente!",
+				message: "Você recebeu {{item}}! O item já está disponível no seu inventário.",
+			},
     },
+		sentBy: "Enviado por {{username}}",
     reviewedBy: "Revisado por {{username}}",
     someone: "Alguém",
   },
@@ -1959,13 +1964,3 @@ export default {
     },
   },
 }
-
-
-
-
-
-
-
-
-
-
