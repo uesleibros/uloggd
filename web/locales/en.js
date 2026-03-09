@@ -604,8 +604,8 @@ export default {
       },
       descriptions: {
         daily_chest: "Daily chest",
-        shop_item: "Shop item",
-        shop_gift: "Gift to"
+        shop_item: "Shop item:",
+        shop_gift: "Gift to:"
       },
     },
     notFound: {
