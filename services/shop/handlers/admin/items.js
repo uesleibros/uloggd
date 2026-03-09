@@ -79,16 +79,30 @@ export async function handleAdminItems(req, res) {
     const { id, artist_ids, ...updates } = req.body
     if (!id) return res.status(400).json({ error: "id_required" })
 
-    updates.updated_at = new Date().toISOString()
+    const cleanUpdates = {}
+    
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === undefined) continue
+      if (value === "") {
+        cleanUpdates[key] = null
+      } else {
+        cleanUpdates[key] = value
+      }
+    }
+
+    cleanUpdates.updated_at = new Date().toISOString()
 
     const { data, error } = await supabase
       .from("store_items")
-      .update(updates)
+      .update(cleanUpdates)
       .eq("id", id)
       .select()
       .single()
 
-    if (error) return res.status(500).json({ error: "update_failed" })
+    if (error) {
+      console.error("Update error:", error)
+      return res.status(500).json({ error: "update_failed", details: error.message })
+    }
 
     if (artist_ids !== undefined) {
       await supabase.from("shop_item_artists").delete().eq("item_id", id)
