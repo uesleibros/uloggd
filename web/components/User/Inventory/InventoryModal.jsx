@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Loader2, Check, X } from "lucide-react"
 import Modal from "@components/UI/Modal"
 import { supabase } from "#lib/supabase.js"
@@ -161,6 +161,7 @@ export default function InventoryModal({ isOpen, onClose }) {
   const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(false)
   const [actionId, setActionId] = useState(null)
+  const hasFetched = useRef(false)
 
   const fetchInventory = useCallback(async () => {
     const headers = await getAuthHeaders()
@@ -180,7 +181,14 @@ export default function InventoryModal({ isOpen, onClose }) {
   }, [t])
 
   useEffect(() => {
-    if (!isOpen || !user) return
+    if (!isOpen || !user) {
+      hasFetched.current = false
+      return
+    }
+
+    if (hasFetched.current) return
+
+    hasFetched.current = true
     fetchInventory()
   }, [isOpen, user, fetchInventory])
 
