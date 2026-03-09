@@ -99,6 +99,21 @@ export default {
       remaining: "remaining",
       availableUntil: "Available until",
     },
+		purchase: {
+		  errors: {
+		    missingItemId: "Item not specified.",
+		    itemNotFound: "Item not found or unavailable.",
+		    itemNotYetAvailable: "This item is not yet available.",
+		    itemExpired: "This item is no longer available.",
+		    outOfStock: "Item is out of stock.",
+		    alreadyOwned: "You already own this item.",
+		    noMinerals: "You do not have any minerals.",
+		    insufficientMinerals: "Not enough minerals for this purchase.",
+		    updateFailed: "Failed to process payment.",
+		    inventoryFailed: "Failed to add item to inventory.",
+		    failed: "Purchase failed.",
+		  },
+		},
 	  gift: {
 	    buttonTitle: "Gift to a friend",
 	    selectRecipient: "Choose recipient",
