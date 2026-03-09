@@ -814,6 +814,10 @@ export default {
       title: "Verificado",
       description: "Identidade confirmada como criador de conteúdo, personalidade ou figura pública da comunidade."
     },
+		designer: {
+			title: "Designer",
+			description: "Membro da equipe de design, responsável pela criação de ícones e elementos visuais."
+		},
     meta: {
       title: "Selos - uloggd",
       description: "Conheça todos os selos disponíveis no uloggd e o que cada um representa.",
@@ -1964,3 +1968,4 @@ export default {
     },
   },
 }
+
