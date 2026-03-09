@@ -104,46 +104,59 @@ export default function ShopPage() {
     setActiveCollectionItems([])
   }
 
-  async function handlePurchase(item) {
-    const headers = await getAuthHeaders()
-    if (!headers) {
-      notify(t("errors.loginRequired"), "error")
-      return
-    }
-
-    setPurchasing(true)
-
-    try {
-      const res = await fetch("/api/shop/@me/purchase", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ itemId: item.id }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        notify(data.error || t("errors.purchaseFailed"), "error")
-        setPurchasing(false)
-        return
-      }
-
-      if (data.minerals) {
-        updateUser({ user_minerals: [data.minerals] })
-      }
-
-      const inv = await fetchInventory()
-      setInventory(inv)
-
-      setSelectedItem(null)
-      setTimeout(() => setPurchasedItem(item), 150)
-    } catch (e) {
-      console.error(e)
-      notify(t("errors.generic"), "error")
-    }
-
-    setPurchasing(false)
-  }
+	async function handlePurchase(item) {
+	  const headers = await getAuthHeaders()
+	  if (!headers) {
+	    notify(t("errors.loginRequired"), "error")
+	    return
+	  }
+	
+	  setPurchasing(true)
+	
+	  try {
+	    const res = await fetch("/api/shop/@me/purchase", {
+	      method: "POST",
+	      headers,
+	      body: JSON.stringify({ itemId: item.id }),
+	    })
+	
+	    const data = await res.json()
+	
+	    if (!res.ok) {
+	      const errorKey = data.error || "generic"
+	      const errorMessages = {
+	        missing_item_id: t("purchase.errors.missingItemId"),
+	        item_not_found: t("purchase.errors.itemNotFound"),
+	        item_not_yet_available: t("purchase.errors.itemNotYetAvailable"),
+	        item_expired: t("purchase.errors.itemExpired"),
+	        out_of_stock: t("purchase.errors.outOfStock"),
+	        already_owned: t("purchase.errors.alreadyOwned"),
+	        no_minerals: t("purchase.errors.noMinerals"),
+	        insufficient_minerals: t("purchase.errors.insufficientMinerals"),
+	        failed_to_update_minerals: t("purchase.errors.updateFailed"),
+	        failed_to_add_inventory: t("purchase.errors.inventoryFailed"),
+	      }
+	      notify(errorMessages[errorKey] || t("purchase.errors.failed"), "error")
+	      setPurchasing(false)
+	      return
+	    }
+	
+	    if (data.minerals) {
+	      updateUser({ user_minerals: [data.minerals] })
+	    }
+	
+	    const inv = await fetchInventory()
+	    setInventory(inv)
+	
+	    setSelectedItem(null)
+	    setTimeout(() => setPurchasedItem(item), 150)
+	  } catch (e) {
+	    console.error(e)
+	    notify(t("errors.generic"), "error")
+	  }
+	
+	  setPurchasing(false)
+	}
 
   async function handleGift(item, recipientId) {
     const headers = await getAuthHeaders()
@@ -366,3 +379,4 @@ export default function ShopPage() {
     </div>
   )
 }
+
