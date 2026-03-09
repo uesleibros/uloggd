@@ -13,10 +13,11 @@ import FeaturedBanner from "./components/FeaturedBanner"
 import EmptyState from "./components/EmptyState"
 import ItemDetailModal from "./components/ItemDetailModal"
 import PurchaseSuccessModal from "./components/PurchaseSuccessModal"
+import GiftSuccessModal from "./components/GiftSuccessModal"
 import AdminPanel from "./components/AdminPanel"
 
 export default function ShopPage() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const { t } = useTranslation("shop")
 
   const [collections, setCollections] = useState([])
@@ -31,7 +32,9 @@ export default function ShopPage() {
   const [selectedItem, setSelectedItem] = useState(null)
   const [purchasing, setPurchasing] = useState(false)
   const [equipping, setEquipping] = useState(false)
+  const [gifting, setGifting] = useState(false)
   const [purchasedItem, setPurchasedItem] = useState(null)
+  const [giftedData, setGiftedData] = useState(null)
   const [adminOpen, setAdminOpen] = useState(false)
 
   usePageMeta({
@@ -101,63 +104,101 @@ export default function ShopPage() {
     setActiveCollectionItems([])
   }
 
-	async function handlePurchase({ item, type, recipient }) {
-	  const headers = await getAuthHeaders()
-	  if (!headers) {
-	    notify(t("errors.loginRequired"), "error")
-	    return
-	  }
-	
-	  setPurchasing(true)
-	
-	  try {
-	    const isGift = type === "gift"
-	
-	    const res = await fetch(isGift ? "/api/shop/@me/gift" : "/api/shop/@me/purchase", {
-	      method: "POST",
-	      headers,
-	      body: JSON.stringify(
-	        isGift
-	          ? {
-	              itemId: item.id,
-	              recipientId: recipient?.user_id || recipient?.id,
-	            }
-	          : {
-	              itemId: item.id,
-	            }
-	      ),
-	    })
-	
-	    const data = await res.json()
-	
-	    if (!res.ok) {
-	      notify(data.error || t("errors.purchaseFailed"), "error")
-	      setPurchasing(false)
-	      return
-	    }
-	
-	    const inv = await fetchInventory()
-	    setInventory(inv)
-	
-	    setSelectedItem(null)
-	
-	    if (isGift) {
-	      notify(
-	        t("success.giftSent", {
-	          username: recipient?.username || "user",
-	        }),
-	        "success"
-	      )
-	    } else {
-	      setTimeout(() => setPurchasedItem(item), 150)
-	    }
-	  } catch (e) {
-	    console.error(e)
-	    notify(t("errors.generic"), "error")
-	  }
-	
-	  setPurchasing(false)
-	}
+  async function handlePurchase(item) {
+    const headers = await getAuthHeaders()
+    if (!headers) {
+      notify(t("errors.loginRequired"), "error")
+      return
+    }
+
+    setPurchasing(true)
+
+    try {
+      const res = await fetch("/api/shop/@me/purchase", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ itemId: item.id }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        notify(data.error || t("errors.purchaseFailed"), "error")
+        setPurchasing(false)
+        return
+      }
+
+      if (data.minerals) {
+        updateUser({ user_minerals: [data.minerals] })
+      }
+
+      const inv = await fetchInventory()
+      setInventory(inv)
+
+      setSelectedItem(null)
+      setTimeout(() => setPurchasedItem(item), 150)
+    } catch (e) {
+      console.error(e)
+      notify(t("errors.generic"), "error")
+    }
+
+    setPurchasing(false)
+  }
+
+  async function handleGift(item, recipientId) {
+    const headers = await getAuthHeaders()
+    if (!headers) {
+      notify(t("errors.loginRequired"), "error")
+      return
+    }
+
+    setGifting(true)
+
+    try {
+      const res = await fetch("/api/shop/@me/gift", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ itemId: item.id, recipientId }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        const errorKey = data.error || "generic"
+        const errorMessages = {
+          cannot_gift_yourself: t("gift.errors.cannotGiftYourself"),
+          recipient_not_found: t("gift.errors.recipientNotFound"),
+          item_not_found: t("gift.errors.itemNotFound"),
+          recipient_already_owns: t("gift.errors.recipientAlreadyOwns"),
+          insufficient_minerals: t("gift.errors.insufficientMinerals"),
+          no_minerals: t("gift.errors.noMinerals"),
+          out_of_stock: t("gift.errors.outOfStock"),
+          item_expired: t("gift.errors.itemExpired"),
+          item_not_yet_available: t("gift.errors.itemNotYetAvailable"),
+        }
+        notify(errorMessages[errorKey] || t("gift.errors.failed"), "error")
+        setGifting(false)
+        return
+      }
+
+      if (data.minerals) {
+        updateUser({ user_minerals: [data.minerals] })
+      }
+
+      setSelectedItem(null)
+      setTimeout(() => {
+        setGiftedData({
+          item: data.item,
+          recipient: data.recipient,
+        })
+      }, 150)
+    } catch (e) {
+      console.error(e)
+      notify(t("errors.generic"), "error")
+    }
+
+    setGifting(false)
+  }
 
   async function handleEquip(inventoryId, slot) {
     const headers = await getAuthHeaders()
@@ -296,12 +337,14 @@ export default function ShopPage() {
         equipped={selectedItem ? isEquipped(selectedItem.id) : false}
         onClose={() => setSelectedItem(null)}
         onPurchase={handlePurchase}
+        onGift={handleGift}
         onEquip={() => {
           const invItem = getInventoryItem(selectedItem.id)
           if (invItem) handleEquip(invItem.inventory_id, selectedItem.item_type)
         }}
         purchasing={purchasing}
         equipping={equipping}
+        gifting={gifting}
         user={user}
       />
 
@@ -311,10 +354,15 @@ export default function ShopPage() {
         item={purchasedItem}
       />
 
+      <GiftSuccessModal
+        isOpen={!!giftedData}
+        onClose={() => setGiftedData(null)}
+        data={giftedData}
+      />
+
       {user?.is_moderator && (
         <AdminPanel isOpen={adminOpen} onClose={handleAdminClose} />
       )}
     </div>
   )
-
 }
