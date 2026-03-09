@@ -101,42 +101,63 @@ export default function ShopPage() {
     setActiveCollectionItems([])
   }
 
-  async function handlePurchase(item) {
-    const headers = await getAuthHeaders()
-    if (!headers) {
-      notify(t("errors.loginRequired"), "error")
-      return
-    }
-
-    setPurchasing(true)
-
-    try {
-      const res = await fetch("/api/shop/@me/purchase", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ itemId: item.id }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        notify(data.error || t("errors.purchaseFailed"), "error")
-        setPurchasing(false)
-        return
-      }
-
-      const inv = await fetchInventory()
-      setInventory(inv)
-
-      setSelectedItem(null)
-      setTimeout(() => setPurchasedItem(item), 150)
-    } catch (e) {
-      console.error(e)
-      notify(t("errors.generic"), "error")
-    }
-
-    setPurchasing(false)
-  }
+	async function handlePurchase({ item, type, recipient }) {
+	  const headers = await getAuthHeaders()
+	  if (!headers) {
+	    notify(t("errors.loginRequired"), "error")
+	    return
+	  }
+	
+	  setPurchasing(true)
+	
+	  try {
+	    const isGift = type === "gift"
+	
+	    const res = await fetch(isGift ? "/api/shop/@me/gift" : "/api/shop/@me/purchase", {
+	      method: "POST",
+	      headers,
+	      body: JSON.stringify(
+	        isGift
+	          ? {
+	              itemId: item.id,
+	              recipientId: recipient?.user_id || recipient?.id,
+	            }
+	          : {
+	              itemId: item.id,
+	            }
+	      ),
+	    })
+	
+	    const data = await res.json()
+	
+	    if (!res.ok) {
+	      notify(data.error || t("errors.purchaseFailed"), "error")
+	      setPurchasing(false)
+	      return
+	    }
+	
+	    const inv = await fetchInventory()
+	    setInventory(inv)
+	
+	    setSelectedItem(null)
+	
+	    if (isGift) {
+	      notify(
+	        t("success.giftSent", {
+	          username: recipient?.username || "user",
+	        }),
+	        "success"
+	      )
+	    } else {
+	      setTimeout(() => setPurchasedItem(item), 150)
+	    }
+	  } catch (e) {
+	    console.error(e)
+	    notify(t("errors.generic"), "error")
+	  }
+	
+	  setPurchasing(false)
+	}
 
   async function handleEquip(inventoryId, slot) {
     const headers = await getAuthHeaders()
@@ -295,4 +316,5 @@ export default function ShopPage() {
       )}
     </div>
   )
+
 }
