@@ -17,7 +17,7 @@ import { chestHandler } from "#routers/chest.js"
 import { transactionsHandler } from "#routers/transactions.js"
 import { passkeyHandler } from "#routers/passkey.js"
 import { shopHandler } from "#routers/shop.js"
-import { journeysHandler } from "#routers/journal.js"
+import { journeysHandler } from "#routers/journeys.js"
 import { getUser } from "#lib/auth.js"
 
 // Connections
