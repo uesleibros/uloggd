@@ -427,11 +427,7 @@ export default function ListPage() {
   }
 
   function handleItemAdded(item) {
-    if (currentPage === 1) {
-      fetchList(1)
-    } else {
-      setTotalItems((prev) => prev + 1)
-    }
+    fetchList(currentPage)
   }
 
   function handleItemRemoved(itemId) {
@@ -801,3 +797,4 @@ export default function ListPage() {
     </div>
   )
 }
+
