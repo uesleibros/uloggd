@@ -1,57 +1,86 @@
 export default {
 	journal: {
-		button: {
-			create: "Criar Jornada",
-			createAnother: "Criar outra jornada"
-		},
-		selector: {
-			new: "Nova"
-		},
-		card: {
-			session: "sessão",
-			sessions: "sessões",
-			platform: "Plataforma"
-		},
-		modal: {
-			title: "Título da jornada",
-			titlePlaceholder: "Ex: Primeira Zerada, NG+, Platinando...",
-			platform: "Plataforma",
-			entries: "Sessões de jogo",
-			session: "sessão",
-			sessions: "sessões",
-			addEntry: "Adicionar sessão",
-			noEntries: "Nenhuma sessão registrada ainda",
-			cancel: "Cancelar",
-			save: "Salvar",
-			create: "Criar",
-			delete: "Excluir jornada",
-			deleting: "Excluindo...",
-			entry: {
-				date: "Data",
-				time: "Tempo jogado",
-				note: "Nota (opcional)",
-				notePlaceholder: "O que aconteceu nessa sessão?",
-				cancel: "Cancelar",
-				save: "Salvar",
-				saving: "Salvando...",
-				added: "Sessão adicionada",
-				updated: "Sessão atualizada",
-				removed: "Sessão removida",
-				saveFailed: "Erro ao salvar sessão",
-				removeFailed: "Erro ao remover sessão"
-			},
-			success: {
-				created: "Jornada criada!",
-				updated: "Jornada atualizada!",
-				deleted: "Jornada excluída"
-			},
-			errors: {
-				titleRequired: "Título é obrigatório",
-				notLoggedIn: "Você precisa estar logado",
-				saveFailed: "Erro ao salvar jornada",
-				deleteFailed: "Erro ao excluir jornada"
-			}
-		}
+	  button: {
+	    create: "Criar Jornada",
+	    createAnother: "Criar outra jornada"
+	  },
+	  selector: {
+	    new: "Nova"
+	  },
+	  card: {
+	    session: "sessão",
+	    sessions: "sessões",
+	    platform: "Plataforma"
+	  },
+	  calendar: {
+	    weekdays: {
+	      sun: "Dom",
+	      mon: "Seg",
+	      tue: "Ter",
+	      wed: "Qua",
+	      thu: "Qui",
+	      fri: "Sex",
+	      sat: "Sáb"
+	    }
+	  },
+	  modal: {
+	    title: "Título da jornada",
+	    titlePlaceholder: "Ex: Primeira Zerada, NG+...",
+	    platform: "Plataforma",
+	    selectPlatform: "Selecionar plataforma",
+	    session: "sessão",
+	    sessions: "sessões",
+	    cancel: "Cancelar",
+	    save: "Salvar",
+	    create: "Criar",
+	    delete: "Excluir jornada",
+	    createFirst: "Crie a jornada para começar a registrar suas sessões",
+	    jumpTo: "Ir para...",
+	    latest: "Última",
+	    today: "Hoje",
+	    start: "Início",
+	    finish: "Fim",
+	    months: {
+	      january: "Janeiro",
+	      february: "Fevereiro",
+	      march: "Março",
+	      april: "Abril",
+	      may: "Maio",
+	      june: "Junho",
+	      july: "Julho",
+	      august: "Agosto",
+	      september: "Setembro",
+	      october: "Outubro",
+	      november: "Novembro",
+	      december: "Dezembro"
+	    },
+	    entry: {
+	      time: "Tempo jogado",
+	      note: "Nota (opcional)",
+	      notePlaceholder: "O que aconteceu nessa sessão?",
+	      cancel: "Cancelar",
+	      save: "Salvar",
+	      saving: "Salvando...",
+	      remove: "Remover",
+	      removing: "Removendo...",
+	      added: "Sessão adicionada",
+	      updated: "Sessão atualizada",
+	      removed: "Sessão removida",
+	      saveFailed: "Erro ao salvar sessão",
+	      removeFailed: "Erro ao remover sessão"
+	    },
+	    success: {
+	      created: "Jornada criada!",
+	      updated: "Jornada atualizada!",
+	      deleted: "Jornada excluída"
+	    },
+	    errors: {
+	      titleRequired: "Título é obrigatório",
+	      notLoggedIn: "Você precisa estar logado",
+	      saveFailed: "Erro ao salvar jornada",
+	      deleteFailed: "Erro ao excluir jornada"
+	    }
+	  }
 	},
 	inventory: {
 		title: "Inventário",

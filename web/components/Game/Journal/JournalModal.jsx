@@ -1,163 +1,33 @@
-import { useState, useEffect } from "react"
-import { X, Check, Plus, Trash2, Calendar, Clock, Pencil } from "lucide-react"
+import { useState, useEffect, useMemo } from "react"
+import { X, ChevronLeft, ChevronRight, Play, Clock, Calendar as CalendarIcon, RotateCcw, FastForward, Rewind } from "lucide-react"
 import { supabase } from "#lib/supabase"
 import { useTranslation } from "#hooks/useTranslation"
 import { notify } from "@components/UI/Notification"
-import PlatformSelector from "@components/UI/PlatformSelector"
+import { JournalCalendar } from "./JournalCalendar"
+import { JournalSidebar } from "./JournalSidebar"
+import { JournalEntryModal } from "./JournalEntryModal"
 
-const MAX_TITLE = 100
-const MAX_NOTE = 500
-
-function EntryItem({ entry, onEdit, onRemove, deleting }) {
-  const { t } = useTranslation("journal.modal")
-  
-  const totalMinutes = (entry.hours || 0) * 60 + (entry.minutes || 0)
-  const displayHours = Math.floor(totalMinutes / 60)
-  const displayMinutes = totalMinutes % 60
-
-  return (
-    <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50 group">
-      <div className="flex-shrink-0 w-10 h-10 bg-zinc-700 rounded-lg flex items-center justify-center">
-        <Calendar className="w-4 h-4 text-zinc-400" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 text-sm">
-          <span className="font-medium text-white">
-            {new Date(entry.played_on + "T00:00:00").toLocaleDateString()}
-          </span>
-          {totalMinutes > 0 && (
-            <span className="text-zinc-500 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {displayHours > 0 && `${displayHours}h`}
-              {displayMinutes > 0 && `${displayMinutes}m`}
-            </span>
-          )}
-        </div>
-        {entry.note && (
-          <p className="text-xs text-zinc-400 mt-1 line-clamp-2">{entry.note}</p>
-        )}
-      </div>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          type="button"
-          onClick={() => onEdit(entry)}
-          className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-700 rounded transition-all cursor-pointer"
-        >
-          <Pencil className="w-3.5 h-3.5" />
-        </button>
-        <button
-          type="button"
-          onClick={() => onRemove(entry.id)}
-          disabled={deleting}
-          className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-zinc-700 rounded transition-all cursor-pointer disabled:opacity-50"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    </div>
-  )
-}
-
-function EntryForm({ entry, onSave, onCancel, saving }) {
-  const { t } = useTranslation("journal.modal")
-  const [playedOn, setPlayedOn] = useState(entry?.played_on || new Date().toISOString().split("T")[0])
-  const [hours, setHours] = useState(entry?.hours?.toString() || "")
-  const [minutes, setMinutes] = useState(entry?.minutes?.toString() || "")
-  const [note, setNote] = useState(entry?.note || "")
-
-  function handleSubmit(e) {
-    e.preventDefault()
-    onSave({
-      id: entry?.id,
-      playedOn,
-      hours: hours ? parseInt(hours) : 0,
-      minutes: minutes ? parseInt(minutes) : 0,
-      note: note.trim(),
-    })
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700 space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t("entry.date")}</label>
-          <input
-            type="date"
-            value={playedOn}
-            onChange={(e) => setPlayedOn(e.target.value)}
-            max={new Date().toISOString().split("T")[0]}
-            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t("entry.time")}</label>
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-              placeholder="0"
-              min="0"
-              max="9999"
-              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
-            />
-            <span className="text-zinc-500 text-sm">h</span>
-            <input
-              type="number"
-              value={minutes}
-              onChange={(e) => setMinutes(e.target.value)}
-              placeholder="0"
-              min="0"
-              max="59"
-              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
-            />
-            <span className="text-zinc-500 text-sm">m</span>
-          </div>
-        </div>
-      </div>
-      <div>
-        <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t("entry.note")}</label>
-        <textarea
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder={t("entry.notePlaceholder")}
-          maxLength={MAX_NOTE}
-          rows={2}
-          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
-        />
-      </div>
-      <div className="flex items-center justify-end gap-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
-        >
-          {t("entry.cancel")}
-        </button>
-        <button
-          type="submit"
-          disabled={saving}
-          className="px-3 py-1.5 text-xs font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors cursor-pointer disabled:opacity-50"
-        >
-          {saving ? t("entry.saving") : t("entry.save")}
-        </button>
-      </div>
-    </form>
-  )
-}
+const MONTHS = [
+  "january", "february", "march", "april", "may", "june",
+  "july", "august", "september", "october", "november", "december"
+]
 
 export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
   const { t } = useTranslation("journal.modal")
   const isEditing = !!existingJourney
-  const [submitting, setSubmitting] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-  const [deletingEntry, setDeletingEntry] = useState(false)
-  const [savingEntry, setSavingEntry] = useState(false)
+
+  const today = new Date()
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth())
+  const [currentYear, setCurrentYear] = useState(today.getFullYear())
+  const [entries, setEntries] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const [title, setTitle] = useState(existingJourney?.title || "")
   const [platform, setPlatform] = useState(existingJourney?.platform_id?.toString() || "")
-  const [entries, setEntries] = useState([])
-  const [showEntryForm, setShowEntryForm] = useState(false)
+
+  const [selectedDate, setSelectedDate] = useState(null)
+  const [showEntryModal, setShowEntryModal] = useState(false)
   const [editingEntry, setEditingEntry] = useState(null)
 
   useEffect(() => {
@@ -172,13 +42,148 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
   }
 
   async function fetchJourneyDetails() {
+    setLoading(true)
     try {
       const res = await fetch(`/api/journeys/get?journeyId=${existingJourney.id}`)
       if (res.ok) {
         const data = await res.json()
         setEntries(data.entries || [])
+        
+        if (data.entries?.length > 0) {
+          const lastEntry = data.entries[data.entries.length - 1]
+          const lastDate = new Date(lastEntry.played_on + "T00:00:00")
+          setCurrentMonth(lastDate.getMonth())
+          setCurrentYear(lastDate.getFullYear())
+        }
       }
-    } catch {}
+    } catch {} finally {
+      setLoading(false)
+    }
+  }
+
+  const entryMap = useMemo(() => {
+    const map = {}
+    entries.forEach(e => {
+      map[e.played_on] = e
+    })
+    return map
+  }, [entries])
+
+  function prevMonth() {
+    if (currentMonth === 0) {
+      setCurrentMonth(11)
+      setCurrentYear(y => y - 1)
+    } else {
+      setCurrentMonth(m => m - 1)
+    }
+  }
+
+  function nextMonth() {
+    if (currentMonth === 11) {
+      setCurrentMonth(0)
+      setCurrentYear(y => y + 1)
+    } else {
+      setCurrentMonth(m => m + 1)
+    }
+  }
+
+  function jumpToToday() {
+    setCurrentMonth(today.getMonth())
+    setCurrentYear(today.getFullYear())
+  }
+
+  function jumpToLatest() {
+    if (entries.length === 0) return
+    const sorted = [...entries].sort((a, b) => new Date(b.played_on) - new Date(a.played_on))
+    const latest = new Date(sorted[0].played_on + "T00:00:00")
+    setCurrentMonth(latest.getMonth())
+    setCurrentYear(latest.getFullYear())
+  }
+
+  function jumpToStart() {
+    if (entries.length === 0) return
+    const sorted = [...entries].sort((a, b) => new Date(a.played_on) - new Date(b.played_on))
+    const start = new Date(sorted[0].played_on + "T00:00:00")
+    setCurrentMonth(start.getMonth())
+    setCurrentYear(start.getFullYear())
+  }
+
+  function jumpToFinish() {
+    jumpToLatest()
+  }
+
+  function handleDayClick(date) {
+    const dateStr = date.toISOString().split("T")[0]
+    const existing = entryMap[dateStr]
+    
+    if (existing) {
+      setEditingEntry(existing)
+      setSelectedDate(dateStr)
+      setShowEntryModal(true)
+    } else {
+      setEditingEntry(null)
+      setSelectedDate(dateStr)
+      setShowEntryModal(true)
+    }
+  }
+
+  async function handleSaveEntry(entryData) {
+    const token = await getToken()
+    if (!token) return
+
+    const isUpdating = !!entryData.id
+
+    try {
+      const url = isUpdating ? "/api/journeys/@me/updateEntry" : "/api/journeys/@me/addEntry"
+      const payload = isUpdating
+        ? { entryId: entryData.id, playedOn: entryData.playedOn, hours: entryData.hours, minutes: entryData.minutes, note: entryData.note }
+        : { journeyId: existingJourney.id, playedOn: entryData.playedOn, hours: entryData.hours, minutes: entryData.minutes, note: entryData.note }
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      })
+
+      if (res.ok) {
+        notify(isUpdating ? t("entry.updated") : t("entry.added"))
+        setShowEntryModal(false)
+        setEditingEntry(null)
+        setSelectedDate(null)
+        fetchJourneyDetails()
+        return true
+      } else {
+        notify(t("entry.saveFailed"), "error")
+        return false
+      }
+    } catch {
+      notify(t("entry.saveFailed"), "error")
+      return false
+    }
+  }
+
+  async function handleRemoveEntry(entryId) {
+    const token = await getToken()
+    if (!token) return
+
+    try {
+      const res = await fetch("/api/journeys/@me/removeEntry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ entryId }),
+      })
+
+      if (res.ok) {
+        notify(t("entry.removed"))
+        setShowEntryModal(false)
+        setEditingEntry(null)
+        fetchJourneyDetails()
+      } else {
+        notify(t("entry.removeFailed"), "error")
+      }
+    } catch {
+      notify(t("entry.removeFailed"), "error")
+    }
   }
 
   async function handleSave() {
@@ -187,7 +192,7 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
       return
     }
 
-    setSubmitting(true)
+    setSaving(true)
     try {
       const token = await getToken()
       if (!token) {
@@ -221,21 +226,23 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
     } catch {
       notify(t("errors.saveFailed"), "error")
     } finally {
-      setSubmitting(false)
+      setSaving(false)
     }
   }
 
   async function handleDelete() {
     if (!isEditing) return
-    setDeleting(true)
+    
+    const token = await getToken()
+    if (!token) return
+
     try {
-      const token = await getToken()
-      if (!token) return
       const res = await fetch("/api/journeys/@me/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ journeyId: existingJourney.id }),
       })
+
       if (res.ok) {
         notify(t("success.deleted"))
         onDeleted?.()
@@ -245,66 +252,6 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
       }
     } catch {
       notify(t("errors.deleteFailed"), "error")
-    } finally {
-      setDeleting(false)
-    }
-  }
-
-  async function handleSaveEntry(entryData) {
-    setSavingEntry(true)
-    try {
-      const token = await getToken()
-      if (!token) return
-
-      const isUpdating = !!entryData.id
-      const url = isUpdating ? "/api/journeys/@me/updateEntry" : "/api/journeys/@me/addEntry"
-      const payload = isUpdating
-        ? { entryId: entryData.id, playedOn: entryData.playedOn, hours: entryData.hours, minutes: entryData.minutes, note: entryData.note }
-        : { journeyId: existingJourney.id, playedOn: entryData.playedOn, hours: entryData.hours, minutes: entryData.minutes, note: entryData.note }
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload),
-      })
-
-      if (res.ok) {
-        notify(isUpdating ? t("entry.updated") : t("entry.added"))
-        setShowEntryForm(false)
-        setEditingEntry(null)
-        fetchJourneyDetails()
-      } else {
-        notify(t("entry.saveFailed"), "error")
-      }
-    } catch {
-      notify(t("entry.saveFailed"), "error")
-    } finally {
-      setSavingEntry(false)
-    }
-  }
-
-  async function handleRemoveEntry(entryId) {
-    setDeletingEntry(true)
-    try {
-      const token = await getToken()
-      if (!token) return
-
-      const res = await fetch("/api/journeys/@me/removeEntry", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ entryId }),
-      })
-
-      if (res.ok) {
-        notify(t("entry.removed"))
-        fetchJourneyDetails()
-      } else {
-        notify(t("entry.removeFailed"), "error")
-      }
-    } catch {
-      notify(t("entry.removeFailed"), "error")
-    } finally {
-      setDeletingEntry(false)
     }
   }
 
@@ -313,144 +260,136 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
     : null
 
   const totalMinutes = entries.reduce((acc, e) => acc + (e.hours || 0) * 60 + (e.minutes || 0), 0)
-  const totalHours = Math.floor(totalMinutes / 60)
-  const remainingMinutes = totalMinutes % 60
+
+  const years = []
+  for (let y = today.getFullYear() + 1; y >= 1970; y--) {
+    years.push(y)
+  }
 
   return (
-    <div className="w-full h-full md:h-auto md:max-w-2xl md:max-h-[90vh] bg-zinc-900 md:border md:border-zinc-700 md:rounded-xl shadow-2xl flex flex-col overflow-hidden">
+    <div className="w-full h-full md:h-auto md:max-w-3xl md:max-h-[90vh] bg-zinc-900 md:border md:border-zinc-700 md:rounded-xl shadow-2xl flex flex-col overflow-hidden">
       <div
-        className="flex items-center justify-between px-4 pb-2 border-b border-zinc-700 flex-shrink-0 md:px-5 md:pb-3"
+        className="flex items-center justify-between px-4 pb-3 border-b border-zinc-700 flex-shrink-0 md:px-5"
         style={{ paddingTop: "max(1rem, env(safe-area-inset-top, 1rem))" }}
       >
-        <div className="flex items-center gap-3 min-w-0">
-          {game.cover && (
-            <img
-              src={`https:${game.cover.url}`}
-              alt=""
-              className="w-8 h-11 rounded object-cover bg-zinc-800 flex-shrink-0"
-              draggable={false}
-            />
-          )}
-          <div className="min-w-0">
-            <h2 className="text-base md:text-lg font-semibold text-white truncate">{game.name}</h2>
-            {releaseYear && <p className="text-xs text-zinc-500">{releaseYear}</p>}
-          </div>
+        <div className="min-w-0">
+          <h2 className="text-lg md:text-xl font-semibold text-white">
+            {game.name} <span className="text-zinc-500 font-normal">{releaseYear}</span>
+          </h2>
         </div>
-        <div className="flex flex-col items-center flex-shrink-0">
-          <button
-            onClick={onClose}
-            className="w-9 h-9 rounded-full border border-zinc-700 hover:border-zinc-500 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer active:bg-zinc-800 transition-all"
-          >
-            <X className="w-4 h-4" />
-          </button>
-          <span className="text-[10px] font-bold text-zinc-600 mt-1 uppercase tracking-wide hidden md:block">
-            ESC
-          </span>
-        </div>
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full border border-zinc-700 hover:border-zinc-500 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto overscroll-contain px-4 md:px-5 py-4 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">{t("title")}</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={t("titlePlaceholder")}
-            maxLength={MAX_TITLE}
-            className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex flex-col md:flex-row">
+          <JournalSidebar
+            game={game}
+            title={title}
+            setTitle={setTitle}
+            platform={platform}
+            setPlatform={setPlatform}
+            totalMinutes={totalMinutes}
+            totalSessions={entries.length}
+            isEditing={isEditing}
+            onDelete={handleDelete}
           />
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">{t("platform")}</label>
-          <PlatformSelector
-            value={platform}
-            onChange={setPlatform}
-            platforms={game.platforms}
-          />
-        </div>
+          <div className="flex-1 p-4 md:p-5">
+            {isEditing ? (
+              <>
+                <div className="flex items-center gap-2 mb-4">
+                  <select
+                    value={currentMonth}
+                    onChange={(e) => setCurrentMonth(parseInt(e.target.value))}
+                    className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500 cursor-pointer"
+                  >
+                    {MONTHS.map((m, i) => (
+                      <option key={m} value={i}>{t(`months.${m}`)}</option>
+                    ))}
+                  </select>
 
-        {isEditing && (
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300">{t("entries")}</label>
-                {entries.length > 0 && (
-                  <p className="text-xs text-zinc-500 mt-0.5">
-                    {entries.length} {entries.length === 1 ? t("session") : t("sessions")}
-                    {totalMinutes > 0 && (
-                      <span className="ml-1">
-                        • {totalHours > 0 && `${totalHours}h`}{remainingMinutes > 0 && `${remainingMinutes}m`}
-                      </span>
-                    )}
-                  </p>
-                )}
-              </div>
-              {!showEntryForm && !editingEntry && (
-                <button
-                  type="button"
-                  onClick={() => setShowEntryForm(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-colors cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  {t("addEntry")}
-                </button>
-              )}
-            </div>
+                  <select
+                    value={currentYear}
+                    onChange={(e) => setCurrentYear(parseInt(e.target.value))}
+                    className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500 cursor-pointer"
+                  >
+                    {years.map(y => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
 
-            {showEntryForm && (
-              <EntryForm
-                onSave={handleSaveEntry}
-                onCancel={() => setShowEntryForm(false)}
-                saving={savingEntry}
-              />
-            )}
-
-            {editingEntry && (
-              <EntryForm
-                entry={editingEntry}
-                onSave={handleSaveEntry}
-                onCancel={() => setEditingEntry(null)}
-                saving={savingEntry}
-              />
-            )}
-
-            {!showEntryForm && !editingEntry && (
-              <div className="space-y-2">
-                {entries.length === 0 ? (
-                  <div className="text-center py-8 text-zinc-500 text-sm">
-                    {t("noEntries")}
+                  <div className="flex items-center gap-1 ml-auto">
+                    <button
+                      onClick={prevMonth}
+                      className="p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={nextMonth}
+                      className="p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
                   </div>
-                ) : (
-                  entries.map((entry) => (
-                    <EntryItem
-                      key={entry.id}
-                      entry={entry}
-                      onEdit={setEditingEntry}
-                      onRemove={handleRemoveEntry}
-                      deleting={deletingEntry}
-                    />
-                  ))
-                )}
+                </div>
+
+                <JournalCalendar
+                  month={currentMonth}
+                  year={currentYear}
+                  entries={entryMap}
+                  onDayClick={handleDayClick}
+                  loading={loading}
+                />
+
+                <div className="flex items-center gap-2 mt-4 flex-wrap">
+                  <span className="text-xs text-zinc-500">{t("jumpTo")}</span>
+                  <button
+                    onClick={jumpToLatest}
+                    disabled={entries.length === 0}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Clock className="w-3 h-3" />
+                    {t("latest")}
+                  </button>
+                  <button
+                    onClick={jumpToToday}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <CalendarIcon className="w-3 h-3" />
+                    {t("today")}
+                  </button>
+                  <button
+                    onClick={jumpToStart}
+                    disabled={entries.length === 0}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Rewind className="w-3 h-3" />
+                    {t("start")}
+                  </button>
+                  <button
+                    onClick={jumpToFinish}
+                    disabled={entries.length === 0}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <FastForward className="w-3 h-3" />
+                    {t("finish")}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12 text-zinc-500">
+                <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p className="text-sm">{t("createFirst")}</p>
               </div>
             )}
           </div>
-        )}
-
-        {isEditing && (
-          <div className="pt-4 border-t border-zinc-800">
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={deleting}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all cursor-pointer disabled:opacity-50"
-            >
-              <Trash2 className="w-4 h-4" />
-              {deleting ? t("deleting") : t("delete")}
-            </button>
-          </div>
-        )}
+        </div>
       </div>
 
       <div
@@ -460,28 +399,34 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all duration-200 cursor-pointer active:bg-zinc-600"
+          className="px-4 py-2.5 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all cursor-pointer"
         >
           {t("cancel")}
         </button>
         <button
           type="button"
           onClick={handleSave}
-          disabled={submitting}
-          className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2 ${
-            submitting
-              ? "bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50"
-              : "bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white cursor-pointer shadow-lg shadow-emerald-500/20"
-          }`}
+          disabled={saving}
+          className="px-5 py-2.5 text-sm font-medium rounded-lg transition-all flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {submitting ? (
-            <div className="w-4 h-4 border-2 border-emerald-300 border-t-white rounded-full animate-spin" />
-          ) : (
-            <Check className="w-4 h-4" />
-          )}
+          {saving && <div className="w-4 h-4 border-2 border-emerald-300 border-t-white rounded-full animate-spin" />}
           {isEditing ? t("save") : t("create")}
         </button>
       </div>
+
+      {showEntryModal && (
+        <JournalEntryModal
+          entry={editingEntry}
+          date={selectedDate}
+          onSave={handleSaveEntry}
+          onRemove={editingEntry ? () => handleRemoveEntry(editingEntry.id) : null}
+          onClose={() => {
+            setShowEntryModal(false)
+            setEditingEntry(null)
+            setSelectedDate(null)
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -1,57 +1,86 @@
 export default {
 	journal: {
-		button: {
-			create: "Create Journey",
-			createAnother: "Create another journey"
-		},
-		selector: {
-			new: "New"
-		},
-		card: {
-			session: "session",
-			sessions: "sessions",
-			platform: "Platform"
-		},
-		modal: {
-			title: "Journey title",
-			titlePlaceholder: "E.g.: First Playthrough, NG+, Platinum Run...",
-			platform: "Platform",
-			entries: "Play sessions",
-			session: "session",
-			sessions: "sessions",
-			addEntry: "Add session",
-			noEntries: "No sessions logged yet",
-			cancel: "Cancel",
-			save: "Save",
-			create: "Create",
-			delete: "Delete journey",
-			deleting: "Deleting...",
-			entry: {
-				date: "Date",
-				time: "Time played",
-				note: "Note (optional)",
-				notePlaceholder: "What happened in this session?",
-				cancel: "Cancel",
-				save: "Save",
-				saving: "Saving...",
-				added: "Session added",
-				updated: "Session updated",
-				removed: "Session removed",
-				saveFailed: "Failed to save session",
-				removeFailed: "Failed to remove session"
-			},
-			success: {
-				created: "Journey created!",
-				updated: "Journey updated!",
-				deleted: "Journey deleted"
-			},
-			errors: {
-				titleRequired: "Title is required",
-				notLoggedIn: "You need to be logged in",
-				saveFailed: "Failed to save journey",
-				deleteFailed: "Failed to delete journey"
-			}
-		}
+	  button: {
+	    create: "Create Journey",
+	    createAnother: "Create another journey"
+	  },
+	  selector: {
+	    new: "New"
+	  },
+	  card: {
+	    session: "session",
+	    sessions: "sessions",
+	    platform: "Platform"
+	  },
+	  calendar: {
+	    weekdays: {
+	      sun: "Sun",
+	      mon: "Mon",
+	      tue: "Tue",
+	      wed: "Wed",
+	      thu: "Thu",
+	      fri: "Fri",
+	      sat: "Sat"
+	    }
+	  },
+	  modal: {
+	    title: "Journey title",
+	    titlePlaceholder: "E.g.: First Playthrough, NG+...",
+	    platform: "Platform",
+	    selectPlatform: "Select platform",
+	    session: "session",
+	    sessions: "sessions",
+	    cancel: "Cancel",
+	    save: "Save",
+	    create: "Create",
+	    delete: "Delete journey",
+	    createFirst: "Create the journey to start logging your sessions",
+	    jumpTo: "Jump to...",
+	    latest: "Latest",
+	    today: "Today",
+	    start: "Start",
+	    finish: "Finish",
+	    months: {
+	      january: "January",
+	      february: "February",
+	      march: "March",
+	      april: "April",
+	      may: "May",
+	      june: "June",
+	      july: "July",
+	      august: "August",
+	      september: "September",
+	      october: "October",
+	      november: "November",
+	      december: "December"
+	    },
+	    entry: {
+	      time: "Time played",
+	      note: "Note (optional)",
+	      notePlaceholder: "What happened in this session?",
+	      cancel: "Cancel",
+	      save: "Save",
+	      saving: "Saving...",
+	      remove: "Remove",
+	      removing: "Removing...",
+	      added: "Session added",
+	      updated: "Session updated",
+	      removed: "Session removed",
+	      saveFailed: "Failed to save session",
+	      removeFailed: "Failed to remove session"
+	    },
+	    success: {
+	      created: "Journey created!",
+	      updated: "Journey updated!",
+	      deleted: "Journey deleted"
+	    },
+	    errors: {
+	      titleRequired: "Title is required",
+	      notLoggedIn: "You need to be logged in",
+	      saveFailed: "Failed to save journey",
+	      deleteFailed: "Failed to delete journey"
+	    }
+	  }
 	},
 	inventory: {
 		title: "Inventory",
