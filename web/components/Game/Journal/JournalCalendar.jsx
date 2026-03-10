@@ -27,7 +27,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   }, [month, year])
 
   const today = new Date()
-  const todayStr = today.toISOString().split("T")[0]
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
 
   function formatDate(day) {
     const m = String(month + 1).padStart(2, "0")
@@ -40,9 +40,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   }
 
   function isFuture(day) {
-    const date = new Date(year, month, day)
-    date.setHours(23, 59, 59, 999)
-    return date > today
+    return formatDate(day) > todayStr
   }
 
   function hasEntry(day) {
