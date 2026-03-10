@@ -5,6 +5,7 @@ import { PlatformList } from "@components/Game/PlatformBadge"
 import RatingBadge from "@components/Game/RatingBadge"
 import QuickActions from "@components/Game/QuickActions"
 import ReviewButton from "@components/Game/Review"
+import JournalButton from "@components/Game/Journal"
 import { AgeRatings } from "../components/AgeRatings"
 import { Websites } from "../components/Websites"
 import { Keywords } from "../components/Keywords"
@@ -95,6 +96,10 @@ export function GameSidebar({ game }) {
       <div className="mt-4 md:hidden">
         <QuickActions game={game} />
         <ReviewButton game={game} />
+      </div>
+
+      <div className="my-4">
+        <JournalButton game={game} />
       </div>
 
       <ParentGameLink parentGame={game.parent_game} />

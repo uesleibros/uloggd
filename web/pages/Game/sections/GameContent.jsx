@@ -78,9 +78,12 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
     <div className="flex-1 min-w-0">
       <GameHeader game={game} />
 
-      <div className="hidden md:block mb-6">
+      <div className="hidden md:block">
         <QuickActions game={game} />
         <ReviewButton game={game} />
+      </div>
+
+      <div className="my-6">
         <JournalButton game={game} />
       </div>
 
