@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useCallback } from "react"
 import { useTranslation } from "#hooks/useTranslation"
+import { Play, Plus, Minus } from "lucide-react"
 
 const WEEKDAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
 
@@ -9,6 +10,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   const [isDragging, setIsDragging] = useState(false)
   const [dragMode, setDragMode] = useState(null)
   const [selectedDates, setSelectedDates] = useState(new Set())
+  const [hoveredDay, setHoveredDay] = useState(null)
   const dragStartRef = useRef(null)
   const containerRef = useRef(null)
 
@@ -51,6 +53,13 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     return entries[formatDate(day)]
   }
 
+  function formatTime(hours, minutes) {
+    if (!hours && !minutes) return null
+    if (hours && minutes) return `${hours}h${minutes}m`
+    if (hours) return `${hours}h`
+    return `${minutes}m`
+  }
+
   function handleMouseDown(day, e) {
     if (disabled || isFuture(day)) return
     e.preventDefault()
@@ -65,6 +74,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   }
 
   function handleMouseEnter(day) {
+    setHoveredDay(day)
     if (!isDragging || disabled || isFuture(day)) return
     
     const dateStr = formatDate(day)
@@ -73,6 +83,10 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       newSet.add(dateStr)
       return newSet
     })
+  }
+
+  function handleMouseLeaveDay() {
+    setHoveredDay(null)
   }
 
   const handleMouseUp = useCallback(() => {
@@ -104,8 +118,11 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="flex items-center justify-center py-32">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm text-zinc-500">{t("loading")}</span>
+        </div>
       </div>
     )
   }
@@ -117,15 +134,15 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       onMouseLeave={handleMouseLeave}
       onMouseUp={handleMouseUp}
     >
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      <div className="grid grid-cols-7 mb-1">
         {WEEKDAYS.map(day => (
-          <div key={day} className="text-center text-sm font-medium text-zinc-500 py-3">
+          <div key={day} className="text-center text-xs font-semibold text-zinc-500 uppercase tracking-wider py-3">
             {t(`weekdays.${day}`)}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1.5">
         {Array.from({ length: startDay }).map((_, i) => (
           <div key={`empty-${i}`} className="aspect-square" />
         ))}
@@ -139,57 +156,140 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
           const isSelected = selectedDates.has(dateStr)
           const isBeingAdded = isSelected && dragMode === "add"
           const isBeingRemoved = isSelected && dragMode === "remove"
+          const isHovered = hoveredDay === day && !isDragging
 
-          const timeDisplay = entry && (entry.hours > 0 || entry.minutes > 0)
-            ? `${entry.hours > 0 ? `${entry.hours}h` : ""}${entry.minutes > 0 ? `${entry.minutes}m` : ""}`
-            : null
+          const timeStr = entry ? formatTime(entry.hours, entry.minutes) : null
 
           return (
-            <button
+            <div
               key={day}
               onMouseDown={(e) => handleMouseDown(day, e)}
               onMouseEnter={() => handleMouseEnter(day)}
-              disabled={future || disabled}
+              onMouseLeave={handleMouseLeaveDay}
               className={`
-                aspect-square rounded-xl flex flex-col items-center justify-center text-base font-medium transition-all relative
+                relative aspect-square rounded-xl transition-all duration-150
                 ${disabled ? "pointer-events-none opacity-50" : ""}
-                ${future 
-                  ? "text-zinc-700 cursor-not-allowed" 
-                  : "cursor-pointer"
-                }
-                ${todayClass && !hasLog && !isSelected ? "ring-2 ring-emerald-500/50 text-emerald-400" : ""}
-                ${hasLog && !isBeingRemoved
-                  ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" 
-                  : !hasLog && !isSelected ? "text-zinc-300 hover:bg-zinc-700/50" : ""
-                }
-                ${isBeingAdded ? "bg-emerald-500/40 text-emerald-300 ring-2 ring-emerald-400" : ""}
-                ${isBeingRemoved ? "bg-red-500/30 text-red-400 ring-2 ring-red-400" : ""}
+                ${future ? "pointer-events-none" : "cursor-pointer"}
               `}
             >
-              <span className="text-lg">{day}</span>
-              {timeDisplay && !isBeingRemoved && (
-                <span className="text-[11px] text-emerald-500/80 mt-0.5">
-                  {timeDisplay}
+              <div
+                className={`
+                  absolute inset-0 rounded-xl flex flex-col items-center justify-center transition-all duration-150
+                  ${future ? "opacity-30" : ""}
+                  ${todayClass && !hasLog && !isSelected 
+                    ? "ring-2 ring-inset ring-emerald-500" 
+                    : ""
+                  }
+                  ${hasLog && !isBeingRemoved
+                    ? "bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 ring-1 ring-inset ring-emerald-500/30" 
+                    : !hasLog && !isSelected 
+                      ? "hover:bg-zinc-800/80" 
+                      : ""
+                  }
+                  ${isBeingAdded 
+                    ? "bg-emerald-500/30 ring-2 ring-inset ring-emerald-400 scale-95" 
+                    : ""
+                  }
+                  ${isBeingRemoved 
+                    ? "bg-red-500/20 ring-2 ring-inset ring-red-400 scale-95" 
+                    : ""
+                  }
+                  ${isHovered && !future && !hasLog
+                    ? "bg-zinc-800 ring-1 ring-inset ring-zinc-600"
+                    : ""
+                  }
+                  ${isHovered && !future && hasLog && !isSelected
+                    ? "ring-2 ring-inset ring-emerald-400"
+                    : ""
+                  }
+                `}
+              >
+                <span 
+                  className={`
+                    text-lg font-semibold transition-colors duration-150
+                    ${future ? "text-zinc-700" : ""}
+                    ${todayClass && !hasLog ? "text-emerald-400" : ""}
+                    ${hasLog && !isBeingRemoved ? "text-emerald-300" : ""}
+                    ${!future && !todayClass && !hasLog && !isSelected ? "text-zinc-300" : ""}
+                    ${isBeingAdded ? "text-emerald-200" : ""}
+                    ${isBeingRemoved ? "text-red-300" : ""}
+                  `}
+                >
+                  {day}
                 </span>
-              )}
-              {hasLog && !isBeingRemoved && (
-                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              )}
-            </button>
+
+                {hasLog && timeStr && !isBeingRemoved && (
+                  <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2">
+                    <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded-full">
+                      {timeStr}
+                    </span>
+                  </div>
+                )}
+
+                {hasLog && !timeStr && !isBeingRemoved && (
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                )}
+
+                {isHovered && !future && !hasLog && !isDragging && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 rounded-xl bg-zinc-800/50" />
+                    <Plus className="w-5 h-5 text-zinc-400 relative z-10" />
+                  </div>
+                )}
+
+                {todayClass && (
+                  <div className="absolute top-1.5 right-1.5">
+                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  </div>
+                )}
+              </div>
+            </div>
           )
         })}
       </div>
 
       {isDragging && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-zinc-800 border border-zinc-600 shadow-xl">
-          <span className={`text-sm font-medium ${dragMode === "add" ? "text-emerald-400" : "text-red-400"}`}>
-            {dragMode === "add" 
-              ? t("dragging.adding", { count: selectedDates.size })
-              : t("dragging.removing", { count: selectedDates.size })
-            }
-          </span>
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <div 
+            className={`
+              flex items-center gap-2.5 px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-sm border
+              ${dragMode === "add" 
+                ? "bg-emerald-500/90 border-emerald-400/50 text-white" 
+                : "bg-red-500/90 border-red-400/50 text-white"
+              }
+            `}
+          >
+            {dragMode === "add" ? (
+              <Plus className="w-5 h-5" />
+            ) : (
+              <Minus className="w-5 h-5" />
+            )}
+            <span className="text-sm font-semibold">
+              {dragMode === "add" 
+                ? t("dragging.adding", { count: selectedDates.size })
+                : t("dragging.removing", { count: selectedDates.size })
+              }
+            </span>
+          </div>
         </div>
       )}
+
+      <div className="flex items-center justify-center gap-6 mt-6 pt-4 border-t border-zinc-800">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-md bg-gradient-to-br from-emerald-500/30 to-emerald-600/20 ring-1 ring-inset ring-emerald-500/40" />
+          <span className="text-xs text-zinc-500">{t("legend.played")}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-md ring-2 ring-inset ring-emerald-500" />
+          <span className="text-xs text-zinc-500">{t("legend.today")}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-md bg-zinc-800 ring-1 ring-inset ring-zinc-600 flex items-center justify-center">
+            <Plus className="w-2.5 h-2.5 text-zinc-500" />
+          </div>
+          <span className="text-xs text-zinc-500">{t("legend.clickToAdd")}</span>
+        </div>
+      </div>
     </div>
   )
 }
