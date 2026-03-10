@@ -386,36 +386,14 @@ export default function GameReviews({ gameId }) {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">{t("communityReviews")}</h2>
-          <div className="flex gap-2">
-            <div className="h-10 w-28 bg-zinc-800/50 rounded-xl animate-pulse" />
-            <div className="h-10 w-28 bg-zinc-800/50 rounded-xl animate-pulse" />
-          </div>
-        </div>
-        <ReviewSkeleton />
-      </div>
-    )
-  }
-
-  if (!reviews.length) {
-    return (
-      <div className="space-y-6">
-        <h2 className="text-lg font-semibold text-white">{t("communityReviews")}</h2>
-        <ReviewEmptyState />
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-lg font-semibold text-white">
           {t("communityReviews")}
-          <span className="text-sm text-zinc-500 font-normal ml-2">{total}</span>
+          {!loading && total > 0 && (
+            <span className="text-sm text-zinc-500 font-normal ml-2">{total}</span>
+          )}
         </h2>
 
         <div className="flex flex-wrap gap-2">
@@ -432,19 +410,27 @@ export default function GameReviews({ gameId }) {
         </div>
       </div>
 
-      <div className="space-y-3">
-        {reviews.map((review) => (
-          <ReviewCard
-            key={review.id}
-            review={review}
-            user={users[review.user_id]}
-            currentUserId={currentUser?.id}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <ReviewSkeleton />
+      ) : reviews.length > 0 ? (
+        <>
+          <div className="space-y-3">
+            {reviews.map((review) => (
+              <ReviewCard
+                key={review.id}
+                review={review}
+                user={users[review.user_id]}
+                currentUserId={currentUser?.id}
+              />
+            ))}
+          </div>
 
-      {totalPages > 1 && (
-        <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+          {totalPages > 1 && (
+            <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+          )}
+        </>
+      ) : (
+        <ReviewEmptyState />
       )}
     </div>
   )
