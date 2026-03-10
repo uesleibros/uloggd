@@ -237,7 +237,7 @@ export default function ListPage() {
   const slugs = useMemo(() => items.map(i => i.game_slug), [items])
   const { getGame } = useGamesBatch(slugs)
 
-  const isOwner = !authLoading && currentUser?.id && list?.user_id === currentUser.id
+  const isOwner = !authLoading && currentUser?.user_id && list?.user_id === currentUser.user_id
   const encodedId = list ? encode(list.id) : id
 
   const sensors = useSensors(
@@ -758,4 +758,5 @@ export default function ListPage() {
       />
     </div>
   )
+
 }
