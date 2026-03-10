@@ -32,7 +32,10 @@ export async function handlePublic(req, res) {
 		if (error) throw error
 
 		const userIds = [...new Set((reviews || []).map(r => r.user_id))]
+		const journeyIds = [...new Set((reviews || []).map(r => r.journey_id).filter(Boolean))]
+
 		let users = {}
+		const journeys = {}
 
 		if (userIds.length > 0) {
 			const profiles = await findManyByIds(userIds)
@@ -40,9 +43,39 @@ export async function handlePublic(req, res) {
 			users = formatUserMap(profiles, streamsMap)
 		}
 
+		if (journeyIds.length > 0) {
+			const { data: journeysData } = await supabase
+				.from("journeys")
+				.select(`
+					id,
+					title,
+					platform_id,
+					created_at,
+					journey_entries(id, played_on, hours, minutes)
+				`)
+				.in("id", journeyIds)
+
+			journeysData?.forEach(journey => {
+				const entries = journey.journey_entries || []
+				const totalMinutes = entries.reduce((acc, e) => acc + (e.hours || 0) * 60 + (e.minutes || 0), 0)
+				const sortedDates = entries.map(e => e.played_on).sort()
+
+				journeys[journey.id] = {
+					id: journey.id,
+					title: journey.title,
+					platform_id: journey.platform_id,
+					total_sessions: entries.length,
+					total_minutes: totalMinutes,
+					first_session: sortedDates[0] || null,
+					last_session: sortedDates[sortedDates.length - 1] || null,
+				}
+			})
+		}
+
 		res.json({
 			reviews: reviews || [],
 			users,
+			journeys,
 			total: count,
 			page: pageNum,
 			totalPages: Math.ceil((count || 0) / limitNum),

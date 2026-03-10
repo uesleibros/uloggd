@@ -1,4 +1,5 @@
-import { Clock, Calendar, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { Clock, Calendar, Trash2, AlertTriangle } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 
 export function JournalSidebar({ 
@@ -10,9 +11,11 @@ export function JournalSidebar({
   totalMinutes, 
   totalSessions,
   isEditing,
-  onDelete 
+  onDelete,
+  deleting
 }) {
   const { t } = useTranslation("journal.modal")
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const hours = Math.floor(totalMinutes / 60)
   const minutes = totalMinutes % 60
@@ -93,13 +96,50 @@ export function JournalSidebar({
 
           {isEditing && (
             <div className="pt-4 border-t border-zinc-700/50">
-              <button
-                onClick={onDelete}
-                className="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-4 h-4" />
-                {t("delete")}
-              </button>
+              {!showDeleteConfirm ? (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {t("delete")}
+                </button>
+              ) : (
+                <div className="p-3 bg-red-500/5 border border-red-500/20 rounded-xl space-y-3">
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-red-400">{t("deleteConfirmTitle")}</p>
+                      <p className="text-xs text-zinc-500 mt-0.5">{t("deleteConfirmMessage")}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={deleting}
+                      className="flex-1 px-3 py-2 text-xs font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      {t("cancel")}
+                    </button>
+                    <button
+                      onClick={onDelete}
+                      disabled={deleting}
+                      className="flex-1 px-3 py-2 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    >
+                      {deleting ? (
+                        <div className="w-3 h-3 border-2 border-red-300 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Trash2 className="w-3 h-3" />
+                          {t("confirmDelete")}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
