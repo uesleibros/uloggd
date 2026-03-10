@@ -492,7 +492,6 @@ export default function ListPage() {
                   size="xs"
                   src={list.owner.avatar}
                   alt={list.owner.username}
-                  decoration={list.owner.avatar_decoration}
                 />
                 {list.owner.username}
               </Link>
@@ -760,3 +759,4 @@ export default function ListPage() {
   )
 
 }
+
