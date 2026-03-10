@@ -30,7 +30,7 @@ function WelcomeBack({ user }) {
 
   return (
     <div className="mt-40">
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4">
         <AvatarWithDecoration
           src={user.avatar}
           alt={user.username}
@@ -43,6 +43,8 @@ function WelcomeBack({ user }) {
           <p className="text-sm text-zinc-500">{t(`greeting.${greetingKey}`)},</p>
           <h1 className="text-3xl font-bold text-white">{user.username}</h1>
         </div>
+      </div>
+      <div className="mb-6">
         <DailyChest />
       </div>
     </div>
@@ -94,3 +96,4 @@ export default function Home() {
     </div>
   )
 }
+
