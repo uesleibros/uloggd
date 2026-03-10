@@ -3,7 +3,7 @@ import { defaultSchema } from "rehype-sanitize"
 const CUSTOM_TAGS = [
   "details", "summary", "iframe", "img", "spoiler", "spoilerimg",
   "div", "center", "mention", "game-card", "game-grid", "game-grid-auto",
-  "svg", "path", "hr", "alert-box", "desktop", "mobile", "em"
+  "svg", "path", "hr", "alert-box", "desktop", "mobile"
 ]
 
 const ALIGNABLE_TAGS = ["p", "h1", "h2", "h3", "h4", "h5", "h6"]
