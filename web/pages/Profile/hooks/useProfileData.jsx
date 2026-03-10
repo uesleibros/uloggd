@@ -7,19 +7,23 @@ export function useProfileData(username) {
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState(null)
   const abortRef = useRef(null)
+  const hasFetchedRef = useRef(false)
+  const lastUsernameRef = useRef(null)
 
   const normalizedUsername = username?.toLowerCase()
 
-  const isOwnProfile = !authLoading
-    && !!currentUser?.username
-    && !!normalizedUsername
-    && currentUser.username.toLowerCase() === normalizedUsername
+  const isOwnProfile =
+    !authLoading &&
+    !!currentUser?.username &&
+    !!normalizedUsername &&
+    currentUser.username.toLowerCase() === normalizedUsername
 
   useEffect(() => {
     if (!username || authLoading) {
       setFetching(true)
       setError(null)
       setFetchedProfile(null)
+      hasFetchedRef.current = false
       return
     }
 
@@ -27,6 +31,11 @@ export function useProfileData(username) {
       setFetchedProfile(currentUser)
       setFetching(false)
       setError(null)
+      hasFetchedRef.current = false
+      return
+    }
+
+    if (hasFetchedRef.current && lastUsernameRef.current === normalizedUsername) {
       return
     }
 
@@ -48,6 +57,8 @@ export function useProfileData(username) {
       .then((data) => {
         setFetchedProfile(data)
         setFetching(false)
+        hasFetchedRef.current = true
+        lastUsernameRef.current = normalizedUsername
       })
       .catch((err) => {
         if (err.name === "AbortError") return
