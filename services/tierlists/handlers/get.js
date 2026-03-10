@@ -15,7 +15,7 @@ export async function handleGet(req, res) {
       .from("tierlists")
       .select(`
         id, user_id, title, description, is_public, created_at, updated_at,
-        owner:user_id ( id, username, avatar, avatar_decoration ),
+        owner:user_id ( id, username, avatar ),
         tierlist_tiers (
           id, label, color, position,
           tierlist_items ( id, game_id, game_slug, position )
@@ -68,4 +68,5 @@ export async function handleGet(req, res) {
     console.error(e)
     return res.status(500).json({ error: "fail" })
   }
+
 }
