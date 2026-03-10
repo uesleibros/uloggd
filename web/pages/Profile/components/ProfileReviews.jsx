@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
+import { MessageSquare } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
-import { MarkdownPreview } from "@components/MarkdownEditor"
+import { useDateTime } from "#hooks/useDateTime"
+import { SORT_OPTIONS } from "#constants/game"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import StatusBadge from "@components/Game/StatusBadge"
 import ReviewRating from "@components/Game/ReviewRating"
 import Playtime from "@components/Game/Playtime"
 import Modal from "@components/UI/Modal"
 import Pagination from "@components/UI/Pagination"
-import { MessageSquare } from "lucide-react"
 import {
   AspectRatingsPreview,
   ReviewIndicators,
@@ -17,56 +18,84 @@ import {
   ReviewEmptyState,
   ReviewSkeleton,
 } from "@components/Game/Review"
-import { getTimeAgo } from "#utils/formatDate"
-import { SORT_OPTIONS } from "#constants/game"
 
-function ReviewModalHeader({ review, game, user, onClose }) {
-  const { t } = useTranslation("profile")
+function SortButton({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all border ${
+        active
+          ? "bg-white text-black border-white"
+          : "text-zinc-400 border-transparent hover:text-white hover:bg-zinc-800/50"
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
+
+function GameCover({ game, size = "md", onClose }) {
+  const sizes = {
+    sm: "w-12 h-16",
+    md: "w-16 h-20",
+  }
 
   return (
-    <div className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
-      <div className="flex items-center gap-3.5 min-w-0">
-        <Link to={`/game/${game?.slug}`} onClick={onClose} className="flex-shrink-0">
-          <img
-            src={game?.cover?.url}
-            alt={game?.name}
-            className="w-12 h-16 object-cover rounded-lg border border-zinc-700"
-          />
-        </Link>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            {user && (
-              <>
-                <Link to={`/u/${user.username}`} onClick={onClose} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors">
-                  {user.username}
-                </Link>
-                <span className="text-zinc-600">•</span>
-              </>
-            )}
-            <Link to={`/game/${game?.slug}`} onClick={onClose} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors">
-              {game?.name || t("reviews.game")}
+    <Link to={`/game/${game?.slug}`} onClick={onClose} className="flex-shrink-0">
+      <img
+        src={game?.cover?.url}
+        alt={game?.name}
+        className={`${sizes[size]} object-cover rounded-lg border border-zinc-700/50 hover:border-zinc-500 transition-colors`}
+      />
+    </Link>
+  )
+}
+
+function ReviewHeader({ review, game, user, onClose }) {
+  const { t } = useTranslation("profile")
+  const { getTimeAgo } = useDateTime()
+
+  return (
+    <div className="min-w-0 flex-1">
+      <div className="flex items-center gap-2 flex-wrap">
+        {user && (
+          <>
+            <Link
+              to={`/u/${user.username}`}
+              onClick={onClose}
+              className="text-base font-semibold text-white hover:text-zinc-300 transition-colors"
+            >
+              {user.username}
             </Link>
-            <StatusBadge status={review.status} />
-            <ReviewIndicators review={review} />
-          </div>
-          <div className="flex items-center gap-3 mt-1.5">
-            <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
-            <span className="text-sm text-zinc-600">{getTimeAgo(review.created_at)}</span>
-          </div>
-        </div>
+            <span className="text-zinc-500 text-sm">{t("reviews.rated")}</span>
+          </>
+        )}
+        <Link
+          to={`/game/${game?.slug}`}
+          onClick={onClose}
+          className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate"
+        >
+          {game?.name || t("reviews.game")}
+        </Link>
+        <StatusBadge status={review.status} />
+        <ReviewIndicators review={review} />
+      </div>
+
+      <div className="flex items-center gap-3 mt-1.5">
+        <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
+        <span className="text-sm text-zinc-500">{getTimeAgo(review.created_at)}</span>
       </div>
     </div>
   )
 }
 
 export function ProfileReviewCard({ review, game, user }) {
-  const { t } = useTranslation("profile")
   const [showModal, setShowModal] = useState(false)
   const aspects = review.aspect_ratings || []
 
   return (
     <>
-      <div className="rounded-xl p-5 sm:p-6 bg-zinc-800/50 border border-zinc-700 hover:border-zinc-600 transition-all duration-200">
+      <div className="rounded-xl p-5 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 transition-colors">
         <div className="flex items-start gap-3.5">
           {user ? (
             <Link to={`/u/${user.username}`} className="flex-shrink-0">
@@ -78,40 +107,15 @@ export function ProfileReviewCard({ review, game, user }) {
               />
             </Link>
           ) : (
-            <Link to={`/game/${game?.slug}`} className="flex-shrink-0">
-              <img
-                src={game?.cover?.url}
-                alt={game?.name}
-                className="w-16 h-20 object-cover rounded-lg border border-zinc-700 hover:border-zinc-500 transition-colors"
-              />
-            </Link>
+            <GameCover game={game} />
           )}
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              {user && (
-                <>
-                  <Link to={`/u/${user.username}`} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors">
-                    {user.username}
-                  </Link>
-                  <span className="text-zinc-600 text-sm">{t("reviews.rated")}</span>
-                </>
-              )}
-              <Link to={`/game/${game?.slug}`} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate">
-                {game?.name || t("reviews.game")}
-              </Link>
-              <StatusBadge status={review.status} />
-              <ReviewIndicators review={review} />
-            </div>
-
-            <div className="flex items-center gap-3 mt-1.5">
-              <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
-              <span className="text-sm text-zinc-600">{getTimeAgo(review.created_at)}</span>
-            </div>
+            <ReviewHeader review={review} game={game} user={user} />
 
             {aspects.length > 0 && (
               <div className="mt-3 p-3 bg-zinc-900/40 border border-zinc-700/30 rounded-lg">
-                <AspectRatingsPreview aspects={aspects} />
+                <AspectRatingsPreview aspects={aspects} compact />
               </div>
             )}
 
@@ -121,19 +125,13 @@ export function ProfileReviewCard({ review, game, user }) {
               </div>
             )}
 
-            <div className="mt-4">
+            <div className="mt-4 pt-4 border-t border-zinc-700/30">
               <Playtime hours={review.hours_played} minutes={review.minutes_played} />
             </div>
           </div>
 
           {user && game?.cover?.url && (
-            <Link to={`/game/${game?.slug}`} className="flex-shrink-0 hidden sm:block">
-              <img
-                src={game.cover.url}
-                alt={game.name}
-                className="w-12 h-16 object-cover rounded-lg border border-zinc-700 hover:border-zinc-500 transition-colors"
-              />
-            </Link>
+            <GameCover game={game} size="sm" className="hidden sm:block" />
           )}
         </div>
       </div>
@@ -144,14 +142,19 @@ export function ProfileReviewCard({ review, game, user }) {
         fullscreenMobile
         showCloseButton={false}
         maxWidth="max-w-2xl"
-        noScroll
         className="!bg-zinc-900 !border-zinc-700 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
       >
-        <div className="flex flex-col h-full max-h-[85vh]">
-          <ReviewModalHeader review={review} game={game} user={user} onClose={() => setShowModal(false)} />
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            <ReviewModalContent review={review} />
-          </div>
+        <div className="flex items-center gap-3.5 p-5 border-b border-zinc-700/50 flex-shrink-0">
+          <GameCover game={game} size="sm" onClose={() => setShowModal(false)} />
+          <ReviewHeader
+            review={review}
+            game={game}
+            user={user}
+            onClose={() => setShowModal(false)}
+          />
+        </div>
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <ReviewModalContent review={review} />
         </div>
       </Modal>
     </>
@@ -181,7 +184,7 @@ export default function ProfileReviews({ userId }) {
     })
 
     fetch(`/api/reviews/byUser?${params}`)
-      .then((r) => r.ok ? r.json() : { reviews: [], games: {} })
+      .then((r) => (r.ok ? r.json() : { reviews: [], games: {} }))
       .then((data) => {
         setReviews(data.reviews || [])
         setGames(data.games || {})
@@ -193,6 +196,7 @@ export default function ProfileReviews({ userId }) {
   }, [userId, sortBy, page])
 
   function handleSortChange(newSort) {
+    if (newSort === sortBy) return
     setSortBy(newSort)
     setPage(1)
   }
@@ -202,55 +206,50 @@ export default function ProfileReviews({ userId }) {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
-  if (loading) return <ReviewSkeleton count={3} showCover />
+  if (loading) {
+    return <ReviewSkeleton count={3} showCover />
+  }
 
-  if (!reviews.length) return <ReviewEmptyState title={t("reviews.empty.title")} subtitle={t("reviews.empty.subtitle")} />
+  if (!reviews.length) {
+    return (
+      <ReviewEmptyState
+        title={t("reviews.empty.title")}
+        subtitle={t("reviews.empty.subtitle")}
+      />
+    )
+  }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-5">
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white flex items-center gap-2">
           <MessageSquare className="w-5 h-5 text-zinc-400" />
           {t("reviews.title")}
-          {total > 0 && (
-            <span className="text-sm text-zinc-500 font-normal">{total}</span>
-          )}
+          {total > 0 && <span className="text-sm text-zinc-500 font-normal">{total}</span>}
         </h2>
+
         <div className="flex gap-1">
           {SORT_OPTIONS.map((option) => (
-            <button
+            <SortButton
               key={option.key}
+              active={sortBy === option.key}
               onClick={() => handleSortChange(option.key)}
-              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 ${
-                sortBy === option.key
-                  ? "bg-white text-black"
-                  : "text-zinc-500 hover:text-white hover:bg-zinc-800/50"
-              }`}
             >
               {tReviews(`sort.${option.key}`)}
-            </button>
+            </SortButton>
           ))}
         </div>
       </div>
 
       <div className="space-y-3">
         {reviews.map((review) => (
-          <ProfileReviewCard
-            key={review.id}
-            review={review}
-            game={games[review.game_id]}
-          />
+          <ProfileReviewCard key={review.id} review={review} game={games[review.game_id]} />
         ))}
       </div>
 
-      <Pagination
-        currentPage={page}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+      {totalPages > 1 && (
+        <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+      )}
     </div>
   )
 }
-
-
-
