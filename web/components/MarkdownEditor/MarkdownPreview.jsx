@@ -14,7 +14,7 @@ import { processContent } from "./utils/processContent"
 import { GamesBatchProvider } from "#hooks/useGamesBatch"
 
 const remarkPlugins = [remarkGfm, remarkBreaks, remarkDirective, remarkAlert]
-const rehypePlugins = [[rehypeSanitize, sanitizeSchema], rehypeRaw]
+const rehypePlugins = [rehypeRaw, [rehypeSanitize, sanitizeSchema]]
 
 export const MarkdownPreview = memo(function MarkdownPreview({ content, authorRatings = {} }) {
 	const processedContent = useMemo(() => processContent(content), [content])
@@ -46,3 +46,4 @@ export const MarkdownPreview = memo(function MarkdownPreview({ content, authorRa
 	)
 
 })
+
