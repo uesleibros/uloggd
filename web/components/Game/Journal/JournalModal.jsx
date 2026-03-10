@@ -267,7 +267,7 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
   }
 
   return (
-    <div className="w-full h-full md:h-auto md:max-w-3xl md:max-h-[90vh] bg-zinc-900 md:border md:border-zinc-700 md:rounded-xl shadow-2xl flex flex-col overflow-hidden">
+    <div className="w-full h-full md:h-auto md:w-3xl md:max-w-3xl md:max-h-[90vh] bg-zinc-900 md:border md:border-zinc-700 md:rounded-xl shadow-2xl flex flex-col overflow-hidden">
       <div
         className="flex items-center justify-between px-4 pb-3 border-b border-zinc-700 flex-shrink-0 md:px-5"
         style={{ paddingTop: "max(1rem, env(safe-area-inset-top, 1rem))" }}
