@@ -1,90 +1,9 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useRef } from "react"
+import { List, Plus } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
+import { ListCard } from "@components/Lists/ListCard"
 import Pagination from "@components/UI/Pagination"
 import CreateListModal from "@components/Lists/CreateListModal"
-import EditListModal from "@components/Lists/EditListModal"
-import DeleteListModal from "@components/Lists/DeleteListModal"
-import { ListCard } from "@components/Lists/ListCard"
-import {
-  List, Plus, MoreHorizontal, Pencil, Trash2,
-} from "lucide-react"
-
-function ListActionMenu({ list, onEdit, onDelete }) {
-  const { t } = useTranslation()
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-
-  useEffect(() => {
-    if (!open) return
-    function handle(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
-    }
-    document.addEventListener("mousedown", handle)
-    document.addEventListener("touchstart", handle)
-    return () => {
-      document.removeEventListener("mousedown", handle)
-      document.removeEventListener("touchstart", handle)
-    }
-  }, [open])
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={e => { e.preventDefault(); e.stopPropagation(); setOpen(!open) }}
-        className="p-1.5 sm:p-1 text-zinc-400 hover:text-zinc-200 active:text-zinc-200 transition-colors cursor-pointer rounded-md bg-black/40 backdrop-blur-sm hover:bg-black/60 sm:opacity-0 sm:group-hover:opacity-100"
-      >
-        <MoreHorizontal className="w-4 h-4" />
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40 sm:hidden" onClick={() => setOpen(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-zinc-800 border-t border-zinc-700 rounded-t-2xl p-2 pb-safe sm:hidden animate-in slide-in-from-bottom duration-200">
-            <div className="flex justify-center pt-1 pb-3">
-              <div className="w-10 h-1 bg-zinc-700 rounded-full" />
-            </div>
-            <button
-              onClick={() => { onEdit(list); setOpen(false) }}
-              className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-zinc-300 active:bg-zinc-700/50 rounded-xl transition-colors cursor-pointer"
-            >
-              <Pencil className="w-4 h-4 text-zinc-500" />
-              {t("profile.lists.editList")}
-            </button>
-            <button
-              onClick={() => { onDelete(list); setOpen(false) }}
-              className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-red-400 active:bg-red-500/10 rounded-xl transition-colors cursor-pointer"
-            >
-              <Trash2 className="w-4 h-4" />
-              {t("profile.lists.deleteList")}
-            </button>
-            <button
-              onClick={() => setOpen(false)}
-              className="w-full mt-1 py-3 text-sm text-zinc-500 active:bg-zinc-700/30 rounded-xl transition-colors cursor-pointer"
-            >
-              {t("profile.lists.cancel")}
-            </button>
-          </div>
-
-          <div className="hidden sm:block absolute right-0 top-full mt-1 z-50 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 min-w-[140px]">
-            <button
-              onClick={() => { onEdit(list); setOpen(false) }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-700/50 transition-colors cursor-pointer"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-              {t("profile.lists.edit")}
-            </button>
-            <button
-              onClick={() => { onDelete(list); setOpen(false) }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              {t("profile.lists.delete")}
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
 
 function ListsSkeleton() {
   return (
@@ -106,6 +25,35 @@ function ListsSkeleton() {
   )
 }
 
+function EmptyState({ isOwnProfile, username, onCreateClick, t }) {
+  return (
+    <div className="rounded-xl p-10 sm:p-14 bg-zinc-800/30 border border-zinc-700/50 flex flex-col items-center justify-center gap-4">
+      <div className="w-14 h-14 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+        <List className="w-6 h-6 text-zinc-500" />
+      </div>
+      <div className="text-center space-y-1">
+        <p className="text-sm text-zinc-400 font-medium">
+          {isOwnProfile
+            ? t("profile.lists.empty.own")
+            : t("profile.lists.empty.other", { username })}
+        </p>
+        {isOwnProfile && (
+          <p className="text-sm text-zinc-500">{t("profile.lists.empty.hint")}</p>
+        )}
+      </div>
+      {isOwnProfile && (
+        <button
+          onClick={onCreateClick}
+          className="mt-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-xl transition-colors cursor-pointer flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          {t("profile.lists.createFirst")}
+        </button>
+      )}
+    </div>
+  )
+}
+
 export default function ListsSection({
   lists,
   setLists,
@@ -119,8 +67,6 @@ export default function ListsSection({
 }) {
   const { t } = useTranslation()
   const [createOpen, setCreateOpen] = useState(false)
-  const [editingList, setEditingList] = useState(null)
-  const [deletingList, setDeletingList] = useState(null)
   const sectionRef = useRef(null)
 
   function handlePageChange(page) {
@@ -132,130 +78,64 @@ export default function ListsSection({
   }
 
   function handleCreated(newList) {
-    setLists(prev => [newList, ...prev])
-  }
-
-  function handleUpdated(updatedList) {
-    setLists(prev => prev.map(l => l.id === updatedList.id ? { ...l, ...updatedList } : l))
-  }
-
-  function handleDeleted(listId) {
-    setLists(prev => prev.filter(l => l.id !== listId))
-  }
-
-  const isEmpty = !lists || lists.length === 0
-
-  if (loading) {
-    return (
-      <div>
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <List className="w-5 h-5 text-zinc-400" />
-            {t("profile.lists.title")}
-          </h2>
-        </div>
-        <ListsSkeleton />
-      </div>
-    )
+    setLists((prev) => [newList, ...prev])
   }
 
   return (
-    <div ref={sectionRef}>
-      <div className="flex items-center justify-between mb-5">
+    <div className="space-y-6" ref={sectionRef}>
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
             <List className="w-5 h-5 text-zinc-400" />
             {t("profile.lists.title")}
           </h2>
-          {total > 0 && (
-            <span className="text-xs text-zinc-500 bg-zinc-800/80 px-2 py-0.5 rounded-full tabular-nums">
-              {total}
-            </span>
+          {!loading && total > 0 && (
+            <span className="text-sm text-zinc-500 font-normal">{total}</span>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {isOwnProfile && (
-            <button
-              onClick={() => setCreateOpen(true)}
-              className="px-3 py-1.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("profile.lists.create")}</span>
-            </button>
-          )}
-        </div>
+        {isOwnProfile && (
+          <button
+            onClick={() => setCreateOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer border bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 border-zinc-700/50"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">{t("profile.lists.create")}</span>
+          </button>
+        )}
       </div>
 
-      {isEmpty ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-4 bg-zinc-800/20 border border-zinc-800 rounded-xl">
-          <div className="w-14 h-14 rounded-full bg-zinc-800/50 border border-zinc-700 flex items-center justify-center text-zinc-600">
-            <List className="w-6 h-6" />
-          </div>
-          <div className="text-center px-4">
-            <p className="text-sm text-zinc-500">
-              {isOwnProfile
-                ? t("profile.lists.empty.own")
-                : t("profile.lists.empty.other", { username })}
-            </p>
-            {isOwnProfile && (
-              <p className="text-xs text-zinc-600 mt-1">{t("profile.lists.empty.hint")}</p>
-            )}
-          </div>
-          {isOwnProfile && (
-            <button
-              onClick={() => setCreateOpen(true)}
-              className="mt-1 px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors cursor-pointer flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              {t("profile.lists.createFirst")}
-            </button>
-          )}
-        </div>
-      ) : (
+      {loading ? (
+        <ListsSkeleton />
+      ) : lists?.length > 0 ? (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {lists.map(list => (
-              <ListCard
-                key={list.id}
-                list={list}
-                actions={isOwnProfile && (
-                  <ListActionMenu 
-                    list={list} 
-                    onEdit={setEditingList} 
-                    onDelete={setDeletingList} 
-                  />
-                )}
-              />
+            {lists.map((list) => (
+              <ListCard key={list.id} list={list} />
             ))}
           </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
         </>
+      ) : (
+        <EmptyState
+          isOwnProfile={isOwnProfile}
+          username={username}
+          onCreateClick={() => setCreateOpen(true)}
+          t={t}
+        />
       )}
 
       <CreateListModal
         isOpen={createOpen}
         onClose={() => setCreateOpen(false)}
         onCreated={handleCreated}
-      />
-
-      <EditListModal
-        isOpen={!!editingList}
-        onClose={() => setEditingList(null)}
-        list={editingList}
-        onUpdated={handleUpdated}
-      />
-
-      <DeleteListModal
-        isOpen={!!deletingList}
-        onClose={() => setDeletingList(null)}
-        list={deletingList}
-        onDeleted={handleDeleted}
       />
     </div>
   )
