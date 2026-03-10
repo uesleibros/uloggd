@@ -81,7 +81,7 @@ export default function TierlistPage() {
 
   const fetchedRef = useRef(false)
 
-  const isOwner = !!(currentUser?.id && !authLoading && tierlist?.user_id === currentUser.id)
+  const isOwner = !!(currentUser?.user_id && !authLoading && tierlist?.user_id === currentUser.user_id)
   const encodedId = tierlist ? encode(tierlist.id) : id
 
   const userGames = useMemo(() => {
@@ -340,4 +340,3 @@ export default function TierlistPage() {
     </div>
   )
 }
-
