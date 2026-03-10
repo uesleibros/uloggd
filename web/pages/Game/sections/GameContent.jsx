@@ -83,7 +83,7 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
         <ReviewButton game={game} />
       </div>
 
-      <div className="my-6">
+      <div className="hidden mt-2 mb-6 md:block">
         <JournalButton game={game} />
       </div>
 

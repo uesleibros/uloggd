@@ -98,7 +98,7 @@ export function GameSidebar({ game }) {
         <ReviewButton game={game} />
       </div>
 
-      <div className="my-4">
+      <div className="my-4 md:hidden">
         <JournalButton game={game} />
       </div>
 
