@@ -4,7 +4,6 @@ import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
 import { useAuth } from "#hooks/useAuth"
 import Modal from "@components/UI/Modal"
-import DailyChest from "@components/Minerals/DailyChest"
 import { MINERALS } from "@components/Minerals/MineralRow"
 
 const MINERALS_DATA = MINERALS.map((mineral) => ({
@@ -209,8 +208,6 @@ export default function Minerals() {
         <h1 className="text-2xl font-bold text-white mb-2">{t("page.title")}</h1>
         <p className="text-sm text-zinc-500">{t("page.subtitle")}</p>
       </div>
-
-      {user && <DailyChest />}
 
       <HowToObtainSection />
 
