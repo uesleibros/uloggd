@@ -1406,9 +1406,13 @@ export default {
     },
     reorder: {
       title: "Reordenar jogos",
-      hint: "Arraste para reordenar ou use as setas.",
-      cancel: "Cancelar",
-      save: "Salvar ordem",
+			hint: "Arraste para reordenar, use as setas ou clique no número para editar.",
+			search: "Buscar jogo...",
+			filteredHint: "Arraste desabilitado durante a busca",
+			noResults: "Nenhum jogo encontrado",
+			totalItems: "{{count}} jogos",
+			cancel: "Cancelar",
+			save: "Salvar ordem",
     },
   },
   gameCard: {
@@ -1968,4 +1972,5 @@ export default {
     },
   },
 }
+
 
