@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 
-const listCache = new Map()
-
 export function useUserLists(profileId) {
   const [lists, setLists] = useState([])
   const [loading, setLoading] = useState(false)
@@ -13,16 +11,6 @@ export function useUserLists(profileId) {
 
   const fetchLists = useCallback(async (pageNum) => {
     if (!profileId) return
-
-    const cacheKey = `${profileId}-${pageNum}`
-
-    if (listCache.has(cacheKey)) {
-      const cached = listCache.get(cacheKey)
-      setLists(cached.lists)
-      setTotal(cached.total)
-      setTotalPages(cached.totalPages)
-      return
-    }
 
     if (abortRef.current) {
       abortRef.current.abort()
@@ -48,17 +36,9 @@ export function useUserLists(profileId) {
 
       if (controller.signal.aborted) return
 
-      const result = {
-        lists: data.lists || [],
-        total: data.total || 0,
-        totalPages: data.totalPages || 1,
-      }
-
-      listCache.set(cacheKey, result)
-
-      setLists(result.lists)
-      setTotal(result.total)
-      setTotalPages(result.totalPages)
+      setLists(data.lists || [])
+      setTotal(data.total || 0)
+      setTotalPages(data.totalPages || 1)
     } catch {
       if (!controller.signal.aborted) {
         setLists([])
