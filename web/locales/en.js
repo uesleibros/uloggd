@@ -1406,9 +1406,13 @@ export default {
     },
     reorder: {
       title: "Reorder games",
-      hint: "Drag to reorder or use the arrows.",
-      cancel: "Cancel",
-      save: "Save order",
+			hint: "Drag to reorder, use arrows or click the number to edit.",
+			search: "Search game...",
+			filteredHint: "Drag disabled while searching",
+			noResults: "No games found",
+			totalItems: "{{count}} games",
+			cancel: "Cancel",
+			save: "Save order",
     },
   },
   gameCard: {
