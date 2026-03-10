@@ -19,6 +19,7 @@ export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
   const [deleting, setDeleting] = useState(false)
 
   const [rating, setRating] = useState(existingReview?.rating ?? null)
+  const [journeyId, setJourneyId] = useState(existingReview?.journey_id || null)
   const [ratingMode, setRatingMode] = useState(existingReview?.rating_mode || "stars_5h")
   const [platform, setPlatform] = useState(existingReview?.platform_id?.toString() || "")
   const [review, setReview] = useState(existingReview?.review || "")
@@ -92,6 +93,7 @@ export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
         startedOn: startedOn || null,
         finishedOn: finishedOn || null,
         replay,
+        journeyId: journeyId || null,
         hoursPlayed: hoursPlayed ? parseInt(hoursPlayed) : null,
         minutesPlayed: minutesPlayed ? parseInt(minutesPlayed) : null,
         platformId: platform ? parseInt(platform) : null,
@@ -224,6 +226,8 @@ export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
               replay={replay}
               setReplay={setReplay}
               hoursPlayed={hoursPlayed}
+              journeyId={journeyId}
+              setJourneyId={setJourneyId}
               setHoursPlayed={setHoursPlayed}
               minutesPlayed={minutesPlayed}
               setMinutesPlayed={setMinutesPlayed}

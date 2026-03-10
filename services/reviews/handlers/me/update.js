@@ -11,6 +11,7 @@ export async function handleUpdate(req, res) {
     startedOn, finishedOn, replay,
     hoursPlayed, minutesPlayed,
     platformId, playedPlatformId, aspectRatings,
+    journeyId,
   } = req.body
 
   if (!reviewId) return res.status(400).json({ error: "reviewId required" })
@@ -40,6 +41,31 @@ export async function handleUpdate(req, res) {
     if (err) return res.status(400).json({ error: err })
   }
 
+  if (journeyId !== undefined && journeyId !== null) {
+    const { data: existingReview } = await supabase
+      .from("reviews")
+      .select("game_id")
+      .eq("id", reviewId)
+      .eq("user_id", req.user.id)
+      .single()
+
+    if (!existingReview)
+      return res.status(404).json({ error: "review not found" })
+
+    const { data: journey, error: journeyError } = await supabase
+      .from("journeys")
+      .select("id, game_id")
+      .eq("id", journeyId)
+      .eq("user_id", req.user.id)
+      .single()
+
+    if (journeyError || !journey)
+      return res.status(400).json({ error: "invalid journeyId" })
+
+    if (journey.game_id !== existingReview.game_id)
+      return res.status(400).json({ error: "journey does not belong to this game" })
+  }
+
   const safeReview = review !== undefined ? sanitize(review, LIMITS.MAX_REVIEW) : undefined
 
   const fieldMap = {
@@ -62,6 +88,7 @@ export async function handleUpdate(req, res) {
     platformId: ["platform_id", safePlatform(platformId)],
     playedPlatformId: ["played_platform_id", safePlatform(playedPlatformId)],
     aspectRatings: ["aspect_ratings", sanitizeAspects(aspectRatings)],
+    journeyId: ["journey_id", journeyId ?? null],
   }
 
   const updateData = {}

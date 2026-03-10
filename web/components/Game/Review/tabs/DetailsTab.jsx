@@ -1,16 +1,146 @@
-import { useState } from "react"
-import { RotateCcw, Trash2, AlertTriangle } from "lucide-react"
+import { useState, useEffect } from "react"
+import { RotateCcw, Trash2, AlertTriangle, Calendar, Clock, Link2, X } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
+import { supabase } from "#lib/supabase"
 import { ReviewSection } from "../shared/ReviewSection"
 import { PlatformSelect } from "../inputs/PlatformSelect"
 import { MAX_TITLE_LENGTH } from "../constants"
 
+function JourneySelector({ gameId, value, onChange }) {
+  const { t } = useTranslation("review.details.journey")
+  const [journeys, setJourneys] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchJourneys()
+  }, [gameId])
+
+  async function fetchJourneys() {
+    setLoading(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const res = await fetch(`/api/journeys/@me/list?gameId=${gameId}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setJourneys(data.journeys || [])
+      }
+    } catch {} finally {
+      setLoading(false)
+    }
+  }
+
+  const selectedJourney = journeys.find(j => j.id === value)
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 px-4 py-3 bg-zinc-900/50 border border-zinc-700/50 rounded-lg">
+        <div className="w-4 h-4 border-2 border-zinc-600 border-t-zinc-400 rounded-full animate-spin" />
+        <span className="text-sm text-zinc-500">{t("loading")}</span>
+      </div>
+    )
+  }
+
+  if (journeys.length === 0) {
+    return (
+      <div className="px-4 py-3 bg-zinc-900/50 border border-zinc-700/50 rounded-lg">
+        <p className="text-sm text-zinc-500">{t("noJourneys")}</p>
+      </div>
+    )
+  }
+
+  if (selectedJourney) {
+    const totalMinutes = selectedJourney.total_minutes || 0
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
+    const sessionCount = selectedJourney.journey_entries?.[0]?.count || 0
+
+    return (
+      <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+              <Link2 className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-white truncate">{selectedJourney.title}</p>
+              <div className="flex items-center gap-3 mt-1 text-xs text-zinc-500">
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  {sessionCount} {sessionCount === 1 ? t("session") : t("sessions")}
+                </span>
+                {totalMinutes > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {hours > 0 && `${hours}h`}{minutes > 0 && `${minutes}m`}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      {journeys.map((journey) => {
+        const totalMinutes = journey.total_minutes || 0
+        const hours = Math.floor(totalMinutes / 60)
+        const minutes = totalMinutes % 60
+        const sessionCount = journey.journey_entries?.[0]?.count || 0
+
+        return (
+          <button
+            key={journey.id}
+            type="button"
+            onClick={() => onChange(journey.id)}
+            className="w-full p-3 bg-zinc-900/50 border border-zinc-700/50 hover:border-zinc-600 rounded-lg text-left transition-colors cursor-pointer group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-zinc-800 group-hover:bg-emerald-500/10 flex items-center justify-center flex-shrink-0 transition-colors">
+                <Calendar className="w-4 h-4 text-zinc-500 group-hover:text-emerald-400 transition-colors" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-zinc-300 group-hover:text-white truncate transition-colors">
+                  {journey.title}
+                </p>
+                <div className="flex items-center gap-3 mt-0.5 text-xs text-zinc-600">
+                  <span>{sessionCount} {sessionCount === 1 ? t("session") : t("sessions")}</span>
+                  {totalMinutes > 0 && (
+                    <span>{hours > 0 && `${hours}h`}{minutes > 0 && `${minutes}m`}</span>
+                  )}
+                </div>
+              </div>
+              <Link2 className="w-4 h-4 text-zinc-600 group-hover:text-emerald-400 transition-colors flex-shrink-0" />
+            </div>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export function DetailsTab({
+  gameId,
   reviewTitle, setReviewTitle,
   replay, setReplay,
   hoursPlayed, setHoursPlayed,
   minutesPlayed, setMinutesPlayed,
   playedPlatform, setPlayedPlatform,
+  journeyId, setJourneyId,
   platforms,
   onDelete,
   deleting,
@@ -50,6 +180,10 @@ export function DetailsTab({
             </button>
           </div>
         </div>
+      </ReviewSection>
+
+      <ReviewSection title={t("journey.title")} description={t("journey.description")}>
+        <JourneySelector gameId={gameId} value={journeyId} onChange={setJourneyId} />
       </ReviewSection>
 
       <ReviewSection title={t("playtime.title")} description={t("playtime.description")}>

@@ -12,6 +12,7 @@ export async function handleCreate(req, res) {
     startedOn, finishedOn, replay,
     hoursPlayed, minutesPlayed,
     platformId, playedPlatformId, aspectRatings,
+    journeyId,
   } = req.body
 
   if (!gameId || typeof gameId !== "number")
@@ -29,6 +30,21 @@ export async function handleCreate(req, res) {
   } catch (e) {
     console.error(e)
     return res.status(502).json({ error: "fail" })
+  }
+
+  if (journeyId) {
+    const { data: journey, error: journeyError } = await supabase
+      .from("journeys")
+      .select("id, game_id")
+      .eq("id", journeyId)
+      .eq("user_id", req.user.id)
+      .single()
+
+    if (journeyError || !journey)
+      return res.status(400).json({ error: "invalid journeyId" })
+
+    if (journey.game_id !== gameId)
+      return res.status(400).json({ error: "journey does not belong to this game" })
   }
 
   const safeStatus = VALID_STATUSES.includes(status) ? status : LIMITS.DEFAULT_STATUS
@@ -70,6 +86,7 @@ export async function handleCreate(req, res) {
         platform_id: safePlatform(platformId),
         played_platform_id: safePlatform(playedPlatformId),
         aspect_ratings: sanitizeAspects(aspectRatings),
+        journey_id: journeyId || null,
       })
       .select()
       .single()

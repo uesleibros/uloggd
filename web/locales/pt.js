@@ -1649,6 +1649,14 @@ export default {
 				maxChars: "Máximo de {{max}} caracteres",
 				replay: "Replay",
 			},
+			journey: {
+	      title: "Jornada",
+	      description: "Anexe uma jornada registrada a esta review.",
+	      loading: "Carregando jornadas...",
+	      noJourneys: "Nenhuma jornada registrada para este jogo.",
+	      session: "sessão",
+	      sessions: "sessões",
+	    },
 			playtime: {
 				title: "Tempo jogado",
 				description: "Quanto tempo você passou jogando?",

@@ -1649,6 +1649,14 @@ export default {
 				maxChars: "Maximum {{max}} characters",
 				replay: "Replay",
 			},
+			journey: {
+	      title: "Journey",
+	      description: "Attach a logged journey to this review.",
+	      loading: "Loading journeys...",
+	      noJourneys: "No journeys logged for this game.",
+	      session: "session",
+	      sessions: "sessions",
+	    },
 			playtime: {
 				title: "Time played",
 				description: "How long did you spend playing?",
