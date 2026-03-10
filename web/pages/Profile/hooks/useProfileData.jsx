@@ -1,7 +1,5 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useAuth } from "#hooks/useAuth"
-
-const profileCache = new Map()
 
 export function useProfileData(username) {
   const { user: currentUser, loading: authLoading } = useAuth()
@@ -32,14 +30,6 @@ export function useProfileData(username) {
       return
     }
 
-    const cached = profileCache.get(normalizedUsername)
-    if (cached) {
-      setFetchedProfile(cached)
-      setFetching(false)
-      setError(null)
-      return
-    }
-
     abortRef.current?.abort()
     const controller = new AbortController()
     abortRef.current = controller
@@ -56,7 +46,6 @@ export function useProfileData(username) {
         return res.json()
       })
       .then((data) => {
-        profileCache.set(normalizedUsername, data)
         setFetchedProfile(data)
         setFetching(false)
       })
@@ -74,21 +63,9 @@ export function useProfileData(username) {
   const updateProfile = useCallback((partial) => {
     setFetchedProfile((prev) => {
       if (!prev) return prev
-      const updated = { ...prev, ...partial }
-      if (!isOwnProfile) {
-        profileCache.set(normalizedUsername, updated)
-      }
-      return updated
+      return { ...prev, ...partial }
     })
-  }, [normalizedUsername, isOwnProfile])
-
-  const invalidateCache = useCallback((user) => {
-    if (user) {
-      profileCache.delete(user.toLowerCase())
-    } else {
-      profileCache.delete(normalizedUsername)
-    }
-  }, [normalizedUsername])
+  }, [])
 
   return {
     profile,
@@ -98,6 +75,5 @@ export function useProfileData(username) {
     fetching,
     error,
     updateProfile,
-    invalidateCache,
   }
 }
