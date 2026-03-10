@@ -17,6 +17,7 @@ import { chestHandler } from "#routers/chest.js"
 import { transactionsHandler } from "#routers/transactions.js"
 import { passkeyHandler } from "#routers/passkey.js"
 import { shopHandler } from "#routers/shop.js"
+import { journeysHandler } from "#routers/journal.js"
 import { getUser } from "#lib/auth.js"
 
 // Connections
@@ -48,7 +49,8 @@ const SERVICES = {
 	chest: chestHandler,
 	transactions: transactionsHandler,
 	passkey: passkeyHandler,
-	shop: shopHandler
+	shop: shopHandler,
+	journeys: journeysHandler
 }
 
 export default async function handler(req, res) {
