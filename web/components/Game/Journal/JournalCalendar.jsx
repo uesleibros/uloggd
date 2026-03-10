@@ -1,10 +1,16 @@
-import { useMemo } from "react"
+import { useState, useMemo, useRef, useCallback } from "react"
 import { useTranslation } from "#hooks/useTranslation"
 
 const WEEKDAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
 
-export function JournalCalendar({ month, year, entries, onDayClick, loading }) {
+export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, onBulkRemove, loading, disabled }) {
   const { t } = useTranslation("journal.calendar")
+
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragMode, setDragMode] = useState(null)
+  const [selectedDates, setSelectedDates] = useState(new Set())
+  const dragStartRef = useRef(null)
+  const containerRef = useRef(null)
 
   const { days, startDay } = useMemo(() => {
     const firstDay = new Date(year, month, 1)
@@ -35,6 +41,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, loading }) {
 
   function isFuture(day) {
     const date = new Date(year, month, day)
+    date.setHours(23, 59, 59, 999)
     return date > today
   }
 
@@ -46,25 +53,75 @@ export function JournalCalendar({ month, year, entries, onDayClick, loading }) {
     return entries[formatDate(day)]
   }
 
-  function handleClick(day) {
-    if (isFuture(day)) return
-    const date = new Date(year, month, day)
-    onDayClick(date)
+  function handleMouseDown(day, e) {
+    if (disabled || isFuture(day)) return
+    e.preventDefault()
+    
+    const dateStr = formatDate(day)
+    const hasExisting = hasEntry(day)
+    
+    setIsDragging(true)
+    setDragMode(hasExisting ? "remove" : "add")
+    setSelectedDates(new Set([dateStr]))
+    dragStartRef.current = dateStr
   }
+
+  function handleMouseEnter(day) {
+    if (!isDragging || disabled || isFuture(day)) return
+    
+    const dateStr = formatDate(day)
+    setSelectedDates(prev => {
+      const newSet = new Set(prev)
+      newSet.add(dateStr)
+      return newSet
+    })
+  }
+
+  const handleMouseUp = useCallback(() => {
+    if (!isDragging) return
+
+    const dates = Array.from(selectedDates)
+    
+    if (dates.length === 1) {
+      onDayClick(dates[0])
+    } else if (dates.length > 1) {
+      if (dragMode === "add") {
+        onBulkAdd(dates)
+      } else {
+        onBulkRemove(dates)
+      }
+    }
+
+    setIsDragging(false)
+    setDragMode(null)
+    setSelectedDates(new Set())
+    dragStartRef.current = null
+  }, [isDragging, selectedDates, dragMode, onDayClick, onBulkAdd, onBulkRemove])
+
+  const handleMouseLeave = useCallback(() => {
+    if (isDragging && selectedDates.size > 0) {
+      handleMouseUp()
+    }
+  }, [isDragging, selectedDates.size, handleMouseUp])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="flex items-center justify-center py-24">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="select-none">
+    <div 
+      ref={containerRef}
+      className="select-none"
+      onMouseLeave={handleMouseLeave}
+      onMouseUp={handleMouseUp}
+    >
       <div className="grid grid-cols-7 gap-1 mb-2">
         {WEEKDAYS.map(day => (
-          <div key={day} className="text-center text-xs font-medium text-zinc-500 py-2">
+          <div key={day} className="text-center text-sm font-medium text-zinc-500 py-3">
             {t(`weekdays.${day}`)}
           </div>
         ))}
@@ -80,38 +137,61 @@ export function JournalCalendar({ month, year, entries, onDayClick, loading }) {
           const todayClass = isToday(day)
           const entry = getEntryInfo(day)
           const hasLog = !!entry
+          const dateStr = formatDate(day)
+          const isSelected = selectedDates.has(dateStr)
+          const isBeingAdded = isSelected && dragMode === "add"
+          const isBeingRemoved = isSelected && dragMode === "remove"
+
+          const timeDisplay = entry && (entry.hours > 0 || entry.minutes > 0)
+            ? `${entry.hours > 0 ? `${entry.hours}h` : ""}${entry.minutes > 0 ? `${entry.minutes}m` : ""}`
+            : null
 
           return (
             <button
               key={day}
-              onClick={() => handleClick(day)}
-              disabled={future}
+              onMouseDown={(e) => handleMouseDown(day, e)}
+              onMouseEnter={() => handleMouseEnter(day)}
+              disabled={future || disabled}
               className={`
-                aspect-square rounded-lg flex flex-col items-center justify-center text-sm font-medium transition-all relative
+                aspect-square rounded-xl flex flex-col items-center justify-center text-base font-medium transition-all relative
+                ${disabled ? "pointer-events-none opacity-50" : ""}
                 ${future 
                   ? "text-zinc-700 cursor-not-allowed" 
-                  : "cursor-pointer hover:bg-zinc-700/50"
+                  : "cursor-pointer"
                 }
-                ${todayClass && !hasLog ? "ring-2 ring-emerald-500/50 text-emerald-400" : ""}
-                ${hasLog 
+                ${todayClass && !hasLog && !isSelected ? "ring-2 ring-emerald-500/50 text-emerald-400" : ""}
+                ${hasLog && !isBeingRemoved
                   ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" 
-                  : "text-zinc-300"
+                  : !hasLog && !isSelected ? "text-zinc-300 hover:bg-zinc-700/50" : ""
                 }
+                ${isBeingAdded ? "bg-emerald-500/40 text-emerald-300 ring-2 ring-emerald-400" : ""}
+                ${isBeingRemoved ? "bg-red-500/30 text-red-400 ring-2 ring-red-400" : ""}
               `}
             >
-              <span>{day}</span>
-              {hasLog && entry.hours + entry.minutes > 0 && (
-                <span className="text-[10px] text-emerald-500/80">
-                  {entry.hours > 0 ? `${entry.hours}h` : ""}{entry.minutes > 0 ? `${entry.minutes}m` : ""}
+              <span className="text-lg">{day}</span>
+              {timeDisplay && !isBeingRemoved && (
+                <span className="text-[11px] text-emerald-500/80 mt-0.5">
+                  {timeDisplay}
                 </span>
               )}
-              {hasLog && (
-                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-400" />
+              {hasLog && !isBeingRemoved && (
+                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-emerald-400" />
               )}
             </button>
           )
         })}
       </div>
+
+      {isDragging && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-zinc-800 border border-zinc-600 shadow-xl">
+          <span className={`text-sm font-medium ${dragMode === "add" ? "text-emerald-400" : "text-red-400"}`}>
+            {dragMode === "add" 
+              ? t("dragging.adding", { count: selectedDates.size })
+              : t("dragging.removing", { count: selectedDates.size })
+            }
+          </span>
+        </div>
+      )}
     </div>
   )
 }

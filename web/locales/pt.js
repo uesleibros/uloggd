@@ -21,6 +21,10 @@ export default {
 	      thu: "Qui",
 	      fri: "Sex",
 	      sat: "Sáb"
+	    },
+	    dragging: {
+	      adding: "Adicionando {{count}} dias",
+	      removing: "Removendo {{count}} dias"
 	    }
 	  },
 	  modal: {
@@ -30,8 +34,10 @@ export default {
 	    selectPlatform: "Selecionar plataforma",
 	    session: "sessão",
 	    sessions: "sessões",
+	    totalTime: "tempo total",
 	    cancel: "Cancelar",
 	    save: "Salvar",
+	    saving: "Salvando...",
 	    create: "Criar",
 	    delete: "Excluir jornada",
 	    createFirst: "Crie a jornada para começar a registrar suas sessões",
@@ -40,6 +46,7 @@ export default {
 	    today: "Hoje",
 	    start: "Início",
 	    finish: "Fim",
+	    dragHint: "Dica: Clique e arraste para selecionar múltiplos dias de uma vez. Clique em um dia para adicionar tempo e notas.",
 	    months: {
 	      january: "Janeiro",
 	      february: "Fevereiro",
@@ -55,7 +62,11 @@ export default {
 	      december: "Dezembro"
 	    },
 	    entry: {
+	      addSession: "Adicionar sessão",
+	      editSession: "Editar sessão",
 	      time: "Tempo jogado",
+	      hours: "horas",
+	      minutes: "minutos",
 	      note: "Nota (opcional)",
 	      notePlaceholder: "O que aconteceu nessa sessão?",
 	      cancel: "Cancelar",
@@ -66,6 +77,8 @@ export default {
 	      added: "Sessão adicionada",
 	      updated: "Sessão atualizada",
 	      removed: "Sessão removida",
+	      bulkAdded: "{{count}} sessões adicionadas",
+	      bulkRemoved: "{{count}} sessões removidas",
 	      saveFailed: "Erro ao salvar sessão",
 	      removeFailed: "Erro ao remover sessão"
 	    },

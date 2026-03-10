@@ -21,6 +21,10 @@ export default {
 	      thu: "Thu",
 	      fri: "Fri",
 	      sat: "Sat"
+	    },
+	    dragging: {
+	      adding: "Adding {{count}} days",
+	      removing: "Removing {{count}} days"
 	    }
 	  },
 	  modal: {
@@ -30,8 +34,10 @@ export default {
 	    selectPlatform: "Select platform",
 	    session: "session",
 	    sessions: "sessions",
+	    totalTime: "total time",
 	    cancel: "Cancel",
 	    save: "Save",
+	    saving: "Saving...",
 	    create: "Create",
 	    delete: "Delete journey",
 	    createFirst: "Create the journey to start logging your sessions",
@@ -40,6 +46,7 @@ export default {
 	    today: "Today",
 	    start: "Start",
 	    finish: "Finish",
+	    dragHint: "Tip: Click and drag to select multiple days at once. Click on a day to add time and notes.",
 	    months: {
 	      january: "January",
 	      february: "February",
@@ -55,7 +62,11 @@ export default {
 	      december: "December"
 	    },
 	    entry: {
+	      addSession: "Add session",
+	      editSession: "Edit session",
 	      time: "Time played",
+	      hours: "hours",
+	      minutes: "minutes",
 	      note: "Note (optional)",
 	      notePlaceholder: "What happened in this session?",
 	      cancel: "Cancel",
@@ -66,6 +77,8 @@ export default {
 	      added: "Session added",
 	      updated: "Session updated",
 	      removed: "Session removed",
+	      bulkAdded: "{{count}} sessions added",
+	      bulkRemoved: "{{count}} sessions removed",
 	      saveFailed: "Failed to save session",
 	      removeFailed: "Failed to remove session"
 	    },
