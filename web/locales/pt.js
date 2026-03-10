@@ -1,4 +1,58 @@
 export default {
+  journal: {
+    button: {
+      create: "Criar Jornada",
+      createAnother: "Criar outra jornada"
+    },
+    selector: {
+      new: "Nova"
+    },
+    card: {
+      session: "sessão",
+      sessions: "sessões",
+      platform: "Plataforma"
+    },
+    modal: {
+      title: "Título da jornada",
+      titlePlaceholder: "Ex: Primeira Zerada, NG+, Platinando...",
+      platform: "Plataforma",
+      entries: "Sessões de jogo",
+      session: "sessão",
+      sessions: "sessões",
+      addEntry: "Adicionar sessão",
+      noEntries: "Nenhuma sessão registrada ainda",
+      cancel: "Cancelar",
+      save: "Salvar",
+      create: "Criar",
+      delete: "Excluir jornada",
+      deleting: "Excluindo...",
+      entry: {
+        date: "Data",
+        time: "Tempo jogado",
+        note: "Nota (opcional)",
+        notePlaceholder: "O que aconteceu nessa sessão?",
+        cancel: "Cancelar",
+        save: "Salvar",
+        saving: "Salvando...",
+        added: "Sessão adicionada",
+        updated: "Sessão atualizada",
+        removed: "Sessão removida",
+        saveFailed: "Erro ao salvar sessão",
+        removeFailed: "Erro ao remover sessão"
+      },
+      success: {
+        created: "Jornada criada!",
+        updated: "Jornada atualizada!",
+        deleted: "Jornada excluída"
+      },
+      errors: {
+        titleRequired: "Título é obrigatório",
+        notLoggedIn: "Você precisa estar logado",
+        saveFailed: "Erro ao salvar jornada",
+        deleteFailed: "Erro ao excluir jornada"
+      }
+    }
+  },
 	inventory: {
 	  title: "Inventário",
 	  description: "Gerencie seus cosméticos e escolha o que equipar no seu perfil.",

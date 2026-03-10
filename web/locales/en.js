@@ -1,4 +1,58 @@
 export default {
+  journal: {
+    button: {
+      create: "Create Journey",
+      createAnother: "Create another journey"
+    },
+    selector: {
+      new: "New"
+    },
+    card: {
+      session: "session",
+      sessions: "sessions",
+      platform: "Platform"
+    },
+    modal: {
+      title: "Journey title",
+      titlePlaceholder: "E.g.: First Playthrough, NG+, Platinum Run...",
+      platform: "Platform",
+      entries: "Play sessions",
+      session: "session",
+      sessions: "sessions",
+      addEntry: "Add session",
+      noEntries: "No sessions logged yet",
+      cancel: "Cancel",
+      save: "Save",
+      create: "Create",
+      delete: "Delete journey",
+      deleting: "Deleting...",
+      entry: {
+        date: "Date",
+        time: "Time played",
+        note: "Note (optional)",
+        notePlaceholder: "What happened in this session?",
+        cancel: "Cancel",
+        save: "Save",
+        saving: "Saving...",
+        added: "Session added",
+        updated: "Session updated",
+        removed: "Session removed",
+        saveFailed: "Failed to save session",
+        removeFailed: "Failed to remove session"
+      },
+      success: {
+        created: "Journey created!",
+        updated: "Journey updated!",
+        deleted: "Journey deleted"
+      },
+      errors: {
+        titleRequired: "Title is required",
+        notLoggedIn: "You need to be logged in",
+        saveFailed: "Failed to save journey",
+        deleteFailed: "Failed to delete journey"
+      }
+    }
+  },
 	inventory: {
 	  title: "Inventory",
 	  description: "Manage your cosmetics and choose what to equip on your profile.",

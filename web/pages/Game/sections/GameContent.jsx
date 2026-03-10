@@ -3,6 +3,7 @@ import { Languages, Loader2 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import QuickActions from "@components/Game/QuickActions"
 import ReviewButton from "@components/Game/Review"
+import JournalButton from "@components/Game/Journal"
 import GameReviews from "@components/Game/GameReviews"
 import { GameSteamAchievements } from "@components/Game/SteamAchievements"
 import { StatCard } from "../components/StatCard"
@@ -80,6 +81,7 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
       <div className="hidden md:block mb-6">
         <QuickActions game={game} />
         <ReviewButton game={game} />
+        <JournalButton game={game} />
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
