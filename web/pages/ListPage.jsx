@@ -726,12 +726,6 @@ export default function ListPage() {
                         <GameCardSkeleton responsive />
                       )}
                     </div>
-
-                    {item.marked && (
-                      <div className="absolute bottom-1 left-1 z-10 p-1.5 bg-white/90 text-zinc-900 rounded-lg">
-                        <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      </div>
-                    )}
                   </div>
                 </div>
               )
@@ -797,4 +791,3 @@ export default function ListPage() {
     </div>
   )
 }
-
