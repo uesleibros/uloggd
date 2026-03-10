@@ -30,9 +30,19 @@ import ReorderModal from "@components/Lists/ReorderModal"
 import RemoveItemModal from "@components/Lists/RemoveItemModal"
 import DeleteListModal from "@components/Lists/DeleteListModal"
 import {
-  List, Lock, ArrowLeft, Pencil, Trash2, Plus,
-  MoreHorizontal, X, Gamepad2, Calendar,
-  Link as LinkIcon, Check, ArrowUpDown,
+  List,
+  Lock,
+  ArrowLeft,
+  Pencil,
+  Trash2,
+  Plus,
+  MoreHorizontal,
+  X,
+  Gamepad2,
+  Calendar,
+  Link as LinkIcon,
+  Check,
+  ArrowUpDown,
 } from "lucide-react"
 import { supabase } from "#lib/supabase.js"
 import { encode } from "#utils/shortId.js"
@@ -88,7 +98,7 @@ function ShareButton({ listId }) {
   )
 }
 
-function MobileActionBar({ listId, onAdd, onEdit, onDelete, onReorder, itemCount }) {
+function MobileActionBar({ onAdd, onEdit, onDelete, onReorder, itemCount }) {
   const { t } = useTranslation("common")
 
   return (
@@ -125,17 +135,22 @@ function MobileActionBar({ listId, onAdd, onEdit, onDelete, onReorder, itemCount
   )
 }
 
-function SortableGameCard({ item, game, editMode, isOwner, globalIndex, showRank, togglingMark, onToggleMark, onRemove }) {
+function SortableGameCard({
+  item,
+  game,
+  editMode,
+  isOwner,
+  globalIndex,
+  showRank,
+  togglingMark,
+  onToggleMark,
+  onRemove,
+}) {
   const { t } = useTranslation("common")
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id })
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  })
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -170,7 +185,10 @@ function SortableGameCard({ item, game, editMode, isOwner, globalIndex, showRank
         {isOwner && editMode && game && (
           <>
             <button
-              onClick={(e) => { e.stopPropagation(); onToggleMark(item) }}
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggleMark(item)
+              }}
               className={`absolute bottom-1 left-1 z-10 p-1.5 rounded-lg transition-all cursor-pointer touch-manipulation opacity-100 sm:opacity-0 sm:group-hover:opacity-100 ${
                 item.marked
                   ? "bg-white/90 text-zinc-900 hover:bg-white sm:!opacity-100"
@@ -182,7 +200,10 @@ function SortableGameCard({ item, game, editMode, isOwner, globalIndex, showRank
             </button>
 
             <button
-              onClick={(e) => { e.stopPropagation(); onRemove(item) }}
+              onClick={(e) => {
+                e.stopPropagation()
+                onRemove(item)
+              }}
               className="absolute top-1 right-1 z-10 p-1.5 bg-black/70 hover:bg-red-500 active:bg-red-600 rounded-lg text-zinc-400 hover:text-white transition-all cursor-pointer touch-manipulation opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
               title={t("remove")}
             >
@@ -234,7 +255,7 @@ export default function ListPage() {
   const menuRef = useRef(null)
   const gridRef = useRef(null)
 
-  const slugs = useMemo(() => items.map(i => i.game_slug), [items])
+  const slugs = useMemo(() => items.map((i) => i.game_slug), [items])
   const { getGame } = useGamesBatch(slugs)
 
   const isOwner = !authLoading && currentUser?.user_id && list?.user_id === currentUser.user_id
@@ -245,48 +266,55 @@ export default function ListPage() {
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 12 } })
   )
 
-  usePageMeta(list ? {
-    title: `${list.title} - uloggd`,
-    description: list.description || "Lista de jogos",
-  } : undefined)
+  usePageMeta(
+    list
+      ? {
+          title: `${list.title} - uloggd`,
+          description: list.description || "Lista de jogos",
+        }
+      : undefined
+  )
 
-  const fetchList = useCallback(async (pageNum) => {
-    setLoading(true)
-    setError(null)
+  const fetchList = useCallback(
+    async (pageNum) => {
+      setLoading(true)
+      setError(null)
 
-    try {
-      const params = new URLSearchParams({
-        listId: id,
-        page: pageNum,
-        limit: ITEMS_PER_PAGE,
-      })
+      try {
+        const params = new URLSearchParams({
+          listId: id,
+          page: pageNum,
+          limit: ITEMS_PER_PAGE,
+        })
 
-      const r = await fetch(`/api/lists/get?${params}`)
+        const r = await fetch(`/api/lists/get?${params}`)
 
-      if (!r.ok) throw new Error("not found")
+        if (!r.ok) throw new Error("not found")
 
-      const data = await r.json()
-      setList({
-        id: data.id,
-        user_id: data.user_id,
-        title: data.title,
-        description: data.description,
-        is_public: data.is_public,
-        ranked: data.ranked,
-        created_at: data.created_at,
-        updated_at: data.updated_at,
-        owner: data.owner,
-      })
-      setItems(data.list_items || [])
-      setTotalItems(data.items_total || 0)
-      setTotalPages(data.items_totalPages || 1)
-      setMarkedTotal(data.items_marked || 0)
-    } catch {
-      setError(true)
-    } finally {
-      setLoading(false)
-    }
-  }, [id])
+        const data = await r.json()
+        setList({
+          id: data.id,
+          user_id: data.user_id,
+          title: data.title,
+          description: data.description,
+          is_public: data.is_public,
+          ranked: data.ranked,
+          created_at: data.created_at,
+          updated_at: data.updated_at,
+          owner: data.owner,
+        })
+        setItems(data.list_items || [])
+        setTotalItems(data.items_total || 0)
+        setTotalPages(data.items_totalPages || 1)
+        setMarkedTotal(data.items_marked || 0)
+      } catch {
+        setError(true)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [id]
+  )
 
   useEffect(() => {
     setCurrentPage(1)
@@ -310,11 +338,11 @@ export default function ListPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           listId: list.id,
-          items: newItems.map(item => item.id),
+          items: newItems.map((item) => item.id),
         }),
       })
 
@@ -336,8 +364,8 @@ export default function ListPage() {
 
     if (!over || active.id === over.id) return
 
-    const oldIndex = items.findIndex(i => i.id === active.id)
-    const newIndex = items.findIndex(i => i.id === over.id)
+    const oldIndex = items.findIndex((i) => i.id === active.id)
+    const newIndex = items.findIndex((i) => i.id === over.id)
 
     if (oldIndex === -1 || newIndex === -1) return
 
@@ -356,10 +384,8 @@ export default function ListPage() {
     const newMarked = !item.marked
     setTogglingMark(item.id)
 
-    setItems(prev => prev.map(i =>
-      i.id === item.id ? { ...i, marked: newMarked } : i
-    ))
-    setMarkedTotal(prev => newMarked ? prev + 1 : prev - 1)
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, marked: newMarked } : i)))
+    setMarkedTotal((prev) => (newMarked ? prev + 1 : prev - 1))
 
     try {
       const token = (await supabase.auth.getSession())?.data?.session?.access_token
@@ -368,17 +394,15 @@ export default function ListPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ itemId: item.id, marked: newMarked }),
       })
 
       if (!r.ok) throw new Error()
     } catch {
-      setItems(prev => prev.map(i =>
-        i.id === item.id ? { ...i, marked: !newMarked } : i
-      ))
-      setMarkedTotal(prev => newMarked ? prev - 1 : prev + 1)
+      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, marked: !newMarked } : i)))
+      setMarkedTotal((prev) => (newMarked ? prev - 1 : prev + 1))
     } finally {
       setTogglingMark(null)
     }
@@ -394,7 +418,7 @@ export default function ListPage() {
   }
 
   function handleUpdated(updated) {
-    setList(prev => ({ ...prev, ...updated }))
+    setList((prev) => ({ ...prev, ...updated }))
   }
 
   function handleDeleted() {
@@ -403,22 +427,25 @@ export default function ListPage() {
   }
 
   function handleItemAdded(item) {
-    setItems(prev => [...prev, item])
-    setTotalItems(prev => prev + 1)
+    if (currentPage === 1) {
+      fetchList(1)
+    } else {
+      setTotalItems((prev) => prev + 1)
+    }
   }
 
   function handleItemRemoved(itemId) {
-    const item = items.find(i => i.id === itemId)
-    setItems(prev => prev.filter(i => i.id !== itemId))
-    setTotalItems(prev => prev - 1)
-    if (item?.marked) setMarkedTotal(prev => prev - 1)
+    const item = items.find((i) => i.id === itemId)
+    setItems((prev) => prev.filter((i) => i.id !== itemId))
+    setTotalItems((prev) => prev - 1)
+    if (item?.marked) setMarkedTotal((prev) => prev - 1)
   }
 
-  function handleReordered(newItems) {
-    setItems(newItems)
+  function handleReordered() {
+    fetchList(currentPage)
   }
 
-  const activeItem = activeId ? items.find(i => i.id === activeId) : null
+  const activeItem = activeId ? items.find((i) => i.id === activeId) : null
   const activeGame = activeItem ? getGame(activeItem.game_slug) : null
   const activeCoverUrl = activeGame ? getCoverUrl(activeGame) : null
 
@@ -432,7 +459,9 @@ export default function ListPage() {
         </div>
         <h1 className="text-xl font-bold text-white">{t("list.notFound.title")}</h1>
         <p className="text-sm text-zinc-500">{t("list.notFound.message")}</p>
-        <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("common.backToHome")}</Link>
+        <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">
+          {t("common.backToHome")}
+        </Link>
       </div>
     )
   }
@@ -445,7 +474,9 @@ export default function ListPage() {
         </div>
         <h1 className="text-xl font-bold text-white">{t("list.private.title")}</h1>
         <p className="text-sm text-zinc-500">{t("list.private.message")}</p>
-        <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("common.backToHome")}</Link>
+        <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">
+          {t("common.backToHome")}
+        </Link>
       </div>
     )
   }
@@ -472,7 +503,9 @@ export default function ListPage() {
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex-1 min-w-0">
           <div className="flex items-start gap-3 mb-2">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white break-words">{list.title}</h1>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white break-words">
+              {list.title}
+            </h1>
             {list.is_public === false && (
               <span className="flex items-center gap-1 text-xs text-zinc-500 bg-zinc-800 border border-zinc-700 px-2 py-0.5 rounded-md flex-shrink-0 mt-1.5">
                 <Lock className="w-3 h-3" />
@@ -487,12 +520,11 @@ export default function ListPage() {
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-zinc-500">
             {list.owner && (
-              <Link to={`/u/${list.owner.username}`} className="flex items-center gap-1.5 hover:text-white active:text-white transition-colors py-0.5">
-                <AvatarWithDecoration
-                  size="xs"
-                  src={list.owner.avatar}
-                  alt={list.owner.username}
-                />
+              <Link
+                to={`/u/${list.owner.username}`}
+                className="flex items-center gap-1.5 hover:text-white active:text-white transition-colors py-0.5"
+              >
+                <AvatarWithDecoration size="xs" src={list.owner.avatar} alt={list.owner.username} />
                 {list.owner.username}
               </Link>
             )}
@@ -567,14 +599,20 @@ export default function ListPage() {
                   {menuOpen && (
                     <div className="absolute right-0 top-full mt-1 z-30 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 min-w-[150px]">
                       <button
-                        onClick={() => { setEditOpen(true); setMenuOpen(false) }}
+                        onClick={() => {
+                          setEditOpen(true)
+                          setMenuOpen(false)
+                        }}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-700/50 transition-colors cursor-pointer"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                         {t("list.actions.editList")}
                       </button>
                       <button
-                        onClick={() => { setDeleteOpen(true); setMenuOpen(false) }}
+                        onClick={() => {
+                          setDeleteOpen(true)
+                          setMenuOpen(false)
+                        }}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -600,7 +638,10 @@ export default function ListPage() {
             </p>
             {isOwner && (
               <button
-                onClick={() => { setEditMode(true); setAddGameOpen(true) }}
+                onClick={() => {
+                  setEditMode(true)
+                  setAddGameOpen(true)
+                }}
                 className="px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 rounded-lg transition-colors cursor-pointer flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
@@ -617,10 +658,7 @@ export default function ListPage() {
             onDragCancel={handleDragCancel}
             modifiers={[restrictToWindowEdges]}
           >
-            <SortableContext
-              items={items.map(i => i.id)}
-              strategy={rectSortingStrategy}
-            >
+            <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
               <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
                 {items.map((item, index) => {
                   const game = getGame(item.game_slug)
@@ -664,51 +702,58 @@ export default function ListPage() {
             </DragOverlay>
           </DndContext>
         ) : (
-          <>
-            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-              {items.map((item, index) => {
-                const game = getGame(item.game_slug)
-                const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index + 1
+          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            {items.map((item, index) => {
+              const game = getGame(item.game_slug)
+              const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index + 1
 
-                return (
-                  <div key={item.id} className={`relative ${showRank ? "pt-2 pl-2" : ""}`}>
-                    {showRank && (
-                      <div className="absolute top-0 left-0 z-10 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[9px] sm:text-[10px] font-bold text-zinc-400 tabular-nums">
-                        {globalIndex}
-                      </div>
-                    )}
+              return (
+                <div key={item.id} className={`relative ${showRank ? "pt-2 pl-2" : ""}`}>
+                  {showRank && (
+                    <div className="absolute top-0 left-0 z-10 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[9px] sm:text-[10px] font-bold text-zinc-400 tabular-nums">
+                      {globalIndex}
+                    </div>
+                  )}
 
-                    <div className="group relative">
-                      <div className={`transition-all duration-200 ${item.marked ? "grayscale opacity-50" : ""}`}>
-                        {game ? (
-                          <GameCard game={game} showQuickActions={!editMode} disableLink={editMode} responsive />
-                        ) : (
-                          <GameCardSkeleton responsive />
-                        )}
-                      </div>
-
-                      {item.marked && (
-                        <div className="absolute bottom-1 left-1 z-10 p-1.5 bg-white/90 text-zinc-900 rounded-lg">
-                          <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                        </div>
+                  <div className="group relative">
+                    <div
+                      className={`transition-all duration-200 ${item.marked ? "grayscale opacity-50" : ""}`}
+                    >
+                      {game ? (
+                        <GameCard
+                          game={game}
+                          showQuickActions={!editMode}
+                          disableLink={editMode}
+                          responsive
+                        />
+                      ) : (
+                        <GameCardSkeleton responsive />
                       )}
                     </div>
+
+                    {item.marked && (
+                      <div className="absolute bottom-1 left-1 z-10 p-1.5 bg-white/90 text-zinc-900 rounded-lg">
+                        <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      </div>
+                    )}
                   </div>
-                )
-              })}
-            </div>
-          </>
+                </div>
+              )
+            })}
+          </div>
         )}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
       </div>
 
       {isOwner && editMode && (
         <MobileActionBar
-          listId={encodedId}
           onAdd={() => setAddGameOpen(true)}
           onEdit={() => setEditOpen(true)}
           onDelete={() => setDeleteOpen(true)}
@@ -742,8 +787,6 @@ export default function ListPage() {
       <ReorderModal
         isOpen={reorderOpen}
         onClose={() => setReorderOpen(false)}
-        items={items}
-        getGame={getGame}
         listId={list.id}
         onReordered={handleReordered}
       />
@@ -757,6 +800,4 @@ export default function ListPage() {
       />
     </div>
   )
-
 }
-
