@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { MessageSquare } from "lucide-react"
+import { MessageSquare, Clock, TrendingUp } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
 import { SORT_OPTIONS } from "#constants/game"
@@ -19,17 +19,23 @@ import {
   ReviewSkeleton,
 } from "@components/Game/Review"
 
-function SortButton({ active, onClick, children }) {
+const SORT_ICONS = {
+  recent: Clock,
+  popular: TrendingUp,
+}
+
+function SortButton({ active, onClick, icon: Icon, children }) {
   return (
     <button
       onClick={onClick}
-      className={`px-3.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all border ${
+      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer border ${
         active
           ? "bg-white text-black border-white"
-          : "text-zinc-400 border-transparent hover:text-white hover:bg-zinc-800/50"
+          : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 border-zinc-700/50"
       }`}
     >
-      {children}
+      {Icon && <Icon className="w-4 h-4" />}
+      <span>{children}</span>
     </button>
   )
 }
@@ -131,7 +137,9 @@ export function ProfileReviewCard({ review, game, user }) {
           </div>
 
           {user && game?.cover?.url && (
-            <GameCover game={game} size="sm" className="hidden sm:block" />
+            <div className="hidden sm:block">
+              <GameCover game={game} size="sm" />
+            </div>
           )}
         </div>
       </div>
@@ -206,34 +214,24 @@ export default function ProfileReviews({ userId }) {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
-  if (loading) {
-    return <ReviewSkeleton count={3} showCover />
-  }
-
-  if (!reviews.length) {
-    return (
-      <ReviewEmptyState
-        title={t("reviews.empty.title")}
-        subtitle={t("reviews.empty.subtitle")}
-      />
-    )
-  }
-
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-lg font-semibold text-white flex items-center gap-2">
           <MessageSquare className="w-5 h-5 text-zinc-400" />
           {t("reviews.title")}
-          {total > 0 && <span className="text-sm text-zinc-500 font-normal">{total}</span>}
+          {!loading && total > 0 && (
+            <span className="text-sm text-zinc-500 font-normal">{total}</span>
+          )}
         </h2>
 
-        <div className="flex gap-1">
+        <div className="flex flex-wrap gap-2">
           {SORT_OPTIONS.map((option) => (
             <SortButton
               key={option.key}
               active={sortBy === option.key}
               onClick={() => handleSortChange(option.key)}
+              icon={SORT_ICONS[option.key]}
             >
               {tReviews(`sort.${option.key}`)}
             </SortButton>
@@ -241,14 +239,25 @@ export default function ProfileReviews({ userId }) {
         </div>
       </div>
 
-      <div className="space-y-3">
-        {reviews.map((review) => (
-          <ProfileReviewCard key={review.id} review={review} game={games[review.game_id]} />
-        ))}
-      </div>
+      {loading ? (
+        <ReviewSkeleton count={3} showCover />
+      ) : reviews.length > 0 ? (
+        <>
+          <div className="space-y-3">
+            {reviews.map((review) => (
+              <ProfileReviewCard key={review.id} review={review} game={games[review.game_id]} />
+            ))}
+          </div>
 
-      {totalPages > 1 && (
-        <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+          {totalPages > 1 && (
+            <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+          )}
+        </>
+      ) : (
+        <ReviewEmptyState
+          title={t("reviews.empty.title")}
+          subtitle={t("reviews.empty.subtitle")}
+        />
       )}
     </div>
   )
