@@ -44,7 +44,7 @@ function WelcomeBack({ user }) {
           <h1 className="text-3xl font-bold text-white">{user.username}</h1>
         </div>
       </div>
-      <div className="mb-6">
+      <div className="my-6">
         <DailyChest />
       </div>
     </div>
@@ -96,4 +96,5 @@ export default function Home() {
     </div>
   )
 }
+
 
