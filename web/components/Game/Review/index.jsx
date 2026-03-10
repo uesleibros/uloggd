@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Plus } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
@@ -9,7 +9,7 @@ import { UserReviewCard } from "./ReviewCard"
 
 function ReviewSelector({ reviews, selectedId, onSelect, onNew }) {
   const { t } = useTranslation("review")
-  
+
   if (reviews.length === 0) return null
 
   return (
@@ -47,38 +47,40 @@ export default function ReviewButton({ game }) {
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedReview, setSelectedReview] = useState(null)
-  const fetchedRef = useRef(false)
 
-  const fetchReviews = useCallback(async () => {
-    if (!user || !game?.id) return
-    setLoading(true)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+  const fetchReviews = useCallback(
+    async (signal) => {
+      if (!user || !game?.id) return
+      setLoading(true)
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+        if (!session || signal?.aborted) return
 
-      const res = await fetch(`/api/reviews/@me/game?gameId=${game.id}`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      })
+        const res = await fetch(`/api/reviews/@me/game?gameId=${game.id}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          signal,
+        })
 
-      if (res.ok) {
-        const data = await res.json()
-        setReviews(data)
-        if (data.length > 0 && !selectedReview) {
-          setSelectedReview(data[0])
+        if (res.ok && !signal?.aborted) {
+          const data = await res.json()
+          setReviews(data)
+          setSelectedReview((prev) => prev ?? data[0] ?? null)
         }
+      } catch (e) {
+        if (e?.name === "AbortError") return
+      } finally {
+        if (!signal?.aborted) setLoading(false)
       }
-    } catch {
-    } finally {
-      setLoading(false)
-    }
-  }, [user?.id, game?.id])
+    },
+    [user?.id, game?.id],
+  )
 
   useEffect(() => {
-    if (fetchedRef.current) return
-    fetchedRef.current = true
-    fetchReviews()
+    const ac = new AbortController()
+    fetchReviews(ac.signal)
+    return () => ac.abort()
   }, [fetchReviews])
 
   if (!user) return null
@@ -98,18 +100,12 @@ export default function ReviewButton({ game }) {
 
   function handleClose() {
     setShowModal(false)
-    fetchedRef.current = false
-    fetchReviews().then(() => {
-      fetchedRef.current = true
-    })
+    fetchReviews()
   }
 
   function handleDeleted() {
     setSelectedReview(null)
-    fetchedRef.current = false
-    fetchReviews().then(() => {
-      fetchedRef.current = true
-    })
+    fetchReviews()
   }
 
   return (
@@ -124,7 +120,10 @@ export default function ReviewButton({ game }) {
               onNew={openNewReview}
             />
           )}
-          <UserReviewCard review={activeReview} onEdit={() => openModal(activeReview)} />
+          <UserReviewCard
+            review={activeReview}
+            onEdit={() => openModal(activeReview)}
+          />
           {reviews.length === 1 && (
             <button
               type="button"
@@ -151,7 +150,13 @@ export default function ReviewButton({ game }) {
         </button>
       )}
 
-      <Modal isOpen={showModal} onClose={handleClose} raw fullscreenMobile className="w-full md:max-w-2xl">
+      <Modal
+        isOpen={showModal}
+        onClose={handleClose}
+        raw
+        fullscreenMobile
+        className="w-full md:max-w-2xl"
+      >
         {showModal && (
           <ReviewModal
             game={game}

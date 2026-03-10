@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Plus } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
@@ -9,7 +9,7 @@ import { JournalCard } from "./JournalCard"
 
 function JourneySelector({ journeys, selectedId, onSelect, onNew }) {
   const { t } = useTranslation("journal")
-  
+
   if (journeys.length === 0) return null
 
   return (
@@ -47,38 +47,40 @@ export default function JournalButton({ game }) {
   const [journeys, setJourneys] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedJourney, setSelectedJourney] = useState(null)
-  const fetchedRef = useRef(false)
 
-  const fetchJourneys = useCallback(async () => {
-    if (!user || !game?.id) return
-    setLoading(true)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+  const fetchJourneys = useCallback(
+    async (signal) => {
+      if (!user || !game?.id) return
+      setLoading(true)
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+        if (!session || signal?.aborted) return
 
-      const res = await fetch(`/api/journeys/@me/list?gameId=${game.id}`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      })
+        const res = await fetch(`/api/journeys/@me/list?gameId=${game.id}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          signal,
+        })
 
-      if (res.ok) {
-        const data = await res.json()
-        setJourneys(data.journeys || [])
-        if (data.journeys?.length > 0 && !selectedJourney) {
-          setSelectedJourney(data.journeys[0])
+        if (res.ok && !signal?.aborted) {
+          const data = await res.json()
+          setJourneys(data.journeys || [])
+          setSelectedJourney((prev) => prev ?? data.journeys?.[0] ?? null)
         }
+      } catch (e) {
+        if (e?.name === "AbortError") return
+      } finally {
+        if (!signal?.aborted) setLoading(false)
       }
-    } catch {
-    } finally {
-      setLoading(false)
-    }
-  }, [user?.id, game?.id])
+    },
+    [user?.id, game?.id],
+  )
 
   useEffect(() => {
-    if (fetchedRef.current) return
-    fetchedRef.current = true
-    fetchJourneys()
+    const ac = new AbortController()
+    fetchJourneys(ac.signal)
+    return () => ac.abort()
   }, [fetchJourneys])
 
   if (!user) return null
@@ -98,18 +100,12 @@ export default function JournalButton({ game }) {
 
   function handleClose() {
     setShowModal(false)
-    fetchedRef.current = false
-    fetchJourneys().then(() => {
-      fetchedRef.current = true
-    })
+    fetchJourneys()
   }
 
   function handleDeleted() {
     setSelectedJourney(null)
-    fetchedRef.current = false
-    fetchJourneys().then(() => {
-      fetchedRef.current = true
-    })
+    fetchJourneys()
   }
 
   return (
@@ -124,7 +120,10 @@ export default function JournalButton({ game }) {
               onNew={openNewJourney}
             />
           )}
-          <JournalCard journey={activeJourney} onEdit={() => openModal(activeJourney)} />
+          <JournalCard
+            journey={activeJourney}
+            onEdit={() => openModal(activeJourney)}
+          />
           {journeys.length === 1 && (
             <button
               type="button"
@@ -151,7 +150,13 @@ export default function JournalButton({ game }) {
         </button>
       )}
 
-      <Modal isOpen={showModal} onClose={handleClose} raw fullscreenMobile className="w-full md:max-w-2xl">
+      <Modal
+        isOpen={showModal}
+        onClose={handleClose}
+        raw
+        fullscreenMobile
+        className="w-full md:max-w-2xl"
+      >
         {showModal && (
           <JournalModal
             game={game}
