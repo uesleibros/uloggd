@@ -20,7 +20,7 @@ export async function handleGet(req, res) {
 					.from("lists")
 					.select(`
 						id, user_id, title, description, is_public, ranked, created_at, updated_at,
-						owner:user_id ( id, username, avatar, avatar_decoration )
+						owner:user_id ( id, username, avatar )
 					`)
 					.eq("id", decodedId)
 					.single(),
@@ -87,5 +87,4 @@ export async function handleGet(req, res) {
 		console.error(e)
 		res.status(500).json({ error: "fail" })
 	}
-
 }
