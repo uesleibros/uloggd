@@ -54,79 +54,39 @@ function getCoverUrl(game) {
 	return game.cover.url.startsWith("http") ? game.cover.url : `https:${game.cover.url}`
 }
 
+const DEFAULT_STATE = { status: null, playing: false, backlog: false, wishlist: false, liked: false }
+
+function buildState(data) {
+	if (!data) return DEFAULT_STATE
+	return {
+		status: data.status || null,
+		playing: data.playing || false,
+		backlog: data.backlog || false,
+		wishlist: data.wishlist || false,
+		liked: data.liked || false,
+	}
+}
+
 function useCardActions(game, enabled, initialState = null) {
 	const { user } = useAuth()
 	const { refresh, getGameData } = useMyLibrary()
-	const cachedData = getGameData(game?.slug)
-	
-	const [state, setState] = useState(() => {
-		if (initialState) return initialState
-		if (cachedData) {
-			return {
-				status: cachedData.status || null,
-				playing: cachedData.playing || false,
-				backlog: cachedData.backlog || false,
-				wishlist: cachedData.wishlist || false,
-				liked: cachedData.liked || false,
-			}
-		}
-		return null
-	})
-	
-	const fetchedRef = useRef(!!initialState || !!cachedData)
 	const [updating, setUpdating] = useState(null)
+	const [optimistic, setOptimistic] = useState(null)
 
-	useEffect(() => {
-		if (!initialState && cachedData && !fetchedRef.current) {
-			setState({
-				status: cachedData.status || null,
-				playing: cachedData.playing || false,
-				backlog: cachedData.backlog || false,
-				wishlist: cachedData.wishlist || false,
-				liked: cachedData.liked || false,
-			})
-			fetchedRef.current = true
-		}
-	}, [cachedData, initialState])
-
-	const prefetch = useCallback(async () => {
-		if (!enabled || !user || fetchedRef.current || !game?.id) return
-		fetchedRef.current = true
-		try {
-			const { data: { session } } = await supabase.auth.getSession()
-			if (!session) return
-			
-			const res = await fetch(`/api/userGames/@me/get?gameId=${game.id}`, {
-				headers: { Authorization: `Bearer ${session.access_token}` },
-			})
-			
-			if (res.ok) {
-				const d = await res.json()
-				setState({
-					status: d.status || null,
-					playing: d.playing || false,
-					backlog: d.backlog || false,
-					wishlist: d.wishlist || false,
-					liked: d.liked || false,
-				})
-			} else {
-				setState({ status: null, playing: false, backlog: false, wishlist: false, liked: false })
-			}
-		} catch {
-			setState({ status: null, playing: false, backlog: false, wishlist: false, liked: false })
-		}
-	}, [enabled, user, game?.id])
+	const cachedData = getGameData(game?.slug)
+	const state = initialState || optimistic || buildState(cachedData)
 
 	async function toggle(field, value) {
-		if (!user || !state || updating) return
+		if (!user || updating) return
 		setUpdating(field)
-
-		const prev = { ...state }
-		setState(s => ({ ...s, [field]: value }))
+		setOptimistic({ ...state, [field]: value })
 
 		try {
 			const { data: { session } } = await supabase.auth.getSession()
-			if (!session) { setState(prev); return }
+			if (!session) {
+				setOptimistic(null)
+				return
+			}
 
 			const res = await fetch("/api/userGames/@me/update", {
 				method: "POST",
@@ -134,16 +94,17 @@ function useCardActions(game, enabled, initialState = null) {
 				body: JSON.stringify({ gameId: game.id, gameSlug: game.slug, field, value }),
 			})
 
-			if (res.ok) refresh()
-			else setState(prev)
+			if (res.ok) {
+				refresh({ optimistic: { slug: game.slug, data: { [field]: value } } })
+			}
 		} catch {
-			setState(prev)
 		} finally {
+			setOptimistic(null)
 			setUpdating(null)
 		}
 	}
 
-	return { user, state, prefetch, toggle, updating }
+	return { user, state, toggle, updating }
 }
 
 function stopEvent(e) {
@@ -416,7 +377,7 @@ export default function GameCard({
 	className = "",
 }) {
 	const { getRating } = useMyLibrary()
-	const { user, state: actions, prefetch, toggle, updating } = useCardActions(game, showQuickActions)
+	const { user, state: actions, toggle, updating } = useCardActions(game, showQuickActions)
 	const [showListModal, setShowListModal] = useState(false)
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
 
@@ -449,10 +410,10 @@ export default function GameCard({
 				{hasRating && <MiniStars rating={rating} />}
 			</div>
 
-			{canShowActions && actions && (
+			{canShowActions && (
 				<div className={`transition-opacity duration-200 ${
-					isMenuOpen 
-						? "opacity-100 pointer-events-auto" 
+					isMenuOpen
+						? "opacity-100 pointer-events-auto"
 						: "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
 				}`}>
 					<BottomBar
@@ -470,15 +431,10 @@ export default function GameCard({
 
 	return (
 		<>
-			<div
-				className={`group relative ${sizeClasses} ${className}`}
-				onMouseEnter={canShowActions ? prefetch : undefined}
-			>
+			<div className={`group relative ${sizeClasses} ${className}`}>
 				{isFavorite && <FavoriteBadge />}
 				{disableLink ? (
-					<div
-						className={`relative w-full h-full rounded-lg ${cardClasses}`}
-					>
+					<div className={`relative w-full h-full rounded-lg ${cardClasses}`}>
 						{imageContent}
 					</div>
 				) : newTab ? (
@@ -519,4 +475,3 @@ export function GameCardSkeleton({ responsive = false, className = "" }) {
 }
 
 export { MiniStars }
-
