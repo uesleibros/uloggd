@@ -289,7 +289,6 @@ export default function TierlistPage() {
                   size="xs"
                   src={tierlist.owner.avatar}
                   alt={tierlist.owner.username}
-                  decoration={tierlist.owner.avatar_decoration}
                 />
                 {tierlist.owner.username}
               </Link>
@@ -341,3 +340,4 @@ export default function TierlistPage() {
     </div>
   )
 }
+
