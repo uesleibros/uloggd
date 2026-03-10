@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { ThumbsUp } from "lucide-react"
+import { ThumbsUp, Clock, TrendingUp } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
@@ -23,6 +23,11 @@ import {
   ReviewEmptyState,
   ReviewSkeleton,
 } from "@components/Game/Review"
+
+const SORT_ICONS = {
+  recent: Clock,
+  popular: TrendingUp,
+}
 
 function LikeButton({ reviewId, currentUserId }) {
   const { t } = useTranslation("reviews")
@@ -119,56 +124,46 @@ function LikeButton({ reviewId, currentUserId }) {
   )
 }
 
-function ReviewHeader({ review, user, onClose }) {
+function ReviewMeta({ review, user, onClose }) {
   const { t } = useTranslation("reviews")
   const { getTimeAgo } = useDateTime()
   const userLink = `/u/${user?.username}`
 
   return (
-    <div className="flex items-center gap-3.5 min-w-0">
-      <Link to={userLink} onClick={onClose} className="flex-shrink-0">
-        <AvatarWithDecoration
-          src={user?.avatar}
-          alt={user?.username}
-          decorationUrl={user?.equipped?.avatar_decoration?.asset_url}
-          size="lg"
-        />
-      </Link>
+    <div className="min-w-0 flex-1">
+      <div className="flex items-center gap-2 flex-wrap">
+        <Link
+          to={userLink}
+          onClick={onClose}
+          className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate"
+        >
+          {user?.username || t("unknownUser")}
+        </Link>
+        <UserBadges user={user} size="md" clickable />
+        <StatusBadge status={review.status} />
+        <ReviewIndicators review={review} />
+      </div>
 
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Link
-            to={userLink}
-            onClick={onClose}
-            className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate"
-          >
-            {user?.username || t("unknownUser")}
-          </Link>
-          <UserBadges user={user} size="md" clickable />
-          <StatusBadge status={review.status} />
-          <ReviewIndicators review={review} />
-        </div>
-
-        <div className="flex items-center gap-3 mt-1.5">
-          <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
-          <span className="text-sm text-zinc-500">{getTimeAgo(review.created_at)}</span>
-        </div>
+      <div className="flex items-center gap-3 mt-1.5">
+        <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
+        <span className="text-sm text-zinc-500">{getTimeAgo(review.created_at)}</span>
       </div>
     </div>
   )
 }
 
-function SortButton({ active, onClick, children }) {
+function SortButton({ active, onClick, icon: Icon, children }) {
   return (
     <button
       onClick={onClick}
-      className={`px-3.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all border ${
+      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer border ${
         active
           ? "bg-white text-black border-white"
-          : "text-zinc-400 border-transparent hover:text-white hover:bg-zinc-800/50"
+          : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 border-zinc-700/50"
       }`}
     >
-      {children}
+      {Icon && <Icon className="w-4 h-4" />}
+      <span>{children}</span>
     </button>
   )
 }
@@ -191,7 +186,7 @@ export function ReviewCard({ review, user, currentUserId }) {
           </Link>
 
           <div className="flex-1 min-w-0">
-            <ReviewHeader review={review} user={user} />
+            <ReviewMeta review={review} user={user} />
 
             {aspects.length > 0 && (
               <div className="mt-3 p-3 bg-zinc-900/40 border border-zinc-700/30 rounded-lg">
@@ -221,8 +216,18 @@ export function ReviewCard({ review, user, currentUserId }) {
         maxWidth="max-w-2xl"
         className="!bg-zinc-900 !border-zinc-700 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
       >
-        <div className="flex items-center justify-between p-5 border-b border-zinc-700/50 flex-shrink-0">
-          <ReviewHeader review={review} user={user} onClose={() => setShowModal(false)} />
+        <div className="flex items-start justify-between gap-4 p-5 border-b border-zinc-700/50 flex-shrink-0">
+          <div className="flex items-start gap-3.5 min-w-0">
+            <Link to={`/u/${user?.username}`} onClick={() => setShowModal(false)} className="flex-shrink-0">
+              <AvatarWithDecoration
+                src={user?.avatar}
+                alt={user?.username}
+                decorationUrl={user?.equipped?.avatar_decoration?.asset_url}
+                size="lg"
+              />
+            </Link>
+            <ReviewMeta review={review} user={user} onClose={() => setShowModal(false)} />
+          </div>
           <LikeButton reviewId={review.id} currentUserId={currentUserId} />
         </div>
         <div className="flex-1 overflow-y-auto overscroll-contain">
@@ -235,6 +240,7 @@ export function ReviewCard({ review, user, currentUserId }) {
 
 export function ProfileReviewCard({ review, game, user }) {
   const { user: currentUser } = useAuth()
+  const { getTimeAgo } = useDateTime()
   const [showModal, setShowModal] = useState(false)
   const aspects = review.aspect_ratings || []
 
@@ -248,21 +254,26 @@ export function ProfileReviewCard({ review, game, user }) {
             <img
               src={game.cover_url}
               alt={game.name}
-              className="w-16 h-20 object-cover rounded-lg"
+              className="w-16 h-20 object-cover rounded-lg border border-zinc-700/50"
             />
           </Link>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <Link
-                  to={`/game/${game.slug}`}
-                  className="text-base font-semibold text-white hover:text-zinc-300 transition-colors line-clamp-1"
-                >
-                  {game.name}
-                </Link>
-                <ReviewHeader review={review} user={user} />
-              </div>
+            <Link
+              to={`/game/${game.slug}`}
+              className="text-base font-semibold text-white hover:text-zinc-300 transition-colors line-clamp-1"
+            >
+              {game.name}
+            </Link>
+
+            <div className="flex items-center gap-2 flex-wrap mt-1">
+              <StatusBadge status={review.status} />
+              <ReviewIndicators review={review} />
+            </div>
+
+            <div className="flex items-center gap-3 mt-1.5">
+              <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
+              <span className="text-sm text-zinc-500">{getTimeAgo(review.created_at)}</span>
             </div>
 
             {aspects.length > 0 && (
@@ -293,8 +304,33 @@ export function ProfileReviewCard({ review, game, user }) {
         maxWidth="max-w-2xl"
         className="!bg-zinc-900 !border-zinc-700 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
       >
-        <div className="flex items-center justify-between p-5 border-b border-zinc-700/50 flex-shrink-0">
-          <ReviewHeader review={review} user={user} onClose={() => setShowModal(false)} />
+        <div className="flex items-start justify-between gap-4 p-5 border-b border-zinc-700/50 flex-shrink-0">
+          <div className="flex items-start gap-3.5 min-w-0">
+            <Link to={`/game/${game.slug}`} onClick={() => setShowModal(false)} className="flex-shrink-0">
+              <img
+                src={game.cover_url}
+                alt={game.name}
+                className="w-12 h-16 object-cover rounded-lg border border-zinc-700/50"
+              />
+            </Link>
+            <div className="min-w-0">
+              <Link
+                to={`/game/${game.slug}`}
+                onClick={() => setShowModal(false)}
+                className="text-base font-semibold text-white hover:text-zinc-300 transition-colors line-clamp-1"
+              >
+                {game.name}
+              </Link>
+              <div className="flex items-center gap-2 flex-wrap mt-1">
+                <StatusBadge status={review.status} />
+                <ReviewIndicators review={review} />
+              </div>
+              <div className="flex items-center gap-3 mt-1.5">
+                <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
+                <span className="text-sm text-zinc-500">{getTimeAgo(review.created_at)}</span>
+              </div>
+            </div>
+          </div>
           <LikeButton reviewId={review.id} currentUserId={currentUser?.id} />
         </div>
         <div className="flex-1 overflow-y-auto overscroll-contain">
@@ -352,8 +388,14 @@ export default function GameReviews({ gameId }) {
 
   if (loading) {
     return (
-      <div className="space-y-5">
-        <h2 className="text-lg font-semibold text-white">{t("communityReviews")}</h2>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">{t("communityReviews")}</h2>
+          <div className="flex gap-2">
+            <div className="h-10 w-28 bg-zinc-800/50 rounded-xl animate-pulse" />
+            <div className="h-10 w-28 bg-zinc-800/50 rounded-xl animate-pulse" />
+          </div>
+        </div>
         <ReviewSkeleton />
       </div>
     )
@@ -361,7 +403,7 @@ export default function GameReviews({ gameId }) {
 
   if (!reviews.length) {
     return (
-      <div className="space-y-5">
+      <div className="space-y-6">
         <h2 className="text-lg font-semibold text-white">{t("communityReviews")}</h2>
         <ReviewEmptyState />
       </div>
@@ -369,19 +411,20 @@ export default function GameReviews({ gameId }) {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-lg font-semibold text-white">
           {t("communityReviews")}
           <span className="text-sm text-zinc-500 font-normal ml-2">{total}</span>
         </h2>
 
-        <div className="flex gap-1">
+        <div className="flex flex-wrap gap-2">
           {SORT_OPTIONS.map((option) => (
             <SortButton
               key={option.key}
               active={sortBy === option.key}
               onClick={() => handleSortChange(option.key)}
+              icon={SORT_ICONS[option.key]}
             >
               {t(`sort.${option.key}`)}
             </SortButton>
