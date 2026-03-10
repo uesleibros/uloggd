@@ -3,7 +3,7 @@ import { defaultSchema } from "rehype-sanitize"
 const CUSTOM_TAGS = [
   "details", "summary", "iframe", "img", "spoiler", "spoilerimg",
   "div", "center", "mention", "game-card", "game-grid", "game-grid-auto",
-  "svg", "path", "hr", "alert-box", "desktop", "mobile"
+  "svg", "path", "hr", "alert-box", "desktop", "mobile", "em"
 ]
 
 const ALIGNABLE_TAGS = ["p", "h1", "h2", "h3", "h4", "h5", "h6"]
@@ -21,6 +21,7 @@ export const sanitizeSchema = {
     div: [...(defaultSchema.attributes?.div || []), "class", "className", "style", "align"],
     ...Object.fromEntries(ALIGNABLE_TAGS.map(tag => [tag, ["style", "align"]])),
     hr: [],
+    em: [],
     center: [],
     mention: [],
     spoiler: [],
