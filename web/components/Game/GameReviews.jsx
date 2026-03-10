@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { ThumbsUp } from "lucide-react"
-import { MarkdownPreview } from "@components/MarkdownEditor"
-import UserBadges from "@components/User/UserBadges"
+import { useAuth } from "#hooks/useAuth"
+import { useTranslation } from "#hooks/useTranslation"
+import { useDateTime } from "#hooks/useDateTime"
+import { SORT_OPTIONS } from "#constants/game"
+import { supabase } from "#lib/supabase"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
+import UserBadges from "@components/User/UserBadges"
 import StatusBadge from "@components/Game/StatusBadge"
 import ReviewRating from "@components/Game/ReviewRating"
 import Playtime from "@components/Game/Playtime"
@@ -12,317 +16,393 @@ import LikeListModal from "@components/Game/LikeListModal"
 import CountUp from "@components/UI/CountUp"
 import Pagination from "@components/UI/Pagination"
 import {
-	AspectRatingsPreview,
-	ReviewIndicators,
-	ReviewModalContent,
-	ReviewContent,
-	ReviewEmptyState,
-	ReviewSkeleton,
+  AspectRatingsPreview,
+  ReviewIndicators,
+  ReviewModalContent,
+  ReviewContent,
+  ReviewEmptyState,
+  ReviewSkeleton,
 } from "@components/Game/Review"
-import { supabase } from "#lib/supabase"
-import { useAuth } from "#hooks/useAuth"
-import { useTranslation } from "#hooks/useTranslation"
-import { useDateTime } from "#hooks/useDateTime"
-import { SORT_OPTIONS } from "#constants/game"
 
 function LikeButton({ reviewId, currentUserId }) {
-	const { t } = useTranslation("reviews")
-	const [isLiked, setIsLiked] = useState(false)
-	const [count, setCount] = useState(0)
-	const [loading, setLoading] = useState(false)
-	const [showLikes, setShowLikes] = useState(false)
+  const { t } = useTranslation("reviews")
+  const [isLiked, setIsLiked] = useState(false)
+  const [count, setCount] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [showLikes, setShowLikes] = useState(false)
 
-	useEffect(() => {
-		const params = new URLSearchParams({ reviewId })
-		if (currentUserId) params.append("currentUserId", currentUserId)
+  useEffect(() => {
+    const params = new URLSearchParams({ reviewId })
+    if (currentUserId) params.append("currentUserId", currentUserId)
 
-		fetch(`/api/reviews/likeStatus?${params}`)
-			.then(r => r.json())
-			.then(data => {
-				setCount(data.count || 0)
-				setIsLiked(data.isLiked || false)
-			})
-			.catch(() => {})
-	}, [reviewId, currentUserId])
+    fetch(`/api/reviews/likeStatus?${params}`)
+      .then((r) => r.json())
+      .then((data) => {
+        setCount(data.count || 0)
+        setIsLiked(data.isLiked || false)
+      })
+      .catch(() => {})
+  }, [reviewId, currentUserId])
 
-	const handleLike = async () => {
-		if (!currentUserId || loading) return
-		setLoading(true)
+  async function handleLike() {
+    if (!currentUserId || loading) return
+    setLoading(true)
 
-		const action = isLiked ? "unlike" : "like"
-		const newLiked = !isLiked
-		const newCount = newLiked ? count + 1 : count - 1
+    const action = isLiked ? "unlike" : "like"
+    const newLiked = !isLiked
+    const newCount = newLiked ? count + 1 : count - 1
 
-		setIsLiked(newLiked)
-		setCount(newCount)
+    setIsLiked(newLiked)
+    setCount(newCount)
 
-		try {
-			const { data: { session } } = await supabase.auth.getSession()
-			if (!session) {
-				setIsLiked(!newLiked)
-				setCount(count)
-				return
-			}
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      if (!session) {
+        setIsLiked(!newLiked)
+        setCount(count)
+        return
+      }
 
-			const r = await fetch("/api/reviews/@me/like", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${session.access_token}`,
-				},
-				body: JSON.stringify({ reviewId, action }),
-			})
-			if (!r.ok) {
-				setIsLiked(!newLiked)
-				setCount(count)
-			}
-		} catch {
-			setIsLiked(!newLiked)
-			setCount(count)
-		} finally {
-			setLoading(false)
-		}
-	}
+      const r = await fetch("/api/reviews/@me/like", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ reviewId, action }),
+      })
 
-	return (
-		<>
-			<div className="flex items-center gap-2">
-				<button
-					onClick={handleLike}
-					disabled={!currentUserId || loading}
-					className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer disabled:cursor-default ${
-						isLiked
-							? "bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/15"
-							: "bg-zinc-800/50 border border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50 hover:border-zinc-600/50"
-					}`}
-				>
-					<ThumbsUp className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${isLiked ? "fill-current" : ""}`} />
-					<span className="text-sm font-medium">
-						{isLiked ? t("liked") : t("like")}
-					</span>
-				</button>
-				{count > 0 && (
-					<button
-						onClick={() => setShowLikes(true)}
-						className="text-sm text-zinc-500 hover:text-zinc-300 tabular-nums cursor-pointer transition-colors hover:underline"
-					>
-						<CountUp end={count} /> {t("likesCount", { count })}
-					</button>
-				)}
-			</div>
+      if (!r.ok) {
+        setIsLiked(!newLiked)
+        setCount(count)
+      }
+    } catch {
+      setIsLiked(!newLiked)
+      setCount(count)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-			<LikeListModal
-				isOpen={showLikes}
-				reviewId={reviewId}
-				onClose={() => setShowLikes(false)}
-			/>
-		</>
-	)
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleLike}
+          disabled={!currentUserId || loading}
+          className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all cursor-pointer disabled:cursor-default disabled:opacity-50 ${
+            isLiked
+              ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/15"
+              : "bg-zinc-800/50 border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50"
+          }`}
+        >
+          <ThumbsUp
+            className={`w-4 h-4 transition-transform group-hover:scale-110 ${isLiked ? "fill-current" : ""}`}
+          />
+          <span className="text-sm font-medium">{isLiked ? t("liked") : t("like")}</span>
+        </button>
+
+        {count > 0 && (
+          <button
+            onClick={() => setShowLikes(true)}
+            className="text-sm text-zinc-500 hover:text-zinc-300 tabular-nums cursor-pointer transition-colors hover:underline"
+          >
+            <CountUp end={count} /> {t("likesCount", { count })}
+          </button>
+        )}
+      </div>
+
+      <LikeListModal isOpen={showLikes} reviewId={reviewId} onClose={() => setShowLikes(false)} />
+    </>
+  )
 }
 
-function ReviewModalHeader({ review, user, currentUserId, onClose }) {
-	const { t } = useTranslation("reviews")
-	const { getTimeAgo } = useDateTime()
+function ReviewHeader({ review, user, onClose }) {
+  const { t } = useTranslation("reviews")
+  const { getTimeAgo } = useDateTime()
+  const userLink = `/u/${user?.username}`
 
-	return (
-		<div className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
-			<div className="flex items-center gap-3.5 min-w-0">
-				<Link to={`/u/${user?.username}`} onClick={onClose} className="flex-shrink-0">
-					<AvatarWithDecoration
-						src={user.avatar}
-						alt={user.username}
-						decorationUrl={user.equipped?.avatar_decoration?.asset_url}
-						size="lg"
-					/>
-				</Link>
-				<div className="min-w-0">
-					<div className="flex items-center gap-2 flex-wrap">
-						<Link to={`/u/${user?.username}`} onClick={onClose} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors">
-							{user?.username || t("unknownUser")}
-						</Link>
-						<UserBadges user={user} size="md" clickable />
-						<StatusBadge status={review.status} />
-						<ReviewIndicators review={review} />
-					</div>
-					<div className="flex items-center gap-3 mt-1.5">
-						<ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
-						<span className="text-sm text-zinc-600">{getTimeAgo(review.created_at)}</span>
-					</div>
-				</div>
-			</div>
-			<LikeButton reviewId={review.id} currentUserId={currentUserId} />
-		</div>
-	)
+  return (
+    <div className="flex items-center gap-3.5 min-w-0">
+      <Link to={userLink} onClick={onClose} className="flex-shrink-0">
+        <AvatarWithDecoration
+          src={user?.avatar}
+          alt={user?.username}
+          decorationUrl={user?.equipped?.avatar_decoration?.asset_url}
+          size="lg"
+        />
+      </Link>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            to={userLink}
+            onClick={onClose}
+            className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate"
+          >
+            {user?.username || t("unknownUser")}
+          </Link>
+          <UserBadges user={user} size="md" clickable />
+          <StatusBadge status={review.status} />
+          <ReviewIndicators review={review} />
+        </div>
+
+        <div className="flex items-center gap-3 mt-1.5">
+          <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
+          <span className="text-sm text-zinc-500">{getTimeAgo(review.created_at)}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SortButton({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all border ${
+        active
+          ? "bg-white text-black border-white"
+          : "text-zinc-400 border-transparent hover:text-white hover:bg-zinc-800/50"
+      }`}
+    >
+      {children}
+    </button>
+  )
 }
 
 export function ReviewCard({ review, user, currentUserId }) {
-	const { t } = useTranslation("reviews")
-	const { getTimeAgo } = useDateTime()
-	const [showModal, setShowModal] = useState(false)
-	const aspects = review.aspect_ratings || []
+  const [showModal, setShowModal] = useState(false)
+  const aspects = review.aspect_ratings || []
 
-	return (
-		<>
-			<div className="rounded-xl p-5 sm:p-6 bg-zinc-800/50 border border-zinc-700 hover:border-zinc-600 transition-all duration-200">
-				<div className="flex items-start gap-3.5">
-					<Link to={`/u/${user?.username}`} className="flex-shrink-0">
-						<AvatarWithDecoration
-							src={user.avatar}
-							alt={user.username}
-							decorationUrl={user.equipped?.avatar_decoration?.asset_url}
-							size="lg"
-						/>
-					</Link>
+  return (
+    <>
+      <div className="rounded-xl p-5 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 transition-colors">
+        <div className="flex items-start gap-3.5">
+          <Link to={`/u/${user?.username}`} className="flex-shrink-0">
+            <AvatarWithDecoration
+              src={user?.avatar}
+              alt={user?.username}
+              decorationUrl={user?.equipped?.avatar_decoration?.asset_url}
+              size="lg"
+            />
+          </Link>
 
-					<div className="flex-1 min-w-0">
-						<div className="flex items-center gap-2 flex-wrap">
-							<Link to={`/u/${user?.username}`} className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate">
-								{user?.username || t("unknownUser")}
-							</Link>
-							<UserBadges user={user} size="md" clickable />
-							<StatusBadge status={review.status} />
-							<ReviewIndicators review={review} />
-						</div>
+          <div className="flex-1 min-w-0">
+            <ReviewHeader review={review} user={user} />
 
-						<div className="flex items-center gap-3 mt-1.5">
-							<ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
-							<span className="text-sm text-zinc-600">{getTimeAgo(review.created_at)}</span>
-						</div>
+            {aspects.length > 0 && (
+              <div className="mt-3 p-3 bg-zinc-900/40 border border-zinc-700/30 rounded-lg">
+                <AspectRatingsPreview aspects={aspects} compact />
+              </div>
+            )}
 
-						{aspects.length > 0 && (
-							<div className="mt-3 p-3 bg-zinc-900/40 border border-zinc-700/30 rounded-lg">
-								<AspectRatingsPreview aspects={aspects} compact />
-							</div>
-						)}
+            {review.review && (
+              <div className="mt-4">
+                <ReviewContent review={review} onOpenModal={() => setShowModal(true)} />
+              </div>
+            )}
 
-						{review.review && (
-							<div className="mt-4">
-								<ReviewContent review={review} onOpenModal={() => setShowModal(true)} />
-							</div>
-						)}
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-700/30">
+              <Playtime hours={review.hours_played} minutes={review.minutes_played} />
+              <LikeButton reviewId={review.id} currentUserId={currentUserId} />
+            </div>
+          </div>
+        </div>
+      </div>
 
-						<div className="flex items-center justify-between mt-4">
-							<Playtime hours={review.hours_played} minutes={review.minutes_played} />
-							<LikeButton reviewId={review.id} currentUserId={currentUserId} />
-						</div>
-					</div>
-				</div>
-			</div>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        fullscreenMobile
+        showCloseButton={false}
+        maxWidth="max-w-2xl"
+        className="!bg-zinc-900 !border-zinc-700 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
+      >
+        <div className="flex items-center justify-between p-5 border-b border-zinc-700/50 flex-shrink-0">
+          <ReviewHeader review={review} user={user} onClose={() => setShowModal(false)} />
+          <LikeButton reviewId={review.id} currentUserId={currentUserId} />
+        </div>
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <ReviewModalContent review={review} />
+        </div>
+      </Modal>
+    </>
+  )
+}
 
-			<Modal
-				isOpen={showModal}
-				onClose={() => setShowModal(false)}
-				fullscreenMobile
-				showCloseButton={false}
-				maxWidth="max-w-2xl"
-				className="!bg-zinc-900 !border-zinc-700 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
-			>
-				<ReviewModalHeader review={review} user={user} currentUserId={currentUserId} onClose={() => setShowModal(false)} />
-				<div className="flex-1 overflow-y-auto overscroll-contain">
-					<ReviewModalContent review={review} />
-				</div>
-			</Modal>
-		</>
-	)
+export function ProfileReviewCard({ review, game, user }) {
+  const { user: currentUser } = useAuth()
+  const [showModal, setShowModal] = useState(false)
+  const aspects = review.aspect_ratings || []
+
+  if (!game) return null
+
+  return (
+    <>
+      <div className="rounded-xl p-5 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 transition-colors">
+        <div className="flex gap-4">
+          <Link to={`/game/${game.slug}`} className="flex-shrink-0">
+            <img
+              src={game.cover_url}
+              alt={game.name}
+              className="w-16 h-20 object-cover rounded-lg"
+            />
+          </Link>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <Link
+                  to={`/game/${game.slug}`}
+                  className="text-base font-semibold text-white hover:text-zinc-300 transition-colors line-clamp-1"
+                >
+                  {game.name}
+                </Link>
+                <ReviewHeader review={review} user={user} />
+              </div>
+            </div>
+
+            {aspects.length > 0 && (
+              <div className="mt-3 p-3 bg-zinc-900/40 border border-zinc-700/30 rounded-lg">
+                <AspectRatingsPreview aspects={aspects} compact />
+              </div>
+            )}
+
+            {review.review && (
+              <div className="mt-4">
+                <ReviewContent review={review} onOpenModal={() => setShowModal(true)} />
+              </div>
+            )}
+
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-700/30">
+              <Playtime hours={review.hours_played} minutes={review.minutes_played} />
+              <LikeButton reviewId={review.id} currentUserId={currentUser?.id} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        fullscreenMobile
+        showCloseButton={false}
+        maxWidth="max-w-2xl"
+        className="!bg-zinc-900 !border-zinc-700 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
+      >
+        <div className="flex items-center justify-between p-5 border-b border-zinc-700/50 flex-shrink-0">
+          <ReviewHeader review={review} user={user} onClose={() => setShowModal(false)} />
+          <LikeButton reviewId={review.id} currentUserId={currentUser?.id} />
+        </div>
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <ReviewModalContent review={review} />
+        </div>
+      </Modal>
+    </>
+  )
 }
 
 export default function GameReviews({ gameId }) {
-	const { t } = useTranslation("reviews")
-	const { user: currentUser } = useAuth()
-	const [reviews, setReviews] = useState([])
-	const [users, setUsers] = useState({})
-	const [loading, setLoading] = useState(true)
-	const [sortBy, setSortBy] = useState("recent")
-	const [page, setPage] = useState(1)
-	const [totalPages, setTotalPages] = useState(1)
-	const [total, setTotal] = useState(0)
+  const { t } = useTranslation("reviews")
+  const { user: currentUser } = useAuth()
+  const [reviews, setReviews] = useState([])
+  const [users, setUsers] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [sortBy, setSortBy] = useState("recent")
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
 
-	useEffect(() => {
-		if (!gameId) return
-		setLoading(true)
+  useEffect(() => {
+    if (!gameId) return
+    setLoading(true)
 
-		const params = new URLSearchParams({
-			gameId,
-			sortBy,
-			page,
-			limit: 20,
-		})
+    const params = new URLSearchParams({
+      gameId,
+      sortBy,
+      page,
+      limit: 20,
+    })
 
-		fetch(`/api/reviews/public?${params}`)
-			.then((r) => r.ok ? r.json() : { reviews: [], users: {} })
-			.then((data) => {
-				setReviews(data.reviews || [])
-				setUsers(data.users || {})
-				setTotalPages(data.totalPages || 1)
-				setTotal(data.total || 0)
-			})
-			.catch(() => {})
-			.finally(() => setLoading(false))
-	}, [gameId, sortBy, page])
+    fetch(`/api/reviews/public?${params}`)
+      .then((r) => (r.ok ? r.json() : { reviews: [], users: {} }))
+      .then((data) => {
+        setReviews(data.reviews || [])
+        setUsers(data.users || {})
+        setTotalPages(data.totalPages || 1)
+        setTotal(data.total || 0)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [gameId, sortBy, page])
 
-	function handleSortChange(newSort) {
-		setSortBy(newSort)
-		setPage(1)
-	}
+  function handleSortChange(newSort) {
+    if (newSort === sortBy) return
+    setSortBy(newSort)
+    setPage(1)
+  }
 
-	function handlePageChange(newPage) {
-		setPage(newPage)
-		window.scrollTo({ top: 0, behavior: "smooth" })
-	}
+  function handlePageChange(newPage) {
+    setPage(newPage)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
 
-	if (loading) {
-		return (
-			<div>
-				<h2 className="text-lg font-semibold text-white mb-5">{t("communityReviews")}</h2>
-				<ReviewSkeleton />
-			</div>
-		)
-	}
+  if (loading) {
+    return (
+      <div className="space-y-5">
+        <h2 className="text-lg font-semibold text-white">{t("communityReviews")}</h2>
+        <ReviewSkeleton />
+      </div>
+    )
+  }
 
-	if (!reviews.length) {
-		return (
-			<div>
-				<h2 className="text-lg font-semibold text-white mb-5">{t("communityReviews")}</h2>
-				<ReviewEmptyState />
-			</div>
-		)
-	}
+  if (!reviews.length) {
+    return (
+      <div className="space-y-5">
+        <h2 className="text-lg font-semibold text-white">{t("communityReviews")}</h2>
+        <ReviewEmptyState />
+      </div>
+    )
+  }
 
-	return (
-		<div>
-			<div className="flex items-center justify-between mb-5">
-				<h2 className="text-lg font-semibold text-white">
-					{t("communityReviews")}
-					<span className="text-sm text-zinc-500 font-normal ml-2">{total}</span>
-				</h2>
-				<div className="flex gap-1">
-					{SORT_OPTIONS.map((option) => (
-						<button
-							key={option.key}
-							onClick={() => handleSortChange(option.key)}
-							className={`px-3.5 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 ${
-								sortBy === option.key
-									? "bg-white text-black"
-									: "text-zinc-500 hover:text-white hover:bg-zinc-800/50"
-							}`}
-						>
-							{t(`sort.${option.key}`)}
-						</button>
-					))}
-				</div>
-			</div>
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-white">
+          {t("communityReviews")}
+          <span className="text-sm text-zinc-500 font-normal ml-2">{total}</span>
+        </h2>
 
-			<div className="space-y-3">
-				{reviews.map((review) => (
-					<ReviewCard key={review.id} review={review} user={users[review.user_id]} currentUserId={currentUser?.id} />
-				))}
-			</div>
+        <div className="flex gap-1">
+          {SORT_OPTIONS.map((option) => (
+            <SortButton
+              key={option.key}
+              active={sortBy === option.key}
+              onClick={() => handleSortChange(option.key)}
+            >
+              {t(`sort.${option.key}`)}
+            </SortButton>
+          ))}
+        </div>
+      </div>
 
-			<Pagination
-				currentPage={page}
-				totalPages={totalPages}
-				onPageChange={handlePageChange}
-			/>
-		</div>
-	)
+      <div className="space-y-3">
+        {reviews.map((review) => (
+          <ReviewCard
+            key={review.id}
+            review={review}
+            user={users[review.user_id]}
+            currentUserId={currentUser?.id}
+          />
+        ))}
+      </div>
+
+      {totalPages > 1 && (
+        <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+      )}
+    </div>
+  )
 }
