@@ -59,7 +59,7 @@ export async function handleGet(req, res) {
 		const { data, error, count } = await supabase
 			.from("lists")
 			.select(`
-				id, title, description, is_public, created_at, updated_at,
+				id, title, description, is_public, ranked, created_at, updated_at,
 				list_items ( id, game_slug, position )
 			`, { count: "exact" })
 			.eq("user_id", userId)
@@ -68,10 +68,10 @@ export async function handleGet(req, res) {
 
 		if (error) throw error
 
-		const lists = (data || []).map(list => {
-			const items = (list.list_items || []).sort((a, b) => a.position - b.position)
+		const lists = (data || []).map(({ list_items, ...rest }) => {
+			const items = (list_items || []).sort((a, b) => a.position - b.position)
 			return {
-				...list,
+				...rest,
 				games_count: items.length,
 				game_slugs: items.slice(0, 5).map(i => i.game_slug),
 			}
