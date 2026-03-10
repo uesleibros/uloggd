@@ -63,6 +63,7 @@ const markdownComponents = {
 
   strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
   em: ({ children }) => <em className="italic text-zinc-300">{children}</em>,
+  i: ({ children }) => <i className="italic text-zinc-300">{children}</i>,
   del: ({ children }) => <del className="text-zinc-500 line-through">{children}</del>,
   blockquote: ({ children }) => <blockquote className="border-l-4 border-zinc-600 pl-4 py-0.5 my-4 text-zinc-400 [&>p]:mb-0">{children}</blockquote>,
 
