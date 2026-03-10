@@ -6,6 +6,7 @@ import UsersChoiceCarousel from "@components/Home/UsersChoiceCarousel"
 import { useAuth } from "#hooks/useAuth"
 import PageBanner from "@components/Layout/PageBanner"
 import { getStatus } from "#utils/onlineStatus"
+import DailyChest from "@components/Minerals/DailyChest"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 
 function WelcomeBackSkeleton() {
@@ -42,6 +43,7 @@ function WelcomeBack({ user }) {
           <p className="text-sm text-zinc-500">{t(`greeting.${greetingKey}`)},</p>
           <h1 className="text-3xl font-bold text-white">{user.username}</h1>
         </div>
+        <DailyChest />
       </div>
     </div>
   )
