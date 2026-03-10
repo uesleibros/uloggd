@@ -9,7 +9,7 @@ let loadingPromise = null
 let initialized = false
 
 function notify() {
-  listeners.forEach(fn => fn())
+  listeners.forEach((fn) => fn())
 }
 
 function getSnapshot() {
@@ -24,10 +24,27 @@ function updateSnapshot() {
     next.user === snapshotRef.user &&
     next.loading === snapshotRef.loading &&
     next.banned === snapshotRef.banned
-  ) return
+  )
+    return
 
   snapshotRef = next
   notify()
+}
+
+function shallowEqual(a, b) {
+  if (a === b) return true
+  if (!a || !b) return false
+  const keysA = Object.keys(a)
+  const keysB = Object.keys(b)
+  if (keysA.length !== keysB.length) return false
+  return keysA.every((key) => a[key] === b[key])
+}
+
+function mergeUser(current, updates) {
+  if (!current) return updates
+  if (!updates) return current
+  if (shallowEqual(current, { ...current, ...updates })) return current
+  return { ...current, ...updates }
 }
 
 async function fetchProfile(session) {
@@ -97,18 +114,20 @@ async function loadUser(session, silent = false) {
       if (profile?.is_banned) {
         if (profile.expires_at && new Date(profile.expires_at) <= new Date()) {
           banned = null
-          cachedUser = buildUser(session, profile)
+          cachedUser = mergeUser(cachedUser, buildUser(session, profile))
         } else {
           await handleBan(profile)
           return
         }
       } else {
         banned = null
-        cachedUser = buildUser(session, profile)
+        const newUser = buildUser(session, profile)
+        cachedUser = mergeUser(cachedUser, newUser)
       }
     } catch {
       banned = null
-      cachedUser = buildUser(session)
+      const newUser = buildUser(session)
+      cachedUser = mergeUser(cachedUser, newUser)
     } finally {
       loading = false
       initialized = true
@@ -132,20 +151,19 @@ function reset() {
 export function updateUser(partial) {
   if (!cachedUser) return
 
-  const hasChanges = Object.keys(partial).some(
-    (key) => cachedUser[key] !== partial[key]
-  )
+  const merged = mergeUser(cachedUser, partial)
+  if (merged === cachedUser) return
 
-  if (!hasChanges) return
-
-  cachedUser = { ...cachedUser, ...partial }
+  cachedUser = merged
   updateSnapshot()
 }
 
 async function refreshUser() {
   if (!cachedUser) return
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
   if (!session?.access_token) return
 
   const profile = await fetchProfile(session)
@@ -153,19 +171,22 @@ async function refreshUser() {
   if (profile?.is_banned) {
     if (profile.expires_at && new Date(profile.expires_at) <= new Date()) {
       banned = null
-      cachedUser = { ...cachedUser, ...profile }
+      cachedUser = mergeUser(cachedUser, profile)
     } else {
       await handleBan(profile)
       return
     }
   } else if (profile) {
-    cachedUser = { ...cachedUser, ...profile }
+    const merged = mergeUser(cachedUser, profile)
+    if (merged === cachedUser) return
+    cachedUser = merged
   }
 
   updateSnapshot()
 }
 
-supabase.auth.getSession()
+supabase.auth
+  .getSession()
   .then(({ data: { session } }) => {
     return session ? loadUser(session) : reset()
   })
@@ -206,5 +227,3 @@ export function useAuth() {
     refreshUser,
   }
 }
-
-
