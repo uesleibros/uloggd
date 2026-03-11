@@ -74,7 +74,6 @@ export function JournalViewModal({ journeyId, onClose }) {
     <Modal
       isOpen
       onClose={onClose}
-      raw
       showCloseButton={false}
       fullscreenMobile
       className="w-full md:max-w-3xl"
