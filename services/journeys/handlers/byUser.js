@@ -2,23 +2,37 @@ import { supabase } from "#lib/supabase-ssr.js"
 import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
 
 export async function handleListByUser(req, res) {
-  const { username, page = 1, limit = 20 } = req.query
+  const { username, userId, page = 1, limit = 20 } = req.query
 
-  if (!username) return res.status(400).json({ error: "missing username" })
+  if (!username && !userId)
+    return res.status(400).json({ error: "missing username or userId" })
 
   const pageNum = Number(page)
   const limitNum = Math.min(Number(limit), 50)
   const offset = (pageNum - 1) * limitNum
 
   try {
-    const { data: user, error: userError } = await supabase
-      .from("users")
-      .select("id, username, avatar")
-      .eq("username", username)
-      .single()
+    let user
 
-    if (userError || !user)
-      return res.status(404).json({ error: "user not found" })
+    if (userId) {
+      const { data, error } = await supabase
+        .from("users")
+        .select("id, username, avatar")
+        .eq("id", userId)
+        .single()
+
+      if (error || !data) return res.status(404).json({ error: "user not found" })
+      user = data
+    } else {
+      const { data, error } = await supabase
+        .from("users")
+        .select("id, username, avatar")
+        .eq("username", username)
+        .single()
+
+      if (error || !data) return res.status(404).json({ error: "user not found" })
+      user = data
+    }
 
     const { data, error, count } = await supabase
       .from("journeys")
@@ -36,7 +50,6 @@ export async function handleListByUser(req, res) {
     const journeys = (data || []).map(j => {
       const entries = j.journey_entries || []
       const totalMinutes = entries.reduce((acc, e) => acc + (e.hours || 0) * 60 + (e.minutes || 0), 0)
-
       const sorted = [...entries].sort((a, b) => a.played_on.localeCompare(b.played_on))
 
       return {
