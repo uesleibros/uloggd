@@ -1,60 +1,62 @@
 import { query } from "#lib/igdbWrapper.js"
 import { PLATFORMS_MAP } from "#data/platformsMapper.js"
+import { buildNameFilter } from "#services/igdb/utils/buildNameFilter.js"
 
 export async function handleAutocomplete(req, res) {
-  const { query: q } = req.query
-  
-  if (!q?.trim()) {
-    return res.status(400).json({ error: "missing query" })
-  }
+	const { query: q } = req.query
+	if (!q?.trim()) return res.status(400).json({ error: "missing query" })
 
-  const sanitized = q.trim()
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"')
+	try {
+		const nameFilter = buildNameFilter(q)
+		const data = await query("games", `
+			fields name, slug, first_release_date,
+				cover.url, cover.image_id,
+				platforms.id, platforms.name, platforms.abbreviation,
+				total_rating, total_rating_count, game_type;
+				where ${nameFilter} & cover != null;
+			sort total_rating_count desc;
+			limit 30;
+		`)
 
-  try {
-    const data = await query("games", `
-      fields name, slug, first_release_date,
-        cover.url, cover.image_id,
-        platforms.id,
-        total_rating, total_rating_count;
-      where name ~ *"${sanitized}"*;
-      sort total_rating_count desc;
-      limit 20;
-    `)
+		const input = q.toLowerCase().trim()
 
-    const games = data.map(g => {
-      // Extrai e filtra plataformas válidas
-      const platformSlugs = g.platforms
-        ?.map(p => PLATFORMS_MAP[String(p.id)])
-        .filter(Boolean) ?? []
+		const games = data.map(g => {
+			const name = g.name.toLowerCase()
+			let relevance = 0
 
-      return {
-        id: g.id,
-        name: g.name,
-        slug: g.slug,
-        first_release_date: g.first_release_date,
-        total_rating: g.total_rating,
-        total_rating_count: g.total_rating_count,
-        platformIcons: [...new Set(platformSlugs)]
-          .sort()
-          .map(slug => ({
-            name: slug,
-            icon: `/platforms/result/${slug}.png`
-          })),
-        cover: g.cover?.url
-          ? { 
-              ...g.cover, 
-              url: g.cover.url.replace("t_thumb", "t_cover_big") 
-            }
-          : null
-      }
-    })
+			if (name === input) relevance = 100
+			else if (name.startsWith(input)) relevance = 80
+			else if (name.includes(input)) relevance = 60
+			else {
+				const inputWords = input.split(/\s+/)
+				const matched = inputWords.filter(w => name.includes(w)).length
+				relevance = (matched / inputWords.length) * 40
+			}
 
-    res.json(games)
-  } catch (e) {
-    console.error("Autocomplete error:", e)
-    res.status(500).json({ error: "fail" })
-  }
+			relevance += Math.min((g.total_rating_count || 0) / 100, 20)
+
+			const slugs = new Set()
+			g.platforms?.forEach(p => {
+				const slug = PLATFORMS_MAP[String(p.id)]
+				if (slug) slugs.add(slug)
+			})
+
+			return {
+				...g,
+				relevance,
+				platformIcons: [...slugs].sort().map(slug => ({
+					name: slug,
+					icon: `/platforms/result/${slug}.png`
+				})),
+				cover: g.cover?.url
+					? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_cover_big") }
+					: null
+			}
+		}).sort((a, b) => b.relevance - a.relevance)
+
+		res.json(games)
+	} catch (e) {
+		console.error(e)
+		res.status(500).json({ error: "fail" })
+	}
 }
-
