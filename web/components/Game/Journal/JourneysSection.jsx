@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Calendar, Clock, Play, Flag, ChevronRight, Gamepad2, BookOpen } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
-import { JournalViewModal } from "@components/Journal/JournalViewModal"
+import { JournalViewModal } from "@components/Game/Journal/JournalViewModal"
 import Pagination from "@components/UI/Pagination"
 
 export default function JourneysSection({ journeys, loading, total, currentPage, totalPages, onPageChange }) {
