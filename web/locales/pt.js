@@ -1579,6 +1579,8 @@ export default {
 		likesCount: "curtida",
 		likesCount_plural: "curtidas",
 		unknownUser: "Usuário",
+		sessions: "sessões",
+		session: "sessão",
 		sort: {
 			recent: "Recentes",
 			popular: "Populares",
@@ -2120,6 +2122,7 @@ export default {
 		},
 	},
 }
+
 
 
 
