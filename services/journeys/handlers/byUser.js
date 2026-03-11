@@ -17,8 +17,8 @@ export async function handleListByUser(req, res) {
     if (userId) {
       const { data, error } = await supabase
         .from("users")
-        .select("id, username, avatar")
-        .eq("id", userId)
+        .select("user_id, username, avatar")
+        .eq("user_id", userId)
         .single()
 
       if (error || !data) return res.status(404).json({ error: "user not found" })
@@ -26,7 +26,7 @@ export async function handleListByUser(req, res) {
     } else {
       const { data, error } = await supabase
         .from("users")
-        .select("id, username, avatar")
+        .select("user_id, username, avatar")
         .eq("username", username)
         .single()
 
@@ -41,7 +41,7 @@ export async function handleListByUser(req, res) {
         started_at, finished_at, created_at, updated_at,
         journey_entries( hours, minutes, played_on )
       `, { count: "exact" })
-      .eq("user_id", user.id)
+      .eq("user_id", user.user_id)
       .order("updated_at", { ascending: false })
       .range(offset, offset + limitNum - 1)
 
@@ -71,7 +71,7 @@ export async function handleListByUser(req, res) {
 
     res.json({
       user: {
-        id: user.id,
+        user_id: user.user_id,
         username: user.username,
         avatar: user.avatar || DEFAULT_AVATAR_URL,
       },
