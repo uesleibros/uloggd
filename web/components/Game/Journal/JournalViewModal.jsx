@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react"
+import { Link } from "react-router-dom"
 import { X, ChevronLeft, ChevronRight, Clock, Calendar as CalendarIcon, Play, Flag } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { JournalCalendar } from "./JournalCalendar"
@@ -89,14 +90,18 @@ export function JournalViewModal({ journeyId, onClose }) {
               <div className="min-w-0">
                 <h2 className="text-lg md:text-xl font-semibold text-white truncate">{journey.title}</h2>
                 {user && (
-                  <div className="flex items-center gap-2 mt-1">
+                  <Link
+                    to={`/u/${user.username}`}
+                    onClick={onClose}
+                    className="flex items-center gap-2 mt-1 group w-fit"
+                  >
                     <img
                       src={user.avatar}
                       alt=""
                       className="w-5 h-5 rounded-full bg-zinc-800"
                     />
-                    <span className="text-sm text-zinc-400">{user.username}</span>
-                  </div>
+                    <span className="text-sm text-zinc-400 group-hover:text-white transition-colors">{user.username}</span>
+                  </Link>
                 )}
               </div>
               <button
