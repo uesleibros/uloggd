@@ -57,11 +57,13 @@ export default function Profile() {
 
   const {
     journeys,
+    journeyGames,
     loading: loadingJourneys,
     total: journeysTotal,
     page: journeysPage,
     totalPages: journeysTotalPages,
     handlePageChange: handleJourneysPageChange,
+    refetch: refetchJourneys,
   } = useUserJourneys(profile?.id)
 
   const { total: transactionsTotal } = useUserTransactions(profile?.id)
@@ -182,11 +184,13 @@ export default function Profile() {
               tierlistsTotal={tierlistsTotal}
               onTierlistsPageChange={handleTierlistsPageChange}
               journeys={journeys}
+              journeyGames={journeyGames}
               loadingJourneys={loadingJourneys}
               journeysPage={journeysPage}
               journeysTotalPages={journeysTotalPages}
               journeysTotal={journeysTotal}
               onJourneysPageChange={handleJourneysPageChange}
+              onJourneysUpdate={refetchJourneys}
               onEditProfile={() => setSettingsOpen(true)}
             />
           </div>
