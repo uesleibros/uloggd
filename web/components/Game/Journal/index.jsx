@@ -49,34 +49,37 @@ export default function JournalButton({ game }) {
   const [loading, setLoading] = useState(false)
   const [selectedJourney, setSelectedJourney] = useState(null)
 
-  const fetchJourneys = useCallback(
-    async (signal) => {
-      if (!user || !game?.id) return
-      setLoading(true)
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-        if (!session || signal?.aborted) return
-
-        const res = await fetch(`/api/journeys/@me/list?gameId=${game.id}`, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-          signal,
-        })
-
-        if (res.ok && !signal?.aborted) {
-          const data = await res.json()
-          setJourneys(data.journeys || [])
-          setSelectedJourney((prev) => prev ?? data.journeys?.[0] ?? null)
-        }
-      } catch (e) {
-        if (e?.name === "AbortError") return
-      } finally {
-        if (!signal?.aborted) setLoading(false)
-      }
-    },
-    [user?.id, game?.id],
-  )
+	const fetchJourneys = useCallback(
+	  async (signal) => {
+	    if (!user || !game?.id) return
+	    setLoading(true)
+	    try {
+	      const {
+	        data: { session },
+	      } = await supabase.auth.getSession()
+	      if (!session || signal?.aborted) return
+	
+	      const res = await fetch(`/api/journeys/@me/list?gameId=${game.id}`, {
+	        headers: { Authorization: `Bearer ${session.access_token}` },
+	        signal,
+	      })
+	
+	      if (res.ok && !signal?.aborted) {
+	        const data = await res.json()
+	        setJourneys(data.journeys || [])
+	        setSelectedJourney((prev) => {
+	          if (!prev) return data.journeys?.[0] ?? null
+	          return data.journeys?.find(j => j.id === prev.id) || data.journeys?.[0] || null
+	        })
+	      }
+	    } catch (e) {
+	      if (e?.name === "AbortError") return
+	    } finally {
+	      if (!signal?.aborted) setLoading(false)
+	    }
+	  },
+	  [user?.id, game?.id],
+	)
 
   useEffect(() => {
     const ac = new AbortController()
@@ -172,3 +175,4 @@ export default function JournalButton({ game }) {
     </>
   )
 }
+
