@@ -42,6 +42,13 @@ function formatTime(entry) {
   return `${m}m`
 }
 
+function getRounding(left, right) {
+  if (left && right) return ""
+  if (left) return "rounded-r-xl"
+  if (right) return "rounded-l-xl"
+  return "rounded-xl"
+}
+
 export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, onBulkRemove, loading, disabled }) {
   const { t } = useTranslation("journal.calendar")
 
@@ -54,72 +61,67 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   const selectedDatesRef = useRef(new Set())
   const containerRef = useRef(null)
 
-  const { days, prevOverflow, nextOverflow } = useMemo(() => {
+  const today = new Date()
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
+
+  function formatDate(day) {
+    return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+  }
+
+  const cells = useMemo(() => {
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
     const startDay = firstDay.getDay()
 
-    const days = []
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(i)
-    }
+    const fmt = (y, m, d) =>
+      `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`
 
-    const prevMonth = month === 0 ? 11 : month - 1
-    const prevYear = month === 0 ? year - 1 : year
-    const prevMonthLastDay = new Date(year, month, 0).getDate()
-    const prevOverflow = []
-    for (let i = startDay - 1; i >= 0; i--) {
-      const day = prevMonthLastDay - i
-      const m = String(prevMonth + 1).padStart(2, "0")
-      const d = String(day).padStart(2, "0")
-      prevOverflow.push({ day, dateStr: `${prevYear}-${m}-${d}` })
-    }
+    const pMonth = month === 0 ? 11 : month - 1
+    const pYear = month === 0 ? year - 1 : year
+    const prevLastDay = new Date(year, month, 0).getDate()
 
     const nMonth = month === 11 ? 0 : month + 1
     const nYear = month === 11 ? year + 1 : year
     const totalCells = startDay + daysInMonth
     const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7)
-    const nextOverflow = []
-    for (let i = 1; i <= remaining; i++) {
-      const m = String(nMonth + 1).padStart(2, "0")
-      const d = String(i).padStart(2, "0")
-      nextOverflow.push({ day: i, dateStr: `${nYear}-${m}-${d}` })
+
+    const all = []
+
+    for (let i = startDay - 1; i >= 0; i--) {
+      const day = prevLastDay - i
+      all.push({ type: "overflow", day, dateStr: fmt(pYear, pMonth, day) })
     }
 
-    return { days, prevOverflow, nextOverflow }
-  }, [month, year])
+    for (let d = 1; d <= daysInMonth; d++) {
+      all.push({ type: "current", day: d, dateStr: fmt(year, month, d) })
+    }
 
-  const today = new Date()
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
+    for (let i = 1; i <= remaining; i++) {
+      all.push({ type: "overflow", day: i, dateStr: fmt(nYear, nMonth, i) })
+    }
 
-  function formatDate(day) {
-    const m = String(month + 1).padStart(2, "0")
-    const d = String(day).padStart(2, "0")
-    return `${year}-${m}-${d}`
-  }
+    return all.map((cell, i) => {
+      const col = i % 7
+      const hasLog = !!entries[cell.dateStr]
+      const prevHasLog = col > 0 && i > 0 && !!entries[all[i - 1].dateStr]
+      const nextHasLog = col < 6 && i < all.length - 1 && !!entries[all[i + 1].dateStr]
 
-  function isToday(day) {
-    return formatDate(day) === todayStr
-  }
-
-  function isFuture(day) {
-    return formatDate(day) > todayStr
-  }
-
-  function hasEntry(day) {
-    return !!entries[formatDate(day)]
-  }
-
-  function getEntryInfo(day) {
-    return entries[formatDate(day)]
-  }
+      return {
+        ...cell,
+        col,
+        hasLog,
+        connectedLeft: hasLog && prevHasLog,
+        connectedRight: hasLog && nextHasLog,
+      }
+    })
+  }, [month, year, entries])
 
   function startDrag(day) {
-    if (disabled || isFuture(day)) return
+    if (disabled || formatDate(day) > todayStr) return
 
     const dateStr = formatDate(day)
-    const mode = hasEntry(day) ? "remove" : "add"
+    const mode = !!entries[dateStr] ? "remove" : "add"
     const dates = new Set([dateStr])
 
     isDraggingRef.current = true
@@ -132,7 +134,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   }
 
   function extendDrag(day) {
-    if (!isDraggingRef.current || disabled || isFuture(day)) return
+    if (!isDraggingRef.current || disabled || formatDate(day) > todayStr) return
 
     const dateStr = formatDate(day)
     if (selectedDatesRef.current.has(dateStr)) return
@@ -153,11 +155,8 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     if (dates.length === 1) {
       onDayClick?.(dates[0])
     } else if (dates.length > 1) {
-      if (mode === "add") {
-        onBulkAdd?.(dates)
-      } else {
-        onBulkRemove?.(dates)
-      }
+      if (mode === "add") onBulkAdd?.(dates)
+      else onBulkRemove?.(dates)
     }
 
     isDraggingRef.current = false
@@ -208,29 +207,6 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     finishDrag()
   }
 
-  function renderOverflowDay({ day, dateStr }) {
-    const entry = entries[dateStr]
-    const intensity = getIntensity(entry)
-    const timeDisplay = formatTime(entry)
-
-    return (
-      <div
-        key={dateStr}
-        className={`
-          aspect-square rounded-xl flex flex-col items-center justify-center relative opacity-40
-          ${intensity > 0 ? INTENSITY_BG[intensity] : ""}
-        `}
-      >
-        <span className="text-sm text-zinc-600">{day}</span>
-        {timeDisplay && (
-          <span className="text-[10px] text-emerald-500/50 leading-tight">
-            {timeDisplay}
-          </span>
-        )}
-      </div>
-    )
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -248,7 +224,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      <div className="grid grid-cols-7 mb-2">
         {WEEKDAYS.map(day => (
           <div key={day} className="text-center text-sm font-medium text-zinc-500 py-3">
             {t(`weekdays.${day}`)}
@@ -256,44 +232,70 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
-        {prevOverflow.map(renderOverflowDay)}
-
-        {days.map(day => {
-          const future = isFuture(day)
-          const todayClass = isToday(day)
-          const entry = getEntryInfo(day)
-          const hasLog = !!entry
-          const dateStr = formatDate(day)
-          const isSelected = selectedDates.has(dateStr)
-          const isBeingAdded = isSelected && dragMode === "add"
-          const isBeingRemoved = isSelected && dragMode === "remove"
-
+      <div className="grid grid-cols-7 gap-y-1">
+        {cells.map((cell) => {
+          const entry = entries[cell.dateStr]
           const intensity = getIntensity(entry)
           const timeDisplay = formatTime(entry)
 
+          if (cell.type === "overflow") {
+            const rounding = cell.hasLog
+              ? getRounding(cell.connectedLeft, cell.connectedRight)
+              : ""
+
+            return (
+              <div
+                key={cell.dateStr}
+                className={`
+                  aspect-square flex flex-col items-center justify-center opacity-40
+                  ${cell.hasLog ? INTENSITY_BG[intensity] : ""}
+                  ${rounding}
+                `}
+              >
+                <span className="text-sm text-zinc-600">{cell.day}</span>
+                {timeDisplay && (
+                  <span className="text-[10px] text-emerald-500/50 leading-tight">
+                    {timeDisplay}
+                  </span>
+                )}
+              </div>
+            )
+          }
+
+          const future = cell.dateStr > todayStr
+          const isCurrentToday = cell.dateStr === todayStr
+          const isSelected = selectedDates.has(cell.dateStr)
+          const isBeingAdded = isSelected && dragMode === "add"
+          const isBeingRemoved = isSelected && dragMode === "remove"
+
+          const rounding = isBeingAdded
+            ? "rounded-xl"
+            : cell.hasLog
+              ? getRounding(cell.connectedLeft, cell.connectedRight)
+              : "rounded-xl"
+
           return (
             <button
-              key={day}
-              data-day={day}
-              onMouseDown={(e) => handleMouseDown(day, e)}
-              onMouseEnter={() => handleMouseEnter(day)}
-              onTouchStart={(e) => handleTouchStart(day, e)}
+              key={cell.dateStr}
+              data-day={cell.day}
+              onMouseDown={(e) => handleMouseDown(cell.day, e)}
+              onMouseEnter={() => handleMouseEnter(cell.day)}
+              onTouchStart={(e) => handleTouchStart(cell.day, e)}
               disabled={future || disabled}
               className={`
-                aspect-square rounded-xl flex flex-col items-center justify-center font-medium transition-all relative
+                aspect-square ${rounding} flex flex-col items-center justify-center font-medium transition-all relative
                 ${disabled ? "pointer-events-none opacity-50" : ""}
                 ${future ? "text-zinc-700 cursor-not-allowed" : "cursor-pointer"}
-                ${todayClass && !hasLog && !isSelected ? "ring-2 ring-emerald-500/50 text-emerald-400" : ""}
-                ${hasLog && !isBeingRemoved
+                ${isCurrentToday && !cell.hasLog && !isSelected ? "ring-2 ring-emerald-500/50 text-emerald-400" : ""}
+                ${cell.hasLog && !isBeingRemoved
                   ? `${INTENSITY_BG[intensity]} ${INTENSITY_TEXT[intensity]} hover:brightness-125`
-                  : !hasLog && !isSelected ? "text-zinc-300 hover:bg-zinc-700/50" : ""
+                  : !cell.hasLog && !isSelected ? "text-zinc-300 hover:bg-zinc-700/50" : ""
                 }
                 ${isBeingAdded ? "bg-emerald-500/40 text-emerald-300 ring-2 ring-emerald-400" : ""}
                 ${isBeingRemoved ? "bg-red-500/30 text-red-400 ring-2 ring-red-400" : ""}
               `}
             >
-              <span className={hasLog && !isBeingRemoved ? "text-base" : "text-lg"}>{day}</span>
+              <span className={cell.hasLog && !isBeingRemoved ? "text-base" : "text-lg"}>{cell.day}</span>
               {timeDisplay && !isBeingRemoved && (
                 <span className="text-[10px] leading-tight opacity-75">
                   {timeDisplay}
@@ -302,8 +304,6 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
             </button>
           )
         })}
-
-        {nextOverflow.map(renderOverflowDay)}
       </div>
 
       {isDragging && (
