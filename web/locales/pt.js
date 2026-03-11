@@ -39,6 +39,9 @@ export default {
 	    save: "Salvar",
 	    saving: "Salvando...",
 	    create: "Criar",
+			deleteConfirmTitle: "Excluir jornada",
+      deleteConfirmMessage: "Tem certeza? Todas as sessões e anotações serão perdidas permanentemente.",
+      confirmDelete: "Excluir",
 	    delete: "Excluir jornada",
 	    createFirst: "Crie a jornada para começar a registrar suas sessões",
 	    jumpTo: "Ir para...",
@@ -2080,6 +2083,7 @@ export default {
 		},
 	},
 }
+
 
 
 
