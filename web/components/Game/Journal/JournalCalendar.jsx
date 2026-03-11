@@ -14,6 +14,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   const dragModeRef = useRef(null)
   const selectedDatesRef = useRef(new Set())
   const containerRef = useRef(null)
+  const dayRefs = useRef({})
 
   const { days, startDay } = useMemo(() => {
     const firstDay = new Date(year, month, 1)
@@ -54,9 +55,8 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     return entries[formatDate(day)]
   }
 
-  function handleMouseDown(day, e) {
+  function startDrag(day) {
     if (disabled || isFuture(day)) return
-    e.preventDefault()
 
     const dateStr = formatDate(day)
     const mode = hasEntry(day) ? "remove" : "add"
@@ -71,10 +71,12 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     setSelectedDates(dates)
   }
 
-  function handleMouseEnter(day) {
+  function extendDrag(day) {
     if (!isDraggingRef.current || disabled || isFuture(day)) return
 
     const dateStr = formatDate(day)
+    if (selectedDatesRef.current.has(dateStr)) return
+
     const newSet = new Set(selectedDatesRef.current)
     newSet.add(dateStr)
 
@@ -107,9 +109,49 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     setSelectedDates(new Set())
   }, [onDayClick, onBulkAdd, onBulkRemove])
 
+  // Mouse handlers
+  function handleMouseDown(day, e) {
+    e.preventDefault()
+    startDrag(day)
+  }
+
+  function handleMouseEnter(day) {
+    extendDrag(day)
+  }
+
   const handleMouseLeave = useCallback(() => {
     if (isDraggingRef.current) finishDrag()
   }, [finishDrag])
+
+  // Touch handlers
+  function handleTouchStart(day, e) {
+    e.preventDefault()
+    startDrag(day)
+  }
+
+  function getDayFromTouch(touch) {
+    const el = document.elementFromPoint(touch.clientX, touch.clientY)
+    if (!el) return null
+
+    const dayEl = el.closest("[data-day]")
+    if (!dayEl) return null
+
+    return parseInt(dayEl.dataset.day, 10)
+  }
+
+  function handleTouchMove(e) {
+    if (!isDraggingRef.current) return
+    e.preventDefault()
+
+    const touch = e.touches[0]
+    const day = getDayFromTouch(touch)
+    if (day) extendDrag(day)
+  }
+
+  function handleTouchEnd(e) {
+    e.preventDefault()
+    finishDrag()
+  }
 
   if (loading) {
     return (
@@ -122,9 +164,11 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   return (
     <div
       ref={containerRef}
-      className="select-none"
+      className="select-none touch-none"
       onMouseLeave={handleMouseLeave}
       onMouseUp={finishDrag}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       <div className="grid grid-cols-7 gap-1 mb-2">
         {WEEKDAYS.map(day => (
@@ -156,8 +200,10 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
           return (
             <button
               key={day}
+              data-day={day}
               onMouseDown={(e) => handleMouseDown(day, e)}
               onMouseEnter={() => handleMouseEnter(day)}
+              onTouchStart={(e) => handleTouchStart(day, e)}
               disabled={future || disabled}
               className={`
                 aspect-square rounded-xl flex flex-col items-center justify-center text-base font-medium transition-all relative
