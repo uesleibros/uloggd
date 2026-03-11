@@ -4,6 +4,7 @@ import { ThumbsUp, Clock, TrendingUp, BookOpen } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
+import { useJournalEvents } from "#hooks/useJournalEvents"
 import { SORT_OPTIONS } from "#constants/game"
 import { supabase } from "#lib/supabase"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
@@ -429,6 +430,8 @@ export default function GameReviews({ gameId }) {
   useEffect(() => {
     fetchReviews()
   }, [fetchReviews])
+
+  useJournalEvents(fetchReviews)
 
   function handleSortChange(newSort) {
     if (newSort === sortBy) return
