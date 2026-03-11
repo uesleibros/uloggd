@@ -1,5 +1,4 @@
 import { query } from "#lib/igdbWrapper.js"
-import { PLATFORMS_MAP } from "#data/platformsMapper.js"
 import { buildNameFilter } from "#services/igdb/utils/buildNameFilter.js"
 import { scoreGame } from "#services/igdb/utils/scoreGame.js"
 
@@ -9,20 +8,23 @@ export async function handleAutocomplete(req, res) {
 
 	try {
 		const nameFilter = buildNameFilter(q)
+		const altNameFilter = nameFilter.replace(/\bname\b/g, "alternative_names.name")
+
 		const data = await query("games", `
 			fields name, slug, first_release_date,
 				cover.url, cover.image_id,
 				platforms.id, platforms.name, platforms.abbreviation,
 				alternative_names.name,
 				total_rating, total_rating_count, game_type;
-			where ${nameFilter} & cover != null;
+			where (${nameFilter} | ${altNameFilter}) & cover != null;
 			sort total_rating_count desc;
-			limit 30;
+			limit 50;
 		`)
 
 		const games = data
 			.map(g => scoreGame(g, q))
 			.sort((a, b) => b.relevance - a.relevance)
+			.slice(0, 30)
 
 		res.json(games)
 	} catch (e) {
