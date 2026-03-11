@@ -59,6 +59,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   const isDraggingRef = useRef(false)
   const dragModeRef = useRef(null)
   const selectedDatesRef = useRef(new Set())
+  const pendingRef = useRef(null) // { day, dateStr, mode } — click pendente, vira drag se mover
   const containerRef = useRef(null)
 
   const today = new Date()
@@ -117,26 +118,30 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     })
   }, [month, year, entries])
 
-  function startDrag(day) {
+  function handlePointerDown(day) {
     if (disabled || formatDate(day) > todayStr) return
 
     const dateStr = formatDate(day)
     const mode = !!entries[dateStr] ? "remove" : "add"
-    const dates = new Set([dateStr])
+
+    pendingRef.current = { day, dateStr, mode }
+  }
+
+  function activateDrag(pending, newDateStr) {
+    const dates = new Set([pending.dateStr, newDateStr])
 
     isDraggingRef.current = true
-    dragModeRef.current = mode
+    dragModeRef.current = pending.mode
     selectedDatesRef.current = dates
 
     setIsDragging(true)
-    setDragMode(mode)
+    setDragMode(pending.mode)
     setSelectedDates(dates)
+
+    pendingRef.current = null
   }
 
-  function extendDrag(day) {
-    if (!isDraggingRef.current || disabled || formatDate(day) > todayStr) return
-
-    const dateStr = formatDate(day)
+  function extendDrag(dateStr) {
     if (selectedDatesRef.current.has(dateStr)) return
 
     const newSet = new Set(selectedDatesRef.current)
@@ -146,44 +151,64 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     setSelectedDates(new Set(newSet))
   }
 
-  const finishDrag = useCallback(() => {
-    if (!isDraggingRef.current) return
+  function handlePointerEnter(day) {
+    if (disabled || formatDate(day) > todayStr) return
 
-    const dates = Array.from(selectedDatesRef.current)
-    const mode = dragModeRef.current
+    const dateStr = formatDate(day)
 
-    if (dates.length === 1) {
-      onDayClick?.(dates[0])
-    } else if (dates.length > 1) {
-      if (mode === "add") onBulkAdd?.(dates)
-      else onBulkRemove?.(dates)
+    if (pendingRef.current && !isDraggingRef.current) {
+      if (dateStr !== pendingRef.current.dateStr) {
+        activateDrag(pendingRef.current, dateStr)
+      }
+      return
     }
 
-    isDraggingRef.current = false
-    dragModeRef.current = null
-    selectedDatesRef.current = new Set()
+    if (isDraggingRef.current) {
+      extendDrag(dateStr)
+    }
+  }
 
-    setIsDragging(false)
-    setDragMode(null)
-    setSelectedDates(new Set())
+  const finishInteraction = useCallback(() => {
+    if (pendingRef.current && !isDraggingRef.current) {
+      onDayClick?.(pendingRef.current.dateStr)
+      pendingRef.current = null
+      return
+    }
+
+    if (isDraggingRef.current) {
+      const dates = Array.from(selectedDatesRef.current)
+      const mode = dragModeRef.current
+
+      if (mode === "add") onBulkAdd?.(dates)
+      else onBulkRemove?.(dates)
+
+      isDraggingRef.current = false
+      dragModeRef.current = null
+      selectedDatesRef.current = new Set()
+      pendingRef.current = null
+
+      setIsDragging(false)
+      setDragMode(null)
+      setSelectedDates(new Set())
+    }
   }, [onDayClick, onBulkAdd, onBulkRemove])
+
+  const handleMouseLeave = useCallback(() => {
+    if (isDraggingRef.current || pendingRef.current) finishInteraction()
+  }, [finishInteraction])
 
   function handleMouseDown(day, e) {
     e.preventDefault()
-    startDrag(day)
+    handlePointerDown(day)
   }
 
   function handleMouseEnter(day) {
-    extendDrag(day)
+    handlePointerEnter(day)
   }
-
-  const handleMouseLeave = useCallback(() => {
-    if (isDraggingRef.current) finishDrag()
-  }, [finishDrag])
 
   function handleTouchStart(day, e) {
     e.preventDefault()
-    startDrag(day)
+    handlePointerDown(day)
   }
 
   function getDayFromTouch(touch) {
@@ -195,16 +220,16 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   }
 
   function handleTouchMove(e) {
-    if (!isDraggingRef.current) return
+    if (!pendingRef.current && !isDraggingRef.current) return
     e.preventDefault()
     const touch = e.touches[0]
     const day = getDayFromTouch(touch)
-    if (day) extendDrag(day)
+    if (day) handlePointerEnter(day)
   }
 
   function handleTouchEnd(e) {
     e.preventDefault()
-    finishDrag()
+    finishInteraction()
   }
 
   if (loading) {
@@ -220,7 +245,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       ref={containerRef}
       className="select-none touch-none"
       onMouseLeave={handleMouseLeave}
-      onMouseUp={finishDrag}
+      onMouseUp={finishInteraction}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
@@ -268,7 +293,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
           const isBeingAdded = isSelected && dragMode === "add"
           const isBeingRemoved = isSelected && dragMode === "remove"
 
-          const rounding = isBeingAdded
+          const rounding = isSelected
             ? "rounded-xl"
             : cell.hasLog
               ? getRounding(cell.connectedLeft, cell.connectedRight)
