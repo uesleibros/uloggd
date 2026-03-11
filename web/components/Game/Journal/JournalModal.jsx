@@ -41,27 +41,27 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
     return session?.access_token
   }
 
-	async function fetchJourneyDetails() {
-	  setLoading(true)
-	  try {
-	    const res = await fetch(`/api/journeys/get?journeyId=${existingJourney.id}`)
-	    if (res.ok) {
-	      const data = await res.json()
-	      setEntries(data.entries || [])
-	      setStartedAt(data.started_at || "")
-	      setFinishedAt(data.finished_at || "")
-	
-	      if (data.entries?.length > 0) {
-	        const lastEntry = data.entries[data.entries.length - 1]
-	        const lastDate = new Date(lastEntry.played_on + "T00:00:00")
-	        setCurrentMonth(lastDate.getMonth())
-	        setCurrentYear(lastDate.getFullYear())
-	      }
-	    }
-	  } catch {} finally {
-	    setLoading(false)
-	  }
-	}
+  async function fetchJourneyDetails() {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/journeys/get?journeyId=${existingJourney.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setEntries(data.entries || [])
+        setStartedAt(data.started_at || "")
+        setFinishedAt(data.finished_at || "")
+
+        if (data.entries?.length > 0) {
+          const lastEntry = data.entries[data.entries.length - 1]
+          const lastDate = new Date(lastEntry.played_on + "T00:00:00")
+          setCurrentMonth(lastDate.getMonth())
+          setCurrentYear(lastDate.getFullYear())
+        }
+      }
+    } catch {} finally {
+      setLoading(false)
+    }
+  }
 
   const entryMap = useMemo(() => {
     const map = {}
@@ -172,66 +172,63 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
     }
   }
 
-	async function handleSaveEntry(entryData) {
-	  const token = await getToken()
-	  if (!token) return
-	
-	  const isUpdating = !!entryData.id
-	
-	  try {
-	    const url = isUpdating ? "/api/journeys/@me/updateEntry" : "/api/journeys/@me/addEntry"
-	    const payload = isUpdating
-	      ? {
-	          entryId: entryData.id,
-	          playedOn: entryData.playedOn,
-	          hours: entryData.hours,
-	          minutes: entryData.minutes,
-	          note: entryData.note,
-	          setStarted: entryData.setStarted,
-	          setFinished: entryData.setFinished,
-	        }
-	      : {
-	          journeyId: existingJourney.id,
-	          playedOn: entryData.playedOn,
-	          hours: entryData.hours,
-	          minutes: entryData.minutes,
-	          note: entryData.note,
-	          setStarted: entryData.setStarted,
-	          setFinished: entryData.setFinished,
-	        }
-	
-	    const res = await fetch(url, {
-	      method: "POST",
-	      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-	      body: JSON.stringify(payload),
-	    })
-	
-	    if (res.ok) {
-	      if (entryData.setStarted !== undefined) setStartedAt(entryData.setStarted || "")
-	      if (entryData.setFinished !== undefined) setFinishedAt(entryData.setFinished || "")
-	
-	      notify(isUpdating ? t("entry.updated") : t("entry.added"))
-	      setShowEntryModal(false)
-	      setEditingEntry(null)
-	      setSelectedDate(null)
-	      fetchJourneyDetails()
-	      return true
-	    } else {
-	      notify(t("entry.saveFailed"), "error")
-	      return false
-	    }
-	  } catch {
-	    notify(t("entry.saveFailed"), "error")
-	    return false
-	  }
-	}
+  async function handleSaveEntry(entryData) {
+    const token = await getToken()
+    if (!token) return
+
+    const isUpdating = !!entryData.id
+
+    try {
+      const url = isUpdating ? "/api/journeys/@me/updateEntry" : "/api/journeys/@me/addEntry"
+      const payload = isUpdating
+        ? {
+            entryId: entryData.id,
+            playedOn: entryData.playedOn,
+            hours: entryData.hours,
+            minutes: entryData.minutes,
+            note: entryData.note,
+            setStarted: entryData.setStarted,
+            setFinished: entryData.setFinished,
+          }
+        : {
+            journeyId: existingJourney.id,
+            playedOn: entryData.playedOn,
+            hours: entryData.hours,
+            minutes: entryData.minutes,
+            note: entryData.note,
+            setStarted: entryData.setStarted,
+            setFinished: entryData.setFinished,
+          }
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      })
+
+      if (res.ok) {
+        if (entryData.setStarted !== undefined) setStartedAt(entryData.setStarted || "")
+        if (entryData.setFinished !== undefined) setFinishedAt(entryData.setFinished || "")
+
+        notify(isUpdating ? t("entry.updated") : t("entry.added"))
+        setShowEntryModal(false)
+        setEditingEntry(null)
+        setSelectedDate(null)
+        fetchJourneyDetails()
+        return true
+      } else {
+        notify(t("entry.saveFailed"), "error")
+        return false
+      }
+    } catch {
+      notify(t("entry.saveFailed"), "error")
+      return false
+    }
+  }
 
   async function handleRemoveEntry(entryId) {
     const token = await getToken()
     if (!token) return
-
-    const entry = entries.find(e => e.id === entryId)
-    const dateStr = entry?.played_on
 
     try {
       const res = await fetch("/api/journeys/@me/removeEntry", {
@@ -241,9 +238,6 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
       })
 
       if (res.ok) {
-        if (dateStr === startedAt) await updateMilestones(null, undefined)
-        if (dateStr === finishedAt) await updateMilestones(undefined, null)
-
         notify(t("entry.removed"))
         setShowEntryModal(false)
         setEditingEntry(null)
@@ -474,4 +468,3 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
     </div>
   )
 }
-
