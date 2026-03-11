@@ -14,7 +14,9 @@ export async function handleAutocomplete(req, res) {
         platforms.id,
         total_rating, total_rating_count;
       where cover != null
-        & name ~ *"${sanitized}"*;
+        & name ~ *"${sanitized}"*
+        & game_type = (0, 4, 8, 9, 10, 11)
+        & version_parent = null;
       sort total_rating_count desc;
       limit 20;
     `)
@@ -49,6 +51,7 @@ export async function handleAutocomplete(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
 
 
 
