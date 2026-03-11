@@ -14,22 +14,13 @@ function getIntensity(entry) {
   return 5
 }
 
-const INTENSITY_BG = {
-  0: "",
-  1: "bg-emerald-500/15",
-  2: "bg-emerald-500/25",
-  3: "bg-emerald-500/35",
-  4: "bg-emerald-500/45",
-  5: "bg-emerald-500/55",
-}
-
-const INTENSITY_TEXT = {
-  0: "",
-  1: "text-emerald-400/70",
-  2: "text-emerald-400/80",
-  3: "text-emerald-400",
-  4: "text-emerald-300",
-  5: "text-emerald-300",
+const INTENSITY = {
+  0: { bg: "", text: "" },
+  1: { bg: "bg-emerald-500/12", text: "text-emerald-400/70" },
+  2: { bg: "bg-emerald-500/20", text: "text-emerald-400/80" },
+  3: { bg: "bg-emerald-500/30", text: "text-emerald-400" },
+  4: { bg: "bg-emerald-500/40", text: "text-emerald-300" },
+  5: { bg: "bg-emerald-500/50", text: "text-emerald-200" },
 }
 
 function formatTime(entry) {
@@ -42,11 +33,11 @@ function formatTime(entry) {
   return `${m}m`
 }
 
-function getRounding(left, right) {
-  if (left && right) return ""
-  if (left) return "rounded-r-xl"
-  if (right) return "rounded-l-xl"
-  return "rounded-xl"
+function getRadius(left, right) {
+  if (left && right) return "rounded-none"
+  if (left) return "rounded-r-lg md:rounded-r-xl"
+  if (right) return "rounded-l-lg md:rounded-l-xl"
+  return "rounded-lg md:rounded-xl"
 }
 
 export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, onBulkRemove, loading, disabled }) {
@@ -59,7 +50,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   const isDraggingRef = useRef(false)
   const dragModeRef = useRef(null)
   const selectedDatesRef = useRef(new Set())
-  const pendingRef = useRef(null) // { day, dateStr, mode } — click pendente, vira drag se mover
+  const pendingRef = useRef(null)
   const containerRef = useRef(null)
 
   const today = new Date()
@@ -108,64 +99,45 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       const prevHasLog = col > 0 && i > 0 && !!entries[all[i - 1].dateStr]
       const nextHasLog = col < 6 && i < all.length - 1 && !!entries[all[i + 1].dateStr]
 
-      return {
-        ...cell,
-        col,
-        hasLog,
-        connectedLeft: hasLog && prevHasLog,
-        connectedRight: hasLog && nextHasLog,
-      }
+      return { ...cell, col, hasLog, connLeft: hasLog && prevHasLog, connRight: hasLog && nextHasLog }
     })
   }, [month, year, entries])
 
   function handlePointerDown(day) {
     if (disabled || formatDate(day) > todayStr) return
-
     const dateStr = formatDate(day)
-    const mode = !!entries[dateStr] ? "remove" : "add"
-
-    pendingRef.current = { day, dateStr, mode }
+    pendingRef.current = { day, dateStr, mode: !!entries[dateStr] ? "remove" : "add" }
   }
 
   function activateDrag(pending, newDateStr) {
     const dates = new Set([pending.dateStr, newDateStr])
-
     isDraggingRef.current = true
     dragModeRef.current = pending.mode
     selectedDatesRef.current = dates
-
     setIsDragging(true)
     setDragMode(pending.mode)
     setSelectedDates(dates)
-
     pendingRef.current = null
   }
 
   function extendDrag(dateStr) {
     if (selectedDatesRef.current.has(dateStr)) return
-
     const newSet = new Set(selectedDatesRef.current)
     newSet.add(dateStr)
-
     selectedDatesRef.current = newSet
     setSelectedDates(new Set(newSet))
   }
 
   function handlePointerEnter(day) {
     if (disabled || formatDate(day) > todayStr) return
-
     const dateStr = formatDate(day)
 
     if (pendingRef.current && !isDraggingRef.current) {
-      if (dateStr !== pendingRef.current.dateStr) {
-        activateDrag(pendingRef.current, dateStr)
-      }
+      if (dateStr !== pendingRef.current.dateStr) activateDrag(pendingRef.current, dateStr)
       return
     }
 
-    if (isDraggingRef.current) {
-      extendDrag(dateStr)
-    }
+    if (isDraggingRef.current) extendDrag(dateStr)
   }
 
   const finishInteraction = useCallback(() => {
@@ -178,7 +150,6 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     if (isDraggingRef.current) {
       const dates = Array.from(selectedDatesRef.current)
       const mode = dragModeRef.current
-
       if (mode === "add") onBulkAdd?.(dates)
       else onBulkRemove?.(dates)
 
@@ -186,7 +157,6 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       dragModeRef.current = null
       selectedDatesRef.current = new Set()
       pendingRef.current = null
-
       setIsDragging(false)
       setDragMode(null)
       setSelectedDates(new Set())
@@ -197,20 +167,6 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     if (isDraggingRef.current || pendingRef.current) finishInteraction()
   }, [finishInteraction])
 
-  function handleMouseDown(day, e) {
-    e.preventDefault()
-    handlePointerDown(day)
-  }
-
-  function handleMouseEnter(day) {
-    handlePointerEnter(day)
-  }
-
-  function handleTouchStart(day, e) {
-    e.preventDefault()
-    handlePointerDown(day)
-  }
-
   function getDayFromTouch(touch) {
     const el = document.elementFromPoint(touch.clientX, touch.clientY)
     if (!el) return null
@@ -219,23 +175,10 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     return parseInt(dayEl.dataset.day, 10)
   }
 
-  function handleTouchMove(e) {
-    if (!pendingRef.current && !isDraggingRef.current) return
-    e.preventDefault()
-    const touch = e.touches[0]
-    const day = getDayFromTouch(touch)
-    if (day) handlePointerEnter(day)
-  }
-
-  function handleTouchEnd(e) {
-    e.preventDefault()
-    finishInteraction()
-  }
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="flex items-center justify-center py-20">
+        <div className="w-7 h-7 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -246,101 +189,130 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       className="select-none touch-none"
       onMouseLeave={handleMouseLeave}
       onMouseUp={finishInteraction}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      onTouchMove={(e) => {
+        if (!pendingRef.current && !isDraggingRef.current) return
+        e.preventDefault()
+        const day = getDayFromTouch(e.touches[0])
+        if (day) handlePointerEnter(day)
+      }}
+      onTouchEnd={(e) => {
+        e.preventDefault()
+        finishInteraction()
+      }}
     >
-      <div className="grid grid-cols-7 mb-2">
+      <div className="grid grid-cols-7 mb-1">
         {WEEKDAYS.map(day => (
-          <div key={day} className="text-center text-sm font-medium text-zinc-500 py-3">
+          <div
+            key={day}
+            className="text-center text-[11px] md:text-xs font-semibold text-zinc-600 uppercase tracking-wider py-2 md:py-3"
+          >
             {t(`weekdays.${day}`)}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-y-1">
+      <div className="grid grid-cols-7 gap-y-0.5 md:gap-y-1">
         {cells.map((cell) => {
           const entry = entries[cell.dateStr]
           const intensity = getIntensity(entry)
           const timeDisplay = formatTime(entry)
 
           if (cell.type === "overflow") {
-            const rounding = cell.hasLog
-              ? getRounding(cell.connectedLeft, cell.connectedRight)
-              : ""
+            const radius = cell.hasLog ? getRadius(cell.connLeft, cell.connRight) : ""
 
             return (
               <div
                 key={cell.dateStr}
                 className={`
-                  aspect-square flex flex-col items-center justify-center opacity-40
-                  ${cell.hasLog ? INTENSITY_BG[intensity] : ""}
-                  ${rounding}
+                  aspect-square flex flex-col items-center justify-center
+                  ${cell.hasLog ? `${INTENSITY[intensity].bg} opacity-30` : ""}
+                  ${radius}
                 `}
               >
-                <span className="text-sm text-zinc-600">{cell.day}</span>
+                <span className="text-xs md:text-sm text-zinc-700/60">{cell.day}</span>
                 {timeDisplay && (
-                  <span className="text-[10px] text-emerald-500/50 leading-tight">
-                    {timeDisplay}
-                  </span>
+                  <span className="text-[9px] md:text-[10px] text-emerald-500/30 leading-tight">{timeDisplay}</span>
                 )}
               </div>
             )
           }
 
           const future = cell.dateStr > todayStr
-          const isCurrentToday = cell.dateStr === todayStr
+          const isToday = cell.dateStr === todayStr
           const isSelected = selectedDates.has(cell.dateStr)
           const isBeingAdded = isSelected && dragMode === "add"
           const isBeingRemoved = isSelected && dragMode === "remove"
-
-          const rounding = isSelected
-            ? "rounded-xl"
-            : cell.hasLog
-              ? getRounding(cell.connectedLeft, cell.connectedRight)
-              : "rounded-xl"
+          const radius = isSelected ? "rounded-lg md:rounded-xl" : cell.hasLog ? getRadius(cell.connLeft, cell.connRight) : "rounded-lg md:rounded-xl"
 
           return (
             <button
               key={cell.dateStr}
               data-day={cell.day}
-              onMouseDown={(e) => handleMouseDown(cell.day, e)}
-              onMouseEnter={() => handleMouseEnter(cell.day)}
-              onTouchStart={(e) => handleTouchStart(cell.day, e)}
+              onMouseDown={(e) => { e.preventDefault(); handlePointerDown(cell.day) }}
+              onMouseEnter={() => handlePointerEnter(cell.day)}
+              onTouchStart={(e) => { e.preventDefault(); handlePointerDown(cell.day) }}
               disabled={future || disabled}
               className={`
-                aspect-square ${rounding} flex flex-col items-center justify-center font-medium transition-all relative
-                ${disabled ? "pointer-events-none opacity-50" : ""}
-                ${future ? "text-zinc-700 cursor-not-allowed" : "cursor-pointer"}
-                ${isCurrentToday && !cell.hasLog && !isSelected ? "ring-2 ring-emerald-500/50 text-emerald-400" : ""}
-                ${cell.hasLog && !isBeingRemoved
-                  ? `${INTENSITY_BG[intensity]} ${INTENSITY_TEXT[intensity]} hover:brightness-125`
-                  : !cell.hasLog && !isSelected ? "text-zinc-300 hover:bg-zinc-700/50" : ""
+                aspect-square ${radius} flex flex-col items-center justify-center font-medium relative
+                transition-[background-color,color,box-shadow,opacity,transform] duration-150 ease-out
+                ${disabled ? "pointer-events-none opacity-40" : ""}
+                ${future ? "text-zinc-800 cursor-default" : "cursor-pointer active:scale-[0.92]"}
+                ${isToday && !cell.hasLog && !isSelected
+                  ? "ring-[1.5px] ring-inset ring-emerald-500/40 text-emerald-400"
+                  : ""
                 }
-                ${isBeingAdded ? "bg-emerald-500/40 text-emerald-300 ring-2 ring-emerald-400" : ""}
-                ${isBeingRemoved ? "bg-red-500/30 text-red-400 ring-2 ring-red-400" : ""}
+                ${cell.hasLog && !isBeingRemoved
+                  ? `${INTENSITY[intensity].bg} ${INTENSITY[intensity].text} hover:brightness-110`
+                  : ""
+                }
+                ${!cell.hasLog && !isSelected && !future && !isToday
+                  ? "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200"
+                  : ""
+                }
+                ${isBeingAdded
+                  ? "bg-emerald-500/30 text-emerald-200 ring-[1.5px] ring-inset ring-emerald-400/60 scale-[1.04]"
+                  : ""
+                }
+                ${isBeingRemoved
+                  ? "bg-red-500/20 text-red-300 ring-[1.5px] ring-inset ring-red-400/50 scale-[1.04]"
+                  : ""
+                }
               `}
             >
-              <span className={cell.hasLog && !isBeingRemoved ? "text-base" : "text-lg"}>{cell.day}</span>
+              <span className={`leading-none ${cell.hasLog && !isBeingRemoved ? "text-sm md:text-base" : "text-sm md:text-lg"}`}>
+                {cell.day}
+              </span>
               {timeDisplay && !isBeingRemoved && (
-                <span className="text-[10px] leading-tight opacity-75">
-                  {timeDisplay}
-                </span>
+                <span className="text-[9px] md:text-[10px] leading-none mt-0.5 opacity-70">{timeDisplay}</span>
               )}
             </button>
           )
         })}
       </div>
 
-      {isDragging && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-zinc-800 border border-zinc-600 shadow-xl">
-          <span className={`text-sm font-medium ${dragMode === "add" ? "text-emerald-400" : "text-red-400"}`}>
-            {dragMode === "add"
-              ? t("dragging.adding", { count: selectedDates.size })
-              : t("dragging.removing", { count: selectedDates.size })
-            }
-          </span>
-        </div>
-      )}
+      <div
+        className={`
+          fixed bottom-6 left-1/2 -translate-x-1/2 z-50
+          px-5 py-2.5 rounded-2xl shadow-2xl
+          border backdrop-blur-xl
+          transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+          ${isDragging
+            ? "translate-y-0 opacity-100 scale-100"
+            : "translate-y-4 opacity-0 scale-90 pointer-events-none"
+          }
+          ${dragMode === "add"
+            ? "bg-emerald-950/80 border-emerald-500/30 shadow-emerald-500/10"
+            : "bg-red-950/80 border-red-500/30 shadow-red-500/10"
+          }
+        `}
+      >
+        <span className={`text-sm font-medium tracking-tight ${dragMode === "add" ? "text-emerald-300" : "text-red-300"}`}>
+          {dragMode === "add"
+            ? t("dragging.adding", { count: selectedDates.size })
+            : t("dragging.removing", { count: selectedDates.size })
+          }
+        </span>
+      </div>
     </div>
   )
 }
