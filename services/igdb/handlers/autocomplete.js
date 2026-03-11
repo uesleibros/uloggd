@@ -8,7 +8,6 @@ export async function handleAutocomplete(req, res) {
     return res.status(400).json({ error: "missing query" })
   }
 
-  // Sanitização mais robusta
   const sanitized = q.trim()
     .replace(/\\/g, '\\\\')
     .replace(/"/g, '\\"')
@@ -19,8 +18,8 @@ export async function handleAutocomplete(req, res) {
         cover.url, cover.image_id,
         platforms.id,
         total_rating, total_rating_count;
-      where cover != null & name ~ *"${sanitized}"*;
-      sort total_rating_count desc, total_rating desc;
+      where name ~ *"${sanitized}"*;
+      sort total_rating_count desc;
       limit 20;
     `)
 
@@ -58,3 +57,4 @@ export async function handleAutocomplete(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
