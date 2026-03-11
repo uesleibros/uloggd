@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from "react"
 import { Link } from "react-router-dom"
-import { X, ChevronLeft, ChevronRight, Clock, Calendar as CalendarIcon, Play, Flag } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Clock, Calendar as CalendarIcon, Play, Flag, Pencil } from "lucide-react"
+import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { JournalCalendar } from "./JournalCalendar"
 import { JournalTimeline } from "./JournalTimeline"
+import { JournalModal } from "./JournalModal"
 
 const MONTHS = [
   "january", "february", "march", "april", "may", "june",
@@ -12,11 +14,13 @@ const MONTHS = [
 
 export function JournalViewModal({ journeyId, onClose }) {
   const { t } = useTranslation("journal.view")
+  const { user: currentUser } = useAuth()
 
   const [journey, setJourney] = useState(null)
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState("calendar")
+  const [editMode, setEditMode] = useState(false)
 
   const today = new Date()
   const [currentMonth, setCurrentMonth] = useState(today.getMonth())
@@ -68,8 +72,38 @@ export function JournalViewModal({ journeyId, onClose }) {
   const user = journey?.users
   const game = journey?.games
 
+  const isOwner = currentUser?.user_id === journey?.user_id
+
   const years = []
   for (let y = today.getFullYear() + 1; y >= 1970; y--) years.push(y)
+
+  if (editMode && isOwner && journey) {
+    const gameObj = {
+      id: journey.game_id,
+      slug: journey.game_slug,
+      name: game?.name || journey.title,
+      cover: game?.cover_url ? { url: game.cover_url } : null,
+    }
+
+    const journeyObj = {
+      id: journey.id,
+      title: journey.title,
+      platform_id: journey.platform_id,
+      started_at: journey.started_at,
+      finished_at: journey.finished_at,
+    }
+
+    return (
+      <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-0 md:p-4">
+        <JournalModal
+          game={gameObj}
+          existingJourney={journeyObj}
+          onClose={onClose}
+          onDeleted={onClose}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-0 md:p-4">
@@ -104,7 +138,7 @@ export function JournalViewModal({ journeyId, onClose }) {
                 )}
                 <div className="min-w-0">
                   <h2 className="text-lg md:text-xl font-semibold text-white truncate">{journey.title}</h2>
-                  {game && (
+                  {game && game.name !== journey.title && (
                     <Link
                       to={`/game/${game.slug}`}
                       onClick={onClose}
@@ -254,9 +288,19 @@ export function JournalViewModal({ journeyId, onClose }) {
             </div>
 
             <div
-              className="flex items-center justify-end px-4 md:px-5 py-3 border-t border-zinc-700 flex-shrink-0"
+              className="flex items-center justify-end gap-2 px-4 md:px-5 py-3 border-t border-zinc-700 flex-shrink-0"
               style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))" }}
             >
+              {isOwner && (
+                <button
+                  type="button"
+                  onClick={() => setEditMode(true)}
+                  className="px-4 py-2.5 text-sm font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-all cursor-pointer flex items-center gap-2"
+                >
+                  <Pencil className="w-4 h-4" />
+                  {t("edit")}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onClose}
