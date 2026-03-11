@@ -15,7 +15,7 @@ export async function handleAutocomplete(req, res) {
         total_rating, total_rating_count;
       where cover != null
         & name ~ *"${sanitized}"*;
-      sort total_rating_count desc;
+      sort rating desc;
       limit 20;
     `)
 
@@ -49,3 +49,4 @@ export async function handleAutocomplete(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
