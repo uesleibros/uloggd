@@ -25,7 +25,11 @@ export default {
 	    dragging: {
 	      adding: "Adicionando {{count}} dias",
 	      removing: "Removendo {{count}} dias"
-	    }
+	    },
+			legend: {
+	      started: "Início",
+	      finished: "Fim",
+	    },
 	  },
 	  modal: {
 	    title: "Título da jornada",
@@ -38,6 +42,8 @@ export default {
 	    cancel: "Cancelar",
 	    save: "Salvar",
 	    saving: "Salvando...",
+			started: "Início",
+	    finished: "Fim", 
 	    create: "Criar",
 			deleteConfirmTitle: "Excluir jornada",
       deleteConfirmMessage: "Tem certeza? Todas as sessões e anotações serão perdidas permanentemente.",
@@ -98,7 +104,33 @@ export default {
 	      saveFailed: "Erro ao salvar jornada",
 	      deleteFailed: "Erro ao excluir jornada"
 	    }
-	  }
+	  },
+		view: {
+	    notFound: "Jornada não encontrada",
+	    session: "sessão",
+	    sessions: "sessões",
+	    tabCalendar: "Calendário",
+	    tabTimeline: "Linha do tempo",
+	    started: "Começou",
+	    finished: "Terminou",
+	    months: {
+	      january: "Janeiro",
+	      february: "Fevereiro",
+	      march: "Março",
+	      april: "Abril",
+	      may: "Maio",
+	      june: "Junho",
+	      july: "Julho",
+	      august: "Agosto",
+	      september: "Setembro",
+	      october: "Outubro",
+	      november: "Novembro",
+	      december: "Dezembro"
+	    },
+	  },
+	  public: {
+	    title: "Jornadas dos jogadores",
+	  },
 	},
 	inventory: {
 		title: "Inventário",
@@ -764,11 +796,19 @@ export default {
 		navigation: {
 			profile: "Perfil",
 			games: "Jogos",
+			journeys: "Jornadas",
 			lists: "Listas",
 			tierlists: "Tierlists",
 			reviews: "Reviews",
 			likes: "Curtidas",
 			transactions: "Transações",
+		},
+		journeys: {
+			empty: "Nenhuma jornada registrada ainda.",
+			playing: "Jogando atualmente",
+			completed: "Completas",
+			session: "sessão",
+			sessions: "sessões",
 		},
 		header: {
 			banned: {
@@ -2083,6 +2123,7 @@ export default {
 		},
 	},
 }
+
 
 
 
