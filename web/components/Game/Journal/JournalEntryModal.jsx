@@ -1,15 +1,17 @@
 import { useState } from "react"
-import { Trash2, Clock, Calendar } from "lucide-react"
+import { Trash2, Clock, Calendar, Play, Flag } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 
-export function JournalEntryModal({ entry, date, onSave, onRemove, onClose }) {
+export function JournalEntryModal({ entry, date, startedAt, finishedAt, onSave, onRemove, onClose }) {
   const { t } = useTranslation("journal.modal.entry")
   const isEditing = !!entry
 
   const [hours, setHours] = useState(entry?.hours?.toString() || "")
   const [minutes, setMinutes] = useState(entry?.minutes?.toString() || "")
   const [note, setNote] = useState(entry?.note || "")
+  const [markStarted, setMarkStarted] = useState(startedAt === date)
+  const [markFinished, setMarkFinished] = useState(finishedAt === date)
   const [saving, setSaving] = useState(false)
   const [removing, setRemoving] = useState(false)
 
@@ -28,6 +30,8 @@ export function JournalEntryModal({ entry, date, onSave, onRemove, onClose }) {
       hours: hours ? parseInt(hours) : 0,
       minutes: minutes ? parseInt(minutes) : 0,
       note: note.trim(),
+      setStarted: markStarted ? date : (startedAt === date ? null : undefined),
+      setFinished: markFinished ? date : (finishedAt === date ? null : undefined),
     })
     if (!success) setSaving(false)
   }
@@ -59,6 +63,39 @@ export function JournalEntryModal({ entry, date, onSave, onRemove, onClose }) {
       </div>
 
       <div className="p-5 space-y-5">
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setMarkStarted(!markStarted)}
+            className={`
+              flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium
+              transition-all duration-150 cursor-pointer border
+              ${markStarted
+                ? "bg-sky-500/15 text-sky-300 border-sky-500/30"
+                : "bg-zinc-800/50 text-zinc-500 border-zinc-700 hover:border-zinc-600 hover:text-zinc-300"
+              }
+            `}
+          >
+            <Play className={`w-3.5 h-3.5 ${markStarted ? "fill-sky-400" : ""}`} />
+            {t("started")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMarkFinished(!markFinished)}
+            className={`
+              flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium
+              transition-all duration-150 cursor-pointer border
+              ${markFinished
+                ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                : "bg-zinc-800/50 text-zinc-500 border-zinc-700 hover:border-zinc-600 hover:text-zinc-300"
+              }
+            `}
+          >
+            <Flag className={`w-3.5 h-3.5 ${markFinished ? "fill-amber-400" : ""}`} />
+            {t("finished")}
+          </button>
+        </div>
+
         <div>
           <label className="flex items-center gap-2 text-sm font-medium text-zinc-300 mb-3">
             <Clock className="w-4 h-4 text-zinc-500" />
@@ -100,7 +137,7 @@ export function JournalEntryModal({ entry, date, onSave, onRemove, onClose }) {
             onChange={(e) => setNote(e.target.value)}
             placeholder={t("notePlaceholder")}
             maxLength={500}
-            rows={4}
+            rows={3}
             className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
           />
         </div>
