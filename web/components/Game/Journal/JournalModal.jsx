@@ -123,7 +123,7 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
     } else {
       setEditingEntry(null)
       setSelectedDate(dateStr)
-      setShowEntryModal(true)
+      setShowEntryModal(false)
     }
   }
 
