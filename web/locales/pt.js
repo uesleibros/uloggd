@@ -106,6 +106,7 @@ export default {
 	    }
 	  },
 		view: {
+			close: "Fechar",
 	    notFound: "Jornada não encontrada",
 	    session: "sessão",
 	    sessions: "sessões",
@@ -2119,6 +2120,7 @@ export default {
 		},
 	},
 }
+
 
 
 
