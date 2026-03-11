@@ -3,6 +3,45 @@ import { useTranslation } from "#hooks/useTranslation"
 
 const WEEKDAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
 
+function getIntensity(entry) {
+  if (!entry) return 0
+  const total = (entry.hours || 0) * 60 + (entry.minutes || 0)
+  if (total === 0) return 1
+  if (total <= 30) return 1
+  if (total <= 60) return 2
+  if (total <= 120) return 3
+  if (total <= 240) return 4
+  return 5
+}
+
+const INTENSITY_BG = {
+  0: "",
+  1: "bg-emerald-500/15",
+  2: "bg-emerald-500/25",
+  3: "bg-emerald-500/35",
+  4: "bg-emerald-500/45",
+  5: "bg-emerald-500/55",
+}
+
+const INTENSITY_TEXT = {
+  0: "",
+  1: "text-emerald-400/70",
+  2: "text-emerald-400/80",
+  3: "text-emerald-400",
+  4: "text-emerald-300",
+  5: "text-emerald-300",
+}
+
+function formatTime(entry) {
+  if (!entry) return null
+  const h = entry.hours || 0
+  const m = entry.minutes || 0
+  if (h === 0 && m === 0) return null
+  if (h > 0 && m > 0) return `${h}:${String(m).padStart(2, "0")}`
+  if (h > 0) return `${h}h`
+  return `${m}m`
+}
+
 export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, onBulkRemove, loading, disabled }) {
   const { t } = useTranslation("journal.calendar")
 
@@ -26,7 +65,6 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       days.push(i)
     }
 
-    // Mês anterior
     const prevMonth = month === 0 ? 11 : month - 1
     const prevYear = month === 0 ? year - 1 : year
     const prevMonthLastDay = new Date(year, month, 0).getDate()
@@ -38,16 +76,15 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       prevOverflow.push({ day, dateStr: `${prevYear}-${m}-${d}` })
     }
 
-    // Próximo mês
-    const nextMonth = month === 11 ? 0 : month + 1
-    const nextYear = month === 11 ? year + 1 : year
+    const nMonth = month === 11 ? 0 : month + 1
+    const nYear = month === 11 ? year + 1 : year
     const totalCells = startDay + daysInMonth
     const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7)
     const nextOverflow = []
     for (let i = 1; i <= remaining; i++) {
-      const m = String(nextMonth + 1).padStart(2, "0")
+      const m = String(nMonth + 1).padStart(2, "0")
       const d = String(i).padStart(2, "0")
-      nextOverflow.push({ day: i, dateStr: `${nextYear}-${m}-${d}` })
+      nextOverflow.push({ day: i, dateStr: `${nYear}-${m}-${d}` })
     }
 
     return { days, prevOverflow, nextOverflow }
@@ -173,28 +210,22 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
 
   function renderOverflowDay({ day, dateStr }) {
     const entry = entries[dateStr]
-    const hasLog = !!entry
-
-    const timeDisplay = entry && (entry.hours > 0 || entry.minutes > 0)
-      ? `${entry.hours > 0 ? `${entry.hours}h` : ""}${entry.minutes > 0 ? `${entry.minutes}m` : ""}`
-      : null
+    const intensity = getIntensity(entry)
+    const timeDisplay = formatTime(entry)
 
     return (
       <div
         key={dateStr}
         className={`
-          aspect-square rounded-xl flex flex-col items-center justify-center relative
-          ${hasLog ? "bg-emerald-500/10" : ""}
+          aspect-square rounded-xl flex flex-col items-center justify-center relative opacity-40
+          ${intensity > 0 ? INTENSITY_BG[intensity] : ""}
         `}
       >
-        <span className="text-sm text-zinc-700">{day}</span>
+        <span className="text-sm text-zinc-600">{day}</span>
         {timeDisplay && (
-          <span className="text-[10px] text-emerald-500/40 mt-0.5">
+          <span className="text-[10px] text-emerald-500/50 leading-tight">
             {timeDisplay}
           </span>
-        )}
-        {hasLog && (
-          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-emerald-400/40" />
         )}
       </div>
     )
@@ -238,9 +269,8 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
           const isBeingAdded = isSelected && dragMode === "add"
           const isBeingRemoved = isSelected && dragMode === "remove"
 
-          const timeDisplay = entry && (entry.hours > 0 || entry.minutes > 0)
-            ? `${entry.hours > 0 ? `${entry.hours}h` : ""}${entry.minutes > 0 ? `${entry.minutes}m` : ""}`
-            : null
+          const intensity = getIntensity(entry)
+          const timeDisplay = formatTime(entry)
 
           return (
             <button
@@ -251,29 +281,23 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
               onTouchStart={(e) => handleTouchStart(day, e)}
               disabled={future || disabled}
               className={`
-                aspect-square rounded-xl flex flex-col items-center justify-center text-base font-medium transition-all relative
+                aspect-square rounded-xl flex flex-col items-center justify-center font-medium transition-all relative
                 ${disabled ? "pointer-events-none opacity-50" : ""}
-                ${future
-                  ? "text-zinc-700 cursor-not-allowed"
-                  : "cursor-pointer"
-                }
+                ${future ? "text-zinc-700 cursor-not-allowed" : "cursor-pointer"}
                 ${todayClass && !hasLog && !isSelected ? "ring-2 ring-emerald-500/50 text-emerald-400" : ""}
                 ${hasLog && !isBeingRemoved
-                  ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                  ? `${INTENSITY_BG[intensity]} ${INTENSITY_TEXT[intensity]} hover:brightness-125`
                   : !hasLog && !isSelected ? "text-zinc-300 hover:bg-zinc-700/50" : ""
                 }
                 ${isBeingAdded ? "bg-emerald-500/40 text-emerald-300 ring-2 ring-emerald-400" : ""}
                 ${isBeingRemoved ? "bg-red-500/30 text-red-400 ring-2 ring-red-400" : ""}
               `}
             >
-              <span className="text-lg">{day}</span>
+              <span className={hasLog && !isBeingRemoved ? "text-base" : "text-lg"}>{day}</span>
               {timeDisplay && !isBeingRemoved && (
-                <span className="text-[11px] text-emerald-500/80 mt-0.5">
+                <span className="text-[10px] leading-tight opacity-75">
                   {timeDisplay}
                 </span>
-              )}
-              {hasLog && !isBeingRemoved && (
-                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-emerald-400" />
               )}
             </button>
           )
