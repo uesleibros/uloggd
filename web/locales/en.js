@@ -62,6 +62,8 @@ export default {
 	      december: "December"
 	    },
 	    entry: {
+				started: "Started",
+				finished: "Finished",
 	      addSession: "Add session",
 	      editSession: "Edit session",
 	      time: "Time played",
