@@ -2,6 +2,16 @@ import { query } from "#lib/igdbWrapper.js"
 import { PLATFORMS_MAP } from "#data/platformsMapper.js"
 import { buildNameFilter } from "#services/igdb/utils/buildNameFilter.js"
 
+function scoreText(text, input) {
+	const t = text.toLowerCase().trim()
+	if (t === input) return 100
+	if (t.startsWith(input)) return 85
+	if (t.includes(input)) return 65
+	const words = input.split(/\s+/)
+	const matched = words.filter(w => t.includes(w)).length
+	return (matched / words.length) * 40
+}
+
 export async function handleSearch(req, res) {
 	const { query: q, limit = 20, offset = 0, sort = "relevance" } = req.query
 	if (!q?.trim()) return res.status(400).json({ results: [], total: 0 })
@@ -22,6 +32,7 @@ export async function handleSearch(req, res) {
 				fields name, slug, first_release_date,
 					cover.url, cover.image_id,
 					platforms.id, platforms.name, platforms.abbreviation,
+					alternative_names.name,
 					total_rating, total_rating_count, game_type,
 					summary;
 				where ${nameFilter};
@@ -35,18 +46,17 @@ export async function handleSearch(req, res) {
 		const input = q.toLowerCase().trim()
 
 		const results = data.map(g => {
-			const name = g.name.toLowerCase()
-			let relevance = 0
+			const titleScore = scoreText(g.name, input)
 
-			if (name === input) relevance = 100
-			else if (name.startsWith(input)) relevance = 80
-			else if (name.includes(input)) relevance = 60
-			else {
-				const inputWords = input.split(/\s+/)
-				const matched = inputWords.filter(w => name.includes(w)).length
-				relevance = (matched / inputWords.length) * 40
+			let bestAltScore = 0
+			if (g.alternative_names?.length) {
+				for (const alt of g.alternative_names) {
+					const s = scoreText(alt.name, input)
+					if (s > bestAltScore) bestAltScore = s
+				}
 			}
 
+			let relevance = Math.max(titleScore, bestAltScore * 0.5)
 			relevance += Math.min((g.total_rating_count || 0) / 100, 20)
 
 			const slugs = new Set()

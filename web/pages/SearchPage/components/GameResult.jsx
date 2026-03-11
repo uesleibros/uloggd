@@ -3,6 +3,14 @@ import { Star, Calendar, ExternalLink } from "lucide-react"
 import { PlatformList } from "@components/Game/PlatformBadge"
 
 const NO_COVER = "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"
+const MAX_SUMMARY = 180
+
+function trimSummary(text, max = MAX_SUMMARY) {
+  if (!text || text.length <= max) return text
+  const trimmed = text.slice(0, max)
+  const lastSpace = trimmed.lastIndexOf(" ")
+  return (lastSpace > 0 ? trimmed.slice(0, lastSpace) : trimmed) + "…"
+}
 
 export function GameResult({ game }) {
   const year = game.first_release_date
@@ -14,13 +22,13 @@ export function GameResult({ game }) {
   return (
     <Link
       to={`/game/${game.slug}`}
-      className="group flex gap-4 p-4 bg-zinc-900/50 border border-zinc-800/50 rounded-xl hover:bg-zinc-900 hover:border-zinc-700 transition-all"
+      className="group flex items-start gap-4 p-4 bg-zinc-900/50 border border-zinc-800/50 rounded-xl hover:bg-zinc-900 hover:border-zinc-700 transition-all"
     >
-      <div className="flex-shrink-0 relative overflow-hidden rounded-lg bg-zinc-800">
+      <div className="flex-shrink-0 self-start relative overflow-hidden rounded-lg bg-zinc-800 w-16 h-20 sm:w-20 sm:h-28">
         <img
           src={coverUrl}
           alt={game.name}
-          className="w-16 h-20 sm:w-20 sm:h-28 object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -55,7 +63,7 @@ export function GameResult({ game }) {
 
           {game.summary && (
             <p className="mt-2 text-sm text-zinc-500 line-clamp-2 hidden sm:block">
-              {game.summary}
+              {trimSummary(game.summary)}
             </p>
           )}
         </div>
