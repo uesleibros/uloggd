@@ -59,8 +59,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     e.preventDefault()
 
     const dateStr = formatDate(day)
-    const hasExisting = hasEntry(day)
-    const mode = hasExisting ? "remove" : "add"
+    const mode = hasEntry(day) ? "remove" : "add"
     const dates = new Set([dateStr])
 
     isDraggingRef.current = true
@@ -83,7 +82,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     setSelectedDates(new Set(newSet))
   }
 
-  const handleMouseUp = useCallback(() => {
+  const finishDrag = useCallback(() => {
     if (!isDraggingRef.current) return
 
     const dates = Array.from(selectedDatesRef.current)
@@ -109,10 +108,8 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   }, [onDayClick, onBulkAdd, onBulkRemove])
 
   const handleMouseLeave = useCallback(() => {
-    if (isDraggingRef.current && selectedDatesRef.current.size > 0) {
-      handleMouseUp()
-    }
-  }, [handleMouseUp])
+    if (isDraggingRef.current) finishDrag()
+  }, [finishDrag])
 
   if (loading) {
     return (
@@ -127,7 +124,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       ref={containerRef}
       className="select-none"
       onMouseLeave={handleMouseLeave}
-      onMouseUp={handleMouseUp}
+      onMouseUp={finishDrag}
     >
       <div className="grid grid-cols-7 gap-1 mb-2">
         {WEEKDAYS.map(day => (

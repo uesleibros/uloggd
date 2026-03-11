@@ -6,17 +6,21 @@ import { handleGet } from "#services/journeys/handlers/get.js"
 import { handleAddEntry } from "#services/journeys/handlers/entries/add.js"
 import { handleUpdateEntry } from "#services/journeys/handlers/entries/update.js"
 import { handleRemoveEntry } from "#services/journeys/handlers/entries/remove.js"
+import { handleBulkAddEntries } from "#services/journeys/handlers/entries/bulkAdd.js"
+import { handleBulkRemoveEntries } from "#services/journeys/handlers/entries/bulkRemove.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
-  create:       { handler: handleCreate,       method: "POST", scopes: ["@me"], auth: true },
-  delete:       { handler: handleDelete,       method: "POST", scopes: ["@me"], auth: true },
-  update:       { handler: handleUpdate,       method: "POST", scopes: ["@me"], auth: true },
-  list:         { handler: handleList,         method: "GET",  scopes: ["@me"], auth: true },
-  get:          { handler: handleGet,          method: "GET",  scopes: null,    auth: false },
-  addEntry:     { handler: handleAddEntry,     method: "POST", scopes: ["@me"], auth: true },
-  updateEntry:  { handler: handleUpdateEntry,  method: "POST", scopes: ["@me"], auth: true },
-  removeEntry:  { handler: handleRemoveEntry,  method: "POST", scopes: ["@me"], auth: true },
+  create:            { handler: handleCreate,            method: "POST", scopes: ["@me"], auth: true  },
+  delete:            { handler: handleDelete,            method: "POST", scopes: ["@me"], auth: true  },
+  update:            { handler: handleUpdate,            method: "POST", scopes: ["@me"], auth: true  },
+  list:              { handler: handleList,              method: "GET",  scopes: ["@me"], auth: true  },
+  get:               { handler: handleGet,               method: "GET",  scopes: null,    auth: false },
+  bulkAddEntries:    { handler: handleBulkAddEntries,    method: "POST", scopes: ["@me"], auth: true  },
+  bulkRemoveEntries: { handler: handleBulkRemoveEntries, method: "POST", scopes: ["@me"], auth: true  },
+  addEntry:          { handler: handleAddEntry,          method: "POST", scopes: ["@me"], auth: true  },
+  updateEntry:       { handler: handleUpdateEntry,       method: "POST", scopes: ["@me"], auth: true  },
+  removeEntry:       { handler: handleRemoveEntry,       method: "POST", scopes: ["@me"], auth: true  },
 }
 
 export async function journeysHandler(req, res) {
