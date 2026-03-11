@@ -789,10 +789,6 @@ export default {
 			title: "Usuário não encontrado",
 			message: "O usuário \"{{username}}\" não existe ou foi removido.",
 		},
-		followModal: {
-			followers: "Seguidores",
-			following: "Seguindo",
-		},
 		navigation: {
 			profile: "Perfil",
 			games: "Jogos",
@@ -2123,6 +2119,7 @@ export default {
 		},
 	},
 }
+
 
 
 
