@@ -56,7 +56,10 @@ export async function handleSearch(req, res) {
 				}
 			}
 
-			let relevance = Math.max(titleScore, bestAltScore * 0.5)
+			let relevance = titleScore > 0
+				? 1000 + titleScore
+				: bestAltScore * 0.5
+
 			relevance += Math.min((g.total_rating_count || 0) / 100, 20)
 
 			const slugs = new Set()
