@@ -4,7 +4,7 @@ import { validateDate, validateTime, runValidations } from "#services/journeys/u
 import { LIMITS } from "#services/journeys/constants.js"
 
 export async function handleAddEntry(req, res) {
-  const { journeyId, playedOn, hours, minutes, note } = req.body
+  const { journeyId, playedOn, hours, minutes, note, setStarted, setFinished } = req.body
 
   if (!journeyId || typeof journeyId !== "number")
     return res.status(400).json({ error: "invalid journeyId" })
@@ -18,7 +18,7 @@ export async function handleAddEntry(req, res) {
   try {
     const { data: journey, error: journeyError } = await supabase
       .from("journeys")
-      .select("id")
+      .select("id, started_at, finished_at")
       .eq("id", journeyId)
       .eq("user_id", req.user.id)
       .single()
@@ -40,9 +40,14 @@ export async function handleAddEntry(req, res) {
 
     if (error) throw error
 
+    const milestoneUpdates = { updated_at: new Date().toISOString() }
+
+    if (setStarted !== undefined) milestoneUpdates.started_at = setStarted || null
+    if (setFinished !== undefined) milestoneUpdates.finished_at = setFinished || null
+
     await supabase
       .from("journeys")
-      .update({ updated_at: new Date().toISOString() })
+      .update(milestoneUpdates)
       .eq("id", journeyId)
 
     res.json(data)
