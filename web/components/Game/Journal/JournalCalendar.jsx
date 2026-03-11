@@ -239,7 +239,7 @@ export function JournalCalendar({ month, year, entries, startedAt, finishedAt, o
               <div
                 key={cell.dateStr}
                 className={`
-                  aspect-square flex flex-col items-center justify-center relative overflow-hidden
+                  aspect-square md:aspect-auto md:h-12 lg:h-14 flex flex-col items-center justify-center relative overflow-hidden
                   ${cell.hasLog ? `${INTENSITY[intensity].bg} opacity-30` : "opacity-30"}
                   ${radius}
                 `}
@@ -275,7 +275,7 @@ export function JournalCalendar({ month, year, entries, startedAt, finishedAt, o
               onMouseEnter={readOnly ? undefined : () => handlePointerEnter(cell.day)}
               onTouchStart={readOnly ? undefined : (e) => { e.preventDefault(); handlePointerDown(cell.day) }}
               className={`
-                aspect-square ${radius} flex flex-col items-center justify-center font-medium relative overflow-hidden
+                aspect-square md:aspect-auto md:h-12 lg:h-14 ${radius} flex flex-col items-center justify-center font-medium relative overflow-hidden
                 transition-[background-color,color,box-shadow,opacity,transform] duration-150 ease-out
                 ${disabled && !readOnly ? "pointer-events-none opacity-40" : ""}
                 ${future ? "text-zinc-800" : ""}
@@ -291,7 +291,7 @@ export function JournalCalendar({ month, year, entries, startedAt, finishedAt, o
               `}
             >
               {renderMarker(cell.dateStr)}
-              <span className={`leading-none ${cell.hasLog && !isBeingRemoved ? "text-sm md:text-base" : "text-sm md:text-lg"}`}>
+              <span className={`leading-none ${cell.hasLog && !isBeingRemoved ? "text-sm md:text-base" : "text-sm md:text-base"}`}>
                 {cell.day}
               </span>
               {timeDisplay && !isBeingRemoved && (
