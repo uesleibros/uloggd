@@ -7,6 +7,7 @@ import ProfileLikes from "../components/ProfileLikes"
 import ListsSection from "@components/Lists/ListsSection"
 import TierlistsSection from "@components/Tierlist/TierlistsSection"
 import TransactionsSection from "./TransactionsSection"
+import JourneysSection from "@components/Game/Journal/JourneysSection"
 
 export function ProfileContent({
   activeSection,
@@ -34,6 +35,12 @@ export function ProfileContent({
   tierlistsTotalPages,
   tierlistsTotal,
   onTierlistsPageChange,
+  journeys,
+  loadingJourneys,
+  journeysPage,
+  journeysTotalPages,
+  journeysTotal,
+  onJourneysPageChange,
   onEditProfile,
 }) {
   const { t } = useTranslation("profile")
@@ -71,6 +78,17 @@ export function ProfileContent({
           currentPage={gamesPage}
           totalPages={gamesTotalPages}
           onPageChange={handleGamesPageChange}
+        />
+      )}
+
+      {activeSection === "journeys" && (
+        <JourneysSection
+          journeys={journeys}
+          loading={loadingJourneys}
+          total={journeysTotal}
+          currentPage={journeysPage}
+          totalPages={journeysTotalPages}
+          onPageChange={onJourneysPageChange}
         />
       )}
 
