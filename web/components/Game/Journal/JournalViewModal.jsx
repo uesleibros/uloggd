@@ -77,7 +77,6 @@ export function JournalViewModal({ journeyId, onClose }) {
       maxWidth="max-w-2xl"
       showCloseButton={false}
       fullscreenMobile
-      showMobileGrip
     >
       {loading ? (
         <div className="flex items-center justify-center py-24">
