@@ -18,7 +18,7 @@ export async function handleAutocomplete(req, res) {
         total_rating, total_rating_count;
       where (${nameFilter} | ${altNameFilter}) & cover != null;
       sort total_rating_count desc;
-      limit 20;
+      limit 50;
     `)
 
     const input = q.toLowerCase().trim()
@@ -81,6 +81,7 @@ export async function handleAutocomplete(req, res) {
       }
     })
       .sort((a, b) => b.relevance - a.relevance)
+      .slice(0, 20)
 
     res.json(games)
   } catch (e) {
