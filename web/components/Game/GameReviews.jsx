@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom"
 import { ThumbsUp, Clock, TrendingUp, BookOpen } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
@@ -198,7 +198,7 @@ function SortButton({ active, onClick, icon: Icon, children }) {
   )
 }
 
-export function ReviewCard({ review, user, currentUserId, journey }) {
+export function ReviewCard({ review, user, currentUserId, journey, onJourneyUpdate }) {
   const [showModal, setShowModal] = useState(false)
   const [showJourney, setShowJourney] = useState(false)
   const aspects = review.aspect_ratings || []
@@ -280,6 +280,7 @@ export function ReviewCard({ review, user, currentUserId, journey }) {
         <JournalViewModal
           journeyId={journey.id}
           onClose={() => setShowJourney(false)}
+          onUpdate={onJourneyUpdate}
         />
       )}
     </>
@@ -401,7 +402,7 @@ export default function GameReviews({ gameId }) {
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
 
-  useEffect(() => {
+  const fetchReviews = useCallback(() => {
     if (!gameId) return
     setLoading(true)
 
@@ -424,6 +425,10 @@ export default function GameReviews({ gameId }) {
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [gameId, sortBy, page])
+
+  useEffect(() => {
+    fetchReviews()
+  }, [fetchReviews])
 
   function handleSortChange(newSort) {
     if (newSort === sortBy) return
@@ -472,6 +477,7 @@ export default function GameReviews({ gameId }) {
                 user={users[review.user_id]}
                 currentUserId={currentUser?.id}
                 journey={review.journey_id ? journeys[review.journey_id] : null}
+                onJourneyUpdate={fetchReviews}
               />
             ))}
           </div>
