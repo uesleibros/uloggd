@@ -15,7 +15,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   const selectedDatesRef = useRef(new Set())
   const containerRef = useRef(null)
 
-  const { days, startDay, prevDays, nextDays } = useMemo(() => {
+  const { days, prevOverflow, nextOverflow } = useMemo(() => {
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
@@ -26,22 +26,31 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       days.push(i)
     }
 
-    // Dias do mês anterior pra preencher o início
+    // Mês anterior
+    const prevMonth = month === 0 ? 11 : month - 1
+    const prevYear = month === 0 ? year - 1 : year
     const prevMonthLastDay = new Date(year, month, 0).getDate()
-    const prevDays = []
+    const prevOverflow = []
     for (let i = startDay - 1; i >= 0; i--) {
-      prevDays.push(prevMonthLastDay - i)
+      const day = prevMonthLastDay - i
+      const m = String(prevMonth + 1).padStart(2, "0")
+      const d = String(day).padStart(2, "0")
+      prevOverflow.push({ day, dateStr: `${prevYear}-${m}-${d}` })
     }
 
-    // Dias do próximo mês pra completar a última row
+    // Próximo mês
+    const nextMonth = month === 11 ? 0 : month + 1
+    const nextYear = month === 11 ? year + 1 : year
     const totalCells = startDay + daysInMonth
     const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7)
-    const nextDays = []
+    const nextOverflow = []
     for (let i = 1; i <= remaining; i++) {
-      nextDays.push(i)
+      const m = String(nextMonth + 1).padStart(2, "0")
+      const d = String(i).padStart(2, "0")
+      nextOverflow.push({ day: i, dateStr: `${nextYear}-${m}-${d}` })
     }
 
-    return { days, startDay, prevDays, nextDays }
+    return { days, prevOverflow, nextOverflow }
   }, [month, year])
 
   const today = new Date()
@@ -162,6 +171,35 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     finishDrag()
   }
 
+  function renderOverflowDay({ day, dateStr }) {
+    const entry = entries[dateStr]
+    const hasLog = !!entry
+
+    const timeDisplay = entry && (entry.hours > 0 || entry.minutes > 0)
+      ? `${entry.hours > 0 ? `${entry.hours}h` : ""}${entry.minutes > 0 ? `${entry.minutes}m` : ""}`
+      : null
+
+    return (
+      <div
+        key={dateStr}
+        className={`
+          aspect-square rounded-xl flex flex-col items-center justify-center relative
+          ${hasLog ? "bg-emerald-500/10" : ""}
+        `}
+      >
+        <span className="text-sm text-zinc-700">{day}</span>
+        {timeDisplay && (
+          <span className="text-[10px] text-emerald-500/40 mt-0.5">
+            {timeDisplay}
+          </span>
+        )}
+        {hasLog && (
+          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-emerald-400/40" />
+        )}
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -188,14 +226,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       </div>
 
       <div className="grid grid-cols-7 gap-1">
-        {prevDays.map(day => (
-          <div
-            key={`prev-${day}`}
-            className="aspect-square rounded-xl flex items-center justify-center text-sm text-zinc-700"
-          >
-            {day}
-          </div>
-        ))}
+        {prevOverflow.map(renderOverflowDay)}
 
         {days.map(day => {
           const future = isFuture(day)
@@ -248,14 +279,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
           )
         })}
 
-        {nextDays.map(day => (
-          <div
-            key={`next-${day}`}
-            className="aspect-square rounded-xl flex items-center justify-center text-sm text-zinc-700"
-          >
-            {day}
-          </div>
-        ))}
+        {nextOverflow.map(renderOverflowDay)}
       </div>
 
       {isDragging && (
