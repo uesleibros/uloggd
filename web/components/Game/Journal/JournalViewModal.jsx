@@ -74,9 +74,10 @@ export function JournalViewModal({ journeyId, onClose }) {
     <Modal
       isOpen
       onClose={onClose}
-      maxWidth="max-w-2xl"
+      raw
       showCloseButton={false}
       fullscreenMobile
+      className="w-full md:max-w-3xl"
     >
       {loading ? (
         <div className="flex items-center justify-center py-24">
