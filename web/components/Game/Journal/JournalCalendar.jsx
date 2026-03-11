@@ -9,7 +9,10 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   const [isDragging, setIsDragging] = useState(false)
   const [dragMode, setDragMode] = useState(null)
   const [selectedDates, setSelectedDates] = useState(new Set())
-  const dragStartRef = useRef(null)
+
+  const isDraggingRef = useRef(false)
+  const dragModeRef = useRef(null)
+  const selectedDatesRef = useRef(new Set())
   const containerRef = useRef(null)
 
   const { days, startDay } = useMemo(() => {
@@ -54,53 +57,62 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   function handleMouseDown(day, e) {
     if (disabled || isFuture(day)) return
     e.preventDefault()
-    
+
     const dateStr = formatDate(day)
     const hasExisting = hasEntry(day)
-    
+    const mode = hasExisting ? "remove" : "add"
+    const dates = new Set([dateStr])
+
+    isDraggingRef.current = true
+    dragModeRef.current = mode
+    selectedDatesRef.current = dates
+
     setIsDragging(true)
-    setDragMode(hasExisting ? "remove" : "add")
-    setSelectedDates(new Set([dateStr]))
-    dragStartRef.current = dateStr
+    setDragMode(mode)
+    setSelectedDates(dates)
   }
 
   function handleMouseEnter(day) {
-    if (!isDragging || disabled || isFuture(day)) return
-    
+    if (!isDraggingRef.current || disabled || isFuture(day)) return
+
     const dateStr = formatDate(day)
-    setSelectedDates(prev => {
-      const newSet = new Set(prev)
-      newSet.add(dateStr)
-      return newSet
-    })
+    const newSet = new Set(selectedDatesRef.current)
+    newSet.add(dateStr)
+
+    selectedDatesRef.current = newSet
+    setSelectedDates(new Set(newSet))
   }
 
   const handleMouseUp = useCallback(() => {
-    if (!isDragging) return
+    if (!isDraggingRef.current) return
 
-    const dates = Array.from(selectedDates)
-    
+    const dates = Array.from(selectedDatesRef.current)
+    const mode = dragModeRef.current
+
     if (dates.length === 1) {
-      onDayClick(dates[0])
+      onDayClick?.(dates[0])
     } else if (dates.length > 1) {
-      if (dragMode === "add") {
-        onBulkAdd(dates)
+      if (mode === "add") {
+        onBulkAdd?.(dates)
       } else {
-        onBulkRemove(dates)
+        onBulkRemove?.(dates)
       }
     }
+
+    isDraggingRef.current = false
+    dragModeRef.current = null
+    selectedDatesRef.current = new Set()
 
     setIsDragging(false)
     setDragMode(null)
     setSelectedDates(new Set())
-    dragStartRef.current = null
-  }, [isDragging, selectedDates, dragMode, onDayClick, onBulkAdd, onBulkRemove])
+  }, [onDayClick, onBulkAdd, onBulkRemove])
 
   const handleMouseLeave = useCallback(() => {
-    if (isDragging && selectedDates.size > 0) {
+    if (isDraggingRef.current && selectedDatesRef.current.size > 0) {
       handleMouseUp()
     }
-  }, [isDragging, selectedDates.size, handleMouseUp])
+  }, [handleMouseUp])
 
   if (loading) {
     return (
@@ -111,7 +123,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="select-none"
       onMouseLeave={handleMouseLeave}
@@ -153,13 +165,13 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
               className={`
                 aspect-square rounded-xl flex flex-col items-center justify-center text-base font-medium transition-all relative
                 ${disabled ? "pointer-events-none opacity-50" : ""}
-                ${future 
-                  ? "text-zinc-700 cursor-not-allowed" 
+                ${future
+                  ? "text-zinc-700 cursor-not-allowed"
                   : "cursor-pointer"
                 }
                 ${todayClass && !hasLog && !isSelected ? "ring-2 ring-emerald-500/50 text-emerald-400" : ""}
                 ${hasLog && !isBeingRemoved
-                  ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" 
+                  ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
                   : !hasLog && !isSelected ? "text-zinc-300 hover:bg-zinc-700/50" : ""
                 }
                 ${isBeingAdded ? "bg-emerald-500/40 text-emerald-300 ring-2 ring-emerald-400" : ""}
@@ -183,7 +195,7 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       {isDragging && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-zinc-800 border border-zinc-600 shadow-xl">
           <span className={`text-sm font-medium ${dragMode === "add" ? "text-emerald-400" : "text-red-400"}`}>
-            {dragMode === "add" 
+            {dragMode === "add"
               ? t("dragging.adding", { count: selectedDates.size })
               : t("dragging.removing", { count: selectedDates.size })
             }

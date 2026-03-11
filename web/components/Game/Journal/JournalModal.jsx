@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { X, ChevronLeft, ChevronRight, Play, Clock, Calendar as CalendarIcon, RotateCcw, FastForward, Rewind } from "lucide-react"
 import { supabase } from "#lib/supabase"
 import { useTranslation } from "#hooks/useTranslation"
@@ -48,7 +48,7 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
       if (res.ok) {
         const data = await res.json()
         setEntries(data.entries || [])
-        
+
         if (data.entries?.length > 0) {
           const lastEntry = data.entries[data.entries.length - 1]
           const lastDate = new Date(lastEntry.played_on + "T00:00:00")
@@ -112,18 +112,58 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
     jumpToLatest()
   }
 
-  function handleDayClick(date) {
-    const dateStr = date.toISOString().split("T")[0]
+  function handleDayClick(dateStr) {
     const existing = entryMap[dateStr]
-    
-    if (existing) {
-      setEditingEntry(existing)
-      setSelectedDate(dateStr)
-      setShowEntryModal(true)
-    } else {
-      setEditingEntry(null)
-      setSelectedDate(dateStr)
-      setShowEntryModal(false)
+
+    setSelectedDate(dateStr)
+    setEditingEntry(existing || null)
+    setShowEntryModal(true)
+  }
+
+  async function handleBulkAdd(dates) {
+    const token = await getToken()
+    if (!token) return
+
+    try {
+      const res = await fetch("/api/journeys/@me/bulkAddEntries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ journeyId: existingJourney.id, dates }),
+      })
+
+      if (res.ok) {
+        notify(t("entry.bulkAdded", { count: dates.length }))
+        fetchJourneyDetails()
+      } else {
+        notify(t("entry.saveFailed"), "error")
+      }
+    } catch {
+      notify(t("entry.saveFailed"), "error")
+    }
+  }
+
+  async function handleBulkRemove(dates) {
+    const token = await getToken()
+    if (!token) return
+
+    const entryIds = dates.map(d => entryMap[d]?.id).filter(Boolean)
+    if (entryIds.length === 0) return
+
+    try {
+      const res = await fetch("/api/journeys/@me/bulkRemoveEntries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ entryIds }),
+      })
+
+      if (res.ok) {
+        notify(t("entry.bulkRemoved", { count: entryIds.length }))
+        fetchJourneyDetails()
+      } else {
+        notify(t("entry.removeFailed"), "error")
+      }
+    } catch {
+      notify(t("entry.removeFailed"), "error")
     }
   }
 
@@ -232,7 +272,7 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
 
   async function handleDelete() {
     if (!isEditing) return
-    
+
     const token = await getToken()
     if (!token) return
 
@@ -344,6 +384,8 @@ export function JournalModal({ game, existingJourney, onClose, onDeleted }) {
                   year={currentYear}
                   entries={entryMap}
                   onDayClick={handleDayClick}
+                  onBulkAdd={handleBulkAdd}
+                  onBulkRemove={handleBulkRemove}
                   loading={loading}
                 />
 
