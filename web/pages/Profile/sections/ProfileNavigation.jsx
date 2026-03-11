@@ -1,10 +1,11 @@
-import { User, Gamepad2, ListChecks, LayoutGrid, MessageSquare, Heart, Receipt } from "lucide-react"
+import { User, Gamepad2, ListChecks, LayoutGrid, MessageSquare, Heart, Receipt, BookOpen } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import DragScrollRow from "@components/UI/DragScrollRow"
 
 const PROFILE_SECTIONS = [
   { id: "profile", icon: User },
   { id: "games", icon: Gamepad2 },
+  { id: "journeys", icon: BookOpen },
   { id: "lists", icon: ListChecks },
   { id: "tierlists", icon: LayoutGrid },
   { id: "reviews", icon: MessageSquare },
@@ -16,6 +17,7 @@ export function ProfileNavigation({
   activeSection,
   onSectionChange,
   counts,
+  journeysCount,
   listsCount,
   tierlistsCount,
   reviewsCount,
@@ -33,6 +35,7 @@ export function ProfileNavigation({
             let badge = null
 
             if (id === "games" && counts?.total > 0) badge = counts.total
+            if (id === "journeys" && journeysCount > 0) badge = journeysCount
             if (id === "lists" && listsCount > 0) badge = listsCount
             if (id === "tierlists" && tierlistsCount > 0) badge = tierlistsCount
             if (id === "reviews" && reviewsCount > 0) badge = reviewsCount

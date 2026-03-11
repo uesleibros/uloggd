@@ -11,7 +11,9 @@ export async function handleRemoveEntry(req, res) {
       .from("journey_entries")
       .select(`
         id,
-        journeys!inner(user_id)
+        played_on,
+        journey_id,
+        journeys!inner(user_id, started_at, finished_at)
       `)
       .eq("id", entryId)
       .single()
@@ -28,6 +30,20 @@ export async function handleRemoveEntry(req, res) {
       .eq("id", entryId)
 
     if (error) throw error
+
+    const milestoneUpdates = { updated_at: new Date().toISOString() }
+
+    if (entry.played_on === entry.journeys.started_at)
+      milestoneUpdates.started_at = null
+
+    if (entry.played_on === entry.journeys.finished_at)
+      milestoneUpdates.finished_at = null
+
+    await supabase
+      .from("journeys")
+      .update(milestoneUpdates)
+      .eq("id", entry.journey_id)
+
     res.json({ success: true })
   } catch (e) {
     console.error(e)

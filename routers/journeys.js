@@ -8,6 +8,7 @@ import { handleUpdateEntry } from "#services/journeys/handlers/entries/update.js
 import { handleRemoveEntry } from "#services/journeys/handlers/entries/remove.js"
 import { handleBulkAddEntries } from "#services/journeys/handlers/entries/bulkAdd.js"
 import { handleBulkRemoveEntries } from "#services/journeys/handlers/entries/bulkRemove.js"
+import { handleListByUser } from "#services/journeys/handlers/byUser.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
@@ -15,6 +16,7 @@ const ACTIONS = {
   delete:            { handler: handleDelete,            method: "POST", scopes: ["@me"], auth: true  },
   update:            { handler: handleUpdate,            method: "POST", scopes: ["@me"], auth: true  },
   list:              { handler: handleList,              method: "GET",  scopes: ["@me"], auth: true  },
+  byUser:            { handler: handleListByUser,        method: "GET",  scopes: null,    auth: false },
   get:               { handler: handleGet,               method: "GET",  scopes: null,    auth: false },
   bulkAddEntries:    { handler: handleBulkAddEntries,    method: "POST", scopes: ["@me"], auth: true  },
   bulkRemoveEntries: { handler: handleBulkRemoveEntries, method: "POST", scopes: ["@me"], auth: true  },

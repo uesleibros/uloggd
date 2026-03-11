@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react"
-import { Receipt, Package, MessageSquare, Heart, Trophy, TrendingDown, Gift, Loader2 } from "lucide-react"
+import { Receipt, Package, MessageSquare, Heart, Trophy, TrendingDown, Gift } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
+import { MINERALS } from "@components/Minerals/MineralRow"
 import Pagination from "@components/UI/Pagination"
 
 const TRANSACTIONS_PER_PAGE = 20
@@ -14,15 +15,6 @@ const TRANSACTION_ICONS = {
   shop_purchase: { icon: TrendingDown, color: "text-red-400", bg: "bg-red-500/10" },
   shop_gift: { icon: Gift, color: "text-violet-400", bg: "bg-violet-500/10" },
 }
-
-const MINERALS_CONFIG = [
-  { key: "copper", color: "#B87333" },
-  { key: "iron", color: "#A8A8A8" },
-  { key: "gold", color: "#FFD700" },
-  { key: "emerald", color: "#50C878" },
-  { key: "diamond", color: "#B9F2FF" },
-  { key: "ruby", color: "#E0115F" },
-]
 
 function TransactionsSkeleton() {
   return (
@@ -70,8 +62,8 @@ function MineralsChange({ minerals }) {
   return (
     <div className="flex flex-wrap gap-2">
       {entries.map(([key, amount]) => {
-        const config = MINERALS_CONFIG.find((m) => m.key === key)
-        if (!config) return null
+        const mineral = MINERALS.find((m) => m.key === key)
+        if (!mineral) return null
 
         const isPositive = amount > 0
 
@@ -80,9 +72,10 @@ function MineralsChange({ minerals }) {
             key={key}
             className="flex items-center gap-1.5 px-2 py-1 bg-zinc-800/50 rounded-lg"
           >
-            <span
-              className="inline-block w-2.5 h-2.5 rounded-sm"
-              style={{ backgroundColor: config.color }}
+            <img
+              src={mineral.image}
+              alt={t(`items.${key}.name`)}
+              className="w-4 h-4 object-contain"
             />
             <span
               className="text-xs font-medium tabular-nums"
@@ -212,4 +205,3 @@ export default function TransactionsSection({ userId }) {
     </div>
   )
 }
-

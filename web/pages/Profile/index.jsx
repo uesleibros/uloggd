@@ -10,6 +10,7 @@ import { useFollowData } from "./hooks/useFollowData"
 import { useUserLists } from "./hooks/useUserLists"
 import { useUserTierlists } from "./hooks/useUserTierlists"
 import { useUserTransactions } from "./hooks/useUserTransactions"
+import { useUserJourneys } from "./hooks/useUserJourneys"
 import { ProfileHeader } from "./sections/ProfileHeader"
 import { ProfileSidebar } from "./sections/ProfileSidebar"
 import { ProfileNavigation } from "./sections/ProfileNavigation"
@@ -53,6 +54,17 @@ export default function Profile() {
     totalPages: tierlistsTotalPages,
     handlePageChange: handleTierlistsPageChange,
   } = useUserTierlists(profile?.id)
+
+  const {
+    journeys,
+    journeyGames,
+    loading: loadingJourneys,
+    total: journeysTotal,
+    page: journeysPage,
+    totalPages: journeysTotalPages,
+    handlePageChange: handleJourneysPageChange,
+    refetch: refetchJourneys,
+  } = useUserJourneys(profile?.id)
 
   const { total: transactionsTotal } = useUserTransactions(profile?.id)
 
@@ -137,6 +149,7 @@ export default function Profile() {
               activeSection={activeSection}
               onSectionChange={setActiveSection}
               counts={counts}
+              journeysCount={journeysTotal}
               listsCount={listsTotal}
               tierlistsCount={tierlists.length}
               reviewsCount={profile?.counts?.reviews || 0}
@@ -170,6 +183,14 @@ export default function Profile() {
               tierlistsTotalPages={tierlistsTotalPages}
               tierlistsTotal={tierlistsTotal}
               onTierlistsPageChange={handleTierlistsPageChange}
+              journeys={journeys}
+              journeyGames={journeyGames}
+              loadingJourneys={loadingJourneys}
+              journeysPage={journeysPage}
+              journeysTotalPages={journeysTotalPages}
+              journeysTotal={journeysTotal}
+              onJourneysPageChange={handleJourneysPageChange}
+              onJourneysUpdate={refetchJourneys}
               onEditProfile={() => setSettingsOpen(true)}
             />
           </div>
@@ -185,6 +206,4 @@ export default function Profile() {
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   )
-
 }
-

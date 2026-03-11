@@ -27,12 +27,14 @@ export default function AddToListModal({ isOpen, onClose, game }) {
         limit: 20,
       })
 
+      if (game?.slug) params.set("checkGameSlug", game.slug)
+
       const r = await fetch(`/api/lists/get?${params}`)
       const data = await r.json()
 
       const mapped = (data.lists || []).map(list => ({
         ...list,
-        hasGame: (list.game_slugs || []).includes(game?.slug),
+        hasGame: list.has_game || false,
       }))
 
       if (append) {
