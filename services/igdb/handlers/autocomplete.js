@@ -24,52 +24,34 @@ export async function handleAutocomplete(req, res) {
     const input = q.toLowerCase().trim()
     const inputWords = input.split(/\s+/)
 
-    const calcNameScore = (n) => {
-      let score = 0
-
-      if (n === input) {
-        score = 100
-      } else if (n.startsWith(input)) {
-        score = 80
-      } else if (n.includes(input)) {
-        score = 60
-      } else {
-        const matched = inputWords.filter(w => n.includes(w)).length
-        score = (matched / inputWords.length) * 40
-      }
-
-      score -= n.length * 0.1
-
-      return score
-    }
-
     const games = data.map(g => {
       const name = g.name.toLowerCase()
       const altNames = g.alternative_names?.map(a => a.name.toLowerCase()) || []
+      const allNames = [name, ...altNames]
 
-      const mainNameScore = calcNameScore(name)
+      let relevance = 0
+      let matchedName = name
 
-      let bestAltScore = 0
-      let bestAltName = null
+      for (const n of allNames) {
+        let score = 0
 
-      for (const alt of altNames) {
-        const altScore = calcNameScore(alt)
-        if (altScore > bestAltScore) {
-          bestAltScore = altScore
-          bestAltName = alt
+        if (n === input) {
+          score = 100
+        } else if (n.startsWith(input)) {
+          score = 80
+        } else if (n.includes(input)) {
+          score = 60
+        } else {
+          const matched = inputWords.filter(w => n.includes(w)).length
+          score = (matched / inputWords.length) * 40
         }
-      }
 
-      let relevance, matchedName, isAltMatch
+        score -= n.length * 0.1
 
-      if (mainNameScore >= bestAltScore) {
-        relevance = mainNameScore
-        matchedName = name
-        isAltMatch = false
-      } else {
-        relevance = bestAltScore * 0.85
-        matchedName = bestAltName
-        isAltMatch = true
+        if (score > relevance) {
+          relevance = score
+          matchedName = n
+        }
       }
 
       relevance += Math.min((g.total_rating_count || 0) / 100, 20)
@@ -87,7 +69,7 @@ export async function handleAutocomplete(req, res) {
         first_release_date: g.first_release_date,
         total_rating: g.total_rating,
         total_rating_count: g.total_rating_count,
-        matchedAlt: isAltMatch ? bestAltName : null,
+        matchedAlt: matchedName !== name ? matchedName : null,
         relevance,
         platformIcons: [...slugs].sort().map(slug => ({
           name: slug,
