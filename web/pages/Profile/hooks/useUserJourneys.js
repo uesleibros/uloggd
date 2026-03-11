@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 
 export function useUserJourneys(userId) {
   const [journeys, setJourneys] = useState([])
+  const [journeyGames, setJourneyGames] = useState({})
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -20,6 +21,7 @@ export function useUserJourneys(userId) {
       if (res.ok && !signal?.aborted) {
         const data = await res.json()
         setJourneys(data.journeys || [])
+        setJourneyGames(data.games || {})
         setTotal(data.total || 0)
         setTotalPages(data.totalPages || 1)
       }
@@ -42,12 +44,18 @@ export function useUserJourneys(userId) {
     fetchJourneys(newPage)
   }
 
+  function refetch() {
+    fetchJourneys(page)
+  }
+
   return {
     journeys,
+    journeyGames,
     loading,
     total,
     page,
     totalPages,
     handlePageChange,
+    refetch,
   }
 }
