@@ -12,7 +12,7 @@ const MONTHS = [
   "july", "august", "september", "october", "november", "december"
 ]
 
-export function JournalViewModal({ journeyId, onClose }) {
+export function JournalViewModal({ journeyId, onClose, onUpdate }) {
   const { t } = useTranslation("journal.view")
   const { user: currentUser } = useAuth()
 
@@ -68,11 +68,22 @@ export function JournalViewModal({ journeyId, onClose }) {
     else setCurrentMonth(m => m + 1)
   }
 
+  function handleEditClose() {
+    setEditMode(false)
+    fetchJourney()
+    onUpdate?.()
+  }
+
+  function handleDeleted() {
+    onUpdate?.()
+    onClose()
+  }
+
   const stats = journey?.stats
   const user = journey?.users
   const game = journey?.games
 
-  const isOwner = currentUser?.user_id === journey?.user_id
+  const isOwner = currentUser?.id === journey?.user_id
 
   const years = []
   for (let y = today.getFullYear() + 1; y >= 1970; y--) years.push(y)
@@ -98,8 +109,8 @@ export function JournalViewModal({ journeyId, onClose }) {
         <JournalModal
           game={gameObj}
           existingJourney={journeyObj}
-          onClose={onClose}
-          onDeleted={onClose}
+          onClose={handleEditClose}
+          onDeleted={handleDeleted}
         />
       </div>
     )
