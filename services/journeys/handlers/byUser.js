@@ -1,84 +1,81 @@
 import { supabase } from "#lib/supabase-ssr.js"
+import { query } from "#lib/igdbWrapper.js"
+import { getCache, setCache } from "#lib/cache.js"
 import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
 
-export async function handleListByUser(req, res) {
-  const { username, userId, page = 1, limit = 20 } = req.query
+async function getGameBySlug(slug) {
+  if (!slug) return null
 
-  if (!username && !userId)
-    return res.status(400).json({ error: "missing username or userId" })
-
-  const pageNum = Number(page)
-  const limitNum = Math.min(Number(limit), 50)
-  const offset = (pageNum - 1) * limitNum
+  const cacheKey = `igdb_game_mini_${slug}`
+  const cached = await getCache(cacheKey)
+  if (cached) return cached
 
   try {
-    let user
+    const data = await query("games", `
+      fields name, slug, cover.url, cover.image_id;
+      where slug = "${slug}";
+      limit 1;
+    `)
 
-    if (userId) {
-      const { data, error } = await supabase
-        .from("users")
-        .select("user_id, username, avatar")
-        .eq("user_id", userId)
-        .single()
+    if (!data.length) return null
 
-      if (error || !data) return res.status(404).json({ error: "user not found" })
-      user = data
-    } else {
-      const { data, error } = await supabase
-        .from("users")
-        .select("user_id, username, avatar")
-        .eq("username", username)
-        .single()
-
-      if (error || !data) return res.status(404).json({ error: "user not found" })
-      user = data
+    const g = data[0]
+    const result = {
+      id: g.id,
+      name: g.name,
+      slug: g.slug,
+      cover_url: g.cover?.url?.replace("t_thumb", "t_cover_big") || null,
     }
 
-    const { data, error, count } = await supabase
+    await setCache(cacheKey, result, 86400)
+    return result
+  } catch {
+    return null
+  }
+}
+
+export async function handleGet(req, res) {
+  const { journeyId } = req.query
+  if (!journeyId) return res.status(400).json({ error: "missing journeyId" })
+
+  try {
+    const { data: journey, error } = await supabase
       .from("journeys")
       .select(`
-        id, title, game_id, game_slug, platform_id,
+        id, user_id, title, game_id, game_slug, platform_id,
         started_at, finished_at, created_at, updated_at,
-        journey_entries( hours, minutes, played_on )
-      `, { count: "exact" })
-      .eq("user_id", user.user_id)
-      .order("updated_at", { ascending: false })
-      .range(offset, offset + limitNum - 1)
+        journey_entries( id, played_on, hours, minutes, note )
+      `)
+      .eq("id", journeyId)
+      .single()
 
-    if (error) throw error
+    if (error || !journey) return res.status(404).json({ error: "not found" })
 
-    const journeys = (data || []).map(j => {
-      const entries = j.journey_entries || []
-      const totalMinutes = entries.reduce((acc, e) => acc + (e.hours || 0) * 60 + (e.minutes || 0), 0)
-      const sorted = [...entries].sort((a, b) => a.played_on.localeCompare(b.played_on))
+    const { data: user } = await supabase
+      .from("users")
+      .select("user_id, username, avatar")
+      .eq("user_id", journey.user_id)
+      .single()
 
-      return {
-        id: j.id,
-        title: j.title,
-        game_id: j.game_id,
-        game_slug: j.game_slug,
-        platform_id: j.platform_id,
-        started_at: j.started_at,
-        finished_at: j.finished_at,
-        created_at: j.created_at,
-        updated_at: j.updated_at,
-        total_sessions: entries.length,
-        total_minutes: totalMinutes,
-        first_session: sorted[0]?.played_on || null,
-        last_session: sorted[sorted.length - 1]?.played_on || null,
-      }
-    })
+    const game = await getGameBySlug(journey.game_slug)
+
+    const entries = journey.journey_entries || []
+    const totalMinutes = entries.reduce((acc, e) => acc + (e.hours || 0) * 60 + (e.minutes || 0), 0)
 
     res.json({
-      user: {
+      ...journey,
+      entries: entries.sort((a, b) => a.played_on.localeCompare(b.played_on)),
+      users: user ? {
         user_id: user.user_id,
         username: user.username,
         avatar: user.avatar || DEFAULT_AVATAR_URL,
+      } : null,
+      games: game,
+      stats: {
+        total_sessions: entries.length,
+        total_minutes: totalMinutes,
+        total_hours: Math.floor(totalMinutes / 60),
       },
-      journeys,
-      total: count || 0,
-      page: pageNum,
-      totalPages: Math.ceil((count || 0) / limitNum),
     })
   } catch (e) {
     console.error(e)
