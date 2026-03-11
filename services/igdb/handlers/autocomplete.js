@@ -18,40 +18,58 @@ export async function handleAutocomplete(req, res) {
         total_rating, total_rating_count;
       where (${nameFilter} | ${altNameFilter}) & cover != null;
       sort total_rating_count desc;
-      limit 50;
+      limit 20;
     `)
 
     const input = q.toLowerCase().trim()
     const inputWords = input.split(/\s+/)
 
+    const calcNameScore = (n) => {
+      let score = 0
+
+      if (n === input) {
+        score = 100
+      } else if (n.startsWith(input)) {
+        score = 80
+      } else if (n.includes(input)) {
+        score = 60
+      } else {
+        const matched = inputWords.filter(w => n.includes(w)).length
+        score = (matched / inputWords.length) * 40
+      }
+
+      score -= n.length * 0.1
+
+      return score
+    }
+
     const games = data.map(g => {
       const name = g.name.toLowerCase()
       const altNames = g.alternative_names?.map(a => a.name.toLowerCase()) || []
-      const allNames = [name, ...altNames]
 
-      let relevance = 0
-      let matchedName = name
+      const mainNameScore = calcNameScore(name)
 
-      for (const n of allNames) {
-        let score = 0
+      let bestAltScore = 0
+      let bestAltName = null
 
-        if (n === input) {
-          score = 100
-        } else if (n.startsWith(input)) {
-          score = 80
-        } else if (n.includes(input)) {
-          score = 60
-        } else {
-          const matched = inputWords.filter(w => n.includes(w)).length
-          score = (matched / inputWords.length) * 40
+      for (const alt of altNames) {
+        const altScore = calcNameScore(alt)
+        if (altScore > bestAltScore) {
+          bestAltScore = altScore
+          bestAltName = alt
         }
+      }
 
-        score -= n.length * 0.1
+      let relevance, matchedName, isAltMatch
 
-        if (score > relevance) {
-          relevance = score
-          matchedName = n
-        }
+      if (mainNameScore >= bestAltScore) {
+        relevance = mainNameScore
+        matchedName = name
+        isAltMatch = false
+      } else {
+        relevance = bestAltScore * 0.85
+        matchedName = bestAltName
+        isAltMatch = true
       }
 
       relevance += Math.min((g.total_rating_count || 0) / 100, 20)
@@ -69,7 +87,7 @@ export async function handleAutocomplete(req, res) {
         first_release_date: g.first_release_date,
         total_rating: g.total_rating,
         total_rating_count: g.total_rating_count,
-        matchedAlt: matchedName !== name ? matchedName : null,
+        matchedAlt: isAltMatch ? bestAltName : null,
         relevance,
         platformIcons: [...slugs].sort().map(slug => ({
           name: slug,
@@ -81,7 +99,6 @@ export async function handleAutocomplete(req, res) {
       }
     })
       .sort((a, b) => b.relevance - a.relevance)
-      .slice(0, 20)
 
     res.json(games)
   } catch (e) {
