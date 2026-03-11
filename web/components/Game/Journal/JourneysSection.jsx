@@ -1,10 +1,11 @@
 import { useState } from "react"
-import { Calendar, Clock, Play, Flag, ChevronRight, Gamepad2, BookOpen } from "lucide-react"
+import { Link } from "react-router-dom"
+import { Calendar, Clock, Play, Flag, ChevronRight, BookOpen } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { JournalViewModal } from "@components/Game/Journal/JournalViewModal"
 import Pagination from "@components/UI/Pagination"
 
-export default function JourneysSection({ journeys, loading, total, currentPage, totalPages, onPageChange }) {
+export default function JourneysSection({ journeys, games = {}, loading, total, currentPage, totalPages, onPageChange, onUpdate }) {
   const { t } = useTranslation("profile")
   const [viewingId, setViewingId] = useState(null)
 
@@ -24,6 +25,14 @@ export default function JourneysSection({ journeys, loading, total, currentPage,
       day: "numeric",
       year: "numeric",
     })
+  }
+
+  function handleClose() {
+    setViewingId(null)
+  }
+
+  function handleUpdate() {
+    onUpdate?.()
   }
 
   if (loading) {
@@ -64,6 +73,7 @@ export default function JourneysSection({ journeys, loading, total, currentPage,
                 <JourneyCard
                   key={j.id}
                   journey={j}
+                  game={games[j.game_slug]}
                   formatTime={formatTime}
                   formatDate={formatDate}
                   onClick={() => setViewingId(j.id)}
@@ -85,6 +95,7 @@ export default function JourneysSection({ journeys, loading, total, currentPage,
                 <JourneyCard
                   key={j.id}
                   journey={j}
+                  game={games[j.game_slug]}
                   formatTime={formatTime}
                   formatDate={formatDate}
                   onClick={() => setViewingId(j.id)}
@@ -107,32 +118,42 @@ export default function JourneysSection({ journeys, loading, total, currentPage,
       {viewingId && (
         <JournalViewModal
           journeyId={viewingId}
-          onClose={() => setViewingId(null)}
+          onClose={handleClose}
+          onUpdate={handleUpdate}
         />
       )}
     </>
   )
 }
 
-function JourneyCard({ journey: j, formatTime, formatDate, onClick, t }) {
+function JourneyCard({ journey: j, game, formatTime, formatDate, onClick, t }) {
   const time = formatTime(j.total_minutes)
-  const gameName = j.game_slug?.replace(/-/g, " ")
 
   return (
     <button
       onClick={onClick}
       className="flex items-start gap-3 p-3.5 bg-zinc-800/30 hover:bg-zinc-800/60 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all cursor-pointer text-left group w-full"
     >
-      <div className={`
-        w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0
-        ${j.finished_at ? "bg-amber-500/10" : "bg-emerald-500/10"}
-      `}>
-        <Gamepad2 className={`w-5 h-5 ${j.finished_at ? "text-amber-400" : "text-emerald-400"}`} />
-      </div>
+      {game?.cover_url ? (
+        <img
+          src={game.cover_url}
+          alt={game.name}
+          className="w-10 h-14 object-cover rounded-lg flex-shrink-0 border border-zinc-700"
+        />
+      ) : (
+        <div className={`
+          w-10 h-14 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-700
+          ${j.finished_at ? "bg-amber-500/10" : "bg-emerald-500/10"}
+        `}>
+          <BookOpen className={`w-4 h-4 ${j.finished_at ? "text-amber-400" : "text-emerald-400"}`} />
+        </div>
+      )}
 
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-white truncate">{j.title}</p>
-        <p className="text-xs text-zinc-600 truncate mt-0.5 capitalize">{gameName}</p>
+        {game?.name && game.name !== j.title && (
+          <p className="text-xs text-zinc-500 truncate mt-0.5">{game.name}</p>
+        )}
 
         <div className="flex items-center gap-3 mt-2 flex-wrap">
           <span className="text-[10px] text-zinc-500 flex items-center gap-1">
