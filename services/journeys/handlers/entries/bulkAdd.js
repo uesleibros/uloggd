@@ -4,7 +4,8 @@ import { validateDate } from "#services/journeys/utils/validators.js"
 export async function handleBulkAddEntries(req, res) {
   const { journeyId, dates } = req.body
 
-  if (!journeyId || typeof journeyId !== "number")
+  const id = Number(journeyId)
+  if (!id || isNaN(id))
     return res.status(400).json({ error: "invalid journeyId" })
 
   if (!Array.isArray(dates) || dates.length === 0 || dates.length > 31)
@@ -19,7 +20,7 @@ export async function handleBulkAddEntries(req, res) {
     const { data: journey, error: journeyError } = await supabase
       .from("journeys")
       .select("id")
-      .eq("id", journeyId)
+      .eq("id", id)
       .eq("user_id", req.user.id)
       .single()
 
@@ -29,7 +30,7 @@ export async function handleBulkAddEntries(req, res) {
     const { data: existing } = await supabase
       .from("journey_entries")
       .select("played_on")
-      .eq("journey_id", journeyId)
+      .eq("journey_id", id)
       .in("played_on", dates)
 
     const existingSet = new Set((existing || []).map(e => e.played_on))
@@ -39,7 +40,7 @@ export async function handleBulkAddEntries(req, res) {
       return res.json({ inserted: 0, entries: [] })
 
     const rows = newDates.map(d => ({
-      journey_id: journeyId,
+      journey_id: id,
       played_on: d,
       hours: 0,
       minutes: 0,
@@ -56,7 +57,7 @@ export async function handleBulkAddEntries(req, res) {
     await supabase
       .from("journeys")
       .update({ updated_at: new Date().toISOString() })
-      .eq("id", journeyId)
+      .eq("id", id)
 
     res.json({ inserted: data.length, entries: data })
   } catch (e) {
