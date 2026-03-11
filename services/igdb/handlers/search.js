@@ -18,10 +18,12 @@ export async function handleSearch(req, res) {
 
 	try {
 		const nameFilter = buildNameFilter(q)
-		
+		const altNameFilter = nameFilter.replace(/\bname\b/g, "alternative_names.name")
+		const whereClause = `(${nameFilter} | ${altNameFilter})`
+
 		const limitNum = Math.min(Number(limit), 50)
 		const offsetNum = Number(offset)
-		
+
 		let orderBy = "total_rating_count desc"
 		if (sort === "name") orderBy = "name asc"
 		else if (sort === "newest") orderBy = "first_release_date desc"
@@ -35,12 +37,12 @@ export async function handleSearch(req, res) {
 					alternative_names.name,
 					total_rating, total_rating_count, game_type,
 					summary;
-				where ${nameFilter};
+				where ${whereClause};
 				sort ${orderBy};
 				limit ${limitNum};
 				offset ${offsetNum};
 			`),
-			query("games/count", `where ${nameFilter};`)
+			query("games/count", `where ${whereClause};`)
 		])
 
 		const input = q.toLowerCase().trim()
