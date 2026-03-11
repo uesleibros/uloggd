@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useCallback } from "react"
+import { Play, Flag } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 
 const WEEKDAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
@@ -40,7 +41,7 @@ function getRadius(left, right) {
   return "rounded-lg md:rounded-xl"
 }
 
-export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, onBulkRemove, loading, disabled }) {
+export function JournalCalendar({ month, year, entries, startedAt, finishedAt, onDayClick, onBulkAdd, onBulkRemove, loading, disabled }) {
   const { t } = useTranslation("journal.calendar")
 
   const [isDragging, setIsDragging] = useState(false)
@@ -175,6 +176,20 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     return parseInt(dayEl.dataset.day, 10)
   }
 
+  function renderMarker(dateStr) {
+    const isStart = dateStr === startedAt
+    const isFinish = dateStr === finishedAt
+
+    if (!isStart && !isFinish) return null
+
+    return (
+      <div className="absolute top-0.5 right-0.5 md:top-1 md:right-1 flex gap-0.5">
+        {isStart && <Play className="w-2 h-2 md:w-2.5 md:h-2.5 text-sky-400 fill-sky-400" />}
+        {isFinish && <Flag className="w-2 h-2 md:w-2.5 md:h-2.5 text-amber-400 fill-amber-400" />}
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -224,14 +239,15 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
               <div
                 key={cell.dateStr}
                 className={`
-                  aspect-square flex flex-col items-center justify-center
-                  ${cell.hasLog ? `${INTENSITY[intensity].bg} opacity-30` : ""}
+                  aspect-square flex flex-col items-center justify-center relative overflow-hidden
+                  ${cell.hasLog ? `${INTENSITY[intensity].bg} opacity-30` : "opacity-30"}
                   ${radius}
                 `}
               >
-                <span className="text-xs md:text-sm text-zinc-700/60">{cell.day}</span>
+                {renderMarker(cell.dateStr)}
+                <span className="text-xs md:text-sm text-zinc-600">{cell.day}</span>
                 {timeDisplay && (
-                  <span className="text-[9px] md:text-[10px] text-emerald-500/30 leading-tight">{timeDisplay}</span>
+                  <span className="text-[9px] md:text-[10px] text-emerald-500/50 leading-tight">{timeDisplay}</span>
                 )}
               </div>
             )
@@ -242,7 +258,15 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
           const isSelected = selectedDates.has(cell.dateStr)
           const isBeingAdded = isSelected && dragMode === "add"
           const isBeingRemoved = isSelected && dragMode === "remove"
-          const radius = isSelected ? "rounded-lg md:rounded-xl" : cell.hasLog ? getRadius(cell.connLeft, cell.connRight) : "rounded-lg md:rounded-xl"
+          const isStart = cell.dateStr === startedAt
+          const isFinish = cell.dateStr === finishedAt
+          const hasMarker = isStart || isFinish
+
+          const radius = isSelected
+            ? "rounded-lg md:rounded-xl"
+            : cell.hasLog
+              ? getRadius(cell.connLeft, cell.connRight)
+              : "rounded-lg md:rounded-xl"
 
           return (
             <button
@@ -253,32 +277,21 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
               onTouchStart={(e) => { e.preventDefault(); handlePointerDown(cell.day) }}
               disabled={future || disabled}
               className={`
-                aspect-square ${radius} flex flex-col items-center justify-center font-medium relative
+                aspect-square ${radius} flex flex-col items-center justify-center font-medium relative overflow-hidden
                 transition-[background-color,color,box-shadow,opacity,transform] duration-150 ease-out
                 ${disabled ? "pointer-events-none opacity-40" : ""}
                 ${future ? "text-zinc-800 cursor-default" : "cursor-pointer active:scale-[0.92]"}
-                ${isToday && !cell.hasLog && !isSelected
-                  ? "ring-[1.5px] ring-inset ring-emerald-500/40 text-emerald-400"
-                  : ""
-                }
-                ${cell.hasLog && !isBeingRemoved
-                  ? `${INTENSITY[intensity].bg} ${INTENSITY[intensity].text} hover:brightness-110`
-                  : ""
-                }
-                ${!cell.hasLog && !isSelected && !future && !isToday
-                  ? "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200"
-                  : ""
-                }
-                ${isBeingAdded
-                  ? "bg-emerald-500/30 text-emerald-200 ring-[1.5px] ring-inset ring-emerald-400/60 scale-[1.04]"
-                  : ""
-                }
-                ${isBeingRemoved
-                  ? "bg-red-500/20 text-red-300 ring-[1.5px] ring-inset ring-red-400/50 scale-[1.04]"
-                  : ""
-                }
+                ${isToday && !cell.hasLog && !isSelected ? "ring-[1.5px] ring-inset ring-emerald-500/40 text-emerald-400" : ""}
+                ${cell.hasLog && !isBeingRemoved ? `${INTENSITY[intensity].bg} ${INTENSITY[intensity].text} hover:brightness-110` : ""}
+                ${!cell.hasLog && !isSelected && !future && !isToday ? "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200" : ""}
+                ${isBeingAdded ? "bg-emerald-500/30 text-emerald-200 ring-[1.5px] ring-inset ring-emerald-400/60 scale-[1.04]" : ""}
+                ${isBeingRemoved ? "bg-red-500/20 text-red-300 ring-[1.5px] ring-inset ring-red-400/50 scale-[1.04]" : ""}
+                ${isStart && !isBeingRemoved ? "ring-[1.5px] ring-inset ring-sky-400/50" : ""}
+                ${isFinish && !isBeingRemoved ? "ring-[1.5px] ring-inset ring-amber-400/50" : ""}
+                ${isStart && isFinish && !isBeingRemoved ? "ring-[1.5px] ring-inset ring-purple-400/50" : ""}
               `}
             >
+              {renderMarker(cell.dateStr)}
               <span className={`leading-none ${cell.hasLog && !isBeingRemoved ? "text-sm md:text-base" : "text-sm md:text-lg"}`}>
                 {cell.day}
               </span>
@@ -289,6 +302,23 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
           )
         })}
       </div>
+
+      {(startedAt || finishedAt) && (
+        <div className="flex items-center gap-3 mt-3 px-1">
+          {startedAt && (
+            <div className="flex items-center gap-1.5">
+              <Play className="w-2.5 h-2.5 text-sky-400 fill-sky-400" />
+              <span className="text-[10px] md:text-[11px] text-zinc-500">{t("legend.started")}</span>
+            </div>
+          )}
+          {finishedAt && (
+            <div className="flex items-center gap-1.5">
+              <Flag className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+              <span className="text-[10px] md:text-[11px] text-zinc-500">{t("legend.finished")}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       <div
         className={`
