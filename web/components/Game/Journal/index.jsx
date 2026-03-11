@@ -3,6 +3,7 @@ import { Plus } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
+import { emitJournalUpdate } from "#hooks/useJournalEvents"
 import Modal from "@components/UI/Modal"
 import { JournalModal } from "./JournalModal"
 import { JournalCard } from "./JournalCard"
@@ -101,11 +102,13 @@ export default function JournalButton({ game }) {
   function handleClose() {
     setShowModal(false)
     fetchJourneys()
+    emitJournalUpdate()
   }
 
   function handleDeleted() {
     setSelectedJourney(null)
     fetchJourneys()
+    emitJournalUpdate()
   }
 
   return (
