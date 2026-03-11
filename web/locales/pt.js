@@ -62,6 +62,8 @@ export default {
 	      december: "Dezembro"
 	    },
 	    entry: {
+				started: "Começou",
+				finished: "Terminou",
 	      addSession: "Adicionar sessão",
 	      editSession: "Editar sessão",
 	      time: "Tempo jogado",
@@ -2078,5 +2080,6 @@ export default {
 		},
 	},
 }
+
 
 
