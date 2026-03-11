@@ -79,9 +79,13 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     if (!isDragging) return
 
     const dates = Array.from(selectedDates)
-    
+
     if (dates.length === 1) {
-      onDayClick(dates[0])
+      if (dragMode === "remove") {
+        onDayClick(dates[0])
+      } else {
+        onBulkAdd(dates)
+      }
     } else if (dates.length > 1) {
       if (dragMode === "add") {
         onBulkAdd(dates)
