@@ -106,6 +106,7 @@ export default {
 	    }
 	  },
 	  view: {
+			edit: "Edit",
 			close: "Close",
 	    notFound: "Journey not found",
 	    session: "session",
