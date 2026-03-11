@@ -12,11 +12,10 @@ export async function handleAutocomplete(req, res) {
       fields name, slug, first_release_date,
         cover.url, cover.image_id,
         platforms.id,
-        total_rating, total_rating_count,
-        aggregated_rating, aggregated_rating_count;
+        total_rating, total_rating_count;
       where cover != null
         & name ~ *"${sanitized}"*;
-      sort aggregated_rating_count desc;
+      sort total_rating_count desc;
       limit 20;
     `)
 
@@ -50,6 +49,7 @@ export async function handleAutocomplete(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
+
 
 
 
