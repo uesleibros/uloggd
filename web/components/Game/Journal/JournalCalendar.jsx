@@ -14,9 +14,8 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   const dragModeRef = useRef(null)
   const selectedDatesRef = useRef(new Set())
   const containerRef = useRef(null)
-  const dayRefs = useRef({})
 
-  const { days, startDay } = useMemo(() => {
+  const { days, startDay, prevDays, nextDays } = useMemo(() => {
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
@@ -27,7 +26,22 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       days.push(i)
     }
 
-    return { days, startDay }
+    // Dias do mês anterior pra preencher o início
+    const prevMonthLastDay = new Date(year, month, 0).getDate()
+    const prevDays = []
+    for (let i = startDay - 1; i >= 0; i--) {
+      prevDays.push(prevMonthLastDay - i)
+    }
+
+    // Dias do próximo mês pra completar a última row
+    const totalCells = startDay + daysInMonth
+    const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7)
+    const nextDays = []
+    for (let i = 1; i <= remaining; i++) {
+      nextDays.push(i)
+    }
+
+    return { days, startDay, prevDays, nextDays }
   }, [month, year])
 
   const today = new Date()
@@ -109,7 +123,6 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     setSelectedDates(new Set())
   }, [onDayClick, onBulkAdd, onBulkRemove])
 
-  // Mouse handlers
   function handleMouseDown(day, e) {
     e.preventDefault()
     startDrag(day)
@@ -123,7 +136,6 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
     if (isDraggingRef.current) finishDrag()
   }, [finishDrag])
 
-  // Touch handlers
   function handleTouchStart(day, e) {
     e.preventDefault()
     startDrag(day)
@@ -132,17 +144,14 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
   function getDayFromTouch(touch) {
     const el = document.elementFromPoint(touch.clientX, touch.clientY)
     if (!el) return null
-
     const dayEl = el.closest("[data-day]")
     if (!dayEl) return null
-
     return parseInt(dayEl.dataset.day, 10)
   }
 
   function handleTouchMove(e) {
     if (!isDraggingRef.current) return
     e.preventDefault()
-
     const touch = e.touches[0]
     const day = getDayFromTouch(touch)
     if (day) extendDrag(day)
@@ -179,8 +188,13 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
       </div>
 
       <div className="grid grid-cols-7 gap-1">
-        {Array.from({ length: startDay }).map((_, i) => (
-          <div key={`empty-${i}`} className="aspect-square" />
+        {prevDays.map(day => (
+          <div
+            key={`prev-${day}`}
+            className="aspect-square rounded-xl flex items-center justify-center text-sm text-zinc-700"
+          >
+            {day}
+          </div>
         ))}
 
         {days.map(day => {
@@ -233,6 +247,15 @@ export function JournalCalendar({ month, year, entries, onDayClick, onBulkAdd, o
             </button>
           )
         })}
+
+        {nextDays.map(day => (
+          <div
+            key={`next-${day}`}
+            className="aspect-square rounded-xl flex items-center justify-center text-sm text-zinc-700"
+          >
+            {day}
+          </div>
+        ))}
       </div>
 
       {isDragging && (
