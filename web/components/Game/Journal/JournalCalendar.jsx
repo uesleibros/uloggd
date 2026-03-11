@@ -41,7 +41,7 @@ function getRadius(left, right) {
   return "rounded-lg md:rounded-xl"
 }
 
-export function JournalCalendar({ month, year, entries, startedAt, finishedAt, onDayClick, onBulkAdd, onBulkRemove, loading, disabled }) {
+export function JournalCalendar({ month, year, entries, startedAt, finishedAt, onDayClick, onBulkAdd, onBulkRemove, loading, disabled, readOnly }) {
   const { t } = useTranslation("journal.calendar")
 
   const [isDragging, setIsDragging] = useState(false)
@@ -105,7 +105,7 @@ export function JournalCalendar({ month, year, entries, startedAt, finishedAt, o
   }, [month, year, entries])
 
   function handlePointerDown(day) {
-    if (disabled || formatDate(day) > todayStr) return
+    if (readOnly || disabled || formatDate(day) > todayStr) return
     const dateStr = formatDate(day)
     pendingRef.current = { day, dateStr, mode: !!entries[dateStr] ? "remove" : "add" }
   }
@@ -130,7 +130,7 @@ export function JournalCalendar({ month, year, entries, startedAt, finishedAt, o
   }
 
   function handlePointerEnter(day) {
-    if (disabled || formatDate(day) > todayStr) return
+    if (readOnly || disabled || formatDate(day) > todayStr) return
     const dateStr = formatDate(day)
 
     if (pendingRef.current && !isDraggingRef.current) {
@@ -201,16 +201,16 @@ export function JournalCalendar({ month, year, entries, startedAt, finishedAt, o
   return (
     <div
       ref={containerRef}
-      className="select-none touch-none"
-      onMouseLeave={handleMouseLeave}
-      onMouseUp={finishInteraction}
-      onTouchMove={(e) => {
+      className={`select-none ${readOnly ? "" : "touch-none"}`}
+      onMouseLeave={readOnly ? undefined : handleMouseLeave}
+      onMouseUp={readOnly ? undefined : finishInteraction}
+      onTouchMove={readOnly ? undefined : (e) => {
         if (!pendingRef.current && !isDraggingRef.current) return
         e.preventDefault()
         const day = getDayFromTouch(e.touches[0])
         if (day) handlePointerEnter(day)
       }}
-      onTouchEnd={(e) => {
+      onTouchEnd={readOnly ? undefined : (e) => {
         e.preventDefault()
         finishInteraction()
       }}
@@ -260,7 +260,6 @@ export function JournalCalendar({ month, year, entries, startedAt, finishedAt, o
           const isBeingRemoved = isSelected && dragMode === "remove"
           const isStart = cell.dateStr === startedAt
           const isFinish = cell.dateStr === finishedAt
-          const hasMarker = isStart || isFinish
 
           const radius = isSelected
             ? "rounded-lg md:rounded-xl"
@@ -269,21 +268,21 @@ export function JournalCalendar({ month, year, entries, startedAt, finishedAt, o
               : "rounded-lg md:rounded-xl"
 
           return (
-            <button
+            <div
               key={cell.dateStr}
               data-day={cell.day}
-              onMouseDown={(e) => { e.preventDefault(); handlePointerDown(cell.day) }}
-              onMouseEnter={() => handlePointerEnter(cell.day)}
-              onTouchStart={(e) => { e.preventDefault(); handlePointerDown(cell.day) }}
-              disabled={future || disabled}
+              onMouseDown={readOnly ? undefined : (e) => { e.preventDefault(); handlePointerDown(cell.day) }}
+              onMouseEnter={readOnly ? undefined : () => handlePointerEnter(cell.day)}
+              onTouchStart={readOnly ? undefined : (e) => { e.preventDefault(); handlePointerDown(cell.day) }}
               className={`
                 aspect-square ${radius} flex flex-col items-center justify-center font-medium relative overflow-hidden
                 transition-[background-color,color,box-shadow,opacity,transform] duration-150 ease-out
-                ${disabled ? "pointer-events-none opacity-40" : ""}
-                ${future ? "text-zinc-800 cursor-default" : "cursor-pointer active:scale-[0.92]"}
+                ${disabled && !readOnly ? "pointer-events-none opacity-40" : ""}
+                ${future ? "text-zinc-800" : ""}
+                ${!readOnly && !future && !disabled ? "cursor-pointer active:scale-[0.92]" : "cursor-default"}
                 ${isToday && !cell.hasLog && !isSelected ? "ring-[1.5px] ring-inset ring-emerald-500/40 text-emerald-400" : ""}
-                ${cell.hasLog && !isBeingRemoved ? `${INTENSITY[intensity].bg} ${INTENSITY[intensity].text} hover:brightness-110` : ""}
-                ${!cell.hasLog && !isSelected && !future && !isToday ? "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200" : ""}
+                ${cell.hasLog && !isBeingRemoved ? `${INTENSITY[intensity].bg} ${INTENSITY[intensity].text} ${!readOnly ? "hover:brightness-110" : ""}` : ""}
+                ${!cell.hasLog && !isSelected && !future && !isToday ? `text-zinc-400 ${!readOnly ? "hover:bg-zinc-800/60 hover:text-zinc-200" : ""}` : ""}
                 ${isBeingAdded ? "bg-emerald-500/30 text-emerald-200 ring-[1.5px] ring-inset ring-emerald-400/60 scale-[1.04]" : ""}
                 ${isBeingRemoved ? "bg-red-500/20 text-red-300 ring-[1.5px] ring-inset ring-red-400/50 scale-[1.04]" : ""}
                 ${isStart && !isBeingRemoved ? "ring-[1.5px] ring-inset ring-sky-400/50" : ""}
@@ -298,7 +297,7 @@ export function JournalCalendar({ month, year, entries, startedAt, finishedAt, o
               {timeDisplay && !isBeingRemoved && (
                 <span className="text-[9px] md:text-[10px] leading-none mt-0.5 opacity-70">{timeDisplay}</span>
               )}
-            </button>
+            </div>
           )
         })}
       </div>
@@ -320,29 +319,31 @@ export function JournalCalendar({ month, year, entries, startedAt, finishedAt, o
         </div>
       )}
 
-      <div
-        className={`
-          fixed bottom-6 left-1/2 -translate-x-1/2 z-50
-          px-5 py-2.5 rounded-2xl shadow-2xl
-          border backdrop-blur-xl
-          transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-          ${isDragging
-            ? "translate-y-0 opacity-100 scale-100"
-            : "translate-y-4 opacity-0 scale-90 pointer-events-none"
-          }
-          ${dragMode === "add"
-            ? "bg-emerald-950/80 border-emerald-500/30 shadow-emerald-500/10"
-            : "bg-red-950/80 border-red-500/30 shadow-red-500/10"
-          }
-        `}
-      >
-        <span className={`text-sm font-medium tracking-tight ${dragMode === "add" ? "text-emerald-300" : "text-red-300"}`}>
-          {dragMode === "add"
-            ? t("dragging.adding", { count: selectedDates.size })
-            : t("dragging.removing", { count: selectedDates.size })
-          }
-        </span>
-      </div>
+      {!readOnly && (
+        <div
+          className={`
+            fixed bottom-6 left-1/2 -translate-x-1/2 z-50
+            px-5 py-2.5 rounded-2xl shadow-2xl
+            border backdrop-blur-xl
+            transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+            ${isDragging
+              ? "translate-y-0 opacity-100 scale-100"
+              : "translate-y-4 opacity-0 scale-90 pointer-events-none"
+            }
+            ${dragMode === "add"
+              ? "bg-emerald-950/80 border-emerald-500/30 shadow-emerald-500/10"
+              : "bg-red-950/80 border-red-500/30 shadow-red-500/10"
+            }
+          `}
+        >
+          <span className={`text-sm font-medium tracking-tight ${dragMode === "add" ? "text-emerald-300" : "text-red-300"}`}>
+            {dragMode === "add"
+              ? t("dragging.adding", { count: selectedDates.size })
+              : t("dragging.removing", { count: selectedDates.size })
+            }
+          </span>
+        </div>
+      )}
     </div>
   )
 }
