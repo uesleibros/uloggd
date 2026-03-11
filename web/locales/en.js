@@ -25,23 +25,29 @@ export default {
 	    dragging: {
 	      adding: "Adding {{count}} days",
 	      removing: "Removing {{count}} days"
-	    }
+	    },
+	    legend: {
+	      started: "Started",
+	      finished: "Finished",
+	    },
 	  },
 	  modal: {
 	    title: "Journey title",
-	    titlePlaceholder: "E.g.: First Playthrough, NG+...",
+	    titlePlaceholder: "e.g. First Playthrough, NG+...",
 	    platform: "Platform",
 	    selectPlatform: "Select platform",
 	    session: "session",
 	    sessions: "sessions",
 	    totalTime: "total time",
+	    started: "Started",
+	    finished: "Finished",
 	    cancel: "Cancel",
 	    save: "Save",
 	    saving: "Saving...",
 	    create: "Create",
-			deleteConfirmTitle: "Delete journey",
-      deleteConfirmMessage: "Are you sure? All sessions and notes will be permanently lost.",
-      confirmDelete: "Delete",
+	    deleteConfirmTitle: "Delete journey",
+	    deleteConfirmMessage: "Are you sure? All sessions and notes will be permanently lost.",
+	    confirmDelete: "Delete",
 	    delete: "Delete journey",
 	    createFirst: "Create the journey to start logging your sessions",
 	    jumpTo: "Jump to...",
@@ -49,7 +55,7 @@ export default {
 	    today: "Today",
 	    start: "Start",
 	    finish: "Finish",
-	    dragHint: "Tip: Click and drag to select multiple days at once. Click on a day to add time and notes.",
+	    dragHint: "Tip: Click and drag to select multiple days at once. Click a day to add time and notes.",
 	    months: {
 	      january: "January",
 	      february: "February",
@@ -65,15 +71,15 @@ export default {
 	      december: "December"
 	    },
 	    entry: {
-				started: "Started",
-				finished: "Finished",
+	      started: "Started",
+	      finished: "Finished",
 	      addSession: "Add session",
 	      editSession: "Edit session",
 	      time: "Time played",
 	      hours: "hours",
 	      minutes: "minutes",
 	      note: "Note (optional)",
-	      notePlaceholder: "What happened in this session?",
+	      notePlaceholder: "What happened during this session?",
 	      cancel: "Cancel",
 	      save: "Save",
 	      saving: "Saving...",
@@ -98,7 +104,33 @@ export default {
 	      saveFailed: "Failed to save journey",
 	      deleteFailed: "Failed to delete journey"
 	    }
-	  }
+	  },
+	  view: {
+	    notFound: "Journey not found",
+	    session: "session",
+	    sessions: "sessions",
+	    tabCalendar: "Calendar",
+	    tabTimeline: "Timeline",
+	    started: "Started",
+	    finished: "Finished",
+	    months: {
+	      january: "January",
+	      february: "February",
+	      march: "March",
+	      april: "April",
+	      may: "May",
+	      june: "June",
+	      july: "July",
+	      august: "August",
+	      september: "September",
+	      october: "October",
+	      november: "November",
+	      december: "December"
+	    },
+	  },
+	  public: {
+	    title: "Player Journeys",
+	  },
 	},
 	inventory: {
 		title: "Inventory",
@@ -131,7 +163,7 @@ export default {
 			},
 			name_color: {
 				title: "Name Color",
-				description: "Change your display name color.",
+				description: "Change the color of your display name.",
 			},
 			theme: {
 				title: "Theme",
@@ -152,10 +184,10 @@ export default {
 	shop: {
 		meta: {
 			title: "Shop - uloggd",
-			description: "Browse and purchase exclusive items to customize your profile.",
+			description: "Browse and buy exclusive items to customize your profile.",
 		},
 		title: "Shop",
-		subtitle: "Browse and customize your profile with unique items.",
+		subtitle: "Browse and personalize your profile with exclusive items.",
 		tags: {
 			featured: "Featured",
 			limited: "Limited",
@@ -164,11 +196,11 @@ export default {
 			equipped: "Equipped",
 		},
 		types: {
-			avatar_decoration: "Avatar Decoration",
+			avatar_decoration: "Avatar decoration",
 			banner: "Banner",
-			profile_effect: "Profile Effect",
+			profile_effect: "Profile effect",
 			badge: "Badge",
-			name_color: "Name Color",
+			name_color: "Name color",
 			theme: "Theme",
 		},
 		filters: {
@@ -185,7 +217,7 @@ export default {
 		},
 		card: {
 			ownedHint: "Click to equip",
-			equippedHint: "In use",
+			equippedHint: "Equipped",
 		},
 		detail: {
 			price: "Price",
@@ -194,9 +226,9 @@ export default {
 			equipped: "Equipped",
 			equip: "Equip",
 			soldOut: "Sold Out",
-			soldOutLabel: "Sold out",
+			soldOutLabel: "Sold Out",
 			purchase: "Purchase",
-			loginRequired: "Log in to purchase",
+			loginRequired: "Sign in to purchase",
 			remaining: "remaining",
 			availableUntil: "Available until",
 		},
@@ -206,46 +238,46 @@ export default {
 				itemNotFound: "Item not found or unavailable.",
 				itemNotYetAvailable: "This item is not yet available.",
 				itemExpired: "This item is no longer available.",
-				outOfStock: "Item is out of stock.",
+				outOfStock: "Item out of stock.",
 				alreadyOwned: "You already own this item.",
-				noMinerals: "You do not have any minerals.",
-				insufficientMinerals: "Not enough minerals for this purchase.",
+				noMinerals: "You don't have enough minerals.",
+				insufficientMinerals: "Insufficient minerals for this purchase.",
 				updateFailed: "Failed to process payment.",
 				inventoryFailed: "Failed to add item to inventory.",
 				failed: "Purchase failed.",
 			},
 		},
 		gift: {
-			buttonTitle: "Gift to a friend",
+			buttonTitle: "Gift a friend",
 			selectRecipient: "Choose recipient",
 			searchPlaceholder: "Search by username...",
 			noResults: "No users found",
 			noFollowing: "You're not following anyone yet",
 			confirmTitle: "Confirm gift",
 			sendingTo: "Sending to",
-			disclaimer: "The cost will be deducted from your minerals. The recipient will receive the item and a notification. This action cannot be undone.",
+			disclaimer: "The amount will be charged from your minerals. The recipient will receive the item and a notification. This action cannot be undone.",
 			confirm: "Send gift",
 			success: {
 				title: "Gift sent!",
-				description: "{{item}} was successfully sent to {{recipient}}.",
+				description: "{{item}} was sent to {{recipient}} successfully.",
 			},
 			errors: {
 				failed: "Failed to send gift",
-				cannotGiftYourself: "You can't gift yourself",
+				cannotGiftYourself: "You cannot gift yourself",
 				recipientNotFound: "Recipient not found",
 				itemNotFound: "Item not found",
 				recipientAlreadyOwns: "The recipient already owns this item",
 				insufficientMinerals: "Insufficient minerals",
-				noMinerals: "You don't have any minerals",
-				outOfStock: "Item is out of stock",
+				noMinerals: "You don't have minerals",
+				outOfStock: "Item out of stock",
 				itemExpired: "This item is no longer available",
 				itemNotYetAvailable: "This item is not yet available",
 			},
 		},
 		success: {
-			title: "Purchase Complete!",
+			title: "Purchase complete!",
 			description: "has been added to your inventory.",
-			continue: "Continue Shopping",
+			continue: "Continue shopping",
 			equipped: "Item equipped!",
 		},
 		errors: {
@@ -265,14 +297,14 @@ export default {
 		},
 		artists: {
 			title: "Partner artists",
-			subtitle: "This shop exists thanks to permission from the Decors artists.",
+			subtitle: "The shop only exists thanks to permission from Decors artists.",
 			defaultLabel: "Artist",
 			visit: "Visit page",
 			itemCredits: "Credits",
 			primary: "primary",
 		},
 		admin: {
-			title: "Shop Management",
+			title: "Manage Shop",
 			tabs: {
 				items: "Items",
 				collections: "Collections",
@@ -292,7 +324,7 @@ export default {
 			createCategoryFirst: "(create a category first)",
 			saved: "{{type}} saved",
 			deleted: "{{name}} deleted",
-			loadFailed: "Failed to load admin data",
+			loadFailed: "Failed to load data",
 			newCategory: "New Category",
 			newCollection: "New Collection",
 			newItem: "New Item",
@@ -309,8 +341,8 @@ export default {
 				listed: "Listed",
 				bannerUrl: "Banner URL",
 				accentColor: "Accent Color",
-				availableFrom: "Available From",
-				availableUntil: "Available Until",
+				availableFrom: "Available from",
+				availableUntil: "Available until",
 				assetUrl: "Asset URL",
 				type: "Type",
 				category: "Category",
@@ -374,7 +406,7 @@ export default {
 			},
 			iron: {
 				name: "Iron",
-				description: "Slightly rarer than copper. Used for quality items.",
+				description: "Slightly rarer than copper. Used in quality items.",
 			},
 			gold: {
 				name: "Gold",
@@ -382,7 +414,7 @@ export default {
 			},
 			emerald: {
 				name: "Emerald",
-				description: "Green gemstone. Used for epic items.",
+				description: "Green gemstone. Used in epic items.",
 			},
 			diamond: {
 				name: "Diamond",
@@ -421,7 +453,7 @@ export default {
 		},
 		allMinerals: {
 			title: "All Minerals",
-			subtitle: "Learn about each mineral and its rarity",
+			subtitle: "Discover each mineral and its rarity",
 		},
 		dailyChest: {
 			title: "Daily Chest",
@@ -430,13 +462,13 @@ export default {
 			opening: "Opening...",
 			available: "Available!",
 			nextIn: "Next in:",
-			error: "Error opening chest",
+			error: "Failed to open chest",
 			opened: "Chest Opened!",
 			youGot: "You got {{count}} minerals!",
 			claim: "Claim Rewards",
-			resetTime: "Resets daily at 00:00 (GMT-3)",
+			resetTime: "Resets daily at 00:00 (UTC-3)",
 			errors: {
-				chest_cooldown: "Wait for the cooldown",
+				chest_cooldown: "Wait for cooldown",
 				failed_to_update_minerals: "Failed to update minerals",
 				failed_to_create_minerals: "Failed to create minerals",
 				failed_to_register_chest: "Failed to register chest",
@@ -445,12 +477,12 @@ export default {
 	},
 	time: {
 		now: "now",
-		minutesAgo: "{{count}}m ago",
+		minutesAgo: "{{count}}min ago",
 		hoursAgo: "{{count}}h ago",
 		daysAgo: "{{count}}d ago",
 		monthsAgo: "{{count}}mo ago",
 		yearsAgo: "{{count}}y ago",
-		minutes: "{{count}}m",
+		minutes: "{{count}}min",
 		hours: "{{count}}h",
 		days: "{{count}}d",
 		months: "{{count}}mo",
@@ -463,9 +495,9 @@ export default {
 		},
 		steam: {
 			spotlights: "Spotlights",
-			dailyDeal: "Daily Deal",
-			specials: "On Sale",
-			topSellers: "Top Sellers",
+			dailyDeal: "Daily deal",
+			specials: "Specials",
+			topSellers: "Top sellers",
 			hoursLeft: "{{count}}h left",
 			endingSoon: "Ending soon"
 		},
@@ -478,7 +510,7 @@ export default {
 		},
 		hero: {
 			title: "Discover, collect, your games.",
-			description: "Track everything you've played, are playing, or want to play. Organize your personal library, create tierlists and custom rankings, rate your favorite games, and discover what the community is enjoying. Compare your ratings with other players, explore recommendations based on your tastes, and keep everything automatically updated as you play.",
+			description: "Track everything you've played, are playing, or want to play. Organize your personal library, create tierlists and custom rankings, rate your favorite games and discover what the community is enjoying. Compare your ratings with other players, explore recommendations based on your taste and keep everything updated automatically as you play.",
 		},
 		sections: {
 			communityFavorites: "Community favorites",
@@ -515,13 +547,13 @@ export default {
 		passkeyLoading: "Please wait...",
 		passkeyError: {
 			cancelled: "Authentication cancelled or not allowed.",
-			invalidState: "This passkey was already used. Try again.",
-			notFound: "Passkey not found. Make sure you've created a passkey before.",
+			invalidState: "This passkey has already been used. Try again.",
+			notFound: "Passkey not found. Make sure you created a passkey before.",
 			generic: "Failed to sign in with passkey. Try again.",
 		},
 	},
 	footer: {
-		description: "Your personal game library. Track, rate, and discover new games.",
+		description: "Your personal game library. Track, rate and discover new games.",
 		igdb: "Data provided by IGDB",
 		about: "About",
 		badges: "Badges",
@@ -553,11 +585,11 @@ export default {
 	list: {
 		notFound: {
 			title: "List not found",
-			message: "This list doesn't exist, was removed, or is private.",
+			message: "This list doesn't exist, was removed or is private.",
 		},
 		private: {
 			title: "Private list",
-			message: "This list is private and can only be viewed by the author.",
+			message: "This list is private and can only be seen by the author.",
 		},
 		empty: {
 			owner: "This list is empty. Add some games!",
@@ -572,11 +604,11 @@ export default {
 	tierlist: {
 		notFound: {
 			title: "Tierlist not found",
-			message: "This tierlist doesn't exist, was removed, or is private.",
+			message: "This tierlist doesn't exist, was removed or is private.",
 		},
 		private: {
 			title: "Private tierlist",
-			message: "This tierlist is private and can only be viewed by the author.",
+			message: "This tierlist is private and can only be seen by the author.",
 		},
 		create: {
 			title: "Create new tierlist",
@@ -654,7 +686,7 @@ export default {
 		editor: {
 			empty: "Empty",
 			dragHere: "Drag games here",
-			untieredGames: "Unranked games",
+			untieredGames: "Untiered games",
 			of: "of",
 			searchPlaceholder: "Search game...",
 			sortDefault: "Default",
@@ -686,7 +718,7 @@ export default {
 		meta: {
 			title: "{{query}} - Search - uloggd",
 			titleDefault: "Search - uloggd",
-			description: "Search games, users, and lists on uloggd",
+			description: "Search games, users and lists on uloggd",
 		},
 		results: {
 			games: "{{count}} game",
@@ -695,7 +727,7 @@ export default {
 		},
 		empty: {
 			startTitle: "Start searching",
-			startDescription: "Type something in the search field to find games, users, or lists",
+			startDescription: "Type something in the search field to find games, users or lists",
 			noResultsTitle: "No results",
 			noResultsDescription: "We couldn't find anything for \"{{query}}\". Try using different words.",
 		},
@@ -726,7 +758,7 @@ export default {
 		},
 		header: {
 			title: "Explore",
-			subtitle: "Find games, users, and lists",
+			subtitle: "Find games, users and lists",
 			placeholder: "What are you looking for?",
 			resultsFound: "{{count}} result found",
 			resultsFound_plural: "{{count}} results found",
@@ -750,37 +782,12 @@ export default {
 			descriptions: {
 				daily_chest: "Daily chest",
 				shop_item: "Shop item:",
-				shop_gift: "Gift to:"
+				shop_gift: "Gift for:"
 			},
 		},
 		notFound: {
 			title: "User not found",
-			message: "The user \"{{username}}\" doesn't exist or was removed.",
-		},
-		followModal: {
-			followers: "Followers",
-			following: "Following",
-		},
-		navigation: {
-			profile: "Profile",
-			games: "Games",
-			lists: "Lists",
-			tierlists: "Tierlists",
-			reviews: "Reviews",
-			likes: "Likes",
-			transactions: "Transactions",
-		},
-		header: {
-			banned: {
-				title: "Suspended account",
-				description: "This user has been suspended for violating the platform's terms.",
-				reason: "Reason: {{reason}}",
-			},
-			lastSeen: "Last seen: {{time}}",
-		},
-		bio: {
-			title: "About",
-			copyMarkdown: "Copy Markdown code",
+			message: "The user \"{{username}}\" doesn't exist or has been removed.",
 		},
 		followModal: {
 			followers: "Followers",
@@ -788,6 +795,35 @@ export default {
 			searchPlaceholder: "Search user...",
 			noResults: "No users found",
 			empty: "No users",
+		},
+		navigation: {
+			profile: "Profile",
+			games: "Games",
+			journeys: "Journeys",
+			lists: "Lists",
+			tierlists: "Tierlists",
+			reviews: "Reviews",
+			likes: "Likes",
+			transactions: "Transactions",
+		},
+		journeys: {
+			empty: "No journeys recorded yet.",
+			playing: "Currently playing",
+			completed: "Completed",
+			session: "session",
+			sessions: "sessions",
+		},
+		header: {
+			banned: {
+				title: "Account suspended",
+				description: "This user has been suspended for violating platform terms.",
+				reason: "Reason: {{reason}}",
+			},
+			lastSeen: "Last seen: {{time}}",
+		},
+		bio: {
+			title: "About",
+			copyMarkdown: "Copy Markdown code",
 		},
 		lists: {
 			title: "Lists",
@@ -840,7 +876,7 @@ export default {
 			},
 		},
 		stats: {
-			gameStats: "Game Stats",
+			gameStats: "Statistics",
 			links: "Links",
 			followers: "followers",
 			following: "following",
@@ -867,7 +903,7 @@ export default {
 				fallback: "No games here.",
 				playing: {
 					own: "You're not playing anything right now.",
-					other: "{{username}} isn't playing anything right now.",
+					other: "{{username}} is not playing anything right now.",
 				},
 				played: {
 					own: "You haven't played any games yet.",
@@ -875,11 +911,11 @@ export default {
 				},
 				backlog: {
 					own: "Your backlog is empty.",
-					other: "{{username}} has no games in the backlog.",
+					other: "{{username}} has no games in backlog.",
 				},
 				wishlist: {
 					own: "Your wishlist is empty.",
-					other: "{{username}} has no games in the wishlist.",
+					other: "{{username}} has no games in wishlist.",
 				},
 				dropped: {
 					own: "You haven't dropped any games.",
@@ -903,19 +939,19 @@ export default {
 		},
 		developer: {
 			title: "Developer",
-			description: "Development team member responsible for creating and maintaining the platform."
+			description: "Member of the development team responsible for creating and maintaining the platform."
 		},
 		moderator: {
 			title: "Moderator",
-			description: "Moderation team member responsible for enforcing community guidelines."
+			description: "Member of the moderation team responsible for enforcing community guidelines."
 		},
 		trainee_moderator: {
 			title: "Trainee Moderator",
-			description: "Moderation team member in training."
+			description: "Member in training of the moderation team."
 		},
 		verified: {
 			title: "Verified",
-			description: "Confirmed identity as a content creator, personality, or public figure."
+			description: "Identity confirmed as content creator, personality or public figure in the community."
 		},
 		designer: {
 			title: "Designer",
@@ -923,10 +959,10 @@ export default {
 		},
 		meta: {
 			title: "Badges - uloggd",
-			description: "Discover all available badges on uloggd and what each one represents.",
+			description: "Discover all badges available on uloggd and what each one represents.",
 		},
 		title: "Badges",
-		subtitle: "Badges that represent roles, achievements, and recognition on the platform.",
+		subtitle: "Badges that represent roles, achievements and recognition on the platform.",
 		categories: {
 			team: {
 				title: "Team",
@@ -939,9 +975,9 @@ export default {
 		},
 		verification: {
 			title: "Profile verification",
-			description: "Content creators, active community members, and public figures can request a verification badge.",
+			description: "Content creators, active community members and public figures can request the verification badge.",
 			request: "Request",
-			inReview: "Under review",
+			inReview: "In review",
 		},
 		modal: {
 			close: "Close",
@@ -949,12 +985,12 @@ export default {
 			request: {
 				title: "Request verification",
 				subtitle: "Describe your role in the gaming community.",
-				placeholder: "E.g.: I've been an active gamer for 5 years, I participate in RPG communities, content creator with 10k followers...",
+				placeholder: "e.g. I've been an active gamer for 5 years, I participate in RPG communities, content creator with 10k followers...",
 				cancel: "Cancel",
 				submit: "Submit",
 			},
 			pending: {
-				title: "Request under review",
+				title: "Request in review",
 				description: "Your request is being reviewed by the team. You will be notified when there's an update.",
 				confirm: "Got it",
 			},
@@ -1008,7 +1044,7 @@ export default {
 				translating: "Translating...",
 				showOriginal: "Show original",
 				showTranslation: "Show translation",
-				autoTranslated: "Automatically translated",
+				autoTranslated: "Auto-translated",
 			},
 			info: {
 				developer: "Developer",
@@ -1019,7 +1055,7 @@ export default {
 				engine: "Engine",
 			},
 			media: {
-				title: "Screenshots/Artwork",
+				title: "Screenshots/Artworks",
 				image: "{{count}} image",
 				image_plural: "{{count}} images",
 				viewAll: "View all ({{count}})",
@@ -1051,15 +1087,15 @@ export default {
 				standalone: "Standalone",
 				remakes: "Remakes",
 				remasters: "Remasters",
-				altNames: "Alternative Names",
+				altNames: "Alt Names",
 				videos: "Videos",
 				similar: "Similar",
 			},
 		},
 		hltb: {
 			title: "How long to beat",
-			disclaimer: "The times shown are estimates based on data reported by the HowLongToBeat community and may not accurately reflect your experience.",
-			disclaimerFull: "The times shown are estimates based on data reported by the HowLongToBeat community and may not accurately reflect your experience. Actual time may vary depending on play style, difficulty level, and other individual factors.",
+			disclaimer: "Times shown are estimates based on data reported by the HowLongToBeat community and may not accurately reflect your experience.",
+			disclaimerFull: "Times shown are estimates based on data reported by the HowLongToBeat community and may not accurately reflect your experience. Actual time may vary depending on play style, difficulty level and other individual factors.",
 			noData: "No time data available",
 			categories: {
 				main: "Main Story",
@@ -1146,15 +1182,15 @@ export default {
 		cropTitle: "Crop banner",
 		errors: {
 			invalidFile: "Please select a valid image file.",
-			fileTooLarge: "Image must be 10MB or less.",
-			fileReadError: "Error reading the file.",
+			fileTooLarge: "Image must be under 10MB.",
+			fileReadError: "Failed to read file.",
 			invalidUrl: "The URL does not point to a valid image.",
-			urlTooLarge: "The image is too large (10MB max).",
-			urlProcessError: "Error processing the image.",
-			urlLoadError: "Could not load the image from this URL.",
-			processedTooLarge: "The processed image is too large. Try a smaller image.",
+			urlTooLarge: "Image is too large (max 10MB).",
+			urlProcessError: "Failed to process image.",
+			urlLoadError: "Could not load image from this URL.",
+			processedTooLarge: "Processed image is too large. Try a smaller image.",
 		},
-		discarded: "Change discarded.",
+		discarded: "Changes discarded.",
 	},
 	avatar: {
 		add: "Click to add an avatar",
@@ -1171,15 +1207,15 @@ export default {
 		cropTitle: "Crop avatar",
 		errors: {
 			invalidFile: "Please select a valid image file.",
-			fileTooLarge: "Image must be 10MB or less.",
-			fileReadError: "Error reading the file.",
+			fileTooLarge: "Image must be under 10MB.",
+			fileReadError: "Failed to read file.",
 			invalidUrl: "The URL does not point to a valid image.",
-			urlTooLarge: "The image is too large (10MB max).",
-			urlProcessError: "Error processing the image.",
-			urlLoadError: "Could not load the image from this URL.",
-			processedTooLarge: "The processed image is too large. Try a smaller image.",
+			urlTooLarge: "Image is too large (max 10MB).",
+			urlProcessError: "Failed to process image.",
+			urlLoadError: "Could not load image from this URL.",
+			processedTooLarge: "Processed image is too large. Try a smaller image.",
 		},
-		discarded: "Change discarded.",
+		discarded: "Changes discarded.",
 	},
 	settings: {
 		success: {
@@ -1190,16 +1226,16 @@ export default {
 			bioUpdated: "Bio updated successfully!",
 			pronounUpdated: "Pronoun updated successfully!",
 			decorationUpdated: "Decoration updated successfully!",
-			usernameUpdated: "Name changed!",
+			usernameUpdated: "Username changed!",
 		},
 		errors: {
-			avatarSave: "Error saving avatar. Please try again.",
-			bannerSave: "Error saving banner. Please try again.",
-			bioSave: "Error saving bio.",
-			pronounSave: "Error saving pronoun.",
-			decorationSave: "Error saving decoration.",
+			avatarSave: "Failed to save avatar. Try again.",
+			bannerSave: "Failed to save banner. Try again.",
+			bioSave: "Failed to save bio.",
+			pronounSave: "Failed to save pronoun.",
+			decorationSave: "Failed to save decoration.",
 			usernameSave: "Failed to change.",
-			accountDelete: "Error deleting account. Please try again.",
+			accountDelete: "Failed to delete account. Try again.",
 		},
 		layout: {
 			title: "Settings",
@@ -1245,7 +1281,7 @@ export default {
 			remove: {
 				confirm: "Are you sure you want to remove \"{{name}}\"?",
 			},
-			hint: "You'll be asked to use your biometrics, PIN or security key.",
+			hint: "You will be asked to use your device's biometrics, PIN or security key.",
 			success: {
 				added: "Passkey added successfully!",
 				removed: "Passkey removed successfully!",
@@ -1254,7 +1290,7 @@ export default {
 				loadFailed: "Failed to load passkeys",
 				notAuthenticated: "Not authenticated",
 				cancelled: "Operation cancelled or not allowed",
-				notSupported: "Your browser doesn't support passkeys",
+				notSupported: "Your browser does not support passkeys",
 				addFailed: "Failed to add passkey",
 				removeFailed: "Failed to remove passkey",
 				emptyName: "Enter a device name",
@@ -1274,24 +1310,24 @@ export default {
 		},
 		account: {
 			title: "My account",
-			description: "Information about your account linked to Discord.",
+			description: "Information about your Discord-linked account."
 		},
 		appearance: {
 			title: "Appearance",
-			description: "Customize how your profile looks.",
+			description: "Customize how your profile looks."
 		},
 		connections: {
 			title: "Connections",
-			description: "Connect your accounts to sync data and unlock features.",
+			description: "Connect your accounts to sync data and unlock features."
 		},
 		integrations: {
 			title: "Integrations",
-			description: "Import your data from other platforms.",
+			description: "Import your data from other platforms."
 		},
 		pronoun: {
 			title: "Pronoun",
 			description: "Displayed on your profile next to your name.",
-			placeholder: "e.g.: he/him, she/her...",
+			placeholder: "e.g. he/him, she/her...",
 		},
 		sessions: {
 			title: "Session",
@@ -1331,7 +1367,7 @@ export default {
 			description: "Irreversible actions. Be sure before proceeding.",
 			deleteAccount: "Delete my account",
 			confirmTitle: "Are you absolutely sure?",
-			confirmDescription: "This action is irreversible. All your data, including saved games, ratings, followers, and lists will be permanently deleted.",
+			confirmDescription: "This action is irreversible. All your data, including saved games, ratings, followers and lists will be permanently deleted.",
 			cancel: "Cancel",
 			deletePermanent: "Delete permanently",
 		},
@@ -1348,8 +1384,8 @@ export default {
 			title: "Backloggd",
 			info: {
 				text: "Import your games from Backloggd to uloggd.",
-				subtext: "Games marked as played, playing, backlog, and wishlist will be imported. Games already in your account will be skipped.",
-				usernameLabel: "Backloggd username",
+				subtext: "Games marked as played, playing, backlog and wishlist will be imported. Games already in your account will be skipped.",
+				usernameLabel: "Backloggd Username",
 				importing: "Importing",
 				searching: "Searching games",
 				importButton: "Import",
@@ -1359,9 +1395,9 @@ export default {
 				noGames: "No games found to import.",
 				userNotFound: "User not found on Backloggd.",
 				alreadyRunning: "An import is already in progress.",
-				startError: "Error starting import.",
-				cancelError: "Error cancelling.",
-				completed: "Import completed! {{count}} games imported.",
+				startError: "Failed to start import.",
+				cancelError: "Failed to cancel.",
+				completed: "Import complete! {{count}} games imported.",
 				status: {
 					scraping: "Searching games...",
 					running: "Importing...",
@@ -1390,8 +1426,8 @@ export default {
 			disconnectedDescription: "Connect your Twitch account to show when you're live and sync your data.",
 			benefitsTitle: "What you get:",
 			benefits: {
-				liveIndicator: "\"Live\" indicator when you're streaming",
-				channelLink: "Direct link to your channel on your profile",
+				liveIndicator: "\"Live\" indicator when streaming",
+				channelLink: "Direct link to your channel on profile",
 			},
 		},
 		steam: {
@@ -1419,7 +1455,7 @@ export default {
 		processing: "Processing...",
 		tooLarge: "Image too large ({{size}}MB). Maximum: {{max}}MB. Try a smaller image.",
 		gifTooLarge: "GIF too large ({{size}}MB). Maximum: {{max}}MB. Try a shorter or smaller GIF.",
-		processingFailed: "Failed to process image. Please try again."
+		processingFailed: "Failed to process image. Try again."
 	},
 	lists: {
 		addGame: {
@@ -1458,7 +1494,7 @@ export default {
 			},
 			errors: {
 				requiredTitle: "Title is required",
-				createError: "Error creating list",
+				createError: "Failed to create list",
 				notAuthenticated: "Not authenticated",
 			},
 			actions: {
@@ -1476,7 +1512,7 @@ export default {
 			confirmButton: "Delete list",
 			errors: {
 				notAuthenticated: "Not authenticated",
-				deleteError: "Error deleting",
+				deleteError: "Failed to delete",
 			},
 		},
 		edit: {
@@ -1494,7 +1530,7 @@ export default {
 			errors: {
 				requiredTitle: "Title is required",
 				notAuthenticated: "Not authenticated",
-				updateError: "Error updating",
+				updateError: "Failed to update",
 			},
 			actions: {
 				cancel: "Cancel",
@@ -1511,7 +1547,7 @@ export default {
 			title: "Reorder games",
 			hint: "Drag to reorder, use arrows or click the number to edit.",
 			search: "Search game...",
-			filteredHint: "Drag disabled while searching",
+			filteredHint: "Drag disabled during search",
 			noResults: "No games found",
 			totalItems: "{{count}} games",
 			cancel: "Cancel",
@@ -1536,7 +1572,7 @@ export default {
 		},
 	},
 	reviews: {
-		communityReviews: "Community reviews",
+		communityReviews: "Community Reviews",
 		like: "Like",
 		liked: "Liked",
 		likesCount: "like",
@@ -1577,11 +1613,11 @@ export default {
 			},
 			shelved: {
 				label: "Shelved",
-				sub: "Didn't finish but might come back",
+				sub: "Didn't finish but might return",
 			},
 			abandoned: {
 				label: "Abandoned",
-				sub: "Didn't finish and won't come back",
+				sub: "Didn't finish and won't return",
 			},
 		},
 	},
@@ -1601,7 +1637,7 @@ export default {
 			errors: {
 				invalidStartDate: "Invalid start date.",
 				invalidEndDate: "Invalid end date.",
-				endBeforeStart: "End date cannot be before start date.",
+				endBeforeStart: "End date cannot be before start.",
 				notLoggedIn: "You need to be logged in.",
 				saveFailed: "Failed to save.",
 				deleteFailed: "Failed to delete.",
@@ -1618,10 +1654,10 @@ export default {
 			addButton: "Add aspect",
 			suggestions: "Suggestions",
 			emptyField: "Empty field",
-			close: "Close",
 			namePlaceholder: "Aspect name",
 			commentPlaceholder: "Comment on {{label}}...",
 			commentPlaceholderDefault: "Comment on this aspect...",
+			close: "Close",
 			suggestion: {
 				gameplay: "Gameplay",
 				story: "Story",
@@ -1641,7 +1677,7 @@ export default {
 			startedOn: "Started on",
 			finishedOn: "Finished on",
 			errors: {
-				future: "Date in the future",
+				future: "Future date",
 				tooOld: "Date too old",
 				finishBeforeStart: "Finish before start",
 			},
@@ -1655,13 +1691,13 @@ export default {
 				replay: "Replay",
 			},
 			journey: {
-	      title: "Journey",
-	      description: "Attach a logged journey to this review.",
-	      loading: "Loading journeys...",
-	      noJourneys: "No journeys logged for this game.",
-	      session: "session",
-	      sessions: "sessions",
-	    },
+				title: "Journey",
+				description: "Attach a recorded journey to this review.",
+				loading: "Loading journeys...",
+				noJourneys: "No journeys recorded for this game.",
+				session: "session",
+				sessions: "sessions",
+			},
 			playtime: {
 				title: "Time played",
 				description: "How long did you spend playing?",
@@ -1914,10 +1950,10 @@ export default {
 				},
 				imageCustom: {
 					description: "Image with custom size.",
-					example: "<img src=\"https://example.com/img.png\" alt=\"desc\" width=\"400\" />",
+					example: '<img src="https://example.com/img.png" alt="desc" width="400" />',
 				},
 				youtube: {
-					description: "Paste a YouTube link and it automatically becomes a player.",
+					description: "Paste a YouTube link and it becomes a player automatically.",
 					example: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 				},
 				codeBlock: {
@@ -1943,7 +1979,7 @@ export default {
 					example: ":::info\nImportant information\n:::",
 				},
 				alertNote: {
-					description: "Complementary note or observation.",
+					description: "Supplementary note or observation.",
 					example: ":::note\nThis is just a note.\n:::",
 				},
 				alertTip: {
@@ -1951,12 +1987,12 @@ export default {
 					example: ":::tip\nUse ice weapons against fire enemies.\n:::",
 				},
 				alertImportant: {
-					description: "Important information that deserves emphasis.",
+					description: "Important information that deserves highlighting.",
 					example: ":::important\nThis is very relevant.\n:::",
 				},
 				alertWarning: {
 					description: "Important warning.",
-					example: ":::warning\nBe careful in this area.\n:::",
+					example: ":::warning\nBe careful with this area.\n:::",
 				},
 				alertDanger: {
 					description: "Critical or dangerous alert.",
@@ -1964,7 +2000,7 @@ export default {
 				},
 				alertSuccess: {
 					description: "Success or completion message.",
-					example: ":::success\nMission accomplished!\n:::",
+					example: ":::success\nMission complete!\n:::",
 				},
 				alertQuestion: {
 					description: "Highlighted question or reflection.",
@@ -1995,7 +2031,7 @@ export default {
 					example: "!game:grid(celeste, hollow-knight+)",
 				},
 				gameGridAuto: {
-					description: "Game showcase with infinite automatic carousel. Also supports + for favorites.",
+					description: "Game showcase with infinite auto carousel. Also supports + for favorites.",
 					example: "!game:grid-auto(celeste, hollow-knight+, hades)",
 				},
 				mention: {
@@ -2008,10 +2044,10 @@ export default {
 				},
 				spoilerImg: {
 					description: "Inserts an image with spoiler blur.",
-					example: "<spoilerimg src=\"https://example.com/img.png\" alt=\"desc\" width=\"400\" />",
+					example: '<spoilerimg src="https://example.com/img.png" alt="desc" width="400" />',
 				},
 				center: {
-					description: "Centers the content (text or images).",
+					description: "Centers content (text or images).",
 					example: "<center>Centered text</center>",
 					preview: "<center>Centered text</center>",
 				},
@@ -2034,7 +2070,7 @@ export default {
 	},
 	errorBoundary: {
 		title: "Something went very wrong!",
-		description: "Looks like something broke. Try reloading the page.",
+		description: "Looks like something broke here. Try reloading the page.",
 		imageAlt: "Error",
 		reload: "Reload",
 		back: "Back",
@@ -2047,7 +2083,7 @@ export default {
 			ban: "Ban user",
 			unban: "Unban user",
 			unbanSuccess: "User unbanned.",
-			unbanError: "Error unbanning.",
+			unbanError: "Failed to unban.",
 		},
 		ban: {
 			title: "Ban @{{username}}",
@@ -2067,7 +2103,7 @@ export default {
 			cancel: "Cancel",
 			confirm: "Confirm Ban",
 			success: "User banned.",
-			error: "Error banning.",
+			error: "Failed to ban.",
 		},
 		verification: {
 			title: "Verification",
@@ -2079,7 +2115,7 @@ export default {
 			rejectPlaceholder: "Rejection reason (optional)...",
 			approveSuccess: "User verified!",
 			rejectSuccess: "Request rejected.",
-			error: "Error processing.",
+			error: "Failed to process.",
 		},
 	},
 }
