@@ -1579,6 +1579,8 @@ export default {
 		likesCount: "like",
 		likesCount_plural: "likes",
 		unknownUser: "User",
+		session: "session",
+		sessions: "sessions",
 		sort: {
 			recent: "Recent",
 			popular: "Popular",
