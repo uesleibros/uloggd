@@ -66,6 +66,7 @@ export function JournalViewModal({ journeyId, onClose }) {
 
   const stats = journey?.stats
   const user = journey?.users
+  const game = journey?.games
 
   const years = []
   for (let y = today.getFullYear() + 1; y >= 1970; y--) years.push(y)
@@ -84,25 +85,49 @@ export function JournalViewModal({ journeyId, onClose }) {
         ) : (
           <>
             <div
-              className="flex items-center justify-between gap-4 px-4 pb-3 border-b border-zinc-700 flex-shrink-0 md:px-5"
+              className="flex items-start justify-between gap-4 px-4 pb-3 border-b border-zinc-700 flex-shrink-0 md:px-5"
               style={{ paddingTop: "max(1rem, env(safe-area-inset-top, 1rem))" }}
             >
-              <div className="min-w-0">
-                <h2 className="text-lg md:text-xl font-semibold text-white truncate">{journey.title}</h2>
-                {user && (
+              <div className="flex items-start gap-3 min-w-0">
+                {game?.cover_url && (
                   <Link
-                    to={`/u/${user.username}`}
+                    to={`/game/${game.slug}`}
                     onClick={onClose}
-                    className="flex items-center gap-2 mt-1 group w-fit"
+                    className="flex-shrink-0"
                   >
                     <img
-                      src={user.avatar}
-                      alt=""
-                      className="w-5 h-5 rounded-full bg-zinc-800"
+                      src={game.cover_url}
+                      alt={game.name}
+                      className="w-12 h-16 object-cover rounded-lg border border-zinc-700 hover:border-zinc-500 transition-colors"
                     />
-                    <span className="text-sm text-zinc-400 group-hover:text-white transition-colors">{user.username}</span>
                   </Link>
                 )}
+                <div className="min-w-0">
+                  <h2 className="text-lg md:text-xl font-semibold text-white truncate">{journey.title}</h2>
+                  {game && (
+                    <Link
+                      to={`/game/${game.slug}`}
+                      onClick={onClose}
+                      className="text-sm text-zinc-400 hover:text-white transition-colors truncate block"
+                    >
+                      {game.name}
+                    </Link>
+                  )}
+                  {user && (
+                    <Link
+                      to={`/u/${user.username}`}
+                      onClick={onClose}
+                      className="flex items-center gap-2 mt-1.5 group w-fit"
+                    >
+                      <img
+                        src={user.avatar}
+                        alt=""
+                        className="w-5 h-5 rounded-full bg-zinc-800"
+                      />
+                      <span className="text-sm text-zinc-500 group-hover:text-white transition-colors">{user.username}</span>
+                    </Link>
+                  )}
+                </div>
               </div>
               <button
                 onClick={onClose}
