@@ -1,5 +1,48 @@
 import { supabase } from "#lib/supabase-ssr.js"
+import { query } from "#lib/igdbWrapper.js"
+import { getCache, setCache } from "#lib/cache.js"
 import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
+
+async function getGamesBySlug(slugs) {
+  if (!slugs.length) return {}
+
+  const games = {}
+
+  const uncached = []
+  for (const slug of slugs) {
+    const cacheKey = `igdb_game_mini_${slug}`
+    const cached = await getCache(cacheKey)
+    if (cached) {
+      games[slug] = cached
+    } else {
+      uncached.push(slug)
+    }
+  }
+
+  if (uncached.length > 0) {
+    try {
+      const slugList = uncached.map(s => `"${s}"`).join(",")
+      const data = await query("games", `
+        fields name, slug, cover.url, cover.image_id;
+        where slug = (${slugList});
+        limit ${uncached.length};
+      `)
+
+      for (const g of data) {
+        const result = {
+          id: g.id,
+          name: g.name,
+          slug: g.slug,
+          cover_url: g.cover?.url?.replace("t_thumb", "t_cover_big") || null,
+        }
+        games[g.slug] = result
+        await setCache(`igdb_game_mini_${g.slug}`, result, 86400)
+      }
+    } catch {}
+  }
+
+  return games
+}
 
 export async function handleListByUser(req, res) {
   const { username, userId, page = 1, limit = 20 } = req.query
@@ -47,6 +90,9 @@ export async function handleListByUser(req, res) {
 
     if (error) throw error
 
+    const slugs = [...new Set((data || []).map(j => j.game_slug).filter(Boolean))]
+    const gamesMap = await getGamesBySlug(slugs)
+
     const journeys = (data || []).map(j => {
       const entries = j.journey_entries || []
       const totalMinutes = entries.reduce((acc, e) => acc + (e.hours || 0) * 60 + (e.minutes || 0), 0)
@@ -76,6 +122,7 @@ export async function handleListByUser(req, res) {
         avatar: user.avatar || DEFAULT_AVATAR_URL,
       },
       journeys,
+      games: gamesMap,
       total: count || 0,
       page: pageNum,
       totalPages: Math.ceil((count || 0) / limitNum),
