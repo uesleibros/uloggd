@@ -36,11 +36,13 @@ export function ProfileContent({
   tierlistsTotal,
   onTierlistsPageChange,
   journeys,
+  journeyGames,
   loadingJourneys,
   journeysPage,
   journeysTotalPages,
   journeysTotal,
   onJourneysPageChange,
+  onJourneysUpdate,
   onEditProfile,
 }) {
   const { t } = useTranslation("profile")
@@ -84,11 +86,13 @@ export function ProfileContent({
       {activeSection === "journeys" && (
         <JourneysSection
           journeys={journeys}
+          games={journeyGames}
           loading={loadingJourneys}
           total={journeysTotal}
           currentPage={journeysPage}
           totalPages={journeysTotalPages}
           onPageChange={onJourneysPageChange}
+          onUpdate={onJourneysUpdate}
         />
       )}
 
