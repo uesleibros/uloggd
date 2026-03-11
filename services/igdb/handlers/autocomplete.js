@@ -8,24 +8,42 @@ export async function handleAutocomplete(req, res) {
   const sanitized = q.trim().replace(/"/g, '\\"')
 
   try {
-    const data = await query("games", `
-      search "${sanitized}";
-      fields name, slug, first_release_date,
-        cover.url, cover.image_id,
-        platforms.id,
-        total_rating, total_rating_count;
-      where cover != null;
-      limit 25;
-    `)
+    const [popular, all] = await Promise.all([
+      query("games", `
+        search "${sanitized}";
+        fields name, slug, first_release_date,
+          cover.url, cover.image_id,
+          platforms.id,
+          total_rating, total_rating_count;
+        where cover != null
+          & total_rating_count > 5;
+        limit 15;
+      `),
+      query("games", `
+        search "${sanitized}";
+        fields name, slug, first_release_date,
+          cover.url, cover.image_id,
+          platforms.id,
+          total_rating, total_rating_count;
+        where cover != null;
+        limit 20;
+      `)
+    ])
 
-    const games = data.map(g => {
+    const seen = new Set()
+    const results = []
+
+    ;[...popular, ...all].forEach(g => {
+      if (seen.has(g.id)) return
+      seen.add(g.id)
+
       const slugs = new Set()
       g.platforms?.forEach(p => {
         const slug = PLATFORMS_MAP[String(p.id)]
         if (slug) slugs.add(slug)
       })
 
-      return {
+      results.push({
         id: g.id,
         name: g.name,
         slug: g.slug,
@@ -38,10 +56,11 @@ export async function handleAutocomplete(req, res) {
         })),
         cover: g.cover?.url
           ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_cover_big") }
-          : null      }
+          : null
+      })
     })
 
-    res.json(games)
+    res.json(results.slice(0, 20))
   } catch (e) {
     console.error(e)
     res.status(500).json({ error: "fail" })
