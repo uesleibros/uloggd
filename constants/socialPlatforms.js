@@ -1,5 +1,5 @@
 import { Globe, Twitter, Instagram, Youtube, Github, Linkedin } from "lucide-react"
-import { TwitchIcon, SteamIcon, NintendoIcon } from "#constants/customIcons"
+import { TwitchIcon, SteamIcon, NintendoIcon, PlayStationIcon } from "#constants/customIcons"
 
 export const SOCIAL_PLATFORMS = {
   twitter: {
@@ -81,6 +81,13 @@ export const CONNECTION_PLATFORMS = {
     color: "hover:text-[#66c0f4]",
     getUrl: (steamId) => `https://steamcommunity.com/profiles/${steamId}`,
     getDisplay: (steamId, displayName) => displayName || steamId,
+  },
+  psn: {
+    icon: PlayStationIcon,
+    label: "PlayStation Network",
+    color: "hover:text-[#0070cc]",
+    getUrl: (onlineId) => `https://psnprofiles.com/${onlineId}`,
+    getDisplay: (onlineId, displayName) => displayName || onlineId,
   },
   nintendo: {
     icon: NintendoIcon,
