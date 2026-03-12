@@ -18,7 +18,7 @@ import { supabase } from "#lib/supabase"
 import { useDateTime } from "#hooks/useDateTime"
 import { PlayStationIcon } from "#constants/customIcons"
 
-const API_BASE = "/api/psn-import/@me"
+const API_BASE = "/api/psnImport/@me"
 
 async function getAuthHeaders() {
   const { data: { session } } = await supabase.auth.getSession()
