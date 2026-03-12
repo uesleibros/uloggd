@@ -767,6 +767,7 @@ export default {
 		},
 	},
 	profile: {
+		psnTrophies: "Troféus PlayStation",
 		transactions: {
 			empty: {
 				title: "Nenhuma transação ainda",
@@ -2149,14 +2150,3 @@ export default {
 		},
 	},
 }
-
-
-
-
-
-
-
-
-
-
-
