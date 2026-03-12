@@ -1473,6 +1473,34 @@ export default {
 				failed: "{{count}} erros",
 			},
 		},
+		psnImport: {
+		  title: "Importar do PlayStation",
+		  description: "Importe seus jogos da PlayStation Network para sua biblioteca.",
+		  subtext: "Jogos com progresso de troféus serão importados. Jogos já existentes serão ignorados.",
+		  connectFirst: "Conecte sua conta PSN primeiro para importar jogos.",
+		  importButton: "Importar",
+		  fetching: "Buscando jogos da PSN...",
+		  importing: "Importando jogos...",
+		  cancel: "Cancelar importação",
+		  retry: "Tentar novamente",
+		  imported: "{{count}} importados",
+		  skipped: "{{count}} ignorados",
+		  failed: "{{count}} erros",
+		  completed: "Importação concluída! {{count}} jogos importados.",
+		  noGames: "Nenhum jogo encontrado para importar.",
+		  notConnected: "PSN não conectada.",
+		  alreadyRunning: "Já existe uma importação em andamento.",
+		  startError: "Erro ao iniciar importação.",
+		  cancelError: "Erro ao cancelar.",
+		  cancelled: "Importação cancelada.",
+		  status: {
+		    fetching: "Buscando...",
+		    running: "Importando...",
+		    completed: "Concluída",
+		    failed: "Falhou",
+		    cancelled: "Cancelada",
+		  },
+		},
 		avatarSection: {
 			title: "Avatar",
 			description: "Personalize o avatar do seu perfil. Recomendado: 512x512px.",
@@ -2210,5 +2238,6 @@ export default {
 		},
 	},
 }
+
 
 
