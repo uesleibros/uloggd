@@ -767,6 +767,7 @@ export default {
 		},
 	},
 	profile: {
+		psnTrophies: "PlayStation Trophies",
 		transactions: {
 			empty: {
 				title: "No transactions yet",
