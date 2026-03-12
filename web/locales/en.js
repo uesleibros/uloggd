@@ -1440,6 +1440,32 @@ export default {
 			description: "Connect your Steam account to display your games and stats on your profile.",
 			idLabel: "ID:",
 		},
+	  psn: {
+	    title: "PlayStation Network",
+	    description: "Connect your PSN account to import your games and trophies",
+	    connect: "Connect PSN",
+	    disconnect: "Disconnect",
+	    connected: "Connected",
+	    invalidToken: "Invalid token. Make sure you copied the complete code.",
+	    connectionError: "Connection failed. Please try again.",
+	    modal: {
+	      title: "Connect PlayStation",
+	      subtitle: "Import your games and trophies",
+	      step1: "Click below to open the PlayStation login page:",
+	      step2: "Log in with your PlayStation account (if not already logged in)",
+	      step3: "Copy the code that appears (just the value inside the quotes):",
+	      step4: "Paste the code below:",
+	      placeholder: "Paste your NPSSO token here...",
+	      openPSN: "Open PlayStation",
+	      copyUrl: "Copy URL",
+	      copied: "Copied!",
+	      validToken: "Valid token",
+	      cancel: "Cancel",
+	      connect: "Connect",
+	      connecting: "Connecting...",
+	      betaWarning: "This feature is in beta. The token expires after ~60 days and you'll need to reconnect."
+	    }
+	  },
 		nintendo: {
 			title: "Nintendo Switch",
 			connected: "Connected",
