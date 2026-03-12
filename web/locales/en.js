@@ -767,7 +767,6 @@ export default {
 		},
 	},
 	profile: {
-		psnTrophies: "PlayStation Trophies",
 		transactions: {
 			empty: {
 				title: "No transactions yet",
@@ -879,6 +878,7 @@ export default {
 			},
 		},
 		stats: {
+			psnTrophies: "PlayStation Trophies",
 			gameStats: "Statistics",
 			links: "Links",
 			followers: "followers",
