@@ -18,7 +18,7 @@ export async function handleTrophies(req, res) {
 			.maybeSingle()
 
 		if (error || !connection) {
-			return res.status(401).json({ error: "PSN not connected" })
+			return res.status(401).json({ error: "PSN not connected", notConnected: true })
 		}
 
 		const accessToken = await getPsnToken(userId)
@@ -35,21 +35,29 @@ export async function handleTrophies(req, res) {
 		const data = await response.json()
 
 		if (!response.ok) {
+			console.error("PSN API error:", data)
 			throw new Error("Failed to fetch trophies")
 		}
 
 		const trophies = (data.trophies || []).map(trophy => ({
-			id: trophy.trophyId,
-			name: trophy.trophyName,
-			description: trophy.trophyDetail,
-			type: trophy.trophyType,
-			iconUrl: trophy.trophyIconUrl,
-			earned: trophy.earned,
-			earnedAt: trophy.earnedDateTime,
-			rarity: trophy.trophyEarnedRate
+			trophyId: trophy.trophyId,
+			trophyName: trophy.trophyName,
+			trophyDetail: trophy.trophyDetail,
+			trophyType: trophy.trophyType,
+			trophyIconUrl: trophy.trophyIconUrl,
+			trophyHidden: trophy.trophyHidden || false,
+			earned: trophy.earned || false,
+			earnedDateTime: trophy.earnedDateTime || null,
+			trophyEarnedRate: trophy.trophyEarnedRate || "0",
+			trophyRare: trophy.trophyRare || 0,
+			trophyGroupId: trophy.trophyGroupId || "default"
 		}))
 
-		res.json({ trophies, total: data.totalItemCount || trophies.length })
+		res.json({ 
+			trophies, 
+			total: data.totalItemCount || trophies.length,
+			notConnected: false 
+		})
 	} catch (err) {
 		console.error("Erro ao buscar troféus PSN:", err)
 		res.status(500).json({ error: "Failed to fetch trophies" })
