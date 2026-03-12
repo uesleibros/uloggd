@@ -67,8 +67,10 @@ export default function PlayStationSection() {
   }
 
   function validateToken(token) {
-    if (!token || token.length < 50) return false
-    if (!token.startsWith("eyJ")) return false
+    if (!token) return false
+    const trimmed = token.trim()
+    if (trimmed.length < 60) return false
+    if (!/^[a-zA-Z0-9]+$/.test(trimmed)) return false
     return true
   }
 
