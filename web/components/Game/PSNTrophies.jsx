@@ -505,9 +505,17 @@ export default function PSNTrophies({ userId, compact = false }) {
   )
 }
 
-export function GamePSNTrophies({ gameId, gameName, gameIcon }) {
+function normalizeGameName(name) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+    .replace(/remastered|remake|edition|goty|deluxe|ultimate|definitive/g, "")
+}
+
+export function GamePSNTrophies({ gameName, gameIcon }) {
   const { t } = useTranslation("trophies.gameSection")
   const { user } = useAuth()
+  const [psnGame, setPsnGame] = useState(null)
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
@@ -516,31 +524,64 @@ export function GamePSNTrophies({ gameId, gameName, gameIcon }) {
   const [showAll, setShowAll] = useState(false)
 
   useEffect(() => {
-    if (!gameId) return
+    if (!user?.user_id || !gameName) {
+      setLoading(false)
+      return
+    }
 
     setLoading(true)
+    setPsnGame(null)
     setData(null)
     setSelected(null)
     setFilter("all")
     setTypeFilter("all")
     setShowAll(false)
 
-    const fetchTrophies = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("/api/psn/trophies", {
+        const gamesRes = await fetch("/api/psn/games", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: user?.user_id, gameId })
+          body: JSON.stringify({ userId: user.user_id })
         })
-        const json = await res.json()
-        setData(json)
-      } catch {} finally {
+        const gamesData = await gamesRes.json()
+
+        if (!gamesData.games?.length) {
+          setLoading(false)
+          return
+        }
+
+        const normalizedSearch = normalizeGameName(gameName)
+        const foundGame = gamesData.games.find(g => {
+          const normalizedPsn = normalizeGameName(g.name)
+          return normalizedPsn === normalizedSearch ||
+                 normalizedPsn.includes(normalizedSearch) ||
+                 normalizedSearch.includes(normalizedPsn)
+        })
+
+        if (!foundGame) {
+          setLoading(false)
+          return
+        }
+
+        setPsnGame(foundGame)
+
+        const trophiesRes = await fetch("/api/psn/trophies", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user.user_id, gameId: foundGame.id })
+        })
+        const trophiesData = await trophiesRes.json()
+        setData(trophiesData)
+      } catch {
+        setData(null)
+      } finally {
         setLoading(false)
       }
     }
 
-    fetchTrophies()
-  }, [gameId, user?.user_id])
+    fetchData()
+  }, [user?.user_id, gameName])
 
   if (loading) {
     return (
@@ -559,7 +600,7 @@ export function GamePSNTrophies({ gameId, gameName, gameIcon }) {
     )
   }
 
-  if (!data || data.total === 0) return null
+  if (!psnGame || !data || data.total === 0) return null
 
   const filtered = data.trophies.filter(t => {
     const statusMatch = filter === "all" ||
@@ -585,32 +626,19 @@ export function GamePSNTrophies({ gameId, gameName, gameIcon }) {
             </span>
             <PlayStationIcon className="w-3.5 h-3.5 text-[#0070cc]" />
           </div>
-          {!data.notConnected && (
-            <span className="text-xs text-zinc-500">
-              {earnedCount}/{data.total} ({percentage}%)
-            </span>
-          )}
+          <span className="text-xs text-zinc-500">
+            {earnedCount}/{data.total} ({percentage}%)
+          </span>
         </div>
 
-        {data.notConnected && (
-          <div className="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-lg mb-4">
-            <PlayStationIcon className="w-4 h-4 text-zinc-500" />
-            <span className="text-xs text-zinc-400">
-              {t("connectPSN")}
-            </span>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-[#003791] to-[#0070cc] rounded-full transition-all"
+              style={{ width: `${percentage}%` }}
+            />
           </div>
-        )}
-
-        {!data.notConnected && (
-          <div className="flex items-center gap-2 mb-4">
-            <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-[#003791] to-[#0070cc] rounded-full transition-all"
-                style={{ width: `${percentage}%` }}
-              />
-            </div>
-          </div>
-        )}
+        </div>
 
         <div className="flex items-center gap-2 mb-3 flex-wrap">
           {["all", "unlocked", "locked"].map(f => (
@@ -691,9 +719,9 @@ export function GamePSNTrophies({ gameId, gameName, gameIcon }) {
 
         <TrophyDetailModal
           trophy={selected}
-          gameName={gameName}
-          gameId={gameId}
-          gameIcon={gameIcon}
+          gameName={psnGame.name}
+          gameId={psnGame.id}
+          gameIcon={psnGame.iconUrl || gameIcon}
           isOpen={!!selected}
           onClose={() => setSelected(null)}
           showGame={false}
