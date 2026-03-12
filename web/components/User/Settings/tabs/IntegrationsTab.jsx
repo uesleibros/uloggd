@@ -1,5 +1,6 @@
 import { useTranslation } from "#hooks/useTranslation"
 import BackloggdSection from "@components/User/Settings/sections/BackloggdSection"
+import PSNImportSection from "@components/User/Settings/sections/PSNImportSection"
 
 export default function IntegrationsTab() {
   const { t } = useTranslation("settings")
@@ -15,6 +16,7 @@ export default function IntegrationsTab() {
       </p>
 
       <BackloggdSection />
+      <PSNImportSection />
     </div>
   )
 }
