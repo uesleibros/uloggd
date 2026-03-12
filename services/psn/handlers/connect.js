@@ -1,6 +1,6 @@
 import {
 	exchangeNpssoForAccessCode,
-	exchangeAccessCodeForAuthorizationToken,
+	exchangeAccessCodeForAuthTokens,
 	getProfileFromAccountId
 } from "psn-api"
 
@@ -15,9 +15,7 @@ export async function handleConnect(req, res) {
 
 	try {
 		const accessCode = await exchangeNpssoForAccessCode(npssoToken)
-
-		const authorization =
-			await exchangeAccessCodeForAuthorizationToken(accessCode)
+		const authorization = await exchangeAccessCodeForAuthTokens(accessCode)
 
 		const profile = await getProfileFromAccountId(
 			{ accessToken: authorization.accessToken },
