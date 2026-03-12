@@ -1,4 +1,4 @@
-import { getUserTitles } from "psn-api"
+import * as psn from "psn-api"
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleGames(req, res) {
@@ -17,7 +17,7 @@ export async function handleGames(req, res) {
 			return res.status(401).json({ error: "PSN not connected" })
 		}
 
-		const response = await getUserTitles(
+		const response = await psn.getUserTitles(
 			{ accessToken: connection.access_token },
 			connection.provider_user_id,
 			{ limit: 800 }
