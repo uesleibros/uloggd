@@ -1,4 +1,4 @@
-import { exchangeNpssoForAccessCode, exchangeAccessCodeForAuthTokens, getProfileFromAccountId } from "psn-api"
+import { exchangeNpssoForAccessToken, getProfileFromAccountId } from "psn-api"
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleConnect(req, res) {
@@ -9,8 +9,7 @@ export async function handleConnect(req, res) {
 	}
 
 	try {
-		const accessCode = await exchangeNpssoForAccessCode(npssoToken)
-		const authorization = await exchangeAccessCodeForAuthTokens(accessCode)
+		const authorization = await exchangeNpssoForAccessToken(npssoToken)
 
 		const profile = await getProfileFromAccountId(
 			{ accessToken: authorization.accessToken },
