@@ -69,7 +69,6 @@ export async function handleProcess(req, res) {
         game_slug: igdbGame.slug,
         status: isCompleted ? "played" : (hasProgress ? "playing" : null),
         playing: hasProgress && !isCompleted,
-        psn_np_communication_id: game.npCommunicationId,
       }
 
       const { error } = await supabase
