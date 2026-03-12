@@ -33,13 +33,14 @@ export function SteamIcon({ className }) {
 }
 
 export function NintendoIcon({ className }) {
-	return (
-		<svg
-			viewBox="0 0 24 24"
-			fill="currentColor"
-			className={className}
-		>
-			<path d="M7 2C4.79 2 3 3.79 3 6v12c0 2.21 1.79 4 4 4h3V2H7zm10 0h-3v20h3c2.21 0 4-1.79 4-4V6c0-2.21-1.79-4-4-4zM7 6.5A1.5 1.5 0 1 1 7 9.5 1.5 1.5 0 0 1 7 6.5zm10 8a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
-		</svg>
-	)
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M9.7 2.5H6.1A3.6 3.6 0 0 0 2.5 6.1v11.8a3.6 3.6 0 0 0 3.6 3.6h3.6V2.5zm-3 5.1a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4zm11.2-5.1H14.3v19h3.6a3.6 3.6 0 0 0 3.6-3.6V6.1a3.6 3.6 0 0 0-3.6-3.6zm-1.2 12.1a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/>
+    </svg>
+  )
 }
