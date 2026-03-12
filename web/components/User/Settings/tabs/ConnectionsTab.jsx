@@ -2,6 +2,7 @@ import { useTranslation } from "#hooks/useTranslation"
 import TwitchSection from "@components/User/Settings/sections/connections/TwitchSection"
 import NintendoSection from "@components/User/Settings/sections/connections/NintendoSection"
 import SteamSection from "@components/User/Settings/sections/connections/SteamSection"
+import PlayStationSection from "@components/User/Settings/sections/connections/PlayStationSection"
 
 export default function ConnectionsTab() {
 	const { t } = useTranslation("settings")
@@ -19,6 +20,7 @@ export default function ConnectionsTab() {
 			<div className="space-y-6">
 				<TwitchSection />
 				<SteamSection />
+				<PlayStationSection />
 				<NintendoSection />
 			</div>
 		</div>
