@@ -1463,7 +1463,7 @@ export default {
         cancel: "Cancelar",
         connect: "Conectar",
         connecting: "Conectando...",
-        betaWarning: "Esta função está em beta. O token expira após ~60 dias e você precisará reconectar."
+        betaWarning: "Esta função está em beta. O token após ~60 dias será renovado automaticamente."
       }
     },
 		nintendo: {
@@ -2149,6 +2149,7 @@ export default {
 		},
 	},
 }
+
 
 
 
