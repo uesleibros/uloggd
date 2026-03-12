@@ -61,7 +61,7 @@ export default async function handler(req, res) {
 	res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin")
 	res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
 
-	const allowedOrigin = process.env.BASE_URL
+	const allowedOrigin = process.env.APP_URL
 
 	if (allowedOrigin) {
 		res.setHeader("Access-Control-Allow-Origin", allowedOrigin)
