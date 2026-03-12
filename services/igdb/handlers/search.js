@@ -3,7 +3,7 @@ import { PLATFORMS_MAP } from "#data/platformsMapper.js"
 import { buildNameFilter } from "#services/igdb/utils/buildNameFilter.js"
 
 export async function handleSearch(req, res) {
-	const { query: q, limit = 20, offset = 0, sort = "relevance" } = req.query
+	const { query: q, limit = 50, offset = 0, sort = "relevance" } = req.query
 	if (!q?.trim()) return res.status(400).json({ results: [], total: 0 })
 
 	try {
@@ -29,7 +29,7 @@ export async function handleSearch(req, res) {
 					summary;
 				where ${whereClause};
 				sort ${orderBy};
-				limit ${limitNum};
+				limit 50;
 				offset ${offsetNum};
 			`),
 			query("games/count", `where ${whereClause};`)
@@ -96,10 +96,11 @@ export async function handleSearch(req, res) {
 					: null
 			}
 		})
-
-		if (sort === "relevance") {
-			results.sort((a, b) => b.relevance - a.relevance)
-		}
+			.sort((a, b) => {
+				if (sort === "relevance") return b.relevance - a.relevance
+				return 0
+			})
+			.slice(0, limitNum)
 
 		res.json({ results, total: countData?.count ?? results.length })
 	} catch (e) {
