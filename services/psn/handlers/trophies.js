@@ -1,4 +1,4 @@
-import { getUserTrophiesEarnedForTitle } from "psn-api"
+import * as psn from "psn-api"
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleTrophies(req, res) {
@@ -19,7 +19,7 @@ export async function handleTrophies(req, res) {
 			return res.status(401).json({ error: "PSN not connected" })
 		}
 
-		const response = await getUserTrophiesEarnedForTitle(
+		const response = await psn.getUserTrophiesEarnedForTitle(
 			{ accessToken: connection.access_token },
 			connection.provider_user_id,
 			gameId,
