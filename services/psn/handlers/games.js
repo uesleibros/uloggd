@@ -1,5 +1,6 @@
-import * as psn from "psn-api"
 import { supabase } from "#lib/supabase-ssr.js"
+
+const PSN_API_URL = "https://m.np.playstation.com/api"
 
 export async function handleGames(req, res) {
 	const { userId } = req.body
@@ -17,24 +18,33 @@ export async function handleGames(req, res) {
 			return res.status(401).json({ error: "PSN not connected" })
 		}
 
-		const response = await psn.getUserTitles(
-			{ accessToken: connection.access_token },
-			connection.provider_user_id,
-			{ limit: 800 }
+		const response = await fetch(
+			`${PSN_API_URL}/trophy/v1/users/${connection.provider_user_id}/trophyTitles?limit=800`,
+			{
+				headers: {
+					Authorization: `Bearer ${connection.access_token}`
+				}
+			}
 		)
 
-		const games = response.trophyTitles.map(title => ({
+		const data = await response.json()
+
+		if (!response.ok) {
+			throw new Error("Failed to fetch games")
+		}
+
+		const games = (data.trophyTitles || []).map(title => ({
 			id: title.npCommunicationId,
 			name: title.trophyTitleName,
 			platform: title.trophyTitlePlatform,
 			iconUrl: title.trophyTitleIconUrl,
 			progress: title.progress,
-			earnedTrophies: title.earnedTrophies,
-			definedTrophies: title.definedTrophies,
+			earnedTrophies: title.earnedTrophies || { bronze: 0, silver: 0, gold: 0, platinum: 0 },
+			definedTrophies: title.definedTrophies || { bronze: 0, silver: 0, gold: 0, platinum: 0 },
 			lastUpdated: title.lastUpdatedDateTime
 		}))
 
-		res.json({ games, total: response.totalResults })
+		res.json({ games, total: data.totalItemCount || games.length })
 	} catch (err) {
 		console.error("Erro ao buscar jogos PSN:", err)
 		res.status(500).json({ error: "Failed to fetch games" })
