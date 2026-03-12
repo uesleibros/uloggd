@@ -22,74 +22,92 @@ export async function handleTrophies(req, res) {
 		}
 
 		const accessToken = await getPsnToken(userId)
-
 		const npServiceName = gameId.startsWith("NPWR") ? "trophy" : "trophy2"
 
-		const [definitionsRes, userProgressRes] = await Promise.all([
-			fetch(
-				`${PSN_API_URL}/trophy/v1/npCommunicationIds/${gameId}/trophyGroups/all/trophies?npServiceName=${npServiceName}`,
-				{
-					headers: { Authorization: `Bearer ${accessToken}` }
-				}
-			),
-			fetch(
-				`${PSN_API_URL}/trophy/v1/users/${connection.provider_user_id}/npCommunicationIds/${gameId}/trophyGroups/all/trophies?npServiceName=${npServiceName}`,
-				{
-					headers: { Authorization: `Bearer ${accessToken}` }
-				}
-			)
-		])
+		const trophies = await fetchTrophiesWithFallback(
+			accessToken,
+			connection.provider_user_id,
+			gameId,
+			npServiceName
+		)
 
-		const definitions = await definitionsRes.json()
-		const userProgress = await userProgressRes.json()
-
-		if (!definitionsRes.ok) {
-			const altNpServiceName = npServiceName === "trophy" ? "trophy2" : "trophy"
-			
-			const [altDefinitionsRes, altUserProgressRes] = await Promise.all([
-				fetch(
-					`${PSN_API_URL}/trophy/v1/npCommunicationIds/${gameId}/trophyGroups/all/trophies?npServiceName=${altNpServiceName}`,
-					{
-						headers: { Authorization: `Bearer ${accessToken}` }
-					}
-				),
-				fetch(
-					`${PSN_API_URL}/trophy/v1/users/${connection.provider_user_id}/npCommunicationIds/${gameId}/trophyGroups/all/trophies?npServiceName=${altNpServiceName}`,
-					{
-						headers: { Authorization: `Bearer ${accessToken}` }
-					}
-				)
-			])
-
-			const altDefinitions = await altDefinitionsRes.json()
-			const altUserProgress = await altUserProgressRes.json()
-
-			if (!altDefinitionsRes.ok) {
-				return res.json({ trophies: [], total: 0 })
-			}
-
-			const trophies = mergeTrophies(altDefinitions.trophies, altUserProgress.trophies)
-			return res.json({ trophies, total: altDefinitions.totalItemCount || trophies.length })
+		if (!trophies) {
+			return res.json({ trophies: [], total: 0 })
 		}
 
-		const trophies = mergeTrophies(definitions.trophies, userProgress.trophies)
-		res.json({ trophies, total: definitions.totalItemCount || trophies.length })
+		res.json({ trophies, total: trophies.length })
 	} catch (err) {
 		console.error("Erro ao buscar troféus PSN:", err)
 		res.status(500).json({ error: "Failed to fetch trophies" })
 	}
 }
 
-function mergeTrophies(definitions = [], userProgress = []) {
-	const progressMap = new Map()
+async function fetchTrophiesWithFallback(accessToken, accountId, gameId, npServiceName) {
+	let trophies = await fetchTrophies(accessToken, accountId, gameId, npServiceName)
 	
+	if (!trophies) {
+		const altService = npServiceName === "trophy" ? "trophy2" : "trophy"
+		trophies = await fetchTrophies(accessToken, accountId, gameId, altService)
+	}
+	
+	return trophies
+}
+
+async function fetchTrophies(accessToken, accountId, gameId, npServiceName) {
+	try {
+		const [definitionsRes, userProgressRes, rarityRes] = await Promise.all([
+			fetch(
+				`${PSN_API_URL}/trophy/v1/npCommunicationIds/${gameId}/trophyGroups/all/trophies?npServiceName=${npServiceName}`,
+				{ headers: { Authorization: `Bearer ${accessToken}` } }
+			),
+			fetch(
+				`${PSN_API_URL}/trophy/v1/users/${accountId}/npCommunicationIds/${gameId}/trophyGroups/all/trophies?npServiceName=${npServiceName}`,
+				{ headers: { Authorization: `Bearer ${accessToken}` } }
+			),
+			fetch(
+				`${PSN_API_URL}/trophy/v1/npCommunicationIds/${gameId}/trophyGroups/all/trophies?npServiceName=${npServiceName}&visibleStats=true`,
+				{ headers: { Authorization: `Bearer ${accessToken}` } }
+			)
+		])
+
+		if (!definitionsRes.ok) return null
+
+		const definitions = await definitionsRes.json()
+		const userProgress = await userProgressRes.json()
+		const rarityData = rarityRes.ok ? await rarityRes.json() : null
+
+		return mergeTrophies(
+			definitions.trophies || [],
+			userProgress.trophies || [],
+			rarityData?.trophies || []
+		)
+	} catch {
+		return null
+	}
+}
+
+function mergeTrophies(definitions, userProgress, rarityData) {
+	const progressMap = new Map()
+	const rarityMap = new Map()
+
 	for (const trophy of userProgress) {
 		progressMap.set(trophy.trophyId, trophy)
 	}
 
+	for (const trophy of rarityData) {
+		rarityMap.set(trophy.trophyId, trophy)
+	}
+
 	return definitions.map(def => {
 		const progress = progressMap.get(def.trophyId) || {}
-		
+		const rarity = rarityMap.get(def.trophyId) || {}
+
+		const earnedRate = 
+			rarity.trophyEarnedRate || 
+			def.trophyEarnedRate || 
+			progress.trophyEarnedRate || 
+			null
+
 		return {
 			trophyId: def.trophyId,
 			trophyName: def.trophyName,
@@ -98,8 +116,8 @@ function mergeTrophies(definitions = [], userProgress = []) {
 			trophyIconUrl: def.trophyIconUrl,
 			trophyHidden: def.trophyHidden || false,
 			trophyGroupId: def.trophyGroupId || "default",
-			trophyEarnedRate: def.trophyEarnedRate || "0",
-			trophyRare: def.trophyRare || 0,
+			trophyEarnedRate: earnedRate,
+			trophyRare: rarity.trophyRare || def.trophyRare || 0,
 			earned: progress.earned || false,
 			earnedDateTime: progress.earnedDateTime || null,
 			progress: progress.progress || null,
