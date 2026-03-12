@@ -235,46 +235,49 @@ export default function PSNImportSection() {
     checkStatus()
   }, [processLoop, pollFetching])
 
-  async function handleImport() {
-    if (loading || isRunning || !connection) return
-
-    setLoading(true)
-    setJob(null)
-
-    try {
-      const data = await apiCall("start", {})
-
-      setJob({
+	async function handleImport() {
+	  if (loading || isRunning || !connection) return
+	
+	  setLoading(true)
+	  setJob(null)
+	
+	  try {
+	    const data = await apiCall("start", {})
+	
+	    setJob({
         id: data.job_id,
-        status: data.status,
-        source_username: connection.onlineId,
-        total: data.total || 0,
-        progress: 0,
-        imported: 0,
-        skipped: 0,
-        failed: 0,
-      })
-
-      if (data.status === "running") {
-        setIsRunning(true)
-        processLoop(data.job_id)
-      } else if (data.status === "completed") {
-        setLoading(false)
-        notify(t("settings.psnImport.noGames"))
-      } else {
-        setLoading(false)
-      }
-    } catch (e) {
-      setLoading(false)
-      if (e.status === 401) {
-        notify(t("settings.psnImport.notConnected"), "error")
-      } else if (e.status === 409) {
-        notify(t("settings.psnImport.alreadyRunning"), "error")
-      } else {
-        notify(t("settings.psnImport.startError"), "error")
-      }
-    }
-  }
+	      status: data.status,
+	      source_username: connection.onlineId,
+	      total: data.total || 0,
+	      progress: 0,
+	      imported: 0,
+	      skipped: 0,
+	      failed: 0,
+	    })
+	
+	    if (data.status === "fetching") {
+	      setIsRunning(true)
+	      pollFetching(data.job_id)
+	    } else if (data.status === "running") {
+	      setIsRunning(true)
+	      processLoop(data.job_id)
+	    } else if (data.status === "completed") {
+	      setLoading(false)
+	      notify(t("settings.psnImport.noGames"))
+	    } else {
+	      setLoading(false)
+	    }
+	  } catch (e) {
+	    setLoading(false)
+	    if (e.status === 401) {
+	      notify(t("settings.psnImport.notConnected"), "error")
+	    } else if (e.status === 409) {
+	      notify(t("settings.psnImport.alreadyRunning"), "error")
+	    } else {
+	      notify(t("settings.psnImport.startError"), "error")
+	    }
+	  }
+	}
 
   async function handleCancel() {
     if (!job?.id) return
