@@ -23,43 +23,87 @@ export async function handleTrophies(req, res) {
 
 		const accessToken = await getPsnToken(userId)
 
-		const response = await fetch(
-			`${PSN_API_URL}/trophy/v1/users/${connection.provider_user_id}/npCommunicationIds/${gameId}/trophyGroups/all/trophies`,
-			{
-				headers: {
-					Authorization: `Bearer ${accessToken}`
+		const npServiceName = gameId.startsWith("NPWR") ? "trophy" : "trophy2"
+
+		const [definitionsRes, userProgressRes] = await Promise.all([
+			fetch(
+				`${PSN_API_URL}/trophy/v1/npCommunicationIds/${gameId}/trophyGroups/all/trophies?npServiceName=${npServiceName}`,
+				{
+					headers: { Authorization: `Bearer ${accessToken}` }
 				}
+			),
+			fetch(
+				`${PSN_API_URL}/trophy/v1/users/${connection.provider_user_id}/npCommunicationIds/${gameId}/trophyGroups/all/trophies?npServiceName=${npServiceName}`,
+				{
+					headers: { Authorization: `Bearer ${accessToken}` }
+				}
+			)
+		])
+
+		const definitions = await definitionsRes.json()
+		const userProgress = await userProgressRes.json()
+
+		if (!definitionsRes.ok) {
+			const altNpServiceName = npServiceName === "trophy" ? "trophy2" : "trophy"
+			
+			const [altDefinitionsRes, altUserProgressRes] = await Promise.all([
+				fetch(
+					`${PSN_API_URL}/trophy/v1/npCommunicationIds/${gameId}/trophyGroups/all/trophies?npServiceName=${altNpServiceName}`,
+					{
+						headers: { Authorization: `Bearer ${accessToken}` }
+					}
+				),
+				fetch(
+					`${PSN_API_URL}/trophy/v1/users/${connection.provider_user_id}/npCommunicationIds/${gameId}/trophyGroups/all/trophies?npServiceName=${altNpServiceName}`,
+					{
+						headers: { Authorization: `Bearer ${accessToken}` }
+					}
+				)
+			])
+
+			const altDefinitions = await altDefinitionsRes.json()
+			const altUserProgress = await altUserProgressRes.json()
+
+			if (!altDefinitionsRes.ok) {
+				return res.json({ trophies: [], total: 0 })
 			}
-		)
 
-		const data = await response.json()
-
-		if (!response.ok) {
-			console.error("PSN API error:", data)
-			throw new Error("Failed to fetch trophies")
+			const trophies = mergeTrophies(altDefinitions.trophies, altUserProgress.trophies)
+			return res.json({ trophies, total: altDefinitions.totalItemCount || trophies.length })
 		}
 
-		const trophies = (data.trophies || []).map(trophy => ({
-			trophyId: trophy.trophyId,
-			trophyName: trophy.trophyName,
-			trophyDetail: trophy.trophyDetail,
-			trophyType: trophy.trophyType,
-			trophyIconUrl: trophy.trophyIconUrl,
-			trophyHidden: trophy.trophyHidden || false,
-			earned: trophy.earned || false,
-			earnedDateTime: trophy.earnedDateTime || null,
-			trophyEarnedRate: trophy.trophyEarnedRate || "0",
-			trophyRare: trophy.trophyRare || 0,
-			trophyGroupId: trophy.trophyGroupId || "default"
-		}))
-
-		res.json({ 
-			trophies, 
-			total: data.totalItemCount || trophies.length,
-			notConnected: false 
-		})
+		const trophies = mergeTrophies(definitions.trophies, userProgress.trophies)
+		res.json({ trophies, total: definitions.totalItemCount || trophies.length })
 	} catch (err) {
 		console.error("Erro ao buscar troféus PSN:", err)
 		res.status(500).json({ error: "Failed to fetch trophies" })
 	}
+}
+
+function mergeTrophies(definitions = [], userProgress = []) {
+	const progressMap = new Map()
+	
+	for (const trophy of userProgress) {
+		progressMap.set(trophy.trophyId, trophy)
+	}
+
+	return definitions.map(def => {
+		const progress = progressMap.get(def.trophyId) || {}
+		
+		return {
+			trophyId: def.trophyId,
+			trophyName: def.trophyName,
+			trophyDetail: def.trophyDetail,
+			trophyType: def.trophyType,
+			trophyIconUrl: def.trophyIconUrl,
+			trophyHidden: def.trophyHidden || false,
+			trophyGroupId: def.trophyGroupId || "default",
+			trophyEarnedRate: def.trophyEarnedRate || "0",
+			trophyRare: def.trophyRare || 0,
+			earned: progress.earned || false,
+			earnedDateTime: progress.earnedDateTime || null,
+			progress: progress.progress || null,
+			progressRate: progress.progressRate || null
+		}
+	})
 }
