@@ -1,6 +1,7 @@
 import { usersHandler } from "#routers/users.js"
 import { userGamesHandler } from "#routers/userGames.js"
 import { backloggdHandler } from "#routers/backloggd.js"
+import { psnImportHandler } from "#routers/psnImport.js"
 import { notificationsHandler } from "#routers/notifications.js"
 import { howlongtobeatHandler } from "#routers/howlongtobeat.js"
 import { igdbHandler } from "#routers/igdb.js"
@@ -31,6 +32,7 @@ const SERVICES = {
 	users: usersHandler,
 	userGames: userGamesHandler,
 	backloggd: backloggdHandler,
+	psnImport: psnImportHandler,
 	notifications: notificationsHandler,
 	howlongtobeat: howlongtobeatHandler,
 	igdb: igdbHandler,
