@@ -1,8 +1,4 @@
-import {
-	exchangeNpssoForAccessCode,
-	exchangeAccessCodeForAuthTokens,
-	getProfileFromAccountId
-} from "psn-api"
+import * as psn from "psn-api"
 
 import { supabase } from "#lib/supabase-ssr.js"
 
