@@ -1,4 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
+import { getPsnToken } from "#services/psn/utils/psnAuth.js"
 
 const PSN_API_URL = "https://m.np.playstation.com/api"
 
@@ -11,7 +12,7 @@ export async function handleTrophies(req, res) {
 	try {
 		const { data: connection, error } = await supabase
 			.from("user_connections")
-			.select("provider_user_id, access_token")
+			.select("provider_user_id")
 			.eq("user_id", userId)
 			.eq("provider", "psn")
 			.maybeSingle()
@@ -20,11 +21,13 @@ export async function handleTrophies(req, res) {
 			return res.status(401).json({ error: "PSN not connected" })
 		}
 
+		const accessToken = await getPsnToken(userId)
+
 		const response = await fetch(
 			`${PSN_API_URL}/trophy/v1/users/${connection.provider_user_id}/npCommunicationIds/${gameId}/trophyGroups/all/trophies`,
 			{
 				headers: {
-					Authorization: `Bearer ${connection.access_token}`
+					Authorization: `Bearer ${accessToken}`
 				}
 			}
 		)
