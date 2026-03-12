@@ -16,7 +16,9 @@ export default function IntegrationsTab() {
       </p>
 
       <BackloggdSection />
-      <PSNImportSection />
+      <div className="mt-2">
+        <PSNImportSection />
+      </div>
     </div>
   )
 }
