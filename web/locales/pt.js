@@ -767,7 +767,6 @@ export default {
 		},
 	},
 	profile: {
-		psnTrophies: "Troféus PlayStation",
 		transactions: {
 			empty: {
 				title: "Nenhuma transação ainda",
@@ -879,6 +878,7 @@ export default {
 			},
 		},
 		stats: {
+			psnTrophies: "Troféus PlayStation",
 			gameStats: "Estatísticas",
 			links: "Links",
 			followers: "seguidores",
@@ -2150,3 +2150,4 @@ export default {
 		},
 	},
 }
+
