@@ -1,4 +1,64 @@
 export default {
+	trophies: {
+	  list: {
+	    title: "Troféus PlayStation"
+	  },
+	  detail: {
+	    back: "Voltar",
+	    hiddenAlt: "Troféu secreto",
+	    hiddenTitle: "Troféu secreto",
+	    hiddenDescription: "Este troféu contém spoilers",
+	    hideDetails: "Esconder detalhes",
+	    revealWarning: "Revelar troféu (pode conter spoilers)",
+	    game: "Jogo",
+	    status: "Status",
+	    unlocked: "Desbloqueado",
+	    locked: "Bloqueado",
+	    unlockedAt: "Desbloqueado",
+	    rarity: "Raridade",
+	    rarityPercent: "{{percent}}% dos jogadores",
+	    type: "Tipo",
+	    secret: "Secreto",
+	    platform: "Plataforma"
+	  },
+	  gameModal: {
+	    noTrophies: "Nenhum troféu encontrado",
+	    hiddenAlt: "Troféu secreto",
+	    hiddenTitle: "Troféu secreto",
+	    unlocked: "Desbloqueado",
+	    filter: {
+	      all: "Todos",
+	      unlocked: "Desbloqueados",
+	      locked: "Bloqueados",
+	      allTypes: "Todos"
+	    },
+	    types: {
+	      platinum: "Platina",
+	      gold: "Ouro",
+	      silver: "Prata",
+	      bronze: "Bronze"
+	    }
+	  },
+	  gameSection: {
+	    title: "Troféus",
+	    connectPSN: "Conecte sua PSN para ver seu progresso",
+	    filter: {
+	      all: "Todos ({{count}})",
+	      unlocked: "Desbloqueados ({{count}})",
+	      locked: "Bloqueados ({{count}})",
+	      allTypes: "Todos"
+	    },
+	    types: {
+	      platinum: "Platina",
+	      gold: "Ouro",
+	      silver: "Prata",
+	      bronze: "Bronze"
+	    },
+	    hiddenAlt: "Troféu secreto",
+	    showLess: "Mostrar menos",
+	    viewAll: "Ver todos ({{count}})"
+	  }
+	},
 	journal: {
 	  button: {
 	    create: "Criar Jornada",
@@ -2150,4 +2210,5 @@ export default {
 		},
 	},
 }
+
 
