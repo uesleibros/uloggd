@@ -1440,6 +1440,32 @@ export default {
 			description: "Conecte sua conta Steam para exibir seus jogos e estatísticas no seu perfil.",
 			idLabel: "ID:",
 		},
+		psn: {
+      title: "PlayStation Network",
+      description: "Conecte sua conta PSN para importar seus jogos e troféus",
+      connect: "Conectar PSN",
+      disconnect: "Desconectar",
+      connected: "Conectado",
+      invalidToken: "Token inválido. Certifique-se de copiar o código completo.",
+      connectionError: "Falha na conexão. Tente novamente.",
+      modal: {
+        title: "Conectar PlayStation",
+        subtitle: "Importe seus jogos e troféus",
+        step1: "Clique abaixo para abrir a página de login da PlayStation:",
+        step2: "Faça login com sua conta PlayStation (se ainda não estiver logado)",
+        step3: "Copie o código que aparece (apenas o valor dentro das aspas):",
+        step4: "Cole o código abaixo:",
+        placeholder: "Cole seu token NPSSO aqui...",
+        openPSN: "Abrir PlayStation",
+        copyUrl: "Copiar URL",
+        copied: "Copiado!",
+        validToken: "Token válido",
+        cancel: "Cancelar",
+        connect: "Conectar",
+        connecting: "Conectando...",
+        betaWarning: "Esta função está em beta. O token expira após ~60 dias e você precisará reconectar."
+      }
+    },
 		nintendo: {
 			title: "Nintendo Switch",
 			connected: "Conectado",
@@ -2123,6 +2149,7 @@ export default {
 		},
 	},
 }
+
 
 
 
