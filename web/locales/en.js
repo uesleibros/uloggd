@@ -1463,7 +1463,7 @@ export default {
 	      cancel: "Cancel",
 	      connect: "Connect",
 	      connecting: "Connecting...",
-	      betaWarning: "This feature is in beta. The token expires after ~60 days and you'll need to reconnect."
+	      betaWarning: "This feature is in beta. The token will be automatically renewed after approximately 60 days."
 	    }
 	  },
 		nintendo: {
