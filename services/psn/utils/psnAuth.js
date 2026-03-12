@@ -1,13 +1,12 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
-const PSN_CLIENT_ID = "09515159-7237-4370-9b40-3806e67c0891"
-const PSN_CLIENT_SECRET = "ucPjka5tntB2KqsP"
-const PSN_AUTH_URL = "https://ca.account.sony.com/api/authz/v3/oauth"
+const AUTH_BASE_URL = "https://ca.account.sony.com/api/authz/v3/oauth"
+const AUTH_HEADER = "Basic MDk1MTUxNTktNzIzNy00MzcwLTliNDAtMzgwNmU2N2MwODkxOnVjUGprYTV0bnRCMktxc1A="
 
 export async function refreshPsnToken(userId) {
 	const { data: connection, error } = await supabase
 		.from("user_connections")
-		.select("refresh_token, provider")
+		.select("refresh_token")
 		.eq("user_id", userId)
 		.eq("provider", "psn")
 		.maybeSingle()
@@ -16,16 +15,18 @@ export async function refreshPsnToken(userId) {
 		throw new Error("No refresh token available")
 	}
 
-	const response = await fetch(`${PSN_AUTH_URL}/token`, {
+	const response = await fetch(`${AUTH_BASE_URL}/token`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded",
-			Authorization: `Basic ${Buffer.from(`${PSN_CLIENT_ID}:${PSN_CLIENT_SECRET}`).toString("base64")}`
+			Authorization: AUTH_HEADER
 		},
 		body: new URLSearchParams({
 			refresh_token: connection.refresh_token,
-			grant_type: "refresh_token"
-		})
+			grant_type: "refresh_token",
+			token_format: "jwt",
+			scope: "psn:mobile.v2.core psn:clientapp"
+		}).toString()
 	})
 
 	const data = await response.json()
