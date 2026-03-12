@@ -1,4 +1,9 @@
-import { exchangeNpssoForAccessToken, getProfileFromAccountId } from "psn-api"
+import {
+	exchangeNpssoForAccessCode,
+	exchangeAccessCodeForAuthorizationToken,
+	getProfileFromAccountId
+} from "psn-api"
+
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleConnect(req, res) {
@@ -9,33 +14,42 @@ export async function handleConnect(req, res) {
 	}
 
 	try {
-		const authorization = await exchangeNpssoForAccessToken(npssoToken)
+		const accessCode = await exchangeNpssoForAccessCode(npssoToken)
+
+		const authorization =
+			await exchangeAccessCodeForAuthorizationToken(accessCode)
 
 		const profile = await getProfileFromAccountId(
 			{ accessToken: authorization.accessToken },
 			"me"
 		)
 
-		const expiresAt = new Date(Date.now() + authorization.expiresIn * 1000).toISOString()
+		const expiresAt = new Date(
+			Date.now() + authorization.expiresIn * 1000
+		).toISOString()
 
 		await supabase
 			.from("user_connections")
-			.upsert({
-				user_id: userId,
-				provider: "psn",
-				provider_user_id: profile.accountId,
-				provider_username: profile.onlineId,
-				provider_display_name: profile.onlineId,
-				provider_avatar_url: profile.avatarUrls?.[0]?.avatarUrl || null,
-				access_token: authorization.accessToken,
-				refresh_token: authorization.refreshToken || null,
-				token_expires_at: expiresAt,
-				extra_data: {
-					isPlus: profile.isPlus || false,
-					aboutMe: profile.aboutMe || null
+			.upsert(
+				{
+					user_id: userId,
+					provider: "psn",
+					provider_user_id: profile.accountId,
+					provider_username: profile.onlineId,
+					provider_display_name: profile.onlineId,
+					provider_avatar_url:
+						profile.avatarUrls?.[0]?.avatarUrl || null,
+					access_token: authorization.accessToken,
+					refresh_token: authorization.refreshToken || null,
+					token_expires_at: expiresAt,
+					extra_data: {
+						isPlus: profile.isPlus || false,
+						aboutMe: profile.aboutMe || null
+					},
+					connected_at: new Date().toISOString()
 				},
-				connected_at: new Date().toISOString()
-			}, { onConflict: "user_id, provider" })
+				{ onConflict: "user_id, provider" }
+			)
 
 		res.json({
 			success: true,
@@ -46,10 +60,11 @@ export async function handleConnect(req, res) {
 			}
 		})
 	} catch (error) {
-		console.error("Erro ao conectar PSN:", error.message)
-		res.status(401).json({ 
-			success: false, 
-			error: "Invalid or expired NPSSO token" 
+		console.error("Erro ao conectar PSN:", error)
+
+		res.status(401).json({
+			success: false,
+			error: "Invalid or expired NPSSO token"
 		})
 	}
 }
