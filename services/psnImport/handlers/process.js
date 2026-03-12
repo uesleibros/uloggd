@@ -2,6 +2,8 @@ import { supabase } from "#lib/supabase-ssr.js"
 import { query } from "#lib/igdbWrapper.js"
 
 const BATCH_SIZE = 25
+const CONCURRENCY = 5
+const MIN_MATCH_SCORE = 40
 
 const PLATFORM_MAP = {
   "PS5": 167,
@@ -15,31 +17,141 @@ const PLATFORM_MAP = {
   "PSP": 38,
 }
 
+function normalize(name) {
+  return name
+    .toLowerCase()
+    .replace(/[™®©]/g, "")
+    .replace(/:\s+/g, ": ")
+    .replace(/\s*[-–—]\s*/g, " ")
+    .replace(/\(.*?\)/g, "")
+    .replace(/\b(remaster(ed)?|goty|edition|definitive|ultimate|deluxe|complete|game of the year)\b/gi, "")
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function bigrams(str) {
+  const set = new Set()
+  for (let i = 0; i < str.length - 1; i++) {
+    set.add(str.slice(i, i + 2))
+  }
+  return set
+}
+
+function dice(a, b) {
+  if (a === b) return 1
+  if (a.length < 2 || b.length < 2) return 0
+
+  const biA = bigrams(a)
+  const biB = bigrams(b)
+  let intersection = 0
+
+  for (const bg of biA) {
+    if (biB.has(bg)) intersection++
+  }
+
+  return (2 * intersection) / (biA.size + biB.size)
+}
+
 function scoreMatch(psnGame, igdbGame) {
-  const psnName = psnGame.name.toLowerCase()
-  const igdbName = igdbGame.name.toLowerCase()
+  const psnNorm = normalize(psnGame.name)
+  const igdbNorm = normalize(igdbGame.name)
 
   let score = 0
 
-  if (psnName === igdbName) score += 100
-  if (psnName.includes(igdbName)) score += 40
-  if (igdbName.includes(psnName)) score += 40
+  if (psnNorm === igdbNorm) {
+    score += 100
+  } else {
+    score += Math.round(dice(psnNorm, igdbNorm) * 70)
+  }
 
   if (igdbGame.alternative_names) {
     for (const alt of igdbGame.alternative_names) {
-      const altName = alt.name.toLowerCase()
-      if (psnName === altName) score += 80
-      if (psnName.includes(altName)) score += 30
-      if (altName.includes(psnName)) score += 30
+      const altNorm = normalize(alt.name)
+      if (psnNorm === altNorm) {
+        score += 80
+        break
+      }
+      if (dice(psnNorm, altNorm) > 0.8) {
+        score += 40
+        break
+      }
     }
   }
 
   const expectedPlatform = PLATFORM_MAP[psnGame.platform]
   if (expectedPlatform && igdbGame.platforms?.some(p => p.id === expectedPlatform)) {
-    score += 50
+    score += 30
   }
 
   return score
+}
+
+function sanitizeForIGDB(name) {
+  return name
+    .replace(/["\\;]/g, "")
+    .replace(/[™®©]/g, "")
+    .trim()
+    .slice(0, 100)
+}
+
+async function mapConcurrent(items, fn, limit) {
+  const results = []
+  let index = 0
+
+  async function worker() {
+    while (index < items.length) {
+      const i = index++
+      results[i] = await fn(items[i], i)
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
+  return results
+}
+
+async function processOne(game, userId) {
+  const searchName = sanitizeForIGDB(game.name)
+  if (!searchName) return { status: "skipped" }
+
+  const results = await query("games", `
+    fields id, slug, name, platforms.id, alternative_names.name;
+    search "${searchName}";
+    limit 10;
+  `)
+
+  if (!results?.length) return { status: "skipped" }
+
+  let best = null
+  let bestScore = 0
+
+  for (const igdbGame of results) {
+    const score = scoreMatch(game, igdbGame)
+    if (score > bestScore) {
+      bestScore = score
+      best = igdbGame
+    }
+  }
+
+  if (!best || bestScore < MIN_MATCH_SCORE) {
+    return { status: "skipped" }
+  }
+
+  const hasProgress = game.progress > 0
+  const isCompleted = game.progress === 100
+
+  const { error } = await supabase
+    .from("user_games")
+    .upsert({
+      user_id: userId,
+      game_id: best.id,
+      game_slug: best.slug,
+      status: isCompleted ? "played" : hasProgress ? "playing" : null,
+      playing: hasProgress && !isCompleted
+    }, { onConflict: "user_id,game_id" })
+
+  if (error) return { status: "failed" }
+  return { status: "imported" }
 }
 
 export async function handleProcess(req, res) {
@@ -48,7 +160,7 @@ export async function handleProcess(req, res) {
 
   const { data: job } = await supabase
     .from("import_jobs")
-    .select("*")
+    .select("id, status, progress, total, imported, skipped, failed, games_data")
     .eq("id", job_id)
     .eq("user_id", req.user.id)
     .single()
@@ -57,7 +169,7 @@ export async function handleProcess(req, res) {
     return res.status(400).json({ error: "invalid job" })
   }
 
-  const games = job.games_data || []
+  const games = job.games_data ?? []
   const start = job.progress
   const batch = games.slice(start, start + BATCH_SIZE)
 
@@ -74,81 +186,35 @@ export async function handleProcess(req, res) {
     return res.json({ status: "completed" })
   }
 
-  let imported = 0
-  let skipped = 0
-  let failed = 0
+  const results = await mapConcurrent(
+    batch,
+    (game) => processOne(game, req.user.id),
+    CONCURRENCY,
+  )
 
-  for (const game of batch) {
-    try {
-      const results = await query("games", `
-        fields id, slug, name, platforms.id, alternative_names.name;
-        search "${game.name.replace(/"/g, "")}";
-        where category = 0;
-        limit 10;
-      `)
-
-      if (!results?.length) {
-        skipped++
-        continue
-      }
-
-      let best = null
-      let bestScore = 0
-
-      for (const igdbGame of results) {
-        const score = scoreMatch(game, igdbGame)
-        if (score > bestScore) {
-          bestScore = score
-          best = igdbGame
-        }
-      }
-
-      if (!best || bestScore < 50) {
-        skipped++
-        continue
-      }
-
-      const hasProgress = game.progress > 0
-      const isCompleted = game.progress === 100
-
-      const row = {
-        user_id: req.user.id,
-        game_id: best.id,
-        game_slug: best.slug,
-        status: isCompleted ? "played" : (hasProgress ? "playing" : null),
-        playing: hasProgress && !isCompleted,
-        psn_np_communication_id: game.npCommunicationId,
-      }
-
-      const { error } = await supabase
-        .from("user_games")
-        .upsert(row, { onConflict: "user_id,game_id", ignoreDuplicates: true })
-
-      if (error) {
-        skipped++
-      } else {
-        imported++
-      }
-    } catch {
-      failed++
-    }
+  const counts = { imported: 0, skipped: 0, failed: 0 }
+  for (const r of results) {
+    counts[r.status]++
   }
 
   const newProgress = start + batch.length
 
-  await supabase.from("import_jobs").update({
-    progress: newProgress,
-    imported: job.imported + imported,
-    skipped: job.skipped + skipped,
-    failed: job.failed + failed,
-  }).eq("id", job_id)
+  await supabase
+    .from("import_jobs")
+    .update({
+      progress: newProgress,
+      imported: job.imported + counts.imported,
+      skipped: job.skipped + counts.skipped,
+      failed: job.failed + counts.failed,
+    })
+    .eq("id", job_id)
 
   return res.json({
     status: "running",
     total: job.total,
     progress: newProgress,
-    imported: job.imported + imported,
-    skipped: job.skipped + skipped,
-    failed: job.failed + failed,
+    imported: job.imported + counts.imported,
+    skipped: job.skipped + counts.skipped,
+    failed: job.failed + counts.failed,
   })
 }
