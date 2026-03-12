@@ -19,9 +19,7 @@ import { transactionsHandler } from "#routers/transactions.js"
 import { passkeyHandler } from "#routers/passkey.js"
 import { shopHandler } from "#routers/shop.js"
 import { journeysHandler } from "#routers/journeys.js"
-import { getUser } from "#lib/auth.js"
 
-// Connections
 import { steamHandler } from "#routers/connections/steam.js"
 import { twitchHandler } from "#routers/connections/twitch.js"
 import { nintendoHandler } from "#routers/connections/nintendo.js"
@@ -58,19 +56,28 @@ const SERVICES = {
 }
 
 export default async function handler(req, res) {
+	res.setHeader("X-Frame-Options", "DENY")
+	res.setHeader("X-Content-Type-Options", "nosniff")
+	res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin")
+	res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+
+	const allowedOrigin = process.env.BASE_URL
+
+	if (allowedOrigin) {
+		res.setHeader("Access-Control-Allow-Origin", allowedOrigin)
+		res.setHeader("Access-Control-Allow-Credentials", "true")
+		res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	}
+
+	if (req.method === "OPTIONS") {
+		return res.status(200).end()
+	}
+
 	const { service, action, scope } = req.query
 
 	const fn = SERVICES[service]
 	if (!fn) return res.status(404).json({ error: "service not found" })
-
-	const allowedOrigin = process.env.BASE_URL
-	const origin = req.headers.origin || req.headers.referer
-
-	if (allowedOrigin) {
-		if (!origin || !origin.startsWith(allowedOrigin)) {
-			return res.status(403).json({ error: "forbidden" })
-		}
-	}
 
 	req.action = action
 	req.scope = scope ?? null
