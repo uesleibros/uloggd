@@ -79,18 +79,24 @@ export async function handleProcess(req, res) {
   const start = job.progress
   const batch = games.slice(start, start + BATCH_SIZE)
 
-  if (batch.length === 0) {
-    await supabase
-      .from("import_jobs")
-      .update({
-        status: "completed",
-        finished_at: new Date().toISOString(),
-        games_data: null,
-      })
-      .eq("id", job_id)
-
-    return res.json({ status: "completed" })
-  }
+	if (batch.length === 0) {
+	  await supabase
+	    .from("import_jobs")
+	    .update({
+	      status: "completed",
+	      finished_at: new Date().toISOString(),
+	      games_data: null,
+	    })
+	    .eq("id", job_id)
+	
+	  return res.json({ 
+	    status: "completed",
+	    total: job.total,
+	    imported: job.imported,
+	    skipped: job.skipped,
+	    failed: job.failed,
+	  })
+	}
 
   const results = await processBatch(batch, req.user.id)
 
