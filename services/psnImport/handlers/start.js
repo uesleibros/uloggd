@@ -81,6 +81,7 @@ export async function handleStart(req, res) {
       name: title.trophyTitleName,
       platform: title.trophyTitlePlatform,
       npCommunicationId: title.npCommunicationId,
+      npTitleId: title.npTitleId,
       progress: title.progress,
       earnedTrophies: title.earnedTrophies,
       lastUpdated: title.lastUpdatedDateTime,
