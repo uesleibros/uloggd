@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Trophy, EyeOff, Eye, ChevronLeft, Loader2 } from "lucide-react"
+import { Trophy, EyeOff, Eye, ChevronLeft, Loader2, ChevronRight } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
@@ -354,6 +354,92 @@ function GameTrophiesModal({ game, userId, isOpen, onClose }) {
   )
 }
 
+function AllGamesModal({ userId, allGames, isOpen, onClose, onSelectGame }) {
+  const { t } = useTranslation("trophies.allGames")
+  const [search, setSearch] = useState("")
+
+  useEffect(() => {
+    if (!isOpen) setSearch("")
+  }, [isOpen])
+
+  const filtered = allGames.filter(g =>
+    g.name.toLowerCase().includes(search.toLowerCase())
+  )
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" fullscreenMobile showMobileGrip>
+      <div className="p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <PlayStationIcon className="w-4 h-4 text-[#0070cc]" />
+          <h3 className="text-base font-bold text-white">{t("title")}</h3>
+          <span className="text-xs text-zinc-500 ml-auto">
+            {allGames.length} {t("gamesCount")}
+          </span>
+        </div>
+
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t("searchPlaceholder")}
+          className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 mb-4"
+        />
+
+        <div className="max-h-96 overflow-y-auto space-y-1.5 pr-1">
+          {filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Trophy className="w-8 h-8 text-zinc-700 mb-2" />
+              <p className="text-sm text-zinc-500">{t("noResults")}</p>
+            </div>
+          ) : (
+            filtered.map((game) => (
+              <button
+                key={game.id}
+                onClick={() => {
+                  onSelectGame(game)
+                  onClose()
+                }}
+                className="w-full flex items-center gap-3 p-2.5 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-zinc-600 rounded-lg transition-all cursor-pointer text-left"
+              >
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={game.iconUrl}
+                    alt={game.name}
+                    className="w-12 h-12 rounded-lg object-cover border border-zinc-700/50"
+                  />
+                  <div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
+                    <PlayStationIcon className="w-2.5 h-2.5 text-[#0070cc]" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-white truncate">{game.name}</div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <TrophySummary
+                      earnedTrophies={game.earnedTrophies}
+                      definedTrophies={game.definedTrophies}
+                      compact
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#003791] to-[#0070cc] transition-all"
+                        style={{ width: `${game.progress}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-zinc-500 flex-shrink-0">{game.progress}%</span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-zinc-600 flex-shrink-0" />
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
 function TrophySummary({ earnedTrophies, definedTrophies, compact = false }) {
   const types = ["platinum", "gold", "silver", "bronze"]
 
@@ -379,13 +465,17 @@ function TrophySummary({ earnedTrophies, definedTrophies, compact = false }) {
 export default function PSNTrophies({ userId, compact = false }) {
   const { t } = useTranslation("trophies.list")
   const [games, setGames] = useState([])
+  const [allGames, setAllGames] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedGame, setSelectedGame] = useState(null)
+  const [showAllGames, setShowAllGames] = useState(false)
 
   useEffect(() => {
     setGames([])
+    setAllGames([])
     setLoading(true)
     setSelectedGame(null)
+    setShowAllGames(false)
 
     if (!userId) return
 
@@ -399,12 +489,12 @@ export default function PSNTrophies({ userId, compact = false }) {
         const data = await res.json()
 
         if (res.ok && data.games) {
-          const recent = data.games
+          const sorted = data.games
             .filter(g => g.progress > 0)
             .sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated))
-            .slice(0, compact ? 3 : 5)
 
-          setGames(recent)
+          setAllGames(sorted)
+          setGames(sorted.slice(0, compact ? 3 : 5))
         }
       } catch {} finally {
         setLoading(false)
@@ -436,12 +526,21 @@ export default function PSNTrophies({ userId, compact = false }) {
   return (
     <>
       <div className="mt-4 bg-zinc-800/30 border border-zinc-700/50 rounded-xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-zinc-700/50">
+        <div className="px-4 py-3 border-b border-zinc-700/50 flex items-center justify-between">
           <h3 className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider flex items-center gap-2">
             <Trophy className="w-3.5 h-3.5" />
             {t("title")}
             <PlayStationIcon className="w-3 h-3 text-[#0070cc]" />
           </h3>
+          {allGames.length > games.length && (
+            <button
+              onClick={() => setShowAllGames(true)}
+              className="text-[11px] text-zinc-500 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
+            >
+              {t("viewAll", { count: allGames.length })}
+              <ChevronRight className="w-3 h-3" />
+            </button>
+          )}
         </div>
 
         <div className="divide-y divide-zinc-700/30">
@@ -494,6 +593,14 @@ export default function PSNTrophies({ userId, compact = false }) {
           ))}
         </div>
       </div>
+
+      <AllGamesModal
+        userId={userId}
+        allGames={allGames}
+        isOpen={showAllGames}
+        onClose={() => setShowAllGames(false)}
+        onSelectGame={setSelectedGame}
+      />
 
       <GameTrophiesModal
         game={selectedGame}
