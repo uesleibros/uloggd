@@ -117,6 +117,42 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 	const { t: tQuickActions } = useTranslation("quickActions")
 	const [showStatus, setShowStatus] = useState(false)
 	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
+	const menuRef = useRef(null)
+
+	useEffect(() => {
+		const handleClickOutside = (e) => {
+			if (menuRef.current && !menuRef.current.contains(e.target)) {
+				onClose()
+			}
+		}
+
+		const handleScroll = () => {
+			onClose()
+		}
+
+		const handleEscape = (e) => {
+			if (e.key === "Escape") {
+				onClose()
+			}
+		}
+
+		document.addEventListener("mousedown", handleClickOutside)
+		document.addEventListener("touchstart", handleClickOutside)
+		window.addEventListener("scroll", handleScroll, true)
+		document.addEventListener("keydown", handleEscape)
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside)
+			document.removeEventListener("touchstart", handleClickOutside)
+			window.removeEventListener("scroll", handleScroll, true)
+			document.removeEventListener("keydown", handleEscape)
+		}
+	}, [onClose])
+
+	const handleAction = useCallback((action) => {
+		action()
+		onClose()
+	}, [onClose])
 
 	const menuContent = showStatus ? (
 		<div className="w-44 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden pointer-events-auto">
@@ -134,7 +170,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 					key={s.id}
 					type="button"
 					onMouseDown={stopEvent}
-					onClick={(e) => { stopEvent(e); onStatusSelect(s.id); setShowStatus(false); onClose?.() }}
+					onClick={(e) => { stopEvent(e); handleAction(() => onStatusSelect(s.id)) }}
 					className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer transition-colors ${
 						state?.status === s.id ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
 					}`}
@@ -148,7 +184,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 				<button
 					type="button"
 					onMouseDown={stopEvent}
-					onClick={(e) => { stopEvent(e); onStatusSelect(null); setShowStatus(false); onClose?.() }}
+					onClick={(e) => { stopEvent(e); handleAction(() => onStatusSelect(null)) }}
 					className="w-full px-2.5 py-2 text-[11px] text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 cursor-pointer text-left border-t border-zinc-700/50"
 				>
 					{t("removeStatus")}
@@ -174,7 +210,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 			<button
 				type="button"
 				onMouseDown={stopEvent}
-				onClick={(e) => { stopEvent(e); onToggle("playing", !state?.playing); onClose?.() }}
+				onClick={(e) => { stopEvent(e); handleAction(() => onToggle("playing", !state?.playing)) }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.playing ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -188,7 +224,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 			<button
 				type="button"
 				onMouseDown={stopEvent}
-				onClick={(e) => { stopEvent(e); onToggle("wishlist", !state?.wishlist); onClose?.() }}
+				onClick={(e) => { stopEvent(e); handleAction(() => onToggle("wishlist", !state?.wishlist)) }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.wishlist ? "text-white bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -204,7 +240,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 			<button
 				type="button"
 				onMouseDown={stopEvent}
-				onClick={(e) => { stopEvent(e); onAddToList(); onClose?.() }}
+				onClick={(e) => { stopEvent(e); handleAction(onAddToList) }}
 				disabled={!!updating}
 				className="w-full flex items-center gap-2 px-2.5 py-2 text-[11px] text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer disabled:opacity-50"
 			>
@@ -217,7 +253,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 			<button
 				type="button"
 				onMouseDown={stopEvent}
-				onClick={(e) => { stopEvent(e); onToggle("liked", !state?.liked); onClose?.() }}
+				onClick={(e) => { stopEvent(e); handleAction(() => onToggle("liked", !state?.liked)) }}
 				disabled={!!updating}
 				className={`w-full flex items-center gap-2 px-2.5 py-2 text-[11px] cursor-pointer disabled:opacity-50 ${
 					state?.liked ? "text-red-400 bg-zinc-800" : "text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -232,6 +268,7 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 	return createPortal(
 		<div
+			ref={menuRef}
 			style={{
 				position: "fixed",
 				left: position.left,
@@ -259,7 +296,7 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 	const statusConfig = state?.status ? GAME_STATUS[state.status] : null
 
 	useEffect(() => {
-		const checkMobile = () => setIsMobile(window.innerWidth < 768)
+		const checkMobile = () => setIsMobile(window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 768)
 		checkMobile()
 		window.addEventListener("resize", checkMobile)
 		return () => window.removeEventListener("resize", checkMobile)
@@ -272,9 +309,17 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 	useEffect(() => {
 		if (showMore && moreButtonRef.current) {
 			const rect = moreButtonRef.current.getBoundingClientRect()
+			const menuWidth = 176
+			let left = rect.right - menuWidth
+
+			if (left < 8) left = 8
+			if (left + menuWidth > window.innerWidth - 8) {
+				left = window.innerWidth - menuWidth - 8
+			}
+
 			setMenuPos({
 				bottom: window.innerHeight - rect.top,
-				left: rect.right - 176,
+				left,
 			})
 		}
 	}, [showMore])
@@ -283,6 +328,14 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 		return () => {
 			if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current)
 		}
+	}, [])
+
+	const handleClose = useCallback(() => {
+		if (closeTimeoutRef.current) {
+			clearTimeout(closeTimeoutRef.current)
+			closeTimeoutRef.current = null
+		}
+		setShowMore(false)
 	}, [])
 
 	const handleMouseEnter = useCallback(() => {
@@ -301,15 +354,9 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 		}, 150)
 	}, [isMobile])
 
-	const handleClick = useCallback((e) => {
+	const handleButtonClick = useCallback((e) => {
 		stopEvent(e)
-		if (isMobile) {
-			setShowMore(prev => !prev)
-		}
-	}, [isMobile])
-
-	const handleClose = useCallback(() => {
-		setShowMore(false)
+		setShowMore(prev => !prev)
 	}, [])
 
 	return (
@@ -361,7 +408,7 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 					ref={moreButtonRef}
 					type="button"
 					onMouseDown={stopEvent}
-					onClick={handleClick}
+					onClick={handleButtonClick}
 					className={`p-1.5 rounded cursor-pointer transition-all ${
 						showMore ? "text-white bg-white/20" : "text-zinc-400 hover:text-white hover:bg-white/10"
 					}`}
