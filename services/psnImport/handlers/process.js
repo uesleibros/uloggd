@@ -3,37 +3,42 @@ import { query } from "#lib/igdbWrapper.js"
 
 const BATCH_SIZE = 20
 
-async function findGamesByPsnIds(npIds) {
-  if (!npIds.length) return {}
+const PSN_PLATFORMS = [7, 8, 9, 48, 167, 390]
 
-  const results = await query("external_games", `
-    fields game.id, game.slug, game.name, uid;
-    where uid = (${npIds.map(id => `"${id}"`).join(",")});
-    limit 500;
-  `)
-
-  const map = {}
-  for (const ext of results || []) {
-    if (ext.game) map[ext.uid] = ext.game
-  }
-  return map
+function scoreMatch(psnName, igdbName) {
+  const a = psnName.toLowerCase().trim()
+  const b = igdbName.toLowerCase().trim()
+  
+  if (a === b) return 100
+  if (a.startsWith(b) || b.startsWith(a)) return 90
+  
+  const wordsA = a.split(/\s+/)
+  const wordsB = b.split(/\s+/)
+  const matched = wordsA.filter(w => wordsB.includes(w)).length
+  
+  return (matched / Math.max(wordsA.length, wordsB.length)) * 80
 }
 
-async function findGameByName(name) {
+async function findGame(name) {
   const results = await query("games", `
     search "${name.replace(/"/g, '\\"')}";
     fields id, slug, name;
-    limit 1;
+    where platforms = (${PSN_PLATFORMS.join(",")});
+    limit 10;
   `)
-  return results?.[0] || null
+
+  if (!results?.length) return null
+
+  const scored = results
+    .map(g => ({ ...g, score: scoreMatch(name, g.name) }))
+    .sort((a, b) => b.score - a.score)
+
+  return scored[0].score >= 50 ? scored[0] : null
 }
 
 async function processBatch(games, userId) {
-  const npIds = games.map(g => g.npCommunicationId).filter(Boolean)
-  const psnMap = await findGamesByPsnIds(npIds)
-
   const igdbResults = await Promise.all(
-    games.map(g => psnMap[g.npCommunicationId] || findGameByName(g.name))
+    games.map(g => g.name ? findGame(g.name) : null)
   )
 
   const validIds = igdbResults.filter(Boolean).map(g => g.id)
@@ -132,6 +137,8 @@ export async function handleProcess(req, res) {
     status: "running",
     total: job.total,
     progress: newProgress,
-    ...counts
+    imported: (job.imported || 0) + counts.imported,
+    skipped: (job.skipped || 0) + counts.skipped,
+    failed: (job.failed || 0) + counts.failed,
   })
 }
