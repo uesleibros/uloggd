@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { CheckCircle2, Unlink, Loader2, ExternalLink, Copy, Check } from "lucide-react"
+import { CheckCircle2, Unlink, Loader2, ExternalLink, Copy, Check, AlertCircle, LogIn } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
@@ -17,7 +17,9 @@ export default function PlayStationSection() {
   const [npssoToken, setNpssoToken] = useState("")
   const [tokenError, setTokenError] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
+  const PSN_LOGIN_URL = "https://store.playstation.com"
   const PSN_TOKEN_URL = "https://ca.account.sony.com/api/v1/ssocookie"
 
   useEffect(() => {
@@ -29,6 +31,7 @@ export default function PlayStationSection() {
       setNpssoToken("")
       setTokenError(null)
       setCopied(false)
+      setIsLoggedIn(false)
     }
   }, [showModal])
 
@@ -136,7 +139,11 @@ export default function PlayStationSection() {
     }
   }
 
-  function handleOpenPSN() {
+  function handleOpenPSNLogin() {
+    window.open(PSN_LOGIN_URL, "_blank", "noopener,noreferrer")
+  }
+
+  function handleOpenPSNToken() {
     window.open(PSN_TOKEN_URL, "_blank", "noopener,noreferrer")
   }
 
@@ -251,7 +258,7 @@ export default function PlayStationSection() {
             onClick={() => !connecting && setShowModal(false)}
           />
           
-          <div className="relative w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden">
+          <div className="relative w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
             <div className="bg-gradient-to-r from-[#003791] to-[#0050d4] p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
@@ -269,26 +276,83 @@ export default function PlayStationSection() {
             </div>
 
             <div className="p-6 space-y-6">
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                <div className="flex gap-3">
+                  <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-400 mb-1">
+                      {t("settings.psn.modal.importantTitle")}
+                    </p>
+                    <p className="text-xs text-blue-300/80">
+                      {t("settings.psn.modal.importantDesc")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-[#003791] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                    1
+                <div className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${
+                  isLoggedIn ? "bg-green-500/5" : "bg-zinc-800/50"
+                }`}>
+                  <div className={`w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                    isLoggedIn ? "bg-green-500" : "bg-[#003791]"
+                  }`}>
+                    {isLoggedIn ? <Check className="w-3.5 h-3.5" /> : "1"}
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-zinc-300 mb-2">
-                      {t("settings.psn.modal.step1")}
+                    <p className="text-sm font-medium text-white mb-1">
+                      {t("settings.psn.modal.step1Title")}
                     </p>
-                    <div className="flex gap-2">
+                    <p className="text-xs text-zinc-400 mb-3">
+                      {t("settings.psn.modal.step1Desc")}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
                       <button
-                        onClick={handleOpenPSN}
+                        onClick={handleOpenPSNLogin}
                         className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-white bg-[#003791] hover:bg-[#0050d4] rounded-lg transition-colors"
                       >
+                        <LogIn className="w-3.5 h-3.5" />
+                        {t("settings.psn.modal.loginPSN")}
+                      </button>
+                      {!isLoggedIn && (
+                        <button
+                          onClick={() => setIsLoggedIn(true)}
+                          className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-green-400 bg-green-500/10 hover:bg-green-500/20 rounded-lg transition-colors"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          {t("settings.psn.modal.alreadyLogged")}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`flex items-start gap-3 p-3 rounded-lg transition-all ${
+                  isLoggedIn ? "bg-zinc-800/50 opacity-100" : "opacity-40 pointer-events-none"
+                }`}>
+                  <div className="w-6 h-6 rounded-full bg-[#003791] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                    2
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-white mb-1">
+                      {t("settings.psn.modal.step2Title")}
+                    </p>
+                    <p className="text-xs text-zinc-400 mb-3">
+                      {t("settings.psn.modal.step2Desc")}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={handleOpenPSNToken}
+                        disabled={!isLoggedIn}
+                        className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-white bg-[#003791] hover:bg-[#0050d4] rounded-lg transition-colors disabled:opacity-50"
+                      >
                         <ExternalLink className="w-3.5 h-3.5" />
-                        {t("settings.psn.modal.openPSN")}
+                        {t("settings.psn.modal.getToken")}
                       </button>
                       <button
                         onClick={handleCopyUrl}
-                        className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+                        disabled={!isLoggedIn}
+                        className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors disabled:opacity-50"
                       >
                         {copied ? (
                           <>
@@ -306,46 +370,53 @@ export default function PlayStationSection() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-[#003791] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                    2
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-zinc-300">
-                      {t("settings.psn.modal.step2")}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
+                <div className={`flex items-start gap-3 p-3 rounded-lg transition-all ${
+                  isLoggedIn ? "bg-zinc-800/50 opacity-100" : "opacity-40 pointer-events-none"
+                }`}>
                   <div className="w-6 h-6 rounded-full bg-[#003791] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
                     3
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-zinc-300 mb-2">
-                      {t("settings.psn.modal.step3")}
+                    <p className="text-sm font-medium text-white mb-1">
+                      {t("settings.psn.modal.step3Title")}
                     </p>
-                    <div className="bg-zinc-800/50 rounded-lg p-3 font-mono text-xs text-zinc-400 border border-zinc-700">
-                      {`{"npsso":"eyJhbGc..."}`}
+                    <p className="text-xs text-zinc-400 mb-2">
+                      {t("settings.psn.modal.step3Desc")}
+                    </p>
+                    <div className="bg-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-400 border border-zinc-700">
+                      <span className="text-zinc-500">{"{"}</span>
+                      <span className="text-blue-400">"npsso"</span>
+                      <span className="text-zinc-500">:</span>
+                      <span className="text-green-400">"eyJhbGciOiJS..."</span>
+                      <span className="text-zinc-500">{"}"}</span>
                     </div>
+                    <p className="text-[10px] text-zinc-500 mt-2">
+                      {t("settings.psn.modal.step3Hint")}
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
+                <div className={`flex items-start gap-3 p-3 rounded-lg transition-all ${
+                  isLoggedIn ? "bg-zinc-800/50 opacity-100" : "opacity-40 pointer-events-none"
+                }`}>
                   <div className="w-6 h-6 rounded-full bg-[#003791] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
                     4
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-zinc-300 mb-2">
-                      {t("settings.psn.modal.step4")}
+                    <p className="text-sm font-medium text-white mb-1">
+                      {t("settings.psn.modal.step4Title")}
+                    </p>
+                    <p className="text-xs text-zinc-400 mb-2">
+                      {t("settings.psn.modal.step4Desc")}
                     </p>
                     <input
                       id="npsso-input"
                       type="text"
                       value={npssoToken}
                       onChange={handleTokenChange}
+                      disabled={!isLoggedIn}
                       placeholder={t("settings.psn.modal.placeholder")}
-                      className={`w-full px-4 py-3 bg-zinc-800 border rounded-lg text-sm text-white placeholder-zinc-500 font-mono focus:outline-none focus:ring-2 transition-colors ${
+                      className={`w-full px-4 py-3 bg-zinc-800 border rounded-lg text-sm text-white placeholder-zinc-500 font-mono focus:outline-none focus:ring-2 transition-colors disabled:opacity-50 ${
                         tokenError 
                           ? "border-red-500 focus:ring-red-500/50" 
                           : isTokenValid
