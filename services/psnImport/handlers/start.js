@@ -3,6 +3,36 @@ import { getPsnToken } from "#services/psn/utils/psnAuth.js"
 
 const PSN_API_URL = "https://m.np.playstation.com/api"
 
+async function fetchAllPsnGames(accessToken, accountId) {
+  const allGames = []
+  let offset = 0
+  const limit = 800
+
+  while (true) {
+    const response = await fetch(
+      `${PSN_API_URL}/trophy/v1/users/${accountId}/trophyTitles?limit=${limit}&offset=${offset}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    )
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch PSN games")
+    }
+
+    const data = await response.json()
+    const titles = data.trophyTitles || []
+    
+    allGames.push(...titles)
+
+    if (titles.length < limit || allGames.length >= data.totalItemCount) {
+      break
+    }
+
+    offset += limit
+  }
+
+  return allGames
+}
+
 export async function handleStart(req, res) {
   const { data: connection } = await supabase
     .from("user_connections")
@@ -45,21 +75,9 @@ export async function handleStart(req, res) {
 
   try {
     const accessToken = await getPsnToken(req.user.id)
+    const trophyTitles = await fetchAllPsnGames(accessToken, connection.provider_user_id)
 
-    const response = await fetch(
-      `${PSN_API_URL}/trophy/v1/users/${connection.provider_user_id}/trophyTitles?limit=800`,
-      {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      }
-    )
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch PSN games")
-    }
-
-    const games = (data.trophyTitles || []).map(title => ({
+    const games = trophyTitles.map(title => ({
       name: title.trophyTitleName,
       platform: title.trophyTitlePlatform,
       npCommunicationId: title.npCommunicationId,
@@ -74,6 +92,9 @@ export async function handleStart(req, res) {
         .update({
           status: "completed",
           total: 0,
+          imported: 0,
+          skipped: 0,
+          failed: 0,
           finished_at: new Date().toISOString(),
         })
         .eq("id", job.id)
