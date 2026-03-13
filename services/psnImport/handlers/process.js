@@ -58,7 +58,7 @@ async function processBatch(games, userId) {
       user_id: userId,
       game_id: igdbGame.id,
       game_slug: igdbGame.slug,
-      status: isCompleted ? "played" : hasProgress ? "playing" : "played",
+      status: isCompleted ? "completed" : "played",
       playing: hasProgress && !isCompleted
     })
     
@@ -66,7 +66,6 @@ async function processBatch(games, userId) {
   }
 
   if (toInsert.length > 0) {
-    console.log("Inserting:", toInsert)
     const { error } = await supabase.from("user_games").insert(toInsert)
     if (error) {
       console.log("Insert error:", error)
