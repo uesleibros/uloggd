@@ -2,8 +2,10 @@ import { supabase } from "#lib/supabase-ssr.js"
 import { query } from "#lib/igdbWrapper.js"
 
 const BATCH_SIZE = 25
-const CONCURRENCY = 5
+const CONCURRENCY = 1
 const MIN_MATCH_SCORE = 40
+const RETRY_ATTEMPTS = 3
+const RETRY_DELAY = 1000
 
 const PLATFORM_MAP = {
   "PS5": 167,
@@ -95,6 +97,28 @@ function sanitizeForIGDB(name) {
     .slice(0, 100)
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+async function queryWithRetry(endpoint, body, attempt = 1) {
+  try {
+    return await query(endpoint, body)
+  } catch (error) {
+    const isTooManyRequests = error.message?.includes("Too Many Requests") || 
+                              error.message?.includes("429")
+    
+    if (isTooManyRequests && attempt <= RETRY_ATTEMPTS) {
+      const delay = RETRY_DELAY * Math.pow(2, attempt - 1) // Exponential backoff
+      console.log(`Rate limited, waiting ${delay}ms before retry ${attempt}/${RETRY_ATTEMPTS}`)
+      await sleep(delay)
+      return queryWithRetry(endpoint, body, attempt + 1)
+    }
+    
+    throw error
+  }
+}
+
 async function mapConcurrent(items, fn, limit) {
   const results = []
   let index = 0
@@ -103,6 +127,7 @@ async function mapConcurrent(items, fn, limit) {
     while (index < items.length) {
       const i = index++
       results[i] = await fn(items[i], i)
+      await sleep(100)
     }
   }
 
@@ -114,44 +139,49 @@ async function processOne(game, userId) {
   const searchName = sanitizeForIGDB(game.name)
   if (!searchName) return { status: "skipped" }
 
-  const results = await query("games", `
-    fields id, slug, name, platforms.id, alternative_names.name;
-    search "${searchName}";
-    limit 10;
-  `)
+  try {
+    const results = await queryWithRetry("games", `
+      fields id, slug, name, platforms.id, alternative_names.name;
+      search "${searchName}";
+      limit 10;
+    `)
 
-  if (!results?.length) return { status: "skipped" }
+    if (!results?.length) return { status: "skipped" }
 
-  let best = null
-  let bestScore = 0
+    let best = null
+    let bestScore = 0
 
-  for (const igdbGame of results) {
-    const score = scoreMatch(game, igdbGame)
-    if (score > bestScore) {
-      bestScore = score
-      best = igdbGame
+    for (const igdbGame of results) {
+      const score = scoreMatch(game, igdbGame)
+      if (score > bestScore) {
+        bestScore = score
+        best = igdbGame
+      }
     }
+
+    if (!best || bestScore < MIN_MATCH_SCORE) {
+      return { status: "skipped" }
+    }
+
+    const hasProgress = game.progress > 0
+    const isCompleted = game.progress === 100
+
+    const { error } = await supabase
+      .from("user_games")
+      .upsert({
+        user_id: userId,
+        game_id: best.id,
+        game_slug: best.slug,
+        status: isCompleted ? "played" : hasProgress ? "playing" : null,
+        playing: hasProgress && !isCompleted
+      }, { onConflict: "user_id,game_id" })
+
+    if (error) return { status: "failed" }
+    return { status: "imported" }
+  } catch (error) {
+    console.error(`Failed to process "${game.name}":`, error.message)
+    return { status: "failed" }
   }
-
-  if (!best || bestScore < MIN_MATCH_SCORE) {
-    return { status: "skipped" }
-  }
-
-  const hasProgress = game.progress > 0
-  const isCompleted = game.progress === 100
-
-  const { error } = await supabase
-    .from("user_games")
-    .upsert({
-      user_id: userId,
-      game_id: best.id,
-      game_slug: best.slug,
-      status: isCompleted ? "played" : hasProgress ? "playing" : null,
-      playing: hasProgress && !isCompleted
-    }, { onConflict: "user_id,game_id" })
-
-  if (error) return { status: "failed" }
-  return { status: "imported" }
 }
 
 export async function handleProcess(req, res) {
