@@ -1,64 +1,52 @@
 import { supabase } from "#lib/supabase-ssr.js"
 import { query } from "#lib/igdbWrapper.js"
 
-const BATCH_SIZE = 25
+const BATCH_SIZE = 20
+
+async function findGameByName(name) {
+  const searchName = name.replace(/"/g, '\\"')
+
+  const results = await query("games", `
+    search "${searchName}";
+    fields id, slug, name;
+    limit 1;
+  `)
+
+  return results?.[0] || null
+}
 
 async function processBatch(games, userId) {
-  const npIds = games.map(g => g.npCommunicationId).filter(Boolean)
+  const igdbResults = await Promise.all(
+    games.map(g => g.name ? findGameByName(g.name) : Promise.resolve(null))
+  )
+
+  const validResults = igdbResults.filter(Boolean)
   
-  console.log("=== BATCH DEBUG ===")
-  console.log("Games in batch:", games.map(g => ({ name: g.name, npId: g.npCommunicationId })))
-  console.log("NP IDs count:", npIds.length)
-  
-  if (npIds.length === 0) {
-    console.log("❌ No NP IDs found, skipping all")
+  if (validResults.length === 0) {
     return games.map(() => ({ status: "skipped" }))
   }
 
-  const igdbQuery = `
-    fields id, slug, name, external_games.uid, external_games.category;
-    where external_games.uid = (${npIds.map(id => `"${id}"`).join(',')});
-    limit 500;
-  `
-  console.log("IGDB Query:", igdbQuery)
+  const { data: existingGames } = await supabase
+    .from("user_games")
+    .select("game_id")
+    .eq("user_id", userId)
+    .in("game_id", validResults.map(g => g.id))
 
-  const igdbGames = await query("games", igdbQuery)
-
-  console.log("IGDB returned:", igdbGames?.length || 0, "games")
-  if (igdbGames?.length) {
-    console.log("IGDB games:", igdbGames.map(g => ({ 
-      name: g.name, 
-      id: g.id,
-      externals: g.external_games?.map(e => e.uid)
-    })))
-  }
-
-  if (!igdbGames?.length) {
-    console.log("❌ No IGDB matches, skipping all")
-    return games.map(() => ({ status: "skipped" }))
-  }
-
-  const npToGame = {}
-  for (const game of igdbGames) {
-    if (game.external_games) {
-      for (const ext of game.external_games) {
-        if (npIds.includes(ext.uid)) {
-          npToGame[ext.uid] = game
-          console.log(`✅ Mapped: ${ext.uid} -> ${game.name}`)
-        }
-      }
-    }
-  }
-
-  console.log("Mappings found:", Object.keys(npToGame).length)
+  const existingIds = new Set(existingGames?.map(g => g.game_id) || [])
 
   const results = []
+  const toInsert = []
 
-  for (const game of games) {
-    const igdbGame = npToGame[game.npCommunicationId]
+  for (let i = 0; i < games.length; i++) {
+    const game = games[i]
+    const igdbGame = igdbResults[i]
 
     if (!igdbGame) {
-      console.log(`⏭️ Skip (no match): ${game.name}`)
+      results.push({ status: "skipped" })
+      continue
+    }
+
+    if (existingIds.has(igdbGame.id)) {
       results.push({ status: "skipped" })
       continue
     }
@@ -66,28 +54,24 @@ async function processBatch(games, userId) {
     const hasProgress = game.progress > 0
     const isCompleted = game.progress === 100
 
-    console.log(`📥 Importing: ${game.name} -> ${igdbGame.slug} (progress: ${game.progress}%)`)
+    toInsert.push({
+      user_id: userId,
+      game_id: igdbGame.id,
+      game_slug: igdbGame.slug,
+      status: isCompleted ? "played" : hasProgress ? "playing" : "played",
+      playing: hasProgress && !isCompleted
+    })
+    
+    results.push({ status: "imported" })
+  }
 
-    const { error } = await supabase
-      .from("user_games")
-      .upsert({
-        user_id: userId,
-        game_id: igdbGame.id,
-        game_slug: igdbGame.slug,
-        status: isCompleted ? "played" : hasProgress ? "playing" : null,
-        playing: hasProgress && !isCompleted
-      }, { onConflict: "user_id,game_id" })
-
+  if (toInsert.length > 0) {
+    const { error } = await supabase.from("user_games").insert(toInsert)
     if (error) {
-      console.log(`❌ DB Error: ${error.message}`)
-      results.push({ status: "failed" })
-    } else {
-      console.log(`✅ Imported: ${game.name}`)
-      results.push({ status: "imported" })
+      return results.map(r => r.status === "imported" ? { status: "failed" } : r)
     }
   }
 
-  console.log("=== BATCH RESULTS ===", results)
   return results
 }
 
@@ -110,8 +94,6 @@ export async function handleProcess(req, res) {
   const start = job.progress || 0
   const batch = games.slice(start, start + BATCH_SIZE)
 
-  console.log(`\n🎮 Processing job ${job_id}: ${start}/${job.total}`)
-
   if (batch.length === 0) {
     await supabase
       .from("import_jobs")
@@ -125,18 +107,16 @@ export async function handleProcess(req, res) {
     return res.json({ 
       status: "completed",
       total: job.total,
-      imported: job.imported,
-      skipped: job.skipped,
-      failed: job.failed,
+      imported: job.imported || 0,
+      skipped: job.skipped || 0,
+      failed: job.failed || 0,
     })
   }
 
   const results = await processBatch(batch, req.user.id)
 
   const counts = { imported: 0, skipped: 0, failed: 0 }
-  for (const r of results) {
-    counts[r.status]++
-  }
+  for (const r of results) counts[r.status]++
 
   const newProgress = start + batch.length
 
@@ -144,9 +124,9 @@ export async function handleProcess(req, res) {
     .from("import_jobs")
     .update({
       progress: newProgress,
-      imported: job.imported + counts.imported,
-      skipped: job.skipped + counts.skipped,
-      failed: job.failed + counts.failed,
+      imported: (job.imported || 0) + counts.imported,
+      skipped: (job.skipped || 0) + counts.skipped,
+      failed: (job.failed || 0) + counts.failed,
     })
     .eq("id", job_id)
 
@@ -154,8 +134,8 @@ export async function handleProcess(req, res) {
     status: "running",
     total: job.total,
     progress: newProgress,
-    imported: job.imported + counts.imported,
-    skipped: job.skipped + counts.skipped,
-    failed: job.failed + counts.failed,
+    imported: (job.imported || 0) + counts.imported,
+    skipped: (job.skipped || 0) + counts.skipped,
+    failed: (job.failed || 0) + counts.failed,
   })
 }
