@@ -66,8 +66,10 @@ async function processBatch(games, userId) {
   }
 
   if (toInsert.length > 0) {
+    console.log("Inserting:", toInsert)
     const { error } = await supabase.from("user_games").insert(toInsert)
     if (error) {
+      console.log("Insert error:", error)
       return results.map(r => r.status === "imported" ? { status: "failed" } : r)
     }
   }
