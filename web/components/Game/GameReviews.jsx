@@ -251,6 +251,7 @@ export function ReviewCard({ review, user, currentUserId, journey, onJourneyUpda
         fullscreenMobile
         showCloseButton={false}
         maxWidth="max-w-2xl"
+        noScroll
         className="!bg-zinc-900 !border-zinc-700 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
       >
         <div className="flex items-start justify-between gap-4 p-5 border-b border-zinc-700/50 flex-shrink-0">
@@ -267,7 +268,7 @@ export function ReviewCard({ review, user, currentUserId, journey, onJourneyUpda
           </div>
           <LikeButton reviewId={review.id} currentUserId={currentUserId} />
         </div>
-        <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <ReviewModalContent review={review} />
           {journey && (
             <div className="px-5 pb-5">
@@ -352,6 +353,7 @@ export function ProfileReviewCard({ review, game, user }) {
         fullscreenMobile
         showCloseButton={false}
         maxWidth="max-w-2xl"
+        noScroll
         className="!bg-zinc-900 !border-zinc-700 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
       >
         <div className="flex items-start justify-between gap-4 p-5 border-b border-zinc-700/50 flex-shrink-0">
@@ -383,7 +385,7 @@ export function ProfileReviewCard({ review, game, user }) {
           </div>
           <LikeButton reviewId={review.id} currentUserId={currentUser?.id} />
         </div>
-        <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <ReviewModalContent review={review} />
         </div>
       </Modal>
