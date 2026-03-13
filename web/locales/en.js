@@ -623,6 +623,7 @@ export default {
 		rights: "© {{year}} uloggd",
 	},
 	common: {
+		next: "Next",
 		back: "Back",
 		backToHome: "Back to home",
 		copyLink: "Copy link",
