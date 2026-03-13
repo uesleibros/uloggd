@@ -151,11 +151,11 @@ export default function Modal({
 	}
 
 	const resolvedMaxWidth = MAX_WIDTH_VALUES[maxWidth] || "32rem"
-
+	
 	const contentSizeClasses = fullscreenMobile
-		? "w-full max-h-full md:max-h-[85vh] flex flex-col"
+		? "w-full max-h-[90vh] md:max-h-[85vh] flex flex-col"
 		: `w-full ${maxWidth} max-h-[80vh] flex flex-col`
-
+	
 	const contentStyleClasses = fullscreenMobile
 		? "bg-zinc-900 rounded-t-2xl md:rounded-xl md:border md:border-zinc-700 md:shadow-2xl"
 		: "bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl"
