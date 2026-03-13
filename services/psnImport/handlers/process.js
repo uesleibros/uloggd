@@ -6,17 +6,35 @@ const BATCH_SIZE = 25
 async function processBatch(games, userId) {
   const npIds = games.map(g => g.npCommunicationId).filter(Boolean)
   
+  console.log("=== BATCH DEBUG ===")
+  console.log("Games in batch:", games.map(g => ({ name: g.name, npId: g.npCommunicationId })))
+  console.log("NP IDs count:", npIds.length)
+  
   if (npIds.length === 0) {
+    console.log("❌ No NP IDs found, skipping all")
     return games.map(() => ({ status: "skipped" }))
   }
 
-  const igdbGames = await query("games", `
-    fields id, slug, external_games.uid;
+  const igdbQuery = `
+    fields id, slug, name, external_games.uid, external_games.category;
     where external_games.uid = (${npIds.map(id => `"${id}"`).join(',')});
     limit 500;
-  `)
+  `
+  console.log("IGDB Query:", igdbQuery)
+
+  const igdbGames = await query("games", igdbQuery)
+
+  console.log("IGDB returned:", igdbGames?.length || 0, "games")
+  if (igdbGames?.length) {
+    console.log("IGDB games:", igdbGames.map(g => ({ 
+      name: g.name, 
+      id: g.id,
+      externals: g.external_games?.map(e => e.uid)
+    })))
+  }
 
   if (!igdbGames?.length) {
+    console.log("❌ No IGDB matches, skipping all")
     return games.map(() => ({ status: "skipped" }))
   }
 
@@ -26,10 +44,13 @@ async function processBatch(games, userId) {
       for (const ext of game.external_games) {
         if (npIds.includes(ext.uid)) {
           npToGame[ext.uid] = game
+          console.log(`✅ Mapped: ${ext.uid} -> ${game.name}`)
         }
       }
     }
   }
+
+  console.log("Mappings found:", Object.keys(npToGame).length)
 
   const results = []
 
@@ -37,12 +58,15 @@ async function processBatch(games, userId) {
     const igdbGame = npToGame[game.npCommunicationId]
 
     if (!igdbGame) {
+      console.log(`⏭️ Skip (no match): ${game.name}`)
       results.push({ status: "skipped" })
       continue
     }
 
     const hasProgress = game.progress > 0
     const isCompleted = game.progress === 100
+
+    console.log(`📥 Importing: ${game.name} -> ${igdbGame.slug} (progress: ${game.progress}%)`)
 
     const { error } = await supabase
       .from("user_games")
@@ -54,9 +78,16 @@ async function processBatch(games, userId) {
         playing: hasProgress && !isCompleted
       }, { onConflict: "user_id,game_id" })
 
-    results.push({ status: error ? "failed" : "imported" })
+    if (error) {
+      console.log(`❌ DB Error: ${error.message}`)
+      results.push({ status: "failed" })
+    } else {
+      console.log(`✅ Imported: ${game.name}`)
+      results.push({ status: "imported" })
+    }
   }
 
+  console.log("=== BATCH RESULTS ===", results)
   return results
 }
 
@@ -76,27 +107,29 @@ export async function handleProcess(req, res) {
   }
 
   const games = job.games_data ?? []
-  const start = job.progress
+  const start = job.progress || 0
   const batch = games.slice(start, start + BATCH_SIZE)
 
-	if (batch.length === 0) {
-	  await supabase
-	    .from("import_jobs")
-	    .update({
-	      status: "completed",
-	      finished_at: new Date().toISOString(),
-	      games_data: null,
-	    })
-	    .eq("id", job_id)
-	
-	  return res.json({ 
-	    status: "completed",
-	    total: job.total,
-	    imported: job.imported,
-	    skipped: job.skipped,
-	    failed: job.failed,
-	  })
-	}
+  console.log(`\n🎮 Processing job ${job_id}: ${start}/${job.total}`)
+
+  if (batch.length === 0) {
+    await supabase
+      .from("import_jobs")
+      .update({
+        status: "completed",
+        finished_at: new Date().toISOString(),
+        games_data: null,
+      })
+      .eq("id", job_id)
+
+    return res.json({ 
+      status: "completed",
+      total: job.total,
+      imported: job.imported,
+      skipped: job.skipped,
+      failed: job.failed,
+    })
+  }
 
   const results = await processBatch(batch, req.user.id)
 
