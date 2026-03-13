@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { CheckCircle2, Unlink, Loader2, ExternalLink, Copy, Check, AlertCircle, LogIn } from "lucide-react"
+import { CheckCircle2, Unlink, Loader2, ExternalLink, Copy, Check, AlertCircle, LogIn, X, ChevronRight } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
@@ -17,7 +17,7 @@ export default function PlayStationSection() {
   const [npssoToken, setNpssoToken] = useState("")
   const [tokenError, setTokenError] = useState(null)
   const [copied, setCopied] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [currentStep, setCurrentStep] = useState(1)
 
   const PSN_LOGIN_URL = "https://store.playstation.com"
   const PSN_TOKEN_URL = "https://ca.account.sony.com/api/v1/ssocookie"
@@ -31,20 +31,19 @@ export default function PlayStationSection() {
       setNpssoToken("")
       setTokenError(null)
       setCopied(false)
-      setIsLoggedIn(false)
+      setCurrentStep(1)
     }
   }, [showModal])
 
   useEffect(() => {
-    const handleVisibility = () => {
-      if (!document.hidden && showModal) {
-        const input = document.getElementById("npsso-input")
-        if (input) input.focus()
-      }
+    if (showModal) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
     }
-
-    document.addEventListener("visibilitychange", handleVisibility)
-    return () => document.removeEventListener("visibilitychange", handleVisibility)
+    return () => {
+      document.body.style.overflow = ""
+    }
   }, [showModal])
 
   async function fetchConnection() {
@@ -54,9 +53,7 @@ export default function PlayStationSection() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id }),
       })
-
       const data = await res.json()
-
       if (data.connected) {
         setConnection(data)
       } else {
@@ -82,14 +79,11 @@ export default function PlayStationSection() {
       setTokenError(t("settings.psn.invalidToken"))
       return
     }
-
     setConnecting(true)
     setTokenError(null)
-
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
-
       const res = await fetch("/api/psn/connect", {
         method: "POST",
         headers: {
@@ -101,9 +95,7 @@ export default function PlayStationSection() {
           npssoToken: npssoToken.trim()
         }),
       })
-
       const data = await res.json()
-
       if (res.ok && data.success) {
         setConnection(data.profile)
         setShowModal(false)
@@ -119,10 +111,8 @@ export default function PlayStationSection() {
 
   async function handleRemove() {
     setRemoving(true)
-
     try {
       const { data: { session } } = await supabase.auth.getSession()
-
       const res = await fetch("/api/psn/disconnect", {
         method: "POST",
         headers: {
@@ -130,7 +120,6 @@ export default function PlayStationSection() {
         },
         body: JSON.stringify({ userId: user.id })
       })
-
       if (res.ok) {
         setConnection(null)
       }
@@ -156,7 +145,6 @@ export default function PlayStationSection() {
   function handleTokenChange(e) {
     const value = e.target.value
     setNpssoToken(value)
-    
     if (tokenError && validateToken(value)) {
       setTokenError(null)
     }
@@ -191,7 +179,6 @@ export default function PlayStationSection() {
                 <PlayStationIcon className="w-7 h-7 text-white" />
               )}
             </div>
-
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-sm font-medium text-white">
@@ -207,7 +194,6 @@ export default function PlayStationSection() {
                   </span>
                 )}
               </div>
-
               {isConnected ? (
                 <>
                   <div className="text-sm font-semibold text-white mb-1">
@@ -218,7 +204,6 @@ export default function PlayStationSection() {
                       PlayStation Plus
                     </div>
                   )}
-
                   <button
                     onClick={handleRemove}
                     disabled={removing}
@@ -236,7 +221,6 @@ export default function PlayStationSection() {
                   <p className="text-xs text-zinc-400 mb-3">
                     {t("settings.psn.description")}
                   </p>
-
                   <button
                     onClick={() => setShowModal(true)}
                     className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#003791] hover:bg-[#0050d4] border border-[#003791] rounded-lg transition-colors cursor-pointer"
@@ -252,171 +236,160 @@ export default function PlayStationSection() {
       </SettingsSection>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
           <div 
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => !connecting && setShowModal(false)}
           />
           
-          <div className="relative w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
-            <div className="bg-gradient-to-r from-[#003791] to-[#0050d4] p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-                  <PlayStationIcon className="w-7 h-7 text-white" />
+          <div className="relative w-full sm:max-w-md bg-zinc-900 border-t sm:border border-zinc-700/50 sm:rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] sm:max-h-[90vh] flex flex-col animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
+            <div className="bg-[#003791] p-4 sm:p-5 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                    <PlayStationIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-white">
+                      {t("settings.psn.modal.title")}
+                    </h2>
+                    <p className="text-xs text-white/60">
+                      {t("settings.psn.modal.subtitle")}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">
-                    {t("settings.psn.modal.title")}
-                  </h2>
-                  <p className="text-sm text-white/70">
-                    {t("settings.psn.modal.subtitle")}
-                  </p>
-                </div>
+                <button
+                  onClick={() => !connecting && setShowModal(false)}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-white/70" />
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-2 mt-4">
+                {[1, 2, 3].map((step) => (
+                  <div key={step} className="flex items-center gap-2 flex-1">
+                    <div className={`w-full h-1 rounded-full transition-colors ${
+                      currentStep >= step ? "bg-white" : "bg-white/20"
+                    }`} />
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="p-6 space-y-6">
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-blue-400 mb-1">
-                      {t("settings.psn.modal.importantTitle")}
-                    </p>
-                    <p className="text-xs text-blue-300/80">
-                      {t("settings.psn.modal.importantDesc")}
-                    </p>
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+              {currentStep === 1 && (
+                <div className="space-y-4">
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                    <div className="flex gap-2.5">
+                      <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-amber-400">
+                          {t("settings.psn.modal.importantTitle")}
+                        </p>
+                        <p className="text-xs text-amber-400/70 mt-0.5">
+                          {t("settings.psn.modal.importantDesc")}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="space-y-4">
-                <div className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${
-                  isLoggedIn ? "bg-green-500/5" : "bg-zinc-800/50"
-                }`}>
-                  <div className={`w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
-                    isLoggedIn ? "bg-green-500" : "bg-[#003791]"
-                  }`}>
-                    {isLoggedIn ? <Check className="w-3.5 h-3.5" /> : "1"}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-white mb-1">
+                  <div className="text-center py-4">
+                    <div className="w-16 h-16 bg-[#003791]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <LogIn className="w-8 h-8 text-[#003791]" />
+                    </div>
+                    <h3 className="text-base font-semibold text-white mb-1">
                       {t("settings.psn.modal.step1Title")}
-                    </p>
-                    <p className="text-xs text-zinc-400 mb-3">
+                    </h3>
+                    <p className="text-sm text-zinc-400">
                       {t("settings.psn.modal.step1Desc")}
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={handleOpenPSNLogin}
-                        className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-white bg-[#003791] hover:bg-[#0050d4] rounded-lg transition-colors"
-                      >
-                        <LogIn className="w-3.5 h-3.5" />
-                        {t("settings.psn.modal.loginPSN")}
-                      </button>
-                      {!isLoggedIn && (
-                        <button
-                          onClick={() => setIsLoggedIn(true)}
-                          className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-green-400 bg-green-500/10 hover:bg-green-500/20 rounded-lg transition-colors"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          {t("settings.psn.modal.alreadyLogged")}
-                        </button>
-                      )}
-                    </div>
                   </div>
-                </div>
 
-                <div className={`flex items-start gap-3 p-3 rounded-lg transition-all ${
-                  isLoggedIn ? "bg-zinc-800/50 opacity-100" : "opacity-40 pointer-events-none"
-                }`}>
-                  <div className="w-6 h-6 rounded-full bg-[#003791] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                    2
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-white mb-1">
+                  <button
+                    onClick={handleOpenPSNLogin}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-[#003791] hover:bg-[#0050d4] rounded-xl transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    {t("settings.psn.modal.loginPSN")}
+                  </button>
+                </div>
+              )}
+
+              {currentStep === 2 && (
+                <div className="space-y-4">
+                  <div className="text-center py-4">
+                    <div className="w-16 h-16 bg-[#003791]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <Copy className="w-8 h-8 text-[#003791]" />
+                    </div>
+                    <h3 className="text-base font-semibold text-white mb-1">
                       {t("settings.psn.modal.step2Title")}
-                    </p>
-                    <p className="text-xs text-zinc-400 mb-3">
+                    </h3>
+                    <p className="text-sm text-zinc-400">
                       {t("settings.psn.modal.step2Desc")}
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={handleOpenPSNToken}
-                        disabled={!isLoggedIn}
-                        className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-white bg-[#003791] hover:bg-[#0050d4] rounded-lg transition-colors disabled:opacity-50"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        {t("settings.psn.modal.getToken")}
-                      </button>
-                      <button
-                        onClick={handleCopyUrl}
-                        disabled={!isLoggedIn}
-                        className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors disabled:opacity-50"
-                      >
-                        {copied ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-green-400" />
-                            <span className="text-green-400">{t("settings.psn.modal.copied")}</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            {t("settings.psn.modal.copyUrl")}
-                          </>
-                        )}
-                      </button>
-                    </div>
                   </div>
-                </div>
 
-                <div className={`flex items-start gap-3 p-3 rounded-lg transition-all ${
-                  isLoggedIn ? "bg-zinc-800/50 opacity-100" : "opacity-40 pointer-events-none"
-                }`}>
-                  <div className="w-6 h-6 rounded-full bg-[#003791] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                    3
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-white mb-1">
-                      {t("settings.psn.modal.step3Title")}
-                    </p>
-                    <p className="text-xs text-zinc-400 mb-2">
-                      {t("settings.psn.modal.step3Desc")}
-                    </p>
-                    <div className="bg-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-400 border border-zinc-700">
+                  <button
+                    onClick={handleOpenPSNToken}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-[#003791] hover:bg-[#0050d4] rounded-xl transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    {t("settings.psn.modal.getToken")}
+                  </button>
+
+                  <button
+                    onClick={handleCopyUrl}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4 text-green-400" />
+                        <span className="text-green-400">{t("settings.psn.modal.copied")}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        {t("settings.psn.modal.copyUrl")}
+                      </>
+                    )}
+                  </button>
+
+                  <div className="bg-zinc-800/50 rounded-xl p-3 border border-zinc-700/50">
+                    <p className="text-xs text-zinc-500 mb-2">{t("settings.psn.modal.step3Title")}</p>
+                    <div className="bg-zinc-900 rounded-lg p-2.5 font-mono text-xs overflow-x-auto">
                       <span className="text-zinc-500">{"{"}</span>
                       <span className="text-blue-400">"npsso"</span>
                       <span className="text-zinc-500">:</span>
-                      <span className="text-green-400">"eyJhbGciOiJS..."</span>
+                      <span className="text-green-400">"eyJhbGci..."</span>
                       <span className="text-zinc-500">{"}"}</span>
                     </div>
-                    <p className="text-[10px] text-zinc-500 mt-2">
+                    <p className="text-[10px] text-zinc-600 mt-2">
                       {t("settings.psn.modal.step3Hint")}
                     </p>
                   </div>
                 </div>
+              )}
 
-                <div className={`flex items-start gap-3 p-3 rounded-lg transition-all ${
-                  isLoggedIn ? "bg-zinc-800/50 opacity-100" : "opacity-40 pointer-events-none"
-                }`}>
-                  <div className="w-6 h-6 rounded-full bg-[#003791] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                    4
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-white mb-1">
+              {currentStep === 3 && (
+                <div className="space-y-4">
+                  <div className="text-center py-2">
+                    <h3 className="text-base font-semibold text-white mb-1">
                       {t("settings.psn.modal.step4Title")}
-                    </p>
-                    <p className="text-xs text-zinc-400 mb-2">
+                    </h3>
+                    <p className="text-sm text-zinc-400">
                       {t("settings.psn.modal.step4Desc")}
                     </p>
+                  </div>
+
+                  <div>
                     <input
-                      id="npsso-input"
                       type="text"
                       value={npssoToken}
                       onChange={handleTokenChange}
-                      disabled={!isLoggedIn}
                       placeholder={t("settings.psn.modal.placeholder")}
-                      className={`w-full px-4 py-3 bg-zinc-800 border rounded-lg text-sm text-white placeholder-zinc-500 font-mono focus:outline-none focus:ring-2 transition-colors disabled:opacity-50 ${
+                      autoFocus
+                      className={`w-full px-4 py-3 bg-zinc-800 border rounded-xl text-sm text-white placeholder-zinc-500 font-mono focus:outline-none focus:ring-2 transition-colors ${
                         tokenError 
                           ? "border-red-500 focus:ring-red-500/50" 
                           : isTokenValid
@@ -434,37 +407,60 @@ export default function PlayStationSection() {
                       </p>
                     )}
                   </div>
+
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                    <p className="text-xs text-amber-400">
+                      {t("settings.psn.modal.betaWarning")}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
+            </div>
 
+            <div className="p-4 sm:p-5 border-t border-zinc-800 flex-shrink-0 bg-zinc-900/80 backdrop-blur-sm">
               <div className="flex gap-3">
-                <button
-                  onClick={() => setShowModal(false)}
-                  disabled={connecting}
-                  className="flex-1 px-4 py-3 text-sm font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  {t("settings.psn.modal.cancel")}
-                </button>
-                <button
-                  onClick={handleConnect}
-                  disabled={connecting || !isTokenValid}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-[#003791] hover:bg-[#0050d4] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {connecting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      {t("settings.psn.modal.connecting")}
-                    </>
-                  ) : (
-                    t("settings.psn.modal.connect")
-                  )}
-                </button>
-              </div>
+                {currentStep > 1 ? (
+                  <button
+                    onClick={() => setCurrentStep(currentStep - 1)}
+                    disabled={connecting}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors disabled:opacity-50"
+                  >
+                    {t("common.back")}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowModal(false)}
+                    disabled={connecting}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors disabled:opacity-50"
+                  >
+                    {t("settings.psn.modal.cancel")}
+                  </button>
+                )}
 
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
-                <p className="text-xs text-amber-400">
-                  {t("settings.psn.modal.betaWarning")}
-                </p>
+                {currentStep < 3 ? (
+                  <button
+                    onClick={() => setCurrentStep(currentStep + 1)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-[#003791] hover:bg-[#0050d4] rounded-xl transition-colors"
+                  >
+                    {currentStep === 1 ? t("settings.psn.modal.alreadyLogged") : t("common.next") || "Próximo"}
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleConnect}
+                    disabled={connecting || !isTokenValid}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-[#003791] hover:bg-[#0050d4] rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {connecting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {t("settings.psn.modal.connecting")}
+                      </>
+                    ) : (
+                      t("settings.psn.modal.connect")
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>
