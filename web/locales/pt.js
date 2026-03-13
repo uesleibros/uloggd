@@ -623,6 +623,7 @@ export default {
 		rights: "© {{year}} uloggd",
 	},
 	common: {
+		next: "Próximo",
 		back: "Voltar",
 		backToHome: "Voltar ao início",
 		copyLink: "Copiar link",
@@ -2247,3 +2248,4 @@ export default {
 		},
 	},
 }
+
