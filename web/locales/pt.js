@@ -1,8 +1,15 @@
 export default {
 	trophies: {
 	  list: {
-	    title: "Troféus PlayStation"
+	    title: "Troféus PlayStation",
+			viewAll: "Ver todos ({{count}})",
 	  },
+		allGames: {
+			title: "Todos os Jogos",
+			gamesCount: "jogos",
+			searchPlaceholder: "Buscar jogo...",
+			noResults: "Nenhum jogo encontrado",
+		},
 	  detail: {
 	    back: "Voltar",
 	    hiddenAlt: "Troféu secreto",
@@ -1964,6 +1971,18 @@ export default {
 			hiddenAlt: "Conquista secreta",
 			showLess: "Mostrar menos",
 			viewAll: "Ver todas ({{count}})",
+			viewAllGames: "Ver todos",
+		},
+		allGames: {
+			title: "Todas as Conquistas",
+			achievementsCount: "conquistas",
+			achievementsUnlocked: "conquistas desbloqueadas",
+			byGame: "Por jogo",
+			recent: "Recentes",
+			searchPlaceholder: "Buscar jogo ou conquista...",
+			noResults: "Nenhum resultado encontrado",
+			hiddenAlt: "Conquista secreta",
+			hiddenTitle: "Conquista secreta",
 		},
 		gameSection: {
 			title: "Conquistas",
@@ -2248,4 +2267,5 @@ export default {
 		},
 	},
 }
+
 
