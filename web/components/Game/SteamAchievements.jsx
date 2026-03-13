@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Trophy, EyeOff, Eye, ChevronLeft, Loader2 } from "lucide-react"
+import { Trophy, EyeOff, Eye, ChevronLeft, Loader2, ChevronRight } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
@@ -436,6 +436,169 @@ function RecentAchievementModal({ achievement, isOpen, onClose, onViewAll }) {
   )
 }
 
+function AllAchievementsModal({ userId, allAchievements, isOpen, onClose, onSelectAchievement, onSelectGame }) {
+  const { t } = useTranslation("achievements.allGames")
+  const [search, setSearch] = useState("")
+  const [view, setView] = useState("games") // "games" or "recent"
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSearch("")
+      setView("games")
+    }
+  }, [isOpen])
+
+  // Group achievements by game
+  const gameMap = {}
+  allAchievements.forEach(a => {
+    if (!gameMap[a.appId]) {
+      gameMap[a.appId] = {
+        appId: a.appId,
+        game: a.game,
+        banner: `https://cdn.cloudflare.steamstatic.com/steam/apps/${a.appId}/header.jpg`,
+        achievements: [],
+        lastUnlocked: 0
+      }
+    }
+    gameMap[a.appId].achievements.push(a)
+    const ts = new Date(a.unlockedAt).getTime()
+    if (ts > gameMap[a.appId].lastUnlocked) {
+      gameMap[a.appId].lastUnlocked = ts
+    }
+  })
+
+  const games = Object.values(gameMap).sort((a, b) => b.lastUnlocked - a.lastUnlocked)
+
+  const filteredGames = games.filter(g =>
+    g.game.toLowerCase().includes(search.toLowerCase())
+  )
+
+  const filteredAchievements = allAchievements.filter(a =>
+    a.name.toLowerCase().includes(search.toLowerCase()) ||
+    a.game.toLowerCase().includes(search.toLowerCase())
+  )
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" fullscreenMobile showMobileGrip>
+      <div className="p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <SteamIcon className="w-4 h-4 text-[#66c0f4]" />
+          <h3 className="text-base font-bold text-white">{t("title")}</h3>
+          <span className="text-xs text-zinc-500 ml-auto">
+            {allAchievements.length} {t("achievementsCount")}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 mb-4">
+          <button
+            onClick={() => setView("games")}
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+              view === "games"
+                ? "bg-zinc-700 text-white"
+                : "bg-zinc-800/50 text-zinc-500 hover:text-white"
+            }`}
+          >
+            {t("byGame")}
+          </button>
+          <button
+            onClick={() => setView("recent")}
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+              view === "recent"
+                ? "bg-zinc-700 text-white"
+                : "bg-zinc-800/50 text-zinc-500 hover:text-white"
+            }`}
+          >
+            {t("recent")}
+          </button>
+        </div>
+
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t("searchPlaceholder")}
+          className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 mb-4"
+        />
+
+        <div className="max-h-96 overflow-y-auto space-y-1.5 pr-1">
+          {view === "games" ? (
+            filteredGames.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Trophy className="w-8 h-8 text-zinc-700 mb-2" />
+                <p className="text-sm text-zinc-500">{t("noResults")}</p>
+              </div>
+            ) : (
+              filteredGames.map((game) => (
+                <button
+                  key={game.appId}
+                  onClick={() => {
+                    onSelectGame(game)
+                    onClose()
+                  }}
+                  className="w-full flex items-center gap-3 p-2.5 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-zinc-600 rounded-lg transition-all cursor-pointer text-left"
+                >
+                  <img
+                    src={game.banner}
+                    alt={game.game}
+                    className="w-16 h-8 object-cover rounded-md border border-zinc-700/50 flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-white truncate">{game.game}</div>
+                    <div className="text-xs text-zinc-500 mt-0.5">
+                      {game.achievements.length} {t("achievementsUnlocked")}
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-zinc-600 flex-shrink-0" />
+                </button>
+              ))
+            )
+          ) : (
+            filteredAchievements.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Trophy className="w-8 h-8 text-zinc-700 mb-2" />
+                <p className="text-sm text-zinc-500">{t("noResults")}</p>
+              </div>
+            ) : (
+              filteredAchievements.map((achievement, i) => (
+                <button
+                  key={`${achievement.appId}-${achievement.name}-${i}`}
+                  onClick={() => {
+                    onSelectAchievement(achievement)
+                    onClose()
+                  }}
+                  className="w-full flex items-center gap-3 p-2.5 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-zinc-600 rounded-lg transition-all cursor-pointer text-left"
+                >
+                  <div className="relative flex-shrink-0">
+                    <img
+                      src={achievement.icon}
+                      alt={achievement.hidden ? t("hiddenAlt") : achievement.name}
+                      className={`w-10 h-10 rounded-md ${achievement.hidden ? "blur-sm" : ""}`}
+                    />
+                    {achievement.hidden && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <EyeOff className="w-3 h-3 text-zinc-400" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-white truncate">
+                      {achievement.hidden ? t("hiddenTitle") : achievement.name}
+                    </div>
+                    <div className="text-xs text-zinc-500 truncate mt-0.5">{achievement.game}</div>
+                  </div>
+                  <span className="text-[10px] text-zinc-600 flex-shrink-0">
+                    {getTimeAgoFromTimestamp(achievement.unlockedAt)}
+                  </span>
+                </button>
+              ))
+            )
+          )}
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
 export default function SteamAchievements({ userId }) {
   const { t } = useTranslation("achievements.list")
   const [achievements, setAchievements] = useState([])
@@ -443,6 +606,7 @@ export default function SteamAchievements({ userId }) {
   const [showAll, setShowAll] = useState(false)
   const [selected, setSelected] = useState(null)
   const [gameModal, setGameModal] = useState(null)
+  const [showAllModal, setShowAllModal] = useState(false)
 
   useEffect(() => {
     setAchievements([])
@@ -450,6 +614,7 @@ export default function SteamAchievements({ userId }) {
     setShowAll(false)
     setSelected(null)
     setGameModal(null)
+    setShowAllModal(false)
 
     if (!userId) return
 
@@ -480,7 +645,16 @@ export default function SteamAchievements({ userId }) {
           </span>
           <SteamIcon className="w-3.5 h-3.5 text-[#66c0f4]" />
         </div>
-        <span className="text-xs text-zinc-600">{t("count", { count: achievements.length })}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-zinc-600">{t("count", { count: achievements.length })}</span>
+          <button
+            onClick={() => setShowAllModal(true)}
+            className="text-[11px] text-zinc-500 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
+          >
+            {t("viewAllGames")}
+            <ChevronRight className="w-3 h-3" />
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-8 gap-1.5">
@@ -536,6 +710,21 @@ export default function SteamAchievements({ userId }) {
         onClose={() => {
           setGameModal(null)
           setSelected(null)
+        }}
+      />
+
+      <AllAchievementsModal
+        userId={userId}
+        allAchievements={achievements}
+        isOpen={showAllModal}
+        onClose={() => setShowAllModal(false)}
+        onSelectAchievement={(a) => {
+          setSelected(a)
+          setShowAllModal(false)
+        }}
+        onSelectGame={(g) => {
+          setGameModal(g)
+          setShowAllModal(false)
         }}
       />
     </div>
