@@ -1537,23 +1537,32 @@ export default {
       connected: "Conectado",
       invalidToken: "Token inválido. Certifique-se de copiar o código completo.",
       connectionError: "Falha na conexão. Tente novamente.",
-      modal: {
-        title: "Conectar PlayStation",
-        subtitle: "Importe seus jogos e troféus",
-        step1: "Clique abaixo para abrir a página de login da PlayStation:",
-        step2: "Faça login com sua conta PlayStation (se ainda não estiver logado)",
-        step3: "Copie o código que aparece (apenas o valor dentro das aspas):",
-        step4: "Cole o código abaixo:",
-        placeholder: "Cole seu token NPSSO aqui...",
-        openPSN: "Abrir PlayStation",
-        copyUrl: "Copiar URL",
-        copied: "Copiado!",
-        validToken: "Token válido",
-        cancel: "Cancelar",
-        connect: "Conectar",
-        connecting: "Conectando...",
-        betaWarning: "Esta função está em beta. O token após ~60 dias será renovado automaticamente."
-      }
+			modal: {
+			  title: "Conectar PlayStation",
+			  subtitle: "Importe seus jogos e troféus",
+			  importantTitle: "Importante: Você precisa estar logado",
+			  importantDesc: "É necessário estar logado na sua conta PlayStation no navegador antes de pegar o token. Caso contrário, a página do token estará vazia ou mostrará erro.",
+			  step1Title: "Faça login na PlayStation Network",
+			  step1Desc: "Abra a PlayStation Store e entre com sua conta PSN. Se já estiver logado, clique no botão abaixo.",
+			  loginPSN: "Abrir PlayStation Store",
+			  alreadyLogged: "Já estou logado",
+			  step2Title: "Pegue seu token NPSSO",
+			  step2Desc: "Após fazer login, clique no botão abaixo para abrir a página do token. Um JSON com seu token aparecerá.",
+			  getToken: "Pegar Token",
+			  step3Title: "Copie o valor do token",
+			  step3Desc: "Você verá algo assim. Copie apenas o valor dentro das aspas (o código longo depois de \"npsso\"):",
+			  step3Hint: "Copie apenas o conteúdo entre aspas, não o JSON inteiro",
+			  step4Title: "Cole o token aqui",
+			  step4Desc: "Cole o token que você copiou no campo abaixo:",
+			  placeholder: "Cole seu token NPSSO aqui...",
+			  copyUrl: "Copiar URL",
+			  copied: "Copiado!",
+			  validToken: "Token válido",
+			  cancel: "Cancelar",
+			  connect: "Conectar",
+			  connecting: "Conectando...",
+			  betaWarning: "Esta função está em beta. O token expira após ~60 dias e será necessário reconectar."
+			},
     },
 		nintendo: {
 			title: "Nintendo Switch",
@@ -2238,6 +2247,3 @@ export default {
 		},
 	},
 }
-
-
-
