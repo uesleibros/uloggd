@@ -1,8 +1,15 @@
 export default {
 	trophies: {
 	  list: {
-	    title: "PlayStation Trophies"
+	    title: "PlayStation Trophies",
+			viewAll: "View all ({{count}})",
 	  },
+		allGames: {
+			title: "All Games",
+			gamesCount: "games",
+			searchPlaceholder: "Search game...",
+			noResults: "No games found",
+		},
 	  detail: {
 	    back: "Back",
 	    hiddenAlt: "Hidden trophy",
@@ -1964,6 +1971,18 @@ export default {
 			hiddenAlt: "Secret achievement",
 			showLess: "Show less",
 			viewAll: "View all ({{count}})",
+			viewAllGames: "View all",
+		},
+		allGames: {
+			title: "All Achievements",
+			achievementsCount: "achievements",
+			achievementsUnlocked: "achievements unlocked",
+			byGame: "By game",
+			recent: "Recent",
+			searchPlaceholder: "Search game or achievement...",
+			noResults: "No results found",
+			hiddenAlt: "Secret achievement",
+			hiddenTitle: "Secret achievement",
 		},
 		gameSection: {
 			title: "Achievements",
