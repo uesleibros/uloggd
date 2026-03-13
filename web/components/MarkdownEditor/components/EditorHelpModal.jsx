@@ -84,14 +84,24 @@ export function EditorHelpModal({ isOpen, onClose, zIndex }) {
   const itemRefs = useRef([])
   const isScrollingTo = useRef(false)
 
-  const featuresWithTranslations = useMemo(() => {
-    return HELP_FEATURES.map(f => ({
-      ...f,
-      description: t(`features.${f.id}.description`),
-      example: t(`features.${f.id}.example`, { defaultValue: "" }) || "",
-      preview: t(`features.${f.id}.preview`, { defaultValue: "" }) || "",
-    }))
-  }, [t])
+	const featuresWithTranslations = useMemo(() => {
+	  return HELP_FEATURES.map(f => {
+	    const descKey = `features.${f.id}.description`
+	    const exampleKey = `features.${f.id}.example`
+	    const previewKey = `features.${f.id}.preview`
+	    
+	    const desc = t(descKey)
+	    const example = t(exampleKey)
+	    const preview = t(previewKey)
+	    
+	    return {
+	      ...f,
+	      description: desc.includes("editor.help.") ? "" : desc,
+	      example: example.includes("editor.help.") ? "" : example,
+	      preview: preview.includes("editor.help.") ? "" : preview,
+	    }
+	  })
+	}, [t])
 
   useEffect(() => {
     if (!isOpen) {
