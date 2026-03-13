@@ -1700,6 +1700,7 @@ export default {
 			played: "Played",
 			playing: "Playing",
 			dropped: "Dropped",
+			retired: "Retired",
 			shelved: "Shelved",
 			completed: "Completed",
 			mastered: "Mastered",
