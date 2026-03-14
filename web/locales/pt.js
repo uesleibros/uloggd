@@ -736,8 +736,8 @@ export default {
 			},
 		},
 		actions: {
-			edit: "Editar tierlist",
-			delete: "Excluir tierlist",
+			editTierlist: "Editar tierlist",
+			deleteTierlist: "Excluir tierlist",
 		},
 		card: {
 			private: "Privada",
@@ -754,6 +754,8 @@ export default {
 		rankedGames: "{{count}} jogo classificado",
 		rankedGames_plural: "{{count}} jogos classificados",
 		editor: {
+			done: "Concluir",
+			edit: "Editar",
 			empty: "Vazio",
 			dragHere: "Arraste jogos para cá",
 			untieredGames: "Jogos não classificados",
