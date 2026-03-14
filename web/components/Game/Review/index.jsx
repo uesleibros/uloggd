@@ -139,7 +139,7 @@ export default function ReviewButton({ game }) {
         <button
           onClick={() => openModal(null)}
           disabled={loading}
-          className="inline-flex items-center gap-2.5 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20"
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 text-white border border-zinc-700 hover:border-zinc-600"
         >
           {loading ? (
             <div className="w-4 h-4 border-2 border-indigo-300 border-t-white rounded-full animate-spin" />
