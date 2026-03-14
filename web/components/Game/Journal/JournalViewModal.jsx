@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { X, ChevronLeft, ChevronRight, Clock, Calendar as CalendarIcon, Play, Flag, Pencil } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
+import { useCustomCovers } from "#hooks/useCustomCovers"
 import { JournalCalendar } from "./JournalCalendar"
 import { JournalTimeline } from "./JournalTimeline"
 import { JournalModal } from "./JournalModal"
@@ -25,6 +26,10 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
   const today = new Date()
   const [currentMonth, setCurrentMonth] = useState(today.getMonth())
   const [currentYear, setCurrentYear] = useState(today.getFullYear())
+
+  const slugs = useMemo(() => journey?.game_slug ? [journey.game_slug] : [], [journey?.game_slug])
+  const { getCustomCover } = useCustomCovers(journey?.user_id, slugs)
+  const customCoverUrl = journey?.game_slug ? getCustomCover(journey.game_slug) : null
 
   useEffect(() => {
     if (!journeyId) return
@@ -88,6 +93,8 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
   const years = []
   for (let y = today.getFullYear() + 1; y >= 1970; y--) years.push(y)
 
+  const coverUrl = customCoverUrl || game?.cover_url
+
   if (editMode && isOwner && journey) {
     const gameObj = {
       id: journey.game_id,
@@ -134,15 +141,15 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
               style={{ paddingTop: "max(1rem, env(safe-area-inset-top, 1rem))" }}
             >
               <div className="flex items-start gap-3 min-w-0">
-                {game?.cover_url && (
+                {coverUrl && (
                   <Link
-                    to={`/game/${game.slug}`}
+                    to={`/game/${game?.slug || journey.game_slug}`}
                     onClick={onClose}
                     className="flex-shrink-0"
                   >
                     <img
-                      src={game.cover_url}
-                      alt={game.name}
+                      src={coverUrl}
+                      alt={game?.name}
                       className="w-12 h-16 object-cover rounded-lg border border-zinc-700 hover:border-zinc-500 transition-colors"
                     />
                   </Link>
