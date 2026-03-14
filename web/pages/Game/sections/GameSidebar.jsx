@@ -12,6 +12,7 @@ import ReviewButton from "@components/Game/Review"
 import JournalButton from "@components/Game/Journal"
 import Modal from "@components/UI/Modal"
 import { notify } from "@components/UI/Notification"
+import GameCover, { getCoverUrl } from "@components/Game/GameCover"
 import { AgeRatings } from "../components/AgeRatings"
 import { Websites } from "../components/Websites"
 import { Keywords } from "../components/Keywords"
@@ -66,6 +67,7 @@ function CoverThumb({ url, isActive, isSaved, onClick }) {
 function AlternativeCovers({ game, covers, activeCover, savedCover, onSelect, onSave }) {
   const { t } = useTranslation("game")
   const { user } = useAuth()
+  const { updateGame } = useMyLibrary()
   const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
 
@@ -81,6 +83,7 @@ function AlternativeCovers({ game, covers, activeCover, savedCover, onSelect, on
 
     try {
       await updateCustomCover(game.id, game.slug, activeCover)
+      updateGame(game.slug, { customCoverUrl: activeCover })
       onSave(activeCover)
       notify(t("sidebar.coverSaved"), "success")
     } catch {
@@ -158,7 +161,7 @@ function AlternativeCovers({ game, covers, activeCover, savedCover, onSelect, on
   )
 }
 
-function GameCover({ url, name }) {
+function SidebarCover({ url, name }) {
   if (url) {
     return (
       <img
@@ -199,8 +202,12 @@ function MobileHeader({ game }) {
 
 function ParentGameLink({ parentGame }) {
   const { t } = useTranslation("game")
+  const { getGameData } = useMyLibrary()
 
   if (!parentGame) return null
+
+  const parentData = getGameData(parentGame.slug)
+  const coverUrl = parentData?.customCoverUrl || (parentGame.cover?.url ? `https:${parentGame.cover.url}` : null)
 
   return (
     <>
@@ -208,9 +215,9 @@ function ParentGameLink({ parentGame }) {
         to={`/game/${parentGame.slug}`}
         className="mt-6 flex items-center gap-3 px-4 py-3 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
       >
-        {parentGame.cover ? (
+        {coverUrl ? (
           <img
-            src={`https:${parentGame.cover.url}`}
+            src={coverUrl}
             alt={parentGame.name}
             className="w-10 h-14 rounded object-cover bg-zinc-700 flex-shrink-0"
           />
@@ -232,10 +239,11 @@ function ParentGameLink({ parentGame }) {
 
 export function GameSidebar({ game }) {
   const { t } = useTranslation("game")
-  const { games: library } = useMyLibrary()
+  const { getGameData } = useMyLibrary()
 
-  const defaultCover = game.cover?.url ? `https:${game.cover.url}` : null
-  const userSavedCover = library?.[game.slug]?.customCoverUrl || null
+  const gameData = getGameData(game.slug)
+  const defaultCover = getCoverUrl(game)
+  const userSavedCover = gameData?.customCoverUrl || null
   const initialCover = userSavedCover || defaultCover
 
   const [activeCover, setActiveCover] = useState(initialCover)
@@ -245,7 +253,7 @@ export function GameSidebar({ game }) {
     <div className="flex-shrink-0">
       <div className="flex flex-row md:flex-col gap-4 md:gap-0">
         <div>
-          <GameCover url={activeCover} name={game.name} />
+          <SidebarCover url={activeCover} name={game.name} />
           <div className="hidden md:block">
             <AlternativeCovers
               game={game}
