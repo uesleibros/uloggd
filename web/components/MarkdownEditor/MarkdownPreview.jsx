@@ -16,34 +16,42 @@ import { GamesBatchProvider } from "#hooks/useGamesBatch"
 const remarkPlugins = [remarkGfm, remarkBreaks, remarkDirective, remarkAlert]
 const rehypePlugins = [rehypeRaw, [rehypeSanitize, sanitizeSchema]]
 
-export const MarkdownPreview = memo(function MarkdownPreview({ content, authorRatings = {} }) {
-	const processedContent = useMemo(() => processContent(content), [content])
+export const MarkdownPreview = memo(function MarkdownPreview({ 
+  content, 
+  authorRatings = {},
+  ownerId = null,
+}) {
+  const processedContent = useMemo(() => processContent(content), [content])
 
-	const components = useMemo(() => ({
-		...markdownComponents,
-		"game-card": (props) => <MarkdownGameCard {...props} authorRatings={authorRatings} />,
-		"game-grid": (props) => <MarkdownGameGrid {...props} authorRatings={authorRatings} />,
-		"game-grid-auto": (props) => <MarkdownGameGrid {...props} authorRatings={authorRatings} autoScroll />,
-	}), [authorRatings])
+  const components = useMemo(() => ({
+    ...markdownComponents,
+    "game-card": (props) => (
+      <MarkdownGameCard {...props} authorRatings={authorRatings} ownerId={ownerId} />
+    ),
+    "game-grid": (props) => (
+      <MarkdownGameGrid {...props} authorRatings={authorRatings} ownerId={ownerId} />
+    ),
+    "game-grid-auto": (props) => (
+      <MarkdownGameGrid {...props} authorRatings={authorRatings} ownerId={ownerId} autoScroll />
+    ),
+  }), [authorRatings, ownerId])
 
-	if (!processedContent.trim()) {
-		return (
-			<div className="flex flex-col items-center justify-center py-16 gap-3 text-zinc-600">
-				<FileText className="w-10 h-10" strokeWidth={1} />
-				<p className="text-sm">Nada para visualizar</p>
-			</div>
-		)
-	}
+  if (!processedContent.trim()) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-3 text-zinc-600">
+        <FileText className="w-10 h-10" strokeWidth={1} />
+        <p className="text-sm">Nada para visualizar</p>
+      </div>
+    )
+  }
 
-	return (
-		<GamesBatchProvider>
-			<div className="markdown-body">
-				<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components}>
-					{processedContent}
-				</ReactMarkdown>
-			</div>
-		</GamesBatchProvider>
-	)
-
+  return (
+    <GamesBatchProvider>
+      <div className="markdown-body">
+        <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components}>
+          {processedContent}
+        </ReactMarkdown>
+      </div>
+    </GamesBatchProvider>
+  )
 })
-
