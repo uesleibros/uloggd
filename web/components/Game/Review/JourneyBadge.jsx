@@ -1,4 +1,3 @@
-// @components/Game/Review/JourneyBadge.jsx
 import { BookOpen } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 
