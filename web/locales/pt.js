@@ -1142,6 +1142,10 @@ export default {
 		},
 		sidebar: {
 			alternativeCovers: "Capas alternativas",
+			saveCover: "Salvar capa",
+			saving: "Salvando...",
+			coverSaved: "Capa salva com sucesso",
+			coverSaveError: "Erro ao salvar capa",
 			parentGame: "Jogo principal",
 			ageRatings: "Classificações de Idade",
 			platforms: "Plataformas",
