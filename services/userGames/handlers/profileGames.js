@@ -12,6 +12,7 @@ function buildGameMap(userGames, logs) {
       backlog: ug.backlog,
       wishlist: ug.wishlist,
       liked: ug.liked,
+      customCoverUrl: ug.custom_cover_url,
       ratings: [],
       hasLog: false,
       latestAt: ug.updated_at,
@@ -30,6 +31,7 @@ function buildGameMap(userGames, logs) {
         backlog: log.backlog || false,
         wishlist: log.wishlist || false,
         liked: log.liked || false,
+        customCoverUrl: null,
         ratings: [],
         hasLog: true,
         latestAt: log.created_at,
@@ -82,6 +84,7 @@ function aggregateGames(gameMap, { page = 1, limit = 20, filter = null } = {}) {
       backlog: g.backlog,
       wishlist: g.wishlist,
       liked: g.liked,
+      customCoverUrl: g.customCoverUrl,
       hasLog: g.hasLog,
       latestAt: g.latestAt,
     }
@@ -131,7 +134,7 @@ export async function handleProfileGames(req, res) {
     const [userGamesRes, logsRes] = await Promise.all([
       supabase
         .from("user_games")
-        .select("game_id, game_slug, status, playing, backlog, wishlist, liked, updated_at")
+        .select("game_id, game_slug, status, playing, backlog, wishlist, liked, custom_cover_url, updated_at")
         .eq("user_id", userId),
       supabase
         .from("reviews")
