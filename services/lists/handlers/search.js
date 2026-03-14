@@ -38,7 +38,7 @@ export async function handleSearch(req, res) {
         game_slugs: items.slice(0, 4).map(i => i.game_slug),
         owner: list.owner ? {
           id: list.owner.id,
-          user_id: list.owner.user_id
+          user_id: list.owner.user_id,
           username: list.owner.username,
           avatar: list.owner.avatar || DEFAULT_AVATAR_URL,
         } : null,
