@@ -3,8 +3,9 @@ import { Link } from "react-router-dom"
 import { LayoutGrid, Plus, Lock, Gamepad2 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
+import { useCustomCovers } from "#hooks/useCustomCovers"
 import Pagination from "@components/UI/Pagination"
-import CreateTierlistModal from "@components/Tierlist/CreateTierlistModal"
+import CreateTierlistModal from "#components/Tierlist/CreateTierlistModal"
 import { encode } from "#utils/shortId.js"
 
 function TierlistsSkeleton() {
@@ -51,7 +52,7 @@ function EmptyState({ isOwnProfile, username, onCreateClick, t }) {
   )
 }
 
-function TierPreview({ tiers, getGame }) {
+function TierPreview({ tiers, getGame, getCustomCover }) {
   if (!tiers || tiers.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-zinc-800/30">
@@ -73,10 +74,10 @@ function TierPreview({ tiers, getGame }) {
           </span>
           <div className="flex-1 flex items-center gap-px bg-zinc-800/30 h-full py-px pr-px overflow-hidden">
             {(tier.items || []).slice(0, 6).map((item, j) => {
+              const customCover = getCustomCover?.(item.game_slug)
               const game = getGame?.(item.game_slug)
-              const coverUrl = game?.cover?.url
-                ? `https:${game.cover.url.replace("t_thumb", "t_cover_small")}`
-                : null
+              const coverUrl = customCover
+                || (game?.cover?.url ? `https:${game.cover.url.replace("t_thumb", "t_cover_small")}` : null)
 
               return (
                 <div key={item.id || j} className="h-full aspect-[3/4] flex-shrink-0">
@@ -98,6 +99,7 @@ function TierPreview({ tiers, getGame }) {
 function TierlistCard({ tierlist }) {
   const { t } = useTranslation("tierlist.card")
   const gamesCount = tierlist.games_count || 0
+  const ownerId = tierlist.user_id || null
 
   const allSlugs = useMemo(() => {
     if (!tierlist.tiers_preview) return []
@@ -107,6 +109,7 @@ function TierlistCard({ tierlist }) {
   }, [tierlist.tiers_preview])
 
   const { getGame } = useGamesBatch(allSlugs)
+  const { getCustomCover } = useCustomCovers(ownerId, allSlugs)
 
   return (
     <Link
@@ -114,7 +117,11 @@ function TierlistCard({ tierlist }) {
       className="group block rounded-xl overflow-hidden bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-zinc-600 transition-all h-full flex flex-col"
     >
       <div className="relative h-24 sm:h-28 overflow-hidden flex-shrink-0">
-        <TierPreview tiers={tierlist.tiers_preview} getGame={getGame} />
+        <TierPreview
+          tiers={tierlist.tiers_preview}
+          getGame={getGame}
+          getCustomCover={getCustomCover}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/20 to-transparent" />
       </div>
 
