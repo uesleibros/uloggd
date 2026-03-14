@@ -5,7 +5,7 @@ import { useTranslation } from "#hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import { useCustomCovers } from "#hooks/useCustomCovers"
 import Pagination from "@components/UI/Pagination"
-import { CreateTierlistModal } from "#components/Tierlist/CreateTierlistModal"
+import CreateTierlistModal from "@components/Tierlist/CreateTierlistModal"
 import { encode } from "#utils/shortId.js"
 
 function TierlistsSkeleton() {
