@@ -1,14 +1,12 @@
 import { Link } from "react-router-dom"
 import { PlatformList } from "@components/Game/PlatformBadge"
 import { MiniStars } from "@components/Game/GameCard"
+import GameCover from "@components/Game/GameCover"
 
-const NO_COVER = "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"
-
-export function DefaultCard({ game, rating }) {
+export function DefaultCard({ game, rating, customCoverUrl = null }) {
   const year = game.first_release_date 
     ? new Date(game.first_release_date * 1000).getFullYear() 
     : null
-  const coverUrl = game.cover?.url || NO_COVER
   const hasRating = rating != null && rating > 0
 
   return (
@@ -27,10 +25,10 @@ export function DefaultCard({ game, rating }) {
 
       <div className="relative z-10 p-4 sm:p-5 flex gap-4 sm:gap-6 items-start">
         <Link to={`/game/${game.slug}`} className="shrink-0 relative group/cover">
-          <img 
-            src={coverUrl} 
-            alt={game.name} 
-            className="w-20 sm:w-24 rounded-lg shadow-xl shadow-black/50 border border-zinc-700/50 group-hover/cover:ring-2 ring-indigo-500/50 transition-all aspect-[3/4] object-cover" 
+          <GameCover 
+            game={game} 
+            customCoverUrl={customCoverUrl} 
+            className="w-20 sm:w-24 rounded-lg shadow-xl shadow-black/50 border border-zinc-700/50 group-hover/cover:ring-2 ring-indigo-500/50 transition-all aspect-[3/4]" 
           />
         </Link>
 
