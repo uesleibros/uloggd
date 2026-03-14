@@ -126,15 +126,15 @@ export function ProfileContent({
       )}
 
       {activeSection === "reviews" && (
-        <ProfileReviews userId={profile.id} />
+        <ProfileReviews userId={profile.user_id} />
       )}
 
       {activeSection === "likes" && (
-        <ProfileLikes userId={profile.id} isOwnProfile={isOwnProfile} username={profile.username} />
+        <ProfileLikes userId={profile.user_id} isOwnProfile={isOwnProfile} username={profile.username} />
       )}
 
       {activeSection === "transactions" && (
-        <TransactionsSection userId={profile.id} />
+        <TransactionsSection userId={profile.user_id} />
       )}
     </div>
   )
