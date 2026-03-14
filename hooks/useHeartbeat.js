@@ -12,13 +12,13 @@ export function useHeartbeat() {
 
 	useEffect(() => {
 		if (loading) return
-		if (!user?.id) return
+		if (!user?.user_id) return
 
 		if (activeHeartbeat && activeHeartbeat !== user.id) {
 			return
 		}
 
-		activeHeartbeat = user.id
+		activeHeartbeat = user.user_id
 
 		const ping = async (status) => {
 			if (lastStatusRef.current === status) return
