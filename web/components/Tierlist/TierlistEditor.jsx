@@ -21,12 +21,15 @@ import { CSS } from "@dnd-kit/utilities"
 import { restrictToWindowEdges } from "@dnd-kit/modifiers"
 import {
   Plus, Trash2, Palette, Gamepad2, Search, X,
-  ArrowUpDown, GripVertical, Eye, EyeOff,
+  ArrowUpDown, GripVertical, Eye, EyeOff, Pencil,
+  MoreHorizontal,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "#hooks/useTranslation"
 import { useCustomCovers } from "#hooks/useCustomCovers"
 import GameCover, { getCoverUrl } from "@components/Game/GameCover"
+import EditTierlistModal from "@components/Tierlist/EditTierlistModal"
+import DeleteTierlistModal from "@components/Tierlist/DeleteTierlistModal"
 
 const PRESET_COLORS = [
   "#ef4444", "#f97316", "#eab308", "#22c55e",
@@ -646,6 +649,62 @@ function EditTierModal({ isOpen, onClose, tier, onSave }) {
   )
 }
 
+function EditorControls({ editMode, onToggleEdit, onEditTierlist, onDeleteTierlist, showMenu, onToggleMenu, menuRef }) {
+  const { t } = useTranslation("tierlist")
+
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      <button
+        onClick={onToggleEdit}
+        className={`px-3 py-2.5 sm:py-2 text-sm font-medium rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+          editMode
+            ? "text-white bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700"
+            : "text-zinc-400 hover:text-white active:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600"
+        }`}
+      >
+        <Pencil className="w-4 h-4" />
+        {editMode ? t("editor.done") : t("editor.edit")}
+      </button>
+
+      {editMode && (
+        <div ref={menuRef} className="relative">
+          <button
+            onClick={onToggleMenu}
+            className="p-2.5 sm:p-2 text-zinc-500 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer"
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </button>
+
+          {showMenu && (
+            <div className="absolute right-0 top-full mt-1 z-30 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 min-w-[150px]">
+              <button
+                onClick={() => {
+                  onEditTierlist()
+                  onToggleMenu()
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-700/50 transition-colors cursor-pointer"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                {t("actions.editTierlist")}
+              </button>
+              <button
+                onClick={() => {
+                  onDeleteTierlist()
+                  onToggleMenu()
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                {t("actions.deleteTierlist")}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function TierlistEditor({
   tiers,
   setTiers,
@@ -654,7 +713,11 @@ export default function TierlistEditor({
   untieredGames,
   getGame,
   ownerId = null,
-  isEditing = true,
+  isOwner = false,
+  tierlist = null,
+  onTierlistUpdated,
+  onTierlistDeleted,
+  isEditing: externalEditMode,
   isLoading = false,
 }) {
   const { t } = useTranslation("tierlist")
@@ -666,10 +729,25 @@ export default function TierlistEditor({
   const [targetTier, setTargetTier] = useState(null)
   const [tierSorts, setTierSorts] = useState({})
   const [showTierOptions, setShowTierOptions] = useState(false)
+  const [editMode, setEditMode] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
+  const [editTierlistOpen, setEditTierlistOpen] = useState(false)
+  const [deleteTierlistOpen, setDeleteTierlistOpen] = useState(false)
   const targetRef = useRef(null)
+  const menuRef = useRef(null)
   const [untieredOrder, setUntieredOrder] = useState(() =>
     untieredGames.map((g) => g.game_slug)
   )
+
+  const isEditing = externalEditMode !== undefined ? externalEditMode : editMode
+
+  useEffect(() => {
+    function handle(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setShowMenu(false)
+    }
+    document.addEventListener("mousedown", handle)
+    return () => document.removeEventListener("mousedown", handle)
+  }, [])
 
   const allSlugs = useMemo(() => {
     const slugsFromTiers = items.map((i) => i.game_slug)
@@ -1030,7 +1108,6 @@ export default function TierlistEditor({
     : null
   const activeGame = activeGameSlug ? getGame(activeGameSlug) : null
   const activeCustomCover = activeGameSlug ? getCustomCover(activeGameSlug) : null
-  const activeCoverUrl = getCoverUrl(activeGame, activeCustomCover)
 
   const activeTierForOverlay = useMemo(() => {
     if (!activeId || activeDragType !== "tier") return null
@@ -1042,157 +1119,221 @@ export default function TierlistEditor({
 
   if (!isEditing) {
     return (
-      <div
-        className="space-y-2 sm:space-y-2.5"
-        onDragStart={(e) => e.preventDefault()}
-      >
-        {tiers.map((tier) => {
-          const tierItems = items
-            .filter((i) => i.tier_id === tier.id)
-            .sort((a, b) => a.position - b.position)
-          return (
-            <ViewTier
-              key={tier.id}
-              tier={tier}
-              items={tierItems}
-              getGame={getGame}
-              getCustomCover={getCustomCover}
-            />
-          )
-        })}
-
-        {tiers.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Gamepad2 className="w-12 h-12 text-zinc-700" />
-            <p className="text-sm text-zinc-500">{t("editor.noTiers")}</p>
-          </div>
+      <>
+        {isOwner && tierlist && (
+          <EditorControls
+            editMode={editMode}
+            onToggleEdit={() => setEditMode(!editMode)}
+            onEditTierlist={() => setEditTierlistOpen(true)}
+            onDeleteTierlist={() => setDeleteTierlistOpen(true)}
+            showMenu={showMenu}
+            onToggleMenu={() => setShowMenu(!showMenu)}
+            menuRef={menuRef}
+          />
         )}
-      </div>
+
+        <div
+          className="space-y-2 sm:space-y-2.5"
+          onDragStart={(e) => e.preventDefault()}
+        >
+          {tiers.map((tier) => {
+            const tierItems = items
+              .filter((i) => i.tier_id === tier.id)
+              .sort((a, b) => a.position - b.position)
+            return (
+              <ViewTier
+                key={tier.id}
+                tier={tier}
+                items={tierItems}
+                getGame={getGame}
+                getCustomCover={getCustomCover}
+              />
+            )
+          })}
+
+          {tiers.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Gamepad2 className="w-12 h-12 text-zinc-700" />
+              <p className="text-sm text-zinc-500">{t("editor.noTiers")}</p>
+            </div>
+          )}
+        </div>
+
+        {isOwner && tierlist && (
+          <>
+            <EditTierlistModal
+              isOpen={editTierlistOpen}
+              onClose={() => setEditTierlistOpen(false)}
+              tierlist={tierlist}
+              onUpdated={onTierlistUpdated}
+            />
+
+            <DeleteTierlistModal
+              isOpen={deleteTierlistOpen}
+              onClose={() => setDeleteTierlistOpen(false)}
+              tierlist={tierlist}
+              onDeleted={onTierlistDeleted}
+            />
+          </>
+        )}
+      </>
     )
   }
 
   const tierRowIds = tiers.map((t) => `tier-row-${t.id}`)
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={tierlistCollisionDetection}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-      modifiers={[restrictToWindowEdges]}
-    >
-      <div className="space-y-2 sm:space-y-2.5">
-        <div className="flex justify-end">
+    <>
+      {isOwner && externalEditMode === undefined && tierlist && (
+        <EditorControls
+          editMode={editMode}
+          onToggleEdit={() => setEditMode(!editMode)}
+          onEditTierlist={() => setEditTierlistOpen(true)}
+          onDeleteTierlist={() => setDeleteTierlistOpen(true)}
+          showMenu={showMenu}
+          onToggleMenu={() => setShowMenu(!showMenu)}
+          menuRef={menuRef}
+        />
+      )}
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={tierlistCollisionDetection}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+        modifiers={[restrictToWindowEdges]}
+      >
+        <div className="space-y-2 sm:space-y-2.5">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowTierOptions((prev) => !prev)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] sm:text-xs text-zinc-500 hover:text-zinc-300 bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/50 rounded-lg transition-colors cursor-pointer"
+            >
+              {showTierOptions ? (
+                <EyeOff className="w-3.5 h-3.5" />
+              ) : (
+                <Eye className="w-3.5 h-3.5" />
+              )}
+              {showTierOptions ? t("editor.hideOptions") : t("editor.showOptions")}
+            </button>
+          </div>
+
+          <SortableContext items={tierRowIds} strategy={verticalListSortingStrategy}>
+            {tiers.map((tier) => {
+              const rawItems = items
+                .filter((i) => i.tier_id === tier.id)
+                .sort((a, b) => a.position - b.position)
+              const tierSort = tierSorts[tier.id] || "manual"
+              const tierItems = sortTierItems(rawItems, tierSort)
+              const isFromUntiered = activeIdStr?.startsWith("untiered-")
+              const activeInThisTier =
+                !isFromUntiered &&
+                activeDragType === "game" &&
+                tierItems.some((i) => i.id === activeIdStr)
+
+              return (
+                <SortableTierRow
+                  key={tier.id}
+                  tier={tier}
+                  items={tierItems}
+                  getGame={getGame}
+                  getCustomCover={getCustomCover}
+                  activeId={activeId}
+                  activeDragType={activeDragType}
+                  isTargeted={
+                    !!activeId &&
+                    activeDragType === "game" &&
+                    !activeInThisTier &&
+                    targetTier === tier.id
+                  }
+                  onEditTier={setEditingTier}
+                  onDeleteTier={handleDeleteTier}
+                  onSortTier={handleSortTier}
+                  tierSort={tierSort}
+                  showOptions={showTierOptions}
+                />
+              )
+            })}
+          </SortableContext>
+
           <button
             type="button"
-            onClick={() => setShowTierOptions((prev) => !prev)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] sm:text-xs text-zinc-500 hover:text-zinc-300 bg-zinc-800/60 hover:bg-zinc-800 border border-zinc-700/50 rounded-lg transition-colors cursor-pointer"
+            onClick={handleAddTier}
+            className="w-full py-4 sm:py-3 border-2 border-dashed border-zinc-700/60 hover:border-zinc-600 hover:bg-zinc-800/30 rounded-xl text-sm text-zinc-500 hover:text-zinc-300 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            {showTierOptions ? (
-              <EyeOff className="w-3.5 h-3.5" />
-            ) : (
-              <Eye className="w-3.5 h-3.5" />
-            )}
-            {showTierOptions ? t("editor.hideOptions") : t("editor.showOptions")}
+            <Plus className="w-4 h-4" />
+            {t("editor.addTier")}
           </button>
         </div>
 
-        <SortableContext items={tierRowIds} strategy={verticalListSortingStrategy}>
-          {tiers.map((tier) => {
-            const rawItems = items
-              .filter((i) => i.tier_id === tier.id)
-              .sort((a, b) => a.position - b.position)
-            const tierSort = tierSorts[tier.id] || "manual"
-            const tierItems = sortTierItems(rawItems, tierSort)
-            const isFromUntiered = activeIdStr?.startsWith("untiered-")
-            const activeInThisTier =
-              !isFromUntiered &&
-              activeDragType === "game" &&
-              tierItems.some((i) => i.id === activeIdStr)
+        <UntieredZone
+          games={orderedUntieredGames}
+          getGame={getGame}
+          getCustomCover={getCustomCover}
+          activeId={activeId}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+        />
 
-            return (
-              <SortableTierRow
-                key={tier.id}
-                tier={tier}
-                items={tierItems}
-                getGame={getGame}
-                getCustomCover={getCustomCover}
-                activeId={activeId}
-                activeDragType={activeDragType}
-                isTargeted={
-                  !!activeId &&
-                  activeDragType === "game" &&
-                  !activeInThisTier &&
-                  targetTier === tier.id
-                }
-                onEditTier={setEditingTier}
-                onDeleteTier={handleDeleteTier}
-                onSortTier={handleSortTier}
-                tierSort={tierSort}
-                showOptions={showTierOptions}
+        <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
+          {activeDragType === "game" && activeGame && (
+            <div className={`${CARD_SIZE} rounded-lg overflow-hidden shadow-lg ring-1 ring-indigo-400/60 opacity-80`}>
+              <GameCover
+                game={activeGame}
+                customCoverUrl={activeCustomCover}
+                className="w-full h-full"
               />
-            )
-          })}
-        </SortableContext>
-
-        <button
-          type="button"
-          onClick={handleAddTier}
-          className="w-full py-4 sm:py-3 border-2 border-dashed border-zinc-700/60 hover:border-zinc-600 hover:bg-zinc-800/30 rounded-xl text-sm text-zinc-500 hover:text-zinc-300 transition-all flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          {t("editor.addTier")}
-        </button>
-      </div>
-
-      <UntieredZone
-        games={orderedUntieredGames}
-        getGame={getGame}
-        getCustomCover={getCustomCover}
-        activeId={activeId}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        sortOrder={sortOrder}
-        onSortChange={setSortOrder}
-      />
-
-      <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
-        {activeDragType === "game" && activeGame && (
-          <div className={`${CARD_SIZE} rounded-lg overflow-hidden shadow-lg ring-1 ring-indigo-400/60 opacity-80`}>
-            <GameCover
-              game={activeGame}
-              customCoverUrl={activeCustomCover}
-              className="w-full h-full"
-            />
-          </div>
-        )}
-        {activeDragType === "tier" && activeTierForOverlay && (
-          <div className="flex border rounded-xl overflow-hidden bg-zinc-900/80 border-indigo-500/50 shadow-xl opacity-90 max-w-md">
-            <div
-              className="w-20 sm:w-28 flex-shrink-0 flex items-center justify-center text-white p-2"
-              style={{ backgroundColor: activeTierForOverlay.color, minHeight: 60 }}
-            >
-              <span className="font-bold text-sm select-none">
-                {activeTierForOverlay.label}
-              </span>
             </div>
-            <div className="flex-1 p-2 bg-zinc-800/60 flex items-center">
-              <span className="text-xs text-zinc-500">
-                {t("editor.gamesCount", { count: items.filter((i) => i.tier_id === activeTierForOverlay.id).length })}
-              </span>
+          )}
+          {activeDragType === "tier" && activeTierForOverlay && (
+            <div className="flex border rounded-xl overflow-hidden bg-zinc-900/80 border-indigo-500/50 shadow-xl opacity-90 max-w-md">
+              <div
+                className="w-20 sm:w-28 flex-shrink-0 flex items-center justify-center text-white p-2"
+                style={{ backgroundColor: activeTierForOverlay.color, minHeight: 60 }}
+              >
+                <span className="font-bold text-sm select-none">
+                  {activeTierForOverlay.label}
+                </span>
+              </div>
+              <div className="flex-1 p-2 bg-zinc-800/60 flex items-center">
+                <span className="text-xs text-zinc-500">
+                  {t("editor.gamesCount", { count: items.filter((i) => i.tier_id === activeTierForOverlay.id).length })}
+                </span>
+              </div>
             </div>
-          </div>
-        )}
-      </DragOverlay>
+          )}
+        </DragOverlay>
 
-      <EditTierModal
-        isOpen={!!editingTier}
-        onClose={() => setEditingTier(null)}
-        tier={editingTier}
-        onSave={handleEditTier}
-      />
-    </DndContext>
+        <EditTierModal
+          isOpen={!!editingTier}
+          onClose={() => setEditingTier(null)}
+          tier={editingTier}
+          onSave={handleEditTier}
+        />
+      </DndContext>
+
+      {isOwner && tierlist && (
+        <>
+          <EditTierlistModal
+            isOpen={editTierlistOpen}
+            onClose={() => setEditTierlistOpen(false)}
+            tierlist={tierlist}
+            onUpdated={onTierlistUpdated}
+          />
+
+          <DeleteTierlistModal
+            isOpen={deleteTierlistOpen}
+            onClose={() => setDeleteTierlistOpen(false)}
+            tierlist={tierlist}
+            onDeleted={onTierlistDeleted}
+          />
+        </>
+      )}
+    </>
   )
 }
