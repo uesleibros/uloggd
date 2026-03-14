@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { ChevronRight, Images, Check } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
@@ -12,7 +12,7 @@ import ReviewButton from "@components/Game/Review"
 import JournalButton from "@components/Game/Journal"
 import Modal from "@components/UI/Modal"
 import { notify } from "@components/UI/Notification"
-import GameCover, { getCoverUrl } from "@components/Game/GameCover"
+import { getCoverUrl } from "@components/Game/GameCover"
 import { AgeRatings } from "../components/AgeRatings"
 import { Websites } from "../components/Websites"
 import { Keywords } from "../components/Keywords"
@@ -239,15 +239,28 @@ function ParentGameLink({ parentGame }) {
 
 export function GameSidebar({ game }) {
   const { t } = useTranslation("game")
-  const { getGameData } = useMyLibrary()
+  const { getGameData, loaded } = useMyLibrary()
 
   const gameData = getGameData(game.slug)
   const defaultCover = getCoverUrl(game)
   const userSavedCover = gameData?.customCoverUrl || null
-  const initialCover = userSavedCover || defaultCover
 
-  const [activeCover, setActiveCover] = useState(initialCover)
+  const [activeCover, setActiveCover] = useState(userSavedCover || defaultCover)
   const [savedCover, setSavedCover] = useState(userSavedCover || defaultCover)
+  const [initialized, setInitialized] = useState(false)
+
+  useEffect(() => {
+    if (loaded && !initialized) {
+      const cover = userSavedCover || defaultCover
+      setActiveCover(cover)
+      setSavedCover(userSavedCover || defaultCover)
+      setInitialized(true)
+    }
+  }, [loaded, initialized, userSavedCover, defaultCover])
+
+  useEffect(() => {
+    setInitialized(false)
+  }, [game.slug])
 
   return (
     <div className="flex-shrink-0">
