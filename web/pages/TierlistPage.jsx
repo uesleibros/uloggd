@@ -328,6 +328,7 @@ export default function TierlistPage() {
 
       <div className="border-t border-zinc-800 pt-5 sm:pt-6">
         <TierlistEditor
+          ownerId={tierlist?.user_id}
           tiers={tiers}
           setTiers={setTiers}
           items={items}
