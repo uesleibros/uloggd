@@ -11,7 +11,7 @@ export function useFollowData(profile, currentUser, authLoading, isOwnProfile) {
   const abortRef = useRef(null)
 
   useEffect(() => {
-    if (!profile?.id || authLoading) return
+    if (!profile?.user_id || authLoading) return
 
     if (abortRef.current) {
       abortRef.current.abort()
@@ -21,10 +21,10 @@ export function useFollowData(profile, currentUser, authLoading, isOwnProfile) {
     abortRef.current = controller
 
     const params = new URLSearchParams({
-      userId: profile.id,
+      userId: profile.user_id,
     })
 
-    if (currentUser?.id) {
+    if (currentUser?.user_id) {
       params.append("currentUserId", currentUser.id)
     }
 
@@ -46,7 +46,7 @@ export function useFollowData(profile, currentUser, authLoading, isOwnProfile) {
       .catch(() => {})
 
     return () => controller.abort()
-  }, [profile?.id, currentUser?.id, authLoading, isOwnProfile])
+  }, [profile?.user_id, currentUser?.user_id, authLoading, isOwnProfile])
 
   const handleFollow = useCallback(async () => {
     if (!currentUser || !profile || followLoading) return
@@ -64,7 +64,7 @@ export function useFollowData(profile, currentUser, authLoading, isOwnProfile) {
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          followingId: profile.id,
+          followingId: profile.user_id,
           action: isFollowing ? "unfollow" : "follow",
         }),
       })
