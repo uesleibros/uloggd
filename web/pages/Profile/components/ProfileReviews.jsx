@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom"
-import { MessageSquare, Clock, TrendingUp, BookOpen } from "lucide-react"
+import { MessageSquare, Clock, TrendingUp } from "lucide-react"
+import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
+import { useJournalEvents } from "#hooks/useJournalEvents"
 import { SORT_OPTIONS } from "#constants/game"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
+import UserBadges from "@components/User/UserBadges"
 import StatusBadge from "@components/Game/StatusBadge"
 import ReviewRating from "@components/Game/ReviewRating"
 import Playtime from "@components/Game/Playtime"
@@ -18,6 +21,9 @@ import {
   ReviewContent,
   ReviewEmptyState,
   ReviewSkeleton,
+  LikeButton,
+  JourneyBadge,
+  SortButton,
 } from "@components/Game/Review"
 
 const SORT_ICONS = {
@@ -25,63 +31,20 @@ const SORT_ICONS = {
   popular: TrendingUp,
 }
 
-function SortButton({ active, onClick, icon: Icon, children }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer border ${
-        active
-          ? "bg-white text-black border-white"
-          : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 border-zinc-700/50"
-      }`}
-    >
-      {Icon && <Icon className="w-4 h-4" />}
-      <span>{children}</span>
-    </button>
-  )
-}
-
-function JourneyBadge({ journey, onClick }) {
-  const { t } = useTranslation("reviews")
-
-  if (!journey) return null
-
-  const hours = Math.floor(journey.total_minutes / 60)
-  const mins = journey.total_minutes % 60
-
-  return (
-    <button
-      onClick={onClick}
-      className="group flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/15 transition-colors cursor-pointer"
-    >
-      <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
-      <span className="text-xs text-emerald-400 font-medium truncate max-w-32">{journey.title}</span>
-      <span className="text-xs text-emerald-400/70">
-        {journey.total_sessions} {journey.total_sessions === 1 ? t("session") : t("sessions")}
-        {journey.total_minutes > 0 && (
-          <>
-            {" · "}
-            {hours > 0 && `${hours}h`}
-            {mins > 0 && `${mins}m`}
-          </>
-        )}
-      </span>
-    </button>
-  )
-}
-
-function GameCover({ game, size = "md", onClose }) {
+function GameCover({ game, size = "md", onClick }) {
   const sizes = {
     sm: "w-12 h-16",
     md: "w-16 h-20",
   }
 
+  if (!game?.cover_url) return null
+
   return (
-    <Link to={`/game/${game?.slug}`} onClick={onClose} className="flex-shrink-0">
+    <Link to={`/game/${game.slug}`} onClick={onClick} className="flex-shrink-0 group/cover">
       <img
-        src={game?.cover?.url}
-        alt={game?.name}
-        className={`${sizes[size]} object-cover rounded-lg border border-zinc-700/50 hover:border-zinc-500 transition-colors`}
+        src={game.cover_url}
+        alt={game.name}
+        className={`${sizes[size]} object-cover rounded-lg border border-zinc-700/50 group-hover/cover:border-zinc-500 transition-colors`}
       />
     </Link>
   )
@@ -103,6 +66,7 @@ function ReviewHeader({ review, game, user, onClose }) {
             >
               {user.username}
             </Link>
+            <UserBadges user={user} size="md" clickable />
             <span className="text-zinc-500 text-sm">{t("reviews.rated")}</span>
           </>
         )}
@@ -126,20 +90,21 @@ function ReviewHeader({ review, game, user, onClose }) {
 }
 
 export function ProfileReviewCard({ review, game, user, journey, onJourneyUpdate }) {
+  const { user: currentUser } = useAuth()
   const [showModal, setShowModal] = useState(false)
   const [showJourney, setShowJourney] = useState(false)
   const aspects = review.aspect_ratings || []
 
   return (
     <>
-      <div className="rounded-xl p-5 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 transition-colors">
-        <div className="flex items-start gap-3.5">
+      <div className="group rounded-xl p-5 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 hover:bg-zinc-800/70 transition-all duration-200">
+        <div className="flex items-start gap-4">
           {user ? (
             <Link to={`/u/${user.username}`} className="flex-shrink-0">
               <AvatarWithDecoration
                 src={user.avatar}
                 alt={user.username}
-                decoration={user.avatar_decoration}
+                decorationUrl={user.equipped?.avatar_decoration?.asset_url}
                 size="lg"
               />
             </Link>
@@ -151,7 +116,7 @@ export function ProfileReviewCard({ review, game, user, journey, onJourneyUpdate
             <ReviewHeader review={review} game={game} user={user} />
 
             {aspects.length > 0 && (
-              <div className="mt-3 p-3 bg-zinc-900/40 border border-zinc-700/30 rounded-lg">
+              <div className="mt-3 p-3 bg-zinc-900/50 border border-zinc-700/40 rounded-lg">
                 <AspectRatingsPreview aspects={aspects} compact />
               </div>
             )}
@@ -169,10 +134,11 @@ export function ProfileReviewCard({ review, game, user, journey, onJourneyUpdate
                   <JourneyBadge journey={journey} onClick={() => setShowJourney(true)} />
                 )}
               </div>
+              <LikeButton reviewId={review.id} currentUserId={currentUser?.id} />
             </div>
           </div>
 
-          {user && game?.cover?.url && (
+          {user && game?.cover_url && (
             <div className="hidden sm:block">
               <GameCover game={game} size="sm" />
             </div>
@@ -186,22 +152,32 @@ export function ProfileReviewCard({ review, game, user, journey, onJourneyUpdate
         fullscreenMobile
         showCloseButton={false}
         maxWidth="max-w-2xl"
-        className="!bg-zinc-900 !border-zinc-700 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
+        noScroll
+        className="!bg-zinc-900 !border-zinc-700/80 !rounded-t-2xl md:!rounded-xl !shadow-2xl"
       >
-        <div className="flex items-center gap-3.5 p-5 border-b border-zinc-700/50 flex-shrink-0">
-          <GameCover game={game} size="sm" onClose={() => setShowModal(false)} />
-          <ReviewHeader
-            review={review}
-            game={game}
-            user={user}
-            onClose={() => setShowModal(false)}
-          />
+        <div className="flex items-start justify-between gap-4 p-5 border-b border-zinc-700/50 flex-shrink-0">
+          <div className="flex items-start gap-4 min-w-0">
+            <GameCover game={game} size="sm" onClick={() => setShowModal(false)} />
+            <ReviewHeader
+              review={review}
+              game={game}
+              user={user}
+              onClose={() => setShowModal(false)}
+            />
+          </div>
+          <LikeButton reviewId={review.id} currentUserId={currentUser?.id} />
         </div>
-        <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <ReviewModalContent review={review} />
           {journey && (
             <div className="px-5 pb-5">
-              <JourneyBadge journey={journey} onClick={() => { setShowModal(false); setShowJourney(true) }} />
+              <JourneyBadge
+                journey={journey}
+                onClick={() => {
+                  setShowModal(false)
+                  setShowJourney(true)
+                }}
+              />
             </div>
           )}
         </div>
@@ -258,6 +234,8 @@ export default function ProfileReviews({ userId }) {
     fetchReviews()
   }, [fetchReviews])
 
+  useJournalEvents(fetchReviews)
+
   function handleSortChange(newSort) {
     if (newSort === sortBy) return
     setSortBy(newSort)
@@ -271,12 +249,12 @@ export default function ProfileReviews({ userId }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <h2 className="text-lg font-semibold text-white flex items-center gap-2">
           <MessageSquare className="w-5 h-5 text-zinc-400" />
           {t("reviews.title")}
           {!loading && total > 0 && (
-            <span className="text-sm text-zinc-500 font-normal">{total}</span>
+            <span className="text-sm text-zinc-500 font-normal">({total})</span>
           )}
         </h2>
 
