@@ -736,8 +736,8 @@ export default {
 			},
 		},
 		actions: {
-			edit: "Edit tierlist",
-			delete: "Delete tierlist",
+			editTierlist: "Edit tierlist",
+			deleteTierlist: "Delete tierlist",
 		},
 		card: {
 			private: "Private",
@@ -754,6 +754,8 @@ export default {
 		rankedGames: "{{count}} ranked game",
 		rankedGames_plural: "{{count}} ranked games",
 		editor: {
+			done: "Done",
+			edit: "Edit",
 			empty: "Empty",
 			dragHere: "Drag games here",
 			untieredGames: "Untiered games",
