@@ -101,6 +101,8 @@ export function formatUserMap(users, streamsMap = {}) {
     const equipped = u.equipped
     
     map[u.user_id] = {
+      id: u.id,
+      user_id: u.user_id,
       username: u.username,
       avatar: u.avatar || DEFAULT_AVATAR_URL,
       last_seen: u.last_seen,
@@ -121,6 +123,8 @@ export function formatMinimalUserMap(users) {
     const equipped = u.equipped
     
     map[u.user_id] = {
+      id: u.id,
+      user_id: u.user_id,
       username: u.username,
       avatar: u.avatar || DEFAULT_AVATAR_URL,
       equipped,
