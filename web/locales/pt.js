@@ -1141,6 +1141,7 @@ export default {
 			parentGame: "Jogo principal",
 		},
 		sidebar: {
+			alternativeCovers: "Capas alternativas",
 			parentGame: "Jogo principal",
 			ageRatings: "Classificações de Idade",
 			platforms: "Plataformas",
