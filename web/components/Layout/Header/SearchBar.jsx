@@ -79,7 +79,7 @@ function ListResult({ item, onSelect }) {
 		>
 			<div className="flex items-center gap-3">
 				<div className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0 border border-zinc-700/50">
-					<CoverStrip slugs={(item.game_slugs || []).slice(0, 4)} />
+					<CoverStrip ownerId={item.owner.user_id} slugs={(item.game_slugs || []).slice(0, 4)} />
 				</div>
 				<div className="flex-1 min-w-0">
 					<span className="group-hover:text-indigo-400 transition-colors font-medium text-sm text-white truncate block">
