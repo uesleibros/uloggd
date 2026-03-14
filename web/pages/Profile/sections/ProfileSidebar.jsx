@@ -82,9 +82,9 @@ export function ProfileSidebar({
         </div>
       </div>
 
-      <ActivityCard stream={profile.stream} userId={profile.id} />
-      <SteamAchievements userId={profile.id} compact />
-      <PSNTrophies userId={profile.id} compact />
+      <ActivityCard stream={profile.stream} userId={profile.user_id} />
+      <SteamAchievements userId={profile.user_id} compact />
+      <PSNTrophies userId={profile.user_id} compact />
     </div>
   )
 }
