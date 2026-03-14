@@ -7,6 +7,7 @@ import UserDisplay from "@components/User/UserDisplay"
 import { CoverStrip } from "@components/Lists/ListCard"
 import { useDateTime } from "#hooks/useDateTime"
 import { useTranslation } from "#hooks/useTranslation"
+import { useMyLibrary } from "#hooks/useMyLibrary"
 import { LoadingSpinner } from "./icons"
 
 const TABS = [
@@ -15,8 +16,10 @@ const TABS = [
 	{ id: "lists", icon: ListMusic },
 ]
 
-function GameResult({ item, onSelect }) {
+function GameResult({ item, onSelect, getGameData }) {
 	const { formatDateShort } = useDateTime()
+	const gameData = getGameData(item.slug)
+	const coverUrl = gameData?.custom_cover_url || (item.cover ? `https:${item.cover.url}` : null)
 
 	return (
 		<li
@@ -24,9 +27,9 @@ function GameResult({ item, onSelect }) {
 			className="group cursor-pointer px-3 py-2.5 hover:bg-indigo-500/10 transition-colors"
 		>
 			<div className="flex items-center gap-3">
-				{item.cover ? (
+				{coverUrl ? (
 					<img
-						src={`https:${item.cover.url}`}
+						src={coverUrl}
 						alt=""
 						className="h-12 w-9 rounded object-cover bg-zinc-800 flex-shrink-0"
 					/>
@@ -79,7 +82,7 @@ function ListResult({ item, onSelect }) {
 		>
 			<div className="flex items-center gap-3">
 				<div className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0 border border-zinc-700/50">
-					<CoverStrip ownerId={item.owner.user_id} slugs={(item.game_slugs || []).slice(0, 4)} />
+					<CoverStrip ownerId={item.owner?.id} slugs={(item.game_slugs || []).slice(0, 4)} />
 				</div>
 				<div className="flex-1 min-w-0">
 					<span className="group-hover:text-indigo-400 transition-colors font-medium text-sm text-white truncate block">
@@ -100,14 +103,8 @@ function ListResult({ item, onSelect }) {
 	)
 }
 
-function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query }) {
+function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query, getGameData }) {
 	const { t } = useTranslation()
-
-	const ResultComponent = {
-		games: GameResult,
-		users: UserResult,
-		lists: ListResult,
-	}[activeTab]
 
 	if (loading) return <LoadingSpinner />
 
@@ -122,9 +119,16 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
 	return (
 		<>
 			<ul className="py-1">
-				{results.map((item) => (
-					<ResultComponent key={item.id || item._id || item.username || item.shortId} item={item} onSelect={onSelect} />
-				))}
+				{results.map((item) => {
+					const key = item.id || item._id || item.username || item.shortId
+					if (activeTab === "games") {
+						return <GameResult key={key} item={item} onSelect={onSelect} getGameData={getGameData} />
+					}
+					if (activeTab === "users") {
+						return <UserResult key={key} item={item} onSelect={onSelect} />
+					}
+					return <ListResult key={key} item={item} onSelect={onSelect} />
+				})}
 			</ul>
 			<button
 				onMouseDown={onViewAll}
@@ -222,6 +226,8 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 	const [focused, setFocused] = useState(false)
 	const [activeTab, setActiveTab] = useState("games")
 	const [dropdownPos, setDropdownPos] = useState(null)
+	
+	const { getGameData } = useMyLibrary()
 	
 	const searchTimeoutRef = useRef(null)
 	const blurTimeoutRef = useRef(null)
@@ -391,6 +397,7 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 					onSelect={handleNavigate}
 					onViewAll={handleViewAll}
 					query={query}
+					getGameData={getGameData}
 				/>
 			</div>
 		</div>
