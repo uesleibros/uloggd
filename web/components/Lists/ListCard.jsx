@@ -133,7 +133,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 
 	const gamesCount = list.games_count || 0
 	const shortId = list.shortId || encode(list.id)
-	const ownerId = list.user_id || list.owner?.id || null
+	const ownerId = list.owner.user_id
 
 	return (
 		<motion.div
