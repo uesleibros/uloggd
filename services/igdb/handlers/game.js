@@ -17,6 +17,44 @@ async function getSteamId(gameId) {
   }
 }
 
+async function getAlternativeCovers(game) {
+  const urls = new Set()
+
+  const addCover = (item) => {
+    const url = item?.cover?.url
+    if (url) urls.add(url)
+  }
+
+  const addFromList = (data, key) => {
+    if (Array.isArray(data?.[key])) data[key].forEach(addCover)
+  }
+
+  addCover(game)
+  addFromList(game, "game_localizations")
+
+  const vp = game.version_parent
+  const rootId = (vp && typeof vp === "object") ? vp.id : game.id
+
+  if (vp && typeof vp === "object") {
+    addCover(vp)
+    addFromList(vp, "game_localizations")
+  }
+
+  try {
+    const siblings = await query("games", `
+      fields cover.url, game_localizations.cover.url;
+      where version_parent = ${rootId};
+      limit 500;
+    `)
+    for (const s of siblings) {
+      addCover(s)
+      addFromList(s, "game_localizations")
+    }
+  } catch {}
+
+  return [...urls].map(url => url.replace("t_thumb", "t_cover_big"))
+}
+
 export async function handleGame(req, res) {
   const { slug } = req.query
   if (!slug?.trim()) return res.status(400).json({ error: "missing slug" })
@@ -47,7 +85,10 @@ export async function handleGame(req, res) {
         remasters.name, remasters.slug, remasters.cover.url, remasters.cover.image_id,
         parent_game.name, parent_game.slug, parent_game.cover, parent_game.cover.url,
         age_ratings.organization, age_ratings.rating_category,
-        websites.url, websites.type;
+        websites.url, websites.type,
+        game_localizations.cover.url,
+        version_parent.id, version_parent.cover.url,
+        version_parent.game_localizations.cover.url;
       where slug = "${slug}";
       limit 1;
     `)
@@ -56,8 +97,9 @@ export async function handleGame(req, res) {
 
     const g = data[0]
 
-    const [steamId, ...rest] = await Promise.all([
-      getSteamId(g.id)
+    const [steamId, alternativeCovers] = await Promise.all([
+      getSteamId(g.id),
+      getAlternativeCovers(g)
     ])
 
     const ageRatings = g.age_ratings?.map(ar => {
@@ -89,6 +131,7 @@ export async function handleGame(req, res) {
       websites,
       platforms,
       steamId,
+      alternativeCovers,
       cover: g.cover?.url ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_1080p") } : null,
       screenshots: g.screenshots?.map(s => ({ ...s, url: s.url.replace("t_thumb", "t_original") })) || [],
       artworks: g.artworks?.map(a => ({ ...a, url: a.url.replace("t_thumb", "t_original") })) || [],
@@ -99,6 +142,11 @@ export async function handleGame(req, res) {
       remakes: mapCovers(g.remakes),
       remasters: mapCovers(g.remasters)
     }
+
+    delete result.game_localizations
+    delete result.version_parent
+    delete result.involved_companies
+    delete result.age_ratings
 
     await setCache(cacheKey, result)
     res.json(result)
