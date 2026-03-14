@@ -25,7 +25,7 @@ export function useFollowData(profile, currentUser, authLoading, isOwnProfile) {
     })
 
     if (currentUser?.user_id) {
-      params.append("currentUserId", currentUser.id)
+      params.append("currentUserId", currentUser.user_id)
     }
 
     fetch(`/api/users/followStatus?${params}`, {
