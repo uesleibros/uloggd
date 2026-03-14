@@ -2,8 +2,8 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { ChevronRight, Images, Check } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
-import { useAuth } from "#contexts/AuthContext"
-import { useLibrary } from "#contexts/LibraryContext"
+import { useAuth } from "#hooks/useAuth"
+import { useMyLibrary } from "#hooks/useMyLibrary"
 import { supabase } from "#lib/supabase"
 import { PlatformList } from "@components/Game/PlatformBadge"
 import RatingBadge from "@components/Game/RatingBadge"
@@ -232,7 +232,7 @@ function ParentGameLink({ parentGame }) {
 
 export function GameSidebar({ game }) {
   const { t } = useTranslation("game")
-  const { library } = useLibrary()
+  const { games: library } = useMyLibrary()
 
   const defaultCover = game.cover?.url ? `https:${game.cover.url}` : null
   const userSavedCover = library?.[game.slug]?.customCoverUrl || null
