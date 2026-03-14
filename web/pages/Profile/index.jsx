@@ -33,7 +33,7 @@ export default function Profile() {
     totalPages: gamesTotalPages,
     handleTabChange,
     handlePageChange: handleGamesPageChange,
-  } = useProfileGames(profile?.id)
+  } = useProfileGames(profile?.user_id)
 
   const {
     lists,
@@ -43,7 +43,7 @@ export default function Profile() {
     page: listsPage,
     totalPages: listsTotalPages,
     handlePageChange: handleListsPageChange,
-  } = useUserLists(profile?.id)
+  } = useUserLists(profile?.user_id)
 
   const {
     tierlists,
@@ -53,7 +53,7 @@ export default function Profile() {
     page: tierlistsPage,
     totalPages: tierlistsTotalPages,
     handlePageChange: handleTierlistsPageChange,
-  } = useUserTierlists(profile?.id)
+  } = useUserTierlists(profile?.user_id)
 
   const {
     journeys,
@@ -64,7 +64,7 @@ export default function Profile() {
     totalPages: journeysTotalPages,
     handlePageChange: handleJourneysPageChange,
     refetch: refetchJourneys,
-  } = useUserJourneys(profile?.id)
+  } = useUserJourneys(profile?.user_id)
 
   const { total: transactionsTotal } = useUserTransactions(profile?.id)
 
@@ -200,7 +200,7 @@ export default function Profile() {
       <FollowListModal
         isOpen={!!followModal}
         title={followModal || ""}
-        userId={profile.id}
+        userId={profile.user_id}
         onClose={() => setFollowModal(null)}
       />
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
