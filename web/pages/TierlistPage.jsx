@@ -17,7 +17,7 @@ import { useDateTime } from "#hooks/useDateTime"
 
 const tierlistCache = new Map()
 
-function TierlistSkeleton() {
+function TierlistPageSkeleton() {
   return (
     <div className="py-6 sm:py-10">
       <div className="animate-pulse space-y-5">
@@ -142,6 +142,7 @@ export default function TierlistPage() {
         created_at: data.created_at,
         updated_at: data.updated_at,
         owner: data.owner,
+        games_count: 0,
       }
 
       const sortedTiers = (data.tierlist_tiers || []).map(t => ({
@@ -154,6 +155,8 @@ export default function TierlistPage() {
       const allItems = (data.tierlist_tiers || []).flatMap(t =>
         (t.tierlist_items || []).map(i => ({ ...i, tier_id: t.id }))
       )
+
+      tierlistData.games_count = allItems.length
 
       tierlistCache.set(id, {
         tierlist: tierlistData,
@@ -191,7 +194,7 @@ export default function TierlistPage() {
     try {
       const token = (await supabase.auth.getSession())?.data?.session?.access_token
 
-      const r = await fetch("/api/tierlists/@me/update", {
+      const r = await fetch("/api/tierlists/@me/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -220,9 +223,20 @@ export default function TierlistPage() {
     }
   }
 
+  function handleTierlistUpdated(updated) {
+    setTierlist(prev => ({ ...prev, ...updated }))
+    tierlistCache.delete(id)
+  }
+
+  function handleTierlistDeleted() {
+    tierlistCache.delete(id)
+    const ownerUsername = tierlist?.owner?.username || currentUser?.username
+    navigate(ownerUsername ? `/u/${ownerUsername}` : "/")
+  }
+
   const isLoading = loading || (isOwner && !libraryLoaded)
 
-  if (isLoading) return <TierlistSkeleton />
+  if (isLoading) return <TierlistPageSkeleton />
 
   if (error || !tierlist) {
     return (
@@ -251,7 +265,6 @@ export default function TierlistPage() {
   }
 
   const createdAt = formatDateLong(tierlist.created_at)
-
   const totalGames = items.length
 
   return (
@@ -309,10 +322,10 @@ export default function TierlistPage() {
         <div className="flex items-center gap-2">
           <ShareButton tierlistId={encodedId} />
 
-          {isOwner && (
+          {isOwner && hasChanges && (
             <button
               onClick={handleSave}
-              disabled={!hasChanges || saving}
+              disabled={saving}
               className="px-3 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
             >
               {saving ? (
@@ -328,14 +341,17 @@ export default function TierlistPage() {
 
       <div className="border-t border-zinc-800 pt-5 sm:pt-6">
         <TierlistEditor
-          ownerId={tierlist?.user_id}
+          ownerId={tierlist.user_id}
+          isOwner={isOwner}
+          tierlist={tierlist}
           tiers={tiers}
           setTiers={setTiers}
           items={items}
           setItems={setItems}
           untieredGames={untieredGames}
           getGame={getGame}
-          isEditing={isOwner}
+          onTierlistUpdated={handleTierlistUpdated}
+          onTierlistDeleted={handleTierlistDeleted}
         />
       </div>
     </div>
