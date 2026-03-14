@@ -79,7 +79,7 @@ export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = 
 
   function getCoverUrl(game) {
     const gameData = getGameData(game.slug)
-    if (gameData?.custom_cover_url) return gameData.custom_cover_url
+    if (gameData?.customCoverUrl) return gameData.customCoverUrl
     if (game.cover?.url) return `https:${game.cover.url}`
     return null
   }
