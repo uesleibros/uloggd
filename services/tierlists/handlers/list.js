@@ -13,7 +13,7 @@ export async function handleList(req, res) {
     const { data, error, count } = await supabase
       .from("tierlists")
       .select(`
-        id, title, description, is_public, created_at, updated_at,
+        id, user_id, title, description, is_public, created_at, updated_at,
         tierlist_tiers ( 
           id, label, color, position, 
           tierlist_items ( id, game_slug, position ) 
@@ -31,6 +31,7 @@ export async function handleList(req, res) {
 
       return {
         id: t.id,
+        user_id: t.user_id,
         title: t.title,
         description: t.description,
         is_public: t.is_public,
