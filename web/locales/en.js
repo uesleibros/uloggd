@@ -1142,6 +1142,10 @@ export default {
 		},
 		sidebar: {
 			alternativeCovers: "Alternative covers",
+			saveCover: "Save cover",
+			saving: "Saving...",
+			coverSaved: "Cover saved successfully.",
+			coverSaveError: "Error saving cover",
 			parentGame: "Parent game",
 			ageRatings: "Age Ratings",
 			platforms: "Platforms",
