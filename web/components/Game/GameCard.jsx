@@ -7,9 +7,8 @@ import { supabase } from "#lib/supabase"
 import { useMyLibrary } from "#hooks/useMyLibrary"
 import { useTranslation } from "#hooks/useTranslation"
 import AddToListModal from "@components/Lists/AddToListModal"
+import GameCover, { getCoverUrl } from "@components/Game/GameCover"
 import { STATUS_OPTIONS, GAME_STATUS } from "#constants/game"
-
-const COVER_FALLBACK = "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"
 
 function MiniStars({ rating }) {
 	const stars = Math.round((rating / 20) * 2) / 2
@@ -47,11 +46,6 @@ function FavoriteBadge() {
 			</svg>
 		</div>
 	)
-}
-
-function getCoverUrl(game) {
-	if (!game?.cover?.url) return COVER_FALLBACK
-	return game.cover.url.startsWith("http") ? game.cover.url : `https:${game.cover.url}`
 }
 
 const DEFAULT_STATE = { status: null, playing: false, backlog: false, wishlist: false, liked: false }
@@ -445,14 +439,15 @@ export default function GameCard({
 	disableLink = false,
 	className = "",
 }) {
-	const { getRating } = useMyLibrary()
+	const { getRating, getGameData } = useMyLibrary()
 	const { user, state: actions, toggle, updating } = useCardActions(game, showQuickActions)
 	const [showListModal, setShowListModal] = useState(false)
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
 
 	const rating = propRating ?? getRating(game.slug)
 	const hasRating = showRating && rating != null && rating > 0
-	const coverUrl = getCoverUrl(game)
+	const gameData = getGameData(game?.slug)
+	const customCoverUrl = game?.customCoverUrl || gameData?.customCoverUrl || null
 	const canShowActions = showQuickActions && user
 
 	const cardClasses = isFavorite
@@ -465,11 +460,10 @@ export default function GameCard({
 
 	const imageContent = (
 		<>
-			<img
-				src={coverUrl}
-				alt={game.name}
-				draggable={false}
-				className="w-full h-full object-cover select-none rounded-lg bg-zinc-800"
+			<GameCover
+				game={game}
+				customCoverUrl={customCoverUrl}
+				className="w-full h-full rounded-lg"
 			/>
 
 			<div className={`absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center p-2 ${canShowActions ? "pb-10" : ""} gap-1.5 pointer-events-none`}>
