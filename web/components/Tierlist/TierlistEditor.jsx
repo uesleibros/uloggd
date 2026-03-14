@@ -23,9 +23,10 @@ import {
   Plus, Trash2, Palette, Gamepad2, Search, X,
   ArrowUpDown, GripVertical, Eye, EyeOff,
 } from "lucide-react"
-import { useTranslation } from "#hooks/useTranslation"
-import GameCard from "@components/Game/GameCard"
 import { Link } from "react-router-dom"
+import { useTranslation } from "#hooks/useTranslation"
+import { useCustomCovers } from "#hooks/useCustomCovers"
+import GameCover, { getCoverUrl } from "@components/Game/GameCover"
 
 const PRESET_COLORS = [
   "#ef4444", "#f97316", "#eab308", "#22c55e",
@@ -45,12 +46,6 @@ const CARD_SIZE = "w-[56px] h-[75px] sm:w-[75px] sm:h-[100px]"
 const TIER_MIN_H = "min-h-[91px] sm:min-h-[116px]"
 const LABEL_W_VIEW = "w-16 sm:w-24 md:w-28"
 const LABEL_W_EDIT = "w-16 sm:w-24 md:w-28"
-
-function getCoverUrl(game) {
-  if (!game?.cover?.url) return null
-  const url = game.cover.url.startsWith("http") ? game.cover.url : `https:${game.cover.url}`
-  return url.replace("t_thumb", "t_cover_small")
-}
 
 function tierlistCollisionDetection(args) {
   const pointerCollisions = pointerWithin(args)
@@ -109,23 +104,14 @@ function DropIndicator() {
   )
 }
 
-function GameCover({ game, linkTo }) {
-  const coverUrl = getCoverUrl(game)
-  
+function LinkedGameCover({ game, customCover, linkTo }) {
   const content = (
-    <div className={`${CARD_SIZE} rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0`} title={game?.name}>
-      {coverUrl ? (
-        <img
-          src={coverUrl}
-          alt={game?.name || ""}
-          className="w-full h-full object-cover select-none pointer-events-none"
-          draggable={false}
-        />
-      ) : (
-        <div className="w-full h-full bg-zinc-700 flex items-center justify-center">
-          <Gamepad2 className="w-4 h-4 text-zinc-500" />
-        </div>
-      )}
+    <div className={`${CARD_SIZE} rounded-lg overflow-hidden flex-shrink-0`} title={game?.name}>
+      <GameCover
+        game={game}
+        customCoverUrl={customCover}
+        className="w-full h-full rounded-lg"
+      />
     </div>
   )
 
@@ -140,7 +126,7 @@ function GameCover({ game, linkTo }) {
   return content
 }
 
-function SortableGameItem({ id, game, isDragging }) {
+function SortableGameItem({ id, game, customCover, isDragging }) {
   const {
     attributes,
     listeners,
@@ -157,38 +143,29 @@ function SortableGameItem({ id, game, isDragging }) {
     transition,
   }
 
-  const coverUrl = getCoverUrl(game)
-
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
-      className={`${CARD_SIZE} rounded-lg overflow-hidden bg-zinc-800 select-none cursor-grab active:cursor-grabbing flex-shrink-0 ${
+      className={`${CARD_SIZE} rounded-lg overflow-hidden select-none cursor-grab active:cursor-grabbing flex-shrink-0 ${
         isActive
           ? "opacity-30 ring-2 ring-indigo-500/40 z-10"
           : "hover:ring-2 hover:ring-zinc-500"
       }`}
       title={game?.name}
     >
-      {coverUrl ? (
-        <img
-          src={coverUrl}
-          alt={game?.name || ""}
-          className="w-full h-full object-cover select-none pointer-events-none"
-          draggable={false}
-        />
-      ) : (
-        <div className="w-full h-full bg-zinc-700 flex items-center justify-center">
-          <Gamepad2 className="w-4 h-4 text-zinc-500" />
-        </div>
-      )}
+      <GameCover
+        game={game}
+        customCoverUrl={customCover}
+        className="w-full h-full"
+      />
     </div>
   )
 }
 
-function SortableUntieredItem({ id, game, isDragging }) {
+function SortableUntieredItem({ id, game, customCover, isDragging }) {
   const {
     attributes,
     listeners,
@@ -205,33 +182,24 @@ function SortableUntieredItem({ id, game, isDragging }) {
     transition,
   }
 
-  const coverUrl = getCoverUrl(game)
-
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
-      className={`${CARD_SIZE} relative rounded-lg overflow-hidden bg-zinc-800 select-none cursor-grab active:cursor-grabbing flex-shrink-0 ${
+      className={`${CARD_SIZE} relative rounded-lg overflow-hidden select-none cursor-grab active:cursor-grabbing flex-shrink-0 ${
         isActive
           ? "opacity-30 ring-2 ring-indigo-500/40 z-10"
           : "hover:ring-2 hover:ring-zinc-500"
       }`}
       title={game?.name}
     >
-      {coverUrl ? (
-        <img
-          src={coverUrl}
-          alt={game?.name || ""}
-          className="w-full h-full object-cover select-none pointer-events-none"
-          draggable={false}
-        />
-      ) : (
-        <div className="w-full h-full bg-zinc-700 flex items-center justify-center">
-          <Gamepad2 className="w-4 h-4 text-zinc-500" />
-        </div>
-      )}
+      <GameCover
+        game={game}
+        customCoverUrl={customCover}
+        className="w-full h-full"
+      />
       {game?.name && (
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-1 pt-3">
           <p className="text-[8px] sm:text-[9px] text-white font-medium leading-tight line-clamp-2 text-center">
@@ -243,7 +211,7 @@ function SortableUntieredItem({ id, game, isDragging }) {
   )
 }
 
-function ViewTier({ tier, items, getGame }) {
+function ViewTier({ tier, items, getGame, getCustomCover }) {
   const { t } = useTranslation("tierlist")
 
   return (
@@ -264,10 +232,15 @@ function ViewTier({ tier, items, getGame }) {
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {items.map((item) => {
               const game = getGame(item.game_slug)
+              const customCover = getCustomCover(item.game_slug)
               if (!game) return null
               return (
                 <div key={item.id} draggable={false} className="select-none">
-                  <GameCover game={game} linkTo={`/game/${item.game_slug}`} />
+                  <LinkedGameCover
+                    game={game}
+                    customCover={customCover}
+                    linkTo={`/game/${item.game_slug}`}
+                  />
                 </div>
               )
             })}
@@ -286,6 +259,7 @@ function SortableTierRow({
   tier,
   items,
   getGame,
+  getCustomCover,
   activeId,
   activeDragType,
   isTargeted,
@@ -390,14 +364,19 @@ function SortableTierRow({
         >
           {hasContent ? (
             <div className="flex flex-wrap gap-1.5 sm:gap-2">
-              {items.map((item) => (
-                <SortableGameItem
-                  key={item.id}
-                  id={item.id}
-                  game={getGame(item.game_slug)}
-                  isDragging={activeId === item.id}
-                />
-              ))}
+              {items.map((item) => {
+                const game = getGame(item.game_slug)
+                const customCover = getCustomCover(item.game_slug)
+                return (
+                  <SortableGameItem
+                    key={item.id}
+                    id={item.id}
+                    game={game}
+                    customCover={customCover}
+                    isDragging={activeId === item.id}
+                  />
+                )
+              })}
               {isTargeted && <DropIndicator />}
             </div>
           ) : (
@@ -416,6 +395,7 @@ function SortableTierRow({
 function UntieredZone({
   games,
   getGame,
+  getCustomCover,
   activeId,
   searchQuery,
   onSearchChange,
@@ -521,12 +501,14 @@ function UntieredZone({
             <div className="flex flex-wrap gap-2 sm:gap-2.5">
               {sortedAndFilteredGames.map((g) => {
                 const game = getGame(g.game_slug)
+                const customCover = getCustomCover(g.game_slug)
                 const itemId = `untiered-${g.game_slug}`
                 return (
                   <SortableUntieredItem
                     key={itemId}
                     id={itemId}
                     game={game}
+                    customCover={customCover}
                     isDragging={activeId === itemId}
                   />
                 )
@@ -671,6 +653,7 @@ export default function TierlistEditor({
   setItems,
   untieredGames,
   getGame,
+  ownerId = null,
   isEditing = true,
   isLoading = false,
 }) {
@@ -687,6 +670,14 @@ export default function TierlistEditor({
   const [untieredOrder, setUntieredOrder] = useState(() =>
     untieredGames.map((g) => g.game_slug)
   )
+
+  const allSlugs = useMemo(() => {
+    const slugsFromTiers = items.map((i) => i.game_slug)
+    const slugsFromUntiered = untieredGames.map((g) => g.game_slug)
+    return [...new Set([...slugsFromTiers, ...slugsFromUntiered])]
+  }, [items, untieredGames])
+
+  const { getCustomCover } = useCustomCovers(ownerId, allSlugs)
 
   useEffect(() => {
     setUntieredOrder((prev) => {
@@ -1038,7 +1029,8 @@ export default function TierlistEditor({
       : items.find((i) => i.id === activeIdStr)?.game_slug
     : null
   const activeGame = activeGameSlug ? getGame(activeGameSlug) : null
-  const activeCoverUrl = getCoverUrl(activeGame)
+  const activeCustomCover = activeGameSlug ? getCustomCover(activeGameSlug) : null
+  const activeCoverUrl = getCoverUrl(activeGame, activeCustomCover)
 
   const activeTierForOverlay = useMemo(() => {
     if (!activeId || activeDragType !== "tier") return null
@@ -1064,6 +1056,7 @@ export default function TierlistEditor({
               tier={tier}
               items={tierItems}
               getGame={getGame}
+              getCustomCover={getCustomCover}
             />
           )
         })}
@@ -1125,6 +1118,7 @@ export default function TierlistEditor({
                 tier={tier}
                 items={tierItems}
                 getGame={getGame}
+                getCustomCover={getCustomCover}
                 activeId={activeId}
                 activeDragType={activeDragType}
                 isTargeted={
@@ -1156,6 +1150,7 @@ export default function TierlistEditor({
       <UntieredZone
         games={orderedUntieredGames}
         getGame={getGame}
+        getCustomCover={getCustomCover}
         activeId={activeId}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -1165,21 +1160,12 @@ export default function TierlistEditor({
 
       <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
         {activeDragType === "game" && activeGame && (
-          <div
-            className={`${CARD_SIZE} rounded-lg overflow-hidden shadow-lg ring-1 ring-indigo-400/60 opacity-80`}
-          >
-            {activeCoverUrl ? (
-              <img
-                src={activeCoverUrl}
-                alt={activeGame.name}
-                className="w-full h-full object-cover"
-                draggable={false}
-              />
-            ) : (
-              <div className="w-full h-full bg-zinc-700 flex items-center justify-center">
-                <Gamepad2 className="w-3 h-3 text-zinc-500" />
-              </div>
-            )}
+          <div className={`${CARD_SIZE} rounded-lg overflow-hidden shadow-lg ring-1 ring-indigo-400/60 opacity-80`}>
+            <GameCover
+              game={activeGame}
+              customCoverUrl={activeCustomCover}
+              className="w-full h-full"
+            />
           </div>
         )}
         {activeDragType === "tier" && activeTierForOverlay && (
