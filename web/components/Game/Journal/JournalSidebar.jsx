@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { Clock, Calendar, Trash2, AlertTriangle, Play, Flag } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
+import { useMyLibrary } from "#hooks/useMyLibrary"
+import GameCover from "@components/Game/GameCover"
 
 export function JournalSidebar({
   game,
@@ -17,24 +19,25 @@ export function JournalSidebar({
   deleting
 }) {
   const { t } = useTranslation("journal.modal")
+  const { getGameData } = useMyLibrary()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const hours = Math.floor(totalMinutes / 60)
   const minutes = totalMinutes % 60
 
+  const gameData = getGameData(game?.slug)
+  const customCoverUrl = gameData?.customCoverUrl || null
+
   return (
     <div className="w-full md:w-72 flex-shrink-0 p-4 md:p-5 border-b md:border-b-0 md:border-r border-zinc-700/50 bg-zinc-800/20">
       <div className="flex gap-4 md:flex-col md:gap-0">
-        {game.cover && (
-          <div className="w-20 flex-shrink-0 md:w-full md:mb-5">
-            <img
-              src={`https:${game.cover.url?.replace("t_thumb", "t_cover_big")}`}
-              alt=""
-              className="w-full rounded-xl object-cover bg-zinc-800 shadow-lg"
-              draggable={false}
-            />
-          </div>
-        )}
+        <div className="w-20 flex-shrink-0 md:w-full md:mb-5">
+          <GameCover
+            game={game}
+            customCoverUrl={customCoverUrl}
+            className="w-full rounded-xl shadow-lg"
+          />
+        </div>
 
         <div className="flex-1 min-w-0 space-y-4 md:space-y-5">
           <div>
