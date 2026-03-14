@@ -438,6 +438,7 @@ export default function GameCard({
 	responsive = false,
 	disableLink = false,
 	className = "",
+	customCoverUrl: propCoverUrl = null,
 }) {
 	const { getRating, getGameData } = useMyLibrary()
 	const { user, state: actions, toggle, updating } = useCardActions(game, showQuickActions)
@@ -447,7 +448,7 @@ export default function GameCard({
 	const rating = propRating ?? getRating(game.slug)
 	const hasRating = showRating && rating != null && rating > 0
 	const gameData = getGameData(game?.slug)
-	const customCoverUrl = game?.customCoverUrl || gameData?.customCoverUrl || null
+	const customCoverUrl = propCoverUrl || game?.customCoverUrl || gameData?.customCoverUrl || null
 	const canShowActions = showQuickActions && user
 
 	const cardClasses = isFavorite
