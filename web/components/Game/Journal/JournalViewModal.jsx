@@ -4,6 +4,7 @@ import { X, ChevronLeft, ChevronRight, Clock, Calendar as CalendarIcon, Play, Fl
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useCustomCovers } from "#hooks/useCustomCovers"
+import GameCover from "@components/Game/GameCover"
 import { JournalCalendar } from "./JournalCalendar"
 import { JournalTimeline } from "./JournalTimeline"
 import { JournalModal } from "./JournalModal"
@@ -93,7 +94,7 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
   const years = []
   for (let y = today.getFullYear() + 1; y >= 1970; y--) years.push(y)
 
-  const coverUrl = customCoverUrl || game?.cover_url
+  const gameForCover = game ? { cover: { url: game.cover_url }, name: game.name } : null
 
   if (editMode && isOwner && journey) {
     const gameObj = {
@@ -141,19 +142,17 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
               style={{ paddingTop: "max(1rem, env(safe-area-inset-top, 1rem))" }}
             >
               <div className="flex items-start gap-3 min-w-0">
-                {coverUrl && (
-                  <Link
-                    to={`/game/${game?.slug || journey.game_slug}`}
-                    onClick={onClose}
-                    className="flex-shrink-0"
-                  >
-                    <img
-                      src={coverUrl}
-                      alt={game?.name}
-                      className="w-12 h-16 object-cover rounded-lg border border-zinc-700 hover:border-zinc-500 transition-colors"
-                    />
-                  </Link>
-                )}
+                <Link
+                  to={`/game/${game?.slug || journey.game_slug}`}
+                  onClick={onClose}
+                  className="flex-shrink-0 w-12 h-16 rounded-lg overflow-hidden border border-zinc-700 hover:border-zinc-500 transition-colors"
+                >
+                  <GameCover
+                    game={gameForCover}
+                    customCoverUrl={customCoverUrl}
+                    className="w-full h-full"
+                  />
+                </Link>
                 <div className="min-w-0">
                   <h2 className="text-lg md:text-xl font-semibold text-white truncate">{journey.title}</h2>
                   {game && game.name !== journey.title && (
