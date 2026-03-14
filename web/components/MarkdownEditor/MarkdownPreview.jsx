@@ -45,6 +45,8 @@ export const MarkdownPreview = memo(function MarkdownPreview({
     )
   }
 
+  console.log("MarkdownPreview ownerId:", ownerId)
+
   return (
     <GamesBatchProvider ownerId={ownerId}>
       <div className="markdown-body">
