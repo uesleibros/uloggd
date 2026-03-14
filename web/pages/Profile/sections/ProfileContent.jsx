@@ -86,6 +86,7 @@ export function ProfileContent({
       {activeSection === "journeys" && (
         <JourneysSection
           journeys={journeys}
+          ownerId={profile.user_id}
           games={journeyGames}
           loading={loadingJourneys}
           total={journeysTotal}
