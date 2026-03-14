@@ -12,7 +12,7 @@ import ReviewButton from "@components/Game/Review"
 import JournalButton from "@components/Game/Journal"
 import Modal from "@components/UI/Modal"
 import { notify } from "@components/UI/Notification"
-import { getCoverUrl } from "@components/Game/GameCover"
+import GameCover, { getCoverUrl } from "@components/Game/GameCover"
 import { AgeRatings } from "../components/AgeRatings"
 import { Websites } from "../components/Websites"
 import { Keywords } from "../components/Keywords"
@@ -161,20 +161,20 @@ function AlternativeCovers({ game, covers, activeCover, savedCover, onSelect, on
   )
 }
 
-function SidebarCover({ url, name }) {
-  if (url) {
+function SidebarCover({ game, customCoverUrl }) {
+  if (game) {
     return (
-      <img
-        src={url}
-        alt={name}
-        className="w-32 sm:w-48 md:w-64 rounded-lg shadow-2xl bg-zinc-800 select-none flex-shrink-0"
+      <GameCover
+        game={game}
+        customCoverUrl={customCoverUrl}
+        className="w-32 sm:w-48 md:w-64 rounded-lg shadow-2xl flex-shrink-0"
       />
     )
   }
 
   return (
     <div className="w-32 h-48 sm:w-48 sm:h-72 md:w-64 md:h-96 rounded-lg bg-zinc-800 flex items-center justify-center flex-shrink-0">
-      <span className="text-zinc-500 text-xs sm:text-sm text-center px-2">{name}</span>
+      <span className="text-zinc-500 text-xs sm:text-sm text-center px-2">No cover</span>
     </div>
   )
 }
@@ -207,7 +207,6 @@ function ParentGameLink({ parentGame }) {
   if (!parentGame) return null
 
   const parentData = getGameData(parentGame.slug)
-  const coverUrl = parentData?.customCoverUrl || (parentGame.cover?.url ? `https:${parentGame.cover.url}` : null)
 
   return (
     <>
@@ -215,15 +214,11 @@ function ParentGameLink({ parentGame }) {
         to={`/game/${parentGame.slug}`}
         className="mt-6 flex items-center gap-3 px-4 py-3 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-all duration-200 group"
       >
-        {coverUrl ? (
-          <img
-            src={coverUrl}
-            alt={parentGame.name}
-            className="w-10 h-14 rounded object-cover bg-zinc-700 flex-shrink-0"
-          />
-        ) : (
-          <div className="w-10 h-14 rounded bg-zinc-700 flex-shrink-0" />
-        )}
+        <GameCover
+          game={parentGame}
+          customCoverUrl={parentData?.customCoverUrl}
+          className="w-10 h-14 rounded flex-shrink-0"
+        />
         <div className="flex flex-col min-w-0">
           <span className="text-xs text-zinc-500 uppercase tracking-wide">{t("sidebar.parentGame")}</span>
           <span className="text-sm text-zinc-300 group-hover:text-white transition-colors truncate">
@@ -266,7 +261,7 @@ export function GameSidebar({ game }) {
     <div className="flex-shrink-0">
       <div className="flex flex-row md:flex-col gap-4 md:gap-0">
         <div>
-          <SidebarCover url={activeCover} name={game.name} />
+          <SidebarCover game={game} customCoverUrl={activeCover} />
           <div className="hidden md:block">
             <AlternativeCovers
               game={game}
