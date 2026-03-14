@@ -4,6 +4,7 @@ import { Gamepad2, Lock } from "lucide-react"
 import { motion } from "framer-motion"
 import { useTranslation } from "#hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
+import { useCustomCovers } from "#hooks/useCustomCovers"
 import { useDateTime } from "#hooks/useDateTime"
 import { encode } from "#utils/shortId.js"
 
@@ -33,12 +34,16 @@ function reorderForCenter(items) {
 	return [...left, items[0], ...right]
 }
 
-function FanImages({ slugs = [], isActive, ranked = false }) {
+function FanImages({ slugs = [], isActive, ranked = false, ownerId = null }) {
 	const orderedSlugs = ranked ? reorderForCenter(slugs) : slugs
 	const { getGame } = useGamesBatch(slugs)
+	const { getCustomCover } = useCustomCovers(ownerId, slugs)
 
 	const covers = orderedSlugs
 		.map((s) => {
+			const custom = getCustomCover(s)
+			if (custom) return custom
+
 			const g = getGame(s)
 			if (!g?.cover?.url) return null
 			return `https:${g.cover.url.replace("t_thumb", "t_cover_big")}`
@@ -128,6 +133,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 
 	const gamesCount = list.games_count || 0
 	const shortId = list.shortId || encode(list.id)
+	const ownerId = list.user_id || list.owner?.id || null
 
 	return (
 		<motion.div
@@ -197,6 +203,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 							slugs={list.game_slugs || []}
 							isActive={isHovered}
 							ranked={!!list.ranked}
+							ownerId={ownerId}
 						/>
 					</motion.div>
 				</motion.div>
@@ -286,8 +293,9 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 	)
 }
 
-export function CoverStrip({ slugs = [] }) {
+export function CoverStrip({ slugs = [], ownerId = null }) {
 	const { getGame } = useGamesBatch(slugs)
+	const { getCustomCover } = useCustomCovers(ownerId, slugs)
 
 	if (slugs.length === 0) {
 		return (
@@ -299,6 +307,9 @@ export function CoverStrip({ slugs = [] }) {
 
 	const covers = slugs
 		.map((s) => {
+			const custom = getCustomCover(s)
+			if (custom) return custom
+
 			const g = getGame(s)
 			if (!g?.cover?.url) return null
 			return `https:${g.cover.url.replace("t_thumb", "t_cover_big")}`
