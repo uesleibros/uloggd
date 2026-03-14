@@ -3,7 +3,7 @@ import { FileText, Copy, Check } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { MarkdownPreview } from "@components/MarkdownEditor"
 
-export default function BioSection({ bio, isOwnProfile, onEdit, profileGames = {} }) {
+export default function BioSection({ bio, profileId, onEdit, profileGames = {} }) {
   const { t } = useTranslation("profile")
   const [copied, setCopied] = useState(false)
 
@@ -37,7 +37,7 @@ export default function BioSection({ bio, isOwnProfile, onEdit, profileGames = {
         </div>
       </div>
       <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl p-5 sm:p-6">
-        <MarkdownPreview content={bio} authorRatings={profileGames} />
+        <MarkdownPreview ownerId={profileId} content={bio} authorRatings={profileGames} />
       </div>
     </div>
   )
