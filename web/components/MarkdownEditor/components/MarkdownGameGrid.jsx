@@ -11,10 +11,10 @@ function parseSlugList(slugs) {
   }).filter(item => item.slug)
 }
 
-export function MarkdownGameGrid({ slugs, autoScroll = false, authorRatings = {} }) {
+export function MarkdownGameGrid({ slugs, autoScroll = false, authorRatings = {}, ownerId = null }) {
   const slugList = useMemo(() => parseSlugList(slugs), [slugs])
   const uniqueSlugs = useMemo(() => [...new Set(slugList.map(s => s.slug))], [slugList])
-  const { loading, getGame } = useGamesBatch(uniqueSlugs)
+  const { loading, getGame, getCustomCover } = useGamesBatch(uniqueSlugs, ownerId)
 
   if (slugList.length === 0) return null
 
@@ -32,7 +32,17 @@ export function MarkdownGameGrid({ slugs, autoScroll = false, authorRatings = {}
           if (loading) return <GameCardSkeleton key={`skeleton-${i}`} />
           const game = getGame(slug)
           if (!game) return null
-          return <GameCard showQuickActions={false} key={`${slug}-${i}`} game={game} isFavorite={isFavorite} userRating={authorRatings[slug]?.avgRating} showRating />
+          return (
+            <GameCard 
+              key={`${slug}-${i}`} 
+              game={game} 
+              isFavorite={isFavorite} 
+              userRating={authorRatings[slug]?.avgRating} 
+              customCoverUrl={getCustomCover(slug)}
+              showQuickActions={false} 
+              showRating 
+            />
+          )
         })}
       </DragScrollRow>
     </div>
