@@ -20,7 +20,7 @@ export async function handleGet(req, res) {
           .from("lists")
           .select(`
             id, user_id, title, description, is_public, ranked, created_at, updated_at,
-            owner:user_id ( id, username, avatar )
+            owner:user_id ( id, user_id, username, avatar )
           `)
           .eq("id", decodedId)
           .single(),
