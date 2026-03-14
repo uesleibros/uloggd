@@ -1,8 +1,8 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
 import { Calendar, Clock, Play, Flag, ChevronRight, BookOpen } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useCustomCovers } from "#hooks/useCustomCovers"
+import GameCover from "@components/Game/GameCover"
 import { JournalViewModal } from "@components/Game/Journal/JournalViewModal"
 import Pagination from "@components/UI/Pagination"
 
@@ -134,27 +134,19 @@ export default function JourneysSection({ journeys, games = {}, loading, total, 
 
 function JourneyCard({ journey: j, game, customCoverUrl, formatTime, formatDate, onClick, t }) {
   const time = formatTime(j.total_minutes)
-  const coverUrl = customCoverUrl || game?.cover_url
 
   return (
     <button
       onClick={onClick}
       className="flex items-start gap-3 p-3.5 bg-zinc-800/30 hover:bg-zinc-800/60 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all cursor-pointer text-left group w-full"
     >
-      {coverUrl ? (
-        <img
-          src={coverUrl}
-          alt={game?.name}
-          className="w-10 h-14 object-cover rounded-lg flex-shrink-0 border border-zinc-700"
+      <div className="w-10 h-14 flex-shrink-0 rounded-lg overflow-hidden border border-zinc-700">
+        <GameCover
+          game={game ? { cover: { url: game.cover_url }, name: game.name } : null}
+          customCoverUrl={customCoverUrl}
+          className="w-full h-full"
         />
-      ) : (
-        <div className={`
-          w-10 h-14 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-700
-          ${j.finished_at ? "bg-amber-500/10" : "bg-emerald-500/10"}
-        `}>
-          <BookOpen className={`w-4 h-4 ${j.finished_at ? "text-amber-400" : "text-emerald-400"}`} />
-        </div>
-      )}
+      </div>
 
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-white truncate">{j.title}</p>
