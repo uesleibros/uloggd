@@ -1,20 +1,18 @@
 import { Link } from "react-router-dom"
 import { MiniStars } from "@components/Game/GameCard"
+import GameCover from "@components/Game/GameCover"
 
-const NO_COVER = "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"
-
-export function MiniCard({ game, rating }) {
+export function MiniCard({ game, rating, customCoverUrl = null }) {
   const year = game.first_release_date 
     ? new Date(game.first_release_date * 1000).getFullYear() 
     : null
-  const coverUrl = game.cover?.url || NO_COVER
   const hasRating = rating != null && rating > 0
 
   return (
     <div className="flex items-center gap-4 p-4 bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800 hover:border-zinc-700 rounded-xl w-full max-w-md my-2 transition-all group shadow-md hover:shadow-lg">
       <Link to={`/game/${game.slug}`} className="flex-shrink-0 relative group/img overflow-hidden rounded-lg">
         <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors z-10" />
-        <img src={coverUrl} alt={game.name} className="w-16 h-22 object-cover shadow-md bg-zinc-800 transition-transform group-hover/img:scale-105" />
+        <GameCover game={game} customCoverUrl={customCoverUrl} className="w-16 h-22 rounded-lg shadow-md transition-transform group-hover/img:scale-105" />
       </Link>
 
       <div className="flex-1 min-w-0 flex flex-col justify-center gap-1.5 text-left">
