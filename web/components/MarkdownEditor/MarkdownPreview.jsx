@@ -46,7 +46,7 @@ export const MarkdownPreview = memo(function MarkdownPreview({
   }
 
   return (
-    <GamesBatchProvider>
+    <GamesBatchProvider ownerId={ownerId}>
       <div className="markdown-body">
         <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components}>
           {processedContent}
