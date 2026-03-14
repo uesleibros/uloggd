@@ -26,6 +26,9 @@ export async function handleUpdate(req, res) {
   if (BOOLEAN_FIELDS.includes(field) && typeof value !== "boolean")
     return res.status(400).json({ error: "value must be boolean" })
 
+  if (field === "custom_cover_url" && value !== null && typeof value !== "string")
+    return res.status(400).json({ error: "value must be string or null" })
+
   try {
     const { data: existing } = await supabase
       .from("user_games")
@@ -114,4 +117,3 @@ export async function handleUpdate(req, res) {
     res.status(500).json({ error: "fail" })
   }
 }
-
