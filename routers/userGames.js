@@ -3,7 +3,7 @@ import { handleUpdate } from "#services/userGames/handlers/me/update.js"
 import { handleProfileGames } from "#services/userGames/handlers/profileGames.js"
 import { handleLibrary } from "#services/userGames/handlers/me/library.js"
 import { handleGetAll } from "#services/userGames/handlers/me/getAll.js"
-import { handleCustomCovers } from "#services/userGames/customCovers.js"
+import { handleCustomCovers } from "#services/userGames/handlers/customCovers.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
