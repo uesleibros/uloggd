@@ -1141,6 +1141,7 @@ export default {
 			parentGame: "Parent game",
 		},
 		sidebar: {
+			alternativeCovers: "Alternative covers",
 			parentGame: "Parent game",
 			ageRatings: "Age Ratings",
 			platforms: "Platforms",
