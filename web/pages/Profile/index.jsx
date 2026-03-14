@@ -66,7 +66,7 @@ export default function Profile() {
     refetch: refetchJourneys,
   } = useUserJourneys(profile?.user_id)
 
-  const { total: transactionsTotal } = useUserTransactions(profile?.id)
+  const { total: transactionsTotal } = useUserTransactions(profile?.user_id)
 
   const {
     isFollowing,
