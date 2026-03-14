@@ -1,22 +1,100 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, Images } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { PlatformList } from "@components/Game/PlatformBadge"
 import RatingBadge from "@components/Game/RatingBadge"
 import QuickActions from "@components/Game/QuickActions"
 import ReviewButton from "@components/Game/Review"
 import JournalButton from "@components/Game/Journal"
+import Modal from "@components/UI/Modal"
 import { AgeRatings } from "../components/AgeRatings"
 import { Websites } from "../components/Websites"
 import { Keywords } from "../components/Keywords"
 import { useDateTime } from "#hooks/useDateTime"
 
-function GameCover({ game }) {
-  if (game.cover) {
+function CoverThumb({ url, isActive, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-12 h-16 rounded overflow-hidden border-2 transition-all duration-200 cursor-pointer flex-shrink-0 ${
+        isActive
+          ? "border-blue-500 ring-1 ring-blue-500/50"
+          : "border-zinc-700 hover:border-zinc-500"
+      }`}
+    >
+      <img src={url} alt="" className="w-full h-full object-cover" />
+    </button>
+  )
+}
+
+function AlternativeCovers({ covers, activeCover, onSelect }) {
+  const { t } = useTranslation("game")
+  const [showModal, setShowModal] = useState(false)
+
+  if (!covers?.length || covers.length <= 1) return null
+
+  const INITIAL_SHOW = 4
+  const hasMore = covers.length > INITIAL_SHOW
+
+  return (
+    <div className="mt-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        {covers.slice(0, INITIAL_SHOW).map((url) => (
+          <CoverThumb
+            key={url}
+            url={url}
+            isActive={activeCover === url}
+            onClick={() => onSelect(url)}
+          />
+        ))}
+        {hasMore && (
+          <button
+            onClick={() => setShowModal(true)}
+            className="w-12 h-16 rounded flex items-center justify-center bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700 hover:border-zinc-600 transition-all duration-200 cursor-pointer flex-shrink-0"
+          >
+            <div className="text-center">
+              <Images className="w-4 h-4 text-blue-400 mx-auto" />
+              <span className="text-[10px] text-blue-400 mt-0.5 block">+{covers.length - INITIAL_SHOW}</span>
+            </div>
+          </button>
+        )}
+      </div>
+
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={t("sidebar.alternativeCovers")}
+        subtitle={String(covers.length)}
+      >
+        <div className="p-4 overflow-y-auto flex-1">
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
+            {covers.map((url) => (
+              <button
+                key={url}
+                onClick={() => { onSelect(url); setShowModal(false) }}
+                className={`aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
+                  activeCover === url
+                    ? "border-blue-500 ring-2 ring-blue-500/50 scale-95"
+                    : "border-zinc-700 hover:border-zinc-500"
+                }`}
+              >
+                <img src={url} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </Modal>
+    </div>
+  )
+}
+
+function GameCover({ url, name }) {
+  if (url) {
     return (
       <img
-        src={`https:${game.cover.url}`}
-        alt={game.name}
+        src={url}
+        alt={name}
         className="w-32 sm:w-48 md:w-64 rounded-lg shadow-2xl bg-zinc-800 select-none flex-shrink-0"
       />
     )
@@ -24,7 +102,7 @@ function GameCover({ game }) {
 
   return (
     <div className="w-32 h-48 sm:w-48 sm:h-72 md:w-64 md:h-96 rounded-lg bg-zinc-800 flex items-center justify-center flex-shrink-0">
-      <span className="text-zinc-500 text-xs sm:text-sm text-center px-2">{game.name}</span>
+      <span className="text-zinc-500 text-xs sm:text-sm text-center px-2">{name}</span>
     </div>
   )
 }
@@ -85,12 +163,32 @@ function ParentGameLink({ parentGame }) {
 
 export function GameSidebar({ game }) {
   const { t } = useTranslation("game")
+  const [activeCover, setActiveCover] = useState(
+    game.cover?.url ? `https:${game.cover.url}` : null
+  )
 
   return (
     <div className="flex-shrink-0">
       <div className="flex flex-row md:flex-col gap-4 md:gap-0">
-        <GameCover game={game} />
+        <div>
+          <GameCover url={activeCover} name={game.name} />
+          <div className="hidden md:block">
+            <AlternativeCovers
+              covers={game.alternativeCovers}
+              activeCover={activeCover}
+              onSelect={setActiveCover}
+            />
+          </div>
+        </div>
         <MobileHeader game={game} />
+      </div>
+
+      <div className="md:hidden">
+        <AlternativeCovers
+          covers={game.alternativeCovers}
+          activeCover={activeCover}
+          onSelect={setActiveCover}
+        />
       </div>
 
       <div className="mt-4 md:hidden">
