@@ -2,12 +2,16 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Calendar, Clock, Play, Flag, ChevronRight, BookOpen } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
+import { useCustomCovers } from "#hooks/useCustomCovers"
 import { JournalViewModal } from "@components/Game/Journal/JournalViewModal"
 import Pagination from "@components/UI/Pagination"
 
-export default function JourneysSection({ journeys, games = {}, loading, total, currentPage, totalPages, onPageChange, onUpdate }) {
+export default function JourneysSection({ journeys, games = {}, loading, total, currentPage, totalPages, onPageChange, onUpdate, ownerId }) {
   const { t } = useTranslation("profile")
   const [viewingId, setViewingId] = useState(null)
+
+  const slugs = journeys.map(j => j.game_slug)
+  const { getCustomCover } = useCustomCovers(ownerId, slugs)
 
   function formatTime(totalMinutes) {
     const h = Math.floor(totalMinutes / 60)
@@ -74,6 +78,7 @@ export default function JourneysSection({ journeys, games = {}, loading, total, 
                   key={j.id}
                   journey={j}
                   game={games[j.game_slug]}
+                  customCoverUrl={getCustomCover(j.game_slug)}
                   formatTime={formatTime}
                   formatDate={formatDate}
                   onClick={() => setViewingId(j.id)}
@@ -96,6 +101,7 @@ export default function JourneysSection({ journeys, games = {}, loading, total, 
                   key={j.id}
                   journey={j}
                   game={games[j.game_slug]}
+                  customCoverUrl={getCustomCover(j.game_slug)}
                   formatTime={formatTime}
                   formatDate={formatDate}
                   onClick={() => setViewingId(j.id)}
@@ -126,18 +132,19 @@ export default function JourneysSection({ journeys, games = {}, loading, total, 
   )
 }
 
-function JourneyCard({ journey: j, game, formatTime, formatDate, onClick, t }) {
+function JourneyCard({ journey: j, game, customCoverUrl, formatTime, formatDate, onClick, t }) {
   const time = formatTime(j.total_minutes)
+  const coverUrl = customCoverUrl || game?.cover_url
 
   return (
     <button
       onClick={onClick}
       className="flex items-start gap-3 p-3.5 bg-zinc-800/30 hover:bg-zinc-800/60 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all cursor-pointer text-left group w-full"
     >
-      {game?.cover_url ? (
+      {coverUrl ? (
         <img
-          src={game.cover_url}
-          alt={game.name}
+          src={coverUrl}
+          alt={game?.name}
           className="w-10 h-14 object-cover rounded-lg flex-shrink-0 border border-zinc-700"
         />
       ) : (
