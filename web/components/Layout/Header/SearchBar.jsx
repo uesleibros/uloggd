@@ -19,7 +19,7 @@ const TABS = [
 function GameResult({ item, onSelect, getGameData }) {
 	const { formatDateShort } = useDateTime()
 	const gameData = getGameData(item.slug)
-	const coverUrl = gameData?.custom_cover_url || (item.cover ? `https:${item.cover.url}` : null)
+	const coverUrl = gameData?.customCoverUrl || (item.cover ? `https:${item.cover.url}` : null)
 
 	return (
 		<li
@@ -82,7 +82,7 @@ function ListResult({ item, onSelect }) {
 		>
 			<div className="flex items-center gap-3">
 				<div className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0 border border-zinc-700/50">
-					<CoverStrip ownerId={item.owner?.id} slugs={(item.game_slugs || []).slice(0, 4)} />
+					<CoverStrip ownerId={item.user_id} slugs={(item.game_slugs || []).slice(0, 4)} />
 				</div>
 				<div className="flex-1 min-w-0">
 					<span className="group-hover:text-indigo-400 transition-colors font-medium text-sm text-white truncate block">
