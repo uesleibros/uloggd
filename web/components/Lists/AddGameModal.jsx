@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "#hooks/useTranslation"
+import { useMyLibrary } from "#hooks/useMyLibrary"
 import { supabase } from "#lib/supabase"
 import Modal from "@components/UI/Modal"
 import PlatformIcons from "@components/Game/PlatformIcons"
@@ -9,6 +10,7 @@ import { Search, X, Plus, Check, Gamepad2 } from "lucide-react"
 
 export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = [], onAdded }) {
   const { t } = useTranslation()
+  const { getGameData } = useMyLibrary()
   const [query, setQuery] = useState("")
   const [results, setResults] = useState([])
   const [searching, setSearching] = useState(false)
@@ -75,6 +77,13 @@ export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = 
     }
   }
 
+  function getCoverUrl(game) {
+    const gameData = getGameData(game.slug)
+    if (gameData?.custom_cover_url) return gameData.custom_cover_url
+    if (game.cover?.url) return `https:${game.cover.url}`
+    return null
+  }
+
   const allAdded = [...existingSlugs, ...recentlyAdded]
 
   return (
@@ -134,6 +143,7 @@ export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = 
           {!searching && results.map(game => {
             const alreadyAdded = allAdded.includes(game.slug)
             const isAdding = adding === game.slug
+            const coverUrl = getCoverUrl(game)
 
             return (
               <div
@@ -141,8 +151,8 @@ export default function AddGameModal({ isOpen, onClose, listId, existingSlugs = 
                 className="flex items-center gap-3 py-3 border-b border-zinc-800/50 last:border-0"
               >
                 <Link to={`/game/${game.slug}`} target="_blank" className="flex-shrink-0" onClick={e => e.stopPropagation()}>
-                  {game.cover ? (
-                    <img src={`https:${game.cover.url}`} alt="" className="h-14 w-10 sm:h-12 sm:w-9 rounded object-cover bg-zinc-800" />
+                  {coverUrl ? (
+                    <img src={coverUrl} alt="" className="h-14 w-10 sm:h-12 sm:w-9 rounded object-cover bg-zinc-800" />
                   ) : (
                     <div className="h-14 w-10 sm:h-12 sm:w-9 rounded bg-zinc-800 flex items-center justify-center">
                       <Gamepad2 className="w-4 h-4 text-zinc-600" />
