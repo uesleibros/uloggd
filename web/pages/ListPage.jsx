@@ -21,8 +21,10 @@ import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
+import { useCustomCovers } from "#hooks/useCustomCovers"
 import Pagination from "@components/UI/Pagination"
 import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
+import GameCover, { getCoverUrl } from "@components/Game/GameCover"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import AddGameModal from "@components/Lists/AddGameModal"
 import EditListModal from "@components/Lists/EditListModal"
@@ -138,6 +140,7 @@ function MobileActionBar({ onAdd, onEdit, onDelete, onReorder, itemCount }) {
 function SortableGameCard({
   item,
   game,
+  customCoverUrl,
   editMode,
   isOwner,
   globalIndex,
@@ -176,7 +179,13 @@ function SortableGameCard({
           {...listeners}
         >
           {game ? (
-            <GameCard game={game} showQuickActions={!editMode} responsive disableLink={editMode} />
+            <GameCard
+              game={game}
+              customCoverUrl={customCoverUrl}
+              showQuickActions={!editMode}
+              responsive
+              disableLink={editMode}
+            />
           ) : (
             <GameCardSkeleton responsive />
           )}
@@ -222,12 +231,6 @@ function SortableGameCard({
   )
 }
 
-function getCoverUrl(game) {
-  if (!game?.cover?.url) return null
-  const url = game.cover.url.startsWith("http") ? game.cover.url : `https:${game.cover.url}`
-  return url.replace("t_thumb", "t_cover_small")
-}
-
 export default function ListPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -257,6 +260,7 @@ export default function ListPage() {
 
   const slugs = useMemo(() => items.map((i) => i.game_slug), [items])
   const { getGame } = useGamesBatch(slugs)
+  const { getCustomCover } = useCustomCovers(list?.user_id, slugs)
 
   const isOwner = !authLoading && currentUser?.user_id && list?.user_id === currentUser.user_id
   const encodedId = list ? encode(list.id) : id
@@ -443,7 +447,7 @@ export default function ListPage() {
 
   const activeItem = activeId ? items.find((i) => i.id === activeId) : null
   const activeGame = activeItem ? getGame(activeItem.game_slug) : null
-  const activeCoverUrl = activeGame ? getCoverUrl(activeGame) : null
+  const activeCustomCover = activeItem ? getCustomCover(activeItem.game_slug) : null
 
   if (loading && !list) return <ListPageSkeleton />
 
@@ -658,6 +662,7 @@ export default function ListPage() {
               <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
                 {items.map((item, index) => {
                   const game = getGame(item.game_slug)
+                  const customCoverUrl = getCustomCover(item.game_slug)
                   const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index + 1
 
                   return (
@@ -665,6 +670,7 @@ export default function ListPage() {
                       key={item.id}
                       item={item}
                       game={game}
+                      customCoverUrl={customCoverUrl}
                       editMode={editMode}
                       isOwner={isOwner}
                       globalIndex={globalIndex}
@@ -681,18 +687,11 @@ export default function ListPage() {
             <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
               {activeGame && (
                 <div className="w-[100px] sm:w-[130px] aspect-[3/4] rounded-lg overflow-hidden shadow-lg ring-1 ring-indigo-400/60 opacity-80">
-                  {activeCoverUrl ? (
-                    <img
-                      src={activeCoverUrl}
-                      alt={activeGame.name}
-                      className="w-full h-full object-cover"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-zinc-700 flex items-center justify-center">
-                      <Gamepad2 className="w-4 h-4 text-zinc-500" />
-                    </div>
-                  )}
+                  <GameCover
+                    game={activeGame}
+                    customCoverUrl={activeCustomCover}
+                    className="w-full h-full rounded-lg"
+                  />
                 </div>
               )}
             </DragOverlay>
@@ -701,6 +700,7 @@ export default function ListPage() {
           <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
             {items.map((item, index) => {
               const game = getGame(item.game_slug)
+              const customCoverUrl = getCustomCover(item.game_slug)
               const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index + 1
 
               return (
@@ -718,6 +718,7 @@ export default function ListPage() {
                       {game ? (
                         <GameCard
                           game={game}
+                          customCoverUrl={customCoverUrl}
                           showQuickActions={!editMode}
                           disableLink={editMode}
                           responsive
@@ -726,6 +727,12 @@ export default function ListPage() {
                         <GameCardSkeleton responsive />
                       )}
                     </div>
+
+                    {item.marked && (
+                      <div className="absolute bottom-1 left-1 z-10 p-1.5 bg-white/90 text-zinc-900 rounded-lg">
+                        <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      </div>
+                    )}
                   </div>
                 </div>
               )
