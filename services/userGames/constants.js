@@ -1,7 +1,5 @@
 export const VALID_STATUSES = ["played", "retired", "shelved", "abandoned"]
-
-export const ALLOWED_FIELDS = ["status", "playing", "backlog", "wishlist", "liked"]
-
+export const ALLOWED_FIELDS = ["status", "playing", "backlog", "wishlist", "liked", "custom_cover_url"]
 export const BOOLEAN_FIELDS = ["playing", "backlog", "wishlist", "liked"]
 
 export const DEFAULT_GAME_STATE = {
