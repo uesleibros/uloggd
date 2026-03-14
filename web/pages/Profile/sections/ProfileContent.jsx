@@ -62,7 +62,7 @@ export function ProfileContent({
       {activeSection === "profile" && (
         <BioSection
           bio={profile.bio}
-          isOwnProfile={isOwnProfile}
+          profileId={profile.user_id}
           onEdit={onEditProfile}
         />
       )}
