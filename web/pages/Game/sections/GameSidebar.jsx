@@ -1,41 +1,94 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { ChevronRight, Images } from "lucide-react"
+import { ChevronRight, Images, Check } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
+import { useAuth } from "#contexts/AuthContext"
+import { useLibrary } from "#contexts/LibraryContext"
+import { supabase } from "#lib/supabase"
 import { PlatformList } from "@components/Game/PlatformBadge"
 import RatingBadge from "@components/Game/RatingBadge"
 import QuickActions from "@components/Game/QuickActions"
 import ReviewButton from "@components/Game/Review"
 import JournalButton from "@components/Game/Journal"
 import Modal from "@components/UI/Modal"
+import { notify } from "@components/UI/Notification"
 import { AgeRatings } from "../components/AgeRatings"
 import { Websites } from "../components/Websites"
 import { Keywords } from "../components/Keywords"
 import { useDateTime } from "#hooks/useDateTime"
 
-function CoverThumb({ url, isActive, onClick }) {
+async function updateCustomCover(gameId, gameSlug, coverUrl) {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw new Error("not authenticated")
+
+  const res = await fetch("/api/userGames/@me/update", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      gameId,
+      gameSlug,
+      field: "custom_cover_url",
+      value: coverUrl,
+    }),
+  })
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error || "fail")
+  }
+
+  return res.json()
+}
+
+function CoverThumb({ url, isActive, isSaved, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`w-12 h-16 rounded overflow-hidden border-2 transition-all duration-200 cursor-pointer flex-shrink-0 ${
+      className={`relative w-12 h-16 rounded overflow-hidden border-2 transition-all duration-200 cursor-pointer flex-shrink-0 ${
         isActive
           ? "border-blue-500 ring-1 ring-blue-500/50"
           : "border-zinc-700 hover:border-zinc-500"
       }`}
     >
       <img src={url} alt="" className="w-full h-full object-cover" />
+      {isSaved && (
+        <div className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+          <Check className="w-2.5 h-2.5 text-white" />
+        </div>
+      )}
     </button>
   )
 }
 
-function AlternativeCovers({ covers, activeCover, onSelect }) {
+function AlternativeCovers({ game, covers, activeCover, savedCover, onSelect, onSave }) {
   const { t } = useTranslation("game")
+  const { user } = useAuth()
   const [showModal, setShowModal] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   if (!covers?.length || covers.length <= 1) return null
 
   const INITIAL_SHOW = 4
   const hasMore = covers.length > INITIAL_SHOW
+  const hasChanges = activeCover !== savedCover
+
+  const handleSave = async () => {
+    if (!user || saving) return
+    setSaving(true)
+
+    try {
+      await updateCustomCover(game.id, game.slug, activeCover)
+      onSave(activeCover)
+      notify(t("sidebar.coverSaved"), "success")
+    } catch {
+      notify(t("sidebar.coverSaveError"), "error")
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div className="mt-3">
@@ -45,6 +98,7 @@ function AlternativeCovers({ covers, activeCover, onSelect }) {
             key={url}
             url={url}
             isActive={activeCover === url}
+            isSaved={savedCover === url}
             onClick={() => onSelect(url)}
           />
         ))}
@@ -61,6 +115,16 @@ function AlternativeCovers({ covers, activeCover, onSelect }) {
         )}
       </div>
 
+      {user && hasChanges && (
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="mt-2 px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors cursor-pointer"
+        >
+          {saving ? t("sidebar.saving") : t("sidebar.saveCover")}
+        </button>
+      )}
+
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
@@ -73,13 +137,18 @@ function AlternativeCovers({ covers, activeCover, onSelect }) {
               <button
                 key={url}
                 onClick={() => { onSelect(url); setShowModal(false) }}
-                className={`aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
+                className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
                   activeCover === url
                     ? "border-blue-500 ring-2 ring-blue-500/50 scale-95"
                     : "border-zinc-700 hover:border-zinc-500"
                 }`}
               >
                 <img src={url} alt="" className="w-full h-full object-cover" />
+                {savedCover === url && (
+                  <div className="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
+                )}
               </button>
             ))}
           </div>
@@ -163,9 +232,14 @@ function ParentGameLink({ parentGame }) {
 
 export function GameSidebar({ game }) {
   const { t } = useTranslation("game")
-  const [activeCover, setActiveCover] = useState(
-    game.cover?.url ? `https:${game.cover.url}` : null
-  )
+  const { library } = useLibrary()
+
+  const defaultCover = game.cover?.url ? `https:${game.cover.url}` : null
+  const userSavedCover = library?.[game.slug]?.customCoverUrl || null
+  const initialCover = userSavedCover || defaultCover
+
+  const [activeCover, setActiveCover] = useState(initialCover)
+  const [savedCover, setSavedCover] = useState(userSavedCover || defaultCover)
 
   return (
     <div className="flex-shrink-0">
@@ -174,9 +248,12 @@ export function GameSidebar({ game }) {
           <GameCover url={activeCover} name={game.name} />
           <div className="hidden md:block">
             <AlternativeCovers
+              game={game}
               covers={game.alternativeCovers}
               activeCover={activeCover}
+              savedCover={savedCover}
               onSelect={setActiveCover}
+              onSave={setSavedCover}
             />
           </div>
         </div>
@@ -185,9 +262,12 @@ export function GameSidebar({ game }) {
 
       <div className="md:hidden">
         <AlternativeCovers
+          game={game}
           covers={game.alternativeCovers}
           activeCover={activeCover}
+          savedCover={savedCover}
           onSelect={setActiveCover}
+          onSave={setSavedCover}
         />
       </div>
 
