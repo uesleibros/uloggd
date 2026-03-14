@@ -59,7 +59,7 @@ export async function handleGet(req, res) {
     const { data, error, count } = await supabase
       .from("lists")
       .select(`
-        id, title, description, is_public, ranked, created_at, updated_at,
+        id, user_id, title, description, is_public, ranked, created_at, updated_at,
         list_items ( id, game_slug, position )
       `, { count: "exact" })
       .eq("user_id", userId)
