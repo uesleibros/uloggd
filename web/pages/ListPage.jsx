@@ -24,7 +24,7 @@ import { useGamesBatch } from "#hooks/useGamesBatch"
 import { useCustomCovers } from "#hooks/useCustomCovers"
 import Pagination from "@components/UI/Pagination"
 import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
-import GameCover, { getCoverUrl } from "@components/Game/GameCover"
+import GameCover from "@components/Game/GameCover"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import AddGameModal from "@components/Lists/AddGameModal"
 import EditListModal from "@components/Lists/EditListModal"
@@ -137,6 +137,27 @@ function MobileActionBar({ onAdd, onEdit, onDelete, onReorder, itemCount }) {
   )
 }
 
+function GameItemFooter({ globalIndex, showRank, marked, editMode, isOwner }) {
+  const showCheck = marked && isOwner && editMode
+
+  if (!showRank && !showCheck) return null
+
+  return (
+    <div className="flex items-center gap-1.5 mt-1.5 px-0.5">
+      {showRank && (
+        <span className="text-[10px] sm:text-xs font-bold text-zinc-500 tabular-nums">
+          #{globalIndex}
+        </span>
+      )}
+      {showCheck && (
+        <div className="w-4 h-4 rounded-full bg-white/90 flex items-center justify-center">
+          <Check className="w-2.5 h-2.5 text-zinc-900" />
+        </div>
+      )}
+    </div>
+  )
+}
+
 function SortableGameCard({
   item,
   game,
@@ -164,14 +185,8 @@ function SortableGameCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative ${showRank ? "pt-2 pl-2" : ""} ${isDragging ? "opacity-30 z-10" : ""}`}
+      className={isDragging ? "opacity-30 z-10" : ""}
     >
-      {showRank && (
-        <div className="absolute top-0 left-0 z-10 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[9px] sm:text-[10px] font-bold text-zinc-400 tabular-nums">
-          {globalIndex}
-        </div>
-      )}
-
       <div className="group relative">
         <div
           className={`transition-all duration-200 ${item.marked ? "grayscale opacity-50" : ""}`}
@@ -220,13 +235,15 @@ function SortableGameCard({
             </button>
           </>
         )}
-
-        {!(isOwner && editMode) && item.marked && (
-          <div className="absolute bottom-1 left-1 z-10 p-1.5 bg-white/90 text-zinc-900 rounded-lg">
-            <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-          </div>
-        )}
       </div>
+
+      <GameItemFooter
+        globalIndex={globalIndex}
+        showRank={showRank}
+        marked={item.marked}
+        editMode={editMode}
+        isOwner={isOwner}
+      />
     </div>
   )
 }
@@ -704,17 +721,9 @@ export default function ListPage() {
               const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index + 1
 
               return (
-                <div key={item.id} className={`relative ${showRank ? "pt-2 pl-2" : ""}`}>
-                  {showRank && (
-                    <div className="absolute top-0 left-0 z-10 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[9px] sm:text-[10px] font-bold text-zinc-400 tabular-nums">
-                      {globalIndex}
-                    </div>
-                  )}
-
+                <div key={item.id}>
                   <div className="group relative">
-                    <div
-                      className={`transition-all duration-200 ${item.marked ? "grayscale opacity-50" : ""}`}
-                    >
+                    <div className={`transition-all duration-200 ${item.marked ? "grayscale opacity-50" : ""}`}>
                       {game ? (
                         <GameCard
                           game={game}
@@ -727,13 +736,15 @@ export default function ListPage() {
                         <GameCardSkeleton responsive />
                       )}
                     </div>
-
-                    {item.marked && (
-                      <div className="absolute bottom-1 left-1 z-10 p-1.5 bg-white/90 text-zinc-900 rounded-lg">
-                        <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      </div>
-                    )}
                   </div>
+
+                  <GameItemFooter
+                    globalIndex={globalIndex}
+                    showRank={showRank}
+                    marked={item.marked}
+                    editMode={editMode}
+                    isOwner={isOwner}
+                  />
                 </div>
               )
             })}
