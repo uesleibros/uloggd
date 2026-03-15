@@ -174,6 +174,7 @@ function SortableGameCard({
   item,
   game,
   customCoverUrl,
+  loading,
   editMode,
   isOwner,
   globalIndex,
@@ -209,6 +210,7 @@ function SortableGameCard({
             <GameCard
               game={game}
               customCoverUrl={customCoverUrl}
+              loading={loading}
               showQuickActions={!editMode}
               responsive
               disableLink={editMode}
@@ -289,10 +291,11 @@ export default function ListPage() {
 
   const slugs = useMemo(() => items.map((i) => i.game_slug), [items])
   const { getGame } = useGamesBatch(slugs)
-  const { getCustomCover } = useCustomCovers(list?.user_id, slugs)
+  const { getCustomCover, loading: coversLoading } = useCustomCovers(list?.user_id, slugs)
 
   const isOwner = !authLoading && currentUser?.user_id && list?.user_id === currentUser.user_id
   const encodedId = list ? encode(list.id) : id
+  const coverLoading = list?.user_id && coversLoading
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -700,6 +703,7 @@ export default function ListPage() {
                       item={item}
                       game={game}
                       customCoverUrl={customCoverUrl}
+                      loading={coverLoading}
                       editMode={editMode}
                       isOwner={isOwner}
                       globalIndex={globalIndex}
@@ -719,6 +723,7 @@ export default function ListPage() {
                   <GameCover
                     game={activeGame}
                     customCoverUrl={activeCustomCover}
+                    loading={coverLoading}
                     className="w-full h-full rounded-lg"
                   />
                 </div>
@@ -740,6 +745,7 @@ export default function ListPage() {
                         <GameCard
                           game={game}
                           customCoverUrl={customCoverUrl}
+                          loading={coverLoading}
                           showQuickActions={!editMode}
                           disableLink={editMode}
                           responsive
