@@ -9,6 +9,7 @@ import { supabase } from "#lib/supabase"
 import { encode } from "#utils/shortId.js"
 import TierlistEditor from "@components/Tierlist/TierlistEditor"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
+import LikeButton from "@components/UI/LikeButton"
 import {
   ArrowLeft, Save, Lock, Loader2,
   Link as LinkIcon, Check, Calendar, Gamepad2, List,
@@ -320,6 +321,12 @@ export default function TierlistPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <LikeButton
+            type="tierlist"
+            targetId={tierlist.id}
+            currentUserId={currentUser?.user_id}
+          />
+
           <ShareButton tierlistId={encodedId} />
 
           {isOwner && hasChanges && (

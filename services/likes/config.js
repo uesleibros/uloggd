@@ -22,6 +22,18 @@ export const LIKE_TYPES = {
       list_id: target.id,
       list_title: target.title
     })
+  },
+  tierlist: {
+    table: "tierlist_likes",
+    targetColumn: "tierlist_id",
+    targetTable: "tierlists",
+    ownerColumn: "user_id",
+    notificationType: "tierlist_like",
+    getNotificationData: (target, likerId) => ({
+      liker_id: likerId,
+      tierlist_id: target.id,
+      tierlist_title: target.title
+    })
   }
 }
 

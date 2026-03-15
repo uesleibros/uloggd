@@ -1,205 +1,205 @@
 export default {
 	trophies: {
-	  list: {
-	    title: "PlayStation Trophies",
+		list: {
+			title: "PlayStation Trophies",
 			viewAll: "View all ({{count}})",
-	  },
+		},
 		allGames: {
 			title: "All Games",
 			gamesCount: "games",
 			searchPlaceholder: "Search game...",
 			noResults: "No games found",
 		},
-	  detail: {
-	    back: "Back",
-	    hiddenAlt: "Hidden trophy",
-	    hiddenTitle: "Hidden Trophy",
-	    hiddenDescription: "This trophy contains spoilers",
-	    hideDetails: "Hide details",
-	    revealWarning: "Reveal trophy (may contain spoilers)",
-	    game: "Game",
-	    status: "Status",
-	    unlocked: "Unlocked",
-	    locked: "Locked",
-	    unlockedAt: "Unlocked at",
-	    rarity: "Rarity",
-	    rarityPercent: "{{percent}}% of players",
-	    type: "Type",
-	    secret: "Secret",
-	    platform: "Platform"
-	  },
-	  gameModal: {
-	    noTrophies: "No trophies found",
-	    hiddenAlt: "Hidden trophy",
-	    hiddenTitle: "Hidden Trophy",
-	    unlocked: "Unlocked",
-	    filter: {
-	      all: "All",
-	      unlocked: "Unlocked",
-	      locked: "Locked",
-	      allTypes: "All"
-	    },
-	    types: {
-	      platinum: "Platinum",
-	      gold: "Gold",
-	      silver: "Silver",
-	      bronze: "Bronze"
-	    }
-	  },
-	  gameSection: {
-	    title: "Trophies",
-	    connectPSN: "Connect your PSN to track your trophies",
-	    filter: {
-	      all: "All ({{count}})",
-	      unlocked: "Unlocked ({{count}})",
-	      locked: "Locked ({{count}})",
-	      allTypes: "All"
-	    },
-	    types: {
-	      platinum: "Platinum",
-	      gold: "Gold",
-	      silver: "Silver",
-	      bronze: "Bronze"
-	    },
-	    hiddenAlt: "Hidden trophy",
-	    showLess: "Show less",
-	    viewAll: "View all ({{count}})"
-	  }
+		detail: {
+			back: "Back",
+			hiddenAlt: "Hidden trophy",
+			hiddenTitle: "Hidden Trophy",
+			hiddenDescription: "This trophy contains spoilers",
+			hideDetails: "Hide details",
+			revealWarning: "Reveal trophy (may contain spoilers)",
+			game: "Game",
+			status: "Status",
+			unlocked: "Unlocked",
+			locked: "Locked",
+			unlockedAt: "Unlocked at",
+			rarity: "Rarity",
+			rarityPercent: "{{percent}}% of players",
+			type: "Type",
+			secret: "Secret",
+			platform: "Platform"
+		},
+		gameModal: {
+			noTrophies: "No trophies found",
+			hiddenAlt: "Hidden trophy",
+			hiddenTitle: "Hidden Trophy",
+			unlocked: "Unlocked",
+			filter: {
+				all: "All",
+				unlocked: "Unlocked",
+				locked: "Locked",
+				allTypes: "All"
+			},
+			types: {
+				platinum: "Platinum",
+				gold: "Gold",
+				silver: "Silver",
+				bronze: "Bronze"
+			}
+		},
+		gameSection: {
+			title: "Trophies",
+			connectPSN: "Connect your PSN to track your trophies",
+			filter: {
+				all: "All ({{count}})",
+				unlocked: "Unlocked ({{count}})",
+				locked: "Locked ({{count}})",
+				allTypes: "All"
+			},
+			types: {
+				platinum: "Platinum",
+				gold: "Gold",
+				silver: "Silver",
+				bronze: "Bronze"
+			},
+			hiddenAlt: "Hidden trophy",
+			showLess: "Show less",
+			viewAll: "View all ({{count}})"
+		}
 	},
 	journal: {
-	  button: {
-	    create: "Create Journey",
-	    createAnother: "Create another journey"
-	  },
-	  selector: {
-	    new: "New"
-	  },
-	  card: {
-	    session: "session",
-	    sessions: "sessions",
-	    platform: "Platform"
-	  },
-	  calendar: {
-	    weekdays: {
-	      sun: "Sun",
-	      mon: "Mon",
-	      tue: "Tue",
-	      wed: "Wed",
-	      thu: "Thu",
-	      fri: "Fri",
-	      sat: "Sat"
-	    },
-	    dragging: {
-	      adding: "Adding {{count}} days",
-	      removing: "Removing {{count}} days"
-	    },
-	    legend: {
-	      started: "Started",
-	      finished: "Finished",
-	    },
-	  },
-	  modal: {
-	    title: "Journey title",
-	    titlePlaceholder: "e.g. First Playthrough, NG+...",
-	    platform: "Platform",
-	    selectPlatform: "Select platform",
-	    session: "session",
-	    sessions: "sessions",
-	    totalTime: "total time",
-	    started: "Started",
-	    finished: "Finished",
-	    cancel: "Cancel",
-	    save: "Save",
-	    saving: "Saving...",
-	    create: "Create",
-	    deleteConfirmTitle: "Delete journey",
-	    deleteConfirmMessage: "Are you sure? All sessions and notes will be permanently lost.",
-	    confirmDelete: "Delete",
-	    delete: "Delete journey",
-	    createFirst: "Create the journey to start logging your sessions",
-	    jumpTo: "Jump to...",
-	    latest: "Latest",
-	    today: "Today",
-	    start: "Start",
-	    finish: "Finish",
-	    dragHint: "Tip: Click and drag to select multiple days at once. Click a day to add time and notes.",
-	    months: {
-	      january: "January",
-	      february: "February",
-	      march: "March",
-	      april: "April",
-	      may: "May",
-	      june: "June",
-	      july: "July",
-	      august: "August",
-	      september: "September",
-	      october: "October",
-	      november: "November",
-	      december: "December"
-	    },
-	    entry: {
-	      started: "Started",
-	      finished: "Finished",
-	      addSession: "Add session",
-	      editSession: "Edit session",
-	      time: "Time played",
-	      hours: "hours",
-	      minutes: "minutes",
-	      note: "Note (optional)",
-	      notePlaceholder: "What happened during this session?",
-	      cancel: "Cancel",
-	      save: "Save",
-	      saving: "Saving...",
-	      remove: "Remove",
-	      removing: "Removing...",
-	      added: "Session added",
-	      updated: "Session updated",
-	      removed: "Session removed",
-	      bulkAdded: "{{count}} sessions added",
-	      bulkRemoved: "{{count}} sessions removed",
-	      saveFailed: "Failed to save session",
-	      removeFailed: "Failed to remove session"
-	    },
-	    success: {
-	      created: "Journey created!",
-	      updated: "Journey updated!",
-	      deleted: "Journey deleted"
-	    },
-	    errors: {
-	      titleRequired: "Title is required",
-	      notLoggedIn: "You need to be logged in",
-	      saveFailed: "Failed to save journey",
-	      deleteFailed: "Failed to delete journey"
-	    }
-	  },
-	  view: {
+		button: {
+			create: "Create Journey",
+			createAnother: "Create another journey"
+		},
+		selector: {
+			new: "New"
+		},
+		card: {
+			session: "session",
+			sessions: "sessions",
+			platform: "Platform"
+		},
+		calendar: {
+			weekdays: {
+				sun: "Sun",
+				mon: "Mon",
+				tue: "Tue",
+				wed: "Wed",
+				thu: "Thu",
+				fri: "Fri",
+				sat: "Sat"
+			},
+			dragging: {
+				adding: "Adding {{count}} days",
+				removing: "Removing {{count}} days"
+			},
+			legend: {
+				started: "Started",
+				finished: "Finished",
+			},
+		},
+		modal: {
+			title: "Journey title",
+			titlePlaceholder: "e.g. First Playthrough, NG+...",
+			platform: "Platform",
+			selectPlatform: "Select platform",
+			session: "session",
+			sessions: "sessions",
+			totalTime: "total time",
+			started: "Started",
+			finished: "Finished",
+			cancel: "Cancel",
+			save: "Save",
+			saving: "Saving...",
+			create: "Create",
+			deleteConfirmTitle: "Delete journey",
+			deleteConfirmMessage: "Are you sure? All sessions and notes will be permanently lost.",
+			confirmDelete: "Delete",
+			delete: "Delete journey",
+			createFirst: "Create the journey to start logging your sessions",
+			jumpTo: "Jump to...",
+			latest: "Latest",
+			today: "Today",
+			start: "Start",
+			finish: "Finish",
+			dragHint: "Tip: Click and drag to select multiple days at once. Click a day to add time and notes.",
+			months: {
+				january: "January",
+				february: "February",
+				march: "March",
+				april: "April",
+				may: "May",
+				june: "June",
+				july: "July",
+				august: "August",
+				september: "September",
+				october: "October",
+				november: "November",
+				december: "December"
+			},
+			entry: {
+				started: "Started",
+				finished: "Finished",
+				addSession: "Add session",
+				editSession: "Edit session",
+				time: "Time played",
+				hours: "hours",
+				minutes: "minutes",
+				note: "Note (optional)",
+				notePlaceholder: "What happened during this session?",
+				cancel: "Cancel",
+				save: "Save",
+				saving: "Saving...",
+				remove: "Remove",
+				removing: "Removing...",
+				added: "Session added",
+				updated: "Session updated",
+				removed: "Session removed",
+				bulkAdded: "{{count}} sessions added",
+				bulkRemoved: "{{count}} sessions removed",
+				saveFailed: "Failed to save session",
+				removeFailed: "Failed to remove session"
+			},
+			success: {
+				created: "Journey created!",
+				updated: "Journey updated!",
+				deleted: "Journey deleted"
+			},
+			errors: {
+				titleRequired: "Title is required",
+				notLoggedIn: "You need to be logged in",
+				saveFailed: "Failed to save journey",
+				deleteFailed: "Failed to delete journey"
+			}
+		},
+		view: {
 			edit: "Edit",
 			close: "Close",
-	    notFound: "Journey not found",
-	    session: "session",
-	    sessions: "sessions",
-	    tabCalendar: "Calendar",
-	    tabTimeline: "Timeline",
-	    started: "Started",
-	    finished: "Finished",
-	    months: {
-	      january: "January",
-	      february: "February",
-	      march: "March",
-	      april: "April",
-	      may: "May",
-	      june: "June",
-	      july: "July",
-	      august: "August",
-	      september: "September",
-	      october: "October",
-	      november: "November",
-	      december: "December"
-	    },
-	  },
-	  public: {
-	    title: "Player Journeys",
-	  },
+			notFound: "Journey not found",
+			session: "session",
+			sessions: "sessions",
+			tabCalendar: "Calendar",
+			tabTimeline: "Timeline",
+			started: "Started",
+			finished: "Finished",
+			months: {
+				january: "January",
+				february: "February",
+				march: "March",
+				april: "April",
+				may: "May",
+				june: "June",
+				july: "July",
+				august: "August",
+				september: "September",
+				october: "October",
+				november: "November",
+				december: "December"
+			},
+		},
+		public: {
+			title: "Player Journeys",
+		},
 	},
 	inventory: {
 		title: "Inventory",
@@ -658,10 +658,10 @@ export default {
 			empty: "No likes yet",
 		},
 		likeButton: {
-		  like: "Like",
-		  liked: "Liked",
-		  count: "like",
-		  count_plural: "likes",
+			like: "Like",
+			liked: "Liked",
+			count: "like",
+			count_plural: "likes",
 		},
 	},
 	list: {
@@ -935,10 +935,12 @@ export default {
 			tabs: {
 				games: "Games",
 				reviews: "Reviews",
+				lists: "Lists",
+				tierlists: "Tierlists",
 			},
 			empty: {
 				title: "No likes yet",
-				own: "Games and reviews you like will appear here",
+				own: "Games, reviews, lists and tierlists you like will appear here",
 				other: "{{username}} hasn't liked anything yet",
 			},
 			emptyGames: {
@@ -948,6 +950,14 @@ export default {
 			emptyReviews: {
 				own: "You haven't liked any reviews yet",
 				other: "{{username}} hasn't liked any reviews yet",
+			},
+			emptyLists: {
+				own: "You haven't liked any lists yet",
+				other: "{{username}} hasn't liked any lists yet",
+			},
+			emptyTierlists: {
+				own: "You haven't liked any tierlists yet",
+				other: "{{username}} hasn't liked any tierlists yet",
 			},
 		},
 		reviews: {
@@ -1501,32 +1511,32 @@ export default {
 			},
 		},
 		psnImport: {
-		  title: "Import from PlayStation",
-		  description: "Import your games from PlayStation Network to your library.",
-		  subtext: "Games with trophy progress will be imported. Games already in your library will be skipped.",
-		  connectFirst: "Connect your PSN account first to import games.",
-		  importButton: "Import",
-		  fetching: "Fetching games from PSN...",
-		  importing: "Importing games...",
-		  cancel: "Cancel import",
-		  retry: "Try again",
-		  imported: "{{count}} imported",
-		  skipped: "{{count}} skipped",
-		  failed: "{{count}} errors",
-		  completed: "Import completed! {{count}} games imported.",
-		  noGames: "No games found to import.",
-		  notConnected: "PSN not connected.",
-		  alreadyRunning: "An import is already running.",
-		  startError: "Error starting import.",
-		  cancelError: "Error cancelling.",
-		  cancelled: "Import cancelled.",
-		  status: {
-		    fetching: "Fetching...",
-		    running: "Importing...",
-		    completed: "Completed",
-		    failed: "Failed",
-		    cancelled: "Cancelled",
-		  },
+			title: "Import from PlayStation",
+			description: "Import your games from PlayStation Network to your library.",
+			subtext: "Games with trophy progress will be imported. Games already in your library will be skipped.",
+			connectFirst: "Connect your PSN account first to import games.",
+			importButton: "Import",
+			fetching: "Fetching games from PSN...",
+			importing: "Importing games...",
+			cancel: "Cancel import",
+			retry: "Try again",
+			imported: "{{count}} imported",
+			skipped: "{{count}} skipped",
+			failed: "{{count}} errors",
+			completed: "Import completed! {{count}} games imported.",
+			noGames: "No games found to import.",
+			notConnected: "PSN not connected.",
+			alreadyRunning: "An import is already running.",
+			startError: "Error starting import.",
+			cancelError: "Error cancelling.",
+			cancelled: "Import cancelled.",
+			status: {
+				fetching: "Fetching...",
+				running: "Importing...",
+				completed: "Completed",
+				failed: "Failed",
+				cancelled: "Cancelled",
+			},
 		},
 		avatarSection: {
 			title: "Avatar",
@@ -1556,41 +1566,41 @@ export default {
 			description: "Connect your Steam account to display your games and stats on your profile.",
 			idLabel: "ID:",
 		},
-	  psn: {
-	    title: "PlayStation Network",
-	    description: "Connect your PSN account to import your games and trophies",
-	    connect: "Connect PSN",
-	    disconnect: "Disconnect",
-	    connected: "Connected",
-	    invalidToken: "Invalid token. Make sure you copied the complete code.",
-	    connectionError: "Connection failed. Please try again.",
+		psn: {
+			title: "PlayStation Network",
+			description: "Connect your PSN account to import your games and trophies",
+			connect: "Connect PSN",
+			disconnect: "Disconnect",
+			connected: "Connected",
+			invalidToken: "Invalid token. Make sure you copied the complete code.",
+			connectionError: "Connection failed. Please try again.",
 			modal: {
-			  title: "Connect PlayStation",
-			  subtitle: "Import your games and trophies",
-			  importantTitle: "Important: You must be logged in",
-			  importantDesc: "You need to be logged into your PlayStation account in your browser before getting the token. Otherwise, the token page will be empty or show an error.",
-			  step1Title: "Log in to PlayStation Network",
-			  step1Desc: "Open the PlayStation Store and sign in with your PSN account. If you're already logged in, click the button below.",
-			  loginPSN: "Open PlayStation Store",
-			  alreadyLogged: "I'm already logged in",
-			  step2Title: "Get your NPSSO token",
-			  step2Desc: "After logging in, click the button below to open the token page. A JSON with your token will appear.",
-			  getToken: "Get Token",
-			  step3Title: "Copy the token value",
-			  step3Desc: "You'll see something like this. Copy only the value inside the quotes (the long code after \"npsso\"):",
-			  step3Hint: "Copy only the content between quotes, not the entire JSON",
-			  step4Title: "Paste the token here",
-			  step4Desc: "Paste the token you copied in the field below:",
-			  placeholder: "Paste your NPSSO token here...",
-			  copyUrl: "Copy URL",
-			  copied: "Copied!",
-			  validToken: "Valid token",
-			  cancel: "Cancel",
-			  connect: "Connect",
-			  connecting: "Connecting...",
-			  betaWarning: "This feature is in beta. The token expires after ~60 days and you'll need to reconnect."
+				title: "Connect PlayStation",
+				subtitle: "Import your games and trophies",
+				importantTitle: "Important: You must be logged in",
+				importantDesc: "You need to be logged into your PlayStation account in your browser before getting the token. Otherwise, the token page will be empty or show an error.",
+				step1Title: "Log in to PlayStation Network",
+				step1Desc: "Open the PlayStation Store and sign in with your PSN account. If you're already logged in, click the button below.",
+				loginPSN: "Open PlayStation Store",
+				alreadyLogged: "I'm already logged in",
+				step2Title: "Get your NPSSO token",
+				step2Desc: "After logging in, click the button below to open the token page. A JSON with your token will appear.",
+				getToken: "Get Token",
+				step3Title: "Copy the token value",
+				step3Desc: "You'll see something like this. Copy only the value inside the quotes (the long code after \"npsso\"):",
+				step3Hint: "Copy only the content between quotes, not the entire JSON",
+				step4Title: "Paste the token here",
+				step4Desc: "Paste the token you copied in the field below:",
+				placeholder: "Paste your NPSSO token here...",
+				copyUrl: "Copy URL",
+				copied: "Copied!",
+				validToken: "Valid token",
+				cancel: "Cancel",
+				connect: "Connect",
+				connecting: "Connecting...",
+				betaWarning: "This feature is in beta. The token expires after ~60 days and you'll need to reconnect."
 			},	
-	  },
+		},
 		nintendo: {
 			title: "Nintendo Switch",
 			connected: "Connected",
