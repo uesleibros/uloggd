@@ -25,16 +25,14 @@ function ErrorContent({ error, onReload, onBack }) {
           </p>
         </div>
 
-        {isDev && (
-          <div className="w-full flex flex-col gap-2">
-            <p className="text-xs text-red-400 font-mono break-all">
-              {error?.message}
-            </p>
-            <pre className="text-[10px] sm:text-xs text-red-400/60 font-mono max-h-32 overflow-auto text-left bg-zinc-900/80 border border-zinc-800 rounded-lg p-3 w-full">
-              {error?.stack}
-            </pre>
-          </div>
-        )}
+        <div className="w-full flex flex-col gap-2">
+          <p className="text-xs text-red-400 font-mono break-all">
+            {error?.message}
+          </p>
+          <pre className="text-[10px] sm:text-xs text-red-400/60 font-mono max-h-32 overflow-auto text-left bg-zinc-900/80 border border-zinc-800 rounded-lg p-3 w-full">
+            {error?.stack}
+          </pre>
+        </div>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <button
