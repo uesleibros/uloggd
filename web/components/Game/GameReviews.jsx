@@ -13,6 +13,7 @@ import ReviewRating from "@components/Game/ReviewRating"
 import Playtime from "@components/Game/Playtime"
 import Modal from "@components/UI/Modal"
 import Pagination from "@components/UI/Pagination"
+import LikeButton from "@components/UI/LikeButton"
 import { JournalViewModal } from "@components/Game/Journal/JournalViewModal"
 import {
   AspectRatingsPreview,
@@ -21,7 +22,6 @@ import {
   ReviewContent,
   ReviewEmptyState,
   ReviewSkeleton,
-  LikeButton,
   JourneyBadge,
   SortButton,
 } from "@components/Game/Review"
@@ -98,7 +98,7 @@ export function ReviewCard({ review, user, currentUserId, journey, onJourneyUpda
                   <JourneyBadge journey={journey} onClick={() => setShowJourney(true)} />
                 )}
               </div>
-              <LikeButton reviewId={review.id} currentUserId={currentUserId} />
+              <LikeButton type="review" targetId={review.id} currentUserId={currentUserId} />
             </div>
           </div>
         </div>
@@ -125,7 +125,7 @@ export function ReviewCard({ review, user, currentUserId, journey, onJourneyUpda
             </Link>
             <ReviewMeta review={review} user={user} onClose={() => setShowModal(false)} />
           </div>
-          <LikeButton reviewId={review.id} currentUserId={currentUserId} />
+          <LikeButton type="review" targetId={review.id} currentUserId={currentUserId} />
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <ReviewModalContent review={review} />
@@ -206,7 +206,7 @@ export function ProfileReviewCard({ review, game, user }) {
 
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-700/30">
               <Playtime hours={review.hours_played} minutes={review.minutes_played} />
-              <LikeButton reviewId={review.id} currentUserId={currentUser?.user_id} />
+              <LikeButton type="review" targetId={review.id} currentUserId={currentUser?.user_id} />
             </div>
           </div>
         </div>
@@ -248,7 +248,7 @@ export function ProfileReviewCard({ review, game, user }) {
               </div>
             </div>
           </div>
-          <LikeButton reviewId={review.id} currentUserId={currentUser?.user_id} />
+          <LikeButton type="review" targetId={review.id} currentUserId={currentUser?.user_id} />
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <ReviewModalContent review={review} />

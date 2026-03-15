@@ -13,6 +13,7 @@ import ReviewRating from "@components/Game/ReviewRating"
 import Playtime from "@components/Game/Playtime"
 import Modal from "@components/UI/Modal"
 import Pagination from "@components/UI/Pagination"
+import LikeButton from "@components/UI/LikeButton"
 import { JournalViewModal } from "@components/Game/Journal/JournalViewModal"
 import {
   AspectRatingsPreview,
@@ -21,7 +22,6 @@ import {
   ReviewContent,
   ReviewEmptyState,
   ReviewSkeleton,
-  LikeButton,
   JourneyBadge,
   SortButton,
 } from "@components/Game/Review"
@@ -134,7 +134,7 @@ export function ProfileReviewCard({ review, game, user, journey, onJourneyUpdate
                   <JourneyBadge journey={journey} onClick={() => setShowJourney(true)} />
                 )}
               </div>
-              <LikeButton reviewId={review.id} currentUserId={currentUser?.user_id} />
+              <LikeButton type="review" targetId={review.id} currentUserId={currentUser?.user_id} />
             </div>
           </div>
 
@@ -165,7 +165,7 @@ export function ProfileReviewCard({ review, game, user, journey, onJourneyUpdate
               onClose={() => setShowModal(false)}
             />
           </div>
-          <LikeButton reviewId={review.id} currentUserId={currentUser?.user_id} />
+          <LikeButton type="review" targetId={review.id} currentUserId={currentUser?.user_id} />
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <ReviewModalContent review={review} />

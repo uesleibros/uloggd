@@ -651,6 +651,18 @@ export default {
 		updated: "Updated {{date}}",
 		selectPlatform: "Select platform",
 		noPlatforms: "No platforms available",
+		likeModal: {
+			title: "Likes",
+			searchPlaceholder: "Search user...",
+			noResults: "No users found",
+			empty: "No likes yet",
+		},
+		likeButton: {
+		  like: "Like",
+		  liked: "Liked",
+		  count: "like",
+		  count_plural: "likes",
+		},
 	},
 	list: {
 		notFound: {
@@ -1726,13 +1738,7 @@ export default {
 			recent: "Recent",
 			popular: "Popular",
 			rating: "Rating",
-		},
-		likeModal: {
-			title: "Likes",
-			searchPlaceholder: "Search user...",
-			noResults: "No users found",
-			empty: "No likes",
-		},
+		}
 	},
 	quickActions: {
 		statusButton: "Status",

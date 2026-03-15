@@ -651,6 +651,18 @@ export default {
 		updated: "Atualizada {{date}}",
 		selectPlatform: "Selecionar plataforma",
 		noPlatforms: "Nenhuma plataforma disponível",
+		likeModal: {
+			title: "Curtidas",
+			searchPlaceholder: "Buscar usuário...",
+			noResults: "Nenhum usuário encontrado",
+			empty: "Nenhuma curtida",
+		},
+		likeButton: {
+		  like: "Curtir",
+		  liked: "Curtido",
+		  count: "curtida",
+		  count_plural: "curtidas",
+		},
 	},
 	list: {
 		notFound: {
@@ -1726,13 +1738,7 @@ export default {
 			recent: "Recentes",
 			popular: "Populares",
 			rating: "Avaliação",
-		},
-		likeModal: {
-			title: "Curtidas",
-			searchPlaceholder: "Buscar usuário...",
-			noResults: "Nenhum usuário encontrado",
-			empty: "Nenhuma curtida",
-		},
+		}
 	},
 	quickActions: {
 		statusButton: "Status",

@@ -6,141 +6,145 @@ import { useTranslation } from "#hooks/useTranslation"
 
 const LIMIT = 20
 
-export default function LikeListModal({ isOpen, reviewId, onClose }) {
-	const { t } = useTranslation("reviews.likeModal")
-	const [users, setUsers] = useState([])
-	const [loading, setLoading] = useState(true)
-	const [loadingMore, setLoadingMore] = useState(false)
-	const [search, setSearch] = useState("")
-	const [page, setPage] = useState(1)
-	const [hasMore, setHasMore] = useState(false)
-	const [total, setTotal] = useState(0)
-	const observerRef = useRef(null)
-	const loaderRef = useRef(null)
+export default function LikeListModal({ isOpen, type, targetId, onClose }) {
+  const { t } = useTranslation("common.likeModal")
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+  const [total, setTotal] = useState(0)
+  const observerRef = useRef(null)
+  const loaderRef = useRef(null)
 
-	const fetchUsers = useCallback(async (pageNum, append = false) => {
-		if (pageNum === 1) setLoading(true)
-		else setLoadingMore(true)
+  const fetchUsers = useCallback(async (pageNum, append = false) => {
+    if (pageNum === 1) setLoading(true)
+    else setLoadingMore(true)
 
-		try {
-			const r = await fetch(`/api/reviews/likes?reviewId=${reviewId}&page=${pageNum}&limit=${LIMIT}`, {
-				method: "GET",
-				headers: { "Content-Type": "application/json" }
-			})
-			const data = await r.json()
+    try {
+      const params = new URLSearchParams({
+        type,
+        targetId: String(targetId),
+        page: String(pageNum),
+        limit: String(LIMIT)
+      })
 
-			if (append) {
-				setUsers(prev => [...prev, ...(data.users || [])])
-			} else {
-				setUsers(data.users || [])
-			}
+      const r = await fetch(`/api/likes/users?${params}`)
+      const data = await r.json()
 
-			setTotal(data.total || 0)
-			setHasMore(pageNum < data.totalPages)
-		} catch {
-			if (!append) setUsers([])
-		} finally {
-			setLoading(false)
-			setLoadingMore(false)
-		}
-	}, [reviewId])
+      if (append) {
+        setUsers(prev => [...prev, ...(data.users || [])])
+      } else {
+        setUsers(data.users || [])
+      }
 
-	useEffect(() => {
-		if (!isOpen) return
-		setUsers([])
-		setSearch("")
-		setPage(1)
-		setHasMore(false)
-		fetchUsers(1)
-	}, [isOpen, reviewId, fetchUsers])
+      setTotal(data.total || 0)
+      setHasMore(pageNum < data.totalPages)
+    } catch {
+      if (!append) setUsers([])
+    } finally {
+      setLoading(false)
+      setLoadingMore(false)
+    }
+  }, [type, targetId])
 
-	useEffect(() => {
-		if (!isOpen || !hasMore || loadingMore || search.trim()) return
+  useEffect(() => {
+    if (!isOpen) return
+    setUsers([])
+    setSearch("")
+    setPage(1)
+    setHasMore(false)
+    fetchUsers(1)
+  }, [isOpen, type, targetId, fetchUsers])
 
-		const observer = new IntersectionObserver(
-			entries => {
-				if (entries[0].isIntersecting) {
-					const nextPage = page + 1
-					setPage(nextPage)
-					fetchUsers(nextPage, true)
-				}
-			},
-			{ threshold: 0.1 }
-		)
+  useEffect(() => {
+    if (!isOpen || !hasMore || loadingMore || search.trim()) return
 
-		observerRef.current = observer
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          const nextPage = page + 1
+          setPage(nextPage)
+          fetchUsers(nextPage, true)
+        }
+      },
+      { threshold: 0.1 }
+    )
 
-		if (loaderRef.current) {
-			observer.observe(loaderRef.current)
-		}
+    observerRef.current = observer
 
-		return () => observer.disconnect()
-	}, [isOpen, hasMore, loadingMore, page, search, fetchUsers])
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current)
+    }
 
-	const filtered = search.trim()
-		? users.filter(u => u.username.toLowerCase().includes(search.toLowerCase()))
-		: users
+    return () => observer.disconnect()
+  }, [isOpen, hasMore, loadingMore, page, search, fetchUsers])
 
-	return (
-		<Modal
-			isOpen={isOpen}
-			onClose={onClose}
-			title={t("title")}
-			subtitle={!loading ? String(total) : undefined}
-			maxWidth="max-w-md"
-		>
-			{!loading && users.length > 0 && (
-				<div className="px-4 pt-3 flex-shrink-0">
-					<input
-						type="text"
-						value={search}
-						onChange={e => setSearch(e.target.value)}
-						placeholder={t("searchPlaceholder")}
-						className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
-						autoFocus
-					/>
-				</div>
-			)}
+  const filtered = search.trim()
+    ? users.filter(u => u.username.toLowerCase().includes(search.toLowerCase()))
+    : users
 
-			<div className="overflow-y-auto flex-1">
-				{loading ? (
-					<div className="p-4 space-y-3">
-						{[...Array(5)].map((_, i) => (
-							<div key={i} className="flex items-center gap-3">
-								<div className="w-10 h-10 rounded-full bg-zinc-800 animate-pulse" />
-								<div className="h-4 w-28 bg-zinc-800 rounded animate-pulse" />
-							</div>
-						))}
-					</div>
-				) : filtered.length > 0 ? (
-					<div className="p-2">
-						{filtered.map(u => (
-							<Link
-								key={u.id}
-								to={`/u/${u.username}`}
-								onClick={onClose}
-								className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-800 transition-colors"
-							>
-								<UserDisplay user={u} size="md" showBadges={true} linkToProfile={false} />
-							</Link>
-						))}
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t("title")}
+      subtitle={!loading ? String(total) : undefined}
+      maxWidth="max-w-md"
+    >
+      {!loading && users.length > 0 && (
+        <div className="px-4 pt-3 flex-shrink-0">
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={t("searchPlaceholder")}
+            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
+            autoFocus
+          />
+        </div>
+      )}
 
-						{hasMore && !search.trim() && (
-							<div ref={loaderRef} className="flex justify-center py-4">
-								{loadingMore && (
-									<div className="w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
-								)}
-							</div>
-						)}
-					</div>
-				) : (
-					<div className="flex flex-col items-center justify-center py-12">
-						<p className="text-sm text-zinc-500">
-							{search.trim() ? t("noResults") : t("empty")}
-						</p>
-					</div>
-				)}
-			</div>
-		</Modal>
-	)
+      <div className="overflow-y-auto flex-1">
+        {loading ? (
+          <div className="p-4 space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-zinc-800 animate-pulse" />
+                <div className="h-4 w-28 bg-zinc-800 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        ) : filtered.length > 0 ? (
+          <div className="p-2">
+            {filtered.map(u => (
+              <Link
+                key={u.id}
+                to={`/u/${u.username}`}
+                onClick={onClose}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                <UserDisplay user={u} size="md" showBadges={true} linkToProfile={false} />
+              </Link>
+            ))}
+
+            {hasMore && !search.trim() && (
+              <div ref={loaderRef} className="flex justify-center py-4">
+                {loadingMore && (
+                  <div className="w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-sm text-zinc-500">
+              {search.trim() ? t("noResults") : t("empty")}
+            </p>
+          </div>
+        )}
+      </div>
+    </Modal>
+  )
 }
