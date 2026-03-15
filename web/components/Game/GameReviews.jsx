@@ -206,7 +206,7 @@ export function ProfileReviewCard({ review, game, user }) {
 
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-700/30">
               <Playtime hours={review.hours_played} minutes={review.minutes_played} />
-              <LikeButton reviewId={review.id} currentUserId={currentUser?.id} />
+              <LikeButton reviewId={review.id} currentUserId={currentUser?.user_id} />
             </div>
           </div>
         </div>
@@ -248,7 +248,7 @@ export function ProfileReviewCard({ review, game, user }) {
               </div>
             </div>
           </div>
-          <LikeButton reviewId={review.id} currentUserId={currentUser?.id} />
+          <LikeButton reviewId={review.id} currentUserId={currentUser?.user_id} />
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <ReviewModalContent review={review} />
