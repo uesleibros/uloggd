@@ -19,7 +19,7 @@ export default function ReviewContent({ review, onOpenModal }) {
 		return (
 			<div className="relative">
 				<div className="max-h-36 overflow-hidden">
-					<MarkdownPreview content={review.review} />
+					<MarkdownPreview ownerId={review?.user_id} content={review.review} />
 				</div>
 				<div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-zinc-800/90 to-transparent pointer-events-none rounded-b-lg" />
 				<button
@@ -33,5 +33,5 @@ export default function ReviewContent({ review, onOpenModal }) {
 		)
 	}
 
-	return <MarkdownPreview content={review.review} />
+	return <MarkdownPreview ownerId={review?.user_id} content={review.review} />
 }
