@@ -34,10 +34,13 @@ export async function handleByUser(req, res) {
 						id: game.id,
 						name: game.name,
 						slug: game.slug,
-						cover: game.cover ? {
-							url: game.cover.url?.replace("t_thumb", "t_cover_big"),
-							image_id: game.cover.image_id,
-						} : null,
+						cover:
+							game.cover && typeof game.cover.url === "string"
+								? {
+										url: game.cover.url.replace("t_thumb", "t_cover_big"),
+										image_id: game.cover.image_id,
+								  }
+								: null,
 					}
 				})
 			}
@@ -73,7 +76,7 @@ export async function handleByUser(req, res) {
 				reviews = data || []
 			}
 
-			const gameIds = [...new Set(reviews?.map(r => r.game_id) || [])]
+			const gameIds = [...new Set(reviews.map(r => r.game_id))]
 			const gamesMap = {}
 
 			if (gameIds.length > 0) {
@@ -87,15 +90,18 @@ export async function handleByUser(req, res) {
 						id: game.id,
 						name: game.name,
 						slug: game.slug,
-						cover: game.cover ? {
-							url: game.cover.url?.replace("t_thumb", "t_cover_big"),
-							image_id: game.cover.image_id,
-						} : null,
+						cover:
+							game.cover && typeof game.cover.url === "string"
+								? {
+										url: game.cover.url.replace("t_thumb", "t_cover_big"),
+										image_id: game.cover.image_id,
+								  }
+								: null,
 					}
 				})
 			}
 
-			const userIds = [...new Set(reviews?.map(r => r.user_id) || [])]
+			const userIds = [...new Set(reviews.map(r => r.user_id))]
 			let users = {}
 
 			if (userIds.length > 0) {
@@ -305,6 +311,7 @@ export async function handleByUser(req, res) {
 		}
 
 		res.status(400).json({ error: "invalid type" })
+
 	} catch (e) {
 		console.error(e)
 		res.status(500).json({ error: "fail" })
