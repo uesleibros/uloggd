@@ -55,7 +55,11 @@ function FanImages({ slugs = [], isActive, ranked = false, ownerId = null }) {
 			if (custom) return custom
 
 			const g = getGame(s)
-			if (!g?.cover?.url) return null
+
+			if (!g || !g.cover || typeof g.cover.url !== "string") {
+			  return null
+			}
+
 			return `https:${g.cover.url.replace("t_thumb", "t_cover_big")}`
 		})
 		.filter(Boolean)
