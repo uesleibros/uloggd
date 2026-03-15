@@ -23,6 +23,7 @@ import { useTranslation } from "#hooks/useTranslation"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import { useCustomCovers } from "#hooks/useCustomCovers"
 import Pagination from "@components/UI/Pagination"
+import LikeButton from "@components/UI/LikeButton"
 import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
 import GameCover from "@components/Game/GameCover"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
@@ -583,6 +584,12 @@ export default function ListPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <LikeButton
+            type="list"
+            targetId={list.id}
+            currentUserId={currentUser?.user_id}
+          />
+
           <ShareButton listId={encodedId} />
 
           {isOwner && (

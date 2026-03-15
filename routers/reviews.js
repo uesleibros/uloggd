@@ -5,9 +5,6 @@ import { handlePublic } from "#services/reviews/handlers/public.js"
 import { handleStats } from "#services/reviews/handlers/stats.js"
 import { handleUpdate } from "#services/reviews/handlers/me/update.js"
 import { handleUser } from "#services/reviews/handlers/user.js"
-import { handleLike } from "#services/reviews/handlers/like.js"
-import { handleLikeStatus } from "#services/reviews/handlers/likeStatus.js"
-import { handleLikes } from "#services/reviews/handlers/likes.js"
 import { handleByUser } from "#services/reviews/handlers/byUser.js"
 import { getUser } from "#lib/auth.js"
 
@@ -15,9 +12,6 @@ const ACTIONS = {
   create:      { handler: handleCreate,      method: "POST", scopes: ["@me"], auth: true  },
   delete:      { handler: handleDelete,      method: "POST", scopes: ["@me"], auth: true  },
   update:      { handler: handleUpdate,      method: "POST", scopes: ["@me"], auth: true  },
-  like:        { handler: handleLike,        method: "POST", scopes: ["@me"], auth: true  },
-  likeStatus:  { handler: handleLikeStatus,  method: "GET",  scopes: null,    auth: false },
-  likes:       { handler: handleLikes,       method: "GET",  scopes: null,    auth: false },
   game:        { handler: handleGame,        method: "GET",  scopes: ["@me"], auth: true  },
   public:      { handler: handlePublic,      method: "GET",  scopes: null,    auth: false },
   stats:       { handler: handleStats,       method: "GET",  scopes: null,    auth: false },

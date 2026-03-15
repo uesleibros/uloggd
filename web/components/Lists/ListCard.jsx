@@ -3,12 +3,10 @@ import { Link } from "react-router-dom"
 import { Gamepad2, Lock } from "lucide-react"
 import { motion } from "framer-motion"
 import { useTranslation } from "#hooks/useTranslation"
-import { useAuth } from "#hooks/useAuth"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import { useCustomCovers } from "#hooks/useCustomCovers"
 import { useDateTime } from "#hooks/useDateTime"
 import { encode } from "#utils/shortId.js"
-import LikeButton from "@components/UI/LikeButton"
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1]
 const TRANSITION_DURATION = 0.3
@@ -138,9 +136,8 @@ function FanImages({ slugs = [], isActive, ranked = false, ownerId = null }) {
 	)
 }
 
-export function ListCard({ list, showOwner = false, actions = null, showLikes = true }) {
+export function ListCard({ list, showOwner = false, actions = null }) {
 	const { t } = useTranslation()
-	const { user } = useAuth()
 	const { formatDateShort } = useDateTime()
 	const [isHovered, setIsHovered] = useState(false)
 
@@ -287,18 +284,7 @@ export function ListCard({ list, showOwner = false, actions = null, showLikes = 
 									<Lock className="w-3 h-3 text-white/30 ml-1" />
 								)}
 							</div>
-							<div className="flex items-center gap-3">
-								{showLikes && (
-									<div className="relative z-50" onClick={(e) => e.preventDefault()}>
-										<LikeButton
-											type="list"
-											targetId={list.id}
-											currentUserId={user?.id}
-											size="sm"
-											showLabel={false}
-										/>
-									</div>
-								)}
+							<div className="flex items-center gap-2">
 								<span className="text-xs text-white/50">
 									{showOwner && list.owner ? list.owner.username : list.updated_at ? formatDateShort(list.updated_at) : ""}
 								</span>
