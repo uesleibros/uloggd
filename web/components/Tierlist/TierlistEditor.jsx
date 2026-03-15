@@ -27,7 +27,7 @@ import {
 import { Link } from "react-router-dom"
 import { useTranslation } from "#hooks/useTranslation"
 import { useCustomCovers } from "#hooks/useCustomCovers"
-import GameCover, { getCoverUrl } from "@components/Game/GameCover"
+import GameCover from "@components/Game/GameCover"
 import EditTierlistModal from "@components/Tierlist/EditTierlistModal"
 import DeleteTierlistModal from "@components/Tierlist/DeleteTierlistModal"
 
@@ -107,12 +107,13 @@ function DropIndicator() {
   )
 }
 
-function LinkedGameCover({ game, customCover, linkTo }) {
+function LinkedGameCover({ game, customCover, loading, linkTo }) {
   const content = (
     <div className={`${CARD_SIZE} rounded-lg overflow-hidden flex-shrink-0`} title={game?.name}>
       <GameCover
         game={game}
         customCoverUrl={customCover}
+        loading={loading}
         className="w-full h-full rounded-lg"
       />
     </div>
@@ -129,7 +130,7 @@ function LinkedGameCover({ game, customCover, linkTo }) {
   return content
 }
 
-function SortableGameItem({ id, game, customCover, isDragging }) {
+function SortableGameItem({ id, game, customCover, loading, isDragging }) {
   const {
     attributes,
     listeners,
@@ -162,13 +163,14 @@ function SortableGameItem({ id, game, customCover, isDragging }) {
       <GameCover
         game={game}
         customCoverUrl={customCover}
+        loading={loading}
         className="w-full h-full"
       />
     </div>
   )
 }
 
-function SortableUntieredItem({ id, game, customCover, isDragging }) {
+function SortableUntieredItem({ id, game, customCover, loading, isDragging }) {
   const {
     attributes,
     listeners,
@@ -201,6 +203,7 @@ function SortableUntieredItem({ id, game, customCover, isDragging }) {
       <GameCover
         game={game}
         customCoverUrl={customCover}
+        loading={loading}
         className="w-full h-full"
       />
       {game?.name && (
@@ -214,7 +217,7 @@ function SortableUntieredItem({ id, game, customCover, isDragging }) {
   )
 }
 
-function ViewTier({ tier, items, getGame, getCustomCover }) {
+function ViewTier({ tier, items, getGame, getCustomCover, coverLoading }) {
   const { t } = useTranslation("tierlist")
 
   return (
@@ -242,6 +245,7 @@ function ViewTier({ tier, items, getGame, getCustomCover }) {
                   <LinkedGameCover
                     game={game}
                     customCover={customCover}
+                    loading={coverLoading}
                     linkTo={`/game/${item.game_slug}`}
                   />
                 </div>
@@ -263,6 +267,7 @@ function SortableTierRow({
   items,
   getGame,
   getCustomCover,
+  coverLoading,
   activeId,
   activeDragType,
   isTargeted,
@@ -376,6 +381,7 @@ function SortableTierRow({
                     id={item.id}
                     game={game}
                     customCover={customCover}
+                    loading={coverLoading}
                     isDragging={activeId === item.id}
                   />
                 )
@@ -399,6 +405,7 @@ function UntieredZone({
   games,
   getGame,
   getCustomCover,
+  coverLoading,
   activeId,
   searchQuery,
   onSearchChange,
@@ -512,6 +519,7 @@ function UntieredZone({
                     id={itemId}
                     game={game}
                     customCover={customCover}
+                    loading={coverLoading}
                     isDragging={activeId === itemId}
                   />
                 )
@@ -755,7 +763,8 @@ export default function TierlistEditor({
     return [...new Set([...slugsFromTiers, ...slugsFromUntiered])]
   }, [items, untieredGames])
 
-  const { getCustomCover } = useCustomCovers(ownerId, allSlugs)
+  const { getCustomCover, loading: coversLoading } = useCustomCovers(ownerId, allSlugs)
+  const coverLoading = ownerId && coversLoading
 
   useEffect(() => {
     setUntieredOrder((prev) => {
@@ -1147,6 +1156,7 @@ export default function TierlistEditor({
                 items={tierItems}
                 getGame={getGame}
                 getCustomCover={getCustomCover}
+                coverLoading={coverLoading}
               />
             )
           })}
@@ -1241,6 +1251,7 @@ export default function TierlistEditor({
                   items={tierItems}
                   getGame={getGame}
                   getCustomCover={getCustomCover}
+                  coverLoading={coverLoading}
                   activeId={activeId}
                   activeDragType={activeDragType}
                   isTargeted={
@@ -1273,6 +1284,7 @@ export default function TierlistEditor({
           games={orderedUntieredGames}
           getGame={getGame}
           getCustomCover={getCustomCover}
+          coverLoading={coverLoading}
           activeId={activeId}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -1286,6 +1298,7 @@ export default function TierlistEditor({
               <GameCover
                 game={activeGame}
                 customCoverUrl={activeCustomCover}
+                loading={coverLoading}
                 className="w-full h-full"
               />
             </div>
