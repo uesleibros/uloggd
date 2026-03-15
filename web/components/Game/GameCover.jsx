@@ -12,7 +12,12 @@ export default function GameCover({
   className = "",
   alt = null,
   draggable = false,
+  loading = false,
 }) {
+  if (loading) {
+    return <GameCoverSkeleton className={className} />
+  }
+
   const url = getCoverUrl(game, customCoverUrl)
 
   return (
