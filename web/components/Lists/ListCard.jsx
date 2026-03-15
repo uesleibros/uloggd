@@ -134,7 +134,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 	const [isHovered, setIsHovered] = useState(false)
 
 	const gamesCount = list.games_count || 0
-	const shortId = list.shortId || encode(String(list.id))
+	const shortId = encode(list.id)
 	const ownerId = list.user_id
 
 	return (
