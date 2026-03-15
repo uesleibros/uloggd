@@ -10,6 +10,18 @@ export const LIKE_TYPES = {
       review_id: target.id,
       game_slug: target.game_slug
     })
+  },
+  list: {
+    table: "list_likes",
+    targetColumn: "list_id",
+    targetTable: "lists",
+    ownerColumn: "user_id",
+    notificationType: "list_like",
+    getNotificationData: (target, likerId) => ({
+      liker_id: likerId,
+      list_id: target.id,
+      list_title: target.title
+    })
   }
 }
 
