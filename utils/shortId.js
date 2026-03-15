@@ -1,12 +1,12 @@
 const CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const BASE = BigInt(CHARS.length)
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-export function encode(uuid) {
-  if (typeof uuid !== "string") {
-    return String(uuid)
-  }
+export function encode(id) {
+  if (typeof id !== "string") return String(id)
+  if (!UUID_REGEX.test(id)) return id
 
-  const hex = uuid.replace(/-/g, "")
+  const hex = id.replace(/-/g, "")
   let num = BigInt("0x" + hex)
   if (num === 0n) return CHARS[0]
 
@@ -19,7 +19,7 @@ export function encode(uuid) {
 }
 
 export function decode(shortId) {
-  if (shortId.includes("-") && shortId.length === 36) return shortId
+  if (UUID_REGEX.test(shortId)) return shortId
 
   let num = 0n
   for (const char of shortId) {
