@@ -122,43 +122,53 @@ export async function handleByUser(req, res) {
 				.range(offset, offset + limitNum - 1)
 
 			const listIds = likedListsData?.map(l => l.list_id) || []
-			let lists = []
 
-			if (listIds.length > 0) {
-				const { data } = await supabase
-					.from("lists")
-					.select("id, user_id, title, description, is_public, ranked, created_at, updated_at")
-					.in("id", listIds)
-					.eq("is_public", true)
-
-				lists = data || []
+			if (listIds.length === 0) {
+				return res.json({
+					lists: [],
+					total: count || 0,
+					page: pageNum,
+					totalPages: Math.ceil((count || 0) / limitNum),
+				})
 			}
 
-			const listIdsFound = lists.map(l => l.id)
+			const { data } = await supabase
+				.from("lists")
+				.select("id, user_id, title, description, is_public, ranked, created_at, updated_at")
+				.in("id", listIds)
+				.eq("is_public", true)
 
-			const { data: itemsData } = await supabase
-				.from("list_items")
-				.select("list_id, game_slug, position")
-				.in("list_id", listIdsFound)
-				.order("position", { ascending: true })
+			const lists = data || []
+			const listIdsFound = lists.map(l => String(l.id))
 
-			const itemsByList = {}
-			itemsData?.forEach(item => {
-				if (!itemsByList[item.list_id]) itemsByList[item.list_id] = []
-				if (itemsByList[item.list_id].length < 5) {
-					itemsByList[item.list_id].push(item.game_slug)
-				}
-			})
+			let itemsByList = {}
+			let countsByList = {}
 
-			const { data: countsData } = await supabase
-				.from("list_items")
-				.select("list_id")
-				.in("list_id", listIdsFound)
+			if (listIdsFound.length > 0) {
+				const { data: itemsData } = await supabase
+					.from("list_items")
+					.select("list_id, game_slug, position")
+					.in("list_id", listIdsFound)
+					.order("position", { ascending: true })
 
-			const countsByList = {}
-			countsData?.forEach(item => {
-				countsByList[item.list_id] = (countsByList[item.list_id] || 0) + 1
-			})
+				itemsData?.forEach(item => {
+					const lid = String(item.list_id)
+					if (!itemsByList[lid]) itemsByList[lid] = []
+					if (itemsByList[lid].length < 5) {
+						itemsByList[lid].push(item.game_slug)
+					}
+				})
+
+				const { data: countsData } = await supabase
+					.from("list_items")
+					.select("list_id")
+					.in("list_id", listIdsFound)
+
+				countsData?.forEach(item => {
+					const lid = String(item.list_id)
+					countsByList[lid] = (countsByList[lid] || 0) + 1
+				})
+			}
 
 			const ownerIds = [...new Set(lists.map(l => l.user_id))]
 			let owners = {}
@@ -168,12 +178,16 @@ export async function handleByUser(req, res) {
 				owners = formatMinimalUserMap(profiles)
 			}
 
-			const formattedLists = lists.map(list => ({
-				...list,
-				game_slugs: itemsByList[list.id] || [],
-				games_count: countsByList[list.id] || 0,
-				owner: owners[list.user_id] || null,
-			}))
+			const formattedLists = lists.map(list => {
+				const lid = String(list.id)
+				return {
+					...list,
+					id: lid,
+					game_slugs: itemsByList[lid] || [],
+					games_count: countsByList[lid] || 0,
+					owner: owners[list.user_id] || null,
+				}
+			})
 
 			return res.json({
 				lists: formattedLists,
@@ -192,62 +206,76 @@ export async function handleByUser(req, res) {
 				.range(offset, offset + limitNum - 1)
 
 			const tierlistIds = likedTierlistsData?.map(l => l.tierlist_id) || []
-			let tierlists = []
 
-			if (tierlistIds.length > 0) {
-				const { data } = await supabase
-					.from("tierlists")
-					.select("id, user_id, title, description, is_public, created_at, updated_at")
-					.in("id", tierlistIds)
-					.eq("is_public", true)
-
-				tierlists = data || []
+			if (tierlistIds.length === 0) {
+				return res.json({
+					tierlists: [],
+					total: count || 0,
+					page: pageNum,
+					totalPages: Math.ceil((count || 0) / limitNum),
+				})
 			}
 
-			const tierlistIdsFound = tierlists.map(t => t.id)
+			const { data } = await supabase
+				.from("tierlists")
+				.select("id, user_id, title, description, is_public, created_at, updated_at")
+				.in("id", tierlistIds)
+				.eq("is_public", true)
 
-			const { data: tiersData } = await supabase
-				.from("tierlist_tiers")
-				.select("id, tierlist_id, label, color, position")
-				.in("tierlist_id", tierlistIdsFound)
-				.order("position", { ascending: true })
+			const tierlists = data || []
+			const tierlistIdsFound = tierlists.map(t => String(t.id))
 
-			const tierIds = tiersData?.map(t => t.id) || []
+			let tiersByTierlist = {}
+			let countsByTierlist = {}
 
-			const { data: itemsData } = await supabase
-				.from("tierlist_items")
-				.select("id, tier_id, game_slug, position")
-				.in("tier_id", tierIds)
-				.order("position", { ascending: true })
+			if (tierlistIdsFound.length > 0) {
+				const { data: tiersData } = await supabase
+					.from("tierlist_tiers")
+					.select("id, tierlist_id, label, color, position")
+					.in("tierlist_id", tierlistIdsFound)
+					.order("position", { ascending: true })
 
-			const itemsByTier = {}
-			itemsData?.forEach(item => {
-				if (!itemsByTier[item.tier_id]) itemsByTier[item.tier_id] = []
-				if (itemsByTier[item.tier_id].length < 6) {
-					itemsByTier[item.tier_id].push(item)
+				const tierIds = tiersData?.map(t => String(t.id)) || []
+
+				let itemsByTier = {}
+
+				if (tierIds.length > 0) {
+					const { data: itemsData } = await supabase
+						.from("tierlist_items")
+						.select("id, tier_id, game_slug, position")
+						.in("tier_id", tierIds)
+						.order("position", { ascending: true })
+
+					itemsData?.forEach(item => {
+						const tid = String(item.tier_id)
+						if (!itemsByTier[tid]) itemsByTier[tid] = []
+						if (itemsByTier[tid].length < 6) {
+							itemsByTier[tid].push(item)
+						}
+					})
+
+					itemsData?.forEach(item => {
+						const tier = tiersData?.find(t => String(t.id) === String(item.tier_id))
+						if (tier) {
+							const tlid = String(tier.tierlist_id)
+							countsByTierlist[tlid] = (countsByTierlist[tlid] || 0) + 1
+						}
+					})
 				}
-			})
 
-			const tiersByTierlist = {}
-			const countsByTierlist = {}
-
-			tiersData?.forEach(tier => {
-				if (!tiersByTierlist[tier.tierlist_id]) tiersByTierlist[tier.tierlist_id] = []
-				tiersByTierlist[tier.tierlist_id].push({
-					id: tier.id,
-					label: tier.label,
-					color: tier.color,
-					position: tier.position,
-					items: itemsByTier[tier.id] || []
+				tiersData?.forEach(tier => {
+					const tlid = String(tier.tierlist_id)
+					const tid = String(tier.id)
+					if (!tiersByTierlist[tlid]) tiersByTierlist[tlid] = []
+					tiersByTierlist[tlid].push({
+						id: tid,
+						label: tier.label,
+						color: tier.color,
+						position: tier.position,
+						items: itemsByTier[tid] || []
+					})
 				})
-			})
-
-			itemsData?.forEach(item => {
-				const tier = tiersData?.find(t => t.id === item.tier_id)
-				if (tier) {
-					countsByTierlist[tier.tierlist_id] = (countsByTierlist[tier.tierlist_id] || 0) + 1
-				}
-			})
+			}
 
 			const ownerIds = [...new Set(tierlists.map(t => t.user_id))]
 			let owners = {}
@@ -257,12 +285,16 @@ export async function handleByUser(req, res) {
 				owners = formatMinimalUserMap(profiles)
 			}
 
-			const formattedTierlists = tierlists.map(tierlist => ({
-				...tierlist,
-				tiers_preview: tiersByTierlist[tierlist.id] || [],
-				games_count: countsByTierlist[tierlist.id] || 0,
-				owner: owners[tierlist.user_id] || null,
-			}))
+			const formattedTierlists = tierlists.map(tierlist => {
+				const tlid = String(tierlist.id)
+				return {
+					...tierlist,
+					id: tlid,
+					tiers_preview: tiersByTierlist[tlid] || [],
+					games_count: countsByTierlist[tlid] || 0,
+					owner: owners[tierlist.user_id] || null,
+				}
+			})
 
 			return res.json({
 				tierlists: formattedTierlists,
