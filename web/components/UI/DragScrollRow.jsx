@@ -58,12 +58,24 @@ const DragScrollRow = forwardRef(function DragScrollRow({
   useEffect(() => {
     if (!autoScroll || isPaused || !scrollRef.current) return
 
-    let lastTime = performance.now()
+    const el = scrollRef.current
+    virtualScrollLeft.current = el.scrollLeft
+    let lastTime = null
 
     function step(now) {
-      const delta = now - lastTime
+      if (lastTime === null) {
+        lastTime = now
+        rafRef.current = requestAnimationFrame(step)
+        return
+      }
+
+      let delta = now - lastTime
       lastTime = now
-      const el = scrollRef.current
+
+      if (delta > 100) {
+        delta = 16
+      }
+
       if (!el) return
 
       if (loop) {
@@ -83,7 +95,19 @@ const DragScrollRow = forwardRef(function DragScrollRow({
 
   useEffect(() => {
     if (!autoScroll) return
-    const handleVisibility = () => setIsPaused(document.hidden)
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(rafRef.current)
+        if (scrollRef.current) {
+          virtualScrollLeft.current = scrollRef.current.scrollLeft
+        }
+        setIsPaused(true)
+      } else {
+        setIsPaused(false)
+      }
+    }
+
     document.addEventListener("visibilitychange", handleVisibility)
     return () => document.removeEventListener("visibilitychange", handleVisibility)
   }, [autoScroll])
