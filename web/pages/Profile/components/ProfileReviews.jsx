@@ -134,7 +134,7 @@ export function ProfileReviewCard({ review, game, user, journey, onJourneyUpdate
                   <JourneyBadge journey={journey} onClick={() => setShowJourney(true)} />
                 )}
               </div>
-              <LikeButton reviewId={review.id} currentUserId={currentUser?.id} />
+              <LikeButton reviewId={review.id} currentUserId={currentUser?.user_id} />
             </div>
           </div>
 
@@ -165,7 +165,7 @@ export function ProfileReviewCard({ review, game, user, journey, onJourneyUpdate
               onClose={() => setShowModal(false)}
             />
           </div>
-          <LikeButton reviewId={review.id} currentUserId={currentUser?.id} />
+          <LikeButton reviewId={review.id} currentUserId={currentUser?.user_id} />
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <ReviewModalContent review={review} />
