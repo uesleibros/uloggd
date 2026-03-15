@@ -288,7 +288,6 @@ function NotificationEmpty() {
         <BellOff className="w-7 h-7 text-zinc-600" />
       </div>
       <p className="text-sm font-medium text-zinc-400 mb-1">{t("notifications.empty")}</p>
-      <p className="text-xs text-zinc-600">{t("notifications.emptySubtitle")}</p>
     </div>
   )
 }
