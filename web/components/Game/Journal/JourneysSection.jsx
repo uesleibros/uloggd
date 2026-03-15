@@ -11,7 +11,8 @@ export default function JourneysSection({ journeys, games = {}, loading, total, 
   const [viewingId, setViewingId] = useState(null)
 
   const slugs = journeys.map(j => j.game_slug)
-  const { getCustomCover } = useCustomCovers(ownerId, slugs)
+  const { getCustomCover, loading: coversLoading } = useCustomCovers(ownerId, slugs)
+  const coverLoading = ownerId && coversLoading
 
   function formatTime(totalMinutes) {
     const h = Math.floor(totalMinutes / 60)
@@ -79,6 +80,7 @@ export default function JourneysSection({ journeys, games = {}, loading, total, 
                   journey={j}
                   game={games[j.game_slug]}
                   customCoverUrl={getCustomCover(j.game_slug)}
+                  coverLoading={coverLoading}
                   formatTime={formatTime}
                   formatDate={formatDate}
                   onClick={() => setViewingId(j.id)}
@@ -102,6 +104,7 @@ export default function JourneysSection({ journeys, games = {}, loading, total, 
                   journey={j}
                   game={games[j.game_slug]}
                   customCoverUrl={getCustomCover(j.game_slug)}
+                  coverLoading={coverLoading}
                   formatTime={formatTime}
                   formatDate={formatDate}
                   onClick={() => setViewingId(j.id)}
@@ -132,7 +135,7 @@ export default function JourneysSection({ journeys, games = {}, loading, total, 
   )
 }
 
-function JourneyCard({ journey: j, game, customCoverUrl, formatTime, formatDate, onClick, t }) {
+function JourneyCard({ journey: j, game, customCoverUrl, coverLoading, formatTime, formatDate, onClick, t }) {
   const time = formatTime(j.total_minutes)
 
   return (
@@ -144,6 +147,7 @@ function JourneyCard({ journey: j, game, customCoverUrl, formatTime, formatDate,
         <GameCover
           game={game ? { cover: { url: game.cover_url }, name: game.name } : null}
           customCoverUrl={customCoverUrl}
+          loading={coverLoading}
           className="w-full h-full"
         />
       </div>
