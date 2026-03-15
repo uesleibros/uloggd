@@ -2,7 +2,10 @@ const CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const BASE = BigInt(CHARS.length)
 
 export function encode(uuid) {
-  console.log("encode received:", uuid, typeof uuid)
+  if (typeof uuid !== "string") {
+    return String(uuid)
+  }
+
   const hex = uuid.replace(/-/g, "")
   let num = BigInt("0x" + hex)
   if (num === 0n) return CHARS[0]
