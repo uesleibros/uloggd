@@ -94,7 +94,18 @@ async function loadUser(session, silent = false) {
     return
   }
 
-  if (cachedUser?.id === session.user.id && initialized) {
+  if (cachedUser?.user_id === session.user.id && initialized) {
+    if (!silent) {
+      fetchProfile(session).then(profile => {
+        if (profile && !profile.is_banned) {
+          const merged = mergeUser(cachedUser, profile)
+          if (merged !== cachedUser) {
+            cachedUser = merged
+            updateSnapshot()
+          }
+        }
+      })
+    }
     loading = false
     updateSnapshot()
     return
@@ -102,7 +113,7 @@ async function loadUser(session, silent = false) {
 
   if (loadingPromise) return loadingPromise
 
-  if (!silent) {
+  if (!silent && !cachedUser) {
     loading = true
     updateSnapshot()
   }
@@ -201,7 +212,7 @@ supabase.auth.onAuthStateChange((event, session) => {
   if (event === "INITIAL_SESSION") return
 
   if (event === "SIGNED_IN" && session) {
-    if (cachedUser?.id !== session.user.id) {
+    if (cachedUser?.user_id !== session.user.id) {
       initialized = false
     }
     loadUser(session)
