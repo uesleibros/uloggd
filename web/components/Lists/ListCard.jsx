@@ -36,8 +36,18 @@ function reorderForCenter(items) {
 
 function FanImages({ slugs = [], isActive, ranked = false, ownerId = null }) {
 	const orderedSlugs = ranked ? reorderForCenter(slugs) : slugs
-	const { getGame } = useGamesBatch(slugs)
-	const { getCustomCover } = useCustomCovers(ownerId, slugs)
+	const { getGame, loading: gamesLoading } = useGamesBatch(slugs)
+	const { getCustomCover, loading: coversLoading } = useCustomCovers(ownerId, slugs)
+
+	const isLoading = gamesLoading || (ownerId && coversLoading)
+
+	if (isLoading) {
+		return (
+			<div className="absolute inset-0 flex items-center justify-center">
+				<div className="h-[200px] w-[134px] rounded-xl bg-zinc-800 animate-pulse" />
+			</div>
+		)
+	}
 
 	const covers = orderedSlugs
 		.map((s) => {
@@ -294,8 +304,10 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 }
 
 export function CoverStrip({ slugs = [], ownerId = null }) {
-	const { getGame } = useGamesBatch(slugs)
-	const { getCustomCover } = useCustomCovers(ownerId, slugs)
+	const { getGame, loading: gamesLoading } = useGamesBatch(slugs)
+	const { getCustomCover, loading: coversLoading } = useCustomCovers(ownerId, slugs)
+
+	const isLoading = gamesLoading || (ownerId && coversLoading)
 
 	if (slugs.length === 0) {
 		return (
@@ -303,6 +315,10 @@ export function CoverStrip({ slugs = [], ownerId = null }) {
 				<Gamepad2 className="w-6 h-6 text-zinc-700" />
 			</div>
 		)
+	}
+
+	if (isLoading) {
+		return <div className="w-full h-full bg-zinc-800 animate-pulse" />
 	}
 
 	const covers = slugs
@@ -315,10 +331,6 @@ export function CoverStrip({ slugs = [], ownerId = null }) {
 			return `https:${g.cover.url.replace("t_thumb", "t_cover_big")}`
 		})
 		.filter(Boolean)
-
-	if (covers.length === 0 && slugs.length > 0) {
-		return <div className="w-full h-full bg-zinc-800 animate-pulse" />
-	}
 
 	if (covers.length === 0) {
 		return (
