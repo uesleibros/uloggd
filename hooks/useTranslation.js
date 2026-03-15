@@ -12,7 +12,13 @@ export function useTranslation(namespace) {
 
   const t = useCallback((key, params = {}) => {
     const fullKey = namespace ? `${namespace}.${key}` : key
-    return translate(fullKey, params)
+    const result = translate(fullKey, params)
+
+    if (typeof result !== "string") {
+      return `object: ${fullKey}`
+    }
+
+    return result
   }, [translate, namespace])
 
   return { t, ...rest }
