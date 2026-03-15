@@ -3,7 +3,6 @@ import { Link } from "react-router-dom"
 import {
   UserPlus,
   ThumbsUp,
-  Check,
   Trash2,
   Bell,
   BadgeCheck,
@@ -13,6 +12,8 @@ import {
   Gift,
   CheckCheck,
   BellOff,
+  List,
+  LayoutGrid,
 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
@@ -22,6 +23,8 @@ import Modal from "@components/UI/Modal"
 const NOTIFICATION_ICONS = {
   follow: { icon: UserPlus, color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20" },
   review_like: { icon: ThumbsUp, color: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-500/20" },
+  list_like: { icon: List, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+  tierlist_like: { icon: LayoutGrid, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
   gift_received: { icon: Gift, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30" },
   verification_approved: { icon: BadgeCheck, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30" },
   verification_rejected: { icon: XCircle, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/30" },
@@ -32,6 +35,8 @@ const NOTIFICATION_ICONS = {
 const NOTIFICATION_USER_ID_MAP = {
   follow: (data) => data.follower_id,
   review_like: (data) => data.liker_id,
+  list_like: (data) => data.liker_id,
+  tierlist_like: (data) => data.liker_id,
   gift_received: (data) => data.from_user_id,
   verification_approved: (data) => data.reviewed_by,
   verification_rejected: (data) => data.reviewed_by,
@@ -42,6 +47,8 @@ const NOTIFICATION_USER_ID_MAP = {
 const NOTIFICATION_LINKS = {
   follow: (data, users) => `/u/${users[data.follower_id]?.username}`,
   review_like: (data) => `/game/${data.game_slug}`,
+  list_like: (data) => `/list/${data.list_id}`,
+  tierlist_like: (data) => `/tierlist/${data.tierlist_id}`,
 }
 
 const MODAL_NOTIFICATIONS = [
@@ -65,6 +72,10 @@ function getNotificationText(type, data, t) {
       return t("notifications.types.follow.text")
     case "review_like":
       return t("notifications.types.review_like.text")
+    case "list_like":
+      return t("notifications.types.list_like.text", { title: data.list_title })
+    case "tierlist_like":
+      return t("notifications.types.tierlist_like.text", { title: data.tierlist_title })
     case "gift_received":
       return t("notifications.types.gift_received.title")
     case "verification_approved":

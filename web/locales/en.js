@@ -1223,6 +1223,12 @@ export default {
 		empty: "No notifications",
 		close: "Close",
 		types: {
+			list_like: {
+			  text: "liked your list \"{{title}}\"",
+			},
+			tierlist_like: {
+			  text: "liked your tierlist \"{{title}}\"",
+			},
 			follow: {
 				text: "started following you",
 			},
