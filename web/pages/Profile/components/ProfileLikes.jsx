@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { Heart, Gamepad2, MessageSquare } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
+import { useCustomCovers } from "#hooks/useCustomCovers"
 import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
 import Pagination from "@components/UI/Pagination"
 import { ProfileReviewCard } from "./ProfileReviews"
@@ -76,6 +77,15 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
   const [initialLoading, setInitialLoading] = useState(true)
   const [counts, setCounts] = useState({ games: 0, reviews: 0 })
   const containerRef = useRef(null)
+
+  const slugs = useMemo(() => {
+    if (activeTab === "games") {
+      return data.items.map((g) => g.slug)
+    }
+    return []
+  }, [activeTab, data.items])
+
+  const { getCustomCover, loading: coversLoading } = useCustomCovers(userId, slugs)
 
   useEffect(() => {
     if (!userId) return
@@ -163,6 +173,8 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
     )
   }
 
+  const isLoadingGames = loading || (activeTab === "games" && coversLoading)
+
   return (
     <div className="space-y-6" ref={containerRef}>
       <div className="flex flex-wrap gap-2">
@@ -182,18 +194,22 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
         />
       </div>
 
-      {loading ? (
-        activeTab === "games" ? (
-          <GamesSkeleton />
-        ) : (
-          <ReviewsSkeleton />
-        )
+      {isLoadingGames && activeTab === "games" ? (
+        <GamesSkeleton />
+      ) : loading && activeTab === "reviews" ? (
+        <ReviewsSkeleton />
       ) : data.items.length > 0 ? (
         <div className="space-y-6">
           {activeTab === "games" ? (
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
               {data.items.map((game) => (
-                <GameCard key={game.slug} game={game} userRating={game.avgRating} responsive />
+                <GameCard
+                  key={game.slug}
+                  game={game}
+                  userRating={game.avgRating}
+                  customCoverUrl={getCustomCover(game.slug)}
+                  responsive
+                />
               ))}
             </div>
           ) : (
