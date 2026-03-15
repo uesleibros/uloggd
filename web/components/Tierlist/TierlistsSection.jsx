@@ -52,13 +52,17 @@ function EmptyState({ isOwnProfile, username, onCreateClick, t }) {
   )
 }
 
-function TierPreview({ tiers, getGame, getCustomCover }) {
+function TierPreview({ tiers, getGame, getCustomCover, loading }) {
   if (!tiers || tiers.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-zinc-800/30">
         <LayoutGrid className="w-6 h-6 text-zinc-700" />
       </div>
     )
+  }
+
+  if (loading) {
+    return <div className="w-full h-full bg-zinc-800 animate-pulse" />
   }
 
   return (
@@ -108,8 +112,9 @@ function TierlistCard({ tierlist }) {
     )
   }, [tierlist.tiers_preview])
 
-  const { getGame } = useGamesBatch(allSlugs)
-  const { getCustomCover } = useCustomCovers(ownerId, allSlugs)
+  const { getGame, loading: gamesLoading } = useGamesBatch(allSlugs)
+  const { getCustomCover, loading: coversLoading } = useCustomCovers(ownerId, allSlugs)
+  const isLoading = gamesLoading || (ownerId && coversLoading)
 
   return (
     <Link
@@ -121,6 +126,7 @@ function TierlistCard({ tierlist }) {
           tiers={tierlist.tiers_preview}
           getGame={getGame}
           getCustomCover={getCustomCover}
+          loading={isLoading}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/20 to-transparent" />
       </div>
