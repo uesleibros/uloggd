@@ -139,12 +139,12 @@ function MobileActionBar({ onAdd, onEdit, onDelete, onReorder, itemCount }) {
 
 function RankBadge({ rank }) {
   const colors = {
-    1: "bg-amber-500 text-amber-950",
-    2: "bg-zinc-300 text-zinc-700",
-    3: "bg-orange-600 text-orange-100",
+    1: "bg-amber-500/80 text-amber-950",
+    2: "bg-zinc-300/80 text-zinc-700",
+    3: "bg-amber-800/80 text-amber-100",
   }
 
-  const colorClass = colors[rank] || "bg-zinc-700 text-zinc-300"
+  const colorClass = colors[rank] || "bg-zinc-700/60 text-zinc-300"
 
   return (
     <div className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold tabular-nums ${colorClass}`}>
