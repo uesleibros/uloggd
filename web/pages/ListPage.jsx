@@ -137,18 +137,30 @@ function MobileActionBar({ onAdd, onEdit, onDelete, onReorder, itemCount }) {
   )
 }
 
+function RankBadge({ rank }) {
+  const colors = {
+    1: "bg-amber-500 text-amber-950",
+    2: "bg-zinc-300 text-zinc-700",
+    3: "bg-orange-600 text-orange-100",
+  }
+
+  const colorClass = colors[rank] || "bg-zinc-700 text-zinc-300"
+
+  return (
+    <div className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold tabular-nums ${colorClass}`}>
+      #{rank}
+    </div>
+  )
+}
+
 function GameItemFooter({ globalIndex, showRank, marked, editMode, isOwner }) {
   const showCheck = marked && isOwner && editMode
 
   if (!showRank && !showCheck) return null
 
   return (
-    <div className="flex items-center gap-1.5 mt-1.5 px-0.5">
-      {showRank && (
-        <span className="text-[10px] sm:text-xs font-bold text-zinc-500 tabular-nums">
-          #{globalIndex}
-        </span>
-      )}
+    <div className="flex items-center justify-center gap-1.5 mt-1.5">
+      {showRank && <RankBadge rank={globalIndex} />}
       {showCheck && (
         <div className="w-4 h-4 rounded-full bg-white/90 flex items-center justify-center">
           <Check className="w-2.5 h-2.5 text-zinc-900" />
