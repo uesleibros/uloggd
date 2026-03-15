@@ -29,8 +29,9 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
   const [currentYear, setCurrentYear] = useState(today.getFullYear())
 
   const slugs = useMemo(() => journey?.game_slug ? [journey.game_slug] : [], [journey?.game_slug])
-  const { getCustomCover } = useCustomCovers(journey?.user_id, slugs)
+  const { getCustomCover, loading: coversLoading } = useCustomCovers(journey?.user_id, slugs)
   const customCoverUrl = journey?.game_slug ? getCustomCover(journey.game_slug) : null
+  const coverLoading = journey?.user_id && coversLoading
 
   useEffect(() => {
     if (!journeyId) return
@@ -150,6 +151,7 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
                   <GameCover
                     game={gameForCover}
                     customCoverUrl={customCoverUrl}
+                    loading={coverLoading}
                     className="w-full h-full"
                   />
                 </Link>
