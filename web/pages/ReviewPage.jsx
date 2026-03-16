@@ -13,11 +13,13 @@ import Playtime from "@components/Game/Playtime"
 import GameCover from "@components/Game/GameCover"
 import LikeButton from "@components/UI/LikeButton"
 import CommentSection from "@components/UI/CommentSection"
+import { MarkdownPreview } from "@components/MarkdownEditor"
 import {
   AspectRatingsPreview,
   ReviewIndicators,
   JourneyBadge,
 } from "@components/Game/Review"
+import SpoilerOverlay from "@components/Game/Review/SpoilerOverlay"
 import { JournalViewModal } from "@components/Game/Journal/JournalViewModal"
 
 function ReviewPageSkeleton() {
@@ -56,6 +58,7 @@ export default function ReviewPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showJourney, setShowJourney] = useState(false)
+  const [spoilerRevealed, setSpoilerRevealed] = useState(false)
 
   usePageMeta(
     review && game
@@ -108,6 +111,7 @@ export default function ReviewPage() {
   }
 
   const aspects = review.aspect_ratings || []
+  const hasSpoiler = review.contain_spoilers && !spoilerRevealed
 
   return (
     <div className="py-6 sm:py-8 max-w-3xl mx-auto">
@@ -178,9 +182,11 @@ export default function ReviewPage() {
         )}
 
         {review.review && (
-          <p className="text-sm sm:text-base text-zinc-300 leading-relaxed whitespace-pre-wrap break-words">
-            {review.review}
-          </p>
+          hasSpoiler ? (
+            <SpoilerOverlay onReveal={() => setSpoilerRevealed(true)} />
+          ) : (
+            <MarkdownPreview ownerId={review.user_id} content={review.review} />
+          )
         )}
 
         <div className="flex items-center justify-between pt-4 border-t border-zinc-800 gap-3 flex-wrap">
