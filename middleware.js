@@ -1,5 +1,5 @@
 export const config = {
-  matcher: ['/game/:slug*', '/u/:username*', '/list/:id*', '/tierlist/:id*'],
+  matcher: ['/game/:slug*', '/u/:username*', '/list/:id*', '/tierlist/:id*', '/review/:id*'],
 }
 
 const BOT_REGEX = /Discordbot|Twitterbot|facebookexternalhit|LinkedInBot|TelegramBot|Slackbot|WhatsApp|Embedly|Pinterest|Slack-ImgProxy/i
@@ -20,6 +20,7 @@ export default async function middleware(req) {
     u: handleProfile,
     list: handleList,
     tierlist: handleTierlist,
+    review: handleReview,
   }
 
   const handler = handlers[type]
@@ -145,7 +146,7 @@ async function handleList(url, listId) {
   )
   if (!list) return buildFallbackResponse(url)
 
-  const gamesCount = list.games_count || list.game_slugs?.length || 0
+  const gamesCount = list.items_total || list.game_slugs?.length || 0
   const title = `${list.title} - ${SITE_NAME}`
   const description = list.description
     ? truncate(stripMarkdown(list.description))
@@ -183,6 +184,40 @@ async function handleTierlist(url, tierlistId) {
     image: null,
     url: url.href,
     twitterCard: 'summary',
+  })
+}
+
+async function handleReview(url, reviewId) {
+  const data = await safeFetch(
+    `${url.origin}/api/reviews/get?reviewId=${encodeURIComponent(reviewId)}`
+  )
+  if (!data?.review) return buildFallbackResponse(url)
+
+  const { review, user, game } = data
+  const username = user?.username || 'Someone'
+  const gameName = game?.name || 'a game'
+
+  const title = `${username}'s review of ${gameName} - ${SITE_NAME}`
+
+  let description
+  if (review.review) {
+    description = truncate(stripMarkdown(review.review))
+  } else if (review.rating) {
+    description = `${username} rated ${gameName} ${review.rating}/10`
+  } else {
+    description = `${username}'s review of ${gameName}`
+  }
+
+  const image = game?.cover?.url
+    ? ensureAbsoluteUrl(game.cover.url.replace('t_thumb', 't_720p'), url.origin)
+    : null
+
+  return buildResponse({
+    title,
+    description,
+    image,
+    url: url.href,
+    twitterCard: image ? 'summary_large_image' : 'summary',
   })
 }
 
