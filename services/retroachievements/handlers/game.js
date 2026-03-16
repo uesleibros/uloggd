@@ -1,82 +1,128 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
 const RA_API_BASE = "https://retroachievements.org/API"
+const RA_USER = process.env.RA_USERNAME
+const RA_KEY = process.env.RA_API_KEY
 
-async function searchGame(username, apiKey, gameName) {
-  const res = await fetch(
-    `${RA_API_BASE}/API_GetUserCompletedGames.php?z=${encodeURIComponent(username)}&y=${apiKey}&u=${encodeURIComponent(username)}`
-  )
+function normalize(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]/g, "")
+}
 
+function similarity(a, b) {
+  const na = normalize(a)
+  const nb = normalize(b)
+
+  if (na === nb) return 1
+
+  if (na.includes(nb) || nb.includes(na)) {
+    return Math.min(na.length, nb.length) / Math.max(na.length, nb.length)
+  }
+
+  const longer = na.length >= nb.length ? na : nb
+  const shorter = na.length >= nb.length ? nb : na
+  let matches = 0
+  let si = 0
+
+  for (let i = 0; i < longer.length && si < shorter.length; i++) {
+    if (longer[i] === shorter[si]) {
+      matches++
+      si++
+    }
+  }
+
+  return matches / Math.max(na.length, nb.length)
+}
+
+async function raFetch(endpoint, params) {
+  const url = `${RA_API_BASE}/${endpoint}?z=${RA_USER}&y=${RA_KEY}&${params}`
+  const res = await fetch(url)
   if (!res.ok) return null
+  return res.json()
+}
 
-  const games = await res.json()
-  if (!games || !Array.isArray(games)) return null
+async function raFetchUser(endpoint, username, apiKey, params) {
+  const url = `${RA_API_BASE}/${endpoint}?z=${encodeURIComponent(username)}&y=${apiKey}&${params}`
+  const res = await fetch(url)
+  if (!res.ok) return null
+  return res.json()
+}
 
-  const normalizedSearch = gameName.toLowerCase().replace(/[^a-z0-9]/g, "")
+async function searchGameInRA(gameName) {
+  const consoles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 23, 24, 25, 27, 28, 29, 33, 37, 38, 39, 40, 41, 43, 44, 45, 46, 47, 49, 51, 53, 56, 57]
 
-  let bestMatch = null
-  let bestScore = 0
+  const attempts = [
+    gameName,
+    gameName.replace(/:/g, "").replace(/-/g, " "),
+    gameName.split(":")[0].trim(),
+  ]
 
-  for (const game of games) {
-    const normalizedTitle = game.Title.toLowerCase().replace(/[^a-z0-9]/g, "")
+  for (const searchTerm of attempts) {
+    const data = await raFetch("API_GetGameList.php", `i=0&h=1&f=${encodeURIComponent(searchTerm)}`)
 
-    if (normalizedTitle === normalizedSearch) {
+    if (!data || !Array.isArray(data) || data.length === 0) continue
+
+    let bestMatch = null
+    let bestScore = 0
+
+    for (const game of data) {
+      const score = similarity(searchTerm, game.Title)
+      if (score > bestScore) {
+        bestScore = score
+        bestMatch = game
+      }
+    }
+
+    if (bestMatch && bestScore >= 0.5) {
       return {
-        id: game.GameID,
-        title: game.Title,
-        consoleId: game.ConsoleID,
-        consoleName: game.ConsoleName,
-        hardcoreMode: game.HardcoreMode === 1,
-        numAwarded: game.NumAwarded,
-        maxPossible: game.MaxPossible,
-        pctWon: game.MaxPossible > 0 ? Math.round((game.NumAwarded / game.MaxPossible) * 100) : 0,
-      }
-    }
-
-    let score = 0
-    if (normalizedTitle.includes(normalizedSearch) || normalizedSearch.includes(normalizedTitle)) {
-      score = Math.min(normalizedTitle.length, normalizedSearch.length) / Math.max(normalizedTitle.length, normalizedSearch.length)
-    }
-
-    const searchWords = normalizedSearch.split("")
-    let matchingChars = 0
-    let searchIdx = 0
-    for (const char of normalizedTitle) {
-      if (searchIdx < searchWords.length && char === searchWords[searchIdx]) {
-        matchingChars++
-        searchIdx++
-      }
-    }
-    const seqScore = matchingChars / Math.max(normalizedTitle.length, normalizedSearch.length)
-    score = Math.max(score, seqScore)
-
-    if (score > bestScore && score > 0.6) {
-      bestScore = score
-      bestMatch = {
-        id: game.GameID,
-        title: game.Title,
-        consoleId: game.ConsoleID,
-        consoleName: game.ConsoleName,
-        hardcoreMode: game.HardcoreMode === 1,
-        numAwarded: game.NumAwarded,
-        maxPossible: game.MaxPossible,
-        pctWon: game.MaxPossible > 0 ? Math.round((game.NumAwarded / game.MaxPossible) * 100) : 0,
+        id: bestMatch.ID,
+        title: bestMatch.Title,
+        consoleId: bestMatch.ConsoleID,
+        consoleName: bestMatch.ConsoleName,
         score: bestScore,
       }
     }
   }
 
-  return bestMatch
+  return null
 }
 
-async function getGameProgress(username, apiKey, gameId) {
-  const res = await fetch(
-    `${RA_API_BASE}/API_GetGameInfoAndUserProgress.php?z=${encodeURIComponent(username)}&y=${apiKey}&u=${encodeURIComponent(username)}&g=${gameId}`
-  )
+async function getGameAchievements(gameId) {
+  const data = await raFetch("API_GetGameInfoAndUserProgress.php", `g=${gameId}&u=${RA_USER}`)
 
-  if (!res.ok) return null
+  if (!data || !data.Title) return null
 
-  const data = await res.json()
+  const achievements = data.Achievements ? Object.values(data.Achievements) : []
+
+  return {
+    game: {
+      id: data.ID,
+      title: data.Title,
+      consoleName: data.ConsoleName,
+      imageIcon: data.ImageIcon ? `https://retroachievements.org${data.ImageIcon}` : null,
+      numPlayers: Number(data.NumDistinctPlayers) || 0,
+    },
+    achievements: achievements
+      .sort((a, b) => Number(a.DisplayOrder) - Number(b.DisplayOrder))
+      .map(a => ({
+        id: a.ID,
+        title: a.Title,
+        description: a.Description,
+        points: Number(a.Points),
+        type: a.type,
+        badgeUrl: a.BadgeName ? `https://media.retroachievements.org/Badge/${a.BadgeName}.png` : null,
+        badgeLockedUrl: a.BadgeName ? `https://media.retroachievements.org/Badge/${a.BadgeName}_lock.png` : null,
+        earned: false,
+        earnedDate: null,
+        hardcoreEarned: false,
+        numAwarded: Number(a.NumAwarded) || 0,
+        numAwardedHardcore: Number(a.NumAwardedHardcore) || 0,
+      })),
+  }
+}
+
+async function getUserGameProgress(username, apiKey, gameId) {
+  const data = await raFetchUser("API_GetGameInfoAndUserProgress.php", username, apiKey, `g=${gameId}&u=${encodeURIComponent(username)}`)
+
   if (!data || !data.Title) return null
 
   const achievements = data.Achievements ? Object.values(data.Achievements) : []
@@ -89,7 +135,7 @@ async function getGameProgress(username, apiKey, gameId) {
       title: data.Title,
       consoleName: data.ConsoleName,
       imageIcon: data.ImageIcon ? `https://retroachievements.org${data.ImageIcon}` : null,
-      imageBoxArt: data.ImageBoxArt ? `https://retroachievements.org${data.ImageBoxArt}` : null,
+      numPlayers: Number(data.NumDistinctPlayers) || 0,
     },
     progress: {
       totalAchievements: achievements.length,
@@ -118,8 +164,8 @@ async function getGameProgress(username, apiKey, gameId) {
         earned: !!(a.DateEarned || a.DateEarnedHardcore),
         earnedDate: a.DateEarnedHardcore || a.DateEarned || null,
         hardcoreEarned: !!a.DateEarnedHardcore,
-        numAwarded: Number(a.NumAwarded),
-        numAwardedHardcore: Number(a.NumAwardedHardcore),
+        numAwarded: Number(a.NumAwarded) || 0,
+        numAwardedHardcore: Number(a.NumAwardedHardcore) || 0,
       })),
   }
 }
@@ -127,44 +173,56 @@ async function getGameProgress(username, apiKey, gameId) {
 export async function handleGame(req, res) {
   const { gameName, userId } = req.query
 
-  if (!gameName || !userId) {
-    return res.status(400).json({ error: "gameName and userId required" })
+  if (!gameName) {
+    return res.status(400).json({ error: "gameName required" })
   }
 
   try {
-    const { data: connection } = await supabase
-      .from("user_connections")
-      .select("provider_username, access_token")
-      .eq("user_id", userId)
-      .eq("provider", "retroachievements")
-      .maybeSingle()
-
-    if (!connection) {
-      return res.json({ connected: false })
-    }
-
-    const match = await searchGame(connection.provider_username, connection.access_token, gameName)
-
+    const match = await searchGameInRA(gameName)
     if (!match) {
-      return res.json({ connected: true, found: false })
+      return res.json({ found: false })
     }
 
-    const progress = await getGameProgress(connection.provider_username, connection.access_token, match.id)
+    let connection = null
+    if (userId) {
+      const { data } = await supabase
+        .from("user_connections")
+        .select("provider_username, access_token")
+        .eq("user_id", userId)
+        .eq("provider", "retroachievements")
+        .maybeSingle()
+      connection = data
+    }
 
-    if (!progress) {
-      return res.json({ connected: true, found: true, match, progress: null })
+    if (connection) {
+      const result = await getUserGameProgress(connection.provider_username, connection.access_token, match.id)
+      if (result) {
+        return res.json({
+          found: true,
+          hasProgress: true,
+          match,
+          ...result,
+        })
+      }
+    }
+
+    const result = await getGameAchievements(match.id)
+    if (!result) {
+      return res.json({ found: true, hasProgress: false, match })
     }
 
     res.json({
-      connected: true,
       found: true,
-      match: {
-        id: match.id,
-        title: match.title,
-        consoleName: match.consoleName,
-        score: match.score,
+      hasProgress: false,
+      match,
+      ...result,
+      progress: {
+        totalAchievements: result.achievements.length,
+        earned: 0,
+        hardcoreEarned: 0,
+        percentage: 0,
+        hardcorePercentage: 0,
       },
-      ...progress,
     })
   } catch (error) {
     console.error("RA game error:", error.message)
