@@ -13,7 +13,7 @@ import { useUserTierlists } from "./hooks/useUserTierlists"
 import { useUserTransactions } from "./hooks/useUserTransactions"
 import { useUserJourneys } from "./hooks/useUserJourneys"
 import { ProfileHeader } from "./sections/ProfileHeader"
-import { ProfileSidebar } from "./sections/ProfileSidebar"
+import { ProfileSidebar, ProfileRightSidebar } from "./sections/ProfileSidebar"
 import { ProfileNavigation } from "./sections/ProfileNavigation"
 import { ProfileContent } from "./sections/ProfileContent"
 import ProfileSkeleton from "./components/ProfileSkeleton"
@@ -198,6 +198,7 @@ export default function Profile() {
 							onEditProfile={() => setSettingsOpen(true)}
 						/>
 					</div>
+					<ProfileRightSidebar profile={profile} />
 				</div>
 			</div>
 
