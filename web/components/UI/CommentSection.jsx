@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Link } from "react-router-dom"
-import { MessageSquare, MoreHorizontal, Pencil, Trash2, MessageCircle, ArrowUp } from "lucide-react"
+import { MessageSquare, MoreHorizontal, Pencil, Trash2, MessageCircle, ArrowUp, X, Check } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
@@ -131,17 +131,104 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
   )
 }
 
+function EditInput({ content, onSave, onCancel, saving }) {
+  const { t } = useTranslation("common")
+  const [editContent, setEditContent] = useState(content)
+  const textareaRef = useRef(null)
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus()
+      textareaRef.current.style.height = "auto"
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px"
+    }
+  }, [])
+
+  function adjustHeight() {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = "auto"
+    const max = 200
+    if (el.scrollHeight > max) {
+      el.style.height = max + "px"
+      el.style.overflowY = "auto"
+    } else {
+      el.style.height = el.scrollHeight + "px"
+      el.style.overflowY = "hidden"
+    }
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 640) {
+      e.preventDefault()
+      if (editContent.trim()) onSave(editContent.trim())
+    }
+    if (e.key === "Escape") onCancel()
+  }
+
+  const hasContent = editContent.trim().length > 0
+  const hasChanged = editContent.trim() !== content
+
+  return (
+    <div className="mt-1.5">
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <textarea
+            ref={textareaRef}
+            value={editContent}
+            onChange={(e) => {
+              setEditContent(e.target.value)
+              adjustHeight()
+            }}
+            onKeyDown={handleKeyDown}
+            maxLength={2000}
+            rows={1}
+            className="w-full px-3.5 py-2.5 bg-zinc-800 border border-indigo-500/30 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500/50 transition-colors resize-none overflow-hidden"
+          />
+        </div>
+
+        <div className="flex items-center gap-1 pt-[1px]">
+          <button
+            onClick={onCancel}
+            disabled={saving}
+            className="w-[38px] h-[38px] rounded-xl flex items-center justify-center bg-zinc-800/80 text-zinc-400 hover:text-white border border-zinc-700/60 transition-colors cursor-pointer disabled:opacity-50"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => { if (hasContent) onSave(editContent.trim()) }}
+            disabled={saving || !hasContent || !hasChanged}
+            className={`w-[38px] h-[38px] rounded-xl flex items-center justify-center transition-colors cursor-pointer disabled:cursor-default ${
+              hasContent && hasChanged
+                ? "bg-indigo-500 hover:bg-indigo-400 text-white"
+                : "bg-zinc-800/80 text-zinc-600 border border-zinc-700/60"
+            }`}
+          >
+            {saving ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Check className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      <p className="text-[10px] text-zinc-600 mt-1.5 px-1 hidden sm:block">
+        escape {t("comments.toCancel")} · enter {t("comments.toSave")}
+      </p>
+    </div>
+  )
+}
+
 function CommentItem({ comment, onEdit, onDelete }) {
   const { t } = useTranslation("common")
   const { user: currentUser } = useAuth()
   const { getTimeAgo } = useDateTime()
   const [menuOpen, setMenuOpen] = useState(false)
   const [editing, setEditing] = useState(false)
-  const [editContent, setEditContent] = useState(comment.content)
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const menuRef = useRef(null)
-  const editRef = useRef(null)
 
   const isOwner = currentUser?.user_id === comment.user_id
   const isMod = currentUser?.is_moderator
@@ -160,31 +247,11 @@ function CommentItem({ comment, onEdit, onDelete }) {
     return () => document.removeEventListener("mousedown", handle)
   }, [])
 
-  useEffect(() => {
-    if (editing && editRef.current) {
-      editRef.current.focus()
-      editRef.current.style.height = "auto"
-      editRef.current.style.height = editRef.current.scrollHeight + "px"
-    }
-  }, [editing])
-
-  async function handleSaveEdit() {
-    if (!editContent.trim() || saving) return
+  async function handleSaveEdit(content) {
     setSaving(true)
-    const success = await onEdit(comment.id, editContent.trim())
+    const success = await onEdit(comment.id, content)
     if (success) setEditing(false)
     setSaving(false)
-  }
-
-  function handleEditKeyDown(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSaveEdit()
-    }
-    if (e.key === "Escape") {
-      setEditing(false)
-      setEditContent(comment.content)
-    }
   }
 
   return (
@@ -267,30 +334,12 @@ function CommentItem({ comment, onEdit, onDelete }) {
         </div>
 
         {editing ? (
-          <div className="mt-2">
-            <textarea
-              ref={editRef}
-              value={editContent}
-              onChange={(e) => {
-                setEditContent(e.target.value)
-                e.target.style.height = "auto"
-                e.target.style.height = e.target.scrollHeight + "px"
-              }}
-              onKeyDown={handleEditKeyDown}
-              maxLength={2000}
-              rows={1}
-              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500/50 transition-colors resize-none"
-            />
-            <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-[11px] text-zinc-500">
-                escape{" "}
-                <span className="text-zinc-600">{t("comments.toCancel")}</span>
-                {" · "}
-                enter{" "}
-                <span className="text-zinc-600">{t("comments.toSave")}</span>
-              </span>
-            </div>
-          </div>
+          <EditInput
+            content={comment.content}
+            onSave={handleSaveEdit}
+            onCancel={() => setEditing(false)}
+            saving={saving}
+          />
         ) : (
           <p className="text-[13px] sm:text-sm text-zinc-300 mt-0.5 whitespace-pre-wrap break-words leading-relaxed">
             {comment.content}
