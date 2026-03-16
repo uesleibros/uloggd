@@ -30,6 +30,12 @@ const NOTIFICATION_ICONS = {
   verification_rejected: { icon: XCircle, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/30" },
   account_banned: { icon: Ban, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/30" },
   account_unbanned: { icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30" },
+  profile_comment: { 
+    icon: MessageCircle, 
+    color: "text-blue-400", 
+    bg: "bg-blue-500/10", 
+    border: "border-blue-500/20" 
+  },
 }
 
 const NOTIFICATION_USER_ID_MAP = {
@@ -42,6 +48,7 @@ const NOTIFICATION_USER_ID_MAP = {
   verification_rejected: (data) => data.reviewed_by,
   account_banned: (data) => data.banned_by,
   account_unbanned: (data) => data.unbanned_by,
+  profile_comment: (data) => data.commenter_id,
 }
 
 const NOTIFICATION_LINKS = {
@@ -49,6 +56,7 @@ const NOTIFICATION_LINKS = {
   review_like: (data) => `/game/${data.game_slug}`,
   list_like: (data) => `/list/${data.list_id}`,
   tierlist_like: (data) => `/tierlist/${data.tierlist_id}`,
+  profile_comment: (data) => `/u/${data.profile_username}`,
 }
 
 const MODAL_NOTIFICATIONS = [
@@ -86,6 +94,10 @@ function getNotificationText(type, data, t) {
       return t("notifications.types.account_banned.title")
     case "account_unbanned":
       return t("notifications.types.account_unbanned.title")
+    case "profile_comment":
+      return t("notifications.types.profile_comment.text", { 
+        username: data.commenter_username 
+      });
     default:
       return ""
   }
@@ -105,6 +117,8 @@ function getNotificationFullText(type, data, t) {
       return t("notifications.types.account_banned.message", { reason: data.reason })
     case "account_unbanned":
       return t("notifications.types.account_unbanned.message")
+    case "profile_comment":
+      return data.content.substring(0, 100) + (data.content.length > 100 ? "..." : "");
     default:
       return ""
   }

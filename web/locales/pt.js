@@ -1241,6 +1241,9 @@ export default {
 		unreadCount: "{{count}} não lidas",
 		close: "Fechar",
 		types: {
+			profile_comment: {
+	      text: "{{username}} comentou no seu perfil"
+	    },
 			list_like: {
 				text: "curtiu sua lista \"{{title}}\"",
 			},

@@ -1241,6 +1241,9 @@ export default {
 		unreadCount: "{{count}} unreads",
 		close: "Close",
 		types: {
+			profile_comment: {
+				text: "{{username}} commented on your profile"
+			},
 			list_like: {
 				text: "liked your list \"{{title}}\"",
 			},
