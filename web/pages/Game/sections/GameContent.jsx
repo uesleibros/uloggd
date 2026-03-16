@@ -7,6 +7,7 @@ import JournalButton from "@components/Game/Journal"
 import GameReviews from "@components/Game/GameReviews"
 import { GameSteamAchievements } from "@components/Game/SteamAchievements"
 import { GameRetroAchievements } from "@components/Game/RetroAchievements"
+import { GamePSNTrophies } from "@components/Game/PSNTrophies"
 import { StatCard } from "../components/StatCard"
 import { InfoRow } from "../components/InfoRow"
 import { HowLongToBeat } from "../components/HowLongToBeat"
@@ -189,6 +190,7 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
         </>
       )}
 
+      <GamePSNTrophies gameName={game.name} />
       <GameRetroAchievements gameName={game.name} />
 
       {allMedia.length > 0 && (
