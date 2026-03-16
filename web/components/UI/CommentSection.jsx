@@ -85,8 +85,8 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
   const hasContent = content.trim().length > 0
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-3">
-      <Link to={`/u/${user.username}`} className="flex-shrink-0 pt-1.5">
+    <form onSubmit={handleSubmit} className="flex items-start gap-3">
+      <Link to={`/u/${user.username}`} className="flex-shrink-0 pt-1">
         <AvatarWithDecoration
           src={user.avatar}
           alt={user.username}
@@ -95,40 +95,38 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
         />
       </Link>
 
-      <div className="flex-1 min-w-0 flex items-end gap-2">
-        <div className="flex-1 min-w-0">
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => {
-              setContent(e.target.value)
-              adjustHeight()
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder || t("comments.placeholder")}
-            autoFocus={autoFocus}
-            maxLength={2000}
-            rows={1}
-            className="w-full px-3.5 py-2.5 bg-zinc-800/80 border border-zinc-700/60 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:bg-zinc-800 transition-all resize-none overflow-hidden"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={!hasContent || sending}
-          className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer disabled:cursor-default mb-0.5 ${
-            hasContent
-              ? "bg-indigo-500 hover:bg-indigo-400 text-white shadow-lg shadow-indigo-500/20"
-              : "bg-zinc-800 text-zinc-600 border border-zinc-700/60"
-          }`}
-        >
-          {sending ? (
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : (
-            <ArrowUp className="w-4 h-4" />
-          )}
-        </button>
+      <div className="flex-1 min-w-0">
+        <textarea
+          ref={textareaRef}
+          value={content}
+          onChange={(e) => {
+            setContent(e.target.value)
+            adjustHeight()
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder || t("comments.placeholder")}
+          autoFocus={autoFocus}
+          maxLength={2000}
+          rows={1}
+          className="w-full px-3.5 py-2.5 bg-zinc-800/80 border border-zinc-700/60 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:bg-zinc-800 transition-all resize-none overflow-hidden"
+        />
       </div>
+
+      <button
+        type="submit"
+        disabled={!hasContent || sending}
+        className={`flex-shrink-0 w-[38px] h-[38px] mt-[1px] rounded-xl flex items-center justify-center transition-colors cursor-pointer disabled:cursor-default ${
+          hasContent
+            ? "bg-indigo-500 hover:bg-indigo-400 text-white"
+            : "bg-zinc-800/80 text-zinc-600 border border-zinc-700/60"
+        }`}
+      >
+        {sending ? (
+          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        ) : (
+          <ArrowUp className="w-4 h-4" />
+        )}
+      </button>
     </form>
   )
 }
