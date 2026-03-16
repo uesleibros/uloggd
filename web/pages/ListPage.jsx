@@ -32,6 +32,7 @@ import EditListModal from "@components/Lists/EditListModal"
 import ReorderModal from "@components/Lists/ReorderModal"
 import RemoveItemModal from "@components/Lists/RemoveItemModal"
 import DeleteListModal from "@components/Lists/DeleteListModal"
+import CommentSection from "@components/UI/CommentSection"
 import {
   List,
   Lock,
@@ -794,6 +795,11 @@ export default function ListPage() {
           itemCount={totalItems}
         />
       )}
+
+      <CommentSection
+        type="list"
+        targetId={list.id}
+      />
 
       <EditListModal
         isOpen={editOpen}

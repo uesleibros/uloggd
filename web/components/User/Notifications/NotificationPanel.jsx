@@ -96,9 +96,7 @@ function getNotificationText(type, data, t) {
     case "account_unbanned":
       return t("notifications.types.account_unbanned.title")
     case "profile_comment":
-      return t("notifications.types.profile_comment.text", { 
-        username: data.commenter_username 
-      });
+      return t("notifications.types.profile_comment.text");
     default:
       return ""
   }

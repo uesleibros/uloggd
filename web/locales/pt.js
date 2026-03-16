@@ -1242,7 +1242,7 @@ export default {
 		close: "Fechar",
 		types: {
 			profile_comment: {
-	      text: "{{username}} comentou no seu perfil"
+	      text: "comentou no seu perfil"
 	    },
 			list_like: {
 				text: "curtiu sua lista \"{{title}}\"",

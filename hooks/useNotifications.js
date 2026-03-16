@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useSyncExternalStore, useCallback } from "
 import { supabase } from "#lib/supabase"
 import { useAuth } from "#hooks/useAuth"
 
-const POLL_INTERVAL = 30000
+const POLL_INTERVAL = 5000
 
 let unreadCount = 0
 let listeners = new Set()
@@ -73,19 +73,19 @@ export function useNotifications() {
 	const count = useSyncExternalStore(subscribe, getSnapshot)
 
 	useEffect(() => {
-		if (!user?.id) {
+		if (!user?.user_id) {
 			stopPolling()
 			return
 		}
 
-		startPolling(user.id)
+		startPolling(user.user_id)
 
 		return () => {
 			if (listeners.size <= 1) {
 				stopPolling()
 			}
 		}
-	}, [user?.id])
+	}, [user?.user_id])
 
 	const refetch = useCallback(() => {
 		fetchCount()
