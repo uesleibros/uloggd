@@ -309,7 +309,7 @@ export default function Modal({
           )
         )}
 
-        <div className={`flex-1 min-h-0 ${noScroll ? "overflow-hidden flex flex-col" : "overflow-y-auto"}`}>
+        <div className={`flex-1 min-h-0 ${noScroll ? "overflow-hidden flex flex-col h-full" : "overflow-y-auto overscroll-contain"}`}>
           {children}
         </div>
       </div>
