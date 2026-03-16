@@ -1,70 +1,50 @@
 export default {
 	trophies: {
-		list: {
-			title: "Troféus PlayStation",
-			viewAll: "Ver todos ({{count}})",
-		},
-		allGames: {
-			title: "Todos os Jogos",
-			gamesCount: "jogos",
-			searchPlaceholder: "Buscar jogo...",
-			noResults: "Nenhum jogo encontrado",
-		},
-		detail: {
-			back: "Voltar",
-			hiddenAlt: "Troféu secreto",
-			hiddenTitle: "Troféu secreto",
-			hiddenDescription: "Este troféu contém spoilers",
-			hideDetails: "Esconder detalhes",
-			revealWarning: "Revelar troféu (pode conter spoilers)",
-			game: "Jogo",
-			status: "Status",
-			unlocked: "Desbloqueado",
-			locked: "Bloqueado",
-			unlockedAt: "Desbloqueado",
-			rarity: "Raridade",
-			rarityPercent: "{{percent}}% dos jogadores",
-			type: "Tipo",
-			secret: "Secreto",
-			platform: "Plataforma"
-		},
-		gameModal: {
-			noTrophies: "Nenhum troféu encontrado",
-			hiddenAlt: "Troféu secreto",
-			hiddenTitle: "Troféu secreto",
-			unlocked: "Desbloqueado",
-			filter: {
-				all: "Todos",
-				unlocked: "Desbloqueados",
-				locked: "Bloqueados",
-				allTypes: "Todos"
-			},
-			types: {
-				platinum: "Platina",
-				gold: "Ouro",
-				silver: "Prata",
-				bronze: "Bronze"
-			}
-		},
-		gameSection: {
-			title: "Troféus",
-			connectPSN: "Conecte sua PSN para ver seu progresso",
-			filter: {
-				all: "Todos ({{count}})",
-				unlocked: "Desbloqueados ({{count}})",
-				locked: "Bloqueados ({{count}})",
-				allTypes: "Todos"
-			},
-			types: {
-				platinum: "Platina",
-				gold: "Ouro",
-				silver: "Prata",
-				bronze: "Bronze"
-			},
-			hiddenAlt: "Troféu secreto",
-			showLess: "Mostrar menos",
-			viewAll: "Ver todos ({{count}})"
-		}
+	  profile: {
+	    title: "Troféus PlayStation",
+	    viewAll: "Ver todos ({{count}})",
+	  },
+	  game: {
+	    title: "Troféus",
+	    showLess: "Ver menos",
+	    viewAll: "Ver todos ({{count}})",
+	  },
+	  gameModal: {
+	    noTrophies: "Nenhum troféu encontrado",
+	  },
+	  allGames: {
+	    title: "Todos os jogos",
+	    gamesCount: "jogos",
+	    searchPlaceholder: "Buscar jogo...",
+	    noResults: "Nenhum jogo encontrado",
+	  },
+	  filter: {
+	    all: "Todos",
+	    unlocked: "Desbloqueados",
+	    locked: "Bloqueados",
+	    allTypes: "Todos",
+	  },
+	  types: {
+	    platinum: "Platina",
+	    gold: "Ouro",
+	    silver: "Prata",
+	    bronze: "Bronze",
+	  },
+	  detail: {
+	    hiddenTitle: "Troféu oculto",
+	    hiddenDescription: "Continue jogando para descobrir este troféu.",
+	    hideDetails: "Ocultar detalhes",
+	    revealWarning: "Revelar troféu (spoiler)",
+	    game: "Jogo",
+	    status: "Status",
+	    unlocked: "Desbloqueado",
+	    locked: "Bloqueado",
+	    unlockedAt: "Desbloqueado em",
+	    rarity: "Raridade",
+	    type: "Tipo",
+	    secret: "Secreto",
+	    platform: "Plataforma",
+	  },
 	},
 	journal: {
 		button: {
