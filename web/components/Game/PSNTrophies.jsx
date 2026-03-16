@@ -297,7 +297,7 @@ function GameTrophiesModal({ game, userId, isOpen, onClose }) {
   }) || []
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" fullscreenMobile showMobileGrip noScroll>
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" fullscreenMobile showMobileGrip>
       <div className="flex flex-col h-full">
         <div className="p-4 sm:p-5 border-b border-zinc-800 flex-shrink-0">
           <div className="flex items-center gap-3">
