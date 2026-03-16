@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="/public/logo.jpg" width="100" height="100" />
+
 # uloggd
 
 A platform to catalog, rate and share your game collection.
