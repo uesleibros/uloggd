@@ -7,11 +7,14 @@ const secToHours = (s) => (s > 0 ? +(s / 3600).toFixed(1) : null)
 
 async function findGame(name, altNames, year) {
   const queries = buildQueries(name, altNames)
-  const seen = new Map()
 
-  for (const terms of queries) {
-    const results = await fetchFinderWithRetry(terms)
-    for (const g of results) {
+  const results = await Promise.all(
+    queries.map(terms => fetchFinderWithRetry(terms).catch(() => []))
+  )
+
+  const seen = new Map()
+  for (const batch of results) {
+    for (const g of batch) {
       if (!seen.has(g.game_id)) seen.set(g.game_id, g)
     }
   }
@@ -36,20 +39,22 @@ export async function handleSearch(req, res) {
   if (cached) return res.json(cached)
 
   try {
-    // Parseia altNames se vier como string (array em query param)
-    const parsedAltNames = Array.isArray(altNames) 
-      ? altNames 
-      : altNames 
-        ? JSON.parse(altNames) 
+    const parsedAltNames = Array.isArray(altNames)
+      ? altNames
+      : altNames
+        ? JSON.parse(altNames)
         : []
 
     const g = await findGame(
-      name.trim(), 
-      parsedAltNames, 
+      name.trim(),
+      parsedAltNames,
       year ? Number(year) : null
     )
-    
-    if (!g) return res.status(404).json({ error: "not found" })
+
+    if (!g) {
+      await setCache(cacheKey, null, 3600)
+      return res.status(404).json({ error: "not found" })
+    }
 
     const result = {
       id: g.game_id,
@@ -62,11 +67,13 @@ export async function handleSearch(req, res) {
         main: secToHours(g.comp_main),
         mainExtra: secToHours(g.comp_plus),
         completionist: secToHours(g.comp_100),
-        allStyles: secToHours(g.comp_all)
-      }
+        allStyles: secToHours(g.comp_all),
+      },
     }
 
     await setCache(cacheKey, result, 86400)
+
+    res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=86400")
     res.json(result)
   } catch (e) {
     console.error(e)
