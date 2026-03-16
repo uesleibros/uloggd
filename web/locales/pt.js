@@ -1642,6 +1642,26 @@ export default {
 				betaWarning: "Esta função está em beta. O token expira após ~60 dias e será necessário reconectar."
 			},
 		},
+		ra: {
+	    title: "RetroAchievements",
+	    connected: "Conectado",
+	    connect: "Conectar",
+	    disconnect: "Desconectar",
+	    description: "Conecte sua conta do RetroAchievements para sincronizar seus achievements de jogos retro.",
+	    missingFields: "Preencha o nome de usuário e a API Key.",
+	    connectionError: "Erro ao conectar. Verifique suas credenciais.",
+	    modal: {
+	      title: "Conectar RetroAchievements",
+	      subtitle: "Vincule sua conta RA",
+	      usernameLabel: "Nome de usuário",
+	      usernamePlaceholder: "Seu username do RA",
+	      apiKeyLabel: "Web API Key",
+	      apiKeyPlaceholder: "Cole sua API Key aqui",
+	      getApiKey: "Obter minha API Key",
+	      connecting: "Conectando...",
+	      connect: "Conectar conta",
+	    },
+	  },
 		nintendo: {
 			title: "Nintendo Switch",
 			connected: "Conectado",
