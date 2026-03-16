@@ -7,7 +7,7 @@ import SettingsSection from "@components/User/Settings/ui/SettingsSection"
 import Modal from "@components/UI/Modal"
 
 const RA_ICON = "https://static.retroachievements.org/assets/images/ra-icon.webp"
-const RA_SETTINGS_URL = "https://retroachievements.org/settings"
+const RA_SETTINGS_URL = "https://retroachievements.org/settings#:~:text=API%20Web"
 
 export default function RetroAchievementsSection() {
   const { t } = useTranslation()
@@ -123,7 +123,7 @@ export default function RetroAchievementsSection() {
               {isConnected && connection.avatar ? (
                 <img src={connection.avatar} alt="RA Avatar" className="w-full h-full object-cover" />
               ) : (
-                <img src={RA_ICON} alt="RetroAchievements" className="w-7 h-7" />
+                <img src={RA_ICON} alt="RetroAchievements" className="w-6 h-6 object-contain brightness-0 invert" />
               )}
             </div>
 
@@ -166,7 +166,7 @@ export default function RetroAchievementsSection() {
                     onClick={() => setShowModal(true)}
                     className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-black bg-[#cc9900] hover:bg-[#e6ad00] rounded-lg transition-colors cursor-pointer"
                   >
-                    <img src={RA_ICON} alt="" className="w-4 h-4" />
+                    <img src={RA_ICON} alt="" className="w-4 h-4 object-contain brightness-0" />
                     {t("settings.ra.connect")}
                   </button>
                 </>
@@ -188,7 +188,7 @@ export default function RetroAchievementsSection() {
           <div className="bg-[#cc9900] p-4 flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-black/20 rounded-xl flex items-center justify-center">
-                <img src={RA_ICON} alt="" className="w-6 h-6" />
+                <img src={RA_ICON} alt="" className="w-6 h-6 object-contain" />
               </div>
               <div>
                 <h2 className="text-base font-bold text-black">{t("settings.ra.modal.title")}</h2>
