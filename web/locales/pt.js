@@ -1175,6 +1175,7 @@ export default {
 				autoTranslated: "Traduzido automaticamente",
 			},
 			info: {
+				title: "Detalhes",
 				developer: "Desenvolvedora",
 				publisher: "Publicadora",
 				genres: "Gêneros",
