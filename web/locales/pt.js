@@ -1821,6 +1821,7 @@ export default {
 		},
 	},
 	review: {
+		readFullReview: "Ler review completa",
 		notFound: {
 			title: "Review não encontrada",
 			message: "Essa review não existe ou foi removida.",
