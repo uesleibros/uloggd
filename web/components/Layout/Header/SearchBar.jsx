@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { useNavigate } from "react-router-dom"
-import { Search, Gamepad2, Users, ListMusic, ArrowRight } from "lucide-react"
+import { Search, Gamepad2, Users, ListMusic, ArrowRight, SearchX } from "lucide-react"
 import PlatformIcons from "@components/Game/PlatformIcons"
 import UserDisplay from "@components/User/UserDisplay"
 import { CoverStrip } from "@components/Lists/ListCard"
@@ -34,11 +34,7 @@ function GameResult({ item, onSelect, getGameData }) {
     >
       <div className="flex items-center gap-3">
         {coverUrl ? (
-          <img
-            src={coverUrl}
-            alt=""
-            className="h-12 w-9 rounded object-cover bg-zinc-800 flex-shrink-0"
-          />
+          <img src={coverUrl} alt="" className="h-12 w-9 rounded object-cover bg-zinc-800 flex-shrink-0" />
         ) : (
           <div className="h-12 w-9 rounded bg-zinc-800 flex-shrink-0" />
         )}
@@ -48,9 +44,7 @@ function GameResult({ item, onSelect, getGameData }) {
           </span>
           <div className="flex items-center gap-2 mt-1">
             {item.first_release_date && (
-              <span className="text-xs text-zinc-500">
-                {formatDateShort(item.first_release_date)}
-              </span>
+              <span className="text-xs text-zinc-500">{formatDateShort(item.first_release_date)}</span>
             )}
             <PlatformIcons icons={item.platformIcons} />
           </div>
@@ -116,8 +110,9 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
 
   if (!results || results.length === 0) {
     return (
-      <div className="px-3 py-6 text-sm text-zinc-500 text-center">
-        {t("header.search.noResults")}
+      <div className="flex flex-col items-center justify-center py-8 gap-2">
+        <SearchX className="w-6 h-6 text-zinc-600" />
+        <p className="text-sm text-zinc-500">{t("header.search.noResults")}</p>
       </div>
     )
   }
@@ -127,12 +122,8 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
       <ul className="py-1">
         {results.map((item) => {
           const key = item.id || item._id || item.username || item.shortId
-          if (activeTab === "games") {
-            return <GameResult key={key} item={item} onSelect={onSelect} getGameData={getGameData} />
-          }
-          if (activeTab === "users") {
-            return <UserResult key={key} item={item} onSelect={onSelect} />
-          }
+          if (activeTab === "games") return <GameResult key={key} item={item} onSelect={onSelect} getGameData={getGameData} />
+          if (activeTab === "users") return <UserResult key={key} item={item} onSelect={onSelect} />
           return <ListResult key={key} item={item} onSelect={onSelect} />
         })}
       </ul>
@@ -170,9 +161,7 @@ function TabBar({ activeTab, onChange, counts }) {
           <Icon className="w-3.5 h-3.5" />
           {t(`header.search.tabs.${id}`)}
           {counts[id] > 0 && (
-            <span className="text-[10px] bg-zinc-800 px-1.5 py-0.5 rounded-full">
-              {counts[id]}
-            </span>
+            <span className="text-[10px] bg-zinc-800 px-1.5 py-0.5 rounded-full">{counts[id]}</span>
           )}
         </button>
       ))}
@@ -232,6 +221,7 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
   const [focused, setFocused] = useState(false)
   const [activeTab, setActiveTab] = useState("games")
   const [dropdownPos, setDropdownPos] = useState(null)
+  const [searched, setSearched] = useState(false)
 
   const { getGameData } = useMyLibrary()
 
@@ -297,6 +287,7 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
     } finally {
       if (mountedRef.current) {
         setLoadingTabs(prev => ({ ...prev, [tab]: false }))
+        setSearched(true)
       }
     }
   }, [])
@@ -307,6 +298,7 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
     const trimmed = query.trim()
     lastQueryRef.current = trimmed
     fetchedTabsRef.current.clear()
+    setSearched(false)
 
     if (!trimmed) {
       setResults({ games: [], users: [], lists: [] })
@@ -334,17 +326,12 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
     fetchTab(activeTab, trimmed)
   }, [activeTab, open, query, fetchTab])
 
-  const closeDropdown = useCallback(() => {
-    if (!mountedRef.current) return
-    if (inputRef.current === document.activeElement) return
-    setOpen(false)
-  }, [])
-
   function handleNavigate(path) {
     clearTimeout(blurTimeoutRef.current)
     setQuery("")
     setOpen(false)
     setResults({ games: [], users: [], lists: [] })
+    setSearched(false)
     fetchedTabsRef.current.clear()
     onSelect?.()
     navigate(path)
@@ -374,7 +361,11 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
   function handleBlur() {
     setFocused(false)
     clearTimeout(blurTimeoutRef.current)
-    blurTimeoutRef.current = setTimeout(closeDropdown, 150)
+    blurTimeoutRef.current = setTimeout(() => {
+      if (!mountedRef.current) return
+      if (inputRef.current === document.activeElement) return
+      setOpen(false)
+    }, 200)
   }
 
   const counts = {
@@ -384,8 +375,7 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
   }
 
   const isLoading = loadingTabs[activeTab]
-  const hasResults = query.trim() && (isLoading || counts.games > 0 || counts.users > 0 || counts.lists > 0)
-  const showDropdown = open && (hasResults || isLoading)
+  const showDropdown = open && query.trim() && (isLoading || searched)
 
   const dropdownContent = showDropdown ? (
     <div
