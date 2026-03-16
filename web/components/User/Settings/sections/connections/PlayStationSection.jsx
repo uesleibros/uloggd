@@ -24,8 +24,8 @@ export default function PlayStationSection() {
   const PSN_TOKEN_URL = "https://ca.account.sony.com/api/v1/ssocookie"
 
   useEffect(() => {
-    if (user?.id) fetchConnection()
-  }, [user?.id])
+    if (user?.user_id) fetchConnection()
+  }, [user?.user_id])
 
   useEffect(() => {
     if (!showModal) {
@@ -41,7 +41,7 @@ export default function PlayStationSection() {
       const res = await fetch("/api/psn/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id }),
+        body: JSON.stringify({ userId: user.user_id }),
       })
       const data = await res.json()
       setConnection(data.connected ? data : null)
