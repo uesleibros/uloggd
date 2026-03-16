@@ -7,6 +7,7 @@ import { handleRemoveItem } from "#services/lists/handlers/me/removeItem.js"
 import { handleReorder } from "#services/lists/handlers/me/reorder.js"
 import { handleSearch } from "#services/lists/handlers/search.js"
 import { handleToggleMark } from "#services/lists/handlers/me/toggleMark.js"
+import { handleBatch } from "#services/lists/handlers/batch.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
@@ -19,6 +20,7 @@ const ACTIONS = {
   reorder:    { handler: handleReorder,    method: "POST", scopes: ["@me"], auth: true  },
   toggleMark: { handler: handleToggleMark, method: "POST", scopes: ["@me"], auth: true  },
   search:     { handler: handleSearch,     method: "GET",  scopes: null,    auth: false },
+  batch:      { handler: handleBatch,      method: "GET",  scopes: null,    auth: false },
 }
 
 export async function listsHandler(req, res) {

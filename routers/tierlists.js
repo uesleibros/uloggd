@@ -3,6 +3,7 @@ import { handleDelete } from "#services/tierlists/handlers/me/delete.js"
 import { handleUpdate } from "#services/tierlists/handlers/me/update.js"
 import { handleGet } from "#services/tierlists/handlers/get.js"
 import { handleList } from "#services/tierlists/handlers/list.js"
+import { handleBatch } from "#services/tierlists/handlers/batch.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
@@ -11,6 +12,7 @@ const ACTIONS = {
   update: { handler: handleUpdate, method: "POST", scopes: ["@me"], auth: true  },
   get:    { handler: handleGet,    method: "GET",  scopes: null,    auth: false },
   list:   { handler: handleList,   method: "GET",  scopes: null,    auth: false },
+  batch:  { handler: handleBatch,  method: "GET",  scopes: null,    auth: false },
 }
 
 export async function tierlistsHandler(req, res) {

@@ -330,6 +330,14 @@ function NotificationEmpty() {
   )
 }
 
+async function fetchBatch(endpoint, ids) {
+  if (ids.length === 0) return []
+  const params = new URLSearchParams()
+  ids.forEach((id) => params.append("ids", id))
+  const res = await fetch(`${endpoint}?${params}`)
+  return res.json()
+}
+
 export default function NotificationPanel({ visible, onClose, onRead }) {
   const { t } = useTranslation()
   const [notifications, setNotifications] = useState([])
@@ -366,50 +374,30 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         if (n.data.comment_id) commentIds.add(n.data.comment_id)
       })
 
-      let usersMap = {}
-      if (userIds.size > 0) {
-        const params = new URLSearchParams()
-        userIds.forEach((id) => params.append("userIds", id))
-        const uRes = await fetch(`/api/users/batch?${params}`)
-        const uData = await uRes.json()
-        uData.forEach((u) => { usersMap[u.user_id] = u })
-      }
+      const [usersData, listsData, tierlistsData, reviewsData, commentsData] = await Promise.all([
+        userIds.size > 0
+          ? fetch(`/api/users/batch?${[...userIds].map(id => `userIds=${id}`).join("&")}`).then(r => r.json())
+          : [],
+        fetchBatch("/api/lists/batch", [...listIds]),
+        fetchBatch("/api/tierlists/batch", [...tierlistIds]),
+        fetchBatch("/api/reviews/batch", [...reviewIds]),
+        fetchBatch("/api/comments/batch", [...commentIds]),
+      ])
 
-      let listsMap = {}
-      if (listIds.size > 0) {
-        const { data: lists } = await supabase
-          .from("lists")
-          .select("id, title")
-          .in("id", [...listIds])
-        lists?.forEach((l) => { listsMap[l.id] = l })
-      }
+      const usersMap = {}
+      usersData.forEach((u) => { usersMap[u.user_id] = u })
 
-      let tierlistsMap = {}
-      if (tierlistIds.size > 0) {
-        const { data: tierlists } = await supabase
-          .from("tierlists")
-          .select("id, title")
-          .in("id", [...tierlistIds])
-        tierlists?.forEach((t) => { tierlistsMap[t.id] = t })
-      }
+      const listsMap = {}
+      listsData.forEach((l) => { listsMap[l.id] = l })
 
-      let reviewsMap = {}
-      if (reviewIds.size > 0) {
-        const { data: reviews } = await supabase
-          .from("reviews")
-          .select("id, game_slug, game_name")
-          .in("id", [...reviewIds])
-        reviews?.forEach((r) => { reviewsMap[r.id] = r })
-      }
+      const tierlistsMap = {}
+      tierlistsData.forEach((t) => { tierlistsMap[t.id] = t })
 
-      let commentsMap = {}
-      if (commentIds.size > 0) {
-        const { data: comments } = await supabase
-          .from("comments")
-          .select("id, content")
-          .in("id", [...commentIds])
-        comments?.forEach((c) => { commentsMap[c.id] = c })
-      }
+      const reviewsMap = {}
+      reviewsData.forEach((r) => { reviewsMap[r.id] = r })
+
+      const commentsMap = {}
+      commentsData.forEach((c) => { commentsMap[c.id] = c })
 
       const enrichedData = data.map((n) => {
         const enriched = { ...n, data: { ...n.data } }

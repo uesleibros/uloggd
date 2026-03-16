@@ -6,6 +6,7 @@ import { handleStats } from "#services/reviews/handlers/stats.js"
 import { handleUpdate } from "#services/reviews/handlers/me/update.js"
 import { handleUser } from "#services/reviews/handlers/user.js"
 import { handleByUser } from "#services/reviews/handlers/byUser.js"
+import { handleBatch } from "#services/reviews/handlers/batch.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
@@ -17,6 +18,7 @@ const ACTIONS = {
   stats:       { handler: handleStats,       method: "GET",  scopes: null,    auth: false },
   user:        { handler: handleUser,        method: "GET",  scopes: null,    auth: false },
   byUser:      { handler: handleByUser,      method: "GET",  scopes: null,    auth: false },
+  batch:       { handler: handleBatch,       method: "GET",  scopes: null,    auth: false },
 }
 
 export async function reviewsHandler(req, res) {

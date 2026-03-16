@@ -2,13 +2,15 @@ import { handleCreate } from "#services/comments/handlers/create.js"
 import { handleList } from "#services/comments/handlers/list.js"
 import { handleEdit } from "#services/comments/handlers/edit.js"
 import { handleDelete } from "#services/comments/handlers/delete.js"
+import { handleBatch } from "#services/comments/handlers/batch.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
-  create: { handler: handleCreate, method: "POST", auth: true },
+  create: { handler: handleCreate, method: "POST", auth: true  },
   list:   { handler: handleList,   method: "GET",  auth: false },
-  edit:   { handler: handleEdit,   method: "POST", auth: true },
-  delete: { handler: handleDelete, method: "POST", auth: true }
+  edit:   { handler: handleEdit,   method: "POST", auth: true  },
+  delete: { handler: handleDelete, method: "POST", auth: true  },
+  batch:  { handler: handleBatch,  method: "GET",  auth: false },
 }
 
 export async function commentsHandler(req, res) {
