@@ -7,7 +7,6 @@ const DragScrollRow = forwardRef(function DragScrollRow({
   autoScrollSpeed = 0.04,
   loop = false,
   showEdgeFade = true,
-  edgeFadeColor = "from-zinc-950",
   ...props 
 }, ref) {
   const scrollRef = useRef(null)
@@ -98,10 +97,7 @@ const DragScrollRow = forwardRef(function DragScrollRow({
       let delta = now - lastTime
       lastTime = now
 
-      if (delta > 100) {
-        delta = 16
-      }
-
+      if (delta > 100) delta = 16
       if (!el) return
 
       if (loop) {
@@ -261,40 +257,37 @@ const DragScrollRow = forwardRef(function DragScrollRow({
     props.onMouseLeave?.(e)
   }, [autoScroll, handleMouseUp, syncVirtualScroll, props.onMouseLeave])
 
-  const content = (
-    <div
-      ref={scrollRef}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-      onMouseEnter={handleMouseEnter}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onClickCapture={handleClickCapture}
-      onDragStart={(e) => e.preventDefault()}
-      className={`flex overflow-x-auto scrollbar-hide select-none cursor-grab active:cursor-grabbing ${className}`}
-    >
-      {children}
-    </div>
-  )
-
-  if (!showEdgeFade) return content
+  let maskImage = "none"
+  if (showEdgeFade) {
+    if (canScrollLeft && canScrollRight) {
+      maskImage = "linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)"
+    } else if (canScrollLeft) {
+      maskImage = "linear-gradient(to right, transparent, black 40px)"
+    } else if (canScrollRight) {
+      maskImage = "linear-gradient(to left, transparent, black 40px)"
+    }
+  }
 
   return (
-    <div className="relative">
+    <div
+      style={maskImage !== "none" ? { maskImage, WebkitMaskImage: maskImage } : undefined}
+    >
       <div
-        className={`absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r ${edgeFadeColor} to-transparent z-10 pointer-events-none transition-opacity duration-200 ${
-          canScrollLeft ? "opacity-100" : "opacity-0"
-        }`}
-      />
-      {content}
-      <div
-        className={`absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l ${edgeFadeColor} to-transparent z-10 pointer-events-none transition-opacity duration-200 ${
-          canScrollRight ? "opacity-100" : "opacity-0"
-        }`}
-      />
+        ref={scrollRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onMouseEnter={handleMouseEnter}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onClickCapture={handleClickCapture}
+        onDragStart={(e) => e.preventDefault()}
+        className={`flex overflow-x-auto scrollbar-hide select-none cursor-grab active:cursor-grabbing ${className}`}
+      >
+        {children}
+      </div>
     </div>
   )
 })
