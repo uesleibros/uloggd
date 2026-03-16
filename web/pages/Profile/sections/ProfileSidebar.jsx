@@ -6,6 +6,7 @@ import { useDateTime } from "#hooks/useDateTime"
 import CountUp from "@components/UI/CountUp"
 import SocialLinks from "@components/User/SocialLinks"
 import SteamAchievements from "@components/Game/SteamAchievements"
+import ProfileRetroAchievements from "@components/Game/RetroAchievements"
 import PSNTrophies from "@components/Game/PSNTrophies"
 import { SteamIcon } from "#constants/customIcons"
 
@@ -85,6 +86,7 @@ export function ProfileSidebar({
       <ActivityCard stream={profile.stream} userId={profile.user_id} />
       <SteamAchievements userId={profile.user_id} compact />
       <PSNTrophies userId={profile.user_id} compact />
+      <ProfileRetroAchievements userId={profile.user_id} />
     </div>
   )
 }
