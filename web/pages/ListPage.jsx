@@ -796,10 +796,12 @@ export default function ListPage() {
         />
       )}
 
-      <CommentSection
-        type="list"
-        targetId={list.id}
-      />
+      <div className="my-4">
+        <CommentSection
+          type="list"
+          targetId={list.id}
+        />
+      </div>
 
       <EditListModal
         isOpen={editOpen}

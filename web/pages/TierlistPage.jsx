@@ -10,6 +10,7 @@ import { encode } from "#utils/shortId.js"
 import TierlistEditor from "@components/Tierlist/TierlistEditor"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import LikeButton from "@components/UI/LikeButton"
+import CommentSection from "@components/UI/CommentSection"
 import {
   ArrowLeft, Save, Lock, Loader2,
   Link as LinkIcon, Check, Calendar, Gamepad2, List,
@@ -346,7 +347,7 @@ export default function TierlistPage() {
         </div>
       </div>
 
-      <div className="border-t border-zinc-800 pt-5 sm:pt-6">
+      <div className="border-t border-b border-zinc-800 pt-5 sm:pt-6">
         <TierlistEditor
           ownerId={tierlist.user_id}
           isOwner={isOwner}
@@ -359,6 +360,13 @@ export default function TierlistPage() {
           getGame={getGame}
           onTierlistUpdated={handleTierlistUpdated}
           onTierlistDeleted={handleTierlistDeleted}
+        />
+      </div>
+
+      <div className="my-4">
+        <CommentSection
+          type="tierlist"
+          targetId={tierlist.id}
         />
       </div>
     </div>
