@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Link } from "react-router-dom"
-import { MessageSquare, MoreHorizontal, Pencil, Trash2, X, MessageCircle } from "lucide-react"
+import { MessageSquare, MoreHorizontal, Pencil, Trash2, MessageCircle } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
@@ -15,7 +15,7 @@ function CommentSkeleton() {
     <div className="space-y-4">
       {[...Array(3)].map((_, i) => (
         <div key={i} className="flex gap-3">
-          <div className="w-9 h-9 rounded-full bg-zinc-800 animate-pulse flex-shrink-0" />
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-zinc-800 animate-pulse flex-shrink-0" />
           <div className="flex-1 space-y-2">
             <div className="h-3.5 w-24 bg-zinc-800 rounded animate-pulse" />
             <div className="h-3 w-full bg-zinc-800/60 rounded animate-pulse" />
@@ -72,13 +72,14 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-3">
+    <form onSubmit={handleSubmit} className="flex gap-2 sm:gap-3">
       <Link to={`/u/${user.username}`} className="flex-shrink-0 mt-0.5">
         <AvatarWithDecoration
           src={user.avatar}
           alt={user.username}
           decorationUrl={user.equipped?.avatar_decoration?.asset_url}
           size="sm"
+          className="w-8 h-8 sm:w-9 sm:h-9"
         />
       </Link>
 
@@ -95,7 +96,7 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
           autoFocus={autoFocus}
           maxLength={2000}
           rows={1}
-          className="w-full px-3 py-2.5 bg-zinc-800/60 border border-zinc-700/50 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors resize-none"
+          className="w-full px-3 py-2 sm:py-2.5 bg-zinc-800/60 border border-zinc-700/50 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors resize-none"
         />
 
         {content.trim() && (
@@ -103,7 +104,7 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
             <button
               type="submit"
               disabled={sending}
-              className="px-4 py-1.5 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer"
+              className="px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer"
             >
               {sending ? t("comments.sending") : t("comments.submit")}
             </button>
@@ -171,33 +172,93 @@ function CommentItem({ comment, onEdit, onDelete }) {
   }
 
   return (
-    <div className="group/comment flex gap-3">
+    <div className="group/comment flex gap-2 sm:gap-3">
       <Link to={`/u/${user?.username}`} className="flex-shrink-0 mt-0.5">
         <AvatarWithDecoration
           src={user?.avatar}
           alt={user?.username}
           decorationUrl={user?.equipped?.avatar_decoration?.asset_url}
           size="sm"
+          className="w-8 h-8 sm:w-9 sm:h-9"
         />
       </Link>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Link
-            to={`/u/${user?.username}`}
-            className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors"
-          >
-            {user?.username}
-          </Link>
-          <UserBadges user={user} size="sm" clickable />
-          <span className="text-xs text-zinc-600">{getTimeAgo(comment.created_at)}</span>
-          {wasEdited && (
-            <span className="text-xs text-zinc-600 italic">({t("comments.edited")})</span>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
+            <Link
+              to={`/u/${user?.username}`}
+              className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors truncate max-w-[120px] sm:max-w-none"
+            >
+              {user?.username}
+            </Link>
+            <UserBadges user={user} size="sm" clickable />
+            <span className="text-[11px] sm:text-xs text-zinc-600 whitespace-nowrap">
+              {getTimeAgo(comment.created_at)}
+            </span>
+            {wasEdited && (
+              <span className="hidden sm:inline text-xs text-zinc-600 italic">
+                ({t("comments.edited")})
+              </span>
+            )}
+          </div>
+
+          {canManage && !editing && (
+            <div ref={menuRef} className="relative flex-shrink-0">
+              <button
+                onClick={() => {
+                  setMenuOpen(!menuOpen)
+                  setConfirmDelete(false)
+                }}
+                className="p-1.5 -mr-1.5 text-zinc-500 hover:text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer sm:opacity-0 sm:group-hover/comment:opacity-100"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+
+              {menuOpen && (
+                <div className="absolute right-0 top-full mt-1 z-30 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl py-1 min-w-[130px]">
+                  {isOwner && (
+                    <button
+                      onClick={() => {
+                        setEditing(true)
+                        setMenuOpen(false)
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      {t("comments.edit")}
+                    </button>
+                  )}
+
+                  {confirmDelete ? (
+                    <button
+                      onClick={() => {
+                        onDelete(comment.id)
+                        setMenuOpen(false)
+                        setConfirmDelete(false)
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      {t("comments.deleteConfirm")}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDelete(true)}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      {t("comments.delete")}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
 
         {editing ? (
-          <div className="mt-1.5">
+          <div className="mt-2">
             <textarea
               ref={editRef}
               value={editContent}
@@ -215,7 +276,7 @@ function CommentItem({ comment, onEdit, onDelete }) {
               <button
                 onClick={handleSaveEdit}
                 disabled={saving || !editContent.trim()}
-                className="px-3 py-1 text-xs font-medium text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                className="px-3 py-1.5 text-xs font-medium text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
               >
                 {saving ? t("comments.saving") : t("comments.save")}
               </button>
@@ -224,7 +285,7 @@ function CommentItem({ comment, onEdit, onDelete }) {
                   setEditing(false)
                   setEditContent(comment.content)
                 }}
-                className="px-3 py-1 text-xs font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                className="px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
               >
                 {t("comments.cancel")}
               </button>
@@ -236,59 +297,6 @@ function CommentItem({ comment, onEdit, onDelete }) {
           </p>
         )}
       </div>
-
-      {canManage && !editing && (
-        <div ref={menuRef} className="relative flex-shrink-0">
-          <button
-            onClick={() => {
-              setMenuOpen(!menuOpen)
-              setConfirmDelete(false)
-            }}
-            className="p-1 text-zinc-600 hover:text-zinc-400 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer opacity-0 group-hover/comment:opacity-100"
-          >
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
-
-          {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 z-30 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 min-w-[140px]">
-              {isOwner && (
-                <button
-                  onClick={() => {
-                    setEditing(true)
-                    setMenuOpen(false)
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-700/50 transition-colors cursor-pointer"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                  {t("comments.edit")}
-                </button>
-              )}
-
-              {confirmDelete ? (
-                <button
-                  onClick={() => {
-                    onDelete(comment.id)
-                    setMenuOpen(false)
-                    setConfirmDelete(false)
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  {t("comments.deleteConfirm")}
-                </button>
-              ) : (
-                <button
-                  onClick={() => setConfirmDelete(true)}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  {t("comments.delete")}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   )
 }
@@ -297,8 +305,8 @@ function CommentEmpty() {
   const { t } = useTranslation("common")
 
   return (
-    <div className="flex flex-col items-center justify-center py-10 gap-3">
-      <div className="w-12 h-12 rounded-full bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center">
+    <div className="flex flex-col items-center justify-center py-8 sm:py-10 gap-3">
+      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center">
         <MessageCircle className="w-5 h-5 text-zinc-600" />
       </div>
       <div className="text-center">
@@ -311,7 +319,6 @@ function CommentEmpty() {
 
 export default function CommentSection({ type, targetId }) {
   const { t } = useTranslation("common")
-  const { user: currentUser } = useAuth()
   const [comments, setComments] = useState([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -436,12 +443,12 @@ export default function CommentSection({ type, targetId }) {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <div className="flex items-center gap-2">
-        <MessageSquare className="w-5 h-5 text-zinc-400" />
-        <h3 className="text-base font-semibold text-white">{t("comments.title")}</h3>
+        <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400" />
+        <h3 className="text-sm sm:text-base font-semibold text-white">{t("comments.title")}</h3>
         {!loading && total > 0 && (
-          <span className="text-sm text-zinc-500">({total})</span>
+          <span className="text-xs sm:text-sm text-zinc-500">({total})</span>
         )}
       </div>
 
@@ -464,7 +471,7 @@ export default function CommentSection({ type, targetId }) {
             <button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              className="w-full py-2.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/30 hover:bg-zinc-800/60 border border-zinc-700/50 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+              className="w-full py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/30 hover:bg-zinc-800/60 border border-zinc-700/50 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
             >
               {loadingMore ? (
                 <div className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin mx-auto" />
