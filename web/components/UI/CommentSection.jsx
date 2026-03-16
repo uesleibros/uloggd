@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Link } from "react-router-dom"
-import { MessageSquare, MoreHorizontal, Pencil, Trash2, MessageCircle } from "lucide-react"
+import { MessageSquare, MoreHorizontal, Pencil, Trash2, MessageCircle, Send } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
@@ -12,14 +12,17 @@ const LIMIT = 10
 
 function CommentSkeleton() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-0.5">
       {[...Array(3)].map((_, i) => (
-        <div key={i} className="flex gap-3 sm:gap-3.5">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-zinc-800 animate-pulse flex-shrink-0" />
-          <div className="flex-1 space-y-2 pt-1">
-            <div className="h-3 w-28 bg-zinc-800 rounded animate-pulse" />
-            <div className="h-3 w-full bg-zinc-800/50 rounded animate-pulse" />
-            <div className="h-3 w-1/2 bg-zinc-800/30 rounded animate-pulse" />
+        <div key={i} className="flex gap-3 px-2 py-3">
+          <div className="w-9 h-9 rounded-full bg-zinc-800 animate-pulse flex-shrink-0" />
+          <div className="flex-1 space-y-2 pt-0.5">
+            <div className="flex items-center gap-2">
+              <div className="h-3.5 w-20 bg-zinc-800 rounded animate-pulse" />
+              <div className="h-3 w-14 bg-zinc-800/40 rounded animate-pulse" />
+            </div>
+            <div className="h-3.5 w-full bg-zinc-800/50 rounded animate-pulse" />
+            <div className="h-3.5 w-2/3 bg-zinc-800/30 rounded animate-pulse" />
           </div>
         </div>
       ))}
@@ -42,7 +45,7 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
   }
 
   async function handleSubmit(e) {
-    e.preventDefault()
+    e?.preventDefault()
     if (!content.trim() || sending) return
 
     setSending(true)
@@ -57,9 +60,9 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
   }
 
   function handleKeyDown(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 640) {
       e.preventDefault()
-      handleSubmit(e)
+      handleSubmit()
     }
   }
 
@@ -72,18 +75,17 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-3 sm:gap-3.5">
-      <Link to={`/u/${user.username}`} className="flex-shrink-0 pt-1">
+    <form onSubmit={handleSubmit} className="flex gap-3">
+      <Link to={`/u/${user.username}`} className="flex-shrink-0 pt-1.5">
         <AvatarWithDecoration
           src={user.avatar}
           alt={user.username}
           decorationUrl={user.equipped?.avatar_decoration?.asset_url}
           size="sm"
-          className="w-8 h-8 sm:w-9 sm:h-9"
         />
       </Link>
 
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 relative">
         <textarea
           ref={textareaRef}
           value={content}
@@ -96,19 +98,20 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
           autoFocus={autoFocus}
           maxLength={2000}
           rows={1}
-          className="w-full px-3 py-2 sm:py-2.5 bg-zinc-800/60 border border-zinc-700/50 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors resize-none"
+          className="w-full pl-3.5 pr-12 py-2.5 bg-zinc-800/80 border border-zinc-700/60 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:bg-zinc-800 transition-all resize-none"
         />
-
         {content.trim() && (
-          <div className="flex justify-end mt-2">
-            <button
-              type="submit"
-              disabled={sending}
-              className="px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer"
-            >
-              {sending ? t("comments.sending") : t("comments.submit")}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={sending}
+            className="absolute right-2 bottom-1.5 p-1.5 text-indigo-400 hover:text-indigo-300 disabled:text-zinc-600 rounded-lg hover:bg-indigo-500/10 transition-all cursor-pointer disabled:cursor-not-allowed"
+          >
+            {sending ? (
+              <div className="w-4 h-4 border-2 border-zinc-600 border-t-indigo-400 rounded-full animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+          </button>
         )}
       </div>
     </form>
@@ -172,89 +175,33 @@ function CommentItem({ comment, onEdit, onDelete }) {
   }
 
   return (
-    <div className="group/comment flex gap-3 sm:gap-3.5">
+    <div className="group/comment flex gap-3 px-2 py-2.5 -mx-2 rounded-lg hover:bg-zinc-800/30 transition-colors">
       <Link to={`/u/${user?.username}`} className="flex-shrink-0 pt-0.5">
         <AvatarWithDecoration
           src={user?.avatar}
           alt={user?.username}
           decorationUrl={user?.equipped?.avatar_decoration?.asset_url}
           size="sm"
-          className="w-8 h-8 sm:w-9 sm:h-9"
         />
       </Link>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <div className="flex items-baseline gap-1.5 sm:gap-2">
           <Link
             to={`/u/${user?.username}`}
-            className="text-[13px] sm:text-sm font-semibold text-white hover:text-zinc-300 transition-colors truncate max-w-[140px] sm:max-w-none"
+            className="text-sm font-semibold text-white hover:underline underline-offset-2 truncate max-w-[140px] sm:max-w-none"
           >
             {user?.username}
           </Link>
           <UserBadges user={user} size="sm" clickable />
-          <span className="text-[11px] sm:text-xs text-zinc-600 whitespace-nowrap">
+          <span className="text-[11px] text-zinc-600 whitespace-nowrap flex-shrink-0">
             {getTimeAgo(comment.created_at)}
-            {wasEdited && (
-              <span className="italic"> · {t("comments.edited")}</span>
-            )}
+            {wasEdited && <span className="italic"> ({t("comments.edited")})</span>}
           </span>
-
-          {canManage && !editing && (
-            <div ref={menuRef} className="relative ml-auto">
-              <button
-                onClick={() => {
-                  setMenuOpen(!menuOpen)
-                  setConfirmDelete(false)
-                }}
-                className="p-1 text-zinc-600 hover:text-zinc-300 rounded-md hover:bg-zinc-800 transition-colors cursor-pointer sm:opacity-0 sm:group-hover/comment:opacity-100"
-              >
-                <MoreHorizontal className="w-3.5 h-3.5" />
-              </button>
-
-              {menuOpen && (
-                <div className="absolute right-0 top-full mt-1 z-30 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl py-1 min-w-[130px]">
-                  {isOwner && (
-                    <button
-                      onClick={() => {
-                        setEditing(true)
-                        setMenuOpen(false)
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                      {t("comments.edit")}
-                    </button>
-                  )}
-
-                  {confirmDelete ? (
-                    <button
-                      onClick={() => {
-                        onDelete(comment.id)
-                        setMenuOpen(false)
-                        setConfirmDelete(false)
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      {t("comments.deleteConfirm")}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setConfirmDelete(true)}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      {t("comments.delete")}
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {editing ? (
-          <div className="mt-1.5">
+          <div className="mt-2">
             <textarea
               ref={editRef}
               value={editContent}
@@ -266,25 +213,16 @@ function CommentItem({ comment, onEdit, onDelete }) {
               onKeyDown={handleEditKeyDown}
               maxLength={2000}
               rows={1}
-              className="w-full px-3 py-2 bg-zinc-800/60 border border-zinc-700/50 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors resize-none"
+              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500/50 transition-colors resize-none"
             />
-            <div className="flex items-center gap-2 mt-2">
-              <button
-                onClick={handleSaveEdit}
-                disabled={saving || !editContent.trim()}
-                className="px-3 py-1.5 text-xs font-medium text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
-              >
-                {saving ? t("comments.saving") : t("comments.save")}
-              </button>
-              <button
-                onClick={() => {
-                  setEditing(false)
-                  setEditContent(comment.content)
-                }}
-                className="px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
-              >
-                {t("comments.cancel")}
-              </button>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="text-[11px] text-zinc-500">
+                escape{" "}
+                <span className="text-zinc-600">{t("comments.toCancel")}</span>
+                {" · "}
+                enter{" "}
+                <span className="text-zinc-600">{t("comments.toSave")}</span>
+              </span>
             </div>
           </div>
         ) : (
@@ -293,6 +231,59 @@ function CommentItem({ comment, onEdit, onDelete }) {
           </p>
         )}
       </div>
+
+      {canManage && !editing && (
+        <div ref={menuRef} className="relative flex-shrink-0 pt-0.5">
+          <button
+            onClick={() => {
+              setMenuOpen(!menuOpen)
+              setConfirmDelete(false)
+            }}
+            className="p-1.5 text-zinc-600 hover:text-zinc-300 rounded-md hover:bg-zinc-700/50 transition-colors cursor-pointer opacity-0 group-hover/comment:opacity-100 sm:opacity-0 max-sm:opacity-100"
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1 z-30 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl shadow-black/50 py-1.5 min-w-[160px]">
+              {isOwner && (
+                <button
+                  onClick={() => {
+                    setEditing(true)
+                    setMenuOpen(false)
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
+                  <Pencil className="w-4 h-4 text-zinc-500" />
+                  {t("comments.edit")}
+                </button>
+              )}
+
+              {confirmDelete ? (
+                <button
+                  onClick={() => {
+                    onDelete(comment.id)
+                    setMenuOpen(false)
+                    setConfirmDelete(false)
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {t("comments.deleteConfirm")}
+                </button>
+              ) : (
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4 text-red-500/70" />
+                  {t("comments.delete")}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -301,14 +292,10 @@ function CommentEmpty() {
   const { t } = useTranslation("common")
 
   return (
-    <div className="flex flex-col items-center justify-center py-8 sm:py-10 gap-3">
-      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center">
-        <MessageCircle className="w-5 h-5 text-zinc-600" />
-      </div>
-      <div className="text-center">
-        <p className="text-sm text-zinc-500">{t("comments.empty")}</p>
-        <p className="text-xs text-zinc-600 mt-0.5">{t("comments.emptySubtitle")}</p>
-      </div>
+    <div className="flex flex-col items-center justify-center py-10 sm:py-12 gap-2">
+      <MessageCircle className="w-8 h-8 text-zinc-700" />
+      <p className="text-sm text-zinc-500">{t("comments.empty")}</p>
+      <p className="text-xs text-zinc-600">{t("comments.emptySubtitle")}</p>
     </div>
   )
 }
@@ -439,7 +426,7 @@ export default function CommentSection({ type, targetId }) {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-5">
+    <div className="space-y-4">
       <div className="flex items-center gap-2">
         <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400" />
         <h3 className="text-sm sm:text-base font-semibold text-white">{t("comments.title")}</h3>
@@ -453,7 +440,7 @@ export default function CommentSection({ type, targetId }) {
       {loading ? (
         <CommentSkeleton />
       ) : comments.length > 0 ? (
-        <div className="space-y-5">
+        <div className="space-y-0.5">
           {comments.map(comment => (
             <CommentItem
               key={comment.id}
@@ -464,17 +451,19 @@ export default function CommentSection({ type, targetId }) {
           ))}
 
           {page < totalPages && (
-            <button
-              onClick={handleLoadMore}
-              disabled={loadingMore}
-              className="w-full py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800/30 hover:bg-zinc-800/60 border border-zinc-700/50 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
-            >
-              {loadingMore ? (
-                <div className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin mx-auto" />
-              ) : (
-                t("comments.loadMore")
-              )}
-            </button>
+            <div className="pt-2">
+              <button
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="w-full py-2 text-xs sm:text-sm font-medium text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {loadingMore ? (
+                  <div className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin mx-auto" />
+                ) : (
+                  t("comments.loadMore")
+                )}
+              </button>
+            </div>
           )}
         </div>
       ) : (
