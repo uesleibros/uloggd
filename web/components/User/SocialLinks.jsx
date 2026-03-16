@@ -134,6 +134,22 @@ export default function SocialLinks({ links, connections }) {
           )
         }
 
+        if (item.provider === "retroachievements") {
+          return (
+            <a
+              key={item.key}
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs transition-all duration-200 hover:bg-yellow-500/20"
+            >
+              <Icon className="w-3.5 h-3.5" />
+              <span className="truncate">{item.display}</span>
+              <ExternalLink className="w-2.5 h-2.5 opacity-50 group-hover:opacity-80 transition-opacity" />
+            </a>
+          )
+        }
+
         return (
           <a
             key={item.key}
