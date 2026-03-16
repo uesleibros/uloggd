@@ -21,7 +21,7 @@ export async function handleRecent(req, res) {
 
     const { provider_username: username, access_token: apiKey } = connection
 
-    const url = `${RA_API_BASE}/API_GetUserRecentAchievements.php?z=${encodeURIComponent(username)}&y=${apiKey}&u=${encodeURIComponent(username)}&m=43200`
+    const url = `${RA_API_BASE}/API_GetUserRecentAchievements.php?z=${encodeURIComponent(username)}&y=${apiKey}&u=${encodeURIComponent(username)}&m=525600`
     const r = await fetch(url)
 
     if (!r.ok) {
