@@ -1775,6 +1775,7 @@ export default {
 		},
 	},
 	reviews: {
+		readFullReview: "Ler review completa",
 		communityReviews: "Reviews da comunidade",
 		like: "Curtir",
 		liked: "Curtido",
@@ -1821,7 +1822,6 @@ export default {
 		},
 	},
 	review: {
-		readFullReview: "Ler review completa",
 		notFound: {
 			title: "Review não encontrada",
 			message: "Essa review não existe ou foi removida.",
