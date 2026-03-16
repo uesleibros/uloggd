@@ -1,9 +1,9 @@
 import { useEffect } from "react"
 
 const defaults = {
-  title: "uloggd - A Video Game Collection Tracker",
-  description: "Mantenha uma lista virtual de jogos da sua coleção, depois avalie e comente os que você já jogou para compartilhar com seus amigos!",
-  image: "/banner.png"
+  title: "uloggd - Track, Rate & Share Your Game Collection",
+  description: "Track your gaming journey, rate games, write reviews, create lists & tier lists, track playtime with journals, and monitor achievements from Steam, PlayStation & RetroAchievements.",
+  image: "/banner.jpg",
 }
 
 export default function usePageMeta({ title, description, image } = {}) {
@@ -22,9 +22,11 @@ export default function usePageMeta({ title, description, image } = {}) {
       'meta[property="og:title"]': t,
       'meta[property="og:description"]': d,
       'meta[property="og:image"]': i,
+      'meta[property="og:image:alt"]': t,
       'meta[name="twitter:title"]': t,
       'meta[name="twitter:description"]': d,
-      'meta[name="twitter:image"]': i
+      'meta[name="twitter:image"]': i,
+      'meta[name="twitter:image:alt"]': t,
     }
 
     Object.entries(tags).forEach(([selector, value]) => {
@@ -33,6 +35,11 @@ export default function usePageMeta({ title, description, image } = {}) {
         if (el.hasAttribute("content")) el.setAttribute("content", value)
       }
     })
+
+    let canonical = document.querySelector('link[rel="canonical"]')
+    if (canonical) {
+      canonical.setAttribute("href", window.location.href.split("?")[0])
+    }
 
     return () => {
       document.title = defaults.title
@@ -45,6 +52,9 @@ export default function usePageMeta({ title, description, image } = {}) {
           if (el.hasAttribute("content")) el.setAttribute("content", key)
         }
       })
+      if (canonical) {
+        canonical.setAttribute("href", window.location.origin)
+      }
     }
   }, [title, description, image])
 }
