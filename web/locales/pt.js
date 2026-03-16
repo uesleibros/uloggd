@@ -1147,10 +1147,27 @@ export default {
 		},
 		content: {
 			ra: {
-				matchedAs: "Corresponde a \"{{title}}\" no RetroAchievements",
-				showAll: "Ver todos ({{count}})",
-				showLess: "Ver menos",
-			},
+		    title: "Conquistas",
+		    matchedAs: "Corresponde a \"{{title}}\" no RetroAchievements",
+		    showAll: "Ver todos ({{count}})",
+		    showLess: "Ver menos",
+		    viewOnRA: "Ver no RetroAchievements",
+		    filter: {
+		      all: "Todos ({{count}})",
+		      unlocked: "Desbloqueados ({{count}})",
+		      locked: "Bloqueados ({{count}})",
+		    },
+		    detail: {
+		      status: "Status",
+		      unlocked: "Desbloqueado",
+		      locked: "Bloqueado",
+		      unlockedAt: "Desbloqueado em",
+		      mode: "Modo",
+		      points: "Pontos",
+		      rarity: "Raridade",
+		      platform: "Plataforma",
+		    },
+		  },
 			stats: {
 				ratings: "Avaliações",
 				hype: "Hype",
