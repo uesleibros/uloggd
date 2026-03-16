@@ -10,6 +10,7 @@ import UserBadges from "@components/User/UserBadges"
 import StatusBadge from "@components/Game/StatusBadge"
 import ReviewRating from "@components/Game/ReviewRating"
 import Playtime from "@components/Game/Playtime"
+import GameCover from "@components/Game/GameCover"
 import LikeButton from "@components/UI/LikeButton"
 import CommentSection from "@components/UI/CommentSection"
 import {
@@ -107,7 +108,6 @@ export default function ReviewPage() {
   }
 
   const aspects = review.aspect_ratings || []
-  const coverUrl = game?.cover?.url
 
   return (
     <div className="py-6 sm:py-8 max-w-3xl mx-auto">
@@ -123,17 +123,10 @@ export default function ReviewPage() {
 
       <div className="flex gap-4 sm:gap-5 mb-6">
         <Link to={`/game/${review.game_slug}`} className="flex-shrink-0">
-          {coverUrl ? (
-            <img
-              src={coverUrl}
-              alt={game.name}
-              className="w-20 sm:w-28 aspect-[3/4] object-cover rounded-lg border border-zinc-700/50 hover:border-zinc-600 transition-colors"
-            />
-          ) : (
-            <div className="w-20 sm:w-28 aspect-[3/4] bg-zinc-800 rounded-lg border border-zinc-700/50 flex items-center justify-center">
-              <Gamepad2 className="w-6 h-6 text-zinc-600" />
-            </div>
-          )}
+          <GameCover
+            game={game}
+            className="w-20 sm:w-28 aspect-[3/4] rounded-lg border border-zinc-700/50 hover:border-zinc-600 transition-colors"
+          />
         </Link>
 
         <div className="flex-1 min-w-0">
