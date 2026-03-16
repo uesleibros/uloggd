@@ -254,125 +254,123 @@ function GameAchievementsModal({ game, userId, isOpen, onClose }) {
   }) || []
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" fullscreenMobile showMobileGrip noScroll>
-      <div className="flex flex-col h-full">
-        <div className="p-4 sm:p-5 border-b border-zinc-800 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <img
-              src={game.banner}
-              alt=""
-              className="w-16 sm:w-20 h-8 sm:h-10 object-cover rounded-lg border border-zinc-700 flex-shrink-0"
-            />
-            <div className="min-w-0 flex-1">
-              <h3 className="text-sm sm:text-base font-bold text-white truncate">{game.game}</h3>
-              {hasProgress && (
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all"
-                      style={{ width: `${data.percentage}%` }}
-                    />
-                  </div>
-                  <span className="text-[11px] sm:text-xs text-zinc-400 flex-shrink-0">
-                    {data.unlocked}/{data.total}
-                  </span>
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" fullscreenMobile showMobileGrip>
+      <div className="sticky top-0 z-10 bg-zinc-900 p-4 sm:p-5 border-b border-zinc-800">
+        <div className="flex items-center gap-3">
+          <img
+            src={game.banner}
+            alt=""
+            className="w-16 sm:w-20 h-8 sm:h-10 object-cover rounded-lg border border-zinc-700 flex-shrink-0"
+          />
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm sm:text-base font-bold text-white truncate">{game.game}</h3>
+            {hasProgress && (
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all"
+                    style={{ width: `${data.percentage}%` }}
+                  />
                 </div>
-              )}
-            </div>
+                <span className="text-[11px] sm:text-xs text-zinc-400 flex-shrink-0">
+                  {data.unlocked}/{data.total}
+                </span>
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-5">
-          {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
-            </div>
-          ) : !data?.achievements?.length ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <Trophy className="w-8 h-8 text-zinc-700 mb-2" />
-              <p className="text-sm text-zinc-500">{t("gameModal.noAchievements")}</p>
-            </div>
-          ) : (
-            <>
-              <FilterTabs
-                filter={filter}
-                onFilter={setFilter}
-                counts={{
-                  all: data.total,
-                  unlocked: data.unlocked || 0,
-                  locked: data.total - (data.unlocked || 0),
-                }}
-              />
+      <div className="p-4 sm:p-5">
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+          </div>
+        ) : !data?.achievements?.length ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <Trophy className="w-8 h-8 text-zinc-700 mb-2" />
+            <p className="text-sm text-zinc-500">{t("gameModal.noAchievements")}</p>
+          </div>
+        ) : (
+          <>
+            <FilterTabs
+              filter={filter}
+              onFilter={setFilter}
+              counts={{
+                all: data.total,
+                unlocked: data.unlocked || 0,
+                locked: data.total - (data.unlocked || 0),
+              }}
+            />
 
-              <div className="space-y-1.5">
-                {filtered.map((achievement, i) => {
-                  const isHidden = achievement.hidden && !achievement.achieved
+            <div className="space-y-1.5">
+              {filtered.map((achievement, i) => {
+                const isHidden = achievement.hidden && !achievement.achieved
 
-                  return (
-                    <button
-                      key={`${achievement.name}-${i}`}
-                      onClick={() => setSelected(achievement)}
-                      className="w-full flex items-center gap-3 p-2.5 sm:p-3 bg-zinc-800/40 hover:bg-zinc-800 border border-zinc-700/40 hover:border-zinc-600 rounded-xl transition-all cursor-pointer text-left"
-                    >
-                      <div className="relative flex-shrink-0">
-                        <img
-                          src={achievement.achieved ? achievement.iconUnlocked : achievement.iconLocked}
-                          alt=""
-                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-zinc-800 ${
-                            isHidden ? "blur-sm" : ""
-                          } ${!achievement.achieved ? "grayscale opacity-50" : ""}`}
-                        />
-                        {isHidden && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <EyeOff className="w-3 h-3 text-zinc-400" />
-                          </div>
+                return (
+                  <button
+                    key={`${achievement.name}-${i}`}
+                    onClick={() => setSelected(achievement)}
+                    className="w-full flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-zinc-800/40 hover:bg-zinc-800 border border-zinc-700/40 hover:border-zinc-600 rounded-xl transition-all cursor-pointer text-left"
+                  >
+                    <div className="relative flex-shrink-0">
+                      <img
+                        src={achievement.achieved ? achievement.iconUnlocked : achievement.iconLocked}
+                        alt=""
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-zinc-800 ${
+                          isHidden ? "blur-sm" : ""
+                        } ${!achievement.achieved ? "grayscale opacity-50" : ""}`}
+                      />
+                      {isHidden && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <EyeOff className="w-3 h-3 text-zinc-400" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`text-xs sm:text-sm font-medium truncate ${
+                          achievement.achieved ? "text-white" : "text-zinc-500"
+                        }`}>
+                          {isHidden ? t("detail.hiddenTitle") : achievement.name}
+                        </span>
+                        {achievement.hidden && (
+                          <EyeOff className="w-3 h-3 text-yellow-500 flex-shrink-0" />
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className={`text-xs sm:text-sm font-medium truncate ${
-                            achievement.achieved ? "text-white" : "text-zinc-500"
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {achievement.globalPercent !== undefined && (
+                          <span className={`text-[11px] sm:text-xs ${
+                            achievement.globalPercent < 5 ? "text-yellow-400" :
+                            achievement.globalPercent < 20 ? "text-purple-400" :
+                            achievement.globalPercent < 50 ? "text-blue-400" : "text-zinc-600"
                           }`}>
-                            {isHidden ? t("detail.hiddenTitle") : achievement.name}
+                            {achievement.globalPercent.toFixed(1)}%
                           </span>
-                          {achievement.hidden && (
-                            <EyeOff className="w-3 h-3 text-yellow-500 flex-shrink-0" />
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {achievement.globalPercent !== undefined && (
-                            <span className={`text-[11px] sm:text-xs ${
-                              achievement.globalPercent < 5 ? "text-yellow-400" :
-                              achievement.globalPercent < 20 ? "text-purple-400" :
-                              achievement.globalPercent < 50 ? "text-blue-400" : "text-zinc-600"
-                            }`}>
-                              {achievement.globalPercent.toFixed(1)}%
-                            </span>
-                          )}
-                          {achievement.achieved && (
-                            <span className="text-[11px] sm:text-xs text-green-400">✓</span>
-                          )}
-                        </div>
+                        )}
+                        {achievement.achieved && (
+                          <span className="text-[11px] sm:text-xs text-green-400">✓</span>
+                        )}
                       </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </>
-          )}
-        </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </>
+        )}
+      </div>
 
-        <div className="p-4 sm:p-5 border-t border-zinc-800 flex-shrink-0">
-          <a
-            href={`https://store.steampowered.com/app/${game.appId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-sm text-zinc-300 hover:text-white transition-colors"
-          >
-            <SteamIcon className="w-4 h-4" />
-            {t("detail.viewOnSteam")}
-          </a>
-        </div>
+      <div className="sticky bottom-0 bg-zinc-900 p-4 sm:p-5 border-t border-zinc-800">
+        <a
+          href={`https://store.steampowered.com/app/${game.appId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-sm text-zinc-300 hover:text-white transition-colors"
+        >
+          <SteamIcon className="w-4 h-4" />
+          {t("detail.viewOnSteam")}
+        </a>
       </div>
     </Modal>
   )
