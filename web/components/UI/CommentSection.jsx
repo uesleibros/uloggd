@@ -211,6 +211,59 @@ function CommentItem({ comment, onEdit, onDelete }) {
             {getTimeAgo(comment.created_at)}
             {wasEdited && <span className="italic"> ({t("comments.edited")})</span>}
           </span>
+
+          {canManage && !editing && (
+            <div ref={menuRef} className="relative ml-auto self-center">
+              <button
+                onClick={() => {
+                  setMenuOpen(!menuOpen)
+                  setConfirmDelete(false)
+                }}
+                className="p-1 text-zinc-600 hover:text-zinc-300 rounded-md hover:bg-zinc-700/50 transition-colors cursor-pointer opacity-0 group-hover/comment:opacity-100 max-sm:opacity-100"
+              >
+                <MoreHorizontal className="w-3.5 h-3.5" />
+              </button>
+
+              {menuOpen && (
+                <div className="absolute right-0 top-full mt-0.5 z-30 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl shadow-black/50 py-1.5 min-w-[160px]">
+                  {isOwner && (
+                    <button
+                      onClick={() => {
+                        setEditing(true)
+                        setMenuOpen(false)
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                    >
+                      <Pencil className="w-4 h-4 text-zinc-500" />
+                      {t("comments.edit")}
+                    </button>
+                  )}
+
+                  {confirmDelete ? (
+                    <button
+                      onClick={() => {
+                        onDelete(comment.id)
+                        setMenuOpen(false)
+                        setConfirmDelete(false)
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      {t("comments.deleteConfirm")}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDelete(true)}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500/70" />
+                      {t("comments.delete")}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {editing ? (
@@ -244,59 +297,6 @@ function CommentItem({ comment, onEdit, onDelete }) {
           </p>
         )}
       </div>
-
-      {canManage && !editing && (
-        <div ref={menuRef} className="relative flex-shrink-0 pt-0.5">
-          <button
-            onClick={() => {
-              setMenuOpen(!menuOpen)
-              setConfirmDelete(false)
-            }}
-            className="p-1.5 text-zinc-600 hover:text-zinc-300 rounded-md hover:bg-zinc-700/50 transition-colors cursor-pointer opacity-0 group-hover/comment:opacity-100 max-sm:opacity-100"
-          >
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
-
-          {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 z-30 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl shadow-black/50 py-1.5 min-w-[160px]">
-              {isOwner && (
-                <button
-                  onClick={() => {
-                    setEditing(true)
-                    setMenuOpen(false)
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-                >
-                  <Pencil className="w-4 h-4 text-zinc-500" />
-                  {t("comments.edit")}
-                </button>
-              )}
-
-              {confirmDelete ? (
-                <button
-                  onClick={() => {
-                    onDelete(comment.id)
-                    setMenuOpen(false)
-                    setConfirmDelete(false)
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  {t("comments.deleteConfirm")}
-                </button>
-              ) : (
-                <button
-                  onClick={() => setConfirmDelete(true)}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4 text-red-500/70" />
-                  {t("comments.delete")}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   )
 }
