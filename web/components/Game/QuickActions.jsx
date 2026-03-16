@@ -84,28 +84,31 @@ export default function QuickActions({ game }) {
   const [showStatus, setShowStatus] = useState(false)
   const [showListModal, setShowListModal] = useState(false)
   const [updating, setUpdating] = useState(null)
-  const fetchedRef = useRef(null)
+  const abortRef = useRef(null)
 
   useEffect(() => {
-    if (!user || !game?.id) return
-    if (fetchedRef.current === game.id) return
+    if (!user?.user_id || !game?.id) {
+      setLoading(false)
+      return
+    }
 
-    let cancelled = false
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
+
+    setLoading(true)
 
     async function fetchState() {
-      setLoading(true)
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        if (!session || cancelled) return
+        if (!session || controller.signal.aborted) return
 
         const res = await fetch(`/api/userGames/@me/get?gameId=${game.id}`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${session.access_token}`,
-          }
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          signal: controller.signal,
         })
 
-        if (res.ok && !cancelled) {
+        if (res.ok && !controller.signal.aborted) {
           const data = await res.json()
           setState({
             status: data.status || null,
@@ -114,16 +117,18 @@ export default function QuickActions({ game }) {
             wishlist: data.wishlist || false,
             liked: data.liked || false,
           })
-          fetchedRef.current = game.id
         }
-      } catch {} finally {
-        if (!cancelled) setLoading(false)
+      } catch (e) {
+        if (e.name === "AbortError") return
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
 
     fetchState()
-    return () => { cancelled = true }
-  }, [user?.id, game?.id])
+
+    return () => controller.abort()
+  }, [user?.user_id, game?.id])
 
   async function toggle(field, value) {
     if (!user || updating) return
@@ -140,7 +145,7 @@ export default function QuickActions({ game }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           gameId: game.id,
@@ -270,4 +275,3 @@ export default function QuickActions({ game }) {
     </>
   )
 }
-
