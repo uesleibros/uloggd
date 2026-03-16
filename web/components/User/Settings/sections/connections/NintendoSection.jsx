@@ -26,15 +26,15 @@ export default function NintendoSection() {
   const [removing, setRemoving] = useState(false)
 
   useEffect(() => {
-    if (user?.id) fetchConnection()
-  }, [user?.id])
+    if (user?.user_id) fetchConnection()
+  }, [user?.user_id])
 
   async function fetchConnection() {
     try {
       const res = await fetch("/api/nintendo/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id }),
+        body: JSON.stringify({ userId: user.user_id }),
       })
 
       const data = await res.json()
