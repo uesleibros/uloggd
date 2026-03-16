@@ -1,5 +1,5 @@
 import { Globe, Twitter, Instagram, Youtube, Github, Linkedin } from "lucide-react"
-import { TwitchIcon, SteamIcon, NintendoIcon, PlayStationIcon } from "#constants/customIcons"
+import { TwitchIcon, SteamIcon, NintendoIcon, PlayStationIcon, RetroAchievementsIcon } from "#constants/customIcons"
 
 export const SOCIAL_PLATFORMS = {
   twitter: {
@@ -95,6 +95,13 @@ export const CONNECTION_PLATFORMS = {
     color: "hover:text-red-500",
     getUrl: () => null,
     getDisplay: (code, displayName) => displayName || code,
+  },
+  retroachievements: {
+    icon: RetroAchievementsIcon,
+    label: "RetroAchievements",
+    color: "hover:text-yellow-400",
+    getUrl: (username) => `https://retroachievements.org/user/${username}`,
+    getDisplay: (username, displayName) => displayName || username,
   },
 }
 
