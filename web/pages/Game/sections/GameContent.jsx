@@ -6,7 +6,6 @@ import GameReviews from "@components/Game/GameReviews"
 import { GameSteamAchievements } from "@components/Game/SteamAchievements"
 import { GameRetroAchievements } from "@components/Game/RetroAchievements"
 import { GamePSNTrophies } from "@components/Game/PSNTrophies"
-import { VideoGrid } from "../components/VideoGrid"
 import { StatCard } from "../components/StatCard"
 import { InfoRow } from "../components/InfoRow"
 import { HowLongToBeat } from "../components/HowLongToBeat"
@@ -104,16 +103,6 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
 
       <GamePSNTrophies gameName={game.name} />
       <GameRetroAchievements gameName={game.name} />
-
-      {game.videos?.length > 0 && (
-        <>
-          <SectionDivider />
-          <SectionTitle count={game.videos.length}>{t("content.videos.title")}</SectionTitle>
-          <div className="mt-4">
-            <VideoGrid videos={game.videos} />
-          </div>
-        </>
-      )}
 
       {allMedia.length > 0 && (
         <>
