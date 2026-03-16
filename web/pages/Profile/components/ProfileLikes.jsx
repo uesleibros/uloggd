@@ -6,6 +6,7 @@ import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
 import { ListCard } from "@components/Lists/ListCard"
 import { TierlistCard } from "@components/Tierlist/TierlistCard"
 import Pagination from "@components/UI/Pagination"
+import DragScrollRow from "@components/UI/DragScrollRow"
 import { ProfileReviewCard } from "./ProfileReviews"
 
 const GAMES_PER_PAGE = 24
@@ -77,7 +78,7 @@ function TabButton({ active, onClick, icon: Icon, label, count }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer border ${
+      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer border whitespace-nowrap flex-shrink-0 ${
         active
           ? "bg-white text-black border-white"
           : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700/60 border-zinc-700/50"
@@ -228,9 +229,9 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
   if (initialLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-10 w-28 bg-zinc-800/50 rounded-xl animate-pulse" />
+            <div key={i} className="h-10 w-28 bg-zinc-800/50 rounded-xl animate-pulse flex-shrink-0" />
           ))}
         </div>
         <GamesSkeleton />
@@ -252,7 +253,7 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
 
   return (
     <div className="space-y-6" ref={containerRef}>
-      <div className="flex flex-wrap gap-2">
+      <DragScrollRow className="gap-2 -mx-4 px-4 sm:mx-0 sm:px-0">
         <TabButton
           active={activeTab === "games"}
           onClick={() => handleTabChange("games")}
@@ -281,7 +282,7 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
           label={t("likes.tabs.tierlists")}
           count={counts.tierlists}
         />
-      </div>
+      </DragScrollRow>
 
       {isLoadingGames && activeTab === "games" ? (
         <GamesSkeleton />
