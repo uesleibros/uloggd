@@ -6,6 +6,7 @@ import ReviewButton from "@components/Game/Review"
 import JournalButton from "@components/Game/Journal"
 import GameReviews from "@components/Game/GameReviews"
 import { GameSteamAchievements } from "@components/Game/SteamAchievements"
+import { GameRetroAchievements } from "@components/Game/RetroAchievements"
 import { StatCard } from "../components/StatCard"
 import { InfoRow } from "../components/InfoRow"
 import { HowLongToBeat } from "../components/HowLongToBeat"
@@ -187,6 +188,8 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
           <GameSteamAchievements appId={game.steamId} />
         </>
       )}
+
+      <GameRetroAchievements gameName={game.name} />
 
       {allMedia.length > 0 && (
         <div>
