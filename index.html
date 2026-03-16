@@ -2,35 +2,194 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/logo.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- HTML Meta Tags -->
-    <title>uloggd - A Video Game Collection Tracker</title>
-    <meta name="description" content="Track, rate, and share your game collection with friends.">
+    <title>uloggd - Track, Rate & Share Your Game Collection</title>
+    <meta name="description" content="Track your gaming journey, rate games, write reviews, create lists & tier lists, track playtime with journals, and monitor achievements from Steam, PlayStation & RetroAchievements. Free forever." />
+    <meta name="keywords" content="game tracker, video game collection, game reviews, game ratings, game lists, tier lists, gaming journal, playtime tracker, steam achievements, playstation trophies, psn trophies, retroachievements, backlog tracker, game backlog, wishlist, game diary, game logging, game catalog, igdb, howlongtobeat, steam price history, game collection manager, game rating app, video game diary, game progress tracker, retro gaming, game completion tracker, played games, gaming stats, game library, game organizer" />
+    <meta name="author" content="uloggd" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="google" content="notranslate" />
 
-    <!-- Google / Search Engine Tags -->
-    <meta itemprop="name" content="uloggd - A Video Game Collection Tracker">
-    <meta itemprop="description" content="Track, rate, and share your game collection with friends.">
-    <meta itemprop="image" content="/banner.jpg">
+    <link rel="icon" type="image/x-icon" href="/logo.jpg" />
+    <link rel="apple-touch-icon" href="/logo.jpg" />
+    <link rel="canonical" href="https://uloggd.vercel.app" />
+    <meta name="theme-color" content="#5865F2" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="application-name" content="uloggd" />
+    <meta name="apple-mobile-web-app-title" content="uloggd" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
 
-    <!-- Facebook Meta Tags -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="uloggd - A Video Game Collection Tracker">
-    <meta property="og:description" content="Track, rate, and share your game collection with friends.">
-    <meta property="og:image" content="/banner.jpg">
+    <meta itemprop="name" content="uloggd - Track, Rate & Share Your Game Collection" />
+    <meta itemprop="description" content="Track your gaming journey, rate games, write reviews, create lists & tier lists, track playtime with journals, and monitor achievements from Steam, PlayStation & RetroAchievements." />
+    <meta itemprop="image" content="https://uloggd.vercel.app/banner.jpg" />
 
-    <!-- Twitter Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="uloggd - A Video Game Collection Tracker">
-    <meta name="twitter:description" content="Track, rate, and share your game collection with friends.">
-    <meta name="twitter:image" content="/banner.jpg">
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="uloggd" />
+    <meta property="og:url" content="https://uloggd.vercel.app" />
+    <meta property="og:title" content="uloggd - Track, Rate & Share Your Game Collection" />
+    <meta property="og:description" content="Track your gaming journey, rate games, write reviews, create lists & tier lists, track playtime with journals, and monitor achievements from Steam, PlayStation & RetroAchievements." />
+    <meta property="og:image" content="https://uloggd.vercel.app/banner.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="uloggd - Track, Rate & Share Your Game Collection" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="pt_BR" />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="uloggd - Track, Rate & Share Your Game Collection" />
+    <meta name="twitter:description" content="Track your gaming journey, rate games, write reviews, create lists & tier lists, track playtime with journals, and monitor achievements from Steam, PlayStation & RetroAchievements." />
+    <meta name="twitter:image" content="https://uloggd.vercel.app/banner.jpg" />
+    <meta name="twitter:image:alt" content="uloggd - Track, Rate & Share Your Game Collection" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "uloggd",
+      "alternateName": ["uloggd game tracker"],
+      "url": "https://uloggd.vercel.app",
+      "logo": "https://uloggd.vercel.app/logo.jpg",
+      "image": "https://uloggd.vercel.app/banner.jpg",
+      "description": "Track your gaming journey, rate games, write reviews, create lists & tier lists, track playtime with journals, and monitor achievements from Steam, PlayStation & RetroAchievements. Free forever.",
+      "applicationCategory": "GameApplication",
+      "applicationSubCategory": "Game Tracker",
+      "operatingSystem": "Web",
+      "browserRequirements": "Requires JavaScript",
+      "softwareVersion": "1.0",
+      "inLanguage": ["en", "pt-BR"],
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "featureList": [
+        "Video game collection tracking and management",
+        "Game reviews with rich text editor and markdown support",
+        "Customizable game rating system (5-star, 10-point, 100-point)",
+        "Custom game lists with drag-and-drop reordering",
+        "Tier list creator with visual drag-and-drop editor",
+        "Gaming journal with session tracking and playtime logging",
+        "Steam achievement tracking and progress monitoring",
+        "PlayStation trophy tracking (PS4, PS5, PS Vita)",
+        "RetroAchievements integration for retro games",
+        "Steam price history charts",
+        "HowLongToBeat integration for game completion times",
+        "Game backlog management",
+        "Wishlist tracking",
+        "Currently playing status",
+        "Game status tracking (completed, playing, shelved, abandoned, retired)",
+        "Social features with follows, likes and comments",
+        "User profile customization with banners, avatar decorations and badges",
+        "Game search powered by IGDB database",
+        "Community reviews and ratings",
+        "Multi-language support (English, Portuguese)",
+        "Dark theme UI",
+        "Mobile responsive design",
+        "Passkey authentication support",
+        "Virtual currency shop with cosmetic items",
+        "Daily reward chest system",
+        "Custom game covers",
+        "Profile comments",
+        "Review comments",
+        "List comments",
+        "Tier list comments",
+        "Nintendo Switch friend code sharing",
+        "Twitch integration",
+        "Aspect-based game ratings (gameplay, story, graphics, soundtrack)",
+        "Spoiler protection on reviews",
+        "Game media gallery with screenshots and artworks",
+        "Game video trailers from YouTube",
+        "Real-time user presence and online status"
+      ],
+      "screenshot": "https://uloggd.vercel.app/banner.jpg",
+      "author": {
+        "@type": "Organization",
+        "name": "uloggd",
+        "url": "https://uloggd.vercel.app"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "uloggd",
+        "url": "https://uloggd.vercel.app",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://uloggd.vercel.app/logo.jpg"
+        }
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://uloggd.vercel.app/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "uloggd",
+      "url": "https://uloggd.vercel.app",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://uloggd.vercel.app/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is uloggd?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "uloggd is a free video game collection tracker where you can log games you've played, write reviews, create lists and tier lists, track your playtime with a gaming journal, and monitor your achievements from Steam, PlayStation, and RetroAchievements."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is uloggd free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, uloggd is completely free to use. All core features including game tracking, reviews, lists, tier lists, journals, and achievement tracking are available at no cost."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I import my games from other platforms?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, uloggd supports importing your game collection from multiple sources. You can import games directly from your Steam library and from other tracking platforms."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What platforms does uloggd track achievements for?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "uloggd tracks achievements and trophies from Steam, PlayStation (PS4, PS5, PS Vita), and RetroAchievements for retro games. You can see your progress directly on each game's page."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>
