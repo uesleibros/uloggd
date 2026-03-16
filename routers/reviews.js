@@ -7,9 +7,11 @@ import { handleUpdate } from "#services/reviews/handlers/me/update.js"
 import { handleUser } from "#services/reviews/handlers/user.js"
 import { handleByUser } from "#services/reviews/handlers/byUser.js"
 import { handleBatch } from "#services/reviews/handlers/batch.js"
+import { handleGet } from "#services/reviews/handlers/get.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
+  get:         { handler: handleGet,         method: "GET",  scopes: null,    auth: false },
   create:      { handler: handleCreate,      method: "POST", scopes: ["@me"], auth: true  },
   delete:      { handler: handleDelete,      method: "POST", scopes: ["@me"], auth: true  },
   update:      { handler: handleUpdate,      method: "POST", scopes: ["@me"], auth: true  },
