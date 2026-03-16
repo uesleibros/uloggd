@@ -1,4 +1,13 @@
 export default {
+	translate: {
+	  button: "Translate",
+	  translating: "Translating...",
+	  showOriginal: "Show original",
+	  showTranslation: "Show translation",
+	  auto: "Auto-translated",
+	  readMore: "Read more",
+	  showLess: "Show less",
+	},
 	trophies: {
 	  profile: {
 	    title: "PlayStation Trophies",
