@@ -60,7 +60,6 @@
     "remark-gfm": "^4.0.0",
     "tailwindcss": "^4.1.18",
     "tough-cookie": "^6.0.0",
-    "psn-api": "^2.18.0",
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
