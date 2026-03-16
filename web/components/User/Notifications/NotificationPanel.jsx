@@ -14,6 +14,7 @@ import {
   BellOff,
   List,
   LayoutGrid,
+  MessageCircle
 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
