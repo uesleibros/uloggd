@@ -15,15 +15,15 @@ export default function TwitchSection() {
   const [disconnecting, setDisconnecting] = useState(false)
 
   useEffect(() => {
-    if (user?.id) fetchStatus()
-  }, [user?.id])
+    if (user?.user_id) fetchStatus()
+  }, [user?.user_id])
 
   async function fetchStatus() {
     try {
       const res = await fetch("/api/twitch/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id }),
+        body: JSON.stringify({ userId: user.user_id }),
       })
       const data = await res.json()
       if (data.connected) {
