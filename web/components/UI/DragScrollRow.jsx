@@ -6,6 +6,8 @@ const DragScrollRow = forwardRef(function DragScrollRow({
   autoScroll = false,
   autoScrollSpeed = 0.04,
   loop = false,
+  showEdgeFade = true,
+  edgeFadeColor = "from-zinc-950",
   ...props 
 }, ref) {
   const scrollRef = useRef(null)
@@ -13,6 +15,8 @@ const DragScrollRow = forwardRef(function DragScrollRow({
   const virtualScrollLeft = useRef(0)
   const windowWidthRef = useRef(typeof window !== "undefined" ? window.innerWidth : 0)
   const [isPaused, setIsPaused] = useState(false)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
 
   const dragRef = useRef({
     isDown: false,
@@ -25,6 +29,28 @@ const DragScrollRow = forwardRef(function DragScrollRow({
   })
 
   useImperativeHandle(ref, () => scrollRef.current)
+
+  const checkScroll = useCallback(() => {
+    if (!showEdgeFade) return
+    const el = scrollRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 2)
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2)
+  }, [showEdgeFade])
+
+  useEffect(() => {
+    if (!showEdgeFade) return
+    checkScroll()
+    const el = scrollRef.current
+    if (!el) return
+    el.addEventListener("scroll", checkScroll, { passive: true })
+    const ro = new ResizeObserver(checkScroll)
+    ro.observe(el)
+    return () => {
+      el.removeEventListener("scroll", checkScroll)
+      ro.disconnect()
+    }
+  }, [showEdgeFade, checkScroll, children])
 
   const normalizeScroll = useCallback(() => {
     if (!loop) return
@@ -161,9 +187,6 @@ const DragScrollRow = forwardRef(function DragScrollRow({
     dragRef.current.isHorizontal = false
   }, [])
 
-  const touchStartRef = useRef({ x: 0, y: 0 })
-  const touchDirectionRef = useRef({ decided: false, horizontal: false })
-
   const handleTouchStart = useCallback((e) => {
     const el = scrollRef.current
     if (!el) return
@@ -177,8 +200,6 @@ const DragScrollRow = forwardRef(function DragScrollRow({
       directionDecided: false,
       isHorizontal: false
     }
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
-    touchDirectionRef.current = { decided: false, horizontal: false }
     props.onTouchStart?.(e)
   }, [props.onTouchStart])
 
@@ -240,7 +261,7 @@ const DragScrollRow = forwardRef(function DragScrollRow({
     props.onMouseLeave?.(e)
   }, [autoScroll, handleMouseUp, syncVirtualScroll, props.onMouseLeave])
 
-  return (
+  const content = (
     <div
       ref={scrollRef}
       onMouseDown={handleMouseDown}
@@ -256,6 +277,24 @@ const DragScrollRow = forwardRef(function DragScrollRow({
       className={`flex overflow-x-auto scrollbar-hide select-none cursor-grab active:cursor-grabbing ${className}`}
     >
       {children}
+    </div>
+  )
+
+  if (!showEdgeFade) return content
+
+  return (
+    <div className="relative">
+      <div
+        className={`absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r ${edgeFadeColor} to-transparent z-10 pointer-events-none transition-opacity duration-200 ${
+          canScrollLeft ? "opacity-100" : "opacity-0"
+        }`}
+      />
+      {content}
+      <div
+        className={`absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l ${edgeFadeColor} to-transparent z-10 pointer-events-none transition-opacity duration-200 ${
+          canScrollRight ? "opacity-100" : "opacity-0"
+        }`}
+      />
     </div>
   )
 })
