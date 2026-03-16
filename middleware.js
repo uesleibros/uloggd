@@ -2,9 +2,10 @@ export const config = {
   matcher: ['/game/:slug*', '/u/:username*', '/list/:id*', '/tierlist/:id*', '/review/:id*'],
 }
 
-const BOT_REGEX = /Discordbot|Twitterbot|facebookexternalhit|LinkedInBot|TelegramBot|Slackbot|WhatsApp|Embedly|Pinterest|Slack-ImgProxy/i
+const BOT_REGEX = /Discordbot|Twitterbot|facebookexternalhit|LinkedInBot|TelegramBot|Slackbot|WhatsApp|Embedly|Pinterest|Slack-ImgProxy|Googlebot|bingbot|yandex|Baiduspider|DuckDuckBot/i
 
 const SITE_NAME = 'uloggd'
+const SITE_DESCRIPTION = 'Track your gaming journey, rate games, write reviews, create lists & tier lists, track playtime with journals, and monitor achievements from Steam, PlayStation & RetroAchievements.'
 const THEME_COLOR = '#5865F2'
 const FETCH_TIMEOUT = 4000
 
@@ -104,7 +105,7 @@ async function handleGame(url, slug) {
   const title = `${game.name} - ${SITE_NAME}`
   const description = game.summary
     ? truncate(stripMarkdown(game.summary))
-    : `View details about ${game.name}`
+    : `View details about ${game.name} on ${SITE_NAME}`
 
   const image = game.cover?.url
     ? ensureAbsoluteUrl(game.cover.url.replace('t_thumb', 't_720p'), url.origin)
@@ -116,6 +117,7 @@ async function handleGame(url, slug) {
     image,
     url: url.href,
     twitterCard: 'summary_large_image',
+    type: 'article',
   })
 }
 
@@ -128,7 +130,7 @@ async function handleProfile(url, username) {
   const title = `${profile.username} - ${SITE_NAME}`
   const description = profile.bio
     ? truncate(stripMarkdown(profile.bio))
-    : `${profile.username}'s profile`
+    : `${profile.username}'s gaming profile on ${SITE_NAME}`
   const image = ensureAbsoluteUrl(profile.avatar, url.origin)
 
   return buildResponse({
@@ -137,6 +139,7 @@ async function handleProfile(url, username) {
     image,
     url: url.href,
     twitterCard: 'summary',
+    type: 'profile',
   })
 }
 
@@ -147,10 +150,11 @@ async function handleList(url, listId) {
   if (!list) return buildFallbackResponse(url)
 
   const gamesCount = list.items_total || list.game_slugs?.length || 0
+  const owner = list.owner?.username || ''
   const title = `${list.title} - ${SITE_NAME}`
   const description = list.description
     ? truncate(stripMarkdown(list.description))
-    : `List with ${pluralize(gamesCount, 'game', 'games')}`
+    : `${owner ? `${owner}'s game list` : 'Game list'} with ${pluralize(gamesCount, 'game', 'games')}`
 
   return buildResponse({
     title,
@@ -158,6 +162,7 @@ async function handleList(url, listId) {
     image: null,
     url: url.href,
     twitterCard: 'summary',
+    type: 'article',
   })
 }
 
@@ -172,11 +177,12 @@ async function handleTierlist(url, tierlistId) {
     0
   )
   const tiersCount = tierlist.tierlist_tiers?.length || 0
+  const owner = tierlist.owner?.username || ''
 
   const title = `${tierlist.title} - ${SITE_NAME}`
   const description = tierlist.description
     ? truncate(stripMarkdown(tierlist.description))
-    : `Tierlist with ${pluralize(gamesCount, 'game', 'games')} in ${pluralize(tiersCount, 'tier', 'tiers')}`
+    : `${owner ? `${owner}'s tier list` : 'Tier list'} with ${pluralize(gamesCount, 'game', 'games')} in ${pluralize(tiersCount, 'tier', 'tiers')}`
 
   return buildResponse({
     title,
@@ -184,6 +190,7 @@ async function handleTierlist(url, tierlistId) {
     image: null,
     url: url.href,
     twitterCard: 'summary',
+    type: 'article',
   })
 }
 
@@ -205,7 +212,7 @@ async function handleReview(url, reviewId) {
   } else if (review.rating) {
     description = `${username} rated ${gameName} ${review.rating}/10`
   } else {
-    description = `${username}'s review of ${gameName}`
+    description = `${username}'s review of ${gameName} on ${SITE_NAME}`
   }
 
   const image = game?.cover?.url
@@ -218,43 +225,53 @@ async function handleReview(url, reviewId) {
     image,
     url: url.href,
     twitterCard: image ? 'summary_large_image' : 'summary',
+    type: 'article',
   })
 }
 
 function buildFallbackResponse(url) {
   return buildResponse({
-    title: SITE_NAME,
-    description: 'Track, rate and discover games.',
+    title: `${SITE_NAME} - Track, Rate & Share Your Game Collection`,
+    description: SITE_DESCRIPTION,
     image: null,
     url: url.href,
-    twitterCard: 'summary',
+    twitterCard: 'summary_large_image',
   })
 }
 
-function buildResponse({ title, description, image, url, twitterCard = 'summary' }) {
+function buildResponse({ title, description, image, url, twitterCard = 'summary', type = 'website' }) {
+  const origin = new URL(url).origin
   const safeTitle = escapeHtml(title)
   const safeDesc = escapeHtml(description)
   const safeUrl = escapeHtml(url)
-  const fallbackImage = `${new URL(url).origin}/banner.jpg`
+  const fallbackImage = `${origin}/banner.jpg`
   const safeImage = escapeHtml(image || fallbackImage)
 
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${safeTitle}</title>
-  <meta name="description" content="${safeDesc}">
-  <meta property="og:title" content="${safeTitle}">
-  <meta property="og:description" content="${safeDesc}">
-  <meta property="og:image" content="${safeImage}">
-  <meta property="og:url" content="${safeUrl}">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="${SITE_NAME}">
-  <meta name="twitter:card" content="${twitterCard}">
-  <meta name="twitter:title" content="${safeTitle}">
-  <meta name="twitter:description" content="${safeDesc}">
-  <meta name="twitter:image" content="${safeImage}">
-  <meta name="theme-color" content="${THEME_COLOR}">
+  <meta name="description" content="${safeDesc}" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+  <meta name="theme-color" content="${THEME_COLOR}" />
+  <link rel="canonical" href="${safeUrl}" />
+  <link rel="icon" type="image/x-icon" href="${origin}/logo.jpg" />
+  <meta property="og:title" content="${safeTitle}" />
+  <meta property="og:description" content="${safeDesc}" />
+  <meta property="og:image" content="${safeImage}" />
+  <meta property="og:image:alt" content="${safeTitle}" />
+  <meta property="og:url" content="${safeUrl}" />
+  <meta property="og:type" content="${type}" />
+  <meta property="og:site_name" content="${SITE_NAME}" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="pt_BR" />
+  <meta name="twitter:card" content="${twitterCard}" />
+  <meta name="twitter:title" content="${safeTitle}" />
+  <meta name="twitter:description" content="${safeDesc}" />
+  <meta name="twitter:image" content="${safeImage}" />
+  <meta name="twitter:image:alt" content="${safeTitle}" />
 </head>
 <body></body>
 </html>`
