@@ -61,7 +61,7 @@ export function ProfileHeader({
               decorationUrl={profile.equipped?.avatar_decoration?.asset_url}
               status={status}
               isStreaming={!!profile.stream}
-              size="profile"
+              size="xl"
             />
             {!isBanned && (
               <div
