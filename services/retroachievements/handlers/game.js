@@ -38,21 +38,21 @@ async function raFetch(endpoint, username, apiKey, params) {
   return res.json()
 }
 
-async function searchGameInRA(username, apiKey, gameName) {
+async function findGameInUserLibrary(username, apiKey, gameName) {
+  const data = await raFetch("API_GetUserCompletedGames.php", username, apiKey, `u=${encodeURIComponent(username)}`)
+
+  if (!data || !Array.isArray(data) || data.length === 0) return null
+
   const attempts = [
     gameName,
     gameName.replace(/:/g, "").replace(/-/g, " "),
     gameName.split(":")[0].trim(),
   ]
 
+  let bestMatch = null
+  let bestScore = 0
+
   for (const searchTerm of attempts) {
-    const data = await raFetch("API_GetGameList.php", username, apiKey, `i=0&h=1&f=${encodeURIComponent(searchTerm)}`)
-
-    if (!data || !Array.isArray(data) || data.length === 0) continue
-
-    let bestMatch = null
-    let bestScore = 0
-
     for (const game of data) {
       const score = similarity(searchTerm, game.Title)
       if (score > bestScore) {
@@ -60,15 +60,15 @@ async function searchGameInRA(username, apiKey, gameName) {
         bestMatch = game
       }
     }
+  }
 
-    if (bestMatch && bestScore >= 0.5) {
-      return {
-        id: bestMatch.ID,
-        title: bestMatch.Title,
-        consoleId: bestMatch.ConsoleID,
-        consoleName: bestMatch.ConsoleName,
-        score: bestScore,
-      }
+  if (bestMatch && bestScore >= 0.5) {
+    return {
+      id: bestMatch.GameID,
+      title: bestMatch.Title,
+      consoleId: bestMatch.ConsoleID,
+      consoleName: bestMatch.ConsoleName,
+      score: bestScore,
     }
   }
 
@@ -144,7 +144,7 @@ export async function handleGame(req, res) {
       return res.json({ connected: false })
     }
 
-    const match = await searchGameInRA(connection.provider_username, connection.access_token, gameName)
+    const match = await findGameInUserLibrary(connection.provider_username, connection.access_token, gameName)
 
     if (!match) {
       return res.json({ connected: true, found: false })
