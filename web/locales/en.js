@@ -1147,10 +1147,27 @@ export default {
 		},
 		content: {
 			ra: {
-				matchedAs: "Matched as \"{{title}}\" on RetroAchievements",
-				showAll: "View all ({{count}})",
-				showLess: "Show less",
-			},
+		    title: "Achievements",
+		    matchedAs: "Matched as \"{{title}}\" on RetroAchievements",
+		    showAll: "View all ({{count}})",
+		    showLess: "Show less",
+		    viewOnRA: "View on RetroAchievements",
+		    filter: {
+		      all: "All ({{count}})",
+		      unlocked: "Unlocked ({{count}})",
+		      locked: "Locked ({{count}})",
+		    },
+		    detail: {
+		      status: "Status",
+		      unlocked: "Unlocked",
+		      locked: "Locked",
+		      unlockedAt: "Unlocked at",
+		      mode: "Mode",
+		      points: "Points",
+		      rarity: "Rarity",
+		      platform: "Platform",
+		    },
+		  },
 			stats: {
 				ratings: "Ratings",
 				hype: "Hype",
