@@ -11,7 +11,6 @@ import { StatCard } from "../components/StatCard"
 import { InfoRow } from "../components/InfoRow"
 import { HowLongToBeat } from "../components/HowLongToBeat"
 import { GameHeader } from "./GameHeader"
-import { VideoGrid } from "../components/VideoGrid"
 import PriceHistory from "@components/Game/PriceHistory"
 import CommentSection from "@components/UI/CommentSection"
 import Translatable from "@components/UI/Translatable"
@@ -82,19 +81,6 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
 
       <GamePSNTrophies gameName={game.name} />
       <GameRetroAchievements gameName={game.name} />
-
-      {game.videos?.length > 0 && (
-        <div>
-          <hr className="my-6 border-zinc-700" />
-          <h2 className="text-lg font-semibold text-white mb-4">
-            {t("content.videos.title")}
-            <span className="text-sm text-zinc-500 font-normal ml-2">
-              ({game.videos.length})
-            </span>
-          </h2>
-          <VideoGrid videos={game.videos} />
-        </div>
-      )}
 
       {allMedia.length > 0 && (
         <div>
