@@ -8,6 +8,7 @@ import ListsSection from "@components/Lists/ListsSection"
 import TierlistsSection from "@components/Tierlist/TierlistsSection"
 import TransactionsSection from "./TransactionsSection"
 import JourneysSection from "@components/Game/Journal/JourneysSection"
+import CommentSection from "@components/UI/CommentSection"
 
 export function ProfileContent({
   activeSection,
@@ -60,11 +61,14 @@ export function ProfileContent({
   return (
     <div className="mt-4">
       {activeSection === "profile" && (
-        <BioSection
-          bio={profile.bio}
-          profileId={profile.user_id}
-          onEdit={onEditProfile}
-        />
+        <div className="space-y-8">
+          <BioSection
+            bio={profile.bio}
+            profileId={profile.user_id}
+            onEdit={onEditProfile}
+          />
+          <CommentSection type="profile" targetId={profile.user_id} />
+        </div>
       )}
 
       {activeSection === "games" && (

@@ -651,6 +651,23 @@ export default {
 		updated: "Atualizada {{date}}",
 		selectPlatform: "Selecionar plataforma",
 		noPlatforms: "Nenhuma plataforma disponível",
+		comments: {
+			title: "Comentários",
+			placeholder: "Escreva um comentário...",
+			submit: "Enviar",
+			sending: "Enviando...",
+			edit: "Editar",
+			delete: "Excluir",
+			cancel: "Cancelar",
+			save: "Salvar",
+			saving: "Salvando...",
+			edited: "editado",
+			loadMore: "Carregar mais",
+			empty: "Nenhum comentário ainda",
+			emptySubtitle: "Seja o primeiro a comentar!",
+			loginRequired: "Entre para comentar",
+			deleteConfirm: "Excluir este comentário?",
+		},
 		likeModal: {
 			title: "Curtidas",
 			searchPlaceholder: "Buscar usuário...",
@@ -932,33 +949,33 @@ export default {
 			follow: "Seguir",
 		},
 		likes: {
-		  tabs: {
-		    games: "Jogos",
-		    reviews: "Reviews",
-		    lists: "Listas",
-		    tierlists: "Tierlists",
-		  },
-		  empty: {
-		    title: "Nenhuma curtida ainda",
-		    own: "Jogos, reviews, listas e tierlists que você curtir aparecerão aqui",
-		    other: "{{username}} ainda não curtiu nada",
-		  },
-		  emptyGames: {
-		    own: "Você ainda não curtiu nenhum jogo",
-		    other: "{{username}} ainda não curtiu nenhum jogo",
-		  },
-		  emptyReviews: {
-		    own: "Você ainda não curtiu nenhuma review",
-		    other: "{{username}} ainda não curtiu nenhuma review",
-		  },
-		  emptyLists: {
-		    own: "Você ainda não curtiu nenhuma lista",
-		    other: "{{username}} ainda não curtiu nenhuma lista",
-		  },
-		  emptyTierlists: {
-		    own: "Você ainda não curtiu nenhuma tierlist",
-		    other: "{{username}} ainda não curtiu nenhuma tierlist",
-		  },
+			tabs: {
+				games: "Jogos",
+				reviews: "Reviews",
+				lists: "Listas",
+				tierlists: "Tierlists",
+			},
+			empty: {
+				title: "Nenhuma curtida ainda",
+				own: "Jogos, reviews, listas e tierlists que você curtir aparecerão aqui",
+				other: "{{username}} ainda não curtiu nada",
+			},
+			emptyGames: {
+				own: "Você ainda não curtiu nenhum jogo",
+				other: "{{username}} ainda não curtiu nenhum jogo",
+			},
+			emptyReviews: {
+				own: "Você ainda não curtiu nenhuma review",
+				other: "{{username}} ainda não curtiu nenhuma review",
+			},
+			emptyLists: {
+				own: "Você ainda não curtiu nenhuma lista",
+				other: "{{username}} ainda não curtiu nenhuma lista",
+			},
+			emptyTierlists: {
+				own: "Você ainda não curtiu nenhuma tierlist",
+				other: "{{username}} ainda não curtiu nenhuma tierlist",
+			},
 		},
 		reviews: {
 			title: "Reviews",
@@ -1221,13 +1238,14 @@ export default {
 		markAllAsRead: "Marcar todas como lidas",
 		clearAll: "Limpar todas",
 		empty: "Nenhuma notificação",
+		unreadCount: "{{count}} não lidas",
 		close: "Fechar",
 		types: {
 			list_like: {
-			  text: "curtiu sua lista \"{{title}}\"",
+				text: "curtiu sua lista \"{{title}}\"",
 			},
 			tierlist_like: {
-			  text: "curtiu sua tierlist \"{{title}}\"",
+				text: "curtiu sua tierlist \"{{title}}\"",
 			},
 			follow: {
 				text: "começou a te seguir",

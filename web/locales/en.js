@@ -651,6 +651,23 @@ export default {
 		updated: "Updated {{date}}",
 		selectPlatform: "Select platform",
 		noPlatforms: "No platforms available",
+		comments: {
+			title: "Comments",
+			placeholder: "Write a comment...",
+			submit: "Submit",
+			sending: "Sending...",
+			edit: "Edit",
+			delete: "Delete",
+			cancel: "Cancel",
+			save: "Save",
+			saving: "Saving...",
+			edited: "edited",
+			loadMore: "Load more",
+			empty: "No comments yet",
+			emptySubtitle: "Be the first to comment!",
+			loginRequired: "Sign in to comment",
+			deleteConfirm: "Delete this comment?",
+		},
 		likeModal: {
 			title: "Likes",
 			searchPlaceholder: "Search user...",
@@ -1221,13 +1238,14 @@ export default {
 		markAllAsRead: "Mark all as read",
 		clearAll: "Clear all",
 		empty: "No notifications",
+		unreadCount: "{{count}} unreads",
 		close: "Close",
 		types: {
 			list_like: {
-			  text: "liked your list \"{{title}}\"",
+				text: "liked your list \"{{title}}\"",
 			},
 			tierlist_like: {
-			  text: "liked your tierlist \"{{title}}\"",
+				text: "liked your tierlist \"{{title}}\"",
 			},
 			follow: {
 				text: "started following you",

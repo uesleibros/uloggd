@@ -19,6 +19,7 @@ import { transactionsHandler } from "#routers/transactions.js"
 import { passkeyHandler } from "#routers/passkey.js"
 import { shopHandler } from "#routers/shop.js"
 import { journeysHandler } from "#routers/journeys.js"
+import { commentsHandler } from "#routers/comments.js"
 
 import { steamHandler } from "#routers/connections/steam.js"
 import { twitchHandler } from "#routers/connections/twitch.js"
@@ -52,7 +53,8 @@ const SERVICES = {
 	transactions: transactionsHandler,
 	passkey: passkeyHandler,
 	shop: shopHandler,
-	journeys: journeysHandler
+	journeys: journeysHandler,
+	comments: commentsHandler
 }
 
 export default async function handler(req, res) {
