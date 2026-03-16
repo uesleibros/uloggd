@@ -20,100 +20,23 @@ import {
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
 import { supabase } from "#lib/supabase"
+import { encode } from "#utils/shortId"
 import Modal from "@components/UI/Modal"
 
 const NOTIFICATION_ICONS = {
-  follow: { 
-    icon: UserPlus, 
-    color: "text-indigo-400", 
-    bg: "bg-indigo-500/15", 
-    border: "border-indigo-500/30",
-    gradient: "from-indigo-500/20 to-indigo-600/5"
-  },
-  review_like: { 
-    icon: ThumbsUp, 
-    color: "text-pink-400", 
-    bg: "bg-pink-500/15", 
-    border: "border-pink-500/30",
-    gradient: "from-pink-500/20 to-pink-600/5"
-  },
-  list_like: { 
-    icon: List, 
-    color: "text-blue-400", 
-    bg: "bg-blue-500/15", 
-    border: "border-blue-500/30",
-    gradient: "from-blue-500/20 to-blue-600/5"
-  },
-  tierlist_like: { 
-    icon: LayoutGrid, 
-    color: "text-purple-400", 
-    bg: "bg-purple-500/15", 
-    border: "border-purple-500/30",
-    gradient: "from-purple-500/20 to-purple-600/5"
-  },
-  gift_received: { 
-    icon: Gift, 
-    color: "text-amber-400", 
-    bg: "bg-amber-500/15", 
-    border: "border-amber-500/30",
-    gradient: "from-amber-500/20 to-amber-600/5"
-  },
-  verification_approved: { 
-    icon: BadgeCheck, 
-    color: "text-emerald-400", 
-    bg: "bg-emerald-500/15", 
-    border: "border-emerald-500/30",
-    gradient: "from-emerald-500/20 to-emerald-600/5"
-  },
-  verification_rejected: { 
-    icon: XCircle, 
-    color: "text-red-400", 
-    bg: "bg-red-500/15", 
-    border: "border-red-500/30",
-    gradient: "from-red-500/20 to-red-600/5"
-  },
-  account_banned: { 
-    icon: Ban, 
-    color: "text-red-400", 
-    bg: "bg-red-500/15", 
-    border: "border-red-500/30",
-    gradient: "from-red-500/20 to-red-600/5"
-  },
-  account_unbanned: { 
-    icon: CheckCircle, 
-    color: "text-emerald-400", 
-    bg: "bg-emerald-500/15", 
-    border: "border-emerald-500/30",
-    gradient: "from-emerald-500/20 to-emerald-600/5"
-  },
-  profile_comment: { 
-    icon: MessageCircle, 
-    color: "text-cyan-400", 
-    bg: "bg-cyan-500/15", 
-    border: "border-cyan-500/30",
-    gradient: "from-cyan-500/20 to-cyan-600/5"
-  },
-  review_comment: { 
-    icon: MessageCircle, 
-    color: "text-pink-400", 
-    bg: "bg-pink-500/15", 
-    border: "border-pink-500/30",
-    gradient: "from-pink-500/20 to-pink-600/5"
-  },
-  list_comment: { 
-    icon: MessageCircle, 
-    color: "text-blue-400", 
-    bg: "bg-blue-500/15", 
-    border: "border-blue-500/30",
-    gradient: "from-blue-500/20 to-blue-600/5"
-  },
-  tierlist_comment: { 
-    icon: MessageCircle, 
-    color: "text-purple-400", 
-    bg: "bg-purple-500/15", 
-    border: "border-purple-500/30",
-    gradient: "from-purple-500/20 to-purple-600/5"
-  },
+  follow: { icon: UserPlus, color: "text-indigo-400" },
+  review_like: { icon: ThumbsUp, color: "text-pink-400" },
+  list_like: { icon: List, color: "text-blue-400" },
+  tierlist_like: { icon: LayoutGrid, color: "text-purple-400" },
+  gift_received: { icon: Gift, color: "text-amber-400" },
+  verification_approved: { icon: BadgeCheck, color: "text-emerald-400" },
+  verification_rejected: { icon: XCircle, color: "text-red-400" },
+  account_banned: { icon: Ban, color: "text-red-400" },
+  account_unbanned: { icon: CheckCircle, color: "text-emerald-400" },
+  profile_comment: { icon: MessageCircle, color: "text-cyan-400" },
+  review_comment: { icon: MessageCircle, color: "text-pink-400" },
+  list_comment: { icon: MessageCircle, color: "text-blue-400" },
+  tierlist_comment: { icon: MessageCircle, color: "text-purple-400" },
 }
 
 const NOTIFICATION_USER_ID_MAP = {
@@ -135,12 +58,12 @@ const NOTIFICATION_USER_ID_MAP = {
 const NOTIFICATION_LINKS = {
   follow: (data, users) => `/u/${users[data.follower_id]?.username}`,
   review_like: (data) => `/game/${data.game_slug}`,
-  list_like: (data) => `/list/${data.list_id}`,
-  tierlist_like: (data) => `/tierlist/${data.tierlist_id}`,
+  list_like: (data) => `/list/${encode(data.list_id)}`,
+  tierlist_like: (data) => `/tierlist/${encode(data.tierlist_id)}`,
   profile_comment: (data) => `/u/${data.profile_username}`,
   review_comment: (data) => `/game/${data.game_slug}`,
-  list_comment: (data) => `/list/${data.list_id}`,
-  tierlist_comment: (data) => `/tierlist/${data.tierlist_id}`,
+  list_comment: (data) => `/list/${encode(data.list_id)}`,
+  tierlist_comment: (data) => `/tierlist/${encode(data.tierlist_id)}`,
 }
 
 const MODAL_NOTIFICATIONS = [
@@ -165,9 +88,9 @@ function getNotificationText(type, data, t) {
     case "review_like":
       return t("notifications.types.review_like.text")
     case "list_like":
-      return t("notifications.types.list_like.text", { title: data.list_title })
+      return t("notifications.types.list_like.text", { title: data.list_title || "..." })
     case "tierlist_like":
-      return t("notifications.types.tierlist_like.text", { title: data.tierlist_title })
+      return t("notifications.types.tierlist_like.text", { title: data.tierlist_title || "..." })
     case "gift_received":
       return t("notifications.types.gift_received.title")
     case "verification_approved":
@@ -181,11 +104,11 @@ function getNotificationText(type, data, t) {
     case "profile_comment":
       return t("notifications.types.profile_comment.text")
     case "review_comment":
-      return t("notifications.types.review_comment.text", { game: data.game_name })
+      return t("notifications.types.review_comment.text", { game: data.game_name || "..." })
     case "list_comment":
-      return t("notifications.types.list_comment.text", { title: data.list_title })
+      return t("notifications.types.list_comment.text", { title: data.list_title || "..." })
     case "tierlist_comment":
-      return t("notifications.types.tierlist_comment.text", { title: data.tierlist_title })
+      return t("notifications.types.tierlist_comment.text", { title: data.tierlist_title || "..." })
     default:
       return ""
   }
@@ -239,50 +162,40 @@ function SystemNotificationModal({ notification, users, isOpen, onClose }) {
       maxWidth="max-w-sm"
       showCloseButton={false}
       zIndex={10001}
-      className="!border-0 !bg-transparent !shadow-none"
     >
-      <div className="relative overflow-hidden rounded-2xl bg-zinc-900/95 backdrop-blur-xl border border-zinc-800/80 shadow-2xl shadow-black/50">
-        <div className={`absolute inset-0 bg-gradient-to-b ${config.gradient} opacity-50`} />
-        
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-lg transition-colors z-10 cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-        </button>
-
-        <div className="relative flex flex-col items-center text-center px-6 pt-10 pb-6">
-          <div className={`w-16 h-16 rounded-2xl ${config.bg} border ${config.border} flex items-center justify-center mb-5 shadow-lg`}>
-            <Icon className={`w-8 h-8 ${config.color}`} />
+      <div className="p-6">
+        <div className="flex items-start gap-4 mb-4">
+          <div className={`w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0`}>
+            <Icon className={`w-5 h-5 ${config.color}`} />
           </div>
-
-          <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
-          <p className="text-sm text-zinc-400 leading-relaxed whitespace-pre-line max-w-[280px]">{message}</p>
-
-          {actor && (
-            <div className="flex items-center gap-2.5 mt-6 px-4 py-2.5 bg-zinc-800/60 border border-zinc-700/50 rounded-xl">
-              <img
-                src={actor.avatar}
-                alt={actor.username}
-                className="w-7 h-7 rounded-full object-cover bg-zinc-700 ring-2 ring-zinc-600/50"
-              />
-              <span className="text-sm text-zinc-300">
-                {isGift
-                  ? t("notifications.sentBy", { username: actor.username })
-                  : t("notifications.reviewedBy", { username: actor.username })}
-              </span>
-            </div>
-          )}
-
-          <p className="text-xs text-zinc-600 mt-5">
-            {formatDateLong(notification.created_at)}
-          </p>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-medium text-white mb-1">{title}</h3>
+            <p className="text-sm text-zinc-400 whitespace-pre-line">{message}</p>
+          </div>
         </div>
 
-        <div className="relative border-t border-zinc-800/80 px-6 py-4 bg-zinc-900/50">
+        {actor && (
+          <div className="flex items-center gap-2 py-2 px-3 bg-zinc-800/50 rounded-lg mb-4">
+            <img
+              src={actor.avatar}
+              alt={actor.username}
+              className="w-5 h-5 rounded-full object-cover"
+            />
+            <span className="text-xs text-zinc-400">
+              {isGift
+                ? t("notifications.sentBy", { username: actor.username })
+                : t("notifications.reviewedBy", { username: actor.username })}
+            </span>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
+          <span className="text-xs text-zinc-500">
+            {formatDateLong(notification.created_at)}
+          </span>
           <button
             onClick={onClose}
-            className="w-full px-4 py-2.5 text-sm font-medium text-zinc-200 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded-xl transition-all cursor-pointer"
+            className="px-4 py-1.5 text-sm font-medium text-white bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer"
           >
             {t("notifications.close")}
           </button>
@@ -308,7 +221,6 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
 
   function handleClick(e) {
     onAction("read", notification.id)
-
     if (opensModal) {
       e.preventDefault()
       onSystemClick(notification)
@@ -320,46 +232,40 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
   const inner = (
     <div className="flex items-start gap-3 flex-1 min-w-0">
       {showIconOnly ? (
-        <div className={`w-11 h-11 rounded-xl ${config.bg} border ${config.border} flex items-center justify-center flex-shrink-0 shadow-sm`}>
-          <Icon className={`w-5 h-5 ${config.color}`} />
+        <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0">
+          <Icon className={`w-4 h-4 ${config.color}`} />
         </div>
       ) : (
         <div className="relative flex-shrink-0">
           <img
             src={actorUser?.avatar}
             alt={actorUser?.username}
-            className="w-11 h-11 rounded-xl object-cover bg-zinc-800 shadow-sm"
+            className="w-9 h-9 rounded-full object-cover bg-zinc-800"
           />
-          <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-lg ${config.bg} border-2 border-zinc-900 flex items-center justify-center shadow-sm`}>
+          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-zinc-900 flex items-center justify-center">
             <Icon className={`w-2.5 h-2.5 ${config.color}`} />
           </div>
         </div>
       )}
 
-      <div className="flex-1 min-w-0 py-0.5">
-        <p className={`text-sm leading-snug ${!notification.read ? "text-zinc-200" : "text-zinc-400"}`}>
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm leading-snug ${!notification.read ? "text-zinc-100" : "text-zinc-400"}`}>
           {!showIconOnly && (
-            <span className={`font-semibold ${!notification.read ? "text-white" : "text-zinc-300"}`}>
-              {actorUser?.username || t("notifications.someone")}
-            </span>
+            <span className="font-medium">{actorUser?.username || t("notifications.someone")}</span>
           )}{" "}
           {text}
         </p>
-        
         {preview && (
-          <p className="text-xs text-zinc-500 mt-1 line-clamp-1 italic">
-            "{preview}"
-          </p>
+          <p className="text-xs text-zinc-500 mt-0.5 truncate">"{preview}"</p>
         )}
-        
-        <span className={`text-xs mt-1.5 block ${!notification.read ? "text-indigo-400" : "text-zinc-600"}`}>
+        <span className={`text-xs mt-1 block ${!notification.read ? "text-indigo-400" : "text-zinc-600"}`}>
           {getTimeAgoFromTimestamp(notification.created_at)}
         </span>
       </div>
 
-      <div className="flex items-center gap-2 flex-shrink-0 pt-1">
+      <div className="flex items-center gap-1.5 flex-shrink-0">
         {!notification.read && (
-          <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-sm shadow-indigo-500/50" />
+          <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
         )}
         <button
           onClick={(e) => {
@@ -367,7 +273,7 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
             e.stopPropagation()
             onDelete(notification.id)
           }}
-          className="p-1.5 text-zinc-600 hover:text-red-400 rounded-lg hover:bg-red-500/10 transition-all cursor-pointer opacity-0 group-hover/item:opacity-100"
+          className="p-1 text-zinc-600 hover:text-red-400 rounded transition-colors cursor-pointer opacity-0 group-hover/item:opacity-100"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
@@ -375,10 +281,8 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
     </div>
   )
 
-  const itemClasses = `group/item flex items-start w-full px-4 py-3.5 transition-all duration-200 ${
-    !notification.read
-      ? "bg-gradient-to-r from-indigo-500/[0.08] to-transparent hover:from-indigo-500/[0.12]"
-      : "hover:bg-zinc-800/40"
+  const itemClasses = `group/item flex items-start w-full px-4 py-3 transition-colors ${
+    !notification.read ? "bg-indigo-500/5 hover:bg-indigo-500/10" : "hover:bg-zinc-800/50"
   }`
 
   if (opensModal) {
@@ -401,13 +305,13 @@ function NotificationItem({ notification, users, onClose, onAction, onSystemClic
 
 function NotificationSkeleton() {
   return (
-    <div className="py-2">
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex items-start gap-3 px-4 py-3.5">
-          <div className="w-11 h-11 rounded-xl bg-zinc-800/80 animate-pulse flex-shrink-0" />
-          <div className="flex-1 space-y-2.5 pt-1">
-            <div className="h-3.5 w-3/4 bg-zinc-800/80 rounded-lg animate-pulse" />
-            <div className="h-3 w-1/3 bg-zinc-800/50 rounded-lg animate-pulse" />
+    <div>
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="flex items-start gap-3 px-4 py-3">
+          <div className="w-9 h-9 rounded-full bg-zinc-800 animate-pulse flex-shrink-0" />
+          <div className="flex-1 space-y-2 pt-0.5">
+            <div className="h-3 w-3/4 bg-zinc-800 rounded animate-pulse" />
+            <div className="h-2.5 w-1/4 bg-zinc-800/60 rounded animate-pulse" />
           </div>
         </div>
       ))}
@@ -419,12 +323,9 @@ function NotificationEmpty() {
   const { t } = useTranslation()
 
   return (
-    <div className="flex flex-col items-center justify-center py-20 px-6">
-      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-zinc-800/80 to-zinc-900 border border-zinc-700/50 flex items-center justify-center mb-5 shadow-lg">
-        <BellOff className="w-9 h-9 text-zinc-600" />
-      </div>
-      <p className="text-base font-medium text-zinc-400 mb-1">{t("notifications.empty")}</p>
-      <p className="text-sm text-zinc-600">{t("notifications.emptySubtext")}</p>
+    <div className="flex flex-col items-center justify-center py-16 px-6">
+      <BellOff className="w-10 h-10 text-zinc-700 mb-3" />
+      <p className="text-sm text-zinc-500">{t("notifications.empty")}</p>
     </div>
   )
 }
@@ -437,9 +338,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
   const [systemNotification, setSystemNotification] = useState(null)
 
   const fetchNotifications = useCallback(async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+    const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
 
     try {
@@ -448,30 +347,80 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
       })
       const data = await r.json()
 
-      const userIds = [
-        ...new Set(
-          data.flatMap((n) => {
-            const getUserId = NOTIFICATION_USER_ID_MAP[n.type]
-            if (!getUserId) return []
-            const userId = getUserId(n.data)
-            return userId ? [userId] : []
-          })
-        ),
-      ]
+      const userIds = new Set()
+      const listIds = new Set()
+      const tierlistIds = new Set()
+      const reviewIds = new Set()
+
+      data.forEach((n) => {
+        const getUserId = NOTIFICATION_USER_ID_MAP[n.type]
+        if (getUserId) {
+          const userId = getUserId(n.data)
+          if (userId) userIds.add(userId)
+        }
+        if (n.data.profile_user_id) userIds.add(n.data.profile_user_id)
+        if (n.data.list_id) listIds.add(n.data.list_id)
+        if (n.data.tierlist_id) tierlistIds.add(n.data.tierlist_id)
+        if (n.data.review_id) reviewIds.add(n.data.review_id)
+      })
 
       let usersMap = {}
-      if (userIds.length > 0) {
+      if (userIds.size > 0) {
         const params = new URLSearchParams()
         userIds.forEach((id) => params.append("userIds", id))
-
         const uRes = await fetch(`/api/users/batch?${params}`)
         const uData = await uRes.json()
-        uData.forEach((u) => {
-          usersMap[u.user_id] = u
-        })
+        uData.forEach((u) => { usersMap[u.user_id] = u })
       }
 
-      setNotifications(data || [])
+      let listsMap = {}
+      if (listIds.size > 0) {
+        const { data: lists } = await supabase
+          .from("lists")
+          .select("id, title")
+          .in("id", [...listIds])
+        lists?.forEach((l) => { listsMap[l.id] = l })
+      }
+
+      let tierlistsMap = {}
+      if (tierlistIds.size > 0) {
+        const { data: tierlists } = await supabase
+          .from("tierlists")
+          .select("id, title")
+          .in("id", [...tierlistIds])
+        tierlists?.forEach((t) => { tierlistsMap[t.id] = t })
+      }
+
+      let reviewsMap = {}
+      if (reviewIds.size > 0) {
+        const { data: reviews } = await supabase
+          .from("reviews")
+          .select("id, game_slug, game_name")
+          .in("id", [...reviewIds])
+        reviews?.forEach((r) => { reviewsMap[r.id] = r })
+      }
+
+      const enrichedData = data.map((n) => {
+        const enriched = { ...n, data: { ...n.data } }
+
+        if (n.data.list_id && listsMap[n.data.list_id]) {
+          enriched.data.list_title = listsMap[n.data.list_id].title
+        }
+        if (n.data.tierlist_id && tierlistsMap[n.data.tierlist_id]) {
+          enriched.data.tierlist_title = tierlistsMap[n.data.tierlist_id].title
+        }
+        if (n.data.review_id && reviewsMap[n.data.review_id]) {
+          enriched.data.game_slug = reviewsMap[n.data.review_id].game_slug
+          enriched.data.game_name = reviewsMap[n.data.review_id].game_name
+        }
+        if (n.data.profile_user_id && usersMap[n.data.profile_user_id]) {
+          enriched.data.profile_username = usersMap[n.data.profile_user_id].username
+        }
+
+        return enriched
+      })
+
+      setNotifications(enrichedData || [])
       setUsers(usersMap)
     } catch {}
     setLoading(false)
@@ -485,9 +434,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
   }, [visible, fetchNotifications])
 
   const handleAction = async (action, notificationId) => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+    const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
 
     try {
@@ -528,95 +475,72 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         fullscreenMobile
         showMobileGrip
         showCloseButton={false}
-        maxWidth="max-w-md"
+        maxWidth="max-w-sm"
         noScroll
         zIndex={10000}
       >
-        <div className="flex flex-col h-full bg-zinc-900/95 backdrop-blur-xl">
-          <div className="relative flex items-center justify-between px-5 py-4 border-b border-zinc-800/60 flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-transparent to-purple-500/5" />
-            
-            <div className="relative flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center shadow-lg shadow-indigo-500/10">
-                <Bell className="w-5 h-5 text-indigo-400" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-white">{t("notifications.title")}</h3>
-                {!loading && (
-                  <p className="text-xs text-zinc-500">
-                    {unreadCount > 0 
-                      ? t("notifications.unreadCount", { count: unreadCount })
-                      : t("notifications.allCaughtUp")
-                    }
-                  </p>
-                )}
-              </div>
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+            <div className="flex items-center gap-2">
+              <Bell className="w-4 h-4 text-zinc-400" />
+              <h3 className="text-sm font-medium text-white">{t("notifications.title")}</h3>
+              {!loading && unreadCount > 0 && (
+                <span className="text-xs text-zinc-500">
+                  ({t("notifications.unreadCount", { count: unreadCount })})
+                </span>
+              )}
             </div>
 
-            <div className="relative flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               {unreadCount > 0 && (
                 <button
                   onClick={() => handleAction("read")}
-                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-all cursor-pointer"
+                  className="p-1.5 text-zinc-500 hover:text-white rounded transition-colors cursor-pointer"
                   title={t("notifications.markAllAsRead")}
                 >
                   <CheckCheck className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t("notifications.markAllAsRead")}</span>
                 </button>
               )}
               {notifications.length > 0 && (
                 <button
                   onClick={() => handleAction("delete")}
-                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all cursor-pointer"
+                  className="p-1.5 text-zinc-500 hover:text-red-400 rounded transition-colors cursor-pointer"
                   title={t("notifications.clearAll")}
                 >
                   <Trash2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t("notifications.clearAll")}</span>
                 </button>
               )}
               <button
                 onClick={onClose}
-                className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-lg transition-colors cursor-pointer ml-1"
+                className="p-1.5 text-zinc-500 hover:text-white rounded transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
             {loading ? (
               <NotificationSkeleton />
             ) : notifications.length > 0 ? (
-              <div className="py-1">
-                {notifications.map((n, idx) => (
-                  <div key={n.id}>
-                    <NotificationItem
-                      notification={n}
-                      users={users}
-                      onClose={onClose}
-                      onAction={handleAction}
-                      onSystemClick={setSystemNotification}
-                      onDelete={(id) => handleAction("delete", id)}
-                      t={t}
-                    />
-                    {idx < notifications.length - 1 && (
-                      <div className="mx-4 border-b border-zinc-800/40" />
-                    )}
-                  </div>
+              <div className="divide-y divide-zinc-800/50">
+                {notifications.map((n) => (
+                  <NotificationItem
+                    key={n.id}
+                    notification={n}
+                    users={users}
+                    onClose={onClose}
+                    onAction={handleAction}
+                    onSystemClick={setSystemNotification}
+                    onDelete={(id) => handleAction("delete", id)}
+                    t={t}
+                  />
                 ))}
               </div>
             ) : (
               <NotificationEmpty />
             )}
           </div>
-
-          {!loading && notifications.length > 0 && (
-            <div className="flex-shrink-0 px-4 py-3 border-t border-zinc-800/60 bg-zinc-900/80">
-              <p className="text-xs text-zinc-600 text-center">
-                {t("notifications.showingCount", { count: notifications.length })}
-              </p>
-            </div>
-          )}
         </div>
       </Modal>
 
