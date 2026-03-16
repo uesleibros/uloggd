@@ -118,19 +118,24 @@ export function buildQueries(name, altNames) {
     queries.push(terms)
   }
 
-  const allNames = [name, ...(altNames || [])]
+  const full = extractWords(name)
+  const clean = strip(name).split(" ").filter(w => w.length >= 2)
 
-  for (const n of allNames) {
-    const full = extractWords(n)
-    const clean = strip(n).split(" ").filter(w => w.length >= 2)
+  push(full)
+  push(clean)
 
-    push(full)
-    push(clean)
+  if (full.length > 2) push(full.slice(0, -1))
 
-    if (full.length > 2) push(full.slice(0, -1))
-    if (clean.length > 2) push(clean.slice(0, -1))
-    if (full.length > 3) push(full.slice(0, Math.ceil(full.length * 0.6)))
+  if (altNames?.length > 0) {
+    const bestAlt = altNames
+      .map(n => ({ name: n, len: extractWords(n).length }))
+      .sort((a, b) => b.len - a.len)[0]
+
+    if (bestAlt) {
+      const altFull = extractWords(bestAlt.name)
+      push(altFull)
+    }
   }
 
-  return queries
+  return queries.slice(0, 3)
 }
