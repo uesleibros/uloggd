@@ -1,4 +1,5 @@
 import { supabase } from "#lib/supabase-ssr.js"
+import { query } from "#lib/igdbWrapper.js"
 import { findManyByIds, resolveStreams, formatUserMap } from "#models/users/index.js"
 
 export async function handleGet(req, res) {
@@ -18,6 +19,27 @@ export async function handleGet(req, res) {
     const profiles = await findManyByIds([review.user_id])
     const streamsMap = await resolveStreams(profiles)
     const users = formatUserMap(profiles, streamsMap)
+
+    let game = null
+    if (review.game_id) {
+      const gamesData = await query(
+        "games",
+        `fields id, name, slug, cover.url, cover.image_id; where id = (${review.game_id}); limit 1;`
+      )
+
+      if (gamesData?.[0]) {
+        const g = gamesData[0]
+        game = {
+          id: g.id,
+          name: g.name,
+          slug: g.slug,
+          cover: g.cover ? {
+            url: g.cover.url?.replace("t_thumb", "t_cover_big"),
+            image_id: g.cover.image_id,
+          } : null,
+        }
+      }
+    }
 
     let journey = null
     if (review.journey_id) {
@@ -47,11 +69,7 @@ export async function handleGet(req, res) {
       }
     }
 
-    res.json({
-      review,
-      user: users[review.user_id] || null,
-      journey,
-    })
+    res.json({ review, user: users[review.user_id] || null, game, journey })
   } catch (e) {
     console.error(e)
     res.status(500).json({ error: "fail" })
