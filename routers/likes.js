@@ -2,13 +2,15 @@ import { handleByUser } from "#services/likes/handlers/byUser.js"
 import { handleToggle } from "#services/likes/handlers/toggle.js"
 import { handleStatus } from "#services/likes/handlers/status.js"
 import { handleUsers } from "#services/likes/handlers/users.js"
+import { handleCounts } from "#services/likes/handlers/counts.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
-	byUser: { handler: handleByUser, method: "GET", auth: false },
+	byUser: { handler: handleByUser, method: "GET",  auth: false },
 	toggle: { handler: handleToggle, method: "POST", auth: true },
-	status: { handler: handleStatus, method: "GET", auth: false },
-	users:  { handler: handleUsers,  method: "GET", auth: false }
+	status: { handler: handleStatus, method: "GET",  auth: false },
+	users:  { handler: handleUsers,  method: "GET",  auth: false },
+  counts: { handler: handleCounts, method: "GET",  auth: false },
 }
 
 export async function likesHandler(req, res) {

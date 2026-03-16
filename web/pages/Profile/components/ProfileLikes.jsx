@@ -97,7 +97,7 @@ function TabButton({ active, onClick, icon: Icon, label, count }) {
   )
 }
 
-export default function ProfileLikes({ userId, isOwnProfile, username }) {
+export default function ProfileLikes({ userId, isOwnProfile, username, initialCounts }) {
   const { t } = useTranslation("profile")
   const [activeTab, setActiveTab] = useState("games")
   const [page, setPage] = useState(1)
@@ -105,9 +105,12 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
   const [games, setGames] = useState({})
   const [users, setUsers] = useState({})
   const [loading, setLoading] = useState(true)
-  const [initialLoading, setInitialLoading] = useState(true)
-  const [counts, setCounts] = useState({ games: 0, reviews: 0, lists: 0, tierlists: 0 })
+  const [counts, setCounts] = useState(initialCounts || { games: 0, reviews: 0, lists: 0, tierlists: 0 })
   const containerRef = useRef(null)
+
+  useEffect(() => {
+    if (initialCounts) setCounts(initialCounts)
+  }, [initialCounts])
 
   const slugs = useMemo(() => {
     if (activeTab === "games") {
@@ -117,31 +120,6 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
   }, [activeTab, data.items])
 
   const { getCustomCover, loading: coversLoading } = useCustomCovers(userId, slugs)
-
-  useEffect(() => {
-    if (!userId) return
-
-    const gamesParams = new URLSearchParams({ userId, type: "games", page: 1, limit: 1 })
-    const reviewsParams = new URLSearchParams({ userId, type: "reviews", page: 1, limit: 1 })
-    const listsParams = new URLSearchParams({ userId, type: "lists", page: 1, limit: 1 })
-    const tierlistsParams = new URLSearchParams({ userId, type: "tierlists", page: 1, limit: 1 })
-
-    Promise.all([
-      fetch(`/api/likes/byUser?${gamesParams}`).then((r) => r.json()),
-      fetch(`/api/likes/byUser?${reviewsParams}`).then((r) => r.json()),
-      fetch(`/api/likes/byUser?${listsParams}`).then((r) => r.json()),
-      fetch(`/api/likes/byUser?${tierlistsParams}`).then((r) => r.json()),
-    ])
-      .then(([gamesRes, reviewsRes, listsRes, tierlistsRes]) => {
-        setCounts({
-          games: gamesRes.total || 0,
-          reviews: reviewsRes.total || 0,
-          lists: listsRes.total || 0,
-          tierlists: tierlistsRes.total || 0,
-        })
-      })
-      .finally(() => setInitialLoading(false))
-  }, [userId])
 
   useEffect(() => {
     if (!userId) return
@@ -226,20 +204,9 @@ export default function ProfileLikes({ userId, isOwnProfile, username }) {
     return icons[activeTab]
   }
 
-  if (initialLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex gap-2">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-10 w-28 bg-zinc-800/50 rounded-xl animate-pulse flex-shrink-0" />
-          ))}
-        </div>
-        <GamesSkeleton />
-      </div>
-    )
-  }
+  const totalLikes = counts.games + counts.reviews + counts.lists + counts.tierlists
 
-  if (!counts.games && !counts.reviews && !counts.lists && !counts.tierlists) {
+  if (totalLikes === 0) {
     return (
       <EmptyState
         icon={Heart}
