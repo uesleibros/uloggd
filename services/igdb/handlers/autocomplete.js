@@ -20,6 +20,7 @@ export async function handleAutocomplete(req, res) {
       fields name, slug, first_release_date,
         cover.url,
         platforms.id,
+        alternative_names.name,
         total_rating_count;
       where (${nameFilter} | ${altNameFilter}) & cover != null;
       sort total_rating_count desc;
@@ -31,21 +32,27 @@ export async function handleAutocomplete(req, res) {
 
     const games = data.map(g => {
       const name = g.name.toLowerCase()
+      const altNames = g.alternative_names?.map(a => a.name.toLowerCase()) || []
+      const allNames = [name, ...altNames]
 
       let relevance = 0
 
-      if (name === input) {
-        relevance = 100
-      } else if (name.startsWith(input)) {
-        relevance = 80
-      } else if (name.includes(input)) {
-        relevance = 60
-      } else {
-        const matched = inputWords.filter(w => name.includes(w)).length
-        relevance = (matched / inputWords.length) * 40
+      for (const n of allNames) {
+        let score = 0
+
+        if (n === input) score = 100
+        else if (n.startsWith(input)) score = 80
+        else if (n.includes(input)) score = 60
+        else {
+          const matched = inputWords.filter(w => n.includes(w)).length
+          score = (matched / inputWords.length) * 40
+        }
+
+        score -= n.length * 0.1
+
+        if (score > relevance) relevance = score
       }
 
-      relevance -= name.length * 0.1
       relevance += Math.min((g.total_rating_count || 0) / 100, 20)
 
       const slugs = new Set()
