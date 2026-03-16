@@ -298,101 +298,89 @@ function GameTrophiesModal({ game, userId, isOpen, onClose }) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" fullscreenMobile showMobileGrip>
-      <div className="flex flex-col h-full">
-        <div className="p-4 sm:p-5 border-b border-zinc-800 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <img src={game.iconUrl} alt="" className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl object-cover border border-zinc-700 flex-shrink-0" />
-            <div className="min-w-0 flex-1">
-              <h3 className="text-sm sm:text-base font-bold text-white truncate">{game.name}</h3>
-              <div className="text-[11px] sm:text-xs text-zinc-500 mt-0.5">{game.platform}</div>
-              {data && (
-                <div className="flex items-center gap-2 mt-1.5">
-                  <div className="flex-1">
-                    <ProgressBar percentage={game.progress} />
-                  </div>
-                  <span className="text-[11px] sm:text-xs text-zinc-400 flex-shrink-0">
-                    {earnedCount}/{totalCount}
-                  </span>
-                </div>
-              )}
-            </div>
+      <div className="sticky top-0 z-10 bg-zinc-900 p-4 sm:p-5 border-b border-zinc-800">
+        <div className="flex items-center gap-3">
+          <img src={game.iconUrl} alt="" className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl object-cover border border-zinc-700 flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm sm:text-base font-bold text-white truncate">{game.name}</h3>
+            <div className="text-[11px] sm:text-xs text-zinc-500 mt-0.5">{game.platform}</div>
+            {data && (
+              <div className="flex items-center gap-2 mt-1.5">
+                <div className="flex-1"><ProgressBar percentage={game.progress} /></div>
+                <span className="text-[11px] sm:text-xs text-zinc-400 flex-shrink-0">{earnedCount}/{totalCount}</span>
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-5">
-          {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+      <div className="p-4 sm:p-5">
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+          </div>
+        ) : !data?.trophies?.length ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <Trophy className="w-8 h-8 text-zinc-700 mb-2" />
+            <p className="text-sm text-zinc-500">{t("gameModal.noTrophies")}</p>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-2 sm:space-y-3 mb-4">
+              <StatusFilterTabs filter={filter} onFilter={setFilter} counts={{ all: totalCount, unlocked: earnedCount, locked: totalCount - earnedCount }} />
+              <TypeFilterTabs typeFilter={typeFilter} onFilter={setTypeFilter} />
             </div>
-          ) : !data?.trophies?.length ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <Trophy className="w-8 h-8 text-zinc-700 mb-2" />
-              <p className="text-sm text-zinc-500">{t("gameModal.noTrophies")}</p>
-            </div>
-          ) : (
-            <>
-              <div className="space-y-2 sm:space-y-3 mb-4">
-                <StatusFilterTabs
-                  filter={filter}
-                  onFilter={setFilter}
-                  counts={{ all: totalCount, unlocked: earnedCount, locked: totalCount - earnedCount }}
-                />
-                <TypeFilterTabs typeFilter={typeFilter} onFilter={setTypeFilter} />
-              </div>
 
-              <div className="space-y-1.5">
-                {filtered.map((trophy, i) => {
-                  const isHidden = trophy.trophyHidden && !trophy.earned
-                  const style = TROPHY_STYLES[trophy.trophyType] || TROPHY_STYLES.bronze
+            <div className="space-y-1.5">
+              {filtered.map((trophy, i) => {
+                const isHidden = trophy.trophyHidden && !trophy.earned
+                const style = TROPHY_STYLES[trophy.trophyType] || TROPHY_STYLES.bronze
 
-                  return (
-                    <button
-                      key={`${trophy.trophyId}-${i}`}
-                      onClick={() => setSelected(trophy)}
-                      className="w-full flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-zinc-800/40 hover:bg-zinc-800 border border-zinc-700/40 hover:border-zinc-600 rounded-xl transition-all cursor-pointer text-left"
-                    >
-                      <div className="relative flex-shrink-0">
-                        <img
-                          src={trophy.trophyIconUrl}
-                          alt=""
-                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-zinc-800 ${
-                            isHidden ? "blur-sm" : ""
-                          } ${!trophy.earned ? "grayscale opacity-50" : ""}`}
-                        />
-                        {isHidden && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <EyeOff className="w-3 h-3 text-zinc-400" />
-                          </div>
-                        )}
+                return (
+                  <button
+                    key={`${trophy.trophyId}-${i}`}
+                    onClick={() => setSelected(trophy)}
+                    className="w-full flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-zinc-800/40 hover:bg-zinc-800 border border-zinc-700/40 hover:border-zinc-600 rounded-xl transition-all cursor-pointer text-left"
+                  >
+                    <div className="relative flex-shrink-0">
+                      <img
+                        src={trophy.trophyIconUrl}
+                        alt=""
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-zinc-800 ${isHidden ? "blur-sm" : ""} ${!trophy.earned ? "grayscale opacity-50" : ""}`}
+                      />
+                      {isHidden && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <EyeOff className="w-3 h-3 text-zinc-400" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <Trophy className={`w-3 h-3 ${style.color} flex-shrink-0`} />
+                        <span className={`text-xs sm:text-sm font-medium truncate ${trophy.earned ? "text-white" : "text-zinc-500"}`}>
+                          {isHidden ? t("detail.hiddenTitle") : trophy.trophyName}
+                        </span>
+                        {trophy.trophyHidden && <EyeOff className="w-3 h-3 text-yellow-500 flex-shrink-0" />}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <Trophy className={`w-3 h-3 ${style.color} flex-shrink-0`} />
-                          <span className={`text-xs sm:text-sm font-medium truncate ${trophy.earned ? "text-white" : "text-zinc-500"}`}>
-                            {isHidden ? t("detail.hiddenTitle") : trophy.trophyName}
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {trophy.trophyEarnedRate && (
+                          <span className={`text-[11px] sm:text-xs ${
+                            parseFloat(trophy.trophyEarnedRate) < 5 ? "text-yellow-400" :
+                            parseFloat(trophy.trophyEarnedRate) < 20 ? "text-purple-400" :
+                            parseFloat(trophy.trophyEarnedRate) < 50 ? "text-blue-400" : "text-zinc-600"
+                          }`}>
+                            {trophy.trophyEarnedRate}%
                           </span>
-                          {trophy.trophyHidden && <EyeOff className="w-3 h-3 text-yellow-500 flex-shrink-0" />}
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {trophy.trophyEarnedRate && (
-                            <span className={`text-[11px] sm:text-xs ${
-                              parseFloat(trophy.trophyEarnedRate) < 5 ? "text-yellow-400" :
-                              parseFloat(trophy.trophyEarnedRate) < 20 ? "text-purple-400" :
-                              parseFloat(trophy.trophyEarnedRate) < 50 ? "text-blue-400" : "text-zinc-600"
-                            }`}>
-                              {trophy.trophyEarnedRate}%
-                            </span>
-                          )}
-                          {trophy.earned && <span className="text-[11px] sm:text-xs text-green-400">✓</span>}
-                        </div>
+                        )}
+                        {trophy.earned && <span className="text-[11px] sm:text-xs text-green-400">✓</span>}
                       </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </>
-          )}
-        </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </>
+        )}
       </div>
     </Modal>
   )
@@ -409,57 +397,55 @@ function AllGamesModal({ userId, allGames, isOpen, onClose, onSelectGame }) {
   const filtered = allGames.filter(g => g.name.toLowerCase().includes(search.toLowerCase()))
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" fullscreenMobile showMobileGrip noScroll>
-      <div className="flex flex-col h-full">
-        <div className="p-4 sm:p-5 border-b border-zinc-800 flex-shrink-0">
-          <div className="flex items-center gap-2 mb-3">
-            <PlayStationIcon className="w-4 h-4 text-[#0070cc]" />
-            <h3 className="text-sm sm:text-base font-bold text-white">{t("allGames.title")}</h3>
-            <span className="text-xs text-zinc-500 ml-auto">{allGames.length} {t("allGames.gamesCount")}</span>
-          </div>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("allGames.searchPlaceholder")}
-            className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-          />
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" fullscreenMobile showMobileGrip>
+      <div className="sticky top-0 z-10 bg-zinc-900 p-4 sm:p-5 border-b border-zinc-800">
+        <div className="flex items-center gap-2 mb-3">
+          <PlayStationIcon className="w-4 h-4 text-[#0070cc]" />
+          <h3 className="text-sm sm:text-base font-bold text-white">{t("allGames.title")}</h3>
+          <span className="text-xs text-zinc-500 ml-auto">{allGames.length} {t("allGames.gamesCount")}</span>
         </div>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t("allGames.searchPlaceholder")}
+          className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
+        />
+      </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-5">
-          {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <Trophy className="w-8 h-8 text-zinc-700 mb-2" />
-              <p className="text-sm text-zinc-500">{t("allGames.noResults")}</p>
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              {filtered.map((game) => (
-                <button
-                  key={game.id}
-                  onClick={() => { onSelectGame(game); onClose() }}
-                  className="w-full flex items-center gap-3 p-2.5 sm:p-3 bg-zinc-800/40 hover:bg-zinc-800 border border-zinc-700/40 hover:border-zinc-600 rounded-xl transition-all cursor-pointer text-left"
-                >
-                  <div className="relative flex-shrink-0">
-                    <img src={game.iconUrl} alt="" className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover border border-zinc-700/50" />
-                    <div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
-                      <PlayStationIcon className="w-2.5 h-2.5 text-[#0070cc]" />
-                    </div>
+      <div className="p-4 sm:p-5">
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <Trophy className="w-8 h-8 text-zinc-700 mb-2" />
+            <p className="text-sm text-zinc-500">{t("allGames.noResults")}</p>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {filtered.map((game) => (
+              <button
+                key={game.id}
+                onClick={() => { onSelectGame(game); onClose() }}
+                className="w-full flex items-center gap-3 p-2.5 sm:p-3 bg-zinc-800/40 hover:bg-zinc-800 border border-zinc-700/40 hover:border-zinc-600 rounded-xl transition-all cursor-pointer text-left"
+              >
+                <div className="relative flex-shrink-0">
+                  <img src={game.iconUrl} alt="" className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover border border-zinc-700/50" />
+                  <div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
+                    <PlayStationIcon className="w-2.5 h-2.5 text-[#0070cc]" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs sm:text-sm font-medium text-white truncate">{game.name}</div>
-                    <TrophySummary earnedTrophies={game.earnedTrophies} definedTrophies={game.definedTrophies} compact />
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <div className="flex-1"><ProgressBar percentage={game.progress} /></div>
-                      <span className="text-[10px] text-zinc-500 flex-shrink-0">{game.progress}%</span>
-                    </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs sm:text-sm font-medium text-white truncate">{game.name}</div>
+                  <TrophySummary earnedTrophies={game.earnedTrophies} definedTrophies={game.definedTrophies} compact />
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <div className="flex-1"><ProgressBar percentage={game.progress} /></div>
+                    <span className="text-[10px] text-zinc-500 flex-shrink-0">{game.progress}%</span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-zinc-600 flex-shrink-0" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-zinc-600 flex-shrink-0" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </Modal>
   )
@@ -675,30 +661,17 @@ export function GamePSNTrophies({ gameName, gameIcon }) {
             <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex-shrink-0">{t("game.title")}</span>
             <PlayStationIcon className="w-3.5 h-3.5 text-[#0070cc] flex-shrink-0" />
           </div>
-          <span className="text-xs text-zinc-500 flex-shrink-0">
-            {earnedCount}/{data.total} ({percentage}%)
-          </span>
+          <span className="text-xs text-zinc-500 flex-shrink-0">{earnedCount}/{data.total} ({percentage}%)</span>
         </div>
 
-        <div className="mb-4">
-          <ProgressBar percentage={percentage} />
-        </div>
+        <div className="mb-4"><ProgressBar percentage={percentage} /></div>
 
         <div className="space-y-2 sm:space-y-3 mb-4">
-          <StatusFilterTabs
-            filter={filter}
-            onFilter={(f) => { setFilter(f); setShowAll(false) }}
-            counts={{ all: data.total, unlocked: earnedCount, locked: data.total - earnedCount }}
-          />
+          <StatusFilterTabs filter={filter} onFilter={(f) => { setFilter(f); setShowAll(false) }} counts={{ all: data.total, unlocked: earnedCount, locked: data.total - earnedCount }} />
           <TypeFilterTabs typeFilter={typeFilter} onFilter={(t) => { setTypeFilter(t); setShowAll(false) }} />
         </div>
 
-        <TrophyGrid
-          trophies={visible}
-          onSelect={setSelected}
-          showLockState
-          columns="grid-cols-6 sm:grid-cols-8 md:grid-cols-12"
-        />
+        <TrophyGrid trophies={visible} onSelect={setSelected} showLockState columns="grid-cols-6 sm:grid-cols-8 md:grid-cols-12" />
 
         {filtered.length > 18 && (
           <button
@@ -709,14 +682,7 @@ export function GamePSNTrophies({ gameName, gameIcon }) {
           </button>
         )}
 
-        <TrophyDetailModal
-          trophy={selected}
-          gameName={psnGame.name}
-          gameIcon={psnGame.iconUrl || gameIcon}
-          isOpen={!!selected}
-          onClose={() => setSelected(null)}
-          showGame={false}
-        />
+        <TrophyDetailModal trophy={selected} gameName={psnGame.name} gameIcon={psnGame.iconUrl || gameIcon} isOpen={!!selected} onClose={() => setSelected(null)} showGame={false} />
       </div>
     </>
   )
