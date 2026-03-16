@@ -1238,11 +1238,20 @@ export default {
 		markAllAsRead: "Mark all as read",
 		clearAll: "Clear all",
 		empty: "No notifications",
-		unreadCount: "{{count}} unreads",
-		close: "Close",
+		emptySubtext: "We'll let you know when something happens",
+		allCaughtUp: "All caught up!",
+		showingCount: "Showing {{count}} notifications",
+		unreadCount: "{{count}} unread",
+		close: "Got it",
+		sentBy: "Sent by {{username}}",
+		reviewedBy: "Reviewed by {{username}}",
+		someone: "Someone",
 		types: {
-			profile_comment: {
-				text: "{{username}} commented on your profile"
+			follow: {
+				text: "started following you",
+			},
+			review_like: {
+				text: "liked your review",
 			},
 			list_like: {
 				text: "liked your list \"{{title}}\"",
@@ -1250,11 +1259,21 @@ export default {
 			tierlist_like: {
 				text: "liked your tierlist \"{{title}}\"",
 			},
-			follow: {
-				text: "started following you",
+			profile_comment: {
+				text: "commented on your profile",
 			},
-			review_like: {
-				text: "liked your review",
+			review_comment: {
+				text: "commented on your review for {{game}}",
+			},
+			list_comment: {
+				text: "commented on your list \"{{title}}\"",
+			},
+			tierlist_comment: {
+				text: "commented on your tierlist \"{{title}}\"",
+			},
+			gift_received: {
+				title: "You received a gift!",
+				message: "You received {{item}}! The item is now available in your inventory.",
 			},
 			verification_approved: {
 				title: "Verification approved",
@@ -1262,8 +1281,8 @@ export default {
 			},
 			verification_rejected: {
 				title: "Verification rejected",
-				messageWithReason: "Your verification request has been rejected.\n\nReason: {{reason}}",
-				messageDefault: "Your verification request has been rejected. You can submit a new request at any time.",
+				messageWithReason: "Your verification request was rejected.\n\nReason: {{reason}}",
+				messageDefault: "Your verification request was rejected. You can submit a new request at any time.",
 			},
 			account_banned: {
 				title: "Account suspended",
@@ -1273,14 +1292,7 @@ export default {
 				title: "Account restored",
 				message: "Your account has been restored. Welcome back!",
 			},
-			gift_received: {
-				title: "You received a gift!",
-				message: "You received {{item}}! The item is now available in your inventory.",
-			},
 		},
-		sentBy: "Sent by {{username}}",
-		reviewedBy: "Reviewed by {{username}}",
-		someone: "Someone",
 	},
 	thinking: {
 		title: "Thought",

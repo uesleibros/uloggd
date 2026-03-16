@@ -1238,23 +1238,42 @@ export default {
 		markAllAsRead: "Marcar todas como lidas",
 		clearAll: "Limpar todas",
 		empty: "Nenhuma notificação",
+		emptySubtext: "Avisaremos quando algo acontecer",
+		allCaughtUp: "Tudo em dia!",
+		showingCount: "Mostrando {{count}} notificações",
 		unreadCount: "{{count}} não lidas",
-		close: "Fechar",
+		close: "Entendi",
+		sentBy: "Enviado por {{username}}",
+		reviewedBy: "Revisado por {{username}}",
+		someone: "Alguém",
 		types: {
-			profile_comment: {
-	      text: "comentou no seu perfil"
-	    },
+			follow: {
+				text: "começou a te seguir",
+			},
+			review_like: {
+				text: "curtiu sua review",
+			},
 			list_like: {
 				text: "curtiu sua lista \"{{title}}\"",
 			},
 			tierlist_like: {
 				text: "curtiu sua tierlist \"{{title}}\"",
 			},
-			follow: {
-				text: "começou a te seguir",
+			profile_comment: {
+				text: "comentou no seu perfil",
 			},
-			review_like: {
-				text: "curtiu sua review",
+			review_comment: {
+				text: "comentou na sua review de {{game}}",
+			},
+			list_comment: {
+				text: "comentou na sua lista \"{{title}}\"",
+			},
+			tierlist_comment: {
+				text: "comentou na sua tierlist \"{{title}}\"",
+			},
+			gift_received: {
+				title: "Você recebeu um presente!",
+				message: "Você recebeu {{item}}! O item já está disponível no seu inventário.",
 			},
 			verification_approved: {
 				title: "Verificação aprovada",
@@ -1273,14 +1292,7 @@ export default {
 				title: "Conta restaurada",
 				message: "Sua conta foi restaurada. Bem-vindo de volta!",
 			},
-			gift_received: {
-				title: "Você recebeu um presente!",
-				message: "Você recebeu {{item}}! O item já está disponível no seu inventário.",
-			},
 		},
-		sentBy: "Enviado por {{username}}",
-		reviewedBy: "Revisado por {{username}}",
-		someone: "Alguém",
 	},
 	thinking: {
 		title: "Pensamento",
