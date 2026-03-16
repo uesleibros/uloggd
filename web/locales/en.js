@@ -1,70 +1,50 @@
 export default {
 	trophies: {
-		list: {
-			title: "PlayStation Trophies",
-			viewAll: "View all ({{count}})",
-		},
-		allGames: {
-			title: "All Games",
-			gamesCount: "games",
-			searchPlaceholder: "Search game...",
-			noResults: "No games found",
-		},
-		detail: {
-			back: "Back",
-			hiddenAlt: "Hidden trophy",
-			hiddenTitle: "Hidden Trophy",
-			hiddenDescription: "This trophy contains spoilers",
-			hideDetails: "Hide details",
-			revealWarning: "Reveal trophy (may contain spoilers)",
-			game: "Game",
-			status: "Status",
-			unlocked: "Unlocked",
-			locked: "Locked",
-			unlockedAt: "Unlocked at",
-			rarity: "Rarity",
-			rarityPercent: "{{percent}}% of players",
-			type: "Type",
-			secret: "Secret",
-			platform: "Platform"
-		},
-		gameModal: {
-			noTrophies: "No trophies found",
-			hiddenAlt: "Hidden trophy",
-			hiddenTitle: "Hidden Trophy",
-			unlocked: "Unlocked",
-			filter: {
-				all: "All",
-				unlocked: "Unlocked",
-				locked: "Locked",
-				allTypes: "All"
-			},
-			types: {
-				platinum: "Platinum",
-				gold: "Gold",
-				silver: "Silver",
-				bronze: "Bronze"
-			}
-		},
-		gameSection: {
-			title: "Trophies",
-			connectPSN: "Connect your PSN to track your trophies",
-			filter: {
-				all: "All ({{count}})",
-				unlocked: "Unlocked ({{count}})",
-				locked: "Locked ({{count}})",
-				allTypes: "All"
-			},
-			types: {
-				platinum: "Platinum",
-				gold: "Gold",
-				silver: "Silver",
-				bronze: "Bronze"
-			},
-			hiddenAlt: "Hidden trophy",
-			showLess: "Show less",
-			viewAll: "View all ({{count}})"
-		}
+	  profile: {
+	    title: "PlayStation Trophies",
+	    viewAll: "View all ({{count}})",
+	  },
+	  game: {
+	    title: "Trophies",
+	    showLess: "Show less",
+	    viewAll: "View all ({{count}})",
+	  },
+	  gameModal: {
+	    noTrophies: "No trophies found",
+	  },
+	  allGames: {
+	    title: "All games",
+	    gamesCount: "games",
+	    searchPlaceholder: "Search game...",
+	    noResults: "No games found",
+	  },
+	  filter: {
+	    all: "All",
+	    unlocked: "Unlocked",
+	    locked: "Locked",
+	    allTypes: "All",
+	  },
+	  types: {
+	    platinum: "Platinum",
+	    gold: "Gold",
+	    silver: "Silver",
+	    bronze: "Bronze",
+	  },
+	  detail: {
+	    hiddenTitle: "Hidden trophy",
+	    hiddenDescription: "Keep playing to discover this trophy.",
+	    hideDetails: "Hide details",
+	    revealWarning: "Reveal trophy (spoiler)",
+	    game: "Game",
+	    status: "Status",
+	    unlocked: "Unlocked",
+	    locked: "Locked",
+	    unlockedAt: "Unlocked at",
+	    rarity: "Rarity",
+	    type: "Type",
+	    secret: "Secret",
+	    platform: "Platform",
+	  },
 	},
 	journal: {
 		button: {
