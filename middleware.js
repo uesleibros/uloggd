@@ -235,7 +235,7 @@ function buildResponse({ title, description, image, url, twitterCard = 'summary'
   const safeTitle = escapeHtml(title)
   const safeDesc = escapeHtml(description)
   const safeUrl = escapeHtml(url)
-  const fallbackImage = `${new URL(url).origin}/banner.png`
+  const fallbackImage = `${new URL(url).origin}/banner.jpg`
   const safeImage = escapeHtml(image || fallbackImage)
 
   const html = `<!DOCTYPE html>
