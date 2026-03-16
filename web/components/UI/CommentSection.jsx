@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Link } from "react-router-dom"
-import { MessageSquare, MoreHorizontal, Pencil, Trash2, MessageCircle, Send } from "lucide-react"
+import { MessageSquare, MoreHorizontal, Pencil, Trash2, MessageCircle, ArrowUp } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
@@ -41,7 +41,14 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
     const el = textareaRef.current
     if (!el) return
     el.style.height = "auto"
-    el.style.height = Math.min(el.scrollHeight, 200) + "px"
+    const max = 200
+    if (el.scrollHeight > max) {
+      el.style.height = max + "px"
+      el.style.overflowY = "auto"
+    } else {
+      el.style.height = el.scrollHeight + "px"
+      el.style.overflowY = "hidden"
+    }
   }
 
   async function handleSubmit(e) {
@@ -54,6 +61,7 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
       setContent("")
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto"
+        textareaRef.current.style.overflowY = "hidden"
       }
     }
     setSending(false)
@@ -74,6 +82,8 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
     )
   }
 
+  const hasContent = content.trim().length > 0
+
   return (
     <form onSubmit={handleSubmit} className="flex gap-3">
       <Link to={`/u/${user.username}`} className="flex-shrink-0 pt-1.5">
@@ -85,34 +95,39 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
         />
       </Link>
 
-      <div className="flex-1 min-w-0 relative">
-        <textarea
-          ref={textareaRef}
-          value={content}
-          onChange={(e) => {
-            setContent(e.target.value)
-            adjustHeight()
-          }}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder || t("comments.placeholder")}
-          autoFocus={autoFocus}
-          maxLength={2000}
-          rows={1}
-          className="w-full pl-3.5 pr-12 py-2.5 bg-zinc-800/80 border border-zinc-700/60 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:bg-zinc-800 transition-all resize-none"
-        />
-        {content.trim() && (
-          <button
-            type="submit"
-            disabled={sending}
-            className="absolute right-2 bottom-1.5 p-1.5 text-indigo-400 hover:text-indigo-300 disabled:text-zinc-600 rounded-lg hover:bg-indigo-500/10 transition-all cursor-pointer disabled:cursor-not-allowed"
-          >
-            {sending ? (
-              <div className="w-4 h-4 border-2 border-zinc-600 border-t-indigo-400 rounded-full animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
-          </button>
-        )}
+      <div className="flex-1 min-w-0 flex items-end gap-2">
+        <div className="flex-1 min-w-0">
+          <textarea
+            ref={textareaRef}
+            value={content}
+            onChange={(e) => {
+              setContent(e.target.value)
+              adjustHeight()
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder || t("comments.placeholder")}
+            autoFocus={autoFocus}
+            maxLength={2000}
+            rows={1}
+            className="w-full px-3.5 py-2.5 bg-zinc-800/80 border border-zinc-700/60 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:bg-zinc-800 transition-all resize-none overflow-hidden"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={!hasContent || sending}
+          className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer disabled:cursor-default mb-0.5 ${
+            hasContent
+              ? "bg-indigo-500 hover:bg-indigo-400 text-white shadow-lg shadow-indigo-500/20"
+              : "bg-zinc-800 text-zinc-600 border border-zinc-700/60"
+          }`}
+        >
+          {sending ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <ArrowUp className="w-4 h-4" />
+          )}
+        </button>
       </div>
     </form>
   )
@@ -239,7 +254,7 @@ function CommentItem({ comment, onEdit, onDelete }) {
               setMenuOpen(!menuOpen)
               setConfirmDelete(false)
             }}
-            className="p-1.5 text-zinc-600 hover:text-zinc-300 rounded-md hover:bg-zinc-700/50 transition-colors cursor-pointer opacity-0 group-hover/comment:opacity-100 sm:opacity-0 max-sm:opacity-100"
+            className="p-1.5 text-zinc-600 hover:text-zinc-300 rounded-md hover:bg-zinc-700/50 transition-colors cursor-pointer opacity-0 group-hover/comment:opacity-100 max-sm:opacity-100"
           >
             <MoreHorizontal className="w-4 h-4" />
           </button>
