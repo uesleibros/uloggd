@@ -1,21 +1,15 @@
 import { useState, useEffect, useCallback } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
-import {
-  ArrowLeft,
-  MessageSquareOff,
-  Gamepad2,
-} from "lucide-react"
+import { ArrowLeft, MessageSquareOff, Gamepad2 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
-import { useGamesBatch } from "#hooks/useGamesBatch"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import UserBadges from "@components/User/UserBadges"
 import StatusBadge from "@components/Game/StatusBadge"
 import ReviewRating from "@components/Game/ReviewRating"
 import Playtime from "@components/Game/Playtime"
-import GameCover from "@components/Game/GameCover"
 import LikeButton from "@components/UI/LikeButton"
 import CommentSection from "@components/UI/CommentSection"
 import {
@@ -31,7 +25,7 @@ function ReviewPageSkeleton() {
       <div className="animate-pulse space-y-6">
         <div className="h-4 w-16 bg-zinc-800 rounded" />
         <div className="flex gap-4">
-          <div className="w-24 sm:w-32 aspect-[3/4] bg-zinc-800 rounded-lg flex-shrink-0" />
+          <div className="w-20 sm:w-28 aspect-[3/4] bg-zinc-800 rounded-lg flex-shrink-0" />
           <div className="flex-1 space-y-3">
             <div className="h-6 w-48 bg-zinc-800 rounded" />
             <div className="h-4 w-32 bg-zinc-800/50 rounded" />
@@ -56,14 +50,11 @@ export default function ReviewPage() {
   const { user: currentUser } = useAuth()
   const [review, setReview] = useState(null)
   const [user, setUser] = useState(null)
+  const [game, setGame] = useState(null)
   const [journey, setJourney] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showJourney, setShowJourney] = useState(false)
-
-  const slugs = review ? [review.game_slug] : []
-  const { getGame } = useGamesBatch(slugs)
-  const game = review ? getGame(review.game_slug) : null
 
   usePageMeta(
     review && game
@@ -85,6 +76,7 @@ export default function ReviewPage() {
       const data = await r.json()
       setReview(data.review)
       setUser(data.user)
+      setGame(data.game)
       setJourney(data.journey)
     } catch {
       setError(true)
@@ -115,6 +107,7 @@ export default function ReviewPage() {
   }
 
   const aspects = review.aspect_ratings || []
+  const coverUrl = game?.cover?.url
 
   return (
     <div className="py-6 sm:py-8 max-w-3xl mx-auto">
@@ -129,13 +122,10 @@ export default function ReviewPage() {
       </div>
 
       <div className="flex gap-4 sm:gap-5 mb-6">
-        <Link
-          to={`/game/${review.game_slug}`}
-          className="flex-shrink-0"
-        >
-          {game ? (
+        <Link to={`/game/${review.game_slug}`} className="flex-shrink-0">
+          {coverUrl ? (
             <img
-              src={game.cover_url}
+              src={coverUrl}
               alt={game.name}
               className="w-20 sm:w-28 aspect-[3/4] object-cover rounded-lg border border-zinc-700/50 hover:border-zinc-600 transition-colors"
             />
@@ -156,7 +146,7 @@ export default function ReviewPage() {
             </Link>
           )}
 
-          <div className="flex items-center gap-2.5 mt-2">
+          <div className="flex items-center gap-2.5 mt-2.5">
             <Link to={`/u/${user?.username}`} className="flex-shrink-0">
               <AvatarWithDecoration
                 src={user?.avatar}
@@ -195,11 +185,9 @@ export default function ReviewPage() {
         )}
 
         {review.review && (
-          <div className="prose prose-invert prose-sm max-w-none">
-            <p className="text-sm sm:text-base text-zinc-300 leading-relaxed whitespace-pre-wrap break-words">
-              {review.review}
-            </p>
-          </div>
+          <p className="text-sm sm:text-base text-zinc-300 leading-relaxed whitespace-pre-wrap break-words">
+            {review.review}
+          </p>
         )}
 
         <div className="flex items-center justify-between pt-4 border-t border-zinc-800 gap-3 flex-wrap">
