@@ -165,7 +165,7 @@ function SystemNotificationModal({ notification, users, isOpen, onClose }) {
     >
       <div className="p-6">
         <div className="flex items-start gap-4 mb-4">
-          <div className={`w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0`}>
+          <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0">
             <Icon className={`w-5 h-5 ${config.color}`} />
           </div>
           <div className="flex-1 min-w-0">
@@ -351,6 +351,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
       const listIds = new Set()
       const tierlistIds = new Set()
       const reviewIds = new Set()
+      const commentIds = new Set()
 
       data.forEach((n) => {
         const getUserId = NOTIFICATION_USER_ID_MAP[n.type]
@@ -362,6 +363,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         if (n.data.list_id) listIds.add(n.data.list_id)
         if (n.data.tierlist_id) tierlistIds.add(n.data.tierlist_id)
         if (n.data.review_id) reviewIds.add(n.data.review_id)
+        if (n.data.comment_id) commentIds.add(n.data.comment_id)
       })
 
       let usersMap = {}
@@ -400,6 +402,15 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         reviews?.forEach((r) => { reviewsMap[r.id] = r })
       }
 
+      let commentsMap = {}
+      if (commentIds.size > 0) {
+        const { data: comments } = await supabase
+          .from("comments")
+          .select("id, content")
+          .in("id", [...commentIds])
+        comments?.forEach((c) => { commentsMap[c.id] = c })
+      }
+
       const enrichedData = data.map((n) => {
         const enriched = { ...n, data: { ...n.data } }
 
@@ -415,6 +426,9 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         }
         if (n.data.profile_user_id && usersMap[n.data.profile_user_id]) {
           enriched.data.profile_username = usersMap[n.data.profile_user_id].username
+        }
+        if (n.data.comment_id && commentsMap[n.data.comment_id]) {
+          enriched.data.content = commentsMap[n.data.comment_id].content
         }
 
         return enriched

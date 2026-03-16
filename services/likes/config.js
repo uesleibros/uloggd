@@ -20,7 +20,6 @@ export const LIKE_TYPES = {
     getNotificationData: (target, likerId) => ({
       liker_id: likerId,
       list_id: target.id,
-      list_title: target.title
     })
   },
   tierlist: {
@@ -32,7 +31,6 @@ export const LIKE_TYPES = {
     getNotificationData: (target, likerId) => ({
       liker_id: likerId,
       tierlist_id: target.id,
-      tierlist_title: target.title
     })
   }
 }
