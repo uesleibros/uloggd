@@ -2,6 +2,7 @@ import { handleConnect } from "#services/retroachievements/handlers/connect.js"
 import { handleStatus } from "#services/retroachievements/handlers/status.js"
 import { handleDisconnect } from "#services/retroachievements/handlers/disconnect.js"
 import { handleGame } from "#services/retroachievements/handlers/game.js"
+import { handleRecent } from "#services/retroachievements/handlers/recent.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
@@ -9,6 +10,7 @@ const ACTIONS = {
   status:     { handler: handleStatus,     method: "POST", auth: false },
   disconnect: { handler: handleDisconnect, method: "POST", auth: true  },
   game:       { handler: handleGame,       method: "GET",  auth: false },
+  recent:     { handler: handleRecent,     method: "GET",  auth: false },
 }
 
 export async function retroachievementsHandler(req, res) {
