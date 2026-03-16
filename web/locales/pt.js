@@ -1146,6 +1146,11 @@ export default {
 			title: "Jogo não encontrado",
 		},
 		content: {
+			ra: {
+				matchedAs: "Corresponde a \"{{title}}\" no RetroAchievements",
+				showAll: "Ver todos ({{count}})",
+				showLess: "Ver menos",
+			},
 			stats: {
 				ratings: "Avaliações",
 				hype: "Hype",
@@ -2358,5 +2363,3 @@ export default {
 		},
 	},
 }
-
-
