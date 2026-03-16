@@ -57,13 +57,13 @@ const NOTIFICATION_USER_ID_MAP = {
 
 const NOTIFICATION_LINKS = {
   follow: (data, users) => `/u/${users[data.follower_id]?.username}`,
-  review_like: (data) => `/game/${data.game_slug}`,
   list_like: (data) => `/list/${encode(data.list_id)}`,
   tierlist_like: (data) => `/tierlist/${encode(data.tierlist_id)}`,
   profile_comment: (data) => `/u/${data.profile_username}`,
-  review_comment: (data) => `/game/${data.game_slug}`,
   list_comment: (data) => `/list/${encode(data.list_id)}`,
   tierlist_comment: (data) => `/tierlist/${encode(data.tierlist_id)}`,
+  review_comment: (data) => `/review/${data.review_id}`,
+  review_like: (data) => `/review/${data.review_id}`,
 }
 
 const MODAL_NOTIFICATIONS = [
