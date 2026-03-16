@@ -29,31 +29,31 @@ export function ProfileSidebar({
         <div className="grid grid-cols-2 divide-x divide-zinc-700/50">
           <button
             onClick={onFollowersClick}
-            className="py-3.5 px-3 text-center hover:bg-zinc-800/40 transition-colors cursor-pointer"
+            className="py-4 px-3 text-center hover:bg-zinc-800/40 transition-colors cursor-pointer"
           >
-            <div className="text-lg font-bold text-white leading-none">
+            <div className="text-xl font-bold text-white leading-none">
               <CountUp end={followersCount} />
             </div>
-            <div className="text-[11px] text-zinc-500 mt-1">{t("stats.followers")}</div>
+            <div className="text-[11px] text-zinc-500 mt-1.5">{t("stats.followers")}</div>
           </button>
           <button
             onClick={onFollowingClick}
-            className="py-3.5 px-3 text-center hover:bg-zinc-800/40 transition-colors cursor-pointer"
+            className="py-4 px-3 text-center hover:bg-zinc-800/40 transition-colors cursor-pointer"
           >
-            <div className="text-lg font-bold text-white leading-none">
+            <div className="text-xl font-bold text-white leading-none">
               <CountUp end={followingCount} />
             </div>
-            <div className="text-[11px] text-zinc-500 mt-1">{t("stats.following")}</div>
+            <div className="text-[11px] text-zinc-500 mt-1.5">{t("stats.following")}</div>
           </button>
         </div>
 
         <div className="border-t border-zinc-700/50" />
 
-        <div className="p-3.5 space-y-2">
+        <div className="p-4 space-y-2.5">
           <h3 className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">
             {t("stats.gameStats")}
           </h3>
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             <StatRow label={t("stats.playing")} value={counts?.playing} />
             <StatRow label={t("stats.played")} value={counts?.played} />
             <StatRow label={t("stats.backlog")} value={counts?.backlog} />
@@ -64,8 +64,8 @@ export function ProfileSidebar({
         {(profile.social_links?.length > 0 || profile.connections?.length > 0) && (
           <>
             <div className="border-t border-zinc-700/50" />
-            <div className="p-3.5">
-              <h3 className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-2.5">
+            <div className="p-4">
+              <h3 className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-3">
                 {t("stats.links")}
               </h3>
               <SocialLinks
@@ -77,18 +77,16 @@ export function ProfileSidebar({
         )}
 
         <div className="border-t border-zinc-700/50" />
-        <div className="px-3.5 py-2.5 flex items-center gap-2 text-xs text-zinc-500">
+        <div className="px-4 py-3 flex items-center gap-2 text-xs text-zinc-500">
           <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
           <span>{formatDateLong(profile.created_at)}</span>
         </div>
       </div>
 
-      <div className="xl:hidden">
-        <ActivityCard stream={profile.stream} userId={profile.user_id} />
-        <SteamAchievements userId={profile.user_id} />
-        <PSNTrophies userId={profile.user_id} compact />
-        <ProfileRetroAchievements userId={profile.user_id} />
-      </div>
+      <ActivityCard stream={profile.stream} userId={profile.user_id} />
+      <SteamAchievements userId={profile.user_id} compact />
+      <PSNTrophies userId={profile.user_id} compact />
+      <ProfileRetroAchievements userId={profile.user_id} />
     </div>
   )
 }
@@ -96,8 +94,8 @@ export function ProfileSidebar({
 function StatRow({ label, value }) {
   return (
     <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-zinc-800/30 transition-colors">
-      <span className="text-[13px] text-zinc-400">{label}</span>
-      <span className="text-[13px] font-semibold text-white tabular-nums">
+      <span className="text-sm text-zinc-400">{label}</span>
+      <span className="text-sm font-semibold text-white tabular-nums">
         <CountUp end={value || 0} />
       </span>
     </div>
@@ -112,36 +110,41 @@ function ActivityCard({ stream, userId }) {
     setPresence(null)
     if (!userId) return
 
-    fetch(`/api/steam/presence?userId=${userId}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.playing) setPresence(data) })
-      .catch(() => {})
+    const fetchPresence = async () => {
+      try {
+        const res = await fetch(`/api/steam/presence?userId=${userId}`)
+        const data = await res.json()
+        if (data.playing) setPresence(data)
+      } catch {}
+    }
+
+    fetchPresence()
   }, [userId])
 
   if (!stream && !presence) return null
 
   return (
     <div className="mt-4 bg-zinc-800/30 border border-zinc-700/50 rounded-xl overflow-hidden">
-      <div className="px-3.5 py-2.5 border-b border-zinc-700/50">
+      <div className="px-4 py-3 border-b border-zinc-700/50">
         <h3 className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider flex items-center gap-2">
           <Gamepad2 className="w-3.5 h-3.5" />
           {t("stats.activity")}
         </h3>
       </div>
 
-      <div className="p-2.5 space-y-2">
+      <div className="p-3 space-y-2">
         {stream && (
           <a
             href={`https://twitch.tv/${stream.twitch_username}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-2.5 bg-purple-500/10 hover:bg-purple-500/15 border border-purple-500/30 hover:border-purple-500/50 rounded-lg px-2.5 py-2 transition-all"
+            className="group flex items-center gap-3 bg-purple-500/10 hover:bg-purple-500/15 border border-purple-500/30 hover:border-purple-500/50 rounded-lg px-3 py-2.5 transition-all"
           >
             <div className="relative flex-shrink-0">
               <img
                 src={stream.thumbnail}
                 alt={stream.title}
-                className="w-11 h-7 object-cover rounded border border-purple-500/20"
+                className="w-12 h-7 object-cover rounded border border-purple-500/20"
               />
               <div className="absolute -top-1 -right-1 flex items-center gap-0.5 bg-red-600 text-white text-[7px] font-bold px-1 py-px rounded shadow-lg">
                 <Radio className="w-1.5 h-1.5" />
@@ -151,7 +154,9 @@ function ActivityCard({ stream, userId }) {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <Twitch className="w-3 h-3 text-purple-400 flex-shrink-0" />
-                <span className="text-[11px] font-semibold text-white truncate">{stream.game}</span>
+                <span className="text-[11px] font-semibold text-white truncate">
+                  {stream.game}
+                </span>
               </div>
               <div className="text-[10px] text-purple-300/60 mt-0.5">
                 {stream.viewers.toLocaleString()} {t("stats.watching")}
@@ -161,13 +166,13 @@ function ActivityCard({ stream, userId }) {
         )}
 
         {presence && (
-          <div className="group relative flex items-center gap-2.5 overflow-hidden rounded-lg px-2.5 py-2 border border-zinc-700/50 hover:border-[#66c0f4]/40 transition-all">
+          <div className="group relative flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 border border-zinc-700/50 hover:border-[#66c0f4]/40 transition-all">
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: `url(${presence.steam.header})` }}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/95 via-zinc-900/90 to-zinc-900/80" />
-            <div className="relative z-10 flex items-center gap-2.5 w-full">
+            <div className="relative z-10 flex items-center gap-3 w-full">
               {presence.game?.cover && (
                 <div className="relative flex-shrink-0">
                   <img
@@ -184,7 +189,9 @@ function ActivityCard({ stream, userId }) {
                 <div className="text-[11px] font-semibold text-white truncate">
                   {presence.game?.name || presence.steam.name}
                 </div>
-                <div className="text-[10px] text-[#66c0f4] mt-0.5">{t("stats.playingNow")}</div>
+                <div className="text-[10px] text-[#66c0f4] mt-0.5">
+                  {t("stats.playingNow")}
+                </div>
               </div>
               {presence.game?.slug && (
                 <Link
@@ -198,21 +205,6 @@ function ActivityCard({ stream, userId }) {
           </div>
         )}
       </div>
-    </div>
-  )
-}
-
-export function ProfileRightSidebar({ profile }) {
-  const isBanned = profile.is_banned
-
-  if (isBanned) return null
-
-  return (
-    <div className="hidden xl:block xl:w-[280px] xl:flex-shrink-0">
-      <ActivityCard stream={profile.stream} userId={profile.user_id} />
-      <SteamAchievements userId={profile.user_id} />
-      <PSNTrophies userId={profile.user_id} compact />
-      <ProfileRetroAchievements userId={profile.user_id} />
     </div>
   )
 }
