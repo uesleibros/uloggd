@@ -630,6 +630,7 @@ export default {
 		rights: "© {{year}} uloggd",
 	},
 	common: {
+		cancel: "Cancelar",
 		next: "Próximo",
 		back: "Voltar",
 		backToHome: "Voltar ao início",
