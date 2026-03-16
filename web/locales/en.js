@@ -768,6 +768,8 @@ export default {
 			create: "Create tierlist",
 			loading: "Loading...",
 			empty: {
+				createFirst: "Create your first tier list.",
+				hint: "Organize your games into tiers and share them with the community.",
 				own: "You haven't created any tierlists yet.",
 				other: "{{username}} hasn't created any tierlists yet.",
 			},
