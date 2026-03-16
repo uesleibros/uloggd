@@ -1821,6 +1821,10 @@ export default {
 		},
 	},
 	review: {
+		notFound: {
+			title: "Review não encontrada",
+			message: "Essa review não existe ou foi removida.",
+		},
 		selector: {
 			defaultTitle: "Review",
 			new: "Nova",
