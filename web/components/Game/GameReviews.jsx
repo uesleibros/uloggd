@@ -233,7 +233,7 @@ export default function GameReviews({ gameId }) {
                 key={review.id}
                 review={review}
                 user={users[review.user_id]}
-                currentUserId={currentUser?.id}
+                currentUserId={currentUser?.user_id}
                 journey={review.journey_id ? journeys[review.journey_id] : null}
               />
             ))}
