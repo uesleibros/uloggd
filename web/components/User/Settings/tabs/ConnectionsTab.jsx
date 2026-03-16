@@ -3,6 +3,7 @@ import TwitchSection from "@components/User/Settings/sections/connections/Twitch
 import NintendoSection from "@components/User/Settings/sections/connections/NintendoSection"
 import SteamSection from "@components/User/Settings/sections/connections/SteamSection"
 import PlayStationSection from "@components/User/Settings/sections/connections/PlayStationSection"
+import RetroAchievementsSection from "@components/User/Settings/sections/connections/RetroAchievementsSection"
 
 export default function ConnectionsTab() {
 	const { t } = useTranslation("settings")
@@ -21,6 +22,7 @@ export default function ConnectionsTab() {
 				<TwitchSection />
 				<SteamSection />
 				<PlayStationSection />
+				<RetroAchievementsSection />
 				<NintendoSection />
 			</div>
 		</div>
