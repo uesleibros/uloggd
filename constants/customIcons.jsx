@@ -32,6 +32,17 @@ export function SteamIcon({ className }) {
 	)
 }
 
+export function RetroAchievementsIcon({ className }) {
+  return (
+    <img
+      src="https://static.retroachievements.org/assets/images/ra-icon.webp"
+      alt=""
+      draggable={false}
+      className={`object-contain ${className}`}
+    />
+  )
+}
+
 export function NintendoIcon({ className }) {
   return (
     <svg
