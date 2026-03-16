@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Loader2, Check, Gift, ArrowLeft, Search, X } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
@@ -60,9 +60,7 @@ function RecipientPicker({ userId, onSelect, onCancel }) {
   }, [loading])
 
   const filtered = query
-    ? users.filter(u =>
-        u.username?.toLowerCase().includes(query.toLowerCase())
-      )
+    ? users.filter(u => u.username?.toLowerCase().includes(query.toLowerCase()))
     : users
 
   return (
@@ -75,6 +73,9 @@ function RecipientPicker({ userId, onSelect, onCancel }) {
           <ArrowLeft className="w-4 h-4" />
         </button>
         <h3 className="text-sm font-semibold text-white">{t("gift.selectRecipient")}</h3>
+        {!loading && (
+          <span className="text-[11px] text-zinc-600 ml-auto">{users.length}</span>
+        )}
       </div>
 
       <div className="relative">
@@ -97,7 +98,7 @@ function RecipientPicker({ userId, onSelect, onCancel }) {
         )}
       </div>
 
-      <div className="max-h-[200px] overflow-y-auto space-y-0.5 rounded-lg">
+      <div className="max-h-[280px] overflow-y-auto overscroll-contain space-y-0.5 rounded-lg">
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-4 h-4 text-zinc-600 animate-spin" />
@@ -109,7 +110,7 @@ function RecipientPicker({ userId, onSelect, onCancel }) {
             </p>
           </div>
         ) : (
-          filtered.slice(0, 50).map(u => (
+          filtered.map(u => (
             <button
               key={u.user_id}
               onClick={() => onSelect(u)}
@@ -148,9 +149,7 @@ function GiftConfirm({ recipient, item, onConfirm, onCancel, loading }) {
               {t("gift.sendingTo")}{" "}
               <span className="font-semibold text-white">{recipient.username}</span>
             </p>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              {item.name}
-            </p>
+            <p className="text-xs text-zinc-500 mt-0.5">{item.name}</p>
           </div>
         </div>
       </div>
@@ -162,9 +161,7 @@ function GiftConfirm({ recipient, item, onConfirm, onCancel, loading }) {
         <PriceDisplay item={item} size="lg" />
       </div>
 
-      <p className="text-[11px] text-zinc-600 leading-relaxed">
-        {t("gift.disclaimer")}
-      </p>
+      <p className="text-[11px] text-zinc-600 leading-relaxed">{t("gift.disclaimer")}</p>
 
       <div className="flex gap-2.5">
         <button
@@ -334,12 +331,7 @@ export default function ItemDetailModal({ item, owned, equipped, onClose, onPurc
                       )
 
                       return artist.url ? (
-                        <a
-                          key={artist.id}
-                          href={artist.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
+                        <a key={artist.id} href={artist.url} target="_blank" rel="noopener noreferrer">
                           {content}
                         </a>
                       ) : (
