@@ -1146,6 +1146,11 @@ export default {
 			title: "Game not found",
 		},
 		content: {
+			ra: {
+				matchedAs: "Matched as \"{{title}}\" on RetroAchievements",
+				showAll: "View all ({{count}})",
+				showLess: "Show less",
+			},
 			stats: {
 				ratings: "Ratings",
 				hype: "Hype",
