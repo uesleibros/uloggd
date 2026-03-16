@@ -45,6 +45,7 @@ export function ProfileContent({
   onJourneysPageChange,
   onJourneysUpdate,
   onEditProfile,
+  likesCounts,
 }) {
   const { t } = useTranslation("profile")
   const tabsRef = useRef(null)
@@ -134,7 +135,12 @@ export function ProfileContent({
       )}
 
       {activeSection === "likes" && (
-        <ProfileLikes userId={profile.user_id} isOwnProfile={isOwnProfile} username={profile.username} />
+        <ProfileLikes
+          userId={profile.user_id}
+          isOwnProfile={isOwnProfile}
+          username={profile.username}
+          initialCounts={likesCounts}
+        />
       )}
 
       {activeSection === "transactions" && (

@@ -161,6 +161,7 @@ export default function Profile() {
 						/>
 
 						<ProfileContent
+							likesCounts={likesCounts}
 							activeSection={activeSection}
 							profile={profile}
 							isOwnProfile={isOwnProfile}
