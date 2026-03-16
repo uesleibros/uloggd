@@ -3,7 +3,7 @@ import { Languages, Loader2 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 
 export default function Translatable({ children, className = "", truncate = 0 }) {
-  const { t, language } = useTranslation("common")
+  const { t, language } = useTranslation()
   const [translated, setTranslated] = useState(null)
   const [showTranslated, setShowTranslated] = useState(false)
   const [detectedLang, setDetectedLang] = useState(null)
