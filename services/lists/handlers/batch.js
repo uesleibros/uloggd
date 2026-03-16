@@ -1,6 +1,6 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
-export async function handleGet(req, res) {
+export async function handleBatch(req, res) {
   const ids = req.query.ids || []
   const idList = Array.isArray(ids) ? ids : [ids]
 
