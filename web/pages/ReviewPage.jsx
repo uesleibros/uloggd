@@ -200,7 +200,7 @@ export default function ReviewPage() {
         </div>
       </div>
 
-      <div className="mt-8 pt-6 border-t border-zinc-800">
+      <div className="mt-4 pt-6 border-t border-zinc-800">
         <CommentSection type="review" targetId={review.id} />
       </div>
 
