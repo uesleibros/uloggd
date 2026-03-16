@@ -11,7 +11,7 @@ async function getProfile(username, apiKey) {
 
   const data = await res.json()
 
-  if (!data || data.ID === undefined) {
+  if (!data || !data.User) {
     throw new Error("Invalid API key or username")
   }
 
@@ -27,14 +27,14 @@ async function getProfile(username, apiKey) {
 }
 
 export async function handleConnect(req, res) {
-  const { apiKey } = req.body
+  const { username, apiKey } = req.body
 
-  if (!apiKey?.trim()) {
-    return res.status(400).json({ error: "apiKey required" })
+  if (!username?.trim() || !apiKey?.trim()) {
+    return res.status(400).json({ error: "username and apiKey required" })
   }
 
   try {
-    const profile = await getProfile(req.user.id, apiKey.trim())
+    const profile = await getProfile(username.trim(), apiKey.trim())
 
     await supabase
       .from("user_connections")
