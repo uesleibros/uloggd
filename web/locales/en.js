@@ -652,6 +652,8 @@ export default {
 		selectPlatform: "Select platform",
 		noPlatforms: "No platforms available",
 		comments: {
+			toCancel: "to cancel",
+			toSave: "to save",
 			title: "Comments",
 			placeholder: "Write a comment...",
 			submit: "Submit",
