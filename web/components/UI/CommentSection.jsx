@@ -12,14 +12,14 @@ const LIMIT = 10
 
 function CommentSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {[...Array(3)].map((_, i) => (
-        <div key={i} className="flex gap-3">
+        <div key={i} className="flex gap-3 sm:gap-3.5">
           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-zinc-800 animate-pulse flex-shrink-0" />
-          <div className="flex-1 space-y-2">
-            <div className="h-3.5 w-24 bg-zinc-800 rounded animate-pulse" />
-            <div className="h-3 w-full bg-zinc-800/60 rounded animate-pulse" />
-            <div className="h-3 w-2/3 bg-zinc-800/40 rounded animate-pulse" />
+          <div className="flex-1 space-y-2 pt-1">
+            <div className="h-3 w-28 bg-zinc-800 rounded animate-pulse" />
+            <div className="h-3 w-full bg-zinc-800/50 rounded animate-pulse" />
+            <div className="h-3 w-1/2 bg-zinc-800/30 rounded animate-pulse" />
           </div>
         </div>
       ))}
@@ -72,8 +72,8 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 sm:gap-3">
-      <Link to={`/u/${user.username}`} className="flex-shrink-0 mt-0.5">
+    <form onSubmit={handleSubmit} className="flex gap-3 sm:gap-3.5">
+      <Link to={`/u/${user.username}`} className="flex-shrink-0 pt-1">
         <AvatarWithDecoration
           src={user.avatar}
           alt={user.username}
@@ -172,8 +172,8 @@ function CommentItem({ comment, onEdit, onDelete }) {
   }
 
   return (
-    <div className="group/comment flex gap-2 sm:gap-3">
-      <Link to={`/u/${user?.username}`} className="flex-shrink-0 mt-0.5">
+    <div className="group/comment flex gap-3 sm:gap-3.5">
+      <Link to={`/u/${user?.username}`} className="flex-shrink-0 pt-0.5">
         <AvatarWithDecoration
           src={user?.avatar}
           alt={user?.username}
@@ -184,35 +184,31 @@ function CommentItem({ comment, onEdit, onDelete }) {
       </Link>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
-            <Link
-              to={`/u/${user?.username}`}
-              className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors truncate max-w-[120px] sm:max-w-none"
-            >
-              {user?.username}
-            </Link>
-            <UserBadges user={user} size="sm" clickable />
-            <span className="text-[11px] sm:text-xs text-zinc-600 whitespace-nowrap">
-              {getTimeAgo(comment.created_at)}
-            </span>
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <Link
+            to={`/u/${user?.username}`}
+            className="text-[13px] sm:text-sm font-semibold text-white hover:text-zinc-300 transition-colors truncate max-w-[140px] sm:max-w-none"
+          >
+            {user?.username}
+          </Link>
+          <UserBadges user={user} size="sm" clickable />
+          <span className="text-[11px] sm:text-xs text-zinc-600 whitespace-nowrap">
+            {getTimeAgo(comment.created_at)}
             {wasEdited && (
-              <span className="hidden sm:inline text-xs text-zinc-600 italic">
-                ({t("comments.edited")})
-              </span>
+              <span className="italic"> · {t("comments.edited")}</span>
             )}
-          </div>
+          </span>
 
           {canManage && !editing && (
-            <div ref={menuRef} className="relative flex-shrink-0">
+            <div ref={menuRef} className="relative ml-auto">
               <button
                 onClick={() => {
                   setMenuOpen(!menuOpen)
                   setConfirmDelete(false)
                 }}
-                className="p-1.5 -mr-1.5 text-zinc-500 hover:text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer sm:opacity-0 sm:group-hover/comment:opacity-100"
+                className="p-1 text-zinc-600 hover:text-zinc-300 rounded-md hover:bg-zinc-800 transition-colors cursor-pointer sm:opacity-0 sm:group-hover/comment:opacity-100"
               >
-                <MoreHorizontal className="w-4 h-4" />
+                <MoreHorizontal className="w-3.5 h-3.5" />
               </button>
 
               {menuOpen && (
@@ -258,7 +254,7 @@ function CommentItem({ comment, onEdit, onDelete }) {
         </div>
 
         {editing ? (
-          <div className="mt-2">
+          <div className="mt-1.5">
             <textarea
               ref={editRef}
               value={editContent}
@@ -292,7 +288,7 @@ function CommentItem({ comment, onEdit, onDelete }) {
             </div>
           </div>
         ) : (
-          <p className="text-sm text-zinc-300 mt-1 whitespace-pre-wrap break-words leading-relaxed">
+          <p className="text-[13px] sm:text-sm text-zinc-300 mt-0.5 whitespace-pre-wrap break-words leading-relaxed">
             {comment.content}
           </p>
         )}
@@ -457,7 +453,7 @@ export default function CommentSection({ type, targetId }) {
       {loading ? (
         <CommentSkeleton />
       ) : comments.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {comments.map(comment => (
             <CommentItem
               key={comment.id}
