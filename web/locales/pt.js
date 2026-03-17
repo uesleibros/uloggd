@@ -1,10 +1,10 @@
 export default {
 	screenshots: {
-	  title: "Screenshots",
+	  title: "Capturas de tela",
 	  add: "Adicionar",
 	  addFirst: "Compartilhe sua primeira screenshot",
 	  postsCount: "publicações",
-	  emptyTitle: "Compartilhe Screenshots",
+	  emptyTitle: "Compartilhe Capturas de tela",
 	  emptyDesc: "Suas capturas de tela aparecerão aqui",
 	  upload: {
 	    title: "Nova publicação",
@@ -995,6 +995,11 @@ export default {
 				reviews: "Reviews",
 				lists: "Listas",
 				tierlists: "Tierlists",
+				screenshots: "Capturas de tela",
+			},
+			emptyScreenshots: {
+			  own: "Você ainda não curtiu nenhuma screenshot",
+			  other: "{{username}} ainda não curtiu nenhuma screenshot",
 			},
 			empty: {
 				title: "Nenhuma curtida ainda",

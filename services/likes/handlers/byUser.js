@@ -310,6 +310,44 @@ export async function handleByUser(req, res) {
 			})
 		}
 
+		if (type === "screenshots") {
+			const { data: likedScreenshotsData, count } = await supabase
+				.from("screenshot_likes")
+				.select("screenshot_id", { count: "exact" })
+				.eq("user_id", userId)
+				.order("created_at", { ascending: false })
+				.range(offset, offset + limitNum - 1)
+
+			const screenshotIds = likedScreenshotsData?.map(l => l.screenshot_id) || []
+
+			if (screenshotIds.length === 0) {
+				return res.json({
+					screenshots: [],
+					total: count || 0,
+					page: pageNum,
+					totalPages: Math.ceil((count || 0) / limitNum),
+				})
+			}
+
+			const { data } = await supabase
+				.from("screenshots")
+				.select("id, user_id, image_url, caption, game_id, game_slug, game_name, is_spoiler, created_at")
+				.in("id", screenshotIds)
+
+			const screenshots = data || []
+
+			const orderedScreenshots = screenshotIds
+				.map(id => screenshots.find(s => s.id === id))
+				.filter(Boolean)
+
+			return res.json({
+				screenshots: orderedScreenshots,
+				total: count || 0,
+				page: pageNum,
+				totalPages: Math.ceil((count || 0) / limitNum),
+			})
+		}
+
 		res.status(400).json({ error: "invalid type" })
 
 	} catch (e) {

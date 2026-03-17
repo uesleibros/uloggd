@@ -995,7 +995,12 @@ export default {
 				reviews: "Reviews",
 				lists: "Lists",
 				tierlists: "Tierlists",
+				screenshots: "Screenshots",
 			},
+			emptyScreenshots: {
+	      own: "You haven't liked any screenshots yet",
+	      other: "{{username}} hasn't liked any screenshots yet",
+	    },
 			empty: {
 				title: "No likes yet",
 				own: "Games, reviews, lists and tierlists you like will appear here",

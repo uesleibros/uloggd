@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react"
-import { Heart, Gamepad2, MessageSquare, List, LayoutGrid } from "lucide-react"
+import { Heart, Gamepad2, MessageSquare, List, LayoutGrid, Camera } from "lucide-react"
+import { Link } from "react-router-dom"
 import { useTranslation } from "#hooks/useTranslation"
 import { useCustomCovers } from "#hooks/useCustomCovers"
 import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
@@ -13,6 +14,7 @@ const GAMES_PER_PAGE = 24
 const REVIEWS_PER_PAGE = 10
 const LISTS_PER_PAGE = 12
 const TIERLISTS_PER_PAGE = 12
+const SCREENSHOTS_PER_PAGE = 18
 
 function GamesSkeleton() {
   return (
@@ -57,6 +59,33 @@ function TierlistsSkeleton() {
         </div>
       ))}
     </div>
+  )
+}
+
+function ScreenshotsSkeleton() {
+  return (
+    <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
+      {[...Array(SCREENSHOTS_PER_PAGE)].map((_, i) => (
+        <div key={i} className="aspect-square bg-zinc-800/50 animate-pulse" />
+      ))}
+    </div>
+  )
+}
+
+function ScreenshotGridItem({ screenshot }) {
+  return (
+    <Link
+      to={`/screenshot/${screenshot.id}`}
+      className="group relative aspect-square overflow-hidden bg-zinc-800 cursor-pointer block"
+    >
+      <img
+        src={screenshot.image_url}
+        alt={screenshot.caption || ""}
+        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+      />
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />
+    </Link>
   )
 }
 
@@ -105,7 +134,7 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
   const [games, setGames] = useState({})
   const [users, setUsers] = useState({})
   const [loading, setLoading] = useState(true)
-  const [counts, setCounts] = useState(initialCounts || { games: 0, reviews: 0, lists: 0, tierlists: 0 })
+  const [counts, setCounts] = useState(initialCounts || { games: 0, reviews: 0, lists: 0, tierlists: 0, screenshots: 0 })
   const containerRef = useRef(null)
 
   useEffect(() => {
@@ -130,6 +159,7 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
       reviews: REVIEWS_PER_PAGE,
       lists: LISTS_PER_PAGE,
       tierlists: TIERLISTS_PER_PAGE,
+      screenshots: SCREENSHOTS_PER_PAGE,
     }
     const limit = limitMap[activeTab]
     const params = new URLSearchParams({ userId, type: activeTab, page, limit })
@@ -163,6 +193,12 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
             total: res.total || 0,
             totalPages: res.totalPages || 1,
           })
+        } else if (activeTab === "screenshots") {
+          setData({
+            items: res.screenshots || [],
+            total: res.total || 0,
+            totalPages: res.totalPages || 1,
+          })
         }
       })
       .catch(() => {})
@@ -190,6 +226,7 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
       reviews: isOwnProfile ? t("likes.emptyReviews.own") : t("likes.emptyReviews.other", { username }),
       lists: isOwnProfile ? t("likes.emptyLists.own") : t("likes.emptyLists.other", { username }),
       tierlists: isOwnProfile ? t("likes.emptyTierlists.own") : t("likes.emptyTierlists.other", { username }),
+      screenshots: isOwnProfile ? t("likes.emptyScreenshots.own") : t("likes.emptyScreenshots.other", { username }),
     }
     return messages[activeTab]
   }
@@ -200,11 +237,12 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
       reviews: MessageSquare,
       lists: List,
       tierlists: LayoutGrid,
+      screenshots: Camera,
     }
     return icons[activeTab]
   }
 
-  const totalLikes = counts.games + counts.reviews + counts.lists + counts.tierlists
+  const totalLikes = counts.games + counts.reviews + counts.lists + counts.tierlists + counts.screenshots
 
   if (totalLikes === 0) {
     return (
@@ -249,6 +287,13 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
           label={t("likes.tabs.tierlists")}
           count={counts.tierlists}
         />
+        <TabButton
+          active={activeTab === "screenshots"}
+          onClick={() => handleTabChange("screenshots")}
+          icon={Camera}
+          label={t("likes.tabs.screenshots")}
+          count={counts.screenshots}
+        />
       </DragScrollRow>
 
       {isLoadingGames && activeTab === "games" ? (
@@ -259,6 +304,8 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
         <ListsSkeleton />
       ) : loading && activeTab === "tierlists" ? (
         <TierlistsSkeleton />
+      ) : loading && activeTab === "screenshots" ? (
+        <ScreenshotsSkeleton />
       ) : data.items.length > 0 ? (
         <div className="space-y-6">
           {activeTab === "games" && (
@@ -300,6 +347,14 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {data.items.map((tierlist) => (
                 <TierlistCard key={tierlist.id} tierlist={tierlist} showOwner />
+              ))}
+            </div>
+          )}
+
+          {activeTab === "screenshots" && (
+            <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
+              {data.items.map((screenshot) => (
+                <ScreenshotGridItem key={screenshot.id} screenshot={screenshot} />
               ))}
             </div>
           )}

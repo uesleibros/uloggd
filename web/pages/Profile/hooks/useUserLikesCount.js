@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 
 export function useUserLikesCount(userId) {
-  const [counts, setCounts] = useState({ games: 0, reviews: 0, lists: 0, tierlists: 0, total: 0 })
+  const [counts, setCounts] = useState({ games: 0, reviews: 0, lists: 0, tierlists: 0, screenshots: 0, total: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

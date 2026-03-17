@@ -1,3 +1,4 @@
+// API - /api/likes/counts.js
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleCounts(req, res) {
@@ -5,7 +6,7 @@ export async function handleCounts(req, res) {
   if (!userId) return res.status(400).json({ error: "userId required" })
 
   try {
-    const [games, reviews, lists, tierlists] = await Promise.all([
+    const [games, reviews, lists, tierlists, screenshots] = await Promise.all([
       supabase
         .from("user_games")
         .select("*", { count: "exact", head: true })
@@ -23,6 +24,10 @@ export async function handleCounts(req, res) {
         .from("tierlist_likes")
         .select("*", { count: "exact", head: true })
         .eq("user_id", userId),
+      supabase
+        .from("screenshot_likes")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId),
     ])
 
     const counts = {
@@ -30,11 +35,12 @@ export async function handleCounts(req, res) {
       reviews: reviews.count || 0,
       lists: lists.count || 0,
       tierlists: tierlists.count || 0,
+      screenshots: screenshots.count || 0,
     }
 
     res.json({
       ...counts,
-      total: counts.games + counts.reviews + counts.lists + counts.tierlists,
+      total: counts.games + counts.reviews + counts.lists + counts.tierlists + counts.screenshots,
     })
   } catch (e) {
     console.error(e)
