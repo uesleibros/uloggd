@@ -102,14 +102,16 @@ async function fetchAllRows(table, select) {
 }
 
 async function getGlobalLeaderboard(limit, offset) {
-  const [mineralsData, followersData, likesData] = await Promise.all([
+  const [mineralsData, reviewsData, followersData, likesData] = await Promise.all([
     getMineralsRaw(),
+    getReviewsRaw(),
     getFollowersRaw(),
     getLikesRaw(),
   ])
 
   const allUserIds = new Set([
     ...Object.keys(mineralsData),
+    ...Object.keys(reviewsData),
     ...Object.keys(followersData),
     ...Object.keys(likesData),
   ])
@@ -118,16 +120,18 @@ async function getGlobalLeaderboard(limit, offset) {
 
   for (const userId of allUserIds) {
     const minerals = mineralsData[userId]?.value || 0
+    const reviews = reviewsData[userId]?.value || 0
     const followers = followersData[userId] || 0
     const likes = likesData[userId]?.value || 0
 
-    const totalScore = minerals + followers + likes
+    const totalScore = minerals + reviews + followers + likes
 
     scores.push({
       user_id: userId,
       value: totalScore,
       breakdown: {
         minerals,
+        reviews,
         followers,
         likes,
       },
@@ -147,6 +151,17 @@ async function getGlobalLeaderboard(limit, offset) {
   }))
 
   return { entries, total }
+}
+
+async function getReviewsRaw() {
+  const reviews = await fetchAllRows("reviews", "user_id")
+
+  const result = {}
+  for (const r of reviews) {
+    if (!result[r.user_id]) result[r.user_id] = { value: 0 }
+    result[r.user_id].value++
+  }
+  return result
 }
 
 async function getMineralsRaw() {
