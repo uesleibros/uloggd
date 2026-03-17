@@ -8,7 +8,8 @@ import { AuthButtons } from "./AuthButtons"
 import { MobileMenu, MenuToggle, NavLink } from "./MobileMenu"
 
 const NAV_ITEMS = [
-  { "label": "Shop", "to": "/shop" }
+  { "label": "Shop", "to": "/shop" },
+  { "label": "Leaderboard", "to": "/leaderboard" }
 ]
 
 export default function Header() {
