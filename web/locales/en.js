@@ -1,4 +1,28 @@
 export default {
+	leaderboard: {
+	  title: "Leaderboard",
+	  subtitle: "Top community members",
+	  description: "See who's at the top of the uloggd community rankings",
+	  participants: "participants",
+	  avgRating: "average",
+	  followers: "followers",
+	  categories: {
+	    minerals: "Minerals",
+	    reviews: "Reviews",
+	    followers: "Followers",
+	    likes: "Likes",
+	  },
+	  units: {
+	    minerals: "points",
+	    reviews: "reviews",
+	    followers: "followers",
+	    likes: "likes",
+	  },
+	  empty: {
+	    title: "No data yet",
+	    description: "Be the first to appear on the leaderboard!",
+	  },
+	},
 	screenshots: {
 	  title: "Screenshots",
 	  add: "Add",
