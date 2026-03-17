@@ -86,9 +86,8 @@ function getPercentileValue(values, percentile) {
 }
 
 async function getGlobalLeaderboard(limit, offset) {
-  const [mineralsData, reviewsData, followersData, likesData, playtimeData] = await Promise.all([
+  const [mineralsData, followersData, likesData, playtimeData] = await Promise.all([
     getMineralsRaw(),
-    getReviewsRaw(),
     getFollowersRaw(),
     getLikesRaw(),
     getPlaytimeRaw(),
@@ -96,20 +95,17 @@ async function getGlobalLeaderboard(limit, offset) {
 
   const allUserIds = new Set([
     ...Object.keys(mineralsData),
-    ...Object.keys(reviewsData),
     ...Object.keys(followersData),
     ...Object.keys(likesData),
     ...Object.keys(playtimeData),
   ])
 
   const mineralsValues = Object.values(mineralsData).map(d => d.value)
-  const reviewsValues = Object.values(reviewsData).map(d => d.value)
   const followersValues = Object.values(followersData)
   const likesValues = Object.values(likesData).map(d => d.value)
   const playtimeValues = Object.values(playtimeData).map(d => d.value)
 
   const maxMinerals = getPercentileValue(mineralsValues, 95)
-  const maxReviews = getPercentileValue(reviewsValues, 95)
   const maxFollowers = getPercentileValue(followersValues, 95)
   const maxLikes = getPercentileValue(likesValues, 95)
   const maxPlaytime = getPercentileValue(playtimeValues, 95)
@@ -118,32 +114,28 @@ async function getGlobalLeaderboard(limit, offset) {
 
   for (const userId of allUserIds) {
     const minerals = mineralsData[userId]?.value || 0
-    const reviews = reviewsData[userId]?.value || 0
     const followers = followersData[userId] || 0
     const likes = likesData[userId]?.value || 0
     const playtime = playtimeData[userId]?.value || 0
 
     const mineralsScore = Math.min((minerals / maxMinerals) * 100, 100)
-    const reviewsScore = Math.min((reviews / maxReviews) * 100, 100)
     const followersScore = Math.min((followers / maxFollowers) * 100, 100)
     const likesScore = Math.min((likes / maxLikes) * 100, 100)
     const playtimeScore = Math.min((playtime / maxPlaytime) * 100, 100)
 
-    const totalScore = mineralsScore + reviewsScore + followersScore + likesScore + playtimeScore
+    const totalScore = mineralsScore + followersScore + likesScore + playtimeScore
 
     scores.push({
       user_id: userId,
       value: Math.round(totalScore * 10) / 10,
       breakdown: {
         minerals: Math.round(mineralsScore * 10) / 10,
-        reviews: Math.round(reviewsScore * 10) / 10,
         followers: Math.round(followersScore * 10) / 10,
         likes: Math.round(likesScore * 10) / 10,
         playtime: Math.round(playtimeScore * 10) / 10,
       },
       raw: {
         minerals,
-        reviews,
         followers,
         likes,
         playtime,
