@@ -721,6 +721,11 @@ export default {
 		selectPlatform: "Select platform",
 		noPlatforms: "No platforms available",
 		comments: {
+			reply: "Reply",
+			replyingTo: "Replying to",
+			replyPlaceholder: "Write your reply...",
+			showReplies: "Show {{count}} replies",
+			hideReplies: "Hide replies",
 			toCancel: "to cancel",
 			toSave: "to save",
 			title: "Comments",
