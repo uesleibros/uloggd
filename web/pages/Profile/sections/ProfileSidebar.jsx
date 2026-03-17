@@ -8,6 +8,7 @@ import SocialLinks from "@components/User/SocialLinks"
 import SteamAchievements from "@components/Game/SteamAchievements"
 import ProfileRetroAchievements from "@components/Game/RetroAchievements"
 import PSNTrophies from "@components/Game/PSNTrophies"
+import RatingStats from "../components/RatingStats"
 import { SteamIcon } from "#constants/customIcons"
 
 export function ProfileSidebar({
@@ -81,6 +82,10 @@ export function ProfileSidebar({
           <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
           <span>{formatDateLong(profile.created_at)}</span>
         </div>
+      </div>
+
+      <div className="mt-4">
+        <RatingStats userId={profile.user_id} />
       </div>
 
       <ActivityCard stream={profile.stream} userId={profile.user_id} />
