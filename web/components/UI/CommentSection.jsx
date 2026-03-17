@@ -302,22 +302,22 @@ function CommentItem({ comment, onEdit, onDelete, onReply, replies = [], depth =
   }
 
   return (
-    <div className={depth > 0 ? "ml-6 sm:ml-10 border-l-2 border-zinc-800 pl-3 sm:pl-4" : ""}>
-      <div className="group/comment flex gap-3 px-2 py-2.5 -mx-2 rounded-lg hover:bg-zinc-800/30 transition-colors">
-        <Link to={`/u/${user?.username}`} className="flex-shrink-0 pt-0.5">
+    <div className={depth > 0 ? "ml-4 sm:ml-6 pl-3 sm:pl-4 border-l-2 border-zinc-800" : ""}>
+      <div className="group/comment flex gap-2.5 sm:gap-3 py-2.5 rounded-lg hover:bg-zinc-800/30 transition-colors">
+        <Link to={`/u/${user?.username}`} className="flex-shrink-0">
           <AvatarWithDecoration
             src={user?.avatar}
             alt={user?.username}
             decorationUrl={user?.equipped?.avatar_decoration?.asset_url}
-            size={depth > 0 ? "xs" : "sm"}
+            size="sm"
           />
         </Link>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <Link
               to={`/u/${user?.username}`}
-              className="text-sm font-semibold text-white hover:underline underline-offset-2 truncate max-w-[140px] sm:max-w-none"
+              className="text-sm font-semibold text-white hover:underline underline-offset-2"
             >
               {user?.username}
             </Link>
@@ -332,13 +332,13 @@ function CommentItem({ comment, onEdit, onDelete, onReply, replies = [], depth =
               </span>
             )}
 
-            <span className="text-[11px] text-zinc-600 whitespace-nowrap flex-shrink-0">
-              {getTimeAgo(comment.created_at)}
+            <span className="text-[11px] text-zinc-600 whitespace-nowrap">
+              · {getTimeAgo(comment.created_at)}
               {wasEdited && <span className="italic"> ({t("comments.edited")})</span>}
             </span>
 
             {canManage && !editing && (
-              <div ref={menuRef} className="relative ml-auto self-center">
+              <div ref={menuRef} className="relative ml-auto">
                 <button
                   onClick={() => {
                     setMenuOpen(!menuOpen)
@@ -400,7 +400,7 @@ function CommentItem({ comment, onEdit, onDelete, onReply, replies = [], depth =
             />
           ) : (
             <>
-              <p className="text-[13px] sm:text-sm text-zinc-300 mt-0.5 whitespace-pre-wrap break-words leading-relaxed">
+              <p className="text-[13px] sm:text-sm text-zinc-300 mt-1 whitespace-pre-wrap break-words leading-relaxed">
                 {comment.content}
               </p>
 
@@ -451,7 +451,7 @@ function CommentItem({ comment, onEdit, onDelete, onReply, replies = [], depth =
       </div>
 
       {hasReplies && showReplies && (
-        <div className="mt-1">
+        <div className="mt-0.5">
           {replies.map(reply => (
             <CommentItem
               key={reply.id}
