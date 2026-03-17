@@ -1,4 +1,32 @@
 export default {
+	screenshots: {
+	  title: "Screenshots",
+	  add: "Adicionar",
+	  addFirst: "Adicione sua primeira screenshot",
+	  empty: "Nenhuma screenshot ainda",
+	  upload: {
+	    title: "Nova screenshot",
+	    selectImage: "Clique para selecionar uma imagem",
+	    game: "Jogo (opcional)",
+	    searchGame: "Buscar jogo...",
+	    caption: "Legenda (opcional)",
+	    captionPlaceholder: "Descreva a screenshot...",
+	    spoiler: "Contém spoiler",
+	    cancel: "Cancelar",
+	    submit: "Enviar",
+	    uploading: "Enviando...",
+	    fileTooLarge: "Arquivo muito grande (máx. 10MB)",
+	    invalidType: "Tipo de arquivo inválido",
+	  },
+	  edit: {
+	    title: "Editar screenshot",
+	    save: "Salvar",
+	  },
+	  lightbox: {
+	    confirmDelete: "Confirmar exclusão",
+	    revealSpoiler: "Clique para revelar (spoiler)",
+	  },
+	},
 	translate: {
 	  button: "Traduzir",
 	  translating: "Traduzindo...",
