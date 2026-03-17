@@ -200,7 +200,9 @@ export default function Profile() {
 						/>
 					</div>
 				</div>
-				<ScreenshotsSection userId={profile.user_id} isOwnProfile={isOwnProfile} />
+				<div className="mt-4">
+					<ScreenshotsSection userId={profile.user_id} isOwnProfile={isOwnProfile} />
+				</div>
 			</div>
 
 			<FollowListModal
