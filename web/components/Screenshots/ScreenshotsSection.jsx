@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import {
   Camera, Plus, Trash2, EyeOff, Eye, Pencil, X, Loader2,
-  Gamepad2, AlertTriangle, ChevronLeft, ChevronRight
+  Gamepad2, AlertTriangle, ChevronLeft, ChevronRight, Heart, MessageCircle,
+  MoreHorizontal, Bookmark, Send
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useAuth } from "#hooks/useAuth"
@@ -19,9 +20,9 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 function ScreenshotSkeleton() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-      {[...Array(8)].map((_, i) => (
-        <div key={i} className="aspect-video bg-zinc-800 rounded-lg animate-pulse" />
+    <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
+      {[...Array(9)].map((_, i) => (
+        <div key={i} className="aspect-square bg-zinc-800/50 animate-pulse" />
       ))}
     </div>
   )
@@ -37,6 +38,7 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
   const [gameResults, setGameResults] = useState([])
   const [selectedGame, setSelectedGame] = useState(null)
   const [error, setError] = useState(null)
+  const [step, setStep] = useState(1)
   const fileRef = useRef(null)
   const searchTimeout = useRef(null)
 
@@ -50,6 +52,7 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
       setGameResults([])
       setSelectedGame(null)
       setError(null)
+      setStep(1)
     }
   }, [isOpen])
 
@@ -76,7 +79,10 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
     setError(null)
     setFile(f)
     const reader = new FileReader()
-    reader.onload = (ev) => setPreview(ev.target.result)
+    reader.onload = (ev) => {
+      setPreview(ev.target.result)
+      setStep(2)
+    }
     reader.readAsDataURL(f)
   }
 
@@ -96,109 +102,165 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={() => !uploading && onClose()} maxWidth="max-w-md" fullscreenMobile showMobileGrip closeOnOverlay={!uploading}>
-      <div className="p-5 space-y-4">
-        <h3 className="text-base font-semibold text-white">{t("upload.title")}</h3>
-
-        {!preview ? (
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="w-full aspect-video bg-zinc-800/50 border-2 border-dashed border-zinc-700 hover:border-zinc-500 rounded-xl flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer"
-          >
-            <Camera className="w-8 h-8 text-zinc-600" />
-            <span className="text-sm text-zinc-500">{t("upload.selectImage")}</span>
-          </button>
-        ) : (
-          <div className="relative">
-            <img src={preview} alt="" className="w-full rounded-xl object-cover max-h-64" />
-            <button
-              onClick={() => { setFile(null); setPreview(null) }}
-              className="absolute top-2 right-2 p-1.5 bg-black/70 hover:bg-black rounded-lg text-white cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-
-        {error && (
-          <p className="text-xs text-red-400 flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5" />
-            {error}
-          </p>
-        )}
-
-        <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t("upload.game")}</label>
-          {selectedGame ? (
-            <div className="flex items-center gap-2.5 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl">
-              {selectedGame.cover?.url && (
-                <img src={`https:${selectedGame.cover.url}`} alt="" className="w-6 h-8 rounded object-cover flex-shrink-0" />
-              )}
-              <span className="text-sm text-white truncate flex-1">{selectedGame.name}</span>
-              <button onClick={() => setSelectedGame(null)} className="text-zinc-500 hover:text-white cursor-pointer">
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ) : (
-            <div className="relative">
-              <input
-                type="text"
-                value={gameQuery}
-                onChange={(e) => setGameQuery(e.target.value)}
-                placeholder={t("upload.searchGame")}
-                className="w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-              />
-              {gameResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl z-20 overflow-hidden">
-                  {gameResults.map((g) => (
-                    <button
-                      key={g.id}
-                      onClick={() => { setSelectedGame(g); setGameQuery(""); setGameResults([]) }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-zinc-800 transition-colors cursor-pointer text-left"
-                    >
-                      {g.cover?.url && <img src={`https:${g.cover.url}`} alt="" className="w-5 h-7 rounded object-cover flex-shrink-0" />}
-                      <span className="text-sm text-zinc-300 truncate">{g.name}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t("upload.caption")}</label>
-          <input
-            type="text"
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            placeholder={t("upload.captionPlaceholder")}
-            maxLength={200}
-            className="w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-          />
-        </div>
-
-        <label className="flex items-center gap-2.5 cursor-pointer">
-          <input type="checkbox" checked={isSpoiler} onChange={(e) => setIsSpoiler(e.target.checked)} className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-indigo-500 focus:ring-0 cursor-pointer" />
-          <span className="text-sm text-zinc-400">{t("upload.spoiler")}</span>
-        </label>
-
-        <div className="flex gap-2.5 pt-2">
-          <button onClick={onClose} disabled={uploading} className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors cursor-pointer disabled:opacity-50">
-            {t("upload.cancel")}
-          </button>
+    <Modal 
+      isOpen={isOpen} 
+      onClose={() => !uploading && onClose()} 
+      maxWidth="max-w-lg" 
+      fullscreenMobile 
+      showCloseButton={false}
+      closeOnOverlay={!uploading}
+      noScroll
+    >
+      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+        <button 
+          onClick={() => step === 1 ? onClose() : setStep(1)} 
+          disabled={uploading}
+          className="text-sm font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+        >
+          {step === 1 ? t("upload.cancel") : <ChevronLeft className="w-5 h-5" />}
+        </button>
+        <h3 className="text-sm font-semibold text-white">
+          {step === 1 ? t("upload.title") : t("upload.details")}
+        </h3>
+        {step === 2 ? (
           <button
             onClick={handleSubmit}
             disabled={!file || uploading}
-            className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
           >
-            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-            {uploading ? t("upload.uploading") : t("upload.submit")}
+            {uploading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            {uploading ? t("upload.uploading") : t("upload.share")}
           </button>
-        </div>
+        ) : (
+          <div className="w-14" />
+        )}
       </div>
+
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        {step === 1 ? (
+          <div className="flex flex-col items-center justify-center min-h-[400px] p-6">
+            <div className="w-20 h-20 rounded-full bg-zinc-800/50 border-2 border-zinc-700 flex items-center justify-center mb-4">
+              <Camera className="w-10 h-10 text-zinc-500" />
+            </div>
+            <h4 className="text-lg font-medium text-white mb-1">{t("upload.dragPhotos")}</h4>
+            <p className="text-sm text-zinc-500 mb-6">{t("upload.dragPhotosDesc")}</p>
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="px-6 py-2.5 text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors cursor-pointer"
+            >
+              {t("upload.selectFromComputer")}
+            </button>
+            {error && (
+              <p className="text-xs text-red-400 flex items-center gap-1.5 mt-4">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                {error}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col md:flex-row">
+            <div className="md:flex-1 bg-black flex items-center justify-center min-h-[250px] md:min-h-[400px]">
+              <img 
+                src={preview} 
+                alt="" 
+                className="max-w-full max-h-[300px] md:max-h-[400px] object-contain" 
+              />
+            </div>
+
+            <div className="md:w-[280px] p-4 space-y-4 border-t md:border-t-0 md:border-l border-zinc-800">
+              <div>
+                <textarea
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  placeholder={t("upload.captionPlaceholder")}
+                  maxLength={200}
+                  rows={3}
+                  className="w-full px-0 py-0 bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none resize-none"
+                />
+                <div className="text-right">
+                  <span className="text-[10px] text-zinc-600">{caption.length}/200</span>
+                </div>
+              </div>
+
+              <div className="border-t border-zinc-800 pt-4">
+                <label className="flex items-center gap-2 text-sm text-zinc-400 mb-2">
+                  <Gamepad2 className="w-4 h-4" />
+                  {t("upload.game")}
+                </label>
+                {selectedGame ? (
+                  <div className="flex items-center gap-2.5 px-3 py-2.5 bg-zinc-800/50 rounded-lg">
+                    {selectedGame.cover?.url && (
+                      <img 
+                        src={`https:${selectedGame.cover.url}`} 
+                        alt="" 
+                        className="w-8 h-10 rounded object-cover flex-shrink-0" 
+                      />
+                    )}
+                    <span className="text-sm text-white truncate flex-1">{selectedGame.name}</span>
+                    <button 
+                      onClick={() => setSelectedGame(null)} 
+                      className="text-zinc-500 hover:text-white cursor-pointer p-1"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={gameQuery}
+                      onChange={(e) => setGameQuery(e.target.value)}
+                      placeholder={t("upload.searchGame")}
+                      className="w-full px-3 py-2.5 bg-zinc-800/50 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600"
+                    />
+                    {gameResults.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl z-20 overflow-hidden max-h-48 overflow-y-auto">
+                        {gameResults.map((g) => (
+                          <button
+                            key={g.id}
+                            onClick={() => { setSelectedGame(g); setGameQuery(""); setGameResults([]) }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-zinc-800 transition-colors cursor-pointer text-left"
+                          >
+                            {g.cover?.url && (
+                              <img 
+                                src={`https:${g.cover.url}`} 
+                                alt="" 
+                                className="w-6 h-8 rounded object-cover flex-shrink-0" 
+                              />
+                            )}
+                            <span className="text-sm text-zinc-300 truncate">{g.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t border-zinc-800 pt-4">
+                <label className="flex items-center justify-between cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    <EyeOff className="w-4 h-4 text-zinc-400" />
+                    <span className="text-sm text-zinc-400">{t("upload.spoiler")}</span>
+                  </div>
+                  <div className="relative">
+                    <input 
+                      type="checkbox" 
+                      checked={isSpoiler} 
+                      onChange={(e) => setIsSpoiler(e.target.checked)} 
+                      className="sr-only peer" 
+                    />
+                    <div className="w-9 h-5 bg-zinc-700 rounded-full peer-checked:bg-indigo-500 transition-colors" />
+                    <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4" />
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
     </Modal>
   )
 }
@@ -208,10 +270,17 @@ function ScreenshotDetailModal({ screenshot, screenshots, owner, isOpen, onClose
   const { user } = useAuth()
   const { getTimeAgo } = useDateTime()
   const [revealed, setRevealed] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [touchStart, setTouchStart] = useState(null)
+  const [touchEnd, setTouchEnd] = useState(null)
+  const menuRef = useRef(null)
+
+  const minSwipeDistance = 50
 
   useEffect(() => {
     setRevealed(false)
+    setShowMenu(false)
     setConfirmDelete(false)
   }, [screenshot])
 
@@ -225,67 +294,233 @@ function ScreenshotDetailModal({ screenshot, screenshots, owner, isOpen, onClose
     return () => window.removeEventListener("keydown", handleKey)
   }, [isOpen, screenshot, screenshots])
 
+  useEffect(() => {
+    if (!showMenu) return
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false)
+        setConfirmDelete(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [showMenu])
+
   if (!screenshot) return null
 
   const currentIndex = screenshots.findIndex(s => s.id === screenshot.id)
   const isSpoilerHidden = screenshot.is_spoiler && !revealed
+  const hasPrev = currentIndex > 0
+  const hasNext = currentIndex < screenshots.length - 1
 
   function handlePrev() {
-    if (currentIndex > 0) onNavigate(screenshots[currentIndex - 1])
+    if (hasPrev) onNavigate(screenshots[currentIndex - 1])
   }
 
   function handleNext() {
-    if (currentIndex < screenshots.length - 1) onNavigate(screenshots[currentIndex + 1])
+    if (hasNext) onNavigate(screenshots[currentIndex + 1])
+  }
+
+  function onTouchStart(e) {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  function onTouchMove(e) {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  function onTouchEnd() {
+    if (!touchStart || !touchEnd) return
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+    if (isLeftSwipe && hasNext) handleNext()
+    if (isRightSwipe && hasPrev) handlePrev()
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-5xl" showCloseButton={false} fullscreenMobile>
-      <div className="flex flex-col md:flex-row h-full md:max-h-[85vh]">
-        <div className="relative flex-1 min-h-0 bg-black flex items-center justify-center">
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      maxWidth="max-w-5xl" 
+      showCloseButton={false} 
+      fullscreenMobile
+      noScroll
+      className="!rounded-none md:!rounded-xl overflow-hidden"
+    >
+      <div className="flex flex-col md:flex-row h-full md:h-[85vh] bg-black md:bg-zinc-900">
+        <div 
+          className="relative flex-1 bg-black flex items-center justify-center min-h-[40vh] md:min-h-0"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
           {isSpoilerHidden ? (
             <div className="relative w-full h-full flex items-center justify-center">
-              <img src={screenshot.image_url} alt="" className="max-w-full max-h-[50vh] md:max-h-full object-contain blur-2xl opacity-30" />
+              <img 
+                src={screenshot.image_url} 
+                alt="" 
+                className="max-w-full max-h-full object-contain blur-3xl opacity-20 scale-110" 
+              />
               <button
                 onClick={() => setRevealed(true)}
-                className="absolute inset-0 flex flex-col items-center justify-center gap-2 cursor-pointer"
+                className="absolute inset-0 flex flex-col items-center justify-center gap-3 cursor-pointer group"
               >
-                <EyeOff className="w-8 h-8 text-zinc-400" />
-                <span className="text-sm text-zinc-400">{t("lightbox.revealSpoiler")}</span>
+                <div className="w-16 h-16 rounded-full bg-zinc-800/80 backdrop-blur flex items-center justify-center group-hover:bg-zinc-700/80 transition-colors">
+                  <EyeOff className="w-7 h-7 text-zinc-400" />
+                </div>
+                <span className="text-sm font-medium text-zinc-400">{t("lightbox.revealSpoiler")}</span>
               </button>
             </div>
           ) : (
-            <img src={screenshot.image_url} alt="" className="max-w-full max-h-[50vh] md:max-h-full object-contain" />
+            <img 
+              src={screenshot.image_url} 
+              alt={screenshot.caption || ""} 
+              className="max-w-full max-h-full object-contain" 
+            />
           )}
 
-          {currentIndex > 0 && (
+          {hasPrev && (
             <button
               onClick={handlePrev}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center cursor-pointer transition-colors"
+              className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white rounded-full items-center justify-center cursor-pointer transition-all hover:scale-105"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-6 h-6" />
             </button>
           )}
-          {currentIndex < screenshots.length - 1 && (
+          {hasNext && (
             <button
               onClick={handleNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center cursor-pointer transition-colors"
+              className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white rounded-full items-center justify-center cursor-pointer transition-all hover:scale-105"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-6 h-6" />
             </button>
+          )}
+
+          {screenshots.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1">
+              {screenshots.slice(
+                Math.max(0, currentIndex - 2),
+                Math.min(screenshots.length, currentIndex + 3)
+              ).map((s, i) => {
+                const actualIndex = Math.max(0, currentIndex - 2) + i
+                return (
+                  <div
+                    key={s.id}
+                    className={`rounded-full transition-all ${
+                      actualIndex === currentIndex 
+                        ? "w-1.5 h-1.5 bg-white" 
+                        : "w-1 h-1 bg-white/50"
+                    }`}
+                  />
+                )
+              })}
+            </div>
           )}
 
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full cursor-pointer transition-colors md:hidden"
+            className="absolute top-4 right-4 p-2 bg-black/50 backdrop-blur-sm text-white rounded-full cursor-pointer md:hidden"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
+          </button>
+
+          <button
+            onClick={onClose}
+            className="hidden md:block absolute top-4 right-4 p-2 text-white/70 hover:text-white cursor-pointer transition-colors"
+          >
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="w-full md:w-[340px] flex flex-col border-t md:border-t-0 md:border-l border-zinc-800 bg-zinc-900">
-          <div className="p-4 border-b border-zinc-800 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 min-w-0">
+        <div className="w-full md:w-[380px] flex flex-col bg-zinc-900 border-t md:border-t-0 md:border-l border-zinc-800">
+          <div className="flex items-center justify-between p-3.5 border-b border-zinc-800">
+            <div className="flex items-center gap-3">
+              {owner && (
+                <Link to={`/u/${owner.username}`} onClick={onClose} className="flex-shrink-0">
+                  <AvatarWithDecoration
+                    src={owner.avatar}
+                    alt={owner.username}
+                    decorationUrl={owner.equipped?.avatar_decoration?.asset_url}
+                    size="sm"
+                  />
+                </Link>
+              )}
+              <div>
+                {owner && (
+                  <Link 
+                    to={`/u/${owner.username}`} 
+                    onClick={onClose} 
+                    className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors"
+                  >
+                    {owner.username}
+                  </Link>
+                )}
+                {screenshot.game_slug && (
+                  <Link
+                    to={`/game/${screenshot.game_slug}`}
+                    onClick={onClose}
+                    className="block text-xs text-zinc-500 hover:text-zinc-400 transition-colors truncate max-w-[180px]"
+                  >
+                    {screenshot.game_name || screenshot.game_slug}
+                  </Link>
+                )}
+              </div>
+            </div>
+
+            <div className="relative" ref={menuRef}>
+              <button 
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-2 text-zinc-400 hover:text-white rounded-full hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
+
+              {showMenu && (
+                <div className="absolute right-0 top-full mt-1 w-48 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl z-30 overflow-hidden">
+                  {isOwner && (
+                    <>
+                      <button 
+                        onClick={() => { onEdit(screenshot); onClose(); setShowMenu(false) }}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:bg-zinc-700 transition-colors cursor-pointer"
+                      >
+                        <Pencil className="w-4 h-4" />
+                        {t("lightbox.edit")}
+                      </button>
+                      {confirmDelete ? (
+                        <button 
+                          onClick={() => { onDelete(screenshot.id); onClose(); setShowMenu(false) }}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          {t("lightbox.confirmDelete")}
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => setConfirmDelete(true)}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-zinc-700 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          {t("lightbox.delete")}
+                        </button>
+                      )}
+                    </>
+                  )}
+                  <button 
+                    onClick={() => setShowMenu(false)}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:bg-zinc-700 transition-colors cursor-pointer border-t border-zinc-700"
+                  >
+                    {t("lightbox.cancel")}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto overscroll-contain">
+            {screenshot.caption && (
+              <div className="flex gap-3 p-3.5 border-b border-zinc-800">
                 {owner && (
                   <Link to={`/u/${owner.username}`} onClick={onClose} className="flex-shrink-0">
                     <AvatarWithDecoration
@@ -296,61 +531,43 @@ function ScreenshotDetailModal({ screenshot, screenshots, owner, isOpen, onClose
                     />
                   </Link>
                 )}
-                <div className="min-w-0">
-                  {owner && (
-                    <Link to={`/u/${owner.username}`} onClick={onClose} className="text-sm font-semibold text-white hover:underline underline-offset-2 truncate block">
-                      {owner.username}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-zinc-200">
+                    <Link 
+                      to={`/u/${owner?.username}`} 
+                      onClick={onClose}
+                      className="font-semibold text-white hover:text-zinc-300 mr-1.5"
+                    >
+                      {owner?.username}
                     </Link>
-                  )}
-                  <span className="text-[11px] text-zinc-500">{getTimeAgo(screenshot.created_at)}</span>
+                    {screenshot.caption}
+                  </p>
+                  <span className="text-[11px] text-zinc-600 mt-1 block">
+                    {getTimeAgo(screenshot.created_at)}
+                  </span>
                 </div>
               </div>
+            )}
 
-              <div className="flex items-center gap-1">
-                {isOwner && (
-                  <>
-                    <button onClick={() => { onEdit(screenshot); onClose() }} className="p-1.5 text-zinc-500 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer">
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                    {confirmDelete ? (
-                      <button onClick={() => { onDelete(screenshot.id); onClose() }} className="px-2 py-1 text-[11px] text-red-400 bg-red-500/10 rounded-lg cursor-pointer">
-                        {t("lightbox.confirmDelete")}
-                      </button>
-                    ) : (
-                      <button onClick={() => setConfirmDelete(true)} className="p-1.5 text-zinc-500 hover:text-red-400 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </>
-                )}
-                <button onClick={onClose} className="p-1.5 text-zinc-500 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer hidden md:block">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+            <div className="p-3.5">
+              <CommentSection type="screenshot" targetId={String(screenshot.id)} />
             </div>
-
-            {screenshot.caption && (
-              <p className="text-sm text-zinc-300 mt-2">{screenshot.caption}</p>
-            )}
-
-            {screenshot.game_slug && (
-              <Link
-                to={`/game/${screenshot.game_slug}`}
-                onClick={onClose}
-                className="flex items-center gap-1.5 mt-2 text-xs text-zinc-500 hover:text-indigo-400 transition-colors"
-              >
-                <Gamepad2 className="w-3 h-3" />
-                {screenshot.game_name || screenshot.game_slug}
-              </Link>
-            )}
           </div>
 
-          <div className="px-4 py-3 border-b border-zinc-800 flex-shrink-0">
-            <LikeButton type="screenshot" targetId={screenshot.id} currentUserId={user?.user_id} />
-          </div>
-
-          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4">
-            <CommentSection type="screenshot" targetId={String(screenshot.id)} />
+          <div className="border-t border-zinc-800 p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <LikeButton 
+                  type="screenshot" 
+                  targetId={screenshot.id} 
+                  currentUserId={user?.user_id}
+                  variant="icon"
+                />
+              </div>
+              <span className="text-[11px] text-zinc-500 uppercase tracking-wide">
+                {getTimeAgo(screenshot.created_at)}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -393,78 +610,176 @@ function EditScreenshotModal({ screenshot, isOpen, onClose, onSave, saving }) {
   if (!screenshot) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={() => !saving && onClose()} maxWidth="max-w-sm" fullscreenMobile showMobileGrip>
-      <div className="p-5 space-y-4">
-        <h3 className="text-base font-semibold text-white">{t("edit.title")}</h3>
-        <img src={screenshot.image_url} alt="" className="w-full rounded-xl object-cover max-h-40" />
+    <Modal 
+      isOpen={isOpen} 
+      onClose={() => !saving && onClose()} 
+      maxWidth="max-w-md" 
+      fullscreenMobile 
+      showCloseButton={false}
+      noScroll
+    >
+      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+        <button 
+          onClick={onClose} 
+          disabled={saving}
+          className="text-sm font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+        >
+          {t("upload.cancel")}
+        </button>
+        <h3 className="text-sm font-semibold text-white">{t("edit.title")}</h3>
+        <button
+          onClick={() => onSave({ 
+            screenshotId: screenshot.id, 
+            caption: caption.trim() || null, 
+            gameId: selectedGame?.id || null, 
+            gameSlug: selectedGame?.slug || null, 
+            isSpoiler 
+          })}
+          disabled={saving}
+          className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+        >
+          {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+          {t("edit.save")}
+        </button>
+      </div>
 
-        <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t("upload.game")}</label>
-          {selectedGame ? (
-            <div className="flex items-center gap-2.5 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl">
-              <span className="text-sm text-white truncate flex-1">{selectedGame.name || selectedGame.slug}</span>
-              <button onClick={() => setSelectedGame(null)} className="text-zinc-500 hover:text-white cursor-pointer">
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ) : (
-            <div className="relative">
-              <input
-                type="text"
-                value={gameQuery}
-                onChange={(e) => setGameQuery(e.target.value)}
-                placeholder={t("upload.searchGame")}
-                className="w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex flex-col md:flex-row">
+          <div className="md:flex-1 bg-black flex items-center justify-center p-4">
+            <img 
+              src={screenshot.image_url} 
+              alt="" 
+              className="max-w-full max-h-[200px] md:max-h-[300px] object-contain rounded-lg" 
+            />
+          </div>
+
+          <div className="md:w-[260px] p-4 space-y-4 border-t md:border-t-0 md:border-l border-zinc-800">
+            <div>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder={t("upload.captionPlaceholder")}
+                maxLength={200}
+                rows={3}
+                className="w-full px-0 py-0 bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none resize-none"
               />
-              {gameResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl z-20 overflow-hidden">
-                  {gameResults.map((g) => (
-                    <button
-                      key={g.id}
-                      onClick={() => { setSelectedGame(g); setGameQuery(""); setGameResults([]) }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-zinc-800 transition-colors cursor-pointer text-left"
-                    >
-                      <span className="text-sm text-zinc-300 truncate">{g.name}</span>
-                    </button>
-                  ))}
+              <div className="text-right">
+                <span className="text-[10px] text-zinc-600">{caption.length}/200</span>
+              </div>
+            </div>
+
+            <div className="border-t border-zinc-800 pt-4">
+              <label className="flex items-center gap-2 text-sm text-zinc-400 mb-2">
+                <Gamepad2 className="w-4 h-4" />
+                {t("upload.game")}
+              </label>
+              {selectedGame ? (
+                <div className="flex items-center gap-2.5 px-3 py-2.5 bg-zinc-800/50 rounded-lg">
+                  <span className="text-sm text-white truncate flex-1">{selectedGame.name || selectedGame.slug}</span>
+                  <button onClick={() => setSelectedGame(null)} className="text-zinc-500 hover:text-white cursor-pointer p-1">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={gameQuery}
+                    onChange={(e) => setGameQuery(e.target.value)}
+                    placeholder={t("upload.searchGame")}
+                    className="w-full px-3 py-2.5 bg-zinc-800/50 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600"
+                  />
+                  {gameResults.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl z-20 overflow-hidden max-h-40 overflow-y-auto">
+                      {gameResults.map((g) => (
+                        <button
+                          key={g.id}
+                          onClick={() => { setSelectedGame(g); setGameQuery(""); setGameResults([]) }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-zinc-800 transition-colors cursor-pointer text-left"
+                        >
+                          <span className="text-sm text-zinc-300 truncate">{g.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
-        </div>
 
-        <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">{t("upload.caption")}</label>
-          <input
-            type="text"
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            placeholder={t("upload.captionPlaceholder")}
-            maxLength={200}
-            className="w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-          />
-        </div>
-
-        <label className="flex items-center gap-2.5 cursor-pointer">
-          <input type="checkbox" checked={isSpoiler} onChange={(e) => setIsSpoiler(e.target.checked)} className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-indigo-500 focus:ring-0 cursor-pointer" />
-          <span className="text-sm text-zinc-400">{t("upload.spoiler")}</span>
-        </label>
-
-        <div className="flex gap-2.5">
-          <button onClick={onClose} disabled={saving} className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors cursor-pointer disabled:opacity-50">
-            {t("upload.cancel")}
-          </button>
-          <button
-            onClick={() => onSave({ screenshotId: screenshot.id, caption: caption.trim() || null, gameId: selectedGame?.id || null, gameSlug: selectedGame?.slug || null, isSpoiler })}
-            disabled={saving}
-            className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-xl transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            {t("edit.save")}
-          </button>
+            <div className="border-t border-zinc-800 pt-4">
+              <label className="flex items-center justify-between cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <EyeOff className="w-4 h-4 text-zinc-400" />
+                  <span className="text-sm text-zinc-400">{t("upload.spoiler")}</span>
+                </div>
+                <div className="relative">
+                  <input 
+                    type="checkbox" 
+                    checked={isSpoiler} 
+                    onChange={(e) => setIsSpoiler(e.target.checked)} 
+                    className="sr-only peer" 
+                  />
+                  <div className="w-9 h-5 bg-zinc-700 rounded-full peer-checked:bg-indigo-500 transition-colors" />
+                  <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4" />
+                </div>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </Modal>
+  )
+}
+
+function ScreenshotGridItem({ screenshot, onClick, likesCount, commentsCount }) {
+  const [isHovered, setIsHovered] = useState(false)
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="group relative aspect-square overflow-hidden bg-zinc-900 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+    >
+      <img
+        src={screenshot.image_url}
+        alt={screenshot.caption || ""}
+        loading="lazy"
+        className={`w-full h-full object-cover transition-all duration-200 ${
+          isHovered ? "scale-105" : "scale-100"
+        } ${screenshot.is_spoiler ? "blur-xl brightness-50" : ""}`}
+      />
+
+      {screenshot.is_spoiler && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+            <EyeOff className="w-5 h-5 text-white/80" />
+          </div>
+        </div>
+      )}
+
+      <div className={`absolute inset-0 bg-black/50 flex items-center justify-center gap-6 transition-opacity duration-200 ${
+        isHovered ? "opacity-100" : "opacity-0"
+      }`}>
+        <div className="flex items-center gap-1.5 text-white">
+          <Heart className="w-5 h-5 fill-white" />
+          <span className="text-sm font-semibold">{likesCount || 0}</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-white">
+          <MessageCircle className="w-5 h-5 fill-white" />
+          <span className="text-sm font-semibold">{commentsCount || 0}</span>
+        </div>
+      </div>
+
+      {screenshot.game_name && !screenshot.is_spoiler && (
+        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          <p className="text-[11px] text-white/90 truncate flex items-center gap-1">
+            <Gamepad2 className="w-3 h-3 flex-shrink-0" />
+            {screenshot.game_name}
+          </p>
+        </div>
+      )}
+    </button>
   )
 }
 
@@ -556,68 +871,81 @@ export default function ScreenshotsSection({ userId, isOwnProfile, owner }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400" />
-          <h2 className="text-sm sm:text-base font-semibold text-white">{t("title")}</h2>
-          {total > 0 && <span className="text-xs sm:text-sm text-zinc-500">({total})</span>}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 border-b-2 border-white pb-2">
+            <Camera className="w-4 h-4 text-white" />
+            <span className="text-xs font-semibold text-white uppercase tracking-wider">
+              {t("title")}
+            </span>
+          </div>
         </div>
         {isOwnProfile && (
           <button
             onClick={() => setUploadOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5" />
-            {t("add")}
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">{t("add")}</span>
           </button>
         )}
       </div>
 
+      {total > 0 && (
+        <div className="mb-4">
+          <span className="text-sm text-zinc-400">
+            <span className="font-semibold text-white">{total}</span> {t("postsCount")}
+          </span>
+        </div>
+      )}
+
       {screenshots.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 gap-3">
-          <Camera className="w-8 h-8 text-zinc-700" />
-          <p className="text-sm text-zinc-500">{t("empty")}</p>
+        <div className="flex flex-col items-center justify-center py-16 border border-zinc-800 rounded-xl">
+          <div className="w-20 h-20 rounded-full border-2 border-zinc-700 flex items-center justify-center mb-4">
+            <Camera className="w-10 h-10 text-zinc-600" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-1">{t("emptyTitle")}</h3>
+          <p className="text-sm text-zinc-500 mb-4">{t("emptyDesc")}</p>
           {isOwnProfile && (
-            <button onClick={() => setUploadOpen(true)} className="text-sm text-indigo-400 hover:text-indigo-300 cursor-pointer">
+            <button 
+              onClick={() => setUploadOpen(true)} 
+              className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 cursor-pointer"
+            >
               {t("addFirst")}
             </button>
           )}
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+          <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
             {screenshots.map((s) => (
-              <button
+              <ScreenshotGridItem
                 key={s.id}
+                screenshot={s}
                 onClick={() => setSelected(s)}
-                className="group relative aspect-video rounded-lg overflow-hidden bg-zinc-800 cursor-pointer"
-              >
-                <img
-                  src={s.image_url}
-                  alt={s.caption || ""}
-                  loading="lazy"
-                  className={`w-full h-full object-cover group-hover:brightness-75 transition-all ${s.is_spoiler ? "blur-lg" : ""}`}
-                />
-                {s.is_spoiler && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <EyeOff className="w-5 h-5 text-zinc-400" />
-                  </div>
-                )}
-                {s.caption && !s.is_spoiler && (
-                  <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="text-[11px] text-white/80 truncate">{s.caption}</p>
-                  </div>
-                )}
-              </button>
+                likesCount={s.likes_count}
+                commentsCount={s.comments_count}
+              />
             ))}
           </div>
 
           {totalPages > 1 && (
-            <Pagination currentPage={page} totalPages={totalPages} onPageChange={(p) => fetchScreenshots(p)} />
+            <div className="mt-6">
+              <Pagination 
+                currentPage={page} 
+                totalPages={totalPages} 
+                onPageChange={(p) => fetchScreenshots(p)} 
+              />
+            </div>
           )}
         </>
       )}
 
-      <UploadModal isOpen={uploadOpen} onClose={() => setUploadOpen(false)} onUpload={handleUpload} uploading={uploading} />
+      <UploadModal 
+        isOpen={uploadOpen} 
+        onClose={() => setUploadOpen(false)} 
+        onUpload={handleUpload} 
+        uploading={uploading} 
+      />
 
       <ScreenshotDetailModal
         screenshot={selected}
