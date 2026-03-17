@@ -7,7 +7,8 @@ function isEmptyGameState(record) {
     record.playing === false &&
     record.backlog === false &&
     record.wishlist === false &&
-    record.liked === false
+    record.liked === false &&
+    (record.custom_cover_url === null || record.custom_cover_url === undefined)
   )
 }
 
