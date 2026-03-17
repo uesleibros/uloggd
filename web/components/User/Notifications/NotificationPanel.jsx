@@ -15,7 +15,8 @@ import {
   List,
   LayoutGrid,
   MessageCircle,
-  X
+  X,
+  Camera
 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
@@ -37,8 +38,8 @@ const NOTIFICATION_ICONS = {
   review_comment: { icon: MessageCircle, color: "text-pink-400" },
   list_comment: { icon: MessageCircle, color: "text-blue-400" },
   tierlist_comment: { icon: MessageCircle, color: "text-purple-400" },
-  screenshot_like: { icon: ThumbsUp, color: "text-cyan-400" },
-  screenshot_comment: { icon: MessageCircle, color: "text-cyan-400" },
+  screenshot_like: { icon: Camera, color: "text-teal-400" },
+  screenshot_comment: { icon: Camera, color: "text-teal-400" },
 }
 
 const NOTIFICATION_USER_ID_MAP = {
@@ -115,6 +116,10 @@ function getNotificationText(type, data, t) {
       return t("notifications.types.list_comment.text", { title: data.list_title || "..." })
     case "tierlist_comment":
       return t("notifications.types.tierlist_comment.text", { title: data.tierlist_title || "..." })
+    case "screenshot_like":
+      return t("notifications.types.screenshot_like.text")
+    case "screenshot_comment":
+      return t("notifications.types.screenshot_comment.text")
     default:
       return ""
   }
@@ -366,6 +371,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
       const tierlistIds = new Set()
       const reviewIds = new Set()
       const commentIds = new Set()
+      const screenshotIds = new Set()
 
       data.forEach((n) => {
         const getUserId = NOTIFICATION_USER_ID_MAP[n.type]
@@ -378,6 +384,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         if (n.data.tierlist_id) tierlistIds.add(n.data.tierlist_id)
         if (n.data.review_id) reviewIds.add(n.data.review_id)
         if (n.data.comment_id) commentIds.add(n.data.comment_id)
+        if (n.data.screenshot_id) screenshotIds.add(n.data.screenshot_id)
       })
 
       const [usersData, listsData, tierlistsData, reviewsData, commentsData] = await Promise.all([

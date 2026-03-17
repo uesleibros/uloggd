@@ -11,13 +11,13 @@ import Pagination from "@components/UI/Pagination"
 import PlatformIcons from "@components/Game/PlatformIcons"
 import { formatDateShort } from "#utils/formatDate"
 
-const ITEMS_PER_PAGE = 18
+const ITEMS_PER_PAGE = 12
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 function ScreenshotSkeleton() {
   return (
     <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
-      {[...Array(9)].map((_, i) => (
+      {[...Array(ITEMS_PER_PAGE)].map((_, i) => (
         <div key={i} className="aspect-square bg-zinc-800/50 animate-pulse" />
       ))}
     </div>
@@ -390,26 +390,26 @@ function ScreenshotGridItem({ screenshot }) {
   return (
     <Link
       to={`/screenshot/${screenshot.id}`}
-      className="group relative aspect-square overflow-hidden bg-zinc-900 cursor-pointer block"
+      className="group relative aspect-square overflow-hidden bg-zinc-800 cursor-pointer block"
     >
       <img
         src={screenshot.image_url}
         alt={screenshot.caption || ""}
         loading="lazy"
-        className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+        className={`absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
           screenshot.is_spoiler ? "blur-xl brightness-50" : ""
         }`}
       />
 
       {screenshot.is_spoiler && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <div className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
             <EyeOff className="w-5 h-5 text-white/70" />
           </div>
         </div>
       )}
 
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />
     </Link>
   )
 }
