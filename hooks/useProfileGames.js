@@ -16,6 +16,7 @@ const LIMIT = 24
 
 export function useProfileGames(profileId, onCountsUpdate) {
 	const [games, setGames] = useState([])
+	const [covers, setCovers] = useState({})
 	const [counts, setCounts] = useState(EMPTY_COUNTS)
 	const [loading, setLoading] = useState(true)
 	const [activeTab, setActiveTab] = useState("playing")
@@ -43,6 +44,7 @@ export function useProfileGames(profileId, onCountsUpdate) {
 			setCounts(newCounts)
 			onCountsUpdate?.(newCounts)
 			setTotalPages(data.totalPages || 1)
+			setCovers(prev => ({ ...prev, ...data.covers }))
 
 			const slugs = data.games?.map(g => g.slug) || []
 			if (slugs.length === 0) {
@@ -85,8 +87,13 @@ export function useProfileGames(profileId, onCountsUpdate) {
 		setPage(newPage)
 	}, [])
 
+	const getCustomCover = useCallback((slug) => {
+		return covers[slug] || null
+	}, [covers])
+
 	return {
 		games,
+		covers,
 		counts,
 		loading,
 		activeTab,
@@ -94,5 +101,6 @@ export function useProfileGames(profileId, onCountsUpdate) {
 		totalPages,
 		handleTabChange,
 		handlePageChange,
+		getCustomCover,
 	}
 }
