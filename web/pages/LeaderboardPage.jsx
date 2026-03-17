@@ -44,6 +44,7 @@ const RANK_CONFIG = {
 
 const GLOBAL_BREAKDOWN_CONFIG = [
   { key: "minerals", icon: Gem, color: "text-cyan-400" },
+  { key: "reviews", icon: MessageSquare, color: "text-green-400" },
   { key: "followers", icon: Users, color: "text-blue-400" },
   { key: "likes", icon: Heart, color: "text-pink-400" },
 ]
