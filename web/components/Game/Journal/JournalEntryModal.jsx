@@ -109,7 +109,7 @@ export function JournalEntryModal({ entry, date, startedAt, finishedAt, onSave, 
                 onChange={(e) => setHours(e.target.value)}
                 placeholder="0"
                 min="0"
-                max="9999"
+                max="24"
                 className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-base text-white text-center focus:outline-none focus:border-emerald-500 transition-colors"
               />
               <p className="text-xs text-zinc-600 text-center mt-1">{t("hours")}</p>
