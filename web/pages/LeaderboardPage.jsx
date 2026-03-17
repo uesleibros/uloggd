@@ -224,6 +224,7 @@ function LikesBreakdown({ breakdown }) {
     { key: "lists", icon: List },
     { key: "tierlists", icon: LayoutGrid },
     { key: "screenshots", icon: Camera },
+    { key: "games", icon: Heart },
   ].filter(item => breakdown[item.key] > 0)
 
   if (items.length === 0) return null
