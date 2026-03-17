@@ -7,7 +7,7 @@ import { supabase } from "#lib/supabase"
 import { useMyLibrary } from "#hooks/useMyLibrary"
 import { useTranslation } from "#hooks/useTranslation"
 import AddToListModal from "@components/Lists/AddToListModal"
-import GameCover, { getCoverUrl } from "@components/Game/GameCover"
+import GameCover from "@components/Game/GameCover"
 import { STATUS_OPTIONS, GAME_STATUS } from "#constants/game"
 
 function MiniStars({ rating }) {
@@ -440,7 +440,7 @@ export default function GameCard({
 	className = "",
 	customCoverUrl: propCoverUrl = null,
 }) {
-	const { getRating, getGameData } = useMyLibrary()
+	const { getRating, getGameData, getCustomCover } = useMyLibrary()
 	const { user, state: actions, toggle, updating } = useCardActions(game, showQuickActions)
 	const [showListModal, setShowListModal] = useState(false)
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -448,7 +448,7 @@ export default function GameCard({
 	const rating = propRating ?? getRating(game.slug)
 	const hasRating = showRating && rating != null && rating > 0
 	const gameData = getGameData(game?.slug)
-	const customCoverUrl = propCoverUrl || game?.customCoverUrl || gameData?.customCoverUrl || null
+	const customCoverUrl = propCoverUrl || game?.customCoverUrl || gameData?.customCoverUrl || getCustomCover(game?.slug)
 	const canShowActions = showQuickActions && user
 
 	const cardClasses = isFavorite
