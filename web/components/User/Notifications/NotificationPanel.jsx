@@ -67,7 +67,7 @@ function getCommentReplyLink(data, users) {
   const { target_type, target_id } = data
   switch (target_type) {
     case "profile":
-      return `/u/${users[data.profile_user_id]?.username || target_id}`
+      return `/u/${users[target_id]?.username}`
     case "review":
       return `/review/${target_id}`
     case "list":
@@ -80,7 +80,6 @@ function getCommentReplyLink(data, users) {
       return "/"
   }
 }
-
 const NOTIFICATION_LINKS = {
   follow: (data, users) => `/u/${users[data.follower_id]?.username}`,
   list_like: (data) => `/list/${encode(data.list_id)}`,
@@ -397,28 +396,28 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
       const commentIds = new Set()
       const screenshotIds = new Set()
 
-      data.forEach((n) => {
-        const getUserId = NOTIFICATION_USER_ID_MAP[n.type]
-        if (getUserId) {
-          const userId = getUserId(n.data)
-          if (userId) userIds.add(userId)
-        }
-        if (n.data.profile_user_id) userIds.add(n.data.profile_user_id)
-        if (n.data.list_id) listIds.add(n.data.list_id)
-        if (n.data.tierlist_id) tierlistIds.add(n.data.tierlist_id)
-        if (n.data.review_id) reviewIds.add(n.data.review_id)
-        if (n.data.comment_id) commentIds.add(n.data.comment_id)
-        if (n.data.screenshot_id) screenshotIds.add(n.data.screenshot_id)
-        if (n.type === "comment_reply" && n.data.target_type === "list" && n.data.target_id) {
-          listIds.add(n.data.target_id)
-        }
-        if (n.type === "comment_reply" && n.data.target_type === "tierlist" && n.data.target_id) {
-          tierlistIds.add(n.data.target_id)
-        }
-        if (n.type === "comment_reply" && n.data.target_type === "review" && n.data.target_id) {
-          reviewIds.add(n.data.target_id)
-        }
-      })
+			data.forEach((n) => {
+			  const getUserId = NOTIFICATION_USER_ID_MAP[n.type]
+			  if (getUserId) {
+			    const userId = getUserId(n.data)
+			    if (userId) userIds.add(userId)
+			  }
+			  if (n.data.profile_user_id) userIds.add(n.data.profile_user_id)
+			  if (n.data.list_id) listIds.add(n.data.list_id)
+			  if (n.data.tierlist_id) tierlistIds.add(n.data.tierlist_id)
+			  if (n.data.review_id) reviewIds.add(n.data.review_id)
+			  if (n.data.comment_id) commentIds.add(n.data.comment_id)
+			  if (n.data.screenshot_id) screenshotIds.add(n.data.screenshot_id)
+			  
+			  if (n.type === "comment_reply") {
+			    const { target_type, target_id } = n.data
+			    if (target_type === "profile") userIds.add(target_id)
+			    if (target_type === "list") listIds.add(target_id)
+			    if (target_type === "tierlist") tierlistIds.add(target_id)
+			    if (target_type === "review") reviewIds.add(target_id)
+			    if (target_type === "screenshot") screenshotIds.add(target_id)
+			  }
+			})
 
       const [usersData, listsData, tierlistsData, reviewsData, commentsData] = await Promise.all([
         userIds.size > 0
