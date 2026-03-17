@@ -186,20 +186,18 @@ function MineralBreakdown({ breakdown }) {
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
-      {nonZero.slice(0, 4).map(mineral => (
+      {nonZero.map(mineral => (
         <div key={mineral.key} className="flex items-center gap-0.5">
-          <div
-            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-            style={{ backgroundColor: mineral.color }}
+          <img
+            src={mineral.image}
+            alt=""
+            className="w-3 h-3 object-contain flex-shrink-0"
           />
           <span className="text-[10px] text-zinc-500 tabular-nums">
             {breakdown[mineral.key].toLocaleString()}
           </span>
         </div>
       ))}
-      {nonZero.length > 4 && (
-        <span className="text-[10px] text-zinc-600">+{nonZero.length - 4}</span>
-      )}
     </div>
   )
 }
