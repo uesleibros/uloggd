@@ -78,37 +78,41 @@ async function getFormattedUsers(userIds) {
   return formatUserMap(profiles, streamsMap)
 }
 
-function getPercentileValue(values, percentile) {
-  if (values.length === 0) return 1
-  const sorted = [...values].sort((a, b) => a - b)
-  const index = Math.ceil((percentile / 100) * sorted.length) - 1
-  return sorted[Math.max(0, index)] || 1
+async function fetchAllRows(table, select) {
+  const rows = []
+  const pageSize = 1000
+  let from = 0
+
+  while (true) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(select)
+      .range(from, from + pageSize - 1)
+
+    if (error) throw error
+    if (!data || data.length === 0) break
+
+    rows.push(...data)
+
+    if (data.length < pageSize) break
+    from += pageSize
+  }
+
+  return rows
 }
 
 async function getGlobalLeaderboard(limit, offset) {
-  const [mineralsData, followersData, likesData, playtimeData] = await Promise.all([
+  const [mineralsData, followersData, likesData] = await Promise.all([
     getMineralsRaw(),
     getFollowersRaw(),
     getLikesRaw(),
-    getPlaytimeRaw(),
   ])
 
   const allUserIds = new Set([
     ...Object.keys(mineralsData),
     ...Object.keys(followersData),
     ...Object.keys(likesData),
-    ...Object.keys(playtimeData),
   ])
-
-  const mineralsValues = Object.values(mineralsData).map(d => d.value)
-  const followersValues = Object.values(followersData)
-  const likesValues = Object.values(likesData).map(d => d.value)
-  const playtimeValues = Object.values(playtimeData).map(d => d.value)
-
-  const maxMinerals = getPercentileValue(mineralsValues, 95)
-  const maxFollowers = getPercentileValue(followersValues, 95)
-  const maxLikes = getPercentileValue(likesValues, 95)
-  const maxPlaytime = getPercentileValue(playtimeValues, 95)
 
   const scores = []
 
@@ -116,29 +120,16 @@ async function getGlobalLeaderboard(limit, offset) {
     const minerals = mineralsData[userId]?.value || 0
     const followers = followersData[userId] || 0
     const likes = likesData[userId]?.value || 0
-    const playtime = playtimeData[userId]?.value || 0
 
-    const mineralsScore = Math.min((minerals / maxMinerals) * 100, 100)
-    const followersScore = Math.min((followers / maxFollowers) * 100, 100)
-    const likesScore = Math.min((likes / maxLikes) * 100, 100)
-    const playtimeScore = Math.min((playtime / maxPlaytime) * 100, 100)
-
-    const totalScore = mineralsScore + followersScore + likesScore + playtimeScore
+    const totalScore = minerals + followers + likes
 
     scores.push({
       user_id: userId,
-      value: Math.round(totalScore * 10) / 10,
+      value: totalScore,
       breakdown: {
-        minerals: Math.round(mineralsScore * 10) / 10,
-        followers: Math.round(followersScore * 10) / 10,
-        likes: Math.round(likesScore * 10) / 10,
-        playtime: Math.round(playtimeScore * 10) / 10,
-      },
-      raw: {
         minerals,
         followers,
         likes,
-        playtime,
       },
     })
   }
@@ -153,45 +144,27 @@ async function getGlobalLeaderboard(limit, offset) {
     user_id: item.user_id,
     value: item.value,
     breakdown: item.breakdown,
-    raw: item.raw,
   }))
 
   return { entries, total }
 }
 
 async function getMineralsRaw() {
-  const { data: minerals } = await supabase
-    .from("user_minerals")
-    .select("user_id, copper, iron, gold, emerald, diamond, ruby")
+  const minerals = await fetchAllRows("user_minerals", "user_id, copper, iron, gold, emerald, diamond, ruby")
 
   const result = {}
-  for (const m of minerals || []) {
+  for (const m of minerals) {
     const value = (m.copper || 0) + (m.iron || 0) + (m.gold || 0) + (m.emerald || 0) + (m.diamond || 0) + (m.ruby || 0)
     result[m.user_id] = { value }
   }
   return result
 }
 
-async function getReviewsRaw() {
-  const { data: reviews } = await supabase
-    .from("reviews")
-    .select("user_id")
-
-  const result = {}
-  for (const r of reviews || []) {
-    if (!result[r.user_id]) result[r.user_id] = { value: 0 }
-    result[r.user_id].value++
-  }
-  return result
-}
-
 async function getFollowersRaw() {
-  const { data: follows } = await supabase
-    .from("follows")
-    .select("following_id")
+  const follows = await fetchAllRows("follows", "following_id")
 
   const result = {}
-  for (const f of follows || []) {
+  for (const f of follows) {
     result[f.following_id] = (result[f.following_id] || 0) + 1
   }
   return result
@@ -222,21 +195,17 @@ async function getLikesRaw() {
 }
 
 async function getPlaytimeRaw() {
-  const { data: journeys } = await supabase
-    .from("journeys")
-    .select("id, user_id")
+  const journeys = await fetchAllRows("journeys", "id, user_id")
 
   const journeyOwners = {}
-  for (const j of journeys || []) {
+  for (const j of journeys) {
     journeyOwners[j.id] = j.user_id
   }
 
-  const { data: entries } = await supabase
-    .from("journey_entries")
-    .select("journey_id, hours, minutes")
+  const entries = await fetchAllRows("journey_entries", "journey_id, hours, minutes")
 
   const result = {}
-  for (const e of entries || []) {
+  for (const e of entries) {
     const userId = journeyOwners[e.journey_id]
     if (!userId) continue
 
@@ -248,13 +217,9 @@ async function getPlaytimeRaw() {
 }
 
 async function getMineralsLeaderboard(limit, offset) {
-  const { data: minerals, error } = await supabase
-    .from("user_minerals")
-    .select("user_id, copper, iron, gold, emerald, diamond, ruby")
+  const minerals = await fetchAllRows("user_minerals", "user_id, copper, iron, gold, emerald, diamond, ruby")
 
-  if (error) throw error
-
-  const scored = (minerals || []).map(m => {
+  const scored = minerals.map(m => {
     const breakdown = {
       copper: m.copper || 0,
       iron: m.iron || 0,
@@ -287,15 +252,11 @@ async function getMineralsLeaderboard(limit, offset) {
 }
 
 async function getReviewsLeaderboard(limit, offset) {
-  const { data: reviews, error } = await supabase
-    .from("reviews")
-    .select("user_id, rating, aspect_ratings")
-
-  if (error) throw error
+  const reviews = await fetchAllRows("reviews", "user_id, rating, aspect_ratings")
 
   const statsMap = {}
 
-  for (const r of reviews || []) {
+  for (const r of reviews) {
     if (!statsMap[r.user_id]) {
       statsMap[r.user_id] = { count: 0, ratingSum: 0, ratingCount: 0 }
     }
@@ -353,14 +314,10 @@ async function getReviewsLeaderboard(limit, offset) {
 }
 
 async function getFollowersLeaderboard(limit, offset) {
-  const { data: follows, error } = await supabase
-    .from("follows")
-    .select("following_id")
-
-  if (error) throw error
+  const follows = await fetchAllRows("follows", "following_id")
 
   const countMap = {}
-  for (const f of follows || []) {
+  for (const f of follows) {
     countMap[f.following_id] = (countMap[f.following_id] || 0) + 1
   }
 
@@ -417,33 +374,25 @@ async function getLikesLeaderboard(limit, offset) {
     rank: offset + i + 1,
     user_id: item.user_id,
     value: item.value,
-    breakdown: breakdownMap[item.user_id] || { reviews: 0, lists: 0, tierlists: 0, screenshots: 0 },
+    breakdown: breakdownMap[item.user_id],
   }))
 
   return { entries, total }
 }
 
 async function getPlaytimeLeaderboard(limit, offset) {
-  const { data: journeys, error: journeysError } = await supabase
-    .from("journeys")
-    .select("id, user_id")
-
-  if (journeysError) throw journeysError
+  const journeys = await fetchAllRows("journeys", "id, user_id")
 
   const journeyOwners = {}
-  for (const j of journeys || []) {
+  for (const j of journeys) {
     journeyOwners[j.id] = j.user_id
   }
 
-  const { data: entries_, error: entriesError } = await supabase
-    .from("journey_entries")
-    .select("journey_id, hours, minutes")
-
-  if (entriesError) throw entriesError
+  const journeyEntries = await fetchAllRows("journey_entries", "journey_id, hours, minutes")
 
   const statsMap = {}
 
-  for (const e of entries_ || []) {
+  for (const e of journeyEntries) {
     const userId = journeyOwners[e.journey_id]
     if (!userId) continue
 
@@ -470,7 +419,7 @@ async function getPlaytimeLeaderboard(limit, offset) {
   const total = sorted.length
   const paginated = sorted.slice(offset, offset + limit)
 
-  const entriesResult = paginated.map((item, i) => ({
+  const entries = paginated.map((item, i) => ({
     rank: offset + i + 1,
     user_id: item.user_id,
     value: item.value,
@@ -479,25 +428,22 @@ async function getPlaytimeLeaderboard(limit, offset) {
     entries: item.entries,
   }))
 
-  return { entries: entriesResult, total }
+  return { entries, total }
 }
 
 async function getReviewLikesPerUser() {
-  const { data: likes } = await supabase
-    .from("review_likes")
-    .select("review_id")
-
-  const { data: reviews } = await supabase
-    .from("reviews")
-    .select("id, user_id")
+  const [likes, reviews] = await Promise.all([
+    fetchAllRows("review_likes", "review_id"),
+    fetchAllRows("reviews", "id, user_id"),
+  ])
 
   const reviewOwners = {}
-  for (const r of reviews || []) {
+  for (const r of reviews) {
     reviewOwners[r.id] = r.user_id
   }
 
   const countMap = {}
-  for (const like of likes || []) {
+  for (const like of likes) {
     const userId = reviewOwners[like.review_id]
     if (userId) {
       countMap[userId] = (countMap[userId] || 0) + 1
@@ -508,21 +454,18 @@ async function getReviewLikesPerUser() {
 }
 
 async function getListLikesPerUser() {
-  const { data: likes } = await supabase
-    .from("list_likes")
-    .select("list_id")
-
-  const { data: lists } = await supabase
-    .from("lists")
-    .select("id, user_id")
+  const [likes, lists] = await Promise.all([
+    fetchAllRows("list_likes", "list_id"),
+    fetchAllRows("lists", "id, user_id"),
+  ])
 
   const listOwners = {}
-  for (const l of lists || []) {
+  for (const l of lists) {
     listOwners[l.id] = l.user_id
   }
 
   const countMap = {}
-  for (const like of likes || []) {
+  for (const like of likes) {
     const userId = listOwners[like.list_id]
     if (userId) {
       countMap[userId] = (countMap[userId] || 0) + 1
@@ -533,21 +476,18 @@ async function getListLikesPerUser() {
 }
 
 async function getTierlistLikesPerUser() {
-  const { data: likes } = await supabase
-    .from("tierlist_likes")
-    .select("tierlist_id")
-
-  const { data: tierlists } = await supabase
-    .from("tierlists")
-    .select("id, user_id")
+  const [likes, tierlists] = await Promise.all([
+    fetchAllRows("tierlist_likes", "tierlist_id"),
+    fetchAllRows("tierlists", "id, user_id"),
+  ])
 
   const tierlistOwners = {}
-  for (const t of tierlists || []) {
+  for (const t of tierlists) {
     tierlistOwners[t.id] = t.user_id
   }
 
   const countMap = {}
-  for (const like of likes || []) {
+  for (const like of likes) {
     const userId = tierlistOwners[like.tierlist_id]
     if (userId) {
       countMap[userId] = (countMap[userId] || 0) + 1
@@ -558,21 +498,18 @@ async function getTierlistLikesPerUser() {
 }
 
 async function getScreenshotLikesPerUser() {
-  const { data: likes } = await supabase
-    .from("screenshot_likes")
-    .select("screenshot_id")
-
-  const { data: screenshots } = await supabase
-    .from("screenshots")
-    .select("id, user_id")
+  const [likes, screenshots] = await Promise.all([
+    fetchAllRows("screenshot_likes", "screenshot_id"),
+    fetchAllRows("screenshots", "id, user_id"),
+  ])
 
   const screenshotOwners = {}
-  for (const s of screenshots || []) {
+  for (const s of screenshots) {
     screenshotOwners[s.id] = s.user_id
   }
 
   const countMap = {}
-  for (const like of likes || []) {
+  for (const like of likes) {
     const userId = screenshotOwners[like.screenshot_id]
     if (userId) {
       countMap[userId] = (countMap[userId] || 0) + 1
