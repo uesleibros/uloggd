@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
-import { ArrowLeft, Camera, EyeOff, Gamepad2, MoreHorizontal, Pencil, Trash2, MessageCircle } from "lucide-react"
+import { ArrowLeft, Camera, EyeOff, Gamepad2, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
@@ -262,12 +262,6 @@ export default function ScreenshotPage() {
 
         {screenshot.caption && (
           <p className="text-sm text-zinc-300">
-            <Link
-              to={`/u/${user?.username}`}
-              className="font-semibold text-white hover:text-zinc-300 mr-1.5"
-            >
-              {user?.username}
-            </Link>
             {screenshot.caption}
           </p>
         )}
@@ -279,12 +273,6 @@ export default function ScreenshotPage() {
             currentUserId={currentUser?.user_id}
             variant="icon"
           />
-          <div className="flex items-center gap-1.5 text-zinc-400">
-            <MessageCircle className="w-5 h-5" />
-            {screenshot.comments_count > 0 && (
-              <span className="text-sm">{screenshot.comments_count}</span>
-            )}
-          </div>
         </div>
       </div>
 

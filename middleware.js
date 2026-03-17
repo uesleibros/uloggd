@@ -1,5 +1,5 @@
 export const config = {
-  matcher: ['/game/:slug*', '/u/:username*', '/list/:id*', '/tierlist/:id*', '/review/:id*'],
+  matcher: ['/game/:slug*', '/u/:username*', '/list/:id*', '/tierlist/:id*', '/review/:id*', '/screenshot/:id*'],
 }
 
 const BOT_REGEX = /Discordbot|Twitterbot|facebookexternalhit|LinkedInBot|TelegramBot|Slackbot|WhatsApp|Embedly|Pinterest|Slack-ImgProxy|Googlebot|bingbot|yandex|Baiduspider|DuckDuckBot/i
@@ -22,6 +22,7 @@ export default async function middleware(req) {
     list: handleList,
     tierlist: handleTierlist,
     review: handleReview,
+    screenshot: handleScreenshot,
   }
 
   const handler = handlers[type]
@@ -225,6 +226,41 @@ async function handleReview(url, reviewId) {
     image,
     url: url.href,
     twitterCard: image ? 'summary_large_image' : 'summary',
+    type: 'article',
+  })
+}
+
+async function handleScreenshot(url, screenshotId) {
+  const data = await safeFetch(
+    `${url.origin}/api/screenshots/get?screenshotId=${encodeURIComponent(screenshotId)}`
+  )
+  if (!data?.screenshot) return buildFallbackResponse(url)
+
+  const { screenshot, user, game } = data
+  const username = user?.username || 'Someone'
+  const gameName = game?.name || null
+
+  const title = gameName
+    ? `${username}'s screenshot of ${gameName} - ${SITE_NAME}`
+    : `${username}'s screenshot - ${SITE_NAME}`
+
+  let description
+  if (screenshot.caption) {
+    description = truncate(screenshot.caption)
+  } else if (gameName) {
+    description = `Screenshot of ${gameName} by ${username} on ${SITE_NAME}`
+  } else {
+    description = `Screenshot by ${username} on ${SITE_NAME}`
+  }
+
+  const image = ensureAbsoluteUrl(screenshot.image_url, url.origin)
+
+  return buildResponse({
+    title,
+    description,
+    image,
+    url: url.href,
+    twitterCard: 'summary_large_image',
     type: 'article',
   })
 }
