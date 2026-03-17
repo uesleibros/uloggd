@@ -1,5 +1,16 @@
 import { supabase } from "#lib/supabase-ssr.js"
 
+function hasRealState(g) {
+  return (
+    g.status !== null ||
+    g.playing === true ||
+    g.backlog === true ||
+    g.wishlist === true ||
+    g.liked === true ||
+    g.ratings.length > 0
+  )
+}
+
 function buildGameMap(userGames, logs) {
   const gameMap = {}
 
@@ -67,8 +78,15 @@ export async function handleLibrary(req, res) {
 
     const gameMap = buildGameMap(userGamesRes.data, logsRes.data)
     const games = {}
+    const covers = {}
 
     for (const [slug, g] of Object.entries(gameMap)) {
+      if (g.customCoverUrl) {
+        covers[slug] = g.customCoverUrl
+      }
+
+      if (!hasRealState(g)) continue
+
       const avgRating = g.ratings.length > 0
         ? Math.round(g.ratings.reduce((a, b) => a + b, 0) / g.ratings.length)
         : null
@@ -88,7 +106,7 @@ export async function handleLibrary(req, res) {
       }
     }
 
-    res.json({ games })
+    res.json({ games, covers })
   } catch (e) {
     console.error(e)
     res.status(500).json({ error: "fail" })
