@@ -5,7 +5,7 @@ export default {
 	  description: "See who's at the top of the uloggd community rankings",
 	  participants: "participants",
 	  avgRating: "average",
-	  followers: "followers",
+	  followersLabel: "followers",
 	  categories: {
 	    minerals: "Minerals",
 	    reviews: "Reviews",
@@ -13,7 +13,7 @@ export default {
 	    likes: "Likes",
 	  },
 	  units: {
-	    minerals: "points",
+	    minerals: "minerals",
 	    reviews: "reviews",
 	    followers: "followers",
 	    likes: "likes",
