@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import {
   Camera, Plus, Trash2, EyeOff, Pencil, X, Loader2,
   Gamepad2, AlertTriangle, ChevronLeft, ChevronRight,
-  MoreHorizontal
+  MoreHorizontal, MessageCircle, Search, Check
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useAuth } from "#hooks/useAuth"
@@ -14,17 +14,169 @@ import Pagination from "@components/UI/Pagination"
 import LikeButton from "@components/UI/LikeButton"
 import CommentSection from "@components/UI/CommentSection"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
+import PlatformIcons from "@components/Game/PlatformIcons"
+import { formatDateShort } from "#utils/formatDate"
 
-const ITEMS_PER_PAGE = 24
+const ITEMS_PER_PAGE = 12
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 function ScreenshotSkeleton() {
   return (
-    <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
-      {[...Array(9)].map((_, i) => (
-        <div key={i} className="aspect-square bg-zinc-800/50 animate-pulse" />
+    <div className="space-y-6">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl overflow-hidden">
+          <div className="aspect-video bg-zinc-800/50 animate-pulse" />
+          <div className="p-4 space-y-3">
+            <div className="h-4 w-32 bg-zinc-800/50 rounded animate-pulse" />
+            <div className="h-8 w-24 bg-zinc-800/50 rounded animate-pulse" />
+          </div>
+        </div>
       ))}
     </div>
+  )
+}
+
+function GameSearchModal({ isOpen, onClose, onSelect, selectedGame }) {
+  const { t } = useTranslation("screenshots")
+  const [query, setQuery] = useState("")
+  const [results, setResults] = useState([])
+  const [searching, setSearching] = useState(false)
+  const debounceRef = useRef(null)
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    if (isOpen) {
+      setQuery("")
+      setResults([])
+      setTimeout(() => inputRef.current?.focus(), 150)
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([])
+      setSearching(false)
+      return
+    }
+
+    setSearching(true)
+    clearTimeout(debounceRef.current)
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/igdb/autocomplete?query=${encodeURIComponent(query.trim())}`)
+        const data = await res.json()
+        setResults(Array.isArray(data) ? data : [])
+      } catch {
+        setResults([])
+      } finally {
+        setSearching(false)
+      }
+    }, 400)
+
+    return () => clearTimeout(debounceRef.current)
+  }, [query])
+
+  function handleSelect(game) {
+    onSelect(game)
+    onClose()
+  }
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t("upload.searchGame")}
+      maxWidth="max-w-lg"
+      fullscreenMobile
+      showMobileGrip
+    >
+      <div className="flex flex-col h-full">
+        <div className="p-5 pb-4">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder={t("upload.searchGamePlaceholder")}
+              className="w-full pl-10 pr-10 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            />
+            {query && (
+              <button
+                onClick={() => { setQuery(""); setResults([]) }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-zinc-300 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 pb-5 min-h-0 max-h-[55vh] md:max-h-96">
+          {searching && (
+            <div className="flex items-center justify-center py-16">
+              <div className="w-5 h-5 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
+            </div>
+          )}
+
+          {!searching && query.trim() && results.length === 0 && (
+            <p className="text-sm text-zinc-500 text-center py-16">
+              {t("upload.noResults")}
+            </p>
+          )}
+
+          {!searching && !query.trim() && (
+            <div className="flex flex-col items-center justify-center py-16 gap-2">
+              <Search className="w-8 h-8 text-zinc-700" />
+              <p className="text-sm text-zinc-600">{t("upload.typeToSearch")}</p>
+            </div>
+          )}
+
+          {!searching && results.map(game => {
+            const isSelected = selectedGame?.id === game.id
+            const coverUrl = game.cover?.url ? `https:${game.cover.url}` : null
+
+            return (
+              <button
+                key={game.id}
+                onClick={() => handleSelect(game)}
+                className="w-full flex items-center gap-3 py-3 border-b border-zinc-800/50 last:border-0 hover:bg-zinc-800/30 transition-colors cursor-pointer text-left"
+              >
+                <div className="flex-shrink-0">
+                  {coverUrl ? (
+                    <img src={coverUrl} alt="" className="h-14 w-10 rounded object-cover bg-zinc-800" />
+                  ) : (
+                    <div className="h-14 w-10 rounded bg-zinc-800 flex items-center justify-center">
+                      <Gamepad2 className="w-4 h-4 text-zinc-600" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">{game.name}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {game.first_release_date && (
+                      <span className="text-xs text-zinc-500">
+                        {formatDateShort(game.first_release_date)}
+                      </span>
+                    )}
+                    <PlatformIcons icons={game.platformIcons} />
+                  </div>
+                </div>
+
+                {isSelected && (
+                  <span className="flex items-center gap-1 text-xs text-emerald-500 px-2.5 py-1.5 bg-emerald-500/10 rounded-lg flex-shrink-0">
+                    <Check className="w-3.5 h-3.5" />
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </Modal>
   )
 }
 
@@ -34,13 +186,11 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
   const [preview, setPreview] = useState(null)
   const [caption, setCaption] = useState("")
   const [isSpoiler, setIsSpoiler] = useState(false)
-  const [gameQuery, setGameQuery] = useState("")
-  const [gameResults, setGameResults] = useState([])
   const [selectedGame, setSelectedGame] = useState(null)
+  const [gameSearchOpen, setGameSearchOpen] = useState(false)
   const [error, setError] = useState(null)
   const [step, setStep] = useState(1)
   const fileRef = useRef(null)
-  const searchTimeout = useRef(null)
 
   useEffect(() => {
     if (!isOpen) {
@@ -48,28 +198,11 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
       setPreview(null)
       setCaption("")
       setIsSpoiler(false)
-      setGameQuery("")
-      setGameResults([])
       setSelectedGame(null)
       setError(null)
       setStep(1)
     }
   }, [isOpen])
-
-  useEffect(() => {
-    clearTimeout(searchTimeout.current)
-    if (!gameQuery.trim()) { setGameResults([]); return }
-
-    searchTimeout.current = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/igdb/autocomplete?query=${encodeURIComponent(gameQuery.trim())}`)
-        const data = await res.json()
-        setGameResults(Array.isArray(data) ? data.slice(0, 5) : [])
-      } catch { setGameResults([]) }
-    }, 300)
-
-    return () => clearTimeout(searchTimeout.current)
-  }, [gameQuery])
 
   function handleFileChange(e) {
     const f = e.target.files?.[0]
@@ -94,6 +227,7 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
         image: ev.target.result,
         gameId: selectedGame?.id || null,
         gameSlug: selectedGame?.slug || null,
+        gameName: selectedGame?.name || null,
         caption: caption.trim() || null,
         isSpoiler,
       })
@@ -101,211 +235,338 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
     reader.readAsDataURL(file)
   }
 
-  return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={() => !uploading && onClose()} 
-      maxWidth="max-w-2xl" 
-      fullscreenMobile 
-      showCloseButton={false}
-      closeOnOverlay={!uploading}
-      noScroll
-    >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-        <button 
-          onClick={() => step === 1 ? onClose() : setStep(1)} 
-          disabled={uploading}
-          className="w-20 text-left text-sm font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
-        >
-          {step === 1 ? t("upload.cancel") : <ChevronLeft className="w-5 h-5" />}
-        </button>
-        <h3 className="text-sm font-semibold text-white">
-          {step === 1 ? t("upload.title") : t("upload.details")}
-        </h3>
-        <div className="w-20 text-right">
-          {step === 2 && (
-            <button
-              onClick={handleSubmit}
-              disabled={!file || uploading}
-              className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
-            >
-              {uploading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              {uploading ? t("upload.uploading") : t("upload.share")}
-            </button>
-          )}
-        </div>
-      </div>
+  const gameCoverUrl = selectedGame?.cover?.url ? `https:${selectedGame.cover.url}` : null
 
-      <div className="flex-1 overflow-y-auto overscroll-contain">
-        {step === 1 ? (
-          <div className="flex flex-col items-center justify-center min-h-[400px] p-6">
-            <div className="w-24 h-24 rounded-full bg-zinc-800/30 border border-zinc-700 flex items-center justify-center mb-5">
-              <Camera className="w-12 h-12 text-zinc-600" />
-            </div>
-            <h4 className="text-xl font-light text-white mb-2">{t("upload.dragPhotos")}</h4>
-            <p className="text-sm text-zinc-500 mb-6">{t("upload.dragPhotosDesc")}</p>
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="px-5 py-2 text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors cursor-pointer"
-            >
-              {t("upload.selectFromComputer")}
-            </button>
-            {error && (
-              <p className="text-xs text-red-400 flex items-center gap-1.5 mt-4">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                {error}
-              </p>
+  return (
+    <>
+      <Modal 
+        isOpen={isOpen} 
+        onClose={() => !uploading && onClose()} 
+        maxWidth="max-w-2xl" 
+        fullscreenMobile 
+        showCloseButton={false}
+        closeOnOverlay={!uploading}
+        noScroll
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+          <button 
+            onClick={() => step === 1 ? onClose() : setStep(1)} 
+            disabled={uploading}
+            className="w-20 text-left text-sm font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+          >
+            {step === 1 ? t("upload.cancel") : <ChevronLeft className="w-5 h-5" />}
+          </button>
+          <h3 className="text-sm font-semibold text-white">
+            {step === 1 ? t("upload.title") : t("upload.details")}
+          </h3>
+          <div className="w-20 text-right">
+            {step === 2 && (
+              <button
+                onClick={handleSubmit}
+                disabled={!file || uploading}
+                className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
+              >
+                {uploading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                {uploading ? t("upload.uploading") : t("upload.share")}
+              </button>
             )}
           </div>
-        ) : (
-          <div className="flex flex-col md:flex-row min-h-[400px]">
-            <div className="flex-1 bg-black flex items-center justify-center p-4">
-              <img 
-                src={preview} 
-                alt="" 
-                className="max-w-full max-h-[50vh] md:max-h-[60vh] w-auto h-auto object-contain" 
-              />
+        </div>
+
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          {step === 1 ? (
+            <div className="flex flex-col items-center justify-center min-h-[400px] p-6">
+              <div className="w-24 h-24 rounded-full bg-zinc-800/30 border border-zinc-700 flex items-center justify-center mb-5">
+                <Camera className="w-12 h-12 text-zinc-600" />
+              </div>
+              <h4 className="text-xl font-light text-white mb-2">{t("upload.dragPhotos")}</h4>
+              <p className="text-sm text-zinc-500 mb-6">{t("upload.dragPhotosDesc")}</p>
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="px-5 py-2 text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors cursor-pointer"
+              >
+                {t("upload.selectFromComputer")}
+              </button>
+              {error && (
+                <p className="text-xs text-red-400 flex items-center gap-1.5 mt-4">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  {error}
+                </p>
+              )}
             </div>
+          ) : (
+            <div className="flex flex-col md:flex-row min-h-[400px]">
+              <div className="flex-1 bg-black flex items-center justify-center p-4">
+                <img 
+                  src={preview} 
+                  alt="" 
+                  className="max-w-full max-h-[50vh] md:max-h-[60vh] w-auto h-auto object-contain" 
+                />
+              </div>
 
-            <div className="w-full md:w-[300px] flex-shrink-0 flex flex-col border-t md:border-t-0 md:border-l border-zinc-800 bg-zinc-900">
-              <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-                <div>
-                  <textarea
-                    value={caption}
-                    onChange={(e) => setCaption(e.target.value)}
-                    placeholder={t("upload.captionPlaceholder")}
-                    maxLength={200}
-                    rows={4}
-                    className="w-full bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none resize-none"
-                  />
-                  <div className="text-right">
-                    <span className="text-[10px] text-zinc-600">{caption.length}/200</span>
+              <div className="w-full md:w-[300px] flex-shrink-0 flex flex-col border-t md:border-t-0 md:border-l border-zinc-800 bg-zinc-900">
+                <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+                  <div>
+                    <textarea
+                      value={caption}
+                      onChange={(e) => setCaption(e.target.value)}
+                      placeholder={t("upload.captionPlaceholder")}
+                      maxLength={200}
+                      rows={4}
+                      className="w-full bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none resize-none"
+                    />
+                    <div className="text-right">
+                      <span className="text-[10px] text-zinc-600">{caption.length}/200</span>
+                    </div>
                   </div>
-                </div>
 
-                <div className="border-t border-zinc-800 pt-4">
-                  <label className="flex items-center gap-2 text-sm text-zinc-400 mb-2.5">
-                    <Gamepad2 className="w-4 h-4" />
-                    {t("upload.game")}
-                  </label>
-                  {selectedGame ? (
-                    <div className="flex items-center gap-2.5 px-3 py-2.5 bg-zinc-800/50 rounded-lg">
-                      {selectedGame.cover?.url && (
-                        <img 
-                          src={`https:${selectedGame.cover.url}`} 
-                          alt="" 
-                          className="w-8 h-10 rounded object-cover flex-shrink-0" 
-                        />
-                      )}
-                      <span className="text-sm text-white truncate flex-1">{selectedGame.name}</span>
-                      <button 
-                        onClick={() => setSelectedGame(null)} 
-                        className="text-zinc-500 hover:text-white cursor-pointer p-1"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={gameQuery}
-                        onChange={(e) => setGameQuery(e.target.value)}
-                        placeholder={t("upload.searchGame")}
-                        className="w-full px-3 py-2.5 bg-zinc-800/50 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600"
-                      />
-                      {gameResults.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl z-20 overflow-hidden max-h-48 overflow-y-auto">
-                          {gameResults.map((g) => (
-                            <button
-                              key={g.id}
-                              onClick={() => { setSelectedGame(g); setGameQuery(""); setGameResults([]) }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-zinc-800 transition-colors cursor-pointer text-left"
-                            >
-                              {g.cover?.url && (
-                                <img 
-                                  src={`https:${g.cover.url}`} 
-                                  alt="" 
-                                  className="w-6 h-8 rounded object-cover flex-shrink-0" 
-                                />
-                              )}
-                              <span className="text-sm text-zinc-300 truncate">{g.name}</span>
-                            </button>
-                          ))}
+                  <div className="border-t border-zinc-800 pt-4">
+                    <label className="block text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                      {t("upload.game")}
+                    </label>
+                    {selectedGame ? (
+                      <div className="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-xl">
+                        {gameCoverUrl ? (
+                          <img src={gameCoverUrl} alt="" className="w-10 h-14 rounded object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="w-10 h-14 rounded bg-zinc-700 flex items-center justify-center flex-shrink-0">
+                            <Gamepad2 className="w-4 h-4 text-zinc-500" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{selectedGame.name}</p>
+                          {selectedGame.first_release_date && (
+                            <p className="text-xs text-zinc-500 mt-0.5">
+                              {formatDateShort(selectedGame.first_release_date)}
+                            </p>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                        <button 
+                          onClick={() => setSelectedGame(null)} 
+                          className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setGameSearchOpen(true)}
+                        className="w-full flex items-center gap-3 p-3 bg-zinc-800/50 hover:bg-zinc-800 rounded-xl transition-colors cursor-pointer text-left"
+                      >
+                        <div className="w-10 h-14 rounded bg-zinc-700 flex items-center justify-center flex-shrink-0">
+                          <Search className="w-4 h-4 text-zinc-500" />
+                        </div>
+                        <span className="text-sm text-zinc-500">{t("upload.searchGame")}</span>
+                      </button>
+                    )}
+                  </div>
 
-                <div className="border-t border-zinc-800 pt-4">
-                  <label className="flex items-center justify-between cursor-pointer">
-                    <div className="flex items-center gap-2">
-                      <EyeOff className="w-4 h-4 text-zinc-400" />
-                      <span className="text-sm text-zinc-400">{t("upload.spoiler")}</span>
-                    </div>
-                    <div className="relative">
-                      <input 
-                        type="checkbox" 
-                        checked={isSpoiler} 
-                        onChange={(e) => setIsSpoiler(e.target.checked)} 
-                        className="sr-only peer" 
-                      />
-                      <div className="w-9 h-5 bg-zinc-700 rounded-full peer-checked:bg-indigo-500 transition-colors" />
-                      <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4" />
-                    </div>
-                  </label>
+                  <div className="border-t border-zinc-800 pt-4">
+                    <label className="flex items-center justify-between cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <EyeOff className="w-4 h-4 text-zinc-400" />
+                        <span className="text-sm text-zinc-400">{t("upload.spoiler")}</span>
+                      </div>
+                      <div className="relative">
+                        <input 
+                          type="checkbox" 
+                          checked={isSpoiler} 
+                          onChange={(e) => setIsSpoiler(e.target.checked)} 
+                          className="sr-only peer" 
+                        />
+                        <div className="w-9 h-5 bg-zinc-700 rounded-full peer-checked:bg-indigo-500 transition-colors" />
+                        <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4" />
+                      </div>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-    </Modal>
+        <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+      </Modal>
+
+      <GameSearchModal
+        isOpen={gameSearchOpen}
+        onClose={() => setGameSearchOpen(false)}
+        onSelect={setSelectedGame}
+        selectedGame={selectedGame}
+      />
+    </>
   )
 }
 
-function ScreenshotDetailModal({ screenshot, screenshots, owner, isOpen, onClose, onNavigate, isOwner, onEdit, onDelete }) {
+function EditScreenshotModal({ screenshot, isOpen, onClose, onSave, saving }) {
+  const { t } = useTranslation("screenshots")
+  const [caption, setCaption] = useState("")
+  const [isSpoiler, setIsSpoiler] = useState(false)
+  const [selectedGame, setSelectedGame] = useState(null)
+  const [gameSearchOpen, setGameSearchOpen] = useState(false)
+
+  useEffect(() => {
+    if (isOpen && screenshot) {
+      setCaption(screenshot.caption || "")
+      setIsSpoiler(screenshot.is_spoiler || false)
+      setSelectedGame(screenshot.game_slug ? { 
+        slug: screenshot.game_slug, 
+        id: screenshot.game_id, 
+        name: screenshot.game_name,
+        cover: screenshot.game_cover ? { url: screenshot.game_cover } : null
+      } : null)
+    }
+  }, [isOpen, screenshot])
+
+  if (!screenshot) return null
+
+  const gameCoverUrl = selectedGame?.cover?.url 
+    ? (selectedGame.cover.url.startsWith("//") ? `https:${selectedGame.cover.url}` : selectedGame.cover.url)
+    : null
+
+  return (
+    <>
+      <Modal 
+        isOpen={isOpen} 
+        onClose={() => !saving && onClose()} 
+        maxWidth="max-w-lg" 
+        fullscreenMobile 
+        showCloseButton={false}
+        noScroll
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+          <button 
+            onClick={onClose} 
+            disabled={saving}
+            className="w-20 text-left text-sm font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+          >
+            {t("upload.cancel")}
+          </button>
+          <h3 className="text-sm font-semibold text-white">{t("edit.title")}</h3>
+          <div className="w-20 text-right">
+            <button
+              onClick={() => onSave({ 
+                screenshotId: screenshot.id, 
+                caption: caption.trim() || null, 
+                gameId: selectedGame?.id || null, 
+                gameSlug: selectedGame?.slug || null,
+                gameName: selectedGame?.name || null,
+                isSpoiler 
+              })}
+              disabled={saving}
+              className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
+            >
+              {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {t("edit.save")}
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <div className="flex flex-col md:flex-row">
+            <div className="flex-1 bg-black flex items-center justify-center p-4 min-h-[200px]">
+              <img 
+                src={screenshot.image_url} 
+                alt="" 
+                className="max-w-full max-h-[40vh] w-auto h-auto object-contain" 
+              />
+            </div>
+
+            <div className="w-full md:w-[280px] flex-shrink-0 p-4 space-y-4 border-t md:border-t-0 md:border-l border-zinc-800">
+              <div>
+                <textarea
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  placeholder={t("upload.captionPlaceholder")}
+                  maxLength={200}
+                  rows={4}
+                  className="w-full bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none resize-none"
+                />
+                <div className="text-right">
+                  <span className="text-[10px] text-zinc-600">{caption.length}/200</span>
+                </div>
+              </div>
+
+              <div className="border-t border-zinc-800 pt-4">
+                <label className="block text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                  {t("upload.game")}
+                </label>
+                {selectedGame ? (
+                  <div className="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-xl">
+                    {gameCoverUrl ? (
+                      <img src={gameCoverUrl} alt="" className="w-8 h-11 rounded object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-8 h-11 rounded bg-zinc-700 flex items-center justify-center flex-shrink-0">
+                        <Gamepad2 className="w-3.5 h-3.5 text-zinc-500" />
+                      </div>
+                    )}
+                    <p className="text-sm font-medium text-white truncate flex-1">{selectedGame.name}</p>
+                    <button 
+                      onClick={() => setSelectedGame(null)} 
+                      className="p-1 text-zinc-500 hover:text-white cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setGameSearchOpen(true)}
+                    className="w-full flex items-center gap-3 p-3 bg-zinc-800/50 hover:bg-zinc-800 rounded-xl transition-colors cursor-pointer text-left"
+                  >
+                    <div className="w-8 h-11 rounded bg-zinc-700 flex items-center justify-center flex-shrink-0">
+                      <Search className="w-3.5 h-3.5 text-zinc-500" />
+                    </div>
+                    <span className="text-sm text-zinc-500">{t("upload.searchGame")}</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="border-t border-zinc-800 pt-4">
+                <label className="flex items-center justify-between cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    <EyeOff className="w-4 h-4 text-zinc-400" />
+                    <span className="text-sm text-zinc-400">{t("upload.spoiler")}</span>
+                  </div>
+                  <div className="relative">
+                    <input 
+                      type="checkbox" 
+                      checked={isSpoiler} 
+                      onChange={(e) => setIsSpoiler(e.target.checked)} 
+                      className="sr-only peer" 
+                    />
+                    <div className="w-9 h-5 bg-zinc-700 rounded-full peer-checked:bg-indigo-500 transition-colors" />
+                    <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4" />
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <GameSearchModal
+        isOpen={gameSearchOpen}
+        onClose={() => setGameSearchOpen(false)}
+        onSelect={setSelectedGame}
+        selectedGame={selectedGame}
+      />
+    </>
+  )
+}
+
+function ScreenshotCard({ screenshot, owner, isOwner, onEdit, onDelete, getTimeAgo }) {
   const { t } = useTranslation("screenshots")
   const { user } = useAuth()
-  const { getTimeAgo } = useDateTime()
   const [revealed, setRevealed] = useState(false)
+  const [showComments, setShowComments] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [touchStart, setTouchStart] = useState(null)
-  const [touchEnd, setTouchEnd] = useState(null)
-  const [imageAspect, setImageAspect] = useState(null)
   const menuRef = useRef(null)
 
-  const minSwipeDistance = 50
-
-  useEffect(() => {
-    setRevealed(false)
-    setShowMenu(false)
-    setConfirmDelete(false)
-    setImageAspect(null)
-  }, [screenshot])
-
-  useEffect(() => {
-    if (!screenshot?.image_url) return
-    const img = new Image()
-    img.onload = () => {
-      setImageAspect(img.width / img.height)
-    }
-    img.src = screenshot.image_url
-  }, [screenshot?.image_url])
-
-  useEffect(() => {
-    if (!isOpen) return
-    function handleKey(e) {
-      if (e.key === "ArrowLeft") handlePrev()
-      if (e.key === "ArrowRight") handleNext()
-    }
-    window.addEventListener("keydown", handleKey)
-    return () => window.removeEventListener("keydown", handleKey)
-  }, [isOpen, screenshot, screenshots])
+  const isSpoilerHidden = screenshot.is_spoiler && !revealed
+  const gameCoverUrl = screenshot.game_cover 
+    ? (screenshot.game_cover.startsWith("//") ? `https:${screenshot.game_cover}` : screenshot.game_cover)
+    : null
 
   useEffect(() => {
     if (!showMenu) return
@@ -319,485 +580,165 @@ function ScreenshotDetailModal({ screenshot, screenshots, owner, isOpen, onClose
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [showMenu])
 
-  if (!screenshot) return null
-
-  const currentIndex = screenshots.findIndex(s => s.id === screenshot.id)
-  const isSpoilerHidden = screenshot.is_spoiler && !revealed
-  const hasPrev = currentIndex > 0
-  const hasNext = currentIndex < screenshots.length - 1
-
-  const isUltrawide = imageAspect && imageAspect > 2
-  const isWide = imageAspect && imageAspect > 1.5
-
-  function handlePrev() {
-    if (hasPrev) onNavigate(screenshots[currentIndex - 1])
-  }
-
-  function handleNext() {
-    if (hasNext) onNavigate(screenshots[currentIndex + 1])
-  }
-
-  function onTouchStart(e) {
-    setTouchEnd(null)
-    setTouchStart(e.targetTouches[0].clientX)
-  }
-
-  function onTouchMove(e) {
-    setTouchEnd(e.targetTouches[0].clientX)
-  }
-
-  function onTouchEnd() {
-    if (!touchStart || !touchEnd) return
-    const distance = touchStart - touchEnd
-    const isLeftSwipe = distance > minSwipeDistance
-    const isRightSwipe = distance < -minSwipeDistance
-    if (isLeftSwipe && hasNext) handleNext()
-    if (isRightSwipe && hasPrev) handlePrev()
-  }
-
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      maxWidth="max-w-7xl" 
-      showCloseButton={false} 
-      fullscreenMobile
-      noScroll
-      className="!rounded-none md:!rounded-xl overflow-hidden"
-    >
-      <div className={`flex flex-col h-full bg-black md:bg-zinc-900 ${
-        isUltrawide ? "md:flex-col" : "md:flex-row md:h-auto md:max-h-[90vh]"
-      }`}>
-        <div 
-          className={`relative bg-black flex items-center justify-center ${
-            isUltrawide 
-              ? "w-full" 
-              : "flex-1 min-h-[35vh] md:min-h-[500px]"
-          }`}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-        >
-          {isSpoilerHidden ? (
-            <div className="relative w-full h-full min-h-[200px] flex items-center justify-center">
-              <img 
-                src={screenshot.image_url} 
-                alt="" 
-                className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-30 scale-110" 
+    <article className="bg-zinc-900/50 border border-zinc-800/50 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-3 min-w-0">
+          {owner && (
+            <Link to={`/u/${owner.username}`} className="flex-shrink-0">
+              <AvatarWithDecoration
+                src={owner.avatar}
+                alt={owner.username}
+                decorationUrl={owner.equipped?.avatar_decoration?.asset_url}
+                size="sm"
               />
-              <button
-                onClick={() => setRevealed(true)}
-                className="relative z-10 flex flex-col items-center justify-center gap-3 cursor-pointer group"
+            </Link>
+          )}
+          <div className="min-w-0">
+            {owner && (
+              <Link 
+                to={`/u/${owner.username}`}
+                className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors block truncate"
               >
-                <div className="w-16 h-16 rounded-full bg-zinc-800/80 backdrop-blur flex items-center justify-center group-hover:bg-zinc-700/80 transition-colors">
-                  <EyeOff className="w-7 h-7 text-zinc-400" />
-                </div>
-                <span className="text-sm font-medium text-zinc-400">{t("lightbox.revealSpoiler")}</span>
-              </button>
-            </div>
-          ) : (
-            <div className={`flex items-center justify-center p-2 md:p-4 ${
-              isUltrawide ? "w-full" : "w-full h-full"
-            }`}>
-              <img 
-                src={screenshot.image_url} 
-                alt={screenshot.caption || ""} 
-                className={`${
-                  isUltrawide 
-                    ? "w-full h-auto max-h-[50vh] md:max-h-[60vh] object-contain" 
-                    : isWide
-                      ? "w-full max-h-[40vh] md:max-h-[80vh] object-contain"
-                      : "max-w-full max-h-[40vh] md:max-h-[80vh] object-contain"
-                }`}
-              />
-            </div>
-          )}
-
-          {hasPrev && (
-            <button
-              onClick={handlePrev}
-              className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white rounded-full items-center justify-center cursor-pointer transition-all"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-          )}
-          {hasNext && (
-            <button
-              onClick={handleNext}
-              className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white rounded-full items-center justify-center cursor-pointer transition-all"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          )}
-
-          {screenshots.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2 py-1 bg-black/40 backdrop-blur-sm rounded-full">
-              {screenshots.slice(
-                Math.max(0, currentIndex - 2),
-                Math.min(screenshots.length, currentIndex + 3)
-              ).map((s, i) => {
-                const actualIndex = Math.max(0, currentIndex - 2) + i
-                return (
-                  <button
-                    key={s.id}
-                    onClick={() => onNavigate(s)}
-                    className={`rounded-full transition-all cursor-pointer ${
-                      actualIndex === currentIndex 
-                        ? "w-2 h-2 bg-white" 
-                        : "w-1.5 h-1.5 bg-white/50 hover:bg-white/70"
-                    }`}
-                  />
-                )
-              })}
-            </div>
-          )}
-
-          <button
-            onClick={onClose}
-            className="absolute top-4 left-4 p-2 bg-black/40 backdrop-blur-sm text-white rounded-full cursor-pointer md:hidden"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-
-          <button
-            onClick={onClose}
-            className="hidden md:flex absolute top-4 right-4 p-2 text-white/60 hover:text-white cursor-pointer transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
+                {owner.username}
+              </Link>
+            )}
+            <span className="text-[11px] text-zinc-500">{getTimeAgo(screenshot.created_at)}</span>
+          </div>
         </div>
 
-        <div className={`flex-shrink-0 flex flex-col bg-zinc-900 border-t md:border-t-0 md:border-l border-zinc-800 ${
-          isUltrawide 
-            ? "w-full max-h-[50vh] md:max-h-[40vh]" 
-            : "w-full md:w-[400px] max-h-[60vh] md:max-h-none"
-        }`}>
-          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 flex-shrink-0">
-            <div className="flex items-center gap-3 min-w-0">
-              {owner && (
-                <Link to={`/u/${owner.username}`} onClick={onClose} className="flex-shrink-0">
-                  <AvatarWithDecoration
-                    src={owner.avatar}
-                    alt={owner.username}
-                    decorationUrl={owner.equipped?.avatar_decoration?.asset_url}
-                    size="sm"
-                  />
-                </Link>
-              )}
-              <div className="min-w-0">
-                {owner && (
-                  <Link 
-                    to={`/u/${owner.username}`} 
-                    onClick={onClose} 
-                    className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors block truncate"
-                  >
-                    {owner.username}
-                  </Link>
-                )}
-                {screenshot.game_slug && (
-                  <Link
-                    to={`/game/${screenshot.game_slug}`}
-                    onClick={onClose}
-                    className="text-xs text-zinc-500 hover:text-zinc-400 transition-colors truncate block"
-                  >
-                    {screenshot.game_name || screenshot.game_slug}
-                  </Link>
-                )}
-              </div>
-            </div>
+        {isOwner && (
+          <div className="relative flex-shrink-0" ref={menuRef}>
+            <button 
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-2 text-zinc-400 hover:text-white rounded-full hover:bg-zinc-800 transition-colors cursor-pointer"
+            >
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
 
-            <div className="relative flex-shrink-0" ref={menuRef}>
-              <button 
-                onClick={() => setShowMenu(!showMenu)}
-                className="p-2 text-zinc-400 hover:text-white rounded-full hover:bg-zinc-800 transition-colors cursor-pointer"
-              >
-                <MoreHorizontal className="w-5 h-5" />
-              </button>
-
-              {showMenu && (
-                <div className="absolute right-0 top-full mt-1 w-48 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl z-30 overflow-hidden">
-                  {isOwner && (
-                    <>
-                      <button 
-                        onClick={() => { onEdit(screenshot); onClose(); setShowMenu(false) }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:bg-zinc-700 transition-colors cursor-pointer"
-                      >
-                        <Pencil className="w-4 h-4" />
-                        {t("lightbox.edit")}
-                      </button>
-                      {confirmDelete ? (
-                        <button 
-                          onClick={() => { onDelete(screenshot.id); onClose(); setShowMenu(false) }}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          {t("lightbox.confirmDelete")}
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => setConfirmDelete(true)}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-zinc-700 transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          {t("lightbox.delete")}
-                        </button>
-                      )}
-                    </>
-                  )}
+            {showMenu && (
+              <div className="absolute right-0 top-full mt-1 w-44 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl z-30 overflow-hidden">
+                <button 
+                  onClick={() => { onEdit(screenshot); setShowMenu(false) }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-700 transition-colors cursor-pointer"
+                >
+                  <Pencil className="w-4 h-4" />
+                  {t("lightbox.edit")}
+                </button>
+                {confirmDelete ? (
                   <button 
-                    onClick={() => setShowMenu(false)}
-                    className="w-full px-4 py-3 text-sm text-zinc-300 hover:bg-zinc-700 transition-colors cursor-pointer border-t border-zinc-700"
+                    onClick={() => { onDelete(screenshot.id); setShowMenu(false) }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer"
                   >
-                    {t("lightbox.cancel")}
+                    <Trash2 className="w-4 h-4" />
+                    {t("lightbox.confirmDelete")}
                   </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
-            {screenshot.caption && (
-              <div className="flex gap-3 px-4 py-3">
-                {owner && (
-                  <Link to={`/u/${owner.username}`} onClick={onClose} className="flex-shrink-0">
-                    <AvatarWithDecoration
-                      src={owner.avatar}
-                      alt={owner.username}
-                      decorationUrl={owner.equipped?.avatar_decoration?.asset_url}
-                      size="sm"
-                    />
-                  </Link>
+                ) : (
+                  <button 
+                    onClick={() => setConfirmDelete(true)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-700 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {t("lightbox.delete")}
+                  </button>
                 )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-zinc-200 break-words">
-                    <Link 
-                      to={`/u/${owner?.username}`} 
-                      onClick={onClose}
-                      className="font-semibold text-white hover:text-zinc-300 mr-1.5"
-                    >
-                      {owner?.username}
-                    </Link>
-                    {screenshot.caption}
-                  </p>
-                  <span className="text-[11px] text-zinc-600 mt-1.5 block">
-                    {getTimeAgo(screenshot.created_at)}
-                  </span>
-                </div>
               </div>
             )}
-
-            <div className="px-4 py-3">
-              <CommentSection type="screenshot" targetId={String(screenshot.id)} />
-            </div>
           </div>
-
-          <div className="border-t border-zinc-800 px-4 py-3 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <LikeButton 
-                type="screenshot" 
-                targetId={screenshot.id} 
-                currentUserId={user?.user_id}
-                variant="icon"
-              />
-              <span className="text-[11px] text-zinc-500">
-                {getTimeAgo(screenshot.created_at)}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Modal>
-  )
-}
-
-function EditScreenshotModal({ screenshot, isOpen, onClose, onSave, saving }) {
-  const { t } = useTranslation("screenshots")
-  const [caption, setCaption] = useState("")
-  const [isSpoiler, setIsSpoiler] = useState(false)
-  const [gameQuery, setGameQuery] = useState("")
-  const [gameResults, setGameResults] = useState([])
-  const [selectedGame, setSelectedGame] = useState(null)
-  const searchTimeout = useRef(null)
-
-  useEffect(() => {
-    if (isOpen && screenshot) {
-      setCaption(screenshot.caption || "")
-      setIsSpoiler(screenshot.is_spoiler || false)
-      setSelectedGame(screenshot.game_slug ? { slug: screenshot.game_slug, id: screenshot.game_id, name: screenshot.game_name } : null)
-    }
-  }, [isOpen, screenshot])
-
-  useEffect(() => {
-    clearTimeout(searchTimeout.current)
-    if (!gameQuery.trim()) { setGameResults([]); return }
-
-    searchTimeout.current = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/igdb/autocomplete?query=${encodeURIComponent(gameQuery.trim())}`)
-        const data = await res.json()
-        setGameResults(Array.isArray(data) ? data.slice(0, 5) : [])
-      } catch { setGameResults([]) }
-    }, 300)
-
-    return () => clearTimeout(searchTimeout.current)
-  }, [gameQuery])
-
-  if (!screenshot) return null
-
-  return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={() => !saving && onClose()} 
-      maxWidth="max-w-lg" 
-      fullscreenMobile 
-      showCloseButton={false}
-      noScroll
-    >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-        <button 
-          onClick={onClose} 
-          disabled={saving}
-          className="w-20 text-left text-sm font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
-        >
-          {t("upload.cancel")}
-        </button>
-        <h3 className="text-sm font-semibold text-white">{t("edit.title")}</h3>
-        <div className="w-20 text-right">
-          <button
-            onClick={() => onSave({ 
-              screenshotId: screenshot.id, 
-              caption: caption.trim() || null, 
-              gameId: selectedGame?.id || null, 
-              gameSlug: selectedGame?.slug || null, 
-              isSpoiler 
-            })}
-            disabled={saving}
-            className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
-          >
-            {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-            {t("edit.save")}
-          </button>
-        </div>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto overscroll-contain">
-        <div className="flex flex-col md:flex-row">
-          <div className="flex-1 bg-black flex items-center justify-center p-4 min-h-[200px]">
+      <div className="relative bg-black">
+        {isSpoilerHidden ? (
+          <div className="relative aspect-video flex items-center justify-center">
             <img 
               src={screenshot.image_url} 
               alt="" 
-              className="max-w-full max-h-[40vh] w-auto h-auto object-contain rounded" 
+              className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-30 scale-110" 
             />
-          </div>
-
-          <div className="w-full md:w-[280px] flex-shrink-0 p-4 space-y-4 border-t md:border-t-0 md:border-l border-zinc-800">
-            <div>
-              <textarea
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                placeholder={t("upload.captionPlaceholder")}
-                maxLength={200}
-                rows={4}
-                className="w-full bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none resize-none"
-              />
-              <div className="text-right">
-                <span className="text-[10px] text-zinc-600">{caption.length}/200</span>
+            <button
+              onClick={() => setRevealed(true)}
+              className="relative z-10 flex flex-col items-center justify-center gap-3 cursor-pointer group"
+            >
+              <div className="w-14 h-14 rounded-full bg-zinc-800/80 backdrop-blur flex items-center justify-center group-hover:bg-zinc-700/80 transition-colors">
+                <EyeOff className="w-6 h-6 text-zinc-400" />
               </div>
-            </div>
-
-            <div className="border-t border-zinc-800 pt-4">
-              <label className="flex items-center gap-2 text-sm text-zinc-400 mb-2.5">
-                <Gamepad2 className="w-4 h-4" />
-                {t("upload.game")}
-              </label>
-              {selectedGame ? (
-                <div className="flex items-center gap-2.5 px-3 py-2.5 bg-zinc-800/50 rounded-lg">
-                  <span className="text-sm text-white truncate flex-1">{selectedGame.name || selectedGame.slug}</span>
-                  <button onClick={() => setSelectedGame(null)} className="text-zinc-500 hover:text-white cursor-pointer p-1">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={gameQuery}
-                    onChange={(e) => setGameQuery(e.target.value)}
-                    placeholder={t("upload.searchGame")}
-                    className="w-full px-3 py-2.5 bg-zinc-800/50 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600"
-                  />
-                  {gameResults.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl z-20 overflow-hidden max-h-40 overflow-y-auto">
-                      {gameResults.map((g) => (
-                        <button
-                          key={g.id}
-                          onClick={() => { setSelectedGame(g); setGameQuery(""); setGameResults([]) }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-zinc-800 transition-colors cursor-pointer text-left"
-                        >
-                          <span className="text-sm text-zinc-300 truncate">{g.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="border-t border-zinc-800 pt-4">
-              <label className="flex items-center justify-between cursor-pointer">
-                <div className="flex items-center gap-2">
-                  <EyeOff className="w-4 h-4 text-zinc-400" />
-                  <span className="text-sm text-zinc-400">{t("upload.spoiler")}</span>
-                </div>
-                <div className="relative">
-                  <input 
-                    type="checkbox" 
-                    checked={isSpoiler} 
-                    onChange={(e) => setIsSpoiler(e.target.checked)} 
-                    className="sr-only peer" 
-                  />
-                  <div className="w-9 h-5 bg-zinc-700 rounded-full peer-checked:bg-indigo-500 transition-colors" />
-                  <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4" />
-                </div>
-              </label>
-            </div>
+              <span className="text-sm font-medium text-zinc-400">{t("lightbox.revealSpoiler")}</span>
+            </button>
           </div>
-        </div>
+        ) : (
+          <img 
+            src={screenshot.image_url} 
+            alt={screenshot.caption || ""} 
+            className="w-full h-auto"
+          />
+        )}
       </div>
-    </Modal>
-  )
-}
 
-function ScreenshotGridItem({ screenshot, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="group relative aspect-square overflow-hidden bg-zinc-900 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-inset"
-    >
-      <img
-        src={screenshot.image_url}
-        alt={screenshot.caption || ""}
-        loading="lazy"
-        className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
-          screenshot.is_spoiler ? "blur-xl brightness-50" : ""
-        }`}
-      />
+      <div className="p-4 space-y-3">
+        {screenshot.game_slug && (
+          <Link
+            to={`/game/${screenshot.game_slug}`}
+            className="flex items-center gap-3 p-2.5 -mx-1 rounded-lg hover:bg-zinc-800/50 transition-colors"
+          >
+            {gameCoverUrl ? (
+              <img src={gameCoverUrl} alt="" className="w-8 h-11 rounded object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-8 h-11 rounded bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                <Gamepad2 className="w-3.5 h-3.5 text-zinc-600" />
+              </div>
+            )}
+            <span className="text-sm font-medium text-zinc-300 hover:text-white truncate">
+              {screenshot.game_name || screenshot.game_slug}
+            </span>
+          </Link>
+        )}
 
-      {screenshot.is_spoiler && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-            <EyeOff className="w-5 h-5 text-white/70" />
-          </div>
+        {screenshot.caption && (
+          <p className="text-sm text-zinc-300">
+            {owner && (
+              <Link 
+                to={`/u/${owner.username}`}
+                className="font-semibold text-white hover:text-zinc-300 mr-1.5"
+              >
+                {owner.username}
+              </Link>
+            )}
+            {screenshot.caption}
+          </p>
+        )}
+
+        <div className="flex items-center gap-4 pt-1">
+          <LikeButton 
+            type="screenshot" 
+            targetId={screenshot.id} 
+            currentUserId={user?.user_id}
+            variant="icon"
+          />
+          <button
+            onClick={() => setShowComments(!showComments)}
+            className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+          >
+            <MessageCircle className="w-5 h-5" />
+            {screenshot.comments_count > 0 && (
+              <span className="text-sm">{screenshot.comments_count}</span>
+            )}
+          </button>
         </div>
-      )}
 
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
-    </button>
+        {showComments && (
+          <div className="pt-3 border-t border-zinc-800">
+            <CommentSection type="screenshot" targetId={String(screenshot.id)} />
+          </div>
+        )}
+      </div>
+    </article>
   )
 }
 
 export default function ScreenshotsSection({ userId, isOwnProfile, owner }) {
   const { t } = useTranslation("screenshots")
+  const { getTimeAgo } = useDateTime()
   const [screenshots, setScreenshots] = useState([])
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
@@ -805,7 +746,6 @@ export default function ScreenshotsSection({ userId, isOwnProfile, owner }) {
   const [totalPages, setTotalPages] = useState(1)
   const [uploadOpen, setUploadOpen] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [selected, setSelected] = useState(null)
   const [editingScreenshot, setEditingScreenshot] = useState(null)
   const [saving, setSaving] = useState(false)
 
@@ -883,7 +823,7 @@ export default function ScreenshotsSection({ userId, isOwnProfile, owner }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
           <Camera className="w-4 h-4 text-zinc-400" />
           <h2 className="text-sm font-semibold text-white uppercase tracking-wide">{t("title")}</h2>
@@ -918,12 +858,16 @@ export default function ScreenshotsSection({ userId, isOwnProfile, owner }) {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-0.5 sm:gap-1 rounded-lg overflow-hidden">
+          <div className="space-y-6">
             {screenshots.map((s) => (
-              <ScreenshotGridItem
+              <ScreenshotCard
                 key={s.id}
                 screenshot={s}
-                onClick={() => setSelected(s)}
+                owner={owner}
+                isOwner={isOwnProfile}
+                onEdit={setEditingScreenshot}
+                onDelete={handleDelete}
+                getTimeAgo={getTimeAgo}
               />
             ))}
           </div>
@@ -945,18 +889,6 @@ export default function ScreenshotsSection({ userId, isOwnProfile, owner }) {
         onClose={() => setUploadOpen(false)} 
         onUpload={handleUpload} 
         uploading={uploading} 
-      />
-
-      <ScreenshotDetailModal
-        screenshot={selected}
-        screenshots={screenshots}
-        owner={owner}
-        isOpen={!!selected}
-        onClose={() => setSelected(null)}
-        onNavigate={setSelected}
-        isOwner={isOwnProfile}
-        onEdit={(s) => { setSelected(null); setEditingScreenshot(s) }}
-        onDelete={handleDelete}
       />
 
       <EditScreenshotModal
