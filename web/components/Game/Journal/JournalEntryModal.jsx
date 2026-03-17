@@ -3,6 +3,14 @@ import { Trash2, Clock, Calendar, Play, Flag } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 
+function clampInput(value, max) {
+  if (value === "") return ""
+  const num = parseInt(value)
+  if (isNaN(num) || num < 0) return ""
+  if (num > max) return String(max)
+  return value
+}
+
 export function JournalEntryModal({ entry, date, startedAt, finishedAt, onSave, onRemove, onClose }) {
   const { t } = useTranslation("journal.modal.entry")
   const isEditing = !!entry
@@ -106,7 +114,7 @@ export function JournalEntryModal({ entry, date, startedAt, finishedAt, onSave, 
               <input
                 type="number"
                 value={hours}
-                onChange={(e) => setHours(e.target.value)}
+                onChange={(e) => setHours(clampInput(e.target.value, 24))}
                 placeholder="0"
                 min="0"
                 max="24"
@@ -119,7 +127,7 @@ export function JournalEntryModal({ entry, date, startedAt, finishedAt, onSave, 
               <input
                 type="number"
                 value={minutes}
-                onChange={(e) => setMinutes(e.target.value)}
+                onChange={(e) => setMinutes(clampInput(e.target.value, 59))}
                 placeholder="0"
                 min="0"
                 max="59"
