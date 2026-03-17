@@ -1376,6 +1376,9 @@ export default {
 		reviewedBy: "Reviewed by {{username}}",
 		someone: "Someone",
 		types: {
+			comment_reply: {
+				text: "replied to your comment"
+			},
 			screenshot_like: {
 			  text: "liked your screenshot",
 			},
