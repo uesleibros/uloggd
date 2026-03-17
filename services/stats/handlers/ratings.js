@@ -10,23 +10,41 @@ export async function handleRatingStats(req, res) {
   if (cached) return res.json(cached)
 
   try {
-    const { data: reviews, error } = await supabase
-      .from("reviews")
-      .select("rating, status, created_at, liked, review, aspect_ratings")
-      .eq("user_id", userId)
+    const [reviewsRes, userGamesRes] = await Promise.all([
+      supabase
+        .from("reviews")
+        .select("game_slug, rating, status, created_at, liked, review, aspect_ratings")
+        .eq("user_id", userId),
+      supabase
+        .from("user_games")
+        .select("game_slug, liked")
+        .eq("user_id", userId),
+    ])
 
-    if (error) throw error
+    if (reviewsRes.error) throw reviewsRes.error
+    if (userGamesRes.error) throw userGamesRes.error
+
+    const reviews = reviewsRes.data || []
+    const userGames = userGamesRes.data || []
+
+    const likedGames = new Set()
+
+    for (const ug of userGames) {
+      if (ug.liked) likedGames.add(ug.game_slug)
+    }
+
+    for (const r of reviews) {
+      if (r.liked) likedGames.add(r.game_slug)
+    }
 
     const distribution = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
     const byStatusAcc = {}
     const monthAcc = {}
     let sum = 0
     let count = 0
-    let liked = 0
     let reviewed = 0
 
-    for (const r of reviews || []) {
-      if (r.liked) liked++
+    for (const r of reviews) {
       if (r.review && r.review.trim()) reviewed++
 
       const ratings = []
@@ -132,7 +150,7 @@ export async function handleRatingStats(req, res) {
       distribution,
       byMonth,
       byStatus,
-      liked,
+      liked: likedGames.size,
       reviewed,
       mode,
     }
