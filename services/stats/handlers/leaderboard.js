@@ -78,6 +78,13 @@ async function getFormattedUsers(userIds) {
   return formatUserMap(profiles, streamsMap)
 }
 
+function getPercentileValue(values, percentile) {
+  if (values.length === 0) return 1
+  const sorted = [...values].sort((a, b) => a - b)
+  const index = Math.ceil((percentile / 100) * sorted.length) - 1
+  return sorted[Math.max(0, index)] || 1
+}
+
 async function getGlobalLeaderboard(limit, offset) {
   const [mineralsData, reviewsData, followersData, likesData, playtimeData] = await Promise.all([
     getMineralsRaw(),
@@ -95,11 +102,17 @@ async function getGlobalLeaderboard(limit, offset) {
     ...Object.keys(playtimeData),
   ])
 
-  const maxMinerals = Math.max(...Object.values(mineralsData).map(d => d.value), 1)
-  const maxReviews = Math.max(...Object.values(reviewsData).map(d => d.value), 1)
-  const maxFollowers = Math.max(...Object.values(followersData), 1)
-  const maxLikes = Math.max(...Object.values(likesData).map(d => d.value), 1)
-  const maxPlaytime = Math.max(...Object.values(playtimeData).map(d => d.value), 1)
+  const mineralsValues = Object.values(mineralsData).map(d => d.value)
+  const reviewsValues = Object.values(reviewsData).map(d => d.value)
+  const followersValues = Object.values(followersData)
+  const likesValues = Object.values(likesData).map(d => d.value)
+  const playtimeValues = Object.values(playtimeData).map(d => d.value)
+
+  const maxMinerals = getPercentileValue(mineralsValues, 95)
+  const maxReviews = getPercentileValue(reviewsValues, 95)
+  const maxFollowers = getPercentileValue(followersValues, 95)
+  const maxLikes = getPercentileValue(likesValues, 95)
+  const maxPlaytime = getPercentileValue(playtimeValues, 95)
 
   const scores = []
 
@@ -110,11 +123,11 @@ async function getGlobalLeaderboard(limit, offset) {
     const likes = likesData[userId]?.value || 0
     const playtime = playtimeData[userId]?.value || 0
 
-    const mineralsScore = (minerals / maxMinerals) * 100
-    const reviewsScore = (reviews / maxReviews) * 100
-    const followersScore = (followers / maxFollowers) * 100
-    const likesScore = (likes / maxLikes) * 100
-    const playtimeScore = (playtime / maxPlaytime) * 100
+    const mineralsScore = Math.min((minerals / maxMinerals) * 100, 100)
+    const reviewsScore = Math.min((reviews / maxReviews) * 100, 100)
+    const followersScore = Math.min((followers / maxFollowers) * 100, 100)
+    const likesScore = Math.min((likes / maxLikes) * 100, 100)
+    const playtimeScore = Math.min((playtime / maxPlaytime) * 100, 100)
 
     const totalScore = mineralsScore + reviewsScore + followersScore + likesScore + playtimeScore
 
@@ -376,12 +389,11 @@ async function getFollowersLeaderboard(limit, offset) {
 }
 
 async function getLikesLeaderboard(limit, offset) {
-  const [reviewLikes, listLikes, tierlistLikes, screenshotLikes, gameLikes] = await Promise.all([
+  const [reviewLikes, listLikes, tierlistLikes, screenshotLikes] = await Promise.all([
     getReviewLikesPerUser(),
     getListLikesPerUser(),
     getTierlistLikesPerUser(),
     getScreenshotLikesPerUser(),
-    getGameLikesPerUser(),
   ])
 
   const countMap = {}
@@ -391,7 +403,7 @@ async function getLikesLeaderboard(limit, offset) {
     for (const [userId, count] of Object.entries(likes)) {
       countMap[userId] = (countMap[userId] || 0) + count
       if (!breakdownMap[userId]) {
-        breakdownMap[userId] = { reviews: 0, lists: 0, tierlists: 0, screenshots: 0, games: 0 }
+        breakdownMap[userId] = { reviews: 0, lists: 0, tierlists: 0, screenshots: 0 }
       }
       breakdownMap[userId][type] = count
     }
@@ -401,7 +413,6 @@ async function getLikesLeaderboard(limit, offset) {
   addLikes(listLikes, "lists")
   addLikes(tierlistLikes, "tierlists")
   addLikes(screenshotLikes, "screenshots")
-  addLikes(gameLikes, "games")
 
   const sorted = Object.entries(countMap)
     .map(([user_id, count]) => ({ user_id, value: count }))
@@ -414,49 +425,10 @@ async function getLikesLeaderboard(limit, offset) {
     rank: offset + i + 1,
     user_id: item.user_id,
     value: item.value,
-    breakdown: breakdownMap[item.user_id] || { reviews: 0, lists: 0, tierlists: 0, screenshots: 0, games: 0 },
+    breakdown: breakdownMap[item.user_id] || { reviews: 0, lists: 0, tierlists: 0, screenshots: 0 },
   }))
 
   return { entries, total }
-}
-
-async function getGameLikesPerUser() {
-  const [reviewsRes, userGamesRes] = await Promise.all([
-    supabase
-      .from("reviews")
-      .select("user_id, game_slug, liked"),
-    supabase
-      .from("user_games")
-      .select("user_id, game_slug, liked"),
-  ])
-
-  const reviews = reviewsRes.data || []
-  const userGames = userGamesRes.data || []
-
-  const userLikedGames = {}
-
-  for (const ug of userGames) {
-    if (!ug.liked) continue
-    if (!userLikedGames[ug.user_id]) {
-      userLikedGames[ug.user_id] = new Set()
-    }
-    userLikedGames[ug.user_id].add(ug.game_slug)
-  }
-
-  for (const r of reviews) {
-    if (!r.liked) continue
-    if (!userLikedGames[r.user_id]) {
-      userLikedGames[r.user_id] = new Set()
-    }
-    userLikedGames[r.user_id].add(r.game_slug)
-  }
-
-  const countMap = {}
-  for (const [userId, games] of Object.entries(userLikedGames)) {
-    countMap[userId] = games.size
-  }
-
-  return countMap
 }
 
 async function getPlaytimeLeaderboard(limit, offset) {
