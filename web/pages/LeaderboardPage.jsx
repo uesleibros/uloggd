@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import {
   Trophy, Gem, MessageSquare, Users, Heart,
   Crown, Medal, Award, ChevronLeft, ChevronRight,
-  Star, List, LayoutGrid, Camera
+  Star, List, LayoutGrid, Camera, Clock
 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
@@ -17,6 +17,7 @@ const CATEGORIES = [
   { id: "reviews", icon: MessageSquare },
   { id: "followers", icon: Users },
   { id: "likes", icon: Heart },
+  { id: "playtime", icon: Clock },
 ]
 
 const RANK_CONFIG = {
@@ -158,7 +159,10 @@ function TopThreePodium({ entries, category, t }) {
 
               <div className="mt-2 sm:mt-3">
                 <span className={`text-base sm:text-xl font-bold tabular-nums ${config.color}`}>
-                  {entry.value.toLocaleString()}
+                  {category === "playtime" 
+                    ? `${entry.hours}h ${entry.minutes}m`
+                    : entry.value.toLocaleString()
+                  }
                 </span>
                 <p className="text-[9px] sm:text-[10px] text-zinc-500 mt-0.5">
                   {t(`leaderboard.units.${category}`)}
@@ -227,7 +231,7 @@ function LikesBreakdown({ breakdown }) {
 }
 
 function LeaderboardEntry({ entry, category, t }) {
-  const { rank, user, value, breakdown, avgRating } = entry
+  const { rank, user, value, breakdown, avgRating, hours, minutes, entries: journeyEntries } = entry
 
   return (
     <Link
@@ -255,7 +259,7 @@ function LeaderboardEntry({ entry, category, t }) {
           {category === "minerals" && breakdown && (
             <MineralBreakdown breakdown={breakdown} />
           )}
-          {category === "reviews" && avgRating && (
+          {category === "reviews" && avgRating !== undefined && avgRating !== null && (
             <div className="flex items-center gap-1">
               <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
               <span className="text-[10px] text-zinc-500">
@@ -271,12 +275,23 @@ function LeaderboardEntry({ entry, category, t }) {
               {t("leaderboard.followersLabel")}
             </span>
           )}
+          {category === "playtime" && journeyEntries !== undefined && (
+            <div className="flex items-center gap-1">
+              <Clock className="w-2.5 h-2.5 text-zinc-600" />
+              <span className="text-[10px] text-zinc-500">
+                {journeyEntries} {t("leaderboard.journeyEntries")}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="flex-shrink-0 text-right">
         <span className="text-sm font-bold text-white tabular-nums">
-          {value.toLocaleString()}
+          {category === "playtime" 
+            ? `${hours}h ${minutes}m`
+            : value.toLocaleString()
+          }
         </span>
       </div>
     </Link>
