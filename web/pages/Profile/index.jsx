@@ -16,7 +16,6 @@ import { ProfileHeader } from "./sections/ProfileHeader"
 import { ProfileSidebar } from "./sections/ProfileSidebar"
 import { ProfileNavigation } from "./sections/ProfileNavigation"
 import { ProfileContent } from "./sections/ProfileContent"
-import ScreenshotsSection from "@components/Screenshots/ScreenshotsSection"
 import ProfileSkeleton from "./components/ProfileSkeleton"
 import FollowListModal from "./components/FollowListModal"
 
@@ -199,9 +198,6 @@ export default function Profile() {
 							onEditProfile={() => setSettingsOpen(true)}
 						/>
 					</div>
-				</div>
-				<div className="mt-4">
-					<ScreenshotsSection userId={profile.user_id} isOwnProfile={isOwnProfile} />
 				</div>
 			</div>
 
