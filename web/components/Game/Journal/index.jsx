@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Plus } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
@@ -46,45 +46,47 @@ export default function JournalButton({ game }) {
   const { t } = useTranslation("journal")
   const [showModal, setShowModal] = useState(false)
   const [journeys, setJourneys] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [selectedJourney, setSelectedJourney] = useState(null)
+  const mountedRef = useRef(true)
 
-	const fetchJourneys = useCallback(
-	  async (signal) => {
-	    if (!user || !game?.id) return
-	    setLoading(true)
-	    try {
-	      const {
-	        data: { session },
-	      } = await supabase.auth.getSession()
-	      if (!session || signal?.aborted) return
-	
-	      const res = await fetch(`/api/journeys/@me/list?gameId=${game.id}`, {
-	        headers: { Authorization: `Bearer ${session.access_token}` },
-	        signal,
-	      })
-	
-	      if (res.ok && !signal?.aborted) {
-	        const data = await res.json()
-	        setJourneys(data.journeys || [])
-	        setSelectedJourney((prev) => {
-	          if (!prev) return data.journeys?.[0] ?? null
-	          return data.journeys?.find(j => j.id === prev.id) || data.journeys?.[0] || null
-	        })
-	      }
-	    } catch (e) {
-	      if (e?.name === "AbortError") return
-	    } finally {
-	      if (!signal?.aborted) setLoading(false)
-	    }
-	  },
-	  [user?.id, game?.id],
-	)
+  const fetchJourneys = useCallback(async () => {
+    if (!user || !game?.id) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session || !mountedRef.current) return
+
+      const res = await fetch(`/api/journeys/@me/list?gameId=${game.id}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+
+      if (!mountedRef.current) return
+
+      if (res.ok) {
+        const data = await res.json()
+        const list = data.journeys || []
+        setJourneys(list)
+        setSelectedJourney((prev) => {
+          if (!prev) return list[0] || null
+          return list.find(j => j.id === prev.id) || list[0] || null
+        })
+      }
+    } catch {
+    } finally {
+      if (mountedRef.current) setLoading(false)
+    }
+  }, [user, game?.id])
 
   useEffect(() => {
-    const ac = new AbortController()
-    fetchJourneys(ac.signal)
-    return () => ac.abort()
+    mountedRef.current = true
+    fetchJourneys()
+    return () => { mountedRef.current = false }
   }, [fetchJourneys])
 
   if (!user) return null
@@ -112,6 +114,12 @@ export default function JournalButton({ game }) {
     setSelectedJourney(null)
     fetchJourneys()
     emitJournalUpdate()
+  }
+
+  if (loading) {
+    return (
+      <div className="h-10 bg-zinc-800 rounded-xl animate-pulse" />
+    )
   }
 
   return (
@@ -142,18 +150,13 @@ export default function JournalButton({ game }) {
           )}
         </div>
       ) : (
-				<button
-				  onClick={() => openModal(null)}
-				  disabled={loading}
-				  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 text-white border border-zinc-700 hover:border-zinc-600"
-				>
-				  {loading ? (
-				    <div className="w-4 h-4 border-2 border-zinc-500 border-t-white rounded-full animate-spin" />
-				  ) : (
-				    <Plus className="w-4 h-4" />
-				  )}
-				  {t("button.create")}
-				</button>
+        <button
+          onClick={() => openModal(null)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 cursor-pointer bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 text-white border border-zinc-700 hover:border-zinc-600"
+        >
+          <Plus className="w-4 h-4" />
+          {t("button.create")}
+        </button>
       )}
 
       <Modal
@@ -175,4 +178,3 @@ export default function JournalButton({ game }) {
     </>
   )
 }
-
