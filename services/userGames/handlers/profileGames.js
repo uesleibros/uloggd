@@ -79,8 +79,13 @@ function aggregateGames(gameMap, { page = 1, limit = 20, filter = null } = {}) {
   }
 
   const allGames = []
+  const covers = {}
 
   for (const [slug, g] of Object.entries(gameMap)) {
+    if (g.customCoverUrl) {
+      covers[slug] = g.customCoverUrl
+    }
+
     if (!hasRealState(g)) continue
 
     const avgRating = g.ratings.length > 0
@@ -136,7 +141,7 @@ function aggregateGames(gameMap, { page = 1, limit = 20, filter = null } = {}) {
   const offset = (page - 1) * limit
   const games = allGames.slice(offset, offset + limit)
 
-  return { games, counts, total, page, totalPages }
+  return { games, covers, counts, total, page, totalPages }
 }
 
 export async function handleProfileGames(req, res) {
