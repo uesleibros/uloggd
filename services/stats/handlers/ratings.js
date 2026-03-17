@@ -12,53 +12,89 @@ export async function handleRatingStats(req, res) {
   try {
     const { data: reviews, error } = await supabase
       .from("reviews")
-      .select("rating, status, created_at, liked, review")
+      .select("rating, status, created_at, liked, review, aspect_ratings")
       .eq("user_id", userId)
 
     if (error) throw error
-
-    const validReviews = (reviews || []).filter(r => r.rating !== null && r.rating !== "")
-
-    if (validReviews.length === 0) {
-      const empty = { total: 0 }
-      await setCache(cacheKey, empty, 300)
-      return res.json(empty)
-    }
 
     const distribution = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
     const byStatusAcc = {}
     const monthAcc = {}
     let sum = 0
+    let count = 0
     let liked = 0
     let reviewed = 0
 
-    for (const r of validReviews) {
-      const rawRating = parseFloat(r.rating)
-      if (isNaN(rawRating)) continue
-
-      const normalized = rawRating / 20
-      const rounded = Math.max(0, Math.min(5, Math.round(normalized)))
-
-      distribution[rounded]++
-      sum += normalized
-
+    for (const r of reviews || []) {
       if (r.liked) liked++
       if (r.review && r.review.trim()) reviewed++
 
+      const ratings = []
+
+      if (r.rating !== null && r.rating !== undefined && r.rating !== "") {
+        const parsed = parseFloat(r.rating)
+        if (!isNaN(parsed)) ratings.push(parsed / 20)
+      }
+
+      let aspects = r.aspect_ratings
+      if (typeof aspects === "string") {
+        try { aspects = JSON.parse(aspects) } catch { aspects = null }
+      }
+
+      if (Array.isArray(aspects)) {
+        for (const aspect of aspects) {
+          if (aspect.rating === null || aspect.rating === undefined) continue
+          const parsed = parseFloat(aspect.rating)
+          if (isNaN(parsed)) continue
+
+          const mode = aspect.ratingMode || "stars_5h"
+          let normalized
+          switch (mode) {
+            case "stars_5":
+              normalized = parsed / 20
+              break
+            case "stars_5h":
+              normalized = parsed / 20
+              break
+            case "points_10":
+              normalized = parsed / 20
+              break
+            case "points_10d":
+              normalized = parsed / 20
+              break
+            case "points_100":
+              normalized = parsed / 20
+              break
+            default:
+              normalized = parsed / 20
+          }
+
+          ratings.push(normalized)
+        }
+      }
+
+      if (ratings.length === 0) continue
+
+      for (const normalized of ratings) {
+        const rounded = Math.max(0, Math.min(5, Math.round(normalized)))
+        distribution[rounded]++
+        sum += normalized
+        count++
+      }
+
       const status = r.status || "played"
       if (!byStatusAcc[status]) byStatusAcc[status] = { count: 0, sum: 0 }
-      byStatusAcc[status].count++
-      byStatusAcc[status].sum += normalized
+      byStatusAcc[status].count += ratings.length
+      byStatusAcc[status].sum += ratings.reduce((a, b) => a + b, 0)
 
       const d = new Date(r.created_at)
       const mk = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
       if (!monthAcc[mk]) monthAcc[mk] = { count: 0, sum: 0 }
-      monthAcc[mk].count++
-      monthAcc[mk].sum += normalized
+      monthAcc[mk].count += ratings.length
+      monthAcc[mk].sum += ratings.reduce((a, b) => a + b, 0)
     }
 
-    const total = Object.values(distribution).reduce((a, b) => a + b, 0)
-    const average = total > 0 ? sum / total : 0
+    const average = count > 0 ? sum / count : 0
 
     const byStatus = {}
     for (const [s, d] of Object.entries(byStatusAcc)) {
@@ -83,15 +119,15 @@ export async function handleRatingStats(req, res) {
 
     let mode = 0
     let modeCount = 0
-    for (const [rating, count] of Object.entries(distribution)) {
-      if (count > modeCount) {
-        modeCount = count
+    for (const [rating, c] of Object.entries(distribution)) {
+      if (c > modeCount) {
+        modeCount = c
         mode = parseInt(rating)
       }
     }
 
     const result = {
-      total,
+      total: count,
       average,
       distribution,
       byMonth,
