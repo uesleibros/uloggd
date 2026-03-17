@@ -6,17 +6,20 @@ export default {
 	  participants: "participantes",
 	  avgRating: "média",
 	  followersLabel: "seguidores",
+		journeyEntries: "registros",
 	  categories: {
 	    minerals: "Minérios",
 	    reviews: "Reviews",
 	    followers: "Seguidores",
 	    likes: "Curtidas",
+		  playtime: "Tempo de Jogo"
 	  },
 	  units: {
 	    minerals: "minérios",
 	    reviews: "reviews",
 	    followers: "seguidores",
 	    likes: "curtidas",
+			playtime: "total"
 	  },
 	  empty: {
 	    title: "Nenhum dado ainda",
