@@ -2,15 +2,6 @@ import { supabase } from "#lib/supabase-ssr.js"
 import { getCache, setCache } from "#lib/cache.js"
 import { findManyByIds, resolveStreams, formatUserMap } from "#models/users/index.js"
 
-const MINERAL_WEIGHTS = {
-  copper: 1,
-  iron: 5,
-  gold: 25,
-  emerald: 125,
-  diamond: 625,
-  ruby: 3125,
-}
-
 const CACHE_TTL = 300
 
 export async function handleLeaderboard(req, res) {
@@ -88,23 +79,22 @@ async function getMineralsLeaderboard(limit, offset) {
 
   if (error) throw error
 
-  const scored = (minerals || []).map(m => ({
-    user_id: m.user_id,
-    value: (m.copper || 0) * MINERAL_WEIGHTS.copper +
-           (m.iron || 0) * MINERAL_WEIGHTS.iron +
-           (m.gold || 0) * MINERAL_WEIGHTS.gold +
-           (m.emerald || 0) * MINERAL_WEIGHTS.emerald +
-           (m.diamond || 0) * MINERAL_WEIGHTS.diamond +
-           (m.ruby || 0) * MINERAL_WEIGHTS.ruby,
-    breakdown: {
+  const scored = (minerals || []).map(m => {
+    const breakdown = {
       copper: m.copper || 0,
       iron: m.iron || 0,
       gold: m.gold || 0,
       emerald: m.emerald || 0,
       diamond: m.diamond || 0,
       ruby: m.ruby || 0,
-    },
-  }))
+    }
+
+    return {
+      user_id: m.user_id,
+      value: breakdown.copper + breakdown.iron + breakdown.gold + breakdown.emerald + breakdown.diamond + breakdown.ruby,
+      breakdown,
+    }
+  })
 
   scored.sort((a, b) => b.value - a.value)
 
