@@ -570,7 +570,7 @@ export default function ScreenshotsSection({ userId, isOwnProfile }) {
   if (!isOwnProfile && screenshots.length === 0) return null
 
   return (
-    <div className="border-t border-zinc-800 pb-4 my-4">
+    <div>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Camera className="w-4 h-4 text-zinc-500" />
