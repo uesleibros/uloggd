@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import {
   Trophy, Gem, MessageSquare, Users, Heart,
   Crown, Medal, Award, ChevronLeft, ChevronRight,
-  Star, List, LayoutGrid, Camera, Clock
+  Star, List, LayoutGrid, Camera, Clock, Globe
 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
@@ -13,6 +13,7 @@ import DragScrollRow from "@components/UI/DragScrollRow"
 import { MINERALS } from "@components/Minerals/MineralRow"
 
 const CATEGORIES = [
+  { id: "global", icon: Globe },
   { id: "minerals", icon: Gem },
   { id: "reviews", icon: MessageSquare },
   { id: "followers", icon: Users },
@@ -43,6 +44,14 @@ const RANK_CONFIG = {
     glow: "shadow-amber-600/10"
   },
 }
+
+const GLOBAL_BREAKDOWN_CONFIG = [
+  { key: "minerals", icon: Gem, color: "text-cyan-400" },
+  { key: "reviews", icon: MessageSquare, color: "text-green-400" },
+  { key: "followers", icon: Users, color: "text-blue-400" },
+  { key: "likes", icon: Heart, color: "text-pink-400" },
+  { key: "playtime", icon: Clock, color: "text-purple-400" },
+]
 
 function LeaderboardSkeleton() {
   return (
@@ -124,6 +133,12 @@ function TopThreePodium({ entries, category, t }) {
         const Icon = config.icon
         const isFirst = rank === 1
 
+        const displayValue = () => {
+          if (category === "playtime") return `${entry.hours}h ${entry.minutes}m`
+          if (category === "global") return `${entry.value} pts`
+          return entry.value.toLocaleString()
+        }
+
         return (
           <Link
             key={entry.user?.id || rank}
@@ -159,10 +174,7 @@ function TopThreePodium({ entries, category, t }) {
 
               <div className="mt-2 sm:mt-3">
                 <span className={`text-base sm:text-xl font-bold tabular-nums ${config.color}`}>
-                  {category === "playtime" 
-                    ? `${entry.hours}h ${entry.minutes}m`
-                    : entry.value.toLocaleString()
-                  }
+                  {displayValue()}
                 </span>
                 <p className="text-[9px] sm:text-[10px] text-zinc-500 mt-0.5">
                   {t(`leaderboard.units.${category}`)}
@@ -230,8 +242,32 @@ function LikesBreakdown({ breakdown }) {
   )
 }
 
+function GlobalBreakdown({ breakdown }) {
+  const items = GLOBAL_BREAKDOWN_CONFIG.filter(item => breakdown[item.key] > 0)
+  if (items.length === 0) return null
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      {items.map(({ key, icon: Icon, color }) => (
+        <div key={key} className="flex items-center gap-0.5">
+          <Icon className={`w-2.5 h-2.5 ${color}`} />
+          <span className="text-[10px] text-zinc-500 tabular-nums">
+            {breakdown[key]}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function LeaderboardEntry({ entry, category, t }) {
   const { rank, user, value, breakdown, avgRating, hours, minutes, entries: journeyEntries } = entry
+
+  const displayValue = () => {
+    if (category === "playtime") return `${hours}h ${minutes}m`
+    if (category === "global") return `${value} pts`
+    return value.toLocaleString()
+  }
 
   return (
     <Link
@@ -256,6 +292,9 @@ function LeaderboardEntry({ entry, category, t }) {
         </div>
 
         <div className="mt-0.5">
+          {category === "global" && breakdown && (
+            <GlobalBreakdown breakdown={breakdown} />
+          )}
           {category === "minerals" && breakdown && (
             <MineralBreakdown breakdown={breakdown} />
           )}
@@ -288,10 +327,7 @@ function LeaderboardEntry({ entry, category, t }) {
 
       <div className="flex-shrink-0 text-right">
         <span className="text-sm font-bold text-white tabular-nums">
-          {category === "playtime" 
-            ? `${hours}h ${minutes}m`
-            : value.toLocaleString()
-          }
+          {displayValue()}
         </span>
       </div>
     </Link>
@@ -373,7 +409,7 @@ function EmptyState({ category, t }) {
 
 export default function LeaderboardPage() {
   const { t } = useTranslation()
-  const [category, setCategory] = useState("minerals")
+  const [category, setCategory] = useState("global")
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
