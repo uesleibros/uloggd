@@ -324,7 +324,7 @@ export async function handleByUser(req, res) {
 			if (screenshotIds.length > 0) {
 				const { data } = await supabase
 					.from("screenshots")
-					.select("id, user_id, image_url, caption, game_id, game_slug, game_name, is_spoiler, created_at")
+					.select("*")
 					.in("id", screenshotIds)
 				screenshots = data || []
 			}
