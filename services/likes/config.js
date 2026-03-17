@@ -32,7 +32,18 @@ export const LIKE_TYPES = {
       liker_id: likerId,
       tierlist_id: target.id,
     })
-  }
+  },
+  screenshot: {
+    table: "screenshot_likes",
+    targetColumn: "screenshot_id",
+    targetTable: "screenshots",
+    ownerColumn: "user_id",
+    notificationType: "screenshot_like",
+    getNotificationData: (target, likerId) => ({
+      liker_id: likerId,
+      screenshot_id: target.id,
+    })
+  },
 }
 
 export function getLikeConfig(type) {

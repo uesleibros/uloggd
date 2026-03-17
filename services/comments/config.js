@@ -42,7 +42,18 @@ export const COMMENT_TYPES = {
       tierlist_id: targetId,
       comment_id: commentId
     })
-  }
+  },
+  screenshot: {
+    targetTable: "screenshots",
+    targetColumn: "id",
+    ownerColumn: "user_id",
+    notificationType: "screenshot_comment",
+    getNotificationData: (targetId, commenterId, commentId) => ({
+      commenter_id: commenterId,
+      screenshot_id: targetId,
+      comment_id: commentId
+    })
+  },
 }
 
 export function getCommentConfig(type) {

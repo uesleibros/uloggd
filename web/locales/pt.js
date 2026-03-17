@@ -1292,6 +1292,12 @@ export default {
 		reviewedBy: "Revisado por {{username}}",
 		someone: "Alguém",
 		types: {
+			screenshot_like: {
+			  text: "curtiu sua screenshot",
+			},
+			screenshot_comment: {
+			  text: "comentou na sua screenshot",
+			},
 			follow: {
 				text: "começou a te seguir",
 			},

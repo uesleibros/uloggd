@@ -37,6 +37,8 @@ const NOTIFICATION_ICONS = {
   review_comment: { icon: MessageCircle, color: "text-pink-400" },
   list_comment: { icon: MessageCircle, color: "text-blue-400" },
   tierlist_comment: { icon: MessageCircle, color: "text-purple-400" },
+  screenshot_like: { icon: ThumbsUp, color: "text-cyan-400" },
+  screenshot_comment: { icon: MessageCircle, color: "text-cyan-400" },
 }
 
 const NOTIFICATION_USER_ID_MAP = {
@@ -53,6 +55,8 @@ const NOTIFICATION_USER_ID_MAP = {
   review_comment: (data) => data.commenter_id,
   list_comment: (data) => data.commenter_id,
   tierlist_comment: (data) => data.commenter_id,
+  screenshot_like: (data) => data.liker_id,
+  screenshot_comment: (data) => data.commenter_id,
 }
 
 const NOTIFICATION_LINKS = {
