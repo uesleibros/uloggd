@@ -9,6 +9,7 @@ import TierlistsSection from "@components/Tierlist/TierlistsSection"
 import TransactionsSection from "./TransactionsSection"
 import JourneysSection from "@components/Game/Journal/JourneysSection"
 import CommentSection from "@components/UI/CommentSection"
+import ScreenshotsSection from "@components/Screenshots/ScreenshotsSection"
 
 export function ProfileContent({
   activeSection,
@@ -68,6 +69,7 @@ export function ProfileContent({
             profileId={profile.user_id}
             onEdit={onEditProfile}
           />
+          <ScreenshotsSection userId={profile.user_id} isOwnProfile={isOwnProfile} />
           <CommentSection type="profile" targetId={profile.user_id} />
         </div>
       )}
