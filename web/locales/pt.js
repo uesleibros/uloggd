@@ -1056,6 +1056,7 @@ export default {
 			noRatings: "Nenhuma avaliação ainda",
 			noRatingsHint: "Avalie jogos para ver suas estatísticas",
 	    tendency: {
+				label: "Tendência",
 	      generous: "Generoso",
 	      positive: "Positivo",
 	      balanced: "Equilibrado",
