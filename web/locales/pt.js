@@ -1,4 +1,28 @@
 export default {
+	leaderboard: {
+	  title: "Ranking",
+	  subtitle: "Os melhores da comunidade",
+	  description: "Veja quem está no topo do ranking da comunidade uloggd",
+	  participants: "participantes",
+	  avgRating: "média",
+	  followers: "seguidores",
+	  categories: {
+	    minerals: "Minérios",
+	    reviews: "Reviews",
+	    followers: "Seguidores",
+	    likes: "Curtidas",
+	  },
+	  units: {
+	    minerals: "pontos",
+	    reviews: "reviews",
+	    followers: "seguidores",
+	    likes: "curtidas",
+	  },
+	  empty: {
+	    title: "Nenhum dado ainda",
+	    description: "Seja o primeiro a aparecer no ranking!",
+	  },
+	},
 	screenshots: {
 	  title: "Capturas de tela",
 	  add: "Adicionar",
