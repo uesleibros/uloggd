@@ -117,19 +117,36 @@ async function getMineralsLeaderboard(limit, offset) {
 async function getReviewsLeaderboard(limit, offset) {
   const { data: reviews, error } = await supabase
     .from("reviews")
-    .select("user_id, rating")
+    .select("user_id, rating, aspect_ratings")
 
   if (error) throw error
 
   const statsMap = {}
+
   for (const r of reviews || []) {
     if (!statsMap[r.user_id]) {
       statsMap[r.user_id] = { count: 0, ratingSum: 0, ratingCount: 0 }
     }
     statsMap[r.user_id].count++
-    if (r.rating !== null && r.rating !== "") {
+
+    if (r.rating !== null && r.rating !== undefined && r.rating !== "") {
       const parsed = parseFloat(r.rating)
       if (!isNaN(parsed)) {
+        statsMap[r.user_id].ratingSum += parsed / 20
+        statsMap[r.user_id].ratingCount++
+      }
+    }
+
+    let aspects = r.aspect_ratings
+    if (typeof aspects === "string") {
+      try { aspects = JSON.parse(aspects) } catch { aspects = null }
+    }
+
+    if (Array.isArray(aspects)) {
+      for (const aspect of aspects) {
+        if (aspect.rating === null || aspect.rating === undefined) continue
+        const parsed = parseFloat(aspect.rating)
+        if (isNaN(parsed)) continue
         statsMap[r.user_id].ratingSum += parsed / 20
         statsMap[r.user_id].ratingCount++
       }
@@ -137,14 +154,18 @@ async function getReviewsLeaderboard(limit, offset) {
   }
 
   const sorted = Object.entries(statsMap)
+    .filter(([, stats]) => stats.count > 0)
     .map(([user_id, stats]) => ({
       user_id,
       value: stats.count,
       avgRating: stats.ratingCount > 0
-        ? parseFloat((stats.ratingSum / stats.ratingCount).toFixed(1))
-        : null,
+        ? parseFloat((stats.ratingSum / stats.ratingCount).toFixed(2))
+        : 0,
     }))
-    .sort((a, b) => b.value - a.value)
+    .sort((a, b) => {
+      if (b.value !== a.value) return b.value - a.value
+      return b.avgRating - a.avgRating
+    })
 
   const total = sorted.length
   const paginated = sorted.slice(offset, offset + limit)
@@ -263,14 +284,16 @@ async function getAspectRatingsLeaderboard(limit, offset) {
   }
 
   const sorted = Object.entries(statsMap)
+    .filter(([, stats]) => stats.count > 0)
     .map(([user_id, stats]) => ({
       user_id,
       value: stats.count,
-      avgRating: stats.count > 0
-        ? parseFloat((stats.sum / stats.count).toFixed(2))
-        : null,
+      avgRating: parseFloat((stats.sum / stats.count).toFixed(2)),
     }))
-    .sort((a, b) => b.value - a.value)
+    .sort((a, b) => {
+      if (b.value !== a.value) return b.value - a.value
+      return b.avgRating - a.avgRating
+    })
 
   const total = sorted.length
   const paginated = sorted.slice(offset, offset + limit)
