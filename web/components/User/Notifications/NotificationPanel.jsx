@@ -16,7 +16,8 @@ import {
   LayoutGrid,
   MessageCircle,
   X,
-  Camera
+  Camera,
+  Reply
 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
@@ -40,6 +41,7 @@ const NOTIFICATION_ICONS = {
   tierlist_comment: { icon: MessageCircle, color: "text-purple-400" },
   screenshot_like: { icon: Camera, color: "text-teal-400" },
   screenshot_comment: { icon: Camera, color: "text-teal-400" },
+  comment_reply: { icon: Reply, color: "text-orange-400" },
 }
 
 const NOTIFICATION_USER_ID_MAP = {
@@ -58,6 +60,25 @@ const NOTIFICATION_USER_ID_MAP = {
   tierlist_comment: (data) => data.commenter_id,
   screenshot_like: (data) => data.liker_id,
   screenshot_comment: (data) => data.commenter_id,
+  comment_reply: (data) => data.replier_id,
+}
+
+function getCommentReplyLink(data, users) {
+  const { target_type, target_id } = data
+  switch (target_type) {
+    case "profile":
+      return `/u/${users[data.profile_user_id]?.username || target_id}`
+    case "review":
+      return `/review/${target_id}`
+    case "list":
+      return `/list/${encode(target_id)}`
+    case "tierlist":
+      return `/tierlist/${encode(target_id)}`
+    case "screenshot":
+      return `/screenshot/${target_id}`
+    default:
+      return "/"
+  }
 }
 
 const NOTIFICATION_LINKS = {
@@ -71,6 +92,7 @@ const NOTIFICATION_LINKS = {
   review_like: (data) => `/review/${data.review_id}`,
   screenshot_like: (data) => `/screenshot/${data.screenshot_id}`,
   screenshot_comment: (data) => `/screenshot/${data.screenshot_id}`,
+  comment_reply: getCommentReplyLink,
 }
 
 const MODAL_NOTIFICATIONS = [
@@ -120,6 +142,8 @@ function getNotificationText(type, data, t) {
       return t("notifications.types.screenshot_like.text")
     case "screenshot_comment":
       return t("notifications.types.screenshot_comment.text")
+    case "comment_reply":
+      return t("notifications.types.comment_reply.text")
     default:
       return ""
   }
@@ -385,6 +409,15 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         if (n.data.review_id) reviewIds.add(n.data.review_id)
         if (n.data.comment_id) commentIds.add(n.data.comment_id)
         if (n.data.screenshot_id) screenshotIds.add(n.data.screenshot_id)
+        if (n.type === "comment_reply" && n.data.target_type === "list" && n.data.target_id) {
+          listIds.add(n.data.target_id)
+        }
+        if (n.type === "comment_reply" && n.data.target_type === "tierlist" && n.data.target_id) {
+          tierlistIds.add(n.data.target_id)
+        }
+        if (n.type === "comment_reply" && n.data.target_type === "review" && n.data.target_id) {
+          reviewIds.add(n.data.target_id)
+        }
       })
 
       const [usersData, listsData, tierlistsData, reviewsData, commentsData] = await Promise.all([
@@ -430,6 +463,17 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         }
         if (n.data.comment_id && commentsMap[n.data.comment_id]) {
           enriched.data.content = commentsMap[n.data.comment_id].content
+        }
+        if (n.type === "comment_reply") {
+          if (n.data.target_type === "list" && listsMap[n.data.target_id]) {
+            enriched.data.list_title = listsMap[n.data.target_id].title
+          }
+          if (n.data.target_type === "tierlist" && tierlistsMap[n.data.target_id]) {
+            enriched.data.tierlist_title = tierlistsMap[n.data.target_id].title
+          }
+          if (n.data.target_type === "review" && reviewsMap[n.data.target_id]) {
+            enriched.data.game_name = reviewsMap[n.data.target_id].game_name
+          }
         }
 
         return enriched
