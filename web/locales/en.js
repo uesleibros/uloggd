@@ -8,6 +8,7 @@ export default {
 	  followersLabel: "followers",
 		journeyEntries: "entries",
 	  categories: {
+			global: "Global",
 	    minerals: "Minerals",
 	    reviews: "Reviews",
 	    followers: "Followers",
@@ -15,6 +16,7 @@ export default {
 		  playtime: "Playtime"
 	  },
 	  units: {
+			global: "points",
 	    minerals: "minerals",
 	    reviews: "reviews",
 	    followers: "followers",
