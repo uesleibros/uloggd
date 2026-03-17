@@ -7,6 +7,7 @@ const MyLibraryContext = createContext(null)
 export function MyLibraryProvider({ children }) {
   const { user } = useAuth()
   const [games, setGames] = useState({})
+  const [covers, setCovers] = useState({})
   const [loaded, setLoaded] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const refreshTimeoutRef = useRef(null)
@@ -15,6 +16,7 @@ export function MyLibraryProvider({ children }) {
   const fetchGames = useCallback(async (signal) => {
     if (!user) {
       setGames({})
+      setCovers({})
       setLoaded(true)
       return
     }
@@ -33,6 +35,7 @@ export function MyLibraryProvider({ children }) {
       if (res.ok && !signal?.aborted) {
         const data = await res.json()
         setGames(data.games || {})
+        setCovers(data.covers || {})
       }
     } catch (e) {
       if (e.name !== "AbortError") {
@@ -62,6 +65,10 @@ export function MyLibraryProvider({ children }) {
   const getGameData = useCallback((slug) => {
     return games[slug] || null
   }, [games])
+
+  const getCustomCover = useCallback((slug) => {
+    return covers[slug] || null
+  }, [covers])
 
   const getRating = useCallback((slug) => {
     return games[slug]?.avgRating || null
@@ -101,6 +108,12 @@ export function MyLibraryProvider({ children }) {
         ...data,
       },
     }))
+    if (data.customCoverUrl !== undefined) {
+      setCovers(prev => ({
+        ...prev,
+        [slug]: data.customCoverUrl,
+      }))
+    }
   }, [])
 
   const removeGame = useCallback((slug) => {
@@ -114,9 +127,11 @@ export function MyLibraryProvider({ children }) {
   return (
     <MyLibraryContext.Provider value={{
       games,
+      covers,
       loaded,
       refreshing,
       getGameData,
+      getCustomCover,
       getRating,
       refresh,
       updateGame,
@@ -133,9 +148,11 @@ export function useMyLibrary() {
   if (!ctx) {
     return {
       games: {},
+      covers: {},
       loaded: true,
       refreshing: false,
       getGameData: () => null,
+      getCustomCover: () => null,
       getRating: () => null,
       refresh: () => {},
       updateGame: () => {},
