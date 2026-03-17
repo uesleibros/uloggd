@@ -66,7 +66,12 @@ export default function ReviewButton({ game }) {
         if (res.ok && !signal?.aborted) {
           const data = await res.json()
           setReviews(data)
-          setSelectedReview((prev) => prev ?? data[0] ?? null)
+          
+          setSelectedReview((prev) => {
+            if (!prev) return data[0] ?? null
+            const updated = data.find(r => r.id === prev.id)
+            return updated ?? data[0] ?? null
+          })
         }
       } catch (e) {
         if (e?.name === "AbortError") return
