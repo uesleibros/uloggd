@@ -276,6 +276,7 @@ function ScreenshotDetailModal({ screenshot, screenshots, owner, isOpen, onClose
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [touchStart, setTouchStart] = useState(null)
   const [touchEnd, setTouchEnd] = useState(null)
+  const [imageAspect, setImageAspect] = useState(null)
   const menuRef = useRef(null)
 
   const minSwipeDistance = 50
@@ -284,7 +285,17 @@ function ScreenshotDetailModal({ screenshot, screenshots, owner, isOpen, onClose
     setRevealed(false)
     setShowMenu(false)
     setConfirmDelete(false)
+    setImageAspect(null)
   }, [screenshot])
+
+  useEffect(() => {
+    if (!screenshot?.image_url) return
+    const img = new Image()
+    img.onload = () => {
+      setImageAspect(img.width / img.height)
+    }
+    img.src = screenshot.image_url
+  }, [screenshot?.image_url])
 
   useEffect(() => {
     if (!isOpen) return
@@ -314,6 +325,9 @@ function ScreenshotDetailModal({ screenshot, screenshots, owner, isOpen, onClose
   const isSpoilerHidden = screenshot.is_spoiler && !revealed
   const hasPrev = currentIndex > 0
   const hasNext = currentIndex < screenshots.length - 1
+
+  const isUltrawide = imageAspect && imageAspect > 2
+  const isWide = imageAspect && imageAspect > 1.5
 
   function handlePrev() {
     if (hasPrev) onNavigate(screenshots[currentIndex - 1])
@@ -345,45 +359,59 @@ function ScreenshotDetailModal({ screenshot, screenshots, owner, isOpen, onClose
     <Modal 
       isOpen={isOpen} 
       onClose={onClose} 
-      maxWidth="max-w-6xl" 
+      maxWidth="max-w-7xl" 
       showCloseButton={false} 
       fullscreenMobile
       noScroll
       className="!rounded-none md:!rounded-xl overflow-hidden"
     >
-      <div className="flex flex-col md:flex-row h-full md:h-auto md:max-h-[90vh] bg-black md:bg-zinc-900">
+      <div className={`flex flex-col h-full bg-black md:bg-zinc-900 ${
+        isUltrawide ? "md:flex-col" : "md:flex-row md:h-auto md:max-h-[90vh]"
+      }`}>
         <div 
-          className="relative flex-1 bg-black flex items-center justify-center"
+          className={`relative bg-black flex items-center justify-center ${
+            isUltrawide 
+              ? "w-full" 
+              : "flex-1 min-h-[35vh] md:min-h-[500px]"
+          }`}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          <div className="relative w-full h-full flex items-center justify-center min-h-[35vh] md:min-h-[500px] md:max-h-[90vh]">
-            {isSpoilerHidden ? (
-              <>
-                <img 
-                  src={screenshot.image_url} 
-                  alt="" 
-                  className="absolute inset-0 w-full h-full object-contain blur-3xl opacity-30 scale-110" 
-                />
-                <button
-                  onClick={() => setRevealed(true)}
-                  className="relative z-10 flex flex-col items-center justify-center gap-3 cursor-pointer group"
-                >
-                  <div className="w-16 h-16 rounded-full bg-zinc-800/80 backdrop-blur flex items-center justify-center group-hover:bg-zinc-700/80 transition-colors">
-                    <EyeOff className="w-7 h-7 text-zinc-400" />
-                  </div>
-                  <span className="text-sm font-medium text-zinc-400">{t("lightbox.revealSpoiler")}</span>
-                </button>
-              </>
-            ) : (
+          {isSpoilerHidden ? (
+            <div className="relative w-full h-full min-h-[200px] flex items-center justify-center">
+              <img 
+                src={screenshot.image_url} 
+                alt="" 
+                className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-30 scale-110" 
+              />
+              <button
+                onClick={() => setRevealed(true)}
+                className="relative z-10 flex flex-col items-center justify-center gap-3 cursor-pointer group"
+              >
+                <div className="w-16 h-16 rounded-full bg-zinc-800/80 backdrop-blur flex items-center justify-center group-hover:bg-zinc-700/80 transition-colors">
+                  <EyeOff className="w-7 h-7 text-zinc-400" />
+                </div>
+                <span className="text-sm font-medium text-zinc-400">{t("lightbox.revealSpoiler")}</span>
+              </button>
+            </div>
+          ) : (
+            <div className={`flex items-center justify-center p-2 md:p-4 ${
+              isUltrawide ? "w-full" : "w-full h-full"
+            }`}>
               <img 
                 src={screenshot.image_url} 
                 alt={screenshot.caption || ""} 
-                className="max-w-full max-h-full w-auto h-auto object-contain" 
+                className={`${
+                  isUltrawide 
+                    ? "w-full h-auto max-h-[50vh] md:max-h-[60vh] object-contain" 
+                    : isWide
+                      ? "w-full max-h-[40vh] md:max-h-[80vh] object-contain"
+                      : "max-w-full max-h-[40vh] md:max-h-[80vh] object-contain"
+                }`}
               />
-            )}
-          </div>
+            </div>
+          )}
 
           {hasPrev && (
             <button
@@ -439,7 +467,11 @@ function ScreenshotDetailModal({ screenshot, screenshots, owner, isOpen, onClose
           </button>
         </div>
 
-        <div className="w-full md:w-[400px] flex-shrink-0 flex flex-col bg-zinc-900 border-t md:border-t-0 md:border-l border-zinc-800 max-h-[60vh] md:max-h-none">
+        <div className={`flex-shrink-0 flex flex-col bg-zinc-900 border-t md:border-t-0 md:border-l border-zinc-800 ${
+          isUltrawide 
+            ? "w-full max-h-[50vh] md:max-h-[40vh]" 
+            : "w-full md:w-[400px] max-h-[60vh] md:max-h-none"
+        }`}>
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 flex-shrink-0">
             <div className="flex items-center gap-3 min-w-0">
               {owner && (
