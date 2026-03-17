@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom"
 import {
   Trophy, Gem, MessageSquare, Users, Heart,
-  Crown, Medal, Award, ChevronLeft, ChevronRight
+  Crown, Medal, Award, ChevronLeft, ChevronRight,
+  Star, List, LayoutGrid, Camera
 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
@@ -18,18 +19,51 @@ const CATEGORIES = [
   { id: "likes", icon: Heart },
 ]
 
-const RANK_STYLES = {
-  1: { icon: Crown, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30" },
-  2: { icon: Medal, color: "text-zinc-300", bg: "bg-zinc-400/10", border: "border-zinc-400/30" },
-  3: { icon: Award, color: "text-amber-600", bg: "bg-amber-700/10", border: "border-amber-600/30" },
+const RANK_CONFIG = {
+  1: { 
+    icon: Crown, 
+    color: "text-amber-400", 
+    bg: "bg-gradient-to-br from-amber-500/20 to-amber-600/5", 
+    border: "border-amber-500/40",
+    glow: "shadow-amber-500/10"
+  },
+  2: { 
+    icon: Medal, 
+    color: "text-zinc-300", 
+    bg: "bg-gradient-to-br from-zinc-400/15 to-zinc-500/5", 
+    border: "border-zinc-400/40",
+    glow: "shadow-zinc-400/10"
+  },
+  3: { 
+    icon: Award, 
+    color: "text-amber-600", 
+    bg: "bg-gradient-to-br from-amber-700/15 to-amber-800/5", 
+    border: "border-amber-600/40",
+    glow: "shadow-amber-600/10"
+  },
 }
 
 function LeaderboardSkeleton() {
   return (
-    <div className="space-y-2">
-      {[...Array(10)].map((_, i) => (
+    <div className="space-y-3">
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        {[2, 1, 3].map((rank) => (
+          <div 
+            key={rank} 
+            className={`p-4 bg-zinc-800/30 rounded-2xl animate-pulse ${rank === 1 ? "order-2" : rank === 2 ? "order-1" : "order-3"}`}
+          >
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-zinc-700 rounded-full mb-3" />
+              <div className="w-16 h-16 bg-zinc-700 rounded-full mb-3" />
+              <div className="w-20 h-4 bg-zinc-700 rounded mb-2" />
+              <div className="w-12 h-3 bg-zinc-800 rounded" />
+            </div>
+          </div>
+        ))}
+      </div>
+      {[...Array(7)].map((_, i) => (
         <div key={i} className="flex items-center gap-4 p-4 bg-zinc-800/30 rounded-xl animate-pulse">
-          <div className="w-8 h-6 bg-zinc-700 rounded" />
+          <div className="w-6 h-6 bg-zinc-700 rounded" />
           <div className="w-10 h-10 bg-zinc-700 rounded-full" />
           <div className="flex-1 space-y-2">
             <div className="w-32 h-4 bg-zinc-700 rounded" />
@@ -76,20 +110,71 @@ function CategoryTabs({ active, onChange, t }) {
   )
 }
 
-function RankBadge({ rank }) {
-  const style = RANK_STYLES[rank]
+function TopThreePodium({ entries, category, t }) {
+  if (entries.length < 3) return null
 
-  if (style) {
-    const Icon = style.icon
-    return (
-      <div className={`w-8 h-8 rounded-full ${style.bg} border ${style.border} flex items-center justify-center`}>
-        <Icon className={`w-4 h-4 ${style.color}`} />
-      </div>
-    )
-  }
+  const ordered = [entries[1], entries[0], entries[2]]
 
   return (
-    <div className="w-8 h-8 rounded-full bg-zinc-800/50 flex items-center justify-center">
+    <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
+      {ordered.map((entry, idx) => {
+        const rank = idx === 0 ? 2 : idx === 1 ? 1 : 3
+        const config = RANK_CONFIG[rank]
+        const Icon = config.icon
+        const isFirst = rank === 1
+
+        return (
+          <Link
+            key={entry.user?.id || rank}
+            to={`/u/${entry.user?.username}`}
+            className={`group relative p-3 sm:p-4 rounded-2xl border transition-all hover:scale-[1.02] ${config.bg} ${config.border} ${
+              isFirst ? "sm:-mt-2" : "mt-2 sm:mt-4"
+            }`}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full ${config.bg} border ${config.border} flex items-center justify-center mb-2 sm:mb-3`}>
+                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${config.color}`} />
+              </div>
+
+              <div className={`relative ${isFirst ? "w-14 h-14 sm:w-18 sm:h-18" : "w-12 h-12 sm:w-14 sm:h-14"}`}>
+                <AvatarWithDecoration
+                  src={entry.user?.avatar}
+                  alt={entry.user?.username}
+                  decorationUrl={entry.user?.equipped?.avatar_decoration?.asset_url}
+                  size={isFirst ? "md" : "sm"}
+                />
+              </div>
+
+              <div className="mt-2 sm:mt-3 w-full min-w-0">
+                <div className="flex items-center justify-center gap-1 mb-0.5">
+                  <span className={`text-xs sm:text-sm font-semibold truncate max-w-full ${isFirst ? "text-white" : "text-zinc-200"}`}>
+                    {entry.user?.username || "Unknown"}
+                  </span>
+                </div>
+                <div className="flex justify-center">
+                  <UserBadges user={entry.user} size="xs" />
+                </div>
+              </div>
+
+              <div className="mt-2 sm:mt-3">
+                <span className={`text-base sm:text-xl font-bold tabular-nums ${config.color}`}>
+                  {entry.value.toLocaleString()}
+                </span>
+                <p className="text-[9px] sm:text-[10px] text-zinc-500 mt-0.5">
+                  {t(`leaderboard.units.${category}`)}
+                </p>
+              </div>
+            </div>
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
+
+function RankNumber({ rank }) {
+  return (
+    <div className="w-6 flex-shrink-0 text-center">
       <span className="text-sm font-bold text-zinc-500 tabular-nums">{rank}</span>
     </div>
   )
@@ -100,11 +185,11 @@ function MineralBreakdown({ breakdown }) {
   if (nonZero.length === 0) return null
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex items-center gap-1.5 flex-wrap">
       {nonZero.slice(0, 4).map(mineral => (
-        <div key={mineral.key} className="flex items-center gap-1">
+        <div key={mineral.key} className="flex items-center gap-0.5">
           <div
-            className="w-3 h-3 rounded-full"
+            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
             style={{ backgroundColor: mineral.color }}
           />
           <span className="text-[10px] text-zinc-500 tabular-nums">
@@ -119,25 +204,21 @@ function MineralBreakdown({ breakdown }) {
   )
 }
 
-function LikesBreakdown({ breakdown, t }) {
+function LikesBreakdown({ breakdown }) {
   const items = [
     { key: "reviews", icon: MessageSquare },
-    { key: "lists", icon: null, label: "L" },
-    { key: "tierlists", icon: null, label: "T" },
-    { key: "screenshots", icon: null, label: "S" },
+    { key: "lists", icon: List },
+    { key: "tierlists", icon: LayoutGrid },
+    { key: "screenshots", icon: Camera },
   ].filter(item => breakdown[item.key] > 0)
 
   if (items.length === 0) return null
 
   return (
     <div className="flex items-center gap-2">
-      {items.map(({ key, icon: Icon, label }) => (
+      {items.map(({ key, icon: Icon }) => (
         <div key={key} className="flex items-center gap-0.5">
-          {Icon ? (
-            <Icon className="w-3 h-3 text-zinc-600" />
-          ) : (
-            <span className="text-[9px] text-zinc-600 font-medium">{label}</span>
-          )}
+          <Icon className="w-2.5 h-2.5 text-zinc-600" />
           <span className="text-[10px] text-zinc-500 tabular-nums">
             {breakdown[key]}
           </span>
@@ -149,18 +230,13 @@ function LikesBreakdown({ breakdown, t }) {
 
 function LeaderboardEntry({ entry, category, t }) {
   const { rank, user, value, breakdown, avgRating } = entry
-  const isTop3 = rank <= 3
 
   return (
     <Link
       to={`/u/${user?.username}`}
-      className={`group flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border transition-all ${
-        isTop3
-          ? `${RANK_STYLES[rank]?.bg || "bg-zinc-800/30"} ${RANK_STYLES[rank]?.border || "border-zinc-700/50"} hover:border-zinc-600`
-          : "bg-zinc-800/20 border-zinc-800/50 hover:bg-zinc-800/40 hover:border-zinc-700"
-      }`}
+      className="group flex items-center gap-3 p-3 rounded-xl bg-zinc-800/20 border border-zinc-800/50 hover:bg-zinc-800/40 hover:border-zinc-700/50 transition-all"
     >
-      <RankBadge rank={rank} />
+      <RankNumber rank={rank} />
 
       <AvatarWithDecoration
         src={user?.avatar}
@@ -170,8 +246,8 @@ function LeaderboardEntry({ entry, category, t }) {
       />
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className={`text-sm font-semibold truncate ${isTop3 ? "text-white" : "text-zinc-200"}`}>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm font-medium text-zinc-200 truncate group-hover:text-white transition-colors">
             {user?.username || "Unknown"}
           </span>
           <UserBadges user={user} size="xs" />
@@ -182,79 +258,81 @@ function LeaderboardEntry({ entry, category, t }) {
             <MineralBreakdown breakdown={breakdown} />
           )}
           {category === "reviews" && avgRating && (
-            <span className="text-[11px] text-amber-400/70">
-              ★ {avgRating} {t("leaderboard.avgRating")}
-            </span>
+            <div className="flex items-center gap-1">
+              <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+              <span className="text-[10px] text-zinc-500">
+                {avgRating} {t("leaderboard.avgRating")}
+              </span>
+            </div>
           )}
           {category === "likes" && breakdown && (
-            <LikesBreakdown breakdown={breakdown} t={t} />
+            <LikesBreakdown breakdown={breakdown} />
           )}
           {category === "followers" && (
-            <span className="text-[11px] text-zinc-600">
-              {t("leaderboard.followers")}
+            <span className="text-[10px] text-zinc-600">
+              {t("leaderboard.followersLabel")}
             </span>
           )}
         </div>
       </div>
 
       <div className="flex-shrink-0 text-right">
-        <div className={`text-base sm:text-lg font-bold tabular-nums ${isTop3 ? RANK_STYLES[rank]?.color : "text-white"}`}>
+        <span className="text-sm font-bold text-white tabular-nums">
           {value.toLocaleString()}
-        </div>
-        <div className="text-[10px] text-zinc-600">
-          {t(`leaderboard.units.${category}`)}
-        </div>
+        </span>
       </div>
     </Link>
   )
 }
 
-function Pagination({ page, totalPages, onChange, t }) {
+function Pagination({ page, totalPages, onChange }) {
   if (totalPages <= 1) return null
 
+  const getPages = () => {
+    const pages = []
+    const maxVisible = 5
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+    } else if (page <= 3) {
+      for (let i = 1; i <= maxVisible; i++) pages.push(i)
+    } else if (page >= totalPages - 2) {
+      for (let i = totalPages - maxVisible + 1; i <= totalPages; i++) pages.push(i)
+    } else {
+      for (let i = page - 2; i <= page + 2; i++) pages.push(i)
+    }
+
+    return pages
+  }
+
   return (
-    <div className="flex items-center justify-center gap-2 mt-6">
+    <div className="flex items-center justify-center gap-1.5 mt-8">
       <button
         onClick={() => onChange(page - 1)}
         disabled={page <= 1}
-        className="p-2 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+        className="w-9 h-9 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-zinc-800/50 disabled:hover:border-zinc-700/50 disabled:hover:text-zinc-400 transition-all cursor-pointer flex items-center justify-center"
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
 
-      <div className="flex items-center gap-1">
-        {[...Array(Math.min(totalPages, 5))].map((_, i) => {
-          let pageNum
-          if (totalPages <= 5) {
-            pageNum = i + 1
-          } else if (page <= 3) {
-            pageNum = i + 1
-          } else if (page >= totalPages - 2) {
-            pageNum = totalPages - 4 + i
-          } else {
-            pageNum = page - 2 + i
-          }
-
-          return (
-            <button
-              key={pageNum}
-              onClick={() => onChange(pageNum)}
-              className={`w-8 h-8 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-                page === pageNum
-                  ? "bg-indigo-500 text-white"
-                  : "bg-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800"
-              }`}
-            >
-              {pageNum}
-            </button>
-          )
-        })}
-      </div>
+      {getPages().map(pageNum => (
+        <button
+          key={pageNum}
+          onClick={() => onChange(pageNum)}
+          className={`w-9 h-9 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+            page === pageNum
+              ? "bg-indigo-500 text-white"
+              : "bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-600"
+          }`}
+        >
+          {pageNum}
+        </button>
+      ))}
 
       <button
         onClick={() => onChange(page + 1)}
         disabled={page >= totalPages}
-        className="p-2 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+        className="w-9 h-9 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-zinc-800/50 disabled:hover:border-zinc-700/50 disabled:hover:text-zinc-400 transition-all cursor-pointer flex items-center justify-center"
       >
         <ChevronRight className="w-4 h-4" />
       </button>
@@ -266,14 +344,14 @@ function EmptyState({ category, t }) {
   const Icon = CATEGORIES.find(c => c.id === category)?.icon || Trophy
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-14 h-14 rounded-full bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mb-4">
-        <Icon className="w-6 h-6 text-zinc-600" />
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="w-16 h-16 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mb-4">
+        <Icon className="w-7 h-7 text-zinc-600" />
       </div>
       <h3 className="text-base font-semibold text-zinc-300 mb-1">
         {t("leaderboard.empty.title")}
       </h3>
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-zinc-500 max-w-xs">
         {t("leaderboard.empty.description")}
       </p>
     </div>
@@ -320,10 +398,14 @@ export default function LeaderboardPage() {
     setPage(1)
   }
 
+  const topThree = data.slice(0, 3)
+  const rest = data.slice(3)
+  const showPodium = page === 1 && topThree.length === 3
+
   return (
-    <div className="py-6 sm:py-10 max-w-3xl mx-auto">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
+    <div className="py-6 sm:py-10 max-w-2xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
             <Trophy className="w-5 h-5 text-indigo-400" />
           </div>
@@ -331,46 +413,53 @@ export default function LeaderboardPage() {
             <h1 className="text-xl sm:text-2xl font-bold text-white">
               {t("leaderboard.title")}
             </h1>
-            <p className="text-sm text-zinc-500">
+            <p className="text-xs sm:text-sm text-zinc-500">
               {t("leaderboard.subtitle")}
             </p>
           </div>
         </div>
+        {!loading && total > 0 && (
+          <div className="text-right hidden sm:block">
+            <span className="text-lg font-bold text-white tabular-nums">
+              {total.toLocaleString()}
+            </span>
+            <p className="text-xs text-zinc-500">{t("leaderboard.participants")}</p>
+          </div>
+        )}
       </div>
 
       <CategoryTabs active={category} onChange={handleCategoryChange} t={t} />
 
-      <div className="mt-4">
-        {!loading && total > 0 && (
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-zinc-500">
-              {total.toLocaleString()} {t("leaderboard.participants")}
-            </span>
-          </div>
-        )}
-
+      <div className="mt-6">
         {loading ? (
           <LeaderboardSkeleton />
         ) : data.length === 0 ? (
           <EmptyState category={category} t={t} />
         ) : (
-          <div className="space-y-2">
-            {data.map(entry => (
-              <LeaderboardEntry
-                key={entry.user?.id || entry.rank}
-                entry={entry}
-                category={category}
-                t={t}
-              />
-            ))}
-          </div>
+          <>
+            {showPodium && (
+              <TopThreePodium entries={topThree} category={category} t={t} />
+            )}
+
+            {(showPodium ? rest : data).length > 0 && (
+              <div className="space-y-2">
+                {(showPodium ? rest : data).map(entry => (
+                  <LeaderboardEntry
+                    key={entry.user?.id || entry.rank}
+                    entry={entry}
+                    category={category}
+                    t={t}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         <Pagination
           page={page}
           totalPages={totalPages}
           onChange={setPage}
-          t={t}
         />
       </div>
     </div>
