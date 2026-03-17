@@ -376,11 +376,12 @@ async function getFollowersLeaderboard(limit, offset) {
 }
 
 async function getLikesLeaderboard(limit, offset) {
-  const [reviewLikes, listLikes, tierlistLikes, screenshotLikes] = await Promise.all([
+  const [reviewLikes, listLikes, tierlistLikes, screenshotLikes, gameLikes] = await Promise.all([
     getReviewLikesPerUser(),
     getListLikesPerUser(),
     getTierlistLikesPerUser(),
     getScreenshotLikesPerUser(),
+    getGameLikesPerUser(),
   ])
 
   const countMap = {}
@@ -390,7 +391,7 @@ async function getLikesLeaderboard(limit, offset) {
     for (const [userId, count] of Object.entries(likes)) {
       countMap[userId] = (countMap[userId] || 0) + count
       if (!breakdownMap[userId]) {
-        breakdownMap[userId] = { reviews: 0, lists: 0, tierlists: 0, screenshots: 0 }
+        breakdownMap[userId] = { reviews: 0, lists: 0, tierlists: 0, screenshots: 0, games: 0 }
       }
       breakdownMap[userId][type] = count
     }
@@ -400,6 +401,7 @@ async function getLikesLeaderboard(limit, offset) {
   addLikes(listLikes, "lists")
   addLikes(tierlistLikes, "tierlists")
   addLikes(screenshotLikes, "screenshots")
+  addLikes(gameLikes, "games")
 
   const sorted = Object.entries(countMap)
     .map(([user_id, count]) => ({ user_id, value: count }))
@@ -412,10 +414,49 @@ async function getLikesLeaderboard(limit, offset) {
     rank: offset + i + 1,
     user_id: item.user_id,
     value: item.value,
-    breakdown: breakdownMap[item.user_id] || { reviews: 0, lists: 0, tierlists: 0, screenshots: 0 },
+    breakdown: breakdownMap[item.user_id] || { reviews: 0, lists: 0, tierlists: 0, screenshots: 0, games: 0 },
   }))
 
   return { entries, total }
+}
+
+async function getGameLikesPerUser() {
+  const [reviewsRes, userGamesRes] = await Promise.all([
+    supabase
+      .from("reviews")
+      .select("user_id, game_slug, liked"),
+    supabase
+      .from("user_games")
+      .select("user_id, game_slug, liked"),
+  ])
+
+  const reviews = reviewsRes.data || []
+  const userGames = userGamesRes.data || []
+
+  const userLikedGames = {}
+
+  for (const ug of userGames) {
+    if (!ug.liked) continue
+    if (!userLikedGames[ug.user_id]) {
+      userLikedGames[ug.user_id] = new Set()
+    }
+    userLikedGames[ug.user_id].add(ug.game_slug)
+  }
+
+  for (const r of reviews) {
+    if (!r.liked) continue
+    if (!userLikedGames[r.user_id]) {
+      userLikedGames[r.user_id] = new Set()
+    }
+    userLikedGames[r.user_id].add(r.game_slug)
+  }
+
+  const countMap = {}
+  for (const [userId, games] of Object.entries(userLikedGames)) {
+    countMap[userId] = games.size
+  }
+
+  return countMap
 }
 
 async function getPlaytimeLeaderboard(limit, offset) {
