@@ -3,6 +3,7 @@ import { Plus } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
+import { emitReviewUpdate } from "#hooks/useReviewEvents"
 import Modal from "@components/UI/Modal"
 import { ReviewModal } from "./ReviewModal"
 import { UserReviewCard } from "./ReviewCard"
@@ -66,10 +67,10 @@ export default function ReviewButton({ game }) {
         if (res.ok && !signal?.aborted) {
           const data = await res.json()
           setReviews(data)
-          
+
           setSelectedReview((prev) => {
             if (!prev) return data[0] ?? null
-            const updated = data.find(r => r.id === prev.id)
+            const updated = data.find((r) => r.id === prev.id)
             return updated ?? data[0] ?? null
           })
         }
@@ -79,7 +80,7 @@ export default function ReviewButton({ game }) {
         if (!signal?.aborted) setLoading(false)
       }
     },
-    [user?.id, game?.id],
+    [user?.id, game?.id]
   )
 
   useEffect(() => {
@@ -106,11 +107,13 @@ export default function ReviewButton({ game }) {
   function handleClose() {
     setShowModal(false)
     fetchReviews()
+    emitReviewUpdate(game.id)
   }
 
   function handleDeleted() {
     setSelectedReview(null)
     fetchReviews()
+    emitReviewUpdate(game.id)
   }
 
   return (
@@ -125,10 +128,7 @@ export default function ReviewButton({ game }) {
               onNew={openNewReview}
             />
           )}
-          <UserReviewCard
-            review={activeReview}
-            onEdit={() => openModal(activeReview)}
-          />
+          <UserReviewCard review={activeReview} onEdit={() => openModal(activeReview)} />
           {reviews.length === 1 && (
             <button
               type="button"
@@ -155,13 +155,7 @@ export default function ReviewButton({ game }) {
         </button>
       )}
 
-      <Modal
-        isOpen={showModal}
-        onClose={handleClose}
-        raw
-        fullscreenMobile
-        className="w-full md:max-w-2xl"
-      >
+      <Modal isOpen={showModal} onClose={handleClose} raw fullscreenMobile className="w-full md:max-w-2xl">
         {showModal && (
           <ReviewModal
             game={game}
