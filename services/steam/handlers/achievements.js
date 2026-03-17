@@ -82,7 +82,10 @@ export async function handleAchievements(req, res) {
                 name: info?.displayName || a.apiname,
                 description: info?.description || "",
                 icon: info?.icon || "",
+                iconUnlocked: info?.icon || "",
+                iconLocked: info?.icongray || "",
                 hidden: info?.hidden === 1,
+                achieved: true,
                 unlockedAt: a.unlocktime
               }
             })
