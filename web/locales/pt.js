@@ -8,6 +8,7 @@ export default {
 	  followersLabel: "seguidores",
 		journeyEntries: "registros",
 	  categories: {
+			global: "Global",
 	    minerals: "Minérios",
 	    reviews: "Reviews",
 	    followers: "Seguidores",
@@ -15,6 +16,7 @@ export default {
 		  playtime: "Tempo de Jogo"
 	  },
 	  units: {
+			global: "pontos",
 	    minerals: "minérios",
 	    reviews: "reviews",
 	    followers: "seguidores",
