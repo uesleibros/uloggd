@@ -37,6 +37,7 @@ export default {
 	  emptyDesc: "Suas capturas de tela aparecerão aqui",
 	  upload: {
 	    title: "Nova publicação",
+			back: "Voltar",
 	    details: "Detalhes",
 	    dragPhotos: "Arraste fotos aqui",
 	    dragPhotosDesc: "ou clique no botão abaixo",
