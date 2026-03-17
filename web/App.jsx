@@ -16,6 +16,7 @@ import Game from "@pages/Game"
 import Profile from "@pages/Profile"
 import ListPage from "@pages/ListPage"
 import ShopPage from "@pages/Shop"
+import LeaderboardPage from "@pages/LeaderboardPage"
 import ReviewPage from "@pages/ReviewPage"
 import ScreenshotPage from "@pages/ScreenshotPage"
 import TierlistPage from "@pages/TierlistPage"
@@ -63,6 +64,7 @@ export default function App() {
 							<Route path="/about/minerals" element={<Minerals />} />
 							<Route path="/search" element={<SearchPage />} />
 							<Route path="/shop" element={<ShopPage />} />
+							<Route path="/leaderboard" element={<LeaderboardPage />} />
 							<Route path="*" element={<NotFound />} />
 						</Routes>
 					</ErrorBoundary>
