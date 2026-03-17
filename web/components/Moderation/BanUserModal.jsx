@@ -44,7 +44,7 @@ export default function BanUserModal({ isOpen, onClose, profile }) {
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          userId: profile.id,
+          userId: profile.user_id,
           reason: reason.trim(),
           durationHours: duration ? Number(duration) : null,
         }),
