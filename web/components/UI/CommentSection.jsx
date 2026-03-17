@@ -488,7 +488,7 @@ export default function CommentSection({ type, targetId }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 border-t border-zinc-800">
       <div className="flex items-center gap-2">
         <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400" />
         <h3 className="text-sm sm:text-base font-semibold text-white">{t("comments.title")}</h3>
