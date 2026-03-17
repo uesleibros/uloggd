@@ -6,17 +6,20 @@ export default {
 	  participants: "participants",
 	  avgRating: "average",
 	  followersLabel: "followers",
+		journeyEntries: "entries",
 	  categories: {
 	    minerals: "Minerals",
 	    reviews: "Reviews",
 	    followers: "Followers",
 	    likes: "Likes",
+		  playtime: "Playtime"
 	  },
 	  units: {
 	    minerals: "minerals",
 	    reviews: "reviews",
 	    followers: "followers",
 	    likes: "likes",
+			playtime: "total"
 	  },
 	  empty: {
 	    title: "No data yet",
