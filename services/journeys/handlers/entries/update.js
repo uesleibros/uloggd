@@ -9,9 +9,16 @@ export async function handleUpdateEntry(req, res) {
   if (!entryId || typeof entryId !== "number")
     return res.status(400).json({ error: "invalid entryId" })
 
+  const h = hours ?? 0
+  const m = minutes ?? 0
+  const totalMinutes = h * 60 + m
+
+  if (totalMinutes > 1440)
+    return res.status(400).json({ error: "max 24 hours per entry" })
+
   const validationError = runValidations([
     { check: validateDate, args: [playedOn] },
-    { check: validateTime, args: [hours ?? 0, minutes ?? 0] },
+    { check: validateTime, args: [h, m] },
   ])
   if (validationError) return res.status(400).json({ error: validationError })
 
@@ -36,8 +43,8 @@ export async function handleUpdateEntry(req, res) {
       .from("journey_entries")
       .update({
         played_on: playedOn || undefined,
-        hours: hours ?? 0,
-        minutes: minutes ?? 0,
+        hours: h,
+        minutes: m,
         note: sanitize(note, LIMITS.MAX_NOTE),
       })
       .eq("id", entryId)
