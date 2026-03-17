@@ -196,7 +196,7 @@ export default function TierlistPage() {
     try {
       const token = (await supabase.auth.getSession())?.data?.session?.access_token
 
-      const r = await fetch("/api/tierlists/@me/save", {
+      const r = await fetch("/api/tierlists/@me/update", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
