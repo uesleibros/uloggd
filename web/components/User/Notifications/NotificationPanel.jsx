@@ -68,6 +68,8 @@ const NOTIFICATION_LINKS = {
   tierlist_comment: (data) => `/tierlist/${encode(data.tierlist_id)}`,
   review_comment: (data) => `/review/${data.review_id}`,
   review_like: (data) => `/review/${data.review_id}`,
+  screenshot_like: (data) => `/screenshot/${data.screenshot_id}`,
+  screenshot_comment: (data) => `/screenshot/${data.screenshot_id}`,
 }
 
 const MODAL_NOTIFICATIONS = [

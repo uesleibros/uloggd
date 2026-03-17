@@ -35,6 +35,16 @@ export default {
 	    confirmDelete: "Confirmar",
 	    revealSpoiler: "Clique para revelar",
 	  },
+	  notFound: {
+	    title: "Screenshot não encontrada",
+	    message: "Esta screenshot pode ter sido removida ou não existe.",
+	    backHome: "Voltar ao início",
+	  },
+	  page: {
+	    back: "Voltar",
+	    viewGame: "Ver página do jogo",
+	    deleting: "Excluindo...",
+	  },
 	},
 	translate: {
 	  button: "Traduzir",

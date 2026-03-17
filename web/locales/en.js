@@ -14,7 +14,7 @@ export default {
 	    selectFromComputer: "Select from computer",
 	    game: "Game",
 	    searchGame: "Search game",
-	    searchGamePlaceholder: "Type to search...",
+	    searchGamePlaceholder: "Type the game name...",
 	    noResults: "No games found",
 	    typeToSearch: "Type to search",
 	    captionPlaceholder: "Write a caption...",
@@ -34,6 +34,16 @@ export default {
 	    delete: "Delete",
 	    confirmDelete: "Confirm",
 	    revealSpoiler: "Click to reveal",
+	  },
+	  notFound: {
+	    title: "Screenshot not found",
+	    message: "This screenshot may have been removed or doesn't exist.",
+	    backHome: "Back to home",
+	  },
+	  page: {
+	    back: "Back",
+	    viewGame: "View game page",
+	    deleting: "Deleting...",
 	  },
 	},
 	translate: {
