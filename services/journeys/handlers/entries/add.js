@@ -9,9 +9,16 @@ export async function handleAddEntry(req, res) {
   if (!journeyId || typeof journeyId !== "number")
     return res.status(400).json({ error: "invalid journeyId" })
 
+  const h = hours ?? 0
+  const m = minutes ?? 0
+  const totalMinutes = h * 60 + m
+
+  if (totalMinutes > 1440)
+    return res.status(400).json({ error: "max 24 hours per entry" })
+
   const validationError = runValidations([
     { check: validateDate, args: [playedOn] },
-    { check: validateTime, args: [hours ?? 0, minutes ?? 0] },
+    { check: validateTime, args: [h, m] },
   ])
   if (validationError) return res.status(400).json({ error: validationError })
 
@@ -31,8 +38,8 @@ export async function handleAddEntry(req, res) {
       .insert({
         journey_id: journeyId,
         played_on: playedOn || new Date().toISOString().split("T")[0],
-        hours: hours ?? 0,
-        minutes: minutes ?? 0,
+        hours: h,
+        minutes: m,
         note: sanitize(note, LIMITS.MAX_NOTE),
       })
       .select()
