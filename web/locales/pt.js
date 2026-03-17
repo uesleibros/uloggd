@@ -1053,6 +1053,8 @@ export default {
 	    mostGiven: "Mais dada",
 	    liked: "Curtidos",
 	    withReview: "Com review",
+			noRatings: "Nenhuma avaliação ainda",
+			noRatingsHint: "Avalie jogos para ver suas estatísticas",
 	    tendency: {
 	      generous: "Generoso",
 	      positive: "Positivo",
@@ -1064,7 +1066,7 @@ export default {
 	      completed: "Completado",
 	      played: "Jogado",
 	      retired: "Aposentado",
-	      shelved: "Engavetado",
+	      shelved: "Na prateleira",
 	      abandoned: "Abandonado",
 	    },
 		},
