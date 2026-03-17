@@ -103,7 +103,7 @@ function GameSearchModal({ isOpen, onClose, onSelect, selectedGame }) {
             {query && (
               <button
                 onClick={() => { setQuery(""); setResults([]) }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -141,7 +141,7 @@ function GameSearchModal({ isOpen, onClose, onSelect, selectedGame }) {
                   <button
                     key={game.id}
                     onClick={() => handleSelect(game)}
-                    className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer text-left ${
+                    className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors text-left ${
                       isSelected ? "bg-indigo-500/15" : "hover:bg-zinc-800"
                     }`}
                   >
@@ -286,209 +286,199 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
         closeOnOverlay={!uploading}
         noScroll
       >
-        <div className="flex flex-col h-full max-h-[90vh] md:max-h-[85vh]">
-          {/* Header */}
-          <div className="flex items-center justify-between h-14 px-4 border-b border-zinc-800 flex-shrink-0 bg-zinc-900">
+        <div className="flex items-center justify-between h-14 px-4 border-b border-zinc-800 flex-shrink-0">
+          <div className="w-20">
             <button
               onClick={() => step === 1 ? onClose() : setStep(1)}
               disabled={uploading}
-              className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 hover:text-white disabled:opacity-50 disabled:pointer-events-none transition-colors"
+              className="flex items-center gap-1 text-sm font-medium text-zinc-400 hover:text-white disabled:opacity-50 disabled:pointer-events-none transition-colors"
             >
               {step === 2 && <ChevronLeft className="w-4 h-4" />}
-              <span>{step === 1 ? t("upload.cancel") : t("upload.back")}</span>
+              {step === 1 ? t("upload.cancel") : t("upload.back")}
             </button>
-
-            <h3 className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-white">
-              {step === 1 ? t("upload.title") : t("upload.details")}
-            </h3>
-
-            <div className="min-w-[4.5rem] flex justify-end">
-              {step === 2 && (
-                <button
-                  onClick={handleSubmit}
-                  disabled={!file || uploading}
-                  className="flex items-center gap-1.5 text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-zinc-600 disabled:pointer-events-none transition-colors"
-                >
-                  {uploading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{uploading ? t("upload.uploading") : t("upload.share")}</span>
-                </button>
-              )}
-            </div>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-hidden">
-            {step === 1 ? (
-              <div
-                ref={dropRef}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                className="h-full flex items-center justify-center p-6 bg-zinc-900"
+          <h3 className="text-sm font-semibold text-white">
+            {step === 1 ? t("upload.title") : t("upload.details")}
+          </h3>
+
+          <div className="w-20 flex justify-end">
+            {step === 2 && (
+              <button
+                onClick={handleSubmit}
+                disabled={!file || uploading}
+                className="flex items-center gap-1.5 text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-zinc-600 disabled:pointer-events-none transition-colors"
               >
-                <div
-                  className={`w-full max-w-md flex flex-col items-center p-10 rounded-2xl border-2 border-dashed transition-all duration-200 ${
-                    isDragging
-                      ? "border-indigo-500 bg-indigo-500/10"
-                      : "border-zinc-700 bg-zinc-800/50"
-                  }`}
-                >
-                  <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-5 transition-colors ${
-                    isDragging ? "bg-indigo-500/20" : "bg-zinc-800"
-                  }`}>
-                    <ImagePlus className={`w-9 h-9 transition-colors ${
-                      isDragging ? "text-indigo-400" : "text-zinc-500"
-                    }`} />
-                  </div>
-
-                  <h4 className="text-lg font-semibold text-white mb-2 text-center">
-                    {t("upload.dragPhotos")}
-                  </h4>
-                  <p className="text-sm text-zinc-500 text-center mb-6 max-w-xs">
-                    {t("upload.dragPhotosDesc")}
-                  </p>
-
-                  <button
-                    onClick={() => fileRef.current?.click()}
-                    className="h-10 px-5 text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-400 active:bg-indigo-600 rounded-lg transition-colors"
-                  >
-                    {t("upload.selectFromComputer")}
-                  </button>
-
-                  <p className="text-xs text-zinc-600 mt-4">
-                    PNG, JPG, WEBP • Max 10MB
-                  </p>
-                </div>
-
-                {error && (
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-lg">
-                    <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
-                    <span className="text-sm text-red-400">{error}</span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="h-full flex flex-col md:flex-row">
-                {/* Preview */}
-                <div className="flex-1 min-h-0 bg-black flex items-center justify-center p-4 md:p-6">
-                  <img
-                    src={preview}
-                    alt=""
-                    className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg"
-                    style={{ maxHeight: "calc(85vh - 56px - 2rem)" }}
-                  />
-                </div>
-
-                {/* Sidebar */}
-                <div className="w-full md:w-80 flex-shrink-0 border-t md:border-t-0 md:border-l border-zinc-800 bg-zinc-900 flex flex-col max-h-[45vh] md:max-h-none overflow-y-auto">
-                  <div className="p-5 space-y-5 flex-1">
-                    {/* Caption */}
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">
-                        {t("upload.caption")}
-                      </label>
-                      <textarea
-                        value={caption}
-                        onChange={(e) => setCaption(e.target.value)}
-                        placeholder={t("upload.captionPlaceholder")}
-                        maxLength={200}
-                        rows={3}
-                        className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 resize-none transition-colors"
-                      />
-                      <div className="flex justify-end mt-1.5">
-                        <span className={`text-xs tabular-nums ${
-                          caption.length > 180 ? "text-amber-400" : "text-zinc-500"
-                        }`}>
-                          {caption.length}/200
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Game */}
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">
-                        {t("upload.game")}
-                      </label>
-
-                      {selectedGame ? (
-                        <div className="flex items-center gap-3 p-3 bg-zinc-800 border border-zinc-700 rounded-lg">
-                          {gameCoverUrl ? (
-                            <img
-                              src={gameCoverUrl}
-                              alt=""
-                              className="w-10 h-14 rounded object-cover flex-shrink-0"
-                            />
-                          ) : (
-                            <div className="w-10 h-14 rounded bg-zinc-700 flex items-center justify-center flex-shrink-0">
-                              <Gamepad2 className="w-4 h-4 text-zinc-500" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white truncate">
-                              {selectedGame.name}
-                            </p>
-                            {selectedGame.first_release_date && (
-                              <p className="text-xs text-zinc-500 mt-0.5">
-                                {formatDateShort(selectedGame.first_release_date)}
-                              </p>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => setSelectedGame(null)}
-                            className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-700 rounded-lg transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setGameSearchOpen(true)}
-                          className="w-full flex items-center gap-3 p-3 bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-lg transition-colors text-left group"
-                        >
-                          <div className="w-10 h-14 rounded bg-zinc-700 flex items-center justify-center flex-shrink-0 group-hover:bg-zinc-600 transition-colors">
-                            <Search className="w-4 h-4 text-zinc-500" />
-                          </div>
-                          <span className="text-sm text-zinc-500 group-hover:text-zinc-400 transition-colors">
-                            {t("upload.searchGame")}
-                          </span>
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Spoiler toggle */}
-                    <div className="flex items-center justify-between p-3 bg-zinc-800 border border-zinc-700 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <EyeOff className="w-4 h-4 text-zinc-400" />
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            {t("upload.spoiler")}
-                          </p>
-                          <p className="text-xs text-zinc-500">
-                            {t("upload.spoilerDesc")}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={isSpoiler}
-                        onClick={() => setIsSpoiler(!isSpoiler)}
-                        className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                          isSpoiler ? "bg-indigo-500" : "bg-zinc-600"
-                        }`}
-                      >
-                        <span
-                          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
-                            isSpoiler ? "translate-x-5" : "translate-x-0"
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                {uploading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                {uploading ? t("upload.uploading") : t("upload.share")}
+              </button>
             )}
           </div>
+        </div>
+
+        <div className="flex-1 min-h-0 overflow-hidden">
+          {step === 1 ? (
+            <div
+              ref={dropRef}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className="h-full flex items-center justify-center p-6"
+            >
+              <div
+                className={`w-full max-w-sm flex flex-col items-center p-8 rounded-2xl border-2 border-dashed transition-all ${
+                  isDragging
+                    ? "border-indigo-500 bg-indigo-500/10"
+                    : "border-zinc-700 bg-zinc-800/30"
+                }`}
+              >
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors ${
+                  isDragging ? "bg-indigo-500/20" : "bg-zinc-800"
+                }`}>
+                  <ImagePlus className={`w-7 h-7 transition-colors ${
+                    isDragging ? "text-indigo-400" : "text-zinc-500"
+                  }`} />
+                </div>
+
+                <h4 className="text-base font-medium text-white mb-1 text-center">
+                  {t("upload.dragPhotos")}
+                </h4>
+                <p className="text-sm text-zinc-500 text-center mb-5">
+                  {t("upload.dragPhotosDesc")}
+                </p>
+
+                <button
+                  onClick={() => fileRef.current?.click()}
+                  className="h-9 px-4 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-400 active:bg-indigo-600 rounded-lg transition-colors"
+                >
+                  {t("upload.selectFromComputer")}
+                </button>
+
+                <p className="text-xs text-zinc-600 mt-4">PNG, JPG, WEBP • Max 10MB</p>
+              </div>
+
+              {error && (
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5 bg-red-500/15 border border-red-500/30 rounded-lg">
+                  <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                  <span className="text-sm text-red-400">{error}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="h-full flex flex-col md:flex-row">
+              <div className="flex-1 min-h-0 bg-black/50 flex items-center justify-center p-4">
+                <img
+                  src={preview}
+                  alt=""
+                  className="max-w-full max-h-full w-auto h-auto object-contain rounded"
+                />
+              </div>
+
+              <div className="w-full md:w-72 flex-shrink-0 border-t md:border-t-0 md:border-l border-zinc-800 overflow-y-auto">
+                <div className="p-4 space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">
+                      {t("upload.caption")}
+                    </label>
+                    <textarea
+                      value={caption}
+                      onChange={(e) => setCaption(e.target.value)}
+                      placeholder={t("upload.captionPlaceholder")}
+                      maxLength={200}
+                      rows={3}
+                      className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 resize-none transition-colors"
+                    />
+                    <div className="flex justify-end mt-1">
+                      <span className={`text-xs tabular-nums ${
+                        caption.length > 180 ? "text-amber-400" : "text-zinc-500"
+                      }`}>
+                        {caption.length}/200
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-zinc-800" />
+
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">
+                      {t("upload.game")}
+                    </label>
+
+                    {selectedGame ? (
+                      <div className="flex items-center gap-3 p-2.5 bg-zinc-800 rounded-lg">
+                        {gameCoverUrl ? (
+                          <img
+                            src={gameCoverUrl}
+                            alt=""
+                            className="w-9 h-12 rounded object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-9 h-12 rounded bg-zinc-700 flex items-center justify-center flex-shrink-0">
+                            <Gamepad2 className="w-4 h-4 text-zinc-500" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">
+                            {selectedGame.name}
+                          </p>
+                          {selectedGame.first_release_date && (
+                            <p className="text-xs text-zinc-500 mt-0.5">
+                              {formatDateShort(selectedGame.first_release_date)}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => setSelectedGame(null)}
+                          className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-700 rounded transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setGameSearchOpen(true)}
+                        className="w-full flex items-center gap-3 p-2.5 bg-zinc-800 hover:bg-zinc-750 rounded-lg transition-colors text-left group"
+                      >
+                        <div className="w-9 h-12 rounded bg-zinc-700 flex items-center justify-center flex-shrink-0 group-hover:bg-zinc-600 transition-colors">
+                          <Search className="w-4 h-4 text-zinc-500" />
+                        </div>
+                        <span className="text-sm text-zinc-500 group-hover:text-zinc-400 transition-colors">
+                          {t("upload.searchGame")}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="h-px bg-zinc-800" />
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <EyeOff className="w-4 h-4 text-zinc-500" />
+                      <div>
+                        <span className="text-sm text-zinc-300">{t("upload.spoiler")}</span>
+                        <p className="text-xs text-zinc-600">{t("upload.spoilerDesc")}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={isSpoiler}
+                      onClick={() => setIsSpoiler(!isSpoiler)}
+                      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                        isSpoiler ? "bg-indigo-500" : "bg-zinc-700"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                          isSpoiler ? "translate-x-5" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <input
@@ -533,14 +523,14 @@ function ScreenshotGridItem({ screenshot }) {
       />
 
       {screenshot.is_spoiler && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
           <div className="w-10 h-10 rounded-full bg-black/60 flex items-center justify-center">
-            <EyeOff className="w-5 h-5 text-white/80" />
+            <EyeOff className="w-5 h-5 text-white/70" />
           </div>
         </div>
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
     </Link>
   )
 }
@@ -628,8 +618,8 @@ export default function ScreenshotsSection({ userId, isOwnProfile }) {
       </div>
 
       {screenshots.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 border border-zinc-800 rounded-xl bg-zinc-900/50">
-          <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-4">
+        <div className="flex flex-col items-center justify-center py-16 border border-zinc-800 rounded-xl">
+          <div className="w-16 h-16 rounded-full border-2 border-zinc-700 flex items-center justify-center mb-4">
             <Camera className="w-7 h-7 text-zinc-600" />
           </div>
           <h3 className="text-base font-semibold text-white mb-1">{t("emptyTitle")}</h3>
@@ -645,7 +635,7 @@ export default function ScreenshotsSection({ userId, isOwnProfile }) {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-0.5 sm:gap-1 rounded-lg overflow-hidden">
+          <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
             {screenshots.map((s) => (
               <ScreenshotGridItem key={s.id} screenshot={s} />
             ))}
