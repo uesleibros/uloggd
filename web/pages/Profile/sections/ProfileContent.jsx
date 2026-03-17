@@ -70,6 +70,7 @@ export function ProfileContent({
             onEdit={onEditProfile}
           />
           <ScreenshotsSection userId={profile.user_id} isOwnProfile={isOwnProfile} />
+          <div className="border-t border-zinc-800 my-6 sm:my-8" />
           <CommentSection type="profile" targetId={profile.user_id} />
         </div>
       )}
