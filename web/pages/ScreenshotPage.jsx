@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
-import { ArrowLeft, Camera, EyeOff, Gamepad2, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { ArrowLeft, Camera, EyeOff, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
+import { useMyLibrary } from "#hooks/useMyLibrary"
 import { supabase } from "#lib/supabase"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import UserBadges from "@components/User/UserBadges"
 import LikeButton from "@components/UI/LikeButton"
 import CommentSection from "@components/UI/CommentSection"
+import GameCover from "@components/Game/GameCover"
 
 function ScreenshotPageSkeleton() {
   return (
@@ -35,6 +37,7 @@ export default function ScreenshotPage() {
   const { t } = useTranslation("screenshots")
   const { getTimeAgo } = useDateTime()
   const { user: currentUser } = useAuth()
+  const { getGameData } = useMyLibrary()
   const [screenshot, setScreenshot] = useState(null)
   const [user, setUser] = useState(null)
   const [game, setGame] = useState(null)
@@ -47,6 +50,7 @@ export default function ScreenshotPage() {
   const menuRef = useRef(null)
 
   const isOwner = currentUser?.user_id === screenshot?.user_id
+  const gameData = game ? getGameData(game.slug) : null
 
   usePageMeta(
     screenshot && user
@@ -130,9 +134,6 @@ export default function ScreenshotPage() {
   }
 
   const isSpoilerHidden = screenshot.is_spoiler && !revealed
-  const gameCoverUrl = game?.cover?.url
-    ? (game.cover.url.startsWith("//") ? `https:${game.cover.url}` : game.cover.url)
-    : null
 
   return (
     <div className="py-6 sm:py-8 max-w-4xl mx-auto">
@@ -244,26 +245,24 @@ export default function ScreenshotPage() {
         {game && (
           <Link
             to={`/game/${game.slug}`}
-            className="flex items-center gap-3 p-3 bg-zinc-800/40 hover:bg-zinc-800/60 rounded-xl transition-colors"
+            className="flex items-center gap-3 p-3 bg-zinc-800/40 hover:bg-zinc-800/60 rounded-lg transition-colors group"
           >
-            {gameCoverUrl ? (
-              <img src={gameCoverUrl} alt="" className="w-10 h-14 rounded object-cover flex-shrink-0" />
-            ) : (
-              <div className="w-10 h-14 rounded bg-zinc-700 flex items-center justify-center flex-shrink-0">
-                <Gamepad2 className="w-4 h-4 text-zinc-500" />
-              </div>
-            )}
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-white truncate">{game.name}</p>
+            <GameCover
+              game={game}
+              customCoverUrl={gameData?.customCoverUrl}
+              className="w-10 h-14 rounded flex-shrink-0"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-white truncate group-hover:text-zinc-200 transition-colors">
+                {game.name}
+              </p>
               <p className="text-xs text-zinc-500">{t("page.viewGame")}</p>
             </div>
           </Link>
         )}
 
         {screenshot.caption && (
-          <p className="text-sm text-zinc-300">
-            {screenshot.caption}
-          </p>
+          <p className="text-sm text-zinc-300">{screenshot.caption}</p>
         )}
 
         <div className="flex items-center gap-4 pt-2">
