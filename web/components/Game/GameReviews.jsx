@@ -5,6 +5,7 @@ import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
 import { useJournalEvents } from "#hooks/useJournalEvents"
+import { useReviewEvents } from "#hooks/useReviewEvents"
 import { SORT_OPTIONS } from "#constants/game"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import UserBadges from "@components/User/UserBadges"
@@ -187,6 +188,7 @@ export default function GameReviews({ gameId }) {
   }, [fetchReviews])
 
   useJournalEvents(fetchReviews)
+  useReviewEvents(fetchReviews, gameId)
 
   function handleSortChange(newSort) {
     if (newSort === sortBy) return
