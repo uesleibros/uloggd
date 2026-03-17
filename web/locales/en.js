@@ -1053,6 +1053,8 @@ export default {
 	    mostGiven: "Most given",
 	    liked: "Liked",
 	    withReview: "With review",
+			noRatings: "No ratings yet",
+			noRatingsHint: "Rate games to see your statistics",
 	    tendency: {
 	      generous: "Generous",
 	      positive: "Positive",
