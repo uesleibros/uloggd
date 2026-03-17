@@ -14,11 +14,12 @@ export async function handleRatingStats(req, res) {
       .from("reviews")
       .select("rating, status, created_at, liked, review")
       .eq("user_id", userId)
-      .not("rating", "is", null)
 
     if (error) throw error
 
-    if (!reviews || reviews.length === 0) {
+    const validReviews = (reviews || []).filter(r => r.rating !== null && r.rating !== "")
+
+    if (validReviews.length === 0) {
       const empty = { total: 0 }
       await setCache(cacheKey, empty, 300)
       return res.json(empty)
@@ -31,10 +32,15 @@ export async function handleRatingStats(req, res) {
     let liked = 0
     let reviewed = 0
 
-    for (const r of reviews) {
-      const rounded = Math.max(0, Math.min(5, Math.round(r.rating)))
+    for (const r of validReviews) {
+      const rawRating = parseFloat(r.rating)
+      if (isNaN(rawRating)) continue
+
+      const normalized = rawRating / 20
+      const rounded = Math.max(0, Math.min(5, Math.round(normalized)))
+
       distribution[rounded]++
-      sum += r.rating
+      sum += normalized
 
       if (r.liked) liked++
       if (r.review && r.review.trim()) reviewed++
@@ -42,16 +48,17 @@ export async function handleRatingStats(req, res) {
       const status = r.status || "played"
       if (!byStatusAcc[status]) byStatusAcc[status] = { count: 0, sum: 0 }
       byStatusAcc[status].count++
-      byStatusAcc[status].sum += r.rating
+      byStatusAcc[status].sum += normalized
 
       const d = new Date(r.created_at)
       const mk = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
       if (!monthAcc[mk]) monthAcc[mk] = { count: 0, sum: 0 }
       monthAcc[mk].count++
-      monthAcc[mk].sum += r.rating
+      monthAcc[mk].sum += normalized
     }
 
-    const average = sum / reviews.length
+    const total = Object.values(distribution).reduce((a, b) => a + b, 0)
+    const average = total > 0 ? sum / total : 0
 
     const byStatus = {}
     for (const [s, d] of Object.entries(byStatusAcc)) {
@@ -84,7 +91,7 @@ export async function handleRatingStats(req, res) {
     }
 
     const result = {
-      total: reviews.length,
+      total,
       average,
       distribution,
       byMonth,
