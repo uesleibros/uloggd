@@ -11,7 +11,7 @@ import Pagination from "@components/UI/Pagination"
 import PlatformIcons from "@components/Game/PlatformIcons"
 import { formatDateShort } from "#utils/formatDate"
 
-const ITEMS_PER_PAGE = 12
+const ITEMS_PER_PAGE = 6
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 function ScreenshotSkeleton() {
