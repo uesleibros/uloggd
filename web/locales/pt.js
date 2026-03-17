@@ -37,6 +37,8 @@ export default {
 	  emptyDesc: "Suas capturas de tela aparecerão aqui",
 	  upload: {
 	    title: "Nova publicação",
+			caption: "Legenda",
+			spoilerDesc: "Ocultar conteúdo sensível",
 			back: "Voltar",
 	    details: "Detalhes",
 	    dragPhotos: "Arraste fotos aqui",
