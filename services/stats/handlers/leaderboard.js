@@ -7,7 +7,7 @@ const CACHE_TTL = 300
 export async function handleLeaderboard(req, res) {
   const { category = "minerals", limit = 10, page = 1 } = req.query
 
-  const validCategories = ["minerals", "reviews", "followers", "likes", "aspect_ratings"]
+  const validCategories = ["minerals", "reviews", "followers", "likes", "aspect_ratings", "playtime"]
   if (!validCategories.includes(category)) {
     return res.status(400).json({ error: "Invalid category" })
   }
@@ -39,6 +39,9 @@ export async function handleLeaderboard(req, res) {
         break
       case "aspect_ratings":
         ({ entries, total } = await getAspectRatingsLeaderboard(limitNum, offset))
+        break
+      case "playtime":
+        ({ entries, total } = await getPlaytimeLeaderboard(limitNum, offset))
         break
     }
 
@@ -306,6 +309,65 @@ async function getAspectRatingsLeaderboard(limit, offset) {
   }))
 
   return { entries, total }
+}
+
+async function getPlaytimeLeaderboard(limit, offset) {
+  const { data: journeys, error: journeysError } = await supabase
+    .from("journeys")
+    .select("id, user_id")
+
+  if (journeysError) throw journeysError
+
+  const journeyOwners = {}
+  for (const j of journeys || []) {
+    journeyOwners[j.id] = j.user_id
+  }
+
+  const { data: entries_, error: entriesError } = await supabase
+    .from("journey_entries")
+    .select("journey_id, hours, minutes")
+
+  if (entriesError) throw entriesError
+
+  const statsMap = {}
+
+  for (const e of entries_ || []) {
+    const userId = journeyOwners[e.journey_id]
+    if (!userId) continue
+
+    const totalMinutes = (e.hours || 0) * 60 + (e.minutes || 0)
+
+    if (!statsMap[userId]) {
+      statsMap[userId] = { totalMinutes: 0, entries: 0 }
+    }
+    statsMap[userId].totalMinutes += totalMinutes
+    statsMap[userId].entries++
+  }
+
+  const sorted = Object.entries(statsMap)
+    .filter(([, stats]) => stats.totalMinutes > 0)
+    .map(([user_id, stats]) => ({
+      user_id,
+      value: stats.totalMinutes,
+      hours: Math.floor(stats.totalMinutes / 60),
+      minutes: stats.totalMinutes % 60,
+      entries: stats.entries,
+    }))
+    .sort((a, b) => b.value - a.value)
+
+  const total = sorted.length
+  const paginated = sorted.slice(offset, offset + limit)
+
+  const entriesResult = paginated.map((item, i) => ({
+    rank: offset + i + 1,
+    user_id: item.user_id,
+    value: item.value,
+    hours: item.hours,
+    minutes: item.minutes,
+    entries: item.entries,
+  }))
+
+  return { entries: entriesResult, total }
 }
 
 async function getReviewLikesPerUser() {
