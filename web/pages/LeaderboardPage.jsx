@@ -27,45 +27,49 @@ const RANK_CONFIG = {
     color: "text-amber-400", 
     bg: "bg-gradient-to-br from-amber-500/20 to-amber-600/5", 
     border: "border-amber-500/40",
-    glow: "shadow-amber-500/10"
   },
   2: { 
     icon: Medal, 
     color: "text-zinc-300", 
     bg: "bg-gradient-to-br from-zinc-400/15 to-zinc-500/5", 
     border: "border-zinc-400/40",
-    glow: "shadow-zinc-400/10"
   },
   3: { 
     icon: Award, 
     color: "text-amber-600", 
     bg: "bg-gradient-to-br from-amber-700/15 to-amber-800/5", 
     border: "border-amber-600/40",
-    glow: "shadow-amber-600/10"
   },
 }
 
 const GLOBAL_BREAKDOWN_CONFIG = [
   { key: "minerals", icon: Gem, color: "text-cyan-400" },
-  { key: "reviews", icon: MessageSquare, color: "text-green-400" },
   { key: "followers", icon: Users, color: "text-blue-400" },
   { key: "likes", icon: Heart, color: "text-pink-400" },
-  { key: "playtime", icon: Clock, color: "text-purple-400" },
+]
+
+const LIKES_BREAKDOWN_CONFIG = [
+  { key: "reviews", icon: MessageSquare },
+  { key: "lists", icon: List },
+  { key: "tierlists", icon: LayoutGrid },
+  { key: "screenshots", icon: Camera },
 ]
 
 function LeaderboardSkeleton() {
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
         {[2, 1, 3].map((rank) => (
           <div 
             key={rank} 
-            className={`p-4 bg-zinc-800/30 rounded-2xl animate-pulse ${rank === 1 ? "order-2" : rank === 2 ? "order-1" : "order-3"}`}
+            className={`p-4 bg-zinc-800/30 rounded-2xl animate-pulse ${
+              rank === 1 ? "order-2" : rank === 2 ? "order-1" : "order-3"
+            }`}
           >
             <div className="flex flex-col items-center">
-              <div className="w-12 h-12 bg-zinc-700 rounded-full mb-3" />
-              <div className="w-16 h-16 bg-zinc-700 rounded-full mb-3" />
-              <div className="w-20 h-4 bg-zinc-700 rounded mb-2" />
+              <div className="w-10 h-10 bg-zinc-700 rounded-full mb-3" />
+              <div className="w-14 h-14 bg-zinc-700 rounded-full mb-3" />
+              <div className="w-16 h-4 bg-zinc-700 rounded mb-2" />
               <div className="w-12 h-3 bg-zinc-800 rounded" />
             </div>
           </div>
@@ -98,7 +102,7 @@ function CategoryTabs({ active, onChange, t }) {
               <button
                 key={id}
                 onClick={() => onChange(id)}
-                className={`group relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all cursor-pointer whitespace-nowrap ${
+                className={`group relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap ${
                   isActive ? "text-indigo-400" : "text-zinc-500 hover:text-zinc-300"
                 }`}
               >
@@ -109,7 +113,7 @@ function CategoryTabs({ active, onChange, t }) {
                 />
                 {t(`leaderboard.categories.${id}`)}
                 {isActive && (
-                  <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-indigo-500 rounded-t-full" />
+                  <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-indigo-500 rounded-t-full" />
                 )}
               </button>
             )
@@ -125,6 +129,12 @@ function TopThreePodium({ entries, category, t }) {
 
   const ordered = [entries[1], entries[0], entries[2]]
 
+  const formatValue = (entry) => {
+    if (category === "playtime") return `${entry.hours || 0}h ${entry.minutes || 0}m`
+    if (category === "global") return `${(entry.value || 0).toLocaleString()} pts`
+    return (entry.value || 0).toLocaleString()
+  }
+
   return (
     <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
       {ordered.map((entry, idx) => {
@@ -133,18 +143,12 @@ function TopThreePodium({ entries, category, t }) {
         const Icon = config.icon
         const isFirst = rank === 1
 
-        const displayValue = () => {
-          if (category === "playtime") return `${entry.hours}h ${entry.minutes}m`
-          if (category === "global") return `${entry.value} pts`
-          return entry.value.toLocaleString()
-        }
-
         return (
           <Link
-            key={entry.user?.id || rank}
-            to={`/u/${entry.user?.username}`}
+            key={entry.user?.id || entry.rank}
+            to={entry.user?.username ? `/u/${entry.user.username}` : "#"}
             className={`group relative p-3 sm:p-4 rounded-2xl border transition-all hover:scale-[1.02] ${config.bg} ${config.border} ${
-              isFirst ? "sm:-mt-2" : "mt-2 sm:mt-4"
+              isFirst ? "order-2" : rank === 2 ? "order-1 mt-4 sm:mt-6" : "order-3 mt-4 sm:mt-6"
             }`}
           >
             <div className="flex flex-col items-center text-center">
@@ -152,7 +156,7 @@ function TopThreePodium({ entries, category, t }) {
                 <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${config.color}`} />
               </div>
 
-              <div className={`relative ${isFirst ? "w-14 h-14 sm:w-18 sm:h-18" : "w-12 h-12 sm:w-14 sm:h-14"}`}>
+              <div className={isFirst ? "w-16 h-16 sm:w-20 sm:h-20" : "w-12 h-12 sm:w-16 sm:h-16"}>
                 <AvatarWithDecoration
                   src={entry.user?.avatar}
                   alt={entry.user?.username}
@@ -162,19 +166,17 @@ function TopThreePodium({ entries, category, t }) {
               </div>
 
               <div className="mt-2 sm:mt-3 w-full min-w-0">
-                <div className="flex items-center justify-center gap-1 mb-0.5">
-                  <span className={`text-xs sm:text-sm font-semibold truncate max-w-full ${isFirst ? "text-white" : "text-zinc-200"}`}>
-                    {entry.user?.username || "Unknown"}
-                  </span>
-                </div>
-                <div className="flex justify-center">
+                <span className={`block text-xs sm:text-sm font-semibold truncate ${isFirst ? "text-white" : "text-zinc-200"}`}>
+                  {entry.user?.username || "Unknown"}
+                </span>
+                <div className="flex justify-center mt-1">
                   <UserBadges user={entry.user} size="xs" />
                 </div>
               </div>
 
               <div className="mt-2 sm:mt-3">
                 <span className={`text-base sm:text-xl font-bold tabular-nums ${config.color}`}>
-                  {displayValue()}
+                  {formatValue(entry)}
                 </span>
                 <p className="text-[9px] sm:text-[10px] text-zinc-500 mt-0.5">
                   {t(`leaderboard.units.${category}`)}
@@ -197,7 +199,9 @@ function RankNumber({ rank }) {
 }
 
 function MineralBreakdown({ breakdown }) {
-  const nonZero = MINERALS.filter(m => breakdown[m.key] > 0)
+  if (!breakdown) return null
+
+  const nonZero = MINERALS.filter(m => (breakdown[m.key] || 0) > 0)
   if (nonZero.length === 0) return null
 
   return (
@@ -210,7 +214,7 @@ function MineralBreakdown({ breakdown }) {
             className="w-3 h-3 object-contain flex-shrink-0"
           />
           <span className="text-[10px] text-zinc-500 tabular-nums">
-            {breakdown[mineral.key].toLocaleString()}
+            {(breakdown[mineral.key] || 0).toLocaleString()}
           </span>
         </div>
       ))}
@@ -219,18 +223,13 @@ function MineralBreakdown({ breakdown }) {
 }
 
 function LikesBreakdown({ breakdown }) {
-  const items = [
-    { key: "reviews", icon: MessageSquare },
-    { key: "lists", icon: List },
-    { key: "tierlists", icon: LayoutGrid },
-    { key: "screenshots", icon: Camera },
-    { key: "games", icon: Heart },
-  ].filter(item => breakdown[item.key] > 0)
+  if (!breakdown) return null
 
+  const items = LIKES_BREAKDOWN_CONFIG.filter(item => (breakdown[item.key] || 0) > 0)
   if (items.length === 0) return null
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-wrap">
       {items.map(({ key, icon: Icon }) => (
         <div key={key} className="flex items-center gap-0.5">
           <Icon className="w-2.5 h-2.5 text-zinc-600" />
@@ -244,7 +243,9 @@ function LikesBreakdown({ breakdown }) {
 }
 
 function GlobalBreakdown({ breakdown }) {
-  const items = GLOBAL_BREAKDOWN_CONFIG.filter(item => breakdown[item.key] > 0)
+  if (!breakdown) return null
+
+  const items = GLOBAL_BREAKDOWN_CONFIG.filter(item => (breakdown[item.key] || 0) > 0)
   if (items.length === 0) return null
 
   return (
@@ -253,7 +254,7 @@ function GlobalBreakdown({ breakdown }) {
         <div key={key} className="flex items-center gap-0.5">
           <Icon className={`w-2.5 h-2.5 ${color}`} />
           <span className="text-[10px] text-zinc-500 tabular-nums">
-            {breakdown[key]}
+            {(breakdown[key] || 0).toLocaleString()}
           </span>
         </div>
       ))}
@@ -264,15 +265,15 @@ function GlobalBreakdown({ breakdown }) {
 function LeaderboardEntry({ entry, category, t }) {
   const { rank, user, value, breakdown, avgRating, hours, minutes, entries: journeyEntries } = entry
 
-  const displayValue = () => {
-    if (category === "playtime") return `${hours}h ${minutes}m`
-    if (category === "global") return `${value} pts`
-    return value.toLocaleString()
+  const formatValue = () => {
+    if (category === "playtime") return `${hours || 0}h ${minutes || 0}m`
+    if (category === "global") return `${(value || 0).toLocaleString()} pts`
+    return (value || 0).toLocaleString()
   }
 
   return (
     <Link
-      to={`/u/${user?.username}`}
+      to={user?.username ? `/u/${user.username}` : "#"}
       className="group flex items-center gap-3 p-3 rounded-xl bg-zinc-800/20 border border-zinc-800/50 hover:bg-zinc-800/40 hover:border-zinc-700/50 transition-all"
     >
       <RankNumber rank={rank} />
@@ -293,29 +294,23 @@ function LeaderboardEntry({ entry, category, t }) {
         </div>
 
         <div className="mt-0.5">
-          {category === "global" && breakdown && (
-            <GlobalBreakdown breakdown={breakdown} />
-          )}
-          {category === "minerals" && breakdown && (
-            <MineralBreakdown breakdown={breakdown} />
-          )}
-          {category === "reviews" && avgRating !== undefined && avgRating !== null && (
+          {category === "global" && <GlobalBreakdown breakdown={breakdown} />}
+          {category === "minerals" && <MineralBreakdown breakdown={breakdown} />}
+          {category === "reviews" && avgRating > 0 && (
             <div className="flex items-center gap-1">
               <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
               <span className="text-[10px] text-zinc-500">
-                {avgRating} {t("leaderboard.avgRating")}
+                {avgRating.toFixed(1)} {t("leaderboard.avgRating")}
               </span>
             </div>
           )}
-          {category === "likes" && breakdown && (
-            <LikesBreakdown breakdown={breakdown} />
-          )}
+          {category === "likes" && <LikesBreakdown breakdown={breakdown} />}
           {category === "followers" && (
             <span className="text-[10px] text-zinc-600">
               {t("leaderboard.followersLabel")}
             </span>
           )}
-          {category === "playtime" && journeyEntries !== undefined && (
+          {category === "playtime" && journeyEntries > 0 && (
             <div className="flex items-center gap-1">
               <Clock className="w-2.5 h-2.5 text-zinc-600" />
               <span className="text-[10px] text-zinc-500">
@@ -328,7 +323,7 @@ function LeaderboardEntry({ entry, category, t }) {
 
       <div className="flex-shrink-0 text-right">
         <span className="text-sm font-bold text-white tabular-nums">
-          {displayValue()}
+          {formatValue()}
         </span>
       </div>
     </Link>
@@ -360,7 +355,7 @@ function Pagination({ page, totalPages, onChange }) {
       <button
         onClick={() => onChange(page - 1)}
         disabled={page <= 1}
-        className="w-9 h-9 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-zinc-800/50 disabled:hover:border-zinc-700/50 disabled:hover:text-zinc-400 transition-all cursor-pointer flex items-center justify-center"
+        className="w-9 h-9 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-600 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center justify-center"
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
@@ -369,7 +364,7 @@ function Pagination({ page, totalPages, onChange }) {
         <button
           key={pageNum}
           onClick={() => onChange(pageNum)}
-          className={`w-9 h-9 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+          className={`w-9 h-9 rounded-lg text-sm font-medium transition-all ${
             page === pageNum
               ? "bg-indigo-500 text-white"
               : "bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-600"
@@ -382,7 +377,7 @@ function Pagination({ page, totalPages, onChange }) {
       <button
         onClick={() => onChange(page + 1)}
         disabled={page >= totalPages}
-        className="w-9 h-9 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-zinc-800/50 disabled:hover:border-zinc-700/50 disabled:hover:text-zinc-400 transition-all cursor-pointer flex items-center justify-center"
+        className="w-9 h-9 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-600 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center justify-center"
       >
         <ChevronRight className="w-4 h-4" />
       </button>
