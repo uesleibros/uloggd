@@ -19,26 +19,51 @@ export async function handleList(req, res) {
       .select("*", { count: "exact" })
       .eq("target_type", type)
       .eq("target_id", String(targetId))
-      .order("created_at", { ascending: false })
+      .order("created_at", { ascending: true })
       .range(offset, offset + limitNum - 1)
 
     const comments = data || []
-    const userIds = [...new Set(comments.map(c => c.user_id))]
+
+    const userIds = new Set()
+    const parentIds = new Set()
+
+    for (const c of comments) {
+      userIds.add(c.user_id)
+      if (c.parent_id) parentIds.add(c.parent_id)
+    }
+
+    let parentComments = []
+    if (parentIds.size > 0) {
+      const { data: parents } = await supabase
+        .from("comments")
+        .select("id, user_id")
+        .in("id", [...parentIds])
+
+      parentComments = parents || []
+      for (const p of parentComments) {
+        userIds.add(p.user_id)
+      }
+    }
+
+    const parentUserMap = {}
+    for (const p of parentComments) {
+      parentUserMap[p.id] = p.user_id
+    }
 
     let usersMap = {}
-
-    if (userIds.length > 0) {
-      const users = await findManyByIds(userIds)
+    if (userIds.size > 0) {
+      const users = await findManyByIds([...userIds])
       const streamsMap = await resolveStreams(users)
 
-      users.forEach(u => {
+      for (const u of users) {
         usersMap[u.user_id] = formatListProfile(u, { stream: streamsMap[u.user_id] })
-      })
+      }
     }
 
     const formatted = comments.map(c => ({
       ...c,
-      user: usersMap[c.user_id] || null
+      user: usersMap[c.user_id] || null,
+      parent_user: c.parent_id ? usersMap[parentUserMap[c.parent_id]] || null : null
     }))
 
     res.json({
