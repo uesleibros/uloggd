@@ -1,8 +1,11 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { X, Check } from "lucide-react"
 import { supabase } from "#lib/supabase"
 import { useTranslation } from "#hooks/useTranslation"
+import { useAuth } from "#hooks/useAuth"
+import { useCustomCovers } from "#hooks/useCustomCovers"
 import { notify } from "@components/UI/Notification"
+import GameCover from "@components/Game/GameCover"
 import { TabNav } from "./tabs/TabNav"
 import { ReviewTab } from "./tabs/ReviewTab"
 import { DatesTab } from "./tabs/DatesTab"
@@ -13,6 +16,7 @@ const TAB_MIN_HEIGHT = "min-h-[480px]"
 
 export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
   const { t } = useTranslation("review.modal")
+  const { user } = useAuth()
   const isEditing = !!existingReview
   const [activeTab, setActiveTab] = useState("review")
   const [submitting, setSubmitting] = useState(false)
@@ -41,6 +45,10 @@ export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
       review: a.review || "",
     })) || []
   )
+
+  const slugs = useMemo(() => game?.slug ? [game.slug] : [], [game?.slug])
+  const { getCustomCover, loading: coverLoading } = useCustomCovers(user?.user_id, slugs)
+  const customCoverUrl = game?.slug ? getCustomCover(game.slug) : null
 
   async function getToken() {
     const { data: { session } } = await supabase.auth.getSession()
@@ -160,14 +168,12 @@ export function ReviewModal({ game, existingReview, onClose, onDeleted }) {
         style={{ paddingTop: "max(1rem, env(safe-area-inset-top, 1rem))" }}
       >
         <div className="flex items-center gap-3 min-w-0">
-          {game.cover && (
-            <img
-              src={`https:${game.cover.url}`}
-              alt=""
-              className="w-8 h-11 rounded object-cover bg-zinc-800 flex-shrink-0"
-              draggable={false}
-            />
-          )}
+          <GameCover
+            game={game}
+            customCoverUrl={customCoverUrl}
+            loading={user?.user_id && coverLoading}
+            className="w-8 h-11 rounded flex-shrink-0"
+          />
           <div className="min-w-0">
             <h2 className="text-base md:text-lg font-semibold text-white truncate">{game.name}</h2>
             {releaseYear && <p className="text-xs text-zinc-500">{releaseYear}</p>}

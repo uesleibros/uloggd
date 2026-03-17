@@ -1,4 +1,3 @@
-// API - /api/likes/counts.js
 import { supabase } from "#lib/supabase-ssr.js"
 
 export async function handleCounts(req, res) {

@@ -319,22 +319,15 @@ export async function handleByUser(req, res) {
 				.range(offset, offset + limitNum - 1)
 
 			const screenshotIds = likedScreenshotsData?.map(l => l.screenshot_id) || []
+			let screenshots = []
 
-			if (screenshotIds.length === 0) {
-				return res.json({
-					screenshots: [],
-					total: count || 0,
-					page: pageNum,
-					totalPages: Math.ceil((count || 0) / limitNum),
-				})
+			if (screenshotIds.length > 0) {
+				const { data } = await supabase
+					.from("screenshots")
+					.select("id, user_id, image_url, caption, game_id, game_slug, game_name, is_spoiler, created_at")
+					.in("id", screenshotIds)
+				screenshots = data || []
 			}
-
-			const { data } = await supabase
-				.from("screenshots")
-				.select("id, user_id, image_url, caption, game_id, game_slug, game_name, is_spoiler, created_at")
-				.in("id", screenshotIds)
-
-			const screenshots = data || []
 
 			const orderedScreenshots = screenshotIds
 				.map(id => screenshots.find(s => s.id === id))
