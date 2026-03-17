@@ -281,7 +281,7 @@ function EmptyState({ category, t }) {
 }
 
 export default function LeaderboardPage() {
-  const { t } = useTranslation("common")
+  const { t } = useTranslation()
   const [category, setCategory] = useState("minerals")
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
