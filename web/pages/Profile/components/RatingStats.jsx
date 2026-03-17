@@ -62,19 +62,20 @@ function StarDisplay({ rating }) {
 
 function DistributionChart({ distribution, total }) {
   const maxCount = Math.max(...Object.values(distribution), 1)
+  const isEmpty = total === 0
 
   return (
     <div className="space-y-1.5">
       {[5, 4, 3, 2, 1, 0].map(rating => {
-        const count = distribution[rating] || 0
+        const count = distribution?.[rating] || 0
         const pct = total > 0 ? (count / total) * 100 : 0
         const barW = maxCount > 0 ? (count / maxCount) * 100 : 0
 
         return (
           <div key={rating} className="flex items-center gap-2">
             <div className="flex items-center gap-0.5 w-8 justify-end flex-shrink-0">
-              <span className="text-xs text-zinc-400 tabular-nums">{rating}</span>
-              <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+              <span className={`text-xs tabular-nums ${isEmpty ? "text-zinc-600" : "text-zinc-400"}`}>{rating}</span>
+              <Star className={`w-3 h-3 ${isEmpty ? "text-zinc-700" : "text-amber-400 fill-amber-400"}`} />
             </div>
             <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
               <div
@@ -82,8 +83,8 @@ function DistributionChart({ distribution, total }) {
                 style={{ width: `${barW}%` }}
               />
             </div>
-            <span className="text-[11px] text-zinc-500 tabular-nums w-14 text-right">
-              {count} ({pct.toFixed(0)}%)
+            <span className="text-[11px] text-zinc-600 tabular-nums w-14 text-right">
+              {isEmpty ? "-" : `${count} (${pct.toFixed(0)}%)`}
             </span>
           </div>
         )
@@ -149,7 +150,7 @@ function MonthlyChart({ data, t }) {
 }
 
 function StatusBreakdown({ data, t }) {
-  const entries = Object.entries(data)
+  const entries = Object.entries(data || {})
     .filter(([_, v]) => v.count > 0)
     .sort((a, b) => b[1].count - a[1].count)
 
@@ -192,6 +193,18 @@ function StatusBreakdown({ data, t }) {
   )
 }
 
+function EmptyState({ t }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-3">
+        <Star className="w-6 h-6 text-zinc-600" />
+      </div>
+      <p className="text-sm text-zinc-500">{t("stats.noRatings")}</p>
+      <p className="text-xs text-zinc-600 mt-1">{t("stats.noRatingsHint")}</p>
+    </div>
+  )
+}
+
 export default function RatingStats({ userId }) {
   const { t } = useTranslation("profile")
   const [stats, setStats] = useState(null)
@@ -221,14 +234,14 @@ export default function RatingStats({ userId }) {
           <div className="sm:w-44 h-28 bg-zinc-800/30 rounded-xl animate-pulse" />
           <div className="flex-1 h-44 bg-zinc-800/30 rounded-xl animate-pulse" />
         </div>
-        <div className="h-28 bg-zinc-800/30 rounded-xl animate-pulse" />
       </div>
     )
   }
 
-  if (!stats || stats.total === 0) return null
+  if (!stats) return null
 
-  const tendency = getTendency(stats.average)
+  const isEmpty = !stats.total || stats.total === 0
+  const tendency = getTendency(stats.average || 0)
   const hasMonthly = stats.byMonth?.some(m => m.count > 0)
   const hasStatus = stats.byStatus && Object.values(stats.byStatus).some(v => v.count > 0)
 
@@ -242,70 +255,76 @@ export default function RatingStats({ userId }) {
           </h2>
         </div>
         <span className="text-xs text-zinc-600">
-          {stats.total} {t("stats.rated")}
+          {stats.total || 0} {t("stats.rated")}
         </span>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="sm:w-44 flex-shrink-0 p-4 bg-zinc-800/30 rounded-xl flex flex-col justify-center">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-3xl font-bold text-white tabular-nums tracking-tight">
-                {stats.average.toFixed(1)}
-              </span>
-              <span className="text-base text-zinc-600 font-medium">/ 5</span>
+      {isEmpty ? (
+        <div className="p-4 bg-zinc-800/30 rounded-xl">
+          <EmptyState t={t} />
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="sm:w-44 flex-shrink-0 p-4 bg-zinc-800/30 rounded-xl flex flex-col justify-center">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-3xl font-bold text-white tabular-nums tracking-tight">
+                  {stats.average.toFixed(1)}
+                </span>
+                <span className="text-base text-zinc-600 font-medium">/ 5</span>
+              </div>
+              <div className="mt-1.5">
+                <StarDisplay rating={stats.average} />
+              </div>
+              <div className="mt-3">
+                <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${tendency.bg} ${tendency.text}`}>
+                  {t(`stats.tendency.${tendency.key}`)}
+                </span>
+              </div>
             </div>
-            <div className="mt-1.5">
-              <StarDisplay rating={stats.average} />
-            </div>
-            <div className="mt-3">
-              <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${tendency.bg} ${tendency.text}`}>
-                {t(`stats.tendency.${tendency.key}`)}
-              </span>
+
+            <div className="flex-1 p-4 bg-zinc-800/30 rounded-xl">
+              <DistributionChart distribution={stats.distribution} total={stats.total} />
             </div>
           </div>
 
-          <div className="flex-1 p-4 bg-zinc-800/30 rounded-xl">
-            <DistributionChart distribution={stats.distribution} total={stats.total} />
+          {hasMonthly && (
+            <div className="p-4 bg-zinc-800/30 rounded-xl">
+              <MonthlyChart data={stats.byMonth} t={t} />
+            </div>
+          )}
+
+          {hasStatus && (
+            <div className="p-4 bg-zinc-800/30 rounded-xl">
+              <StatusBreakdown data={stats.byStatus} t={t} />
+            </div>
+          )}
+
+          <div className="grid grid-cols-3 gap-2">
+            <div className="p-3 bg-zinc-800/30 rounded-xl text-center">
+              <div className="flex items-center justify-center gap-0.5">
+                <span className="text-base font-bold text-white tabular-nums">{stats.mode}</span>
+                <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+              </div>
+              <p className="text-[10px] text-zinc-500 mt-1">{t("stats.mostGiven")}</p>
+            </div>
+            <div className="p-3 bg-zinc-800/30 rounded-xl text-center">
+              <div className="flex items-center justify-center gap-1">
+                <Heart className="w-3.5 h-3.5 text-red-400 fill-red-400" />
+                <span className="text-base font-bold text-white tabular-nums">{stats.liked}</span>
+              </div>
+              <p className="text-[10px] text-zinc-500 mt-1">{t("stats.liked")}</p>
+            </div>
+            <div className="p-3 bg-zinc-800/30 rounded-xl text-center">
+              <div className="flex items-center justify-center gap-1">
+                <MessageSquare className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-base font-bold text-white tabular-nums">{stats.reviewed}</span>
+              </div>
+              <p className="text-[10px] text-zinc-500 mt-1">{t("stats.withReview")}</p>
+            </div>
           </div>
         </div>
-
-        {hasMonthly && (
-          <div className="p-4 bg-zinc-800/30 rounded-xl">
-            <MonthlyChart data={stats.byMonth} t={t} />
-          </div>
-        )}
-
-        {hasStatus && (
-          <div className="p-4 bg-zinc-800/30 rounded-xl">
-            <StatusBreakdown data={stats.byStatus} t={t} />
-          </div>
-        )}
-
-        <div className="grid grid-cols-3 gap-2">
-          <div className="p-3 bg-zinc-800/30 rounded-xl text-center">
-            <div className="flex items-center justify-center gap-0.5">
-              <span className="text-base font-bold text-white tabular-nums">{stats.mode}</span>
-              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-            </div>
-            <p className="text-[10px] text-zinc-500 mt-1">{t("stats.mostGiven")}</p>
-          </div>
-          <div className="p-3 bg-zinc-800/30 rounded-xl text-center">
-            <div className="flex items-center justify-center gap-1">
-              <Heart className="w-3.5 h-3.5 text-red-400 fill-red-400" />
-              <span className="text-base font-bold text-white tabular-nums">{stats.liked}</span>
-            </div>
-            <p className="text-[10px] text-zinc-500 mt-1">{t("stats.liked")}</p>
-          </div>
-          <div className="p-3 bg-zinc-800/30 rounded-xl text-center">
-            <div className="flex items-center justify-center gap-1">
-              <MessageSquare className="w-3.5 h-3.5 text-blue-400" />
-              <span className="text-base font-bold text-white tabular-nums">{stats.reviewed}</span>
-            </div>
-            <p className="text-[10px] text-zinc-500 mt-1">{t("stats.withReview")}</p>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   )
 }
