@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Link } from "react-router-dom"
-import { MessageSquare, MoreHorizontal, Pencil, Trash2, MessageCircle, ArrowUp, X, Check } from "lucide-react"
+import { MessageSquare, MoreHorizontal, Pencil, Trash2, MessageCircle, ArrowUp, X, Check, Reply, ChevronDown, ChevronUp } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
@@ -30,18 +30,24 @@ function CommentSkeleton() {
   )
 }
 
-function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
+function CommentInput({ onSubmit, placeholder, autoFocus = false, parentId = null, replyingTo = null, onCancel = null, compact = false }) {
   const { t } = useTranslation("common")
   const { user } = useAuth()
   const [content, setContent] = useState("")
   const [sending, setSending] = useState(false)
   const textareaRef = useRef(null)
 
+  useEffect(() => {
+    if (autoFocus && textareaRef.current) {
+      textareaRef.current.focus()
+    }
+  }, [autoFocus])
+
   function adjustHeight() {
     const el = textareaRef.current
     if (!el) return
     el.style.height = "auto"
-    const max = 200
+    const max = compact ? 120 : 200
     if (el.scrollHeight > max) {
       el.style.height = max + "px"
       el.style.overflowY = "auto"
@@ -56,13 +62,14 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
     if (!content.trim() || sending) return
 
     setSending(true)
-    const success = await onSubmit(content.trim())
+    const success = await onSubmit(content.trim(), parentId)
     if (success) {
       setContent("")
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto"
         textareaRef.current.style.overflowY = "hidden"
       }
+      if (onCancel) onCancel()
     }
     setSending(false)
   }
@@ -72,9 +79,13 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
       e.preventDefault()
       handleSubmit()
     }
+    if (e.key === "Escape" && onCancel) {
+      onCancel()
+    }
   }
 
   if (!user) {
+    if (compact) return null
     return (
       <div className="flex items-center justify-center py-4 px-4 bg-zinc-800/30 border border-zinc-700/50 rounded-xl">
         <p className="text-sm text-zinc-500">{t("comments.loginRequired")}</p>
@@ -85,17 +96,26 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
   const hasContent = content.trim().length > 0
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-start gap-3">
-      <Link to={`/u/${user.username}`} className="flex-shrink-0 pt-1">
-        <AvatarWithDecoration
-          src={user.avatar}
-          alt={user.username}
-          decorationUrl={user.equipped?.avatar_decoration?.asset_url}
-          size="sm"
-        />
-      </Link>
+    <form onSubmit={handleSubmit} className={`flex items-start gap-2 ${compact ? "mt-2" : "gap-3"}`}>
+      {!compact && (
+        <Link to={`/u/${user.username}`} className="flex-shrink-0 pt-1">
+          <AvatarWithDecoration
+            src={user.avatar}
+            alt={user.username}
+            decorationUrl={user.equipped?.avatar_decoration?.asset_url}
+            size="sm"
+          />
+        </Link>
+      )}
 
       <div className="flex-1 min-w-0">
+        {replyingTo && (
+          <div className="flex items-center gap-1.5 mb-1.5 text-xs text-zinc-500">
+            <Reply className="w-3 h-3" />
+            <span>{t("comments.replyingTo")}</span>
+            <span className="text-indigo-400 font-medium">@{replyingTo}</span>
+          </div>
+        )}
         <textarea
           ref={textareaRef}
           value={content}
@@ -104,29 +124,46 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false }) {
             adjustHeight()
           }}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder || t("comments.placeholder")}
+          placeholder={placeholder || (replyingTo ? t("comments.replyPlaceholder") : t("comments.placeholder"))}
           autoFocus={autoFocus}
           maxLength={2000}
           rows={1}
-          className="w-full px-3.5 py-2.5 bg-zinc-800/80 border border-zinc-700/60 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:bg-zinc-800 transition-all resize-none overflow-hidden"
+          className={`w-full px-3.5 py-2.5 bg-zinc-800/80 border border-zinc-700/60 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:bg-zinc-800 transition-all resize-none overflow-hidden ${
+            compact ? "text-[13px] py-2 px-3" : ""
+          }`}
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={!hasContent || sending}
-        className={`flex-shrink-0 w-[38px] h-[38px] mt-[1px] rounded-xl flex items-center justify-center transition-colors cursor-pointer disabled:cursor-default ${
-          hasContent
-            ? "bg-indigo-500 hover:bg-indigo-400 text-white"
-            : "bg-zinc-800/80 text-zinc-600 border border-zinc-700/60"
-        }`}
-      >
-        {sending ? (
-          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-        ) : (
-          <ArrowUp className="w-4 h-4" />
+      <div className={`flex items-center gap-1.5 ${compact ? "pt-0" : "pt-[1px]"}`}>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className={`flex-shrink-0 rounded-xl flex items-center justify-center bg-zinc-800/80 text-zinc-400 hover:text-white border border-zinc-700/60 transition-colors cursor-pointer ${
+              compact ? "w-8 h-8" : "w-[38px] h-[38px]"
+            }`}
+          >
+            <X className={compact ? "w-3.5 h-3.5" : "w-4 h-4"} />
+          </button>
         )}
-      </button>
+        <button
+          type="submit"
+          disabled={!hasContent || sending}
+          className={`flex-shrink-0 rounded-xl flex items-center justify-center transition-colors cursor-pointer disabled:cursor-default ${
+            compact ? "w-8 h-8" : "w-[38px] h-[38px]"
+          } ${
+            hasContent
+              ? "bg-indigo-500 hover:bg-indigo-400 text-white"
+              : "bg-zinc-800/80 text-zinc-600 border border-zinc-700/60"
+          }`}
+        >
+          {sending ? (
+            <div className={`border-2 border-white/30 border-t-white rounded-full animate-spin ${compact ? "w-3 h-3" : "w-4 h-4"}`} />
+          ) : (
+            <ArrowUp className={compact ? "w-3.5 h-3.5" : "w-4 h-4"} />
+          )}
+        </button>
+      </div>
     </form>
   )
 }
@@ -220,7 +257,7 @@ function EditInput({ content, onSave, onCancel, saving }) {
   )
 }
 
-function CommentItem({ comment, onEdit, onDelete }) {
+function CommentItem({ comment, onEdit, onDelete, onReply, replies = [], depth = 0 }) {
   const { t } = useTranslation("common")
   const { user: currentUser } = useAuth()
   const { getTimeAgo } = useDateTime()
@@ -228,13 +265,17 @@ function CommentItem({ comment, onEdit, onDelete }) {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showReplyInput, setShowReplyInput] = useState(false)
+  const [showReplies, setShowReplies] = useState(true)
   const menuRef = useRef(null)
 
   const isOwner = currentUser?.user_id === comment.user_id
   const isMod = currentUser?.is_moderator
   const canManage = isOwner || isMod
+  const canReply = !!currentUser && depth < 3
   const user = comment.user
   const wasEdited = comment.updated_at !== comment.created_at
+  const hasReplies = replies.length > 0
 
   useEffect(() => {
     function handle(e) {
@@ -254,98 +295,176 @@ function CommentItem({ comment, onEdit, onDelete }) {
     setSaving(false)
   }
 
+  async function handleReply(content, parentId) {
+    const success = await onReply(content, parentId)
+    if (success) setShowReplyInput(false)
+    return success
+  }
+
   return (
-    <div className="group/comment flex gap-3 px-2 py-2.5 -mx-2 rounded-lg hover:bg-zinc-800/30 transition-colors">
-      <Link to={`/u/${user?.username}`} className="flex-shrink-0 pt-0.5">
-        <AvatarWithDecoration
-          src={user?.avatar}
-          alt={user?.username}
-          decorationUrl={user?.equipped?.avatar_decoration?.asset_url}
-          size="sm"
-        />
-      </Link>
+    <div className={depth > 0 ? "ml-6 sm:ml-10 border-l-2 border-zinc-800 pl-3 sm:pl-4" : ""}>
+      <div className="group/comment flex gap-3 px-2 py-2.5 -mx-2 rounded-lg hover:bg-zinc-800/30 transition-colors">
+        <Link to={`/u/${user?.username}`} className="flex-shrink-0 pt-0.5">
+          <AvatarWithDecoration
+            src={user?.avatar}
+            alt={user?.username}
+            decorationUrl={user?.equipped?.avatar_decoration?.asset_url}
+            size={depth > 0 ? "xs" : "sm"}
+          />
+        </Link>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-1.5 sm:gap-2">
-          <Link
-            to={`/u/${user?.username}`}
-            className="text-sm font-semibold text-white hover:underline underline-offset-2 truncate max-w-[140px] sm:max-w-none"
-          >
-            {user?.username}
-          </Link>
-          <UserBadges user={user} size="sm" clickable />
-          <span className="text-[11px] text-zinc-600 whitespace-nowrap flex-shrink-0">
-            {getTimeAgo(comment.created_at)}
-            {wasEdited && <span className="italic"> ({t("comments.edited")})</span>}
-          </span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+            <Link
+              to={`/u/${user?.username}`}
+              className="text-sm font-semibold text-white hover:underline underline-offset-2 truncate max-w-[140px] sm:max-w-none"
+            >
+              {user?.username}
+            </Link>
+            <UserBadges user={user} size="sm" clickable />
 
-          {canManage && !editing && (
-            <div ref={menuRef} className="relative ml-auto self-center">
-              <button
-                onClick={() => {
-                  setMenuOpen(!menuOpen)
-                  setConfirmDelete(false)
-                }}
-                className="p-1 text-zinc-600 hover:text-zinc-300 rounded-md hover:bg-zinc-700/50 transition-colors cursor-pointer opacity-0 group-hover/comment:opacity-100 max-sm:opacity-100"
-              >
-                <MoreHorizontal className="w-3.5 h-3.5" />
-              </button>
+            {comment.parent_user && (
+              <span className="text-[11px] text-zinc-600 flex items-center gap-1">
+                <Reply className="w-2.5 h-2.5" />
+                <Link to={`/u/${comment.parent_user.username}`} className="text-zinc-500 hover:text-zinc-400 hover:underline">
+                  @{comment.parent_user.username}
+                </Link>
+              </span>
+            )}
 
-              {menuOpen && (
-                <div className="absolute right-0 top-full mt-0.5 z-30 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl shadow-black/50 py-1.5 min-w-[160px]">
-                  {isOwner && (
-                    <button
-                      onClick={() => {
-                        setEditing(true)
-                        setMenuOpen(false)
-                      }}
-                      className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-                    >
-                      <Pencil className="w-4 h-4 text-zinc-500" />
-                      {t("comments.edit")}
-                    </button>
-                  )}
+            <span className="text-[11px] text-zinc-600 whitespace-nowrap flex-shrink-0">
+              {getTimeAgo(comment.created_at)}
+              {wasEdited && <span className="italic"> ({t("comments.edited")})</span>}
+            </span>
 
-                  {confirmDelete ? (
-                    <button
-                      onClick={() => {
-                        onDelete(comment.id)
-                        setMenuOpen(false)
-                        setConfirmDelete(false)
-                      }}
-                      className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      {t("comments.deleteConfirm")}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setConfirmDelete(true)}
-                      className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-500/70" />
-                      {t("comments.delete")}
-                    </button>
-                  )}
-                </div>
+            {canManage && !editing && (
+              <div ref={menuRef} className="relative ml-auto self-center">
+                <button
+                  onClick={() => {
+                    setMenuOpen(!menuOpen)
+                    setConfirmDelete(false)
+                  }}
+                  className="p-1 text-zinc-600 hover:text-zinc-300 rounded-md hover:bg-zinc-700/50 transition-colors cursor-pointer opacity-0 group-hover/comment:opacity-100 max-sm:opacity-100"
+                >
+                  <MoreHorizontal className="w-3.5 h-3.5" />
+                </button>
+
+                {menuOpen && (
+                  <div className="absolute right-0 top-full mt-0.5 z-30 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl shadow-black/50 py-1.5 min-w-[160px]">
+                    {isOwner && (
+                      <button
+                        onClick={() => {
+                          setEditing(true)
+                          setMenuOpen(false)
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                      >
+                        <Pencil className="w-4 h-4 text-zinc-500" />
+                        {t("comments.edit")}
+                      </button>
+                    )}
+
+                    {confirmDelete ? (
+                      <button
+                        onClick={() => {
+                          onDelete(comment.id)
+                          setMenuOpen(false)
+                          setConfirmDelete(false)
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        {t("comments.deleteConfirm")}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDelete(true)}
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500/70" />
+                        {t("comments.delete")}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {editing ? (
+            <EditInput
+              content={comment.content}
+              onSave={handleSaveEdit}
+              onCancel={() => setEditing(false)}
+              saving={saving}
+            />
+          ) : (
+            <>
+              <p className="text-[13px] sm:text-sm text-zinc-300 mt-0.5 whitespace-pre-wrap break-words leading-relaxed">
+                {comment.content}
+              </p>
+
+              <div className="flex items-center gap-3 mt-1.5">
+                {canReply && (
+                  <button
+                    onClick={() => setShowReplyInput(!showReplyInput)}
+                    className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                  >
+                    <Reply className="w-3 h-3" />
+                    {t("comments.reply")}
+                  </button>
+                )}
+
+                {hasReplies && (
+                  <button
+                    onClick={() => setShowReplies(!showReplies)}
+                    className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                  >
+                    {showReplies ? (
+                      <>
+                        <ChevronUp className="w-3 h-3" />
+                        {t("comments.hideReplies")}
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-3 h-3" />
+                        {t("comments.showReplies", { count: replies.length })}
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+
+              {showReplyInput && (
+                <CommentInput
+                  onSubmit={handleReply}
+                  parentId={comment.id}
+                  replyingTo={user?.username}
+                  onCancel={() => setShowReplyInput(false)}
+                  autoFocus
+                  compact
+                />
               )}
-            </div>
+            </>
           )}
         </div>
-
-        {editing ? (
-          <EditInput
-            content={comment.content}
-            onSave={handleSaveEdit}
-            onCancel={() => setEditing(false)}
-            saving={saving}
-          />
-        ) : (
-          <p className="text-[13px] sm:text-sm text-zinc-300 mt-0.5 whitespace-pre-wrap break-words leading-relaxed">
-            {comment.content}
-          </p>
-        )}
       </div>
+
+      {hasReplies && showReplies && (
+        <div className="mt-1">
+          {replies.map(reply => (
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onReply={onReply}
+              replies={reply.replies || []}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -360,6 +479,25 @@ function CommentEmpty() {
       <p className="text-xs text-zinc-600">{t("comments.emptySubtitle")}</p>
     </div>
   )
+}
+
+function buildCommentTree(comments) {
+  const map = {}
+  const roots = []
+
+  for (const c of comments) {
+    map[c.id] = { ...c, replies: [] }
+  }
+
+  for (const c of comments) {
+    if (c.parent_id && map[c.parent_id]) {
+      map[c.parent_id].replies.push(map[c.id])
+    } else {
+      roots.push(map[c.id])
+    }
+  }
+
+  return roots
 }
 
 export default function CommentSection({ type, targetId }) {
@@ -408,7 +546,7 @@ export default function CommentSection({ type, targetId }) {
     fetchComments(1)
   }, [type, targetId, fetchComments])
 
-  async function handleCreate(content) {
+  async function handleCreate(content, parentId = null) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return false
@@ -419,7 +557,7 @@ export default function CommentSection({ type, targetId }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ type, targetId, content })
+        body: JSON.stringify({ type, targetId, content, parentId })
       })
 
       if (!r.ok) return false
@@ -477,7 +615,7 @@ export default function CommentSection({ type, targetId }) {
 
       if (!r.ok) return
 
-      setComments(prev => prev.filter(c => c.id !== commentId))
+      setComments(prev => prev.filter(c => c.id !== commentId && c.parent_id !== commentId))
       setTotal(prev => prev - 1)
     } catch {}
   }
@@ -486,6 +624,8 @@ export default function CommentSection({ type, targetId }) {
     if (loadingMore || page >= totalPages) return
     fetchComments(page + 1, true)
   }
+
+  const commentTree = buildCommentTree(comments)
 
   return (
     <div className="space-y-4">
@@ -501,14 +641,16 @@ export default function CommentSection({ type, targetId }) {
 
       {loading ? (
         <CommentSkeleton />
-      ) : comments.length > 0 ? (
+      ) : commentTree.length > 0 ? (
         <div className="space-y-0.5">
-          {comments.map(comment => (
+          {commentTree.map(comment => (
             <CommentItem
               key={comment.id}
               comment={comment}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onReply={handleCreate}
+              replies={comment.replies}
             />
           ))}
 
