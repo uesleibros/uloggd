@@ -37,6 +37,7 @@ export default {
 	  emptyDesc: "Your screenshots will appear here",
 	  upload: {
 	    title: "New post",
+			back: "Back",
 	    details: "Details",
 	    dragPhotos: "Drag photos here",
 	    dragPhotosDesc: "or click the button below",
