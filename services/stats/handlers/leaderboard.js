@@ -7,7 +7,7 @@ const CACHE_TTL = 300
 export async function handleLeaderboard(req, res) {
   const { category = "minerals", limit = 10, page = 1 } = req.query
 
-  const validCategories = ["minerals", "reviews", "followers", "likes", "aspect_ratings", "playtime"]
+  const validCategories = ["global", "minerals", "reviews", "followers", "likes", "playtime"]
   if (!validCategories.includes(category)) {
     return res.status(400).json({ error: "Invalid category" })
   }
@@ -25,6 +25,9 @@ export async function handleLeaderboard(req, res) {
     let total = 0
 
     switch (category) {
+      case "global":
+        ({ entries, total } = await getGlobalLeaderboard(limitNum, offset))
+        break
       case "minerals":
         ({ entries, total } = await getMineralsLeaderboard(limitNum, offset))
         break
@@ -36,9 +39,6 @@ export async function handleLeaderboard(req, res) {
         break
       case "likes":
         ({ entries, total } = await getLikesLeaderboard(limitNum, offset))
-        break
-      case "aspect_ratings":
-        ({ entries, total } = await getAspectRatingsLeaderboard(limitNum, offset))
         break
       case "playtime":
         ({ entries, total } = await getPlaytimeLeaderboard(limitNum, offset))
@@ -76,6 +76,170 @@ async function getFormattedUsers(userIds) {
   const profiles = await findManyByIds(userIds)
   const streamsMap = await resolveStreams(profiles)
   return formatUserMap(profiles, streamsMap)
+}
+
+async function getGlobalLeaderboard(limit, offset) {
+  const [mineralsData, reviewsData, followersData, likesData, playtimeData] = await Promise.all([
+    getMineralsRaw(),
+    getReviewsRaw(),
+    getFollowersRaw(),
+    getLikesRaw(),
+    getPlaytimeRaw(),
+  ])
+
+  const allUserIds = new Set([
+    ...Object.keys(mineralsData),
+    ...Object.keys(reviewsData),
+    ...Object.keys(followersData),
+    ...Object.keys(likesData),
+    ...Object.keys(playtimeData),
+  ])
+
+  const maxMinerals = Math.max(...Object.values(mineralsData).map(d => d.value), 1)
+  const maxReviews = Math.max(...Object.values(reviewsData).map(d => d.value), 1)
+  const maxFollowers = Math.max(...Object.values(followersData), 1)
+  const maxLikes = Math.max(...Object.values(likesData).map(d => d.value), 1)
+  const maxPlaytime = Math.max(...Object.values(playtimeData).map(d => d.value), 1)
+
+  const scores = []
+
+  for (const userId of allUserIds) {
+    const minerals = mineralsData[userId]?.value || 0
+    const reviews = reviewsData[userId]?.value || 0
+    const followers = followersData[userId] || 0
+    const likes = likesData[userId]?.value || 0
+    const playtime = playtimeData[userId]?.value || 0
+
+    const mineralsScore = (minerals / maxMinerals) * 100
+    const reviewsScore = (reviews / maxReviews) * 100
+    const followersScore = (followers / maxFollowers) * 100
+    const likesScore = (likes / maxLikes) * 100
+    const playtimeScore = (playtime / maxPlaytime) * 100
+
+    const totalScore = mineralsScore + reviewsScore + followersScore + likesScore + playtimeScore
+
+    scores.push({
+      user_id: userId,
+      value: Math.round(totalScore * 10) / 10,
+      breakdown: {
+        minerals: Math.round(mineralsScore * 10) / 10,
+        reviews: Math.round(reviewsScore * 10) / 10,
+        followers: Math.round(followersScore * 10) / 10,
+        likes: Math.round(likesScore * 10) / 10,
+        playtime: Math.round(playtimeScore * 10) / 10,
+      },
+      raw: {
+        minerals,
+        reviews,
+        followers,
+        likes,
+        playtime,
+      },
+    })
+  }
+
+  scores.sort((a, b) => b.value - a.value)
+
+  const total = scores.length
+  const paginated = scores.slice(offset, offset + limit)
+
+  const entries = paginated.map((item, i) => ({
+    rank: offset + i + 1,
+    user_id: item.user_id,
+    value: item.value,
+    breakdown: item.breakdown,
+    raw: item.raw,
+  }))
+
+  return { entries, total }
+}
+
+async function getMineralsRaw() {
+  const { data: minerals } = await supabase
+    .from("user_minerals")
+    .select("user_id, copper, iron, gold, emerald, diamond, ruby")
+
+  const result = {}
+  for (const m of minerals || []) {
+    const value = (m.copper || 0) + (m.iron || 0) + (m.gold || 0) + (m.emerald || 0) + (m.diamond || 0) + (m.ruby || 0)
+    result[m.user_id] = { value }
+  }
+  return result
+}
+
+async function getReviewsRaw() {
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("user_id")
+
+  const result = {}
+  for (const r of reviews || []) {
+    if (!result[r.user_id]) result[r.user_id] = { value: 0 }
+    result[r.user_id].value++
+  }
+  return result
+}
+
+async function getFollowersRaw() {
+  const { data: follows } = await supabase
+    .from("follows")
+    .select("following_id")
+
+  const result = {}
+  for (const f of follows || []) {
+    result[f.following_id] = (result[f.following_id] || 0) + 1
+  }
+  return result
+}
+
+async function getLikesRaw() {
+  const [reviewLikes, listLikes, tierlistLikes, screenshotLikes] = await Promise.all([
+    getReviewLikesPerUser(),
+    getListLikesPerUser(),
+    getTierlistLikesPerUser(),
+    getScreenshotLikesPerUser(),
+  ])
+
+  const result = {}
+  const addLikes = (likes) => {
+    for (const [userId, count] of Object.entries(likes)) {
+      if (!result[userId]) result[userId] = { value: 0 }
+      result[userId].value += count
+    }
+  }
+
+  addLikes(reviewLikes)
+  addLikes(listLikes)
+  addLikes(tierlistLikes)
+  addLikes(screenshotLikes)
+
+  return result
+}
+
+async function getPlaytimeRaw() {
+  const { data: journeys } = await supabase
+    .from("journeys")
+    .select("id, user_id")
+
+  const journeyOwners = {}
+  for (const j of journeys || []) {
+    journeyOwners[j.id] = j.user_id
+  }
+
+  const { data: entries } = await supabase
+    .from("journey_entries")
+    .select("journey_id, hours, minutes")
+
+  const result = {}
+  for (const e of entries || []) {
+    const userId = journeyOwners[e.journey_id]
+    if (!userId) continue
+
+    const totalMinutes = (e.hours || 0) * 60 + (e.minutes || 0)
+    if (!result[userId]) result[userId] = { value: 0 }
+    result[userId].value += totalMinutes
+  }
+  return result
 }
 
 async function getMineralsLeaderboard(limit, offset) {
@@ -249,63 +413,6 @@ async function getLikesLeaderboard(limit, offset) {
     user_id: item.user_id,
     value: item.value,
     breakdown: breakdownMap[item.user_id] || { reviews: 0, lists: 0, tierlists: 0, screenshots: 0 },
-  }))
-
-  return { entries, total }
-}
-
-async function getAspectRatingsLeaderboard(limit, offset) {
-  const { data: reviews, error } = await supabase
-    .from("reviews")
-    .select("user_id, aspect_ratings")
-
-  if (error) throw error
-
-  const statsMap = {}
-
-  for (const r of reviews || []) {
-    let aspects = r.aspect_ratings
-    if (typeof aspects === "string") {
-      try { aspects = JSON.parse(aspects) } catch { aspects = null }
-    }
-
-    if (!Array.isArray(aspects)) continue
-
-    for (const aspect of aspects) {
-      if (aspect.rating === null || aspect.rating === undefined) continue
-      const parsed = parseFloat(aspect.rating)
-      if (isNaN(parsed)) continue
-
-      const normalized = parsed / 20
-
-      if (!statsMap[r.user_id]) {
-        statsMap[r.user_id] = { count: 0, sum: 0 }
-      }
-      statsMap[r.user_id].count++
-      statsMap[r.user_id].sum += normalized
-    }
-  }
-
-  const sorted = Object.entries(statsMap)
-    .filter(([, stats]) => stats.count > 0)
-    .map(([user_id, stats]) => ({
-      user_id,
-      value: stats.count,
-      avgRating: parseFloat((stats.sum / stats.count).toFixed(2)),
-    }))
-    .sort((a, b) => {
-      if (b.value !== a.value) return b.value - a.value
-      return b.avgRating - a.avgRating
-    })
-
-  const total = sorted.length
-  const paginated = sorted.slice(offset, offset + limit)
-
-  const entries = paginated.map((item, i) => ({
-    rank: offset + i + 1,
-    user_id: item.user_id,
-    value: item.value,
-    avgRating: item.avgRating,
   }))
 
   return { entries, total }
