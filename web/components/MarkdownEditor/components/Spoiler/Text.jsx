@@ -14,15 +14,15 @@ export function SpoilerText({ children }) {
   return (
     <span
       onClick={handleClick}
-      className={`relative inline-block align-middle max-w-full rounded px-1.5 py-0.5 transition-colors break-words whitespace-normal z-10 ${
+      className={`relative inline-block align-middle max-w-full rounded px-1.5 py-0.5 transition-colors break-words whitespace-normal ${
         revealed
           ? "bg-zinc-700/40 text-zinc-300 cursor-text select-text"
-          : "bg-zinc-700 hover:bg-zinc-600 text-transparent cursor-pointer select-none"
+          : "bg-zinc-700 hover:bg-zinc-600 text-transparent cursor-pointer select-none [&_*]:invisible"
       }`}
     >
       {children}
       {!revealed && (
-        <span className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+        <span className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
           <EyeOff className="w-4 h-4 text-zinc-400" />
         </span>
       )}
