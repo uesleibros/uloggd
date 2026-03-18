@@ -114,6 +114,7 @@ cp .env.example .env
 | `IMGCHEST_API_KEY` | API key for image uploads | https://imgchest.com/docs/api |
 | `DISCORD_WEBHOOK_URL` | Webhook URL for team notifications | Discord → Channel → Edit Channel → Integrations → Webhooks |
 | `ISTHEREANYDEAL_API_KEY` | API key for game price history | https://isthereanydeal.com/dev/app/ |
+| `DEVTO_API_KEY` | API key for blog/news posts | Dev.to → Settings → Extensions → DEV Community API Keys |
 
 #### Local Development
 
