@@ -1,4 +1,17 @@
 export default {
+	blog: 	{
+	  title: "News",
+	  subtitle: "Updates and news from uloggd",
+	  description: "Latest news and updates from uloggd",
+	  backToHome: "Back to home",
+	  minRead: "min read",
+	  readMore: "Read on Dev.to",
+	  poweredBy: "Powered by",
+	  empty: {
+	    title: "No posts yet",
+	    description: "Stay tuned for updates!"
+	  }
+	},
 	legal: 	{
 	  backToHome: "Back to home",
 	  questions: "Have any questions? Contact us:",
