@@ -125,6 +125,118 @@ function CategoryTabs({ active, onChange, t }) {
   )
 }
 
+function MineralBreakdown({ breakdown, compact = false }) {
+  if (!breakdown) return null
+
+  const nonZero = MINERALS.filter(m => (breakdown[m.key] || 0) > 0)
+  if (nonZero.length === 0) return null
+
+  return (
+    <div className={`flex items-center gap-1.5 flex-wrap ${compact ? "justify-center" : ""}`}>
+      {nonZero.map(mineral => (
+        <div key={mineral.key} className="flex items-center gap-0.5">
+          <img
+            src={mineral.image}
+            alt=""
+            className="w-3 h-3 object-contain flex-shrink-0"
+          />
+          <span className="text-[10px] text-zinc-500 tabular-nums">
+            {(breakdown[mineral.key] || 0).toLocaleString()}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function LikesBreakdown({ breakdown, compact = false }) {
+  if (!breakdown) return null
+
+  const items = LIKES_BREAKDOWN_CONFIG.filter(item => (breakdown[item.key] || 0) > 0)
+  if (items.length === 0) return null
+
+  return (
+    <div className={`flex items-center gap-2 flex-wrap ${compact ? "justify-center" : ""}`}>
+      {items.map(({ key, icon: Icon }) => (
+        <div key={key} className="flex items-center gap-0.5">
+          <Icon className="w-2.5 h-2.5 text-zinc-600" />
+          <span className="text-[10px] text-zinc-500 tabular-nums">
+            {breakdown[key]}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function GlobalBreakdown({ breakdown, compact = false }) {
+  if (!breakdown) return null
+
+  const items = GLOBAL_BREAKDOWN_CONFIG.filter(item => (breakdown[item.key] || 0) > 0)
+  if (items.length === 0) return null
+
+  return (
+    <div className={`flex items-center gap-2 flex-wrap ${compact ? "justify-center" : ""}`}>
+      {items.map(({ key, icon: Icon, color }) => (
+        <div key={key} className="flex items-center gap-0.5">
+          <Icon className={`w-2.5 h-2.5 ${color}`} />
+          <span className="text-[10px] text-zinc-500 tabular-nums">
+            {(breakdown[key] || 0).toLocaleString()}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function PodiumBreakdown({ entry, category, t }) {
+  const { breakdown, avgRating, entries: journeyEntries } = entry
+
+  if (category === "global") {
+    return <GlobalBreakdown breakdown={breakdown} compact />
+  }
+
+  if (category === "minerals") {
+    return <MineralBreakdown breakdown={breakdown} compact />
+  }
+
+  if (category === "reviews" && avgRating > 0) {
+    return (
+      <div className="flex items-center justify-center gap-1">
+        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+        <span className="text-[10px] text-zinc-500">
+          {avgRating.toFixed(1)} {t("leaderboard.avgRating")}
+        </span>
+      </div>
+    )
+  }
+
+  if (category === "likes") {
+    return <LikesBreakdown breakdown={breakdown} compact />
+  }
+
+  if (category === "followers") {
+    return (
+      <span className="text-[10px] text-zinc-600">
+        {t("leaderboard.followersLabel")}
+      </span>
+    )
+  }
+
+  if (category === "playtime" && journeyEntries > 0) {
+    return (
+      <div className="flex items-center justify-center gap-1">
+        <Clock className="w-2.5 h-2.5 text-zinc-600" />
+        <span className="text-[10px] text-zinc-500">
+          {journeyEntries} {t("leaderboard.journeyEntries")}
+        </span>
+      </div>
+    )
+  }
+
+  return null
+}
+
 function TopThreePodium({ entries, category, t }) {
   if (entries.length < 3) return null
 
@@ -157,12 +269,12 @@ function TopThreePodium({ entries, category, t }) {
                 <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${config.color}`} />
               </div>
 
-              <div className={isFirst ? "w-16 h-16 sm:w-20 sm:h-20" : "w-12 h-12 sm:w-16 sm:h-16"}>
+              <div className={isFirst ? "w-20 h-20 sm:w-24 sm:h-24" : "w-16 h-16 sm:w-20 sm:h-20"}>
                 <AvatarWithDecoration
                   src={entry.user?.avatar}
                   alt={entry.user?.username}
                   decorationUrl={entry.user?.equipped?.avatar_decoration?.asset_url}
-                  size={isFirst ? "md" : "sm"}
+                  size={isFirst ? "lg" : "md"}
                 />
               </div>
 
@@ -183,6 +295,10 @@ function TopThreePodium({ entries, category, t }) {
                   {t(`leaderboard.units.${category}`)}
                 </p>
               </div>
+
+              <div className="mt-2 w-full">
+                <PodiumBreakdown entry={entry} category={category} t={t} />
+              </div>
             </div>
           </Link>
         )
@@ -195,70 +311,6 @@ function RankNumber({ rank }) {
   return (
     <div className="w-6 flex-shrink-0 text-center">
       <span className="text-sm font-bold text-zinc-500 tabular-nums">{rank}</span>
-    </div>
-  )
-}
-
-function MineralBreakdown({ breakdown }) {
-  if (!breakdown) return null
-
-  const nonZero = MINERALS.filter(m => (breakdown[m.key] || 0) > 0)
-  if (nonZero.length === 0) return null
-
-  return (
-    <div className="flex items-center gap-1.5 flex-wrap">
-      {nonZero.map(mineral => (
-        <div key={mineral.key} className="flex items-center gap-0.5">
-          <img
-            src={mineral.image}
-            alt=""
-            className="w-3 h-3 object-contain flex-shrink-0"
-          />
-          <span className="text-[10px] text-zinc-500 tabular-nums">
-            {(breakdown[mineral.key] || 0).toLocaleString()}
-          </span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function LikesBreakdown({ breakdown }) {
-  if (!breakdown) return null
-
-  const items = LIKES_BREAKDOWN_CONFIG.filter(item => (breakdown[item.key] || 0) > 0)
-  if (items.length === 0) return null
-
-  return (
-    <div className="flex items-center gap-2 flex-wrap">
-      {items.map(({ key, icon: Icon }) => (
-        <div key={key} className="flex items-center gap-0.5">
-          <Icon className="w-2.5 h-2.5 text-zinc-600" />
-          <span className="text-[10px] text-zinc-500 tabular-nums">
-            {breakdown[key]}
-          </span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function GlobalBreakdown({ breakdown }) {
-  if (!breakdown) return null
-
-  const items = GLOBAL_BREAKDOWN_CONFIG.filter(item => (breakdown[item.key] || 0) > 0)
-  if (items.length === 0) return null
-
-  return (
-    <div className="flex items-center gap-2 flex-wrap">
-      {items.map(({ key, icon: Icon, color }) => (
-        <div key={key} className="flex items-center gap-0.5">
-          <Icon className={`w-2.5 h-2.5 ${color}`} />
-          <span className="text-[10px] text-zinc-500 tabular-nums">
-            {(breakdown[key] || 0).toLocaleString()}
-          </span>
-        </div>
-      ))}
     </div>
   )
 }
