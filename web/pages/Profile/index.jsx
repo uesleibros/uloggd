@@ -78,6 +78,7 @@ export default function Profile() {
 		followersCount,
 		followingCount,
 		handleFollow,
+		adjustFollowingCount,
 	} = useFollowData(profile, currentUser, authLoading, isOwnProfile)
 
 	const [activeSection, setActiveSection] = useState("profile")
@@ -206,6 +207,11 @@ export default function Profile() {
 				title={followModal || ""}
 				userId={profile.user_id}
 				onClose={() => setFollowModal(null)}
+				onFollowChange={(targetUserId, isNowFollowing) => {
+					if (isOwnProfile) {
+						adjustFollowingCount(isNowFollowing ? 1 : -1)
+					}
+				}}
 			/>
 			<SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
 		</div>
