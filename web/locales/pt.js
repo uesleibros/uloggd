@@ -691,6 +691,8 @@ export default {
 	notFound: {
 		title: "404",
 		message: "Essa página não existe ou foi movida.",
+		searchGames: "Buscar jogos",
+		goBack: "Voltar",
 		backHome: "Voltar para a home",
 	},
 	header: {
