@@ -9,20 +9,21 @@ import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import UserBadges from "@components/User/UserBadges"
 
 const LIMIT = 10
+const MAX_VISUAL_DEPTH = 2
 
 function CommentSkeleton() {
   return (
-    <div className="space-y-0.5">
+    <div className="space-y-3">
       {[...Array(3)].map((_, i) => (
-        <div key={i} className="flex gap-3 px-2 py-3">
-          <div className="w-9 h-9 rounded-full bg-zinc-800 animate-pulse flex-shrink-0" />
-          <div className="flex-1 space-y-2 pt-0.5">
+        <div key={i} className="flex gap-2.5 py-2">
+          <div className="w-8 h-8 rounded-full bg-zinc-800 animate-pulse flex-shrink-0" />
+          <div className="flex-1 space-y-1.5">
             <div className="flex items-center gap-2">
-              <div className="h-3.5 w-20 bg-zinc-800 rounded animate-pulse" />
-              <div className="h-3 w-14 bg-zinc-800/40 rounded animate-pulse" />
+              <div className="h-3 w-20 bg-zinc-800 rounded animate-pulse" />
+              <div className="h-2.5 w-12 bg-zinc-800/40 rounded animate-pulse" />
             </div>
-            <div className="h-3.5 w-full bg-zinc-800/50 rounded animate-pulse" />
-            <div className="h-3.5 w-2/3 bg-zinc-800/30 rounded animate-pulse" />
+            <div className="h-3 w-full bg-zinc-800/50 rounded animate-pulse" />
+            <div className="h-3 w-1/2 bg-zinc-800/30 rounded animate-pulse" />
           </div>
         </div>
       ))}
@@ -47,7 +48,7 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false, parentId = nul
     const el = textareaRef.current
     if (!el) return
     el.style.height = "auto"
-    const max = compact ? 120 : 200
+    const max = compact ? 100 : 160
     if (el.scrollHeight > max) {
       el.style.height = max + "px"
       el.style.overflowY = "auto"
@@ -96,9 +97,9 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false, parentId = nul
   const hasContent = content.trim().length > 0
 
   return (
-    <form onSubmit={handleSubmit} className={`flex items-start gap-2 ${compact ? "mt-2" : "gap-3"}`}>
+    <form onSubmit={handleSubmit} className={`flex items-start gap-2 ${compact ? "mt-2" : "gap-2.5"}`}>
       {!compact && (
-        <Link to={`/u/${user.username}`} className="flex-shrink-0 pt-1">
+        <Link to={`/u/${user.username}`} className="flex-shrink-0">
           <AvatarWithDecoration
             src={user.avatar}
             alt={user.username}
@@ -128,29 +129,29 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false, parentId = nul
           autoFocus={autoFocus}
           maxLength={2000}
           rows={1}
-          className={`w-full px-3.5 py-2.5 bg-zinc-800/80 border border-zinc-700/60 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:bg-zinc-800 transition-all resize-none overflow-hidden ${
-            compact ? "text-[13px] py-2 px-3" : ""
+          className={`w-full px-3 py-2 bg-zinc-800/80 border border-zinc-700/60 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:bg-zinc-800 transition-all resize-none overflow-hidden ${
+            compact ? "text-[13px] py-1.5 px-2.5" : ""
           }`}
         />
       </div>
 
-      <div className={`flex items-center gap-1.5 ${compact ? "pt-0" : "pt-[1px]"}`}>
+      <div className={`flex items-center gap-1 ${compact ? "" : "pt-px"}`}>
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className={`flex-shrink-0 rounded-xl flex items-center justify-center bg-zinc-800/80 text-zinc-400 hover:text-white border border-zinc-700/60 transition-colors cursor-pointer ${
-              compact ? "w-8 h-8" : "w-[38px] h-[38px]"
+            className={`flex-shrink-0 rounded-lg flex items-center justify-center bg-zinc-800/80 text-zinc-400 hover:text-white border border-zinc-700/60 transition-colors cursor-pointer ${
+              compact ? "w-7 h-7" : "w-9 h-9"
             }`}
           >
-            <X className={compact ? "w-3.5 h-3.5" : "w-4 h-4"} />
+            <X className={compact ? "w-3 h-3" : "w-4 h-4"} />
           </button>
         )}
         <button
           type="submit"
           disabled={!hasContent || sending}
-          className={`flex-shrink-0 rounded-xl flex items-center justify-center transition-colors cursor-pointer disabled:cursor-default ${
-            compact ? "w-8 h-8" : "w-[38px] h-[38px]"
+          className={`flex-shrink-0 rounded-lg flex items-center justify-center transition-colors cursor-pointer disabled:cursor-default ${
+            compact ? "w-7 h-7" : "w-9 h-9"
           } ${
             hasContent
               ? "bg-indigo-500 hover:bg-indigo-400 text-white"
@@ -158,9 +159,9 @@ function CommentInput({ onSubmit, placeholder, autoFocus = false, parentId = nul
           }`}
         >
           {sending ? (
-            <div className={`border-2 border-white/30 border-t-white rounded-full animate-spin ${compact ? "w-3 h-3" : "w-4 h-4"}`} />
+            <div className={`border-2 border-white/30 border-t-white rounded-full animate-spin ${compact ? "w-3 h-3" : "w-3.5 h-3.5"}`} />
           ) : (
-            <ArrowUp className={compact ? "w-3.5 h-3.5" : "w-4 h-4"} />
+            <ArrowUp className={compact ? "w-3 h-3" : "w-4 h-4"} />
           )}
         </button>
       </div>
@@ -185,7 +186,7 @@ function EditInput({ content, onSave, onCancel, saving }) {
     const el = textareaRef.current
     if (!el) return
     el.style.height = "auto"
-    const max = 200
+    const max = 160
     if (el.scrollHeight > max) {
       el.style.height = max + "px"
       el.style.overflowY = "auto"
@@ -207,42 +208,40 @@ function EditInput({ content, onSave, onCancel, saving }) {
   const hasChanged = editContent.trim() !== content
 
   return (
-    <div className="mt-1.5">
-      <div className="flex items-start gap-2">
-        <div className="flex-1 min-w-0">
-          <textarea
-            ref={textareaRef}
-            value={editContent}
-            onChange={(e) => {
-              setEditContent(e.target.value)
-              adjustHeight()
-            }}
-            onKeyDown={handleKeyDown}
-            maxLength={2000}
-            rows={1}
-            className="w-full px-3.5 py-2.5 bg-zinc-800 border border-indigo-500/30 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500/50 transition-colors resize-none overflow-hidden"
-          />
-        </div>
+    <div className="mt-1">
+      <div className="flex items-start gap-1.5">
+        <textarea
+          ref={textareaRef}
+          value={editContent}
+          onChange={(e) => {
+            setEditContent(e.target.value)
+            adjustHeight()
+          }}
+          onKeyDown={handleKeyDown}
+          maxLength={2000}
+          rows={1}
+          className="flex-1 min-w-0 px-3 py-2 bg-zinc-800 border border-indigo-500/30 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500/50 transition-colors resize-none overflow-hidden"
+        />
 
-        <div className="flex items-center gap-1 pt-[1px]">
+        <div className="flex items-center gap-1">
           <button
             onClick={onCancel}
             disabled={saving}
-            className="w-[38px] h-[38px] rounded-xl flex items-center justify-center bg-zinc-800/80 text-zinc-400 hover:text-white border border-zinc-700/60 transition-colors cursor-pointer disabled:opacity-50"
+            className="w-9 h-9 rounded-lg flex items-center justify-center bg-zinc-800/80 text-zinc-400 hover:text-white border border-zinc-700/60 transition-colors cursor-pointer disabled:opacity-50"
           >
             <X className="w-4 h-4" />
           </button>
           <button
             onClick={() => { if (hasContent) onSave(editContent.trim()) }}
             disabled={saving || !hasContent || !hasChanged}
-            className={`w-[38px] h-[38px] rounded-xl flex items-center justify-center transition-colors cursor-pointer disabled:cursor-default ${
+            className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors cursor-pointer disabled:cursor-default ${
               hasContent && hasChanged
                 ? "bg-indigo-500 hover:bg-indigo-400 text-white"
                 : "bg-zinc-800/80 text-zinc-600 border border-zinc-700/60"
             }`}
           >
             {saving ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <Check className="w-4 h-4" />
             )}
@@ -250,8 +249,8 @@ function EditInput({ content, onSave, onCancel, saving }) {
         </div>
       </div>
 
-      <p className="text-[10px] text-zinc-600 mt-1.5 px-1 hidden sm:block">
-        escape {t("comments.toCancel")} · enter {t("comments.toSave")}
+      <p className="text-[10px] text-zinc-600 mt-1 hidden sm:block">
+        esc {t("comments.toCancel")} · enter {t("comments.toSave")}
       </p>
     </div>
   )
@@ -276,6 +275,9 @@ function CommentItem({ comment, onEdit, onDelete, onReply, replies = [], depth =
   const user = comment.user
   const wasEdited = comment.updated_at !== comment.created_at
   const hasReplies = replies.length > 0
+
+  const visualDepth = Math.min(depth, MAX_VISUAL_DEPTH)
+  const indentClass = visualDepth > 0 ? "ml-3 sm:ml-4 pl-3 border-l border-zinc-800" : ""
 
   useEffect(() => {
     function handle(e) {
@@ -302,29 +304,29 @@ function CommentItem({ comment, onEdit, onDelete, onReply, replies = [], depth =
   }
 
   return (
-    <div className={depth > 0 ? "ml-4 sm:ml-6 pl-3 sm:pl-4 border-l-2 border-zinc-800" : ""}>
-      <div className="group/comment flex gap-2.5 sm:gap-3 py-2.5 rounded-lg hover:bg-zinc-800/30 transition-colors">
+    <div className={indentClass}>
+      <div className="group/comment flex gap-2 py-2 rounded-lg hover:bg-zinc-800/20 transition-colors -mx-1 px-1">
         <Link to={`/u/${user?.username}`} className="flex-shrink-0">
           <AvatarWithDecoration
             src={user?.avatar}
             alt={user?.username}
             decorationUrl={user?.equipped?.avatar_decoration?.asset_url}
-            size="sm"
+            size="xs"
           />
         </Link>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex-1 min-w-0 -mt-0.5">
+          <div className="flex items-center gap-1.5 flex-wrap text-[13px] leading-tight">
             <Link
               to={`/u/${user?.username}`}
-              className="text-sm font-semibold text-white hover:underline underline-offset-2"
+              className="font-semibold text-white hover:underline underline-offset-2"
             >
               {user?.username}
             </Link>
-            <UserBadges user={user} size="sm" clickable />
+            <UserBadges user={user} size="xs" clickable />
 
-            {comment.parent_user && (
-              <span className="text-[11px] text-zinc-600 flex items-center gap-1">
+            {comment.parent_user && depth > 0 && (
+              <span className="text-[11px] text-zinc-600 flex items-center gap-0.5">
                 <Reply className="w-2.5 h-2.5" />
                 <Link to={`/u/${comment.parent_user.username}`} className="text-zinc-500 hover:text-zinc-400 hover:underline">
                   @{comment.parent_user.username}
@@ -332,7 +334,7 @@ function CommentItem({ comment, onEdit, onDelete, onReply, replies = [], depth =
               </span>
             )}
 
-            <span className="text-[11px] text-zinc-600 whitespace-nowrap">
+            <span className="text-[11px] text-zinc-600">
               · {getTimeAgo(comment.created_at)}
               {wasEdited && <span className="italic"> ({t("comments.edited")})</span>}
             </span>
@@ -344,22 +346,22 @@ function CommentItem({ comment, onEdit, onDelete, onReply, replies = [], depth =
                     setMenuOpen(!menuOpen)
                     setConfirmDelete(false)
                   }}
-                  className="p-1 text-zinc-600 hover:text-zinc-300 rounded-md hover:bg-zinc-700/50 transition-colors cursor-pointer opacity-0 group-hover/comment:opacity-100 max-sm:opacity-100"
+                  className="p-0.5 text-zinc-600 hover:text-zinc-300 rounded transition-colors cursor-pointer opacity-0 group-hover/comment:opacity-100 max-sm:opacity-100"
                 >
                   <MoreHorizontal className="w-3.5 h-3.5" />
                 </button>
 
                 {menuOpen && (
-                  <div className="absolute right-0 top-full mt-0.5 z-30 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl shadow-black/50 py-1.5 min-w-[160px]">
+                  <div className="absolute right-0 top-full mt-0.5 z-30 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl shadow-black/50 py-1 min-w-[140px]">
                     {isOwner && (
                       <button
                         onClick={() => {
                           setEditing(true)
                           setMenuOpen(false)
                         }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
                       >
-                        <Pencil className="w-4 h-4 text-zinc-500" />
+                        <Pencil className="w-3.5 h-3.5 text-zinc-500" />
                         {t("comments.edit")}
                       </button>
                     )}
@@ -371,17 +373,17 @@ function CommentItem({ comment, onEdit, onDelete, onReply, replies = [], depth =
                           setMenuOpen(false)
                           setConfirmDelete(false)
                         }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                         {t("comments.deleteConfirm")}
                       </button>
                     ) : (
                       <button
                         onClick={() => setConfirmDelete(true)}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
                       >
-                        <Trash2 className="w-4 h-4 text-red-500/70" />
+                        <Trash2 className="w-3.5 h-3.5 text-red-500/70" />
                         {t("comments.delete")}
                       </button>
                     )}
@@ -400,11 +402,11 @@ function CommentItem({ comment, onEdit, onDelete, onReply, replies = [], depth =
             />
           ) : (
             <>
-              <p className="text-[13px] sm:text-sm text-zinc-300 mt-1 whitespace-pre-wrap break-words leading-relaxed">
+              <p className="text-[13px] text-zinc-300 mt-0.5 whitespace-pre-wrap break-words leading-relaxed">
                 {comment.content}
               </p>
 
-              <div className="flex items-center gap-3 mt-1.5">
+              <div className="flex items-center gap-3 mt-1">
                 {canReply && (
                   <button
                     onClick={() => setShowReplyInput(!showReplyInput)}
@@ -473,7 +475,7 @@ function CommentEmpty() {
   const { t } = useTranslation("common")
 
   return (
-    <div className="flex flex-col items-center justify-center py-10 sm:py-12 gap-2">
+    <div className="flex flex-col items-center justify-center py-10 gap-2">
       <MessageCircle className="w-8 h-8 text-zinc-700" />
       <p className="text-sm text-zinc-500">{t("comments.empty")}</p>
       <p className="text-xs text-zinc-600">{t("comments.emptySubtitle")}</p>
@@ -630,10 +632,10 @@ export default function CommentSection({ type, targetId }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400" />
-        <h3 className="text-sm sm:text-base font-semibold text-white">{t("comments.title")}</h3>
+        <MessageSquare className="w-4 h-4 text-zinc-400" />
+        <h3 className="text-sm font-semibold text-white">{t("comments.title")}</h3>
         {!loading && total > 0 && (
-          <span className="text-xs sm:text-sm text-zinc-500">({total})</span>
+          <span className="text-xs text-zinc-500">({total})</span>
         )}
       </div>
 
@@ -659,7 +661,7 @@ export default function CommentSection({ type, targetId }) {
               <button
                 onClick={handleLoadMore}
                 disabled={loadingMore}
-                className="w-full py-2 text-xs sm:text-sm font-medium text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                className="w-full py-2 text-xs font-medium text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
               >
                 {loadingMore ? (
                   <div className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin mx-auto" />
