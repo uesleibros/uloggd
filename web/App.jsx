@@ -21,6 +21,7 @@ import ReviewPage from "@pages/ReviewPage"
 import ScreenshotPage from "@pages/ScreenshotPage"
 import TierlistPage from "@pages/TierlistPage"
 import LegalPage from "@pages/Legal"
+import BlogPage from "@pages/Blog"
 import NotificationContainer from "@components/UI/Notification"
 import NotFound from "@pages/NotFound"
 import SplashScreen from "@components/UI/SplashScreen"
@@ -66,6 +67,7 @@ export default function App() {
 							<Route path="/search" element={<SearchPage />} />
 							<Route path="/shop" element={<ShopPage />} />
 							<Route path="/leaderboard" element={<LeaderboardPage />} />
+							<Route path="/blog" element={<BlogPage />} />
 							<Route path="/legal/:type" element={<LegalPage />} />
 							<Route path="/terms" element={<Navigate to="/legal/terms" replace />} />
 							<Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
