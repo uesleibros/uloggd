@@ -8,7 +8,7 @@ import Modal from "@components/UI/Modal"
 
 const LIMIT = 20
 
-function FollowButton({ user, currentUserId, t }) {
+function FollowButton({ user, currentUserId, onFollowChange, t }) {
   const [isFollowing, setIsFollowing] = useState(user.is_following || false)
   const [loading, setLoading] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -43,6 +43,7 @@ function FollowButton({ user, currentUserId, t }) {
       const data = await res.json()
       if (res.ok) {
         setIsFollowing(data.followed)
+        onFollowChange?.(user.user_id, data.followed)
       }
     } catch {
     } finally {
@@ -75,7 +76,7 @@ function FollowButton({ user, currentUserId, t }) {
   )
 }
 
-export default function FollowListModal({ isOpen, title, userId, onClose }) {
+export default function FollowListModal({ isOpen, title, userId, onClose, onFollowChange }) {
   const { t } = useTranslation("profile")
   const { user: currentUser } = useAuth()
   const [users, setUsers] = useState([])
@@ -207,7 +208,7 @@ export default function FollowListModal({ isOpen, title, userId, onClose }) {
                 <div className="flex-1 min-w-0">
                   <UserDisplay user={u} size="md" showBadges={true} showStatus={true} linkToProfile={false} />
                 </div>
-                <FollowButton user={u} currentUserId={currentUser?.user_id} t={t} />
+                <FollowButton user={u} currentUserId={currentUser?.user_id} onFollowChange={onFollowChange} t={t} />
               </Link>
             ))}
 
