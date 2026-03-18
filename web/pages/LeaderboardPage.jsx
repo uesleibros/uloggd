@@ -2,14 +2,13 @@ import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom"
 import {
   Trophy, Gem, MessageSquare, Users, Heart,
-  Crown, Medal, Award, ChevronLeft, ChevronRight,
-  Star, List, LayoutGrid, Camera, Clock, Globe
+  Crown, Medal, Award, Star, List, LayoutGrid, Camera, Clock, Globe
 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
-import UserBadges from "@components/User/UserBadges"
 import DragScrollRow from "@components/UI/DragScrollRow"
+import Pagination from "@components/UI/Pagination"
 import { MINERALS } from "@components/Minerals/MineralRow"
 
 const CATEGORIES = [
@@ -103,7 +102,7 @@ function CategoryTabs({ active, onChange, t }) {
               <button
                 key={id}
                 onClick={() => onChange(id)}
-                className={`group relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap ${
+                className={`group relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap cursor-pointer ${
                   isActive ? "text-indigo-400" : "text-zinc-500 hover:text-zinc-300"
                 }`}
               >
@@ -135,11 +134,7 @@ function MineralBreakdown({ breakdown, compact = false }) {
     <div className={`flex items-center gap-1.5 flex-wrap ${compact ? "justify-center" : ""}`}>
       {nonZero.map(mineral => (
         <div key={mineral.key} className="flex items-center gap-0.5">
-          <img
-            src={mineral.image}
-            alt=""
-            className="w-3 h-3 object-contain flex-shrink-0"
-          />
+          <img src={mineral.image} alt="" className="w-3 h-3 object-contain flex-shrink-0" />
           <span className="text-[10px] text-zinc-500 tabular-nums">
             {(breakdown[mineral.key] || 0).toLocaleString()}
           </span>
@@ -160,9 +155,7 @@ function LikesBreakdown({ breakdown, compact = false }) {
       {items.map(({ key, icon: Icon }) => (
         <div key={key} className="flex items-center gap-0.5">
           <Icon className="w-2.5 h-2.5 text-zinc-600" />
-          <span className="text-[10px] text-zinc-500 tabular-nums">
-            {breakdown[key]}
-          </span>
+          <span className="text-[10px] text-zinc-500 tabular-nums">{breakdown[key]}</span>
         </div>
       ))}
     </div>
@@ -189,20 +182,16 @@ function GlobalBreakdown({ breakdown, compact = false }) {
   )
 }
 
-function PodiumBreakdown({ entry, category, t }) {
+function EntryBreakdown({ entry, category, t, compact = false }) {
   const { breakdown, avgRating, entries: journeyEntries } = entry
 
-  if (category === "global") {
-    return <GlobalBreakdown breakdown={breakdown} compact />
-  }
-
-  if (category === "minerals") {
-    return <MineralBreakdown breakdown={breakdown} compact />
-  }
+  if (category === "global") return <GlobalBreakdown breakdown={breakdown} compact={compact} />
+  if (category === "minerals") return <MineralBreakdown breakdown={breakdown} compact={compact} />
+  if (category === "likes") return <LikesBreakdown breakdown={breakdown} compact={compact} />
 
   if (category === "reviews" && avgRating > 0) {
     return (
-      <div className="flex items-center justify-center gap-1">
+      <div className={`flex items-center gap-1 ${compact ? "justify-center" : ""}`}>
         <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
         <span className="text-[10px] text-zinc-500">
           {avgRating.toFixed(1)} {t("leaderboard.avgRating")}
@@ -211,21 +200,13 @@ function PodiumBreakdown({ entry, category, t }) {
     )
   }
 
-  if (category === "likes") {
-    return <LikesBreakdown breakdown={breakdown} compact />
-  }
-
   if (category === "followers") {
-    return (
-      <span className="text-[10px] text-zinc-600">
-        {t("leaderboard.followersLabel")}
-      </span>
-    )
+    return <span className="text-[10px] text-zinc-600">{t("leaderboard.followersLabel")}</span>
   }
 
   if (category === "playtime" && journeyEntries > 0) {
     return (
-      <div className="flex items-center justify-center gap-1">
+      <div className={`flex items-center gap-1 ${compact ? "justify-center" : ""}`}>
         <Clock className="w-2.5 h-2.5 text-zinc-600" />
         <span className="text-[10px] text-zinc-500">
           {journeyEntries} {t("leaderboard.journeyEntries")}
@@ -237,16 +218,16 @@ function PodiumBreakdown({ entry, category, t }) {
   return null
 }
 
+function formatValue(entry, category) {
+  if (category === "playtime") return `${entry.hours || 0}h ${entry.minutes || 0}m`
+  if (category === "global") return `${(entry.value || 0).toLocaleString()} pts`
+  return (entry.value || 0).toLocaleString()
+}
+
 function TopThreePodium({ entries, category, t }) {
   if (entries.length < 3) return null
 
   const ordered = [entries[1], entries[0], entries[2]]
-
-  const formatValue = (entry) => {
-    if (category === "playtime") return `${entry.hours || 0}h ${entry.minutes || 0}m`
-    if (category === "global") return `${(entry.value || 0).toLocaleString()} pts`
-    return (entry.value || 0).toLocaleString()
-  }
 
   return (
     <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
@@ -282,14 +263,11 @@ function TopThreePodium({ entries, category, t }) {
                 <span className={`block text-xs sm:text-sm font-semibold truncate ${isFirst ? "text-white" : "text-zinc-200"}`}>
                   {entry.user?.username || "Unknown"}
                 </span>
-                <div className="flex justify-center mt-1">
-                  <UserBadges user={entry.user} size="xs" />
-                </div>
               </div>
 
               <div className="mt-2 sm:mt-3">
                 <span className={`text-base sm:text-xl font-bold tabular-nums ${config.color}`}>
-                  {formatValue(entry)}
+                  {formatValue(entry, category)}
                 </span>
                 <p className="text-[9px] sm:text-[10px] text-zinc-500 mt-0.5">
                   {t(`leaderboard.units.${category}`)}
@@ -297,7 +275,7 @@ function TopThreePodium({ entries, category, t }) {
               </div>
 
               <div className="mt-2 w-full">
-                <PodiumBreakdown entry={entry} category={category} t={t} />
+                <EntryBreakdown entry={entry} category={category} t={t} compact />
               </div>
             </div>
           </Link>
@@ -307,29 +285,17 @@ function TopThreePodium({ entries, category, t }) {
   )
 }
 
-function RankNumber({ rank }) {
-  return (
-    <div className="w-6 flex-shrink-0 text-center">
-      <span className="text-sm font-bold text-zinc-500 tabular-nums">{rank}</span>
-    </div>
-  )
-}
-
 function LeaderboardEntry({ entry, category, t }) {
-  const { rank, user, value, breakdown, avgRating, hours, minutes, entries: journeyEntries } = entry
-
-  const formatValue = () => {
-    if (category === "playtime") return `${hours || 0}h ${minutes || 0}m`
-    if (category === "global") return `${(value || 0).toLocaleString()} pts`
-    return (value || 0).toLocaleString()
-  }
+  const { rank, user } = entry
 
   return (
     <Link
       to={user?.username ? `/u/${user.username}` : "#"}
       className="group flex items-center gap-3 p-3 rounded-xl bg-zinc-800/20 border border-zinc-800/50 hover:bg-zinc-800/40 hover:border-zinc-700/50 transition-all"
     >
-      <RankNumber rank={rank} />
+      <div className="w-6 flex-shrink-0 text-center">
+        <span className="text-sm font-bold text-zinc-500 tabular-nums">{rank}</span>
+      </div>
 
       <AvatarWithDecoration
         src={user?.avatar}
@@ -339,102 +305,20 @@ function LeaderboardEntry({ entry, category, t }) {
       />
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm font-medium text-zinc-200 truncate group-hover:text-white transition-colors">
-            {user?.username || "Unknown"}
-          </span>
-          <UserBadges user={user} size="xs" />
-        </div>
-
+        <span className="text-sm font-medium text-zinc-200 truncate group-hover:text-white transition-colors block">
+          {user?.username || "Unknown"}
+        </span>
         <div className="mt-0.5">
-          {category === "global" && <GlobalBreakdown breakdown={breakdown} />}
-          {category === "minerals" && <MineralBreakdown breakdown={breakdown} />}
-          {category === "reviews" && avgRating > 0 && (
-            <div className="flex items-center gap-1">
-              <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-              <span className="text-[10px] text-zinc-500">
-                {avgRating.toFixed(1)} {t("leaderboard.avgRating")}
-              </span>
-            </div>
-          )}
-          {category === "likes" && <LikesBreakdown breakdown={breakdown} />}
-          {category === "followers" && (
-            <span className="text-[10px] text-zinc-600">
-              {t("leaderboard.followersLabel")}
-            </span>
-          )}
-          {category === "playtime" && journeyEntries > 0 && (
-            <div className="flex items-center gap-1">
-              <Clock className="w-2.5 h-2.5 text-zinc-600" />
-              <span className="text-[10px] text-zinc-500">
-                {journeyEntries} {t("leaderboard.journeyEntries")}
-              </span>
-            </div>
-          )}
+          <EntryBreakdown entry={entry} category={category} t={t} />
         </div>
       </div>
 
       <div className="flex-shrink-0 text-right">
         <span className="text-sm font-bold text-white tabular-nums">
-          {formatValue()}
+          {formatValue(entry, category)}
         </span>
       </div>
     </Link>
-  )
-}
-
-function Pagination({ page, totalPages, onChange }) {
-  if (totalPages <= 1) return null
-
-  const getPages = () => {
-    const pages = []
-    const maxVisible = 5
-
-    if (totalPages <= maxVisible) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i)
-    } else if (page <= 3) {
-      for (let i = 1; i <= maxVisible; i++) pages.push(i)
-    } else if (page >= totalPages - 2) {
-      for (let i = totalPages - maxVisible + 1; i <= totalPages; i++) pages.push(i)
-    } else {
-      for (let i = page - 2; i <= page + 2; i++) pages.push(i)
-    }
-
-    return pages
-  }
-
-  return (
-    <div className="flex items-center justify-center gap-1.5 mt-8">
-      <button
-        onClick={() => onChange(page - 1)}
-        disabled={page <= 1}
-        className="w-9 h-9 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-600 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center justify-center"
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </button>
-
-      {getPages().map(pageNum => (
-        <button
-          key={pageNum}
-          onClick={() => onChange(pageNum)}
-          className={`w-9 h-9 rounded-lg text-sm font-medium transition-all ${
-            page === pageNum
-              ? "bg-indigo-500 text-white"
-              : "bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-600"
-          }`}
-        >
-          {pageNum}
-        </button>
-      ))}
-
-      <button
-        onClick={() => onChange(page + 1)}
-        disabled={page >= totalPages}
-        className="w-9 h-9 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-600 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center justify-center"
-      >
-        <ChevronRight className="w-4 h-4" />
-      </button>
-    </div>
   )
 }
 
@@ -535,9 +419,7 @@ export default function LeaderboardPage() {
           <EmptyState category={category} t={t} />
         ) : (
           <>
-            {showPodium && (
-              <TopThreePodium entries={topThree} category={category} t={t} />
-            )}
+            {showPodium && <TopThreePodium entries={topThree} category={category} t={t} />}
 
             {(showPodium ? rest : data).length > 0 && (
               <div className="space-y-2">
@@ -555,9 +437,9 @@ export default function LeaderboardPage() {
         )}
 
         <Pagination
-          page={page}
+          currentPage={page}
           totalPages={totalPages}
-          onChange={setPage}
+          onPageChange={setPage}
         />
       </div>
     </div>
