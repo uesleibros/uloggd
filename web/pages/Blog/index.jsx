@@ -8,13 +8,16 @@ function BlogSkeleton() {
   return (
     <div className="space-y-4">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="bg-zinc-800/30 border border-zinc-800 rounded-xl p-5 animate-pulse">
-          <div className="h-5 w-3/4 bg-zinc-700 rounded mb-3" />
-          <div className="h-3 w-full bg-zinc-800 rounded mb-2" />
-          <div className="h-3 w-2/3 bg-zinc-800 rounded mb-4" />
-          <div className="flex gap-4">
-            <div className="h-3 w-20 bg-zinc-800 rounded" />
-            <div className="h-3 w-16 bg-zinc-800 rounded" />
+        <div key={i} className="bg-zinc-800/30 border border-zinc-800 rounded-xl overflow-hidden animate-pulse">
+          <div className="h-44 sm:h-48 bg-zinc-700" />
+          <div className="p-5">
+            <div className="h-5 w-3/4 bg-zinc-700 rounded mb-3" />
+            <div className="h-3 w-full bg-zinc-800 rounded mb-2" />
+            <div className="h-3 w-2/3 bg-zinc-800 rounded mb-4" />
+            <div className="flex gap-4">
+              <div className="h-3 w-20 bg-zinc-800 rounded" />
+              <div className="h-3 w-16 bg-zinc-800 rounded" />
+            </div>
           </div>
         </div>
       ))}
@@ -36,21 +39,53 @@ function BlogPost({ post, t }) {
       href={post.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 rounded-xl p-5 transition-all hover:bg-zinc-800/30"
+      className="group block bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 rounded-xl overflow-hidden transition-all hover:bg-zinc-800/30"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold text-white group-hover:text-indigo-400 transition-colors line-clamp-2">
-            {post.title}
-          </h2>
+      {image && (
+        <div className="relative w-full h-44 sm:h-48 overflow-hidden">
+          <img
+            src={image}
+            alt=""
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-transparent to-transparent" />
           
-          {post.description && (
-            <p className="mt-2 text-sm text-zinc-400 line-clamp-2">
-              {post.description}
-            </p>
+          {post.tag_list?.length > 0 && (
+            <div className="absolute top-3 left-3 flex items-center gap-1.5">
+              {post.tag_list.slice(0, 2).map(tag => (
+                <span
+                  key={tag}
+                  className="px-2 py-1 text-[10px] font-medium bg-black/50 backdrop-blur-sm text-white rounded-full"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
           )}
 
-          <div className="flex items-center gap-4 mt-4 flex-wrap">
+          <div className="absolute bottom-3 left-3 right-3">
+            <h2 className="text-lg sm:text-xl font-bold text-white line-clamp-2 drop-shadow-lg">
+              {post.title}
+            </h2>
+          </div>
+        </div>
+      )}
+
+      <div className="p-4 sm:p-5">
+        {!image && (
+          <h2 className="text-lg font-semibold text-white group-hover:text-indigo-400 transition-colors line-clamp-2 mb-2">
+            {post.title}
+          </h2>
+        )}
+
+        {post.description && (
+          <p className="text-sm text-zinc-400 line-clamp-2">
+            {post.description}
+          </p>
+        )}
+
+        <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center gap-3 flex-wrap">
             <span className="flex items-center gap-1.5 text-xs text-zinc-500">
               <Calendar className="w-3.5 h-3.5" />
               {date}
@@ -67,34 +102,13 @@ function BlogPost({ post, t }) {
                 {post.public_reactions_count}
               </span>
             )}
+          </div>
 
-            {post.tag_list?.length > 0 && (
-              <div className="flex items-center gap-1.5">
-                {post.tag_list.slice(0, 3).map(tag => (
-                  <span
-                    key={tag}
-                    className="px-2 py-0.5 text-[10px] font-medium bg-zinc-800 text-zinc-400 rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
+          <div className="flex items-center gap-1 text-xs text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
+            {t("readMore")}
+            <ExternalLink className="w-3 h-3" />
           </div>
         </div>
-
-        {image && (
-          <img
-            src={image}
-            alt=""
-            className="w-24 h-24 sm:w-32 sm:h-20 object-cover rounded-lg flex-shrink-0 hidden sm:block"
-          />
-        )}
-      </div>
-
-      <div className="flex items-center gap-1.5 mt-4 text-xs text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-        {t("readMore")}
-        <ExternalLink className="w-3 h-3" />
       </div>
     </a>
   )
