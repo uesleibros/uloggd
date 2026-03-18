@@ -16,17 +16,22 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 function ScreenshotSkeleton() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-5 h-5 rounded bg-zinc-800 animate-pulse" />
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-zinc-800 animate-pulse" />
           <div className="w-24 h-4 rounded bg-zinc-800 animate-pulse" />
+          <div className="w-6 h-4 rounded bg-zinc-800 animate-pulse" />
         </div>
-        <div className="w-20 h-8 rounded-lg bg-zinc-800 animate-pulse" />
+        <div className="w-24 h-8 rounded-lg bg-zinc-800 animate-pulse" />
       </div>
       <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
         {[...Array(ITEMS_PER_PAGE)].map((_, i) => (
-          <div key={i} className="aspect-square bg-zinc-800 animate-pulse" />
+          <div 
+            key={i} 
+            className="aspect-square bg-zinc-800/50 animate-pulse rounded-sm"
+            style={{ animationDelay: `${i * 100}ms` }}
+          />
         ))}
       </div>
     </div>
@@ -141,7 +146,7 @@ function GameSearchModal({ isOpen, onClose, onSelect, selectedGame }) {
                   <button
                     key={game.id}
                     onClick={() => handleSelect(game)}
-                    className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors text-left ${
+                    className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors text-left cursor-pointer ${
                       isSelected ? "bg-indigo-500/15" : "hover:bg-zinc-800"
                     }`}
                   >
@@ -291,7 +296,7 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
             <button
               onClick={() => step === 1 ? onClose() : setStep(1)}
               disabled={uploading}
-              className="flex items-center gap-1 text-sm font-medium text-zinc-400 hover:text-white disabled:opacity-50 disabled:pointer-events-none transition-colors"
+              className="flex items-center gap-1 text-sm font-medium text-zinc-400 hover:text-white disabled:opacity-50 disabled:pointer-events-none transition-colors cursor-pointer"
             >
               {step === 2 && <ChevronLeft className="w-4 h-4" />}
               {step === 1 ? t("upload.cancel") : t("upload.back")}
@@ -307,7 +312,7 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
               <button
                 onClick={handleSubmit}
                 disabled={!file || uploading}
-                className="flex items-center gap-1.5 text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-zinc-600 disabled:pointer-events-none transition-colors"
+                className="flex items-center gap-1.5 text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-zinc-600 disabled:pointer-events-none transition-colors cursor-pointer"
               >
                 {uploading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 {uploading ? t("upload.uploading") : t("upload.share")}
@@ -349,9 +354,9 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
 
                 <button
                   onClick={() => fileRef.current?.click()}
-                  className="h-9 px-4 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-400 active:bg-indigo-600 rounded-lg transition-colors"
+                  className="h-10 px-5 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-400 active:bg-indigo-600 rounded-lg transition-colors cursor-pointer"
                 >
-                  {t("upload.selectFromComputer")}
+                  {t("upload.selectImage")}
                 </button>
 
                 <p className="text-xs text-zinc-600 mt-4">PNG, JPG, WEBP • Max 10MB</p>
@@ -429,7 +434,7 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
                         </div>
                         <button
                           onClick={() => setSelectedGame(null)}
-                          className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-700 rounded transition-colors"
+                          className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-700 rounded transition-colors cursor-pointer"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -437,7 +442,7 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
                     ) : (
                       <button
                         onClick={() => setGameSearchOpen(true)}
-                        className="w-full flex items-center gap-3 p-2.5 bg-zinc-800 hover:bg-zinc-750 rounded-lg transition-colors text-left group"
+                        className="w-full flex items-center gap-3 p-2.5 bg-zinc-800 hover:bg-zinc-750 rounded-lg transition-colors text-left group cursor-pointer"
                       >
                         <div className="w-9 h-12 rounded bg-zinc-700 flex items-center justify-center flex-shrink-0 group-hover:bg-zinc-600 transition-colors">
                           <Search className="w-4 h-4 text-zinc-500" />
@@ -464,7 +469,7 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
                       role="switch"
                       aria-checked={isSpoiler}
                       onClick={() => setIsSpoiler(!isSpoiler)}
-                      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 cursor-pointer ${
                         isSpoiler ? "bg-indigo-500" : "bg-zinc-700"
                       }`}
                     >
@@ -609,7 +614,7 @@ export default function ScreenshotsSection({ userId, isOwnProfile }) {
         {isOwnProfile && (
           <button
             onClick={() => setUploadOpen(true)}
-            className="flex items-center gap-1.5 h-8 px-3 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-400 active:bg-indigo-600 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 h-8 px-3 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-400 active:bg-indigo-600 rounded-lg transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">{t("add")}</span>
@@ -627,7 +632,7 @@ export default function ScreenshotsSection({ userId, isOwnProfile }) {
           {isOwnProfile && (
             <button
               onClick={() => setUploadOpen(true)}
-              className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+              className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
             >
               {t("addFirst")}
             </button>
@@ -635,20 +640,18 @@ export default function ScreenshotsSection({ userId, isOwnProfile }) {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
+          <div className="grid grid-cols-3 gap-0.5 sm:gap-1 rounded-lg overflow-hidden">
             {screenshots.map((s) => (
               <ScreenshotGridItem key={s.id} screenshot={s} />
             ))}
           </div>
 
           {totalPages > 1 && (
-            <div className="mt-6">
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={(p) => fetchScreenshots(p)}
-              />
-            </div>
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={(p) => fetchScreenshots(p)}
+            />
           )}
         </>
       )}
