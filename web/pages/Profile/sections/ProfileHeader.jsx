@@ -1,4 +1,6 @@
-import { Ban } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Ban, Trophy } from "lucide-react"
+import { Link } from "react-router-dom"
 import { useTranslation } from "#hooks/useTranslation"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import UserBadges from "@components/User/UserBadges"
@@ -8,6 +10,59 @@ import ProfileActions from "../components/ProfileActions"
 import { MineralsDisplay } from "@components/Minerals/MineralsDisplay"
 import { getStatus } from "#utils/onlineStatus"
 import { useDateTime } from "#hooks/useDateTime"
+
+function GlobalRank({ userId }) {
+  const { t } = useTranslation("profile")
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!userId) return
+
+    async function fetchRank() {
+      try {
+        const res = await fetch(`/api/stats/rank?userId=${userId}`)
+        const json = await res.json()
+        if (json.rank) setData(json)
+      } catch {}
+      finally {
+        setLoading(false)
+      }
+    }
+
+    fetchRank()
+  }, [userId])
+
+  if (loading || !data?.rank) return null
+
+  const isTop10 = data.rank <= 10
+  const isTop100 = data.rank <= 100
+
+  return (
+    <Link
+      to="/leaderboard"
+      className={`group flex items-center gap-1.5 px-2 py-1 rounded-lg border transition-all ${
+        isTop10
+          ? "bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20"
+          : isTop100
+          ? "bg-indigo-500/10 border-indigo-500/30 hover:bg-indigo-500/20"
+          : "bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-800"
+      }`}
+    >
+      <Trophy className={`w-3 h-3 ${
+        isTop10 ? "text-amber-400" : isTop100 ? "text-indigo-400" : "text-zinc-500"
+      }`} />
+      <span className={`text-[11px] font-medium ${
+        isTop10 ? "text-amber-400" : isTop100 ? "text-indigo-400" : "text-zinc-400"
+      }`}>
+        #{data.rank.toLocaleString()}
+      </span>
+      <span className="text-[10px] text-zinc-600 hidden sm:inline">
+        ranking global
+      </span>
+    </Link>
+  )
+}
 
 export function ProfileHeader({
   profile,
@@ -103,6 +158,8 @@ export function ProfileHeader({
                   username={profile.username}
                   isOwnProfile={isOwnProfile}
                 />
+
+                {!isBanned && <GlobalRank userId={profile.user_id} />}
 
                 {status === "offline" && getTimeAgo(profile.last_seen, profile.status) && (
                   <span className="text-[11px] text-zinc-500">
