@@ -1,4 +1,20 @@
 export default {
+	legal: 	{
+	  backToHome: "Voltar ao início",
+	  questions: "Tem alguma dúvida? Entre em contato:",
+	  tabs: {
+	    terms: "Termos de Uso",
+	    privacy: "Privacidade"
+	  },
+	  terms: {
+	    title: "Termos de Uso",
+	    description: "Termos de uso e condições do uloggd",
+	  },
+	  privacy: {
+	    title: "Política de Privacidade",
+	    description: "Política de privacidade e proteção de dados do uloggd",
+	  }
+	},
 	leaderboard: {
 	  title: "Ranking",
 	  subtitle: "Os melhores da comunidade",
