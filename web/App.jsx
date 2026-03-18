@@ -26,6 +26,7 @@ import NotificationContainer from "@components/UI/Notification"
 import NotFound from "@pages/NotFound"
 import SplashScreen from "@components/UI/SplashScreen"
 import BannedScreen from "@components/BannedScreen"
+import UpdateModal from "@components/UpdateModal"
 
 import "#web/App.css"
 
@@ -51,6 +52,7 @@ export default function App() {
 				<NotificationContainer />
 				<TwemojiProvider />
 				<Header />
+				<UpdateModal />
 
 				<main className="main-content">
 					<ErrorBoundary>
