@@ -1,5 +1,5 @@
 import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
-import { supabase } from "#lib/supabase.js"
+import { supabase } from "#lib/supabase-ssr.js"
 
 function formatBadges(userBadges) {
   return (userBadges || [])
