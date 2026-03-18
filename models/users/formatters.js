@@ -1,4 +1,5 @@
 import { DEFAULT_AVATAR_URL } from "#services/users/constants.js"
+import { supabase } from "#lib/supabase.js"
 
 function formatBadges(userBadges) {
   return (userBadges || [])
@@ -26,6 +27,18 @@ function formatMinerals(userMinerals) {
     diamond: userMinerals.diamond || 0,
     ruby: userMinerals.ruby || 0
   }
+}
+
+export async function getFollowingSet(currentUserId, targetIds) {
+  if (!currentUserId || !targetIds.length) return new Set()
+
+  const { data } = await supabase
+    .from("follows")
+    .select("following_id")
+    .eq("follower_id", currentUserId)
+    .in("following_id", targetIds)
+
+  return new Set((data || []).map(r => r.following_id))
 }
 
 export function formatFullProfile(
