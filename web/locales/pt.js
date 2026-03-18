@@ -84,7 +84,7 @@ export default {
 	    details: "Detalhes",
 	    dragPhotos: "Arraste fotos aqui",
 	    dragPhotosDesc: "ou clique no botão abaixo",
-	    selectFromComputer: "Selecionar do computador",
+	    selectImage: "Selecionar imagem",
 	    game: "Jogo",
 	    searchGame: "Buscar jogo",
 	    searchGamePlaceholder: "Digite o nome do jogo...",
