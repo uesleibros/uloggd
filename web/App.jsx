@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom"
 import RouteLoader from "@components/Layout/RouteLoader"
 import ScrollToTop from "@components/Layout/ScrollToTop"
 import Header from "@components/Layout/Header"
@@ -20,6 +20,7 @@ import LeaderboardPage from "@pages/LeaderboardPage"
 import ReviewPage from "@pages/ReviewPage"
 import ScreenshotPage from "@pages/ScreenshotPage"
 import TierlistPage from "@pages/TierlistPage"
+import LegalPage from "@pages/Legal"
 import NotificationContainer from "@components/UI/Notification"
 import NotFound from "@pages/NotFound"
 import SplashScreen from "@components/UI/SplashScreen"
@@ -65,6 +66,9 @@ export default function App() {
 							<Route path="/search" element={<SearchPage />} />
 							<Route path="/shop" element={<ShopPage />} />
 							<Route path="/leaderboard" element={<LeaderboardPage />} />
+							<Route path="/legal/:type" element={<LegalPage />} />
+							<Route path="/terms" element={<Navigate to="/legal/terms" replace />} />
+							<Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
 							<Route path="*" element={<NotFound />} />
 						</Routes>
 					</ErrorBoundary>
