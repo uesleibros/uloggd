@@ -1,13 +1,14 @@
 import { VALID_LIST_TYPES } from "#services/users/constants.js"
 import {
 	getFollowIds,
+	getFollowingSet,
 	findManyByIds,
 	resolveStreams,
 	formatListProfile,
 } from "#models/users/index.js"
 
 export async function handleFollowers(req, res) {
-	const { userId, type, page = 1, limit = 20 } = req.query
+	const { userId, type, page = 1, limit = 20, currentUserId } = req.query
 
 	if (!userId || !type) return res.status(400).json({ error: "missing params" })
 	if (!VALID_LIST_TYPES.includes(type)) return res.status(400).json({ error: "invalid type" })
@@ -31,10 +32,21 @@ export async function handleFollowers(req, res) {
 		const users = await findManyByIds(userIds)
 		const streamsMap = await resolveStreams(users)
 
+		const followingSet = currentUserId
+			? await getFollowingSet(currentUserId, userIds)
+			: new Set()
+
 		const userMap = Object.fromEntries(users.map(u => [u.user_id, u]))
 
 		const result = userIds
-			.map(id => formatListProfile(userMap[id], { stream: streamsMap[id] }))
+			.map(id => {
+				const formatted = formatListProfile(userMap[id], { stream: streamsMap[id] })
+				if (!formatted) return null
+				return {
+					...formatted,
+					is_following: followingSet.has(id),
+				}
+			})
 			.filter(Boolean)
 
 		res.json({
