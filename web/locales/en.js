@@ -1,4 +1,20 @@
 export default {
+	legal: 	{
+	  backToHome: "Back to home",
+	  questions: "Have any questions? Contact us:",
+	  tabs: {
+	    terms: "Terms of Service",
+	    privacy: "Privacy"
+	  },
+	  terms: {
+	    title: "Terms of Service",
+	    description: "Terms of service and conditions for uloggd",
+	  },
+	  privacy: {
+	    title: "Privacy Policy",
+	    description: "Privacy policy and data protection for uloggd",
+	  }
+	},
 	leaderboard: {
 	  title: "Leaderboard",
 	  subtitle: "Top community members",
