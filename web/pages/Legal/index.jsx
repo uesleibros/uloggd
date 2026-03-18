@@ -7,10 +7,7 @@ import { MarkdownPreview } from "@components/MarkdownEditor"
 
 const LEGAL_PAGES = {
   terms: {
-    title: "Terms of Service",
-    description: "Terms of service and conditions for uloggd",
     icon: FileText,
-    updatedDate: "January 2025",
     content: `By accessing and using uloggd (the "Website"), you accept and agree to be bound by the following terms and conditions ("Terms"):
 
 ## Intended use
@@ -58,10 +55,7 @@ We will try to address all technical issues that arise on the Website. However, 
 Any outgoing link to partner stores may be sponsored and any purchase made through the link will help us with no extra cost to you.`,
   },
   privacy: {
-    title: "Privacy Policy",
-    description: "Privacy policy and data protection for uloggd",
     icon: Shield,
-    updatedDate: "January 2025",
     content: `This Privacy Policy describes how uloggd ("we", "our" or "Website") collects, uses and protects your personal information.
 
 ## Information we collect
@@ -226,6 +220,7 @@ function TranslatableMarkdown({ content }) {
 
 export default function LegalPage() {
   const { type } = useParams()
+  const { t } = useTranslation("legal")
 
   if (!LEGAL_PAGES[type]) {
     return <Navigate to="/legal/terms" replace />
@@ -235,8 +230,8 @@ export default function LegalPage() {
   const Icon = page.icon
 
   usePageMeta({
-    title: `${page.title} - uloggd`,
-    description: page.description,
+    title: `${t(`${type}.title`)} - uloggd`,
+    description: t(`${type}.description`),
   })
 
   return (
@@ -246,7 +241,7 @@ export default function LegalPage() {
         className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to home
+        {t("backToHome")}
       </Link>
 
       <div className="flex items-center gap-3 mb-6">
@@ -255,10 +250,10 @@ export default function LegalPage() {
         </div>
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white">
-            {page.title}
+            {t(`${type}.title`)}
           </h1>
           <p className="text-sm text-zinc-500 mt-1">
-            Last updated: {page.updatedDate}
+            {t("lastUpdated", { date: t(`${type}.updatedDate`) })}
           </p>
         </div>
       </div>
@@ -272,7 +267,7 @@ export default function LegalPage() {
               : "bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700"
           }`}
         >
-          Terms of Service
+          {t("tabs.terms")}
         </Link>
         <Link
           to="/legal/privacy"
@@ -282,7 +277,7 @@ export default function LegalPage() {
               : "bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700"
           }`}
         >
-          Privacy Policy
+          {t("tabs.privacy")}
         </Link>
       </div>
 
