@@ -58,7 +58,7 @@ function BlogPost({ post, t }) {
             
             <span className="flex items-center gap-1.5 text-xs text-zinc-500">
               <Clock className="w-3.5 h-3.5" />
-              {post.reading_time_minutes} {t("blog.minRead")}
+              {post.reading_time_minutes} {t("minRead")}
             </span>
 
             {post.positive_reactions_count > 0 && (
@@ -93,7 +93,7 @@ function BlogPost({ post, t }) {
       </div>
 
       <div className="flex items-center gap-1.5 mt-4 text-xs text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-        {t("blog.readMore")}
+        {t("readMore")}
         <ExternalLink className="w-3 h-3" />
       </div>
     </a>
@@ -107,10 +107,10 @@ function EmptyState({ t }) {
         <Newspaper className="w-7 h-7 text-zinc-600" />
       </div>
       <h3 className="text-base font-semibold text-zinc-300 mb-1">
-        {t("blog.empty.title")}
+        {t("empty.title")}
       </h3>
       <p className="text-sm text-zinc-500 max-w-xs">
-        {t("blog.empty.description")}
+        {t("empty.description")}
       </p>
     </div>
   )
