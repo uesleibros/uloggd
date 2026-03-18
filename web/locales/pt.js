@@ -998,6 +998,7 @@ export default {
 			copyMarkdown: "Copiar código Markdown",
 		},
 		followModal: {
+			follow: "Seguir",
 			followers: "Seguidores",
 			following: "Seguindo",
 			searchPlaceholder: "Buscar usuário...",
