@@ -129,10 +129,7 @@ The Website is not intended for children under 13. We do not knowingly collect i
 ## Changes to this policy
 
 We may update this policy periodically. We will notify you of significant changes.
-
-## Contact
-
-For privacy questions, contact us: contact@uloggd.com`,
+`,
   },
 }
 
@@ -248,14 +245,9 @@ export default function LegalPage() {
         <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
           <Icon className="w-6 h-6 text-indigo-400" />
         </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">
-            {t(`${type}.title`)}
-          </h1>
-          <p className="text-sm text-zinc-500 mt-1">
-            {t("lastUpdated", { date: t(`${type}.updatedDate`) })}
-          </p>
-        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">
+          {t(`${type}.title`)}
+        </h1>
       </div>
 
       <div className="flex gap-2 mb-8">
@@ -283,6 +275,18 @@ export default function LegalPage() {
 
       <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 sm:p-8">
         <TranslatableMarkdown content={page.content} />
+      </div>
+
+      <div className="mt-8 p-4 bg-zinc-800/30 border border-zinc-700/50 rounded-xl">
+        <p className="text-sm text-zinc-500 text-center">
+          {t("questions")}{" "}
+          <a
+            href="mailto:contact@uloggd.com"
+            className="text-indigo-400 hover:underline"
+          >
+            uloggd.gg@gmail.com
+          </a>
+        </p>
       </div>
     </div>
   )
