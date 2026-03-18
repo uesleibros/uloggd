@@ -80,6 +80,7 @@ function getCommentReplyLink(data, users) {
       return "/"
   }
 }
+
 const NOTIFICATION_LINKS = {
   follow: (data, users) => `/u/${users[data.follower_id]?.username}`,
   list_like: (data) => `/list/${encode(data.list_id)}`,
@@ -396,28 +397,28 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
       const commentIds = new Set()
       const screenshotIds = new Set()
 
-			data.forEach((n) => {
-			  const getUserId = NOTIFICATION_USER_ID_MAP[n.type]
-			  if (getUserId) {
-			    const userId = getUserId(n.data)
-			    if (userId) userIds.add(userId)
-			  }
-			  if (n.data.profile_user_id) userIds.add(n.data.profile_user_id)
-			  if (n.data.list_id) listIds.add(n.data.list_id)
-			  if (n.data.tierlist_id) tierlistIds.add(n.data.tierlist_id)
-			  if (n.data.review_id) reviewIds.add(n.data.review_id)
-			  if (n.data.comment_id) commentIds.add(n.data.comment_id)
-			  if (n.data.screenshot_id) screenshotIds.add(n.data.screenshot_id)
-			  
-			  if (n.type === "comment_reply") {
-			    const { target_type, target_id } = n.data
-			    if (target_type === "profile") userIds.add(target_id)
-			    if (target_type === "list") listIds.add(target_id)
-			    if (target_type === "tierlist") tierlistIds.add(target_id)
-			    if (target_type === "review") reviewIds.add(target_id)
-			    if (target_type === "screenshot") screenshotIds.add(target_id)
-			  }
-			})
+      data.forEach((n) => {
+        const getUserId = NOTIFICATION_USER_ID_MAP[n.type]
+        if (getUserId) {
+          const userId = getUserId(n.data)
+          if (userId) userIds.add(userId)
+        }
+        if (n.data.profile_user_id) userIds.add(n.data.profile_user_id)
+        if (n.data.list_id) listIds.add(n.data.list_id)
+        if (n.data.tierlist_id) tierlistIds.add(n.data.tierlist_id)
+        if (n.data.review_id) reviewIds.add(n.data.review_id)
+        if (n.data.comment_id) commentIds.add(n.data.comment_id)
+        if (n.data.screenshot_id) screenshotIds.add(n.data.screenshot_id)
+        
+        if (n.type === "comment_reply") {
+          const { target_type, target_id } = n.data
+          if (target_type === "profile") userIds.add(target_id)
+          if (target_type === "list") listIds.add(target_id)
+          if (target_type === "tierlist") tierlistIds.add(target_id)
+          if (target_type === "review") reviewIds.add(target_id)
+          if (target_type === "screenshot") screenshotIds.add(target_id)
+        }
+      })
 
       const [usersData, listsData, tierlistsData, reviewsData, commentsData] = await Promise.all([
         userIds.size > 0
@@ -534,11 +535,10 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         showMobileGrip
         showCloseButton={false}
         maxWidth="max-w-sm"
-        noScroll
         zIndex={10000}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 flex-shrink-0">
             <div className="flex items-center gap-2">
               <Bell className="w-4 h-4 text-zinc-400" />
               <h3 className="text-sm font-medium text-white">{t("notifications.title")}</h3>
