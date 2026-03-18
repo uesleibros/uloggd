@@ -692,6 +692,9 @@ export default {
 	footer: {
 		description: "Sua biblioteca de jogos pessoal. Acompanhe, avalie e descubra novos jogos.",
 		igdb: "Dados fornecidos por IGDB",
+		legal: "Legal",
+		terms: "Termos de Uso",
+		privacy: "Privacidade",
 		about: "Sobre",
 		badges: "Selos",
 		minerals: "Minérios",
