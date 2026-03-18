@@ -4,8 +4,6 @@ import { ArrowLeft, Newspaper, ExternalLink, Calendar, Clock, Heart } from "luci
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
 
-const DEVTO_USERNAME = "uloggd"
-
 function BlogSkeleton() {
   return (
     <div className="space-y-4">
@@ -25,11 +23,13 @@ function BlogSkeleton() {
 }
 
 function BlogPost({ post, t }) {
-  const date = new Date(post.published_at).toLocaleDateString(undefined, {
+  const date = new Date(post.published_timestamp).toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",
   })
+
+  const image = post.cover_image || post.social_image
 
   return (
     <a
@@ -61,10 +61,10 @@ function BlogPost({ post, t }) {
               {post.reading_time_minutes} {t("minRead")}
             </span>
 
-            {post.positive_reactions_count > 0 && (
+            {post.public_reactions_count > 0 && (
               <span className="flex items-center gap-1.5 text-xs text-zinc-500">
                 <Heart className="w-3.5 h-3.5" />
-                {post.positive_reactions_count}
+                {post.public_reactions_count}
               </span>
             )}
 
@@ -83,9 +83,9 @@ function BlogPost({ post, t }) {
           </div>
         </div>
 
-        {post.cover_image && (
+        {image && (
           <img
-            src={post.cover_image}
+            src={image}
             alt=""
             className="w-24 h-24 sm:w-32 sm:h-20 object-cover rounded-lg flex-shrink-0 hidden sm:block"
           />
@@ -129,7 +129,7 @@ export default function BlogPage() {
   useEffect(() => {
     async function fetchPosts() {
       try {
-        const res = await fetch(`https://dev.to/api/articles?username=${DEVTO_USERNAME}&per_page=20`)
+        const res = await fetch("/api/blog/articles")
         const data = await res.json()
         setPosts(data || [])
       } catch {
