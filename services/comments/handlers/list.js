@@ -19,7 +19,7 @@ export async function handleList(req, res) {
       .select("*", { count: "exact" })
       .eq("target_type", type)
       .eq("target_id", String(targetId))
-      .order("created_at", { ascending: false })
+      .order("created_at", { ascending: true })
       .range(offset, offset + limitNum - 1)
 
     const comments = data || []
