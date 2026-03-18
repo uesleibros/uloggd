@@ -1,4 +1,17 @@
 export default {
+	blog: 	{
+	  title: "Novidades",
+	  subtitle: "Atualizações e notícias do uloggd",
+	  description: "Últimas novidades e atualizações do uloggd",
+	  backToHome: "Voltar ao início",
+	  minRead: "min de leitura",
+	  readMore: "Ler no Dev.to",
+	  poweredBy: "Powered by",
+	  empty: {
+	    title: "Nenhuma postagem ainda",
+	    description: "Em breve teremos novidades por aqui!"
+	  }
+	},
 	legal: 	{
 	  backToHome: "Voltar ao início",
 	  questions: "Tem alguma dúvida? Entre em contato:",
