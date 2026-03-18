@@ -85,6 +85,10 @@ export function useFollowData(profile, currentUser, authLoading, isOwnProfile) {
     }
   }, [currentUser, profile, isFollowing, followLoading])
 
+  const adjustFollowingCount = useCallback((delta) => {
+    setFollowingCount(prev => Math.max(0, prev + delta))
+  }, [])
+
   return {
     isFollowing,
     followLoading,
@@ -92,5 +96,6 @@ export function useFollowData(profile, currentUser, authLoading, isOwnProfile) {
     followersCount,
     followingCount,
     handleFollow,
+    adjustFollowingCount,
   }
 }
