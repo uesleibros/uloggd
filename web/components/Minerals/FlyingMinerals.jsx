@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useLayoutEffect } from "react"
 import { createPortal } from "react-dom"
 import { MINERALS } from "./MineralRow"
 
@@ -28,16 +28,16 @@ function FlyingMineral({ image, startX, startY, endX, endY, delay, onComplete })
       clearTimeout(timer1)
       clearTimeout(timer2)
     }
-  }, [])
+  }, [endX, endY, delay, onComplete])
 
   return (
     <div
       className="fixed pointer-events-none z-[9999]"
       style={{
-        left: style.left,
-        top: style.top,
+        left: `${style.left}px`,
+        top: `${style.top}px`,
         opacity: style.opacity,
-        transform: style.transform,
+        transform: `${style.transform} translate(-50%, -50%)`,
         transition: "all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
       }}
     >
@@ -57,56 +57,85 @@ export default function FlyingMinerals({ rewards, originRef, destinationId, onCo
   const [minerals, setMinerals] = useState([])
   const [completed, setCompleted] = useState(0)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!rewards || !originRef?.current) return
 
-    const origin = originRef.current.getBoundingClientRect()
-    const destination = document.getElementById(destinationId)?.getBoundingClientRect()
+    const calculatePositions = () => {
+      const origin = originRef.current?.getBoundingClientRect()
+      const destinationElement = document.getElementById(destinationId)
+      const destination = destinationElement?.getBoundingClientRect()
 
-    if (!destination) {
-      onComplete?.()
-      return
-    }
-
-    const startX = origin.left + origin.width / 2
-    const startY = origin.top + origin.height / 2
-    const endX = destination.left + destination.width / 2
-    const endY = destination.top + destination.height / 2
-
-    const mineralList = []
-    let index = 0
-
-    for (const [key, amount] of Object.entries(rewards)) {
-      if (amount <= 0) continue
-
-      const config = MINERALS.find((m) => m.key === key)
-      if (!config) continue
-
-      const count = Math.min(amount, 5)
-
-      for (let i = 0; i < count; i++) {
-        mineralList.push({
-          id: `${key}-${i}`,
-          image: config.image,
-          startX: startX + (Math.random() - 0.5) * 40,
-          startY: startY + (Math.random() - 0.5) * 40,
-          endX: endX + (Math.random() - 0.5) * 10,
-          endY: endY,
-          delay: index * 80,
-        })
-        index++
+      if (!origin || !destination) {
+        onComplete?.()
+        return
       }
+
+      const isDestinationVisible = 
+        destination.width > 0 && 
+        destination.height > 0 &&
+        destination.top >= 0 &&
+        destination.top <= window.innerHeight
+
+      if (!isDestinationVisible) {
+        const fallbackDestination = {
+          left: window.innerWidth - 60,
+          top: 40,
+          width: 40,
+          height: 40,
+        }
+        return createMinerals(origin, fallbackDestination)
+      }
+
+      createMinerals(origin, destination)
     }
 
-    setMinerals(mineralList)
-    setCompleted(0)
-  }, [rewards, originRef, destinationId])
+    const createMinerals = (origin, destination) => {
+      const startX = origin.left + origin.width / 2
+      const startY = origin.top + origin.height / 2
+      const endX = destination.left + destination.width / 2
+      const endY = destination.top + destination.height / 2
+
+      const mineralList = []
+      let index = 0
+
+      for (const [key, amount] of Object.entries(rewards)) {
+        if (amount <= 0) continue
+
+        const config = MINERALS.find((m) => m.key === key)
+        if (!config) continue
+
+        const count = Math.min(amount, 5)
+
+        for (let i = 0; i < count; i++) {
+          mineralList.push({
+            id: `${key}-${i}`,
+            image: config.image,
+            startX: startX + (Math.random() - 0.5) * 40,
+            startY: startY + (Math.random() - 0.5) * 40,
+            endX: endX + (Math.random() - 0.5) * 10,
+            endY: endY,
+            delay: index * 80,
+          })
+          index++
+        }
+      }
+
+      setMinerals(mineralList)
+      setCompleted(0)
+    }
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        calculatePositions()
+      })
+    })
+  }, [rewards, originRef, destinationId, onComplete])
 
   useEffect(() => {
     if (minerals.length > 0 && completed >= minerals.length) {
       onComplete?.()
     }
-  }, [completed, minerals.length])
+  }, [completed, minerals.length, onComplete])
 
   function handleMineralComplete() {
     setCompleted((prev) => prev + 1)
