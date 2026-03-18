@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react"
 import { useParams, Link, Navigate } from "react-router-dom"
-import { FileText, Shield, ArrowLeft } from "lucide-react"
+import { FileText, Shield, ArrowLeft, Languages, Loader2 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
-import Translatable from "@components/UI/Translatable"
+import { useTranslation } from "#hooks/useTranslation"
+import { MarkdownPreview } from "@components/MarkdownEditor"
 
 const LEGAL_PAGES = {
   terms: {
@@ -140,6 +142,88 @@ For privacy questions, contact us: contact@uloggd.com`,
   },
 }
 
+function TranslatableMarkdown({ content }) {
+  const { t, language } = useTranslation()
+  const [translated, setTranslated] = useState(null)
+  const [showTranslated, setShowTranslated] = useState(false)
+  const [detectedLang, setDetectedLang] = useState(null)
+  const [translating, setTranslating] = useState(false)
+
+  useEffect(() => {
+    setTranslated(null)
+    setShowTranslated(false)
+    setDetectedLang(null)
+  }, [language, content])
+
+  const shouldShowButton = detectedLang !== language
+  const displayContent = showTranslated && translated ? translated : content
+
+  async function handleTranslate() {
+    if (translated) {
+      setShowTranslated(!showTranslated)
+      return
+    }
+
+    setTranslating(true)
+
+    try {
+      const res = await fetch("/api/translate/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: content, target: language }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setTranslated(data.translation)
+        setDetectedLang(data.detectedLang)
+        setShowTranslated(data.detectedLang !== language)
+      }
+    } catch {}
+    finally {
+      setTranslating(false)
+    }
+  }
+
+  return (
+    <div>
+      {shouldShowButton && (
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <button
+            onClick={handleTranslate}
+            disabled={translating}
+            className={`group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium transition-all border cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+              translated
+                ? "bg-zinc-700/60 border-zinc-600 text-white"
+                : "bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500"
+            }`}
+          >
+            {translating ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Languages className="w-3 h-3 group-hover:rotate-12 transition-transform" />
+            )}
+            {translating
+              ? t("translate.translating")
+              : translated
+              ? showTranslated
+                ? t("translate.showOriginal")
+                : t("translate.showTranslation")
+              : t("translate.button")}
+          </button>
+
+          {showTranslated && translated && (
+            <span className="text-[10px] text-zinc-600">{t("translate.auto")}</span>
+          )}
+        </div>
+      )}
+
+      <MarkdownPreview content={displayContent} />
+    </div>
+  )
+}
+
 export default function LegalPage() {
   const { type } = useParams()
 
@@ -203,21 +287,7 @@ export default function LegalPage() {
       </div>
 
       <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 sm:p-8">
-        <Translatable className="prose prose-invert prose-zinc max-w-none prose-headings:text-white prose-headings:font-semibold prose-h2:text-lg prose-h2:mt-8 prose-h2:mb-3 prose-h3:text-base prose-h3:mt-6 prose-h3:mb-2 prose-p:text-zinc-400 prose-p:leading-relaxed prose-li:text-zinc-400 prose-ul:mt-2 prose-ul:space-y-1 prose-strong:text-white">
-          {page.content}
-        </Translatable>
-      </div>
-
-      <div className="mt-8 p-4 bg-zinc-800/30 border border-zinc-700/50 rounded-xl">
-        <p className="text-sm text-zinc-500 text-center">
-          Have any questions? Contact us:{" "}
-          <a
-            href="mailto:contact@uloggd.com"
-            className="text-indigo-400 hover:underline"
-          >
-            contact@uloggd.com
-          </a>
-        </p>
+        <TranslatableMarkdown content={page.content} />
       </div>
     </div>
   )
