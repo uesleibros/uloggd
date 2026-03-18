@@ -1,4 +1,10 @@
 export default {
+	update: {
+	  title: "Nova versão disponível",
+	  description: "Uma nova versão do uloggd está disponível. Atualize para ter a melhor experiência.",
+	  refresh: "Atualizar",
+	  dismiss: "Agora não",
+	},
 	blog: 	{
 	  title: "Novidades",
 	  subtitle: "Atualizações e notícias do uloggd",
