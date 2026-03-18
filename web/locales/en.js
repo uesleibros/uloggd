@@ -721,6 +721,7 @@ export default {
 	footer: {
 		description: "Your personal game library. Track, rate and discover new games.",
 		igdb: "Data provided by IGDB",
+		blog: "News",
 		legal: "Legal",
 		terms: "Terms of Service",
 		privacy: "Privacy",
