@@ -41,7 +41,7 @@ export default function TwitchSection() {
   function handleConnect() {
     setConnecting(true)
     const returnUrl = encodeURIComponent(window.location.pathname)
-    window.location.href = `/api/twitch/auth?userId=${user.id}&returnUrl=${returnUrl}`
+    window.location.href = `/api/twitch/auth?userId=${user.user_id}&returnUrl=${returnUrl}`
   }
 
   async function handleDisconnect() {
