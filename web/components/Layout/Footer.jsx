@@ -3,9 +3,9 @@ import { useTranslation } from "#hooks/useTranslation"
 
 const LINKS = {
   about: [
+    { key: "blog", to: "/blog" },
     { key: "badges", to: "/about/badges" },
     { key: "minerals", to: "/about/minerals" },
-    { key: "blog", to: "/blog" },
   ],
   legal: [
     { key: "terms", to: "/legal/terms" },
