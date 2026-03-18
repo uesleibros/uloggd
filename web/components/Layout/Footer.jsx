@@ -75,12 +75,10 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-zinc-800/50 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div>
             <p className="text-xs text-zinc-600">
               {t("footer.rights", { year: new Date().getFullYear() })}
             </p>
-            <span className="text-zinc-800">·</span>
-            <span className="text-xs text-zinc-700">v1.1.2</span>
           </div>
 
           <a
