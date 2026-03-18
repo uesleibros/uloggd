@@ -1,4 +1,10 @@
 export default {
+	blogNotification: {
+	  badge: "Novidade",
+	  dismiss: "Agora não",
+	  read: "Ler post",
+	  viewAll: "Ver todas as novidades"
+	},
 	update: {
 	  title: "Nova versão disponível",
 	  description: "Uma nova versão do uloggd está disponível. Atualize para ter a melhor experiência.",
