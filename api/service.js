@@ -22,6 +22,7 @@ import { journeysHandler } from "#routers/journeys.js"
 import { commentsHandler } from "#routers/comments.js"
 import { screenshotsHandler } from "#routers/screenshots.js"
 import { statsHandler } from "#routers/stats.js"
+import { blogHandler } from "#routers/blog.js"
 
 import { steamHandler } from "#routers/connections/steam.js"
 import { twitchHandler } from "#routers/connections/twitch.js"
@@ -60,7 +61,8 @@ const SERVICES = {
 	journeys: journeysHandler,
 	comments: commentsHandler,
 	screenshots: screenshotsHandler,
-	stats: statsHandler
+	stats: statsHandler,
+	blog: blogHandler
 }
 
 export default async function handler(req, res) {
