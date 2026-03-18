@@ -1,9 +1,11 @@
 import { handleRatingStats } from "#services/stats/handlers/ratings.js"
 import { handleLeaderboard } from "#services/stats/handlers/leaderboard.js"
+import { handleRank } from "#services/stats/handlers/rank.js"
 
 const ACTIONS = {
   ratings:     { handler: handleRatingStats, method: "GET", scopes: null, auth: false },
   leaderboard: { handler: handleLeaderboard, method: "GET", scopes: null, auth: false },
+  rank:        { handler: handleRank,        method: "GET", scopes: null, auth: false },
 }
 
 export async function statsHandler(req, res) {
