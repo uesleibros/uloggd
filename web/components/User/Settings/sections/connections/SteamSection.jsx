@@ -53,7 +53,7 @@ export default function SteamSection() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ userId: user.id }),
+        body: JSON.stringify({ userId: user.user_id }),
       })
 
       const data = await res.json()
@@ -79,7 +79,7 @@ export default function SteamSection() {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ userId: user.id })
+        body: JSON.stringify({ userId: user.user_id })
       })
 
       if (res.ok) {
