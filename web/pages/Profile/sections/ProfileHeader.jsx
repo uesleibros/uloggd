@@ -57,9 +57,6 @@ function GlobalRank({ userId }) {
       }`}>
         #{data.rank.toLocaleString()}
       </span>
-      <span className="text-[10px] text-zinc-600 hidden sm:inline">
-        ranking global
-      </span>
     </Link>
   )
 }
