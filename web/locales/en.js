@@ -969,6 +969,7 @@ export default {
 			message: "The user \"{{username}}\" doesn't exist or has been removed.",
 		},
 		followModal: {
+			unfollow: "Unfollow",
 			follow: "Follow",
 			followers: "Followers",
 			following: "Following",
