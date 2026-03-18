@@ -2,9 +2,13 @@ import { Link } from "react-router-dom"
 import { useTranslation } from "#hooks/useTranslation"
 
 const LINKS = {
-  sobre: [
+  about: [
     { key: "badges", to: "/about/badges" },
     { key: "minerals", to: "/about/minerals" },
+  ],
+  legal: [
+    { key: "terms", to: "/legal/terms" },
+    { key: "privacy", to: "/legal/privacy" },
   ],
 }
 
@@ -37,7 +41,25 @@ export default function Footer() {
               {t("footer.about")}
             </h3>
             <ul className="space-y-2.5">
-              {LINKS.sobre.map((link) => (
+              {LINKS.about.map((link) => (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    className="text-sm text-zinc-500 hover:text-white transition-colors"
+                  >
+                    {t(`footer.${link.key}`)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4">
+              {t("footer.legal")}
+            </h3>
+            <ul className="space-y-2.5">
+              {LINKS.legal.map((link) => (
                 <li key={link.to}>
                   <Link
                     to={link.to}
