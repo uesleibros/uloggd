@@ -206,7 +206,7 @@ export default function FollowListModal({ isOpen, title, userId, onClose, onFoll
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-800 transition-colors"
               >
                 <div className="flex-1 min-w-0">
-                  <UserDisplay user={u} size="md" showBadges={true} showStatus={true} linkToProfile={false} />
+                  <UserDisplay user={u} size="md" showBadges={false} showStatus={true} linkToProfile={false} />
                 </div>
                 <FollowButton user={u} currentUserId={currentUser?.user_id} onFollowChange={onFollowChange} t={t} />
               </Link>
