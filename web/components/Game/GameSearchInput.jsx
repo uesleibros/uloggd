@@ -4,6 +4,7 @@ import { Link } from "react-router-dom"
 import { useTranslation } from "#hooks/useTranslation"
 import { useMyLibrary } from "#hooks/useMyLibrary"
 import PlatformIcons from "@components/Game/PlatformIcons"
+import GameTypeBadge from "@components/Game/GameTypeBadge"
 import { formatDateShort } from "#utils/formatDate"
 
 export function GameSearchInput({
@@ -45,6 +46,93 @@ export function GameSearchInput({
   )
 }
 
+function GameResultItem({
+  game,
+  onSelect,
+  isSelected,
+  showLinks,
+  showGameType,
+  renderActions,
+  getCoverUrl,
+}) {
+  const coverUrl = getCoverUrl(game)
+
+  const coverElement = coverUrl ? (
+    <img
+      src={coverUrl}
+      alt=""
+      className="h-14 w-10 sm:h-12 sm:w-9 rounded object-cover bg-zinc-800"
+    />
+  ) : (
+    <div className="h-14 w-10 sm:h-12 sm:w-9 rounded bg-zinc-800 flex items-center justify-center">
+      <Gamepad2 className="w-4 h-4 text-zinc-600" />
+    </div>
+  )
+
+  return (
+    <div
+      onClick={() => onSelect?.(game)}
+      className={`flex items-center gap-3 py-3 px-3 border-b border-zinc-800/50 last:border-0 transition-colors ${
+        onSelect ? "cursor-pointer hover:bg-zinc-800/30" : ""
+      } ${isSelected ? "bg-indigo-500/10" : ""}`}
+    >
+      {showLinks ? (
+        <Link
+          to={`/game/${game.slug}`}
+          target="_blank"
+          className="flex-shrink-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {coverElement}
+        </Link>
+      ) : (
+        <div className="flex-shrink-0">{coverElement}</div>
+      )}
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          {showLinks ? (
+            <Link
+              to={`/game/${game.slug}`}
+              target="_blank"
+              className="text-sm font-medium text-white hover:text-indigo-400 transition-colors truncate"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {game.name}
+            </Link>
+          ) : (
+            <span className="text-sm font-medium text-white truncate">
+              {game.name}
+            </span>
+          )}
+          {showGameType && <GameTypeBadge type={game.gameType} />}
+        </div>
+
+        <div className="flex items-center gap-2 mt-0.5">
+          {game.first_release_date && (
+            <span className="text-xs text-zinc-500">
+              {formatDateShort(game.first_release_date)}
+            </span>
+          )}
+          <PlatformIcons icons={game.platformIcons} />
+        </div>
+
+        {game.parentGame && (
+          <p className="text-xs text-zinc-600 mt-0.5 truncate">
+            {game.parentGame}
+          </p>
+        )}
+      </div>
+
+      {renderActions && (
+        <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+          {renderActions(game, isSelected)}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function GameSearchResults({
   results,
   searching,
@@ -55,6 +143,7 @@ export function GameSearchResults({
   typeToSearchMessage,
   renderActions,
   showLinks = true,
+  showGameType = true,
 }) {
   const { t } = useTranslation()
   const { getGameData } = useMyLibrary()
@@ -94,80 +183,19 @@ export function GameSearchResults({
   }
 
   return (
-    <div className="space-y-0">
-      {results.map((game) => {
-        const isSelected = selectedGameId === game.id
-        const coverUrl = getCoverUrl(game)
-
-        const coverElement = coverUrl ? (
-          <img
-            src={coverUrl}
-            alt=""
-            className="h-14 w-10 sm:h-12 sm:w-9 rounded object-cover bg-zinc-800"
-          />
-        ) : (
-          <div className="h-14 w-10 sm:h-12 sm:w-9 rounded bg-zinc-800 flex items-center justify-center">
-            <Gamepad2 className="w-4 h-4 text-zinc-600" />
-          </div>
-        )
-
-        const nameElement = (
-          <span className="text-sm font-medium text-white hover:text-indigo-400 transition-colors truncate block">
-            {game.name}
-          </span>
-        )
-
-        return (
-          <div
-            key={game.id}
-            onClick={() => onSelect?.(game)}
-            className={`flex items-center gap-3 py-3 px-3 border-b border-zinc-800/50 last:border-0 transition-colors ${
-              onSelect ? "cursor-pointer hover:bg-zinc-800/30" : ""
-            } ${isSelected ? "bg-indigo-500/10" : ""}`}
-          >
-            {showLinks ? (
-              <Link
-                to={`/game/${game.slug}`}
-                target="_blank"
-                className="flex-shrink-0"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {coverElement}
-              </Link>
-            ) : (
-              <div className="flex-shrink-0">{coverElement}</div>
-            )}
-
-            <div className="flex-1 min-w-0">
-              {showLinks ? (
-                <Link
-                  to={`/game/${game.slug}`}
-                  target="_blank"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {nameElement}
-                </Link>
-              ) : (
-                nameElement
-              )}
-              <div className="flex items-center gap-2 mt-0.5">
-                {game.first_release_date && (
-                  <span className="text-xs text-zinc-500">
-                    {formatDateShort(game.first_release_date)}
-                  </span>
-                )}
-                <PlatformIcons icons={game.platformIcons} />
-              </div>
-            </div>
-
-            {renderActions && (
-              <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                {renderActions(game, isSelected)}
-              </div>
-            )}
-          </div>
-        )
-      })}
+    <div>
+      {results.map((game) => (
+        <GameResultItem
+          key={game.id}
+          game={game}
+          onSelect={onSelect}
+          isSelected={selectedGameId === game.id}
+          showLinks={showLinks}
+          showGameType={showGameType}
+          renderActions={renderActions}
+          getCoverUrl={getCoverUrl}
+        />
+      ))}
     </div>
   )
 }
