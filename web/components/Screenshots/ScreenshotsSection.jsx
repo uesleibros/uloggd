@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import {
   Camera, Plus, EyeOff, X, Loader2,
-  Gamepad2, AlertTriangle, ChevronLeft, Search, Check, ImagePlus
+  Gamepad2, AlertTriangle, ChevronLeft, Check, ImagePlus
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "#hooks/useTranslation"
+import { useGameSearch } from "#hooks/useGameSearch"
 import { supabase } from "#lib/supabase"
 import Modal from "@components/UI/Modal"
 import Pagination from "@components/UI/Pagination"
-import PlatformIcons from "@components/Game/PlatformIcons"
+import { GameSearchInput, GameSearchResults } from "@components/Game/GameSearchInput"
 import { formatDateShort } from "#utils/formatDate"
 
 const ITEMS_PER_PAGE = 6
@@ -27,8 +28,8 @@ function ScreenshotSkeleton() {
       </div>
       <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
         {[...Array(ITEMS_PER_PAGE)].map((_, i) => (
-          <div 
-            key={i} 
+          <div
+            key={i}
             className="aspect-square bg-zinc-800/50 animate-pulse rounded-sm"
             style={{ animationDelay: `${i * 100}ms` }}
           />
@@ -40,44 +41,13 @@ function ScreenshotSkeleton() {
 
 function GameSearchModal({ isOpen, onClose, onSelect, selectedGame }) {
   const { t } = useTranslation("screenshots")
-  const [query, setQuery] = useState("")
-  const [results, setResults] = useState([])
-  const [searching, setSearching] = useState(false)
-  const debounceRef = useRef(null)
-  const inputRef = useRef(null)
+  const { query, setQuery, results, searching, reset } = useGameSearch({ enabled: isOpen })
 
   useEffect(() => {
     if (isOpen) {
-      setQuery("")
-      setResults([])
-      setTimeout(() => inputRef.current?.focus(), 150)
+      reset()
     }
-  }, [isOpen])
-
-  useEffect(() => {
-    if (!query.trim()) {
-      setResults([])
-      setSearching(false)
-      return
-    }
-
-    setSearching(true)
-    clearTimeout(debounceRef.current)
-
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/igdb/autocomplete?query=${encodeURIComponent(query.trim())}`)
-        const data = await res.json()
-        setResults(Array.isArray(data) ? data : [])
-      } catch {
-        setResults([])
-      } finally {
-        setSearching(false)
-      }
-    }, 400)
-
-    return () => clearTimeout(debounceRef.current)
-  }, [query])
+  }, [isOpen, reset])
 
   function handleSelect(game) {
     onSelect(game)
@@ -95,95 +65,33 @@ function GameSearchModal({ isOpen, onClose, onSelect, selectedGame }) {
     >
       <div className="flex flex-col h-full">
         <div className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder={t("upload.searchGamePlaceholder")}
-              className="w-full h-10 pl-9 pr-9 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors"
-            />
-            {query && (
-              <button
-                onClick={() => { setQuery(""); setResults([]) }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          <GameSearchInput
+            query={query}
+            onQueryChange={setQuery}
+            onClear={reset}
+            placeholder={t("upload.searchGamePlaceholder")}
+            autoFocus
+          />
         </div>
 
         <div className="flex-1 overflow-y-auto min-h-0 max-h-[50vh] md:max-h-80">
-          {searching && (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-5 h-5 text-zinc-500 animate-spin" />
-            </div>
-          )}
-
-          {!searching && query.trim() && results.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 px-4">
-              <p className="text-sm text-zinc-500">{t("upload.noResults")}</p>
-            </div>
-          )}
-
-          {!searching && !query.trim() && (
-            <div className="flex flex-col items-center justify-center py-16 px-4">
-              <Search className="w-8 h-8 text-zinc-700 mb-3" />
-              <p className="text-sm text-zinc-500">{t("upload.typeToSearch")}</p>
-            </div>
-          )}
-
-          {!searching && results.length > 0 && (
-            <div className="px-2 pb-2">
-              {results.map(game => {
-                const isSelected = selectedGame?.id === game.id
-                const coverUrl = game.cover?.url ? `https:${game.cover.url}` : null
-
-                return (
-                  <button
-                    key={game.id}
-                    onClick={() => handleSelect(game)}
-                    className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors text-left cursor-pointer ${
-                      isSelected ? "bg-indigo-500/15" : "hover:bg-zinc-800"
-                    }`}
-                  >
-                    {coverUrl ? (
-                      <img
-                        src={coverUrl}
-                        alt=""
-                        className="w-10 h-14 rounded object-cover bg-zinc-800 flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-10 h-14 rounded bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                        <Gamepad2 className="w-4 h-4 text-zinc-600" />
-                      </div>
-                    )}
-
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{game.name}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        {game.first_release_date && (
-                          <span className="text-xs text-zinc-500">
-                            {formatDateShort(game.first_release_date)}
-                          </span>
-                        )}
-                        <PlatformIcons icons={game.platformIcons} />
-                      </div>
-                    </div>
-
-                    {isSelected && (
-                      <div className="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          )}
+          <GameSearchResults
+            results={results}
+            searching={searching}
+            query={query}
+            onSelect={handleSelect}
+            selectedGameId={selectedGame?.id}
+            emptyMessage={t("upload.noResults")}
+            typeToSearchMessage={t("upload.typeToSearch")}
+            showLinks={false}
+            renderActions={(game, isSelected) =>
+              isSelected && (
+                <div className="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+              )
+            }
+          />
         </div>
       </div>
     </Modal>
@@ -445,7 +353,7 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
                         className="w-full flex items-center gap-3 p-2.5 bg-zinc-800 hover:bg-zinc-750 rounded-lg transition-colors text-left group cursor-pointer"
                       >
                         <div className="w-9 h-12 rounded bg-zinc-700 flex items-center justify-center flex-shrink-0 group-hover:bg-zinc-600 transition-colors">
-                          <Search className="w-4 h-4 text-zinc-500" />
+                          <Gamepad2 className="w-4 h-4 text-zinc-500" />
                         </div>
                         <span className="text-sm text-zinc-500 group-hover:text-zinc-400 transition-colors">
                           {t("upload.searchGame")}
