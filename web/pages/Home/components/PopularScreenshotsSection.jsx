@@ -34,28 +34,21 @@ export default function PopularScreenshotsSection() {
 
   if (!loading && screenshots.length === 0) return null
 
-  const tripled = screenshots.length > 0 ? [...screenshots, ...screenshots, ...screenshots] : []
-
   return (
     <div>
       <h2 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">
         {t("sections.popularScreenshots")}
       </h2>
 
-      <DragScrollRow
-        autoScroll
-        autoScrollSpeed={0.03}
-        loop
-        className="gap-3 pb-2 overflow-x-hidden touch-pan-y"
-      >
+      <DragScrollRow className="gap-3 pb-2" autoScroll autoScrollSpeed={25} loop>
         {loading
-          ? Array.from({ length: 18 }).map((_, i) => (
+          ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="w-44 flex-shrink-0">
                 <ScreenshotCardSkeleton />
               </div>
             ))
-          : tripled.map((screenshot, index) => (
-              <div key={`${screenshot.id}-${index}`} className="w-44 flex-shrink-0">
+          : screenshots.map((screenshot) => (
+              <div key={screenshot.id} className="w-44 flex-shrink-0">
                 <ScreenshotCard screenshot={screenshot} />
               </div>
             ))}
