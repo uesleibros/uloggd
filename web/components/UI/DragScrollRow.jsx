@@ -9,11 +9,12 @@ const DragScrollRow = forwardRef(function DragScrollRow({
   autoScrollSpeed = 1,
   loop = false,
   showEdgeFade = true,
+  gap = 0,
   ...props
 }, ref) {
-  const prevScrollStateRef = useRef({ left: false, right: false })
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(false)
+  const [scrollState, setScrollState] = useState({ left: false, right: false })
+  const rafRef = useRef(null)
+  const lastStateRef = useRef({ left: false, right: false })
 
   const plugins = useMemo(() => {
     if (!autoScroll) return []
@@ -36,67 +37,89 @@ const DragScrollRow = forwardRef(function DragScrollRow({
 
   const [emblaRef, emblaApi] = useEmblaCarousel(options, plugins)
 
-  useImperativeHandle(ref, () => emblaApi || null, [emblaApi])
+  useImperativeHandle(ref, () => emblaApi, [emblaApi])
 
   const updateScrollState = useCallback(() => {
-    if (!emblaApi || !showEdgeFade) return
+    if (!emblaApi || !showEdgeFade || loop) return
 
-    const nextLeft = emblaApi.canScrollPrev()
-    const nextRight = emblaApi.canScrollNext()
-
-    if (
-      prevScrollStateRef.current.left !== nextLeft ||
-      prevScrollStateRef.current.right !== nextRight
-    ) {
-      prevScrollStateRef.current = { left: nextLeft, right: nextRight }
-      setCanScrollLeft(nextLeft)
-      setCanScrollRight(nextRight)
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current)
     }
-  }, [emblaApi, showEdgeFade])
+
+    rafRef.current = requestAnimationFrame(() => {
+      const nextLeft = emblaApi.canScrollPrev()
+      const nextRight = emblaApi.canScrollNext()
+
+      if (
+        lastStateRef.current.left !== nextLeft ||
+        lastStateRef.current.right !== nextRight
+      ) {
+        lastStateRef.current = { left: nextLeft, right: nextRight }
+        setScrollState({ left: nextLeft, right: nextRight })
+      }
+    })
+  }, [emblaApi, showEdgeFade, loop])
 
   useEffect(() => {
-    if (!emblaApi) return
-    if (!showEdgeFade) return
+    if (!emblaApi || loop || !showEdgeFade) return
 
     updateScrollState()
+
     emblaApi.on("scroll", updateScrollState)
     emblaApi.on("reInit", updateScrollState)
-    emblaApi.on("resize", updateScrollState)
-    emblaApi.on("select", updateScrollState)
 
     return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+      }
       emblaApi.off("scroll", updateScrollState)
       emblaApi.off("reInit", updateScrollState)
-      emblaApi.off("resize", updateScrollState)
-      emblaApi.off("select", updateScrollState)
     }
-  }, [emblaApi, showEdgeFade, updateScrollState])
+  }, [emblaApi, showEdgeFade, loop, updateScrollState])
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+      }
+    }
+  }, [])
 
   const maskStyle = useMemo(() => {
-    if (!showEdgeFade) return undefined
+    if (!showEdgeFade || loop) return undefined
 
-    let maskImage = null
+    const { left, right } = scrollState
 
-    if (canScrollLeft && canScrollRight) {
-      maskImage = "linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)"
-    } else if (canScrollLeft) {
-      maskImage = "linear-gradient(to right, transparent, black 40px, black 100%)"
-    } else if (canScrollRight) {
-      maskImage = "linear-gradient(to left, transparent, black 40px, black 100%)"
+    if (left && right) {
+      return {
+        maskImage: "linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)",
+        WebkitMaskImage: "linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)",
+      }
     }
-
-    if (!maskImage) return undefined
-
-    return {
-      maskImage,
-      WebkitMaskImage: maskImage,
+    if (left) {
+      return {
+        maskImage: "linear-gradient(to right, transparent, black 40px, black 100%)",
+        WebkitMaskImage: "linear-gradient(to right, transparent, black 40px, black 100%)",
+      }
     }
-  }, [showEdgeFade, canScrollLeft, canScrollRight])
+    if (right) {
+      return {
+        maskImage: "linear-gradient(to left, transparent, black 40px, black 100%)",
+        WebkitMaskImage: "linear-gradient(to left, transparent, black 40px, black 100%)",
+      }
+    }
+    return undefined
+  }, [showEdgeFade, loop, scrollState])
+
+  const containerStyle = useMemo(() => {
+    if (!gap) return undefined
+    return { gap: `${gap}px` }
+  }, [gap])
 
   return (
     <div style={maskStyle} className="w-full" {...props}>
       <div ref={emblaRef} className="overflow-hidden">
-        <div className={`flex ${className}`}>
+        <div className={`flex ${className}`} style={containerStyle}>
           {children}
         </div>
       </div>
