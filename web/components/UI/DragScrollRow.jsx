@@ -1,308 +1,241 @@
-import { useRef, useCallback, forwardRef, useImperativeHandle, useEffect, useState } from "react"
+import { useRef, useCallback, forwardRef, useImperativeHandle, useEffect, Children } from "react"
 
-const DragScrollRow = forwardRef(function DragScrollRow({ 
-  children, 
-  className = "", 
+const DragScrollRow = forwardRef(function DragScrollRow({
+  children,
+  className = "",
   autoScroll = false,
   autoScrollSpeed = 0.04,
   loop = false,
   showEdgeFade = true,
-  ...props 
+  ...props
 }, ref) {
   const scrollRef = useRef(null)
+  const containerRef = useRef(null)
   const rafRef = useRef(null)
-  const virtualScrollLeft = useRef(0)
   const lastTimeRef = useRef(null)
-  const windowWidthRef = useRef(typeof window !== "undefined" ? window.innerWidth : 0)
-  const isPausedRef = useRef(false)
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(false)
-
-  const dragRef = useRef({
+  
+  const stateRef = useRef({
     isDown: false,
+    isHovered: false,
     startX: 0,
-    startY: 0,
     scrollLeft: 0,
     hasMoved: false,
-    directionDecided: false,
-    isHorizontal: false
+    virtualScroll: 0,
+    touchX: 0,
+    touchY: 0,
+    isHorizontalTouch: null
   })
 
   useImperativeHandle(ref, () => scrollRef.current)
 
-  const checkScroll = useCallback(() => {
-    if (!showEdgeFade) return
+  const updateMask = useCallback(() => {
+    if (!showEdgeFade || !scrollRef.current || !containerRef.current) return
     const el = scrollRef.current
-    if (!el) return
-    setCanScrollLeft(el.scrollLeft > 2)
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2)
-  }, [showEdgeFade])
+    const { scrollLeft, scrollWidth, clientWidth } = el
+    
+    const canScrollLeft = scrollLeft > 2
+    const canScrollRight = scrollLeft < scrollWidth - clientWidth - 2
+    let maskImage = "none"
 
-  useEffect(() => {
-    if (!showEdgeFade) return
-    checkScroll()
-    const el = scrollRef.current
-    if (!el) return
-    el.addEventListener("scroll", checkScroll, { passive: true })
-    const ro = new ResizeObserver(checkScroll)
-    ro.observe(el)
-    return () => {
-      el.removeEventListener("scroll", checkScroll)
-      ro.disconnect()
-    }
-  }, [showEdgeFade, checkScroll, children])
-
-  const normalizeScroll = useCallback(() => {
-    if (!loop) return
-    const el = scrollRef.current
-    if (!el) return
-    const sectionWidth = el.scrollWidth / 3
-    if (sectionWidth === 0) return
-    if (virtualScrollLeft.current >= sectionWidth * 2) {
-      virtualScrollLeft.current -= sectionWidth
-      el.scrollLeft = virtualScrollLeft.current
-    } else if (virtualScrollLeft.current <= 0) {
-      virtualScrollLeft.current += sectionWidth
-      el.scrollLeft = virtualScrollLeft.current
-    }
-  }, [loop])
-
-  const syncVirtualScroll = useCallback(() => {
-    if (scrollRef.current) {
-      virtualScrollLeft.current = scrollRef.current.scrollLeft
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!autoScroll || !loop || !scrollRef.current) return
-    const el = scrollRef.current
-    const initialPos = el.scrollWidth / 3
-    el.scrollLeft = initialPos
-    virtualScrollLeft.current = initialPos
-  }, [autoScroll, loop, children])
-
-  useEffect(() => {
-    if (!autoScroll || !scrollRef.current) return
-
-    const el = scrollRef.current
-    lastTimeRef.current = null
-
-    function step(now) {
-      if (isPausedRef.current) {
-        lastTimeRef.current = null
-        rafRef.current = requestAnimationFrame(step)
-        return
-      }
-
-      if (lastTimeRef.current === null) {
-        lastTimeRef.current = now
-        rafRef.current = requestAnimationFrame(step)
-        return
-      }
-
-      const delta = Math.min(now - lastTimeRef.current, 32)
-      lastTimeRef.current = now
-
-      if (loop) {
-        virtualScrollLeft.current += autoScrollSpeed * delta
-        el.scrollLeft = Math.floor(virtualScrollLeft.current)
-        normalizeScroll()
-      } else {
-        el.scrollLeft += autoScrollSpeed * delta
-      }
-
-      rafRef.current = requestAnimationFrame(step)
-    }
-
-    rafRef.current = requestAnimationFrame(step)
-    return () => {
-      cancelAnimationFrame(rafRef.current)
-      rafRef.current = null
-    }
-  }, [autoScroll, autoScrollSpeed, loop, normalizeScroll])
-
-  useEffect(() => {
-    if (!autoScroll) return
-
-    const handleVisibility = () => {
-      if (document.hidden) {
-        isPausedRef.current = true
-        syncVirtualScroll()
-      } else {
-        lastTimeRef.current = null
-        isPausedRef.current = false
-      }
-    }
-
-    document.addEventListener("visibilitychange", handleVisibility)
-    return () => document.removeEventListener("visibilitychange", handleVisibility)
-  }, [autoScroll, syncVirtualScroll])
-
-  useEffect(() => {
-    if (!autoScroll || !loop) return
-
-    const handleResize = () => {
-      if (window.innerWidth === windowWidthRef.current) return
-      windowWidthRef.current = window.innerWidth
-      const el = scrollRef.current
-      if (!el) return
-      const newPos = el.scrollWidth / 3
-      el.scrollLeft = newPos
-      virtualScrollLeft.current = newPos
-    }
-
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [autoScroll, loop])
-
-  const pause = useCallback(() => {
-    isPausedRef.current = true
-    syncVirtualScroll()
-  }, [syncVirtualScroll])
-
-  const resume = useCallback(() => {
-    lastTimeRef.current = null
-    isPausedRef.current = false
-  }, [])
-
-  const handleMouseDown = useCallback((e) => {
-    const el = scrollRef.current
-    if (!el) return
-    dragRef.current = {
-      isDown: true,
-      startX: e.pageX,
-      startY: 0,
-      scrollLeft: el.scrollLeft,
-      hasMoved: false,
-      directionDecided: true,
-      isHorizontal: true
-    }
-  }, [])
-
-  const handleMouseMove = useCallback((e) => {
-    if (!dragRef.current.isDown || !dragRef.current.isHorizontal) return
-    const el = scrollRef.current
-    if (!el) return
-    const diff = e.pageX - dragRef.current.startX
-    if (Math.abs(diff) > 5) {
-      dragRef.current.hasMoved = true
-      e.preventDefault()
-    }
-    el.scrollLeft = dragRef.current.scrollLeft - diff
-  }, [])
-
-  const handleMouseUp = useCallback(() => {
-    dragRef.current.isDown = false
-    dragRef.current.directionDecided = false
-    dragRef.current.isHorizontal = false
-  }, [])
-
-  const handleTouchStart = useCallback((e) => {
-    const el = scrollRef.current
-    if (!el) return
-    const touch = e.touches[0]
-    dragRef.current = {
-      isDown: true,
-      startX: touch.pageX,
-      startY: touch.pageY,
-      scrollLeft: el.scrollLeft,
-      hasMoved: false,
-      directionDecided: false,
-      isHorizontal: false
-    }
-    props.onTouchStart?.(e)
-  }, [props.onTouchStart])
-
-  const handleTouchMove = useCallback((e) => {
-    if (!dragRef.current.isDown) return
-    const el = scrollRef.current
-    if (!el) return
-    const touch = e.touches[0]
-
-    if (!dragRef.current.directionDecided) {
-      const dx = Math.abs(touch.pageX - dragRef.current.startX)
-      const dy = Math.abs(touch.pageY - dragRef.current.startY)
-      if (dx + dy < 10) return
-      dragRef.current.directionDecided = true
-      dragRef.current.isHorizontal = dx > dy
-      if (dragRef.current.isHorizontal && autoScroll) pause()
-    }
-
-    if (dragRef.current.isHorizontal) {
-      const diff = touch.pageX - dragRef.current.startX
-      if (Math.abs(diff) > 5) dragRef.current.hasMoved = true
-      el.scrollLeft = dragRef.current.scrollLeft - diff
-    }
-
-    props.onTouchMove?.(e)
-  }, [props.onTouchMove, autoScroll, pause])
-
-  const handleTouchEnd = useCallback((e) => {
-    if (dragRef.current.isHorizontal && autoScroll) {
-      syncVirtualScroll()
-      normalizeScroll()
-      setTimeout(resume, 100)
-    }
-    dragRef.current.isDown = false
-    dragRef.current.directionDecided = false
-    dragRef.current.isHorizontal = false
-    props.onTouchEnd?.(e)
-  }, [props.onTouchEnd, autoScroll, syncVirtualScroll, normalizeScroll, resume])
-
-  const handleClickCapture = useCallback((e) => {
-    if (dragRef.current.hasMoved) {
-      e.preventDefault()
-      e.stopPropagation()
-      dragRef.current.hasMoved = false
-    }
-  }, [])
-
-  const handleMouseEnter = useCallback((e) => {
-    if (autoScroll) pause()
-    props.onMouseEnter?.(e)
-  }, [autoScroll, pause, props.onMouseEnter])
-
-  const handleMouseLeave = useCallback((e) => {
-    handleMouseUp()
-    if (autoScroll) {
-      syncVirtualScroll()
-      resume()
-    }
-    props.onMouseLeave?.(e)
-  }, [autoScroll, handleMouseUp, syncVirtualScroll, resume, props.onMouseLeave])
-
-  let maskStyle = undefined
-  if (showEdgeFade) {
-    let maskImage = null
     if (canScrollLeft && canScrollRight) {
       maskImage = "linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)"
     } else if (canScrollLeft) {
       maskImage = "linear-gradient(to right, transparent, black 40px)"
     } else if (canScrollRight) {
       maskImage = "linear-gradient(to left, transparent, black 40px)"
+    } else {
+      maskImage = "none"
     }
-    if (maskImage) {
-      maskStyle = { maskImage, WebkitMaskImage: maskImage }
+
+    containerRef.current.style.maskImage = maskImage
+    containerRef.current.style.webkitMaskImage = maskImage
+  }, [showEdgeFade])
+
+  const normalizeLoop = useCallback(() => {
+    if (!loop || !scrollRef.current) return
+    const el = scrollRef.current
+    const halfWidth = el.scrollWidth / 2
+
+    if (el.scrollLeft >= halfWidth) {
+      el.scrollLeft -= halfWidth
+      stateRef.current.virtualScroll = el.scrollLeft
+    } else if (el.scrollLeft <= 0) {
+      el.scrollLeft += halfWidth
+      stateRef.current.virtualScroll = el.scrollLeft
     }
-  }
+  }, [loop])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+
+    const handleScroll = () => {
+      updateMask()
+      if (!autoScroll && !stateRef.current.isDown) {
+        normalizeLoop()
+      }
+    }
+
+    el.addEventListener("scroll", handleScroll, { passive: true })
+    const ro = new ResizeObserver(() => {
+      updateMask()
+    })
+    ro.observe(el)
+
+    updateMask()
+
+    return () => {
+      el.removeEventListener("scroll", handleScroll)
+      ro.disconnect()
+    }
+  }, [updateMask, normalizeLoop, autoScroll])
+
+  useEffect(() => {
+    if (!autoScroll) {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      return
+    }
+
+    const el = scrollRef.current
+    if (!el) return
+
+    const tick = (now) => {
+      if (!lastTimeRef.current) lastTimeRef.current = now
+      const delta = Math.min(now - lastTimeRef.current, 50)
+      lastTimeRef.current = now
+
+      if (!stateRef.current.isDown && !stateRef.current.isHovered) {
+        stateRef.current.virtualScroll += autoScrollSpeed * delta
+        el.scrollLeft = stateRef.current.virtualScroll
+        normalizeLoop()
+      } else {
+        stateRef.current.virtualScroll = el.scrollLeft
+      }
+
+      rafRef.current = requestAnimationFrame(tick)
+    }
+
+    rafRef.current = requestAnimationFrame(tick)
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
+  }, [autoScroll, autoScrollSpeed, normalizeLoop])
+
+  const handlePointerDown = useCallback((e) => {
+    const el = scrollRef.current
+    if (!el) return
+
+    const isTouch = e.type === "touchstart"
+    const clientX = isTouch ? e.touches[0].clientX : e.clientX
+    const clientY = isTouch ? e.touches[0].clientY : e.clientY
+
+    stateRef.current.isDown = true
+    stateRef.current.hasMoved = false
+    stateRef.current.startX = clientX
+    stateRef.current.touchY = clientY
+    stateRef.current.scrollLeft = el.scrollLeft
+    stateRef.current.isHorizontalTouch = null
+    stateRef.current.virtualScroll = el.scrollLeft
+
+    if (isTouch) {
+      props.onTouchStart?.(e)
+    }
+  }, [props])
+
+  const handlePointerMove = useCallback((e) => {
+    if (!stateRef.current.isDown) return
+    const el = scrollRef.current
+    if (!el) return
+
+    const isTouch = e.type === "touchmove"
+    const clientX = isTouch ? e.touches[0].clientX : e.clientX
+    const clientY = isTouch ? e.touches[0].clientY : e.clientY
+
+    if (isTouch && stateRef.current.isHorizontalTouch === null) {
+      const dx = Math.abs(clientX - stateRef.current.startX)
+      const dy = Math.abs(clientY - stateRef.current.touchY)
+      if (dx + dy < 5) return
+      stateRef.current.isHorizontalTouch = dx > dy
+    }
+
+    if (isTouch && !stateRef.current.isHorizontalTouch) {
+      return
+    }
+
+    const walk = clientX - stateRef.current.startX
+    if (Math.abs(walk) > 5) {
+      stateRef.current.hasMoved = true
+    }
+
+    el.scrollLeft = stateRef.current.scrollLeft - walk
+    stateRef.current.virtualScroll = el.scrollLeft
+
+    if (!isTouch) {
+      e.preventDefault()
+    } else {
+      props.onTouchMove?.(e)
+    }
+  }, [props])
+
+  const handlePointerUp = useCallback((e) => {
+    stateRef.current.isDown = false
+    stateRef.current.isHorizontalTouch = null
+    normalizeLoop()
+    
+    if (e.type === "touchend") {
+      props.onTouchEnd?.(e)
+    }
+  }, [normalizeLoop, props])
+
+  const handleMouseLeave = useCallback((e) => {
+    stateRef.current.isDown = false
+    stateRef.current.isHovered = false
+    normalizeLoop()
+    props.onMouseLeave?.(e)
+  }, [normalizeLoop, props])
+
+  const handleMouseEnter = useCallback((e) => {
+    stateRef.current.isHovered = true
+    if (scrollRef.current) {
+      stateRef.current.virtualScroll = scrollRef.current.scrollLeft
+    }
+    props.onMouseEnter?.(e)
+  }, [props])
+
+  const handleClickCapture = useCallback((e) => {
+    if (stateRef.current.hasMoved) {
+      e.preventDefault()
+      e.stopPropagation()
+      stateRef.current.hasMoved = false
+    }
+  }, [])
 
   return (
-    <div style={maskStyle}>
+    <div ref={containerRef} style={{ display: "flex", width: "100%" }}>
       <div
         ref={scrollRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onMouseDown={handlePointerDown}
+        onMouseMove={handlePointerMove}
+        onMouseUp={handlePointerUp}
         onMouseLeave={handleMouseLeave}
         onMouseEnter={handleMouseEnter}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onTouchStart={handlePointerDown}
+        onTouchMove={handlePointerMove}
+        onTouchEnd={handlePointerUp}
         onClickCapture={handleClickCapture}
         onDragStart={(e) => e.preventDefault()}
         className={`flex overflow-x-auto scrollbar-hide select-none cursor-grab active:cursor-grabbing ${className}`}
+        style={{ scrollBehavior: "auto", WebkitOverflowScrolling: "touch" }}
       >
-        {children}
+        <div className="flex shrink-0">
+          {children}
+        </div>
+        {loop && (
+          <div className="flex shrink-0" aria-hidden="true">
+            {children}
+          </div>
+        )}
       </div>
     </div>
   )
