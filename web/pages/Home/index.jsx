@@ -3,6 +3,7 @@ import { useTranslation } from "#hooks/useTranslation"
 import SteamSalesSection from "./components/SteamSalesSection"
 import EpicFreeGamesSection from "./components/EpicFreeGamesSection"
 import PopularAmongFriendsCarousel from "./components/PopularAmongFriendsCarousel"
+import FriendsReviewsSection from "./components/FriendsReviewsSection"
 import { useAuth } from "#hooks/useAuth"
 import PageBanner from "@components/Layout/PageBanner"
 import { getStatus } from "#utils/onlineStatus"
@@ -79,6 +80,10 @@ export default function Home() {
 
       <div className="mt-12">
         <PopularAmongFriendsCarousel />
+      </div>
+
+      <div className="mt-12">
+        <FriendsReviewsSection />
       </div>
 
       <div className="mt-12">
