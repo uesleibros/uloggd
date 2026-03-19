@@ -110,16 +110,37 @@ export default function FriendsReviewsSection() {
   const [users, setUsers] = useState({})
   const [games, setGames] = useState({})
   const [loading, setLoading] = useState(true)
-  const fetchedRef = useRef(false)
+  
+  const abortControllerRef = useRef(null)
+  const fetchedForUserRef = useRef(null)
 
   useEffect(() => {
-    if (!user || fetchedRef.current) return
+    if (!user) {
+      setReviews([])
+      setUsers({})
+      setGames({})
+      setLoading(false)
+      fetchedForUserRef.current = null
+      return
+    }
 
-    let cancelled = false
+    if (fetchedForUserRef.current === user.user_id) {
+      return
+    }
+
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = new AbortController()
+    
+    const currentAbortController = abortControllerRef.current
 
     async function fetchData() {
+      setLoading(true)
+      
       try {
         const { data: { session } } = await supabase.auth.getSession()
+        
+        if (currentAbortController.signal.aborted) return
+        
         if (!session) {
           setLoading(false)
           return
@@ -127,25 +148,34 @@ export default function FriendsReviewsSection() {
 
         const res = await fetch("/api/home/friendsReviews?limit=12&sortBy=recent", {
           headers: { Authorization: `Bearer ${session.access_token}` },
+          signal: currentAbortController.signal,
         })
+
+        if (currentAbortController.signal.aborted) return
 
         const data = await res.json()
 
-        if (!cancelled) {
-          setReviews(data.reviews || [])
-          setUsers(data.users || {})
-          setGames(data.games || {})
+        if (currentAbortController.signal.aborted) return
+
+        setReviews(data.reviews || [])
+        setUsers(data.users || {})
+        setGames(data.games || {})
+        fetchedForUserRef.current = user.user_id
+      } catch (err) {
+        if (err.name === "AbortError") return
+        console.error("Error fetching friends reviews:", err)
+      } finally {
+        if (!currentAbortController.signal.aborted) {
           setLoading(false)
-          fetchedRef.current = true
         }
-      } catch {
-        if (!cancelled) setLoading(false)
       }
     }
 
     fetchData()
 
-    return () => { cancelled = true }
+    return () => {
+      currentAbortController.abort()
+    }
   }, [user])
 
   if (!user) return null

@@ -40,7 +40,7 @@ export default function PopularScreenshotsSection() {
         {t("sections.popularScreenshots")}
       </h2>
 
-      <DragScrollRow className="gap-3 pb-2" autoScrol loop>
+      <DragScrollRow className="gap-3 pb-2" autoScroll loop>
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="w-44 flex-shrink-0">
