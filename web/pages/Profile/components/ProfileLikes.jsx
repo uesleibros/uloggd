@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react"
 import { Heart, Gamepad2, MessageSquare, List, LayoutGrid, Camera } from "lucide-react"
-import { Link } from "react-router-dom"
 import { useTranslation } from "#hooks/useTranslation"
 import { useCustomCovers } from "#hooks/useCustomCovers"
 import GameCard, { GameCardSkeleton } from "@components/Game/GameCard"
@@ -8,6 +7,7 @@ import { ListCard } from "@components/Lists/ListCard"
 import { TierlistCard } from "@components/Tierlist/TierlistCard"
 import Pagination from "@components/UI/Pagination"
 import DragScrollRow from "@components/UI/DragScrollRow"
+import ScreenshotCard, { ScreenshotCardSkeleton } from "@components/Screenshot/ScreenshotCard"
 import { ProfileReviewCard } from "./ProfileReviews"
 
 const GAMES_PER_PAGE = 24
@@ -66,26 +66,9 @@ function ScreenshotsSkeleton() {
   return (
     <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
       {[...Array(SCREENSHOTS_PER_PAGE)].map((_, i) => (
-        <div key={i} className="aspect-square bg-zinc-800/50 animate-pulse" />
+        <ScreenshotCardSkeleton key={i} />
       ))}
     </div>
-  )
-}
-
-function ScreenshotGridItem({ screenshot }) {
-  return (
-    <Link
-      to={`/screenshot/${screenshot.id}`}
-      className="group relative aspect-square overflow-hidden bg-zinc-800 cursor-pointer block"
-    >
-      <img
-        src={screenshot.image_url}
-        alt={screenshot.caption || ""}
-        loading="lazy"
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />
-    </Link>
   )
 }
 
@@ -354,7 +337,7 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
           {activeTab === "screenshots" && (
             <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
               {data.items.map((screenshot) => (
-                <ScreenshotGridItem key={screenshot.id} screenshot={screenshot} />
+                <ScreenshotCard key={screenshot.id} screenshot={screenshot} />
               ))}
             </div>
           )}
