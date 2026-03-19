@@ -26,7 +26,7 @@ export async function handleFriendsReviews(req, res) {
 
     const friendIds = following.map((f) => f.following_id)
 
-    const fetchMultiple = limitNum * 3
+    const fetchMultiple = limitNum * 4
 
     let q = supabase
       .from("reviews")
@@ -51,21 +51,30 @@ export async function handleFriendsReviews(req, res) {
       return res.json({ reviews: [], users: {}, games: {}, message: "no_reviews" })
     }
 
-    const maxPerFriend = Math.max(2, Math.ceil(limitNum / friendIds.length))
+    const friendCount = friendIds.length
+    const maxPerFriend = friendCount <= 2
+      ? limitNum
+      : Math.max(3, Math.ceil(limitNum / Math.min(friendCount, 5)))
+
     const userCounts = {}
-    const seenGames = new Set()
     const diversified = []
 
     for (const review of allReviews) {
       if (diversified.length >= limitNum) break
 
-      userCounts[review.user_id] = (userCounts[review.user_id] || 0) + 1
-      if (userCounts[review.user_id] > maxPerFriend) continue
+      const count = userCounts[review.user_id] || 0
+      if (count >= maxPerFriend) continue
 
-      if (seenGames.has(review.game_slug)) continue
-      seenGames.add(review.game_slug)
-
+      userCounts[review.user_id] = count + 1
       diversified.push(review)
+    }
+
+    if (diversified.length < limitNum) {
+      for (const review of allReviews) {
+        if (diversified.length >= limitNum) break
+        if (diversified.some((r) => r.id === review.id)) continue
+        diversified.push(review)
+      }
     }
 
     if (diversified.length === 0) {
