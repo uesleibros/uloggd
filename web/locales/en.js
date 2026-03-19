@@ -692,6 +692,7 @@ export default {
 		},
 		sections: {
 			popularAmongFriends: "Popular among friends",
+			friendsReviews: "Reviews from friends",
 		},
 	},
 	notFound: {
