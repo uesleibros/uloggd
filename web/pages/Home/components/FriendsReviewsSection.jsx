@@ -151,34 +151,25 @@ export default function FriendsReviewsSection() {
   if (!user) return null
   if (!loading && reviews.length === 0) return null
 
-  const tripled = reviews.length > 0 ? [...reviews, ...reviews, ...reviews] : []
-
   return (
     <div>
       <h2 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">
         {t("home.sections.friendsReviews")}
       </h2>
 
-      <DragScrollRow
-        className="gap-3 overflow-x-hidden pb-2 touch-pan-y"
-        autoScroll
-        autoScrollSpeed={0.03}
-        loop
-      >
-        {loading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <CardSkeleton key={i} />
-          ))
-        ) : (
-          tripled.map((review, index) => (
-            <FriendReviewCard
-              key={`${review.id}-${index}`}
-              review={review}
-              user={users[review.user_id]}
-              game={games[review.game_id]}
-            />
-          ))
-        )}
+      <DragScrollRow className="gap-3 pb-2" autoScroll autoScrollSpeed={25} loop>
+        {loading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <CardSkeleton key={i} />
+            ))
+          : reviews.map((review) => (
+              <FriendReviewCard
+                key={review.id}
+                review={review}
+                user={users[review.user_id]}
+                game={games[review.game_id]}
+              />
+            ))}
       </DragScrollRow>
     </div>
   )
