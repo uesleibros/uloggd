@@ -2,7 +2,7 @@ import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
 import SteamSalesSection from "../components/SteamSalesSection"
 import EpicFreeGamesSection from "../components/EpicFreeGamesSection"
-import UsersChoiceCarousel from "../components/UsersChoiceCarousel"
+import PopularAmongFriendsCarousel from "../components/PopularAmongFriendsCarousel"
 import { useAuth } from "#hooks/useAuth"
 import PageBanner from "@components/Layout/PageBanner"
 import { getStatus } from "#utils/onlineStatus"
@@ -63,7 +63,6 @@ function HeroSection() {
 
 export default function Home() {
   usePageMeta()
-  const { t } = useTranslation("home")
   const { user, loading } = useAuth()
 
   function renderHero() {
@@ -79,8 +78,7 @@ export default function Home() {
       {renderHero()}
 
       <div className="mt-12">
-        <h2 className="text-xl font-semibold text-white mb-4">{t("sections.communityFavorites")}</h2>
-        <UsersChoiceCarousel />
+        <PopularAmongFriendsCarousel />
       </div>
 
       <div className="mt-12">
@@ -99,5 +97,3 @@ export default function Home() {
     </div>
   )
 }
-
-
