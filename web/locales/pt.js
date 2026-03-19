@@ -1,4 +1,20 @@
 export default {
+	gameEvents: {
+	  title: "Eventos",
+	  live: "AO VIVO",
+	  upcoming: "Em breve",
+	  liveNow: "ao vivo agora",
+	  upcomingSoon: "em breve",
+	  videos: "vídeos",
+	  watchStream: "Assistir",
+	  viewDetails: "Ver detalhes",
+	  showAll: "Ver todos os {{count}} eventos",
+	  showLess: "Mostrar menos",
+	  empty: {
+	    title: "Nenhum evento",
+	    description: "Não há eventos registrados para este jogo."
+	  }
+	},
 	blogNotification: {
 	  badge: "Novidade",
 	  dismiss: "Agora não",
