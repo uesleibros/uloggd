@@ -60,7 +60,9 @@
     "remark-gfm": "^4.0.0",
     "tailwindcss": "^4.1.18",
     "tough-cookie": "^6.0.0",
-    "unist-util-visit": "^5.1.0"
+    "unist-util-visit": "^5.1.0",
+    "embla-carousel-react": "^8.6.0",
+    "embla-carousel-autoplay": "^8.6.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
