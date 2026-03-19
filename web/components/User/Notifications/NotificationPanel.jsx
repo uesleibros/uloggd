@@ -538,7 +538,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         zIndex={10000}
         noScroll
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full max-h-[90vh] md:max-h-[85vh]">
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 flex-shrink-0">
             <div className="flex items-center gap-2">
               <Bell className="w-4 h-4 text-zinc-400" />
