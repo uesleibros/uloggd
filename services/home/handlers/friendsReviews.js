@@ -77,6 +77,15 @@ export async function handleFriendsReviews(req, res) {
       }
     }
 
+    if (sortBy === "rating") {
+      diversified.sort((a, b) => {
+        if (b.rating !== a.rating) return b.rating - a.rating
+        return new Date(b.created_at) - new Date(a.created_at)
+      })
+    } else {
+      diversified.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    }
+
     if (diversified.length === 0) {
       return res.json({ reviews: [], users: {}, games: {}, message: "no_reviews" })
     }
