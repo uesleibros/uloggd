@@ -52,7 +52,7 @@ export default function PopularListsSection() {
         {t("home.sections.popularLists")}
       </h2>
 
-      <DragScrollRow className="gap-4 pb-2" style={{ overflow: "visible" }}>
+      <DragScrollRow autoScrollSpeed={0.03} autoScroll loop className="gap-4 pb-2" style={{ overflow: "visible" }}>
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => (
             <ListCardSkeleton key={i} />
