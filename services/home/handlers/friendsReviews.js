@@ -4,13 +4,11 @@ import { getCache, setCache } from "#lib/cache.js"
 
 export async function handleFriendsReviews(req, res) {
   const userId = req.user.id
-  const { sortBy = "recent", page = 1, limit = 10 } = req.query
+  const { sortBy = "recent", limit = 12 } = req.query
 
-  const pageNum = Math.max(1, Number(page))
   const limitNum = Math.min(20, Math.max(1, Number(limit)))
-  const offset = (pageNum - 1) * limitNum
 
-  const cacheKey = `home_friends_reviews_${userId}_${sortBy}_${pageNum}_${limitNum}`
+  const cacheKey = `home_friends_reviews_${userId}_${sortBy}_${limitNum}`
   const cached = await getCache(cacheKey)
   if (cached) return res.json(cached)
 
@@ -23,30 +21,21 @@ export async function handleFriendsReviews(req, res) {
     if (followError) throw followError
 
     if (!following || following.length === 0) {
-      return res.json({
-        reviews: [],
-        users: {},
-        games: {},
-        journeys: {},
-        total: 0,
-        page: pageNum,
-        totalPages: 0,
-        message: "no_friends",
-      })
+      return res.json({ reviews: [], users: {}, games: {}, message: "no_friends" })
     }
 
     const friendIds = following.map((f) => f.following_id)
 
+    const fetchMultiple = limitNum * 3
+
     let q = supabase
       .from("reviews")
-      .select("*", { count: "exact" })
+      .select("*")
       .in("user_id", friendIds)
       .not("rating", "is", null)
-      .range(offset, offset + limitNum - 1)
+      .limit(fetchMultiple)
 
-    if (sortBy === "popular") {
-      q = q.order("created_at", { ascending: false })
-    } else if (sortBy === "rating") {
+    if (sortBy === "rating") {
       q = q
         .order("rating", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false })
@@ -54,28 +43,40 @@ export async function handleFriendsReviews(req, res) {
       q = q.order("created_at", { ascending: false })
     }
 
-    const { data: reviews, count, error: reviewsError } = await q
+    const { data: allReviews, error: reviewsError } = await q
 
     if (reviewsError) throw reviewsError
 
-    if (!reviews || reviews.length === 0) {
-      return res.json({
-        reviews: [],
-        users: {},
-        games: {},
-        journeys: {},
-        total: 0,
-        page: pageNum,
-        totalPages: 0,
-        message: "no_reviews",
-      })
+    if (!allReviews || allReviews.length === 0) {
+      return res.json({ reviews: [], users: {}, games: {}, message: "no_reviews" })
     }
 
-    const userIds = [...new Set(reviews.map((r) => r.user_id))]
-    const gameIds = [...new Set(reviews.map((r) => r.game_id))]
-    const journeyIds = [...new Set(reviews.map((r) => r.journey_id).filter(Boolean))]
+    const maxPerFriend = Math.max(2, Math.ceil(limitNum / friendIds.length))
+    const userCounts = {}
+    const seenGames = new Set()
+    const diversified = []
 
-    const [usersResult, gamesData, journeysResult] = await Promise.all([
+    for (const review of allReviews) {
+      if (diversified.length >= limitNum) break
+
+      userCounts[review.user_id] = (userCounts[review.user_id] || 0) + 1
+      if (userCounts[review.user_id] > maxPerFriend) continue
+
+      if (seenGames.has(review.game_slug)) continue
+      seenGames.add(review.game_slug)
+
+      diversified.push(review)
+    }
+
+    if (diversified.length === 0) {
+      return res.json({ reviews: [], users: {}, games: {}, message: "no_reviews" })
+    }
+
+    const userIds = [...new Set(diversified.map((r) => r.user_id))]
+    const gameIds = [...new Set(diversified.map((r) => r.game_id))]
+    const gameSlugs = [...new Set(diversified.map((r) => r.game_slug))]
+
+    const [usersResult, gamesData, customCoversResult] = await Promise.all([
       supabase
         .from("users")
         .select(`
@@ -99,17 +100,12 @@ export async function handleFriendsReviews(req, res) {
           )
         : [],
 
-      journeyIds.length > 0
-        ? supabase
-            .from("journeys")
-            .select(`
-              id,
-              title,
-              platform_id,
-              journey_entries(id, played_on, hours, minutes)
-            `)
-            .in("id", journeyIds)
-        : { data: [] },
+      supabase
+        .from("user_games")
+        .select("user_id, game_slug, custom_cover_url")
+        .eq("user_id", userId)
+        .in("game_slug", gameSlugs)
+        .not("custom_cover_url", "is", null),
     ])
 
     const users = {}
@@ -135,6 +131,13 @@ export async function handleFriendsReviews(req, res) {
       }
     }
 
+    const customCovers = {}
+    if (customCoversResult.data) {
+      for (const c of customCoversResult.data) {
+        customCovers[c.game_slug] = c.custom_cover_url
+      }
+    }
+
     const games = {}
     if (gamesData) {
       for (const g of gamesData) {
@@ -143,46 +146,14 @@ export async function handleFriendsReviews(req, res) {
           name: g.name,
           slug: g.slug,
           cover: g.cover
-            ? {
-                url: g.cover.url?.replace("t_thumb", "t_cover_big"),
-                image_id: g.cover.image_id,
-              }
+            ? { url: g.cover.url?.replace("t_thumb", "t_cover_big"), image_id: g.cover.image_id }
             : null,
+          customCoverUrl: customCovers[g.slug] || null,
         }
       }
     }
 
-    const journeys = {}
-    if (journeysResult.data) {
-      for (const j of journeysResult.data) {
-        const entries = j.journey_entries || []
-        const totalMinutes = entries.reduce(
-          (acc, e) => acc + (e.hours || 0) * 60 + (e.minutes || 0),
-          0
-        )
-        const sortedDates = entries.map((e) => e.played_on).sort()
-
-        journeys[j.id] = {
-          id: j.id,
-          title: j.title,
-          platform_id: j.platform_id,
-          total_sessions: entries.length,
-          total_minutes: totalMinutes,
-          first_session: sortedDates[0] || null,
-          last_session: sortedDates[sortedDates.length - 1] || null,
-        }
-      }
-    }
-
-    const response = {
-      reviews,
-      users,
-      games,
-      journeys,
-      total: count || 0,
-      page: pageNum,
-      totalPages: Math.ceil((count || 0) / limitNum),
-    }
+    const response = { reviews: diversified, users, games }
 
     await setCache(cacheKey, response, 120)
 
