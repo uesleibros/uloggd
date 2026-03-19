@@ -5,6 +5,7 @@ import EpicFreeGamesSection from "./components/EpicFreeGamesSection"
 import PopularAmongFriendsCarousel from "./components/PopularAmongFriendsCarousel"
 import FriendsReviewsSection from "./components/FriendsReviewsSection"
 import PopularListsSection from "./components/PopularListsSection"
+import PopularScreenshotsSection from "./components/PopularScreenshotsSection"
 import { useAuth } from "#hooks/useAuth"
 import PageBanner from "@components/Layout/PageBanner"
 import { getStatus } from "#utils/onlineStatus"
@@ -103,6 +104,10 @@ export default function Home() {
 
       <div className={user ? "" : "mt-10"}>
         <PopularListsSection />
+      </div>
+
+      <div className="mt-12">
+        <PopularScreenshotsSection />
       </div>
 
       <Divider />
