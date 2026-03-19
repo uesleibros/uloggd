@@ -1273,6 +1273,22 @@ export default {
 	},
 	game: {
 		playtime: "of gameplay",
+		type: {
+		    dlc: "DLC",
+		    expansion: "Expansion",
+		    bundle: "Bundle",
+		    standalone: "Standalone",
+		    mod: "Mod",
+		    episode: "Episode",
+		    season: "Season",
+		    remake: "Remake",
+		    remaster: "Remaster",
+		    expanded: "Expanded Edition",
+		    port: "Port",
+		    fork: "Fork",
+		    pack: "Content Pack",
+		    update: "Update",
+		},
 		prices: {
 			title: "Prices",
 			stats: {
