@@ -1,7 +1,26 @@
 import { query } from "#lib/igdbWrapper.js"
-import { PLATFORMS_MAP } from "#data/platformsMapper.js"
 import { buildNameFilter } from "#services/igdb/utils/buildNameFilter.js"
+import { transformGameResult, sortByRelevance } from "#services/igdb/utils/transformGame.js"
 import { getCache, setCache } from "#lib/cache.js"
+
+const SEARCH_FIELDS = `
+  fields name, slug, first_release_date,
+    cover.url,
+    platforms.id,
+    alternative_names.name,
+    total_rating, total_rating_count,
+    game_type,
+    version_title,
+    parent_game.name,
+    summary;
+`
+
+const SORT_OPTIONS = {
+  relevance: "total_rating_count desc",
+  name: "name asc",
+  newest: "first_release_date desc",
+  rating: "total_rating desc",
+}
 
 export async function handleSearch(req, res) {
   const { query: q, limit = 50, offset = 0, sort = "relevance" } = req.query
@@ -19,20 +38,11 @@ export async function handleSearch(req, res) {
     const nameFilter = buildNameFilter(trimmed)
     const altNameFilter = nameFilter.replace(/\bname\b/g, "alternative_names.name")
     const whereClause = `(${nameFilter} | ${altNameFilter})`
-
-    let orderBy = "total_rating_count desc"
-    if (sort === "name") orderBy = "name asc"
-    else if (sort === "newest") orderBy = "first_release_date desc"
-    else if (sort === "rating") orderBy = "total_rating desc"
+    const orderBy = SORT_OPTIONS[sort] || SORT_OPTIONS.relevance
 
     const [data, countData] = await Promise.all([
       query("games", `
-        fields name, slug, first_release_date,
-          cover.url,
-          platforms.id,
-          alternative_names.name,
-          total_rating, total_rating_count, game_type,
-          summary;
+        ${SEARCH_FIELDS}
         where ${whereClause};
         sort ${orderBy};
         limit ${limitNum};
@@ -41,63 +51,15 @@ export async function handleSearch(req, res) {
       query("games/count", `where ${whereClause};`),
     ])
 
-    const input = trimmed.toLowerCase()
-    const inputWords = input.split(/\s+/)
+    let results = data.map(g => transformGameResult(g, {
+      coverSize: "t_cover_big",
+      includeRelevance: true,
+      searchInput: trimmed,
+    }))
 
-    const results = data.map(g => {
-      const name = g.name.toLowerCase()
-      const altNames = g.alternative_names?.map(a => a.name.toLowerCase()) || []
-      const allNames = [name, ...altNames]
-
-      let relevance = 0
-
-      for (const n of allNames) {
-        let score = 0
-
-        if (n === input) score = 100
-        else if (n.startsWith(input)) score = 80
-        else if (n.includes(input)) score = 60
-        else {
-          const matched = inputWords.filter(w => n.includes(w)).length
-          score = (matched / inputWords.length) * 40
-        }
-
-        score -= n.length * 0.1
-
-        if (score > relevance) relevance = score
-      }
-
-      relevance += Math.min((g.total_rating_count || 0) / 100, 20)
-
-      const slugs = new Set()
-      g.platforms?.forEach(p => {
-        const slug = PLATFORMS_MAP[String(p.id)]
-        if (slug) slugs.add(slug)
-      })
-
-      return {
-        id: g.id,
-        name: g.name,
-        slug: g.slug,
-        first_release_date: g.first_release_date,
-        total_rating: g.total_rating,
-        total_rating_count: g.total_rating_count,
-        game_type: g.game_type,
-        summary: g.summary,
-        relevance,
-        platformIcons: [...slugs].sort().map(slug => ({
-          name: slug,
-          icon: `/platforms/result/${slug}.png`,
-        })),
-        cover: g.cover?.url
-          ? { url: g.cover.url.replace("t_thumb", "t_cover_big") }
-          : null,
-      }
-    })
-      .sort((a, b) => {
-        if (sort === "relevance") return b.relevance - a.relevance
-        return 0
-      })
+    if (sort === "relevance") {
+      results = sortByRelevance(results)
+    }
 
     const result = { results, total: countData?.count ?? results.length }
 
