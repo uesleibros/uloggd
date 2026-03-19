@@ -11,6 +11,7 @@ import UserBadges from "@components/User/UserBadges"
 import StatusBadge from "@components/Game/StatusBadge"
 import ReviewRating from "@components/Game/ReviewRating"
 import Playtime from "@components/Game/Playtime"
+import GameCover from "@components/Game/GameCover"
 import Pagination from "@components/UI/Pagination"
 import LikeButton from "@components/UI/LikeButton"
 import {
@@ -26,25 +27,6 @@ import {
 const SORT_ICONS = {
   recent: Clock,
   popular: TrendingUp,
-}
-
-function GameCoverLink({ game, size = "md" }) {
-  const sizes = {
-    sm: "w-12 h-16",
-    md: "w-16 h-20",
-  }
-
-  if (!game?.cover_url) return null
-
-  return (
-    <Link to={`/game/${game.slug}`} className="flex-shrink-0 group/cover">
-      <img
-        src={game.cover_url}
-        alt={game.name}
-        className={`${sizes[size]} object-cover rounded-lg border border-zinc-700/50 group-hover/cover:border-zinc-500 transition-colors`}
-      />
-    </Link>
-  )
 }
 
 export function ProfileReviewCard({ review, game, user, journey }) {
@@ -65,9 +47,11 @@ export function ProfileReviewCard({ review, game, user, journey }) {
               size="lg"
             />
           </Link>
-        ) : (
-          <GameCoverLink game={game} />
-        )}
+        ) : game ? (
+          <Link to={`/game/${game.slug}`} className="flex-shrink-0">
+            <GameCover game={game} className="w-16 h-20 rounded-lg" />
+          </Link>
+        ) : null}
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -119,10 +103,10 @@ export function ProfileReviewCard({ review, game, user, journey }) {
           </div>
         </div>
 
-        {user && game?.cover_url && (
-          <div className="hidden sm:block">
-            <GameCoverLink game={game} size="sm" />
-          </div>
+        {user && game && (
+          <Link to={`/game/${game.slug}`} className="hidden sm:block flex-shrink-0">
+            <GameCover game={game} className="w-12 h-16 rounded-lg" />
+          </Link>
         )}
       </div>
     </div>
