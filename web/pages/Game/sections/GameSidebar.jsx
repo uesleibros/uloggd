@@ -186,12 +186,14 @@ function MobileHeader({ game }) {
 
   return (
     <div className="flex-1 min-w-0 md:hidden">
-      <div className="flex items-center gap-2">
-        <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight truncate">
-          {game.name}
-        </h1>
-        <GameTypeBadge type={game.gameType} />
-      </div>
+      {game.gameType && game.gameType !== "main" && (
+        <div className="mb-1">
+          <GameTypeBadge type={game.gameType} />
+        </div>
+      )}
+      <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight line-clamp-2">
+        {game.name}
+      </h1>
       {game.first_release_date && (
         <p className="text-xs sm:text-sm text-zinc-400 mt-1.5">
           {formatDateLong(game.first_release_date)}
