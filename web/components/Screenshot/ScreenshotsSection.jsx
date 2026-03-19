@@ -3,13 +3,13 @@ import {
   Camera, Plus, EyeOff, X, Loader2,
   Gamepad2, AlertTriangle, ChevronLeft, Check, ImagePlus
 } from "lucide-react"
-import { Link } from "react-router-dom"
 import { useTranslation } from "#hooks/useTranslation"
 import { useGameSearch } from "#hooks/useGameSearch"
 import { supabase } from "#lib/supabase"
 import Modal from "@components/UI/Modal"
 import Pagination from "@components/UI/Pagination"
 import { GameSearchInput, GameSearchResults } from "@components/Game/GameSearchInput"
+import ScreenshotCard, { ScreenshotCardSkeleton } from "@components/Screenshot/ScreenshotCard"
 import { formatDateShort } from "#utils/formatDate"
 
 const ITEMS_PER_PAGE = 6
@@ -28,11 +28,7 @@ function ScreenshotSkeleton() {
       </div>
       <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
         {[...Array(ITEMS_PER_PAGE)].map((_, i) => (
-          <div
-            key={i}
-            className="aspect-square bg-zinc-800/50 animate-pulse rounded-sm"
-            style={{ animationDelay: `${i * 100}ms` }}
-          />
+          <ScreenshotCardSkeleton key={i} />
         ))}
       </div>
     </div>
@@ -413,41 +409,6 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
   )
 }
 
-function ScreenshotGridItem({ screenshot }) {
-  const [loaded, setLoaded] = useState(false)
-
-  return (
-    <Link
-      to={`/screenshot/${screenshot.id}`}
-      className="relative aspect-square overflow-hidden bg-zinc-900 block group"
-    >
-      {!loaded && (
-        <div className="absolute inset-0 bg-zinc-800 animate-pulse" />
-      )}
-
-      <img
-        src={screenshot.image_url}
-        alt={screenshot.caption || ""}
-        loading="lazy"
-        onLoad={() => setLoaded(true)}
-        className={`absolute inset-0 w-full h-full object-cover transition-all duration-300 ${
-          loaded ? "opacity-100" : "opacity-0"
-        } ${screenshot.is_spoiler ? "blur-xl scale-110" : "group-hover:scale-105"}`}
-      />
-
-      {screenshot.is_spoiler && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
-          <div className="w-10 h-10 rounded-full bg-black/60 flex items-center justify-center">
-            <EyeOff className="w-5 h-5 text-white/70" />
-          </div>
-        </div>
-      )}
-
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-    </Link>
-  )
-}
-
 export default function ScreenshotsSection({ userId, isOwnProfile }) {
   const { t } = useTranslation("screenshots")
   const [screenshots, setScreenshots] = useState([])
@@ -548,9 +509,9 @@ export default function ScreenshotsSection({ userId, isOwnProfile }) {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-0.5 sm:gap-1 rounded-lg overflow-hidden">
+          <div className="grid grid-cols-3 gap-0.5 sm:gap-1 overflow-hidden">
             {screenshots.map((s) => (
-              <ScreenshotGridItem key={s.id} screenshot={s} />
+              <ScreenshotCard key={s.id} screenshot={s} />
             ))}
           </div>
 
