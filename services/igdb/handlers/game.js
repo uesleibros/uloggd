@@ -21,7 +21,7 @@ async function getSteamId(gameId) {
 async function getGameCharacters(gameId) {
   try {
     const data = await query("characters", `
-      fields name, slug, description, mug_shot, gender, species;
+      fields name, slug, description, mug_shot, character_gender, character_species;
       where games = (${gameId});
       limit 30;
     `)
