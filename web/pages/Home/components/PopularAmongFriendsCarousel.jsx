@@ -9,7 +9,7 @@ function FriendsOverlay({ friends, friendsCount }) {
   if (!friends || friends.length === 0) return null
 
   return (
-    <div className="absolute bottom-2 left-2 right-2 flex items-center gap-1.5 pointer-events-none">
+    <div className="absolute top-2 left-2 flex items-center gap-1 pointer-events-none z-10">
       <div className="flex -space-x-1.5">
         {friends.slice(0, 3).map((friend) => (
           <img
@@ -22,7 +22,7 @@ function FriendsOverlay({ friends, friendsCount }) {
         ))}
       </div>
       {friendsCount > 3 && (
-        <span className="text-[10px] font-medium text-white/80 bg-black/50 px-1.5 py-0.5 rounded-full">
+        <span className="text-[10px] font-medium text-white bg-black/60 px-1.5 py-0.5 rounded-full backdrop-blur-sm">
           +{friendsCount - 3}
         </span>
       )}
@@ -33,8 +33,8 @@ function FriendsOverlay({ friends, friendsCount }) {
 function PopularGameCard({ game }) {
   return (
     <div className="relative flex-shrink-0">
-      <GameCard game={game} draggable={false} />
       <FriendsOverlay friends={game.friends} friendsCount={game.friends_count} />
+      <GameCard game={game} draggable={false} />
     </div>
   )
 }
@@ -84,19 +84,12 @@ export default function PopularAmongFriendsCarousel() {
 
   if (loading) {
     return (
-      <section className="mb-8">
-        <div className="mb-4">
-          <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
-            {t("home.sections.popularAmongFriends")}
-          </h2>
-        </div>
-        <DragScrollRow
-          className="gap-4 overflow-x-hidden py-2 touch-pan-y"
-          autoScroll
-          autoScrollSpeed={0.03}
-          loop
-        >
-          {[...Array(20)].map((_, i) => (
+      <section>
+        <h2 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">
+          {t("home.sections.popularAmongFriends")}
+        </h2>
+        <DragScrollRow className="gap-4 py-2">
+          {[...Array(8)].map((_, i) => (
             <GameCardSkeleton key={i} />
           ))}
         </DragScrollRow>
@@ -106,24 +99,14 @@ export default function PopularAmongFriendsCarousel() {
 
   if (games.length === 0) return null
 
-  const tripled = [...games, ...games, ...games]
-
   return (
-    <section className="mb-8">
-      <div className="flex items-center gap-2 mb-4">
-        <Users className="w-4 h-4 text-indigo-400" />
-        <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
-          {t("home.sections.popularAmongFriends")}
-        </h2>
-      </div>
-      <DragScrollRow
-        className="gap-4 overflow-x-hidden py-2 touch-pan-y"
-        autoScroll
-        autoScrollSpeed={0.03}
-        loop
-      >
-        {tripled.map((game, index) => (
-          <PopularGameCard key={`${game.id}-${index}`} game={game} />
+    <section>
+      <h2 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">
+        {t("home.sections.popularAmongFriends")}
+      </h2>
+      <DragScrollRow className="gap-4 py-2">
+        {games.map((game) => (
+          <PopularGameCard key={game.id} game={game} />
         ))}
       </DragScrollRow>
     </section>
