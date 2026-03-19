@@ -150,7 +150,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 
 	return (
 		<motion.div
-			className="group relative w-full cursor-pointer h-[280px]"
+			className="group relative w-full h-[280px]"
 			style={{
 				perspective: "1200px",
 				zIndex: isHovered ? 50 : 1,
@@ -159,7 +159,11 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
-			<Link to={`/list/${shortId}`} className="absolute inset-0 z-40 rounded-2xl" />
+			<Link
+				to={`/list/${shortId}`}
+				className="absolute inset-0 z-30 rounded-2xl"
+				aria-label={list.title}
+			/>
 
 			<div
 				className="relative w-full h-full"
@@ -197,7 +201,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 					/>
 
 					<motion.div
-						className="absolute inset-0"
+						className="absolute inset-0 pointer-events-none"
 						animate={{
 							rotateX: isHovered ? -12 : 0,
 						}}
@@ -281,20 +285,29 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 						<div className="absolute inset-0 flex items-center justify-between px-4">
 							<div className="flex items-center gap-1.5">
 								<span className="text-[13px] text-white/60">
-									{gamesCount === 1 ? t("common.games", { count: gamesCount }) : t("common.games_plural", { count: gamesCount })}
+									{gamesCount === 1
+										? t("common.games", { count: gamesCount })
+										: t("common.games_plural", { count: gamesCount })}
 								</span>
 								{list.is_public === false && (
 									<Lock className="w-3 h-3 text-white/30 ml-1" />
 								)}
 							</div>
 
-							<div className="flex items-center gap-2 z-50">
+							<div className="flex items-center gap-2 relative z-40">
 								<span className="text-xs text-white/50">
 									{showOwner && list.owner ? list.owner.username : list.updated_at ? formatDateShort(list.updated_at) : ""}
 								</span>
+
 								<div
-									onClick={(e) => e.preventDefault()}
-									onMouseDown={(e) => e.stopPropagation()}
+									onClick={(e) => {
+										e.preventDefault()
+										e.stopPropagation()
+									}}
+									onMouseDown={(e) => {
+										e.preventDefault()
+										e.stopPropagation()
+									}}
 								>
 									<LikeButton
 										type="list"
@@ -302,7 +315,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 										currentUserId={user?.user_id}
 										size="sm"
 										showLabel={false}
-										showCount={true}
+										showCount
 									/>
 								</div>
 							</div>
