@@ -18,25 +18,32 @@ async function getSteamId(gameId) {
   }
 }
 
-async function getCharacters(gameId) {
+async function getEvents(gameId) {
   try {
-    const data = await query("characters", `
-      fields name, slug, description, mug_shot.image_id, character_gender, character_species;
+    const data = await query("events", `
+      fields name, slug, description, start_time, end_time, time_zone,
+        event_logo.image_id, live_stream_url, videos.video_id;
       where games = [${gameId}];
-      limit 50;
+      sort start_time desc;
+      limit 20;
     `)
     
-    return data.map(char => {
-      const imageId = char.mug_shot?.image_id
+    if (!data.length) return []
+    
+    return data.map(event => {
+      const logoId = event.event_logo?.image_id
       return {
-        id: char.id,
-        name: char.name,
-        slug: char.slug,
-        description: char.description || null,
-        gender: char.character_gender || null,
-        species: char.character_species || null,
-        image_url: imageId ? `https://images.igdb.com/igdb/image/upload/t_720p/${imageId}.jpg` : null,
-        thumb_url: imageId ? `https://images.igdb.com/igdb/image/upload/t_thumb/${imageId}.jpg` : null
+        id: event.id,
+        name: event.name,
+        slug: event.slug,
+        description: event.description || null,
+        start_time: event.start_time || null,
+        end_time: event.end_time || null,
+        time_zone: event.time_zone || null,
+        live_stream_url: event.live_stream_url || null,
+        videos: event.videos || [],
+        logo_url: logoId ? `https://images.igdb.com/igdb/image/upload/t_720p/${logoId}.jpg` : null,
+        thumb_url: logoId ? `https://images.igdb.com/igdb/image/upload/t_thumb/${logoId}.jpg` : null
       }
     })
   } catch {
@@ -125,10 +132,10 @@ export async function handleGame(req, res) {
 
     const g = data[0]
 
-    const [steamId, alternativeCovers, characters] = await Promise.all([
+    const [steamId, alternativeCovers, events] = await Promise.all([
       getSteamId(g.id),
       getAlternativeCovers(g),
-      getCharacters(g.id)
+      getEvents(g.id)
     ])
 
     const ageRatings = g.age_ratings?.map(ar => {
@@ -162,7 +169,7 @@ export async function handleGame(req, res) {
       platforms,
       steamId,
       alternativeCovers,
-      characters,
+      events,
       cover: g.cover?.url ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_1080p") } : null,
       screenshots: g.screenshots?.map(s => ({ ...s, url: s.url.replace("t_thumb", "t_original") })) || [],
       artworks: g.artworks?.map(a => ({ ...a, url: a.url.replace("t_thumb", "t_original") })) || [],
