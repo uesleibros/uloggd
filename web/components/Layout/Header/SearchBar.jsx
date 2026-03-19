@@ -314,7 +314,7 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
     }, 250)
 
     return () => clearTimeout(searchTimeoutRef.current)
-  }, [query])
+  }, [query, activeTab, fetchTab])
 
   useEffect(() => {
     const trimmed = query.trim()
