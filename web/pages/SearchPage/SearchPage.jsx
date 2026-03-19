@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useSearchParams, useLocation } from "react-router-dom"
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
 import { useSearch } from "./hooks/useSearch"
@@ -10,9 +10,11 @@ import { SearchResults } from "./components/SearchResults"
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
   const { t } = useTranslation()
-  const initialQuery = searchParams.get("q") || ""
-  const initialTab = searchParams.get("tab") || "games"
+  
+  const urlQuery = searchParams.get("q") || ""
+  const urlTab = searchParams.get("tab") || "games"
 
   const {
     query,
@@ -28,12 +30,24 @@ export default function SearchPage() {
     counts,
     totalPages,
     loading,
-  } = useSearch(initialQuery, initialTab)
+  } = useSearch(urlQuery, urlTab)
 
   usePageMeta({
     title: query ? t("search.meta.title", { query }) : t("search.meta.titleDefault"),
     description: t("search.meta.description"),
   })
+
+  useEffect(() => {
+    const newQuery = searchParams.get("q") || ""
+    const newTab = searchParams.get("tab") || "games"
+    
+    if (newQuery !== query) {
+      setQuery(newQuery)
+    }
+    if (newTab !== activeTab) {
+      setActiveTab(newTab)
+    }
+  }, [searchParams, location.state?.key])
 
   useEffect(() => {
     const params = {}
@@ -85,5 +99,4 @@ export default function SearchPage() {
       </div>
     </div>
   )
-
 }

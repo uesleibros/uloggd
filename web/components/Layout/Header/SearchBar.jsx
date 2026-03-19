@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { createPortal } from "react-dom"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { Search, Gamepad2, Users, ListMusic, ArrowRight, SearchX } from "lucide-react"
 import GameResultItem from "@components/Game/GameResultItem"
 import UserDisplay from "@components/User/UserDisplay"
 import { CoverStrip } from "@components/Lists/ListCard"
 import { useTranslation } from "#hooks/useTranslation"
-import { useMyLibrary } from "#hooks/useMyLibrary"
 import { LoadingSpinner } from "./icons"
 
 const TABS = [
@@ -19,6 +18,18 @@ const ENDPOINTS = {
   games: (q) => `/api/igdb/autocomplete?query=${encodeURIComponent(q)}`,
   users: (q) => `/api/users/search?query=${encodeURIComponent(q)}&limit=5`,
   lists: (q) => `/api/lists/search?query=${encodeURIComponent(q)}&limit=5`,
+}
+
+function extractArray(res) {
+  if (Array.isArray(res)) return res
+  if (res && typeof res === "object") {
+    if (Array.isArray(res.results)) return res.results
+    if (Array.isArray(res.data)) return res.data
+    if (Array.isArray(res.users)) return res.users
+    if (Array.isArray(res.lists)) return res.lists
+    if (Array.isArray(res.games)) return res.games
+  }
+  return []
 }
 
 function UserResult({ item, onSelect }) {
@@ -73,7 +84,13 @@ function ListResult({ item, onSelect }) {
 function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query }) {
   const { t } = useTranslation()
 
-  if (loading) return <LoadingSpinner />
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <LoadingSpinner />
+      </div>
+    )
+  }
 
   if (!results || results.length === 0) {
     return (
@@ -183,46 +200,31 @@ function SearchInput({ inputRef, query, onChange, onFocus, onBlur, onKeyDown, fo
   )
 }
 
-function extractArray(res) {
-  if (Array.isArray(res)) return res
-  if (res && typeof res === "object") {
-    if (Array.isArray(res.results)) return res.results
-    if (Array.isArray(res.data)) return res.data
-    if (Array.isArray(res.users)) return res.users
-    if (Array.isArray(res.lists)) return res.lists
-    if (Array.isArray(res.games)) return res.games
-  }
-  return []
-}
-
 export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
   const [query, setQuery] = useState("")
   const [results, setResults] = useState({ games: [], users: [], lists: [] })
   const [open, setOpen] = useState(false)
-  const [loadingTabs, setLoadingTabs] = useState({})
+  const [loading, setLoading] = useState(false)
   const [focused, setFocused] = useState(false)
   const [activeTab, setActiveTab] = useState("games")
   const [dropdownPos, setDropdownPos] = useState(null)
-  const [searched, setSearched] = useState(false)
-
-  const { getGameData } = useMyLibrary()
+  const [completedQuery, setCompletedQuery] = useState("")
 
   const searchTimeoutRef = useRef(null)
   const blurTimeoutRef = useRef(null)
   const containerRef = useRef(null)
   const inputRef = useRef(null)
-  const mountedRef = useRef(true)
-  const lastQueryRef = useRef("")
-  const fetchedTabsRef = useRef(new Set())
+  const abortControllerRef = useRef(null)
+  const cacheRef = useRef({})
 
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
-    mountedRef.current = true
     return () => {
-      mountedRef.current = false
       clearTimeout(searchTimeoutRef.current)
       clearTimeout(blurTimeoutRef.current)
+      abortControllerRef.current?.abort()
     }
   }, [])
 
@@ -247,30 +249,36 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
     }
   }, [open, variant, updateDropdownPos])
 
-  const fetchTab = useCallback(async (tab, q) => {
-    if (!q || !mountedRef.current) return
-    const endpoint = ENDPOINTS[tab]
-    if (!endpoint) return
+  const fetchResults = useCallback(async (searchQuery, tab) => {
+    const cacheKey = `${searchQuery}:${tab}`
 
-    setLoadingTabs(prev => ({ ...prev, [tab]: true }))
+    if (cacheRef.current[cacheKey]) {
+      setResults((prev) => ({ ...prev, [tab]: cacheRef.current[cacheKey] }))
+      setCompletedQuery(searchQuery)
+      setLoading(false)
+      return
+    }
+
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = new AbortController()
 
     try {
-      const res = await fetch(endpoint(q))
+      const res = await fetch(ENDPOINTS[tab](searchQuery), {
+        signal: abortControllerRef.current.signal,
+      })
       const data = await res.json()
+      const items = extractArray(data)
 
-      if (!mountedRef.current || lastQueryRef.current !== q) return
-
-      setResults(prev => ({ ...prev, [tab]: extractArray(data) }))
-      fetchedTabsRef.current.add(`${q}:${tab}`)
-    } catch {
-      if (mountedRef.current) {
-        setResults(prev => ({ ...prev, [tab]: [] }))
+      cacheRef.current[cacheKey] = items
+      setResults((prev) => ({ ...prev, [tab]: items }))
+      setCompletedQuery(searchQuery)
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        setResults((prev) => ({ ...prev, [tab]: [] }))
+        setCompletedQuery(searchQuery)
       }
     } finally {
-      if (mountedRef.current) {
-        setLoadingTabs(prev => ({ ...prev, [tab]: false }))
-        setSearched(true)
-      }
+      setLoading(false)
     }
   }, [])
 
@@ -278,49 +286,74 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
     clearTimeout(searchTimeoutRef.current)
 
     const trimmed = query.trim()
-    lastQueryRef.current = trimmed
-    fetchedTabsRef.current.clear()
-    setSearched(false)
 
     if (!trimmed) {
+      abortControllerRef.current?.abort()
       setResults({ games: [], users: [], lists: [] })
-      setLoadingTabs({})
+      setLoading(false)
       setOpen(false)
+      setCompletedQuery("")
       return
     }
 
     setOpen(true)
+    setLoading(true)
 
     searchTimeoutRef.current = setTimeout(() => {
-      fetchTab(activeTab, trimmed)
-    }, 250)
+      fetchResults(trimmed, activeTab)
+    }, 300)
 
     return () => clearTimeout(searchTimeoutRef.current)
-  }, [query, activeTab, fetchTab])
+  }, [query, activeTab, fetchResults])
 
-  useEffect(() => {
+  function handleTabChange(tab) {
+    if (tab === activeTab) return
+
+    setActiveTab(tab)
+
     const trimmed = query.trim()
-    if (!trimmed || !open) return
+    if (!trimmed) return
 
-    const cacheKey = `${trimmed}:${activeTab}`
-    if (fetchedTabsRef.current.has(cacheKey)) return
+    const cacheKey = `${trimmed}:${tab}`
 
-    fetchTab(activeTab, trimmed)
-  }, [activeTab, open, query, fetchTab])
+    if (cacheRef.current[cacheKey]) {
+      setResults((prev) => ({ ...prev, [tab]: cacheRef.current[cacheKey] }))
+      return
+    }
 
-  function handleNavigate(path) {
+    setLoading(true)
+    fetchResults(trimmed, tab)
+  }
+
+  function resetSearch() {
     clearTimeout(blurTimeoutRef.current)
+    abortControllerRef.current?.abort()
     setQuery("")
     setOpen(false)
     setResults({ games: [], users: [], lists: [] })
-    setSearched(false)
-    fetchedTabsRef.current.clear()
+    setCompletedQuery("")
+  }
+
+  function handleNavigate(path) {
+    resetSearch()
     onSelect?.()
     navigate(path)
   }
 
   function handleViewAll() {
-    handleNavigate(`/search?q=${encodeURIComponent(query)}&tab=${activeTab}`)
+    const trimmed = query.trim()
+    if (!trimmed) return
+
+    const searchPath = `/search?q=${encodeURIComponent(trimmed)}&tab=${activeTab}`
+
+    resetSearch()
+    onSelect?.()
+
+    if (location.pathname === "/search") {
+      navigate(searchPath, { replace: true, state: { key: Date.now() } })
+    } else {
+      navigate(searchPath)
+    }
   }
 
   function handleKeyDown(e) {
@@ -344,11 +377,14 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
     setFocused(false)
     clearTimeout(blurTimeoutRef.current)
     blurTimeoutRef.current = setTimeout(() => {
-      if (!mountedRef.current) return
       if (inputRef.current === document.activeElement) return
       setOpen(false)
     }, 200)
   }
+
+  const trimmedQuery = query.trim()
+  const hasResults = completedQuery === trimmedQuery && trimmedQuery !== ""
+  const showDropdown = open && trimmedQuery && (loading || hasResults)
 
   const counts = {
     games: results.games.length,
@@ -356,28 +392,29 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
     lists: results.lists.length,
   }
 
-  const isLoading = loadingTabs[activeTab]
-  const showDropdown = open && query.trim() && (isLoading || searched)
-
   const dropdownContent = showDropdown ? (
     <div
       onMouseDown={(e) => e.preventDefault()}
       className={`rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl overflow-hidden ${
         variant === "desktop" ? "absolute top-full right-0 w-96 mt-1.5 z-50" : ""
       }`}
-      style={variant === "mobile" && dropdownPos ? {
-        position: "fixed",
-        top: dropdownPos.top,
-        left: dropdownPos.left,
-        width: dropdownPos.width,
-        zIndex: 9999,
-      } : undefined}
+      style={
+        variant === "mobile" && dropdownPos
+          ? {
+              position: "fixed",
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+              width: dropdownPos.width,
+              zIndex: 9999,
+            }
+          : undefined
+      }
     >
-      <TabBar activeTab={activeTab} onChange={setActiveTab} counts={counts} />
+      <TabBar activeTab={activeTab} onChange={handleTabChange} counts={counts} />
       <div className="max-h-80 overflow-y-auto">
         <SearchResults
           results={results[activeTab]}
-          loading={isLoading}
+          loading={loading}
           activeTab={activeTab}
           onSelect={handleNavigate}
           onViewAll={handleViewAll}
@@ -399,11 +436,8 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
         focused={focused}
         variant={variant}
       />
-      {dropdownContent && (
-        variant === "mobile"
-          ? createPortal(dropdownContent, document.body)
-          : dropdownContent
-      )}
+      {dropdownContent &&
+        (variant === "mobile" ? createPortal(dropdownContent, document.body) : dropdownContent)}
     </div>
   )
 }
