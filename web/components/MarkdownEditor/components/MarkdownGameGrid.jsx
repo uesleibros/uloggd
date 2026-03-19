@@ -25,7 +25,6 @@ export function MarkdownGameGrid({ slugs, autoScroll = false, authorRatings = {}
       <DragScrollRow
         className={`gap-3 pb-4 pt-4 px-1 items-end ${autoScroll ? "overflow-x-hidden" : ""}`}
         autoScroll={autoScroll}
-        autoScrollSpeed={0.04}
         loop={autoScroll}
       >
         {items.map(({ slug, isFavorite }, i) => {
