@@ -536,6 +536,7 @@ export default function NotificationPanel({ visible, onClose, onRead }) {
         showCloseButton={false}
         maxWidth="max-w-sm"
         zIndex={10000}
+        noScroll
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 flex-shrink-0">
