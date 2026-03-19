@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react"
-import { ExternalLink, Clock, TrendingUp, Sparkles, Flame } from "lucide-react"
+import { Clock } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import DragScrollRow from "@components/UI/DragScrollRow"
 
-function SaleCardSkeleton() {
+function CardSkeleton() {
   return (
-    <div className="w-48 flex-shrink-0 bg-zinc-800 rounded-xl overflow-hidden animate-pulse">
-      <div className="h-22 bg-zinc-700" />
-      <div className="p-3 space-y-2">
-        <div className="h-4 bg-zinc-700 rounded w-3/4" />
-        <div className="h-4 bg-zinc-700 rounded w-1/2" />
+    <div className="w-44 flex-shrink-0 bg-zinc-800/50 rounded-lg overflow-hidden animate-pulse">
+      <div className="h-20 bg-zinc-700/50" />
+      <div className="p-2.5 space-y-2">
+        <div className="h-3 bg-zinc-700/50 rounded w-3/4" />
+        <div className="h-3 bg-zinc-700/50 rounded w-1/2" />
       </div>
     </div>
   )
@@ -21,21 +21,17 @@ function SpotlightCard({ spotlight }) {
       href={spotlight.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex-shrink-0 w-72 rounded-xl overflow-hidden border border-zinc-700/50 hover:border-zinc-600 transition-all hover:scale-[1.01] hover:shadow-xl"
+      className="group flex-shrink-0 w-64 rounded-lg overflow-hidden bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 transition-colors"
     >
-      <div className="relative h-36 overflow-hidden">
+      <div className="relative h-32 overflow-hidden">
         <img
           src={spotlight.image}
           alt={spotlight.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         <div className="absolute bottom-0 inset-x-0 p-3">
-          <h3 className="text-sm font-semibold text-white line-clamp-1">{spotlight.name}</h3>
-          <div className="flex items-center gap-1 mt-1 text-[10px] text-zinc-300/80">
-            <ExternalLink className="w-3 h-3" />
-            <span>Steam</span>
-          </div>
+          <h3 className="text-sm font-medium text-white line-clamp-1">{spotlight.name}</h3>
         </div>
       </div>
     </a>
@@ -63,48 +59,35 @@ function DailyDealCard({ game, language }) {
       href={game.steamUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-zinc-800/90 to-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 rounded-xl transition-all hover:shadow-xl"
+      className="group flex gap-4 p-4 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 rounded-lg transition-colors"
     >
-      <div className="relative w-full sm:w-48 flex-shrink-0">
-        <img
-          src={game.image}
-          alt={game.name}
-          className="w-full sm:w-48 h-32 sm:h-22 object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
-        />
-        <span className="absolute top-2 left-2 sm:hidden text-[10px] uppercase tracking-wider text-amber-400 font-bold bg-black/60 px-2 py-1 rounded">
-          {t("steam.dailyDeal")}
-        </span>
-        <span className="absolute top-2 right-2 sm:hidden bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">
-          -{game.discountPercent}%
-        </span>
-      </div>
+      <img
+        src={game.image}
+        alt={game.name}
+        className="w-40 h-20 object-cover rounded flex-shrink-0"
+      />
       <div className="flex flex-col justify-center min-w-0">
-        <span className="hidden sm:block text-[10px] uppercase tracking-wider text-amber-400 font-bold mb-1">
+        <span className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">
           {t("steam.dailyDeal")}
         </span>
-        <h3 className="text-sm sm:text-base font-semibold text-white truncate group-hover:text-blue-400 transition-colors">
+        <h3 className="text-sm font-medium text-white truncate group-hover:text-indigo-400 transition-colors">
           {game.name}
         </h3>
-        <div className="flex items-center gap-2 sm:gap-3 mt-1.5 sm:mt-2">
-          <span className="hidden sm:inline bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className="bg-emerald-500/20 text-emerald-400 text-[10px] font-medium px-1.5 py-0.5 rounded">
             -{game.discountPercent}%
           </span>
           <span className="text-xs text-zinc-500 line-through">
             {formatPrice(game.originalPrice)}
           </span>
-          <span className="text-sm font-bold text-green-400">
+          <span className="text-sm font-medium text-white">
             {formatPrice(game.finalPrice)}
           </span>
         </div>
-        {timeLeft !== null && (
-          <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-[11px] text-zinc-500">
+        {timeLeft !== null && timeLeft > 0 && (
+          <div className="flex items-center gap-1 mt-1.5 text-[11px] text-zinc-500">
             <Clock className="w-3 h-3" />
-            <span>
-              {timeLeft > 0
-                ? t("steam.hoursLeft", { count: timeLeft })
-                : t("steam.endingSoon")
-              }
-            </span>
+            <span>{t("steam.hoursLeft", { count: timeLeft })}</span>
           </div>
         )}
       </div>
@@ -112,7 +95,7 @@ function DailyDealCard({ game, language }) {
   )
 }
 
-function SaleCard({ game, language }) {
+function GameCard({ game, language, rank }) {
   const { getLanguageConfig } = useTranslation()
   const config = getLanguageConfig(language)
 
@@ -129,99 +112,42 @@ function SaleCard({ game, language }) {
       href={game.steamUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group w-48 flex-shrink-0 bg-zinc-800/80 hover:bg-zinc-800 border border-zinc-700/50 hover:border-zinc-600 rounded-xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-xl"
+      className="group w-44 flex-shrink-0 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 rounded-lg overflow-hidden transition-colors"
     >
-      <div className="relative h-22 overflow-hidden">
+      <div className="relative h-20 overflow-hidden">
         <img
           src={game.image}
           alt={game.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover"
         />
+        {rank && (
+          <div className="absolute top-1.5 left-1.5 bg-zinc-900/90 text-white text-[10px] font-medium w-5 h-5 rounded flex items-center justify-center">
+            {rank}
+          </div>
+        )}
         {game.discounted && (
-          <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-1.5 py-0.5 rounded shadow-lg">
+          <div className="absolute top-1.5 right-1.5 bg-emerald-500/90 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">
             -{game.discountPercent}%
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 to-transparent" />
       </div>
 
       <div className="p-2.5">
-        <h3 className="text-sm font-medium text-white truncate group-hover:text-blue-400 transition-colors">
+        <h3 className="text-xs font-medium text-white truncate group-hover:text-indigo-400 transition-colors">
           {game.name}
         </h3>
-        <div className="flex items-center gap-2 mt-1.5">
+        <div className="flex items-center gap-1.5 mt-1">
           {game.discounted ? (
             <>
-              <span className="text-xs text-zinc-500 line-through">
+              <span className="text-[10px] text-zinc-500 line-through">
                 {formatPrice(game.originalPrice)}
               </span>
-              <span className="text-sm font-bold text-green-400">
+              <span className="text-xs font-medium text-white">
                 {formatPrice(game.finalPrice)}
               </span>
             </>
           ) : (
-            <span className="text-sm font-medium text-zinc-300">
-              {formatPrice(game.finalPrice)}
-            </span>
-          )}
-        </div>
-      </div>
-    </a>
-  )
-}
-
-function TopSellerCard({ game, language, rank }) {
-  const { getLanguageConfig } = useTranslation()
-  const config = getLanguageConfig(language)
-
-  const formatPrice = (cents) => {
-    if (!cents) return language === "pt" ? "Grátis" : "Free"
-    return new Intl.NumberFormat(config.numberLocale, {
-      style: "currency",
-      currency: game.currency || (language === "pt" ? "BRL" : "USD")
-    }).format(cents / 100)
-  }
-
-  return (
-    <a
-      href={game.steamUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group w-48 flex-shrink-0 bg-zinc-800/80 hover:bg-zinc-800 border border-zinc-700/50 hover:border-zinc-600 rounded-xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-xl"
-    >
-      <div className="relative h-22 overflow-hidden">
-        <img
-          src={game.image}
-          alt={game.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        <div className="absolute top-2 left-2 bg-zinc-900/90 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-lg border border-zinc-600/50">
-          {rank}
-        </div>
-        {game.discounted && (
-          <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-1.5 py-0.5 rounded shadow-lg">
-            -{game.discountPercent}%
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 to-transparent" />
-      </div>
-
-      <div className="p-2.5">
-        <h3 className="text-sm font-medium text-white truncate group-hover:text-blue-400 transition-colors">
-          {game.name}
-        </h3>
-        <div className="flex items-center gap-2 mt-1.5">
-          {game.discounted ? (
-            <>
-              <span className="text-xs text-zinc-500 line-through">
-                {formatPrice(game.originalPrice)}
-              </span>
-              <span className="text-sm font-bold text-green-400">
-                {formatPrice(game.finalPrice)}
-              </span>
-            </>
-          ) : (
-            <span className="text-sm font-medium text-zinc-300">
+            <span className="text-xs text-zinc-400">
               {formatPrice(game.finalPrice)}
             </span>
           )}
@@ -271,18 +197,18 @@ export default function SteamSalesSection() {
   }
 
   return (
-    <div className="space-y-8">
-      <h2 className="text-xl font-semibold text-white mb-4">Steam</h2>
+    <div className="space-y-6">
+      <h2 className="text-sm font-semibold text-white uppercase tracking-wide">Steam</h2>
+
       {(loading || hasSpotlights) && (
         <div>
-          <h3 className="text-sm font-medium text-zinc-400 mb-3 flex items-center gap-2">
-            <Sparkles className="w-4 h-4" />
+          <h3 className="text-xs text-zinc-500 uppercase tracking-wide mb-3">
             {t("steam.spotlights")}
           </h3>
           <DragScrollRow className="gap-3 pb-2">
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="w-72 h-36 flex-shrink-0 bg-zinc-800 rounded-xl animate-pulse" />
+                <div key={i} className="w-64 h-32 flex-shrink-0 bg-zinc-800/50 rounded-lg animate-pulse" />
               ))
             ) : (
               data.spotlights.map((s, i) => (
@@ -296,7 +222,7 @@ export default function SteamSalesSection() {
       {(loading || hasDailyDeal) && (
         <div>
           {loading ? (
-            <div className="h-28 bg-zinc-800 rounded-xl animate-pulse" />
+            <div className="h-24 bg-zinc-800/50 rounded-lg animate-pulse" />
           ) : (
             <DailyDealCard game={data.dailyDeal} language={language} />
           )}
@@ -305,18 +231,17 @@ export default function SteamSalesSection() {
 
       {(loading || hasSpecials) && (
         <div>
-          <h3 className="text-sm font-medium text-zinc-400 mb-3 flex items-center gap-2">
-            <Flame className="w-4 h-4" />
+          <h3 className="text-xs text-zinc-500 uppercase tracking-wide mb-3">
             {t("steam.specials")}
           </h3>
           <DragScrollRow className="gap-3 pb-2">
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => (
-                <SaleCardSkeleton key={i} />
+                <CardSkeleton key={i} />
               ))
             ) : (
               data.specials.map((game) => (
-                <SaleCard key={game.id} game={game} language={language} />
+                <GameCard key={game.id} game={game} language={language} />
               ))
             )}
           </DragScrollRow>
@@ -325,18 +250,17 @@ export default function SteamSalesSection() {
 
       {(loading || hasTopSellers) && (
         <div>
-          <h3 className="text-sm font-medium text-zinc-400 mb-3 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
+          <h3 className="text-xs text-zinc-500 uppercase tracking-wide mb-3">
             {t("steam.topSellers")}
           </h3>
           <DragScrollRow className="gap-3 pb-2">
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => (
-                <SaleCardSkeleton key={i} />
+                <CardSkeleton key={i} />
               ))
             ) : (
               data.topSellers.map((game, i) => (
-                <TopSellerCard key={game.id} game={game} language={language} rank={i + 1} />
+                <GameCard key={game.id} game={game} language={language} rank={i + 1} />
               ))
             )}
           </DragScrollRow>
