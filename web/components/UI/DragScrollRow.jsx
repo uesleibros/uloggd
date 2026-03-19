@@ -38,11 +38,15 @@ const DragScrollRow = forwardRef(function DragScrollRow({
     const el = scrollRef.current
     if (!el) return
 
+    if (!(!isPausedRef.current && autoScroll && !isDraggingRef.current)) {
+      virtualScrollLeft.current = el.scrollLeft
+    }
+
     if (showEdgeFade) {
       setCanScrollLeft(el.scrollLeft > 2)
       setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2)
     }
-  }, [showEdgeFade])
+  }, [showEdgeFade, autoScroll])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -59,26 +63,20 @@ const DragScrollRow = forwardRef(function DragScrollRow({
   }, [updateScrollState])
 
   const normalizeScroll = useCallback(() => {
-    if (!loop) return 0
+    if (!loop) return
     const el = scrollRef.current
-    if (!el) return 0
+    if (!el) return
 
     const sectionWidth = el.scrollWidth / 3
-    if (sectionWidth <= 0) return 0
+    if (sectionWidth === 0) return
 
-    let shift = 0
     if (el.scrollLeft >= sectionWidth * 2) {
-      shift = -sectionWidth
+      el.scrollLeft -= sectionWidth
+      virtualScrollLeft.current = el.scrollLeft
     } else if (el.scrollLeft <= 0) {
-      shift = sectionWidth
-    }
-
-    if (shift !== 0) {
-      el.scrollLeft += shift
+      el.scrollLeft += sectionWidth
       virtualScrollLeft.current = el.scrollLeft
     }
-
-    return shift
   }, [loop])
 
   useEffect(() => {
@@ -88,7 +86,7 @@ const DragScrollRow = forwardRef(function DragScrollRow({
     el.scrollLeft = initialPos
     virtualScrollLeft.current = initialPos
     updateScrollState()
-  }, [loop, updateScrollState, children])
+  }, [loop, updateScrollState])
 
   useEffect(() => {
     if (!autoScroll) return
@@ -105,8 +103,6 @@ const DragScrollRow = forwardRef(function DragScrollRow({
         virtualScrollLeft.current += autoScrollSpeed * delta
         el.scrollLeft = virtualScrollLeft.current
         normalizeScroll()
-      } else {
-        virtualScrollLeft.current = el.scrollLeft
       }
 
       rafRef.current = requestAnimationFrame(step)
@@ -158,11 +154,7 @@ const DragScrollRow = forwardRef(function DragScrollRow({
 
     el.scrollLeft = dragRef.current.scrollLeft - diff
     virtualScrollLeft.current = el.scrollLeft
-    
-    const shift = normalizeScroll()
-    if (shift !== 0) {
-      dragRef.current.scrollLeft += shift
-    }
+    normalizeScroll()
   }, [normalizeScroll])
 
   const handleMouseUpOrLeave = useCallback(() => {
@@ -204,15 +196,9 @@ const DragScrollRow = forwardRef(function DragScrollRow({
     if (dragRef.current.isHorizontal) {
       const diff = touch.pageX - dragRef.current.startX
       if (Math.abs(diff) > 3) dragRef.current.hasMoved = true
-      
       el.scrollLeft = dragRef.current.scrollLeft - diff
       virtualScrollLeft.current = el.scrollLeft
-      
-      const shift = normalizeScroll()
-      if (shift !== 0) {
-        dragRef.current.scrollLeft += shift
-      }
-      
+      normalizeScroll()
       if (e.cancelable) e.preventDefault()
     }
 
