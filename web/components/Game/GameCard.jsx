@@ -120,7 +120,8 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 			onClose()
 		}
 
-		const handleScroll = () => {
+		const handleScroll = (e) => {
+			if (e.target !== document && e.target !== document.documentElement && e.target !== window) return
 			onClose()
 		}
 
