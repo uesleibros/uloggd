@@ -13,6 +13,7 @@ import JournalButton from "@components/Game/Journal"
 import Modal from "@components/UI/Modal"
 import { notify } from "@components/UI/Notification"
 import GameCover, { getCoverUrl } from "@components/Game/GameCover"
+import GameTypeBadge from "@components/Game/GameTypeBadge"
 import { AgeRatings } from "../components/AgeRatings"
 import { Websites } from "../components/Websites"
 import { Keywords } from "../components/Keywords"
@@ -185,7 +186,12 @@ function MobileHeader({ game }) {
 
   return (
     <div className="flex-1 min-w-0 md:hidden">
-      <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight">{game.name}</h1>
+      <div className="flex items-center gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight truncate">
+          {game.name}
+        </h1>
+        <GameTypeBadge type={game.gameType} />
+      </div>
       {game.first_release_date && (
         <p className="text-xs sm:text-sm text-zinc-400 mt-1.5">
           {formatDateLong(game.first_release_date)}
