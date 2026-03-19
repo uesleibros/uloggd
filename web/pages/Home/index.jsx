@@ -14,7 +14,7 @@ import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 function WelcomeBackSkeleton() {
   return (
     <div className="mt-40">
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4">
         <div className="w-14 h-14 rounded-full bg-zinc-800 animate-pulse" />
         <div className="space-y-2">
           <div className="h-4 w-20 bg-zinc-800 rounded animate-pulse" />
@@ -63,6 +63,10 @@ function HeroSection() {
   )
 }
 
+function Divider() {
+  return <div className="border-t border-zinc-800 my-10" />
+}
+
 export default function Home() {
   usePageMeta()
   const { user, loading } = useAuth()
@@ -79,31 +83,35 @@ export default function Home() {
 
       {renderHero()}
 
-      <div className="mt-12">
-        <PopularAmongFriendsCarousel />
-      </div>
+      {user && (
+        <>
+          <div className="mt-10">
+            <PopularAmongFriendsCarousel />
+          </div>
 
-      <div className="mt-12">
-        <FriendsReviewsSection />
-      </div>
+          <div className="mt-10">
+            <FriendsReviewsSection />
+          </div>
 
-      <div className="mt-12">
+          <div className="mt-10">
+            <DailyChest />
+          </div>
+
+          <Divider />
+        </>
+      )}
+
+      <div className={user ? "" : "mt-10"}>
         <PopularListsSection />
       </div>
 
-      <div className="mt-12">
-        <SteamSalesSection />
-      </div>
+      <Divider />
 
-      <div className="mt-12">
-        <EpicFreeGamesSection />
-      </div>
+      <SteamSalesSection />
 
-      {user && (
-        <div className="my-6">
-          <DailyChest />
-        </div>
-      )}
+      <Divider />
+
+      <EpicFreeGamesSection />
     </div>
   )
 }
