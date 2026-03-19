@@ -1,10 +1,12 @@
 import { handlePopularAmongFriends } from "#services/home/handlers/popularAmongFriends.js"
 import { handleFriendsReviews } from "#services/home/handlers/friendsReviews.js"
+import { handlePopularLists } from "#services/home/handlers/popularLists.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
   popularAmongFriends: { handler: handlePopularAmongFriends, method: "GET", auth: true },
   friendsReviews: { handler: handleFriendsReviews, method: "GET", auth: true },
+  popularLists: { handler: handlePopularLists, method: "GET", auth: false },
 }
 
 export async function homeHandler(req, res) {
