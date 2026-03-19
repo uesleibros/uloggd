@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react"
-import { Users } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
@@ -86,8 +85,7 @@ export default function PopularAmongFriendsCarousel() {
   if (loading) {
     return (
       <section className="mb-8">
-        <div className="flex items-center gap-2 mb-4">
-          <Users className="w-4 h-4 text-indigo-400" />
+        <div className="mb-4">
           <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
             {t("home.sections.popularAmongFriends")}
           </h2>
