@@ -2,10 +2,9 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { useNavigate } from "react-router-dom"
 import { Search, Gamepad2, Users, ListMusic, ArrowRight, SearchX } from "lucide-react"
-import PlatformIcons from "@components/Game/PlatformIcons"
+import GameResultItem from "@components/Game/GameResultItem"
 import UserDisplay from "@components/User/UserDisplay"
 import { CoverStrip } from "@components/Lists/ListCard"
-import { useDateTime } from "#hooks/useDateTime"
 import { useTranslation } from "#hooks/useTranslation"
 import { useMyLibrary } from "#hooks/useMyLibrary"
 import { LoadingSpinner } from "./icons"
@@ -20,38 +19,6 @@ const ENDPOINTS = {
   games: (q) => `/api/igdb/autocomplete?query=${encodeURIComponent(q)}`,
   users: (q) => `/api/users/search?query=${encodeURIComponent(q)}&limit=5`,
   lists: (q) => `/api/lists/search?query=${encodeURIComponent(q)}&limit=5`,
-}
-
-function GameResult({ item, onSelect, getGameData }) {
-  const { formatDateShort } = useDateTime()
-  const gameData = getGameData(item.slug)
-  const coverUrl = gameData?.customCoverUrl || (item.cover ? `https:${item.cover.url}` : null)
-
-  return (
-    <li
-      onMouseDown={() => onSelect(`/game/${item.slug}`)}
-      className="group cursor-pointer px-3 py-2.5 hover:bg-indigo-500/10 transition-colors"
-    >
-      <div className="flex items-center gap-3">
-        {coverUrl ? (
-          <img src={coverUrl} alt="" className="h-12 w-9 rounded object-cover bg-zinc-800 flex-shrink-0" />
-        ) : (
-          <div className="h-12 w-9 rounded bg-zinc-800 flex-shrink-0" />
-        )}
-        <div className="flex-1 min-w-0">
-          <span className="group-hover:text-indigo-400 transition-colors font-medium text-sm text-white truncate block">
-            {item.name}
-          </span>
-          <div className="flex items-center gap-2 mt-1">
-            {item.first_release_date && (
-              <span className="text-xs text-zinc-500">{formatDateShort(item.first_release_date)}</span>
-            )}
-            <PlatformIcons icons={item.platformIcons} />
-          </div>
-        </div>
-      </div>
-    </li>
-  )
 }
 
 function UserResult({ item, onSelect }) {
@@ -103,7 +70,7 @@ function ListResult({ item, onSelect }) {
   )
 }
 
-function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query, getGameData }) {
+function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query }) {
   const { t } = useTranslation()
 
   if (loading) return <LoadingSpinner />
@@ -122,8 +89,23 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
       <ul className="py-1">
         {results.map((item) => {
           const key = item.id || item._id || item.username || item.shortId
-          if (activeTab === "games") return <GameResult key={key} item={item} onSelect={onSelect} getGameData={getGameData} />
-          if (activeTab === "users") return <UserResult key={key} item={item} onSelect={onSelect} />
+
+          if (activeTab === "games") {
+            return (
+              <GameResultItem
+                key={key}
+                game={item}
+                onSelect={() => onSelect(`/game/${item.slug}`)}
+                variant="compact"
+                showLinks={false}
+              />
+            )
+          }
+
+          if (activeTab === "users") {
+            return <UserResult key={key} item={item} onSelect={onSelect} />
+          }
+
           return <ListResult key={key} item={item} onSelect={onSelect} />
         })}
       </ul>
@@ -400,7 +382,6 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
           onSelect={handleNavigate}
           onViewAll={handleViewAll}
           query={query}
-          getGameData={getGameData}
         />
       </div>
     </div>
