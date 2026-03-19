@@ -18,45 +18,6 @@ async function getSteamId(gameId) {
   }
 }
 
-async function getGameCharacters(gameId) {
-  try {
-    const data = await query("characters", `
-      fields name, slug, description, mug_shot, character_gender, character_species;
-      where games = (${gameId});
-      limit 30;
-    `)
-    
-    if (!data.length) return []
-    
-    const mugShotIds = data.filter(c => c.mug_shot).map(c => c.mug_shot)
-    
-    if (mugShotIds.length) {
-      const mugShots = await query("character_mug_shots", `
-        fields id, image_id;
-        where id = (${mugShotIds.join(',')});
-      `)
-      
-      const mugShotMap = {}
-      for (const ms of mugShots) {
-        mugShotMap[ms.id] = ms.image_id
-      }
-      
-      for (const char of data) {
-        if (char.mug_shot && mugShotMap[char.mug_shot]) {
-          const imageId = mugShotMap[char.mug_shot]
-          char.image_url = `https://images.igdb.com/igdb/image/upload/t_720p/${imageId}.jpg`
-          char.thumb_url = `https://images.igdb.com/igdb/image/upload/t_thumb/${imageId}.jpg`
-        }
-        delete char.mug_shot
-      }
-    }
-    
-    return data.filter(c => c.image_url)
-  } catch {
-    return []
-  }
-}
-
 async function getAlternativeCovers(game) {
   const urls = new Set()
 
@@ -95,6 +56,24 @@ async function getAlternativeCovers(game) {
   return [...urls].map(url => url.replace("t_thumb", "t_cover_big"))
 }
 
+function mapCharacters(characters) {
+  if (!characters?.length) return []
+  
+  return characters.map(char => {
+    const imageId = char.mug_shot?.image_id
+    return {
+      id: char.id,
+      name: char.name,
+      slug: char.slug,
+      description: char.description || null,
+      gender: char.character_gender || null,
+      species: char.character_species || null,
+      image_url: imageId ? `https://images.igdb.com/igdb/image/upload/t_720p/${imageId}.jpg` : null,
+      thumb_url: imageId ? `https://images.igdb.com/igdb/image/upload/t_thumb/${imageId}.jpg` : null
+    }
+  })
+}
+
 export async function handleGame(req, res) {
   const { slug } = req.query
   if (!slug?.trim()) return res.status(400).json({ error: "missing slug" })
@@ -118,6 +97,8 @@ export async function handleGame(req, res) {
         total_rating, total_rating_count, aggregated_rating, rating, hypes,
         keywords.name, keywords.slug,
         game_type,
+        characters.name, characters.slug, characters.description,
+        characters.mug_shot.image_id, characters.character_gender, characters.character_species,
         similar_games.name, similar_games.slug, similar_games.cover.url, similar_games.cover.image_id,
         dlcs.name, dlcs.slug, dlcs.cover.url, dlcs.cover.image_id,
         expansions.name, expansions.slug, expansions.cover.url, expansions.cover.image_id,
@@ -138,10 +119,9 @@ export async function handleGame(req, res) {
 
     const g = data[0]
 
-    const [steamId, alternativeCovers, characters] = await Promise.all([
+    const [steamId, alternativeCovers] = await Promise.all([
       getSteamId(g.id),
-      getAlternativeCovers(g),
-      getGameCharacters(g.id)
+      getAlternativeCovers(g)
     ])
 
     const ageRatings = g.age_ratings?.map(ar => {
@@ -175,7 +155,7 @@ export async function handleGame(req, res) {
       platforms,
       steamId,
       alternativeCovers,
-      characters,
+      characters: mapCharacters(g.characters),
       cover: g.cover?.url ? { ...g.cover, url: g.cover.url.replace("t_thumb", "t_1080p") } : null,
       screenshots: g.screenshots?.map(s => ({ ...s, url: s.url.replace("t_thumb", "t_original") })) || [],
       artworks: g.artworks?.map(a => ({ ...a, url: a.url.replace("t_thumb", "t_original") })) || [],
