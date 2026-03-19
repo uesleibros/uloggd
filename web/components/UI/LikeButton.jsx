@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { ThumbsUp } from "lucide-react"
+import { Heart } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { supabase } from "#lib/supabase"
 import LikeListModal from "@components/UI/LikeListModal"
@@ -42,11 +42,11 @@ export default function LikeButton({
     setLoading(true)
 
     const action = isLiked ? "unlike" : "like"
-    const newLiked = !isLiked
-    const newCount = newLiked ? count + 1 : count - 1
+    const nextLiked = !isLiked
+    const nextCount = nextLiked ? count + 1 : count - 1
 
-    setIsLiked(newLiked)
-    setCount(newCount)
+    setIsLiked(nextLiked)
+    setCount(nextCount)
 
     try {
       const {
@@ -54,7 +54,7 @@ export default function LikeButton({
       } = await supabase.auth.getSession()
 
       if (!session) {
-        setIsLiked(!newLiked)
+        setIsLiked(!nextLiked)
         setCount(count)
         return
       }
@@ -69,11 +69,11 @@ export default function LikeButton({
       })
 
       if (!r.ok) {
-        setIsLiked(!newLiked)
+        setIsLiked(!nextLiked)
         setCount(count)
       }
     } catch {
-      setIsLiked(!newLiked)
+      setIsLiked(!nextLiked)
       setCount(count)
     } finally {
       setLoading(false)
@@ -82,19 +82,22 @@ export default function LikeButton({
 
   const sizes = {
     sm: {
-      button: "px-2 py-1 gap-1",
+      button: "h-7 px-2 gap-1.5 rounded-md",
       icon: "w-3.5 h-3.5",
       text: "text-xs",
+      count: "text-xs",
     },
     md: {
-      button: "px-3 py-1.5 gap-1.5",
+      button: "h-9 px-3 gap-2 rounded-lg",
       icon: "w-4 h-4",
       text: "text-sm",
+      count: "text-sm",
     },
     lg: {
-      button: "px-4 py-2 gap-2",
-      icon: "w-5 h-5",
-      text: "text-base",
+      button: "h-10 px-4 gap-2 rounded-lg",
+      icon: "w-4.5 h-4.5",
+      text: "text-sm",
+      count: "text-sm",
     },
   }
 
@@ -106,14 +109,16 @@ export default function LikeButton({
         <button
           onClick={handleLike}
           disabled={!currentUserId || loading}
-          className={`group flex items-center ${s.button} rounded-lg border transition-all duration-200 cursor-pointer disabled:cursor-default disabled:opacity-50 ${
+          className={`group inline-flex items-center justify-center ${s.button} border transition-colors cursor-pointer disabled:cursor-default disabled:opacity-50 ${
             isLiked
-              ? "bg-indigo-500/15 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/20"
+              ? "bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/15"
               : "bg-zinc-800/60 border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/60"
           }`}
         >
-          <ThumbsUp
-            className={`${s.icon} transition-transform duration-200 group-hover:scale-110 ${isLiked ? "fill-current" : ""}`}
+          <Heart
+            className={`${s.icon} transition-transform duration-200 group-hover:scale-110 ${
+              isLiked ? "fill-current" : ""
+            }`}
           />
           {showLabel && (
             <span className={`${s.text} font-medium`}>
@@ -125,7 +130,7 @@ export default function LikeButton({
         {showCount && count > 0 && (
           <button
             onClick={() => setShowLikes(true)}
-            className={`${s.text} text-zinc-500 hover:text-zinc-300 tabular-nums cursor-pointer transition-colors hover:underline`}
+            className={`${s.count} text-zinc-500 hover:text-zinc-300 tabular-nums cursor-pointer transition-colors`}
           >
             <CountUp end={count} /> {t("likeButton.count", { count })}
           </button>
