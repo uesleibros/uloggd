@@ -157,7 +157,7 @@ export default function FriendsReviewsSection() {
         {t("home.sections.friendsReviews")}
       </h2>
 
-      <DragScrollRow className="gap-3 pb-2" autoScroll autoScrollSpeed={25} loop>
+      <DragScrollRow className="gap-3 pb-2" autoScroll loop>
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
               <CardSkeleton key={i} />
