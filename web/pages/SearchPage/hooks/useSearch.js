@@ -21,8 +21,39 @@ export function useSearch(initialQuery = "", initialTab = "games") {
   const [initialLoad, setInitialLoad] = useState(true)
 
   const abortRef = useRef(null)
+  const isExternalUpdateRef = useRef(false)
+  const prevInitialQueryRef = useRef(initialQuery)
+  const prevInitialTabRef = useRef(initialTab)
 
   useEffect(() => {
+    const queryChanged = initialQuery !== prevInitialQueryRef.current
+    const tabChanged = initialTab !== prevInitialTabRef.current
+
+    if (queryChanged || tabChanged) {
+      prevInitialQueryRef.current = initialQuery
+      prevInitialTabRef.current = initialTab
+      isExternalUpdateRef.current = true
+
+      if (queryChanged) {
+        setQuery(initialQuery)
+        setDebouncedQuery(initialQuery)
+        setPage(1)
+      }
+
+      if (tabChanged) {
+        setActiveTab(initialTab)
+        setPage(1)
+        setFilters({ sort: "relevance" })
+      }
+    }
+  }, [initialQuery, initialTab])
+
+  useEffect(() => {
+    if (isExternalUpdateRef.current) {
+      isExternalUpdateRef.current = false
+      return
+    }
+
     const timer = setTimeout(() => {
       setDebouncedQuery(query)
       setPage(1)
@@ -30,8 +61,8 @@ export function useSearch(initialQuery = "", initialTab = "games") {
     return () => clearTimeout(timer)
   }, [query])
 
-  const fetchTab = useCallback(async (tab, pageNum = 1) => {
-    if (!debouncedQuery.trim()) {
+  const fetchTab = useCallback(async (tab, searchQuery, pageNum = 1) => {
+    if (!searchQuery.trim()) {
       setResults(prev => ({ ...prev, [tab]: [] }))
       setCounts(prev => ({ ...prev, [tab]: 0 }))
       setTotalPages(prev => ({ ...prev, [tab]: 0 }))
@@ -40,7 +71,7 @@ export function useSearch(initialQuery = "", initialTab = "games") {
 
     try {
       const params = new URLSearchParams({
-        query: debouncedQuery,
+        query: searchQuery,
         limit: PER_PAGE,
         offset: (pageNum - 1) * PER_PAGE,
         ...filters,
@@ -60,7 +91,7 @@ export function useSearch(initialQuery = "", initialTab = "games") {
     } catch (err) {
       console.error(`Error fetching ${tab}:`, err)
     }
-  }, [debouncedQuery, filters])
+  }, [filters])
 
   useEffect(() => {
     if (!debouncedQuery.trim()) {
@@ -72,12 +103,15 @@ export function useSearch(initialQuery = "", initialTab = "games") {
       return
     }
 
+    abortRef.current?.abort()
+    abortRef.current = new AbortController()
+
     setLoading(true)
 
     Promise.all([
-      fetchTab("games", 1),
-      fetchTab("users", 1),
-      fetchTab("lists", 1),
+      fetchTab("games", debouncedQuery, 1),
+      fetchTab("users", debouncedQuery, 1),
+      fetchTab("lists", debouncedQuery, 1),
     ]).finally(() => {
       setLoading(false)
       setInitialLoad(false)
@@ -86,10 +120,18 @@ export function useSearch(initialQuery = "", initialTab = "games") {
 
   useEffect(() => {
     if (!debouncedQuery.trim() || initialLoad) return
+    if (page === 1) return
 
     setLoading(true)
-    fetchTab(activeTab, page).finally(() => setLoading(false))
-  }, [page, activeTab, filters])
+    fetchTab(activeTab, debouncedQuery, page).finally(() => setLoading(false))
+  }, [page])
+
+  useEffect(() => {
+    if (!debouncedQuery.trim() || initialLoad) return
+
+    setLoading(true)
+    fetchTab(activeTab, debouncedQuery, 1).finally(() => setLoading(false))
+  }, [filters])
 
   const handleTabChange = useCallback((tab) => {
     setActiveTab(tab)
