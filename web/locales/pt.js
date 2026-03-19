@@ -694,6 +694,7 @@ export default {
 			popularAmongFriends: "Popular entre amigos",
 			friendsReviews: "Reviews de amigos",
 			popularLists: "Listas populares",
+			popularScreenshots: "Capturas de tela populares",
 		},
 	},
 	notFound: {
