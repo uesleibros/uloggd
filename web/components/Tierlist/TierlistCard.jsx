@@ -2,8 +2,10 @@ import { useMemo } from "react"
 import { Link } from "react-router-dom"
 import { LayoutGrid, Lock, Gamepad2 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
+import { useAuth } from "#hooks/useAuth"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import { useCustomCovers } from "#hooks/useCustomCovers"
+import LikeButton from "@components/UI/LikeButton"
 import { encode } from "#utils/shortId.js"
 
 function TierPreview({ tiers, getGame, getCustomCover, loading }) {
@@ -56,8 +58,10 @@ function TierPreview({ tiers, getGame, getCustomCover, loading }) {
 
 export function TierlistCard({ tierlist, showOwner = false }) {
   const { t } = useTranslation("tierlist.card")
+  const { user } = useAuth()
   const gamesCount = tierlist.games_count || 0
   const ownerId = tierlist.user_id || null
+  const shortId = encode(tierlist.id)
 
   const allSlugs = useMemo(() => {
     if (!tierlist.tiers_preview) return []
@@ -71,31 +75,38 @@ export function TierlistCard({ tierlist, showOwner = false }) {
   const isLoading = gamesLoading || (ownerId && coversLoading)
 
   return (
-    <Link
-      to={`/tierlist/${encode(tierlist.id)}`}
-      className="group block rounded-xl overflow-hidden bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-zinc-600 transition-all h-full flex flex-col"
-    >
-      <div className="relative h-24 sm:h-28 overflow-hidden flex-shrink-0">
+    <div className="group rounded-xl overflow-hidden bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-zinc-600 transition-all h-full flex flex-col">
+      <Link
+        to={`/tierlist/${shortId}`}
+        className="relative h-24 sm:h-28 overflow-hidden flex-shrink-0 block"
+      >
         <TierPreview
           tiers={tierlist.tiers_preview}
           getGame={getGame}
           getCustomCover={getCustomCover}
           loading={isLoading}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/20 to-transparent" />
-      </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/20 to-transparent pointer-events-none" />
+      </Link>
 
       <div className="p-3 sm:p-3.5 flex flex-col flex-1">
-        <h3 className="text-sm font-semibold text-white truncate group-hover:text-indigo-400 transition-colors">
-          {tierlist.title}
-        </h3>
+        <Link to={`/tierlist/${shortId}`} className="block">
+          <h3 className="text-sm font-semibold text-white truncate group-hover:text-indigo-400 transition-colors">
+            {tierlist.title}
+          </h3>
+        </Link>
 
-        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2 min-h-[1rem] sm:min-h-[2rem]">
-          {tierlist.description || ""}
-        </p>
+        <Link to={`/tierlist/${shortId}`} className="block">
+          <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2 min-h-[1rem] sm:min-h-[2rem]">
+            {tierlist.description || ""}
+          </p>
+        </Link>
 
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-between mt-2 gap-2">
+          <Link
+            to={`/tierlist/${shortId}`}
+            className="flex items-center gap-2.5 min-w-0"
+          >
             <span className="text-xs text-zinc-500 flex items-center gap-1">
               <Gamepad2 className="w-3 h-3" />
               {gamesCount}
@@ -107,15 +118,26 @@ export function TierlistCard({ tierlist, showOwner = false }) {
                 <span className="hidden sm:inline">{t("private")}</span>
               </span>
             )}
-          </div>
 
-          {showOwner && tierlist.owner && (
-            <span className="text-xs text-zinc-500 truncate max-w-[100px]">
-              {tierlist.owner.username}
-            </span>
-          )}
+            {showOwner && tierlist.owner && (
+              <span className="text-xs text-zinc-500 truncate max-w-[100px]">
+                {tierlist.owner.username}
+              </span>
+            )}
+          </Link>
+
+          <div>
+            <LikeButton
+              type="tierlist"
+              targetId={tierlist.id}
+              currentUserId={user?.user_id}
+              size="sm"
+              showLabel={false}
+              showCount
+            />
+          </div>
         </div>
       </div>
-    </Link>
+    </div>
   )
 }
