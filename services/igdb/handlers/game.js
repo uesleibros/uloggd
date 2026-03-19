@@ -3,6 +3,7 @@ import { getCache, setCache } from "#lib/cache.js"
 import { AGE_RATINGS_MAP } from "#data/ageRatingsMapper.js"
 import { WEBSITE_MAP } from "#data/websitesMapper.js"
 import { mapCovers } from "#services/igdb/utils/mapCovers.js"
+import { getGameType } from "#data/gameTypes.js"
 
 async function getSteamId(gameId) {
   try {
@@ -77,6 +78,7 @@ export async function handleGame(req, res) {
         game_modes.name, game_engines.name,
         total_rating, total_rating_count, aggregated_rating, rating, hypes,
         keywords.name, keywords.slug,
+        game_type,
         similar_games.name, similar_games.slug, similar_games.cover.url, similar_games.cover.image_id,
         dlcs.name, dlcs.slug, dlcs.cover.url, dlcs.cover.image_id,
         expansions.name, expansions.slug, expansions.cover.url, expansions.cover.image_id,
@@ -125,6 +127,7 @@ export async function handleGame(req, res) {
 
     const result = {
       ...g,
+      gameType: getGameType(g.game_type),
       ageRatings,
       developers,
       publishers,
@@ -147,6 +150,7 @@ export async function handleGame(req, res) {
     delete result.version_parent
     delete result.involved_companies
     delete result.age_ratings
+    delete result.game_type
 
     await setCache(cacheKey, result)
     res.json(result)
