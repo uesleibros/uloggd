@@ -52,19 +52,21 @@ export default function PopularListsSection() {
         {t("home.sections.popularLists")}
       </h2>
 
-      <DragScrollRow autoScroll loop className="gap-4 pb-2" style={{ overflow: "visible" }}>
-        {loading ? (
-          Array.from({ length: 5 }).map((_, i) => (
+      {loading ? (
+        <DragScrollRow className="gap-4 pb-2">
+          {Array.from({ length: 5 }).map((_, i) => (
             <ListCardSkeleton key={i} />
-          ))
-        ) : (
-          lists.map((list) => (
+          ))}
+        </DragScrollRow>
+      ) : (
+        <DragScrollRow autoScroll loop className="gap-4 pb-2">
+          {lists.map((list) => (
             <div key={list.id} className="w-64 flex-shrink-0">
               <ListCard list={list} showOwner />
             </div>
-          ))
-        )}
-      </DragScrollRow>
+          ))}
+        </DragScrollRow>
+      )}
     </div>
   )
 }
