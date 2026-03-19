@@ -691,7 +691,7 @@ export default {
 			description: "Acompanhe tudo que você já jogou, está jogando ou quer jogar. Organize sua biblioteca pessoal, crie tierlists e rankings personalizados, dê notas aos seus jogos favoritos e descubra o que a comunidade está curtindo. Compare suas classificações com outros jogadores, explore recomendações baseadas nos seus gostos e mantenha tudo atualizado automaticamente conforme você joga.",
 		},
 		sections: {
-			communityFavorites: "Favoritos da comunidade",
+			popularAmongFriends: "Popular entre amigos",
 		},
 	},
 	notFound: {
