@@ -68,16 +68,16 @@ function CharacterModal({ character, onClose }) {
             {character.name}
           </h3>
           
-          {(character.gender !== undefined || character.species) && (
+          {(character.character_gender !== undefined || character.character_species) && (
             <div className="flex items-center gap-3 mt-2">
-              {character.gender !== undefined && (
+              {character.character_gender !== undefined && (
                 <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">
-                  {GENDER_MAP[character.gender] || "Unknown"}
+                  {GENDER_MAP[character.character_gender] || "Unknown"}
                 </span>
               )}
-              {character.species && (
+              {character.character_species && (
                 <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">
-                  Species: {character.species}
+                  Species: {character.character_species}
                 </span>
               )}
             </div>
