@@ -1,3 +1,4 @@
+import { homeHandler } from "#routers/home.js"
 import { usersHandler } from "#routers/users.js"
 import { userGamesHandler } from "#routers/userGames.js"
 import { backloggdHandler } from "#routers/backloggd.js"
@@ -32,6 +33,7 @@ import { epicGamesHandler } from "#routers/connections/epicgames.js"
 import { retroachievementsHandler } from "#routers/connections/retroachievements.js"
 
 const SERVICES = {
+	home: homeHandler,
 	users: usersHandler,
 	userGames: userGamesHandler,
 	backloggd: backloggdHandler,
