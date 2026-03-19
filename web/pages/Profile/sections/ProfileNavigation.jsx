@@ -28,8 +28,8 @@ export function ProfileNavigation({
 
   return (
     <div className="border-b border-zinc-800/80">
-      <DragScrollRow className="-mb-px">
-        <nav className="flex gap-1 w-max">
+      <nav aria-label="Profile sections">
+        <DragScrollRow className="-mb-px gap-1">
           {PROFILE_SECTIONS.map(({ id, icon: Icon }) => {
             const isActive = activeSection === id
             let badge = null
@@ -46,7 +46,7 @@ export function ProfileNavigation({
               <button
                 key={id}
                 onClick={() => onSectionChange(id)}
-                className={`group relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all cursor-pointer whitespace-nowrap ${
+                className={`group relative flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all cursor-pointer whitespace-nowrap ${
                   isActive ? "text-indigo-400" : "text-zinc-500 hover:text-zinc-300"
                 }`}
               >
@@ -73,8 +73,8 @@ export function ProfileNavigation({
               </button>
             )
           })}
-        </nav>
-      </DragScrollRow>
+        </DragScrollRow>
+      </nav>
     </div>
   )
 }
