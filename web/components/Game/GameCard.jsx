@@ -106,7 +106,7 @@ function stopEvent(e) {
 	e.stopPropagation()
 }
 
-function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, position, onMouseEnter, onMouseLeave, onClose }) {
+function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, position, onMouseEnter, onMouseLeave, onClose, triggerRef }) {
 	const { t } = useTranslation("gameCard")
 	const { t: tQuickActions } = useTranslation("quickActions")
 	const [showStatus, setShowStatus] = useState(false)
@@ -115,9 +115,9 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 
 	useEffect(() => {
 		const handleClickOutside = (e) => {
-			if (menuRef.current && !menuRef.current.contains(e.target)) {
-				onClose()
-			}
+			if (menuRef.current && menuRef.current.contains(e.target)) return
+			if (triggerRef?.current && triggerRef.current.contains(e.target)) return
+			onClose()
 		}
 
 		const handleScroll = () => {
@@ -130,18 +130,22 @@ function MoreMenu({ state, onToggle, onStatusSelect, onAddToList, updating, posi
 			}
 		}
 
-		document.addEventListener("mousedown", handleClickOutside)
-		document.addEventListener("touchstart", handleClickOutside)
+		const timer = setTimeout(() => {
+			document.addEventListener("mousedown", handleClickOutside)
+			document.addEventListener("touchstart", handleClickOutside)
+		}, 0)
+
 		window.addEventListener("scroll", handleScroll, true)
 		document.addEventListener("keydown", handleEscape)
 
 		return () => {
+			clearTimeout(timer)
 			document.removeEventListener("mousedown", handleClickOutside)
 			document.removeEventListener("touchstart", handleClickOutside)
 			window.removeEventListener("scroll", handleScroll, true)
 			document.removeEventListener("keydown", handleEscape)
 		}
-	}, [onClose])
+	}, [onClose, triggerRef])
 
 	const handleAction = useCallback((action) => {
 		action()
@@ -421,6 +425,7 @@ function BottomBar({ state, onToggle, onStatusSelect, onAddToList, updating, onM
 						onMouseEnter={handleMouseEnter}
 						onMouseLeave={handleMouseLeave}
 						onClose={handleClose}
+						triggerRef={moreButtonRef}
 					/>
 				)}
 			</div>
