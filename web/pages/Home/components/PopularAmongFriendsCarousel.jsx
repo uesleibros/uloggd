@@ -81,33 +81,21 @@ export default function PopularAmongFriendsCarousel() {
   }, [user])
 
   if (!user) return null
-
-  if (loading) {
-    return (
-      <section>
-        <h2 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">
-          {t("home.sections.popularAmongFriends")}
-        </h2>
-        <DragScrollRow className="gap-4 py-2">
-          {[...Array(8)].map((_, i) => (
-            <GameCardSkeleton key={i} />
-          ))}
-        </DragScrollRow>
-      </section>
-    )
-  }
-
-  if (games.length === 0) return null
+  if (!loading && games.length === 0) return null
 
   return (
     <section>
       <h2 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">
         {t("home.sections.popularAmongFriends")}
       </h2>
-      <DragScrollRow autoScroll autoScrollSpeed={0.03} loop className="gap-4 py-2">
-        {games.map((game) => (
-          <PopularGameCard key={game.id} game={game} />
-        ))}
+      <DragScrollRow className="gap-4 py-2" autoScroll autoScrollSpeed={30} loop>
+        {loading
+          ? Array.from({ length: 8 }).map((_, i) => (
+              <GameCardSkeleton key={i} />
+            ))
+          : games.map((game) => (
+              <PopularGameCard key={game.id} game={game} />
+            ))}
       </DragScrollRow>
     </section>
   )
