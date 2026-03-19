@@ -693,6 +693,7 @@ export default {
 		sections: {
 			popularAmongFriends: "Popular entre amigos",
 			friendsReviews: "Reviews de amigos",
+			popularLists: "Listas populares",
 		},
 	},
 	notFound: {
