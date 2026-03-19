@@ -9,7 +9,7 @@ import TierlistsSection from "@components/Tierlist/TierlistsSection"
 import TransactionsSection from "./TransactionsSection"
 import JourneysSection from "@components/Game/Journal/JourneysSection"
 import CommentSection from "@components/UI/CommentSection"
-import ScreenshotsSection from "@components/Screenshots/ScreenshotsSection"
+import ScreenshotsSection from "@components/Screenshot/ScreenshotsSection"
 
 export function ProfileContent({
   activeSection,
