@@ -1,10 +1,11 @@
 import { useRef, useEffect } from "react"
-import { Search, X, Gamepad2 } from "lucide-react"
+import { Search, X } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "#hooks/useTranslation"
 import { useMyLibrary } from "#hooks/useMyLibrary"
 import PlatformIcons from "@components/Game/PlatformIcons"
 import GameTypeBadge from "@components/Game/GameTypeBadge"
+import GameCover from "@components/Game/GameCover"
 import { formatDateShort } from "#utils/formatDate"
 
 export function GameSearchInput({
@@ -53,20 +54,16 @@ function GameResultItem({
   showLinks,
   showGameType,
   renderActions,
-  getCoverUrl,
 }) {
-  const coverUrl = getCoverUrl(game)
+  const { getGameData } = useMyLibrary()
+  const gameData = getGameData(game.slug)
 
-  const coverElement = coverUrl ? (
-    <img
-      src={coverUrl}
-      alt=""
-      className="h-14 w-10 sm:h-12 sm:w-9 rounded object-cover bg-zinc-800"
+  const coverElement = (
+    <GameCover
+      game={game}
+      customCoverUrl={gameData?.customCoverUrl}
+      className="h-14 w-10 sm:h-12 sm:w-9 rounded"
     />
-  ) : (
-    <div className="h-14 w-10 sm:h-12 sm:w-9 rounded bg-zinc-800 flex items-center justify-center">
-      <Gamepad2 className="w-4 h-4 text-zinc-600" />
-    </div>
   )
 
   return (
@@ -146,14 +143,6 @@ export function GameSearchResults({
   showGameType = true,
 }) {
   const { t } = useTranslation()
-  const { getGameData } = useMyLibrary()
-
-  function getCoverUrl(game) {
-    const gameData = getGameData(game.slug)
-    if (gameData?.customCoverUrl) return gameData.customCoverUrl
-    if (game.cover?.url) return `https:${game.cover.url}`
-    return null
-  }
 
   if (searching) {
     return (
@@ -193,7 +182,6 @@ export function GameSearchResults({
           showLinks={showLinks}
           showGameType={showGameType}
           renderActions={renderActions}
-          getCoverUrl={getCoverUrl}
         />
       ))}
     </div>
