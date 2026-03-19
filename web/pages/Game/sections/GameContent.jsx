@@ -6,7 +6,7 @@ import GameReviews from "@components/Game/GameReviews"
 import { GameSteamAchievements } from "@components/Game/SteamAchievements"
 import { GameRetroAchievements } from "@components/Game/RetroAchievements"
 import { GamePSNTrophies } from "@components/Game/PSNTrophies"
-import GameCharacters from "@components/Game/GameCharacters"
+import GameEvents from "../components/GameEvents"
 import { StatCard } from "../components/StatCard"
 import { InfoRow } from "../components/InfoRow"
 import { HowLongToBeat } from "../components/HowLongToBeat"
@@ -54,7 +54,7 @@ export function GameContent({ game, hltb, hltbLoading, onOpenLightbox }) {
         <StatCard value={game.platforms?.length} label={t("content.stats.platforms")} />
       </div>
 
-      <GameCharacters characters={game.characters} />
+      <GameEvents events={game.events} />
 
       {game.summary && (
         <>
