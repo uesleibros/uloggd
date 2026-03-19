@@ -1,4 +1,20 @@
 export default {
+	gameEvents: {
+	  title: "Events",
+	  live: "LIVE",
+	  upcoming: "Upcoming",
+	  liveNow: "live now",
+	  upcomingSoon: "upcoming",
+	  videos: "videos",
+	  watchStream: "Watch",
+	  viewDetails: "View details",
+	  showAll: "View all {{count}} events",
+	  showLess: "Show less",
+	  empty: {
+	    title: "No events",
+	    description: "There are no events registered for this game."
+	  }
+	},
 	blogNotification: {
 	  badge: "What's new",
 	  dismiss: "Not now",
