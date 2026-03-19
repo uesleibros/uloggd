@@ -88,7 +88,7 @@ export default function PopularAmongFriendsCarousel() {
       <h2 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">
         {t("home.sections.popularAmongFriends")}
       </h2>
-      <DragScrollRow className="gap-4 py-2" autoScroll autoScrollSpeed={30} loop>
+      <DragScrollRow className="gap-4 py-2" autoScroll loop>
         {loading
           ? Array.from({ length: 8 }).map((_, i) => (
               <GameCardSkeleton key={i} />
