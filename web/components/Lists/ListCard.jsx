@@ -100,7 +100,7 @@ function FanImages({ slugs = [], isActive, ranked = false, ownerId = null }) {
 				return (
 					<motion.div
 						key={imgIndex}
-						className="absolute"
+						className="absolute pointer-events-none"
 						initial={false}
 						animate={{
 							x: xPos,
@@ -159,12 +159,6 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
-			<Link
-				to={`/list/${shortId}`}
-				className="absolute inset-0 z-30 rounded-2xl"
-				aria-label={list.title}
-			/>
-
 			<div
 				className="relative w-full h-full"
 				style={{
@@ -200,29 +194,35 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 						}}
 					/>
 
-					<motion.div
-						className="absolute inset-0 pointer-events-none"
-						animate={{
-							rotateX: isHovered ? -12 : 0,
-						}}
-						transition={{
-							type: "spring",
-							stiffness: 200,
-							damping: 25,
-							mass: 0.8,
-						}}
-						style={{
-							transformOrigin: "center bottom",
-							overflow: "visible",
-						}}
+					<Link
+						to={`/list/${shortId}`}
+						className="absolute inset-0 block"
+						aria-label={list.title}
 					>
-						<FanImages
-							slugs={list.game_slugs || []}
-							isActive={isHovered}
-							ranked={!!list.ranked}
-							ownerId={ownerId}
-						/>
-					</motion.div>
+						<motion.div
+							className="absolute inset-0"
+							animate={{
+								rotateX: isHovered ? -12 : 0,
+							}}
+							transition={{
+								type: "spring",
+								stiffness: 200,
+								damping: 25,
+								mass: 0.8,
+							}}
+							style={{
+								transformOrigin: "center bottom",
+								overflow: "visible",
+							}}
+						>
+							<FanImages
+								slugs={list.game_slugs || []}
+								isActive={isHovered}
+								ranked={!!list.ranked}
+								ownerId={ownerId}
+							/>
+						</motion.div>
+					</Link>
 				</motion.div>
 
 				<motion.div
@@ -245,7 +245,7 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 						transformOrigin: "center bottom",
 					}}
 				>
-					<div className="relative py-4 px-4 min-h-[2.75rem]">
+					<Link to={`/list/${shortId}`} className="block relative py-4 px-4 min-h-[2.75rem]">
 						<div
 							className="absolute -inset-2 transition-all duration-500 rounded-t-2xl pointer-events-none"
 							style={{
@@ -278,12 +278,15 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 								{list.description}
 							</p>
 						)}
-					</div>
+					</Link>
 
 					<div className="relative h-[48px]">
 						<div className="absolute inset-x-0 top-0 h-[1px] bg-white/[0.04]" />
 						<div className="absolute inset-0 flex items-center justify-between px-4">
-							<div className="flex items-center gap-1.5">
+							<Link
+								to={`/list/${shortId}`}
+								className="flex items-center gap-1.5"
+							>
 								<span className="text-[13px] text-white/60">
 									{gamesCount === 1
 										? t("common.games", { count: gamesCount })
@@ -292,23 +295,23 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 								{list.is_public === false && (
 									<Lock className="w-3 h-3 text-white/30 ml-1" />
 								)}
-							</div>
+							</Link>
 
-							<div className="flex items-center gap-2 relative z-40">
-								<span className="text-xs text-white/50">
-									{showOwner && list.owner ? list.owner.username : list.updated_at ? formatDateShort(list.updated_at) : ""}
-								</span>
+							<div className="flex items-center gap-2">
+								{showOwner || list.updated_at ? (
+									<Link
+										to={`/list/${shortId}`}
+										className="text-xs text-white/50"
+									>
+										{showOwner && list.owner
+											? list.owner.username
+											: list.updated_at
+												? formatDateShort(list.updated_at)
+												: ""}
+									</Link>
+								) : null}
 
-								<div
-									onClick={(e) => {
-										e.preventDefault()
-										e.stopPropagation()
-									}}
-									onMouseDown={(e) => {
-										e.preventDefault()
-										e.stopPropagation()
-									}}
-								>
+								<div>
 									<LikeButton
 										type="list"
 										targetId={list.id}
