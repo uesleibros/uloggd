@@ -51,32 +51,38 @@ export async function handleFriendsReviews(req, res) {
       return res.json({ reviews: [], users: {}, games: {}, message: "no_reviews" })
     }
 
-    const friendCount = friendIds.length
-    const maxPerFriend = friendCount <= 2
-      ? limitNum
-      : Math.max(3, Math.ceil(limitNum / Math.min(friendCount, 5)))
+    // Agrupar reviews por usuário
+    const reviewsByUser = {}
+    for (const review of allReviews) {
+      if (!reviewsByUser[review.user_id]) {
+        reviewsByUser[review.user_id] = []
+      }
+      reviewsByUser[review.user_id].push(review)
+    }
 
-    const userCounts = {}
+    const activeUsers = Object.keys(reviewsByUser)
     const diversified = []
 
-    for (const review of allReviews) {
-      if (diversified.length >= limitNum) break
+    // Round-robin: pega 1 de cada amigo por vez até preencher
+    let round = 0
+    while (diversified.length < limitNum) {
+      let addedThisRound = false
 
-      const count = userCounts[review.user_id] || 0
-      if (count >= maxPerFriend) continue
-
-      userCounts[review.user_id] = count + 1
-      diversified.push(review)
-    }
-
-    if (diversified.length < limitNum) {
-      for (const review of allReviews) {
+      for (const odUserId of activeUsers) {
         if (diversified.length >= limitNum) break
-        if (diversified.some((r) => r.id === review.id)) continue
-        diversified.push(review)
+
+        const userReviews = reviewsByUser[odUserId]
+        if (round < userReviews.length) {
+          diversified.push(userReviews[round])
+          addedThisRound = true
+        }
       }
+
+      if (!addedThisRound) break
+      round++
     }
 
+    // Re-ordenar conforme sortBy
     if (sortBy === "rating") {
       diversified.sort((a, b) => {
         if (b.rating !== a.rating) return b.rating - a.rating
