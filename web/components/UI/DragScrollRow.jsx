@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState, forwardRef } from "react"
 import useEmblaCarousel from "embla-carousel-react"
-import AutoplayPlugin from "embla-carousel-autoplay"
+import AutoScrollPlugin from "embla-carousel-auto-scroll"
 
 const DragScrollRow = forwardRef(function DragScrollRow({
   children,
   className = "",
   autoScroll = false,
-  autoScrollSpeed = 0.04,
+  autoScrollSpeed = 1,
   loop = false,
   showEdgeFade = true,
   ...props
@@ -18,12 +18,11 @@ const DragScrollRow = forwardRef(function DragScrollRow({
 
   if (autoScroll) {
     plugins.push(
-      AutoplayPlugin({
-        delay: 0,
+      AutoScrollPlugin({
+        speed: autoScrollSpeed,
         playOnInit: true,
         stopOnInteraction: false,
         stopOnMouseEnter: true,
-        speed: Math.round(autoScrollSpeed * 1000),
       })
     )
   }
