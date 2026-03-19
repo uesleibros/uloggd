@@ -66,6 +66,21 @@ function GameResultItem({
     />
   )
 
+  const nameElement = showLinks ? (
+    <Link
+      to={`/game/${game.slug}`}
+      target="_blank"
+      className="text-sm font-medium text-white hover:text-indigo-400 transition-colors truncate"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {game.name}
+    </Link>
+  ) : (
+    <span className="text-sm font-medium text-white truncate">
+      {game.name}
+    </span>
+  )
+
   return (
     <div
       onClick={() => onSelect?.(game)}
@@ -87,22 +102,14 @@ function GameResultItem({
       )}
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          {showLinks ? (
-            <Link
-              to={`/game/${game.slug}`}
-              target="_blank"
-              className="text-sm font-medium text-white hover:text-indigo-400 transition-colors truncate"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {game.name}
-            </Link>
-          ) : (
-            <span className="text-sm font-medium text-white truncate">
-              {game.name}
-            </span>
-          )}
-          {showGameType && <GameTypeBadge type={game.gameType} />}
+        {showGameType && game.gameType && game.gameType !== "main" && (
+          <div className="mb-1">
+            <GameTypeBadge type={game.gameType} />
+          </div>
+        )}
+
+        <div className="truncate">
+          {nameElement}
         </div>
 
         <div className="flex items-center gap-2 mt-0.5">
