@@ -10,7 +10,7 @@ import StatusBadge from "@components/Game/StatusBadge"
 import Playtime from "@components/Game/Playtime"
 import LikeButton from "@components/UI/LikeButton"
 import DragScrollRow from "@components/UI/DragScrollRow"
-import { ReviewIndicators, ReviewContent } from "@components/Game/Review"
+import { ReviewIndicators } from "@components/Game/Review"
 
 function CardSkeleton() {
   return (
@@ -39,7 +39,11 @@ function FriendReviewCard({ review, user, game }) {
       <div className="p-3">
         <div className="flex gap-3">
           <Link to={`/game/${game.slug}`} className="flex-shrink-0">
-            <GameCover game={game} className="w-14 h-20 rounded" />
+            <GameCover
+              game={game}
+              customCoverUrl={game.customCoverUrl}
+              className="w-14 h-20 rounded"
+            />
           </Link>
 
           <div className="flex-1 min-w-0">
