@@ -3,9 +3,11 @@ import { Link } from "react-router-dom"
 import { Gamepad2, Lock } from "lucide-react"
 import { motion } from "framer-motion"
 import { useTranslation } from "#hooks/useTranslation"
+import { useAuth } from "#hooks/useAuth"
 import { useGamesBatch } from "#hooks/useGamesBatch"
 import { useCustomCovers } from "#hooks/useCustomCovers"
 import { useDateTime } from "#hooks/useDateTime"
+import LikeButton from "@components/UI/LikeButton"
 import { encode } from "#utils/shortId.js"
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1]
@@ -139,6 +141,7 @@ function FanImages({ slugs = [], isActive, ranked = false, ownerId = null }) {
 export function ListCard({ list, showOwner = false, actions = null }) {
 	const { t } = useTranslation()
 	const { formatDateShort } = useDateTime()
+	const { user } = useAuth()
 	const [isHovered, setIsHovered] = useState(false)
 
 	const gamesCount = list.games_count || 0
@@ -284,10 +287,24 @@ export function ListCard({ list, showOwner = false, actions = null }) {
 									<Lock className="w-3 h-3 text-white/30 ml-1" />
 								)}
 							</div>
-							<div className="flex items-center gap-2">
+
+							<div className="flex items-center gap-2 z-50">
 								<span className="text-xs text-white/50">
 									{showOwner && list.owner ? list.owner.username : list.updated_at ? formatDateShort(list.updated_at) : ""}
 								</span>
+								<div
+									onClick={(e) => e.preventDefault()}
+									onMouseDown={(e) => e.stopPropagation()}
+								>
+									<LikeButton
+										type="list"
+										targetId={list.id}
+										currentUserId={user?.user_id}
+										size="sm"
+										showLabel={false}
+										showCount={true}
+									/>
+								</div>
 							</div>
 						</div>
 					</div>
