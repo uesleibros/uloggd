@@ -1,88 +1,98 @@
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
-import { ChevronRight } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useAuth } from "#hooks/useAuth"
 import { useDateTime } from "#hooks/useDateTime"
 import { supabase } from "#lib/supabase"
-import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
-import UserBadges from "@components/User/UserBadges"
-import StatusBadge from "@components/Game/StatusBadge"
-import ReviewRating from "@components/Game/ReviewRating"
 import GameCover from "@components/Game/GameCover"
+import ReviewRating from "@components/Game/ReviewRating"
+import StatusBadge from "@components/Game/StatusBadge"
+import Playtime from "@components/Game/Playtime"
+import LikeButton from "@components/UI/LikeButton"
+import DragScrollRow from "@components/UI/DragScrollRow"
 import { ReviewIndicators, ReviewContent } from "@components/Game/Review"
 
-function FriendReviewCard({ review, user, game }) {
-  const { getTimeAgo } = useDateTime()
-
-  if (!game) return null
-
+function CardSkeleton() {
   return (
-    <div className="flex-shrink-0 w-80 rounded-xl p-4 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 transition-colors">
-      <div className="flex items-start gap-3 mb-3">
-        <Link to={`/u/${user?.username}`} className="flex-shrink-0">
-          <AvatarWithDecoration
-            src={user?.avatar}
-            alt={user?.username}
-            decorationUrl={user?.equipped?.avatar_decoration?.asset_url}
-            size="sm"
-          />
-        </Link>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <Link
-              to={`/u/${user?.username}`}
-              className="text-sm font-medium text-white hover:text-zinc-300 transition-colors truncate"
-            >
-              {user?.username}
-            </Link>
-            <UserBadges user={user} size="sm" />
-          </div>
-          <span className="text-xs text-zinc-500">{getTimeAgo(review.created_at)}</span>
+    <div className="w-72 flex-shrink-0 bg-zinc-800/50 rounded-lg overflow-hidden animate-pulse">
+      <div className="p-3 flex gap-3">
+        <div className="w-14 h-20 bg-zinc-700/50 rounded" />
+        <div className="flex-1 space-y-2">
+          <div className="h-3 bg-zinc-700/50 rounded w-3/4" />
+          <div className="h-3 bg-zinc-700/50 rounded w-1/2" />
+          <div className="h-3 bg-zinc-700/50 rounded w-1/3" />
         </div>
       </div>
-
-      <Link to={`/game/${game.slug}`} className="flex gap-3 group">
-        <GameCover
-          game={game}
-          className="w-12 h-16 rounded flex-shrink-0"
-        />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white group-hover:text-indigo-400 transition-colors line-clamp-1">
-            {game.name}
-          </p>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <ReviewRating rating={review.rating} ratingMode={review.rating_mode} size="sm" />
-            <StatusBadge status={review.status} size="sm" />
-            <ReviewIndicators review={review} size="sm" />
-          </div>
-        </div>
-      </Link>
-
-      {review.review && (
-        <div className="mt-3 pt-3 border-t border-zinc-700/50">
-          <p className="text-xs text-zinc-400 line-clamp-2">{review.review}</p>
-        </div>
-      )}
     </div>
   )
 }
 
-function FriendReviewSkeleton() {
+function FriendReviewCard({ review, user, game }) {
+  const { user: currentUser } = useAuth()
+  const { getTimeAgo } = useDateTime()
+  const { t } = useTranslation("reviews")
+
+  if (!game || !user) return null
+
   return (
-    <div className="flex-shrink-0 w-80 rounded-xl p-4 bg-zinc-800/50 border border-zinc-700/50 animate-pulse">
-      <div className="flex items-start gap-3 mb-3">
-        <div className="w-8 h-8 rounded-full bg-zinc-700" />
-        <div className="flex-1 space-y-1.5">
-          <div className="h-3 w-24 bg-zinc-700 rounded" />
-          <div className="h-2 w-16 bg-zinc-700/50 rounded" />
+    <div className="w-72 flex-shrink-0 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 rounded-lg overflow-hidden transition-colors">
+      <div className="p-3">
+        <div className="flex gap-3">
+          <Link to={`/game/${game.slug}`} className="flex-shrink-0">
+            <GameCover game={game} className="w-14 h-20 rounded" />
+          </Link>
+
+          <div className="flex-1 min-w-0">
+            <Link
+              to={`/game/${game.slug}`}
+              className="text-sm font-medium text-white hover:text-indigo-400 transition-colors line-clamp-1"
+            >
+              {game.name}
+            </Link>
+
+            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+              <ReviewRating rating={review.rating} ratingMode={review.rating_mode} size="sm" />
+              <StatusBadge status={review.status} size="sm" />
+              <ReviewIndicators review={review} size="sm" />
+            </div>
+
+            <div className="flex items-center gap-2 mt-2">
+              <Link to={`/u/${user.username}`} className="flex-shrink-0">
+                <img
+                  src={user.avatar}
+                  alt={user.username}
+                  className="w-4 h-4 rounded-full object-cover"
+                />
+              </Link>
+              <Link
+                to={`/u/${user.username}`}
+                className="text-xs text-zinc-400 hover:text-white transition-colors truncate"
+              >
+                {user.username}
+              </Link>
+              <span className="text-xs text-zinc-600">·</span>
+              <span className="text-xs text-zinc-600 flex-shrink-0">{getTimeAgo(review.created_at)}</span>
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="flex gap-3">
-        <div className="w-12 h-16 bg-zinc-700 rounded" />
-        <div className="flex-1 space-y-2">
-          <div className="h-3 w-32 bg-zinc-700 rounded" />
-          <div className="h-3 w-20 bg-zinc-700/50 rounded" />
+
+        {review.review && (
+          <div className="mt-3 pt-3 border-t border-zinc-700/50">
+            <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
+              {review.review}
+            </p>
+            <Link
+              to={`/review/${review.id}`}
+              className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors mt-1.5 inline-block"
+            >
+              {t("readFullReview")}
+            </Link>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-700/50">
+          <Playtime hours={review.hours_played} minutes={review.minutes_played} size="sm" />
+          <LikeButton type="review" targetId={review.id} currentUserId={currentUser?.user_id} size="sm" />
         </div>
       </div>
     </div>
@@ -111,7 +121,7 @@ export default function FriendsReviewsSection() {
           return
         }
 
-        const res = await fetch("/api/home/friendsReviews?limit=10&sortBy=recent", {
+        const res = await fetch("/api/home/friendsReviews?limit=12&sortBy=recent", {
           headers: { Authorization: `Bearer ${session.access_token}` },
         })
 
@@ -135,39 +145,37 @@ export default function FriendsReviewsSection() {
   }, [user])
 
   if (!user) return null
+  if (!loading && reviews.length === 0) return null
 
-  if (loading) {
-    return (
-      <section>
-        <h2 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">
-          {t("home.sections.friendsReviews")}
-        </h2>
-        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          {[...Array(4)].map((_, i) => (
-            <FriendReviewSkeleton key={i} />
-          ))}
-        </div>
-      </section>
-    )
-  }
-
-  if (reviews.length === 0) return null
+  const tripled = reviews.length > 0 ? [...reviews, ...reviews, ...reviews] : []
 
   return (
-    <section>
+    <div>
       <h2 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">
         {t("home.sections.friendsReviews")}
       </h2>
-      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-        {reviews.map((review) => (
-          <FriendReviewCard
-            key={review.id}
-            review={review}
-            user={users[review.user_id]}
-            game={games[review.game_id]}
-          />
-        ))}
-      </div>
-    </section>
+
+      <DragScrollRow
+        className="gap-3 overflow-x-hidden pb-2 touch-pan-y"
+        autoScroll
+        autoScrollSpeed={0.03}
+        loop
+      >
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))
+        ) : (
+          tripled.map((review, index) => (
+            <FriendReviewCard
+              key={`${review.id}-${index}`}
+              review={review}
+              user={users[review.user_id]}
+              game={games[review.game_id]}
+            />
+          ))
+        )}
+      </DragScrollRow>
+    </div>
   )
 }
