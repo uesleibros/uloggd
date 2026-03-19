@@ -691,7 +691,7 @@ export default {
 			description: "Track everything you've played, are playing, or want to play. Organize your personal library, create tierlists and custom rankings, rate your favorite games and discover what the community is enjoying. Compare your ratings with other players, explore recommendations based on your taste and keep everything updated automatically as you play.",
 		},
 		sections: {
-			communityFavorites: "Community favorites",
+			popularAmongFriends: "Popular among friends",
 		},
 	},
 	notFound: {
