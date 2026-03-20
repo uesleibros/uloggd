@@ -7,6 +7,7 @@ import { useTranslation } from "#hooks/useTranslation"
 import { useGameSearch } from "#hooks/useGameSearch"
 import { supabase } from "#lib/supabase"
 import Modal from "@components/UI/Modal"
+import ImageCropModal from "@components/UI/ImageCropModal"
 import Pagination from "@components/UI/Pagination"
 import { GameSearchInput, GameSearchResults } from "@components/Game/GameSearchInput"
 import ScreenshotCard, { ScreenshotCardSkeleton } from "@components/Screenshot/ScreenshotCard"
@@ -14,6 +15,8 @@ import { formatDateShort } from "#utils/formatDate"
 
 const ITEMS_PER_PAGE = 6
 const MAX_FILE_SIZE = 10 * 1024 * 1024
+const MAX_UPLOAD_SIZE = 5 * 1024 * 1024
+const SCREENSHOT_MAX_WIDTH = 1920
 
 function ScreenshotSkeleton() {
   return (
@@ -96,27 +99,40 @@ function GameSearchModal({ isOpen, onClose, onSelect, selectedGame }) {
 
 function UploadModal({ isOpen, onClose, onUpload, uploading }) {
   const { t } = useTranslation("screenshots")
-  const [file, setFile] = useState(null)
+  const [cropSrc, setCropSrc] = useState(null)
   const [preview, setPreview] = useState(null)
+  const [pendingBlob, setPendingBlob] = useState(null)
   const [caption, setCaption] = useState("")
   const [isSpoiler, setIsSpoiler] = useState(false)
   const [selectedGame, setSelectedGame] = useState(null)
   const [gameSearchOpen, setGameSearchOpen] = useState(false)
   const [error, setError] = useState(null)
-  const [step, setStep] = useState(1)
   const [isDragging, setIsDragging] = useState(false)
   const fileRef = useRef(null)
   const dropRef = useRef(null)
+  const previewUrlRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (!isOpen) {
-      setFile(null)
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current)
+        previewUrlRef.current = null
+      }
+      setCropSrc(null)
       setPreview(null)
+      setPendingBlob(null)
       setCaption("")
       setIsSpoiler(false)
       setSelectedGame(null)
       setError(null)
-      setStep(1)
       setIsDragging(false)
     }
   }, [isOpen])
@@ -132,17 +148,16 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
       return
     }
     setError(null)
-    setFile(f)
+
     const reader = new FileReader()
-    reader.onload = (ev) => {
-      setPreview(ev.target.result)
-      setStep(2)
-    }
+    reader.onload = (ev) => setCropSrc(ev.target.result)
+    reader.onerror = () => setError(t("upload.fileReadError"))
     reader.readAsDataURL(f)
   }
 
   function handleFileChange(e) {
     processFile(e.target.files?.[0])
+    e.target.value = ""
   }
 
   function handleDragOver(e) {
@@ -166,12 +181,24 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
     processFile(e.dataTransfer.files?.[0])
   }
 
+  function handleCropComplete({ blob, url }) {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current)
+    }
+    previewUrlRef.current = url
+
+    setPreview(url)
+    setPendingBlob(blob)
+    setCropSrc(null)
+  }
+
   async function handleSubmit() {
-    if (!file || uploading) return
+    if (!pendingBlob || uploading) return
+
     const reader = new FileReader()
-    reader.onload = async (ev) => {
-      await onUpload({
-        image: ev.target.result,
+    reader.onload = () => {
+      onUpload({
+        image: reader.result,
         gameId: selectedGame?.id || null,
         gameSlug: selectedGame?.slug || null,
         gameName: selectedGame?.name || null,
@@ -179,15 +206,17 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
         isSpoiler,
       })
     }
-    reader.readAsDataURL(file)
+    reader.onerror = () => setError(t("upload.fileReadError"))
+    reader.readAsDataURL(pendingBlob)
   }
 
   const gameCoverUrl = selectedGame?.cover?.url ? `https:${selectedGame.cover.url}` : null
+  const hasImage = !!preview
 
   return (
     <>
       <Modal
-        isOpen={isOpen}
+        isOpen={isOpen && !cropSrc}
         onClose={() => !uploading && onClose()}
         maxWidth="max-w-3xl"
         fullscreenMobile
@@ -198,24 +227,24 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
         <div className="flex items-center justify-between h-14 px-4 border-b border-zinc-800 flex-shrink-0">
           <div className="w-20">
             <button
-              onClick={() => step === 1 ? onClose() : setStep(1)}
+              onClick={() => hasImage ? (setPreview(null), setPendingBlob(null)) : onClose()}
               disabled={uploading}
               className="flex items-center gap-1 text-sm font-medium text-zinc-400 hover:text-white disabled:opacity-50 disabled:pointer-events-none transition-colors cursor-pointer"
             >
-              {step === 2 && <ChevronLeft className="w-4 h-4" />}
-              {step === 1 ? t("upload.cancel") : t("upload.back")}
+              {hasImage && <ChevronLeft className="w-4 h-4" />}
+              {hasImage ? t("upload.back") : t("upload.cancel")}
             </button>
           </div>
 
           <h3 className="text-sm font-semibold text-white">
-            {step === 1 ? t("upload.title") : t("upload.details")}
+            {hasImage ? t("upload.details") : t("upload.title")}
           </h3>
 
           <div className="w-20 flex justify-end">
-            {step === 2 && (
+            {hasImage && (
               <button
                 onClick={handleSubmit}
-                disabled={!file || uploading}
+                disabled={!pendingBlob || uploading}
                 className="flex items-center gap-1.5 text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-zinc-600 disabled:pointer-events-none transition-colors cursor-pointer"
               >
                 {uploading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
@@ -226,7 +255,7 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
         </div>
 
         <div className="flex-1 min-h-0 overflow-hidden">
-          {step === 1 ? (
+          {!hasImage ? (
             <div
               ref={dropRef}
               onDragOver={handleDragOver}
@@ -263,7 +292,7 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
                   {t("upload.selectImage")}
                 </button>
 
-                <p className="text-xs text-zinc-600 mt-4">PNG, JPG, WEBP • Max 10MB</p>
+                <p className="text-xs text-zinc-600 mt-4">PNG, JPG, WEBP, GIF • Max 10MB</p>
               </div>
 
               {error && (
@@ -399,6 +428,17 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
         />
       </Modal>
 
+      <ImageCropModal
+        isOpen={!!cropSrc}
+        imageSrc={cropSrc || ""}
+        aspect={null}
+        onCrop={handleCropComplete}
+        onClose={() => setCropSrc(null)}
+        maxWidth={SCREENSHOT_MAX_WIDTH}
+        maxBlobSize={MAX_UPLOAD_SIZE}
+        title={t("upload.cropTitle")}
+      />
+
       <GameSearchModal
         isOpen={gameSearchOpen}
         onClose={() => setGameSearchOpen(false)}
@@ -446,6 +486,7 @@ export default function ScreenshotsSection({ userId, isOwnProfile }) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
+
       const r = await fetch("/api/screenshots/upload", {
         method: "POST",
         headers: {
@@ -454,6 +495,7 @@ export default function ScreenshotsSection({ userId, isOwnProfile }) {
         },
         body: JSON.stringify(data),
       })
+
       if (r.ok) {
         setUploadOpen(false)
         fetchScreenshots(1)
