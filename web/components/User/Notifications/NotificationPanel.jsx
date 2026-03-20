@@ -17,7 +17,8 @@ import {
   MessageCircle,
   X,
   Camera,
-  Reply
+  Reply,
+  Heart
 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
@@ -30,6 +31,7 @@ const NOTIFICATION_ICONS = {
   review_like: { icon: ThumbsUp, color: "text-pink-400" },
   list_like: { icon: List, color: "text-blue-400" },
   tierlist_like: { icon: LayoutGrid, color: "text-purple-400" },
+  profile_like: { icon: Heart, color: "text-rose-400" },
   gift_received: { icon: Gift, color: "text-amber-400" },
   verification_approved: { icon: BadgeCheck, color: "text-emerald-400" },
   verification_rejected: { icon: XCircle, color: "text-red-400" },
@@ -49,6 +51,7 @@ const NOTIFICATION_USER_ID_MAP = {
   review_like: (data) => data.liker_id,
   list_like: (data) => data.liker_id,
   tierlist_like: (data) => data.liker_id,
+  profile_like: (data) => data.liker_id,
   gift_received: (data) => data.from_user_id,
   verification_approved: (data) => data.reviewed_by,
   verification_rejected: (data) => data.reviewed_by,
@@ -85,6 +88,7 @@ const NOTIFICATION_LINKS = {
   follow: (data, users) => `/u/${users[data.follower_id]?.username}`,
   list_like: (data) => `/list/${encode(data.list_id)}`,
   tierlist_like: (data) => `/tierlist/${encode(data.tierlist_id)}`,
+  profile_like: (data, users) => `/u/${users[data.liker_id]?.username}`,
   profile_comment: (data) => `/u/${data.profile_username}`,
   list_comment: (data) => `/list/${encode(data.list_id)}`,
   tierlist_comment: (data) => `/tierlist/${encode(data.tierlist_id)}`,
@@ -120,6 +124,8 @@ function getNotificationText(type, data, t) {
       return t("notifications.types.list_like.text", { title: data.list_title || "..." })
     case "tierlist_like":
       return t("notifications.types.tierlist_like.text", { title: data.tierlist_title || "..." })
+    case "profile_like":
+      return t("notifications.types.profile_like.text")
     case "gift_received":
       return t("notifications.types.gift_received.title")
     case "verification_approved":
