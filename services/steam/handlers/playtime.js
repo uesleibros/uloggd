@@ -63,7 +63,7 @@ async function getSteamPlaytime(steamId, appId) {
   }
 }
 
-export async function handleSteamPlaytime(req, res) {
+export async function handlePlaytime(req, res) {
   const { slug, userId } = req.query
 
   if (!slug || !userId) {
