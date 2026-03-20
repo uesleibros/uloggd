@@ -12,6 +12,7 @@ import {
   getListLikesPerUser,
   getTierlistLikesPerUser,
   getScreenshotLikesPerUser,
+  getProfileLikesPerUser,
 } from "../utils/scores.js"
 
 const CACHE_TTL = 300
@@ -228,11 +229,12 @@ async function getFollowersLeaderboard(limit, offset) {
 }
 
 async function getLikesLeaderboard(limit, offset) {
-  const [reviewLikes, listLikes, tierlistLikes, screenshotLikes] = await Promise.all([
+  const [reviewLikes, listLikes, tierlistLikes, screenshotLikes, profileLikes] = await Promise.all([
     getReviewLikesPerUser(),
     getListLikesPerUser(),
     getTierlistLikesPerUser(),
     getScreenshotLikesPerUser(),
+    getProfileLikesPerUser(),
   ])
 
   const countMap = {}
@@ -242,7 +244,7 @@ async function getLikesLeaderboard(limit, offset) {
     for (const [userId, count] of Object.entries(likes)) {
       countMap[userId] = (countMap[userId] || 0) + count
       if (!breakdownMap[userId]) {
-        breakdownMap[userId] = { reviews: 0, lists: 0, tierlists: 0, screenshots: 0 }
+        breakdownMap[userId] = { reviews: 0, lists: 0, tierlists: 0, screenshots: 0, profile: 0 }
       }
       breakdownMap[userId][type] = count
     }
@@ -252,6 +254,7 @@ async function getLikesLeaderboard(limit, offset) {
   addLikes(listLikes, "lists")
   addLikes(tierlistLikes, "tierlists")
   addLikes(screenshotLikes, "screenshots")
+  addLikes(profileLikes, "profile")
 
   const sorted = Object.entries(countMap)
     .map(([user_id, count]) => ({ user_id, value: count }))
