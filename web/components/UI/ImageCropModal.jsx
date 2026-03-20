@@ -42,6 +42,16 @@ function getCroppedCanvas(image, crop, maxWidth = 1920) {
   return canvas
 }
 
+function dataUrlToArrayBuffer(dataUrl) {
+  const base64 = dataUrl.split(",")[1]
+  const binaryString = atob(base64)
+  const bytes = new Uint8Array(binaryString.length)
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i)
+  }
+  return bytes.buffer
+}
+
 async function cropGif(gifUrl, crop, imageElement, maxWidth = 1920) {
   const scaleX = imageElement.naturalWidth / imageElement.width
   const scaleY = imageElement.naturalHeight / imageElement.height
@@ -57,8 +67,14 @@ async function cropGif(gifUrl, crop, imageElement, maxWidth = 1920) {
   const outputWidth = Math.round(pixelCrop.width * scale)
   const outputHeight = Math.round(pixelCrop.height * scale)
 
-  const response = await fetch(gifUrl)
-  const arrayBuffer = await response.arrayBuffer()
+  let arrayBuffer
+  if (gifUrl.startsWith("data:")) {
+    arrayBuffer = dataUrlToArrayBuffer(gifUrl)
+  } else {
+    const response = await fetch(gifUrl)
+    arrayBuffer = await response.arrayBuffer()
+  }
+
   const gif = parseGIF(arrayBuffer)
   const frames = decompressFrames(gif, true)
 
@@ -210,35 +226,35 @@ export default function ImageCropModal({
     }
   }, [isOpen, imageSrc])
 
-	const onImageLoad = useCallback(
-	  (e) => {
-	    const { width, height } = e.currentTarget
-	
-	    let percentCrop
-	
-	    if (aspect) {
-	      percentCrop = centerCrop(
-	        makeAspectCrop({ unit: "%", width: 90 }, aspect, width, height),
-	        width,
-	        height
-	      )
-	    } else {
-	      percentCrop = {
-	        unit: "%",
-	        x: 0,
-	        y: 0,
-	        width: 100,
-	        height: 100,
-	      }
-	    }
-	
-	    setCrop(percentCrop)
-	
-	    const pixelCrop = convertToPixelCrop(percentCrop, width, height)
-	    setCompletedCrop(pixelCrop)
-	  },
-	  [aspect]
-	)
+  const onImageLoad = useCallback(
+    (e) => {
+      const { width, height } = e.currentTarget
+
+      let percentCrop
+
+      if (aspect) {
+        percentCrop = centerCrop(
+          makeAspectCrop({ unit: "%", width: 90 }, aspect, width, height),
+          width,
+          height
+        )
+      } else {
+        percentCrop = {
+          unit: "%",
+          x: 0,
+          y: 0,
+          width: 100,
+          height: 100,
+        }
+      }
+
+      setCrop(percentCrop)
+
+      const pixelCrop = convertToPixelCrop(percentCrop, width, height)
+      setCompletedCrop(pixelCrop)
+    },
+    [aspect]
+  )
 
   async function handleConfirm() {
     if (!completedCrop || !imgRef.current) return
@@ -331,7 +347,6 @@ export default function ImageCropModal({
                 onLoad={onImageLoad}
                 className="max-h-[60dvh] sm:max-h-[60vh] select-none max-w-full object-contain"
                 draggable={false}
-                crossOrigin="anonymous"
               />
             </ReactCrop>
           )}
