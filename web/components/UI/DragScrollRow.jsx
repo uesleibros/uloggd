@@ -191,14 +191,15 @@ const DragScrollRow = forwardRef(function DragScrollRow({
   }, [syncVirtualScroll])
 
   const resume = useCallback(() => {
+    syncVirtualScroll()
+    if (loop) normalizeScroll()
     lastTimeRef.current = null
     isPausedRef.current = false
-  }, [])
+  }, [syncVirtualScroll, loop, normalizeScroll])
 
   const handleMouseDown = useCallback((e) => {
     const el = scrollRef.current
     if (!el) return
-    if (autoScroll) pause()
     dragRef.current = {
       isDown: true,
       startX: e.pageX,
@@ -208,7 +209,7 @@ const DragScrollRow = forwardRef(function DragScrollRow({
       directionDecided: true,
       isHorizontal: true
     }
-  }, [autoScroll, pause])
+  }, [])
 
   const handleMouseMove = useCallback((e) => {
     if (!dragRef.current.isDown || !dragRef.current.isHorizontal) return
@@ -228,21 +229,15 @@ const DragScrollRow = forwardRef(function DragScrollRow({
   }, [loop, normalizeScroll])
 
   const handleMouseUp = useCallback(() => {
-    const wasDown = dragRef.current.isDown
     dragRef.current.isDown = false
     dragRef.current.directionDecided = false
     dragRef.current.isHorizontal = false
-    
-    if (wasDown && autoScroll) {
-      syncVirtualScroll()
-      if (loop) normalizeScroll()
-      setTimeout(resume, 100)
-    }
-  }, [autoScroll, loop, syncVirtualScroll, normalizeScroll, resume])
+  }, [])
 
   const handleTouchStart = useCallback((e) => {
     const el = scrollRef.current
     if (!el) return
+    if (autoScroll) pause()
     const touch = e.touches[0]
     dragRef.current = {
       isDown: true,
@@ -254,7 +249,7 @@ const DragScrollRow = forwardRef(function DragScrollRow({
       isHorizontal: false
     }
     props.onTouchStart?.(e)
-  }, [props])
+  }, [props, autoScroll, pause])
 
   const handleTouchMove = useCallback((e) => {
     if (!dragRef.current.isDown) return
@@ -268,7 +263,6 @@ const DragScrollRow = forwardRef(function DragScrollRow({
       if (dx + dy < 10) return
       dragRef.current.directionDecided = true
       dragRef.current.isHorizontal = dx > dy
-      if (dragRef.current.isHorizontal && autoScroll) pause()
     }
 
     if (dragRef.current.isHorizontal) {
@@ -282,19 +276,19 @@ const DragScrollRow = forwardRef(function DragScrollRow({
     }
 
     props.onTouchMove?.(e)
-  }, [props, autoScroll, pause, loop])
+  }, [props, loop])
 
   const handleTouchEnd = useCallback((e) => {
-    if (dragRef.current.isHorizontal && autoScroll) {
-      syncVirtualScroll()
-      if (loop) normalizeScroll()
-      setTimeout(resume, 100)
-    }
     dragRef.current.isDown = false
     dragRef.current.directionDecided = false
     dragRef.current.isHorizontal = false
+    
+    if (autoScroll) {
+      setTimeout(resume, 150)
+    }
+    
     props.onTouchEnd?.(e)
-  }, [props, autoScroll, loop, syncVirtualScroll, normalizeScroll, resume])
+  }, [props, autoScroll, resume])
 
   const handleClickCapture = useCallback((e) => {
     if (dragRef.current.hasMoved) {
@@ -311,8 +305,11 @@ const DragScrollRow = forwardRef(function DragScrollRow({
 
   const handleMouseLeave = useCallback((e) => {
     handleMouseUp()
+    if (autoScroll) {
+      setTimeout(resume, 150)
+    }
     props.onMouseLeave?.(e)
-  }, [handleMouseUp, props])
+  }, [handleMouseUp, autoScroll, resume, props])
 
   let maskStyle = undefined
   if (shouldShowFade) {
