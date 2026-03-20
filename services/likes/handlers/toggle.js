@@ -19,20 +19,24 @@ export async function handleToggle(req, res) {
   }
 
   try {
+    const idColumn = config.targetIdColumn || "id"
+
     const { data: target } = await supabase
       .from(config.targetTable)
       .select("*")
-      .eq("id", targetId)
+      .eq(idColumn, targetId)
       .single()
 
     if (!target) {
       return res.status(404).json({ error: `${type} not found` })
     }
 
+    const ownerId = target[config.ownerColumn]
+
     const { data: owner } = await supabase
       .from("users")
       .select("is_banned")
-      .eq("user_id", target[config.ownerColumn])
+      .eq("user_id", ownerId)
       .single()
 
     if (owner?.is_banned) {
@@ -49,9 +53,9 @@ export async function handleToggle(req, res) {
 
       if (error) throw error
 
-      if (target[config.ownerColumn] !== req.user.id && config.notificationType) {
+      if (ownerId !== req.user.id && config.notificationType) {
         await createNotification({
-          userId: target[config.ownerColumn],
+          userId: ownerId,
           type: config.notificationType,
           data: config.getNotificationData(target, req.user.id),
           dedupeKey: {
