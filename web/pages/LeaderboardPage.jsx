@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom"
 import {
-  Trophy, Gem, MessageSquare, User, Users, Heart,
+  Trophy, Gem, MessageSquare, Users, Heart,
   Crown, Medal, Award, Star, List, LayoutGrid, Camera, Clock, Globe, BookOpen
 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
@@ -54,7 +54,6 @@ const LIKES_BREAKDOWN_CONFIG = [
   { key: "lists", icon: List },
   { key: "tierlists", icon: LayoutGrid },
   { key: "screenshots", icon: Camera },
-  { key: "profile", icon: User },
 ]
 
 function LeaderboardSkeleton() {
