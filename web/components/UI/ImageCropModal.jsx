@@ -210,36 +210,24 @@ export default function ImageCropModal({
     }
   }, [isOpen, imageSrc])
 
-	const onImageLoad = useCallback(
-	  (e) => {
-	    const { width, height } = e.currentTarget
-	
-	    let percentCrop
-	
-	    if (aspect) {
-	      percentCrop = centerCrop(
-	        makeAspectCrop({ unit: "%", width: 90 }, aspect, width, height),
-	        width,
-	        height
-	      )
-	    } else {
-	      percentCrop = {
-	        unit: "%",
-	        x: 0,
-	        y: 0,
-	        width: 100,
-	        height: 100,
-	      }
-	    }
-	
-	    setCrop(percentCrop)
-	
-	    const pixelCrop = convertToPixelCrop(percentCrop, width, height)
-	    setCompletedCrop(pixelCrop)
-	  },
-	  [aspect]
-	)
-  
+  const onImageLoad = useCallback(
+    (e) => {
+      const { width, height } = e.currentTarget
+
+      const percentCrop = centerCrop(
+        makeAspectCrop({ unit: "%", width: 90 }, aspect, width, height),
+        width,
+        height
+      )
+
+      setCrop(percentCrop)
+
+      const pixelCrop = convertToPixelCrop(percentCrop, width, height)
+      setCompletedCrop(pixelCrop)
+    },
+    [aspect]
+  )
+
   async function handleConfirm() {
     if (!completedCrop || !imgRef.current) return
 
