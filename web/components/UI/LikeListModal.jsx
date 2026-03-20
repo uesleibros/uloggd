@@ -125,7 +125,7 @@ export default function LikeListModal({ isOpen, type, targetId, onClose }) {
                 onClick={onClose}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-800 transition-colors"
               >
-                <UserDisplay user={u} size="md" showBadges={true} linkToProfile={false} />
+                <UserDisplay user={u} size="md" showBadges={false} linkToProfile={false} />
               </Link>
             ))}
 
