@@ -93,6 +93,8 @@ export default {
 	  emptyTitle: "Share Screenshots",
 	  emptyDesc: "Your screenshots will appear here",
 	  upload: {
+			cropTitle: "Crop screenshot",
+			fileReadError: "Failed to read file",
 	    title: "New post",
 			back: "Back",
 			caption: "Caption",
