@@ -1,4 +1,5 @@
 import { getCache, setCache } from "#lib/cache.js"
+import { supabase } from "#lib/supabase-ssr.js"
 import { findManyByIds, resolveStreams, formatUserMap } from "#models/users/index.js"
 import {
   fetchAllRows,
@@ -269,12 +270,53 @@ async function getLikesLeaderboard(limit, offset) {
   return { entries, total }
 }
 
+async function getSteamPlaytimeForUsers(userIds) {
+  if (!userIds.length) return {}
+
+  const { data: connections } = await supabase
+    .from("user_connections")
+    .select("user_id, provider_user_id")
+    .eq("provider", "steam")
+    .in("user_id", userIds)
+
+  if (!connections?.length) return {}
+
+  const playtimeMap = {}
+
+  await Promise.all(
+    connections.map(async (conn) => {
+      try {
+        const res = await fetch(
+          `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${process.env.STEAM_WEB_API_KEY}&steamid=${conn.provider_user_id}&include_played_free_games=true`
+        )
+
+        if (!res.ok) return
+
+        const { response } = await res.json()
+        const games = response?.games || []
+
+        let totalMinutes = 0
+        for (const game of games) {
+          totalMinutes += game.playtime_forever || 0
+        }
+
+        playtimeMap[conn.user_id] = totalMinutes
+      } catch {}
+    })
+  )
+
+  return playtimeMap
+}
+
 async function getPlaytimeLeaderboard(limit, offset) {
   const journeys = await fetchAllRows("journeys", "id, user_id")
 
   const journeyOwners = {}
+  const allUserIds = new Set()
+
   for (const j of journeys) {
     journeyOwners[j.id] = j.user_id
+    allUserIds.add(j.user_id)
   }
 
   const journeyEntries = await fetchAllRows("journey_entries", "journey_id, hours, minutes")
@@ -288,21 +330,51 @@ async function getPlaytimeLeaderboard(limit, offset) {
     const totalMinutes = (e.hours || 0) * 60 + (e.minutes || 0)
 
     if (!statsMap[userId]) {
-      statsMap[userId] = { totalMinutes: 0, entries: 0 }
+      statsMap[userId] = { journalMinutes: 0, steamMinutes: 0, entries: 0 }
     }
-    statsMap[userId].totalMinutes += totalMinutes
+    statsMap[userId].journalMinutes += totalMinutes
     statsMap[userId].entries++
   }
 
+  const { data: steamConnections } = await supabase
+    .from("user_connections")
+    .select("user_id")
+    .eq("provider", "steam")
+
+  const steamUserIds = steamConnections?.map(c => c.user_id) || []
+  const steamPlaytime = await getSteamPlaytimeForUsers(steamUserIds)
+
+  for (const [userId, minutes] of Object.entries(steamPlaytime)) {
+    if (!statsMap[userId]) {
+      statsMap[userId] = { journalMinutes: 0, steamMinutes: 0, entries: 0 }
+    }
+    statsMap[userId].steamMinutes = minutes
+  }
+
   const sorted = Object.entries(statsMap)
-    .filter(([, stats]) => stats.totalMinutes > 0)
-    .map(([user_id, stats]) => ({
-      user_id,
-      value: stats.totalMinutes,
-      hours: Math.floor(stats.totalMinutes / 60),
-      minutes: stats.totalMinutes % 60,
-      entries: stats.entries,
-    }))
+    .filter(([, stats]) => stats.journalMinutes > 0 || stats.steamMinutes > 0)
+    .map(([user_id, stats]) => {
+      const totalMinutes = stats.journalMinutes + stats.steamMinutes
+      return {
+        user_id,
+        value: totalMinutes,
+        hours: Math.floor(totalMinutes / 60),
+        minutes: totalMinutes % 60,
+        entries: stats.entries,
+        breakdown: {
+          journal: {
+            totalMinutes: stats.journalMinutes,
+            hours: Math.floor(stats.journalMinutes / 60),
+            minutes: stats.journalMinutes % 60,
+          },
+          steam: {
+            totalMinutes: stats.steamMinutes,
+            hours: Math.floor(stats.steamMinutes / 60),
+            minutes: stats.steamMinutes % 60,
+          },
+        },
+      }
+    })
     .sort((a, b) => b.value - a.value)
 
   const total = sorted.length
@@ -315,6 +387,7 @@ async function getPlaytimeLeaderboard(limit, offset) {
     hours: item.hours,
     minutes: item.minutes,
     entries: item.entries,
+    breakdown: item.breakdown,
   }))
 
   return { entries, total }
