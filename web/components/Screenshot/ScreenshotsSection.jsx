@@ -181,18 +181,21 @@ function UploadModal({ isOpen, onClose, onUpload, uploading }) {
     processFile(e.dataTransfer.files?.[0])
   }
 
-	function handleCropComplete({ blob, url }) {
-	  if (previewUrlRef.current) {
-	    URL.revokeObjectURL(previewUrlRef.current)
-	  }
-	  
-	  const previewUrl = url || URL.createObjectURL(blob)
-	  previewUrlRef.current = previewUrl
-	
-	  setPreview(previewUrl)
-	  setPendingBlob(blob)
-	  setCropSrc(null)
-	}
+  function handleCropComplete({ blob }) {
+    const previewUrl = URL.createObjectURL(blob)
+
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current)
+    }
+    previewUrlRef.current = previewUrl
+
+    setPendingBlob(blob)
+    setPreview(previewUrl)
+
+    setTimeout(() => {
+      setCropSrc(null)
+    }, 0)
+  }
 
   async function handleSubmit() {
     if (!pendingBlob || uploading) return
