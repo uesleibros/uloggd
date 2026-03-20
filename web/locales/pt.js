@@ -298,6 +298,10 @@ export default {
 			}
 		},
 		view: {
+			logged: "registradas",
+			onSteam: "na Steam",
+			recent: "últimas 2 semanas",
+			steamPlaytime: "Tempo total jogado na Steam",
 			edit: "Editar",
 			close: "Fechar",
 			notFound: "Jornada não encontrada",
