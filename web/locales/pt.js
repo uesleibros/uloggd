@@ -1465,6 +1465,9 @@ export default {
 		reviewedBy: "Revisado por {{username}}",
 		someone: "Alguém",
 		types: {
+			profile_like: {
+				text: "curtiu o seu perfil"
+			},
 			comment_reply: {
 				text: "respondeu ao seu comentário"
 			},
