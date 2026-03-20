@@ -48,7 +48,7 @@ export const LIKE_TYPES = {
     table: "profile_likes",
     targetColumn: "profile_id",
     targetTable: "users",
-    ownerColumn: "id",
+    ownerColumn: "user_id",
     notificationType: "profile_like",
     getNotificationData: (target, likerId) => ({
       liker_id: likerId,
