@@ -93,6 +93,8 @@ export default {
 	  emptyTitle: "Compartilhe Capturas de tela",
 	  emptyDesc: "Suas capturas de tela aparecerão aqui",
 	  upload: {
+			cropTitle: "Cortar captura de tela",
+      fileReadError: "Falha ao ler arquivo",
 	    title: "Nova publicação",
 			caption: "Legenda",
 			spoilerDesc: "Ocultar conteúdo sensível",
