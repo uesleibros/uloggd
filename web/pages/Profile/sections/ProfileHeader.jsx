@@ -7,6 +7,7 @@ import UserBadges from "@components/User/UserBadges"
 import ThinkingBubble from "@components/User/ThinkingBubble"
 import ModeratorMenu from "@components/Moderation/ModeratorMenu"
 import ProfileActions from "../components/ProfileActions"
+import LikeButton from "@components/UI/LikeButton"
 import { MineralsDisplay } from "@components/Minerals/MineralsDisplay"
 import { getStatus } from "#utils/onlineStatus"
 import { useDateTime } from "#hooks/useDateTime"
@@ -164,6 +165,17 @@ export function ProfileHeader({
                   </span>
                 )}
               </div>
+
+              {!isBanned && (
+                <div className="mt-3">
+                  <LikeButton
+                    type="profile"
+                    targetId={profile.user_id}
+                    currentUserId={currentUser?.id}
+                    size="sm"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-1 flex-shrink-0">
