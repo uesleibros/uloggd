@@ -22,7 +22,7 @@ export default function AddToListModal({ isOpen, onClose, game }) {
 
     try {
       const params = new URLSearchParams({
-        userId: user.id,
+        userId: user.user_id,
         page: pageNum,
         limit: 20,
       })
