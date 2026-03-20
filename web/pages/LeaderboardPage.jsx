@@ -54,6 +54,7 @@ const LIKES_BREAKDOWN_CONFIG = [
   { key: "lists", icon: List },
   { key: "tierlists", icon: LayoutGrid },
   { key: "screenshots", icon: Camera },
+  { key: "profile", icon: User },
 ]
 
 function LeaderboardSkeleton() {
