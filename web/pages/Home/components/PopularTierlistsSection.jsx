@@ -61,7 +61,7 @@ export default function PopularTierlistsSection() {
           ))}
         </DragScrollRow>
       ) : (
-        <DragScrollRow autoScroll loop className="gap-4 pb-2">
+        <DragScrollRow className="gap-4 pb-2">
           {tierlists.map((tierlist) => (
             <div key={tierlist.id} className="w-64 flex-shrink-0">
               <TierlistCard tierlist={tierlist} showOwner />
