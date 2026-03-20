@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom"
 import {
-  Trophy, Gem, MessageSquare, Users, Heart,
+  Trophy, Gem, MessageSquare, User, Users, Heart,
   Crown, Medal, Award, Star, List, LayoutGrid, Camera, Clock, Globe, BookOpen
 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
