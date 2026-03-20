@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom"
 import {
   Trophy, Gem, MessageSquare, Users, Heart,
-  Crown, Medal, Award, Star, List, LayoutGrid, Camera, Clock, Globe
+  Crown, Medal, Award, Star, List, LayoutGrid, Camera, Clock, Globe, BookOpen
 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
+import { SteamIcon } from "#constants/customIcons"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import DragScrollRow from "@components/UI/DragScrollRow"
 import Pagination from "@components/UI/Pagination"
@@ -182,12 +183,46 @@ function GlobalBreakdown({ breakdown, compact = false }) {
   )
 }
 
+function PlaytimeBreakdown({ breakdown, compact = false }) {
+  if (!breakdown) return null
+
+  const journal = breakdown.journal
+  const steam = breakdown.steam
+
+  const hasJournal = journal?.totalMinutes > 0
+  const hasSteam = steam?.totalMinutes > 0
+
+  if (!hasJournal && !hasSteam) return null
+
+  return (
+    <div className={`flex items-center gap-2 flex-wrap ${compact ? "justify-center" : ""}`}>
+      {hasJournal && (
+        <div className="flex items-center gap-0.5">
+          <BookOpen className="w-2.5 h-2.5 text-emerald-400" />
+          <span className="text-[10px] text-zinc-500 tabular-nums">
+            {journal.hours}h {journal.minutes}m
+          </span>
+        </div>
+      )}
+      {hasSteam && (
+        <div className="flex items-center gap-0.5">
+          <SteamIcon className="w-2.5 h-2.5 text-[#66c0f4]" />
+          <span className="text-[10px] text-zinc-500 tabular-nums">
+            {steam.hours}h {steam.minutes}m
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function EntryBreakdown({ entry, category, t, compact = false }) {
-  const { breakdown, avgRating, entries: journeyEntries } = entry
+  const { breakdown, avgRating } = entry
 
   if (category === "global") return <GlobalBreakdown breakdown={breakdown} compact={compact} />
   if (category === "minerals") return <MineralBreakdown breakdown={breakdown} compact={compact} />
   if (category === "likes") return <LikesBreakdown breakdown={breakdown} compact={compact} />
+  if (category === "playtime") return <PlaytimeBreakdown breakdown={breakdown} compact={compact} />
 
   if (category === "reviews" && avgRating > 0) {
     return (
@@ -202,17 +237,6 @@ function EntryBreakdown({ entry, category, t, compact = false }) {
 
   if (category === "followers") {
     return <span className="text-[10px] text-zinc-600">{t("leaderboard.followersLabel")}</span>
-  }
-
-  if (category === "playtime" && journeyEntries > 0) {
-    return (
-      <div className={`flex items-center gap-1 ${compact ? "justify-center" : ""}`}>
-        <Clock className="w-2.5 h-2.5 text-zinc-600" />
-        <span className="text-[10px] text-zinc-500">
-          {journeyEntries} {t("leaderboard.journeyEntries")}
-        </span>
-      </div>
-    )
   }
 
   return null
