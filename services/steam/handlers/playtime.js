@@ -15,21 +15,47 @@ async function getSteamAppId(gameId) {
   }
 }
 
-async function getGameIdBySlug(slug) {
+async function getGameBySlug(slug) {
   try {
     const data = await query("games", `
-      fields id;
+      fields id, name;
       where slug = "${slug}";
       limit 1;
     `)
-    return data[0]?.id || null
+    return data[0] || null
   } catch {
     return null
   }
 }
 
+async function findSteamAppByName(steamId, gameName) {
+  const res = await fetch(
+    `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${process.env.STEAM_WEB_API_KEY}&steamid=${steamId}&include_appinfo=true&include_played_free_games=true`
+  )
+
+  if (!res.ok) return null
+
+  const { response } = await res.json()
+  const games = response?.games || []
+
+  if (!games.length) return null
+
+  const normalize = str => str.toLowerCase().replace(/[^a-z0-9]/g, "")
+  const normalizedName = normalize(gameName)
+
+  const exact = games.find(g => normalize(g.name) === normalizedName)
+  if (exact) return exact
+
+  const partial = games.find(g => 
+    normalize(g.name).includes(normalizedName) || 
+    normalizedName.includes(normalize(g.name))
+  )
+  
+  return partial || null
+}
+
 function formatPlaytime(minutes) {
-  if (!minutes) return { hours: 0, minutes: 0, formatted: "0h 0m" }
+  if (!minutes) return { hours: 0, minutes: 0, totalMinutes: 0, formatted: "0h 0m" }
   
   const hours = Math.floor(minutes / 60)
   const mins = minutes % 60
@@ -86,32 +112,46 @@ export async function handlePlaytime(req, res) {
       return res.json({ connected: false })
     }
 
-    const gameId = await getGameIdBySlug(slug)
+    const game = await getGameBySlug(slug)
 
-    if (!gameId) {
+    if (!game) {
       return res.status(404).json({ error: "game not found" })
     }
 
-    const steamAppId = await getSteamAppId(gameId)
+    let steamAppId = await getSteamAppId(game.id)
+    let playtime = null
 
-    if (!steamAppId) {
-      return res.json({ 
-        connected: true, 
-        found: false, 
-        message: "Game not available on Steam" 
-      })
+    if (steamAppId) {
+      playtime = await getSteamPlaytime(connection.provider_user_id, steamAppId)
     }
 
-    const playtime = await getSteamPlaytime(connection.provider_user_id, steamAppId)
+    if (!playtime) {
+      const steamGame = await findSteamAppByName(connection.provider_user_id, game.name)
+      
+      if (steamGame) {
+        steamAppId = String(steamGame.appid)
+        playtime = {
+          total: formatPlaytime(steamGame.playtime_forever),
+          recent: formatPlaytime(steamGame.playtime_2weeks),
+          lastPlayed: steamGame.rtime_last_played 
+            ? new Date(steamGame.rtime_last_played * 1000).toISOString() 
+            : null
+        }
+      }
+    }
 
     if (!playtime) {
-      return res.json({ 
+      const result = { 
         connected: true, 
-        found: true,
+        found: !!steamAppId,
         owned: false,
         steamAppId,
-        message: "Game not in user library or profile is private"
-      })
+        message: steamAppId 
+          ? "Game not in user library or profile is private"
+          : "Game not found on Steam"
+      }
+      await setCache(cacheKey, result, 300)
+      return res.json(result)
     }
 
     const result = {
@@ -122,7 +162,7 @@ export async function handlePlaytime(req, res) {
       playtime
     }
 
-    await setCache(cacheKey, result, 300) // Cache 5 minutos
+    await setCache(cacheKey, result, 300)
     return res.json(result)
 
   } catch (e) {
