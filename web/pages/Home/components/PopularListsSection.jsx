@@ -59,7 +59,7 @@ export default function PopularListsSection() {
           ))}
         </DragScrollRow>
       ) : (
-        <DragScrollRow autoScroll loop className="gap-4 pb-2">
+        <DragScrollRow className="gap-4 pb-2">
           {lists.map((list) => (
             <div key={list.id} className="w-64 flex-shrink-0">
               <ListCard list={list} showOwner />
