@@ -171,7 +171,7 @@ export function ProfileHeader({
                   <LikeButton
                     type="profile"
                     targetId={profile.user_id}
-                    currentUserId={currentUser?.id}
+                    currentUserId={currentUser?.user_id}
                     size="sm"
                   />
                 </div>
