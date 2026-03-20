@@ -57,7 +57,7 @@ export async function getFollowersRaw() {
 
 export async function getReviewLikesPerUser() {
   const [likes, reviews] = await Promise.all([
-    fetchAllRows("review_likes", "review_id"),
+    fetchAllRows("review_likes", "user_id, review_id"),
     fetchAllRows("reviews", "id, user_id"),
   ])
 
@@ -68,9 +68,9 @@ export async function getReviewLikesPerUser() {
 
   const countMap = {}
   for (const like of likes) {
-    const userId = reviewOwners[like.review_id]
-    if (userId) {
-      countMap[userId] = (countMap[userId] || 0) + 1
+    const ownerId = reviewOwners[like.review_id]
+    if (ownerId && like.user_id !== ownerId) {
+      countMap[ownerId] = (countMap[ownerId] || 0) + 1
     }
   }
 
@@ -79,7 +79,7 @@ export async function getReviewLikesPerUser() {
 
 export async function getListLikesPerUser() {
   const [likes, lists] = await Promise.all([
-    fetchAllRows("list_likes", "list_id"),
+    fetchAllRows("list_likes", "user_id, list_id"),
     fetchAllRows("lists", "id, user_id"),
   ])
 
@@ -90,9 +90,9 @@ export async function getListLikesPerUser() {
 
   const countMap = {}
   for (const like of likes) {
-    const userId = listOwners[like.list_id]
-    if (userId) {
-      countMap[userId] = (countMap[userId] || 0) + 1
+    const ownerId = listOwners[like.list_id]
+    if (ownerId && like.user_id !== ownerId) {
+      countMap[ownerId] = (countMap[ownerId] || 0) + 1
     }
   }
 
@@ -101,7 +101,7 @@ export async function getListLikesPerUser() {
 
 export async function getTierlistLikesPerUser() {
   const [likes, tierlists] = await Promise.all([
-    fetchAllRows("tierlist_likes", "tierlist_id"),
+    fetchAllRows("tierlist_likes", "user_id, tierlist_id"),
     fetchAllRows("tierlists", "id, user_id"),
   ])
 
@@ -112,9 +112,9 @@ export async function getTierlistLikesPerUser() {
 
   const countMap = {}
   for (const like of likes) {
-    const userId = tierlistOwners[like.tierlist_id]
-    if (userId) {
-      countMap[userId] = (countMap[userId] || 0) + 1
+    const ownerId = tierlistOwners[like.tierlist_id]
+    if (ownerId && like.user_id !== ownerId) {
+      countMap[ownerId] = (countMap[ownerId] || 0) + 1
     }
   }
 
@@ -123,7 +123,7 @@ export async function getTierlistLikesPerUser() {
 
 export async function getScreenshotLikesPerUser() {
   const [likes, screenshots] = await Promise.all([
-    fetchAllRows("screenshot_likes", "screenshot_id"),
+    fetchAllRows("screenshot_likes", "user_id, screenshot_id"),
     fetchAllRows("screenshots", "id, user_id"),
   ])
 
@@ -134,9 +134,22 @@ export async function getScreenshotLikesPerUser() {
 
   const countMap = {}
   for (const like of likes) {
-    const userId = screenshotOwners[like.screenshot_id]
-    if (userId) {
-      countMap[userId] = (countMap[userId] || 0) + 1
+    const ownerId = screenshotOwners[like.screenshot_id]
+    if (ownerId && like.user_id !== ownerId) {
+      countMap[ownerId] = (countMap[ownerId] || 0) + 1
+    }
+  }
+
+  return countMap
+}
+
+export async function getProfileLikesPerUser() {
+  const likes = await fetchAllRows("profile_likes", "user_id, profile_id")
+
+  const countMap = {}
+  for (const like of likes) {
+    if (like.user_id !== like.profile_id) {
+      countMap[like.profile_id] = (countMap[like.profile_id] || 0) + 1
     }
   }
 
@@ -144,11 +157,12 @@ export async function getScreenshotLikesPerUser() {
 }
 
 export async function getLikesRaw() {
-  const [reviewLikes, listLikes, tierlistLikes, screenshotLikes] = await Promise.all([
+  const [reviewLikes, listLikes, tierlistLikes, screenshotLikes, profileLikes] = await Promise.all([
     getReviewLikesPerUser(),
     getListLikesPerUser(),
     getTierlistLikesPerUser(),
     getScreenshotLikesPerUser(),
+    getProfileLikesPerUser(),
   ])
 
   const result = {}
@@ -163,6 +177,7 @@ export async function getLikesRaw() {
   addLikes(listLikes)
   addLikes(tierlistLikes)
   addLikes(screenshotLikes)
+  addLikes(profileLikes)
 
   return result
 }
