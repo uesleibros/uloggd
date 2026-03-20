@@ -298,6 +298,10 @@ export default {
 			}
 		},
 		view: {
+			logged: "logged",
+			onSteam: "on Steam",
+			recent: "last 2 weeks",
+			steamPlaytime: "Total playtime on Steam",
 			edit: "Edit",
 			close: "Close",
 			notFound: "Journey not found",
