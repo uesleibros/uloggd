@@ -4,6 +4,7 @@ import { X, ChevronLeft, ChevronRight, Clock, Calendar as CalendarIcon, Play, Fl
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useCustomCovers } from "#hooks/useCustomCovers"
+import { SteamIcon } from "#constants/customIcons"
 import GameCover from "@components/Game/GameCover"
 import { JournalCalendar } from "./JournalCalendar"
 import { JournalTimeline } from "./JournalTimeline"
@@ -23,6 +24,8 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState("calendar")
   const [editMode, setEditMode] = useState(false)
+  const [steamPlaytime, setSteamPlaytime] = useState(null)
+  const [steamLoading, setSteamLoading] = useState(false)
 
   const today = new Date()
   const [currentMonth, setCurrentMonth] = useState(today.getMonth())
@@ -37,6 +40,11 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
     if (!journeyId) return
     fetchJourney()
   }, [journeyId])
+
+  useEffect(() => {
+    if (!journey?.game_slug || !journey?.user_id) return
+    fetchSteamPlaytime()
+  }, [journey?.game_slug, journey?.user_id])
 
   async function fetchJourney() {
     setLoading(true)
@@ -56,6 +64,21 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
       }
     } catch {} finally {
       setLoading(false)
+    }
+  }
+
+  async function fetchSteamPlaytime() {
+    setSteamLoading(true)
+    try {
+      const res = await fetch(`/api/steam/playtime?slug=${journey.game_slug}&userId=${journey.user_id}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.connected && data.owned && data.playtime) {
+          setSteamPlaytime(data.playtime)
+        }
+      }
+    } catch {} finally {
+      setSteamLoading(false)
     }
   }
 
@@ -190,16 +213,18 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
               </button>
             </div>
 
-            {stats && (
+            {(stats || steamPlaytime) && (
               <div className="flex items-center gap-4 px-4 md:px-5 py-3 border-b border-zinc-800 overflow-x-auto flex-shrink-0">
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <CalendarIcon className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-xs text-zinc-400">
-                    <span className="text-white font-medium">{stats.total_sessions}</span> {stats.total_sessions === 1 ? t("session") : t("sessions")}
-                  </span>
-                </div>
+                {stats?.total_sessions > 0 && (
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <CalendarIcon className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-xs text-zinc-400">
+                      <span className="text-white font-medium">{stats.total_sessions}</span> {stats.total_sessions === 1 ? t("session") : t("sessions")}
+                    </span>
+                  </div>
+                )}
 
-                {stats.total_minutes > 0 && (
+                {stats?.total_minutes > 0 && (
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <Clock className="w-3.5 h-3.5 text-emerald-400" />
                     <span className="text-xs text-zinc-400">
@@ -207,6 +232,27 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
                         {stats.total_hours > 0 && `${stats.total_hours}h `}
                         {stats.total_minutes % 60 > 0 && `${stats.total_minutes % 60}m`}
                       </span>
+                      <span className="text-zinc-600 ml-1">{t("logged")}</span>
+                    </span>
+                  </div>
+                )}
+
+                {steamPlaytime && (
+                  <div className="flex items-center gap-1.5 flex-shrink-0" title={t("steamPlaytime")}>
+                    <SteamIcon className="w-3.5 h-3.5 text-[#66c0f4]" />
+                    <span className="text-xs text-zinc-400">
+                      <span className="text-white font-medium">{steamPlaytime.total.formatted}</span>
+                      <span className="text-zinc-600 ml-1">{t("onSteam")}</span>
+                    </span>
+                  </div>
+                )}
+
+                {steamPlaytime?.recent?.totalMinutes > 0 && (
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <Clock className="w-3.5 h-3.5 text-[#66c0f4]/70" />
+                    <span className="text-xs text-zinc-500">
+                      <span className="text-zinc-400">{steamPlaytime.recent.formatted}</span>
+                      <span className="ml-1">{t("recent")}</span>
                     </span>
                   </div>
                 )}
@@ -226,6 +272,12 @@ export function JournalViewModal({ journeyId, onClose, onUpdate }) {
                     <span className="text-xs text-zinc-400">
                       {new Date(journey.finished_at + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                     </span>
+                  </div>
+                )}
+
+                {steamLoading && (
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <div className="w-3 h-3 border border-[#66c0f4] border-t-transparent rounded-full animate-spin" />
                   </div>
                 )}
               </div>
