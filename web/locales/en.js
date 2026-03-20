@@ -711,6 +711,7 @@ export default {
 			friendsReviews: "Reviews from friends",
 			popularLists: "Popular lists",
 			popularScreenshots: "Popular screenshots",
+			popularTierlists: "Popular Tier Lists"
 		},
 	},
 	notFound: {

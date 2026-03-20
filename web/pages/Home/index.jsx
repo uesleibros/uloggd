@@ -5,6 +5,7 @@ import EpicFreeGamesSection from "./components/EpicFreeGamesSection"
 import PopularAmongFriendsCarousel from "./components/Friends/PopularAmongFriendsCarousel"
 import FriendsReviewsSection from "./components/Friends/FriendsReviewsSection"
 import PopularListsSection from "./components/PopularListsSection"
+import PopularTierlistsSection from "./components/PopularTierlistsSection"
 import PopularScreenshotsSection from "./components/PopularScreenshotsSection"
 import { useAuth } from "#hooks/useAuth"
 import PageBanner from "@components/Layout/PageBanner"
@@ -108,6 +109,10 @@ export default function Home() {
 
       <div className="mt-12">
         <PopularScreenshotsSection />
+      </div>
+
+      <div className="mt-12">
+        <PopularTierlistsSection />
       </div>
 
       <Divider />
