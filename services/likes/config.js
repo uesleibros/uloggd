@@ -52,7 +52,7 @@ export const LIKE_TYPES = {
     notificationType: "profile_like",
     getNotificationData: (target, likerId) => ({
       liker_id: likerId,
-      profile_id: target.id,
+      profile_id: target.user_id,
     })
   },
 }
