@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { Link } from "react-router-dom"
 import { MessageSquare, Clock, TrendingUp } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
 import { useJournalEvents } from "#hooks/useJournalEvents"
+import { useCustomCovers } from "#hooks/useCustomCovers"
 import { SORT_OPTIONS } from "#constants/game"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import UserBadges from "@components/User/UserBadges"
@@ -29,7 +30,7 @@ const SORT_ICONS = {
   popular: TrendingUp,
 }
 
-export function ProfileReviewCard({ review, game, user, journey }) {
+export function ProfileReviewCard({ review, game, user, journey, customCoverUrl }) {
   const { user: currentUser } = useAuth()
   const { t } = useTranslation("profile")
   const { getTimeAgo } = useDateTime()
@@ -49,11 +50,15 @@ export function ProfileReviewCard({ review, game, user, journey }) {
           </Link>
         ) : game ? (
           <Link to={`/game/${game.slug}`} className="flex-shrink-0">
-            <GameCover game={game} className="w-16 h-20 rounded-lg" />
+            <GameCover
+              game={game}
+              customCoverUrl={customCoverUrl}
+              className="w-16 h-20 rounded-lg"
+            />
           </Link>
         ) : null}
 
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 overflow-hidden">
           <div className="flex items-center gap-2 flex-wrap">
             {user && (
               <>
@@ -69,7 +74,7 @@ export function ProfileReviewCard({ review, game, user, journey }) {
             )}
             <Link
               to={`/game/${game?.slug}`}
-              className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate"
+              className="text-base font-semibold text-white hover:text-zinc-300 transition-colors break-words max-w-full"
             >
               {game?.name || t("reviews.game")}
             </Link>
@@ -77,7 +82,7 @@ export function ProfileReviewCard({ review, game, user, journey }) {
             <ReviewIndicators review={review} />
           </div>
 
-          <div className="flex items-center gap-3 mt-1.5">
+          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
             <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
             <span className="text-sm text-zinc-500">{getTimeAgo(review.created_at)}</span>
           </div>
@@ -105,7 +110,11 @@ export function ProfileReviewCard({ review, game, user, journey }) {
 
         {user && game && (
           <Link to={`/game/${game.slug}`} className="hidden sm:block flex-shrink-0">
-            <GameCover game={game} className="w-12 h-16 rounded-lg" />
+            <GameCover
+              game={game}
+              customCoverUrl={customCoverUrl}
+              className="w-12 h-16 rounded-lg"
+            />
           </Link>
         )}
       </div>
@@ -155,6 +164,12 @@ export default function ProfileReviews({ userId }) {
 
   useJournalEvents(fetchReviews)
 
+  const gameSlugs = useMemo(() => {
+    return Object.values(games).map((g) => g.slug).filter(Boolean)
+  }, [games])
+
+  const { getCustomCover } = useCustomCovers(userId, gameSlugs)
+
   function handleSortChange(newSort) {
     if (newSort === sortBy) return
     setSortBy(newSort)
@@ -196,14 +211,18 @@ export default function ProfileReviews({ userId }) {
       ) : reviews.length > 0 ? (
         <>
           <div className="space-y-3">
-            {reviews.map((review) => (
-              <ProfileReviewCard
-                key={review.id}
-                review={review}
-                game={games[review.game_id]}
-                journey={review.journey_id ? journeys[review.journey_id] : null}
-              />
-            ))}
+            {reviews.map((review) => {
+              const game = games[review.game_id]
+              return (
+                <ProfileReviewCard
+                  key={review.id}
+                  review={review}
+                  game={game}
+                  journey={review.journey_id ? journeys[review.journey_id] : null}
+                  customCoverUrl={game?.slug ? getCustomCover(game.slug) : null}
+                />
+              )
+            })}
           </div>
 
           {totalPages > 1 && (
