@@ -7,6 +7,8 @@ import Modal from "@components/UI/Modal"
 import { notify } from "@components/UI/Notification"
 import { parseGIF, decompressFrames } from "gifuct-js"
 
+const DEFAULT_MAX_BLOB_SIZE = 3 * 1024 * 1024
+
 function getCroppedCanvas(image, crop, maxWidth = 1920) {
   const canvas = document.createElement("canvas")
   const scaleX = image.naturalWidth / image.width
@@ -52,56 +54,28 @@ function dataUrlToArrayBuffer(dataUrl) {
   return bytes.buffer
 }
 
-async function cropGif(gifUrl, crop, imageElement, maxWidth = 1920) {
-  const scaleX = imageElement.naturalWidth / imageElement.width
-  const scaleY = imageElement.naturalHeight / imageElement.height
-
-  const pixelCrop = {
-    x: Math.round(crop.x * scaleX),
-    y: Math.round(crop.y * scaleY),
-    width: Math.round(crop.width * scaleX),
-    height: Math.round(crop.height * scaleY),
-  }
-
-  const scale = Math.min(1, maxWidth / pixelCrop.width)
-  const outputWidth = Math.round(pixelCrop.width * scale)
-  const outputHeight = Math.round(pixelCrop.height * scale)
-
-  let arrayBuffer
-  if (gifUrl.startsWith("data:")) {
-    arrayBuffer = dataUrlToArrayBuffer(gifUrl)
-  } else {
-    const response = await fetch(gifUrl)
-    arrayBuffer = await response.arrayBuffer()
-  }
-
-  const gif = parseGIF(arrayBuffer)
-  const frames = decompressFrames(gif, true)
-
-  if (frames.length === 0) {
-    throw new Error("No frames found in GIF")
-  }
-
-  const GIF = (await import("gif.js")).default
-
+function encodeGif({ frames, pixelCrop, outputWidth, outputHeight, quality, originalWidth, originalHeight, GIF }) {
   return new Promise((resolve, reject) => {
     const encoder = new GIF({
       workers: 2,
-      quality: 10,
+      quality,
       width: outputWidth,
       height: outputHeight,
       workerScript: "/gif.worker.js",
+      dither: false,
     })
 
     const tempCanvas = document.createElement("canvas")
-    tempCanvas.width = imageElement.naturalWidth
-    tempCanvas.height = imageElement.naturalHeight
+    tempCanvas.width = originalWidth
+    tempCanvas.height = originalHeight
     const tempCtx = tempCanvas.getContext("2d")
 
     const cropCanvas = document.createElement("canvas")
     cropCanvas.width = outputWidth
     cropCanvas.height = outputHeight
     const cropCtx = cropCanvas.getContext("2d")
+    cropCtx.imageSmoothingEnabled = true
+    cropCtx.imageSmoothingQuality = "medium"
 
     let lastImageData = null
 
@@ -154,14 +128,82 @@ async function cropGif(gifUrl, crop, imageElement, maxWidth = 1920) {
   })
 }
 
+async function cropGif(gifUrl, crop, imageElement, maxWidth = 1920, maxBytes = DEFAULT_MAX_BLOB_SIZE) {
+  const scaleX = imageElement.naturalWidth / imageElement.width
+  const scaleY = imageElement.naturalHeight / imageElement.height
+
+  const pixelCrop = {
+    x: Math.round(crop.x * scaleX),
+    y: Math.round(crop.y * scaleY),
+    width: Math.round(crop.width * scaleX),
+    height: Math.round(crop.height * scaleY),
+  }
+
+  let arrayBuffer
+  if (gifUrl.startsWith("data:")) {
+    arrayBuffer = dataUrlToArrayBuffer(gifUrl)
+  } else {
+    const response = await fetch(gifUrl)
+    arrayBuffer = await response.arrayBuffer()
+  }
+
+  const gif = parseGIF(arrayBuffer)
+  const frames = decompressFrames(gif, true)
+
+  if (frames.length === 0) {
+    throw new Error("No frames found in GIF")
+  }
+
+  const GIF = (await import("gif.js")).default
+
+  const qualitySteps = [10, 15, 20]
+  const scaleSteps = [1, 0.75, 0.5]
+
+  for (const scaleFactor of scaleSteps) {
+    const currentScale = Math.min(1, maxWidth / pixelCrop.width) * scaleFactor
+    const outputWidth = Math.round(pixelCrop.width * currentScale)
+    const outputHeight = Math.round(pixelCrop.height * currentScale)
+
+    for (const quality of qualitySteps) {
+      const result = await encodeGif({
+        frames,
+        pixelCrop,
+        outputWidth,
+        outputHeight,
+        quality,
+        originalWidth: imageElement.naturalWidth,
+        originalHeight: imageElement.naturalHeight,
+        GIF,
+      })
+
+      if (result.blob.size <= maxBytes) {
+        return result
+      }
+    }
+  }
+
+  const finalScale = Math.min(1, maxWidth / pixelCrop.width) * 0.4
+  const finalWidth = Math.round(pixelCrop.width * finalScale)
+  const finalHeight = Math.round(pixelCrop.height * finalScale)
+
+  return encodeGif({
+    frames,
+    pixelCrop,
+    outputWidth: finalWidth,
+    outputHeight: finalHeight,
+    quality: 20,
+    originalWidth: imageElement.naturalWidth,
+    originalHeight: imageElement.naturalHeight,
+    GIF,
+  })
+}
+
 function isGifUrl(url) {
   if (!url) return false
   if (url.toLowerCase().includes(".gif")) return true
   if (url.startsWith("data:image/gif")) return true
   return false
 }
-
-const DEFAULT_MAX_BLOB_SIZE = 3 * 1024 * 1024
 
 function compressToLimit(canvas, maxBytes = DEFAULT_MAX_BLOB_SIZE, startQuality = 0.85, minQuality = 0.3) {
   return new Promise((resolve) => {
@@ -263,7 +305,7 @@ export default function ImageCropModal({
 
     try {
       if (isGif) {
-        const result = await cropGif(imageSrc, completedCrop, imgRef.current, maxWidth)
+        const result = await cropGif(imageSrc, completedCrop, imgRef.current, maxWidth, maxBlobSize)
 
         if (result.blob.size > maxBlobSize) {
           const sizeMB = (result.blob.size / 1024 / 1024).toFixed(1)
