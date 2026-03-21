@@ -1,141 +1,169 @@
 export default {
 	gameEvents: {
-	  title: "Events",
-	  live: "LIVE",
-	  upcoming: "Upcoming",
-	  liveNow: "live now",
-	  upcomingSoon: "upcoming",
-	  videos: "videos",
-	  watchStream: "Watch",
-	  viewDetails: "View details",
-	  showAll: "View all {{count}} events",
-	  showLess: "Show less",
-	  empty: {
-	    title: "No events",
-	    description: "There are no events registered for this game."
-	  }
+		title: "Events",
+		live: "LIVE",
+		upcoming: "Upcoming",
+		liveNow: "live now",
+		upcomingSoon: "upcoming",
+		videos: "videos",
+		watchStream: "Watch",
+		viewDetails: "View details",
+		showAll: "View all {{count}} events",
+		showLess: "Show less",
+		empty: {
+			title: "No events",
+			description: "There are no events registered for this game."
+		}
 	},
 	blogNotification: {
-	  badge: "What's new",
-	  dismiss: "Not now",
-	  read: "Read post",
-	  viewAll: "View all updates"
+		badge: "What's new",
+		dismiss: "Not now",
+		read: "Read post",
+		viewAll: "View all updates"
 	},
 	update: {
-	  title: "New version available",
-	  description: "A new version of uloggd is available. Update for the best experience.",
-	  refresh: "Update",
-	  dismiss: "Not now",
+		title: "New version available",
+		description: "A new version of uloggd is available. Update for the best experience.",
+		refresh: "Update",
+		dismiss: "Not now",
 	},
 	blog: 	{
-	  title: "News",
-	  subtitle: "Updates and news from uloggd",
-	  description: "Latest news and updates from uloggd",
-	  backToHome: "Back to home",
-	  minRead: "min read",
-	  readMore: "Read on Dev.to",
-	  poweredBy: "Powered by",
-	  empty: {
-	    title: "No posts yet",
-	    description: "Stay tuned for updates!"
-	  }
+		title: "News",
+		subtitle: "Updates and news from uloggd",
+		description: "Latest news and updates from uloggd",
+		backToHome: "Back to home",
+		minRead: "min read",
+		readMore: "Read on Dev.to",
+		poweredBy: "Powered by",
+		empty: {
+			title: "No posts yet",
+			description: "Stay tuned for updates!"
+		}
 	},
 	legal: 	{
-	  backToHome: "Back to home",
-	  questions: "Have any questions? Contact us:",
-	  tabs: {
-	    terms: "Terms of Service",
-	    privacy: "Privacy"
-	  },
-	  terms: {
-	    title: "Terms of Service",
-	    description: "Terms of service and conditions for uloggd",
-	  },
-	  privacy: {
-	    title: "Privacy Policy",
-	    description: "Privacy policy and data protection for uloggd",
-	  }
+		backToHome: "Back to home",
+		questions: "Have any questions? Contact us:",
+		tabs: {
+			terms: "Terms of Service",
+			privacy: "Privacy"
+		},
+		terms: {
+			title: "Terms of Service",
+			description: "Terms of service and conditions for uloggd",
+		},
+		privacy: {
+			title: "Privacy Policy",
+			description: "Privacy policy and data protection for uloggd",
+		}
 	},
 	leaderboard: {
-	  title: "Leaderboard",
-	  subtitle: "Top community members",
-	  description: "See who's at the top of the uloggd community rankings",
-	  participants: "participants",
-	  avgRating: "average",
-	  followersLabel: "followers",
+		title: "Leaderboard",
+		subtitle: "Top community members",
+		description: "See who's at the top of the uloggd community rankings",
+		participants: "participants",
+		avgRating: "average",
+		followersLabel: "followers",
 		journeyEntries: "entries",
-	  categories: {
+		hint: {
+		  global: {
+		    title: "How does the global ranking work?",
+		    description: "The score is calculated based on your activities on the platform. Each category has a different weight in the final calculation.",
+		    likesReceived: "Likes received",
+		    likesGiven: "Likes given",
+		  },
+		  minerals: {
+		    title: "How does the minerals ranking work?",
+		    description: "Ranking based on total minerals collected. All mineral types (copper, iron, gold, emerald, diamond and ruby) are summed together.",
+		  },
+		  reviews: {
+		    title: "How does the reviews ranking work?",
+		    description: "Ranking based on the number of published reviews. In case of a tie, the average rating is used as a tiebreaker.",
+		  },
+		  followers: {
+		    title: "How does the followers ranking work?",
+		    description: "Ranking based on the total number of followers each user has.",
+		  },
+		  likes: {
+		    title: "How does the likes ranking work?",
+		    description: "Ranking based on total likes received on reviews, lists, tierlists and screenshots. Self-likes don't count.",
+		  },
+		  playtime: {
+		    title: "How does the playtime ranking work?",
+		    description: "Ranking based on total time played, combining journey logs on uloggd with Steam data (when connected).",
+		  },
+		},
+		categories: {
 			global: "Global",
-	    minerals: "Minerals",
-	    reviews: "Reviews",
-	    followers: "Followers",
-	    likes: "Likes",
-		  playtime: "Playtime"
-	  },
-	  units: {
+			minerals: "Minerals",
+			reviews: "Reviews",
+			followers: "Followers",
+			likes: "Likes",
+			playtime: "Playtime"
+		},
+		units: {
 			global: "points",
-	    minerals: "minerals",
-	    reviews: "reviews",
-	    followers: "followers",
-	    likes: "likes",
+			minerals: "minerals",
+			reviews: "reviews",
+			followers: "followers",
+			likes: "likes",
 			playtime: "total"
-	  },
-	  empty: {
-	    title: "No data yet",
-	    description: "Be the first to appear on the leaderboard!",
-	  },
+		},
+		empty: {
+			title: "No data yet",
+			description: "Be the first to appear on the leaderboard!",
+		},
 	},
 	screenshots: {
-	  title: "Screenshots",
-	  add: "Add",
-	  addFirst: "Share your first screenshot",
-	  postsCount: "posts",
-	  emptyTitle: "Share Screenshots",
-	  emptyDesc: "Your screenshots will appear here",
-	  upload: {
+		title: "Screenshots",
+		add: "Add",
+		addFirst: "Share your first screenshot",
+		postsCount: "posts",
+		emptyTitle: "Share Screenshots",
+		emptyDesc: "Your screenshots will appear here",
+		upload: {
 			cropTitle: "Crop screenshot",
 			fileReadError: "Failed to read file",
-	    title: "New post",
+			title: "New post",
 			back: "Back",
 			caption: "Caption",
 			spoilerDesc: "Hide sensitive content",
-	    details: "Details",
-	    dragPhotos: "Drag photos here",
-	    dragPhotosDesc: "or click the button below",
-	    selectImage: "Select image",
-	    game: "Game",
-	    searchGame: "Search game",
-	    searchGamePlaceholder: "Type the game name...",
-	    noResults: "No games found",
-	    typeToSearch: "Type to search",
-	    captionPlaceholder: "Write a caption...",
-	    spoiler: "Contains spoiler",
-	    cancel: "Cancel",
-	    share: "Share",
-	    uploading: "Posting...",
-	    fileTooLarge: "File too large (max 10MB)",
-	    invalidType: "Invalid file type",
-	  },
-	  edit: {
-	    title: "Edit",
-	    save: "Save",
-	  },
-	  lightbox: {
-	    edit: "Edit",
-	    delete: "Delete",
-	    confirmDelete: "Confirm",
-	    revealSpoiler: "Click to reveal",
-	  },
-	  notFound: {
-	    title: "Screenshot not found",
-	    message: "This screenshot may have been removed or doesn't exist.",
-	    backHome: "Back to home",
-	  },
-	  page: {
-	    back: "Back",
-	    viewGame: "View game page",
-	    deleting: "Deleting...",
-	  },
+			details: "Details",
+			dragPhotos: "Drag photos here",
+			dragPhotosDesc: "or click the button below",
+			selectImage: "Select image",
+			game: "Game",
+			searchGame: "Search game",
+			searchGamePlaceholder: "Type the game name...",
+			noResults: "No games found",
+			typeToSearch: "Type to search",
+			captionPlaceholder: "Write a caption...",
+			spoiler: "Contains spoiler",
+			cancel: "Cancel",
+			share: "Share",
+			uploading: "Posting...",
+			fileTooLarge: "File too large (max 10MB)",
+			invalidType: "Invalid file type",
+		},
+		edit: {
+			title: "Edit",
+			save: "Save",
+		},
+		lightbox: {
+			edit: "Edit",
+			delete: "Delete",
+			confirmDelete: "Confirm",
+			revealSpoiler: "Click to reveal",
+		},
+		notFound: {
+			title: "Screenshot not found",
+			message: "This screenshot may have been removed or doesn't exist.",
+			backHome: "Back to home",
+		},
+		page: {
+			back: "Back",
+			viewGame: "View game page",
+			deleting: "Deleting...",
+		},
 	},
 	translate: {
 		button: "Translate",
@@ -1110,9 +1138,9 @@ export default {
 				screenshots: "Screenshots",
 			},
 			emptyScreenshots: {
-	      own: "You haven't liked any screenshots yet",
-	      other: "{{username}} hasn't liked any screenshots yet",
-	    },
+				own: "You haven't liked any screenshots yet",
+				other: "{{username}} hasn't liked any screenshots yet",
+			},
 			empty: {
 				title: "No likes yet",
 				own: "Games, reviews, lists and tierlists you like will appear here",
@@ -1160,28 +1188,28 @@ export default {
 			backlog: "Backlog",
 			rated: "Rated",
 			ratings: "Ratings",
-	    monthlyActivity: "Monthly activity",
-	    byStatus: "By status",
-	    mostGiven: "Most given",
-	    liked: "Liked",
-	    withReview: "With review",
+			monthlyActivity: "Monthly activity",
+			byStatus: "By status",
+			mostGiven: "Most given",
+			liked: "Liked",
+			withReview: "With review",
 			noRatings: "No ratings yet",
 			noRatingsHint: "Rate games to see your statistics",
-	    tendency: {
+			tendency: {
 				label: "Tendency",
-	      generous: "Generous",
-	      positive: "Positive",
-	      balanced: "Balanced",
-	      critical: "Critical",
-	      harsh: "Harsh",
-	    },
-	    status: {
-	      completed: "Completed",
-	      played: "Played",
-	      retired: "Retired",
-	      shelved: "Shelved",
-	      abandoned: "Abandoned",
-	    },
+				generous: "Generous",
+				positive: "Positive",
+				balanced: "Balanced",
+				critical: "Critical",
+				harsh: "Harsh",
+			},
+			status: {
+				completed: "Completed",
+				played: "Played",
+				retired: "Retired",
+				shelved: "Shelved",
+				abandoned: "Abandoned",
+			},
 		},
 		tabs: {
 			playing: "Playing",
@@ -1300,20 +1328,20 @@ export default {
 	game: {
 		playtime: "of gameplay",
 		type: {
-		    dlc: "DLC",
-		    expansion: "Expansion",
-		    bundle: "Bundle",
-		    standalone: "Standalone",
-		    mod: "Mod",
-		    episode: "Episode",
-		    season: "Season",
-		    remake: "Remake",
-		    remaster: "Remaster",
-		    expanded: "Expanded Edition",
-		    port: "Port",
-		    fork: "Fork",
-		    pack: "Content Pack",
-		    update: "Update",
+				dlc: "DLC",
+				expansion: "Expansion",
+				bundle: "Bundle",
+				standalone: "Standalone",
+				mod: "Mod",
+				episode: "Episode",
+				season: "Season",
+				remake: "Remake",
+				remaster: "Remaster",
+				expanded: "Expanded Edition",
+				port: "Port",
+				fork: "Fork",
+				pack: "Content Pack",
+				update: "Update",
 		},
 		prices: {
 			title: "Prices",
@@ -1474,10 +1502,10 @@ export default {
 				text: "replied to your comment"
 			},
 			screenshot_like: {
-			  text: "liked your screenshot",
+				text: "liked your screenshot",
 			},
 			screenshot_comment: {
-			  text: "commented on your screenshot",
+				text: "commented on your screenshot",
 			},
 			follow: {
 				text: "started following you",

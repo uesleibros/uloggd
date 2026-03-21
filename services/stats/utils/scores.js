@@ -182,19 +182,53 @@ export async function getLikesRaw() {
   return result
 }
 
+export async function getLikesGivenRaw() {
+  const [reviewLikes, listLikes, tierlistLikes, screenshotLikes, profileLikes] = await Promise.all([
+    fetchAllRows("review_likes", "user_id"),
+    fetchAllRows("list_likes", "user_id"),
+    fetchAllRows("tierlist_likes", "user_id"),
+    fetchAllRows("screenshot_likes", "user_id"),
+    fetchAllRows("profile_likes", "user_id"),
+  ])
+
+  const result = {}
+
+  const addLikes = (likes) => {
+    for (const like of likes) {
+      if (!result[like.user_id]) result[like.user_id] = { value: 0 }
+      result[like.user_id].value++
+    }
+  }
+
+  addLikes(reviewLikes)
+  addLikes(listLikes)
+  addLikes(tierlistLikes)
+  addLikes(screenshotLikes)
+  addLikes(profileLikes)
+
+  return result
+}
+
+const WEIGHTS = {
+  reviews: 2,
+  likesReceived: 1,
+  likesGiven: 0.25,
+  minerals: 0.25,
+}
+
 export async function getGlobalScores() {
-  const [mineralsData, reviewsData, followersData, likesData] = await Promise.all([
+  const [mineralsData, reviewsData, likesReceivedData, likesGivenData] = await Promise.all([
     getMineralsRaw(),
     getReviewsRaw(),
-    getFollowersRaw(),
     getLikesRaw(),
+    getLikesGivenRaw(),
   ])
 
   const allUserIds = new Set([
     ...Object.keys(mineralsData),
     ...Object.keys(reviewsData),
-    ...Object.keys(followersData),
-    ...Object.keys(likesData),
+    ...Object.keys(likesReceivedData),
+    ...Object.keys(likesGivenData),
   ])
 
   const scores = []
@@ -202,16 +236,26 @@ export async function getGlobalScores() {
   for (const userId of allUserIds) {
     const minerals = mineralsData[userId]?.value || 0
     const reviews = reviewsData[userId]?.value || 0
-    const followers = followersData[userId] || 0
-    const likes = likesData[userId]?.value || 0
+    const likesReceived = likesReceivedData[userId]?.value || 0
+    const likesGiven = likesGivenData[userId]?.value || 0
 
-    const totalScore = minerals + reviews + followers + likes
+    const weightedMinerals = minerals * WEIGHTS.minerals
+    const weightedReviews = reviews * WEIGHTS.reviews
+    const weightedLikesReceived = likesReceived * WEIGHTS.likesReceived
+    const weightedLikesGiven = likesGiven * WEIGHTS.likesGiven
+
+    const totalScore = weightedMinerals + weightedReviews + weightedLikesReceived + weightedLikesGiven
 
     if (totalScore > 0) {
       scores.push({
         user_id: userId,
-        value: totalScore,
-        breakdown: { minerals, reviews, followers, likes },
+        value: Math.round(totalScore * 100) / 100,
+        breakdown: {
+          minerals: { raw: minerals, weighted: weightedMinerals },
+          reviews: { raw: reviews, weighted: weightedReviews },
+          likesReceived: { raw: likesReceived, weighted: weightedLikesReceived },
+          likesGiven: { raw: likesGiven, weighted: weightedLikesGiven },
+        },
       })
     }
   }

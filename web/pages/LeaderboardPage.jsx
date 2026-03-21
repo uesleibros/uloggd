@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom"
 import {
   Trophy, Gem, MessageSquare, Users, Heart,
-  Crown, Medal, Award, Star, List, LayoutGrid, Camera, Clock, Globe, BookOpen
+  Crown, Medal, Award, Star, List, LayoutGrid, Camera, Clock, Globe, BookOpen,
+  HelpCircle, X
 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
@@ -22,31 +23,31 @@ const CATEGORIES = [
 ]
 
 const RANK_CONFIG = {
-  1: { 
-    icon: Crown, 
-    color: "text-amber-400", 
-    bg: "bg-gradient-to-br from-amber-500/20 to-amber-600/5", 
-    border: "border-amber-500/40",
+  1: {
+    icon: Crown,
+    color: "text-amber-400",
+    bg: "bg-zinc-800/40",
+    border: "border-zinc-700/60",
   },
-  2: { 
-    icon: Medal, 
-    color: "text-zinc-300", 
-    bg: "bg-gradient-to-br from-zinc-400/15 to-zinc-500/5", 
-    border: "border-zinc-400/40",
+  2: {
+    icon: Medal,
+    color: "text-zinc-300",
+    bg: "bg-zinc-800/30",
+    border: "border-zinc-700/40",
   },
-  3: { 
-    icon: Award, 
-    color: "text-amber-600", 
-    bg: "bg-gradient-to-br from-amber-700/15 to-amber-800/5", 
-    border: "border-amber-600/40",
+  3: {
+    icon: Award,
+    color: "text-amber-600",
+    bg: "bg-zinc-800/30",
+    border: "border-zinc-700/40",
   },
 }
 
 const GLOBAL_BREAKDOWN_CONFIG = [
-  { key: "minerals", icon: Gem, color: "text-cyan-400" },
-  { key: "reviews", icon: MessageSquare, color: "text-green-400" },
-  { key: "followers", icon: Users, color: "text-blue-400" },
-  { key: "likes", icon: Heart, color: "text-pink-400" },
+  { key: "minerals", icon: Gem, color: "text-zinc-400" },
+  { key: "reviews", icon: MessageSquare, color: "text-zinc-400" },
+  { key: "likesReceived", icon: Heart, color: "text-zinc-400" },
+  { key: "likesGiven", icon: Heart, color: "text-zinc-500" },
 ]
 
 const LIKES_BREAKDOWN_CONFIG = [
@@ -58,33 +59,33 @@ const LIKES_BREAKDOWN_CONFIG = [
 
 function LeaderboardSkeleton() {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
         {[2, 1, 3].map((rank) => (
-          <div 
-            key={rank} 
-            className={`p-4 bg-zinc-800/30 rounded-2xl animate-pulse ${
+          <div
+            key={rank}
+            className={`p-4 bg-zinc-800/30 rounded-xl animate-pulse ${
               rank === 1 ? "order-2" : rank === 2 ? "order-1" : "order-3"
             }`}
           >
             <div className="flex flex-col items-center">
-              <div className="w-10 h-10 bg-zinc-700 rounded-full mb-3" />
-              <div className="w-14 h-14 bg-zinc-700 rounded-full mb-3" />
-              <div className="w-16 h-4 bg-zinc-700 rounded mb-2" />
-              <div className="w-12 h-3 bg-zinc-800 rounded" />
+              <div className="w-8 h-8 bg-zinc-700/50 rounded-full mb-3" />
+              <div className="w-14 h-14 bg-zinc-700/50 rounded-full mb-3" />
+              <div className="w-16 h-4 bg-zinc-700/50 rounded mb-2" />
+              <div className="w-12 h-3 bg-zinc-700/30 rounded" />
             </div>
           </div>
         ))}
       </div>
       {[...Array(7)].map((_, i) => (
-        <div key={i} className="flex items-center gap-4 p-4 bg-zinc-800/30 rounded-xl animate-pulse">
-          <div className="w-6 h-6 bg-zinc-700 rounded" />
-          <div className="w-10 h-10 bg-zinc-700 rounded-full" />
+        <div key={i} className="flex items-center gap-4 p-3 bg-zinc-800/20 rounded-xl animate-pulse">
+          <div className="w-6 h-6 bg-zinc-700/50 rounded" />
+          <div className="w-10 h-10 bg-zinc-700/50 rounded-full" />
           <div className="flex-1 space-y-2">
-            <div className="w-32 h-4 bg-zinc-700 rounded" />
-            <div className="w-20 h-3 bg-zinc-800 rounded" />
+            <div className="w-32 h-4 bg-zinc-700/50 rounded" />
+            <div className="w-20 h-3 bg-zinc-700/30 rounded" />
           </div>
-          <div className="w-16 h-5 bg-zinc-700 rounded" />
+          <div className="w-16 h-5 bg-zinc-700/50 rounded" />
         </div>
       ))}
     </div>
@@ -104,23 +105,60 @@ function CategoryTabs({ active, onChange, t }) {
                 key={id}
                 onClick={() => onChange(id)}
                 className={`group relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap cursor-pointer ${
-                  isActive ? "text-indigo-400" : "text-zinc-500 hover:text-zinc-300"
+                  isActive ? "text-white" : "text-zinc-500 hover:text-zinc-300"
                 }`}
               >
                 <Icon
                   className={`w-4 h-4 transition-colors ${
-                    isActive ? "text-indigo-400" : "text-zinc-600 group-hover:text-zinc-400"
+                    isActive ? "text-white" : "text-zinc-600 group-hover:text-zinc-400"
                   }`}
                 />
                 {t(`leaderboard.categories.${id}`)}
                 {isActive && (
-                  <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-indigo-500 rounded-t-full" />
+                  <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-white rounded-t-full" />
                 )}
               </button>
             )
           })}
         </nav>
       </DragScrollRow>
+    </div>
+  )
+}
+
+function HintBox({ category, t, onClose }) {
+  return (
+    <div className="relative bg-zinc-800/40 border border-zinc-700/50 rounded-xl p-4 mb-4">
+      <button
+        onClick={onClose}
+        className="absolute top-3 right-3 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+      >
+        <X className="w-4 h-4" />
+      </button>
+      <div className="pr-6">
+        <h3 className="text-sm font-semibold text-zinc-200 mb-1">
+          {t(`leaderboard.hint.${category}.title`)}
+        </h3>
+        <p className="text-xs text-zinc-400 leading-relaxed">
+          {t(`leaderboard.hint.${category}.description`)}
+        </p>
+        {category === "global" && (
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+            <span className="text-[11px] text-zinc-500">
+              <span className="text-zinc-400 font-medium">{t("leaderboard.categories.reviews")}</span> ×2
+            </span>
+            <span className="text-[11px] text-zinc-500">
+              <span className="text-zinc-400 font-medium">{t("leaderboard.hint.global.likesReceived")}</span> ×1
+            </span>
+            <span className="text-[11px] text-zinc-500">
+              <span className="text-zinc-400 font-medium">{t("leaderboard.hint.global.likesGiven")}</span> ×0.25
+            </span>
+            <span className="text-[11px] text-zinc-500">
+              <span className="text-zinc-400 font-medium">{t("leaderboard.categories.minerals")}</span> ×0.25
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -166,19 +204,28 @@ function LikesBreakdown({ breakdown, compact = false }) {
 function GlobalBreakdown({ breakdown, compact = false }) {
   if (!breakdown) return null
 
-  const items = GLOBAL_BREAKDOWN_CONFIG.filter(item => (breakdown[item.key] || 0) > 0)
+  const items = GLOBAL_BREAKDOWN_CONFIG.filter(item => {
+    const val = breakdown[item.key]
+    if (typeof val === "object") return (val?.raw || 0) > 0
+    return (val || 0) > 0
+  })
   if (items.length === 0) return null
 
   return (
     <div className={`flex items-center gap-2 flex-wrap ${compact ? "justify-center" : ""}`}>
-      {items.map(({ key, icon: Icon, color }) => (
-        <div key={key} className="flex items-center gap-0.5">
-          <Icon className={`w-2.5 h-2.5 ${color}`} />
-          <span className="text-[10px] text-zinc-500 tabular-nums">
-            {(breakdown[key] || 0).toLocaleString()}
-          </span>
-        </div>
-      ))}
+      {items.map(({ key, icon: Icon, color }) => {
+        const val = breakdown[key]
+        const raw = typeof val === "object" ? val?.raw || 0 : val || 0
+
+        return (
+          <div key={key} className="flex items-center gap-0.5">
+            <Icon className={`w-2.5 h-2.5 ${color}`} />
+            <span className="text-[10px] text-zinc-500 tabular-nums">
+              {raw.toLocaleString()}
+            </span>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -198,7 +245,7 @@ function PlaytimeBreakdown({ breakdown, compact = false }) {
     <div className={`flex items-center gap-2 flex-wrap ${compact ? "justify-center" : ""}`}>
       {hasJournal && (
         <div className="flex items-center gap-0.5">
-          <BookOpen className="w-2.5 h-2.5 text-emerald-400" />
+          <BookOpen className="w-2.5 h-2.5 text-zinc-400" />
           <span className="text-[10px] text-zinc-500 tabular-nums">
             {journal.hours}h {journal.minutes}m
           </span>
@@ -206,7 +253,7 @@ function PlaytimeBreakdown({ breakdown, compact = false }) {
       )}
       {hasSteam && (
         <div className="flex items-center gap-0.5">
-          <SteamIcon className="w-2.5 h-2.5 text-[#66c0f4]" />
+          <SteamIcon className="w-2.5 h-2.5 text-zinc-400" />
           <span className="text-[10px] text-zinc-500 tabular-nums">
             {steam.hours}h {steam.minutes}m
           </span>
@@ -227,7 +274,7 @@ function EntryBreakdown({ entry, category, t, compact = false }) {
   if (category === "reviews" && avgRating > 0) {
     return (
       <div className={`flex items-center gap-1 ${compact ? "justify-center" : ""}`}>
-        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+        <Star className="w-2.5 h-2.5 text-zinc-400 fill-zinc-400" />
         <span className="text-[10px] text-zinc-500">
           {avgRating.toFixed(1)} {t("leaderboard.avgRating")}
         </span>
@@ -265,13 +312,13 @@ function TopThreePodium({ entries, category, t }) {
           <Link
             key={entry.user?.id || entry.rank}
             to={entry.user?.username ? `/u/${entry.user.username}` : "#"}
-            className={`group relative p-3 sm:p-4 rounded-2xl border transition-all hover:scale-[1.02] ${config.bg} ${config.border} ${
+            className={`group relative p-3 sm:p-4 rounded-xl border transition-all hover:bg-zinc-800/60 ${config.bg} ${config.border} ${
               isFirst ? "order-2" : rank === 2 ? "order-1 mt-4 sm:mt-6" : "order-3 mt-4 sm:mt-6"
             }`}
           >
             <div className="flex flex-col items-center text-center">
-              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full ${config.bg} border ${config.border} flex items-center justify-center mb-2 sm:mb-3`}>
-                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${config.color}`} />
+              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-zinc-800/60 border border-zinc-700/50 flex items-center justify-center mb-2 sm:mb-3`}>
+                <Icon className={`w-4 h-4 ${config.color}`} />
               </div>
 
               <div className={isFirst ? "w-20 h-20 sm:w-24 sm:h-24" : "w-16 h-16 sm:w-20 sm:h-20"}>
@@ -290,7 +337,7 @@ function TopThreePodium({ entries, category, t }) {
               </div>
 
               <div className="mt-2 sm:mt-3">
-                <span className={`text-base sm:text-xl font-bold tabular-nums ${config.color}`}>
+                <span className={`text-base sm:text-xl font-bold tabular-nums text-white`}>
                   {formatValue(entry, category)}
                 </span>
                 <p className="text-[9px] sm:text-[10px] text-zinc-500 mt-0.5">
@@ -351,7 +398,7 @@ function EmptyState({ category, t }) {
 
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mb-4">
+      <div className="w-16 h-16 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mb-4">
         <Icon className="w-7 h-7 text-zinc-600" />
       </div>
       <h3 className="text-base font-semibold text-zinc-300 mb-1">
@@ -372,6 +419,7 @@ export default function LeaderboardPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [showHint, setShowHint] = useState(false)
 
   usePageMeta({
     title: `${t("leaderboard.title")} - uloggd`,
@@ -402,6 +450,7 @@ export default function LeaderboardPage() {
   function handleCategoryChange(cat) {
     setCategory(cat)
     setPage(1)
+    setShowHint(false)
   }
 
   const topThree = data.slice(0, 3)
@@ -412,8 +461,8 @@ export default function LeaderboardPage() {
     <div className="py-6 sm:py-10 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-            <Trophy className="w-5 h-5 text-indigo-400" />
+          <div className="w-10 h-10 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center">
+            <Trophy className="w-5 h-5 text-zinc-400" />
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-white">
@@ -424,19 +473,35 @@ export default function LeaderboardPage() {
             </p>
           </div>
         </div>
-        {!loading && total > 0 && (
-          <div className="text-right hidden sm:block">
-            <span className="text-lg font-bold text-white tabular-nums">
-              {total.toLocaleString()}
-            </span>
-            <p className="text-xs text-zinc-500">{t("leaderboard.participants")}</p>
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowHint(prev => !prev)}
+            className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all cursor-pointer ${
+              showHint
+                ? "bg-zinc-700/50 border-zinc-600/50 text-zinc-300"
+                : "bg-zinc-800/50 border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600/50"
+            }`}
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
+          {!loading && total > 0 && (
+            <div className="text-right hidden sm:block">
+              <span className="text-lg font-bold text-white tabular-nums">
+                {total.toLocaleString()}
+              </span>
+              <p className="text-xs text-zinc-500">{t("leaderboard.participants")}</p>
+            </div>
+          )}
+        </div>
       </div>
 
       <CategoryTabs active={category} onChange={handleCategoryChange} t={t} />
 
       <div className="mt-6">
+        {showHint && (
+          <HintBox category={category} t={t} onClose={() => setShowHint(false)} />
+        )}
+
         {loading ? (
           <LeaderboardSkeleton />
         ) : data.length === 0 ? (
