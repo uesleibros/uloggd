@@ -26,20 +26,20 @@ const RANK_CONFIG = {
   1: {
     icon: Crown,
     color: "text-amber-400",
-    bg: "bg-zinc-800/40",
-    border: "border-zinc-700/60",
+    border: "border-amber-500/50",
+    glow: "shadow-[0_0_12px_rgba(245,158,11,0.15)]",
   },
   2: {
     icon: Medal,
     color: "text-zinc-300",
-    bg: "bg-zinc-800/30",
-    border: "border-zinc-700/40",
+    border: "border-zinc-400/40",
+    glow: "shadow-[0_0_12px_rgba(161,161,170,0.1)]",
   },
   3: {
     icon: Award,
     color: "text-amber-600",
-    bg: "bg-zinc-800/30",
-    border: "border-zinc-700/40",
+    border: "border-amber-700/40",
+    glow: "shadow-[0_0_12px_rgba(180,83,9,0.1)]",
   },
 }
 
@@ -105,17 +105,17 @@ function CategoryTabs({ active, onChange, t }) {
                 key={id}
                 onClick={() => onChange(id)}
                 className={`group relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap cursor-pointer ${
-                  isActive ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                  isActive ? "text-violet-400" : "text-zinc-500 hover:text-zinc-300"
                 }`}
               >
                 <Icon
                   className={`w-4 h-4 transition-colors ${
-                    isActive ? "text-white" : "text-zinc-600 group-hover:text-zinc-400"
+                    isActive ? "text-violet-400" : "text-zinc-600 group-hover:text-zinc-400"
                   }`}
                 />
                 {t(`leaderboard.categories.${id}`)}
                 {isActive && (
-                  <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-white rounded-t-full" />
+                  <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-violet-500 rounded-t-full" />
                 )}
               </button>
             )
@@ -128,33 +128,40 @@ function CategoryTabs({ active, onChange, t }) {
 
 function HintBox({ category, t, onClose }) {
   return (
-    <div className="relative bg-zinc-800/40 border border-zinc-700/50 rounded-xl p-4 mb-4">
+    <div className="relative bg-violet-500/5 border border-violet-500/20 rounded-xl p-4 mb-4">
       <button
         onClick={onClose}
-        className="absolute top-3 right-3 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+        className="absolute top-3 right-3 text-violet-400/60 hover:text-violet-300 transition-colors cursor-pointer"
       >
         <X className="w-4 h-4" />
       </button>
       <div className="pr-6">
-        <h3 className="text-sm font-semibold text-zinc-200 mb-1">
-          {t(`leaderboard.hint.${category}.title`)}
-        </h3>
+        <div className="flex items-center gap-2 mb-1">
+          <HelpCircle className="w-4 h-4 text-violet-400" />
+          <h3 className="text-sm font-semibold text-violet-300">
+            {t(`leaderboard.hint.${category}.title`)}
+          </h3>
+        </div>
         <p className="text-xs text-zinc-400 leading-relaxed">
           {t(`leaderboard.hint.${category}.description`)}
         </p>
         {category === "global" && (
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
             <span className="text-[11px] text-zinc-500">
-              <span className="text-zinc-400 font-medium">{t("leaderboard.categories.reviews")}</span> ×2
+              <span className="text-violet-400/80 font-medium">{t("leaderboard.categories.reviews")}</span>{" "}
+              <span className="text-violet-400/60">×2</span>
             </span>
             <span className="text-[11px] text-zinc-500">
-              <span className="text-zinc-400 font-medium">{t("leaderboard.hint.global.likesReceived")}</span> ×1
+              <span className="text-violet-400/80 font-medium">{t("leaderboard.hint.global.likesReceived")}</span>{" "}
+              <span className="text-violet-400/60">×1</span>
             </span>
             <span className="text-[11px] text-zinc-500">
-              <span className="text-zinc-400 font-medium">{t("leaderboard.hint.global.likesGiven")}</span> ×0.25
+              <span className="text-violet-400/80 font-medium">{t("leaderboard.hint.global.likesGiven")}</span>{" "}
+              <span className="text-violet-400/60">×0.25</span>
             </span>
             <span className="text-[11px] text-zinc-500">
-              <span className="text-zinc-400 font-medium">{t("leaderboard.categories.minerals")}</span> ×0.25
+              <span className="text-violet-400/80 font-medium">{t("leaderboard.categories.minerals")}</span>{" "}
+              <span className="text-violet-400/60">×0.25</span>
             </span>
           </div>
         )}
@@ -312,12 +319,12 @@ function TopThreePodium({ entries, category, t }) {
           <Link
             key={entry.user?.id || entry.rank}
             to={entry.user?.username ? `/u/${entry.user.username}` : "#"}
-            className={`group relative p-3 sm:p-4 rounded-xl border transition-all hover:bg-zinc-800/60 ${config.bg} ${config.border} ${
+            className={`group relative p-3 sm:p-4 rounded-xl border-2 transition-all hover:scale-[1.02] bg-zinc-800/30 ${config.border} ${config.glow} ${
               isFirst ? "order-2" : rank === 2 ? "order-1 mt-4 sm:mt-6" : "order-3 mt-4 sm:mt-6"
             }`}
           >
             <div className="flex flex-col items-center text-center">
-              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-zinc-800/60 border border-zinc-700/50 flex items-center justify-center mb-2 sm:mb-3`}>
+              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-zinc-800/80 border ${config.border} flex items-center justify-center mb-2 sm:mb-3`}>
                 <Icon className={`w-4 h-4 ${config.color}`} />
               </div>
 
@@ -337,7 +344,7 @@ function TopThreePodium({ entries, category, t }) {
               </div>
 
               <div className="mt-2 sm:mt-3">
-                <span className={`text-base sm:text-xl font-bold tabular-nums text-white`}>
+                <span className={`text-base sm:text-xl font-bold tabular-nums ${config.color}`}>
                   {formatValue(entry, category)}
                 </span>
                 <p className="text-[9px] sm:text-[10px] text-zinc-500 mt-0.5">
@@ -362,7 +369,7 @@ function LeaderboardEntry({ entry, category, t }) {
   return (
     <Link
       to={user?.username ? `/u/${user.username}` : "#"}
-      className="group flex items-center gap-3 p-3 rounded-xl bg-zinc-800/20 border border-zinc-800/50 hover:bg-zinc-800/40 hover:border-zinc-700/50 transition-all"
+      className="group flex items-center gap-3 p-3 rounded-xl bg-zinc-800/20 border border-zinc-800/50 hover:bg-zinc-800/40 hover:border-violet-500/20 transition-all"
     >
       <div className="w-6 flex-shrink-0 text-center">
         <span className="text-sm font-bold text-zinc-500 tabular-nums">{rank}</span>
@@ -461,8 +468,8 @@ export default function LeaderboardPage() {
     <div className="py-6 sm:py-10 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center">
-            <Trophy className="w-5 h-5 text-zinc-400" />
+          <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+            <Trophy className="w-5 h-5 text-violet-400" />
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-white">
@@ -478,8 +485,8 @@ export default function LeaderboardPage() {
             onClick={() => setShowHint(prev => !prev)}
             className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all cursor-pointer ${
               showHint
-                ? "bg-zinc-700/50 border-zinc-600/50 text-zinc-300"
-                : "bg-zinc-800/50 border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600/50"
+                ? "bg-violet-500/20 border-violet-500/30 text-violet-400"
+                : "bg-zinc-800/50 border-zinc-700/50 text-zinc-500 hover:text-violet-400 hover:border-violet-500/30 hover:bg-violet-500/10"
             }`}
           >
             <HelpCircle className="w-4 h-4" />
