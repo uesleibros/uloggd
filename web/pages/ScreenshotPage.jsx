@@ -36,7 +36,10 @@ function getMaxTextureSize() {
     const canvas = document.createElement("canvas")
     const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl")
     if (gl) {
-      return gl.getParameter(gl.MAX_TEXTURE_SIZE)
+      const size = gl.getParameter(gl.MAX_TEXTURE_SIZE)
+      const ext = gl.getExtension("WEBGL_lose_context")
+      if (ext) ext.loseContext()
+      return size
     }
   } catch {}
   return 4096
@@ -70,6 +73,7 @@ export default function ScreenshotPage() {
   const { getTimeAgo } = useDateTime()
   const { user: currentUser } = useAuth()
   const { getGameData } = useMyLibrary()
+  
   const [screenshot, setScreenshot] = useState(null)
   const [user, setUser] = useState(null)
   const [game, setGame] = useState(null)
@@ -83,7 +87,9 @@ export default function ScreenshotPage() {
   const [upscaledImage, setUpscaledImage] = useState(null)
   const [showUpscaled, setShowUpscaled] = useState(false)
   const [upscaleError, setUpscaleError] = useState(null)
+  
   const menuRef = useRef(null)
+  const isMounted = useRef(true)
 
   const isOwner = currentUser?.user_id === screenshot?.user_id
   const gameData = game ? getGameData(game.slug) : null
@@ -98,6 +104,13 @@ export default function ScreenshotPage() {
       : undefined
   )
 
+  useEffect(() => {
+    isMounted.current = true
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
+
   const fetchScreenshot = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -107,13 +120,15 @@ export default function ScreenshotPage() {
       if (!r.ok) throw new Error("not found")
 
       const data = await r.json()
-      setScreenshot(data.screenshot)
-      setUser(data.user)
-      setGame(data.game)
+      if (isMounted.current) {
+        setScreenshot(data.screenshot)
+        setUser(data.user)
+        setGame(data.game)
+      }
     } catch {
-      setError(true)
+      if (isMounted.current) setError(true)
     } finally {
-      setLoading(false)
+      if (isMounted.current) setLoading(false)
     }
   }, [id])
 
@@ -145,15 +160,17 @@ export default function ScreenshotPage() {
         body: JSON.stringify({ screenshotId: screenshot.id }),
       })
 
-      if (r.ok) {
+      if (r.ok && isMounted.current) {
         navigate(`/u/${user.username}`, { replace: true })
       }
     } catch {}
-    finally { setDeleting(false) }
+    finally {
+      if (isMounted.current) setDeleting(false)
+    }
   }
 
   async function handleUpscale() {
-    if (!screenshot?.image_url) return
+    if (!screenshot?.image_url || upscaling) return
 
     setUpscaling(true)
     setUpscaleError(null)
@@ -162,16 +179,20 @@ export default function ScreenshotPage() {
 
     try {
       const Upscaler = (await import("upscaler")).default
+      if (!isMounted.current) return
 
       const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(screenshot.image_url)}`
 
       const img = new Image()
       img.crossOrigin = "anonymous"
+      
       await new Promise((resolve, reject) => {
-        img.onload = resolve
+        img.onload = () => resolve(img)
         img.onerror = reject
         img.src = proxyUrl
       })
+
+      if (!isMounted.current) return
 
       const maxTexture = getMaxTextureSize()
       const safeMax = Math.min(maxTexture / 2, 2048)
@@ -187,18 +208,19 @@ export default function ScreenshotPage() {
         output: "base64",
       })
 
-      setUpscaledImage(upscaled)
-      setShowUpscaled(true)
+      if (isMounted.current) {
+        setUpscaledImage(upscaled)
+        setShowUpscaled(true)
+      }
     } catch (err) {
-      console.error("Erro ao fazer upscale:", err)
-      setUpscaleError("Failed to upscale image")
+      if (isMounted.current) setUpscaleError("Failed to upscale image")
     } finally {
       if (upscaler) {
         try {
           await upscaler.dispose()
         } catch {}
       }
-      setUpscaling(false)
+      if (isMounted.current) setUpscaling(false)
     }
   }
 
