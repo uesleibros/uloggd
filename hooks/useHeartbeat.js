@@ -14,7 +14,7 @@ export function useHeartbeat() {
 		if (loading) return
 		if (!user?.user_id) return
 
-		if (activeHeartbeat && activeHeartbeat !== user.id) {
+		if (activeHeartbeat && activeHeartbeat !== user.user_id) {
 			return
 		}
 
@@ -74,5 +74,5 @@ export function useHeartbeat() {
 			lastStatusRef.current = null
 			activeHeartbeat = null
 		}
-	}, [user?.id, loading])
+	}, [user?.user_id, loading])
 }
