@@ -5,9 +5,9 @@ export default function PageBanner({
   transparentBase = false,
 }) {
   const heightClasses = {
-    home: "h-[262px]",
-    profile: "aspect-[16/7] sm:aspect-[16/5] md:aspect-auto md:h-[280px]",
-    game: "aspect-[16/7] sm:aspect-[16/5] md:aspect-auto md:h-[262px]",
+    home: "h-[320px]",
+    profile: "aspect-[16/6] sm:aspect-[16/4] md:aspect-auto md:h-[340px]",
+    game: "aspect-[16/6] sm:aspect-[16/4] md:aspect-auto md:h-[320px]",
   }
 
   return (
@@ -26,7 +26,7 @@ export default function PageBanner({
       {transparentBase ? (
         <>
           <div 
-            className="absolute top-0 left-0 right-0 h-[262px] z-[-1]"
+            className="absolute top-0 left-0 right-0 h-[320px] z-[-1]"
             style={{ background: "linear-gradient(0deg, transparent 2%, rgba(0,0,0,0.5) 109%)" }}
           />
           <div 
