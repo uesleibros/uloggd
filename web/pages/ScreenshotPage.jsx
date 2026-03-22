@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
-import { ArrowLeft, Camera, EyeOff, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { ArrowLeft, Camera, EyeOff, MoreHorizontal, Pencil, Trash2, Maximize2 } from "lucide-react"
+import Upscaler from "upscaler"
 import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
@@ -47,7 +48,11 @@ export default function ScreenshotPage() {
   const [showMenu, setShowMenu] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [upscaling, setUpscaling] = useState(false)
+  const [upscaledImage, setUpscaledImage] = useState(null)
+  const [showUpscaled, setShowUpscaled] = useState(false)
   const menuRef = useRef(null)
+  const upscalerRef = useRef(null)
 
   const isOwner = currentUser?.user_id === screenshot?.user_id
   const gameData = game ? getGameData(game.slug) : null
@@ -61,6 +66,13 @@ export default function ScreenshotPage() {
         }
       : undefined
   )
+
+  useEffect(() => {
+    upscalerRef.current = new Upscaler()
+    return () => {
+      upscalerRef.current = null
+    }
+  }, [])
 
   const fetchScreenshot = useCallback(async () => {
     setLoading(true)
@@ -116,6 +128,29 @@ export default function ScreenshotPage() {
     finally { setDeleting(false) }
   }
 
+  async function handleUpscale() {
+    if (!screenshot?.image_url || !upscalerRef.current) return
+    
+    setUpscaling(true)
+    try {
+      const upscaled = await upscalerRef.current.upscale(screenshot.image_url, {
+        output: 'base64',
+        patchSize: 64,
+        padding: 2,
+      })
+      setUpscaledImage(upscaled)
+      setShowUpscaled(true)
+    } catch (error) {
+      console.error('Erro ao fazer upscale:', error)
+    } finally {
+      setUpscaling(false)
+    }
+  }
+
+  function toggleUpscaled() {
+    setShowUpscaled(!showUpscaled)
+  }
+
   if (loading) return <ScreenshotPageSkeleton />
 
   if (error || !screenshot) {
@@ -134,6 +169,7 @@ export default function ScreenshotPage() {
   }
 
   const isSpoilerHidden = screenshot.is_spoiler && !revealed
+  const displayImage = showUpscaled && upscaledImage ? upscaledImage : screenshot.image_url
 
   return (
     <div className="py-6 sm:py-8 max-w-4xl mx-auto">
@@ -233,11 +269,33 @@ export default function ScreenshotPage() {
             </button>
           </div>
         ) : (
-          <img
-            src={screenshot.image_url}
-            alt={screenshot.caption || ""}
-            className="w-full h-auto"
-          />
+          <>
+            <img
+              src={displayImage}
+              alt={screenshot.caption || ""}
+              className="w-full h-auto"
+            />
+            
+            <div className="absolute bottom-4 right-4 flex gap-2">
+              {upscaledImage && (
+                <button
+                  onClick={toggleUpscaled}
+                  className="px-3 py-2 bg-zinc-800/90 hover:bg-zinc-700/90 backdrop-blur text-white text-xs rounded-lg transition-colors cursor-pointer"
+                >
+                  {showUpscaled ? "Original" : "HD"}
+                </button>
+              )}
+              
+              <button
+                onClick={handleUpscale}
+                disabled={upscaling}
+                className="px-3 py-2 bg-zinc-800/90 hover:bg-zinc-700/90 backdrop-blur text-white text-xs rounded-lg transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+                {upscaling ? "Processando..." : "Melhorar Qualidade"}
+              </button>
+            </div>
+          </>
         )}
       </div>
 
