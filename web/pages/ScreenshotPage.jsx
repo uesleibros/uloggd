@@ -130,18 +130,23 @@ export default function ScreenshotPage() {
 
   async function handleUpscale() {
     if (!screenshot?.image_url || !upscalerRef.current) return
-    
+
     setUpscaling(true)
     try {
-      const upscaled = await upscalerRef.current.upscale(screenshot.image_url, {
-        output: 'base64',
-        patchSize: 64,
-        padding: 2,
+      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(screenshot.image_url)}`
+
+      const img = new Image()
+      await new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = reject
+        img.src = proxyUrl
       })
+
+      const upscaled = await upscalerRef.current.upscale(img)
       setUpscaledImage(upscaled)
       setShowUpscaled(true)
     } catch (error) {
-      console.error('Erro ao fazer upscale:', error)
+      console.error("Erro ao fazer upscale:", error)
     } finally {
       setUpscaling(false)
     }
