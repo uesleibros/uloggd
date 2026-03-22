@@ -31,41 +31,6 @@ function ScreenshotPageSkeleton() {
   )
 }
 
-function getMaxTextureSize() {
-  try {
-    const canvas = document.createElement("canvas")
-    const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl")
-    if (gl) {
-      const size = gl.getParameter(gl.MAX_TEXTURE_SIZE)
-      const ext = gl.getExtension("WEBGL_lose_context")
-      if (ext) ext.loseContext()
-      return size
-    }
-  } catch {}
-  return 4096
-}
-
-function resizeImage(img, maxSize) {
-  const { naturalWidth, naturalHeight } = img
-
-  if (naturalWidth <= maxSize && naturalHeight <= maxSize) {
-    return img
-  }
-
-  const scale = Math.min(maxSize / naturalWidth, maxSize / naturalHeight)
-  const width = Math.floor(naturalWidth * scale)
-  const height = Math.floor(naturalHeight * scale)
-
-  const canvas = document.createElement("canvas")
-  canvas.width = width
-  canvas.height = height
-
-  const ctx = canvas.getContext("2d")
-  ctx.drawImage(img, 0, 0, width, height)
-
-  return canvas
-}
-
 export default function ScreenshotPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -73,7 +38,6 @@ export default function ScreenshotPage() {
   const { getTimeAgo } = useDateTime()
   const { user: currentUser } = useAuth()
   const { getGameData } = useMyLibrary()
-  
   const [screenshot, setScreenshot] = useState(null)
   const [user, setUser] = useState(null)
   const [game, setGame] = useState(null)
@@ -83,13 +47,7 @@ export default function ScreenshotPage() {
   const [showMenu, setShowMenu] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [upscaling, setUpscaling] = useState(false)
-  const [upscaledImage, setUpscaledImage] = useState(null)
-  const [showUpscaled, setShowUpscaled] = useState(false)
-  const [upscaleError, setUpscaleError] = useState(null)
-  
   const menuRef = useRef(null)
-  const isMounted = useRef(true)
 
   const isOwner = currentUser?.user_id === screenshot?.user_id
   const gameData = game ? getGameData(game.slug) : null
@@ -104,13 +62,6 @@ export default function ScreenshotPage() {
       : undefined
   )
 
-  useEffect(() => {
-    isMounted.current = true
-    return () => {
-      isMounted.current = false
-    }
-  }, [])
-
   const fetchScreenshot = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -120,15 +71,13 @@ export default function ScreenshotPage() {
       if (!r.ok) throw new Error("not found")
 
       const data = await r.json()
-      if (isMounted.current) {
-        setScreenshot(data.screenshot)
-        setUser(data.user)
-        setGame(data.game)
-      }
+      setScreenshot(data.screenshot)
+      setUser(data.user)
+      setGame(data.game)
     } catch {
-      if (isMounted.current) setError(true)
+      setError(true)
     } finally {
-      if (isMounted.current) setLoading(false)
+      setLoading(false)
     }
   }, [id])
 
@@ -160,68 +109,11 @@ export default function ScreenshotPage() {
         body: JSON.stringify({ screenshotId: screenshot.id }),
       })
 
-      if (r.ok && isMounted.current) {
+      if (r.ok) {
         navigate(`/u/${user.username}`, { replace: true })
       }
     } catch {}
-    finally {
-      if (isMounted.current) setDeleting(false)
-    }
-  }
-
-  async function handleUpscale() {
-    if (!screenshot?.image_url || upscaling) return
-
-    setUpscaling(true)
-    setUpscaleError(null)
-
-    let upscaler = null
-
-    try {
-      const Upscaler = (await import("upscaler")).default
-      if (!isMounted.current) return
-
-      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(screenshot.image_url)}`
-
-      const img = new Image()
-      img.crossOrigin = "anonymous"
-      
-      await new Promise((resolve, reject) => {
-        img.onload = () => resolve(img)
-        img.onerror = reject
-        img.src = proxyUrl
-      })
-
-      if (!isMounted.current) return
-
-      const maxTexture = getMaxTextureSize()
-      const safeMax = Math.min(maxTexture / 2, 2048)
-      const input = resizeImage(img, safeMax)
-
-      upscaler = new Upscaler({
-        model: "default",
-      })
-
-      const upscaled = await upscaler.upscale(input, {
-        patchSize: 64,
-        padding: 2,
-        output: "base64",
-      })
-
-      if (isMounted.current) {
-        setUpscaledImage(upscaled)
-        setShowUpscaled(true)
-      }
-    } catch (err) {
-      if (isMounted.current) setUpscaleError("Failed to upscale image")
-    } finally {
-      if (upscaler) {
-        try {
-          await upscaler.dispose()
-        } catch {}
-      }
-      if (isMounted.current) setUpscaling(false)
-    }
+    finally { setDeleting(false) }
   }
 
   if (loading) return <ScreenshotPageSkeleton />
@@ -242,7 +134,6 @@ export default function ScreenshotPage() {
   }
 
   const isSpoilerHidden = screenshot.is_spoiler && !revealed
-  const displayImage = showUpscaled && upscaledImage ? upscaledImage : screenshot.image_url
 
   return (
     <div className="py-6 sm:py-8 max-w-4xl mx-auto">
@@ -343,50 +234,12 @@ export default function ScreenshotPage() {
           </div>
         ) : (
           <img
-            src={displayImage}
+            src={screenshot.image_url}
             alt={screenshot.caption || ""}
             className="w-full h-auto"
           />
         )}
       </div>
-
-      {!isSpoilerHidden && (
-        <div className="mt-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {upscaledImage ? (
-              <button
-                onClick={() => setShowUpscaled(!showUpscaled)}
-                className="px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-800 text-zinc-400 hover:text-white text-xs rounded-lg transition-colors cursor-pointer"
-              >
-                {showUpscaled ? "Original" : "Upscaled"}
-              </button>
-            ) : (
-              <button
-                onClick={handleUpscale}
-                disabled={upscaling}
-                className="px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-800 text-zinc-400 hover:text-white text-xs rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {upscaling ? "Processing..." : "Upscale"}
-              </button>
-            )}
-
-            {upscaleError && (
-              <span className="text-xs text-red-400">{upscaleError}</span>
-            )}
-          </div>
-
-          {upscaledImage && (
-            <a
-              href="https://upscalerjs.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors"
-            >
-              Powered by UpscalerJS
-            </a>
-          )}
-        </div>
-      )}
 
       <div className="mt-4 space-y-4">
         {game && (
