@@ -101,7 +101,7 @@ export function ProfileHeader({
       )}
 
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-        <div className={`flex-shrink-0 mt-6 flex justify-center sm:justify-start ${isBanned ? "opacity-60" : ""}`}>
+        <div className={`flex-shrink-0 sm:mt-6 flex justify-center sm:justify-start ${isBanned ? "opacity-60" : ""}`}>
           <div className="relative">
             <AvatarWithDecoration
               src={profile.avatar}
