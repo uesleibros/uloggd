@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
-import { ArrowLeft, Camera, EyeOff, MoreHorizontal, Pencil, Trash2, Maximize2 } from "lucide-react"
+import { ArrowLeft, Camera, EyeOff, MoreHorizontal, Pencil, Trash2, Sparkles } from "lucide-react"
 import Upscaler from "upscaler"
 import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
@@ -52,7 +52,6 @@ export default function ScreenshotPage() {
   const [upscaledImage, setUpscaledImage] = useState(null)
   const [showUpscaled, setShowUpscaled] = useState(false)
   const menuRef = useRef(null)
-  const upscalerRef = useRef(null)
 
   const isOwner = currentUser?.user_id === screenshot?.user_id
   const gameData = game ? getGameData(game.slug) : null
@@ -66,13 +65,6 @@ export default function ScreenshotPage() {
         }
       : undefined
   )
-
-  useEffect(() => {
-    upscalerRef.current = new Upscaler()
-    return () => {
-      upscalerRef.current = null
-    }
-  }, [])
 
   const fetchScreenshot = useCallback(async () => {
     setLoading(true)
@@ -129,31 +121,42 @@ export default function ScreenshotPage() {
   }
 
   async function handleUpscale() {
-    if (!screenshot?.image_url || !upscalerRef.current) return
+    if (!screenshot?.image_url) return
 
     setUpscaling(true)
+
+    let upscaler = null
+    let img = null
+
     try {
       const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(screenshot.image_url)}`
 
-      const img = new Image()
+      img = new Image()
       await new Promise((resolve, reject) => {
         img.onload = resolve
         img.onerror = reject
         img.src = proxyUrl
       })
 
-      const upscaled = await upscalerRef.current.upscale(img)
+      if (img.naturalWidth > 1920 || img.naturalHeight > 1080) {
+        console.log("Imagem muito grande, pulando upscale")
+        return
+      }
+
+      upscaler = new Upscaler()
+      const upscaled = await upscaler.upscale(img)
+
       setUpscaledImage(upscaled)
       setShowUpscaled(true)
     } catch (error) {
       console.error("Erro ao fazer upscale:", error)
     } finally {
+      if (upscaler) {
+        await upscaler.dispose()
+      }
+      img = null
       setUpscaling(false)
     }
-  }
-
-  function toggleUpscaled() {
-    setShowUpscaled(!showUpscaled)
   }
 
   if (loading) return <ScreenshotPageSkeleton />
@@ -274,35 +277,65 @@ export default function ScreenshotPage() {
             </button>
           </div>
         ) : (
-          <>
-            <img
-              src={displayImage}
-              alt={screenshot.caption || ""}
-              className="w-full h-auto"
-            />
-            
-            <div className="absolute bottom-4 right-4 flex gap-2">
-              {upscaledImage && (
+          <img
+            src={displayImage}
+            alt={screenshot.caption || ""}
+            className="w-full h-auto"
+          />
+        )}
+      </div>
+
+      {!isSpoilerHidden && (
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {upscaledImage ? (
+              <>
                 <button
-                  onClick={toggleUpscaled}
-                  className="px-3 py-2 bg-zinc-800/90 hover:bg-zinc-700/90 backdrop-blur text-white text-xs rounded-lg transition-colors cursor-pointer"
+                  onClick={() => setShowUpscaled(false)}
+                  className={`px-3 py-1.5 text-xs rounded-lg transition-colors cursor-pointer ${
+                    !showUpscaled
+                      ? "bg-zinc-700 text-white"
+                      : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-800"
+                  }`}
                 >
-                  {showUpscaled ? "Original" : "HD"}
+                  Original
                 </button>
-              )}
-              
+                <button
+                  onClick={() => setShowUpscaled(true)}
+                  className={`px-3 py-1.5 text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    showUpscaled
+                      ? "bg-violet-600 text-white"
+                      : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-800"
+                  }`}
+                >
+                  <Sparkles className="w-3 h-3" />
+                  HD
+                </button>
+              </>
+            ) : (
               <button
                 onClick={handleUpscale}
                 disabled={upscaling}
-                className="px-3 py-2 bg-zinc-800/90 hover:bg-zinc-700/90 backdrop-blur text-white text-xs rounded-lg transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                className="px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-800 text-zinc-400 hover:text-white text-xs rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               >
-                <Maximize2 className="w-3.5 h-3.5" />
-                {upscaling ? "Processando..." : "Melhorar Qualidade"}
+                <Sparkles className="w-3 h-3" />
+                {upscaling ? "Processando..." : "Melhorar qualidade"}
               </button>
-            </div>
-          </>
-        )}
-      </div>
+            )}
+          </div>
+
+          {upscaledImage && (
+            <a
+              href="https://upscalerjs.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors"
+            >
+              Powered by UpscalerJS
+            </a>
+          )}
+        </div>
+      )}
 
       <div className="mt-4 space-y-4">
         {game && (
