@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
-import { ArrowLeft, Camera, EyeOff, MoreHorizontal, Pencil, Trash2, Sparkles } from "lucide-react"
-import Upscaler from "upscaler"
+import { ArrowLeft, Camera, EyeOff, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
@@ -32,6 +31,38 @@ function ScreenshotPageSkeleton() {
   )
 }
 
+function getMaxTextureSize() {
+  try {
+    const canvas = document.createElement("canvas")
+    const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl")
+    if (gl) {
+      return gl.getParameter(gl.MAX_TEXTURE_SIZE)
+    }
+  } catch {}
+  return 4096
+}
+
+function resizeImage(img, maxSize) {
+  const { naturalWidth, naturalHeight } = img
+
+  if (naturalWidth <= maxSize && naturalHeight <= maxSize) {
+    return img
+  }
+
+  const scale = Math.min(maxSize / naturalWidth, maxSize / naturalHeight)
+  const width = Math.floor(naturalWidth * scale)
+  const height = Math.floor(naturalHeight * scale)
+
+  const canvas = document.createElement("canvas")
+  canvas.width = width
+  canvas.height = height
+
+  const ctx = canvas.getContext("2d")
+  ctx.drawImage(img, 0, 0, width, height)
+
+  return canvas
+}
+
 export default function ScreenshotPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -51,6 +82,7 @@ export default function ScreenshotPage() {
   const [upscaling, setUpscaling] = useState(false)
   const [upscaledImage, setUpscaledImage] = useState(null)
   const [showUpscaled, setShowUpscaled] = useState(false)
+  const [upscaleError, setUpscaleError] = useState(null)
   const menuRef = useRef(null)
 
   const isOwner = currentUser?.user_id === screenshot?.user_id
@@ -124,37 +156,48 @@ export default function ScreenshotPage() {
     if (!screenshot?.image_url) return
 
     setUpscaling(true)
+    setUpscaleError(null)
 
     let upscaler = null
-    let img = null
 
     try {
+      const Upscaler = (await import("upscaler")).default
+
       const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(screenshot.image_url)}`
 
-      img = new Image()
+      const img = new Image()
+      img.crossOrigin = "anonymous"
       await new Promise((resolve, reject) => {
         img.onload = resolve
         img.onerror = reject
         img.src = proxyUrl
       })
 
-      if (img.naturalWidth > 1920 || img.naturalHeight > 1080) {
-        console.log("Imagem muito grande, pulando upscale")
-        return
-      }
+      const maxTexture = getMaxTextureSize()
+      const safeMax = Math.min(maxTexture / 2, 2048)
+      const input = resizeImage(img, safeMax)
 
-      upscaler = new Upscaler()
-      const upscaled = await upscaler.upscale(img)
+      upscaler = new Upscaler({
+        model: "default",
+      })
+
+      const upscaled = await upscaler.upscale(input, {
+        patchSize: 64,
+        padding: 2,
+        output: "base64",
+      })
 
       setUpscaledImage(upscaled)
       setShowUpscaled(true)
-    } catch (error) {
-      console.error("Erro ao fazer upscale:", error)
+    } catch (err) {
+      console.error("Erro ao fazer upscale:", err)
+      setUpscaleError("Failed to upscale image")
     } finally {
       if (upscaler) {
-        await upscaler.dispose()
+        try {
+          await upscaler.dispose()
+        } catch {}
       }
-      img = null
       setUpscaling(false)
     }
   }
@@ -289,38 +332,24 @@ export default function ScreenshotPage() {
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {upscaledImage ? (
-              <>
-                <button
-                  onClick={() => setShowUpscaled(false)}
-                  className={`px-3 py-1.5 text-xs rounded-lg transition-colors cursor-pointer ${
-                    !showUpscaled
-                      ? "bg-zinc-700 text-white"
-                      : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-800"
-                  }`}
-                >
-                  Original
-                </button>
-                <button
-                  onClick={() => setShowUpscaled(true)}
-                  className={`px-3 py-1.5 text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
-                    showUpscaled
-                      ? "bg-violet-600 text-white"
-                      : "bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-800"
-                  }`}
-                >
-                  <Sparkles className="w-3 h-3" />
-                  HD
-                </button>
-              </>
+              <button
+                onClick={() => setShowUpscaled(!showUpscaled)}
+                className="px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-800 text-zinc-400 hover:text-white text-xs rounded-lg transition-colors cursor-pointer"
+              >
+                {showUpscaled ? "Original" : "Upscaled"}
+              </button>
             ) : (
               <button
                 onClick={handleUpscale}
                 disabled={upscaling}
-                className="px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-800 text-zinc-400 hover:text-white text-xs rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-800 text-zinc-400 hover:text-white text-xs rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Sparkles className="w-3 h-3" />
-                {upscaling ? "Processando..." : "Melhorar qualidade"}
+                {upscaling ? "Processing..." : "Upscale"}
               </button>
+            )}
+
+            {upscaleError && (
+              <span className="text-xs text-red-400">{upscaleError}</span>
             )}
           </div>
 
