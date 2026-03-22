@@ -85,7 +85,7 @@ export default {
 		  },
 		  likes: {
 		    title: "Como funciona o ranking de curtidas?",
-		    description: "Classificação baseada no total de curtidas recebidas em reviews, listas, tierlists e screenshots. Curtidas no próprio conteúdo não contam.",
+		    description: "Classificação baseada nas curtidas recebidas (×1) e curtidas dadas (×0.25). Curtidas no próprio conteúdo não contam.",
 		  },
 		  playtime: {
 		    title: "Como funciona o ranking de tempo de jogo?",

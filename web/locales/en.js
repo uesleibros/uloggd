@@ -85,7 +85,7 @@ export default {
 		  },
 		  likes: {
 		    title: "How does the likes ranking work?",
-		    description: "Ranking based on total likes received on reviews, lists, tierlists and screenshots. Self-likes don't count.",
+		    description: "Ranking based on likes received (×1) and likes given (×0.25). Self-likes don't count.",
 		  },
 		  playtime: {
 		    title: "How does the playtime ranking work?",

@@ -4,9 +4,6 @@ import { findManyByIds, resolveStreams, formatUserMap } from "#models/users/inde
 import {
   fetchAllRows,
   getMineralsRaw,
-  getReviewsRaw,
-  getFollowersRaw,
-  getLikesRaw,
   getGlobalScores,
   getReviewLikesPerUser,
   getListLikesPerUser,
@@ -107,24 +104,13 @@ async function getGlobalLeaderboard(limit, offset) {
 }
 
 async function getMineralsLeaderboard(limit, offset) {
-  const minerals = await fetchAllRows("user_minerals", "user_id, copper, iron, gold, emerald, diamond, ruby")
+  const mineralsData = await getMineralsRaw()
 
-  const scored = minerals.map(m => {
-    const breakdown = {
-      copper: m.copper || 0,
-      iron: m.iron || 0,
-      gold: m.gold || 0,
-      emerald: m.emerald || 0,
-      diamond: m.diamond || 0,
-      ruby: m.ruby || 0,
-    }
-
-    return {
-      user_id: m.user_id,
-      value: breakdown.copper + breakdown.iron + breakdown.gold + breakdown.emerald + breakdown.diamond + breakdown.ruby,
-      breakdown,
-    }
-  })
+  const scored = Object.entries(mineralsData).map(([user_id, data]) => ({
+    user_id,
+    value: data.value,
+    breakdown: data.breakdown,
+  }))
 
   scored.sort((a, b) => b.value - a.value)
 
@@ -235,26 +221,62 @@ async function getLikesLeaderboard(limit, offset) {
     getScreenshotLikesPerUser(),
   ])
 
+  const likesGiven = await fetchAllRows("review_likes", "user_id")
+    .then(async reviewLikesGiven => {
+      const [listLikesGiven, tierlistLikesGiven, screenshotLikesGiven, profileLikesGiven] = await Promise.all([
+        fetchAllRows("list_likes", "user_id"),
+        fetchAllRows("tierlist_likes", "user_id"),
+        fetchAllRows("screenshot_likes", "user_id"),
+        fetchAllRows("profile_likes", "user_id"),
+      ])
+
+      const result = {}
+      const addLikes = (likes) => {
+        for (const like of likes) {
+          result[like.user_id] = (result[like.user_id] || 0) + 1
+        }
+      }
+
+      addLikes(reviewLikesGiven)
+      addLikes(listLikesGiven)
+      addLikes(tierlistLikesGiven)
+      addLikes(screenshotLikesGiven)
+      addLikes(profileLikesGiven)
+
+      return result
+    })
+
   const countMap = {}
   const breakdownMap = {}
 
-  const addLikes = (likes, type) => {
+  const addLikesReceived = (likes, type) => {
     for (const [userId, count] of Object.entries(likes)) {
-      countMap[userId] = (countMap[userId] || 0) + count
+      if (!countMap[userId]) countMap[userId] = 0
       if (!breakdownMap[userId]) {
-        breakdownMap[userId] = { reviews: 0, lists: 0, tierlists: 0, screenshots: 0 }
+        breakdownMap[userId] = { received: 0, given: 0, reviews: 0, lists: 0, tierlists: 0, screenshots: 0 }
       }
+      countMap[userId] += count
+      breakdownMap[userId].received += count
       breakdownMap[userId][type] = count
     }
   }
 
-  addLikes(reviewLikes, "reviews")
-  addLikes(listLikes, "lists")
-  addLikes(tierlistLikes, "tierlists")
-  addLikes(screenshotLikes, "screenshots")
+  addLikesReceived(reviewLikes, "reviews")
+  addLikesReceived(listLikes, "lists")
+  addLikesReceived(tierlistLikes, "tierlists")
+  addLikesReceived(screenshotLikes, "screenshots")
+
+  for (const [userId, count] of Object.entries(likesGiven)) {
+    if (!countMap[userId]) countMap[userId] = 0
+    if (!breakdownMap[userId]) {
+      breakdownMap[userId] = { received: 0, given: 0, reviews: 0, lists: 0, tierlists: 0, screenshots: 0 }
+    }
+    countMap[userId] += count * 0.25
+    breakdownMap[userId].given = count
+  }
 
   const sorted = Object.entries(countMap)
-    .map(([user_id, count]) => ({ user_id, value: count }))
+    .map(([user_id, count]) => ({ user_id, value: Math.round(count * 100) / 100 }))
     .sort((a, b) => b.value - a.value)
 
   const total = sorted.length

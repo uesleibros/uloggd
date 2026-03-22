@@ -24,13 +24,37 @@ export async function fetchAllRows(table, select) {
 }
 
 export async function getMineralsRaw() {
-  const minerals = await fetchAllRows("user_minerals", "user_id, copper, iron, gold, emerald, diamond, ruby")
+  const transactions = await fetchAllRows(
+    "mineral_transactions",
+    "user_id, transaction_type, minerals_changed"
+  )
 
   const result = {}
-  for (const m of minerals) {
-    const value = (m.copper || 0) + (m.iron || 0) + (m.gold || 0) + (m.emerald || 0) + (m.diamond || 0) + (m.ruby || 0)
-    result[m.user_id] = { value }
+
+  for (const t of transactions) {
+    if (t.transaction_type === "shop_purchase" || t.transaction_type === "shop_gift") {
+      continue
+    }
+
+    if (!result[t.user_id]) {
+      result[t.user_id] = {
+        value: 0,
+        breakdown: { copper: 0, iron: 0, gold: 0, emerald: 0, diamond: 0, ruby: 0 },
+      }
+    }
+
+    const changes = t.minerals_changed
+    if (changes && typeof changes === "object") {
+      for (const [mineral, amount] of Object.entries(changes)) {
+        const val = parseInt(amount) || 0
+        if (val > 0) {
+          result[t.user_id].breakdown[mineral] = (result[t.user_id].breakdown[mineral] || 0) + val
+          result[t.user_id].value += val
+        }
+      }
+    }
   }
+
   return result
 }
 
