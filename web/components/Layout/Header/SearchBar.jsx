@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { useNavigate, useLocation } from "react-router-dom"
-import { Search, Gamepad2, Users, ListMusic, ArrowRight, SearchX } from "lucide-react"
+import { Search, Gamepad2, Users, List, ArrowRight, SearchX } from "lucide-react"
 import GameResultItem from "@components/Game/GameResultItem"
 import UserDisplay from "@components/User/UserDisplay"
 import { CoverStrip } from "@components/Lists/ListCard"
@@ -11,7 +11,7 @@ import { LoadingSpinner } from "./icons"
 const TABS = [
   { id: "games", icon: Gamepad2 },
   { id: "users", icon: Users },
-  { id: "lists", icon: ListMusic },
+  { id: "lists", icon: List },
 ]
 
 const ENDPOINTS = {

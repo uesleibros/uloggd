@@ -1,9 +1,9 @@
-import { Gamepad2, Users, ListMusic } from "lucide-react"
+import { Gamepad2, Users, List } from "lucide-react"
 
 export const TABS = [
   { id: "games", icon: Gamepad2 },
   { id: "users", icon: Users },
-  { id: "lists", icon: ListMusic },
+  { id: "lists", icon: List },
 ]
 
 export const SORT_OPTIONS = {

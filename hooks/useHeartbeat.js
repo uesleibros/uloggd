@@ -20,8 +20,8 @@ export function useHeartbeat() {
 
 		activeHeartbeat = user.user_id
 
-		const ping = async (status) => {
-			if (lastStatusRef.current === status) return
+		const ping = async (status, force = false) => {
+			if (!force && lastStatusRef.current === status) return
 
 			const { data: { session } } = await supabase.auth.getSession()
 			if (!session?.access_token) return
@@ -55,13 +55,15 @@ export function useHeartbeat() {
 			)
 		}
 
-		const onVisibility = () => ping(document.hidden ? "idle" : "online")
+		const onVisibility = () => {
+			const status = document.hidden ? "idle" : "online"
+			ping(status, true)
+		}
 
-		ping("online")
+		ping("online", true)
 
 		intervalRef.current = setInterval(() => {
-			lastStatusRef.current = null
-			ping(document.hidden ? "idle" : "online")
+			ping(document.hidden ? "idle" : "online", true)
 		}, 2 * 60 * 1000)
 
 		document.addEventListener("visibilitychange", onVisibility)

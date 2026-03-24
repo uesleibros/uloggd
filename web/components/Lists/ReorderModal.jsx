@@ -13,7 +13,7 @@ export default function ReorderModal({ isOpen, onClose, listId, onReordered }) {
   const [saving, setSaving] = useState(false)
   const [dragIndex, setDragIndex] = useState(null)
   const [overIndex, setOverIndex] = useState(null)
-  const [editingIndex, setEditingIndex] = useState(null)
+  const [editingItemId, setEditingItemId] = useState(null)
   const [editValue, setEditValue] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
   const listRef = useRef(null)
@@ -27,6 +27,7 @@ export default function ReorderModal({ isOpen, onClose, listId, onReordered }) {
     async function fetchAllItems() {
       setLoading(true)
       setSearchQuery("")
+      setEditingItemId(null)
       try {
         const params = new URLSearchParams({ listId, page: 1, limit: 9999 })
         const r = await fetch(`/api/lists/get?${params}`)
@@ -62,23 +63,24 @@ export default function ReorderModal({ isOpen, onClose, listId, onReordered }) {
     return allItems.findIndex((i) => i.id === item.id)
   }
 
-  function startEditIndex(filteredIndex) {
-    const item = displayItems[filteredIndex]
+  function startEditIndex(item) {
     const actualIndex = getActualIndex(item)
-    setEditingIndex(filteredIndex)
+    setEditingItemId(item.id)
     setEditValue(String(actualIndex + 1))
   }
 
-  function commitIndexEdit(filteredIndex) {
+  function commitIndexEdit() {
     const target = parseInt(editValue, 10)
-    setEditingIndex(null)
+    const itemId = editingItemId
+    setEditingItemId(null)
 
+    if (!itemId) return
     if (isNaN(target) || target < 1 || target > allItems.length) return
 
-    const item = displayItems[filteredIndex]
-    const currentActualIndex = getActualIndex(item)
-    const targetIndex = target - 1
+    const currentActualIndex = allItems.findIndex((i) => i.id === itemId)
+    if (currentActualIndex === -1) return
 
+    const targetIndex = target - 1
     if (targetIndex === currentActualIndex) return
 
     const updated = [...allItems]
@@ -120,8 +122,7 @@ export default function ReorderModal({ isOpen, onClose, listId, onReordered }) {
     setOverIndex(null)
   }
 
-  function moveItem(filteredIndex, direction) {
-    const item = displayItems[filteredIndex]
+  function moveItem(item, direction) {
     const actualIndex = getActualIndex(item)
     const toIndex = actualIndex + direction
 
@@ -133,8 +134,7 @@ export default function ReorderModal({ isOpen, onClose, listId, onReordered }) {
     setAllItems(updated)
   }
 
-  function moveToPosition(filteredIndex, position) {
-    const item = displayItems[filteredIndex]
+  function moveToPosition(item, position) {
     const actualIndex = getActualIndex(item)
     const targetIndex = position === "first" ? 0 : allItems.length - 1
 
@@ -233,6 +233,7 @@ export default function ReorderModal({ isOpen, onClose, listId, onReordered }) {
                   const isDragging = dragIndex === index
                   const isOver = overIndex === index
                   const actualIndex = getActualIndex(item)
+                  const isEditing = editingItemId === item.id
 
                   return (
                     <div
@@ -256,16 +257,16 @@ export default function ReorderModal({ isOpen, onClose, listId, onReordered }) {
                         <GripVertical className="w-4 h-4" />
                       </div>
 
-                      {editingIndex === index ? (
+                      {isEditing ? (
                         <input
                           type="text"
                           inputMode="numeric"
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value.replace(/\D/g, ""))}
-                          onBlur={() => commitIndexEdit(index)}
+                          onBlur={commitIndexEdit}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") e.target.blur()
-                            if (e.key === "Escape") setEditingIndex(null)
+                            if (e.key === "Escape") setEditingItemId(null)
                           }}
                           autoFocus
                           onFocus={(e) => e.target.select()}
@@ -273,7 +274,7 @@ export default function ReorderModal({ isOpen, onClose, listId, onReordered }) {
                         />
                       ) : (
                         <button
-                          onClick={() => startEditIndex(index)}
+                          onClick={() => startEditIndex(item)}
                           className="text-xs text-zinc-600 hover:text-indigo-400 tabular-nums w-10 h-6 text-center flex-shrink-0 cursor-pointer rounded hover:bg-zinc-800/80 transition-colors flex items-center justify-center"
                           title={t("lists.reorder.clickToEdit")}
                         >
@@ -297,7 +298,7 @@ export default function ReorderModal({ isOpen, onClose, listId, onReordered }) {
 
                       <div className="flex items-center gap-0.5 flex-shrink-0">
                         <button
-                          onClick={() => moveToPosition(index, "first")}
+                          onClick={() => moveToPosition(item, "first")}
                           disabled={actualIndex === 0}
                           className="p-1.5 text-zinc-600 hover:text-zinc-300 disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer rounded hover:bg-zinc-800"
                           title={t("lists.reorder.moveToFirst")}
@@ -313,7 +314,7 @@ export default function ReorderModal({ isOpen, onClose, listId, onReordered }) {
                           </svg>
                         </button>
                         <button
-                          onClick={() => moveItem(index, -1)}
+                          onClick={() => moveItem(item, -1)}
                           disabled={actualIndex === 0}
                           className="p-1.5 text-zinc-600 hover:text-zinc-300 disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer rounded hover:bg-zinc-800"
                           title={t("lists.reorder.moveUp")}
@@ -321,7 +322,7 @@ export default function ReorderModal({ isOpen, onClose, listId, onReordered }) {
                           <ChevronUp className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => moveItem(index, 1)}
+                          onClick={() => moveItem(item, 1)}
                           disabled={actualIndex === allItems.length - 1}
                           className="p-1.5 text-zinc-600 hover:text-zinc-300 disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer rounded hover:bg-zinc-800"
                           title={t("lists.reorder.moveDown")}
@@ -329,7 +330,7 @@ export default function ReorderModal({ isOpen, onClose, listId, onReordered }) {
                           <ChevronDown className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => moveToPosition(index, "last")}
+                          onClick={() => moveToPosition(item, "last")}
                           disabled={actualIndex === allItems.length - 1}
                           className="p-1.5 text-zinc-600 hover:text-zinc-300 disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer rounded hover:bg-zinc-800"
                           title={t("lists.reorder.moveToLast")}
