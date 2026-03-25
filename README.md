@@ -163,20 +163,78 @@ For development with Vercel serverless functions:
 npm run dev:vercel
 ```
 
-### Database
+## Database
 
-The project uses **Supabase** (PostgreSQL). To set up the database:
+This project uses **Supabase (PostgreSQL)** for data storage and authentication.
 
-1. **Create a project** on [Supabase Dashboard](https://app.supabase.com)
+### Create a Supabase Project
 
-2. **Import the database schema**:
-   - Access **SQL Editor** in the Supabase dashboard
-   - Copy all contents from [`database/schema.sql`](/database/schema.sql)
-   - Paste into the editor and click **RUN**
+Create a new project through the Supabase dashboard:
 
-3. **Configure Discord authentication:**
-   - In Supabase, go to **Authentication** > **Providers**
-   - Enable **Discord** and fill in Client ID and Secret
+https://app.supabase.com
+
+### Import the Base Schema
+
+1. Open **SQL Editor** in the Supabase dashboard.
+2. Open the file [`supabase/schema.sql`](/supabase/schema.sql).
+3. Copy the entire contents of the file.
+4. Paste it into the SQL Editor.
+5. Click **Run**.
+
+This will create all required tables, indexes, functions, triggers, and Row Level Security (RLS) policies.
+
+### Configure Discord Authentication
+
+In the Supabase dashboard navigate to:
+
+Authentication → Providers → Discord
+
+Enable the provider and configure:
+
+- **Client ID**
+- **Client Secret**
+
+### Optional: Database Migrations
+
+If you prefer managing schema changes using migrations, you can use the Supabase CLI.
+
+#### Install Supabase CLI
+
+```bash
+npm install -D supabase
+````
+
+#### Create a New Migration
+
+```bash
+npx supabase migration new migration_name
+```
+
+#### Apply Migrations
+
+```bash
+npx supabase db push
+```
+
+#### Pull Schema Changes From Remote
+
+```bash
+npx supabase db pull
+```
+
+### Project Structure
+
+```
+supabase/
+  schema.sql
+  migrations/
+```
+
+The project supports two database workflows:
+
+* **Schema import** using `supabase/schema.sql`
+* **Migration-based development** using Supabase CLI
+
 
 ### Available Scripts
 
