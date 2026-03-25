@@ -39,7 +39,7 @@ export default function ModeratorMenu({ profile, currentUser }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ userId: profile.id }),
+        body: JSON.stringify({ userId: profile.user_id }),
       })
 
       if (res.ok) {
