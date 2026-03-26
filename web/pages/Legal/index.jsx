@@ -62,17 +62,9 @@ Any outgoing link to partner stores may be sponsored and any purchase made throu
 
 ### Account information
 When you create an account, we collect:
-- Email address
+- Email address (optional)
 - Username
-- Password (encrypted)
 - Profile picture (optional)
-
-### Usage information
-We automatically collect:
-- IP address
-- Browser type
-- Pages visited
-- Date and time of access
 
 ### User content
 We store the content you create:
@@ -84,10 +76,7 @@ We store the content you create:
 ## How we use your information
 
 We use your information to:
-- Provide and maintain our services
 - Personalize your experience
-- Send important notifications
-- Improve our services
 - Prevent fraud and abuse
 
 ## Information sharing
