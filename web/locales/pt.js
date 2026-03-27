@@ -801,6 +801,20 @@ export default {
 	    invalidState: "Passkey não é mais válida.",
 	    notFound: "Nenhuma passkey encontrada para esta conta."
 	  },
+		reset: {
+	    title: "Redefinir senha",
+	    description: "Digite sua nova senha para continuar.",
+	    newPassword: "Nova senha",
+	    confirmPassword: "Confirmar senha",
+	    submit: "Salvar nova senha",
+	    checking: "Verificando link de recuperação...",
+	    invalidLink: "Este link de recuperação é inválido ou expirou.",
+	    passwordMinLength: "A senha deve ter pelo menos 6 caracteres.",
+	    passwordMismatch: "As senhas não coincidem.",
+	    genericError: "Não foi possível redefinir sua senha.",
+	    successTitle: "Senha atualizada",
+	    successDescription: "Sua senha foi alterada com sucesso. Redirecionando..."
+		},
 	  page: {
 	    welcomeBack: "Bem-vindo de volta",
 	    createAccount: "Criar uma conta",
