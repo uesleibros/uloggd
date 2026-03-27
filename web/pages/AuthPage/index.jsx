@@ -276,7 +276,7 @@ export default function AuthPage() {
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
           <div className="text-center mb-8">
             <Link to="/" className="inline-block mb-5">
-              <img src="/logo.svg" alt="uloggd" className="h-8 mx-auto" />
+              <img src="/logo.jpg" alt="uloggd" className="h-8 mx-auto" />
             </Link>
             <h1 className="text-2xl font-bold text-white mb-1">
               {view === "signIn"
