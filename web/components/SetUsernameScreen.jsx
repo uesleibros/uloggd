@@ -33,7 +33,7 @@ export default function SetUsernameScreen({ onComplete }) {
 
       const { data: { session } } = await supabase.auth.getSession()
 
-      const res = await fetch("/api/users/createUsername", {
+      const res = await fetch("/api/users/@me/createUsername", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
