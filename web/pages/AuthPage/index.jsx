@@ -27,53 +27,6 @@ function GoogleIcon({ className }) {
   )
 }
 
-function SocialButton({ onClick, disabled, title, children, className = "" }) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      className={`flex-1 h-12 rounded-lg border border-zinc-800 bg-zinc-900 flex items-center justify-center gap-2.5 hover:bg-zinc-800 hover:border-zinc-700 active:scale-[0.98] transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-    >
-      {children}
-    </button>
-  )
-}
-
-function InputField({ type = "text", value, onChange, placeholder, icon: Icon, right, className = "", ...props }) {
-  return (
-    <div className="relative">
-      {Icon && <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-zinc-500" />}
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={`w-full h-12 ${Icon ? "pl-11" : "pl-4"} ${right ? "pr-12" : "pr-4"} rounded-lg bg-zinc-900 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 focus:bg-zinc-900/80 transition-all duration-150 ${className}`}
-        {...props}
-      />
-      {right && (
-        <div className="absolute right-1 top-1/2 -translate-y-1/2">
-          {right}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function PrimaryButton({ type = "button", onClick, disabled, children }) {
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className="w-full h-12 rounded-lg bg-indigo-500 text-white text-sm font-semibold hover:bg-indigo-400 active:scale-[0.98] transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-    >
-      {children}
-    </button>
-  )
-}
-
 export default function AuthPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -226,37 +179,25 @@ export default function AuthPage() {
     }
   }
 
-  const passwordToggle = (
-    <button
-      type="button"
-      onClick={() => setShowPassword(!showPassword)}
-      className="w-10 h-10 flex items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer rounded-md"
-    >
-      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-    </button>
-  )
-
   if (view === "checkEmail") {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-[420px]">
-          <div className="bg-zinc-950 border border-zinc-800/60 rounded-xl p-10 text-center shadow-2xl shadow-black/40">
-            <div className="w-20 h-20 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="w-10 h-10 text-green-400" />
-            </div>
-            <h1 className="text-[22px] font-bold text-white mb-2">
-              {t("auth.page.checkEmailTitle")}
-            </h1>
-            <p className="text-sm text-zinc-400 mb-8 leading-relaxed max-w-[300px] mx-auto">
-              {t("auth.page.checkEmailMessage", { email })}
-            </p>
-            <button
-              onClick={() => switchView("signIn")}
-              className="text-sm text-zinc-500 hover:text-white transition-colors cursor-pointer"
-            >
-              {t("auth.page.backToSignIn")}
-            </button>
+        <div className="w-full max-w-sm text-center">
+          <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-8">
+            <CheckCircle2 className="w-10 h-10 text-green-400" />
           </div>
+          <h1 className="text-3xl font-bold text-white mb-3">
+            {t("auth.page.checkEmailTitle")}
+          </h1>
+          <p className="text-[15px] text-zinc-400 mb-10 leading-relaxed">
+            {t("auth.page.checkEmailMessage", { email })}
+          </p>
+          <button
+            onClick={() => switchView("signIn")}
+            className="text-sm text-zinc-500 hover:text-white transition-colors cursor-pointer"
+          >
+            {t("auth.page.backToSignIn")}
+          </button>
         </div>
       </div>
     )
@@ -265,56 +206,58 @@ export default function AuthPage() {
   if (view === "forgotPassword") {
     return (
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-[420px]">
-          <div className="bg-zinc-950 border border-zinc-800/60 rounded-xl p-10 shadow-2xl shadow-black/40">
+        <div className="w-full max-w-sm">
+          <button
+            onClick={() => switchView("signIn")}
+            className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-white transition-colors mb-10 cursor-pointer group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+            {t("auth.page.backToSignIn")}
+          </button>
+
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {t("auth.page.forgotPasswordTitle")}
+          </h1>
+          <p className="text-[15px] text-zinc-400 mb-10 leading-relaxed">
+            {t("auth.page.forgotPasswordDescription")}
+          </p>
+
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 mb-6">
+              <p className="text-sm text-red-400">{error}</p>
+            </div>
+          )}
+
+          {message && (
+            <div className="bg-green-500/10 border border-green-500/20 rounded-lg px-4 py-3 mb-6">
+              <p className="text-sm text-green-400">{message}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleForgotPassword} className="space-y-6">
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">
+                {t("auth.page.emailLabel")}
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t("auth.page.emailPlaceholder")}
+                className="w-full h-12 px-4 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500/50 transition-colors"
+                required
+              />
+            </div>
+
             <button
-              onClick={() => switchView("signIn")}
-              className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-white transition-colors mb-8 cursor-pointer group"
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 rounded-lg bg-indigo-500 text-white text-sm font-semibold hover:bg-indigo-400 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-              {t("auth.page.backToSignIn")}
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {t("auth.page.sendResetLink")}
             </button>
-
-            <h1 className="text-[22px] font-bold text-white mb-2">
-              {t("auth.page.forgotPasswordTitle")}
-            </h1>
-            <p className="text-sm text-zinc-400 mb-8 leading-relaxed">
-              {t("auth.page.forgotPasswordDescription")}
-            </p>
-
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 mb-5">
-                <p className="text-sm text-red-400">{error}</p>
-              </div>
-            )}
-
-            {message && (
-              <div className="bg-green-500/10 border border-green-500/20 rounded-lg px-4 py-3 mb-5">
-                <p className="text-sm text-green-400">{message}</p>
-              </div>
-            )}
-
-            <form onSubmit={handleForgotPassword} className="space-y-5">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">
-                  {t("auth.page.emailLabel")}
-                </label>
-                <InputField
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t("auth.page.emailPlaceholder")}
-                  icon={Mail}
-                  required
-                />
-              </div>
-
-              <PrimaryButton type="submit" disabled={loading}>
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {t("auth.page.sendResetLink")}
-              </PrimaryButton>
-            </form>
-          </div>
+          </form>
         </div>
       </div>
     )
@@ -322,144 +265,156 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-[420px]">
-        <div className="bg-zinc-950 border border-zinc-800/60 rounded-xl p-10 shadow-2xl shadow-black/40">
-          <div className="text-center mb-8">
-            <Link to="/" className="inline-block mb-6 group">
-              <img
-                src="/logo.jpg"
-                alt="uloggd"
-                className="h-10 mx-auto rounded-lg group-hover:opacity-80 transition-opacity"
-              />
-            </Link>
-            <h1 className="text-[22px] font-bold text-white mb-1">
-              {view === "signIn"
-                ? t("auth.page.welcomeBack")
-                : t("auth.page.createAccount")}
-            </h1>
-            <p className="text-sm text-zinc-500">
-              {view === "signIn"
-                ? t("auth.page.signInDescription")
-                : t("auth.page.signUpDescription")}
-            </p>
-          </div>
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-10">
+          <Link to="/" className="inline-block mb-6">
+            <img
+              src="/logo.jpg"
+              alt="uloggd"
+              className="h-12 mx-auto rounded-xl"
+            />
+          </Link>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {view === "signIn"
+              ? t("auth.page.welcomeBack")
+              : t("auth.page.createAccount")}
+          </h1>
+          <p className="text-[15px] text-zinc-500">
+            {view === "signIn"
+              ? t("auth.page.signInDescription")
+              : t("auth.page.signUpDescription")}
+          </p>
+        </div>
 
-          <div className="flex gap-2 mb-6">
-            <SocialButton
-              onClick={handleDiscordSignIn}
-              title={t("auth.signInWithDiscord")}
-            >
-              <DiscordIcon className="w-5 h-5 text-zinc-400 group-hover:text-[#5865F2] transition-colors" />
-              <span className="text-sm text-zinc-400 hidden sm:block">Discord</span>
-            </SocialButton>
-
-            <SocialButton
-              onClick={handleGoogleSignIn}
-              title={t("auth.signInWithGoogle")}
-            >
-              <GoogleIcon className="w-5 h-5" />
-              <span className="text-sm text-zinc-400 hidden sm:block">Google</span>
-            </SocialButton>
-
-            <SocialButton
-              onClick={handlePasskeySignIn}
-              disabled={passkeyLoading}
-              title={t("auth.signInWithPasskey")}
-            >
-              {passkeyLoading ? (
-                <Loader2 className="w-5 h-5 text-zinc-400 animate-spin" />
-              ) : (
-                <>
-                  <Fingerprint className="w-5 h-5 text-zinc-400" />
-                  <span className="text-sm text-zinc-400 hidden sm:block">Passkey</span>
-                </>
-              )}
-            </SocialButton>
-          </div>
-
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex-1 h-px bg-zinc-800/80" />
-            <span className="text-[11px] text-zinc-600 uppercase tracking-widest font-medium">
-              {t("auth.page.or")}
-            </span>
-            <div className="flex-1 h-px bg-zinc-800/80" />
-          </div>
-
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 mb-5">
-              <p className="text-sm text-red-400">{error}</p>
-            </div>
-          )}
-
-          <form
-            onSubmit={view === "signIn" ? handleEmailSignIn : handleEmailSignUp}
-            className="space-y-4"
+        <div className="flex gap-3 mb-8">
+          <button
+            onClick={handleDiscordSignIn}
+            className="flex-1 h-12 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center gap-2 hover:bg-zinc-800 hover:border-zinc-700 active:scale-[0.97] transition-all cursor-pointer group"
+            title={t("auth.signInWithDiscord")}
           >
-            <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">
-                {t("auth.page.emailLabel")}
-              </label>
-              <InputField
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("auth.page.emailPlaceholder")}
-                icon={Mail}
-                required
-              />
-            </div>
+            <DiscordIcon className="w-5 h-5 text-zinc-500 group-hover:text-[#5865F2] transition-colors" />
+            <span className="text-sm text-zinc-500 group-hover:text-zinc-300 transition-colors hidden sm:block">Discord</span>
+          </button>
 
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                  {t("auth.page.passwordLabel")}
-                </label>
-                {view === "signIn" && (
-                  <button
-                    type="button"
-                    onClick={() => switchView("forgotPassword")}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer font-medium"
-                  >
-                    {t("auth.page.forgotPassword")}
-                  </button>
-                )}
-              </div>
-              <InputField
+          <button
+            onClick={handleGoogleSignIn}
+            className="flex-1 h-12 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center gap-2 hover:bg-zinc-800 hover:border-zinc-700 active:scale-[0.97] transition-all cursor-pointer group"
+            title={t("auth.signInWithGoogle")}
+          >
+            <GoogleIcon className="w-5 h-5" />
+            <span className="text-sm text-zinc-500 group-hover:text-zinc-300 transition-colors hidden sm:block">Google</span>
+          </button>
+
+          <button
+            onClick={handlePasskeySignIn}
+            disabled={passkeyLoading}
+            className="flex-1 h-12 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center gap-2 hover:bg-zinc-800 hover:border-zinc-700 active:scale-[0.97] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
+            title={t("auth.signInWithPasskey")}
+          >
+            {passkeyLoading ? (
+              <Loader2 className="w-5 h-5 text-zinc-500 animate-spin" />
+            ) : (
+              <>
+                <Fingerprint className="w-5 h-5 text-zinc-500 group-hover:text-white transition-colors" />
+                <span className="text-sm text-zinc-500 group-hover:text-zinc-300 transition-colors hidden sm:block">Passkey</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-4 mb-8">
+          <div className="flex-1 h-px bg-zinc-800" />
+          <span className="text-[11px] text-zinc-600 uppercase tracking-widest font-medium">
+            {t("auth.page.or")}
+          </span>
+          <div className="flex-1 h-px bg-zinc-800" />
+        </div>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 mb-6">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
+
+        <form
+          onSubmit={view === "signIn" ? handleEmailSignIn : handleEmailSignUp}
+          className="space-y-5"
+        >
+          <div>
+            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">
+              {t("auth.page.emailLabel")}
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t("auth.page.emailPlaceholder")}
+              className="w-full h-12 px-4 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500/50 transition-colors"
+              required
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                {t("auth.page.passwordLabel")}
+              </label>
+              {view === "signIn" && (
+                <button
+                  type="button"
+                  onClick={() => switchView("forgotPassword")}
+                  className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
+                >
+                  {t("auth.page.forgotPassword")}
+                </button>
+              )}
+            </div>
+            <div className="relative">
+              <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                right={passwordToggle}
+                className="w-full h-12 pl-4 pr-12 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500/50 transition-colors"
                 required
                 minLength={view === "signUp" ? 6 : undefined}
               />
-              {view === "signUp" && (
-                <p className="text-xs text-zinc-600 mt-2">
-                  {t("auth.page.passwordHint")}
-                </p>
-              )}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300 transition-colors cursor-pointer p-1"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
+            {view === "signUp" && (
+              <p className="text-xs text-zinc-600 mt-2">
+                {t("auth.page.passwordHint")}
+              </p>
+            )}
+          </div>
 
-            <div className="pt-1">
-              <PrimaryButton type="submit" disabled={loading}>
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {view === "signIn"
-                  ? t("auth.page.signInButton")
-                  : t("auth.page.signUpButton")}
-              </PrimaryButton>
-            </div>
-          </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-12 rounded-lg bg-indigo-500 text-white text-sm font-semibold hover:bg-indigo-400 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {view === "signIn"
+              ? t("auth.page.signInButton")
+              : t("auth.page.signUpButton")}
+          </button>
+        </form>
 
-          <p className="text-sm text-zinc-500 text-center mt-8">
-            {view === "signIn" ? t("auth.page.noAccount") : t("auth.page.hasAccount")}{" "}
-            <button
-              onClick={() => switchView(view === "signIn" ? "signUp" : "signIn")}
-              className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors cursor-pointer"
-            >
-              {view === "signIn" ? t("auth.page.signUpLink") : t("auth.page.signInLink")}
-            </button>
-          </p>
-        </div>
+        <p className="text-sm text-zinc-500 text-center mt-8">
+          {view === "signIn" ? t("auth.page.noAccount") : t("auth.page.hasAccount")}{" "}
+          <button
+            onClick={() => switchView(view === "signIn" ? "signUp" : "signIn")}
+            className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors cursor-pointer"
+          >
+            {view === "signIn" ? t("auth.page.signUpLink") : t("auth.page.signInLink")}
+          </button>
+        </p>
       </div>
     </div>
   )
