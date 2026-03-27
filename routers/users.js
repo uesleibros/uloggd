@@ -10,6 +10,7 @@ import { handleThinking } from "#services/users/handlers/me/thinking.js"
 import { handlePronoun } from "#services/users/handlers/me/pronoun.js"
 import { handleHeartbeat } from "#services/users/handlers/me/heartbeat.js"
 import { handleUsername } from "#services/users/handlers/me/username.js"
+import { handleCreateUsername } from "#services/users/handlers/me/createUsername.js"
 import { handleBatch } from "#services/users/handlers/batch.js"
 import { handleSearch } from "#services/users/handlers/search.js"
 import { getUser } from "#lib/auth.js"
@@ -17,20 +18,21 @@ import { supabase } from "#lib/supabase-ssr.js"
 import { ensureUserNotBanned } from "#lib/moderation.js"
 
 const ACTIONS = {
-  profile:      { handler: handleProfile,      method: "GET",  scopes: null,    auth: false      },
-  username:     { handler: handleUsername,     method: "POST", scopes: ["@me"], auth: true       },
-  bio:          { handler: handleBio,          method: "POST", scopes: ["@me"], auth: true       },
-  delete:       { handler: handleDelete,       method: "POST", scopes: ["@me"], auth: true       },
-  follow:       { handler: handleFollow,       method: "POST", scopes: null,    auth: true       },
-  followStatus: { handler: handleFollowStatus, method: "GET",  scopes: null,    auth: false      },
-  followers:    { handler: handleFollowers,    method: "GET",  scopes: null,    auth: false      },
-  banner:       { handler: handleBanner,       method: "POST", scopes: ["@me"], auth: true       },
-  avatar:       { handler: handleAvatar,       method: "POST", scopes: ["@me"], auth: true       },
-  thinking:     { handler: handleThinking,     method: "POST", scopes: ["@me"], auth: true       },
-  pronoun:      { handler: handlePronoun,      method: "POST", scopes: ["@me"], auth: true       },
-  heartbeat:    { handler: handleHeartbeat,    method: "POST", scopes: ["@me"], auth: "flexible" },
-  batch:        { handler: handleBatch,        method: "GET",  scopes: null,    auth: false      },
-  search:       { handler: handleSearch,       method: "GET",  scopes: null,    auth: false      }
+  profile:        { handler: handleProfile,         method: "GET",  scopes: null,    auth: false      },
+  createUsername: { handler: handleCreateUsername,  method: "POST", scopes: ["@me"], auth: true       },
+  username:       { handler: handleUsername,        method: "POST", scopes: ["@me"], auth: true       },
+  bio:            { handler: handleBio,             method: "POST", scopes: ["@me"], auth: true       },
+  delete:         { handler: handleDelete,          method: "POST", scopes: ["@me"], auth: true       },
+  follow:         { handler: handleFollow,          method: "POST", scopes: null,    auth: true       },
+  followStatus:   { handler: handleFollowStatus,    method: "GET",  scopes: null,    auth: false      },
+  followers:      { handler: handleFollowers,       method: "GET",  scopes: null,    auth: false      },
+  banner:         { handler: handleBanner,          method: "POST", scopes: ["@me"], auth: true       },
+  avatar:         { handler: handleAvatar,          method: "POST", scopes: ["@me"], auth: true       },
+  thinking:       { handler: handleThinking,        method: "POST", scopes: ["@me"], auth: true       },
+  pronoun:        { handler: handlePronoun,         method: "POST", scopes: ["@me"], auth: true       },
+  heartbeat:      { handler: handleHeartbeat,       method: "POST", scopes: ["@me"], auth: "flexible" },
+  batch:          { handler: handleBatch,           method: "GET",  scopes: null,    auth: false      },
+  search:         { handler: handleSearch,          method: "GET",  scopes: null,    auth: false      }
 }
 
 export async function usersHandler(req, res) {
