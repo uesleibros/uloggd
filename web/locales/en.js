@@ -1,4 +1,20 @@
 export default {
+	setUsername: {
+	  title: "Choose your username",
+	  description: "Pick a unique username for your profile. This is how other users will find you.",
+	  label: "Username",
+	  placeholder: "username",
+	  hint: "3-32 characters. Letters, numbers and underscores only.",
+	  submit: "Continue",
+	  saving: "Saving...",
+	  errors: {
+	    tooShort: "Must be at least 3 characters.",
+	    tooLong: "Must be at most 32 characters.",
+	    invalidChars: "Only letters, numbers and underscores allowed.",
+	    taken: "This username is already taken.",
+	    generic: "Something went wrong. Try again."
+	  }
+	},
 	gameEvents: {
 		title: "Events",
 		live: "LIVE",
