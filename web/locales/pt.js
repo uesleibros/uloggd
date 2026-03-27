@@ -1,4 +1,20 @@
 export default {
+	setUsername: {
+	  title: "Escolha seu nome de usuário",
+	  description: "Escolha um nome de usuário único para seu perfil. É assim que outros usuários vão te encontrar.",
+	  label: "Nome de usuário",
+	  placeholder: "nomedeusuario",
+	  hint: "3-32 caracteres. Apenas letras, números e underscores.",
+	  submit: "Continuar",
+	  saving: "Salvando...",
+	  errors: {
+	    tooShort: "Deve ter pelo menos 3 caracteres.",
+	    tooLong: "Deve ter no máximo 32 caracteres.",
+	    invalidChars: "Apenas letras, números e underscores são permitidos.",
+	    taken: "Este nome de usuário já está em uso.",
+	    generic: "Algo deu errado. Tente novamente."
+	  }
+	},
 	gameEvents: {
 		title: "Eventos",
 		live: "AO VIVO",
