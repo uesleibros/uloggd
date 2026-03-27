@@ -30,7 +30,6 @@ import SetUsernameScreen from "@components/SetUsernameScreen"
 import UpdateModal from "@components/UpdateModal"
 import BlogNotificationModal from "@components/BlogNotificationModal"
 import AuthPage from "@pages/AuthPage"
-import ResetPasswordPage from "@pages/ResetPasswordPage"
 
 import "#web/App.css"
 
@@ -76,7 +75,6 @@ export default function App() {
 						<Routes>
 							<Route path="/" element={<Home />} />
 							<Route path="/auth" element={<AuthPage />} />
-							<Route path="/auth/reset-password" element={<ResetPasswordPage />} />
 							<Route path="/game/:slug" element={<Game />} />
 							<Route path="/list/:id" element={<ListPage />} />
 							<Route path="/tierlist/:id" element={<TierlistPage />} />
