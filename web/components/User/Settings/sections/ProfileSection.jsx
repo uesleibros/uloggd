@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { User, Mail, Hash, ShieldCheck, Pencil, Check, X, Loader2, AlertTriangle } from "lucide-react"
+import { User, Mail, ShieldCheck, Pencil, Check, X, Loader2, AlertTriangle } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import SettingsSection from "@components/User/Settings/ui/SettingsSection"
 import InfoField from "@components/User/Settings/ui/InfoField"
@@ -124,7 +124,6 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
       </div>
 
       <InfoField label={t("settings.profile.email")} value={user.email.replace(/(.{2})(.*)(@.*)/, "$1****$3")} icon={<Mail className="w-4 h-4" />} />
-      <InfoField label={t("settings.profile.discordId")} value={user.discordId} icon={<Hash className="w-4 h-4" />} />
       <InfoField
         label={t("settings.profile.verification")}
         value={
@@ -188,4 +187,3 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
     </SettingsSection>
   )
 }
-
