@@ -1,7 +1,8 @@
 import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, Navigate, useNavigate } from "react-router-dom"
 import { Fingerprint, Loader2 } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
+import { useAuth } from "#hooks/useAuth"
 import { supabase } from "#lib/supabase"
 import { authenticateWithPasskey } from "#lib/passkey-client"
 import { TwitchIcon } from "#constants/customIcons"
@@ -36,10 +37,23 @@ function GitHubIcon({ className }) {
 export default function AuthPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { user, loading: authLoading } = useAuth()
   const [passkeyLoading, setPasskeyLoading] = useState(false)
   const [error, setError] = useState("")
 
   usePageMeta({ title: `${t("auth.page.signInButton")} - uloggd` })
+
+  if (authLoading) {
+    return (
+      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+      </div>
+    )
+  }
+
+  if (user) {
+    return <Navigate to="/" replace />
+  }
 
   const handleOAuthSignIn = async (provider) => {
     try {
