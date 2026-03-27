@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom"
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom"
 import RouteLoader from "@components/Layout/RouteLoader"
 import ScrollToTop from "@components/Layout/ScrollToTop"
 import Header from "@components/Layout/Header"
@@ -26,6 +26,7 @@ import NotificationContainer from "@components/UI/Notification"
 import NotFound from "@pages/NotFound"
 import SplashScreen from "@components/UI/SplashScreen"
 import BannedScreen from "@components/BannedScreen"
+import SetUsernameScreen from "@components/SetUsernameScreen"
 import UpdateModal from "@components/UpdateModal"
 import BlogNotificationModal from "@components/BlogNotificationModal"
 import AuthPage from "@pages/AuthPage"
@@ -33,7 +34,8 @@ import AuthPage from "@pages/AuthPage"
 import "#web/App.css"
 
 export default function App() {
-	const { banned } = useAuth()
+	const { user, banned } = useAuth()
+	const navigate = useNavigate()
 	useHeartbeat()
 
 	if (banned) {
@@ -41,6 +43,17 @@ export default function App() {
 			<BannedScreen
 				reason={banned.reason}
 				expires_at={banned.expires_at}
+			/>
+		)
+	}
+
+	if (user && !user.username) {
+		return (
+			<SetUsernameScreen
+				onComplete={(username) => {
+					navigate(`/u/${username}`)
+					window.location.reload()
+				}}
 			/>
 		)
 	}
