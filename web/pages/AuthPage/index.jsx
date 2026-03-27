@@ -103,7 +103,7 @@ export default function AuthPage() {
             <img
               src="/logo.jpg"
               alt="uloggd"
-              className="h-12 mx-auto rounded-xl"
+              className="h-20 mx-auto rounded-xl"
             />
           </Link>
           <h1 className="text-3xl font-bold text-white mb-2">
