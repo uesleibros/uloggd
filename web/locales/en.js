@@ -801,6 +801,20 @@ export default {
 	    invalidState: "Passkey is no longer valid.",
 	    notFound: "No passkey found for this account."
 	  },
+		reset: {
+	    title: "Reset password",
+	    description: "Enter your new password to continue.",
+	    newPassword: "New password",
+	    confirmPassword: "Confirm password",
+	    submit: "Save new password",
+	    checking: "Checking recovery link...",
+	    invalidLink: "This recovery link is invalid or expired.",
+	    passwordMinLength: "Password must be at least 6 characters.",
+	    passwordMismatch: "Passwords do not match.",
+	    genericError: "Could not reset your password.",
+	    successTitle: "Password updated",
+	    successDescription: "Your password has been changed successfully. Redirecting..."
+		},
 	  page: {
 	    welcomeBack: "Welcome back",
 	    createAccount: "Create an account",
