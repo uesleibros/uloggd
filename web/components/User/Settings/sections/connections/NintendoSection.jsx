@@ -32,6 +32,7 @@ export default function NintendoSection() {
   const [lookupError, setLookupError] = useState(null)
   const [profile, setProfile] = useState(null)
   const [verificationCode, setVerificationCode] = useState("")
+  const [verificationToken, setVerificationToken] = useState("")
   const [verifying, setVerifying] = useState(false)
   const [verifyError, setVerifyError] = useState(null)
   const [attemptsLeft, setAttemptsLeft] = useState(3)
@@ -50,6 +51,7 @@ export default function NintendoSection() {
       setLookupError(null)
       setProfile(null)
       setVerificationCode("")
+      setVerificationToken("")
       setVerifyError(null)
       setAttemptsLeft(3)
       setCooldown(0)
@@ -137,6 +139,7 @@ export default function NintendoSection() {
 
       setProfile(data.profile)
       setVerificationCode(data.verificationCode)
+      setVerificationToken(data.verificationToken)
       setCurrentStep(2)
     } catch {
       setLookupError("network_error")
@@ -159,6 +162,7 @@ export default function NintendoSection() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
+        body: JSON.stringify({ verificationToken }),
       })
 
       const data = await res.json()
