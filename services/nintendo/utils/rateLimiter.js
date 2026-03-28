@@ -1,5 +1,5 @@
 const connectionAttempts = new Map()
-const verificationSessions = new Map()
+const verificationAttempts = new Map()
 
 export function checkConnectionRateLimit(userId) {
 	const now = Date.now()
@@ -17,33 +17,23 @@ export function setConnectionAttempt(userId) {
 	connectionAttempts.set(userId, Date.now())
 }
 
-export function getVerificationState(userId) {
-	const state = verificationSessions.get(userId)
-	if (!state) return null
-
-	if (Date.now() - state.createdAt > 10 * 60 * 1000) {
-		verificationSessions.delete(userId)
-		return null
+export function getAttemptCount(userId) {
+	const state = verificationAttempts.get(userId)
+	if (!state) return 0
+	if (Date.now() - state.startedAt > 10 * 60 * 1000) {
+		verificationAttempts.delete(userId)
+		return 0
 	}
-
-	return state
-}
-
-export function createVerificationState(userId, code, nsaId, friendCode, profile) {
-	verificationSessions.set(userId, {
-		code,
-		nsaId,
-		friendCode,
-		profile,
-		attempts: 0,
-		lastAttemptAt: 0,
-		createdAt: Date.now(),
-	})
+	return state.attempts
 }
 
 export function checkVerificationAttempt(userId) {
-	const state = verificationSessions.get(userId)
-	if (!state) return { allowed: false, reason: "no_session" }
+	const state = verificationAttempts.get(userId)
+
+	if (!state || Date.now() - state.startedAt > 10 * 60 * 1000) {
+		verificationAttempts.set(userId, { attempts: 0, lastAttemptAt: 0, startedAt: Date.now() })
+		return { allowed: true }
+	}
 
 	if (state.attempts >= 3) {
 		return { allowed: false, reason: "max_attempts" }
@@ -59,13 +49,11 @@ export function checkVerificationAttempt(userId) {
 }
 
 export function incrementVerificationAttempt(userId) {
-	const state = verificationSessions.get(userId)
-	if (state) {
-		state.attempts++
-		state.lastAttemptAt = Date.now()
+	let state = verificationAttempts.get(userId)
+	if (!state) {
+		state = { attempts: 0, lastAttemptAt: 0, startedAt: Date.now() }
+		verificationAttempts.set(userId, state)
 	}
-}
-
-export function clearVerificationState(userId) {
-	verificationSessions.delete(userId)
+	state.attempts++
+	state.lastAttemptAt = Date.now()
 }
