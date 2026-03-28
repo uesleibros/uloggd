@@ -32,10 +32,11 @@ function normalizePresence(data) {
 	const friend = data.friend
 	const presence = friend.presence
 	const title = data.title
+	const presenceGame = presence.game
 
 	const state = presence.state?.toLowerCase() || "offline"
 	const isOnline = state === "online" || state === "playing"
-	const isPlaying = state === "playing" || (title && Object.keys(title).length > 0)
+	const isPlaying = state === "playing" || !!presenceGame
 
 	const result = {
 		state: isPlaying ? "playing" : isOnline ? "online" : "offline",
@@ -52,13 +53,21 @@ function normalizePresence(data) {
 		},
 	}
 
-	if (title && Object.keys(title).length > 0) {
+	if (presenceGame) {
+		result.game = {
+			name: presenceGame.name || title?.name || null,
+			imageUrl: presenceGame.imageUri || title?.image_url || null,
+			shopUrl: presenceGame.shopUri || title?.url || null,
+			totalPlayTime: presenceGame.totalPlayTime || null,
+			firstPlayedAt: presenceGame.firstPlayedAt ? new Date(presenceGame.firstPlayedAt * 1000).toISOString() : null,
+		}
+	} else if (title && Object.keys(title).length > 0) {
 		result.game = {
 			name: title.name || null,
-			imageUrl: title.imageUri || null,
-			shopUrl: title.shopUri || null,
-			totalPlayTime: title.totalPlayTime || null,
-			firstPlayedAt: title.firstPlayedAt ? new Date(title.firstPlayedAt * 1000).toISOString() : null,
+			imageUrl: title.image_url || null,
+			shopUrl: title.url || null,
+			totalPlayTime: null,
+			firstPlayedAt: null,
 		}
 	}
 
