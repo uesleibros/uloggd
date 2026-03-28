@@ -9,7 +9,7 @@ import SteamAchievements from "@components/Game/SteamAchievements"
 import ProfileRetroAchievements from "@components/Game/RetroAchievements"
 import PSNTrophies from "@components/Game/PSNTrophies"
 import RatingStats from "../components/RatingStats"
-import { SteamIcon } from "#constants/customIcons"
+import { SteamIcon, NintendoSwitchIcon } from "#constants/customIcons"
 
 export function ProfileSidebar({
   profile,
@@ -109,24 +109,53 @@ function StatRow({ label, value }) {
 
 function ActivityCard({ stream, userId }) {
   const { t } = useTranslation("profile")
-  const [presence, setPresence] = useState(null)
+  const [steamPresence, setSteamPresence] = useState(null)
+  const [nintendoPresence, setNintendoPresence] = useState(null)
 
   useEffect(() => {
-    setPresence(null)
+    setSteamPresence(null)
+    setNintendoPresence(null)
     if (!userId) return
 
-    const fetchPresence = async () => {
+    let cancelled = false
+
+    const fetchPresences = async () => {
+      const [steamRes, nintendoRes] = await Promise.all([
+        fetch(`/api/steam/presence?userId=${userId}`).catch(() => null),
+        fetch(`/api/nintendo/presence?userId=${userId}`).catch(() => null),
+      ])
+
+      if (cancelled) return
+
       try {
-        const res = await fetch(`/api/steam/presence?userId=${userId}`)
-        const data = await res.json()
-        if (data.playing) setPresence(data)
-      } catch {}
+        if (steamRes?.ok) {
+          const steamData = await steamRes.json()
+          if (steamData.playing) setSteamPresence(steamData)
+        }
+      } catch (err) {
+        console.error("steam presence error:", err)
+      }
+
+      try {
+        if (nintendoRes?.ok) {
+          const nintendoData = await nintendoRes.json()
+          if (nintendoData.connected && nintendoData.presence?.isOnline) {
+            setNintendoPresence(nintendoData.presence)
+          }
+        }
+      } catch (err) {
+        console.error("nintendo presence error:", err)
+      }
     }
 
-    fetchPresence()
+    fetchPresences()
+
+    return () => {
+      cancelled = true
+    }
   }, [userId])
 
-  if (!stream && !presence) return null
+  if (!stream && !steamPresence && !nintendoPresence) return null
 
   return (
     <div className="mt-4 bg-zinc-800/30 border border-zinc-700/50 rounded-xl overflow-hidden">
@@ -170,19 +199,19 @@ function ActivityCard({ stream, userId }) {
           </a>
         )}
 
-        {presence && (
+        {steamPresence && (
           <div className="group relative flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 border border-zinc-700/50 hover:border-[#66c0f4]/40 transition-all">
             <div
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${presence.steam.header})` }}
+              style={{ backgroundImage: `url(${steamPresence.steam.header})` }}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/95 via-zinc-900/90 to-zinc-900/80" />
             <div className="relative z-10 flex items-center gap-3 w-full">
-              {presence.game?.cover && (
+              {steamPresence.game?.cover && (
                 <div className="relative flex-shrink-0">
                   <img
-                    src={presence.game?.cover}
-                    alt={presence.game?.name || presence.steam.name}
+                    src={steamPresence.game?.cover}
+                    alt={steamPresence.game?.name || steamPresence.steam.name}
                     className="w-7 h-10 object-cover rounded shadow-lg"
                   />
                   <div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
@@ -192,20 +221,52 @@ function ActivityCard({ stream, userId }) {
               )}
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-semibold text-white truncate">
-                  {presence.game?.name || presence.steam.name}
+                  {steamPresence.game?.name || steamPresence.steam.name}
                 </div>
                 <div className="text-[10px] text-[#66c0f4] mt-0.5">
                   {t("stats.playingNow")}
                 </div>
               </div>
-              {presence.game?.slug && (
+              {steamPresence.game?.slug && (
                 <Link
-                  to={`/game/${presence.game.slug}`}
+                  to={`/game/${steamPresence.game.slug}`}
                   className="text-[10px] bg-[#66c0f4]/20 hover:bg-[#66c0f4] hover:text-[#171a21] text-[#66c0f4] px-2 py-1 rounded font-semibold transition-colors flex-shrink-0"
                 >
                   {t("stats.view")}
                 </Link>
               )}
+            </div>
+          </div>
+        )}
+
+        {nintendoPresence && (
+          <div className="group relative flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 border border-zinc-700/50 hover:border-[#e60012]/40 transition-all">
+            {nintendoPresence.game?.imageUrl && (
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url(${nintendoPresence.game.imageUrl})` }}
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/95 via-zinc-900/90 to-zinc-900/80" />
+            <div className="relative z-10 flex items-center gap-3 w-full">
+              <div className="relative flex-shrink-0">
+                <img
+                  src={nintendoPresence.user.imageUri}
+                  alt={nintendoPresence.user.name}
+                  className="w-9 h-9 object-cover rounded-full shadow-lg border-2 border-[#e60012]/30"
+                />
+                <div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
+                  <NintendoSwitchIcon className="w-2.5 h-2.5 text-[#e60012]" />
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] font-semibold text-white truncate">
+                  {nintendoPresence.game?.name || nintendoPresence.user.name}
+                </div>
+                <div className="text-[10px] text-[#e60012] mt-0.5">
+                  {nintendoPresence.isPlaying ? t("stats.playingNow") : t("stats.online")}
+                </div>
+              </div>
             </div>
           </div>
         )}
