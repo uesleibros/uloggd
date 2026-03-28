@@ -1,6 +1,11 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { nxapiWebfinger, generateVerificationCode, normalizeSwitchCode } from "#services/nintendo/utils/nxapi.js"
-import { checkConnectionRateLimit, createVerificationState } from "#services/nintendo/utils/rateLimiter.js"
+import {
+	nxapiWebfinger,
+	generateVerificationCode,
+	normalizeSwitchCode,
+	signVerificationData,
+} from "#services/nintendo/utils/nxapi.js"
+import { checkConnectionRateLimit } from "#services/nintendo/utils/rateLimiter.js"
 
 export async function handleLookup(req, res) {
 	const { code } = req.body
@@ -46,16 +51,20 @@ export async function handleLookup(req, res) {
 
 		const verificationCode = generateVerificationCode()
 
-		createVerificationState(userId, verificationCode, nsaId, formatted, {
-			name,
-			avatar,
+		const verificationToken = signVerificationData({
+			code: verificationCode,
+			nsaId,
 			friendCode: formatted,
+			userId,
+			profile: { name, avatar, friendCode: formatted },
+			createdAt: Date.now(),
 		})
 
 		res.json({
 			found: true,
 			profile: { name, avatar, friendCode: formatted },
 			verificationCode,
+			verificationToken,
 		})
 	} catch (err) {
 		console.error("nintendo lookup error:", err)
