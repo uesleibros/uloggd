@@ -276,13 +276,31 @@ function ActivityCard({ stream, userId }) {
                 <div className="text-[11px] font-semibold text-white truncate">
                   {nintendoPresence.game?.name || nintendoPresence.user.name}
                 </div>
-                <div className="text-[10px] text-[#e60012] mt-0.5">
-                  {nintendoPresence.isPlaying ? t("stats.playingNow") : t("stats.online")}
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[10px] text-[#e60012]">
+                    {nintendoPresence.isPlaying ? t("stats.playingNow") : t("stats.online")}
+                  </span>
+                  {nintendoPresence.game?.sessionTime && (
+                    <>
+                      <span className="text-[10px] text-zinc-600">·</span>
+                      <span className="text-[10px] text-zinc-400">
+                        {nintendoPresence.game.sessionTime}
+                      </span>
+                    </>
+                  )}
                 </div>
+                {nintendoPresence.game?.totalPlayTime && (
+                  <div className="text-[9px] text-zinc-500 mt-0.5">
+                    {nintendoPresence.game.totalPlayTime} {t("stats.totalPlayed")}
+                  </div>
+                )}
               </div>
-              {nintendoPresence.game?.shopUrl && (
+              {nintendoPresence.game?.name && (
                 <a
-                  href={nintendoPresence.game.shopUrl}
+                  href={
+                    nintendoPresence.game.shopUrl ||
+                    `https://www.nintendo.com/search/#q=${encodeURIComponent(nintendoPresence.game.name)}`
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[10px] bg-[#e60012]/20 hover:bg-[#e60012] hover:text-white text-[#e60012] px-2 py-1 rounded font-semibold transition-colors flex-shrink-0"
