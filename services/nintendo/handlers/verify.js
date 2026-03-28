@@ -1,19 +1,27 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { nxapiPresence } from "#services/nintendo/utils/nxapi.js"
+import { nxapiWebfinger, verifySignedData } from "#services/nintendo/utils/nxapi.js"
 import {
-	getVerificationState,
 	checkVerificationAttempt,
 	incrementVerificationAttempt,
-	clearVerificationState,
 	setConnectionAttempt,
+	getAttemptCount,
 } from "#services/nintendo/utils/rateLimiter.js"
 
 export async function handleVerify(req, res) {
 	const userId = req.user.id
+	const { verificationToken } = req.body
 
-	const state = getVerificationState(userId)
-	if (!state) {
+	if (!verificationToken) {
 		return res.status(400).json({ error: "no_verification_session" })
+	}
+
+	const state = verifySignedData(verificationToken)
+	if (!state) {
+		return res.status(400).json({ error: "expired_or_invalid_session" })
+	}
+
+	if (state.userId !== userId) {
+		return res.status(403).json({ error: "user_mismatch" })
 	}
 
 	const attemptCheck = checkVerificationAttempt(userId)
@@ -21,24 +29,30 @@ export async function handleVerify(req, res) {
 		return res.status(429).json({
 			error: attemptCheck.reason,
 			retryAfter: attemptCheck.retryAfter || 0,
-			attemptsLeft: Math.max(0, 3 - (getVerificationState(userId)?.attempts || 0)),
+			attemptsLeft: Math.max(0, 3 - getAttemptCount(userId)),
 		})
 	}
 
 	incrementVerificationAttempt(userId)
 
 	try {
-		const presence = await nxapiPresence(state.nsaId)
+		const webfinger = await nxapiWebfinger(state.friendCode)
 
-		if (!presence || !presence.friend) {
-			const currentState = getVerificationState(userId)
-			return res.status(400).json({
-				error: "presence_unavailable",
-				attemptsLeft: Math.max(0, 3 - (currentState?.attempts || 0)),
+		if (!webfinger || !webfinger.properties) {
+			return res.status(502).json({
+				error: "lookup_unavailable",
+				attemptsLeft: Math.max(0, 3 - getAttemptCount(userId)),
 			})
 		}
 
-		const currentName = presence.friend.name
+		const currentName = webfinger.properties["https://nxapi-auth.fancy.org.uk/ns/baas/nsa/name"]
+
+		if (!currentName) {
+			return res.status(502).json({
+				error: "lookup_unavailable",
+				attemptsLeft: Math.max(0, 3 - getAttemptCount(userId)),
+			})
+		}
 
 		if (currentName === state.code) {
 			setConnectionAttempt(userId)
@@ -63,8 +77,6 @@ export async function handleVerify(req, res) {
 				return res.status(500).json({ error: "save_failed" })
 			}
 
-			clearVerificationState(userId)
-
 			return res.json({
 				verified: true,
 				connection: {
@@ -75,19 +87,17 @@ export async function handleVerify(req, res) {
 			})
 		}
 
-		const currentState = getVerificationState(userId)
 		return res.json({
 			verified: false,
 			currentName,
 			expectedCode: state.code,
-			attemptsLeft: Math.max(0, 3 - (currentState?.attempts || 0)),
+			attemptsLeft: Math.max(0, 3 - getAttemptCount(userId)),
 		})
 	} catch (err) {
 		console.error("nintendo verify error:", err)
-		const currentState = getVerificationState(userId)
 		return res.status(500).json({
 			error: "verify_failed",
-			attemptsLeft: Math.max(0, 3 - (currentState?.attempts || 0)),
+			attemptsLeft: Math.max(0, 3 - getAttemptCount(userId)),
 		})
 	}
 }
