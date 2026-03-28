@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Calendar, Gamepad2, Twitch, Radio } from "lucide-react"
+import { Calendar, Gamepad2, Twitch, Radio, Clock } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
 import CountUp from "@components/UI/CountUp"
@@ -276,24 +276,28 @@ function ActivityCard({ stream, userId }) {
                 <div className="text-[11px] font-semibold text-white truncate">
                   {nintendoPresence.game?.name || nintendoPresence.user.name}
                 </div>
-                <div className="flex items-center gap-1.5 mt-0.5">
+                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                   <span className="text-[10px] text-[#e60012]">
                     {nintendoPresence.isPlaying ? t("stats.playingNow") : t("stats.online")}
                   </span>
                   {nintendoPresence.game?.sessionTime && (
                     <>
                       <span className="text-[10px] text-zinc-600">·</span>
-                      <span className="text-[10px] text-zinc-400">
+                      <span className="text-[10px] text-zinc-400 flex items-center gap-0.5">
+                        <Clock className="w-2.5 h-2.5" />
                         {nintendoPresence.game.sessionTime}
                       </span>
                     </>
                   )}
+                  {nintendoPresence.game?.totalPlayTime && (
+                    <>
+                      <span className="text-[10px] text-zinc-600">·</span>
+                      <span className="text-[10px] text-zinc-500 flex items-center gap-0.5">
+                        {nintendoPresence.game.totalPlayTime} total
+                      </span>
+                    </>
+                  )}
                 </div>
-                {nintendoPresence.game?.totalPlayTime && (
-                  <div className="text-[9px] text-zinc-500 mt-0.5">
-                    {nintendoPresence.game.totalPlayTime} {t("stats.totalPlayed")}
-                  </div>
-                )}
               </div>
               {nintendoPresence.game?.name && (
                 <a
