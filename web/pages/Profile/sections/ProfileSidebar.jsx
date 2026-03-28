@@ -249,7 +249,7 @@ function ActivityCard({ stream, userId }) {
             )}
             <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/95 via-zinc-900/90 to-zinc-900/80" />
             <div className="relative z-10 flex items-center gap-3 w-full">
-              {nintendoPresence.game?.imageUrl && (
+              {nintendoPresence.game?.imageUrl ? (
                 <div className="relative flex-shrink-0">
                   <img
                     src={nintendoPresence.game.imageUrl}
@@ -257,11 +257,10 @@ function ActivityCard({ stream, userId }) {
                     className="w-7 h-10 object-cover rounded shadow-lg"
                   />
                   <div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
-                    <NintendoSwitchIcon className="w-2.5 h-2.5 text-[#e60012]" />
+                    <NintendoIcon className="w-2.5 h-2.5 text-[#e60012]" />
                   </div>
                 </div>
-              )}
-              {!nintendoPresence.game?.imageUrl && (
+              ) : (
                 <div className="relative flex-shrink-0">
                   <img
                     src={nintendoPresence.user.imageUri}
@@ -269,7 +268,7 @@ function ActivityCard({ stream, userId }) {
                     className="w-9 h-9 object-cover rounded-full shadow-lg border-2 border-[#e60012]/30"
                   />
                   <div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
-                    <NintendoSwitchIcon className="w-2.5 h-2.5 text-[#e60012]" />
+                    <NintendoIcon className="w-2.5 h-2.5 text-[#e60012]" />
                   </div>
                 </div>
               )}
@@ -281,6 +280,16 @@ function ActivityCard({ stream, userId }) {
                   {nintendoPresence.isPlaying ? t("stats.playingNow") : t("stats.online")}
                 </div>
               </div>
+              {nintendoPresence.game?.shopUrl && (
+                <a
+                  href={nintendoPresence.game.shopUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] bg-[#e60012]/20 hover:bg-[#e60012] hover:text-white text-[#e60012] px-2 py-1 rounded font-semibold transition-colors flex-shrink-0"
+                >
+                  eShop
+                </a>
+              )}
             </div>
           </div>
         )}
