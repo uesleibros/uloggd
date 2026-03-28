@@ -249,16 +249,30 @@ function ActivityCard({ stream, userId }) {
             )}
             <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/95 via-zinc-900/90 to-zinc-900/80" />
             <div className="relative z-10 flex items-center gap-3 w-full">
-              <div className="relative flex-shrink-0">
-                <img
-                  src={nintendoPresence.user.imageUri}
-                  alt={nintendoPresence.user.name}
-                  className="w-9 h-9 object-cover rounded-full shadow-lg border-2 border-[#e60012]/30"
-                />
-                <div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
-                  <NintendoIcon className="w-2.5 h-2.5 text-[#e60012]" />
+              {nintendoPresence.game?.imageUrl && (
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={nintendoPresence.game.imageUrl}
+                    alt={nintendoPresence.game?.name}
+                    className="w-7 h-10 object-cover rounded shadow-lg"
+                  />
+                  <div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
+                    <NintendoSwitchIcon className="w-2.5 h-2.5 text-[#e60012]" />
+                  </div>
                 </div>
-              </div>
+              )}
+              {!nintendoPresence.game?.imageUrl && (
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={nintendoPresence.user.imageUri}
+                    alt={nintendoPresence.user.name}
+                    className="w-9 h-9 object-cover rounded-full shadow-lg border-2 border-[#e60012]/30"
+                  />
+                  <div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
+                    <NintendoSwitchIcon className="w-2.5 h-2.5 text-[#e60012]" />
+                  </div>
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-semibold text-white truncate">
                   {nintendoPresence.game?.name || nintendoPresence.user.name}
