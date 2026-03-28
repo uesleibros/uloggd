@@ -66,10 +66,10 @@ export async function handleVerify(req, res) {
 					provider_username: state.friendCode,
 					provider_display_name: state.profile.name,
 					provider_avatar_url: state.profile.avatar,
-					extra_data: JSON.stringify({
+					extra_data: {
 						nsaId: state.nsaId,
 						verifiedAt: new Date().toISOString(),
-					}),
+					},
 				}, { onConflict: "user_id,provider" })
 
 			if (error) {

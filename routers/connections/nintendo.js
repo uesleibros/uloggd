@@ -3,6 +3,7 @@ import { handleDisconnect } from "#services/nintendo/handlers/disconnect.js"
 import { handleStatus } from "#services/nintendo/handlers/status.js"
 import { handleLookup } from "#services/nintendo/handlers/lookup.js"
 import { handleVerify } from "#services/nintendo/handlers/verify.js"
+import { handlePresence } from "#services/nintendo/handlers/presence.js"
 import { getUser } from "#lib/auth.js"
 
 const ACTIONS = {
@@ -11,6 +12,7 @@ const ACTIONS = {
 	connect:    { handler: handleConnect,    method: "POST", auth: true  },
 	disconnect: { handler: handleDisconnect, method: "POST", auth: true  },
 	status:     { handler: handleStatus,     method: "POST", auth: false },
+	presence:   { handler: handlePresence,   method: "GET",  auth: false },
 }
 
 export async function nintendoHandler(req, res) {

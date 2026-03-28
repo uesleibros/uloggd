@@ -70,6 +70,27 @@ export async function nxapiWebfinger(friendCode) {
 	return res.json()
 }
 
+export async function nxapiPresence(nsaId) {
+	const token = await getNxapiToken()
+	
+	const res = await fetch(
+		`https://nxapi-presence.fancy.org.uk/api/presence/${nsaId}`,
+		{
+			headers: {
+				Authorization: `Bearer ${token}`,
+				"Cache-Control": "no-cache",
+			},
+		}
+	)
+
+	if (!res.ok) {
+		if (res.status === 404) return null
+		throw new Error(`nxapi presence failed: ${res.status}`)
+	}
+
+	return res.json()
+}
+
 export function generateVerificationCode() {
 	const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 	let code = ""
