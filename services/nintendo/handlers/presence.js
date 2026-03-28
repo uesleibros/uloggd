@@ -45,8 +45,6 @@ function normalizePresence(data) {
 		updatedAt: presence.updatedAt ? new Date(presence.updatedAt * 1000).toISOString() : new Date().toISOString(),
 		lastOnlineAt: presence.logoutAt ? new Date(presence.logoutAt * 1000).toISOString() : null,
 		user: {
-			id: friend.id,
-			nsaId: friend.nsaId,
 			name: friend.name,
 			imageUri: friend.imageUri,
 			image2Uri: friend.image2Uri,
