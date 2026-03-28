@@ -33,37 +33,49 @@ function ActivitySection({ stream, userId }) {
   const [steamPresence, setSteamPresence] = useState(null)
   const [nintendoPresence, setNintendoPresence] = useState(null)
 
-  const fetchPresences = async () => {
-    console.log("fetching presences for userId:", userId)
-    
-    try {
-      const [steamRes, nintendoRes] = await Promise.all([
-        fetch(`/api/steam/presence?userId=${userId}`).catch(e => { console.log("steam fetch error:", e); return null }),
-        fetch(`/api/nintendo/presence?userId=${userId}`).catch(e => { console.log("nintendo fetch error:", e); return null }),
-      ])
+  useEffect(() => {
+    setSteamPresence(null)
+    setNintendoPresence(null)
 
-      console.log("steamRes:", steamRes?.status)
-      console.log("nintendoRes:", nintendoRes?.status)
+    if (!userId) return
+
+    let cancelled = false
+
+    const fetchPresences = async () => {
+      const [steamRes, nintendoRes] = await Promise.all([
+        fetch(`/api/steam/presence?userId=${userId}`).catch(() => null),
+        fetch(`/api/nintendo/presence?userId=${userId}`).catch(() => null),
+      ])
 
       if (cancelled) return
 
-      if (steamRes) {
-        const steamData = await steamRes.json()
-        console.log("steamData:", steamData)
-        if (steamData.playing) setSteamPresence(steamData)
+      try {
+        if (steamRes?.ok) {
+          const steamData = await steamRes.json()
+          if (steamData.playing) setSteamPresence(steamData)
+        }
+      } catch (err) {
+        console.error("steam presence error:", err)
       }
 
-      if (nintendoRes) {
-        const nintendoData = await nintendoRes.json()
-        console.log("nintendoData:", nintendoData)
-        if (nintendoData.connected && nintendoData.presence?.isOnline) {
-          setNintendoPresence(nintendoData.presence)
+      try {
+        if (nintendoRes?.ok) {
+          const nintendoData = await nintendoRes.json()
+          if (nintendoData.connected && nintendoData.presence?.isOnline) {
+            setNintendoPresence(nintendoData.presence)
+          }
         }
+      } catch (err) {
+        console.error("nintendo presence error:", err)
       }
-    } catch (err) {
-      console.error("presence fetch error:", err)
     }
-  }
+
+    fetchPresences()
+
+    return () => {
+      cancelled = true
+    }
+  }, [userId])
 
   if (!stream && !steamPresence && !nintendoPresence) return null
 
