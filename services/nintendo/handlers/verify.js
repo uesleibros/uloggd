@@ -51,11 +51,11 @@ export async function handleVerify(req, res) {
 					provider_user_id: state.friendCode,
 					provider_username: state.friendCode,
 					provider_display_name: state.profile.name,
-					provider_avatar: state.profile.avatar,
-					provider_metadata: {
+					provider_avatar_url: state.profile.avatar,
+					extra_data: JSON.stringify({
 						nsaId: state.nsaId,
 						verifiedAt: new Date().toISOString(),
-					},
+					}),
 				}, { onConflict: "user_id,provider" })
 
 			if (error) {
