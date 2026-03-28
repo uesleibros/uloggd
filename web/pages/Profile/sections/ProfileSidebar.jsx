@@ -9,7 +9,7 @@ import SteamAchievements from "@components/Game/SteamAchievements"
 import ProfileRetroAchievements from "@components/Game/RetroAchievements"
 import PSNTrophies from "@components/Game/PSNTrophies"
 import RatingStats from "../components/RatingStats"
-import { SteamIcon, NintendoSwitchIcon } from "#constants/customIcons"
+import { SteamIcon, NintendoIcon } from "#constants/customIcons"
 
 export function ProfileSidebar({
   profile,
@@ -256,7 +256,7 @@ function ActivityCard({ stream, userId }) {
                   className="w-9 h-9 object-cover rounded-full shadow-lg border-2 border-[#e60012]/30"
                 />
                 <div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5">
-                  <NintendoSwitchIcon className="w-2.5 h-2.5 text-[#e60012]" />
+                  <NintendoIcon className="w-2.5 h-2.5 text-[#e60012]" />
                 </div>
               </div>
               <div className="min-w-0 flex-1">
