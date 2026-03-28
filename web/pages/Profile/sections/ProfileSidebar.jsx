@@ -276,6 +276,11 @@ function ActivityCard({ stream, userId }) {
                 <div className="text-[11px] font-semibold text-white truncate">
                   {nintendoPresence.game?.name || nintendoPresence.user.name}
                 </div>
+                {nintendoPresence.game?.sysDescription && (
+                  <div className="text-[11px] font-semibold text-zinc-600 truncate">
+                    {nintendoPresence.game?.sysDescription}
+                  </div>
+                )}
                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                   <span className="text-[10px] text-[#e60012]">
                     {nintendoPresence.isPlaying ? t("stats.playingNow") : t("stats.online")}

@@ -62,6 +62,7 @@ function normalizePresence(data) {
 	if (presenceGame) {
 		result.game = {
 			name: presenceGame.name || title?.name || null,
+			sysDescription: presenceGame.sysDescription,
 			imageUrl: presenceGame.imageUri || title?.image_url || null,
 			shopUrl: presenceGame.shopUri || title?.url || null,
 			totalPlayTime: formatPlayTime(presenceGame.totalPlayTime), // já vem em minutos
