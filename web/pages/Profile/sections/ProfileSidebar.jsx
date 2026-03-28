@@ -277,7 +277,7 @@ function ActivityCard({ stream, userId }) {
                   {nintendoPresence.game?.name || nintendoPresence.user.name}
                 </div>
                 {nintendoPresence.game?.sysDescription && (
-                  <div className="text-[11px] font-semibold text-zinc-600 truncate">
+                  <div className="text-[11px] font-semibold text-zinc-400 truncate">
                     {nintendoPresence.game?.sysDescription}
                   </div>
                 )}
