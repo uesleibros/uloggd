@@ -28,12 +28,12 @@ function setCachedPresence(nsaId, data) {
 	}
 }
 
-function formatPlayTime(seconds) {
-	if (!seconds) return null
-	const hours = Math.floor(seconds / 3600)
-	const minutes = Math.floor((seconds % 3600) / 60)
-	if (hours > 0) return `${hours}h ${minutes}m`
-	return `${minutes}m`
+function formatPlayTime(minutes) {
+	if (!minutes) return null
+	const hours = Math.floor(minutes / 60)
+	const mins = minutes % 60
+	if (hours > 0) return `${hours}h ${mins}m`
+	return `${mins}m`
 }
 
 function normalizePresence(data) {
@@ -64,8 +64,10 @@ function normalizePresence(data) {
 			name: presenceGame.name || title?.name || null,
 			imageUrl: presenceGame.imageUri || title?.image_url || null,
 			shopUrl: presenceGame.shopUri || title?.url || null,
-			totalPlayTime: formatPlayTime(presenceGame.totalPlayTime),
-			sessionTime: title?.since ? formatPlayTime(Math.floor((Date.now() - new Date(title.since).getTime()) / 1000)) : null,
+			totalPlayTime: formatPlayTime(presenceGame.totalPlayTime), // já vem em minutos
+			sessionTime: title?.since 
+				? formatPlayTime(Math.floor((Date.now() - new Date(title.since).getTime()) / 1000 / 60))
+				: null,
 			firstPlayedAt: presenceGame.firstPlayedAt ? new Date(presenceGame.firstPlayedAt * 1000).toISOString() : null,
 		}
 	} else if (title && Object.keys(title).length > 0) {
