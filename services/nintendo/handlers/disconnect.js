@@ -1,5 +1,4 @@
 import { supabase } from "#lib/supabase-ssr.js"
-import { clearVerificationState } from "#services/nintendo/utils/rateLimiter.js"
 
 export async function handleDisconnect(req, res) {
 	const userId = req.user.id
@@ -15,6 +14,5 @@ export async function handleDisconnect(req, res) {
 		return res.status(500).json({ error: "fail" })
 	}
 
-	clearVerificationState(userId)
 	res.json({ disconnected: true })
 }
