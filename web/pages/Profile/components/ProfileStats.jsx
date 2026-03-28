@@ -39,24 +39,38 @@ function ActivitySection({ stream, userId }) {
 
     if (!userId) return
 
-    const fetchSteamPresence = async () => {
+    let cancelled = false
+
+    const fetchPresences = async () => {
       try {
-        const res = await fetch(`/api/steam/presence?userId=${userId}`)
-        const data = await res.json()
-        if (data.playing) setSteamPresence(data)
-      } catch {}
+        const [steamRes, nintendoRes] = await Promise.all([
+          fetch(`/api/steam/presence?userId=${userId}`).catch(() => null),
+          fetch(`/api/nintendo/presence?userId=${userId}`).catch(() => null),
+        ])
+
+        if (cancelled) return
+
+        if (steamRes) {
+          const steamData = await steamRes.json()
+          if (steamData.playing) setSteamPresence(steamData)
+        }
+
+        if (nintendoRes) {
+          const nintendoData = await nintendoRes.json()
+          if (nintendoData.connected && nintendoData.presence?.isOnline) {
+            setNintendoPresence(nintendoData.presence)
+          }
+        }
+      } catch (err) {
+        console.error("presence fetch error:", err)
+      }
     }
 
-    const fetchNintendoPresence = async () => {
-      try {
-        const res = await fetch(`/api/nintendo/presence?userId=${userId}`)
-        const data = await res.json()
-        if (data.connected && data.presence?.isOnline) setNintendoPresence(data.presence)
-      } catch {}
-    }
+    fetchPresences()
 
-    fetchSteamPresence()
-    fetchNintendoPresence()
+    return () => {
+      cancelled = true
+    }
   }, [userId])
 
   if (!stream && !steamPresence && !nintendoPresence) return null

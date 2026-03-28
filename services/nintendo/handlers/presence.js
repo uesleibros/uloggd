@@ -96,7 +96,7 @@ function syncConnectionInBackground(connection, friend) {
 }
 
 export async function handlePresence(req, res) {
-	const targetUserId = req.query.userId || req.user?.id
+	const targetUserId = req.query.userId
 	const skipCache = req.query.refresh === "true"
 
 	if (!targetUserId) {
