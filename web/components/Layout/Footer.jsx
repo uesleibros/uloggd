@@ -6,6 +6,7 @@ const LINKS = {
     { key: "blog", to: "/blog" },
     { key: "badges", to: "/about/badges" },
     { key: "minerals", to: "/about/minerals" },
+    { key: "acknowledgements", to: "/acknowledgements" },
   ],
   legal: [
     { key: "terms", to: "/legal/terms" },
@@ -27,14 +28,6 @@ export default function Footer() {
             <p className="mt-3 text-sm text-zinc-500 leading-relaxed">
               {t("footer.description")}
             </p>
-            <a
-              href="https://www.igdb.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 mt-4 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
-            >
-              {t("footer.igdb")}
-            </a>
           </div>
 
           <div>
