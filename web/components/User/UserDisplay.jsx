@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom"
 import UserBadges from "@components/User/UserBadges"
-import { getStatus } from "#utils/onlineStatus"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 
 export default function UserDisplay({
@@ -8,7 +7,6 @@ export default function UserDisplay({
   size = "md",
   showBadges = true,
   showUsername = true,
-  showStatus = false,
   linkToProfile = false,
   className = "",
 }) {
@@ -21,8 +19,6 @@ export default function UserDisplay({
         alt={user.username}
         decorationUrl={user.equipped?.avatar_decoration?.asset_url}
         size={size}
-        status={showStatus ? getStatus(user.last_seen, user.status) : null}
-        isStreaming={showStatus ? !!user.stream : null}
       />
       {showUsername && (
         <div className="flex items-center gap-1.5 min-w-0">
@@ -47,6 +43,4 @@ export default function UserDisplay({
   }
 
   return content
-
 }
-
