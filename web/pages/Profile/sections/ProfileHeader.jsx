@@ -74,7 +74,6 @@ export function ProfileHeader({
 
   const isBanned = profile.is_banned
   const isModerator = currentUser?.is_moderator
-  const status = getStatus(profile.last_seen, profile.status)
 
   return (
     <div>
