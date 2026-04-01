@@ -43,9 +43,8 @@ const ACKNOWLEDGEMENTS = [
     description: "Trophy syncing, game library imports and user profile integration for PlayStation platforms.",
     category: "data",
     url: "https://www.playstation.com",
-    logo: "https://www.playstation.com/favicon.ico",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Playstation_logo_colour.svg",
     color: "#003791",
-    letter: "PSN",
   },
   {
     name: "RetroAchievements",
@@ -60,8 +59,8 @@ const ACKNOWLEDGEMENTS = [
     description: "Historical pricing data and deal tracking powering the game price history features.",
     category: "data",
     url: "https://isthereanydeal.com",
+    logo: "https://isthereanydeal.com/public/assets/logo-GBHE6XF2.svg",
     color: "#4078c0",
-    letter: "ITAD",
   },
   {
     name: "Supabase",
@@ -70,14 +69,6 @@ const ACKNOWLEDGEMENTS = [
     url: "https://supabase.com",
     logo: "https://supabase.com/favicon/favicon-32x32.png",
     color: "#3ecf8e",
-  },
-  {
-    name: "Vercel",
-    description: "Cloud platform hosting and deploying uloggd with edge functions and global CDN.",
-    category: "infrastructure",
-    url: "https://vercel.com",
-    color: "#ffffff",
-    letter: "▲",
   },
   {
     name: "NXAPI",
