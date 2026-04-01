@@ -52,7 +52,7 @@ const ACKNOWLEDGEMENTS = [
     description: "Retro game achievement tracking and integration for classic gaming libraries and profiles.",
     category: "data",
     url: "https://retroachievements.org",
-    logo: "https://retroachievements.org/favicon.webp",
+    logo: "https://static.retroachievements.org/assets/images/ra-icon.webp",
     color: "#cc9900",
   },
   {
@@ -92,8 +92,8 @@ const ACKNOWLEDGEMENTS = [
     description: "Image hosting service for user-uploaded screenshots, covers and media content.",
     category: "infrastructure",
     url: "https://imgchest.com",
+    logo: "https://cdn.imgchest.com/logo_icon.png",
     color: "#4a9eff",
-    letter: "IC",
   },
   {
     name: "Decors",
