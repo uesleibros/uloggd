@@ -22,10 +22,10 @@ const EQUIPPED_REL = `
 
 const FULL_FIELDS = `
   user_id, username, banner, bio, pronoun, thinking, avatar,
-  created_at, is_moderator, is_banned, last_seen, status, username_changed_at
+  created_at, is_moderator, is_banned, username_changed_at
 `
 
-const LIST_FIELDS = `user_id, username, avatar, is_moderator, last_seen, status`
+const LIST_FIELDS = `user_id, username, avatar, is_moderator`
 
 const MINIMAL_FIELDS = `user_id, username, avatar`
 
@@ -192,5 +192,3 @@ export async function getFollowStatus(userId, currentUserId) {
     followsYou: !!followsYouRes.data,
   }
 }
-
-
