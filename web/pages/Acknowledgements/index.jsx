@@ -2,13 +2,15 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { ArrowLeft, ExternalLink, Heart, Gamepad2, Sparkles, Trophy, Star } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
+import { useTranslation } from "#hooks/useTranslation"
+import Translatable from "@components/UI/Translatable"
 
 const CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "infrastructure", label: "Infrastructure" },
-  { id: "data", label: "Data & APIs" },
-  { id: "libraries", label: "Libraries" },
-  { id: "tools", label: "Tools" },
+  { id: "all", labelKey: "categories.all" },
+  { id: "infrastructure", labelKey: "categories.infrastructure" },
+  { id: "data", labelKey: "categories.data" },
+  { id: "libraries", labelKey: "categories.libraries" },
+  { id: "tools", labelKey: "categories.tools" },
 ]
 
 const ACKNOWLEDGEMENTS = [
@@ -143,7 +145,7 @@ const ACKNOWLEDGEMENTS = [
   },
   {
     name: "Twemoji",
-    description: "Twitter's open source emoji library providing consistent cross-platform emoji rendering.",
+    description: "Open source emoji library providing consistent cross-platform emoji rendering.",
     category: "libraries",
     url: "https://github.com/jdecked/twemoji",
     color: "#1da1f2",
@@ -231,7 +233,9 @@ function AcknowledgementCard({ item }) {
           </h3>
           <ExternalLink className="w-3 h-3 text-zinc-600 group-hover:text-zinc-400 transition-colors opacity-0 group-hover:opacity-100" />
         </div>
-        <p className="text-xs text-zinc-500 leading-relaxed">{item.description}</p>
+        <Translatable className="text-xs text-zinc-500 leading-relaxed">
+          {item.description}
+        </Translatable>
       </div>
 
       <div
@@ -254,10 +258,11 @@ function FloatingIcon({ icon: Icon, className }) {
 
 export default function AcknowledgementsPage() {
   const [activeCategory, setActiveCategory] = useState("all")
+  const { t } = useTranslation("acknowledgements")
 
   usePageMeta({
-    title: "Acknowledgements - uloggd",
-    description: "Credits and acknowledgements for the open source projects and services that power uloggd.",
+    title: `${t("title")} - uloggd`,
+    description: t("description"),
   })
 
   const filtered = activeCategory === "all"
@@ -276,18 +281,18 @@ export default function AcknowledgementsPage() {
         className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to home
+        {t("backToHome")}
       </Link>
 
       <div className="flex items-center gap-3 mb-2">
         <div className="w-12 h-12 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center">
           <Heart className="w-6 h-6 text-pink-400" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-white">Acknowledgements</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">{t("title")}</h1>
       </div>
 
       <p className="text-sm text-zinc-500 mb-8 ml-0.5">
-        uloggd is built on the shoulders of incredible open source projects and services. We are grateful to every one of them.
+        {t("description")}
       </p>
 
       <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide pb-1">
@@ -301,7 +306,7 @@ export default function AcknowledgementsPage() {
                 : "bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700"
             }`}
           >
-            {cat.label}
+            {t(cat.labelKey)}
           </button>
         ))}
       </div>
@@ -315,18 +320,18 @@ export default function AcknowledgementsPage() {
       {filtered.length === 0 && (
         <div className="text-center py-16">
           <Gamepad2 className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
-          <p className="text-sm text-zinc-600">No acknowledgements in this category.</p>
+          <p className="text-sm text-zinc-600">{t("empty")}</p>
         </div>
       )}
 
       <div className="mt-10 p-4 bg-zinc-800/30 border border-zinc-700/50 rounded-xl">
         <p className="text-sm text-zinc-500 text-center">
-          Think we missed something?{" "}
+          {t("missing")}{" "}
           <a
             href="mailto:uloggd.gg@gmail.com"
             className="text-indigo-400 hover:underline"
           >
-            Let us know
+            {t("letUsKnow")}
           </a>
         </p>
       </div>
