@@ -14,30 +14,31 @@ export function SearchHeader({ query, onChange, onClear, totalResults, loading }
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
         <input
           type="text"
           value={query}
           onChange={(e) => onChange(e.target.value)}
           placeholder={t("header.placeholder")}
-          className="w-full h-10 pl-10 pr-10 bg-zinc-900 rounded-md text-white text-sm placeholder-zinc-500 focus:outline-none transition-colors"
+          className="w-full h-11 pl-11 pr-11 bg-zinc-900/80 border border-zinc-700 rounded-xl text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors"
           autoFocus
         />
         {query && (
           <button
             onClick={onClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full border border-zinc-700 hover:border-zinc-500 text-zinc-500 hover:text-white flex items-center justify-center transition-all cursor-pointer hover:bg-zinc-800/50"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
 
       {query && !loading && totalResults > 0 && (
-        <p className="mt-3 text-xs text-zinc-500 uppercase font-semibold tracking-wide">
+        <p className="mt-3 text-xs text-zinc-500">
           {t("header.resultsFound", { count: totalResults.toLocaleString() })}
         </p>
       )}
     </div>
   )
+
 }
