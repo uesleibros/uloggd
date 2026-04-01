@@ -75,7 +75,7 @@ const ACKNOWLEDGEMENTS = [
     description: "Unofficial Nintendo Switch Online API client enabling Nintendo account integrations and play activity.",
     category: "data",
     url: "https://github.com/samuelthomas2774/nxapi",
-    color: "#e60012",
+    color: "#fa003f",
     letter: "NX",
   },
   {
@@ -91,8 +91,8 @@ const ACKNOWLEDGEMENTS = [
     description: "Avatar decoration service providing profile customization and cosmetic assets.",
     category: "tools",
     url: "https://github.com/decor-discord",
+    logo: "https://avatars.githubusercontent.com/u/148011228?s=200&v=4",
     color: "#f47fff",
-    letter: "D",
   },
   {
     name: "DEV.to",
