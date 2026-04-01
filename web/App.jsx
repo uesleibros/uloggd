@@ -6,7 +6,6 @@ import Footer from "@components/Layout/Footer"
 import TwemojiProvider from "@components/UI/Twemoji"
 import { useAuth } from "#hooks/useAuth"
 import { MyLibraryProvider } from "#hooks/useMyLibrary"
-import { useHeartbeat } from "#hooks/useHeartbeat"
 import ErrorBoundary from "@components/ErrorBoundary"
 import Home from "@pages/Home"
 import Badges from "@pages/Badges"
@@ -36,7 +35,6 @@ import "#web/App.css"
 export default function App() {
 	const { user, banned } = useAuth()
 	const navigate = useNavigate()
-	useHeartbeat()
 
 	if (banned) {
 		return (
