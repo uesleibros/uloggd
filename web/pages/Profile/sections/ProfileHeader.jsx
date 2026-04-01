@@ -154,12 +154,6 @@ export function ProfileHeader({
                 />
 
                 {!isBanned && <GlobalRank userId={profile.user_id} />}
-
-                {status === "offline" && getTimeAgo(profile.last_seen, profile.status) && (
-                  <span className="text-[11px] text-zinc-500">
-                    {t("header.lastSeen", { time: getTimeAgo(profile.last_seen, profile.status) })}
-                  </span>
-                )}
               </div>
             </div>
 
