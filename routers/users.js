@@ -8,7 +8,6 @@ import { handleBanner } from "#services/users/handlers/me/banner.js"
 import { handleAvatar } from "#services/users/handlers/me/avatar.js"
 import { handleThinking } from "#services/users/handlers/me/thinking.js"
 import { handlePronoun } from "#services/users/handlers/me/pronoun.js"
-import { handleHeartbeat } from "#services/users/handlers/me/heartbeat.js"
 import { handleUsername } from "#services/users/handlers/me/username.js"
 import { handleCreateUsername } from "#services/users/handlers/me/createUsername.js"
 import { handleBatch } from "#services/users/handlers/batch.js"
@@ -30,7 +29,6 @@ const ACTIONS = {
   avatar:         { handler: handleAvatar,          method: "POST", scopes: ["@me"], auth: true       },
   thinking:       { handler: handleThinking,        method: "POST", scopes: ["@me"], auth: true       },
   pronoun:        { handler: handlePronoun,         method: "POST", scopes: ["@me"], auth: true       },
-  heartbeat:      { handler: handleHeartbeat,       method: "POST", scopes: ["@me"], auth: "flexible" },
   batch:          { handler: handleBatch,           method: "GET",  scopes: null,    auth: false      },
   search:         { handler: handleSearch,          method: "GET",  scopes: null,    auth: false      }
 }
