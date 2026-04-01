@@ -1,4 +1,19 @@
 export default {
+	acknowledgements: {
+	  title: "Acknowledgements",
+	  description: "uloggd is built on the shoulders of incredible open source projects and services. We are grateful to every one of them.",
+	  backToHome: "Back to home",
+	  empty: "No acknowledgements in this category.",
+	  missing: "Think we missed something?",
+	  letUsKnow: "Let us know",
+	  categories: {
+	    all: "All",
+	    infrastructure: "Infrastructure",
+	    data: "Data & APIs",
+	    libraries: "Libraries",
+	    tools: "Tools"
+	  }
+	},
 	setUsername: {
 	  title: "Choose your username",
 	  description: "Pick a unique username for your profile. This is how other users will find you.",
