@@ -824,7 +824,7 @@ export default {
 	},
 	footer: {
 		description: "Sua biblioteca de jogos pessoal. Acompanhe, avalie e descubra novos jogos.",
-		igdb: "Dados fornecidos por IGDB",
+		acknowledgements: "Reconhecimentos",
 		blog: "Novidades",
 		legal: "Legal",
 		terms: "Termos de Uso",
