@@ -139,7 +139,6 @@ function ProfilePreview({ user, equippedDecoration, itemCount, equippedCount }) 
         src={user.avatar}
         alt={user.username}
         size="lg"
-        showStatus={false}
         decorationUrl={equippedDecoration}
       />
       <div>
