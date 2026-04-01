@@ -8,7 +8,6 @@ import Badge from "@components/User/Settings/ui/Badge"
 import UserBadges from "@components/User/UserBadges"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 import Modal from "@components/UI/Modal"
-import { getStatus } from "#utils/onlineStatus"
 
 function getCooldownDays(changedAt) {
   if (!changedAt) return 0
@@ -57,8 +56,6 @@ export default function ProfileSection({ user, onUsernameSave, usernameSaving })
           src={user.avatar}
           alt={user.username}
           decorationUrl={user.equipped?.avatar_decoration?.asset_url}
-          status={getStatus(user.last_seen, user.status)}
-          isStreaming={!!user.stream}
           size="xl"
         />
         <div className="flex-1 min-w-0">
