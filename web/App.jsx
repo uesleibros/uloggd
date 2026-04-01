@@ -21,6 +21,7 @@ import ScreenshotPage from "@pages/ScreenshotPage"
 import TierlistPage from "@pages/TierlistPage"
 import LegalPage from "@pages/Legal"
 import BlogPage from "@pages/Blog"
+import AcknowledgementsPage from "@pages/Acknowledgements"
 import NotificationContainer from "@components/UI/Notification"
 import NotFound from "@pages/NotFound"
 import SplashScreen from "@components/UI/SplashScreen"
@@ -86,6 +87,7 @@ export default function App() {
 							<Route path="/leaderboard" element={<LeaderboardPage />} />
 							<Route path="/blog" element={<BlogPage />} />
 							<Route path="/legal/:type" element={<LegalPage />} />
+							<Route path="/acknowledgements" element={<AcknowledgementsPage />} />
 							<Route path="/terms" element={<Navigate to="/legal/terms" replace />} />
 							<Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
 							<Route path="*" element={<NotFound />} />
