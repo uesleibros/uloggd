@@ -9,7 +9,6 @@ import PopularTierlistsSection from "./components/PopularTierlistsSection"
 import PopularScreenshotsSection from "./components/PopularScreenshotsSection"
 import { useAuth } from "#hooks/useAuth"
 import PageBanner from "@components/Layout/PageBanner"
-import { getStatus } from "#utils/onlineStatus"
 import DailyChest from "@components/Minerals/DailyChest"
 import AvatarWithDecoration from "@components/User/AvatarWithDecoration"
 
@@ -39,8 +38,6 @@ function WelcomeBack({ user }) {
           src={user.avatar}
           alt={user.username}
           decorationUrl={user.equipped?.avatar_decoration?.asset_url}
-          status={getStatus(user.last_seen, user.status)}
-          isStreaming={!!user.stream}
           size="lg"
         />
         <div>
