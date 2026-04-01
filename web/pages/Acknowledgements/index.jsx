@@ -112,30 +112,6 @@ const ACKNOWLEDGEMENTS = [
     color: "#ffffff",
   },
   {
-    name: "React",
-    description: "JavaScript library for building the entire uloggd user interface with component-based architecture.",
-    category: "libraries",
-    url: "https://react.dev",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/64px-React-icon.svg.png",
-    color: "#61dafb",
-  },
-  {
-    name: "Vite",
-    description: "Next generation frontend build tool providing instant HMR and optimized production builds.",
-    category: "tools",
-    url: "https://vite.dev",
-    logo: "https://vite.dev/logo.svg",
-    color: "#bd34fe",
-  },
-  {
-    name: "Tailwind CSS",
-    description: "Utility-first CSS framework used for styling every component and page on the site.",
-    category: "libraries",
-    url: "https://tailwindcss.com",
-    logo: "https://tailwindcss.com/favicons/favicon-32x32.png",
-    color: "#38bdf8",
-  },
-  {
     name: "Lucide",
     description: "Beautiful and consistent icon library providing all icons used throughout uloggd.",
     category: "libraries",
@@ -168,28 +144,12 @@ const ACKNOWLEDGEMENTS = [
     letter: "GIF",
   },
   {
-    name: "React Router",
-    description: "Declarative routing library handling all client-side navigation and URL management.",
-    category: "libraries",
-    url: "https://reactrouter.com",
-    logo: "https://reactrouter.com/favicon-dark.png",
-    color: "#f44250",
-  },
-  {
     name: "Framer Motion",
     description: "Production-ready motion library powering animations and transitions throughout the interface.",
     category: "libraries",
     url: "https://motion.dev",
     logo: "https://framerusercontent.com/images/48ha9ZR9oZQGQ6gZ8YUfElP3T0A.png",
     color: "#bb4bff",
-  },
-  {
-    name: "GitHub",
-    description: "Version control and collaboration platform hosting the uloggd source code and issue tracking.",
-    category: "tools",
-    url: "https://github.com",
-    logo: "https://github.githubassets.com/favicons/favicon-dark.svg",
-    color: "#ffffff",
   },
 ]
 
@@ -233,9 +193,11 @@ function AcknowledgementCard({ item }) {
           </h3>
           <ExternalLink className="w-3 h-3 text-zinc-600 group-hover:text-zinc-400 transition-colors opacity-0 group-hover:opacity-100" />
         </div>
-        <Translatable className="text-xs text-zinc-500 leading-relaxed">
-          {item.description}
-        </Translatable>
+        <div onClick={e => e.preventDefault()}>
+          <Translatable className="text-xs text-zinc-500 leading-relaxed">
+            {item.description}
+          </Translatable>
+        </div>
       </div>
 
       <div
