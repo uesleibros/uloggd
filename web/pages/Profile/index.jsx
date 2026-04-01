@@ -113,22 +113,8 @@ export default function Profile() {
 		)
 	}
 
-	const bannerUrl = "https://images.steamusercontent.com/ugc/792007521116378988/88ADDA64DE2B5D177032EAFD7C0277E43899975F/"
-
 	return (
-		<div className="relative min-h-screen">
-			{bannerUrl && (
-				<div className="fixed inset-0 -z-10">
-					<img
-						src={bannerUrl}
-						alt=""
-						className="w-full h-full object-cover scale-110 blur-2xl saturate-[0.3] brightness-[0.15] opacity-80"
-						draggable={false}
-					/>
-					<div className="absolute inset-0 bg-gradient-to-b from-zinc-950/60 via-zinc-950/80 to-zinc-950" />
-				</div>
-			)}
-
+		<div>
 			<PageBanner image={profile.banner} height="profile" />
 
 			<div className="pt-[22vw] sm:pt-[20vw] md:pt-36 pb-16">
