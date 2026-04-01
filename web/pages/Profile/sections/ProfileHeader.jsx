@@ -8,7 +8,6 @@ import ThinkingBubble from "@components/User/ThinkingBubble"
 import ModeratorMenu from "@components/Moderation/ModeratorMenu"
 import ProfileActions from "../components/ProfileActions"
 import { MineralsDisplay } from "@components/Minerals/MineralsDisplay"
-import { getStatus } from "#utils/onlineStatus"
 import { useDateTime } from "#hooks/useDateTime"
 
 function GlobalRank({ userId }) {
@@ -107,8 +106,6 @@ export function ProfileHeader({
               src={profile.avatar}
               alt={profile.username}
               decorationUrl={profile.equipped?.avatar_decoration?.asset_url}
-              status={status}
-              isStreaming={!!profile.stream}
               size="2xl"
             />
             {!isBanned && (
