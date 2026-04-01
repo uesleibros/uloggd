@@ -8,7 +8,6 @@ import ThinkingBubble from "@components/User/ThinkingBubble"
 import ModeratorMenu from "@components/Moderation/ModeratorMenu"
 import ProfileActions from "../components/ProfileActions"
 import { MineralsDisplay } from "@components/Minerals/MineralsDisplay"
-import { useDateTime } from "#hooks/useDateTime"
 
 function GlobalRank({ userId }) {
   const { t } = useTranslation("profile")
@@ -72,7 +71,6 @@ export function ProfileHeader({
   onProfileUpdate,
 }) {
   const { t } = useTranslation("profile")
-  const { getTimeAgo } = useDateTime()
 
   const isBanned = profile.is_banned
   const isModerator = currentUser?.is_moderator
