@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { ArrowLeft, ExternalLink, Heart, Gamepad2, Sparkles, Trophy, Star, Swords, Crown } from "lucide-react"
+import { ArrowLeft, ExternalLink, Heart, Gamepad2, Sparkles, Trophy, Star } from "lucide-react"
 import usePageMeta from "#hooks/usePageMeta"
 
 const CATEGORIES = [
@@ -21,6 +21,38 @@ const ACKNOWLEDGEMENTS = [
     color: "#9147ff",
   },
   {
+    name: "Twitch",
+    description: "OAuth authentication provider and live streaming data for user profiles and game streams.",
+    category: "data",
+    url: "https://www.twitch.tv",
+    logo: "https://static.twitchcdn.net/assets/favicon-32-e29e246c157142c94346.png",
+    color: "#9147ff",
+  },
+  {
+    name: "Steam",
+    description: "Game library imports, user profile integration, current promotions and pricing information.",
+    category: "data",
+    url: "https://store.steampowered.com",
+    logo: "https://store.steampowered.com/favicon.ico",
+    color: "#1b2838",
+  },
+  {
+    name: "RetroAchievements",
+    description: "Retro game achievement tracking and integration for classic gaming libraries and profiles.",
+    category: "data",
+    url: "https://retroachievements.org",
+    logo: "https://retroachievements.org/favicon.webp",
+    color: "#cc9900",
+  },
+  {
+    name: "IsThereAnyDeal",
+    description: "Historical pricing data and deal tracking powering the game price history features.",
+    category: "data",
+    url: "https://isthereanydeal.com",
+    color: "#4078c0",
+    letter: "ITAD",
+  },
+  {
     name: "Supabase",
     description: "Open source backend providing authentication, database, storage and real-time subscriptions.",
     category: "infrastructure",
@@ -33,9 +65,8 @@ const ACKNOWLEDGEMENTS = [
     description: "Cloud platform hosting and deploying uloggd with edge functions and global CDN.",
     category: "infrastructure",
     url: "https://vercel.com",
-    logo: "https://assets.vercel.com/image/upload/front/favicon/vercel/favicon.ico",
     color: "#ffffff",
-    invertLogo: true,
+    letter: "▲",
   },
   {
     name: "NXAPI",
@@ -46,12 +77,28 @@ const ACKNOWLEDGEMENTS = [
     letter: "NX",
   },
   {
+    name: "Imgchest",
+    description: "Image hosting service for user-uploaded screenshots, covers and media content.",
+    category: "infrastructure",
+    url: "https://imgchest.com",
+    color: "#4a9eff",
+    letter: "IC",
+  },
+  {
     name: "Decors",
     description: "Avatar decoration service providing profile customization and cosmetic assets.",
     category: "tools",
     url: "https://github.com/decor-discord",
     color: "#f47fff",
     letter: "D",
+  },
+  {
+    name: "DEV.to",
+    description: "Developer blogging platform powering the uloggd blog and development updates.",
+    category: "tools",
+    url: "https://dev.to",
+    logo: "https://dev-to-uploads.s3.amazonaws.com/uploads/logos/resized_logo_UQww2soKuUsjaOGNB38o.png",
+    color: "#ffffff",
   },
   {
     name: "React",
@@ -108,14 +155,7 @@ const ACKNOWLEDGEMENTS = [
     url: "https://github.com",
     logo: "https://github.githubassets.com/favicons/favicon-dark.svg",
     color: "#ffffff",
-    invertLogo: true,
   },
-]
-
-const STATS = [
-  { icon: Gamepad2, label: "Technologies", value: ACKNOWLEDGEMENTS.length },
-  { icon: Swords, label: "Open Source", value: "100%" },
-  { icon: Crown, label: "Made with", value: "♥" },
 ]
 
 function AcknowledgementCard({ item }) {
@@ -127,14 +167,11 @@ function AcknowledgementCard({ item }) {
       href={item.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative flex items-start gap-4 p-4 sm:p-5 rounded-xl bg-zinc-800/30 border border-zinc-700/40 hover:border-zinc-600/80 hover:bg-zinc-800/60 transition-all duration-300"
+      className="group relative flex items-start gap-4 p-4 rounded-xl bg-zinc-800/40 border border-zinc-700/50 hover:border-zinc-600 hover:bg-zinc-800/70 transition-all duration-300"
     >
       <div
-        className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border transition-colors duration-300"
-        style={{
-          background: `${item.color}08`,
-          borderColor: `${item.color}15`,
-        }}
+        className="w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-700/50 overflow-hidden"
+        style={{ background: `${item.color}10` }}
       >
         {useLetter ? (
           <span
@@ -147,8 +184,7 @@ function AcknowledgementCard({ item }) {
           <img
             src={item.logo}
             alt=""
-            className="w-5 h-5 object-contain"
-            style={item.invertLogo ? { filter: "brightness(0) invert(1)", opacity: 0.9 } : undefined}
+            className="w-6 h-6 object-contain"
             onError={() => setImgError(true)}
             loading="lazy"
           />
@@ -157,35 +193,28 @@ function AcknowledgementCard({ item }) {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h3 className="text-[13px] font-semibold text-zinc-200 group-hover:text-white transition-colors">
+          <h3 className="text-sm font-semibold text-white group-hover:text-indigo-300 transition-colors">
             {item.name}
           </h3>
-          <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-all opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" />
+          <ExternalLink className="w-3 h-3 text-zinc-600 group-hover:text-zinc-400 transition-colors opacity-0 group-hover:opacity-100" />
         </div>
-        <p className="text-xs text-zinc-500 leading-relaxed group-hover:text-zinc-400 transition-colors">
-          {item.description}
-        </p>
+        <p className="text-xs text-zinc-500 leading-relaxed">{item.description}</p>
       </div>
 
       <div
         className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
         style={{
-          background: `radial-gradient(400px circle at 0% 50%, ${item.color}08, transparent 60%)`,
+          background: `radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), ${item.color}06, transparent 40%)`,
         }}
-      />
-
-      <div
-        className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{ background: `${item.color}40` }}
       />
     </a>
   )
 }
 
-function FloatingDecor({ icon: Icon, className }) {
+function FloatingIcon({ icon: Icon, className }) {
   return (
-    <div className={`absolute pointer-events-none select-none ${className}`}>
-      <Icon className="w-4 h-4 text-zinc-800/50" />
+    <div className={`absolute text-zinc-800/40 pointer-events-none select-none ${className}`}>
+      <Icon className="w-5 h-5" />
     </div>
   )
 }
@@ -204,57 +233,39 @@ export default function AcknowledgementsPage() {
 
   return (
     <div className="py-8 sm:py-12 max-w-3xl mx-auto relative">
-      <FloatingDecor icon={Gamepad2} className="top-6 right-4 rotate-12 hidden lg:block" />
-      <FloatingDecor icon={Trophy} className="top-52 -right-6 -rotate-12 hidden lg:block" />
-      <FloatingDecor icon={Star} className="top-[28rem] -left-6 rotate-[25deg] hidden lg:block" />
-      <FloatingDecor icon={Sparkles} className="bottom-40 -right-4 rotate-6 hidden lg:block" />
-      <FloatingDecor icon={Swords} className="bottom-72 -left-8 -rotate-12 hidden lg:block" />
+      <FloatingIcon icon={Gamepad2} className="top-4 right-8 rotate-12 hidden sm:block" />
+      <FloatingIcon icon={Trophy} className="top-48 right-2 -rotate-6 hidden sm:block" />
+      <FloatingIcon icon={Star} className="top-96 left-0 rotate-45 hidden sm:block" />
+      <FloatingIcon icon={Sparkles} className="bottom-32 right-12 rotate-12 hidden sm:block" />
 
       <Link
         to="/"
-        className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors mb-8"
+        className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to home
       </Link>
 
-      <div className="mb-10">
-        <div className="flex items-center gap-3.5 mb-3">
-          <div className="w-12 h-12 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center">
-            <Heart className="w-5 h-5 text-pink-400" />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">Acknowledgements</h1>
-            <p className="text-xs text-zinc-600 mt-0.5">Credits & open source</p>
-          </div>
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-12 h-12 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center">
+          <Heart className="w-6 h-6 text-pink-400" />
         </div>
-        <p className="text-sm text-zinc-500 leading-relaxed max-w-lg">
-          uloggd wouldn't exist without the amazing open source community. Here are the projects and services that make everything possible.
-        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">Acknowledgements</h1>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 mb-10">
-        {STATS.map((stat, i) => (
-          <div
-            key={i}
-            className="flex flex-col items-center gap-1.5 py-4 rounded-xl bg-zinc-800/20 border border-zinc-800/60"
-          >
-            <stat.icon className="w-4 h-4 text-zinc-600" />
-            <span className="text-lg font-bold text-white">{stat.value}</span>
-            <span className="text-[10px] text-zinc-600 uppercase tracking-wider font-medium">{stat.label}</span>
-          </div>
-        ))}
-      </div>
+      <p className="text-sm text-zinc-500 mb-8 ml-0.5">
+        uloggd is built on the shoulders of incredible open source projects and services. We are grateful to every one of them.
+      </p>
 
-      <div className="flex gap-1.5 mb-6 overflow-x-auto scrollbar-hide pb-1">
+      <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide pb-1">
         {CATEGORIES.map(cat => (
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+            className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
               activeCategory === cat.id
-                ? "bg-indigo-500/90 text-white shadow-lg shadow-indigo-500/20"
-                : "bg-zinc-800/60 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
+                ? "bg-indigo-500 text-white"
+                : "bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700"
             }`}
           >
             {cat.label}
@@ -269,21 +280,18 @@ export default function AcknowledgementsPage() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-20">
-          <Gamepad2 className="w-8 h-8 text-zinc-800 mx-auto mb-3" />
+        <div className="text-center py-16">
+          <Gamepad2 className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
           <p className="text-sm text-zinc-600">No acknowledgements in this category.</p>
         </div>
       )}
 
-      <div className="mt-12 p-5 bg-zinc-800/20 border border-zinc-800/50 rounded-xl text-center">
-        <p className="text-xs text-zinc-600 mb-1">
-          Built with <span className="text-pink-400/80">♥</span> by the uloggd team
-        </p>
-        <p className="text-xs text-zinc-600">
+      <div className="mt-10 p-4 bg-zinc-800/30 border border-zinc-700/50 rounded-xl">
+        <p className="text-sm text-zinc-500 text-center">
           Think we missed something?{" "}
           <a
             href="mailto:uloggd.gg@gmail.com"
-            className="text-indigo-400/80 hover:text-indigo-300 hover:underline transition-colors"
+            className="text-indigo-400 hover:underline"
           >
             Let us know
           </a>
