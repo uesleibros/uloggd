@@ -36,9 +36,20 @@ export default function Game() {
 
   if (error || !game) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 gap-4">
-        <h1 className="text-2xl font-bold text-white">{t("game.notFound.title")}</h1>
-        <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">
+      <div className="flex flex-col items-center justify-center py-40 gap-6">
+        <div className="w-16 h-16 rounded-2xl bg-zinc-800/80 border border-zinc-700/50 flex items-center justify-center">
+          <span className="text-3xl">🎮</span>
+        </div>
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl font-bold text-white">{t("game.notFound.title")}</h1>
+          <p className="text-sm text-zinc-500 max-w-md">
+            {t("game.notFound.description", { defaultValue: "The game you're looking for doesn't exist or has been removed." })}
+          </p>
+        </div>
+        <Link
+          to="/"
+          className="px-5 py-2.5 text-sm font-medium text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded-xl transition-all duration-200"
+        >
           {t("common.backToHome")}
         </Link>
       </div>
@@ -48,18 +59,23 @@ export default function Game() {
   const bannerImage = game.screenshots?.length > 0 ? `https:${game.screenshots[0].url}` : null
 
   return (
-    <div>
+    <div className="min-h-screen">
       <PageBanner image={bannerImage} height="game" />
-      <div className="mx-auto pt-[22vw] sm:pt-[20vw] md:pt-32 pb-16">
-        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+
+      <div className="mx-auto pt-[22vw] sm:pt-[20vw] md:pt-32 pb-20">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
           <GameSidebar game={game} />
-          <GameContent
-            game={game}
-            hltb={hltb}
-            hltbLoading={hltbLoading}
-            onOpenLightbox={openLightbox}
-          />
+
+          <div className="flex-1 min-w-0">
+            <GameContent
+              game={game}
+              hltb={hltb}
+              hltbLoading={hltbLoading}
+              onOpenLightbox={openLightbox}
+            />
+          </div>
         </div>
+
         <RelatedGamesSection game={game} />
       </div>
 
