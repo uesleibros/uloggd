@@ -13,7 +13,7 @@ const HEADERS_BASE = {
 async function getToken() {
   if (cachedToken && Date.now() - cachedAt < TOKEN_TTL) return cachedToken
 
-  const res = await fetch(`${HLTB_BASE}/api/finder/init?t=${Date.now()}`, {
+  const res = await fetch(`${HLTB_BASE}/api/find/init?t=${Date.now()}`, {
     headers: HEADERS_BASE,
   })
 
@@ -34,7 +34,7 @@ export function invalidateToken() {
 export async function fetchFinder(terms) {
   const token = await getToken()
 
-  const res = await fetch(`${HLTB_BASE}/api/finder`, {
+  const res = await fetch(`${HLTB_BASE}/api/find`, {
     method: "POST",
     headers: {
       ...HEADERS_BASE,
