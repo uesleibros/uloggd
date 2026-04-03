@@ -29,15 +29,31 @@ const SORT_ICONS = {
   popular: TrendingUp,
 }
 
+function ReviewMeta({ children }) {
+  return (
+    <div className="flex items-center gap-3 flex-wrap text-sm text-zinc-500">
+      {children}
+    </div>
+  )
+}
+
+function ReviewFooter({ children }) {
+  return (
+    <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-800/60 gap-3 flex-wrap">
+      {children}
+    </div>
+  )
+}
+
 export function ReviewCard({ review, user, currentUserId, journey }) {
   const { getTimeAgo } = useDateTime()
   const { t } = useTranslation("reviews")
   const aspects = review.aspect_ratings || []
 
   return (
-    <div className="group rounded-xl p-5 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 hover:bg-zinc-800/70 transition-all duration-200">
-      <div className="flex items-start gap-4">
-        <Link to={`/u/${user?.username}`} className="flex-shrink-0">
+    <div className="py-5 first:pt-0">
+      <div className="flex gap-3.5">
+        <Link to={`/u/${user?.username}`} className="flex-shrink-0 mt-0.5">
           <AvatarWithDecoration
             src={user?.avatar}
             alt={user?.username}
@@ -50,7 +66,7 @@ export function ReviewCard({ review, user, currentUserId, journey }) {
           <div className="flex items-center gap-2 flex-wrap">
             <Link
               to={`/u/${user?.username}`}
-              className="text-base font-semibold text-white hover:text-zinc-300 transition-colors truncate"
+              className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors truncate"
             >
               {user?.username || t("unknownUser")}
             </Link>
@@ -59,30 +75,30 @@ export function ReviewCard({ review, user, currentUserId, journey }) {
             <ReviewIndicators review={review} />
           </div>
 
-          <div className="flex items-center gap-3 mt-1.5">
+          <ReviewMeta>
             <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
-            <span className="text-sm text-zinc-500">{getTimeAgo(review.created_at)}</span>
-          </div>
+            <span>{getTimeAgo(review.created_at)}</span>
+          </ReviewMeta>
 
           {aspects.length > 0 && (
-            <div className="mt-3 p-3 bg-zinc-900/50 border border-zinc-700/40 rounded-lg">
+            <div className="mt-3">
               <AspectRatingsPreview aspects={aspects} compact />
             </div>
           )}
 
           {review.review && (
-            <div className="mt-4">
+            <div className="mt-3">
               <ReviewContent review={review} linkTo={`/review/${review.id}`} />
             </div>
           )}
 
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-700/30 gap-3 flex-wrap">
+          <ReviewFooter>
             <div className="flex items-center gap-3 flex-wrap">
               <Playtime hours={review.hours_played} minutes={review.minutes_played} />
               {journey && <JourneyBadge journey={journey} />}
             </div>
             <LikeButton type="review" targetId={review.id} currentUserId={currentUserId} />
-          </div>
+          </ReviewFooter>
         </div>
       </div>
     </div>
@@ -97,50 +113,50 @@ export function ProfileReviewCard({ review, game, user }) {
   if (!game) return null
 
   return (
-    <div className="group rounded-xl p-5 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 hover:bg-zinc-800/70 transition-all duration-200">
-      <div className="flex gap-4">
+    <div className="py-5 first:pt-0">
+      <div className="flex gap-3.5">
         <Link to={`/game/${game.slug}`} className="flex-shrink-0">
           <img
             src={game.cover_url}
             alt={game.name}
-            className="w-16 h-20 object-cover rounded-lg border border-zinc-700/50 group-hover:border-zinc-600 transition-colors"
+            className="w-12 h-16 object-cover rounded-lg bg-zinc-800"
           />
         </Link>
 
         <div className="flex-1 min-w-0">
           <Link
             to={`/game/${game.slug}`}
-            className="text-base font-semibold text-white hover:text-zinc-300 transition-colors line-clamp-1"
+            className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors line-clamp-1"
           >
             {game.name}
           </Link>
 
-          <div className="flex items-center gap-2 flex-wrap mt-1">
+          <div className="flex items-center gap-2 flex-wrap mt-0.5">
             <StatusBadge status={review.status} />
             <ReviewIndicators review={review} />
           </div>
 
-          <div className="flex items-center gap-3 mt-1.5">
+          <ReviewMeta>
             <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
-            <span className="text-sm text-zinc-500">{getTimeAgo(review.created_at)}</span>
-          </div>
+            <span>{getTimeAgo(review.created_at)}</span>
+          </ReviewMeta>
 
           {aspects.length > 0 && (
-            <div className="mt-3 p-3 bg-zinc-900/50 border border-zinc-700/40 rounded-lg">
+            <div className="mt-3">
               <AspectRatingsPreview aspects={aspects} compact />
             </div>
           )}
 
           {review.review && (
-            <div className="mt-4">
+            <div className="mt-3">
               <ReviewContent review={review} linkTo={`/review/${review.id}`} />
             </div>
           )}
 
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-700/30">
+          <ReviewFooter>
             <Playtime hours={review.hours_played} minutes={review.minutes_played} />
             <LikeButton type="review" targetId={review.id} currentUserId={currentUser?.user_id} />
-          </div>
+          </ReviewFooter>
         </div>
       </div>
     </div>
@@ -163,12 +179,7 @@ export default function GameReviews({ gameId }) {
     if (!gameId) return
     setLoading(true)
 
-    const params = new URLSearchParams({
-      gameId,
-      sortBy,
-      page,
-      limit: 20,
-    })
+    const params = new URLSearchParams({ gameId, sortBy, page, limit: 20 })
 
     fetch(`/api/reviews/public?${params}`)
       .then((r) => (r.ok ? r.json() : { reviews: [], users: {}, journeys: {} }))
@@ -190,33 +201,35 @@ export default function GameReviews({ gameId }) {
   useJournalEvents(fetchReviews)
   useReviewEvents(fetchReviews, gameId)
 
-  function handleSortChange(newSort) {
-    if (newSort === sortBy) return
-    setSortBy(newSort)
+  function handleSort(key) {
+    if (key === sortBy) return
+    setSortBy(key)
     setPage(1)
   }
 
-  function handlePageChange(newPage) {
-    setPage(newPage)
+  function handlePage(p) {
+    setPage(p)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <h2 className="text-lg font-semibold text-white">
+    <div>
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+        <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight">
           {t("communityReviews")}
           {!loading && total > 0 && (
-            <span className="text-sm text-zinc-500 font-normal ml-2">({total})</span>
+            <span className="ml-2 text-xs font-medium text-zinc-500 bg-zinc-800/60 px-2 py-0.5 rounded-full">
+              {total}
+            </span>
           )}
         </h2>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-1.5">
           {SORT_OPTIONS.map((option) => (
             <SortButton
               key={option.key}
               active={sortBy === option.key}
-              onClick={() => handleSortChange(option.key)}
+              onClick={() => handleSort(option.key)}
               icon={SORT_ICONS[option.key]}
             >
               {t(`sort.${option.key}`)}
@@ -229,7 +242,7 @@ export default function GameReviews({ gameId }) {
         <ReviewSkeleton />
       ) : reviews.length > 0 ? (
         <>
-          <div className="space-y-3">
+          <div className="divide-y divide-zinc-800/60">
             {reviews.map((review) => (
               <ReviewCard
                 key={review.id}
@@ -242,7 +255,9 @@ export default function GameReviews({ gameId }) {
           </div>
 
           {totalPages > 1 && (
-            <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+            <div className="mt-6">
+              <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePage} />
+            </div>
           )}
         </>
       ) : (
