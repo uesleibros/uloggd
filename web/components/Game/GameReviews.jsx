@@ -29,31 +29,15 @@ const SORT_ICONS = {
   popular: TrendingUp,
 }
 
-function ReviewMeta({ children }) {
-  return (
-    <div className="flex items-center gap-3 flex-wrap text-sm text-zinc-500">
-      {children}
-    </div>
-  )
-}
-
-function ReviewFooter({ children }) {
-  return (
-    <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-800/60 gap-3 flex-wrap">
-      {children}
-    </div>
-  )
-}
-
 export function ReviewCard({ review, user, currentUserId, journey }) {
   const { getTimeAgo } = useDateTime()
   const { t } = useTranslation("reviews")
   const aspects = review.aspect_ratings || []
 
   return (
-    <div className="py-5 first:pt-0">
-      <div className="flex gap-3.5">
-        <Link to={`/u/${user?.username}`} className="flex-shrink-0 mt-0.5">
+    <div className="py-4 first:pt-0 last:pb-0">
+      <div className="flex gap-3">
+        <Link to={`/u/${user?.username}`} className="flex-shrink-0">
           <AvatarWithDecoration
             src={user?.avatar}
             alt={user?.username}
@@ -66,19 +50,22 @@ export function ReviewCard({ review, user, currentUserId, journey }) {
           <div className="flex items-center gap-2 flex-wrap">
             <Link
               to={`/u/${user?.username}`}
-              className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors truncate"
+              className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors"
             >
               {user?.username || t("unknownUser")}
             </Link>
             <UserBadges user={user} size="md" clickable />
-            <StatusBadge status={review.status} />
-            <ReviewIndicators review={review} />
+            <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
+            <span className="text-xs text-zinc-600">·</span>
+            <span className="text-xs text-zinc-500">{getTimeAgo(review.created_at)}</span>
           </div>
 
-          <ReviewMeta>
-            <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
-            <span>{getTimeAgo(review.created_at)}</span>
-          </ReviewMeta>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <StatusBadge status={review.status} />
+            <ReviewIndicators review={review} />
+            {journey && <JourneyBadge journey={journey} />}
+            <Playtime hours={review.hours_played} minutes={review.minutes_played} />
+          </div>
 
           {aspects.length > 0 && (
             <div className="mt-3">
@@ -87,18 +74,14 @@ export function ReviewCard({ review, user, currentUserId, journey }) {
           )}
 
           {review.review && (
-            <div className="mt-3">
+            <div className="mt-2.5">
               <ReviewContent review={review} linkTo={`/review/${review.id}`} />
             </div>
           )}
 
-          <ReviewFooter>
-            <div className="flex items-center gap-3 flex-wrap">
-              <Playtime hours={review.hours_played} minutes={review.minutes_played} />
-              {journey && <JourneyBadge journey={journey} />}
-            </div>
+          <div className="mt-2.5">
             <LikeButton type="review" targetId={review.id} currentUserId={currentUserId} />
-          </ReviewFooter>
+          </div>
         </div>
       </div>
     </div>
@@ -113,33 +96,34 @@ export function ProfileReviewCard({ review, game, user }) {
   if (!game) return null
 
   return (
-    <div className="py-5 first:pt-0">
-      <div className="flex gap-3.5">
+    <div className="py-4 first:pt-0 last:pb-0">
+      <div className="flex gap-3">
         <Link to={`/game/${game.slug}`} className="flex-shrink-0">
           <img
             src={game.cover_url}
             alt={game.name}
-            className="w-12 h-16 object-cover rounded-lg bg-zinc-800"
+            className="w-11 h-15 object-cover rounded-lg bg-zinc-800"
           />
         </Link>
 
         <div className="flex-1 min-w-0">
-          <Link
-            to={`/game/${game.slug}`}
-            className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors line-clamp-1"
-          >
-            {game.name}
-          </Link>
-
-          <div className="flex items-center gap-2 flex-wrap mt-0.5">
-            <StatusBadge status={review.status} />
-            <ReviewIndicators review={review} />
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              to={`/game/${game.slug}`}
+              className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors line-clamp-1"
+            >
+              {game.name}
+            </Link>
+            <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
+            <span className="text-xs text-zinc-600">·</span>
+            <span className="text-xs text-zinc-500">{getTimeAgo(review.created_at)}</span>
           </div>
 
-          <ReviewMeta>
-            <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
-            <span>{getTimeAgo(review.created_at)}</span>
-          </ReviewMeta>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <StatusBadge status={review.status} />
+            <ReviewIndicators review={review} />
+            <Playtime hours={review.hours_played} minutes={review.minutes_played} />
+          </div>
 
           {aspects.length > 0 && (
             <div className="mt-3">
@@ -148,15 +132,14 @@ export function ProfileReviewCard({ review, game, user }) {
           )}
 
           {review.review && (
-            <div className="mt-3">
+            <div className="mt-2.5">
               <ReviewContent review={review} linkTo={`/review/${review.id}`} />
             </div>
           )}
 
-          <ReviewFooter>
-            <Playtime hours={review.hours_played} minutes={review.minutes_played} />
+          <div className="mt-2.5">
             <LikeButton type="review" targetId={review.id} currentUserId={currentUser?.user_id} />
-          </ReviewFooter>
+          </div>
         </div>
       </div>
     </div>
@@ -214,7 +197,7 @@ export default function GameReviews({ gameId }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
         <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight">
           {t("communityReviews")}
           {!loading && total > 0 && (
