@@ -1,87 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { useNavigate, useLocation } from "react-router-dom"
-import { Search, Gamepad2, Users, List, ArrowRight, SearchX } from "lucide-react"
+import { Search, ArrowRight, SearchX } from "lucide-react"
 import GameResultItem from "@components/Game/GameResultItem"
-import UserDisplay from "@components/User/UserDisplay"
-import { CoverStrip } from "@components/Lists/ListCard"
 import { useTranslation } from "#hooks/useTranslation"
 import { LoadingSpinner } from "./icons"
 
-const TABS = [
-  { id: "games", icon: Gamepad2 },
-  { id: "users", icon: Users },
-  { id: "lists", icon: List },
-]
-
-const ENDPOINTS = {
-  games: (q) => `/api/igdb/autocomplete?query=${encodeURIComponent(q)}`,
-  users: (q) => `/api/users/search?query=${encodeURIComponent(q)}&limit=5`,
-  lists: (q) => `/api/lists/search?query=${encodeURIComponent(q)}&limit=5`,
-}
-
-function extractArray(res) {
-  if (Array.isArray(res)) return res
-  if (res && typeof res === "object") {
-    if (Array.isArray(res.results)) return res.results
-    if (Array.isArray(res.data)) return res.data
-    if (Array.isArray(res.users)) return res.users
-    if (Array.isArray(res.lists)) return res.lists
-    if (Array.isArray(res.games)) return res.games
-  }
-  return []
-}
-
-function UserResult({ item, onSelect }) {
-  return (
-    <li
-      onMouseDown={() => onSelect(`/u/${item.username}`)}
-      className="group cursor-pointer px-3 py-2.5 hover:bg-indigo-500/10 transition-colors"
-    >
-      <div className="flex items-center gap-3">
-        <UserDisplay user={item} size="sm" showUsername={false} showStatus={false} />
-        <div className="flex-1 min-w-0">
-          <span className="group-hover:text-indigo-400 transition-colors font-medium text-sm text-white truncate block">
-            {item.username}
-          </span>
-        </div>
-      </div>
-    </li>
-  )
-}
-
-function ListResult({ item, onSelect }) {
-  const { t } = useTranslation()
-
-  return (
-    <li
-      onMouseDown={() => onSelect(`/list/${item.shortId}`)}
-      className="group cursor-pointer px-3 py-2.5 hover:bg-indigo-500/10 transition-colors"
-    >
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0 border border-zinc-700/50">
-          <CoverStrip ownerId={item.user_id} slugs={(item.game_slugs || []).slice(0, 4)} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <span className="group-hover:text-indigo-400 transition-colors font-medium text-sm text-white truncate block">
-            {item.title}
-          </span>
-          <div className="flex items-center gap-2 text-xs text-zinc-500">
-            <span>{t("header.search.gamesCount", { count: item.games_count })}</span>
-            {item.owner && (
-              <>
-                <span>•</span>
-                <span>{t("header.search.byUser", { username: item.owner.username })}</span>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    </li>
-  )
-}
-
-function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query }) {
+function SearchResults({ results, loading, onSelect, onViewAll, query }) {
   const { t } = useTranslation()
 
   if (loading) {
@@ -104,31 +29,19 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
   return (
     <>
       <ul className="py-1">
-        {results.map((item) => {
-          const key = item.id || item._id || item.username || item.shortId
-
-          if (activeTab === "games") {
-            return (
-              <GameResultItem
-                key={key}
-                game={item}
-                onSelect={() => onSelect(`/game/${item.slug}`)}
-                variant="compact"
-                showLinks={false}
-              />
-            )
-          }
-
-          if (activeTab === "users") {
-            return <UserResult key={key} item={item} onSelect={onSelect} />
-          }
-
-          return <ListResult key={key} item={item} onSelect={onSelect} />
-        })}
+        {results.map((game) => (
+          <GameResultItem
+            key={game.id}
+            game={game}
+            onSelect={() => onSelect(`/game/${game.slug}`)}
+            variant="compact"
+            showLinks={false}
+          />
+        ))}
       </ul>
       <button
         onMouseDown={onViewAll}
-        className="w-full px-3 py-2.5 border-t border-zinc-800 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors flex items-center justify-center gap-2"
+        className="w-full px-3 py-2.5 border-t border-zinc-800 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
       >
         {t("header.search.viewAll", { query })}
         <ArrowRight className="w-4 h-4" />
@@ -137,50 +50,18 @@ function SearchResults({ results, loading, activeTab, onSelect, onViewAll, query
   )
 }
 
-function TabBar({ activeTab, onChange, counts }) {
+function SearchInput({ inputRef, query, onChange, onFocus, onBlur, onKeyDown, focused, variant }) {
   const { t } = useTranslation()
 
-  return (
-    <div className="flex border-b border-zinc-800">
-      {TABS.map(({ id, icon: Icon }) => (
-        <button
-          key={id}
-          type="button"
-          onMouseDown={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            onChange(id)
-          }}
-          className={`flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
-            activeTab === id
-              ? "text-indigo-400 border-b-2 border-indigo-400 -mb-px"
-              : "text-zinc-500 hover:text-zinc-300"
-          }`}
-        >
-          <Icon className="w-3.5 h-3.5" />
-          {t(`header.search.tabs.${id}`)}
-          {counts[id] > 0 && (
-            <span className="text-[10px] bg-zinc-800 px-1.5 py-0.5 rounded-full">{counts[id]}</span>
-          )}
-        </button>
-      ))}
-    </div>
-  )
-}
+  const baseClasses = "rounded-lg bg-zinc-800 text-sm text-white placeholder-zinc-500 outline-none border"
 
-function SearchInput({ inputRef, query, onChange, onFocus, onBlur, onKeyDown, focused = false, variant = "desktop" }) {
-  const { t } = useTranslation()
-
-  const baseClasses = "rounded-md bg-zinc-800 text-sm text-white placeholder-zinc-500 outline-none border"
-
-  const variants = {
-    desktop: `h-8 w-48 lg:w-64 bg-zinc-800/80 pl-9 pr-3 transition-all duration-200 ${
-      focused
-        ? "border-zinc-600 bg-zinc-800 w-56 lg:w-72"
-        : "border-zinc-700/50 hover:border-zinc-600 hover:bg-zinc-800"
-    }`,
-    mobile: "h-10 w-full pl-10 pr-3 border-zinc-700",
-  }
+  const variantClasses = variant === "mobile"
+    ? "h-10 w-full pl-10 pr-3 border-zinc-700"
+    : `h-8 w-48 lg:w-64 bg-zinc-800/80 pl-9 pr-3 transition-all duration-200 ${
+        focused
+          ? "border-zinc-600 bg-zinc-800 w-56 lg:w-72"
+          : "border-zinc-700/50 hover:border-zinc-600 hover:bg-zinc-800"
+      }`
 
   return (
     <div className="relative">
@@ -194,21 +75,23 @@ function SearchInput({ inputRef, query, onChange, onFocus, onBlur, onKeyDown, fo
         onBlur={onBlur}
         onKeyDown={onKeyDown}
         placeholder={t("header.search.placeholder")}
-        className={`${baseClasses} ${variants[variant]}`}
+        className={`${baseClasses} ${variantClasses}`}
       />
     </div>
   )
 }
 
 export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const location = useLocation()
+
   const [query, setQuery] = useState("")
-  const [results, setResults] = useState({ games: [], users: [], lists: [] })
+  const [results, setResults] = useState([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [focused, setFocused] = useState(false)
-  const [activeTab, setActiveTab] = useState("games")
   const [dropdownPos, setDropdownPos] = useState(null)
-  const [completedQuery, setCompletedQuery] = useState("")
 
   const searchTimeoutRef = useRef(null)
   const blurTimeoutRef = useRef(null)
@@ -216,9 +99,6 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
   const inputRef = useRef(null)
   const abortControllerRef = useRef(null)
   const cacheRef = useRef({})
-
-  const navigate = useNavigate()
-  const location = useLocation()
 
   useEffect(() => {
     return () => {
@@ -249,39 +129,6 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
     }
   }, [open, variant, updateDropdownPos])
 
-  const fetchResults = useCallback(async (searchQuery, tab) => {
-    const cacheKey = `${searchQuery}:${tab}`
-
-    if (cacheRef.current[cacheKey]) {
-      setResults((prev) => ({ ...prev, [tab]: cacheRef.current[cacheKey] }))
-      setCompletedQuery(searchQuery)
-      setLoading(false)
-      return
-    }
-
-    abortControllerRef.current?.abort()
-    abortControllerRef.current = new AbortController()
-
-    try {
-      const res = await fetch(ENDPOINTS[tab](searchQuery), {
-        signal: abortControllerRef.current.signal,
-      })
-      const data = await res.json()
-      const items = extractArray(data)
-
-      cacheRef.current[cacheKey] = items
-      setResults((prev) => ({ ...prev, [tab]: items }))
-      setCompletedQuery(searchQuery)
-    } catch (err) {
-      if (err.name !== "AbortError") {
-        setResults((prev) => ({ ...prev, [tab]: [] }))
-        setCompletedQuery(searchQuery)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
   useEffect(() => {
     clearTimeout(searchTimeoutRef.current)
 
@@ -289,49 +136,50 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
 
     if (!trimmed) {
       abortControllerRef.current?.abort()
-      setResults({ games: [], users: [], lists: [] })
+      setResults([])
       setLoading(false)
       setOpen(false)
-      setCompletedQuery("")
+      return
+    }
+
+    if (cacheRef.current[trimmed]) {
+      setResults(cacheRef.current[trimmed])
+      setOpen(true)
       return
     }
 
     setOpen(true)
     setLoading(true)
 
-    searchTimeoutRef.current = setTimeout(() => {
-      fetchResults(trimmed, activeTab)
+    searchTimeoutRef.current = setTimeout(async () => {
+      abortControllerRef.current?.abort()
+      abortControllerRef.current = new AbortController()
+
+      try {
+        const res = await fetch(`/api/igdb/autocomplete?query=${encodeURIComponent(trimmed)}`, {
+          signal: abortControllerRef.current.signal,
+        })
+        const data = await res.json()
+        const items = Array.isArray(data) ? data : []
+
+        cacheRef.current[trimmed] = items
+        setResults(items)
+      } catch (err) {
+        if (err.name !== "AbortError") setResults([])
+      } finally {
+        setLoading(false)
+      }
     }, 300)
 
     return () => clearTimeout(searchTimeoutRef.current)
-  }, [query, activeTab, fetchResults])
-
-  function handleTabChange(tab) {
-    if (tab === activeTab) return
-
-    setActiveTab(tab)
-
-    const trimmed = query.trim()
-    if (!trimmed) return
-
-    const cacheKey = `${trimmed}:${tab}`
-
-    if (cacheRef.current[cacheKey]) {
-      setResults((prev) => ({ ...prev, [tab]: cacheRef.current[cacheKey] }))
-      return
-    }
-
-    setLoading(true)
-    fetchResults(trimmed, tab)
-  }
+  }, [query])
 
   function resetSearch() {
     clearTimeout(blurTimeoutRef.current)
     abortControllerRef.current?.abort()
     setQuery("")
     setOpen(false)
-    setResults({ games: [], users: [], lists: [] })
-    setCompletedQuery("")
+    setResults([])
   }
 
   function handleNavigate(path) {
@@ -344,7 +192,7 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
     const trimmed = query.trim()
     if (!trimmed) return
 
-    const searchPath = `/search?q=${encodeURIComponent(trimmed)}&tab=${activeTab}`
+    const searchPath = `/search?q=${encodeURIComponent(trimmed)}`
 
     resetSearch()
     onSelect?.()
@@ -382,21 +230,14 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
     }, 200)
   }
 
-  const trimmedQuery = query.trim()
-  const hasResults = completedQuery === trimmedQuery && trimmedQuery !== ""
-  const showDropdown = open && trimmedQuery && (loading || hasResults)
-
-  const counts = {
-    games: results.games.length,
-    users: results.users.length,
-    lists: results.lists.length,
-  }
+  const trimmed = query.trim()
+  const showDropdown = open && trimmed
 
   const dropdownContent = showDropdown ? (
     <div
       onMouseDown={(e) => e.preventDefault()}
-      className={`rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl overflow-hidden ${
-        variant === "desktop" ? "absolute top-full right-0 w-96 mt-1.5 z-50" : ""
+      className={`rounded-xl border border-zinc-700/50 bg-zinc-900 shadow-xl overflow-hidden ${
+        variant === "desktop" ? "absolute top-full right-0 w-80 mt-1.5 z-50" : ""
       }`}
       style={
         variant === "mobile" && dropdownPos
@@ -410,12 +251,10 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
           : undefined
       }
     >
-      <TabBar activeTab={activeTab} onChange={handleTabChange} counts={counts} />
       <div className="max-h-80 overflow-y-auto">
         <SearchResults
-          results={results[activeTab]}
+          results={results}
           loading={loading}
-          activeTab={activeTab}
           onSelect={handleNavigate}
           onViewAll={handleViewAll}
           query={query}
@@ -436,8 +275,7 @@ export function SearchBar({ variant = "desktop", onSelect, className = "" }) {
         focused={focused}
         variant={variant}
       />
-      {dropdownContent &&
-        (variant === "mobile" ? createPortal(dropdownContent, document.body) : dropdownContent)}
+      {dropdownContent && (variant === "mobile" ? createPortal(dropdownContent, document.body) : dropdownContent)}
     </div>
   )
 }
