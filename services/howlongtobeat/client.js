@@ -22,7 +22,7 @@ async function getToken() {
   const json = await res.json()
   if (!json.token) throw new Error("HLTB no token")
 
-  cachedToken = json.token
+  cachedToken = json
   cachedAt = Date.now()
   return cachedToken
 }
@@ -39,9 +39,12 @@ export async function fetchFinder(terms) {
     headers: {
       ...HEADERS_BASE,
       "Content-Type": "application/json",
-      "X-Auth-Token": token,
+      "X-Auth-Token": token.token,
+      "X-Hp-Key": token.hpKey,
+      "X-Hp-Val": token.hpVal,
     },
     body: JSON.stringify({
+      [token.hpKey]: token.hpVal,
       ...FINDER_BODY_TEMPLATE,
       searchTerms: terms,
     }),
