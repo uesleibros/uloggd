@@ -10,16 +10,30 @@ import DragScrollRow from "@components/UI/DragScrollRow"
 import ScreenshotCard, { ScreenshotCardSkeleton } from "@components/Screenshot/ScreenshotCard"
 import { ProfileReviewCard } from "./ProfileReviews"
 
-const GAMES_PER_PAGE = 24
-const REVIEWS_PER_PAGE = 10
-const LISTS_PER_PAGE = 12
-const TIERLISTS_PER_PAGE = 12
-const SCREENSHOTS_PER_PAGE = 18
+const LIMITS = {
+  games: 24,
+  reviews: 10,
+  lists: 12,
+  tierlists: 12,
+  screenshots: 18,
+}
+
+const TAB_ICONS = {
+  games: Gamepad2,
+  reviews: MessageSquare,
+  lists: List,
+  tierlists: LayoutGrid,
+  screenshots: Camera,
+}
+
+function Skeleton({ className }) {
+  return <div className={`bg-zinc-800/50 rounded-xl animate-pulse ${className}`} />
+}
 
 function GamesSkeleton() {
   return (
     <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-      {[...Array(12)].map((_, i) => (
+      {Array.from({ length: 12 }, (_, i) => (
         <GameCardSkeleton key={i} responsive />
       ))}
     </div>
@@ -29,8 +43,8 @@ function GamesSkeleton() {
 function ReviewsSkeleton() {
   return (
     <div className="space-y-3">
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="h-32 bg-zinc-800/50 rounded-xl animate-pulse" />
+      {Array.from({ length: 5 }, (_, i) => (
+        <Skeleton key={i} className="h-28" />
       ))}
     </div>
   )
@@ -39,8 +53,8 @@ function ReviewsSkeleton() {
 function ListsSkeleton() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {[...Array(6)].map((_, i) => (
-        <div key={i} className="h-[280px] bg-zinc-800/50 rounded-2xl animate-pulse" />
+      {Array.from({ length: 6 }, (_, i) => (
+        <Skeleton key={i} className="h-[260px] rounded-2xl" />
       ))}
     </div>
   )
@@ -49,14 +63,8 @@ function ListsSkeleton() {
 function TierlistsSkeleton() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      {[...Array(6)].map((_, i) => (
-        <div key={i} className="rounded-xl overflow-hidden animate-pulse border border-zinc-800">
-          <div className="h-24 sm:h-28 bg-zinc-800" />
-          <div className="p-3 sm:p-3.5 space-y-2 bg-zinc-800/30">
-            <div className="h-4 w-2/3 bg-zinc-700/50 rounded" />
-            <div className="h-3 w-full bg-zinc-800 rounded" />
-          </div>
-        </div>
+      {Array.from({ length: 6 }, (_, i) => (
+        <Skeleton key={i} className="h-40" />
       ))}
     </div>
   )
@@ -65,7 +73,7 @@ function TierlistsSkeleton() {
 function ScreenshotsSkeleton() {
   return (
     <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
-      {[...Array(SCREENSHOTS_PER_PAGE)].map((_, i) => (
+      {Array.from({ length: LIMITS.screenshots }, (_, i) => (
         <ScreenshotCardSkeleton key={i} />
       ))}
     </div>
@@ -74,13 +82,13 @@ function ScreenshotsSkeleton() {
 
 function EmptyState({ icon: Icon, title, description }) {
   return (
-    <div className="rounded-xl p-10 sm:p-14 bg-zinc-800/30 border border-zinc-700/50 flex flex-col items-center justify-center gap-4">
-      <div className="w-14 h-14 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-        <Icon className="w-6 h-6 text-zinc-500" />
+    <div className="py-16 flex flex-col items-center justify-center gap-4">
+      <div className="w-12 h-12 rounded-xl bg-zinc-800/60 border border-zinc-700/50 flex items-center justify-center">
+        <Icon className="w-5 h-5 text-zinc-500" />
       </div>
       <div className="text-center space-y-1">
         <p className="text-sm text-zinc-400 font-medium">{title}</p>
-        {description && <p className="text-sm text-zinc-500">{description}</p>}
+        {description && <p className="text-xs text-zinc-500">{description}</p>}
       </div>
     </div>
   )
@@ -125,9 +133,7 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
   }, [initialCounts])
 
   const slugs = useMemo(() => {
-    if (activeTab === "games") {
-      return data.items.map((g) => g.slug)
-    }
+    if (activeTab === "games") return data.items.map((g) => g.slug)
     return []
   }, [activeTab, data.items])
 
@@ -137,95 +143,41 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
     if (!userId) return
     setLoading(true)
 
-    const limitMap = {
-      games: GAMES_PER_PAGE,
-      reviews: REVIEWS_PER_PAGE,
-      lists: LISTS_PER_PAGE,
-      tierlists: TIERLISTS_PER_PAGE,
-      screenshots: SCREENSHOTS_PER_PAGE,
-    }
-    const limit = limitMap[activeTab]
-    const params = new URLSearchParams({ userId, type: activeTab, page, limit })
+    const params = new URLSearchParams({ userId, type: activeTab, page, limit: LIMITS[activeTab] })
 
     fetch(`/api/likes/byUser?${params}`)
       .then((r) => (r.ok ? r.json() : {}))
       .then((res) => {
-        if (activeTab === "games") {
-          setData({
-            items: res.games || [],
-            total: res.total || 0,
-            totalPages: res.totalPages || 1,
-          })
-        } else if (activeTab === "reviews") {
-          setData({
-            items: res.reviews || [],
-            total: res.total || 0,
-            totalPages: res.totalPages || 1,
-          })
+        const key = activeTab === "games" ? "games" : activeTab
+        setData({
+          items: res[key] || res.reviews || res.lists || res.tierlists || res.screenshots || [],
+          total: res.total || 0,
+          totalPages: res.totalPages || 1,
+        })
+        if (activeTab === "reviews") {
           setGames(res.games || {})
           setUsers(res.users || {})
-        } else if (activeTab === "lists") {
-          setData({
-            items: res.lists || [],
-            total: res.total || 0,
-            totalPages: res.totalPages || 1,
-          })
-        } else if (activeTab === "tierlists") {
-          setData({
-            items: res.tierlists || [],
-            total: res.total || 0,
-            totalPages: res.totalPages || 1,
-          })
-        } else if (activeTab === "screenshots") {
-          setData({
-            items: res.screenshots || [],
-            total: res.total || 0,
-            totalPages: res.totalPages || 1,
-          })
         }
       })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [userId, activeTab, page])
 
-  function handleTabChange(tab) {
+  function handleTab(tab) {
     if (tab === activeTab) return
     setActiveTab(tab)
     setPage(1)
   }
 
-  function handlePageChange(newPage) {
-    setPage(newPage)
-    const el = containerRef.current
-    if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - 24
+  function handlePage(p) {
+    setPage(p)
+    if (containerRef.current) {
+      const y = containerRef.current.getBoundingClientRect().top + window.scrollY - 24
       window.scrollTo({ top: y, behavior: "smooth" })
     }
   }
 
-  function getEmptyMessage() {
-    const messages = {
-      games: isOwnProfile ? t("likes.emptyGames.own") : t("likes.emptyGames.other", { username }),
-      reviews: isOwnProfile ? t("likes.emptyReviews.own") : t("likes.emptyReviews.other", { username }),
-      lists: isOwnProfile ? t("likes.emptyLists.own") : t("likes.emptyLists.other", { username }),
-      tierlists: isOwnProfile ? t("likes.emptyTierlists.own") : t("likes.emptyTierlists.other", { username }),
-      screenshots: isOwnProfile ? t("likes.emptyScreenshots.own") : t("likes.emptyScreenshots.other", { username }),
-    }
-    return messages[activeTab]
-  }
-
-  function getEmptyIcon() {
-    const icons = {
-      games: Gamepad2,
-      reviews: MessageSquare,
-      lists: List,
-      tierlists: LayoutGrid,
-      screenshots: Camera,
-    }
-    return icons[activeTab]
-  }
-
-  const totalLikes = counts.games + counts.reviews + counts.lists + counts.tierlists + counts.screenshots
+  const totalLikes = Object.values(counts).reduce((a, b) => a + b, 0)
 
   if (totalLikes === 0) {
     return (
@@ -237,58 +189,41 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
     )
   }
 
-  const isLoadingGames = loading || (activeTab === "games" && coversLoading)
+  const isLoading = loading || (activeTab === "games" && coversLoading)
+
+  const skeletons = {
+    games: <GamesSkeleton />,
+    reviews: <ReviewsSkeleton />,
+    lists: <ListsSkeleton />,
+    tierlists: <TierlistsSkeleton />,
+    screenshots: <ScreenshotsSkeleton />,
+  }
+
+  const emptyMessages = {
+    games: isOwnProfile ? t("likes.emptyGames.own") : t("likes.emptyGames.other", { username }),
+    reviews: isOwnProfile ? t("likes.emptyReviews.own") : t("likes.emptyReviews.other", { username }),
+    lists: isOwnProfile ? t("likes.emptyLists.own") : t("likes.emptyLists.other", { username }),
+    tierlists: isOwnProfile ? t("likes.emptyTierlists.own") : t("likes.emptyTierlists.other", { username }),
+    screenshots: isOwnProfile ? t("likes.emptyScreenshots.own") : t("likes.emptyScreenshots.other", { username }),
+  }
 
   return (
-    <div className="space-y-6" ref={containerRef}>
-      <DragScrollRow className="gap-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-        <TabButton
-          active={activeTab === "games"}
-          onClick={() => handleTabChange("games")}
-          icon={Gamepad2}
-          label={t("likes.tabs.games")}
-          count={counts.games}
-        />
-        <TabButton
-          active={activeTab === "reviews"}
-          onClick={() => handleTabChange("reviews")}
-          icon={MessageSquare}
-          label={t("likes.tabs.reviews")}
-          count={counts.reviews}
-        />
-        <TabButton
-          active={activeTab === "lists"}
-          onClick={() => handleTabChange("lists")}
-          icon={List}
-          label={t("likes.tabs.lists")}
-          count={counts.lists}
-        />
-        <TabButton
-          active={activeTab === "tierlists"}
-          onClick={() => handleTabChange("tierlists")}
-          icon={LayoutGrid}
-          label={t("likes.tabs.tierlists")}
-          count={counts.tierlists}
-        />
-        <TabButton
-          active={activeTab === "screenshots"}
-          onClick={() => handleTabChange("screenshots")}
-          icon={Camera}
-          label={t("likes.tabs.screenshots")}
-          count={counts.screenshots}
-        />
+    <div ref={containerRef}>
+      <DragScrollRow className="gap-2 -mx-4 px-4 sm:mx-0 sm:px-0 mb-6">
+        {Object.keys(LIMITS).map((tab) => (
+          <TabButton
+            key={tab}
+            active={activeTab === tab}
+            onClick={() => handleTab(tab)}
+            icon={TAB_ICONS[tab]}
+            label={t(`likes.tabs.${tab}`)}
+            count={counts[tab]}
+          />
+        ))}
       </DragScrollRow>
 
-      {isLoadingGames && activeTab === "games" ? (
-        <GamesSkeleton />
-      ) : loading && activeTab === "reviews" ? (
-        <ReviewsSkeleton />
-      ) : loading && activeTab === "lists" ? (
-        <ListsSkeleton />
-      ) : loading && activeTab === "tierlists" ? (
-        <TierlistsSkeleton />
-      ) : loading && activeTab === "screenshots" ? (
-        <ScreenshotsSkeleton />
+      {isLoading ? (
+        skeletons[activeTab]
       ) : data.items.length > 0 ? (
         <div className="space-y-6">
           {activeTab === "games" && (
@@ -306,7 +241,7 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
           )}
 
           {activeTab === "reviews" && (
-            <div className="space-y-3">
+            <div className="divide-y divide-zinc-800/60">
               {data.items.map((review) => (
                 <ProfileReviewCard
                   key={review.id}
@@ -346,12 +281,12 @@ export default function ProfileLikes({ userId, isOwnProfile, username, initialCo
             <Pagination
               currentPage={page}
               totalPages={data.totalPages}
-              onPageChange={handlePageChange}
+              onPageChange={handlePage}
             />
           )}
         </div>
       ) : (
-        <EmptyState icon={getEmptyIcon()} title={getEmptyMessage()} description="" />
+        <EmptyState icon={TAB_ICONS[activeTab]} title={emptyMessages[activeTab]} />
       )}
     </div>
   )
