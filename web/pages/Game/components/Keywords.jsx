@@ -3,74 +3,38 @@ import { ChevronDown } from "lucide-react"
 import { useTranslation } from "#hooks/useTranslation"
 import Modal from "@components/UI/Modal"
 
-function Keyword({ text }) {
-  return (
-    <button className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-800/50 backdrop-blur-sm hover:bg-gray-700/50 border border-zinc-700 hover:border-zinc-600 rounded-full text-sm transition-all duration-200">
-      <span className="text-blue-400 text-base">#</span>
-      <span className="text-gray-300 hover:text-white">{text}</span>
-    </button>
-  )
-}
-
-function KeywordsModalContent({ keywords }) {
+export function Keywords({ keywords }) {
   const { t } = useTranslation("game")
+  const [showModal, setShowModal] = useState(false)
   const [search, setSearch] = useState("")
+
+  if (!keywords?.length) return null
+
+  const INITIAL_SHOW = 10
+  const hasMore = keywords.length > INITIAL_SHOW
 
   const filtered = search.trim()
     ? keywords.filter((k) => k.slug.toLowerCase().includes(search.toLowerCase()))
     : keywords
 
   return (
-    <>
-      <div className="px-4 pt-3 flex-shrink-0">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("keywords.searchPlaceholder")}
-          className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
-          autoFocus
-        />
-      </div>
-      <div className="p-4 overflow-y-auto flex-1">
-        {filtered.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {filtered.map((kw) => (
-              <Keyword key={kw.slug} text={kw.slug} />
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-zinc-500 text-center py-8">
-            {t("keywords.noResults")}
-          </p>
-        )}
-      </div>
-    </>
-  )
-}
-
-export function Keywords({ keywords }) {
-  const { t } = useTranslation("game")
-  const [showModal, setShowModal] = useState(false)
-  if (!keywords?.length) return null
-
-  const INITIAL_SHOW = 10
-  const hasMore = keywords.length > INITIAL_SHOW
-
-  return (
-    <div className="max-w-sm space-y-3">
-      <h2 className="text-lg font-semibold text-white mb-3">{t("keywords.title")}</h2>
-      <div className="flex flex-wrap gap-2">
+    <div className="space-y-3">
+      <h3 className="text-sm font-semibold text-zinc-300 tracking-tight">{t("keywords.title")}</h3>
+      <div className="flex flex-wrap gap-1.5">
         {keywords.slice(0, INITIAL_SHOW).map((kw) => (
-          <Keyword key={kw.slug} text={kw.slug} />
+          <span
+            key={kw.slug}
+            className="px-2.5 py-1 bg-zinc-800/50 border border-zinc-700/50 rounded-full text-xs text-zinc-400"
+          >
+            {kw.slug}
+          </span>
         ))}
         {hasMore && (
           <button
             onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-900/30 hover:bg-blue-900/50 border border-blue-700/50 hover:border-blue-600 rounded-full text-sm transition-all duration-200 cursor-pointer"
+            className="px-2.5 py-1 text-xs text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/15 border border-blue-500/20 rounded-full transition-colors cursor-pointer"
           >
-            <span className="text-blue-400">{t("keywords.viewAll", { count: keywords.length })}</span>
-            <ChevronDown className="w-4 h-4 text-blue-400" />
+            +{keywords.length - INITIAL_SHOW}
           </button>
         )}
       </div>
@@ -81,7 +45,34 @@ export function Keywords({ keywords }) {
         title={t("keywords.title")}
         subtitle={String(keywords.length)}
       >
-        <KeywordsModalContent keywords={keywords} />
+        <div className="px-4 pt-3">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t("keywords.searchPlaceholder")}
+            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
+            autoFocus
+          />
+        </div>
+        <div className="p-4 overflow-y-auto flex-1">
+          {filtered.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {filtered.map((kw) => (
+                <span
+                  key={kw.slug}
+                  className="px-2.5 py-1 bg-zinc-800/50 border border-zinc-700/50 rounded-full text-xs text-zinc-400"
+                >
+                  {kw.slug}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-zinc-500 text-center py-8">
+              {t("keywords.noResults")}
+            </p>
+          )}
+        </div>
       </Modal>
     </div>
   )
