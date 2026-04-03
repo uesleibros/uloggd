@@ -59,7 +59,6 @@ export function Keywords({ keywords }) {
 
   return (
     <div className="max-w-sm space-y-3">
-      <hr className="my-6 border-zinc-700" />
       <h2 className="text-lg font-semibold text-white mb-3">{t("keywords.title")}</h2>
       <div className="flex flex-wrap gap-2">
         {keywords.slice(0, INITIAL_SHOW).map((kw) => (
