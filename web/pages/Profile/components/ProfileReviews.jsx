@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { Link } from "react-router-dom"
-import { MessageSquare, Clock, TrendingUp } from "lucide-react"
+import { Clock, TrendingUp } from "lucide-react"
 import { useAuth } from "#hooks/useAuth"
 import { useTranslation } from "#hooks/useTranslation"
 import { useDateTime } from "#hooks/useDateTime"
@@ -37,8 +37,8 @@ export function ProfileReviewCard({ review, game, user, journey, customCoverUrl 
   const aspects = review.aspect_ratings || []
 
   return (
-    <div className="group rounded-xl p-5 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 hover:bg-zinc-800/70 transition-all duration-200">
-      <div className="flex items-start gap-4">
+    <div className="py-4 first:pt-0 last:pb-0">
+      <div className="flex gap-3">
         {user ? (
           <Link to={`/u/${user.username}`} className="flex-shrink-0">
             <AvatarWithDecoration
@@ -53,57 +53,56 @@ export function ProfileReviewCard({ review, game, user, journey, customCoverUrl 
             <GameCover
               game={game}
               customCoverUrl={customCoverUrl}
-              className="w-16 h-20 rounded-lg"
+              className="w-11 h-15 rounded-lg"
             />
           </Link>
         ) : null}
 
-        <div className="flex-1 min-w-0 overflow-hidden">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             {user && (
               <>
                 <Link
                   to={`/u/${user.username}`}
-                  className="text-base font-semibold text-white hover:text-zinc-300 transition-colors"
+                  className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors"
                 >
                   {user.username}
                 </Link>
                 <UserBadges user={user} size="md" clickable />
-                <span className="text-zinc-500 text-sm">{t("reviews.rated")}</span>
+                <span className="text-xs text-zinc-600">·</span>
               </>
             )}
             <Link
               to={`/game/${game?.slug}`}
-              className="text-base font-semibold text-white hover:text-zinc-300 transition-colors break-words max-w-full"
+              className="text-sm font-semibold text-white hover:text-zinc-300 transition-colors truncate"
             >
               {game?.name || t("reviews.game")}
             </Link>
-            <StatusBadge status={review.status} />
-            <ReviewIndicators review={review} />
+            <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
+            <span className="text-xs text-zinc-600">·</span>
+            <span className="text-xs text-zinc-500">{getTimeAgo(review.created_at)}</span>
           </div>
 
-          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-            <ReviewRating rating={review.rating} ratingMode={review.rating_mode} />
-            <span className="text-sm text-zinc-500">{getTimeAgo(review.created_at)}</span>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <StatusBadge status={review.status} />
+            <ReviewIndicators review={review} />
+            {journey && <JourneyBadge journey={journey} />}
+            <Playtime hours={review.hours_played} minutes={review.minutes_played} />
           </div>
 
           {aspects.length > 0 && (
-            <div className="mt-3 p-3 bg-zinc-900/50 border border-zinc-700/40 rounded-lg">
+            <div className="mt-3">
               <AspectRatingsPreview aspects={aspects} compact />
             </div>
           )}
 
           {review.review && (
-            <div className="mt-4">
+            <div className="mt-2.5">
               <ReviewContent review={review} linkTo={`/review/${review.id}`} />
             </div>
           )}
 
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-700/30 gap-3 flex-wrap">
-            <div className="flex items-center gap-3 flex-wrap">
-              <Playtime hours={review.hours_played} minutes={review.minutes_played} />
-              {journey && <JourneyBadge journey={journey} />}
-            </div>
+          <div className="mt-2.5">
             <LikeButton type="review" targetId={review.id} currentUserId={currentUser?.user_id} />
           </div>
         </div>
@@ -113,7 +112,7 @@ export function ProfileReviewCard({ review, game, user, journey, customCoverUrl 
             <GameCover
               game={game}
               customCoverUrl={customCoverUrl}
-              className="w-12 h-16 rounded-lg"
+              className="w-11 h-15 rounded-lg"
             />
           </Link>
         )}
@@ -138,12 +137,7 @@ export default function ProfileReviews({ userId }) {
     if (!userId) return
     setLoading(true)
 
-    const params = new URLSearchParams({
-      userId,
-      sortBy,
-      page,
-      limit: 10,
-    })
+    const params = new URLSearchParams({ userId, sortBy, page, limit: 10 })
 
     fetch(`/api/reviews/byUser?${params}`)
       .then((r) => (r.ok ? r.json() : { reviews: [], games: {}, journeys: {} }))
@@ -170,34 +164,35 @@ export default function ProfileReviews({ userId }) {
 
   const { getCustomCover } = useCustomCovers(userId, gameSlugs)
 
-  function handleSortChange(newSort) {
-    if (newSort === sortBy) return
-    setSortBy(newSort)
+  function handleSort(key) {
+    if (key === sortBy) return
+    setSortBy(key)
     setPage(1)
   }
 
-  function handlePageChange(newPage) {
-    setPage(newPage)
+  function handlePage(p) {
+    setPage(p)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-          <MessageSquare className="w-5 h-5 text-zinc-400" />
+    <div>
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
+        <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight">
           {t("reviews.title")}
           {!loading && total > 0 && (
-            <span className="text-sm text-zinc-500 font-normal">({total})</span>
+            <span className="ml-2 text-xs font-medium text-zinc-500 bg-zinc-800/60 px-2 py-0.5 rounded-full">
+              {total}
+            </span>
           )}
         </h2>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-1.5">
           {SORT_OPTIONS.map((option) => (
             <SortButton
               key={option.key}
               active={sortBy === option.key}
-              onClick={() => handleSortChange(option.key)}
+              onClick={() => handleSort(option.key)}
               icon={SORT_ICONS[option.key]}
             >
               {tReviews(`sort.${option.key}`)}
@@ -210,7 +205,7 @@ export default function ProfileReviews({ userId }) {
         <ReviewSkeleton count={3} showCover />
       ) : reviews.length > 0 ? (
         <>
-          <div className="space-y-3">
+          <div className="divide-y divide-zinc-800/60">
             {reviews.map((review) => {
               const game = games[review.game_id]
               return (
@@ -226,7 +221,9 @@ export default function ProfileReviews({ userId }) {
           </div>
 
           {totalPages > 1 && (
-            <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+            <div className="mt-6">
+              <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePage} />
+            </div>
           )}
         </>
       ) : (
