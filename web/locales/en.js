@@ -1745,7 +1745,7 @@ export default {
 		},
 		account: {
 			title: "My account",
-			description: "Information about your Discord-linked account."
+			description: "Information about your account."
 		},
 		appearance: {
 			title: "Appearance",
