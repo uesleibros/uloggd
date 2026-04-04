@@ -400,8 +400,8 @@ function NotificationsEmpty() {
       <div className="w-16 h-16 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
         <BellOff className="w-7 h-7 text-zinc-600" />
       </div>
-      <h3 className="text-base font-medium text-zinc-400 mb-1">{t("notifications.emptyTitle")}</h3>
-      <p className="text-sm text-zinc-600">{t("notifications.emptyDescription")}</p>
+      <h3 className="text-base font-medium text-zinc-400 mb-1">{t("notifications.empty")}</h3>
+      <p className="text-sm text-zinc-600">{t("notifications.emptySubtext")}</p>
     </div>
   )
 }
