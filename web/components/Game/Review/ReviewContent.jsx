@@ -22,7 +22,7 @@ export default function ReviewContent({ review, linkTo }) {
       <div className={isLong ? "max-h-36 overflow-hidden" : ""}>
         <MarkdownPreview ownerId={review?.user_id} content={review.review} />
       </div>
-      {isLong && linkTo && (
+      {linkTo && (
         <Link
           to={linkTo}
           className="mt-2 inline-block text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
