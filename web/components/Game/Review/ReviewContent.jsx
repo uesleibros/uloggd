@@ -19,18 +19,18 @@ export default function ReviewContent({ review, linkTo }) {
 
   return (
     <div>
-      <div className={isLong ? "relative" : ""}>
+      <div className="relative">
         <div className={isLong ? "max-h-36 overflow-hidden" : ""}>
           <MarkdownPreview ownerId={review?.user_id} content={review.review} />
         </div>
         {isLong && (
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-zinc-800/90 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-zinc-800 to-transparent" />
         )}
       </div>
-      {linkTo && (
+      {isLong && linkTo && (
         <Link
           to={linkTo}
-          className="mt-2 text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+          className="mt-2 inline-block text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
         >
           {t("readFullReview")}
         </Link>
