@@ -21,6 +21,7 @@ import ScreenshotPage from "@pages/ScreenshotPage"
 import TierlistPage from "@pages/TierlistPage"
 import LegalPage from "@pages/Legal"
 import BlogPage from "@pages/Blog"
+import NotificationsPage from "@pages/NotificationsPage"
 import AcknowledgementsPage from "@pages/Acknowledgements"
 import NotificationContainer from "@components/UI/Notification"
 import NotFound from "@pages/NotFound"
@@ -73,6 +74,7 @@ export default function App() {
 					<ErrorBoundary>
 						<Routes>
 							<Route path="/" element={<Home />} />
+							<Route path="/notifications" element={<NotificationsPage />} />
 							<Route path="/auth" element={<AuthPage />} />
 							<Route path="/game/:slug" element={<Game />} />
 							<Route path="/list/:id" element={<ListPage />} />
