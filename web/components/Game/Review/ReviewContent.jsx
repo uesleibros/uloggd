@@ -30,10 +30,9 @@ export default function ReviewContent({ review, linkTo }) {
       {linkTo && (
         <Link
           to={linkTo}
-          className="inline-flex items-center gap-1 mt-2 text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+          className="mt-2 text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
         >
           {t("readFullReview")}
-          <span aria-hidden>→</span>
         </Link>
       )}
     </div>
