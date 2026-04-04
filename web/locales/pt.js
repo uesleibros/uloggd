@@ -1745,7 +1745,7 @@ export default {
 		},
 		account: {
 			title: "Minha conta",
-			description: "Informações da sua conta vinculada ao Discord."
+			description: "Informações da sua conta."
 		},
 		appearance: {
 			title: "Aparência",
