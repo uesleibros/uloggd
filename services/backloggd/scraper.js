@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio"
-import { gotScraping } from "got-scraping"
+import axios from "axios"
+import { wrapper } from "axios-cookiejar-support"
 import { CookieJar, Cookie } from "tough-cookie"
 
 const BASE = "https://www.backloggd.com"
@@ -34,7 +35,8 @@ const COOKIES = {
 const HEADERS = {
   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
   "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
-  "Referer": BASE
+  "Referer": BASE,
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
 const GAMES_PER_PAGE = 40
@@ -48,26 +50,19 @@ async function buildCookieJar() {
   return jar
 }
 
-let cookieJar = null
+let client = null
 
-async function getCookieJar() {
-  if (!cookieJar) cookieJar = await buildCookieJar()
-  return cookieJar
+async function getClient() {
+  if (client) return client
+  const jar = await buildCookieJar()
+  client = wrapper(axios.create({ jar, withCredentials: true, headers: HEADERS, timeout: 15000, maxRedirects: 5 }))
+  return client
 }
 
 async function fetchPage(url) {
-  const jar = await getCookieJar()
-  const { body, statusCode } = await gotScraping({
-    url,
-    cookieJar: jar,
-    headers: HEADERS,
-    headerGeneratorOptions: {
-      browsers: ["chrome"],
-      operatingSystems: ["windows"]
-    }
-  })
-  if (statusCode !== 200) throw new Error(`HTTP ${statusCode}`)
-  return body
+  const http = await getClient()
+  const response = await http.get(url, { responseType: "text", validateStatus: (status) => status === 200 })
+  return response.data
 }
 
 function getTotalPages(html) {
@@ -141,7 +136,8 @@ async function scrapeSection(username, section) {
 
     try {
       html = await fetchPage(url)
-    } catch {
+    } catch (err) {
+      console.warn(`Erro ao buscar ${url}:`, err.message)
       break
     }
 
