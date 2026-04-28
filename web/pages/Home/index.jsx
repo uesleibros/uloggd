@@ -1,7 +1,5 @@
 import usePageMeta from "#hooks/usePageMeta"
 import { useTranslation } from "#hooks/useTranslation"
-import SteamSalesSection from "./components/SteamSalesSection"
-import EpicFreeGamesSection from "./components/EpicFreeGamesSection"
 import PopularAmongFriendsCarousel from "./components/friends/PopularAmongFriendsCarousel"
 import FriendsReviewsSection from "./components/friends/FriendsReviewsSection"
 import PopularListsSection from "./components/PopularListsSection"
@@ -111,14 +109,6 @@ export default function Home() {
       <div className="mt-12">
         <PopularTierlistsSection />
       </div>
-
-      <Divider />
-
-      <SteamSalesSection />
-
-      <Divider />
-
-      <EpicFreeGamesSection />
     </div>
   )
 }
