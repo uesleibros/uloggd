@@ -1,6 +1,4 @@
 import * as cheerio from "cheerio"
-import axios from "axios"
-import { wrapper } from "axios-cookiejar-support"
 import { CookieJar, Cookie } from "tough-cookie"
 
 const BASE = "https://www.backloggd.com"
@@ -50,19 +48,23 @@ async function buildCookieJar() {
   return jar
 }
 
-let client = null
+let jar = null
 
-async function getClient() {
-  if (client) return client
-  const jar = await buildCookieJar()
-  client = wrapper(axios.create({ jar, withCredentials: true, headers: HEADERS, timeout: 15000, maxRedirects: 5 }))
-  return client
+async function getJar() {
+  if (!jar) jar = await buildCookieJar()
+  return jar
 }
 
 async function fetchPage(url) {
-  const http = await getClient()
-  const response = await http.get(url, { responseType: "text", validateStatus: (status) => status === 200 })
-  return response.data
+  const cookieJar = await getJar()
+  const cookieString = await cookieJar.getCookieString(url)
+
+  const response = await fetch(url, {
+    headers: { ...HEADERS, "Cookie": cookieString }
+  })
+
+  if (!response.ok) throw new Error(`HTTP ${response.status}`)
+  return response.text()
 }
 
 function getTotalPages(html) {
