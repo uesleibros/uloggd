@@ -29,7 +29,6 @@ import { steamHandler } from "#routers/connections/steam.js"
 import { twitchHandler } from "#routers/connections/twitch.js"
 import { nintendoHandler } from "#routers/connections/nintendo.js"
 import { psnHandler } from "#routers/connections/psn.js"
-import { epicGamesHandler } from "#routers/connections/epicgames.js"
 import { retroachievementsHandler } from "#routers/connections/retroachievements.js"
 
 const SERVICES = {
@@ -46,7 +45,6 @@ const SERVICES = {
 	twitch: twitchHandler,
 	nintendo: nintendoHandler,
 	psn: psnHandler,
-	epicgames: epicGamesHandler,
 	retroachievements: retroachievementsHandler,
 	translate: translateHandler,
 	likes: likesHandler,
