@@ -35,7 +35,11 @@ export default async function LoginPage({
     getPopularGames().catch(() => []),
   ]);
   if (user) {
-    const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).maybeSingle();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", user.id)
+      .maybeSingle();
     redirect(profile?.username ? `/${lang}` : `/${lang}/onboarding/username`);
   }
 

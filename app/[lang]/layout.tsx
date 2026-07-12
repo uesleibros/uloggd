@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { PlatformNavigation } from "@/components/platform-navigation";
 import { DesktopGameSearch } from "@/components/game-search";
+import { PlatformFooter } from "@/components/platform-footer";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
 import "../globals.css";
@@ -57,6 +58,7 @@ export default async function LocaleLayout({
               <DesktopGameSearch dictionary={dictionary} />
             </header>
             {children}
+            <PlatformFooter lang={lang} dictionary={dictionary} />
           </div>
         </div>
       </body>
