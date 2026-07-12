@@ -52,20 +52,22 @@ export default async function LoginPage({
           <h2>{d.auth.libraryLabel}</h2>
           <p>{d.auth.libraryHint}</p>
         </div>
-        {shelf.length > 0 && (
-          <div className="login-cover-row" aria-hidden="true">
-            {shelf.map((game, index) => (
-              <div
-                className="login-cover"
-                key={game.id}
-                style={{ "--cover-index": index } as CSSProperties}
-              >
-                <Image src={game.coverUrl} alt="" fill sizes="130px" />
-              </div>
-            ))}
-          </div>
-        )}
-        <div className="login-library-rule" />
+        <div className="login-shelf-scene">
+          {shelf.length > 0 && (
+            <div className="login-cover-row" aria-hidden="true">
+              {shelf.map((game, index) => (
+                <div
+                  className="login-cover"
+                  key={game.id}
+                  style={{ "--cover-index": index } as CSSProperties}
+                >
+                  <Image src={game.coverUrl} alt="" fill sizes="130px" />
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="login-library-rule" />
+        </div>
       </aside>
       <LoginPanel lang={lang} dictionary={d} />
     </main>

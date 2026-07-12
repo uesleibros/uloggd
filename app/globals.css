@@ -1286,10 +1286,10 @@ a {
 }
 .login-library {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-rows: auto minmax(260px, 1fr);
+  gap: 32px;
   min-width: 0;
-  flex-direction: column;
-  justify-content: flex-start;
   padding: 56px 40px 42px;
   overflow: hidden;
   border-right: 1px solid var(--shell-line);
@@ -1307,10 +1307,16 @@ a {
   mask-image: linear-gradient(transparent, black 45%, black 86%, transparent);
 }
 .login-library-copy,
+.login-shelf-scene,
 .login-cover-row,
 .login-library-rule {
   position: relative;
   z-index: 1;
+}
+.login-shelf-scene {
+  align-self: center;
+  width: 100%;
+  padding-block: 24px 40px;
 }
 .login-library-copy {
   max-width: 410px;
@@ -1335,9 +1341,10 @@ a {
 .login-cover-row {
   display: flex;
   align-items: flex-end;
-  width: calc(100% + 82px);
-  margin: clamp(32px, 6vh, 64px) -22px 18px;
-  padding-top: 24px;
+  justify-content: center;
+  width: 100%;
+  margin: 0 0 20px;
+  padding-inline: 12px;
   transform: rotate(-2deg);
 }
 .login-cover {
@@ -1360,7 +1367,7 @@ a {
 }
 .login-library-rule {
   height: 9px;
-  margin-inline: -14px;
+  margin-inline: 12px;
   border-top: 1px solid var(--shell-line-strong);
   border-bottom: 1px solid rgb(0 0 0 / 55%);
   background: var(--console-raised);
@@ -2116,10 +2123,14 @@ a {
     min-height: calc(100dvh - 60px);
   }
   .login-library {
+    display: flex;
     min-height: 164px;
     padding: 25px 22px 22px;
     border-right: 0;
     border-bottom: 1px solid var(--shell-line);
+  }
+  .login-shelf-scene {
+    display: contents;
   }
   .login-library-copy h2 {
     max-width: 270px;
