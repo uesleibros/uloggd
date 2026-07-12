@@ -101,7 +101,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Solid `console-panel` background with `shell-line-strong` right border.
 - Brand plus subtle beta stage at top.
 - Navigation rows are 44px high with an 8px radius.
-- Current route uses a violet wash, violet icon, white label, and small status dot.
+- Current route uses a graphite hover surface, white icon and label, and one small violet status dot. Violet never floods the navigation row.
 - Quick-log action is tonal, not a large saturated pill.
 - Account control stays at the bottom and must not fabricate authenticated state.
 
@@ -113,7 +113,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 ### Mobile navigation
 
-- Persistent 60px header with a single navigation entry point.
+- Persistent 60px header with the menu trigger on the left and search on the right; the logo stays inside the drawer instead of occupying the center.
 - Sidebar remains available through the menu trigger.
 - Do not use a bottom navigation bar; all destinations live in the drawer to avoid competing navigation systems.
 - Drawer behavior uses Radix Dialog for focus trapping, Escape handling, focus return, and accessible overlay state.

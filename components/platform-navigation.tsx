@@ -52,11 +52,19 @@ export function PlatformNavigation({
           <span className="nav-label">{d.platform.navigation}</span>
           {nav.map(([icon, label], index) => {
             const NavIcon = iconMap[icon];
+            if (index !== 0) {
+              return (
+                <Link key={label} href={`/${lang}`}>
+                  <NavIcon size={20} />
+                  <span>{label}</span>
+                </Link>
+              );
+            }
             return (
               <ActiveLink key={label} href={`/${lang}`}>
                 <NavIcon size={20} />
                 <span>{label}</span>
-                {index === 0 && <i />}
+                <i />
               </ActiveLink>
             );
           })}
@@ -114,7 +122,6 @@ export function PlatformNavigation({
             syncJourney: d.actions.syncJourney,
           }}
         />
-        <Brand lang={lang} />
         <button aria-label={d.platform.openSearch}>
           <Search size={21} />
         </button>

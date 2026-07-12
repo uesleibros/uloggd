@@ -182,7 +182,7 @@ a {
 }
 .main-nav a[aria-current="page"] {
   color: var(--screen-white);
-  background: var(--uloggd-violet-wash);
+  background: var(--console-hover);
 }
 .main-nav a[aria-current="page"] svg {
   color: var(--screen-white);
@@ -872,7 +872,7 @@ a {
 }
 .drawer-navigation a[data-active] {
   color: white;
-  background: var(--uloggd-violet-wash);
+  background: var(--console-hover);
 }
 .drawer-navigation a[data-active] svg {
   color: var(--screen-white);
@@ -1141,23 +1141,12 @@ a {
     top: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
     height: 60px;
     padding: 0 12px;
     border-bottom: 1px solid var(--shell-line-strong);
     background: rgb(23 21 27 / 96%);
     backdrop-filter: blur(14px);
-  }
-  .mobile-header .brand {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  .mobile-header .brand span {
-    display: none;
-  }
-  .mobile-header > button:last-child {
-    margin-left: auto;
   }
   .mobile-header button {
     min-width: 40px;
