@@ -35,17 +35,26 @@ async function getAccessToken() {
   if (tokenCache && Date.now() < tokenCache.expiresAt) return tokenCache.value;
   const clientId = process.env.TWITCH_CLIENT_ID;
   const clientSecret = process.env.TWITCH_CLIENT_SECRET;
-  if (!clientId || !clientSecret) throw new Error("Missing Twitch/IGDB credentials");
+  if (!clientId || !clientSecret)
+    throw new Error("Missing Twitch/IGDB credentials");
 
   const response = await fetch("https://id.twitch.tv/oauth2/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, grant_type: "client_credentials" }),
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: "client_credentials",
+    }),
     cache: "no-store",
   });
-  if (!response.ok) throw new Error(`Twitch authentication failed (${response.status})`);
+  if (!response.ok)
+    throw new Error(`Twitch authentication failed (${response.status})`);
   const data = (await response.json()) as TwitchToken;
-  tokenCache = { value: data.access_token, expiresAt: Date.now() + (data.expires_in - 60) * 1000 };
+  tokenCache = {
+    value: data.access_token,
+    expiresAt: Date.now() + (data.expires_in - 60) * 1000,
+  };
   return data.access_token;
 }
 
@@ -60,10 +69,17 @@ function normalize(game: IgdbGameResponse): Game {
     name: game.name,
     slug: game.slug,
     summary: game.summary ?? "",
-    rating: typeof game.total_rating === "number" ? Math.round(game.total_rating) : null,
+    rating:
+      typeof game.total_rating === "number"
+        ? Math.round(game.total_rating)
+        : null,
     ratingCount: game.total_rating_count ?? 0,
-    releaseYear: game.first_release_date ? new Date(game.first_release_date * 1000).getUTCFullYear() : null,
-    coverUrl: game.cover ? imageUrl(game.cover.image_id, "cover_big") : "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png",
+    releaseYear: game.first_release_date
+      ? new Date(game.first_release_date * 1000).getUTCFullYear()
+      : null,
+    coverUrl: game.cover
+      ? imageUrl(game.cover.image_id, "cover_big")
+      : "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png",
     heroUrl: hero ? imageUrl(hero.image_id, "1080p") : null,
     genres: game.genres?.map((genre) => genre.name).slice(0, 2) ?? [],
   };
@@ -75,11 +91,18 @@ async function queryGames(body: string) {
   const token = await getAccessToken();
   const response = await fetch("https://api.igdb.com/v4/games", {
     method: "POST",
-    headers: { "Client-ID": clientId, Authorization: `Bearer ${token}`, "Content-Type": "text/plain" },
+    headers: {
+      "Client-ID": clientId,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "text/plain",
+    },
     body,
     next: { revalidate: 3600 },
   });
-  if (!response.ok) throw new Error(`IGDB request failed (${response.status}): ${await response.text()}`);
+  if (!response.ok)
+    throw new Error(
+      `IGDB request failed (${response.status}): ${await response.text()}`,
+    );
   return ((await response.json()) as IgdbGameResponse[]).map(normalize);
 }
 
