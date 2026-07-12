@@ -53,6 +53,13 @@ type IgdbEventResponse = {
   event_logo?: IgdbImage;
 };
 
+type IgdbTimeToBeatResponse = {
+  hastily?: number;
+  normally?: number;
+  completely?: number;
+  count?: number;
+};
+
 export type GameSearchResult = {
   id: number;
   name: string;
@@ -297,6 +304,12 @@ export type GameDetail = Game & {
     kind: "expansions" | "editions" | "remakes" | "similar";
     games: Game[];
   }[];
+  timeToBeat: {
+    hastily: number | null;
+    normally: number | null;
+    completely: number | null;
+    count: number;
+  } | null;
 };
 
 export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
@@ -354,15 +367,26 @@ export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
     game.game_localizations?.forEach((item) => addCover(item.cover, "edition"));
   });
 
-  const events = await queryIgdbRaw<IgdbEventResponse>(
-    "events",
-    `
+  const [events, timeToBeatRows] = await Promise.all([
+    queryIgdbRaw<IgdbEventResponse>(
+      "events",
+      `
       fields name,slug,description,start_time,end_time,live_stream_url,event_logo.image_id;
       where games = [${raw.id}];
       sort start_time desc;
       limit 12;
     `,
-  ).catch(() => []);
+    ).catch(() => []),
+    queryIgdbRaw<IgdbTimeToBeatResponse>(
+      "game_time_to_beats",
+      `
+        fields hastily,normally,completely,count;
+        where game_id = ${raw.id};
+        limit 1;
+      `,
+    ).catch(() => []),
+  ]);
+  const time = timeToBeatRows[0];
 
   const gallery = [
     ...(raw.screenshots ?? []).map((image) => ({
@@ -431,6 +455,14 @@ export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
       .filter((url) => url.startsWith("https://"))
       .slice(0, 8),
     related: related.filter((group) => group.games.length > 0),
+    timeToBeat: time
+      ? {
+          hastily: time.hastily ?? null,
+          normally: time.normally ?? null,
+          completely: time.completely ?? null,
+          count: time.count ?? 0,
+        }
+      : null,
   };
 }
 

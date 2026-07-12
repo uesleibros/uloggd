@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { CalendarDays, ExternalLink, Play, Star } from "lucide-react";
+import {
+  CalendarDays,
+  Clock3,
+  ExternalLink,
+  Gauge,
+  Play,
+  Star,
+  Trophy,
+} from "lucide-react";
 import { GameMediaGallery } from "@/components/game-media-gallery";
 import { CoverSelector } from "@/components/library/cover-selector";
 import { GameActionPanel } from "@/components/library/game-action-panel";
-import { QuickGameCard } from "@/components/library/quick-game-card";
+import { RelatedGamesTabs } from "@/components/related-games-tabs";
 import { getGameBySlug } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../dictionaries";
@@ -71,6 +79,9 @@ export default async function GamePage({ params }: Props) {
     (savedGames ?? []).map((saved) => [saved.igdb_id, saved]),
   );
   const state = savedById.get(game.id) ?? null;
+  const savedRelated = Object.fromEntries(
+    relatedIds.map((id) => [id, savedById.get(id) ?? null]),
+  );
   const releaseDate = game.releaseTimestamp
     ? new Intl.DateTimeFormat(lang, {
         day: "numeric",
@@ -90,6 +101,12 @@ export default async function GamePage({ params }: Props) {
           timeZone: "UTC",
         }).format(new Date(timestamp * 1000))
       : null;
+  const duration = (seconds: number | null) => {
+    if (!seconds) return "—";
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.round((seconds % 3600) / 60);
+    return `${hours}h${minutes ? ` ${minutes}m` : ""}`;
+  };
 
   return (
     <main className="game-page">
@@ -126,6 +143,59 @@ export default async function GamePage({ params }: Props) {
             lang={lang}
             enabled={Boolean(user)}
           />
+          <section className="game-summary">
+            <h2>{lang === "pt-BR" ? "Sobre" : "About"}</h2>
+            <p>
+              {game.summary ||
+                (lang === "pt-BR"
+                  ? "Mais informações em breve."
+                  : "More information coming soon.")}
+            </p>
+          </section>
+        </div>
+        <aside className="game-context-rail">
+          {game.timeToBeat && (
+            <section className="game-time-panel">
+              <header>
+                <Clock3 size={15} />
+                <div>
+                  <span>
+                    {lang === "pt-BR" ? "TEMPO PARA TERMINAR" : "TIME TO BEAT"}
+                  </span>
+                  <h2>{lang === "pt-BR" ? "Duração" : "Playtime"}</h2>
+                </div>
+              </header>
+              <dl>
+                <div>
+                  <dt>
+                    <Gauge size={13} />
+                    {lang === "pt-BR" ? "Campanha" : "Main story"}
+                  </dt>
+                  <dd>{duration(game.timeToBeat.hastily)}</dd>
+                </div>
+                <div>
+                  <dt>
+                    <Play size={13} />
+                    {lang === "pt-BR" ? "Com extras" : "With extras"}
+                  </dt>
+                  <dd>{duration(game.timeToBeat.normally)}</dd>
+                </div>
+                <div>
+                  <dt>
+                    <Trophy size={13} />
+                    100%
+                  </dt>
+                  <dd>{duration(game.timeToBeat.completely)}</dd>
+                </div>
+              </dl>
+              {game.timeToBeat.count > 0 && (
+                <p>
+                  {game.timeToBeat.count.toLocaleString(lang)}{" "}
+                  {lang === "pt-BR" ? "registros no IGDB" : "IGDB submissions"}
+                </p>
+              )}
+            </section>
+          )}
           <div className="game-score-line">
             <div>
               <Star size={16} fill="currentColor" />
@@ -137,15 +207,6 @@ export default async function GamePage({ params }: Props) {
               {lang === "pt-BR" ? "avaliações no catálogo" : "catalog ratings"}
             </p>
           </div>
-          <section className="game-summary">
-            <h2>{lang === "pt-BR" ? "Sobre" : "About"}</h2>
-            <p>
-              {game.summary ||
-                (lang === "pt-BR"
-                  ? "Mais informações em breve."
-                  : "More information coming soon.")}
-            </p>
-          </section>
           <dl className="game-details">
             <div>
               <dt>{lang === "pt-BR" ? "Lançamento" : "Released"}</dt>
@@ -178,7 +239,7 @@ export default async function GamePage({ params }: Props) {
               </div>
             )}
           </dl>
-        </div>
+        </aside>
       </div>
       <div className="game-extended-content">
         <GameMediaGallery items={game.gallery} lang={lang} />
@@ -284,48 +345,12 @@ export default async function GamePage({ params }: Props) {
             </div>
           </section>
         )}
-        {game.related.map((group) => {
-          const labels =
-            lang === "pt-BR"
-              ? {
-                  expansions: ["CONTEÚDO", "DLCs e expansões"],
-                  editions: ["VERSÕES", "Edições e ports"],
-                  remakes: ["NOVAS VERSÕES", "Remakes e remasters"],
-                  similar: ["DESCUBRA", "Jogos relacionados"],
-                }
-              : {
-                  expansions: ["CONTENT", "DLCs and expansions"],
-                  editions: ["VERSIONS", "Editions and ports"],
-                  remakes: ["NEW VERSIONS", "Remakes and remasters"],
-                  similar: ["DISCOVER", "Related games"],
-                };
-          const [eyebrow, title] = labels[group.kind];
-          return (
-            <section
-              className="game-section game-related-section"
-              key={group.kind}
-            >
-              <header className="game-section-heading">
-                <div>
-                  <span>{eyebrow}</span>
-                  <h2>{title}</h2>
-                </div>
-                <small>{group.games.length}</small>
-              </header>
-              <div className="game-related-shelf">
-                {group.games.map((related) => (
-                  <QuickGameCard
-                    key={related.id}
-                    game={related}
-                    initial={savedById.get(related.id) ?? null}
-                    lang={lang}
-                    enabled={Boolean(user)}
-                  />
-                ))}
-              </div>
-            </section>
-          );
-        })}
+        <RelatedGamesTabs
+          groups={game.related}
+          saved={savedRelated}
+          lang={lang}
+          enabled={Boolean(user)}
+        />
       </div>
     </main>
   );

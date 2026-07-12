@@ -176,8 +176,15 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 ### Related game shelves
 
 - Relations remain separated by IGDB meaning: DLCs/expansions, editions/ports, remakes/remasters, and similar games.
-- Each group uses the active-shelf card with internal links, quick actions, and the account's saved cover.
+- Relations share one tabbed module so the game page does not grow by repeating four shelves.
+- Each selected group uses the active-shelf card with internal links, quick actions, and the account's saved cover.
 - Desktop uses six covers per row; mobile preserves every result in a horizontal snap shelf.
+
+### Game context rail
+
+- Desktop game pages use cover / primary content / context rail columns.
+- The context rail owns IGDB time-to-beat data, catalog score, release, genres, platforms, publisher, themes, and modes.
+- Tablet moves the rail below primary content; mobile stacks cover, content, and context without a persistent side column.
 
 ### Compact game row
 
