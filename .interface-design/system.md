@@ -204,6 +204,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Queries wait 280ms, abort stale requests, cache repeated terms in the browser, and rank exact/prefix matches ahead of IGDB popularity.
 - Mobile keeps only the search trigger in the persistent header. It opens a full-height Radix Dialog, focuses a 48px input, and uses 72px result rows with 48px covers.
 - Search loading, minimum-query, empty, and server-error states use direct text; do not add decorative empty-state icons.
+- Opening results never changes the search field geometry; the dropdown overlays below the stable header field. Personalized result caching is scoped per authenticated account so saved covers cannot leak across signed-in and anonymous states.
 
 ### Context rail panel
 
@@ -211,11 +212,13 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - One onboarding or context action, followed by a dense trend list.
 - Must not repeat the exact feed content or hierarchy.
 - Signed-out home rails explain the library and link to authentication; signed-in rails replace that pitch with real collection, playing, and rating counts plus a library shortcut.
+- Ranked catalog rows include compact 3:4 covers, index, title, and rating volume so they remain identifiable at a glance.
 
 ### Star rating
 
-- Personal ratings use five gold stars backed by the existing 0–100 value (20 points per star).
+- Personal ratings use five gold stars with half-star precision backed by the existing 0–100 value (10 points per half-star).
 - The game page shows the full labeled control; cover menus use the compact five-star variant.
+- A saved rating always exposes a nearby remove action that clears only the rating, not the library entry.
 - Rating a new game adds it to the library as Backlog. Library cards expose a clearly destructive remove action in their overflow menu.
 
 ### Legal document switcher

@@ -29,10 +29,12 @@ export function PlatformNavigation({
   lang,
   dictionary: d,
   account,
+  searchCacheScope,
 }: {
   lang: Locale;
   dictionary: Dictionary;
   account: NavigationAccount | null;
+  searchCacheScope: string;
 }) {
   const isAuthenticated = Boolean(account);
   const nav = [
@@ -151,7 +153,11 @@ export function PlatformNavigation({
         />
         <div className="mobile-header-actions">
           <LocaleSwitcher locale={lang} />
-          <MobileGameSearch dictionary={d} lang={lang} />
+          <MobileGameSearch
+            dictionary={d}
+            lang={lang}
+            cacheScope={searchCacheScope}
+          />
         </div>
       </header>
     </>

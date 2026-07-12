@@ -41,6 +41,7 @@ export function QuickGameCard({
   enabled = true,
   meta,
   removable = false,
+  onRemove,
 }: {
   game: {
     id: number;
@@ -56,6 +57,7 @@ export function QuickGameCard({
   enabled?: boolean;
   meta?: string;
   removable?: boolean;
+  onRemove?: () => void;
 }) {
   const pt = lang === "pt-BR";
   const [state, setState] = useState<State>(initial);
@@ -106,7 +108,7 @@ export function QuickGameCard({
     setPending(null);
   }
 
-  async function rate(value: number) {
+  async function rate(value: number | null) {
     if (pending) return;
     setPending("rating");
     setError(null);
@@ -142,6 +144,7 @@ export function QuickGameCard({
       return;
     }
     setRemoved(true);
+    onRemove?.();
   }
 
   const played = state?.status === "COMPLETED";

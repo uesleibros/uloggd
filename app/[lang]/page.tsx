@@ -1,13 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowUpRight,
-  Bookmark,
-  LibraryBig,
-  ListPlus,
-  Star,
-} from "lucide-react";
+import { ArrowUpRight, Star } from "lucide-react";
 import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
 import { resolveGameCover } from "@/lib/game-cover";
@@ -148,15 +142,6 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                 <span>{featured.genres.join(" · ")}</span>
               </div>
               <p>{featured.summary || d.home.subtitle}</p>
-              <div className="featured-actions">
-                <button>
-                  <LibraryBig size={17} />
-                  {d.actions.wantToPlay}
-                </button>
-                <button aria-label={d.actions.save}>
-                  <Bookmark size={18} />
-                </button>
-              </div>
             </div>
           </section>
         )}
@@ -258,9 +243,6 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                   <strong>{game.rating ?? "—"}</strong>
                   <span>{game.ratingCount.toLocaleString(lang)}</span>
                 </div>
-                <button aria-label={`${d.actions.addGame}: ${game.name}`}>
-                  <ListPlus size={18} />
-                </button>
               </article>
             ))}
           </div>
@@ -327,6 +309,17 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
               key={game.id}
             >
               <span>{index + 1}</span>
+              <span className="trend-cover">
+                <Image
+                  src={resolveGameCover(
+                    game.coverUrl,
+                    savedById.get(game.id)?.custom_cover_url,
+                  )}
+                  alt=""
+                  fill
+                  sizes="38px"
+                />
+              </span>
               <div>
                 <strong>{game.name}</strong>
                 <small>

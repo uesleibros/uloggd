@@ -59,6 +59,7 @@ export default async function LocaleLayout({
           <PlatformNavigation
             lang={lang}
             dictionary={dictionary}
+            searchCacheScope={user?.id ?? "anonymous"}
             account={
               user
                 ? {
@@ -70,7 +71,11 @@ export default async function LocaleLayout({
           />
           <div className="platform-content">
             <header className="content-header">
-              <DesktopGameSearch dictionary={dictionary} lang={lang} />
+              <DesktopGameSearch
+                dictionary={dictionary}
+                lang={lang}
+                cacheScope={user?.id ?? "anonymous"}
+              />
               <LocaleSwitcher locale={lang} />
             </header>
             {children}

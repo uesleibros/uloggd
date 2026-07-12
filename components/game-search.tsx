@@ -12,7 +12,7 @@ import type { GameSearchResult } from "@/lib/igdb";
 
 const searchCache = new Map<string, GameSearchResult[]>();
 
-function useGameSearch() {
+function useGameSearch(cacheScope: string) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GameSearchResult[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">(
@@ -33,10 +33,11 @@ function useGameSearch() {
   useEffect(() => {
     const normalized = query.trim().toLocaleLowerCase();
     if (normalized.length < 2) return;
+    const cacheKey = `${cacheScope}:${normalized}`;
 
     const controller = new AbortController();
     const timeout = window.setTimeout(async () => {
-      const cached = searchCache.get(normalized);
+      const cached = searchCache.get(cacheKey);
       if (cached) {
         if (currentQueryRef.current !== normalized) return;
         setResults(cached);
@@ -56,7 +57,7 @@ function useGameSearch() {
           results?: GameSearchResult[];
         };
         const nextResults = Array.isArray(data.results) ? data.results : [];
-        searchCache.set(normalized, nextResults);
+        searchCache.set(cacheKey, nextResults);
         if (currentQueryRef.current !== normalized) return;
         setResults(nextResults);
         setStatus("ready");
@@ -75,16 +76,19 @@ function useGameSearch() {
       window.clearTimeout(timeout);
       controller.abort();
     };
-  }, [query]);
+  }, [cacheScope, query]);
 
-  const updateQuery = useCallback((value: string) => {
-    const normalized = value.trim().toLocaleLowerCase();
-    const cached = searchCache.get(normalized);
-    currentQueryRef.current = normalized;
-    setQuery(value);
-    setResults(cached ?? []);
-    setStatus(normalized.length < 2 ? "idle" : cached ? "ready" : "loading");
-  }, []);
+  const updateQuery = useCallback(
+    (value: string) => {
+      const normalized = value.trim().toLocaleLowerCase();
+      const cached = searchCache.get(`${cacheScope}:${normalized}`);
+      currentQueryRef.current = normalized;
+      setQuery(value);
+      setResults(cached ?? []);
+      setStatus(normalized.length < 2 ? "idle" : cached ? "ready" : "loading");
+    },
+    [cacheScope],
+  );
 
   return { query, setQuery: updateQuery, results, status };
 }
@@ -176,14 +180,16 @@ function SearchSurface({
   mobile = false,
   lang,
   onSelect,
+  cacheScope,
 }: {
   dictionary: Dictionary;
   mobile?: boolean;
   lang: "pt-BR" | "en";
   onSelect?: () => void;
+  cacheScope: string;
 }) {
   const router = useRouter();
-  const { query, setQuery, results, status } = useGameSearch();
+  const { query, setQuery, results, status } = useGameSearch(cacheScope);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [expanded, setExpanded] = useState(mobile);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -319,19 +325,29 @@ function SearchSurface({
 export function DesktopGameSearch({
   dictionary,
   lang,
+  cacheScope,
 }: {
   dictionary: Dictionary;
   lang: "pt-BR" | "en";
+  cacheScope: string;
 }) {
-  return <SearchSurface dictionary={dictionary} lang={lang} />;
+  return (
+    <SearchSurface
+      dictionary={dictionary}
+      lang={lang}
+      cacheScope={cacheScope}
+    />
+  );
 }
 
 export function MobileGameSearch({
   dictionary: d,
   lang,
+  cacheScope,
 }: {
   dictionary: Dictionary;
   lang: "pt-BR" | "en";
+  cacheScope: string;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -361,6 +377,7 @@ export function MobileGameSearch({
           <SearchSurface
             dictionary={d}
             lang={lang}
+            cacheScope={cacheScope}
             mobile
             onSelect={() => setOpen(false)}
           />

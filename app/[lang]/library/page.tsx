@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { QuickGameCard } from "@/components/library/quick-game-card";
+import { LibraryCollection } from "@/components/library/library-collection";
 import { getGamesByIds } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../dictionaries";
@@ -28,7 +28,6 @@ export default async function LibraryPage({
   const games = await getGamesByIds(
     (records ?? []).map((record) => record.igdb_id),
   );
-  const byId = new Map(games.map((game) => [game.id, game]));
 
   return (
     <main className="library-page">
@@ -41,35 +40,7 @@ export default async function LibraryPage({
             : "Hover over a cover to update status, rating, or choose another image."}
         </p>
       </header>
-      {records?.length ? (
-        <div className="library-grid">
-          {records.map((record) => {
-            const game = byId.get(record.igdb_id);
-            return game ? (
-              <QuickGameCard
-                key={game.id}
-                game={game}
-                initial={record}
-                lang={lang}
-                removable
-              />
-            ) : null;
-          })}
-        </div>
-      ) : (
-        <section className="library-empty">
-          <h2>
-            {lang === "pt-BR"
-              ? "Sua biblioteca está vazia"
-              : "Your library is empty"}
-          </h2>
-          <p>
-            {lang === "pt-BR"
-              ? "Use as ações rápidas nas capas da página inicial para começar."
-              : "Use the quick actions on home page covers to get started."}
-          </p>
-        </section>
-      )}
+      <LibraryCollection games={games} records={records ?? []} lang={lang} />
     </main>
   );
 }

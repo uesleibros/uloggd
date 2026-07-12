@@ -78,7 +78,7 @@ export function GameActionPanel({
     setPending(null);
   }
 
-  async function rate(value: number) {
+  async function rate(value: number | null) {
     if (!enabled || pending) return;
     setPending("rating");
     setError(null);
