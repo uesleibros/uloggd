@@ -78,11 +78,9 @@ a {
 
 .platform-shell {
   display: grid;
-  grid-template-columns: 264px minmax(0, 1080px);
-  width: min(100%, 1344px);
+  grid-template-columns: 264px minmax(0, 1fr);
+  width: 100%;
   min-height: 100vh;
-  margin-inline: auto;
-  border-inline: 1px solid var(--shell-line);
   background: var(--console-canvas);
 }
 
@@ -111,7 +109,7 @@ a {
 
 .home-shell {
   display: grid;
-  grid-template-columns: minmax(580px, 760px) 320px;
+  grid-template-columns: minmax(580px, 1fr) 320px;
   min-height: 100vh;
 }
 
@@ -3066,10 +3064,10 @@ a {
 
 @media (max-width: 1100px) {
   .platform-shell {
-    grid-template-columns: 76px minmax(0, 1050px);
+    grid-template-columns: 76px minmax(0, 1fr);
   }
   .home-shell {
-    grid-template-columns: minmax(560px, 760px) 290px;
+    grid-template-columns: minmax(560px, 1fr) 290px;
   }
   .sidebar {
     align-items: center;
