@@ -6,8 +6,8 @@ uloggd uses Supabase for PostgreSQL, Auth, Storage, Realtime, and row-level secu
 
 - `DATABASE_URL`: Supavisor transaction pooler on port 6543. Reserved for server-side PostgreSQL jobs that cannot use the Data API.
 - `DIRECT_URL`: Supavisor session connection on port 5432. Used only by migrations, introspection, and administrative database scripts.
-- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`: safe to use in the browser with RLS enabled.
-- `SUPABASE_SERVICE_ROLE_KEY`: server-only administrative access. It must never be imported by a Client Component or exposed with a `NEXT_PUBLIC_` prefix.
+- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: safe to use in the browser with RLS enabled.
+- `SUPABASE_SECRET_KEY`: server-only administrative access. It must never be imported by a Client Component or exposed with a `NEXT_PUBLIC_` prefix.
 
 ## Data ownership
 
