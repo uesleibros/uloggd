@@ -26,16 +26,10 @@ const reserved = new Set([
   "uloggd",
   "www",
 ]);
-export function UsernamePanel({
-  lang,
-  suggestion,
-}: {
-  lang: "en" | "pt-BR";
-  suggestion?: string;
-}) {
+export function UsernamePanel({ lang }: { lang: "en" | "pt-BR" }) {
   const router = useRouter();
   const pt = lang === "pt-BR";
-  const [value, setValue] = useState(suggestion || "");
+  const [value, setValue] = useState("");
   const [available, setAvailable] = useState<boolean | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,11 +69,21 @@ export function UsernamePanel({
       setAvailable(null);
       return;
     }
-    const { data } = await createClient()
+    const { data, error: checkError } = await createClient()
       .from("profiles")
       .select("id")
       .ilike("username", clean)
       .limit(1);
+    if (checkError) {
+      setAvailable(null);
+      setError(
+        pt
+          ? "Não foi possível verificar a disponibilidade agora. Tente novamente."
+          : "Could not check availability right now. Try again.",
+      );
+      return;
+    }
+    setError(null);
     setAvailable(!data?.length);
   }
   async function submit(e: React.FormEvent) {
@@ -92,16 +96,23 @@ export function UsernamePanel({
       candidate: normalized,
     });
     if (rpcError) {
+      const occupied = rpcError.code === "23505";
+      const unavailableRpc =
+        rpcError.code === "PGRST202" || rpcError.code === "42883";
       setError(
-        rpcError.code === "23505"
+        occupied
           ? pt
             ? "Esse username acabou de ser escolhido. Tente outro."
             : "That username was just claimed. Try another."
-          : pt
-            ? "Não foi possível salvar. Confira o nome e tente novamente."
-            : "Could not save it. Check the name and try again.",
+          : unavailableRpc
+            ? pt
+              ? "A escolha de username ainda não está disponível. A configuração do banco precisa ser aplicada."
+              : "Username selection is not available yet. The database configuration must be applied."
+            : pt
+              ? "Não foi possível salvar o username. Tente novamente."
+              : "Could not save the username. Try again.",
       );
-      setAvailable(false);
+      setAvailable(occupied ? false : null);
       setPending(false);
       return;
     }

@@ -218,19 +218,11 @@ a {
 }
 .main-nav a[aria-current="page"] {
   color: var(--screen-white);
-  background: var(--console-hover);
+  font-weight: 720;
 }
 .main-nav a[aria-current="page"] svg {
   color: var(--screen-white);
-}
-.main-nav a[aria-current="page"] i {
-  position: absolute;
-  right: 10px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--brand-blurple);
-  box-shadow: 0 0 0 3px rgb(88 101 242 / 10%);
+  stroke-width: 2.5;
 }
 .sidebar-bottom {
   display: grid;
@@ -1222,10 +1214,11 @@ a {
 }
 .drawer-navigation a[data-active] {
   color: white;
-  background: var(--console-hover);
+  font-weight: 720;
 }
 .drawer-navigation a[data-active] svg {
   color: var(--screen-white);
+  stroke-width: 2.5;
 }
 .drawer-secondary {
   display: grid;
@@ -1905,10 +1898,6 @@ a {
   }
   .nav-disabled .nav-lock {
     display: none;
-  }
-  .main-nav a i {
-    top: 8px;
-    right: 8px;
   }
   .account-button {
     display: block;

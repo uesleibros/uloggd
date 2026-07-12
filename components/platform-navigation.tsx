@@ -79,7 +79,6 @@ export function PlatformNavigation({
                 <ActiveLink key={label} href={`/${lang}`}>
                   <NavIcon size={20} />
                   <span>{label}</span>
-                  <i />
                 </ActiveLink>
               );
             })}

@@ -21,21 +21,9 @@ export default async function Page({
     .eq("id", user.id)
     .maybeSingle();
   if (profile?.username) redirect(`/${lang}/u/${profile.username}`);
-  const raw = String(
-    user.user_metadata?.preferred_username ||
-      user.user_metadata?.user_name ||
-      user.user_metadata?.name ||
-      "",
-  )
-    .toLowerCase()
-    .replace(/[^a-z0-9_]/g, "")
-    .slice(0, 32);
   return (
     <main className="login-shell auth-single">
-      <UsernamePanel
-        lang={lang}
-        suggestion={raw.length >= 3 ? raw : undefined}
-      />
+      <UsernamePanel lang={lang} />
     </main>
   );
 }
