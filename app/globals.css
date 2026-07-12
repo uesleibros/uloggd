@@ -1359,8 +1359,8 @@ a {
 .login-library {
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(260px, 1fr);
-  gap: 32px;
+  grid-template-rows: auto auto 1fr;
+  gap: 24px;
   min-width: 0;
   padding: 56px 40px 42px;
   overflow: hidden;
@@ -1404,7 +1404,7 @@ a {
   text-wrap: pretty;
 }
 .login-highlight-list {
-  align-self: center;
+  align-self: start;
   width: 100%;
   border-top: 1px solid var(--shell-line);
 }

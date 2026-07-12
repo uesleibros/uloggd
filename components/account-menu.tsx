@@ -1,7 +1,8 @@
 "use client";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { ChevronDown, LogOut } from "lucide-react";
+import { ChevronDown, LoaderCircle, LogOut } from "lucide-react";
+import { useState } from "react";
 
 export type NavigationAccount = { email: string; username: string | null };
 
@@ -12,8 +13,24 @@ export function AccountMenu({
   account: NavigationAccount;
   lang: "pt-BR" | "en";
 }) {
+  const [signingOut, setSigningOut] = useState(false);
   const label = account.username ? `@${account.username}` : account.email;
   const initial = (account.username || account.email).slice(0, 1).toUpperCase();
+
+  async function signOut() {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      const response = await fetch(`/${lang}/auth/signout`, {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      if (!response.ok) throw new Error("signout_failed");
+      window.location.replace(`/${lang}/login`);
+    } catch {
+      setSigningOut(false);
+    }
+  }
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger className="account-button">
@@ -37,14 +54,27 @@ export function AccountMenu({
             <span>{account.email}</span>
           </div>
           <DropdownMenu.Separator />
-          <form action={`/${lang}/auth/signout`} method="post">
-            <DropdownMenu.Item asChild>
-              <button className="account-menu-signout" type="submit">
-                <LogOut size={16} />
-                {lang === "pt-BR" ? "Sair da conta" : "Sign out"}
-              </button>
-            </DropdownMenu.Item>
-          </form>
+          <DropdownMenu.Item
+            className="account-menu-signout"
+            disabled={signingOut}
+            onSelect={(event) => {
+              event.preventDefault();
+              void signOut();
+            }}
+          >
+            {signingOut ? (
+              <LoaderCircle className="spin" size={16} />
+            ) : (
+              <LogOut size={16} />
+            )}
+            {signingOut
+              ? lang === "pt-BR"
+                ? "Saindo…"
+                : "Signing out…"
+              : lang === "pt-BR"
+                ? "Sair da conta"
+                : "Sign out"}
+          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
