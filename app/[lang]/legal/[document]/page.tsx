@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Mail, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  FileText,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+} from "lucide-react";
 import { notFound } from "next/navigation";
 import { getLegalContent, isLegalDocument } from "@/lib/legal-content";
 import { getDictionary, hasLocale } from "../../dictionaries";
@@ -18,6 +24,11 @@ export default async function LegalPage({ params }: Props) {
   if (!hasLocale(lang) || !isLegalDocument(document)) notFound();
   const content = getLegalContent(lang, document);
   const d = await getDictionary(lang);
+  const documents = [
+    { slug: "terms", label: d.legal.terms, icon: FileText },
+    { slug: "privacy", label: d.legal.privacy, icon: LockKeyhole },
+    { slug: "child-safety", label: d.legal.safety, icon: ShieldCheck },
+  ] as const;
 
   return (
     <div className="legal-shell">
@@ -28,6 +39,18 @@ export default async function LegalPage({ params }: Props) {
         </Link>
       </header>
       <main className="legal-page">
+        <nav className="legal-document-nav" aria-label={d.legalUi.documents}>
+          {documents.map(({ slug, label, icon: Icon }) => (
+            <Link
+              key={slug}
+              href={`/${lang}/legal/${slug}`}
+              aria-current={document === slug ? "page" : undefined}
+            >
+              <Icon size={16} />
+              <span>{label}</span>
+            </Link>
+          ))}
+        </nav>
         <div className="legal-title">
           <span>
             <ShieldCheck size={18} /> {d.legalUi.section}
