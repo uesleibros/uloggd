@@ -24,6 +24,11 @@ type IgdbGameResponse = {
     cover?: IgdbImage;
     game_localizations?: { cover?: IgdbImage }[];
   };
+  involved_companies?: {
+    developer?: boolean;
+    publisher?: boolean;
+    company?: { name: string };
+  }[];
 };
 
 export type GameSearchResult = {
@@ -49,6 +54,8 @@ export type Game = {
   coverUrl: string;
   heroUrl: string | null;
   genres: string[];
+  platforms: string[];
+  developers: string[];
 };
 
 let tokenCache: { value: string; expiresAt: number } | null = null;
@@ -106,6 +113,11 @@ function normalize(game: IgdbGameResponse): Game {
       : "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png",
     heroUrl: hero ? imageUrl(hero.image_id, "1080p") : null,
     genres: game.genres?.map((genre) => genre.name).slice(0, 2) ?? [],
+    platforms: game.platforms?.map((platform) => platform.name) ?? [],
+    developers:
+      game.involved_companies
+        ?.filter((item) => item.developer && item.company?.name)
+        .map((item) => item.company!.name) ?? [],
   };
 }
 
@@ -241,6 +253,7 @@ export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
   const games = await queryGamesRaw(`
     fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
       cover.image_id,artworks.image_id,screenshots.image_id,genres.name,
+      platforms.name,involved_companies.developer,involved_companies.company.name,
       game_localizations.cover.image_id,version_parent.id,version_parent.cover.image_id,
       version_parent.game_localizations.cover.image_id;
     where slug = "${slug}";

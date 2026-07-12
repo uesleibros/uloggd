@@ -189,20 +189,14 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                 </header>
                 <div className="discovery-games">
                   {lane.games.map((game) => (
-                    <article className="discovery-game" key={game.id}>
-                      <div className="discovery-cover">
-                        <Image
-                          src={game.coverUrl}
-                          alt={`${game.name} cover`}
-                          fill
-                          sizes="(max-width: 620px) 90px, 76px"
-                        />
-                      </div>
-                      <div>
-                        <h4>{game.name}</h4>
-                        <p>{lane.meta(game)}</p>
-                      </div>
-                    </article>
+                    <QuickGameCard
+                      key={game.id}
+                      game={game}
+                      initial={savedById.get(game.id) ?? null}
+                      lang={lang}
+                      enabled={Boolean(user)}
+                      meta={lane.meta(game)}
+                    />
                   ))}
                 </div>
               </section>

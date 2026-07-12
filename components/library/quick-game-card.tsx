@@ -36,6 +36,7 @@ export function QuickGameCard({
   lang,
   rank,
   enabled = true,
+  meta,
 }: {
   game: {
     id: number;
@@ -49,6 +50,7 @@ export function QuickGameCard({
   lang: "pt-BR" | "en";
   rank?: number;
   enabled?: boolean;
+  meta?: string;
 }) {
   const pt = lang === "pt-BR";
   const [state, setState] = useState<State>(initial);
@@ -245,7 +247,9 @@ export function QuickGameCard({
         )}
       </div>
       <h3>{game.name}</h3>
-      <p>{[game.releaseYear, game.genres[0]].filter(Boolean).join(" · ")}</p>
+      <p>
+        {meta ?? [game.releaseYear, game.genres[0]].filter(Boolean).join(" · ")}
+      </p>
     </article>
   );
 }
