@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import { redirect, notFound } from "next/navigation";
-import { Gamepad2 } from "lucide-react";
 import { LoginPanel } from "@/components/auth/login-panel";
 import { getPopularGames } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
@@ -43,9 +42,6 @@ export default async function LoginPage({
     <main className="login-shell">
       <aside className="login-library" aria-label={d.auth.libraryLabel}>
         <div className="login-library-copy">
-          <span>
-            <Gamepad2 size={14} /> uloggd
-          </span>
           <h2>{d.auth.libraryLabel}</h2>
           <p>{d.auth.libraryHint}</p>
         </div>

@@ -5,6 +5,7 @@ import {
   HomeIcon,
   LibraryBig,
   ListPlus,
+  LogIn,
   LockKeyhole,
   Search,
   Settings,
@@ -93,7 +94,9 @@ export function PlatformNavigation({
             <span>{d.nav.settings}</span>
           </Link>
           <Link className="account-button" href={`/${lang}/login`}>
-            <div className="avatar">U</div>
+            <span className="signed-out-icon" aria-hidden>
+              <LogIn size={18} />
+            </span>
             <div>
               <strong>{d.actions.signIn}</strong>
               <small>{d.actions.syncJourney}</small>

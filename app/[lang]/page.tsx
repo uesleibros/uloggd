@@ -5,7 +5,7 @@ import {
   ArrowUpRight,
   Bookmark,
   Check,
-  Gamepad2,
+  LibraryBig,
   ListPlus,
   Search,
   Sparkles,
@@ -86,7 +86,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
               <p>{featured.summary || d.home.subtitle}</p>
               <div className="featured-actions">
                 <button>
-                  <Gamepad2 size={17} />
+                  <LibraryBig size={17} />
                   {d.actions.wantToPlay}
                 </button>
                 <button aria-label={d.actions.save}>

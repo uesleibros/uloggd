@@ -33,8 +33,9 @@ Colors come from console hardware and late-night screens:
 - `--screen-white: #f4f2f6` — primary text.
 - `--screen-dim: #aaa5af` — supporting text.
 - `--screen-muted: #716c77` — metadata and disabled hierarchy.
-- `--uloggd-violet: #9478f4` — primary action and current state only.
-- `--uloggd-violet-bright: #a991ff` — high-emphasis brand state.
+- `--brand-blurple: #5865f2` — Discord-inspired primary action and current state only.
+- `--brand-blurple-bright: #7983f5` — hover and high-emphasis brand state.
+- `--brand-blurple-wash: rgb(88 101 242 / 13%)` — tonal brand surface.
 - `--achievement-gold: #d3b55b` — ratings and achievements only.
 - `--safe-green: #73c69a` — safety and positive status only.
 
@@ -101,9 +102,10 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Solid `console-panel` background with `shell-line-strong` right border.
 - Brand plus subtle beta stage at top.
 - Navigation rows are 44px high with an 8px radius.
-- Current route uses a graphite hover surface, white icon and label, and one small violet status dot. Violet never floods the navigation row.
+- Current route uses a graphite hover surface, white icon and label, and one small blurple status dot. Blurple never floods the navigation row.
 - Quick-log action is tonal, not a large saturated pill.
 - Account control stays at the bottom and must not fabricate authenticated state.
+- Signed-out account controls use a neutral login glyph; initials and avatars are reserved for real authenticated profiles.
 
 ### Compact sidebar
 

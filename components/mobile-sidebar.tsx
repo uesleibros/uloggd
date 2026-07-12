@@ -10,6 +10,7 @@ import {
   HomeIcon,
   LibraryBig,
   LockKeyhole,
+  LogIn,
   Menu,
   Settings,
   ShieldCheck,
@@ -118,7 +119,9 @@ export function MobileSidebar({ lang, labels }: MobileSidebarProps) {
           </div>
           <Dialog.Close asChild>
             <Link className="drawer-account" href={`/${lang}/login`}>
-              <div className="avatar">U</div>
+              <span className="signed-out-icon" aria-hidden>
+                <LogIn size={18} />
+              </span>
               <div>
                 <strong>{labels.signIn}</strong>
                 <span>{labels.syncJourney}</span>
