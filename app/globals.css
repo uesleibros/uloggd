@@ -139,14 +139,24 @@ a {
   box-shadow: 12px 0 32px rgb(0 0 0 / 18%);
   grid-column: 1;
   grid-row: 1;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  overflow: hidden;
 }
 .sidebar-brand {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 4px;
+}
+.sidebar-scroll {
+  min-height: 0;
+  flex: 1;
+  margin: 22px -8px 0;
+  padding: 0 8px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--shell-line-strong) transparent;
 }
 .product-stage {
   padding: 3px 6px;
@@ -160,7 +170,7 @@ a {
 .main-nav {
   display: grid;
   gap: 3px;
-  margin-top: 34px;
+  margin-top: 12px;
 }
 .nav-label {
   margin: 0 10px 9px;
@@ -266,7 +276,7 @@ a {
 .sidebar-bottom {
   display: grid;
   gap: 2px;
-  margin-top: auto;
+  margin-top: 20px;
 }
 
 .locale-switcher {
@@ -275,6 +285,7 @@ a {
   gap: 13px;
 }
 .account-button {
+  flex: none;
   display: grid;
   grid-template-columns: 36px 1fr auto;
   align-items: center;
@@ -1094,8 +1105,7 @@ a {
   display: flex;
   flex-direction: column;
   max-height: 100dvh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  overflow: hidden;
 }
 .mobile-drawer[data-state="open"] {
   animation: drawer-in 240ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -1104,6 +1114,7 @@ a {
   animation: drawer-out 160ms cubic-bezier(0.77, 0, 0.175, 1);
 }
 .drawer-header {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1115,10 +1126,20 @@ a {
   border-radius: 7px;
   background: var(--console-hover);
 }
+.drawer-scroll {
+  min-height: 0;
+  flex: 1;
+  margin: 20px -8px 0;
+  padding: 0 8px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--shell-line-strong) transparent;
+}
 .drawer-navigation {
   display: grid;
   gap: 3px;
-  margin-top: 24px;
+  margin-top: 4px;
 }
 .drawer-navigation a,
 .drawer-secondary a,
@@ -1162,6 +1183,7 @@ a {
   font-size: 11px;
 }
 .drawer-account {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1296,6 +1318,9 @@ a {
   box-shadow: 0 11px 25px rgb(0 0 0 / 45%);
 }
 .login-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   align-self: center;
   width: 100%;
   max-width: 430px;
@@ -1321,7 +1346,7 @@ a {
   align-items: center;
   gap: 12px;
   width: 100%;
-  margin-top: 30px;
+  margin: 0;
   padding: 11px 13px;
   border: 1px solid rgb(88 101 242 / 50%);
   border-radius: 10px;
@@ -1366,7 +1391,7 @@ a {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 22px 0 15px;
+  margin: 0;
   color: var(--screen-muted);
   font-size: 9px;
   letter-spacing: 0.05em;
@@ -1383,6 +1408,10 @@ a {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+}
+.auth-alternatives {
+  display: grid;
+  gap: 12px;
 }
 
 /* Auth forms extend the existing access column without changing its shell. */
@@ -1411,7 +1440,7 @@ a {
 }
 .auth-form {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 .auth-form label {
   display: grid;
@@ -1433,6 +1462,26 @@ a {
 .auth-form input:focus {
   border-color: rgb(88 101 242 / 58%);
 }
+.auth-form input[aria-invalid="true"]:not([type="checkbox"]) {
+  border-color: rgb(210 105 105 / 58%);
+}
+.auth-field-error,
+.auth-field-hint {
+  font-size: 10px;
+  font-weight: 450;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+.auth-field-error {
+  color: #e2aaaa;
+}
+.auth-field-hint {
+  color: var(--screen-muted);
+}
+.auth-checkbox-group {
+  display: grid;
+  gap: 6px;
+}
 .auth-checkbox {
   grid-template-columns: 18px 1fr;
   align-items: start;
@@ -1444,6 +1493,10 @@ a {
   height: 18px;
   margin: 1px 0 0;
   accent-color: var(--brand-blurple);
+}
+.auth-checkbox input[aria-invalid="true"] {
+  outline: 1px solid rgb(210 105 105 / 70%);
+  outline-offset: 2px;
 }
 .auth-primary {
   display: flex;
@@ -1488,6 +1541,7 @@ a {
   border-radius: 7px;
 }
 .auth-state {
+  gap: 20px;
   align-content: center;
   text-align: center;
 }
@@ -1585,7 +1639,7 @@ a {
   opacity: 0.62;
 }
 .auth-error {
-  margin-top: 12px;
+  margin: 0;
   padding: 10px 12px;
   border: 1px solid rgb(210 105 105 / 25%);
   border-radius: 7px;
@@ -1614,7 +1668,7 @@ a {
   font-size: 10px;
 }
 .auth-legal {
-  margin: 20px 0 0;
+  margin: 0;
   color: var(--screen-muted);
   font-size: 9px;
   line-height: 1.55;
@@ -2040,11 +2094,7 @@ a {
     padding: 30px 20px 40px;
   }
   .login-panel-heading h1 {
-    margin-top: 9px;
     font-size: 27px;
-  }
-  .passkey-button {
-    margin-top: 24px;
   }
 }
 

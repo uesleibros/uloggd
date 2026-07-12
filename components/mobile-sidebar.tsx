@@ -76,77 +76,79 @@ export function MobileSidebar({
               <X size={20} />
             </Dialog.Close>
           </div>
-          <nav className="drawer-navigation">
-            {links.map(([Icon, label, href, requiresAuth], index) =>
-              requiresAuth && !isAuthenticated ? (
-                <span
-                  className="drawer-disabled"
-                  key={label}
-                  aria-disabled="true"
-                  title={labels.requiresSignIn}
-                >
-                  <Icon size={21} />
-                  <span>{label}</span>
-                  <LockKeyhole className="nav-lock" size={13} />
-                </span>
-              ) : (
-                <Dialog.Close asChild key={label}>
-                  <Link
-                    href={href}
-                    data-active={
-                      index === 0 && pathname === href ? true : undefined
-                    }
+          <div className="drawer-scroll">
+            <nav className="drawer-navigation">
+              {links.map(([Icon, label, href, requiresAuth], index) =>
+                requiresAuth && !isAuthenticated ? (
+                  <span
+                    className="drawer-disabled"
+                    key={label}
+                    aria-disabled="true"
+                    title={labels.requiresSignIn}
                   >
                     <Icon size={21} />
                     <span>{label}</span>
-                  </Link>
-                </Dialog.Close>
-              ),
-            )}
-          </nav>
-          <div className="drawer-secondary">
-            <Dialog.Close asChild>
-              <Link href={`/${lang}/legal/terms`}>
-                <FileText size={19} />
-                {labels.terms}
-              </Link>
-            </Dialog.Close>
-            <Dialog.Close asChild>
-              <Link href={`/${lang}/legal/privacy`}>
-                <LockKeyhole size={19} />
-                {labels.privacy}
-              </Link>
-            </Dialog.Close>
-            <Dialog.Close asChild>
-              <Link href={`/${lang}/legal/child-safety`}>
-                <ShieldCheck size={19} />
-                {labels.safety}
-              </Link>
-            </Dialog.Close>
-            <Dialog.Close asChild>
-              <Link href={localeHref} hrefLang={nextLocale}>
-                <Globe2 size={19} />
-                {nextLocale === "en" ? "English" : "Português"}
-              </Link>
-            </Dialog.Close>
-            {isAuthenticated ? (
+                    <LockKeyhole className="nav-lock" size={13} />
+                  </span>
+                ) : (
+                  <Dialog.Close asChild key={label}>
+                    <Link
+                      href={href}
+                      data-active={
+                        index === 0 && pathname === href ? true : undefined
+                      }
+                    >
+                      <Icon size={21} />
+                      <span>{label}</span>
+                    </Link>
+                  </Dialog.Close>
+                ),
+              )}
+            </nav>
+            <div className="drawer-secondary">
               <Dialog.Close asChild>
-                <Link href={`/${lang}`}>
-                  <Settings size={19} />
-                  {labels.settings}
+                <Link href={`/${lang}/legal/terms`}>
+                  <FileText size={19} />
+                  {labels.terms}
                 </Link>
               </Dialog.Close>
-            ) : (
-              <span
-                className="drawer-disabled"
-                aria-disabled="true"
-                title={labels.requiresSignIn}
-              >
-                <Settings size={19} />
-                <span>{labels.settings}</span>
-                <LockKeyhole className="nav-lock" size={13} />
-              </span>
-            )}
+              <Dialog.Close asChild>
+                <Link href={`/${lang}/legal/privacy`}>
+                  <LockKeyhole size={19} />
+                  {labels.privacy}
+                </Link>
+              </Dialog.Close>
+              <Dialog.Close asChild>
+                <Link href={`/${lang}/legal/child-safety`}>
+                  <ShieldCheck size={19} />
+                  {labels.safety}
+                </Link>
+              </Dialog.Close>
+              <Dialog.Close asChild>
+                <Link href={localeHref} hrefLang={nextLocale}>
+                  <Globe2 size={19} />
+                  {nextLocale === "en" ? "English" : "Português"}
+                </Link>
+              </Dialog.Close>
+              {isAuthenticated ? (
+                <Dialog.Close asChild>
+                  <Link href={`/${lang}`}>
+                    <Settings size={19} />
+                    {labels.settings}
+                  </Link>
+                </Dialog.Close>
+              ) : (
+                <span
+                  className="drawer-disabled"
+                  aria-disabled="true"
+                  title={labels.requiresSignIn}
+                >
+                  <Settings size={19} />
+                  <span>{labels.settings}</span>
+                  <LockKeyhole className="nav-lock" size={13} />
+                </span>
+              )}
+            </div>
           </div>
           <Dialog.Close asChild>
             <Link className="drawer-account" href={`/${lang}/login`}>

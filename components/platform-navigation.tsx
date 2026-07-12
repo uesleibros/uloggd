@@ -52,99 +52,101 @@ export function PlatformNavigation({
           <Brand lang={lang} />
           <span className="product-stage">{d.platform.beta}</span>
         </div>
-        <nav className="main-nav" aria-label={d.platform.navigation}>
-          <span className="nav-label">{d.platform.navigation}</span>
-          {nav.map(([icon, label, requiresAuth], index) => {
-            const NavIcon = iconMap[icon];
-            if (requiresAuth && !isAuthenticated) {
+        <div className="sidebar-scroll">
+          <nav className="main-nav" aria-label={d.platform.navigation}>
+            <span className="nav-label">{d.platform.navigation}</span>
+            {nav.map(([icon, label, requiresAuth], index) => {
+              const NavIcon = iconMap[icon];
+              if (requiresAuth && !isAuthenticated) {
+                return (
+                  <span
+                    className="nav-disabled"
+                    key={label}
+                    aria-disabled="true"
+                    title={d.actions.requiresSignIn}
+                  >
+                    <NavIcon size={20} />
+                    <span>{label}</span>
+                    <LockKeyhole className="nav-lock" size={12} />
+                  </span>
+                );
+              }
+              if (index !== 0) {
+                return (
+                  <Link key={label} href={`/${lang}`}>
+                    <NavIcon size={20} />
+                    <span>{label}</span>
+                  </Link>
+                );
+              }
               return (
-                <span
-                  className="nav-disabled"
-                  key={label}
-                  aria-disabled="true"
-                  title={d.actions.requiresSignIn}
-                >
+                <ActiveLink key={label} href={`/${lang}`}>
                   <NavIcon size={20} />
                   <span>{label}</span>
-                  <LockKeyhole className="nav-lock" size={12} />
-                </span>
+                  <i />
+                </ActiveLink>
               );
-            }
-            if (index !== 0) {
-              return (
-                <Link key={label} href={`/${lang}`}>
-                  <NavIcon size={20} />
-                  <span>{label}</span>
-                </Link>
-              );
-            }
-            return (
-              <ActiveLink key={label} href={`/${lang}`}>
-                <NavIcon size={20} />
-                <span>{label}</span>
-                <i />
-              </ActiveLink>
-            );
-          })}
-        </nav>
-        <button
-          className="quick-log"
-          disabled={!isAuthenticated}
-          title={!isAuthenticated ? d.actions.requiresSignIn : undefined}
-        >
-          <ListPlus size={19} />
-          <span>{d.actions.addGame}</span>
-          <kbd>+</kbd>
-        </button>
-        <div className="sidebar-bottom">
-          <Link href={`/${lang}/legal/terms`}>
-            <FileText size={19} />
-            <span>{d.legal.terms}</span>
-          </Link>
-          <Link href={`/${lang}/legal/privacy`}>
-            <LockKeyhole size={19} />
-            <span>{d.legal.privacy}</span>
-          </Link>
-          <Link href={`/${lang}/legal/cookies`}>
-            <Cookie size={19} />
-            <span>
-              {lang === "pt-BR"
-                ? "Configurações de cookies"
-                : "Cookie settings"}
-            </span>
-          </Link>
-          <Link href={`/${lang}/legal/child-safety`}>
-            <ShieldCheck size={19} />
-            <span>{d.legal.safety}</span>
-          </Link>
-          <LocaleSwitcher locale={lang} />
-          {isAuthenticated ? (
-            <Link href={`/${lang}`}>
-              <Settings size={19} />
-              <span>{d.nav.settings}</span>
+            })}
+          </nav>
+          <button
+            className="quick-log"
+            disabled={!isAuthenticated}
+            title={!isAuthenticated ? d.actions.requiresSignIn : undefined}
+          >
+            <ListPlus size={19} />
+            <span>{d.actions.addGame}</span>
+            <kbd>+</kbd>
+          </button>
+          <div className="sidebar-bottom">
+            <Link href={`/${lang}/legal/terms`}>
+              <FileText size={19} />
+              <span>{d.legal.terms}</span>
             </Link>
-          ) : (
-            <span
-              className="nav-disabled"
-              aria-disabled="true"
-              title={d.actions.requiresSignIn}
-            >
-              <Settings size={19} />
-              <span>{d.nav.settings}</span>
-              <LockKeyhole className="nav-lock" size={12} />
-            </span>
-          )}
-          <Link className="account-button" href={`/${lang}/login`}>
-            <span className="signed-out-icon" aria-hidden>
-              <LogIn size={18} />
-            </span>
-            <div>
-              <strong>{d.actions.signIn}</strong>
-              <small>{d.actions.syncJourney}</small>
-            </div>
-            <span aria-hidden>↗</span>
-          </Link>
+            <Link href={`/${lang}/legal/privacy`}>
+              <LockKeyhole size={19} />
+              <span>{d.legal.privacy}</span>
+            </Link>
+            <Link href={`/${lang}/legal/cookies`}>
+              <Cookie size={19} />
+              <span>
+                {lang === "pt-BR"
+                  ? "Configurações de cookies"
+                  : "Cookie settings"}
+              </span>
+            </Link>
+            <Link href={`/${lang}/legal/child-safety`}>
+              <ShieldCheck size={19} />
+              <span>{d.legal.safety}</span>
+            </Link>
+            <LocaleSwitcher locale={lang} />
+            {isAuthenticated ? (
+              <Link href={`/${lang}`}>
+                <Settings size={19} />
+                <span>{d.nav.settings}</span>
+              </Link>
+            ) : (
+              <span
+                className="nav-disabled"
+                aria-disabled="true"
+                title={d.actions.requiresSignIn}
+              >
+                <Settings size={19} />
+                <span>{d.nav.settings}</span>
+                <LockKeyhole className="nav-lock" size={12} />
+              </span>
+            )}
+          </div>
         </div>
+        <Link className="account-button" href={`/${lang}/login`}>
+          <span className="signed-out-icon" aria-hidden>
+            <LogIn size={18} />
+          </span>
+          <div>
+            <strong>{d.actions.signIn}</strong>
+            <small>{d.actions.syncJourney}</small>
+          </div>
+          <span aria-hidden>↗</span>
+        </Link>
       </aside>
 
       <header className="mobile-header">

@@ -8,11 +8,7 @@ import type { Provider } from "@supabase/supabase-js";
 import type { TurnstileInstance } from "@marsidev/react-turnstile";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { createClient } from "@/lib/supabase/client";
-import {
-  emailSchema,
-  passwordSchema,
-  safeInternalNext,
-} from "@/lib/auth-validation";
+import { emailSchema, safeInternalNext } from "@/lib/auth-validation";
 import { DiscordIcon, GoogleIcon, TwitchIcon } from "./provider-icons";
 import { AuthTurnstile } from "./turnstile";
 
@@ -23,6 +19,8 @@ const providers = [
 ] as const;
 
 type Mode = "signin" | "signup" | "forgot" | "check-email";
+type FieldName = "email" | "password" | "confirmPassword" | "terms";
+type FieldErrors = Partial<Record<FieldName, string>>;
 
 export function LoginPanel({
   lang,
@@ -45,6 +43,7 @@ export function LoginPanel({
     searchParams.get("error") ? d.auth.callbackError : null,
   );
   const [message, setMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [cooldown, setCooldown] = useState(false);
@@ -63,6 +62,25 @@ export function LoginPanel({
           submitForgot: "Enviar link de recuperação",
           terms: "Aceito os Termos de Uso e a Política de Privacidade.",
           invalid: "Confira os dados informados e tente novamente.",
+          emailRequired: "Informe seu e-mail.",
+          emailInvalid: "Digite um e-mail válido, como nome@exemplo.com.",
+          passwordRequired: "Informe sua senha.",
+          passwordShort: "A senha precisa ter pelo menos 8 caracteres.",
+          passwordLong: "A senha pode ter no máximo 72 caracteres.",
+          passwordLetter: "Inclua pelo menos uma letra.",
+          passwordNumber: "Inclua pelo menos um número.",
+          passwordRules:
+            "Use de 8 a 72 caracteres, com pelo menos uma letra e um número.",
+          confirmRequired: "Confirme sua senha.",
+          termsRequired:
+            "Você precisa aceitar os Termos de Uso e a Política de Privacidade.",
+          invalidCredentials: "E-mail ou senha incorretos.",
+          captchaFailed:
+            "A verificação de segurança expirou ou falhou. Faça-a novamente.",
+          signupDisabled:
+            "Novos cadastros estão temporariamente indisponíveis.",
+          network:
+            "Não foi possível conectar ao serviço. Verifique sua conexão e tente novamente.",
           captcha: "Conclua a verificação de segurança.",
           mismatch: "As senhas não coincidem.",
           genericRecovery:
@@ -87,6 +105,23 @@ export function LoginPanel({
           submitForgot: "Send recovery link",
           terms: "I accept the Terms of Use and Privacy Policy.",
           invalid: "Check the information and try again.",
+          emailRequired: "Enter your email address.",
+          emailInvalid: "Enter a valid email, such as name@example.com.",
+          passwordRequired: "Enter your password.",
+          passwordShort: "Password must be at least 8 characters.",
+          passwordLong: "Password can have at most 72 characters.",
+          passwordLetter: "Include at least one letter.",
+          passwordNumber: "Include at least one number.",
+          passwordRules:
+            "Use 8–72 characters with at least one letter and one number.",
+          confirmRequired: "Confirm your password.",
+          termsRequired: "You must accept the Terms of Use and Privacy Policy.",
+          invalidCredentials: "Incorrect email or password.",
+          captchaFailed:
+            "The security check expired or failed. Complete it again.",
+          signupDisabled: "New registrations are temporarily unavailable.",
+          network:
+            "Could not connect to the service. Check your connection and try again.",
           captcha: "Complete the security check.",
           mismatch: "Passwords do not match.",
           genericRecovery:
@@ -108,7 +143,67 @@ export function LoginPanel({
     setMode(next);
     setError(null);
     setMessage(null);
+    setFieldErrors({});
     resetCaptcha();
+  }
+
+  function clearFieldError(field: FieldName) {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  }
+
+  function validateFields(data: FormData) {
+    const errors: FieldErrors = {};
+    const submittedEmail = String(data.get("email") || "").trim();
+    const password = String(data.get("password") || "");
+    const confirmation = String(data.get("confirmPassword") || "");
+
+    if (!submittedEmail) errors.email = copy.emailRequired;
+    else if (!emailSchema.safeParse(submittedEmail).success)
+      errors.email = copy.emailInvalid;
+
+    if (mode !== "forgot") {
+      if (!password) errors.password = copy.passwordRequired;
+      else if (mode === "signup") {
+        if (password.length < 8) errors.password = copy.passwordShort;
+        else if (password.length > 72) errors.password = copy.passwordLong;
+        else if (!/[a-zA-Z]/.test(password))
+          errors.password = copy.passwordLetter;
+        else if (!/[0-9]/.test(password)) errors.password = copy.passwordNumber;
+      }
+    }
+
+    if (mode === "signup") {
+      if (!confirmation) errors.confirmPassword = copy.confirmRequired;
+      else if (password !== confirmation)
+        errors.confirmPassword = copy.mismatch;
+      if (data.get("terms") !== "on") errors.terms = copy.termsRequired;
+    }
+
+    return { errors, submittedEmail, password };
+  }
+
+  function authErrorMessage(authError: { code?: string; status?: number }) {
+    if (authError.status === 429 || authError.code?.includes("rate_limit"))
+      return copy.rate;
+    switch (authError.code) {
+      case "email_not_confirmed":
+        return copy.unconfirmed;
+      case "invalid_credentials":
+        return copy.invalidCredentials;
+      case "captcha_failed":
+        return copy.captchaFailed;
+      case "signup_disabled":
+        return copy.signupDisabled;
+      case "weak_password":
+        return copy.passwordRules;
+      default:
+        return copy.invalid;
+    }
   }
 
   async function signInWithOAuth(provider: Provider, label: string) {
@@ -153,24 +248,9 @@ export function LoginPanel({
     setError(null);
     setMessage(null);
     const data = new FormData(event.currentTarget);
-    const submittedEmail = String(data.get("email") || "").trim();
-    const password = String(data.get("password") || "");
-    if (mode === "signup" && data.get("terms") !== "on") {
-      setError(copy.invalid);
-      return;
-    }
-    if (
-      !emailSchema.safeParse(submittedEmail).success ||
-      (mode !== "forgot" && !passwordSchema.safeParse(password).success)
-    ) {
-      setError(copy.invalid);
-      return;
-    }
-    if (
-      mode === "signup" &&
-      password !== String(data.get("confirmPassword") || "")
-    ) {
-      setError(copy.mismatch);
+    const { errors, submittedEmail, password } = validateFields(data);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
       return;
     }
     if (!captchaToken) {
@@ -187,35 +267,43 @@ export function LoginPanel({
           options: { captchaToken },
         });
         if (authError) {
-          setError(
-            authError.code === "email_not_confirmed"
-              ? copy.unconfirmed
-              : authError.status === 429
-                ? copy.rate
-                : copy.invalid,
-          );
+          setError(authErrorMessage(authError));
           return;
         }
         router.replace(safeInternalNext(searchParams.get("next"), lang));
         router.refresh();
       } else if (mode === "signup") {
         const redirect = `${window.location.origin}/${lang}/auth/callback`;
-        await supabase.auth.signUp({
+        const { error: authError } = await supabase.auth.signUp({
           email: submittedEmail,
           password,
           options: { captchaToken, emailRedirectTo: redirect },
         });
+        if (authError) {
+          setError(authErrorMessage(authError));
+          return;
+        }
         setEmail(submittedEmail);
         setMode("check-email");
       } else {
-        await supabase.auth.resetPasswordForEmail(submittedEmail, {
-          redirectTo: `${window.location.origin}/${lang}/auth/callback?next=/${lang}/auth/reset-password`,
-          captchaToken,
-        });
+        const { error: authError } = await supabase.auth.resetPasswordForEmail(
+          submittedEmail,
+          {
+            redirectTo: `${window.location.origin}/${lang}/auth/callback?next=/${lang}/auth/reset-password`,
+            captchaToken,
+          },
+        );
+        if (
+          authError?.status === 429 ||
+          authError?.code?.includes("rate_limit")
+        ) {
+          setError(copy.rate);
+          return;
+        }
         setMessage(copy.genericRecovery);
       }
     } catch {
-      setError(copy.invalid);
+      setError(copy.network);
     } finally {
       setPending(null);
       resetCaptcha();
@@ -275,23 +363,23 @@ export function LoginPanel({
   return (
     <section className="login-panel" aria-labelledby="login-title">
       <div className="auth-tabs" role="tablist">
-      <button
-        role="tab"
-        aria-selected={mode === "signin"}
+        <button
+          role="tab"
+          aria-selected={mode === "signin"}
           onClick={() => changeMode("signin")}
         >
           {copy.signin}
         </button>
-      <button
-        role="tab"
-        aria-selected={mode === "signup"}
+        <button
+          role="tab"
+          aria-selected={mode === "signup"}
           onClick={() => changeMode("signup")}
         >
           {copy.signup}
         </button>
-      <button
-        role="tab"
-        aria-selected={mode === "forgot"}
+        <button
+          role="tab"
+          aria-selected={mode === "forgot"}
           onClick={() => changeMode("forgot")}
         >
           {copy.forgot}
@@ -316,7 +404,20 @@ export function LoginPanel({
       <form className="auth-form" onSubmit={submit} noValidate>
         <label>
           {copy.email}
-          <input name="email" type="email" autoComplete="email" required />
+          <input
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            aria-invalid={Boolean(fieldErrors.email)}
+            aria-describedby={fieldErrors.email ? "email-error" : undefined}
+            onChange={() => clearFieldError("email")}
+          />
+          {fieldErrors.email && (
+            <span className="auth-field-error" id="email-error">
+              {fieldErrors.email}
+            </span>
+          )}
         </label>
         {mode !== "forgot" && (
           <label>
@@ -328,7 +429,26 @@ export function LoginPanel({
                 mode === "signup" ? "new-password" : "current-password"
               }
               required
+              aria-invalid={Boolean(fieldErrors.password)}
+              aria-describedby={
+                fieldErrors.password
+                  ? "password-error"
+                  : mode === "signup"
+                    ? "password-hint"
+                    : undefined
+              }
+              onChange={() => clearFieldError("password")}
             />
+            {mode === "signup" && !fieldErrors.password && (
+              <span className="auth-field-hint" id="password-hint">
+                {copy.passwordRules}
+              </span>
+            )}
+            {fieldErrors.password && (
+              <span className="auth-field-error" id="password-error">
+                {fieldErrors.password}
+              </span>
+            )}
           </label>
         )}
         {mode === "signup" && (
@@ -340,12 +460,38 @@ export function LoginPanel({
                 type="password"
                 autoComplete="new-password"
                 required
+                aria-invalid={Boolean(fieldErrors.confirmPassword)}
+                aria-describedby={
+                  fieldErrors.confirmPassword ? "confirm-error" : undefined
+                }
+                onChange={() => clearFieldError("confirmPassword")}
               />
+              {fieldErrors.confirmPassword && (
+                <span className="auth-field-error" id="confirm-error">
+                  {fieldErrors.confirmPassword}
+                </span>
+              )}
             </label>
-            <label className="auth-checkbox">
-              <input name="terms" type="checkbox" required />
-              <span>{copy.terms}</span>
-            </label>
+            <div className="auth-checkbox-group">
+              <label className="auth-checkbox">
+                <input
+                  name="terms"
+                  type="checkbox"
+                  required
+                  aria-invalid={Boolean(fieldErrors.terms)}
+                  aria-describedby={
+                    fieldErrors.terms ? "terms-error" : undefined
+                  }
+                  onChange={() => clearFieldError("terms")}
+                />
+                <span>{copy.terms}</span>
+              </label>
+              {fieldErrors.terms && (
+                <span className="auth-field-error" id="terms-error">
+                  {fieldErrors.terms}
+                </span>
+              )}
+            </div>
           </>
         )}
         <AuthTurnstile
@@ -367,38 +513,40 @@ export function LoginPanel({
           <div className="auth-divider">
             <span>{d.auth.otherMethods}</span>
           </div>
-          <button
-            className="passkey-button"
-            onClick={signInWithPasskey}
-            disabled={pending !== null}
-          >
-            <span className="passkey-icon">
-              {pending === "passkey" ? (
-                <LoaderCircle className="spin" size={23} />
-              ) : (
-                <Fingerprint size={25} />
-              )}
-            </span>
-            <span>
-              <strong>{d.auth.passkeyLabel}</strong>
-              <small>{d.auth.passkeyHint}</small>
-            </span>
-          </button>
-          <div className="provider-grid">
-            {providers.map(([provider, label, Icon]) => (
-              <button
-                key={provider}
-                onClick={() => signInWithOAuth(provider, label)}
-                disabled={pending !== null}
-              >
-                {pending === provider ? (
-                  <LoaderCircle className="spin" size={20} />
+          <div className="auth-alternatives">
+            <button
+              className="passkey-button"
+              onClick={signInWithPasskey}
+              disabled={pending !== null}
+            >
+              <span className="passkey-icon">
+                {pending === "passkey" ? (
+                  <LoaderCircle className="spin" size={23} />
                 ) : (
-                  <Icon />
+                  <Fingerprint size={25} />
                 )}
-                <span>{label}</span>
-              </button>
-            ))}
+              </span>
+              <span>
+                <strong>{d.auth.passkeyLabel}</strong>
+                <small>{d.auth.passkeyHint}</small>
+              </span>
+            </button>
+            <div className="provider-grid">
+              {providers.map(([provider, label, Icon]) => (
+                <button
+                  key={provider}
+                  onClick={() => signInWithOAuth(provider, label)}
+                  disabled={pending !== null}
+                >
+                  {pending === provider ? (
+                    <LoaderCircle className="spin" size={20} />
+                  ) : (
+                    <Icon />
+                  )}
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </>
       )}
