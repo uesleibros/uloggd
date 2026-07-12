@@ -34,7 +34,10 @@ export default async function LoginPage({
     getDictionary(lang),
     getPopularGames().catch(() => []),
   ]);
-  if (user) redirect(`/${lang}`);
+  if (user) {
+    const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).maybeSingle();
+    redirect(profile?.username ? `/${lang}` : `/${lang}/onboarding/username`);
+  }
 
   const shelf = games.slice(0, 5);
 

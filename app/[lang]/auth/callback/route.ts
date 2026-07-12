@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../dictionaries";
+import { safeInternalNext } from "@/lib/auth-validation";
 
 export async function GET(
   request: NextRequest,
@@ -14,16 +15,29 @@ export async function GET(
   }
 
   const code = request.nextUrl.searchParams.get("code");
-  const requestedNext = request.nextUrl.searchParams.get("next");
-  const next =
-    requestedNext?.startsWith(`/${lang}`) && !requestedNext.startsWith("//")
-      ? requestedNext
-      : `/${lang}`;
+  const next = safeInternalNext(request.nextUrl.searchParams.get("next"), lang);
 
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL(next, request.url));
+    if (!error) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (!profile) await supabase.from("profiles").insert({ id: user.id });
+        if (!profile?.username && !next.endsWith("/auth/reset-password"))
+          return NextResponse.redirect(
+            new URL(`/${lang}/onboarding/username`, request.url),
+          );
+      }
+      return NextResponse.redirect(new URL(next, request.url));
+    }
   }
 
   return NextResponse.redirect(

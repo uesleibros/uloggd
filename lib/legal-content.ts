@@ -1,4 +1,4 @@
-export type LegalDocument = "terms" | "privacy" | "child-safety";
+export type LegalDocument = "terms" | "privacy" | "cookies" | "child-safety";
 
 type Section = { title: string; paragraphs: string[]; bullets?: string[] };
 export type LegalContent = {
@@ -11,6 +11,36 @@ export type LegalContent = {
 const contact = "uloggd.gg@gmail.com";
 
 const pt: Record<LegalDocument, LegalContent> = {
+  cookies: {
+    title: "Política de Cookies",
+    intro:
+      "Esta política descreve os cookies e armazenamentos realmente utilizados pelo uloggd.",
+    updated: "Última atualização: 12 de julho de 2026",
+    sections: [
+      {
+        title: "1. Uso atual",
+        paragraphs: [
+          "Atualmente, o uloggd usa cookies estritamente necessários do Supabase para manter e renovar a sessão de autenticação. O Cloudflare Turnstile pode usar dados técnicos e armazenamento necessário para prevenção de abuso. A interface também pode usar armazenamento local para preferências funcionais.",
+        ],
+      },
+      {
+        title: "2. Categorias",
+        paragraphs: [],
+        bullets: [
+          "Necessários: autenticação, segurança, balanceamento e prevenção de fraude.",
+          "Preferências: idioma e escolhas da interface, quando salvas.",
+          "Analytics: não utilizados atualmente.",
+          "Marketing: não utilizados atualmente.",
+        ],
+      },
+      {
+        title: "3. Suas escolhas",
+        paragraphs: [
+          "Como não há analytics ou marketing ativos, não exibimos um banner enganoso de aceite. Cookies necessários não podem ser desativados pela interface sem impedir login e recursos de segurança. Quando categorias opcionais forem adicionadas, ficarão bloqueadas até sua escolha e esta página oferecerá controles equivalentes para aceitar ou recusar.",
+        ],
+      },
+    ],
+  },
   terms: {
     title: "Termos de Uso",
     intro:
@@ -77,8 +107,9 @@ const pt: Record<LegalDocument, LegalContent> = {
       {
         title: "1. Dados tratados",
         paragraphs: [
-          "Na versão atual, podemos tratar dados técnicos essenciais, como endereço IP, tipo de navegador e registros de segurança. Quando contas forem disponibilizadas, poderemos tratar e-mail, nome de usuário, foto, biblioteca, avaliações, listas e preferências.",
-          "Dados de catálogo de jogos vêm da IGDB. Não enviamos suas credenciais da Twitch ou nossos segredos de integração ao navegador.",
+          "Tratamos dados técnicos essenciais, como endereço IP, tipo de navegador e registros de segurança, além de e-mail, username, perfil, biblioteca, avaliações, listas e preferências quando você usa esses recursos.",
+          "Supabase fornece autenticação e banco de dados; Resend entrega e-mails transacionais configurados no Supabase; Cloudflare Turnstile previne abuso. Google, Discord ou Twitch tratam dados quando você escolhe o respectivo login. Dados de catálogo vêm da IGDB.",
+          "Usamos cookies de sessão necessários e armazenamento funcional conforme descrito na Política de Cookies. Não usamos atualmente analytics ou marketing.",
         ],
       },
       {
@@ -176,6 +207,36 @@ const pt: Record<LegalDocument, LegalContent> = {
 };
 
 const en: Record<LegalDocument, LegalContent> = {
+  cookies: {
+    title: "Cookie Policy",
+    intro:
+      "This policy describes the cookies and storage uloggd actually uses.",
+    updated: "Last updated: July 12, 2026",
+    sections: [
+      {
+        title: "1. Current use",
+        paragraphs: [
+          "uloggd currently uses strictly necessary Supabase cookies to maintain and refresh authentication sessions. Cloudflare Turnstile may use technical data and necessary storage to prevent abuse. The interface may also use local storage for functional preferences.",
+        ],
+      },
+      {
+        title: "2. Categories",
+        paragraphs: [],
+        bullets: [
+          "Necessary: authentication, security, load balancing, and fraud prevention.",
+          "Preferences: language and interface choices, when saved.",
+          "Analytics: not currently used.",
+          "Marketing: not currently used.",
+        ],
+      },
+      {
+        title: "3. Your choices",
+        paragraphs: [
+          "Because no analytics or marketing is active, we do not show a misleading consent banner. Necessary cookies cannot be disabled in the interface without preventing sign-in and security features. If optional categories are added, they will remain blocked until you choose and this page will provide equivalent accept and reject controls.",
+        ],
+      },
+    ],
+  },
   terms: {
     title: "Terms of Use",
     intro:
@@ -242,8 +303,9 @@ const en: Record<LegalDocument, LegalContent> = {
       {
         title: "1. Data we process",
         paragraphs: [
-          "In the current version, we may process essential technical data such as IP address, browser type, and security logs. When accounts become available, we may process email address, username, profile picture, game library, reviews, lists, and preferences.",
-          "Game catalog data comes from IGDB. We do not send Twitch credentials or our private integration secrets to your browser.",
+          "We process essential technical data such as IP address, browser type, and security logs, as well as email, username, profile, game library, reviews, lists, and preferences when you use those features.",
+          "Supabase provides authentication and database services; Resend delivers transactional email configured through Supabase; Cloudflare Turnstile prevents abuse. Google, Discord, or Twitch process data when you choose that sign-in provider. Catalog data comes from IGDB.",
+          "We use necessary session cookies and functional storage as described in the Cookie Policy. We do not currently use analytics or marketing.",
         ],
       },
       {
@@ -341,7 +403,12 @@ const en: Record<LegalDocument, LegalContent> = {
 };
 
 export function isLegalDocument(value: string): value is LegalDocument {
-  return value === "terms" || value === "privacy" || value === "child-safety";
+  return (
+    value === "terms" ||
+    value === "privacy" ||
+    value === "cookies" ||
+    value === "child-safety"
+  );
 }
 
 export function getLegalContent(lang: string, document: LegalDocument) {

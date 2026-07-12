@@ -6,6 +6,7 @@ import {
   LockKeyhole,
   Mail,
   ShieldCheck,
+  Cookie,
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getLegalContent, isLegalDocument } from "@/lib/legal-content";
@@ -27,6 +28,11 @@ export default async function LegalPage({ params }: Props) {
   const documents = [
     { slug: "terms", label: d.legal.terms, icon: FileText },
     { slug: "privacy", label: d.legal.privacy, icon: LockKeyhole },
+    {
+      slug: "cookies",
+      label: lang === "pt-BR" ? "Política de Cookies" : "Cookie Policy",
+      icon: Cookie,
+    },
     { slug: "child-safety", label: d.legal.safety, icon: ShieldCheck },
   ] as const;
 

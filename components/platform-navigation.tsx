@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   Compass,
+  Cookie,
   FileText,
   HomeIcon,
   LibraryBig,
@@ -103,6 +104,14 @@ export function PlatformNavigation({
           <Link href={`/${lang}/legal/privacy`}>
             <LockKeyhole size={19} />
             <span>{d.legal.privacy}</span>
+          </Link>
+          <Link href={`/${lang}/legal/cookies`}>
+            <Cookie size={19} />
+            <span>
+              {lang === "pt-BR"
+                ? "Configurações de cookies"
+                : "Cookie settings"}
+            </span>
           </Link>
           <Link href={`/${lang}/legal/child-safety`}>
             <ShieldCheck size={19} />
