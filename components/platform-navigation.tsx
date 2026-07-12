@@ -85,7 +85,6 @@ export function PlatformNavigation({
             })}
           </nav>
           <div className="sidebar-bottom">
-            <LocaleSwitcher locale={lang} />
             {isAuthenticated ? (
               <Link href={`/${lang}`}>
                 <Settings size={19} />
@@ -134,7 +133,10 @@ export function PlatformNavigation({
             requiresSignIn: d.actions.requiresSignIn,
           }}
         />
-        <MobileGameSearch dictionary={d} />
+        <div className="mobile-header-actions">
+          <LocaleSwitcher locale={lang} />
+          <MobileGameSearch dictionary={d} />
+        </div>
       </header>
     </>
   );

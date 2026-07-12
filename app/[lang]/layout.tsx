@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { PlatformNavigation } from "@/components/platform-navigation";
 import { DesktopGameSearch } from "@/components/game-search";
 import { PlatformFooter } from "@/components/platform-footer";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
 import "../globals.css";
@@ -56,6 +57,7 @@ export default async function LocaleLayout({
           <div className="platform-content">
             <header className="content-header">
               <DesktopGameSearch dictionary={dictionary} />
+              <LocaleSwitcher locale={lang} />
             </header>
             {children}
             <PlatformFooter lang={lang} dictionary={dictionary} />

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Compass,
-  Globe2,
   HomeIcon,
   LibraryBig,
   LockKeyhole,
@@ -42,10 +41,6 @@ export function MobileSidebar({
   isAuthenticated,
 }: MobileSidebarProps) {
   const pathname = usePathname();
-  const nextLocale = lang === "pt-BR" ? "en" : "pt-BR";
-  const localeSegments = pathname.split("/");
-  localeSegments[1] = nextLocale;
-  const localeHref = localeSegments.join("/") || `/${nextLocale}`;
   const links = [
     [HomeIcon, labels.home, `/${lang}`, false],
     [Compass, labels.explore, `/${lang}`, false],
@@ -101,12 +96,6 @@ export function MobileSidebar({
               )}
             </nav>
             <div className="drawer-secondary">
-              <Dialog.Close asChild>
-                <Link href={localeHref} hrefLang={nextLocale}>
-                  <Globe2 size={19} />
-                  {nextLocale === "en" ? "English" : "Português"}
-                </Link>
-              </Dialog.Close>
               {isAuthenticated ? (
                 <Dialog.Close asChild>
                   <Link href={`/${lang}`}>
