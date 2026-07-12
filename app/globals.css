@@ -894,6 +894,334 @@ a {
   gap: 14px;
   margin-top: 20px;
 }
+.quick-game-card {
+  min-width: 0;
+}
+.quick-cover {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  border-radius: 7px;
+  background: var(--console-raised);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.quick-cover > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.quick-game-card:hover .quick-cover,
+.quick-game-card:focus-within .quick-cover {
+  transform: translateY(-3px);
+}
+.quick-rank {
+  position: absolute;
+  z-index: 2;
+  bottom: 7px;
+  left: 7px;
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 20px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 4px;
+  background: rgb(8 7 10 / 80%);
+  color: #d8d3dc;
+  backdrop-filter: blur(6px);
+  font: 650 9px var(--font-geist-mono);
+}
+.quick-actions {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 7px;
+  padding: 10px;
+  opacity: 0;
+  background: linear-gradient(
+    to top,
+    rgb(7 6 9 / 98%) 12%,
+    rgb(7 6 9 / 64%) 68%,
+    transparent
+  );
+  pointer-events: none;
+  transition: opacity 150ms ease-out;
+}
+.quick-game-card:hover .quick-actions,
+.quick-game-card:focus-within .quick-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+.quick-statuses {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+}
+.quick-statuses button,
+.quick-cover-edit,
+.quick-cover-form button {
+  border: 1px solid rgb(255 255 255 / 12%);
+  background: rgb(255 255 255 / 7%);
+  cursor: pointer;
+}
+.quick-statuses button {
+  min-width: 0;
+  min-height: 27px;
+  padding: 3px;
+  border-radius: 4px;
+  color: var(--screen-dim);
+  font-size: 8px;
+  font-weight: 650;
+}
+.quick-statuses button:hover,
+.quick-statuses button[data-active] {
+  border-color: rgb(121 131 245 / 55%);
+  background: var(--brand-blurple-wash);
+  color: white;
+}
+.quick-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 29px;
+  padding: 0 7px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 5px;
+  background: rgb(0 0 0 / 34%);
+  color: var(--achievement-gold);
+}
+.quick-rating input {
+  width: 32px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  appearance: textfield;
+}
+.quick-rating input::-webkit-inner-spin-button {
+  appearance: none;
+}
+.quick-rating span {
+  color: var(--screen-muted);
+  font-size: 8px;
+}
+.quick-cover-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 29px;
+  border-radius: 5px;
+  color: var(--screen-dim);
+  font-size: 9px;
+  font-weight: 650;
+}
+.quick-cover-edit:hover {
+  background: rgb(255 255 255 / 12%);
+  color: white;
+}
+.quick-cover-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 29px;
+  gap: 4px;
+}
+.quick-cover-form input {
+  min-width: 0;
+  height: 29px;
+  padding: 0 7px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 5px;
+  outline: 0;
+  background: rgb(0 0 0 / 44%);
+  color: white;
+  font-size: 8px;
+}
+.quick-cover-form button {
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+}
+.quick-actions small {
+  color: #ffaaa4;
+  font-size: 8px;
+  line-height: 1.25;
+}
+.quick-game-card h3 {
+  margin: 9px 0 3px;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.quick-game-card > p {
+  margin: 0;
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.discoveries-section {
+  padding: 36px 32px 40px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.discoveries-heading {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.discoveries-heading > span {
+  color: var(--brand-blurple-bright);
+  font: 600 9px var(--font-geist-mono);
+  letter-spacing: 0.08em;
+}
+.discoveries-heading h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 660;
+  letter-spacing: -0.035em;
+}
+.discoveries-heading p,
+.discovery-lane header p,
+.discovery-game p {
+  color: var(--screen-muted);
+}
+.discoveries-heading p {
+  margin: 5px 0 0;
+  font-size: 10px;
+}
+.discovery-lanes {
+  border-top: 1px solid var(--shell-line);
+}
+.discovery-lane {
+  display: grid;
+  grid-template-columns: 182px minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--shell-line);
+}
+.discovery-lane:last-child {
+  border-bottom: 0;
+}
+.discovery-lane > header {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-content: start;
+  gap: 8px;
+  padding-top: 3px;
+}
+.discovery-lane > header > span {
+  color: var(--screen-muted);
+  font: 600 9px var(--font-geist-mono);
+  font-variant-numeric: tabular-nums;
+}
+.discovery-lane h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.discovery-lane header p {
+  margin: 5px 0 0;
+  font-size: 9px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.discovery-games {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.discovery-game {
+  min-width: 0;
+}
+.discovery-cover {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  border-radius: 6px;
+  background: var(--console-raised);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.discovery-cover img {
+  object-fit: cover;
+}
+.discovery-game:hover .discovery-cover {
+  transform: translateY(-2px);
+}
+.discovery-game h4 {
+  margin: 7px 0 2px;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.discovery-game p {
+  margin: 0;
+  overflow: hidden;
+  font: 500 8px var(--font-geist-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.library-page {
+  flex: 1;
+  padding: 44px 32px 64px;
+}
+.library-page > header {
+  max-width: 620px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.library-page > header > span {
+  color: var(--brand-blurple-bright);
+  font: 650 10px var(--font-geist-mono);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.library-page > header h1 {
+  margin: 8px 0 7px;
+  font-size: clamp(30px, 5vw, 48px);
+  letter-spacing: -0.055em;
+}
+.library-page > header p,
+.library-empty p {
+  margin: 0;
+  color: var(--screen-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 24px 16px;
+  margin-top: 28px;
+}
+.library-empty {
+  margin-top: 28px;
+  padding: 40px 24px;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 10px;
+  text-align: center;
+}
+.library-empty h2 {
+  margin: 0 0 7px;
+  font-size: 15px;
+}
 .shelf-game {
   min-width: 0;
 }
@@ -2105,8 +2433,15 @@ a {
     padding-inline: 11px;
   }
   .library-section,
-  .explore-section {
+  .explore-section,
+  .discoveries-section {
     padding: 30px 18px;
+  }
+  .discoveries-heading {
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+  .discovery-lane {
+    grid-template-columns: 148px minmax(0, 1fr);
   }
   .cover-shelf {
     display: flex;
@@ -2123,7 +2458,14 @@ a {
     flex: 0 0 126px;
     scroll-snap-align: start;
   }
+  .cover-shelf .quick-game-card {
+    flex: 0 0 126px;
+    scroll-snap-align: start;
+  }
   .shelf-game:last-child {
+    margin-right: 18px;
+  }
+  .cover-shelf .quick-game-card:last-child {
     margin-right: 18px;
   }
   .shelf-cover > button {
@@ -2276,8 +2618,47 @@ a {
     width: 36px;
   }
   .library-section,
-  .explore-section {
+  .explore-section,
+  .discoveries-section {
     padding-inline: 14px;
+  }
+  .discoveries-heading {
+    display: block;
+  }
+  .discoveries-heading > span {
+    display: block;
+    margin-bottom: 8px;
+  }
+  .discovery-lane {
+    display: block;
+  }
+  .discovery-lane > header {
+    margin-bottom: 14px;
+  }
+  .discovery-games {
+    display: flex;
+    gap: 10px;
+    margin-right: -14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+  }
+  .discovery-games::-webkit-scrollbar {
+    display: none;
+  }
+  .discovery-game {
+    flex: 0 0 92px;
+    scroll-snap-align: start;
+  }
+  .discovery-game:last-child {
+    margin-right: 14px;
+  }
+  .library-page {
+    padding: 32px 14px 48px;
+  }
+  .library-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 12px;
   }
   .cover-shelf {
     margin-right: -14px;
@@ -2291,6 +2672,18 @@ a {
   .section-heading > a {
     flex: 0 0 auto;
     margin-left: 8px;
+  }
+}
+
+@media (hover: none) {
+  .quick-actions {
+    top: auto;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .quick-rank {
+    top: 7px;
+    bottom: auto;
   }
 }
 

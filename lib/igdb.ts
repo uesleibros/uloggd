@@ -17,6 +17,7 @@ type IgdbGameResponse = {
   platforms?: { name: string }[];
   alternative_names?: { name: string }[];
   game_type?: number;
+  hypes?: number;
 };
 
 export type GameSearchResult = {
@@ -37,6 +38,8 @@ export type Game = {
   rating: number | null;
   ratingCount: number;
   releaseYear: number | null;
+  releaseTimestamp: number | null;
+  hype: number;
   coverUrl: string;
   heroUrl: string | null;
   genres: string[];
@@ -90,6 +93,8 @@ function normalize(game: IgdbGameResponse): Game {
     releaseYear: game.first_release_date
       ? new Date(game.first_release_date * 1000).getUTCFullYear()
       : null,
+    releaseTimestamp: game.first_release_date ?? null,
+    hype: game.hypes ?? 0,
     coverUrl: game.cover
       ? imageUrl(game.cover.image_id, "cover_big")
       : "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png",
@@ -203,4 +208,52 @@ export async function getPopularGames(): Promise<Game[]> {
     sort total_rating_count desc;
     limit 10;
   `);
+}
+
+export async function getGamesByIds(ids: number[]): Promise<Game[]> {
+  const safeIds = [...new Set(ids)]
+    .filter((id) => Number.isInteger(id) && id > 0)
+    .slice(0, 100);
+  if (!safeIds.length) return [];
+  return queryGames(`
+    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
+    where id = (${safeIds.join(",")});
+    limit ${safeIds.length};
+  `);
+}
+
+export type DiscoveryGames = {
+  anticipated: Game[];
+  upcoming: Game[];
+  hiddenGems: Game[];
+};
+
+export async function getDiscoveryGames(): Promise<DiscoveryGames> {
+  const now = Math.floor(Date.now() / 1000);
+  const inFourMonths = now + 60 * 60 * 24 * 120;
+  const fields =
+    "name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name";
+
+  const [anticipated, upcoming, hiddenGems] = await Promise.all([
+    queryGames(`
+      fields ${fields};
+      where cover != null & first_release_date > ${now} & hypes > 5 & game_type = (0,8,9);
+      sort hypes desc;
+      limit 4;
+    `),
+    queryGames(`
+      fields ${fields};
+      where cover != null & first_release_date > ${now} & first_release_date < ${inFourMonths} & game_type = (0,8,9);
+      sort first_release_date asc;
+      limit 4;
+    `),
+    queryGames(`
+      fields ${fields};
+      where cover != null & first_release_date < ${now} & total_rating >= 78 & total_rating_count >= 20 & total_rating_count < 400 & game_type = (0,8,9);
+      sort total_rating desc;
+      limit 4;
+    `),
+  ]);
+
+  return { anticipated, upcoming, hiddenGems };
 }

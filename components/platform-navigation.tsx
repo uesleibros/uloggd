@@ -70,8 +70,18 @@ export function PlatformNavigation({
                 );
               }
               if (index !== 0) {
+                const href =
+                  icon === "library" ? `/${lang}/library` : `/${lang}`;
+                if (icon === "library") {
+                  return (
+                    <ActiveLink key={label} href={href}>
+                      <NavIcon size={20} />
+                      <span>{label}</span>
+                    </ActiveLink>
+                  );
+                }
                 return (
-                  <Link key={label} href={`/${lang}`}>
+                  <Link key={label} href={href}>
                     <NavIcon size={20} />
                     <span>{label}</span>
                   </Link>

@@ -8,16 +8,32 @@ import {
   ListPlus,
   Star,
 } from "lucide-react";
-import { getPopularGames } from "@/lib/igdb";
+import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
+import { createClient } from "@/lib/supabase/server";
+import { QuickGameCard } from "@/components/library/quick-game-card";
 import { getDictionary, hasLocale } from "./dictionaries";
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const [d, games] = await Promise.all([
+  const [d, games, discoveries, supabase] = await Promise.all([
     getDictionary(lang),
     getPopularGames(),
+    getDiscoveryGames(),
+    createClient(),
   ]);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: savedGames } = user
+    ? await supabase
+        .from("user_games")
+        .select("igdb_id,status,quick_rating,custom_cover_url")
+        .eq("profile_id", user.id)
+    : { data: [] };
+  const savedById = new Map(
+    (savedGames ?? []).map((item) => [item.igdb_id, item]),
+  );
   const [featured, ...catalog] = games;
   const date = new Intl.DateTimeFormat(lang, {
     day: "2-digit",
@@ -27,6 +43,50 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   })
     .format(new Date())
     .toUpperCase();
+  const releaseFormatter = new Intl.DateTimeFormat(lang, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  const discoveryLanes: {
+    key: string;
+    title: string;
+    description: string;
+    games: Game[];
+    meta: (game: Game) => string;
+  }[] = [
+    {
+      key: "anticipated",
+      title: d.home.mostAnticipated,
+      description: d.home.mostAnticipatedDescription,
+      games: discoveries.anticipated,
+      meta: (game) =>
+        game.hype
+          ? `${game.hype.toLocaleString(lang)} ${lang === "pt-BR" ? "interessados" : "following"}`
+          : d.home.releaseDatePending,
+    },
+    {
+      key: "upcoming",
+      title: d.home.comingSoon,
+      description: d.home.comingSoonDescription,
+      games: discoveries.upcoming,
+      meta: (game) =>
+        game.releaseTimestamp
+          ? releaseFormatter.format(new Date(game.releaseTimestamp * 1000))
+          : d.home.releaseDatePending,
+    },
+    {
+      key: "hidden-gems",
+      title: d.home.hiddenGems,
+      description: d.home.hiddenGemsDescription,
+      games: discoveries.hiddenGems,
+      meta: (game) =>
+        game.rating
+          ? `${game.rating}/100 · ${game.ratingCount.toLocaleString(lang)} ${d.home.registrations}`
+          : d.home.releaseDatePending,
+    },
+  ];
 
   return (
     <div className="home-shell">
@@ -95,24 +155,55 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           </div>
           <div className="cover-shelf">
             {catalog.slice(0, 5).map((game, index) => (
-              <article className="shelf-game" key={game.id}>
-                <div className="shelf-cover">
-                  <Image
-                    src={game.coverUrl}
-                    alt={`${game.name} cover`}
-                    fill
-                    sizes="(max-width: 620px) 42vw, 120px"
-                  />
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <button aria-label={`${d.actions.save}: ${game.name}`}>
-                    <Bookmark size={15} />
-                  </button>
+              <QuickGameCard
+                key={game.id}
+                game={game}
+                initial={savedById.get(game.id) ?? null}
+                lang={lang}
+                rank={index + 1}
+                enabled={Boolean(user)}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="discoveries-section">
+          <div className="discoveries-heading">
+            <span>03 / DISCOVERY</span>
+            <div>
+              <h2>{d.home.discoveries}</h2>
+              <p>{d.home.discoveriesDescription}</p>
+            </div>
+          </div>
+          <div className="discovery-lanes">
+            {discoveryLanes.map((lane, laneIndex) => (
+              <section className="discovery-lane" key={lane.key}>
+                <header>
+                  <span>{String(laneIndex + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h3>{lane.title}</h3>
+                    <p>{lane.description}</p>
+                  </div>
+                </header>
+                <div className="discovery-games">
+                  {lane.games.map((game) => (
+                    <article className="discovery-game" key={game.id}>
+                      <div className="discovery-cover">
+                        <Image
+                          src={game.coverUrl}
+                          alt={`${game.name} cover`}
+                          fill
+                          sizes="(max-width: 620px) 90px, 76px"
+                        />
+                      </div>
+                      <div>
+                        <h4>{game.name}</h4>
+                        <p>{lane.meta(game)}</p>
+                      </div>
+                    </article>
+                  ))}
                 </div>
-                <h3>{game.name}</h3>
-                <p>
-                  {game.releaseYear} · {game.genres[0]}
-                </p>
-              </article>
+              </section>
             ))}
           </div>
         </section>

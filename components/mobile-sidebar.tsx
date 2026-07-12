@@ -47,7 +47,7 @@ export function MobileSidebar({
   const links = [
     [HomeIcon, labels.home, `/${lang}`, false],
     [Compass, labels.explore, `/${lang}`, false],
-    [LibraryBig, labels.library, `/${lang}`, true],
+    [LibraryBig, labels.library, `/${lang}/library`, true],
     [Star, labels.reviews, `/${lang}`, true],
     [UserRound, labels.profile, `/${lang}`, true],
   ] as const;
@@ -88,7 +88,9 @@ export function MobileSidebar({
                     <Link
                       href={href}
                       data-active={
-                        index === 0 && pathname === href ? true : undefined
+                        (index === 0
+                          ? pathname === href
+                          : pathname.startsWith(href)) || undefined
                       }
                     >
                       <Icon size={21} />
