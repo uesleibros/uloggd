@@ -20,7 +20,9 @@ export default async function LibraryPage({
 
   const { data: records } = await supabase
     .from("user_games")
-    .select("igdb_id,status,quick_rating,custom_cover_url,updated_at")
+    .select(
+      "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url,updated_at",
+    )
     .eq("profile_id", user.id)
     .order("updated_at", { ascending: false });
   const games = await getGamesByIds(

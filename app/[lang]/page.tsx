@@ -28,7 +28,9 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   const { data: savedGames } = user
     ? await supabase
         .from("user_games")
-        .select("igdb_id,status,quick_rating,custom_cover_url")
+        .select(
+          "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
+        )
         .eq("profile_id", user.id)
     : { data: [] };
   const savedById = new Map(

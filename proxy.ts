@@ -2,7 +2,14 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { defaultLocale, locales } from "./app/[lang]/dictionaries";
 
-const publicSegments = new Set(["", "login", "auth", "legal", "onboarding"]);
+const publicSegments = new Set([
+  "",
+  "login",
+  "auth",
+  "legal",
+  "onboarding",
+  "game",
+]);
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const lang = locales.find(

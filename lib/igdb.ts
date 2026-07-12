@@ -18,6 +18,12 @@ type IgdbGameResponse = {
   alternative_names?: { name: string }[];
   game_type?: number;
   hypes?: number;
+  game_localizations?: { cover?: IgdbImage }[];
+  version_parent?: {
+    id: number;
+    cover?: IgdbImage;
+    game_localizations?: { cover?: IgdbImage }[];
+  };
 };
 
 export type GameSearchResult = {
@@ -227,6 +233,51 @@ export type DiscoveryGames = {
   upcoming: Game[];
   hiddenGems: Game[];
 };
+
+export type GameDetail = Game & { alternativeCovers: string[] };
+
+export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
+  if (!/^[a-z0-9-]{1,255}$/.test(slug)) return null;
+  const games = await queryGamesRaw(`
+    fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
+      cover.image_id,artworks.image_id,screenshots.image_id,genres.name,
+      game_localizations.cover.image_id,version_parent.id,version_parent.cover.image_id,
+      version_parent.game_localizations.cover.image_id;
+    where slug = "${slug}";
+    limit 1;
+  `);
+  const raw = games[0];
+  if (!raw) return null;
+
+  const coverIds = new Set<string>();
+  const addCover = (cover?: IgdbImage) => {
+    if (cover?.image_id) coverIds.add(cover.image_id);
+  };
+  addCover(raw.cover);
+  raw.game_localizations?.forEach((item) => addCover(item.cover));
+  addCover(raw.version_parent?.cover);
+  raw.version_parent?.game_localizations?.forEach((item) =>
+    addCover(item.cover),
+  );
+
+  const rootId = raw.version_parent?.id ?? raw.id;
+  const siblings = await queryGamesRaw(`
+    fields cover.image_id,game_localizations.cover.image_id;
+    where version_parent = ${rootId};
+    limit 500;
+  `).catch(() => []);
+  siblings.forEach((game) => {
+    addCover(game.cover);
+    game.game_localizations?.forEach((item) => addCover(item.cover));
+  });
+
+  return {
+    ...normalize(raw),
+    alternativeCovers: [...coverIds]
+      .slice(0, 24)
+      .map((id) => imageUrl(id, "cover_big")),
+  };
+}
 
 export async function getDiscoveryGames(): Promise<DiscoveryGames> {
   const now = Math.floor(Date.now() / 1000);
