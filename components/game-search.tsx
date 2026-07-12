@@ -113,7 +113,6 @@ function ResultList({
     >
       <div className="search-results-label">
         <span>{d.search.results}</span>
-        <span>{d.search.source}</span>
       </div>
       {results.map((game, index) => (
         <a
@@ -136,7 +135,7 @@ function ResultList({
             <small>
               {[game.releaseYear, ...game.platforms]
                 .filter(Boolean)
-                .join(" · ") || d.search.source}
+                .join(" · ") || d.search.kind[game.kind]}
             </small>
           </span>
           {game.kind !== "game" && (

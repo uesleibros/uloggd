@@ -71,7 +71,7 @@ The feed should alternate between expressive/editorial zones and compact working
 
 ## Typography
 
-Primary typeface: Geist Sans through `next/font`. Monospace metadata uses Geist Mono.
+Primary typeface: Geist Sans Variable through `next/font`, followed by the native Apple system stack (`-apple-system`, `BlinkMacSystemFont`, `SF Pro Text`) as fallback. Never place Arial before the loaded font. Monospace metadata uses Geist Mono.
 
 Approximate scale:
 
@@ -126,7 +126,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Authentication keeps the product shell and navigation visible; it is an entry point to the library, not a detached marketing page.
 - Desktop uses an asymmetrical split: a tactile active-shelf scene on the left and a focused access column on the right.
 - The passkey is the primary action because it is the intended passwordless default. OAuth providers appear as a compact two-column utility grid below it.
-- The active shelf uses real IGDB cover data when available and degrades cleanly to copy without blocking access.
+- The active shelf uses real IGDB cover data when available and remains a quiet, text-free collection scene so it does not compete with access.
 - On mobile, the shelf compresses into a short context banner and the form becomes a single uninterrupted column below it.
 - Authentication errors are inline, reserved, and actionable. Loading disables competing methods so two ceremonies cannot start at once.
 - Security copy must accurately state that biometric verification stays on the device; never imply that uloggd stores biometric data.

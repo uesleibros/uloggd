@@ -40,11 +40,7 @@ export default async function LoginPage({
 
   return (
     <main className="login-shell">
-      <aside className="login-library" aria-label={d.auth.libraryLabel}>
-        <div className="login-library-copy">
-          <h2>{d.auth.libraryLabel}</h2>
-          <p>{d.auth.libraryHint}</p>
-        </div>
+      <aside className="login-library" aria-hidden="true">
         {shelf.length > 0 && (
           <div className="login-cover-row" aria-hidden="true">
             {shelf.map((game, index) => (

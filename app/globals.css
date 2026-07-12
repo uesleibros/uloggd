@@ -33,7 +33,18 @@ body {
   overflow-x: clip;
   background: var(--console-black);
   color: var(--screen-white);
-  font-family: Arial, var(--font-geist-sans), sans-serif;
+  font-family:
+    var(--font-geist-sans),
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "Helvetica Neue",
+    sans-serif;
+  font-feature-settings:
+    "kern" 1,
+    "liga" 1,
+    "calt" 1;
+  font-synthesis: none;
 }
 a {
   color: inherit;
@@ -1190,30 +1201,10 @@ a {
   content: "";
   mask-image: linear-gradient(transparent, black 45%, black 86%, transparent);
 }
-.login-library-copy,
 .login-cover-row,
 .login-library-rule {
   position: relative;
   z-index: 1;
-}
-.login-library-copy {
-  max-width: 410px;
-}
-.login-library-copy h2 {
-  max-width: 370px;
-  margin: 0 0 10px;
-  font-size: clamp(29px, 3.4vw, 43px);
-  font-weight: 660;
-  letter-spacing: -0.055em;
-  line-height: 1.03;
-  text-wrap: balance;
-}
-.login-library-copy p {
-  max-width: 330px;
-  margin: 0;
-  color: var(--screen-dim);
-  font-size: 13px;
-  line-height: 1.65;
 }
 .login-cover-row {
   display: flex;
@@ -1615,9 +1606,6 @@ a {
   .login-shell {
     grid-template-columns: minmax(270px, 0.78fr) minmax(370px, 1fr);
   }
-  .login-library-copy h2 {
-    font-size: 30px;
-  }
 }
 
 @media (min-width: 621px) {
@@ -1787,19 +1775,10 @@ a {
     min-height: calc(100dvh - 60px);
   }
   .login-library {
-    min-height: 164px;
-    padding: 25px 22px 22px;
+    min-height: 116px;
+    padding: 0;
     border-right: 0;
     border-bottom: 1px solid var(--shell-line);
-  }
-  .login-library-copy h2 {
-    max-width: 270px;
-    margin: 10px 0 6px;
-    font-size: 24px;
-  }
-  .login-library-copy p {
-    max-width: 280px;
-    font-size: 11px;
   }
   .login-cover-row {
     position: absolute;
@@ -1839,7 +1818,7 @@ a {
     grid-template-columns: 1fr;
   }
   .login-library {
-    min-height: 150px;
+    min-height: 108px;
   }
   .login-panel {
     padding-inline: 16px;
