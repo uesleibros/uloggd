@@ -1743,9 +1743,8 @@ a {
   font-size: 10px;
   line-height: 1.5;
 }
-.game-extended-content {
-  width: min(100% - 64px, 940px);
-  margin: 48px auto 0;
+.game-primary-sections {
+  min-width: 0;
 }
 .game-section {
   padding: 36px 0;
@@ -1975,6 +1974,9 @@ a {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 16px 10px;
+}
+.game-page-content .game-related-shelf {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 .related-tabs {
   display: flex;
@@ -3608,10 +3610,6 @@ a {
   }
   .game-details > div {
     grid-template-columns: 88px minmax(0, 1fr);
-  }
-  .game-extended-content {
-    width: auto;
-    margin: 36px 16px 0;
   }
   .game-section {
     padding-block: 28px;

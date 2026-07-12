@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { Game, GameDetail } from "@/lib/igdb";
 import { QuickGameCard } from "./library/quick-game-card";
 
-type SavedState = {
+export type SavedState = {
   status:
     "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
   playing: boolean;
