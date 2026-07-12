@@ -64,7 +64,7 @@ Base unit: **4px**.
 - Feed section padding: 32–36px desktop; 18–30px mobile.
 - Major separation: 32–40px.
 - Desktop sidebar: 264px full; 76px compact.
-- Context rail: 320px full; 290px compact; hidden below 900px.
+- Context rail: 320px full; 290px compact; hidden at 960px and below to prevent tablet overflow.
 
 The feed should alternate between expressive/editorial zones and compact working zones. Do not give every section the same gap, card shape, or density.
 
@@ -161,6 +161,12 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - 12px radius, 20px padding.
 - One onboarding or context action, followed by a dense trend list.
 - Must not repeat the exact feed content or hierarchy.
+
+### Legal document switcher
+
+- All three documents remain visible at once on desktop and mobile.
+- Desktop uses three compact horizontal segments.
+- Mobile keeps three equal columns with stacked icon and balanced label; never hide documents behind horizontal scrolling.
 
 ## Interaction States
 

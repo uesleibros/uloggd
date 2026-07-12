@@ -30,6 +30,7 @@ html {
 body {
   min-height: 100%;
   margin: 0;
+  overflow-x: clip;
   background: var(--console-black);
   color: var(--screen-white);
   font-family: Arial, var(--font-geist-sans), sans-serif;
@@ -830,6 +831,11 @@ a {
   outline: 0;
   background: var(--console-panel);
   box-shadow: 24px 0 60px rgb(0 0 0 / 55%);
+  display: flex;
+  flex-direction: column;
+  max-height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .mobile-drawer[data-state="open"] {
   animation: drawer-in 240ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -852,7 +858,7 @@ a {
 .drawer-navigation {
   display: grid;
   gap: 3px;
-  margin-top: 34px;
+  margin-top: 24px;
 }
 .drawer-navigation a,
 .drawer-secondary a {
@@ -885,10 +891,6 @@ a {
   font-size: 11px;
 }
 .drawer-account {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  left: 16px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -896,6 +898,7 @@ a {
   border: 1px solid var(--shell-line);
   border-radius: 9px;
   background: var(--console-raised);
+  margin-top: auto;
 }
 .drawer-account strong,
 .drawer-account span {
@@ -1104,7 +1107,7 @@ a {
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .platform-shell {
     grid-template-columns: 76px minmax(0, 1fr);
   }
@@ -1268,21 +1271,106 @@ a {
   }
   .legal-header {
     width: min(calc(100% - 28px), 920px);
+    min-height: 56px;
   }
   .legal-header .brand span {
     display: none;
   }
   .legal-page {
     width: min(calc(100% - 32px), 760px);
-    padding-top: 48px;
+    padding: 24px 0 80px;
   }
   .legal-document-nav {
-    grid-template-columns: 1fr;
-    margin-bottom: 32px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    margin: 0 0 28px;
+    padding: 5px;
   }
   .legal-document-nav a {
-    justify-content: flex-start;
-    padding-inline: 12px;
+    justify-content: center;
+    min-width: 0;
+    min-height: 58px;
+    padding: 7px 5px;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 9px;
+    line-height: 1.25;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .legal-title {
+    padding-bottom: 28px;
+  }
+  .legal-title h1 {
+    overflow-wrap: anywhere;
+    font-size: clamp(32px, 11vw, 44px);
+  }
+  .legal-title p {
+    font-size: 14px;
+  }
+  .legal-content section {
+    padding-top: 30px;
+  }
+  .legal-content h2 {
+    font-size: 17px;
+  }
+  .legal-content p,
+  .legal-content li {
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .legal-contact {
+    margin-top: 36px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 370px) {
+  .feed-header {
+    min-height: 96px;
+    padding-inline: 14px;
+  }
+  .feed-header h1 {
+    font-size: 21px;
+  }
+  .featured-game {
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 12px;
+    min-height: 226px;
+    margin-inline: 8px;
+    padding: 14px;
+  }
+  .featured-cover {
+    width: 82px;
+  }
+  .featured-copy h2 {
+    font-size: 22px;
+  }
+  .featured-actions button {
+    min-height: 36px;
+    padding-inline: 9px;
+    font-size: 10px;
+  }
+  .featured-actions button:last-child {
+    width: 36px;
+  }
+  .library-section,
+  .explore-section {
+    padding-inline: 14px;
+  }
+  .cover-shelf {
+    margin-right: -14px;
+  }
+  .shelf-game:last-child {
+    margin-right: 14px;
+  }
+  .section-heading h2 {
+    font-size: 15px;
+  }
+  .section-heading > a {
+    flex: 0 0 auto;
+    margin-left: 8px;
   }
 }
 
