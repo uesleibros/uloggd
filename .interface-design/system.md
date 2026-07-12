@@ -67,6 +67,7 @@ Base unit: **4px**.
 - Desktop sidebar: 264px full; 76px compact.
 - Context rail: 320px full; 290px compact; hidden at 960px and below to prevent tablet overflow.
 - The application canvas is full-viewport; never cap the global shell or center it inside decorative outer gutters. Width constraints belong to readable text and focused controls, not the product frame.
+- Game pages use a compact 16px outer gutter; larger spacing belongs between cover, primary content, and context rail rather than outside the rails.
 
 The feed should alternate between expressive/editorial zones and compact working zones. Do not give every section the same gap, card shape, or density.
 
