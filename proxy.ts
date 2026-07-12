@@ -50,7 +50,8 @@ export async function proxy(request: NextRequest) {
   const onboarding = pathname.startsWith(`/${lang}/onboarding`);
   const callback = pathname.startsWith(`/${lang}/auth/callback`);
   const reset = pathname.startsWith(`/${lang}/auth/reset-password`);
-  if (!profile?.username && !onboarding && !callback && !reset)
+  const signout = pathname.startsWith(`/${lang}/auth/signout`);
+  if (!profile?.username && !onboarding && !callback && !reset && !signout)
     return NextResponse.redirect(
       new URL(`/${lang}/onboarding/username`, request.url),
     );

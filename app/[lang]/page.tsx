@@ -9,6 +9,7 @@ import {
   Star,
 } from "lucide-react";
 import { getPopularGames } from "@/lib/igdb";
+import { PlatformFooter } from "@/components/platform-footer";
 import { getDictionary, hasLocale } from "./dictionaries";
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
@@ -150,6 +151,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
             ))}
           </div>
         </section>
+        <PlatformFooter lang={lang} dictionary={d} />
       </main>
 
       <aside className="right-rail">
@@ -179,14 +181,6 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
             </Link>
           ))}
         </section>
-        <footer>
-          <span>© 2026 uloggd · {d.platform.gameData}</span>
-          <nav>
-            <Link href={`/${lang}/legal/terms`}>{d.legal.terms}</Link>
-            <Link href={`/${lang}/legal/privacy`}>{d.legal.privacy}</Link>
-            <Link href={`/${lang}/legal/child-safety`}>{d.legal.safety}</Link>
-          </nav>
-        </footer>
       </aside>
     </div>
   );

@@ -105,12 +105,7 @@ export function UsernamePanel({
       setPending(false);
       return;
     }
-    router.replace(`/${lang}/u/${normalized}`);
-    router.refresh();
-  }
-  async function signOut() {
-    await createClient().auth.signOut();
-    router.replace(`/${lang}/login`);
+    router.replace(`/${lang}`);
     router.refresh();
   }
   return (
@@ -165,10 +160,12 @@ export function UsernamePanel({
           {error}
         </div>
       )}
-      <button className="auth-text-button" onClick={signOut}>
-        <LogOut size={15} />
-        {pt ? "Sair da conta" : "Sign out"}
-      </button>
+      <form action={`/${lang}/auth/signout`} method="post">
+        <button className="auth-text-button" type="submit">
+          <LogOut size={15} />
+          {pt ? "Sair da conta" : "Sign out"}
+        </button>
+      </form>
     </section>
   );
 }

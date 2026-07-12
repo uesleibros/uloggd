@@ -222,25 +222,41 @@ export function LoginPanel({
   }
 
   async function signInWithPasskey() {
-    setPending("passkey");
     setError(null);
+    if (!captchaToken) {
+      setError(copy.captcha);
+      return;
+    }
     if (!("PublicKeyCredential" in window)) {
       setError(d.auth.passkeyUnsupported);
+      return;
+    }
+    setPending("passkey");
+    try {
+      const { error: authError } = await createClient().auth.signInWithPasskey({
+        options: { captchaToken },
+      });
+      if (!authError) {
+        router.replace(`/${lang}/onboarding/username`);
+        router.refresh();
+        return;
+      }
+      setError(
+        authError.code === "captcha_failed"
+          ? copy.captchaFailed
+          : ("status" in authError && authError.status === 429) ||
+              authError.code?.includes("rate_limit")
+            ? copy.rate
+            : authError.code === "passkey_disabled"
+              ? d.auth.passkeyDisabled
+              : d.auth.passkeyCancelled,
+      );
+    } catch {
+      setError(copy.network);
+    } finally {
       setPending(null);
-      return;
+      resetCaptcha();
     }
-    const { error: authError } = await createClient().auth.signInWithPasskey();
-    if (!authError) {
-      router.replace(`/${lang}/onboarding/username`);
-      router.refresh();
-      return;
-    }
-    setError(
-      authError.code === "passkey_disabled"
-        ? d.auth.passkeyDisabled
-        : d.auth.passkeyCancelled,
-    );
-    setPending(null);
   }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {

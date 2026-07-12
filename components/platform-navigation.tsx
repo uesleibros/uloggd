@@ -1,15 +1,11 @@
 import Link from "next/link";
 import {
   Compass,
-  Cookie,
-  FileText,
   HomeIcon,
   LibraryBig,
-  ListPlus,
   LogIn,
   LockKeyhole,
   Settings,
-  ShieldCheck,
   Star,
   UserRound,
 } from "lucide-react";
@@ -88,36 +84,7 @@ export function PlatformNavigation({
               );
             })}
           </nav>
-          <button
-            className="quick-log"
-            disabled={!isAuthenticated}
-            title={!isAuthenticated ? d.actions.requiresSignIn : undefined}
-          >
-            <ListPlus size={19} />
-            <span>{d.actions.addGame}</span>
-            <kbd>+</kbd>
-          </button>
           <div className="sidebar-bottom">
-            <Link href={`/${lang}/legal/terms`}>
-              <FileText size={19} />
-              <span>{d.legal.terms}</span>
-            </Link>
-            <Link href={`/${lang}/legal/privacy`}>
-              <LockKeyhole size={19} />
-              <span>{d.legal.privacy}</span>
-            </Link>
-            <Link href={`/${lang}/legal/cookies`}>
-              <Cookie size={19} />
-              <span>
-                {lang === "pt-BR"
-                  ? "Configurações de cookies"
-                  : "Cookie settings"}
-              </span>
-            </Link>
-            <Link href={`/${lang}/legal/child-safety`}>
-              <ShieldCheck size={19} />
-              <span>{d.legal.safety}</span>
-            </Link>
             <LocaleSwitcher locale={lang} />
             {isAuthenticated ? (
               <Link href={`/${lang}`}>
@@ -162,9 +129,6 @@ export function PlatformNavigation({
             reviews: d.nav.reviews,
             profile: d.nav.profile,
             settings: d.nav.settings,
-            terms: d.legal.terms,
-            privacy: d.legal.privacy,
-            safety: d.legal.safety,
             signIn: d.actions.signIn,
             syncJourney: d.actions.syncJourney,
             requiresSignIn: d.actions.requiresSignIn,

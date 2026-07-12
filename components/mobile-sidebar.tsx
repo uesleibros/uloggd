@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Compass,
-  FileText,
   Globe2,
   HomeIcon,
   LibraryBig,
@@ -13,7 +12,6 @@ import {
   LogIn,
   Menu,
   Settings,
-  ShieldCheck,
   Star,
   UserRound,
   X,
@@ -32,9 +30,6 @@ type MobileSidebarProps = {
     reviews: string;
     profile: string;
     settings: string;
-    terms: string;
-    privacy: string;
-    safety: string;
     signIn: string;
     syncJourney: string;
     requiresSignIn: string;
@@ -106,24 +101,6 @@ export function MobileSidebar({
               )}
             </nav>
             <div className="drawer-secondary">
-              <Dialog.Close asChild>
-                <Link href={`/${lang}/legal/terms`}>
-                  <FileText size={19} />
-                  {labels.terms}
-                </Link>
-              </Dialog.Close>
-              <Dialog.Close asChild>
-                <Link href={`/${lang}/legal/privacy`}>
-                  <LockKeyhole size={19} />
-                  {labels.privacy}
-                </Link>
-              </Dialog.Close>
-              <Dialog.Close asChild>
-                <Link href={`/${lang}/legal/child-safety`}>
-                  <ShieldCheck size={19} />
-                  {labels.safety}
-                </Link>
-              </Dialog.Close>
               <Dialog.Close asChild>
                 <Link href={localeHref} hrefLang={nextLocale}>
                   <Globe2 size={19} />
