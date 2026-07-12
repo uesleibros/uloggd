@@ -2,6 +2,7 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Compass,
   Globe2,
@@ -17,8 +18,7 @@ import {
 import { Brand } from "./brand";
 
 type MobileSidebarProps = {
-  lang: string;
-  otherLocale: string;
+  lang: "pt-BR" | "en";
   labels: {
     menu: string;
     close: string;
@@ -29,14 +29,17 @@ type MobileSidebarProps = {
     profile: string;
     settings: string;
     safety: string;
+    signIn: string;
+    syncJourney: string;
   };
 };
 
-export function MobileSidebar({
-  lang,
-  otherLocale,
-  labels,
-}: MobileSidebarProps) {
+export function MobileSidebar({ lang, labels }: MobileSidebarProps) {
+  const pathname = usePathname();
+  const nextLocale = lang === "pt-BR" ? "en" : "pt-BR";
+  const localeSegments = pathname.split("/");
+  localeSegments[1] = nextLocale;
+  const localeHref = localeSegments.join("/") || `/${nextLocale}`;
   const links = [
     [HomeIcon, labels.home, `/${lang}`],
     [Compass, labels.explore, `/${lang}`],
@@ -65,7 +68,12 @@ export function MobileSidebar({
           <nav className="drawer-navigation">
             {links.map(([Icon, label, href], index) => (
               <Dialog.Close asChild key={label}>
-                <Link href={href} data-active={index === 0 || undefined}>
+                <Link
+                  href={href}
+                  data-active={
+                    index === 0 && pathname === href ? true : undefined
+                  }
+                >
                   <Icon size={21} />
                   <span>{label}</span>
                 </Link>
@@ -80,9 +88,9 @@ export function MobileSidebar({
               </Link>
             </Dialog.Close>
             <Dialog.Close asChild>
-              <Link href={`/${otherLocale}`}>
+              <Link href={localeHref} hrefLang={nextLocale}>
                 <Globe2 size={19} />
-                {otherLocale === "en" ? "English" : "Português"}
+                {nextLocale === "en" ? "English" : "Português"}
               </Link>
             </Dialog.Close>
             <Dialog.Close asChild>
@@ -95,8 +103,8 @@ export function MobileSidebar({
           <div className="drawer-account">
             <div className="avatar">U</div>
             <div>
-              <strong>Entre no uloggd</strong>
-              <span>Salve jogos e avaliações</span>
+              <strong>{labels.signIn}</strong>
+              <span>{labels.syncJourney}</span>
             </div>
           </div>
         </Dialog.Content>

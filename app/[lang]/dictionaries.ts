@@ -17,3 +17,5 @@ export function hasLocale(locale: string): locale is Locale {
 export async function getDictionary(locale: Locale) {
   return dictionaries[locale]();
 }
+
+export type Dictionary = Awaited<ReturnType<typeof getDictionary>>;

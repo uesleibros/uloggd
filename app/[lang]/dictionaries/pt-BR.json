@@ -14,13 +14,25 @@
     "continue": "Continuar jogando",
     "changeLanguage": "Mudar idioma",
     "menu": "Abrir menu",
-    "close": "Fechar menu"
+    "close": "Fechar menu",
+    "signIn": "Entrar",
+    "syncJourney": "Sincronize sua jornada",
+    "save": "Salvar",
+    "wantToPlay": "Quero jogar",
+    "buildLibrary": "Montar minha biblioteca"
   },
   "legal": {
     "terms": "Termos de Uso",
     "privacy": "Política de Privacidade",
     "safety": "Segurança Infantil",
     "contact": "Contato"
+  },
+  "platform": {
+    "navigation": "Navegação",
+    "beta": "beta",
+    "search": "Buscar no catálogo",
+    "openSearch": "Buscar jogos",
+    "gameData": "Dados por IGDB"
   },
   "home": {
     "eyebrow": "Sua jornada continua",
@@ -35,6 +47,22 @@
     "online": "jogadores online",
     "reviewed": "avaliou",
     "completed": "zerou",
-    "added": "adicionou à lista"
+    "added": "adicionou à lista",
+    "todayTitle": "O que vale jogar agora",
+    "communityPick": "Escolha da comunidade",
+    "mostLogged": "Mais registrados",
+    "mostLoggedDescription": "Jogos que continuam voltando às bibliotecas",
+    "nextAdventure": "Talvez seja sua próxima aventura",
+    "nextAdventureDescription": "Bem avaliados por milhares de jogadores",
+    "startHere": "Comece por aqui",
+    "libraryPitch": "Sua biblioteca, do seu jeito.",
+    "libraryPitchDescription": "Registre o que jogou, abandone sem culpa e encontre o próximo favorito.",
+    "trendingPeriod": "24h",
+    "registrations": "registros"
+  },
+  "legalUi": {
+    "back": "Voltar ao início",
+    "section": "Legal e segurança",
+    "help": "Precisa falar com a gente?"
   }
 }

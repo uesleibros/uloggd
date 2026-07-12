@@ -14,13 +14,25 @@
     "continue": "Keep playing",
     "changeLanguage": "Change language",
     "menu": "Open menu",
-    "close": "Close menu"
+    "close": "Close menu",
+    "signIn": "Sign in",
+    "syncJourney": "Sync your journey",
+    "save": "Save",
+    "wantToPlay": "Want to play",
+    "buildLibrary": "Build my library"
   },
   "legal": {
     "terms": "Terms of Use",
     "privacy": "Privacy Policy",
     "safety": "Child Safety",
     "contact": "Contact"
+  },
+  "platform": {
+    "navigation": "Navigation",
+    "beta": "beta",
+    "search": "Search the catalog",
+    "openSearch": "Search games",
+    "gameData": "Data by IGDB"
   },
   "home": {
     "eyebrow": "Your journey continues",
@@ -35,6 +47,22 @@
     "online": "players online",
     "reviewed": "reviewed",
     "completed": "completed",
-    "added": "added to their list"
+    "added": "added to their list",
+    "todayTitle": "What is worth playing now",
+    "communityPick": "Community pick",
+    "mostLogged": "Most logged",
+    "mostLoggedDescription": "Games that keep returning to players' libraries",
+    "nextAdventure": "Maybe your next adventure",
+    "nextAdventureDescription": "Highly rated by thousands of players",
+    "startHere": "Start here",
+    "libraryPitch": "Your library, your way.",
+    "libraryPitchDescription": "Log what you played, drop games without guilt, and find your next favorite.",
+    "trendingPeriod": "24h",
+    "registrations": "logs"
+  },
+  "legalUi": {
+    "back": "Back to home",
+    "section": "Legal and safety",
+    "help": "Need to talk to us?"
   }
 }

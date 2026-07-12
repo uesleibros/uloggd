@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, Mail, ShieldCheck } from "lucide-react";
 import { notFound } from "next/navigation";
-import { Brand } from "@/components/brand";
 import { getLegalContent, isLegalDocument } from "@/lib/legal-content";
-import { hasLocale } from "../../dictionaries";
+import { getDictionary, hasLocale } from "../../dictionaries";
 
 type Props = PageProps<"/[lang]/legal/[document]">;
 
@@ -18,20 +17,20 @@ export default async function LegalPage({ params }: Props) {
   const { lang, document } = await params;
   if (!hasLocale(lang) || !isLegalDocument(document)) notFound();
   const content = getLegalContent(lang, document);
+  const d = await getDictionary(lang);
 
   return (
     <div className="legal-shell">
       <header className="legal-header">
-        <Brand lang={lang} />
         <Link href={`/${lang}`}>
           <ArrowLeft size={18} />
-          Voltar ao início
+          {d.legalUi.back}
         </Link>
       </header>
       <main className="legal-page">
         <div className="legal-title">
           <span>
-            <ShieldCheck size={18} /> Legal e segurança
+            <ShieldCheck size={18} /> {d.legalUi.section}
           </span>
           <h1>{content.title}</h1>
           <p>{content.intro}</p>
@@ -57,7 +56,7 @@ export default async function LegalPage({ params }: Props) {
         <aside className="legal-contact">
           <Mail size={20} />
           <div>
-            <strong>Precisa falar com a gente?</strong>
+            <strong>{d.legalUi.help}</strong>
             <a href="mailto:uloggd.gg@gmail.com">uloggd.gg@gmail.com</a>
           </div>
         </aside>

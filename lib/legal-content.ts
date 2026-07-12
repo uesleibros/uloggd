@@ -15,7 +15,7 @@ const pt: Record<LegalDocument, LegalContent> = {
     title: "Termos de Uso",
     intro:
       "Estes termos definem as regras para usar o uloggd e manter a comunidade segura e útil para quem gosta de jogos.",
-    updated: "Última atualização: 11 de julho de 2026",
+    updated: "Última atualização: 12 de julho de 2026",
     sections: [
       {
         title: "1. Aceitação e elegibilidade",
@@ -72,7 +72,7 @@ const pt: Record<LegalDocument, LegalContent> = {
     title: "Política de Privacidade",
     intro:
       "Esta política explica quais dados o uloggd usa, para quê e quais escolhas você tem.",
-    updated: "Última atualização: 11 de julho de 2026",
+    updated: "Última atualização: 12 de julho de 2026",
     sections: [
       {
         title: "1. Dados tratados",
@@ -128,7 +128,7 @@ const pt: Record<LegalDocument, LegalContent> = {
     title: "Segurança Infantil",
     intro:
       "O uloggd não tolera exploração, abuso ou qualquer conteúdo que coloque crianças e adolescentes em risco.",
-    updated: "Última atualização: 11 de julho de 2026",
+    updated: "Última atualização: 12 de julho de 2026",
     sections: [
       {
         title: "Nossa abordagem",
@@ -175,16 +175,170 @@ const pt: Record<LegalDocument, LegalContent> = {
   },
 };
 
-const en: Record<LegalDocument, LegalContent> = Object.fromEntries(
-  Object.entries(pt).map(([key, value]) => [
-    key,
-    {
-      ...value,
-      intro:
-        "This document is currently provided in Portuguese, the governing language for uloggd in Brazil. An English version will be published before public launch.",
-    },
-  ]),
-) as Record<LegalDocument, LegalContent>;
+const en: Record<LegalDocument, LegalContent> = {
+  terms: {
+    title: "Terms of Use",
+    intro:
+      "These terms set the rules for using uloggd and keeping the community safe and useful for people who enjoy games.",
+    updated: "Last updated: July 12, 2026",
+    sections: [
+      {
+        title: "1. Acceptance and eligibility",
+        paragraphs: [
+          "By accessing or creating an account on uloggd, you agree to these Terms and the Privacy Policy. If you do not agree, do not use the service.",
+          "People under 18 must use the platform with the knowledge and supervision of a parent or guardian. Social features may require age confirmation and parental authorization.",
+        ],
+      },
+      {
+        title: "2. Your account",
+        paragraphs: [
+          "You are responsible for the information you provide, the security of your credentials, and activity performed through your account. Notify us immediately if you suspect unauthorized access.",
+        ],
+      },
+      {
+        title: "3. Content and conduct",
+        paragraphs: [
+          "You retain the rights to content you publish and grant uloggd a limited license to host and display it within the service.",
+        ],
+        bullets: [
+          "Do not publish illegal, misleading, discriminatory content or content that violates third-party rights.",
+          "Do not harass, threaten, stalk, sexually exploit, or expose another person's private information.",
+          "Do not attempt to break into, abusively automate, damage, or bypass the platform's security.",
+          "Content that puts children or teenagers at risk is strictly prohibited.",
+        ],
+      },
+      {
+        title: "4. Moderation",
+        paragraphs: [
+          "We may remove content, limit features, or suspend accounts that violate these terms. In urgent safety situations, we may act without prior notice and preserve information as required by law.",
+        ],
+      },
+      {
+        title: "5. Game data and third parties",
+        paragraphs: [
+          "Game information is provided by IGDB and may contain errors or change. External links and services are governed by their own terms and policies.",
+        ],
+      },
+      {
+        title: "6. Availability and liability",
+        paragraphs: [
+          "uloggd is provided as available. We work to keep the service safe and reliable but do not guarantee uninterrupted operation. Nothing in these terms excludes mandatory rights under Brazilian law.",
+        ],
+      },
+      {
+        title: "7. Changes and contact",
+        paragraphs: [
+          `We may update these terms to reflect changes to the service or the law. Material changes will be communicated clearly. Questions may be sent to ${contact}.`,
+        ],
+      },
+    ],
+  },
+  privacy: {
+    title: "Privacy Policy",
+    intro:
+      "This policy explains which data uloggd uses, why it is used, and the choices available to you.",
+    updated: "Last updated: July 12, 2026",
+    sections: [
+      {
+        title: "1. Data we process",
+        paragraphs: [
+          "In the current version, we may process essential technical data such as IP address, browser type, and security logs. When accounts become available, we may process email address, username, profile picture, game library, reviews, lists, and preferences.",
+          "Game catalog data comes from IGDB. We do not send Twitch credentials or our private integration secrets to your browser.",
+        ],
+      },
+      {
+        title: "2. Purposes",
+        paragraphs: [],
+        bullets: [
+          "Provide, personalize, and improve the platform.",
+          "Keep accounts and preferences synchronized.",
+          "Prevent fraud, abuse, and security incidents.",
+          "Moderate content and protect the community.",
+          "Comply with legal obligations and respond to valid requests.",
+        ],
+      },
+      {
+        title: "3. Legal bases and sharing",
+        paragraphs: [
+          "We process data under the applicable legal bases of Brazil's LGPD, including contract performance, consent, assessed legitimate interests, and compliance with legal obligations. We share only what is necessary with infrastructure and security providers and services requested by you. We do not sell personal data.",
+        ],
+      },
+      {
+        title: "4. Retention and security",
+        paragraphs: [
+          "We keep data for as long as necessary for the stated purposes, legal obligations, and the defense of rights. We apply access controls, minimization, encrypted communications, and monitoring, but no system is completely immune to risk.",
+        ],
+      },
+      {
+        title: "5. Your rights",
+        paragraphs: [
+          `You may request confirmation, access, correction, portability where applicable, anonymization, deletion, information about sharing, or withdrawal of consent by emailing ${contact}. We may request information to verify your identity.`,
+        ],
+      },
+      {
+        title: "6. Children and teenagers",
+        paragraphs: [
+          "Processing must always consider the best interests of children and teenagers. For children, we will adopt specific and prominent parental consent when required, collect only the minimum data, and provide protective settings by default. See our Child Safety page.",
+        ],
+      },
+      {
+        title: "7. Contact",
+        paragraphs: [
+          `For privacy questions or to exercise your rights, email ${contact}.`,
+        ],
+      },
+    ],
+  },
+  "child-safety": {
+    title: "Child Safety",
+    intro:
+      "uloggd does not tolerate exploitation, abuse, or any content that puts children and teenagers at risk.",
+    updated: "Last updated: July 12, 2026",
+    sections: [
+      {
+        title: "Our approach",
+        paragraphs: [
+          "We design features around the best interests of children and teenagers, high privacy by default, minimal data collection, and appropriate limits on social interactions. Messaging and publishing features must include reporting, blocking, and visibility controls before release.",
+        ],
+      },
+      {
+        title: "Strictly prohibited content",
+        paragraphs: [],
+        bullets: [
+          "Child sexual abuse or exploitation material, whether real or artificially generated.",
+          "Grooming, sexualization, blackmail, extortion, or requests for intimate images.",
+          "Encouragement of self-harm, violence, dangerous challenges, or illegal activity.",
+          "Exposure of a minor's location, school, contact details, or other personal information without authorization.",
+          "Harassment, stalking, hate speech, or attempts to move conversations to unsafe channels.",
+        ],
+      },
+      {
+        title: "Reporting and response",
+        paragraphs: [
+          `Send reports to ${contact} with the subject “Child Safety.” Include the link, username, and a factual description. Do not download, copy, or forward illegal material. We will prioritize these reports, remove content when necessary, preserve evidence, and cooperate with the appropriate authorities.`,
+        ],
+      },
+      {
+        title: "Immediate help in Brazil",
+        paragraphs: [
+          "If someone is in immediate danger, contact the police. Violations against children and teenagers may be reported through Disque 100, the local Guardianship Council, Civil Police, or Comunica PF. SaferNet also provides guidance and a reporting channel. Reporting to uloggd does not replace notifying the authorities.",
+        ],
+      },
+      {
+        title: "Families and guardians",
+        paragraphs: [
+          "We recommend regular conversations about privacy, unknown contacts, and image sharing. Parents and guardians may request information, review, or deletion of a child's data through our contact channel.",
+        ],
+      },
+      {
+        title: "Commitment to improvement",
+        paragraphs: [
+          "Before releasing accounts and social features, we will implement risk-appropriate age assurance, parental consent where applicable, safety by default, reporting tools, and documented response procedures.",
+        ],
+      },
+    ],
+  },
+};
 
 export function isLegalDocument(value: string): value is LegalDocument {
   return value === "terms" || value === "privacy" || value === "child-safety";
