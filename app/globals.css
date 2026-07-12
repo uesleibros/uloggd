@@ -1564,6 +1564,65 @@ a {
 .game-context-rail .game-details dd {
   margin-top: 4px;
 }
+.game-similar-rail {
+  margin-top: 22px;
+}
+.game-similar-rail > header span {
+  color: var(--brand-blurple-bright);
+  font: 600 7px var(--font-geist-mono);
+  letter-spacing: 0.07em;
+}
+.game-similar-rail > header h2 {
+  margin: 4px 0 10px;
+  font-size: 13px;
+  font-weight: 620;
+}
+.game-similar-rail > div {
+  border-top: 1px solid var(--shell-line);
+}
+.game-similar-rail a {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-height: 58px;
+  padding: 8px 3px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.game-similar-rail a:hover {
+  background: rgb(255 255 255 / 2.5%);
+}
+.game-similar-cover {
+  position: relative;
+  overflow: hidden;
+  width: 38px;
+  aspect-ratio: 3 / 4;
+  border-radius: 4px;
+  background: var(--console-raised);
+}
+.game-similar-cover img {
+  object-fit: cover;
+}
+.game-similar-rail a > span:last-child {
+  min-width: 0;
+}
+.game-similar-rail strong,
+.game-similar-rail small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.game-similar-rail strong {
+  color: var(--screen-dim);
+  font-size: 9px;
+  font-weight: 550;
+}
+.game-similar-rail small {
+  margin-top: 3px;
+  color: var(--screen-muted);
+  font-size: 7px;
+}
 .game-title-meta {
   display: flex;
   flex-wrap: wrap;
@@ -1659,6 +1718,9 @@ a {
   font-size: 13px;
   line-height: 1.7;
   text-wrap: pretty;
+}
+.game-page-content > .game-gallery-section {
+  padding-top: 28px;
 }
 .game-details {
   margin: 0;
@@ -3475,6 +3537,14 @@ a {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .game-similar-rail {
+    grid-column: 1 / -1;
+  }
+  .game-similar-rail > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 16px;
+  }
 }
 
 @media (max-width: 620px) {
@@ -3504,6 +3574,9 @@ a {
   }
   .game-time-panel {
     margin-top: 4px;
+  }
+  .game-similar-rail {
+    margin-top: 26px;
   }
   .game-title-meta {
     font-size: 9px;

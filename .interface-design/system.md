@@ -184,7 +184,9 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 - Desktop game pages use cover / primary content / context rail columns.
 - The context rail owns IGDB time-to-beat data, catalog score, release, genres, platforms, publisher, themes, and modes.
+- Similar games appear as a short compact-cover list in the context rail, not as another full related-games tab.
 - Tablet moves the rail below primary content; mobile stacks cover, content, and context without a persistent side column.
+- The media gallery belongs directly after About in the primary column so the page fills vertically before lower videos, events, links, and related content.
 
 ### Compact game row
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   CalendarDays,
@@ -15,6 +16,7 @@ import { CoverSelector } from "@/components/library/cover-selector";
 import { GameActionPanel } from "@/components/library/game-action-panel";
 import { RelatedGamesTabs } from "@/components/related-games-tabs";
 import { getGameBySlug } from "@/lib/igdb";
+import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../dictionaries";
 
@@ -79,6 +81,11 @@ export default async function GamePage({ params }: Props) {
     (savedGames ?? []).map((saved) => [saved.igdb_id, saved]),
   );
   const state = savedById.get(game.id) ?? null;
+  const similarGames =
+    game.related.find((group) => group.kind === "similar")?.games ?? [];
+  const tabbedRelated = game.related.filter(
+    (group) => group.kind !== "similar",
+  );
   const savedRelated = Object.fromEntries(
     relatedIds.map((id) => [id, savedById.get(id) ?? null]),
   );
@@ -152,6 +159,7 @@ export default async function GamePage({ params }: Props) {
                   : "More information coming soon.")}
             </p>
           </section>
+          <GameMediaGallery items={game.gallery} lang={lang} />
         </div>
         <aside className="game-context-rail">
           {game.timeToBeat && (
@@ -239,10 +247,44 @@ export default async function GamePage({ params }: Props) {
               </div>
             )}
           </dl>
+          {similarGames.length > 0 && (
+            <section className="game-similar-rail">
+              <header>
+                <span>{lang === "pt-BR" ? "DESCUBRA" : "DISCOVER"}</span>
+                <h2>
+                  {lang === "pt-BR" ? "Jogos similares" : "Similar games"}
+                </h2>
+              </header>
+              <div>
+                {similarGames.slice(0, 5).map((similar) => (
+                  <Link key={similar.id} href={`/${lang}/game/${similar.slug}`}>
+                    <span className="game-similar-cover">
+                      <Image
+                        src={resolveGameCover(
+                          similar.coverUrl,
+                          savedById.get(similar.id)?.custom_cover_url,
+                        )}
+                        alt=""
+                        fill
+                        sizes="42px"
+                      />
+                    </span>
+                    <span>
+                      <strong>{similar.name}</strong>
+                      <small>
+                        {[similar.releaseYear, similar.genres[0]]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </small>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </aside>
       </div>
       <div className="game-extended-content">
-        <GameMediaGallery items={game.gallery} lang={lang} />
         {game.videos.length > 0 && (
           <section className="game-section">
             <header className="game-section-heading">
@@ -346,7 +388,7 @@ export default async function GamePage({ params }: Props) {
           </section>
         )}
         <RelatedGamesTabs
-          groups={game.related}
+          groups={tabbedRelated}
           saved={savedRelated}
           lang={lang}
           enabled={Boolean(user)}
