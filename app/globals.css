@@ -1261,7 +1261,6 @@ a {
   position: relative;
   height: 280px;
   overflow: hidden;
-  border-bottom: 1px solid var(--shell-line);
 }
 .game-hero img {
   object-fit: cover;
@@ -1296,46 +1295,13 @@ a {
   background: var(--console-raised);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
 }
-.game-cover-primary img,
-.game-cover-options img {
+.game-cover-primary img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.game-cover-options {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  padding-bottom: 4px;
-  overflow-x: auto;
-  scrollbar-width: thin;
-}
-.game-cover-options button {
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: 3 / 4;
-  flex: 0 0 48px;
-  padding: 0;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 6px;
-  background: var(--console-raised);
-  cursor: pointer;
-}
-.game-cover-options button:hover,
-.game-cover-options button[data-active] {
-  border-color: var(--brand-blurple-bright);
-}
-.game-cover-options button > svg {
-  position: absolute;
-  right: 3px;
-  bottom: 3px;
-  padding: 2px;
-  border-radius: 50%;
-  background: var(--safe-green);
-  color: var(--console-black);
-}
-.game-cover-save {
+.game-cover-change {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1343,19 +1309,184 @@ a {
   width: 100%;
   min-height: 36px;
   margin-top: 12px;
-  border: 1px solid rgb(88 101 242 / 30%);
+  padding: 0 10px;
+  border: 1px solid var(--shell-line);
   border-radius: 7px;
-  background: var(--brand-blurple-wash);
-  color: white;
+  background: rgb(255 255 255 / 4%);
+  color: var(--screen-dim);
   font-size: 10px;
-  font-weight: 650;
+  font-weight: 500;
   cursor: pointer;
 }
-.game-cover-picker > p {
-  margin: 8px 0 0;
+.game-cover-change:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--console-hover);
+  color: white;
+}
+.game-cover-change span {
+  margin-left: auto;
+  color: var(--screen-muted);
+  font: 550 8px var(--font-geist-mono);
+}
+.cover-modal-backdrop {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  background: rgb(5 4 7 / 76%);
+  backdrop-filter: blur(8px);
+}
+.cover-modal {
+  position: fixed;
+  z-index: 91;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  width: min(calc(100% - 32px), 760px);
+  max-height: min(82dvh, 720px);
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--console-panel);
+  box-shadow: 0 24px 70px rgb(0 0 0 / 48%);
+  transform: translate(-50%, -50%);
+}
+.cover-modal > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.cover-modal > header h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 640;
+  letter-spacing: -0.03em;
+}
+.cover-modal > header p {
+  margin: 5px 0 0;
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.cover-modal > header button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--screen-dim);
+  cursor: pointer;
+}
+.cover-modal > header button:hover {
+  background: var(--console-hover);
+  color: white;
+}
+.cover-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 16px 12px;
+  padding: 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.cover-modal-grid > button {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--screen-dim);
+  text-align: left;
+  cursor: pointer;
+}
+.cover-modal-image {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 7px;
+  background: var(--console-raised);
+}
+.cover-modal-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cover-modal-grid > button:hover .cover-modal-image,
+.cover-modal-grid > button[data-active] .cover-modal-image {
+  border-color: var(--brand-blurple-bright);
+  box-shadow: 0 0 0 2px var(--brand-blurple-wash);
+}
+.cover-modal-image > svg {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--brand-blurple);
+  color: white;
+}
+.cover-modal-grid strong {
+  display: block;
+  margin-top: 7px;
+  overflow: hidden;
   color: var(--screen-dim);
   font-size: 9px;
-  text-align: center;
+  font-weight: 520;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cover-modal-grid small {
+  display: block;
+  margin-top: 2px;
+  color: var(--safe-green);
+  font-size: 8px;
+}
+.cover-modal > p {
+  margin: 0;
+  padding: 0 20px 12px;
+  color: #ffaaa4;
+  font-size: 9px;
+}
+.cover-modal > footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--shell-line);
+  background: var(--console-panel);
+}
+.cover-modal > footer button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 92px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--screen-dim);
+  font-size: 10px;
+  font-weight: 520;
+  cursor: pointer;
+}
+.cover-modal > footer button:last-child {
+  border-color: rgb(88 101 242 / 32%);
+  background: var(--brand-blurple-wash);
+  color: white;
+}
+.cover-modal > footer button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 .game-page-content {
   max-width: 620px;
@@ -1705,6 +1836,11 @@ a {
   border-color: var(--shell-line-strong);
   background: var(--console-hover);
   color: white;
+}
+.game-related-shelf {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px 10px;
 }
 .shelf-game {
   min-width: 0;
@@ -3273,6 +3409,25 @@ a {
   .game-video-grid {
     grid-template-columns: 1fr;
   }
+  .game-related-shelf {
+    display: flex;
+    gap: 12px;
+    margin-right: -16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+  }
+  .game-related-shelf::-webkit-scrollbar {
+    display: none;
+  }
+  .game-related-shelf .quick-game-card {
+    display: block;
+    flex: 0 0 116px;
+    scroll-snap-align: start;
+  }
+  .game-related-shelf .quick-game-card:last-child {
+    margin-right: 16px;
+  }
   .game-event-list > a {
     grid-template-columns: 74px minmax(0, 1fr) 16px;
     gap: 10px;
@@ -3285,6 +3440,29 @@ a {
   .media-lightbox {
     inset: 60px 8px 8px;
     border-radius: 8px;
+  }
+  .cover-modal {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: calc(100dvh - 28px);
+    border-radius: 14px 14px 0 0;
+    transform: none;
+  }
+  .cover-modal > header,
+  .cover-modal-grid,
+  .cover-modal > footer {
+    padding-inline: 16px;
+  }
+  .cover-modal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 10px;
+  }
+  .cover-modal > footer button {
+    flex: 1;
+    min-height: 42px;
   }
 }
 

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { resolveGameCover } from "@/lib/game-cover";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -101,7 +102,7 @@ export function QuickGameCard({
   }
 
   const played = state?.status === "COMPLETED";
-  const image = state?.custom_cover_url || game.coverUrl;
+  const image = resolveGameCover(game.coverUrl, state?.custom_cover_url);
 
   return (
     <article className="quick-game-card">

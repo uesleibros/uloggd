@@ -1,16 +1,49 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { CalendarDays, ExternalLink, Play, Star } from "lucide-react";
 import { GameMediaGallery } from "@/components/game-media-gallery";
 import { CoverSelector } from "@/components/library/cover-selector";
 import { GameActionPanel } from "@/components/library/game-action-panel";
+import { QuickGameCard } from "@/components/library/quick-game-card";
 import { getGameBySlug } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../dictionaries";
 
-export default async function GamePage({
-  params,
-}: PageProps<"/[lang]/game/[slug]">) {
+type Props = PageProps<"/[lang]/game/[slug]">;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang, slug } = await params;
+  if (!hasLocale(lang)) return {};
+  const game = await getGameBySlug(slug);
+  if (!game) return {};
+  const description =
+    game.summary.slice(0, 180) ||
+    (lang === "pt-BR"
+      ? `Informações, mídia e sua jornada em ${game.name}.`
+      : `Information, media, and your journey through ${game.name}.`);
+  const image = game.heroUrl ?? game.coverUrl;
+  return {
+    title: game.name,
+    description,
+    openGraph: {
+      title: `${game.name} · uloggd`,
+      description,
+      type: "website",
+      siteName: "uloggd",
+      locale: lang === "pt-BR" ? "pt_BR" : "en_US",
+      images: [{ url: image, alt: game.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${game.name} · uloggd`,
+      description,
+      images: [image],
+    },
+  };
+}
+
+export default async function GamePage({ params }: Props) {
   const { lang, slug } = await params;
   if (!hasLocale(lang)) notFound();
   const [game, supabase] = await Promise.all([
@@ -22,16 +55,22 @@ export default async function GamePage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const { data: state } = user
+  const relatedIds = game.related.flatMap((group) =>
+    group.games.map((related) => related.id),
+  );
+  const { data: savedGames } = user
     ? await supabase
         .from("user_games")
         .select(
-          "status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
+          "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
         )
         .eq("profile_id", user.id)
-        .eq("igdb_id", game.id)
-        .maybeSingle()
-    : { data: null };
+        .in("igdb_id", [game.id, ...relatedIds])
+    : { data: [] };
+  const savedById = new Map(
+    (savedGames ?? []).map((saved) => [saved.igdb_id, saved]),
+  );
+  const state = savedById.get(game.id) ?? null;
   const releaseDate = game.releaseTimestamp
     ? new Intl.DateTimeFormat(lang, {
         day: "numeric",
@@ -62,7 +101,12 @@ export default async function GamePage({
       )}
       <div className="game-layout">
         <CoverSelector
-          game={game}
+          game={{
+            id: game.id,
+            slug: game.slug,
+            name: game.name,
+            coverUrl: game.coverUrl,
+          }}
           covers={game.alternativeCovers}
           savedCover={state?.custom_cover_url ?? null}
           lang={lang}
@@ -240,6 +284,48 @@ export default async function GamePage({
             </div>
           </section>
         )}
+        {game.related.map((group) => {
+          const labels =
+            lang === "pt-BR"
+              ? {
+                  expansions: ["CONTEÚDO", "DLCs e expansões"],
+                  editions: ["VERSÕES", "Edições e ports"],
+                  remakes: ["NOVAS VERSÕES", "Remakes e remasters"],
+                  similar: ["DESCUBRA", "Jogos relacionados"],
+                }
+              : {
+                  expansions: ["CONTENT", "DLCs and expansions"],
+                  editions: ["VERSIONS", "Editions and ports"],
+                  remakes: ["NEW VERSIONS", "Remakes and remasters"],
+                  similar: ["DISCOVER", "Related games"],
+                };
+          const [eyebrow, title] = labels[group.kind];
+          return (
+            <section
+              className="game-section game-related-section"
+              key={group.kind}
+            >
+              <header className="game-section-heading">
+                <div>
+                  <span>{eyebrow}</span>
+                  <h2>{title}</h2>
+                </div>
+                <small>{group.games.length}</small>
+              </header>
+              <div className="game-related-shelf">
+                {group.games.map((related) => (
+                  <QuickGameCard
+                    key={related.id}
+                    game={related}
+                    initial={savedById.get(related.id) ?? null}
+                    lang={lang}
+                    enabled={Boolean(user)}
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </div>
     </main>
   );

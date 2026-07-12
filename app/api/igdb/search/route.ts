@@ -1,15 +1,47 @@
 import type { NextRequest } from "next/server";
+import { resolveGameCover } from "@/lib/game-cover";
 import { searchGames } from "@/lib/igdb";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
   if (query.length < 2) return Response.json({ results: [] });
 
   try {
-    const results = await searchGames(query);
+    const [results, supabase] = await Promise.all([
+      searchGames(query),
+      createClient(),
+    ]);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { data: savedGames } =
+      user && results.length
+        ? await supabase
+            .from("user_games")
+            .select("igdb_id,custom_cover_url")
+            .eq("profile_id", user.id)
+            .in(
+              "igdb_id",
+              results.map((game) => game.id),
+            )
+        : { data: [] };
+    const covers = new Map(
+      (savedGames ?? []).map((game) => [game.igdb_id, game.custom_cover_url]),
+    );
+    const personalizedResults = results.map((game) => ({
+      ...game,
+      coverUrl: resolveGameCover(game.coverUrl, covers.get(game.id)),
+    }));
     return Response.json(
-      { results },
-      { headers: { "Cache-Control": "public, max-age=60, s-maxage=300" } },
+      { results: personalizedResults },
+      {
+        headers: {
+          "Cache-Control": user
+            ? "private, no-store"
+            : "public, max-age=60, s-maxage=300",
+        },
+      },
     );
   } catch (error) {
     console.error("IGDB search failed", error);

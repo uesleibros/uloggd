@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
+import { resolveGameCover } from "@/lib/game-cover";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { getDictionary, hasLocale } from "./dictionaries";
 
@@ -116,7 +117,10 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
               href={`/${lang}/game/${featured.slug}`}
             >
               <Image
-                src={featured.coverUrl}
+                src={resolveGameCover(
+                  featured.coverUrl,
+                  savedById.get(featured.id)?.custom_cover_url,
+                )}
                 alt={`${featured.name} cover`}
                 fill
                 priority
@@ -225,7 +229,15 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                   className="list-cover"
                   href={`/${lang}/game/${game.slug}`}
                 >
-                  <Image src={game.coverUrl} alt="" fill sizes="48px" />
+                  <Image
+                    src={resolveGameCover(
+                      game.coverUrl,
+                      savedById.get(game.id)?.custom_cover_url,
+                    )}
+                    alt=""
+                    fill
+                    sizes="48px"
+                  />
                 </Link>
                 <Link className="list-main" href={`/${lang}/game/${game.slug}`}>
                   <h3>{game.name}</h3>

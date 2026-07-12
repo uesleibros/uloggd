@@ -21,6 +21,16 @@ function useGameSearch() {
   const currentQueryRef = useRef("");
 
   useEffect(() => {
+    const clearPersonalizedCache = () => searchCache.clear();
+    window.addEventListener("uloggd:cover-changed", clearPersonalizedCache);
+    return () =>
+      window.removeEventListener(
+        "uloggd:cover-changed",
+        clearPersonalizedCache,
+      );
+  }, []);
+
+  useEffect(() => {
     const normalized = query.trim().toLocaleLowerCase();
     if (normalized.length < 2) return;
 

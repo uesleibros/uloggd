@@ -33,6 +33,13 @@ type IgdbGameResponse = {
   themes?: { name: string }[];
   game_modes?: { name: string }[];
   websites?: { url: string }[];
+  similar_games?: IgdbGameResponse[];
+  dlcs?: IgdbGameResponse[];
+  expansions?: IgdbGameResponse[];
+  standalone_expansions?: IgdbGameResponse[];
+  ports?: IgdbGameResponse[];
+  remakes?: IgdbGameResponse[];
+  remasters?: IgdbGameResponse[];
 };
 
 type IgdbEventResponse = {
@@ -266,7 +273,10 @@ export type DiscoveryGames = {
 };
 
 export type GameDetail = Game & {
-  alternativeCovers: string[];
+  alternativeCovers: {
+    url: string;
+    source: "default" | "localized" | "edition";
+  }[];
   gallery: { id: string; url: string; kind: "screenshot" | "artwork" }[];
   videos: { id: string; name: string }[];
   events: {
@@ -283,6 +293,10 @@ export type GameDetail = Game & {
   themes: string[];
   modes: string[];
   websites: string[];
+  related: {
+    kind: "expansions" | "editions" | "remakes" | "similar";
+    games: Game[];
+  }[];
 };
 
 export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
@@ -292,6 +306,13 @@ export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
       cover.image_id,artworks.image_id,screenshots.image_id,genres.name,
       platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
       videos.video_id,videos.name,themes.name,game_modes.name,websites.url,
+      similar_games.name,similar_games.slug,similar_games.first_release_date,similar_games.total_rating,similar_games.total_rating_count,similar_games.cover.image_id,similar_games.genres.name,
+      dlcs.name,dlcs.slug,dlcs.first_release_date,dlcs.total_rating,dlcs.total_rating_count,dlcs.cover.image_id,dlcs.genres.name,
+      expansions.name,expansions.slug,expansions.first_release_date,expansions.total_rating,expansions.total_rating_count,expansions.cover.image_id,expansions.genres.name,
+      standalone_expansions.name,standalone_expansions.slug,standalone_expansions.first_release_date,standalone_expansions.total_rating,standalone_expansions.total_rating_count,standalone_expansions.cover.image_id,standalone_expansions.genres.name,
+      ports.name,ports.slug,ports.first_release_date,ports.total_rating,ports.total_rating_count,ports.cover.image_id,ports.genres.name,
+      remakes.name,remakes.slug,remakes.first_release_date,remakes.total_rating,remakes.total_rating_count,remakes.cover.image_id,remakes.genres.name,
+      remasters.name,remasters.slug,remasters.first_release_date,remasters.total_rating,remasters.total_rating_count,remasters.cover.image_id,remasters.genres.name,
       game_localizations.cover.image_id,version_parent.id,version_parent.cover.image_id,
       version_parent.game_localizations.cover.image_id;
     where slug = "${slug}";
@@ -300,26 +321,37 @@ export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
   const raw = games[0];
   if (!raw) return null;
 
-  const coverIds = new Set<string>();
-  const addCover = (cover?: IgdbImage) => {
-    if (cover?.image_id) coverIds.add(cover.image_id);
+  const coverOptions = new Map<
+    string,
+    GameDetail["alternativeCovers"][number]
+  >();
+  const addCover = (
+    cover: IgdbImage | undefined,
+    source: GameDetail["alternativeCovers"][number]["source"],
+  ) => {
+    if (cover?.image_id && !coverOptions.has(cover.image_id)) {
+      coverOptions.set(cover.image_id, {
+        url: imageUrl(cover.image_id, "cover_big"),
+        source,
+      });
+    }
   };
-  addCover(raw.cover);
-  raw.game_localizations?.forEach((item) => addCover(item.cover));
-  addCover(raw.version_parent?.cover);
+  addCover(raw.cover, "default");
+  raw.game_localizations?.forEach((item) => addCover(item.cover, "localized"));
+  addCover(raw.version_parent?.cover, "edition");
   raw.version_parent?.game_localizations?.forEach((item) =>
-    addCover(item.cover),
+    addCover(item.cover, "edition"),
   );
 
   const rootId = raw.version_parent?.id ?? raw.id;
   const siblings = await queryGamesRaw(`
-    fields cover.image_id,game_localizations.cover.image_id;
+    fields name,slug,first_release_date,total_rating,total_rating_count,cover.image_id,genres.name,game_localizations.cover.image_id;
     where version_parent = ${rootId};
     limit 500;
   `).catch(() => []);
   siblings.forEach((game) => {
-    addCover(game.cover);
-    game.game_localizations?.forEach((item) => addCover(item.cover));
+    addCover(game.cover, "edition");
+    game.game_localizations?.forEach((item) => addCover(item.cover, "edition"));
   });
 
   const events = await queryIgdbRaw<IgdbEventResponse>(
@@ -344,12 +376,31 @@ export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
       kind: "artwork" as const,
     })),
   ];
+  const usable = (games: IgdbGameResponse[] | undefined) =>
+    (games ?? [])
+      .filter((game) => game.id !== raw.id && game.cover?.image_id)
+      .map(normalize);
+  const expansions = usable([
+    ...(raw.dlcs ?? []),
+    ...(raw.expansions ?? []),
+    ...(raw.standalone_expansions ?? []),
+  ]).slice(0, 12);
+  const editions = usable([...siblings, ...(raw.ports ?? [])]).slice(0, 12);
+  const remakes = usable([
+    ...(raw.remakes ?? []),
+    ...(raw.remasters ?? []),
+  ]).slice(0, 12);
+  const similar = usable(raw.similar_games).slice(0, 12);
+  const related: GameDetail["related"] = [
+    { kind: "expansions", games: expansions },
+    { kind: "editions", games: editions },
+    { kind: "remakes", games: remakes },
+    { kind: "similar", games: similar },
+  ];
 
   return {
     ...normalize(raw),
-    alternativeCovers: [...coverIds]
-      .slice(0, 24)
-      .map((id) => imageUrl(id, "cover_big")),
+    alternativeCovers: [...coverOptions.values()].slice(0, 24),
     gallery,
     videos: (raw.videos ?? [])
       .filter((video) => /^[a-zA-Z0-9_-]{6,20}$/.test(video.video_id))
@@ -379,6 +430,7 @@ export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
       .map((website) => website.url)
       .filter((url) => url.startsWith("https://"))
       .slice(0, 8),
+    related: related.filter((group) => group.games.length > 0),
   };
 }
 

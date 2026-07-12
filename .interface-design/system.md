@@ -164,6 +164,20 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Cover ratio 3:4, 7px radius.
 - Rank label sits at the bottom-left over the image.
 - Save action appears on hover/focus desktop and remains visible on touch devices.
+- A saved custom cover is a library-wide preference: every authenticated catalog surface resolves it before the IGDB default.
+
+### Cover picker
+
+- The game page shows only the active cover plus one quiet “Change cover” control.
+- Alternatives open in a Radix modal and identify their source as Default, Localized, or Edition.
+- Selection is provisional until Save; Cancel restores the saved cover.
+- Desktop uses a centered, scrollable grid. Mobile uses a bottom sheet with two columns and equal Cancel/Save actions.
+
+### Related game shelves
+
+- Relations remain separated by IGDB meaning: DLCs/expansions, editions/ports, remakes/remasters, and similar games.
+- Each group uses the active-shelf card with internal links, quick actions, and the account's saved cover.
+- Desktop uses six covers per row; mobile preserves every result in a horizontal snap shelf.
 
 ### Compact game row
 

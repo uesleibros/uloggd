@@ -1,8 +1,16 @@
 "use client";
 
-import { Check, LoaderCircle } from "lucide-react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { Check, Images, LoaderCircle, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/client";
+
+type Cover = {
+  url: string;
+  source: "default" | "localized" | "edition";
+};
 
 export function CoverSelector({
   game,
@@ -11,35 +19,57 @@ export function CoverSelector({
   lang,
   enabled,
 }: {
-  game: { id: number; slug: string };
-  covers: string[];
+  game: { id: number; slug: string; coverUrl: string; name: string };
+  covers: Cover[];
   savedCover: string | null;
   lang: "pt-BR" | "en";
   enabled: boolean;
 }) {
   const pt = lang === "pt-BR";
-  const initial = savedCover ?? covers[0];
+  const router = useRouter();
+  const fallback = covers[0]?.url ?? game.coverUrl;
+  const initial = resolveGameCover(fallback, savedCover);
+  const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(initial);
   const [saved, setSaved] = useState(initial);
   const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const labels = pt
+    ? { default: "Padrão", localized: "Localizada", edition: "Edição" }
+    : { default: "Default", localized: "Localized", edition: "Edition" };
+
+  function close() {
+    if (pending) return;
+    setSelected(saved);
+    setError(null);
+    setOpen(false);
+  }
 
   async function save() {
-    if (!enabled || !selected || pending) return;
+    if (!enabled) {
+      setError(pt ? "Entre para salvar uma capa." : "Sign in to save a cover.");
+      return;
+    }
+    if (!selected || pending) return;
     setPending(true);
-    setMessage(null);
-    const { error } = await createClient().rpc("set_game_custom_cover", {
-      game_id: game.id,
-      game_slug: game.slug,
-      cover_url: selected,
-    });
-    if (error) {
-      setMessage(
+    setError(null);
+    const { error: saveError } = await createClient().rpc(
+      "set_game_custom_cover",
+      { game_id: game.id, game_slug: game.slug, cover_url: selected },
+    );
+    if (saveError) {
+      setError(
         pt ? "Não foi possível salvar a capa." : "Could not save the cover.",
       );
     } else {
       setSaved(selected);
-      setMessage(pt ? "Capa salva." : "Cover saved.");
+      setOpen(false);
+      window.dispatchEvent(
+        new CustomEvent("uloggd:cover-changed", {
+          detail: { gameId: game.id, coverUrl: selected },
+        }),
+      );
+      router.refresh();
     }
     setPending(false);
   }
@@ -49,43 +79,89 @@ export function CoverSelector({
       <div className="game-cover-primary">
         {/* All options are trusted IGDB image URLs returned by the server. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={selected} alt="" />
+        <img src={saved} alt={`${pt ? "Capa de" : "Cover of"} ${game.name}`} />
       </div>
       {covers.length > 1 && (
-        <div
-          className="game-cover-options"
-          aria-label={pt ? "Capas disponíveis" : "Available covers"}
-        >
-          {covers.map((cover) => (
-            <button
-              key={cover}
-              type="button"
-              data-active={selected === cover || undefined}
-              onClick={() => setSelected(cover)}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={cover} alt="" />
-              {saved === cover && <Check size={12} />}
-            </button>
-          ))}
-        </div>
-      )}
-      {enabled && selected !== saved && (
         <button
-          className="game-cover-save"
+          className="game-cover-change"
           type="button"
-          onClick={save}
-          disabled={pending}
+          onClick={() => {
+            setSelected(saved);
+            setOpen(true);
+          }}
         >
-          {pending ? (
-            <LoaderCircle className="spin" size={14} />
-          ) : (
-            <Check size={14} />
-          )}
-          {pt ? "Usar esta capa" : "Use this cover"}
+          <Images size={14} />
+          {pt ? "Alterar capa" : "Change cover"}
+          <span>{covers.length}</span>
         </button>
       )}
-      {message && <p role="status">{message}</p>}
+      <Dialog.Root
+        open={open}
+        onOpenChange={(next) => (next ? setOpen(true) : close())}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="cover-modal-backdrop" />
+          <Dialog.Content className="cover-modal">
+            <header>
+              <div>
+                <Dialog.Title>
+                  {pt ? "Escolher capa" : "Choose cover"}
+                </Dialog.Title>
+                <Dialog.Description>
+                  {pt
+                    ? "Escolha como este jogo aparece na sua biblioteca."
+                    : "Choose how this game appears across your library."}
+                </Dialog.Description>
+              </div>
+              <button
+                type="button"
+                onClick={close}
+                aria-label={pt ? "Fechar" : "Close"}
+              >
+                <X size={19} />
+              </button>
+            </header>
+            <div className="cover-modal-grid">
+              {covers.map((cover) => (
+                <button
+                  key={cover.url}
+                  type="button"
+                  data-active={selected === cover.url || undefined}
+                  onClick={() => setSelected(cover.url)}
+                >
+                  <span className="cover-modal-image">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={cover.url} alt="" />
+                    {selected === cover.url && <Check size={16} />}
+                  </span>
+                  <strong>{labels[cover.source]}</strong>
+                  {saved === cover.url && (
+                    <small>{pt ? "Em uso" : "In use"}</small>
+                  )}
+                </button>
+              ))}
+            </div>
+            {error && <p role="alert">{error}</p>}
+            <footer>
+              <button type="button" onClick={close} disabled={pending}>
+                {pt ? "Cancelar" : "Cancel"}
+              </button>
+              <button
+                type="button"
+                onClick={save}
+                disabled={pending || selected === saved}
+              >
+                {pending ? (
+                  <LoaderCircle className="spin" size={14} />
+                ) : (
+                  <Check size={14} />
+                )}
+                {pt ? "Salvar capa" : "Save cover"}
+              </button>
+            </footer>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </section>
   );
 }
