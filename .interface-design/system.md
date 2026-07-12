@@ -126,7 +126,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Authentication keeps the product shell and navigation visible; it is an entry point to the library, not a detached marketing page.
 - Desktop uses an asymmetrical split: a tactile active-shelf scene on the left and a focused access column on the right.
 - The passkey is the primary action because it is the intended passwordless default. OAuth providers appear as a compact two-column utility grid below it.
-- The active shelf uses real IGDB cover data when available and remains a quiet, text-free collection scene so it does not compete with access.
+- The active shelf uses real IGDB cover data when available and keeps one concise library title plus supporting line. The form itself starts directly at its main heading without a redundant eyebrow.
 - On mobile, the shelf compresses into a short context banner and the form becomes a single uninterrupted column below it.
 - Authentication errors are inline, reserved, and actionable. Loading disables competing methods so two ceremonies cannot start at once.
 - Security copy must accurately state that biometric verification stays on the device; never imply that uloggd stores biometric data.
@@ -173,7 +173,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 ### Global catalog search
 
 - Desktop search is persistent in a 64px content header, up to 420px wide, with `/` as a focus shortcut.
-- Results open in a 460px overlay and use dense cover rows: 38px cover, title, year/platform metadata, and a small type label only for DLCs, expansions, and editions.
+- Results open in a 480px overlay and use dense cover rows: 44px cover, title, year/platform metadata, and a small type label only for DLCs, expansions, and editions.
 - Queries wait 280ms, abort stale requests, cache repeated terms in the browser, and rank exact/prefix matches ahead of IGDB popularity.
 - Mobile keeps only the search trigger in the persistent header. It opens a full-height Radix Dialog, focuses a 48px input, and uses 72px result rows with 48px covers.
 - Search loading, minimum-query, empty, and server-error states use direct text; do not add decorative empty-state icons.

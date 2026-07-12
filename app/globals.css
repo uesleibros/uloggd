@@ -384,7 +384,7 @@ a {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: min(460px, calc(100vw - 100px));
+  width: min(480px, calc(100vw - 100px));
   max-height: min(520px, calc(100vh - 88px));
   overflow-y: auto;
   border: 1px solid var(--shell-line-strong);
@@ -407,13 +407,16 @@ a {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+.search-results-label span:last-child {
+  font-variant-numeric: tabular-nums;
+}
 .search-result {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
   gap: 11px;
-  min-height: 58px;
-  padding: 7px 10px;
+  min-height: 66px;
+  padding: 8px 12px;
   border-bottom: 1px solid rgb(255 255 255 / 4%);
   color: var(--screen-dim);
   transition:
@@ -430,7 +433,7 @@ a {
 }
 .search-result-cover {
   position: relative;
-  width: 38px;
+  width: 44px;
   aspect-ratio: 0.75;
   overflow: hidden;
   border-radius: 5px;
@@ -1201,10 +1204,31 @@ a {
   content: "";
   mask-image: linear-gradient(transparent, black 45%, black 86%, transparent);
 }
+.login-library-copy,
 .login-cover-row,
 .login-library-rule {
   position: relative;
   z-index: 1;
+}
+.login-library-copy {
+  max-width: 410px;
+}
+.login-library-copy h2 {
+  max-width: 370px;
+  margin: 0 0 10px;
+  font-size: clamp(29px, 3.4vw, 43px);
+  font-weight: 660;
+  letter-spacing: -0.055em;
+  line-height: 1.03;
+  text-wrap: balance;
+}
+.login-library-copy p {
+  max-width: 330px;
+  margin: 0;
+  color: var(--screen-dim);
+  font-size: 13px;
+  line-height: 1.65;
+  text-wrap: pretty;
 }
 .login-cover-row {
   display: flex;
@@ -1246,14 +1270,8 @@ a {
   max-width: 430px;
   padding: 48px 42px;
 }
-.login-eyebrow {
-  color: var(--brand-blurple-bright);
-  font: 650 10px var(--font-geist-mono);
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
 .login-panel-heading h1 {
-  margin: 12px 0 10px;
+  margin: 0 0 10px;
   font-size: 32px;
   font-weight: 660;
   letter-spacing: -0.05em;
@@ -1775,10 +1793,19 @@ a {
     min-height: calc(100dvh - 60px);
   }
   .login-library {
-    min-height: 116px;
-    padding: 0;
+    min-height: 164px;
+    padding: 25px 22px 22px;
     border-right: 0;
     border-bottom: 1px solid var(--shell-line);
+  }
+  .login-library-copy h2 {
+    max-width: 270px;
+    margin: 10px 0 6px;
+    font-size: 24px;
+  }
+  .login-library-copy p {
+    max-width: 280px;
+    font-size: 11px;
   }
   .login-cover-row {
     position: absolute;
@@ -1818,7 +1845,7 @@ a {
     grid-template-columns: 1fr;
   }
   .login-library {
-    min-height: 108px;
+    min-height: 150px;
   }
   .login-panel {
     padding-inline: 16px;

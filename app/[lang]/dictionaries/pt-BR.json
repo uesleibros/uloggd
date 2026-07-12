@@ -71,7 +71,6 @@
   },
   "auth": {
     "metadataTitle": "Entrar",
-    "eyebrow": "Sua estante está esperando",
     "title": "Volte para os jogos que são seus.",
     "description": "Entre para registrar partidas, organizar sua biblioteca e continuar de onde parou.",
     "passkeyLabel": "Entrar com passkey",
@@ -80,6 +79,8 @@
     "otherMethods": "ou continue com",
     "continueWith": "Continuar com {provider}",
     "privacyNote": "O uloggd nunca recebe sua biometria. A confirmação acontece no seu dispositivo.",
+    "libraryLabel": "Sua biblioteca, em qualquer dispositivo",
+    "libraryHint": "Salve o que jogou e retome sua jornada depois.",
     "legalPrefix": "Ao continuar, você concorda com os",
     "and": "e a",
     "oauthError": "Não foi possível iniciar o acesso com {provider}. Tente novamente.",

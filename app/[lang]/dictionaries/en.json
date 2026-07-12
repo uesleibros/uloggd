@@ -71,7 +71,6 @@
   },
   "auth": {
     "metadataTitle": "Sign in",
-    "eyebrow": "Your shelf is waiting",
     "title": "Come back to the games that are yours.",
     "description": "Sign in to log play sessions, organize your library, and pick up where you left off.",
     "passkeyLabel": "Sign in with a passkey",
@@ -80,6 +79,8 @@
     "otherMethods": "or continue with",
     "continueWith": "Continue with {provider}",
     "privacyNote": "uloggd never receives your biometric data. Confirmation happens on your device.",
+    "libraryLabel": "Your library, on every device",
+    "libraryHint": "Save what you played and return to your journey later.",
     "legalPrefix": "By continuing, you agree to the",
     "and": "and",
     "oauthError": "We couldn't start sign-in with {provider}. Try again.",

@@ -16,6 +16,7 @@ function useGameSearch() {
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">(
     "idle",
   );
+  const currentQueryRef = useRef("");
 
   useEffect(() => {
     const normalized = query.trim().toLocaleLowerCase();
@@ -25,6 +26,7 @@ function useGameSearch() {
     const timeout = window.setTimeout(async () => {
       const cached = searchCache.get(normalized);
       if (cached) {
+        if (currentQueryRef.current !== normalized) return;
         setResults(cached);
         setStatus("ready");
         return;
@@ -43,10 +45,14 @@ function useGameSearch() {
         };
         const nextResults = Array.isArray(data.results) ? data.results : [];
         searchCache.set(normalized, nextResults);
+        if (currentQueryRef.current !== normalized) return;
         setResults(nextResults);
         setStatus("ready");
       } catch (error) {
-        if ((error as Error).name !== "AbortError") {
+        if (
+          (error as Error).name !== "AbortError" &&
+          currentQueryRef.current === normalized
+        ) {
           setResults([]);
           setStatus("error");
         }
@@ -60,9 +66,12 @@ function useGameSearch() {
   }, [query]);
 
   const updateQuery = useCallback((value: string) => {
+    const normalized = value.trim().toLocaleLowerCase();
+    const cached = searchCache.get(normalized);
+    currentQueryRef.current = normalized;
     setQuery(value);
-    setResults([]);
-    setStatus(value.trim().length < 2 ? "idle" : "loading");
+    setResults(cached ?? []);
+    setStatus(normalized.length < 2 ? "idle" : cached ? "ready" : "loading");
   }, []);
 
   return { query, setQuery: updateQuery, results, status };
@@ -105,46 +114,44 @@ function ResultList({
     return <div className="search-message">{d.search.empty}</div>;
 
   return (
-    <div
-      className="search-results"
-      role="listbox"
-      id={listId}
-      aria-label={d.search.results}
-    >
+    <div className="search-results">
       <div className="search-results-label">
         <span>{d.search.results}</span>
+        <span>{results.length}</span>
       </div>
-      {results.map((game, index) => (
-        <a
-          key={game.id}
-          id={`${listId}-${index}`}
-          href={`https://www.igdb.com/games/${game.slug}`}
-          target="_blank"
-          rel="noreferrer"
-          role="option"
-          aria-selected={activeIndex === index}
-          aria-label={d.search.openGame.replace("{game}", game.name)}
-          onMouseEnter={() => onActiveIndex(index)}
-          className="search-result"
-        >
-          <span className="search-result-cover">
-            <Image src={game.coverUrl} alt="" fill sizes="44px" />
-          </span>
-          <span className="search-result-copy">
-            <strong>{game.name}</strong>
-            <small>
-              {[game.releaseYear, ...game.platforms]
-                .filter(Boolean)
-                .join(" · ") || d.search.kind[game.kind]}
-            </small>
-          </span>
-          {game.kind !== "game" && (
-            <span className="search-result-kind">
-              {d.search.kind[game.kind]}
+      <div role="listbox" id={listId} aria-label={d.search.results}>
+        {results.map((game, index) => (
+          <a
+            key={game.id}
+            id={`${listId}-${index}`}
+            href={`https://www.igdb.com/games/${game.slug}`}
+            target="_blank"
+            rel="noreferrer"
+            role="option"
+            aria-selected={activeIndex === index}
+            aria-label={d.search.openGame.replace("{game}", game.name)}
+            onMouseEnter={() => onActiveIndex(index)}
+            className="search-result"
+          >
+            <span className="search-result-cover">
+              <Image src={game.coverUrl} alt="" fill sizes="44px" />
             </span>
-          )}
-        </a>
-      ))}
+            <span className="search-result-copy">
+              <strong>{game.name}</strong>
+              <small>
+                {[game.releaseYear, ...game.platforms]
+                  .filter(Boolean)
+                  .join(" · ") || d.search.kind[game.kind]}
+              </small>
+            </span>
+            {game.kind !== "game" && (
+              <span className="search-result-kind">
+                {d.search.kind[game.kind]}
+              </span>
+            )}
+          </a>
+        ))}
+      </div>
     </div>
   );
 }
@@ -160,6 +167,7 @@ function SearchSurface({
   const [activeIndex, setActiveIndex] = useState(-1);
   const [expanded, setExpanded] = useState(mobile);
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const listId = useId();
 
   useEffect(() => {
@@ -180,6 +188,21 @@ function SearchSurface({
     }
     window.addEventListener("keydown", focusSearch);
     return () => window.removeEventListener("keydown", focusSearch);
+  }, [mobile]);
+  useEffect(() => {
+    if (mobile) return;
+    function closeOutside(event: Event) {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setExpanded(false);
+        setActiveIndex(-1);
+      }
+    }
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("focusin", closeOutside);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("focusin", closeOutside);
+    };
   }, [mobile]);
 
   const handleKeyDown = useCallback(
@@ -209,6 +232,7 @@ function SearchSurface({
 
   return (
     <div
+      ref={containerRef}
       className={mobile ? "mobile-search-surface" : "desktop-search-surface"}
     >
       <label className="catalog-search-field">
@@ -222,14 +246,13 @@ function SearchSurface({
             setExpanded(true);
           }}
           onFocus={() => setExpanded(true)}
-          onBlur={() => window.setTimeout(() => setExpanded(false), 120)}
           onKeyDown={handleKeyDown}
           placeholder={d.search.placeholder}
           aria-label={d.search.label}
           role="combobox"
           aria-autocomplete="list"
           aria-controls={listId}
-          aria-expanded={query.trim().length >= 2}
+          aria-expanded={expanded && query.trim().length >= 2}
           aria-activedescendant={
             activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined
           }

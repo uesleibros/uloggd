@@ -76,7 +76,6 @@ export function LoginPanel({
   return (
     <section className="login-panel" aria-labelledby="login-title">
       <div className="login-panel-heading">
-        <span className="login-eyebrow">{d.auth.eyebrow}</span>
         <h1 id="login-title">{d.auth.title}</h1>
         <p>{d.auth.description}</p>
       </div>
