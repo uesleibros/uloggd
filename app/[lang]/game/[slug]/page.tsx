@@ -142,6 +142,8 @@ export default async function GamePage({ params }: Props) {
                   : "More information coming soon.")}
             </p>
           </section>
+        </div>
+        <div className="game-wide-content">
           <GameMediaGallery items={game.gallery} lang={lang} />
           <GameExtendedContent
             game={game}
