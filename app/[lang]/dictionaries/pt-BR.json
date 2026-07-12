@@ -47,7 +47,7 @@
     "start": "Digite pelo menos 2 caracteres para buscar.",
     "error": "A busca não está disponível agora. Tente novamente.",
     "results": "Resultados",
-    "openGame": "Abrir {game} na IGDB",
+    "openGame": "Abrir {game}",
     "kind": {
       "game": "Jogo",
       "dlc": "DLC",

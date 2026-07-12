@@ -70,7 +70,7 @@ export default async function LocaleLayout({
           />
           <div className="platform-content">
             <header className="content-header">
-              <DesktopGameSearch dictionary={dictionary} />
+              <DesktopGameSearch dictionary={dictionary} lang={lang} />
               <LocaleSwitcher locale={lang} />
             </header>
             {children}

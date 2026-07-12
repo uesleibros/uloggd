@@ -151,7 +151,7 @@ export function PlatformNavigation({
         />
         <div className="mobile-header-actions">
           <LocaleSwitcher locale={lang} />
-          <MobileGameSearch dictionary={d} />
+          <MobileGameSearch dictionary={d} lang={lang} />
         </div>
       </header>
     </>

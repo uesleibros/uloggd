@@ -111,7 +111,10 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
               className="featured-backdrop"
             />
             <div className="featured-scrim" />
-            <div className="featured-cover">
+            <Link
+              className="featured-cover"
+              href={`/${lang}/game/${featured.slug}`}
+            >
               <Image
                 src={featured.coverUrl}
                 alt={`${featured.name} cover`}
@@ -119,9 +122,13 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                 priority
                 sizes="150px"
               />
-            </div>
+            </Link>
             <div className="featured-copy">
-              <h2>{featured.name}</h2>
+              <h2>
+                <Link href={`/${lang}/game/${featured.slug}`}>
+                  {featured.name}
+                </Link>
+              </h2>
               <div className="featured-meta">
                 <span>
                   <Star size={13} fill="currentColor" />
@@ -214,17 +221,20 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           <div className="game-list">
             {catalog.slice(5, 9).map((game) => (
               <article className="game-list-row" key={game.id}>
-                <div className="list-cover">
+                <Link
+                  className="list-cover"
+                  href={`/${lang}/game/${game.slug}`}
+                >
                   <Image src={game.coverUrl} alt="" fill sizes="48px" />
-                </div>
-                <div className="list-main">
+                </Link>
+                <Link className="list-main" href={`/${lang}/game/${game.slug}`}>
                   <h3>{game.name}</h3>
                   <p>
                     {[game.releaseYear, ...game.genres]
                       .filter(Boolean)
                       .join(" · ")}
                   </p>
-                </div>
+                </Link>
                 <div className="list-rating">
                   <Star size={12} fill="currentColor" />
                   <strong>{game.rating ?? "—"}</strong>
@@ -254,7 +264,11 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
             <span>{d.home.trendingPeriod}</span>
           </div>
           {games.slice(0, 5).map((game, index) => (
-            <Link href={`/${lang}`} className="trend" key={game.id}>
+            <Link
+              href={`/${lang}/game/${game.slug}`}
+              className="trend"
+              key={game.id}
+            >
               <span>{index + 1}</span>
               <div>
                 <strong>{game.name}</strong>

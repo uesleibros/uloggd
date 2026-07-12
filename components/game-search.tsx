@@ -2,6 +2,8 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LoaderCircle, Search, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
@@ -85,6 +87,8 @@ function ResultList({
   activeIndex,
   onActiveIndex,
   listId,
+  lang,
+  onSelect,
 }: {
   dictionary: Dictionary;
   results: GameSearchResult[];
@@ -93,6 +97,8 @@ function ResultList({
   activeIndex: number;
   onActiveIndex: (index: number) => void;
   listId: string;
+  lang: "pt-BR" | "en";
+  onSelect?: () => void;
 }) {
   if (status === "loading") {
     return (
@@ -121,17 +127,16 @@ function ResultList({
       </div>
       <div role="listbox" id={listId} aria-label={d.search.results}>
         {results.map((game, index) => (
-          <a
+          <Link
             key={game.id}
             id={`${listId}-${index}`}
-            href={`https://www.igdb.com/games/${game.slug}`}
-            target="_blank"
-            rel="noreferrer"
+            href={`/${lang}/game/${game.slug}`}
             role="option"
             aria-selected={activeIndex === index}
             aria-label={d.search.openGame.replace("{game}", game.name)}
             onMouseEnter={() => onActiveIndex(index)}
             className="search-result"
+            onClick={onSelect}
           >
             <span className="search-result-cover">
               <Image src={game.coverUrl} alt="" fill sizes="44px" />
@@ -149,7 +154,7 @@ function ResultList({
                 {d.search.kind[game.kind]}
               </span>
             )}
-          </a>
+          </Link>
         ))}
       </div>
     </div>
@@ -159,10 +164,15 @@ function ResultList({
 function SearchSurface({
   dictionary: d,
   mobile = false,
+  lang,
+  onSelect,
 }: {
   dictionary: Dictionary;
   mobile?: boolean;
+  lang: "pt-BR" | "en";
+  onSelect?: () => void;
 }) {
+  const router = useRouter();
   const { query, setQuery, results, status } = useGameSearch();
   const [activeIndex, setActiveIndex] = useState(-1);
   const [expanded, setExpanded] = useState(mobile);
@@ -217,17 +227,15 @@ function SearchSurface({
         );
       } else if (event.key === "Enter" && activeIndex >= 0) {
         event.preventDefault();
-        window.open(
-          `https://www.igdb.com/games/${results[activeIndex].slug}`,
-          "_blank",
-          "noopener,noreferrer",
-        );
+        router.push(`/${lang}/game/${results[activeIndex].slug}`);
+        setExpanded(false);
+        onSelect?.();
       } else if (event.key === "Escape" && !mobile) {
         setExpanded(false);
         inputRef.current?.blur();
       }
     },
-    [activeIndex, mobile, results],
+    [activeIndex, lang, mobile, onSelect, results, router],
   );
 
   return (
@@ -286,6 +294,11 @@ function SearchSurface({
             activeIndex={activeIndex}
             onActiveIndex={setActiveIndex}
             listId={listId}
+            lang={lang}
+            onSelect={() => {
+              setExpanded(false);
+              onSelect?.();
+            }}
           />
         </div>
       )}
@@ -293,14 +306,22 @@ function SearchSurface({
   );
 }
 
-export function DesktopGameSearch({ dictionary }: { dictionary: Dictionary }) {
-  return <SearchSurface dictionary={dictionary} />;
+export function DesktopGameSearch({
+  dictionary,
+  lang,
+}: {
+  dictionary: Dictionary;
+  lang: "pt-BR" | "en";
+}) {
+  return <SearchSurface dictionary={dictionary} lang={lang} />;
 }
 
 export function MobileGameSearch({
   dictionary: d,
+  lang,
 }: {
   dictionary: Dictionary;
+  lang: "pt-BR" | "en";
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -327,7 +348,12 @@ export function MobileGameSearch({
               <X size={20} />
             </Dialog.Close>
           </header>
-          <SearchSurface dictionary={d} mobile />
+          <SearchSurface
+            dictionary={d}
+            lang={lang}
+            mobile
+            onSelect={() => setOpen(false)}
+          />
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

@@ -197,7 +197,7 @@ a {
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 13px;
-  font-weight: 560;
+  font-weight: 430;
   transition:
     background-color 140ms ease-out,
     color 140ms ease-out;
@@ -218,7 +218,7 @@ a {
 }
 .main-nav a[aria-current="page"] {
   color: var(--screen-white);
-  font-weight: 720;
+  font-weight: 650;
 }
 .main-nav a[aria-current="page"] svg {
   color: var(--screen-white);
@@ -1853,7 +1853,7 @@ a {
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 13px;
-  font-weight: 580;
+  font-weight: 430;
 }
 .drawer-navigation > .drawer-disabled,
 .drawer-secondary > .drawer-disabled {
@@ -1866,7 +1866,7 @@ a {
 }
 .drawer-navigation a[data-active] {
   color: white;
-  font-weight: 720;
+  font-weight: 650;
 }
 .drawer-navigation a[data-active] svg {
   color: var(--screen-white);
@@ -2967,6 +2967,73 @@ a {
   .quick-rank {
     top: 7px;
     bottom: auto;
+  }
+}
+
+@media (max-width: 620px) {
+  .game-page {
+    padding-bottom: 48px;
+  }
+  .game-hero {
+    height: 168px;
+  }
+  .game-layout {
+    display: block;
+    margin-top: -72px;
+    padding: 0 16px;
+  }
+  .game-cover-picker {
+    width: 132px;
+  }
+  .game-cover-primary {
+    border-radius: 8px;
+  }
+  .game-page-content {
+    max-width: none;
+    padding-top: 22px;
+  }
+  .game-title-meta {
+    font-size: 9px;
+  }
+  .game-page-content h1 {
+    margin-top: 7px;
+    font-size: clamp(30px, 10vw, 42px);
+    line-height: 1;
+  }
+  .game-action-panel {
+    gap: 6px;
+  }
+  .game-action-panel > button,
+  .game-status-button {
+    min-height: 38px;
+    padding-inline: 10px;
+    font-size: 9px;
+  }
+  .game-score-line {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .game-summary {
+    padding-block: 24px;
+  }
+  .game-summary p {
+    font-size: 12px;
+  }
+  .game-details > div {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 370px) {
+  .game-layout {
+    padding-inline: 12px;
+  }
+  .game-cover-picker {
+    width: 116px;
+  }
+  .game-page-content h1 {
+    font-size: 29px;
   }
 }
 

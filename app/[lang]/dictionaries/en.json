@@ -47,7 +47,7 @@
     "start": "Type at least 2 characters to search.",
     "error": "Search is unavailable right now. Try again.",
     "results": "Results",
-    "openGame": "Open {game} on IGDB",
+    "openGame": "Open {game}",
     "kind": {
       "game": "Game",
       "dlc": "DLC",
