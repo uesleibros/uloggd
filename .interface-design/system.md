@@ -170,6 +170,14 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - 42px cover, primary title, muted metadata, tabular rating, add control.
 - Use tonal hover only; do not wrap each row in an individual card.
 
+### Global catalog search
+
+- Desktop search is persistent in a 64px content header, up to 420px wide, with `/` as a focus shortcut.
+- Results open in a 460px overlay and use dense cover rows: 38px cover, title, year/platform metadata, and a small type label only for DLCs, expansions, and editions.
+- Queries wait 280ms, abort stale requests, cache repeated terms in the browser, and rank exact/prefix matches ahead of IGDB popularity.
+- Mobile keeps only the search trigger in the persistent header. It opens a full-height Radix Dialog, focuses a 48px input, and uses 72px result rows with 48px covers.
+- Search loading, minimum-query, empty, and server-error states use direct text; do not add decorative empty-state icons.
+
 ### Context rail panel
 
 - 12px radius, 20px padding.

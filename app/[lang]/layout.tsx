@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { PlatformNavigation } from "@/components/platform-navigation";
+import { DesktopGameSearch } from "@/components/game-search";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
 import "../globals.css";
 
@@ -40,7 +41,12 @@ export default async function LocaleLayout({
       <body>
         <div className="platform-shell">
           <PlatformNavigation lang={lang} dictionary={dictionary} />
-          <div className="platform-content">{children}</div>
+          <div className="platform-content">
+            <header className="content-header">
+              <DesktopGameSearch dictionary={dictionary} />
+            </header>
+            {children}
+          </div>
         </div>
       </body>
     </html>

@@ -4,11 +4,8 @@ import { notFound } from "next/navigation";
 import {
   ArrowUpRight,
   Bookmark,
-  Check,
   LibraryBig,
   ListPlus,
-  Search,
-  Sparkles,
   Star,
 } from "lucide-react";
 import { getPopularGames } from "@/lib/igdb";
@@ -39,14 +36,6 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
             <span>{date}</span>
             <h1>{d.home.todayTitle}</h1>
           </div>
-          <label className="feed-search">
-            <Search size={17} />
-            <input
-              aria-label={d.platform.openSearch}
-              placeholder={d.platform.search}
-            />
-            <kbd>⌘ K</kbd>
-          </label>
         </header>
 
         {featured && (
@@ -70,10 +59,6 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
               />
             </div>
             <div className="featured-copy">
-              <span className="eyebrow">
-                <Sparkles size={13} />
-                {d.home.communityPick}
-              </span>
               <h2>{featured.name}</h2>
               <div className="featured-meta">
                 <span>
@@ -169,10 +154,6 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 
       <aside className="right-rail">
         <section className="rail-intro">
-          <span>
-            <Check size={13} />
-            {d.home.startHere}
-          </span>
           <h2>{d.home.libraryPitch}</h2>
           <p>{d.home.libraryPitchDescription}</p>
           <button>

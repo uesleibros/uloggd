@@ -7,7 +7,6 @@ import {
   ListPlus,
   LogIn,
   LockKeyhole,
-  Search,
   Settings,
   ShieldCheck,
   Star,
@@ -18,6 +17,7 @@ import { Brand } from "./brand";
 import { ActiveLink } from "./active-link";
 import { LocaleSwitcher } from "./locale-switcher";
 import { MobileSidebar } from "./mobile-sidebar";
+import { MobileGameSearch } from "./game-search";
 
 const iconMap = {
   home: HomeIcon,
@@ -125,9 +125,7 @@ export function PlatformNavigation({
             syncJourney: d.actions.syncJourney,
           }}
         />
-        <button aria-label={d.platform.openSearch}>
-          <Search size={21} />
-        </button>
+        <MobileGameSearch dictionary={d} />
       </header>
     </>
   );
