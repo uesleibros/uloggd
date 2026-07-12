@@ -1,0 +1,5 @@
+{
+  "nav": { "home": "Home", "explore": "Explore", "library": "Library", "reviews": "Reviews", "profile": "Profile", "settings": "Settings" },
+  "actions": { "addGame": "Add game", "seeAll": "See all", "rate": "Review", "continue": "Keep playing", "changeLanguage": "Change language" },
+  "home": { "eyebrow": "Your journey continues", "title": "What are you playing next?", "subtitle": "Organize your library, share achievements, and discover your next adventure.", "activity": "Recent activity", "trending": "Trending in the community", "playing": "Playing now", "hours": "42 hours", "progress": "Progress", "community": "Community", "online": "players online", "reviewed": "reviewed", "completed": "completed", "added": "added to their list" }
+}

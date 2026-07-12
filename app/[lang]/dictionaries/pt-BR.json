@@ -1,0 +1,5 @@
+{
+  "nav": { "home": "Início", "explore": "Explorar", "library": "Biblioteca", "reviews": "Avaliações", "profile": "Perfil", "settings": "Configurações" },
+  "actions": { "addGame": "Adicionar jogo", "seeAll": "Ver todos", "rate": "Avaliar", "continue": "Continuar jogando", "changeLanguage": "Mudar idioma" },
+  "home": { "eyebrow": "Sua jornada continua", "title": "O que você vai jogar agora?", "subtitle": "Organize sua biblioteca, compartilhe suas conquistas e descubra a próxima aventura.", "activity": "Atividade recente", "trending": "Em alta na comunidade", "playing": "Jogando agora", "hours": "42 horas", "progress": "Progresso", "community": "Comunidade", "online": "jogadores online", "reviewed": "avaliou", "completed": "zerou", "added": "adicionou à lista" }
+}
