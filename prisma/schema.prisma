@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum GameStatus {
+  WISHLIST
+  BACKLOG
+  PLAYING
+  COMPLETED
+  DROPPED
+  ON_HOLD
+}
+
+enum Visibility {
+  PUBLIC
+  FOLLOWERS
+  PRIVATE
+}
+
+enum ReportReason {
+  HARASSMENT
+  HATE_SPEECH
+  SPAM
+  IMPERSONATION
+  SEXUAL_CONTENT
+  CHILD_SAFETY
+  SELF_HARM
+  VIOLENCE
+  PRIVACY
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
+model Profile {
+  id          String   @id @db.Uuid
+  username    String?  @unique @db.VarChar(32)
+  displayName String?  @map("display_name") @db.VarChar(80)
+  bio         String?  @db.VarChar(500)
+  avatarUrl   String?  @map("avatar_url")
+  locale      String   @default("pt-BR") @db.VarChar(10)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  games          UserGame[]
+  reviews        Review[]
+  lists          GameList[]
+  following      Follow[]   @relation("Follower")
+  followers      Follow[]   @relation("Following")
+  blocksCreated  Block[]    @relation("Blocker")
+  blocksReceived Block[]    @relation("Blocked")
+  reportsCreated Report[]   @relation("Reporter")
+  reportsAgainst Report[]   @relation("ReportedProfile")
+
+  @@map("profiles")
+}
+
+model UserGame {
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profileId       String     @map("profile_id") @db.Uuid
+  igdbId          Int        @map("igdb_id")
+  gameSlug        String     @map("game_slug") @db.VarChar(255)
+  status          GameStatus @default(BACKLOG)
+  progress        Int?
+  playtimeMinutes Int        @default(0) @map("playtime_minutes")
+  liked           Boolean    @default(false)
+  favorite        Boolean    @default(false)
+  startedAt       DateTime?  @map("started_at") @db.Date
+  completedAt     DateTime?  @map("completed_at") @db.Date
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  profile         Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, igdbId])
+  @@index([profileId, status])
+  @@index([igdbId])
+  @@map("user_games")
+}
+
+model Review {
+  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profileId        String     @map("profile_id") @db.Uuid
+  igdbId           Int        @map("igdb_id")
+  gameSlug         String     @map("game_slug") @db.VarChar(255)
+  rating           Int
+  content          String?    @db.Text
+  containsSpoilers Boolean    @default(false) @map("contains_spoilers")
+  visibility       Visibility @default(PUBLIC)
+  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  profile          Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, igdbId])
+  @@index([igdbId, createdAt])
+  @@map("reviews")
+}
+
+model GameList {
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profileId   String         @map("profile_id") @db.Uuid
+  name        String         @db.VarChar(100)
+  description String?        @db.VarChar(500)
+  visibility  Visibility     @default(PUBLIC)
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  profile     Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  items       GameListItem[]
+
+  @@index([profileId, updatedAt])
+  @@map("game_lists")
+}
+
+model GameListItem {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listId    String   @map("list_id") @db.Uuid
+  igdbId    Int      @map("igdb_id")
+  gameSlug  String   @map("game_slug") @db.VarChar(255)
+  position  Int      @default(0)
+  note      String?  @db.VarChar(300)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  list      GameList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, igdbId])
+  @@index([listId, position])
+  @@map("game_list_items")
+}
+
+model Follow {
+  followerId  String   @map("follower_id") @db.Uuid
+  followingId String   @map("following_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  follower    Profile  @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   Profile  @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId, createdAt])
+  @@map("follows")
+}
+
+model Block {
+  blockerId String   @map("blocker_id") @db.Uuid
+  blockedId String   @map("blocked_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  blocker   Profile  @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   Profile  @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("blocks")
+}
+
+model Report {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reporterId      String       @map("reporter_id") @db.Uuid
+  targetProfileId String?      @map("target_profile_id") @db.Uuid
+  contentType     String?      @map("content_type") @db.VarChar(40)
+  contentId       String?      @map("content_id") @db.Uuid
+  reason          ReportReason
+  details         String?      @db.VarChar(1000)
+  status          ReportStatus @default(OPEN)
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  reporter        Profile      @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetProfile   Profile?     @relation("ReportedProfile", fields: [targetProfileId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([targetProfileId])
+  @@map("reports")
+}

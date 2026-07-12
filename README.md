@@ -1,4 +1,8 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# uloggd
+
+The new uloggd platform is built with Next.js, Supabase, Prisma, and IGDB.
+
+Database setup and migration guidance is documented in [docs/database.md](docs/database.md).
 
 ## Getting Started
 
