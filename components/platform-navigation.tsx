@@ -10,6 +10,7 @@ import {
   UserRound,
 } from "lucide-react";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
+import { AccountMenu, type NavigationAccount } from "./account-menu";
 import { Brand } from "./brand";
 import { ActiveLink } from "./active-link";
 import { LocaleSwitcher } from "./locale-switcher";
@@ -27,12 +28,13 @@ const iconMap = {
 export function PlatformNavigation({
   lang,
   dictionary: d,
-  isAuthenticated,
+  account,
 }: {
   lang: Locale;
   dictionary: Dictionary;
-  isAuthenticated: boolean;
+  account: NavigationAccount | null;
 }) {
+  const isAuthenticated = Boolean(account);
   const nav = [
     ["home", d.nav.home, false],
     ["compass", d.nav.explore, false],
@@ -102,22 +104,27 @@ export function PlatformNavigation({
             )}
           </div>
         </div>
-        <Link className="account-button" href={`/${lang}/login`}>
-          <span className="signed-out-icon" aria-hidden>
-            <LogIn size={18} />
-          </span>
-          <div>
-            <strong>{d.actions.signIn}</strong>
-            <small>{d.actions.syncJourney}</small>
-          </div>
-          <span aria-hidden>↗</span>
-        </Link>
+        {account ? (
+          <AccountMenu account={account} lang={lang} />
+        ) : (
+          <Link className="account-button" href={`/${lang}/login`}>
+            <span className="signed-out-icon" aria-hidden>
+              <LogIn size={18} />
+            </span>
+            <div>
+              <strong>{d.actions.signIn}</strong>
+              <small>{d.actions.syncJourney}</small>
+            </div>
+            <span aria-hidden>↗</span>
+          </Link>
+        )}
       </aside>
 
       <header className="mobile-header">
         <MobileSidebar
           lang={lang}
           isAuthenticated={isAuthenticated}
+          account={account}
           labels={{
             menu: d.actions.menu,
             close: d.actions.close,

@@ -73,7 +73,7 @@
   "auth": {
     "metadataTitle": "Entrar",
     "title": "Volte para os jogos que são seus.",
-    "description": "Entre para registrar partidas, organizar sua biblioteca e continuar de onde parou.",
+    "description": "Entre para organizar sua biblioteca, guardar avaliações e continuar de onde parou.",
     "passkeyLabel": "Entrar com passkey",
     "passkeyHint": "Use sua biometria, PIN ou chave de segurança. Sem senha para lembrar.",
     "passkeyLoading": "Aguardando seu dispositivo…",

@@ -44,6 +44,13 @@ export default async function LocaleLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", user.id)
+        .maybeSingle()
+    : { data: null };
 
   return (
     <html lang={lang} className={`${geistSans.variable} ${geistMono.variable}`}>
@@ -52,7 +59,14 @@ export default async function LocaleLayout({
           <PlatformNavigation
             lang={lang}
             dictionary={dictionary}
-            isAuthenticated={Boolean(user)}
+            account={
+              user
+                ? {
+                    email: user.email ?? "",
+                    username: profile?.username ?? null,
+                  }
+                : null
+            }
           />
           <div className="platform-content">
             <header className="content-header">

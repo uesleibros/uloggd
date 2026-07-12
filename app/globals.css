@@ -357,6 +357,78 @@ a {
 .account-button > svg {
   color: var(--screen-muted);
 }
+.account-initial {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font: 700 12px var(--font-geist-mono);
+}
+.account-copy {
+  min-width: 0;
+}
+.account-copy strong,
+.account-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-menu {
+  z-index: 80;
+  width: 232px;
+  padding: 6px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  outline: 0;
+  background: var(--console-raised);
+  box-shadow: 0 16px 38px rgb(0 0 0 / 44%);
+  animation: locale-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.account-menu-identity {
+  padding: 9px;
+}
+.account-menu-identity strong,
+.account-menu-identity span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-menu-identity strong {
+  font-size: 11px;
+}
+.account-menu-identity span {
+  margin-top: 4px;
+  color: var(--screen-muted);
+  font-size: 9px;
+}
+.account-menu [role="separator"] {
+  height: 1px;
+  margin: 4px;
+  background: var(--shell-line);
+}
+.account-menu-signout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 6px;
+  outline: 0;
+  background: transparent;
+  color: #e2aaaa;
+  font-size: 11px;
+  cursor: pointer;
+}
+.account-menu-signout[data-highlighted] {
+  background: rgb(210 105 105 / 8%);
+}
 
 /* Feed */
 .feed {
@@ -1307,16 +1379,9 @@ a {
   mask-image: linear-gradient(transparent, black 45%, black 86%, transparent);
 }
 .login-library-copy,
-.login-shelf-scene,
-.login-cover-row,
-.login-library-rule {
+.login-highlight-list {
   position: relative;
   z-index: 1;
-}
-.login-shelf-scene {
-  align-self: center;
-  width: 100%;
-  padding-block: 24px 40px;
 }
 .login-library-copy {
   max-width: 410px;
@@ -1338,40 +1403,38 @@ a {
   line-height: 1.65;
   text-wrap: pretty;
 }
-.login-cover-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+.login-highlight-list {
+  align-self: center;
   width: 100%;
-  margin: 0 0 20px;
-  padding-inline: 12px;
-  transform: rotate(-2deg);
+  border-top: 1px solid var(--shell-line);
 }
-.login-cover {
-  position: relative;
-  width: clamp(88px, 13vw, 132px);
-  aspect-ratio: 0.75;
-  margin-left: clamp(-22px, -2vw, -12px);
-  overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 7px 7px 4px 4px;
-  background: var(--console-raised);
-  box-shadow: 0 18px 34px rgb(0 0 0 / 38%);
-  transform: translateY(calc(var(--cover-index) * 5px));
+.login-highlight-list article {
+  display: grid;
+  grid-template-columns: 28px 24px minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+  padding: 22px 4px;
+  border-bottom: 1px solid var(--shell-line);
 }
-.login-cover:first-child {
-  margin-left: 0;
+.login-highlight-list article > span {
+  color: var(--screen-muted);
+  font: 600 9px var(--font-geist-mono);
 }
-.login-cover img {
-  object-fit: cover;
+.login-highlight-list article > svg {
+  color: #8f97f7;
 }
-.login-library-rule {
-  height: 9px;
-  margin-inline: 12px;
-  border-top: 1px solid var(--shell-line-strong);
-  border-bottom: 1px solid rgb(0 0 0 / 55%);
-  background: var(--console-raised);
-  box-shadow: 0 11px 25px rgb(0 0 0 / 45%);
+.login-highlight-list h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+}
+.login-highlight-list p {
+  max-width: 380px;
+  margin: 6px 0 0;
+  color: var(--screen-muted);
+  font-size: 11px;
+  line-height: 1.55;
+  text-wrap: pretty;
 }
 .login-panel {
   display: flex;
@@ -1891,7 +1954,7 @@ a {
   .main-nav a > span,
   .main-nav > .nav-disabled > span,
   .sidebar-bottom > a span,
-  .account-button > div:nth-child(2),
+  .account-copy,
   .account-button > svg {
     display: none;
   }
@@ -1915,6 +1978,20 @@ a {
   }
   .login-library {
     padding-inline: 30px;
+  }
+  .login-highlight-list {
+    display: none;
+  }
+  .mobile-drawer .account-button {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    padding: 12px;
+    border: 1px solid var(--shell-line);
+    border-radius: 9px;
+    background: var(--console-raised);
+  }
+  .mobile-drawer .account-copy {
+    display: block;
   }
 }
 
@@ -2129,9 +2206,6 @@ a {
     border-right: 0;
     border-bottom: 1px solid var(--shell-line);
   }
-  .login-shelf-scene {
-    display: contents;
-  }
   .login-library-copy h2 {
     max-width: 270px;
     margin: 10px 0 6px;
@@ -2140,26 +2214,6 @@ a {
   .login-library-copy p {
     max-width: 280px;
     font-size: 11px;
-  }
-  .login-cover-row {
-    position: absolute;
-    right: -20px;
-    bottom: 1px;
-    width: 156px;
-    margin: 0;
-    padding: 0;
-    opacity: 0.56;
-    transform: rotate(-3deg);
-  }
-  .login-cover {
-    width: 68px;
-    margin-left: -48px;
-  }
-  .login-cover:first-child {
-    margin-left: 0;
-  }
-  .login-library-rule {
-    display: none;
   }
   .login-panel {
     max-width: none;

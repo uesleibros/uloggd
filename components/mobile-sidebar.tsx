@@ -16,10 +16,12 @@ import {
   X,
 } from "lucide-react";
 import { Brand } from "./brand";
+import { AccountMenu, type NavigationAccount } from "./account-menu";
 
 type MobileSidebarProps = {
   lang: "pt-BR" | "en";
   isAuthenticated: boolean;
+  account: NavigationAccount | null;
   labels: {
     menu: string;
     close: string;
@@ -39,6 +41,7 @@ export function MobileSidebar({
   lang,
   labels,
   isAuthenticated,
+  account,
 }: MobileSidebarProps) {
   const pathname = usePathname();
   const links = [
@@ -116,17 +119,21 @@ export function MobileSidebar({
               )}
             </div>
           </div>
-          <Dialog.Close asChild>
-            <Link className="drawer-account" href={`/${lang}/login`}>
-              <span className="signed-out-icon" aria-hidden>
-                <LogIn size={18} />
-              </span>
-              <div>
-                <strong>{labels.signIn}</strong>
-                <span>{labels.syncJourney}</span>
-              </div>
-            </Link>
-          </Dialog.Close>
+          {account ? (
+            <AccountMenu account={account} lang={lang} />
+          ) : (
+            <Dialog.Close asChild>
+              <Link className="drawer-account" href={`/${lang}/login`}>
+                <span className="signed-out-icon" aria-hidden>
+                  <LogIn size={18} />
+                </span>
+                <div>
+                  <strong>{labels.signIn}</strong>
+                  <span>{labels.syncJourney}</span>
+                </div>
+              </Link>
+            </Dialog.Close>
+          )}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
