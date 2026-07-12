@@ -2,21 +2,25 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  BookOpen,
+  ArrowUpRight,
+  Bookmark,
+  Check,
   Compass,
+  Gamepad2,
   Globe2,
   HomeIcon,
   LibraryBig,
-  MoreHorizontal,
-  Plus,
+  ListPlus,
   Search,
   Settings,
+  ShieldCheck,
+  Sparkles,
   Star,
   UserRound,
 } from "lucide-react";
-import { getPopularGames } from "@/lib/igdb";
 import { Brand } from "@/components/brand";
 import { MobileSidebar } from "@/components/mobile-sidebar";
+import { getPopularGames } from "@/lib/igdb";
 import { getDictionary, hasLocale } from "./dictionaries";
 
 const iconMap = {
@@ -47,43 +51,53 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <Brand lang={lang} />
+        <div className="sidebar-brand">
+          <Brand lang={lang} />
+          <span className="product-stage">beta</span>
+        </div>
         <nav className="main-nav" aria-label="Principal">
+          <span className="nav-label">Navegação</span>
           {nav.map(([icon, label], index) => {
             const NavIcon = iconMap[icon];
             return (
               <Link
                 key={label}
                 href={`/${lang}`}
-                className={index === 0 ? "active" : ""}
+                aria-current={index === 0 ? "page" : undefined}
               >
-                <NavIcon size={22} />
+                <NavIcon size={20} />
                 <span>{label}</span>
+                {index === 0 && <i />}
               </Link>
             );
           })}
         </nav>
-        <button className="add-game">
-          <Plus size={19} />
+        <button className="quick-log">
+          <ListPlus size={19} />
           <span>{d.actions.addGame}</span>
+          <kbd>+</kbd>
         </button>
         <div className="sidebar-bottom">
-          <Link href={`/${otherLocale}`} title={d.actions.changeLanguage}>
-            <Globe2 size={22} />
+          <Link href={`/${lang}/legal/child-safety`}>
+            <ShieldCheck size={19} />
+            <span>{d.legal.safety}</span>
+          </Link>
+          <Link href={`/${otherLocale}`}>
+            <Globe2 size={19} />
             <span>{otherLocale === "en" ? "English" : "Português"}</span>
           </Link>
           <Link href={`/${lang}`}>
-            <Settings size={22} />
+            <Settings size={19} />
             <span>{d.nav.settings}</span>
           </Link>
-          <div className="mini-profile">
-            <div className="avatar">UB</div>
+          <button className="account-button">
+            <div className="avatar">U</div>
             <div>
-              <strong>Ueslei</strong>
-              <small>@uesleibros</small>
+              <strong>Entrar</strong>
+              <small>Sincronize sua jornada</small>
             </div>
-            <MoreHorizontal size={20} />
-          </div>
+            <ArrowUpRight size={16} />
+          </button>
         </div>
       </aside>
 
@@ -106,126 +120,176 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           />
           <Brand lang={lang} />
           <button aria-label="Buscar">
-            <Search size={22} />
+            <Search size={21} />
           </button>
         </header>
+
+        <header className="feed-header">
+          <div>
+            <span>11 JUL · SÁBADO</span>
+            <h1>O que vale jogar agora</h1>
+          </div>
+          <label className="feed-search">
+            <Search size={17} />
+            <input aria-label="Buscar jogos" placeholder="Buscar no catálogo" />
+            <kbd>⌘ K</kbd>
+          </label>
+        </header>
+
         {featured && (
-          <section className="hero">
+          <section className="featured-game">
             <Image
               src={featured.heroUrl ?? featured.coverUrl}
               alt=""
               fill
               priority
-              sizes="(max-width: 760px) 100vw, 720px"
-              className="hero-image"
+              sizes="720px"
+              className="featured-backdrop"
             />
-            <div className="hero-shade" />
-            <div className="hero-copy">
-              <span>{featured.genres.join(" · ") || d.home.eyebrow}</span>
-              <h1>{featured.name}</h1>
+            <div className="featured-scrim" />
+            <div className="featured-cover">
+              <Image
+                src={featured.coverUrl}
+                alt={`Capa de ${featured.name}`}
+                fill
+                priority
+                sizes="150px"
+              />
+            </div>
+            <div className="featured-copy">
+              <span className="eyebrow">
+                <Sparkles size={13} /> Escolha da comunidade
+              </span>
+              <h2>{featured.name}</h2>
+              <div className="featured-meta">
+                <span>
+                  <Star size={13} fill="currentColor" />
+                  {featured.rating ?? "—"}
+                </span>
+                <span>{featured.releaseYear}</span>
+                <span>{featured.genres.join(" · ")}</span>
+              </div>
               <p>{featured.summary || d.home.subtitle}</p>
-              <button>
-                <Compass size={18} />
-                {d.nav.explore}
-              </button>
+              <div className="featured-actions">
+                <button>
+                  <Gamepad2 size={17} />
+                  Quero jogar
+                </button>
+                <button aria-label="Salvar">
+                  <Bookmark size={18} />
+                </button>
+              </div>
             </div>
           </section>
         )}
 
-        <section className="section-block">
+        <section className="library-section">
           <div className="section-heading">
             <div>
-              <span className="live-dot" />
-              <h2>{d.home.trending}</h2>
+              <h2>Mais registrados</h2>
+              <p>Jogos que continuam voltando às bibliotecas</p>
             </div>
-            <Link href={`/${lang}`}>{d.actions.seeAll}</Link>
+            <Link href={`/${lang}`}>
+              {d.actions.seeAll}
+              <ArrowUpRight size={14} />
+            </Link>
           </div>
-          <div className="game-grid">
-            {catalog.slice(0, 6).map((game) => (
-              <article className="igdb-card" key={game.id}>
-                <div className="igdb-cover">
+          <div className="cover-shelf">
+            {catalog.slice(0, 5).map((game, index) => (
+              <article className="shelf-game" key={game.id}>
+                <div className="shelf-cover">
                   <Image
                     src={game.coverUrl}
                     alt={`Capa de ${game.name}`}
                     fill
-                    sizes="(max-width: 620px) 44vw, 150px"
+                    sizes="(max-width: 620px) 42vw, 120px"
                   />
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <button aria-label={`Salvar ${game.name}`}>
+                    <Bookmark size={15} />
+                  </button>
                 </div>
-                <div className="igdb-info">
+                <h3>{game.name}</h3>
+                <p>
+                  {game.releaseYear} · {game.genres[0]}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="explore-section">
+          <div className="section-heading">
+            <div>
+              <h2>Talvez seja sua próxima aventura</h2>
+              <p>Bem avaliados por milhares de jogadores</p>
+            </div>
+          </div>
+          <div className="game-list">
+            {catalog.slice(5, 9).map((game) => (
+              <article className="game-list-row" key={game.id}>
+                <div className="list-cover">
+                  <Image src={game.coverUrl} alt="" fill sizes="48px" />
+                </div>
+                <div className="list-main">
                   <h3>{game.name}</h3>
                   <p>
                     {[game.releaseYear, ...game.genres]
                       .filter(Boolean)
                       .join(" · ")}
                   </p>
-                  <span>
-                    <Star size={13} fill="currentColor" /> {game.rating ?? "—"}
-                    <small>{game.ratingCount.toLocaleString(lang)}</small>
-                  </span>
                 </div>
+                <div className="list-rating">
+                  <Star size={12} fill="currentColor" />
+                  <strong>{game.rating ?? "—"}</strong>
+                  <span>{game.ratingCount.toLocaleString(lang)}</span>
+                </div>
+                <button aria-label={`Adicionar ${game.name}`}>
+                  <ListPlus size={18} />
+                </button>
               </article>
             ))}
           </div>
         </section>
-
-        <section className="section-block discover">
-          <div className="section-heading">
-            <h2>{d.nav.explore}</h2>
-          </div>
-          {catalog.slice(6, 9).map((game, index) => (
-            <article className="discover-row" key={game.id}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <div className="row-cover">
-                <Image src={game.coverUrl} alt="" fill sizes="54px" />
-              </div>
-              <div>
-                <h3>{game.name}</h3>
-                <p>{game.summary || game.genres.join(" · ")}</p>
-              </div>
-              <strong>{game.rating ?? "—"}</strong>
-            </article>
-          ))}
-        </section>
       </main>
 
       <aside className="right-rail">
-        <label className="search">
-          <Search size={19} />
-          <input placeholder={`${d.nav.explore}...`} />
-        </label>
-        <section className="rail-card">
-          <div className="section-heading">
-            <h2>{d.home.trending}</h2>
+        <section className="rail-intro">
+          <span>
+            <Check size={13} /> Comece por aqui
+          </span>
+          <h2>Sua biblioteca, do seu jeito.</h2>
+          <p>
+            Registre o que jogou, abandone sem culpa e encontre o próximo
+            favorito.
+          </p>
+          <button>
+            Montar minha biblioteca
+            <ArrowUpRight size={15} />
+          </button>
+        </section>
+        <section className="rail-section">
+          <div className="rail-title">
+            <h2>Em alta</h2>
+            <span>24h</span>
           </div>
           {games.slice(0, 5).map((game, index) => (
             <Link href={`/${lang}`} className="trend" key={game.id}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
+              <span>{index + 1}</span>
               <div>
                 <strong>{game.name}</strong>
-                <small>{game.ratingCount.toLocaleString(lang)} ratings</small>
+                <small>{game.ratingCount.toLocaleString(lang)} registros</small>
               </div>
-              <MoreHorizontal size={18} />
+              <ArrowUpRight size={14} />
             </Link>
           ))}
         </section>
-        <section className="community-card">
-          <div className="community-icon">
-            <BookOpen size={21} />
-          </div>
-          <div>
-            <strong>Dados da IGDB</strong>
-            <span>
-              <i /> catálogo atualizado automaticamente
-            </span>
-          </div>
-        </section>
         <footer>
-          <span>© 2026 uloggd · Game data by IGDB</span>
+          <span>© 2026 uloggd · Dados por IGDB</span>
           <nav>
             <Link href={`/${lang}/legal/terms`}>{d.legal.terms}</Link>
             <Link href={`/${lang}/legal/privacy`}>{d.legal.privacy}</Link>
             <Link href={`/${lang}/legal/child-safety`}>{d.legal.safety}</Link>
-            <a href="mailto:uloggd.gg@gmail.com">{d.legal.contact}</a>
           </nav>
         </footer>
       </aside>
@@ -240,7 +304,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
               className={index === 0 ? "active" : ""}
               aria-label={label}
             >
-              <NavIcon size={23} />
+              <NavIcon size={22} />
               <span>{label}</span>
             </Link>
           );
