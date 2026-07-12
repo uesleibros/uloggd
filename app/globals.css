@@ -135,7 +135,7 @@ a {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding: 24px 20px 16px;
+  padding: 0;
   border-right: 1px solid var(--shell-line-strong);
   background: var(--console-panel);
   box-shadow: 12px 0 32px rgb(0 0 0 / 18%);
@@ -148,12 +148,14 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin: 24px 20px 0;
   padding: 0 4px;
 }
 .sidebar-scroll {
   min-height: 0;
   flex: 1;
-  margin: 22px -8px 0;
+  width: calc(100% - 24px);
+  margin: 22px 12px 0;
   padding: 0 8px 16px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -317,8 +319,8 @@ a {
   grid-template-columns: 36px 1fr auto;
   align-items: center;
   gap: 10px;
-  width: 100%;
-  margin-top: 12px;
+  width: calc(100% - 40px);
+  margin: 12px 20px 16px;
   padding: 12px 8px 4px;
   border: 0;
   border-top: 1px solid var(--shell-line);
@@ -3071,7 +3073,15 @@ a {
   }
   .sidebar {
     align-items: center;
-    padding-inline: 12px;
+  }
+  .sidebar-brand {
+    margin: 24px 0 0;
+    padding: 0;
+  }
+  .sidebar-scroll {
+    width: 100%;
+    margin: 22px 0 0;
+    padding: 0 16px 16px;
   }
   .sidebar-brand .brand span,
   .product-stage,
@@ -3096,6 +3106,8 @@ a {
   }
   .account-button {
     display: block;
+    width: 44px;
+    margin: 12px 0 16px;
     padding-inline: 4px;
   }
   .login-shell {

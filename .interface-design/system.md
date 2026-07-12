@@ -65,6 +65,7 @@ Base unit: **4px**.
 - Feed section padding: 32–36px desktop; 18–30px mobile.
 - Major separation: 32–40px.
 - Desktop sidebar: 264px full; 76px compact.
+- The sidebar structural column itself has no outer padding; brand, scrollable navigation, and account control own their internal gutters so the panel remains flush with the application canvas.
 - Context rail: 320px full; 290px compact; hidden at 960px and below to prevent tablet overflow.
 - The application canvas is full-viewport; never cap the global shell or center it inside decorative outer gutters. Width constraints belong to readable text and focused controls, not the product frame.
 - Game pages use a compact 16px outer gutter; larger spacing belongs between cover, primary content, and context rail rather than outside the rails.
