@@ -66,6 +66,7 @@ Base unit: **4px**.
 - Major separation: 32–40px.
 - Desktop sidebar: 264px full; 76px compact.
 - The sidebar structural column itself has no outer padding; brand, scrollable navigation, and account control own their internal gutters so the panel remains flush with the application canvas.
+- Brand starts 20px from the top, navigation follows after 16px without a second nested top margin, and the 60px account control uses even 8px internal padding; these three zones share the same 20px visual gutter.
 - Context rail: 320px full; 290px compact; hidden at 960px and below to prevent tablet overflow.
 - The application canvas is full-viewport; never cap the global shell or center it inside decorative outer gutters. Width constraints belong to readable text and focused controls, not the product frame.
 - Game pages use a compact 16px outer gutter; larger spacing belongs between cover, primary content, and context rail rather than outside the rails.
@@ -219,6 +220,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Personal ratings use five gold stars with half-star precision backed by the existing 0–100 value (10 points per half-star).
 - The game page shows the full labeled control; cover menus use the compact five-star variant.
 - A saved rating always exposes a nearby remove action that clears only the rating, not the library entry.
+- Hovering or keyboard-focusing either half of a star previews that half-step and every preceding star before the rating is committed.
 - Rating a new game adds it to the library as Backlog. Library cards expose a clearly destructive remove action in their overflow menu.
 
 ### Legal document switcher

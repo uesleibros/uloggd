@@ -1,6 +1,7 @@
 "use client";
 
 import { Star, X } from "lucide-react";
+import { useState } from "react";
 
 export function StarRating({
   value,
@@ -16,6 +17,8 @@ export function StarRating({
   lang: "pt-BR" | "en";
 }) {
   const selected = value ? value / 10 : 0;
+  const [preview, setPreview] = useState<number | null>(null);
+  const visibleValue = preview ?? selected;
   const pt = lang === "pt-BR";
   const formatRating = (halfSteps: number) =>
     (halfSteps / 2).toLocaleString(lang, {
@@ -29,14 +32,22 @@ export function StarRating({
       role="group"
       aria-label={pt ? "Sua avaliação" : "Your rating"}
     >
-      <div className="star-rating-stars">
+      <div
+        className="star-rating-stars"
+        onMouseLeave={() => setPreview(null)}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setPreview(null);
+          }
+        }}
+      >
         {[1, 2, 3, 4, 5].map((star) => {
           const firstHalf = star * 2 - 1;
           const secondHalf = star * 2;
           const fill =
-            selected >= secondHalf
+            visibleValue >= secondHalf
               ? "full"
-              : selected >= firstHalf
+              : visibleValue >= firstHalf
                 ? "half"
                 : "empty";
           return (
@@ -55,6 +66,8 @@ export function StarRating({
                     key={halfSteps}
                     type="button"
                     disabled={disabled}
+                    onMouseEnter={() => setPreview(halfSteps)}
+                    onFocus={() => setPreview(halfSteps)}
                     onClick={() => onChange(halfSteps * 10)}
                     aria-label={
                       pt
@@ -84,10 +97,10 @@ export function StarRating({
       )}
       {!compact && (
         <span className="star-rating-value" aria-live="polite">
-          {selected
+          {visibleValue
             ? pt
-              ? `${formatRating(selected)} de 5`
-              : `${formatRating(selected)} out of 5`
+              ? `${formatRating(visibleValue)} de 5`
+              : `${formatRating(visibleValue)} out of 5`
             : pt
               ? "Sem nota"
               : "Not rated"}
