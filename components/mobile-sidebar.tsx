@@ -22,6 +22,7 @@ import { Brand } from "./brand";
 
 type MobileSidebarProps = {
   lang: "pt-BR" | "en";
+  isAuthenticated: boolean;
   labels: {
     menu: string;
     close: string;
@@ -36,21 +37,26 @@ type MobileSidebarProps = {
     safety: string;
     signIn: string;
     syncJourney: string;
+    requiresSignIn: string;
   };
 };
 
-export function MobileSidebar({ lang, labels }: MobileSidebarProps) {
+export function MobileSidebar({
+  lang,
+  labels,
+  isAuthenticated,
+}: MobileSidebarProps) {
   const pathname = usePathname();
   const nextLocale = lang === "pt-BR" ? "en" : "pt-BR";
   const localeSegments = pathname.split("/");
   localeSegments[1] = nextLocale;
   const localeHref = localeSegments.join("/") || `/${nextLocale}`;
   const links = [
-    [HomeIcon, labels.home, `/${lang}`],
-    [Compass, labels.explore, `/${lang}`],
-    [LibraryBig, labels.library, `/${lang}`],
-    [Star, labels.reviews, `/${lang}`],
-    [UserRound, labels.profile, `/${lang}`],
+    [HomeIcon, labels.home, `/${lang}`, false],
+    [Compass, labels.explore, `/${lang}`, false],
+    [LibraryBig, labels.library, `/${lang}`, true],
+    [Star, labels.reviews, `/${lang}`, true],
+    [UserRound, labels.profile, `/${lang}`, true],
   ] as const;
 
   return (
@@ -71,19 +77,32 @@ export function MobileSidebar({ lang, labels }: MobileSidebarProps) {
             </Dialog.Close>
           </div>
           <nav className="drawer-navigation">
-            {links.map(([Icon, label, href], index) => (
-              <Dialog.Close asChild key={label}>
-                <Link
-                  href={href}
-                  data-active={
-                    index === 0 && pathname === href ? true : undefined
-                  }
+            {links.map(([Icon, label, href, requiresAuth], index) =>
+              requiresAuth && !isAuthenticated ? (
+                <span
+                  className="drawer-disabled"
+                  key={label}
+                  aria-disabled="true"
+                  title={labels.requiresSignIn}
                 >
                   <Icon size={21} />
                   <span>{label}</span>
-                </Link>
-              </Dialog.Close>
-            ))}
+                  <LockKeyhole className="nav-lock" size={13} />
+                </span>
+              ) : (
+                <Dialog.Close asChild key={label}>
+                  <Link
+                    href={href}
+                    data-active={
+                      index === 0 && pathname === href ? true : undefined
+                    }
+                  >
+                    <Icon size={21} />
+                    <span>{label}</span>
+                  </Link>
+                </Dialog.Close>
+              ),
+            )}
           </nav>
           <div className="drawer-secondary">
             <Dialog.Close asChild>
@@ -110,12 +129,24 @@ export function MobileSidebar({ lang, labels }: MobileSidebarProps) {
                 {nextLocale === "en" ? "English" : "Português"}
               </Link>
             </Dialog.Close>
-            <Dialog.Close asChild>
-              <Link href={`/${lang}`}>
+            {isAuthenticated ? (
+              <Dialog.Close asChild>
+                <Link href={`/${lang}`}>
+                  <Settings size={19} />
+                  {labels.settings}
+                </Link>
+              </Dialog.Close>
+            ) : (
+              <span
+                className="drawer-disabled"
+                aria-disabled="true"
+                title={labels.requiresSignIn}
+              >
                 <Settings size={19} />
-                {labels.settings}
-              </Link>
-            </Dialog.Close>
+                <span>{labels.settings}</span>
+                <LockKeyhole className="nav-lock" size={13} />
+              </span>
+            )}
           </div>
           <Dialog.Close asChild>
             <Link className="drawer-account" href={`/${lang}/login`}>

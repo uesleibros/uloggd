@@ -1,4 +1,3 @@
-import { createHash, randomUUID } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { config } from "dotenv";
@@ -13,29 +12,39 @@ async function main() {
   await client.connect();
 
   try {
+    await client.query("create schema if not exists supabase_migrations");
     await client.query(`
-      create table if not exists public._prisma_migrations (
-        id varchar(36) primary key,
-        checksum varchar(64) not null,
-        finished_at timestamptz,
-        migration_name varchar(255) not null,
-        logs text,
-        rolled_back_at timestamptz,
-        started_at timestamptz not null default now(),
-        applied_steps_count integer not null default 0
+      create table if not exists supabase_migrations.schema_migrations (
+        version text primary key,
+        statements text[],
+        name text
       )
     `);
+    await client.query(`
+      do $$
+      begin
+        if to_regclass('public._prisma_migrations') is not null then
+          insert into supabase_migrations.schema_migrations (version, name)
+          select split_part(migration_name, '_', 1), migration_name
+          from public._prisma_migrations
+          where finished_at is not null and rolled_back_at is null
+          on conflict (version) do nothing;
+        end if;
+      end $$
+    `);
     await client.query("select pg_advisory_lock(72707369)");
-    const migrationsRoot = path.join(process.cwd(), "prisma", "migrations");
-    const directories = (await readdir(migrationsRoot, { withFileTypes: true }))
-      .filter((entry) => entry.isDirectory())
+    const migrationsRoot = path.join(process.cwd(), "supabase", "migrations");
+    const migrations = (await readdir(migrationsRoot, { withFileTypes: true }))
+      .filter((entry) => entry.isFile() && /^\d+_.+\.sql$/.test(entry.name))
       .map((entry) => entry.name)
       .sort();
 
-    for (const migrationName of directories) {
+    for (const migrationFile of migrations) {
+      const version = migrationFile.split("_", 1)[0];
+      const migrationName = migrationFile.replace(/\.sql$/, "");
       const existing = await client.query(
-        "select 1 from public._prisma_migrations where migration_name = $1 and finished_at is not null and rolled_back_at is null",
-        [migrationName],
+        "select 1 from supabase_migrations.schema_migrations where version = $1",
+        [version],
       );
       if (existing.rowCount) {
         console.log(`${migrationName}: already applied`);
@@ -43,18 +52,16 @@ async function main() {
       }
 
       const sql = await readFile(
-        path.join(migrationsRoot, migrationName, "migration.sql"),
+        path.join(migrationsRoot, migrationFile),
         "utf8",
       );
-      const checksum = createHash("sha256").update(sql).digest("hex");
       await client.query("begin");
       try {
         await client.query(sql);
         await client.query(
-          `insert into public._prisma_migrations
-            (id, checksum, finished_at, migration_name, applied_steps_count)
-           values ($1, $2, now(), $3, 1)`,
-          [randomUUID(), checksum, migrationName],
+          `insert into supabase_migrations.schema_migrations (version, name, statements)
+           values ($1, $2, $3)`,
+          [version, migrationName, [sql]],
         );
         await client.query("commit");
         console.log(`${migrationName}: applied`);

@@ -17,6 +17,7 @@
     "close": "Close menu",
     "signIn": "Sign in",
     "syncJourney": "Sync your journey",
+    "requiresSignIn": "Sign in to access",
     "save": "Save",
     "wantToPlay": "Want to play",
     "buildLibrary": "Build my library"

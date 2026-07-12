@@ -106,6 +106,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Quick-log action is tonal, not a large saturated pill.
 - Account control stays at the bottom and must not fabricate authenticated state.
 - Signed-out account controls use a neutral login glyph; initials and avatars are reserved for real authenticated profiles.
+- Signed-out navigation keeps Home, Explore, search, language, and legal documents available. Library, Reviews, Profile, Settings, and quick-log render as non-interactive muted rows with a small lock glyph and an accessible sign-in requirement.
 
 ### Compact sidebar
 

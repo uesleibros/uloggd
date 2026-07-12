@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { PlatformNavigation } from "@/components/platform-navigation";
 import { DesktopGameSearch } from "@/components/game-search";
+import { createClient } from "@/lib/supabase/server";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
 import "../globals.css";
 
@@ -34,13 +35,23 @@ export default async function LocaleLayout({
 }: LayoutProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const dictionary = await getDictionary(lang);
+  const [dictionary, supabase] = await Promise.all([
+    getDictionary(lang),
+    createClient(),
+  ]);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   return (
     <html lang={lang} className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
         <div className="platform-shell">
-          <PlatformNavigation lang={lang} dictionary={dictionary} />
+          <PlatformNavigation
+            lang={lang}
+            dictionary={dictionary}
+            isAuthenticated={Boolean(user)}
+          />
           <div className="platform-content">
             <header className="content-header">
               <DesktopGameSearch dictionary={dictionary} />

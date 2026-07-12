@@ -30,16 +30,18 @@ const iconMap = {
 export function PlatformNavigation({
   lang,
   dictionary: d,
+  isAuthenticated,
 }: {
   lang: Locale;
   dictionary: Dictionary;
+  isAuthenticated: boolean;
 }) {
   const nav = [
-    ["home", d.nav.home],
-    ["compass", d.nav.explore],
-    ["library", d.nav.library],
-    ["star", d.nav.reviews],
-    ["user", d.nav.profile],
+    ["home", d.nav.home, false],
+    ["compass", d.nav.explore, false],
+    ["library", d.nav.library, true],
+    ["star", d.nav.reviews, true],
+    ["user", d.nav.profile, true],
   ] as const;
 
   return (
@@ -51,8 +53,22 @@ export function PlatformNavigation({
         </div>
         <nav className="main-nav" aria-label={d.platform.navigation}>
           <span className="nav-label">{d.platform.navigation}</span>
-          {nav.map(([icon, label], index) => {
+          {nav.map(([icon, label, requiresAuth], index) => {
             const NavIcon = iconMap[icon];
+            if (requiresAuth && !isAuthenticated) {
+              return (
+                <span
+                  className="nav-disabled"
+                  key={label}
+                  aria-disabled="true"
+                  title={d.actions.requiresSignIn}
+                >
+                  <NavIcon size={20} />
+                  <span>{label}</span>
+                  <LockKeyhole className="nav-lock" size={12} />
+                </span>
+              );
+            }
             if (index !== 0) {
               return (
                 <Link key={label} href={`/${lang}`}>
@@ -70,7 +86,11 @@ export function PlatformNavigation({
             );
           })}
         </nav>
-        <button className="quick-log">
+        <button
+          className="quick-log"
+          disabled={!isAuthenticated}
+          title={!isAuthenticated ? d.actions.requiresSignIn : undefined}
+        >
           <ListPlus size={19} />
           <span>{d.actions.addGame}</span>
           <kbd>+</kbd>
@@ -89,10 +109,22 @@ export function PlatformNavigation({
             <span>{d.legal.safety}</span>
           </Link>
           <LocaleSwitcher locale={lang} />
-          <Link href={`/${lang}`}>
-            <Settings size={19} />
-            <span>{d.nav.settings}</span>
-          </Link>
+          {isAuthenticated ? (
+            <Link href={`/${lang}`}>
+              <Settings size={19} />
+              <span>{d.nav.settings}</span>
+            </Link>
+          ) : (
+            <span
+              className="nav-disabled"
+              aria-disabled="true"
+              title={d.actions.requiresSignIn}
+            >
+              <Settings size={19} />
+              <span>{d.nav.settings}</span>
+              <LockKeyhole className="nav-lock" size={12} />
+            </span>
+          )}
           <Link className="account-button" href={`/${lang}/login`}>
             <span className="signed-out-icon" aria-hidden>
               <LogIn size={18} />
@@ -109,6 +141,7 @@ export function PlatformNavigation({
       <header className="mobile-header">
         <MobileSidebar
           lang={lang}
+          isAuthenticated={isAuthenticated}
           labels={{
             menu: d.actions.menu,
             close: d.actions.close,
@@ -123,6 +156,7 @@ export function PlatformNavigation({
             safety: d.legal.safety,
             signIn: d.actions.signIn,
             syncJourney: d.actions.syncJourney,
+            requiresSignIn: d.actions.requiresSignIn,
           }}
         />
         <MobileGameSearch dictionary={d} />

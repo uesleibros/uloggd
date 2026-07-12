@@ -171,7 +171,9 @@ a {
   text-transform: uppercase;
 }
 .main-nav a,
-.sidebar-bottom > a {
+.sidebar-bottom > a,
+.main-nav > .nav-disabled,
+.sidebar-bottom > .nav-disabled {
   position: relative;
   display: flex;
   align-items: center;
@@ -185,6 +187,15 @@ a {
   transition:
     background-color 140ms ease-out,
     color 140ms ease-out;
+}
+.main-nav > .nav-disabled,
+.sidebar-bottom > .nav-disabled {
+  cursor: not-allowed;
+  color: #5f5a65;
+}
+.nav-disabled .nav-lock {
+  margin-left: auto;
+  color: #55505a;
 }
 .main-nav a:hover,
 .sidebar-bottom > a:hover {
@@ -227,6 +238,15 @@ a {
 }
 .quick-log:hover {
   background: rgb(88 101 242 / 20%);
+}
+.quick-log:disabled {
+  border-color: var(--shell-line);
+  background: var(--console-inset);
+  color: #625d68;
+  cursor: not-allowed;
+}
+.quick-log:disabled kbd {
+  display: none;
 }
 .quick-log:active {
   transform: scale(0.98);
@@ -1101,7 +1121,9 @@ a {
   margin-top: 24px;
 }
 .drawer-navigation a,
-.drawer-secondary a {
+.drawer-secondary a,
+.drawer-navigation > .drawer-disabled,
+.drawer-secondary > .drawer-disabled {
   display: flex;
   align-items: center;
   gap: 13px;
@@ -1111,6 +1133,15 @@ a {
   color: var(--screen-dim);
   font-size: 13px;
   font-weight: 580;
+}
+.drawer-navigation > .drawer-disabled,
+.drawer-secondary > .drawer-disabled {
+  cursor: not-allowed;
+  color: #5f5a65;
+}
+.drawer-disabled .nav-lock {
+  margin-left: auto;
+  color: #55505a;
 }
 .drawer-navigation a[data-active] {
   color: white;
@@ -1576,7 +1607,8 @@ a {
   .sidebar-brand .brand span,
   .product-stage,
   .nav-label,
-  .main-nav span,
+  .main-nav a > span,
+  .main-nav > .nav-disabled > span,
   .quick-log span,
   .quick-log kbd,
   .sidebar-bottom > a span,
@@ -1585,10 +1617,15 @@ a {
     display: none;
   }
   .main-nav a,
-  .sidebar-bottom > a {
+  .sidebar-bottom > a,
+  .main-nav > .nav-disabled,
+  .sidebar-bottom > .nav-disabled {
     justify-content: center;
     width: 44px;
     padding: 0;
+  }
+  .nav-disabled .nav-lock {
+    display: none;
   }
   .main-nav a i {
     top: 8px;
