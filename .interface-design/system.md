@@ -113,10 +113,12 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 ### Mobile navigation
 
-- Persistent 60px header and 64px bottom navigation.
+- Persistent 60px header with a single navigation entry point.
 - Sidebar remains available through the menu trigger.
+- Do not use a bottom navigation bar; all destinations live in the drawer to avoid competing navigation systems.
 - Drawer behavior uses Radix Dialog for focus trapping, Escape handling, focus return, and accessible overlay state.
 - Drawer animation: 240ms entry, 160ms exit, transform and opacity only.
+- Terms, Privacy, and Child Safety must all be directly available in the desktop sidebar and mobile drawer.
 
 ## Reusable Component Patterns
 

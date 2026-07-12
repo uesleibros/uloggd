@@ -128,6 +128,8 @@ a {
   box-shadow: 12px 0 32px rgb(0 0 0 / 18%);
   grid-column: 1;
   grid-row: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .sidebar-brand {
   display: flex;
@@ -793,10 +795,6 @@ a {
 .right-rail footer a:hover {
   color: var(--screen-dim);
 }
-.bottom-nav {
-  display: none;
-}
-
 /* Radix mobile drawer */
 .mobile-menu-button,
 .drawer-header button {
@@ -1126,9 +1124,6 @@ a {
 }
 
 @media (max-width: 620px) {
-  body {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom));
-  }
   .platform-shell {
     display: block;
     width: 100%;
@@ -1239,35 +1234,6 @@ a {
   }
   .list-rating {
     grid-template-columns: 14px 24px;
-  }
-  .bottom-nav {
-    position: fixed;
-    z-index: 40;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: flex;
-    height: calc(64px + env(safe-area-inset-bottom));
-    padding-bottom: env(safe-area-inset-bottom);
-    border-top: 1px solid var(--shell-line-strong);
-    background: rgb(23 21 27 / 98%);
-    backdrop-filter: blur(14px);
-  }
-  .bottom-nav a {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    color: var(--screen-muted);
-  }
-  .bottom-nav a span {
-    font-size: 8px;
-    font-weight: 600;
-  }
-  .bottom-nav a.active {
-    color: var(--screen-white);
   }
   .legal-header {
     width: min(calc(100% - 28px), 920px);

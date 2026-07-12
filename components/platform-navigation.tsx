@@ -1,9 +1,11 @@
 import Link from "next/link";
 import {
   Compass,
+  FileText,
   HomeIcon,
   LibraryBig,
   ListPlus,
+  LockKeyhole,
   Search,
   Settings,
   ShieldCheck,
@@ -65,6 +67,14 @@ export function PlatformNavigation({
           <kbd>+</kbd>
         </button>
         <div className="sidebar-bottom">
+          <Link href={`/${lang}/legal/terms`}>
+            <FileText size={19} />
+            <span>{d.legal.terms}</span>
+          </Link>
+          <Link href={`/${lang}/legal/privacy`}>
+            <LockKeyhole size={19} />
+            <span>{d.legal.privacy}</span>
+          </Link>
           <Link href={`/${lang}/legal/child-safety`}>
             <ShieldCheck size={19} />
             <span>{d.legal.safety}</span>
@@ -97,6 +107,8 @@ export function PlatformNavigation({
             reviews: d.nav.reviews,
             profile: d.nav.profile,
             settings: d.nav.settings,
+            terms: d.legal.terms,
+            privacy: d.legal.privacy,
             safety: d.legal.safety,
             signIn: d.actions.signIn,
             syncJourney: d.actions.syncJourney,
@@ -107,23 +119,6 @@ export function PlatformNavigation({
           <Search size={21} />
         </button>
       </header>
-
-      <nav className="bottom-nav" aria-label={d.platform.navigation}>
-        {nav.map(([icon, label]) => {
-          const NavIcon = iconMap[icon];
-          return (
-            <ActiveLink
-              key={label}
-              href={`/${lang}`}
-              activeClassName="active"
-              aria-label={label}
-            >
-              <NavIcon size={22} />
-              <span>{label}</span>
-            </ActiveLink>
-          );
-        })}
-      </nav>
     </>
   );
 }
