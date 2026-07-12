@@ -118,6 +118,16 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Do not use a bottom navigation bar; all destinations live in the drawer to avoid competing navigation systems.
 - Drawer behavior uses Radix Dialog for focus trapping, Escape handling, focus return, and accessible overlay state.
 - Drawer animation: 240ms entry, 160ms exit, transform and opacity only.
+
+## Authentication Pattern
+
+- Authentication keeps the product shell and navigation visible; it is an entry point to the library, not a detached marketing page.
+- Desktop uses an asymmetrical split: a tactile active-shelf scene on the left and a focused access column on the right.
+- The passkey is the primary action because it is the intended passwordless default. OAuth providers appear as a compact two-column utility grid below it.
+- The active shelf uses real IGDB cover data when available and degrades cleanly to copy without blocking access.
+- On mobile, the shelf compresses into a short context banner and the form becomes a single uninterrupted column below it.
+- Authentication errors are inline, reserved, and actionable. Loading disables competing methods so two ceremonies cannot start at once.
+- Security copy must accurately state that biometric verification stays on the device; never imply that uloggd stores biometric data.
 - Terms, Privacy, and Child Safety must all be directly available in the desktop sidebar and mobile drawer.
 
 ## Reusable Component Patterns

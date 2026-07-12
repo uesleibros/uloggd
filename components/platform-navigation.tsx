@@ -92,14 +92,14 @@ export function PlatformNavigation({
             <Settings size={19} />
             <span>{d.nav.settings}</span>
           </Link>
-          <button className="account-button">
+          <Link className="account-button" href={`/${lang}/login`}>
             <div className="avatar">U</div>
             <div>
               <strong>{d.actions.signIn}</strong>
               <small>{d.actions.syncJourney}</small>
             </div>
             <span aria-hidden>↗</span>
-          </button>
+          </Link>
         </div>
       </aside>
 

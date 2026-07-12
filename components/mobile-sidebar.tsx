@@ -116,13 +116,15 @@ export function MobileSidebar({ lang, labels }: MobileSidebarProps) {
               </Link>
             </Dialog.Close>
           </div>
-          <div className="drawer-account">
-            <div className="avatar">U</div>
-            <div>
-              <strong>{labels.signIn}</strong>
-              <span>{labels.syncJourney}</span>
-            </div>
-          </div>
+          <Dialog.Close asChild>
+            <Link className="drawer-account" href={`/${lang}/login`}>
+              <div className="avatar">U</div>
+              <div>
+                <strong>{labels.signIn}</strong>
+                <span>{labels.syncJourney}</span>
+              </div>
+            </Link>
+          </Dialog.Close>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

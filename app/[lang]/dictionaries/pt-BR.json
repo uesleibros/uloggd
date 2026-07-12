@@ -60,6 +60,28 @@
     "trendingPeriod": "24h",
     "registrations": "registros"
   },
+  "auth": {
+    "metadataTitle": "Entrar",
+    "eyebrow": "Sua estante está esperando",
+    "title": "Volte para os jogos que são seus.",
+    "description": "Entre para registrar partidas, organizar sua biblioteca e continuar de onde parou.",
+    "passkeyLabel": "Entrar com passkey",
+    "passkeyHint": "Use sua biometria, PIN ou chave de segurança. Sem senha para lembrar.",
+    "passkeyLoading": "Aguardando seu dispositivo…",
+    "otherMethods": "ou continue com",
+    "continueWith": "Continuar com {provider}",
+    "privacyNote": "O uloggd nunca recebe sua biometria. A confirmação acontece no seu dispositivo.",
+    "libraryLabel": "Sua biblioteca, em qualquer dispositivo",
+    "libraryHint": "Salve o que jogou e retome sua jornada depois.",
+    "legalPrefix": "Ao continuar, você concorda com os",
+    "and": "e a",
+    "oauthError": "Não foi possível iniciar o acesso com {provider}. Tente novamente.",
+    "callbackError": "O acesso não foi concluído. Tente novamente.",
+    "passkeyUnsupported": "Este navegador ou dispositivo não oferece suporte a passkeys.",
+    "passkeyDisabled": "As passkeys ainda precisam ser habilitadas neste projeto do Supabase.",
+    "passkeyCancelled": "A confirmação foi cancelada ou não pôde ser concluída.",
+    "secureAccess": "Acesso protegido contra phishing"
+  },
   "legalUi": {
     "back": "Voltar ao início",
     "section": "Legal e segurança",
