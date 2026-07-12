@@ -29,6 +29,21 @@ type IgdbGameResponse = {
     publisher?: boolean;
     company?: { name: string };
   }[];
+  videos?: { video_id: string; name?: string }[];
+  themes?: { name: string }[];
+  game_modes?: { name: string }[];
+  websites?: { url: string }[];
+};
+
+type IgdbEventResponse = {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  start_time?: number;
+  end_time?: number;
+  live_stream_url?: string;
+  event_logo?: IgdbImage;
 };
 
 export type GameSearchResult = {
@@ -121,11 +136,11 @@ function normalize(game: IgdbGameResponse): Game {
   };
 }
 
-async function queryGamesRaw(body: string) {
+async function queryIgdbRaw<T>(endpoint: string, body: string): Promise<T[]> {
   const clientId = process.env.TWITCH_CLIENT_ID;
   if (!clientId) throw new Error("Missing Twitch client ID");
   const token = await getAccessToken();
-  const response = await fetch("https://api.igdb.com/v4/games", {
+  const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
     method: "POST",
     headers: {
       "Client-ID": clientId,
@@ -139,7 +154,11 @@ async function queryGamesRaw(body: string) {
     throw new Error(
       `IGDB request failed (${response.status}): ${await response.text()}`,
     );
-  return (await response.json()) as IgdbGameResponse[];
+  return (await response.json()) as T[];
+}
+
+async function queryGamesRaw(body: string) {
+  return queryIgdbRaw<IgdbGameResponse>("games", body);
 }
 
 async function queryGames(body: string) {
@@ -246,14 +265,33 @@ export type DiscoveryGames = {
   hiddenGems: Game[];
 };
 
-export type GameDetail = Game & { alternativeCovers: string[] };
+export type GameDetail = Game & {
+  alternativeCovers: string[];
+  gallery: { id: string; url: string; kind: "screenshot" | "artwork" }[];
+  videos: { id: string; name: string }[];
+  events: {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    startTimestamp: number | null;
+    endTimestamp: number | null;
+    liveStreamUrl: string | null;
+    imageUrl: string | null;
+  }[];
+  publishers: string[];
+  themes: string[];
+  modes: string[];
+  websites: string[];
+};
 
 export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
   if (!/^[a-z0-9-]{1,255}$/.test(slug)) return null;
   const games = await queryGamesRaw(`
     fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
       cover.image_id,artworks.image_id,screenshots.image_id,genres.name,
-      platforms.name,involved_companies.developer,involved_companies.company.name,
+      platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
+      videos.video_id,videos.name,themes.name,game_modes.name,websites.url,
       game_localizations.cover.image_id,version_parent.id,version_parent.cover.image_id,
       version_parent.game_localizations.cover.image_id;
     where slug = "${slug}";
@@ -284,11 +322,63 @@ export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
     game.game_localizations?.forEach((item) => addCover(item.cover));
   });
 
+  const events = await queryIgdbRaw<IgdbEventResponse>(
+    "events",
+    `
+      fields name,slug,description,start_time,end_time,live_stream_url,event_logo.image_id;
+      where games = [${raw.id}];
+      sort start_time desc;
+      limit 12;
+    `,
+  ).catch(() => []);
+
+  const gallery = [
+    ...(raw.screenshots ?? []).map((image) => ({
+      id: image.image_id,
+      url: imageUrl(image.image_id, "1080p"),
+      kind: "screenshot" as const,
+    })),
+    ...(raw.artworks ?? []).map((image) => ({
+      id: image.image_id,
+      url: imageUrl(image.image_id, "1080p"),
+      kind: "artwork" as const,
+    })),
+  ];
+
   return {
     ...normalize(raw),
     alternativeCovers: [...coverIds]
       .slice(0, 24)
       .map((id) => imageUrl(id, "cover_big")),
+    gallery,
+    videos: (raw.videos ?? [])
+      .filter((video) => /^[a-zA-Z0-9_-]{6,20}$/.test(video.video_id))
+      .slice(0, 6)
+      .map((video) => ({ id: video.video_id, name: video.name || raw.name })),
+    events: events.map((event) => ({
+      id: event.id,
+      name: event.name,
+      slug: event.slug,
+      description: event.description ?? null,
+      startTimestamp: event.start_time ?? null,
+      endTimestamp: event.end_time ?? null,
+      liveStreamUrl: event.live_stream_url?.startsWith("https://")
+        ? event.live_stream_url
+        : null,
+      imageUrl: event.event_logo
+        ? imageUrl(event.event_logo.image_id, "1080p")
+        : null,
+    })),
+    publishers:
+      raw.involved_companies
+        ?.filter((item) => item.publisher && item.company?.name)
+        .map((item) => item.company!.name) ?? [],
+    themes: raw.themes?.map((theme) => theme.name) ?? [],
+    modes: raw.game_modes?.map((mode) => mode.name) ?? [],
+    websites: (raw.websites ?? [])
+      .map((website) => website.url)
+      .filter((url) => url.startsWith("https://"))
+      .slice(0, 8),
   };
 }
 

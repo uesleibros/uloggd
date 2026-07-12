@@ -90,7 +90,8 @@ export function MobileSidebar({
                       data-active={
                         (index === 0
                           ? pathname === href
-                          : pathname.startsWith(href)) || undefined
+                          : href !== `/${lang}` && pathname.startsWith(href)) ||
+                        undefined
                       }
                     >
                       <Icon size={21} />
