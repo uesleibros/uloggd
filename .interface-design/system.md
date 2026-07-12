@@ -1,0 +1,204 @@
+# uloggd Interface System
+
+## Direction
+
+The uloggd interface should feel like a personal game library used at night: quiet, dense, tactile, and editorial. It is a product for players deciding what to play, logging their journey, and returning to games over time—not a generic analytics dashboard or game-store landing page.
+
+Domain vocabulary: game journal, backlog, physical covers, shelf, play session, achievement, progress, community log, discovery.
+
+Avoid generic SaaS patterns, promotional gradients, symmetrical metric-card grids, oversized landing-page heroes, repeated content across columns, and decorative color without meaning.
+
+## Product Signature
+
+The recurring signature is the **active shelf**:
+
+- Covers are treated as objects in a personal collection, not interchangeable cards.
+- Rankings use small physical-style index labels.
+- Progress, rating, year, and genre appear as compact log metadata.
+- Editorial highlights combine artwork and cover art, preserving the feeling of selecting a game from a library.
+- Dense lists follow the shelf to create uneven, intentional rhythm.
+
+This signature should appear in the home feed, library, profile collections, lists, reviews, and discovery screens.
+
+## Color World
+
+Colors come from console hardware and late-night screens:
+
+- `--console-black: #0b0a0d` — page perimeter and deepest background.
+- `--console-canvas: #0f0e11` — primary content canvas.
+- `--console-panel: #17151b` — navigation and persistent panels.
+- `--console-raised: #1c1a20` — cards, drawers, and raised controls.
+- `--console-inset: #0c0b0e` — search fields and input surfaces.
+- `--console-hover: #222027` — hover and pressed navigation surfaces.
+- `--screen-white: #f4f2f6` — primary text.
+- `--screen-dim: #aaa5af` — supporting text.
+- `--screen-muted: #716c77` — metadata and disabled hierarchy.
+- `--uloggd-violet: #9478f4` — primary action and current state only.
+- `--uloggd-violet-bright: #a991ff` — high-emphasis brand state.
+- `--achievement-gold: #d3b55b` — ratings and achievements only.
+- `--safe-green: #73c69a` — safety and positive status only.
+
+Use approximately 60% canvas, 30% panel/raised surfaces, and no more than 10% accent. Do not introduce new accent hues without a semantic role.
+
+## Depth Strategy
+
+Use **surface shifts plus quiet borders**. Dark-mode shadows are secondary and should never define the hierarchy alone.
+
+- Canvas → panel → raised → overlay should increase lightness subtly.
+- Standard border: `rgba(255, 255, 255, 0.07)`.
+- Emphasis border: `rgba(255, 255, 255, 0.11)`.
+- Inputs are darker than their parent because they receive content.
+- Persistent sidebar has a solid `console-panel` background and an emphasis border.
+- Image edges use a neutral white inset outline around 9–10% opacity.
+- Avoid dramatic shadows and tinted borders.
+
+## Spacing and Density
+
+Base unit: **4px**.
+
+- Micro gaps: 4–8px.
+- Control gaps and padding: 8–12px.
+- Navigation row height: 44–46px.
+- Compact list row: 54–62px.
+- Card/internal padding: 16–20px.
+- Feed section padding: 32–36px desktop; 18–30px mobile.
+- Major separation: 32–40px.
+- Desktop sidebar: 264px full; 76px compact.
+- Context rail: 320px full; 290px compact; hidden below 900px.
+
+The feed should alternate between expressive/editorial zones and compact working zones. Do not give every section the same gap, card shape, or density.
+
+## Typography
+
+Primary typeface: Geist Sans through `next/font`. Monospace metadata uses Geist Mono.
+
+Approximate scale:
+
+- Micro metadata: 8–10px, 500–650, muted, optionally tracked.
+- Supporting metadata: 10–11px, 400–600.
+- Product body: 12–14px, line-height 1.5–1.65.
+- Section title: 16–19px, 620–650, negative tracking.
+- Page title: 28px, 650, `-0.045em` tracking.
+- Editorial game title: 28–42px, 680, `-0.055em` tracking.
+- Legal/document display: 36–54px.
+
+Use weight and color before adding font size. Headings use balanced wrapping; paragraphs use pretty wrapping. Dynamic numbers use tabular numerals.
+
+## Radius Scale
+
+- Small controls and image thumbnails: 5–7px.
+- Navigation and buttons: 7–9px.
+- Panels and feature surfaces: 10–14px.
+- Circular elements only for avatars and status dots.
+
+Nested radii must be concentric: outer radius equals the inner radius plus surrounding padding where visually applicable.
+
+## Navigation Patterns
+
+### Desktop sidebar
+
+- 264px wide, sticky, full viewport height.
+- Solid `console-panel` background with `shell-line-strong` right border.
+- Brand plus subtle beta stage at top.
+- Navigation rows are 44px high with an 8px radius.
+- Current route uses a violet wash, violet icon, white label, and small status dot.
+- Quick-log action is tonal, not a large saturated pill.
+- Account control stays at the bottom and must not fabricate authenticated state.
+
+### Compact sidebar
+
+- 76px wide below 1100px.
+- Icons remain centered in 44px hit areas.
+- Text, keyboard hint, beta label, and account metadata collapse.
+
+### Mobile navigation
+
+- Persistent 60px header and 64px bottom navigation.
+- Sidebar remains available through the menu trigger.
+- Drawer behavior uses Radix Dialog for focus trapping, Escape handling, focus return, and accessible overlay state.
+- Drawer animation: 240ms entry, 160ms exit, transform and opacity only.
+
+## Reusable Component Patterns
+
+### Brand
+
+- Real `/logo.jpg`, 38×38px desktop.
+- 9px radius with neutral inset edge.
+- Wordmark at 23px/760 with tight negative tracking.
+
+### Quick log button
+
+- 44px height.
+- 9px radius.
+- Violet wash background and low-opacity violet border.
+- 19px leading icon, 13px/650 label, optional keyboard hint.
+- Active feedback uses `scale(0.98)`.
+
+### Editorial featured game
+
+- Artwork backdrop plus separate 3:4 cover object.
+- One dominant game title; rating/year/genre form a single metadata line.
+- Description is clamped to three lines.
+- Primary action is neutral white; save action is a quiet secondary square.
+- Mobile reduces cover to 96px and removes long description rather than squeezing it.
+
+### Active shelf
+
+- Five covers across on desktop.
+- Horizontal scroll with 126px cover items on mobile.
+- Cover ratio 3:4, 7px radius.
+- Rank label sits at the bottom-left over the image.
+- Save action appears on hover/focus desktop and remains visible on touch devices.
+
+### Compact game row
+
+- 62px minimum height.
+- 42px cover, primary title, muted metadata, tabular rating, add control.
+- Use tonal hover only; do not wrap each row in an individual card.
+
+### Context rail panel
+
+- 12px radius, 20px padding.
+- One onboarding or context action, followed by a dense trend list.
+- Must not repeat the exact feed content or hierarchy.
+
+## Interaction States
+
+Every interactive control requires:
+
+- Visible keyboard focus using a 2px violet outline with 3px offset.
+- Tonal hover state.
+- Press feedback between `scale(0.97)` and `scale(0.98)` when appropriate.
+- Minimum 40px hit area; prefer 44px for navigation.
+- Disabled state using muted text and no pointer response.
+- Loading, empty, and error states before data-backed features ship.
+
+Do not use `transition: all`. Animate only transform, opacity, background color, border color, and text color as needed.
+
+## Motion
+
+- Buttons and frequent controls: 100–140ms.
+- Hover surfaces: 130–180ms.
+- Drawer entry: 240ms using `cubic-bezier(0.23, 1, 0.32, 1)`.
+- Drawer exit: 160ms using `cubic-bezier(0.77, 0, 0.175, 1)`.
+- Avoid animation on repeated keyboard-driven actions.
+- Respect `prefers-reduced-motion` by removing movement while preserving immediate state changes.
+
+## Content Principles
+
+- Never fabricate user activity, online counts, progress, or authenticated identity.
+- IGDB catalog data may populate discovery surfaces; clearly distinguish it from uloggd community data.
+- Use direct product language, not promotional copy.
+- Empty social areas should explain what becomes available after accounts/data exist.
+- Portuguese is the primary product language; every new interface string must also be represented in the English dictionary.
+
+## Craft Checks
+
+Before shipping a new screen:
+
+1. Squint test: editorial focus, navigation, and secondary data remain distinguishable.
+2. Swap test: the screen should still read as a game journal if the uloggd wordmark is hidden.
+3. Signature test: identify at least one active-shelf expression and four supporting domain-specific details.
+4. Token test: no arbitrary hex colors outside this system without a documented semantic need.
+5. State test: verify hover, active, focus, loading, empty, error, and mobile behavior.
+6. Run desktop and mobile visual checks, lint, TypeScript, and production build.
