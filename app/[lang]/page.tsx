@@ -37,6 +37,12 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   const savedById = new Map(
     (savedGames ?? []).map((item) => [item.igdb_id, item]),
   );
+  const libraryCount = savedGames?.length ?? 0;
+  const playingCount =
+    savedGames?.filter((item) => item.playing || item.status === "PLAYING")
+      .length ?? 0;
+  const ratedCount =
+    savedGames?.filter((item) => item.quick_rating !== null).length ?? 0;
   const [featured, ...catalog] = games;
   const date = new Intl.DateTimeFormat(lang, {
     day: "2-digit",
@@ -263,12 +269,51 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 
       <aside className="right-rail">
         <section className="rail-intro">
-          <h2>{d.home.libraryPitch}</h2>
-          <p>{d.home.libraryPitchDescription}</p>
-          <button>
-            {d.actions.buildLibrary}
-            <ArrowUpRight size={15} />
-          </button>
+          {user ? (
+            <>
+              <span>{lang === "pt-BR" ? "SUA JORNADA" : "YOUR JOURNEY"}</span>
+              <h2>
+                {lang === "pt-BR"
+                  ? "Continue de onde parou"
+                  : "Pick up where you left off"}
+              </h2>
+              <p>
+                {lang === "pt-BR"
+                  ? "Sua coleção e suas avaliações, reunidas em um só lugar."
+                  : "Your collection and ratings, together in one place."}
+              </p>
+              <dl className="rail-library-stats">
+                <div>
+                  <dt>{lang === "pt-BR" ? "Jogos" : "Games"}</dt>
+                  <dd>{libraryCount}</dd>
+                </div>
+                <div>
+                  <dt>{lang === "pt-BR" ? "Jogando" : "Playing"}</dt>
+                  <dd>{playingCount}</dd>
+                </div>
+                <div>
+                  <dt>{lang === "pt-BR" ? "Avaliados" : "Rated"}</dt>
+                  <dd>{ratedCount}</dd>
+                </div>
+              </dl>
+              <Link className="rail-primary-action" href={`/${lang}/library`}>
+                {lang === "pt-BR" ? "Abrir biblioteca" : "Open library"}
+                <ArrowUpRight size={15} />
+              </Link>
+            </>
+          ) : (
+            <>
+              <h2>{d.home.libraryPitch}</h2>
+              <p>{d.home.libraryPitchDescription}</p>
+              <Link
+                className="rail-primary-action"
+                href={`/${lang}/login?next=/${lang}`}
+              >
+                {d.actions.buildLibrary}
+                <ArrowUpRight size={15} />
+              </Link>
+            </>
+          )}
         </section>
         <section className="rail-section">
           <div className="rail-title">

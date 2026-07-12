@@ -1067,6 +1067,23 @@ a {
 .quick-menu [data-liked] {
   color: #ffaaa4;
 }
+.quick-rating-menu {
+  padding: 7px 8px 8px;
+}
+.quick-rating-menu > span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--screen-muted);
+  font-size: 9px;
+}
+.quick-menu [role="menuitem"].quick-menu-remove {
+  color: #e2aaaa;
+}
+.quick-menu [role="menuitem"].quick-menu-remove:hover,
+.quick-menu [role="menuitem"].quick-menu-remove:focus {
+  background: rgb(210 105 105 / 9%);
+  color: #ffc1bc;
+}
 .quick-menu [role="separator"] {
   height: 1px;
   margin: 4px -5px;
@@ -1279,7 +1296,7 @@ a {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: 210px minmax(0, 1fr) 220px;
+  grid-template-columns: 200px minmax(0, 1fr) 240px;
   align-items: start;
   gap: 24px;
   margin-top: -112px;
@@ -1521,7 +1538,7 @@ a {
 }
 .game-time-panel header span {
   color: var(--brand-blurple-bright);
-  font: 600 7px var(--font-geist-mono);
+  font: 600 9px var(--font-geist-mono);
   letter-spacing: 0.07em;
 }
 .game-time-panel h2 {
@@ -1545,18 +1562,18 @@ a {
   align-items: center;
   gap: 6px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 .game-time-panel dd {
   margin: 0;
   color: var(--screen-white);
-  font: 630 10px var(--font-geist-mono);
+  font: 630 11px var(--font-geist-mono);
   font-variant-numeric: tabular-nums;
 }
 .game-time-panel > p {
   margin: 10px 0 0;
   color: var(--screen-muted);
-  font-size: 7px;
+  font-size: 9px;
   text-align: right;
 }
 .game-context-rail .game-score-line {
@@ -1576,12 +1593,12 @@ a {
 }
 .game-similar-rail > header span {
   color: var(--brand-blurple-bright);
-  font: 600 7px var(--font-geist-mono);
+  font: 600 9px var(--font-geist-mono);
   letter-spacing: 0.07em;
 }
 .game-similar-rail > header h2 {
   margin: 4px 0 10px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 620;
 }
 .game-similar-rail > div {
@@ -1622,13 +1639,13 @@ a {
 }
 .game-similar-rail strong {
   color: var(--screen-dim);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 550;
 }
 .game-similar-rail small {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 7px;
+  font-size: 9px;
 }
 .game-title-meta {
   display: flex;
@@ -1639,9 +1656,9 @@ a {
 }
 .game-page-content h1 {
   margin: 10px 0 16px;
-  font-size: clamp(34px, 6vw, 58px);
-  line-height: 0.98;
-  letter-spacing: -0.06em;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
   text-wrap: balance;
 }
 .game-action-panel {
@@ -1650,6 +1667,64 @@ a {
   align-items: center;
   gap: 8px;
   margin-bottom: 24px;
+}
+.game-user-rating {
+  flex-basis: 100%;
+  margin-bottom: 2px;
+}
+.game-user-rating > span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--screen-muted);
+  font: 600 9px var(--font-geist-mono);
+  letter-spacing: 0.07em;
+}
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.star-rating button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #4f4a52;
+  cursor: pointer;
+  transition:
+    color 130ms ease-out,
+    background-color 130ms ease-out,
+    transform 100ms ease-out;
+}
+.star-rating button:hover,
+.star-rating button[data-active] {
+  color: var(--achievement-gold);
+}
+.star-rating button:hover {
+  background: rgb(211 181 91 / 8%);
+}
+.star-rating button:active {
+  transform: scale(0.97);
+}
+.star-rating button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.star-rating > span {
+  margin-left: 7px;
+  color: var(--screen-muted);
+  font: 550 10px var(--font-geist-mono);
+}
+.star-rating-compact {
+  gap: 0;
+}
+.star-rating-compact button {
+  width: 25px;
+  height: 25px;
 }
 .game-action-panel > button,
 .game-status-button {
@@ -1662,7 +1737,7 @@ a {
   border-radius: 7px;
   background: rgb(255 255 255 / 4%);
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 450;
   cursor: pointer;
 }
@@ -1707,7 +1782,7 @@ a {
 .game-score-line span,
 .game-score-line p {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 10px;
 }
 .game-score-line p {
   margin: 0;
@@ -1742,12 +1817,12 @@ a {
 }
 .game-details dt {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 10px;
 }
 .game-details dd {
   margin: 0;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 .game-primary-sections {
@@ -2206,7 +2281,7 @@ a {
   line-height: 1.55;
   text-wrap: pretty;
 }
-.rail-intro button {
+.rail-primary-action {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2222,8 +2297,36 @@ a {
   font-weight: 620;
   cursor: pointer;
 }
-.rail-intro button:hover {
+.rail-primary-action:hover {
   background: var(--console-hover);
+}
+.rail-library-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 17px 0 0;
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 7px;
+  background: var(--shell-line);
+}
+.rail-library-stats > div {
+  min-width: 0;
+  padding: 10px 7px;
+  background: var(--console-inset);
+}
+.rail-library-stats dt {
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-library-stats dd {
+  margin: 5px 0 0;
+  color: var(--screen-white);
+  font: 650 15px var(--font-geist-mono);
+  font-variant-numeric: tabular-nums;
 }
 .rail-section {
   margin-top: 28px;
@@ -3613,7 +3716,7 @@ a {
   }
   .game-page-content h1 {
     margin-top: 7px;
-    font-size: clamp(30px, 10vw, 42px);
+    font-size: clamp(28px, 9vw, 36px);
     line-height: 1;
   }
   .game-action-panel {

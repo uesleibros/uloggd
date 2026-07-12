@@ -51,6 +51,7 @@ export default async function LibraryPage({
                 game={game}
                 initial={record}
                 lang={lang}
+                removable
               />
             ) : null;
           })}

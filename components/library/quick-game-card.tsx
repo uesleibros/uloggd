@@ -11,10 +11,12 @@ import {
   MoreHorizontal,
   Play,
   Star,
+  Trash2,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { resolveGameCover } from "@/lib/game-cover";
+import { StarRating } from "./star-rating";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -38,6 +40,7 @@ export function QuickGameCard({
   rank,
   enabled = true,
   meta,
+  removable = false,
 }: {
   game: {
     id: number;
@@ -52,11 +55,13 @@ export function QuickGameCard({
   rank?: number;
   enabled?: boolean;
   meta?: string;
+  removable?: boolean;
 }) {
   const pt = lang === "pt-BR";
   const [state, setState] = useState<State>(initial);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [removed, setRemoved] = useState(false);
 
   const labels: Record<Status, string> = pt
     ? {
@@ -101,8 +106,48 @@ export function QuickGameCard({
     setPending(null);
   }
 
+  async function rate(value: number) {
+    if (pending) return;
+    setPending("rating");
+    setError(null);
+    const { data, error: actionError } = await createClient().rpc(
+      "set_game_rating",
+      { game_id: game.id, game_slug: game.slug, rating: value },
+    );
+    if (actionError)
+      setError(
+        pt
+          ? "Não foi possível salvar sua nota."
+          : "Could not save your rating.",
+      );
+    else setState(data as State);
+    setPending(null);
+  }
+
+  async function remove() {
+    if (pending) return;
+    setPending("remove");
+    setError(null);
+    const { data, error: actionError } = await createClient().rpc(
+      "remove_game_from_library",
+      { game_id: game.id },
+    );
+    if (actionError || data !== true) {
+      setError(
+        pt
+          ? "Não foi possível remover este jogo."
+          : "Could not remove this game.",
+      );
+      setPending(null);
+      return;
+    }
+    setRemoved(true);
+  }
+
   const played = state?.status === "COMPLETED";
   const image = resolveGameCover(game.coverUrl, state?.custom_cover_url);
+
+  if (removed) return null;
 
   return (
     <article className="quick-game-card">
@@ -123,7 +168,7 @@ export function QuickGameCard({
           {state?.quick_rating ? (
             <span>
               <Star size={11} fill="currentColor" />
-              {state.quick_rating}
+              {state.quick_rating / 20}/5
             </span>
           ) : null}
         </div>
@@ -197,6 +242,17 @@ export function QuickGameCard({
                     </DropdownMenu.Portal>
                   </DropdownMenu.Sub>
                   <DropdownMenu.Separator />
+                  <div className="quick-rating-menu">
+                    <span>{pt ? "Sua nota" : "Your rating"}</span>
+                    <StarRating
+                      value={state?.quick_rating ?? null}
+                      onChange={rate}
+                      disabled={Boolean(pending)}
+                      compact
+                      lang={lang}
+                    />
+                  </div>
+                  <DropdownMenu.Separator />
                   <DropdownMenu.CheckboxItem
                     checked={state?.playing ?? false}
                     onCheckedChange={(value) =>
@@ -236,6 +292,19 @@ export function QuickGameCard({
                       <Check size={13} />
                     </DropdownMenu.ItemIndicator>
                   </DropdownMenu.CheckboxItem>
+                  {removable && (
+                    <>
+                      <DropdownMenu.Separator />
+                      <DropdownMenu.Item
+                        className="quick-menu-remove"
+                        disabled={Boolean(pending)}
+                        onSelect={remove}
+                      >
+                        <Trash2 size={13} />
+                        {pt ? "Remover da biblioteca" : "Remove from library"}
+                      </DropdownMenu.Item>
+                    </>
+                  )}
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>
             </DropdownMenu.Root>

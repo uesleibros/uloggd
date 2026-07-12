@@ -4,6 +4,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronDown, Clock3, Gift, Heart, Play } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { StarRating } from "./star-rating";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -13,6 +14,7 @@ type State = {
   backlog: boolean;
   wishlist: boolean;
   liked: boolean;
+  quick_rating: number | null;
 } | null;
 const statusOptions: Status[] = ["COMPLETED", "PLAYING", "ON_HOLD", "DROPPED"];
 
@@ -76,6 +78,24 @@ export function GameActionPanel({
     setPending(null);
   }
 
+  async function rate(value: number) {
+    if (!enabled || pending) return;
+    setPending("rating");
+    setError(null);
+    const { data, error: actionError } = await createClient().rpc(
+      "set_game_rating",
+      { game_id: game.id, game_slug: game.slug, rating: value },
+    );
+    if (actionError)
+      setError(
+        pt
+          ? "Não foi possível salvar sua avaliação. Tente novamente."
+          : "Could not save your rating. Please try again.",
+      );
+    else setState(data as State);
+    setPending(null);
+  }
+
   if (!enabled)
     return (
       <p className="game-actions-signed-out">
@@ -98,6 +118,15 @@ export function GameActionPanel({
 
   return (
     <div className="game-action-panel">
+      <div className="game-user-rating">
+        <span>{pt ? "SUA NOTA" : "YOUR RATING"}</span>
+        <StarRating
+          value={state?.quick_rating ?? null}
+          onChange={rate}
+          disabled={Boolean(pending)}
+          lang={lang}
+        />
+      </div>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
           <button

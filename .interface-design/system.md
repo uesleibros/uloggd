@@ -210,6 +210,13 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - 12px radius, 20px padding.
 - One onboarding or context action, followed by a dense trend list.
 - Must not repeat the exact feed content or hierarchy.
+- Signed-out home rails explain the library and link to authentication; signed-in rails replace that pitch with real collection, playing, and rating counts plus a library shortcut.
+
+### Star rating
+
+- Personal ratings use five gold stars backed by the existing 0–100 value (20 points per star).
+- The game page shows the full labeled control; cover menus use the compact five-star variant.
+- Rating a new game adds it to the library as Backlog. Library cards expose a clearly destructive remove action in their overflow menu.
 
 ### Legal document switcher
 
