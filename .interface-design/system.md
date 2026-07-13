@@ -129,6 +129,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Do not use a bottom navigation bar; all destinations live in the drawer to avoid competing navigation systems.
 - Drawer behavior uses Radix Dialog for focus trapping, Escape handling, focus return, and accessible overlay state.
 - Drawer animation: 240ms entry, 160ms exit, transform and opacity only.
+- The authenticated account control spans the full drawer width at the bottom; compact desktop sidebar rules must never collapse its identity, metadata, or menu chevron.
 
 ## Authentication Pattern
 

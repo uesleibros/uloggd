@@ -3550,15 +3550,22 @@ html[data-sidebar-collapsed] .cookie-banner {
   .login-highlight-list {
     display: none;
   }
-  .mobile-drawer .account-button {
+  html .mobile-drawer .account-button {
     display: grid;
     grid-template-columns: 36px 1fr auto;
+    align-self: stretch;
+    width: 100%;
+    min-height: 62px;
+    margin: auto 0 0;
     padding: 12px;
     border: 1px solid var(--shell-line);
     border-radius: 9px;
     background: var(--console-raised);
   }
-  .mobile-drawer .account-copy {
+  html .mobile-drawer .account-copy {
+    display: block;
+  }
+  html .mobile-drawer .account-button > svg {
     display: block;
   }
 }
