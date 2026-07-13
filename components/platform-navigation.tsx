@@ -3,6 +3,7 @@ import {
   Compass,
   HomeIcon,
   LibraryBig,
+  ListTree,
   LogIn,
   LockKeyhole,
   Settings,
@@ -24,6 +25,7 @@ const iconMap = {
   library: LibraryBig,
   star: Star,
   user: UserRound,
+  list: ListTree,
 };
 
 export function PlatformNavigation({
@@ -43,6 +45,7 @@ export function PlatformNavigation({
     ["compass", d.nav.explore, false],
     ["library", d.nav.library, true],
     ["star", d.nav.reviews, true],
+    ["list", d.nav.lists, true],
     ["user", d.nav.profile, true],
   ] as const;
 
@@ -75,22 +78,19 @@ export function PlatformNavigation({
               }
               if (index !== 0) {
                 const href =
-                  icon === "library" ? `/${lang}/library` : `/${lang}`;
-                if (icon === "library") {
-                  return (
-                    <ActiveLink
-                      key={label}
-                      href={href}
-                      aria-label={label}
-                      title={label}
-                    >
-                      <NavIcon size={20} />
-                      <span>{label}</span>
-                    </ActiveLink>
-                  );
-                }
+                  icon === "compass"
+                    ? `/${lang}/explore`
+                    : icon === "library"
+                      ? `/${lang}/library`
+                      : icon === "star"
+                        ? `/${lang}/reviews`
+                        : icon === "list"
+                          ? `/${lang}/lists`
+                          : account?.username
+                            ? `/${lang}/u/${account.username}`
+                            : `/${lang}/onboarding/username`;
                 return (
-                  <Link
+                  <ActiveLink
                     key={label}
                     href={href}
                     aria-label={label}
@@ -98,7 +98,7 @@ export function PlatformNavigation({
                   >
                     <NavIcon size={20} />
                     <span>{label}</span>
-                  </Link>
+                  </ActiveLink>
                 );
               }
               return (
@@ -165,6 +165,7 @@ export function PlatformNavigation({
             explore: d.nav.explore,
             library: d.nav.library,
             reviews: d.nav.reviews,
+            lists: d.nav.lists,
             profile: d.nav.profile,
             settings: d.nav.settings,
             signIn: d.actions.signIn,

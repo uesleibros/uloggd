@@ -279,6 +279,19 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 
 ## Content Principles
 
+### Social journal
+
+- Reviews and diary sessions remain distinct: a review owns the lasting rating and opinion, while a diary entry records a dated play session, optional duration, and short note.
+- Activity rows use a 72px physical cover, compact identity, one activity verb, and optional body content; mobile reduces the cover to 56px instead of flattening the hierarchy.
+- Spoilers stay behind an explicit disclosure control, and public feeds never reveal private entries.
+- Game pages expose review, session, and list actions as quiet secondary controls below the primary library state.
+
+### Public profiles and lists
+
+- Profiles use a 4:1 banner, overlapping 112px avatar, compact statistic line, active shelf, activity stream, and lists rail; mobile uses a 3:1 banner and 82px avatar.
+- List cards emphasize title and description over counts. Detail views reuse active-shelf covers with a small physical index marker for manual order.
+- Creating a list is a focused inline form; adding a game remains contextual on the game page.
+
 - Never fabricate user activity, online counts, progress, or authenticated identity.
 - IGDB catalog data may populate discovery surfaces; clearly distinguish it from uloggd community data.
 - Use direct product language, not promotional copy.

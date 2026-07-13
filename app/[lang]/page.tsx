@@ -6,6 +6,8 @@ import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
 import { resolveGameCover } from "@/lib/game-cover";
 import { QuickGameCard } from "@/components/library/quick-game-card";
+import { ActivityStream } from "@/components/social/activity-stream";
+import { getActivity } from "@/lib/social";
 import { getDictionary, hasLocale } from "./dictionaries";
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
@@ -28,6 +30,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         )
         .eq("profile_id", user.id)
     : { data: [] };
+  const communityEntries = await getActivity(supabase, { limit: 6 });
   const savedById = new Map(
     (savedGames ?? []).map((item) => [item.igdb_id, item]),
   );
@@ -246,6 +249,27 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
               </article>
             ))}
           </div>
+        </section>
+        <section className="home-activity-section">
+          <div className="section-heading">
+            <div>
+              <h2>
+                {lang === "pt-BR"
+                  ? "Agora na comunidade"
+                  : "Now in the community"}
+              </h2>
+              <p>
+                {lang === "pt-BR"
+                  ? "Sessões e avaliações publicadas recentemente"
+                  : "Recently published sessions and reviews"}
+              </p>
+            </div>
+            <Link href={`/${lang}/explore`}>
+              {d.actions.seeAll}
+              <ArrowUpRight size={14} />
+            </Link>
+          </div>
+          <ActivityStream entries={communityEntries} lang={lang} />
         </section>
       </main>
 

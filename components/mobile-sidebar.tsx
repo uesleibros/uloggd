@@ -9,6 +9,7 @@ import {
   Compass,
   HomeIcon,
   LibraryBig,
+  ListTree,
   LockKeyhole,
   LogIn,
   Menu,
@@ -31,6 +32,7 @@ type MobileSidebarProps = {
     explore: string;
     library: string;
     reviews: string;
+    lists: string;
     profile: string;
     settings: string;
     signIn: string;
@@ -48,10 +50,18 @@ export function MobileSidebar({
   const pathname = usePathname();
   const links = [
     [HomeIcon, labels.home, `/${lang}`, false],
-    [Compass, labels.explore, `/${lang}`, false],
+    [Compass, labels.explore, `/${lang}/explore`, false],
     [LibraryBig, labels.library, `/${lang}/library`, true],
-    [Star, labels.reviews, `/${lang}`, true],
-    [UserRound, labels.profile, `/${lang}`, true],
+    [Star, labels.reviews, `/${lang}/reviews`, true],
+    [ListTree, labels.lists, `/${lang}/lists`, true],
+    [
+      UserRound,
+      labels.profile,
+      account?.username
+        ? `/${lang}/u/${account.username}`
+        : `/${lang}/onboarding/username`,
+      true,
+    ],
   ] as const;
 
   return (

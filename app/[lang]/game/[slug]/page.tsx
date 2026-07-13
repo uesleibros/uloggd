@@ -7,9 +7,12 @@ import { GameExtendedContent } from "@/components/game-extended-content";
 import { GameMediaGallery } from "@/components/game-media-gallery";
 import { CoverSelector } from "@/components/library/cover-selector";
 import { GameActionPanel } from "@/components/library/game-action-panel";
+import { GameLogActions } from "@/components/social/game-log-actions";
+import { ActivityStream } from "@/components/social/activity-stream";
 import { getGameBySlug } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/server";
+import { getActivity } from "@/lib/social";
 import { hasLocale } from "../../dictionaries";
 
 type Props = PageProps<"/[lang]/game/[slug]">;
@@ -69,6 +72,17 @@ export default async function GamePage({ params }: Props) {
         .eq("profile_id", user.id)
         .in("igdb_id", [game.id, ...relatedIds])
     : { data: [] };
+  const { data: userLists } = user
+    ? await supabase
+        .from("game_lists")
+        .select("id,name")
+        .eq("profile_id", user.id)
+        .order("updated_at", { ascending: false })
+    : { data: [] };
+  const communityEntries = await getActivity(supabase, {
+    gameId: game.id,
+    limit: 12,
+  });
   const savedById = new Map(
     (savedGames ?? []).map((saved) => [saved.igdb_id, saved]),
   );
@@ -133,6 +147,14 @@ export default async function GamePage({ params }: Props) {
             lang={lang}
             enabled={Boolean(user)}
           />
+          {user && (
+            <GameLogActions
+              game={game}
+              lang={lang}
+              lists={userLists ?? []}
+              initialRating={state?.quick_rating ?? null}
+            />
+          )}
           <section className="game-summary">
             <h2>{lang === "pt-BR" ? "Sobre" : "About"}</h2>
             <p>
@@ -144,6 +166,19 @@ export default async function GamePage({ params }: Props) {
           </section>
         </div>
         <div className="game-wide-content">
+          <section className="game-community-section">
+            <div className="social-section-title">
+              <div>
+                <h2>{lang === "pt-BR" ? "Comunidade" : "Community"}</h2>
+                <p>
+                  {lang === "pt-BR"
+                    ? "Avaliações e sessões recentes"
+                    : "Recent reviews and sessions"}
+                </p>
+              </div>
+            </div>
+            <ActivityStream entries={communityEntries} lang={lang} />
+          </section>
           <GameMediaGallery items={game.gallery} lang={lang} />
           <GameExtendedContent
             game={game}

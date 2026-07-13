@@ -9,6 +9,9 @@ const publicSegments = new Set([
   "legal",
   "onboarding",
   "game",
+  "explore",
+  "u",
+  "lists",
 ]);
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
