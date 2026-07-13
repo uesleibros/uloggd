@@ -24,6 +24,9 @@ export async function generateMetadata({
   const locale = hasLocale(lang) ? lang : "pt-BR";
   const dictionary = await getDictionary(locale);
   return {
+    metadataBase: new URL(
+      process.env.NEXT_PUBLIC_SITE_URL || "https://uloggd.com",
+    ),
     title: { default: "uloggd", template: "%s · uloggd" },
     description: dictionary.home.subtitle,
   };

@@ -45,7 +45,8 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
   const segment = pathname.slice(lang.length + 2).split("/")[0] || "";
   if (!user) {
-    if (!publicSegments.has(segment)) {
+    const privateListsIndex = pathname === `/${lang}/lists`;
+    if (!publicSegments.has(segment) || privateListsIndex) {
       const url = new URL(`/${lang}/login`, request.url);
       url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);

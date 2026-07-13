@@ -2,10 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, Clock3, EyeOff, Star } from "lucide-react";
 import type { Game } from "@/lib/igdb";
+import { ActivityEntryActions } from "./activity-entry-actions";
 
 export type SocialEntry = {
   id: string;
   kind: "review" | "diary";
+  profileId: string;
   profile: {
     username: string;
     display_name: string | null;
@@ -19,15 +21,18 @@ export type SocialEntry = {
   playedOn?: string;
   minutes?: number | null;
   spoilers: boolean;
+  visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
   createdAt: string;
 };
 
 export function ActivityStream({
   entries,
   lang,
+  viewerId,
 }: {
   entries: SocialEntry[];
   lang: "pt-BR" | "en";
+  viewerId?: string | null;
 }) {
   const pt = lang === "pt-BR";
   const date = new Intl.DateTimeFormat(lang, {
@@ -139,6 +144,19 @@ export function ActivityStream({
               ) : (
                 <p className="activity-content">{entry.content}</p>
               ))}
+            {viewerId === entry.profileId && (
+              <ActivityEntryActions
+                id={entry.id}
+                kind={entry.kind}
+                lang={lang}
+                gameSlug={entry.gameSlug}
+                playedOn={entry.playedOn}
+                minutes={entry.minutes}
+                content={entry.content}
+                spoilers={entry.spoilers}
+                visibility={entry.visibility}
+              />
+            )}
           </div>
         </article>
       ))}

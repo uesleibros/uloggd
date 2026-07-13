@@ -1,22 +1,65 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { QuickGameCard } from "@/components/library/quick-game-card";
+import {
+  ListOwnerControls,
+  RemoveListItem,
+} from "@/components/social/list-owner-controls";
 import { getGamesByIds } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../dictionaries";
 
-export default async function ListPage({
-  params,
-}: PageProps<"/[lang]/lists/[id]">) {
+type Props = PageProps<"/[lang]/lists/[id]">;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang, id } = await params;
+  if (!hasLocale(lang) || !/^[0-9a-f-]{36}$/i.test(id)) return {};
+  const { data: list } = await (
+    await createClient()
+  )
+    .from("game_lists")
+    .select("name,description,profiles!game_lists_profile_id_fkey(username)")
+    .eq("id", id)
+    .maybeSingle();
+  if (!list) return {};
+  const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
+  const description =
+    list.description ||
+    (lang === "pt-BR"
+      ? `Uma lista de jogos criada por @${owner?.username} no uloggd.`
+      : `A game list by @${owner?.username} on uloggd.`);
+  return {
+    title: list.name,
+    description,
+    openGraph: {
+      title: `${list.name} · uloggd`,
+      description,
+      type: "website",
+      siteName: "uloggd",
+    },
+    twitter: { card: "summary", title: `${list.name} · uloggd`, description },
+  };
+}
+
+export default async function ListPage({ params }: Props) {
   const { lang, id } = await params;
   if (!hasLocale(lang) || !/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const supabase = await createClient();
-  const { data: list } = await supabase
-    .from("game_lists")
-    .select(
-      "id,name,description,visibility,profiles!game_lists_profile_id_fkey(username,display_name),game_list_items(id,igdb_id,game_slug,position,note)",
-    )
-    .eq("id", id)
-    .maybeSingle();
+  const [
+    { data: list },
+    {
+      data: { user },
+    },
+  ] = await Promise.all([
+    supabase
+      .from("game_lists")
+      .select(
+        "id,profile_id,name,description,visibility,profiles!game_lists_profile_id_fkey(username,display_name),game_list_items(id,igdb_id,game_slug,position,note)",
+      )
+      .eq("id", id)
+      .maybeSingle(),
+    supabase.auth.getUser(),
+  ]);
   if (!list) notFound();
   const items = [...(list.game_list_items ?? [])].sort(
     (a, b) => a.position - b.position,
@@ -25,6 +68,7 @@ export default async function ListPage({
   const byId = new Map(games.map((game) => [game.id, game]));
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const pt = lang === "pt-BR";
+  const isOwner = user?.id === list.profile_id;
   return (
     <main className="social-page">
       <header className="list-detail-header">
@@ -36,6 +80,7 @@ export default async function ListPage({
         <small>
           {items.length} {pt ? "jogos" : "games"}
         </small>
+        {isOwner && <ListOwnerControls list={list} lang={lang} />}
       </header>
       {items.length ? (
         <div className="library-grid">
@@ -51,6 +96,13 @@ export default async function ListPage({
                   enabled={false}
                 />
                 {item.note && <p>{item.note}</p>}
+                {isOwner && (
+                  <RemoveListItem
+                    listId={list.id}
+                    gameId={item.igdb_id}
+                    lang={lang}
+                  />
+                )}
               </div>
             ) : null;
           })}

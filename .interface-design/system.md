@@ -289,8 +289,11 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 ### Public profiles and lists
 
 - Profiles use a 4:1 banner, overlapping 112px avatar, compact statistic line, active shelf, activity stream, and lists rail; mobile uses a 3:1 banner and 82px avatar.
+- Profile statistics always use exact database counts rather than the number of preview rows currently rendered. The owner gets a quiet edit action; visitors get a follow control in the same position.
+- Profile metadata uses display name/username, bio, and the uploaded banner (avatar fallback) for Open Graph and Twitter embeds.
 - List cards emphasize title and description over counts. Detail views reuse active-shelf covers with a small physical index marker for manual order.
 - Creating a list is a focused inline form; adding a game remains contextual on the game page.
+- Owners can edit or delete reviews, diary sessions, and lists without exposing management controls to other viewers. Destructive actions require confirmation and remain visually secondary until hovered.
 
 - Never fabricate user activity, online counts, progress, or authenticated identity.
 - IGDB catalog data may populate discovery surfaces; clearly distinguish it from uloggd community data.

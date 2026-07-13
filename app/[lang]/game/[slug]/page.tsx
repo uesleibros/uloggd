@@ -79,6 +79,14 @@ export default async function GamePage({ params }: Props) {
         .eq("profile_id", user.id)
         .order("updated_at", { ascending: false })
     : { data: [] };
+  const { data: ownReview } = user
+    ? await supabase
+        .from("reviews")
+        .select("id,rating,content,contains_spoilers,visibility")
+        .eq("profile_id", user.id)
+        .eq("igdb_id", game.id)
+        .maybeSingle()
+    : { data: null };
   const communityEntries = await getActivity(supabase, {
     gameId: game.id,
     limit: 12,
@@ -153,6 +161,7 @@ export default async function GamePage({ params }: Props) {
               lang={lang}
               lists={userLists ?? []}
               initialRating={state?.quick_rating ?? null}
+              initialReview={ownReview}
             />
           )}
           <section className="game-summary">
@@ -177,7 +186,11 @@ export default async function GamePage({ params }: Props) {
                 </p>
               </div>
             </div>
-            <ActivityStream entries={communityEntries} lang={lang} />
+            <ActivityStream
+              entries={communityEntries}
+              lang={lang}
+              viewerId={user?.id}
+            />
           </section>
           <GameMediaGallery items={game.gallery} lang={lang} />
           <GameExtendedContent

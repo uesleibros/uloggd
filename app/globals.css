@@ -4468,6 +4468,71 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 
 /* Social journal, reviews, profiles, and lists */
+.social-skeleton {
+  min-height: 70vh;
+}
+.skeleton-block {
+  display: block;
+  border-radius: 7px;
+  background: var(--console-raised);
+  animation: skeleton-pulse 1.4s ease-in-out infinite alternate;
+}
+.skeleton-title {
+  width: min(280px, 65%);
+  height: 32px;
+  margin-top: 32px;
+}
+.skeleton-subtitle {
+  width: min(460px, 85%);
+  height: 13px;
+  margin-top: 12px;
+}
+.skeleton-banner {
+  width: 100%;
+  height: min(24vw, 260px);
+  margin: 0;
+  border-radius: 12px;
+}
+.skeleton-stream {
+  display: grid;
+  gap: 0;
+  max-width: 780px;
+  margin-top: 46px;
+  border-top: 1px solid var(--shell-line);
+}
+.skeleton-entry {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 16px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--shell-line);
+}
+.skeleton-entry > span {
+  width: 72px;
+  height: 96px;
+}
+.skeleton-entry > div {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+.skeleton-entry > div span:nth-child(1) {
+  width: 34%;
+  height: 12px;
+}
+.skeleton-entry > div span:nth-child(2) {
+  width: 58%;
+  height: 14px;
+}
+.skeleton-entry > div span:nth-child(3) {
+  width: 88%;
+  height: 34px;
+}
+@keyframes skeleton-pulse {
+  to {
+    opacity: 0.48;
+  }
+}
 .library-toolbar {
   display: flex;
   align-items: center;
@@ -4566,6 +4631,30 @@ html[data-sidebar-collapsed] .cookie-banner {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
+}
+.social-filter-tabs {
+  display: flex;
+  gap: 4px;
+  margin: -12px 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.social-filter-tabs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 11px;
+  border-radius: 7px;
+  color: var(--screen-muted);
+  font-size: 11px;
+  font-weight: 550;
+}
+.social-filter-tabs a:hover {
+  color: var(--screen-white);
+}
+.social-filter-tabs a[aria-current="page"] {
+  background: var(--console-hover);
+  color: var(--screen-white);
 }
 .social-section-title h2 {
   color: var(--screen-white);
@@ -4687,6 +4776,39 @@ html[data-sidebar-collapsed] .cookie-banner {
   line-height: 1.65;
   white-space: pre-wrap;
   text-wrap: pretty;
+}
+.activity-entry-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+}
+.activity-entry-actions button,
+.activity-entry-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: 7px;
+  color: var(--screen-muted);
+  font-size: 10px;
+  font-weight: 550;
+  transition:
+    background-color 130ms ease-out,
+    color 130ms ease-out;
+}
+.activity-entry-actions button:hover,
+.activity-entry-actions a:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.activity-entry-actions button:nth-of-type(2):hover {
+  color: #e79a9a;
+}
+.activity-entry-actions span[role="alert"] {
+  color: #e79a9a;
+  font-size: 10px;
 }
 .spoiler-content {
   margin-top: 11px;
@@ -4913,6 +5035,13 @@ html[data-sidebar-collapsed] .cookie-banner {
   background: var(--brand-blurple);
   color: white;
 }
+.social-editor-form footer .social-delete-button {
+  margin-right: auto;
+  color: #e79a9a;
+}
+.social-editor-form footer .social-delete-button:hover {
+  background: rgb(190 70 70 / 10%);
+}
 .social-form-error,
 .create-list-form [role="alert"] {
   color: #e79a9a;
@@ -4987,6 +5116,38 @@ html[data-sidebar-collapsed] .cookie-banner {
   color: var(--screen-muted);
   font-size: 10px;
 }
+.list-owner-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: 18px;
+}
+.list-owner-actions button,
+.list-item-owner-action button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 10px;
+  font-weight: 550;
+}
+.list-owner-actions button:last-child:hover,
+.list-item-owner-action button:hover {
+  color: #e79a9a;
+  border-color: rgb(231 154 154 / 24%);
+}
+.list-item-owner-action {
+  margin-top: 8px;
+}
+.list-item-owner-action span {
+  margin-left: 7px;
+  color: #e79a9a;
+  font-size: 9px;
+}
 .ranked-list-item {
   position: relative;
   min-width: 0;
@@ -5028,6 +5189,52 @@ html[data-sidebar-collapsed] .cookie-banner {
   padding: 0 24px;
   position: relative;
   z-index: 1;
+}
+.profile-identity {
+  flex: 1;
+  min-width: 0;
+}
+.profile-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.profile-edit-link,
+.profile-follow-control button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 580;
+  white-space: nowrap;
+}
+.profile-follow-control button:not([data-following]) {
+  background: var(--brand-blurple);
+  border-color: var(--brand-blurple);
+  color: white;
+}
+.profile-follow-control span {
+  display: block;
+  margin-top: 4px;
+  color: #e79a9a;
+  font-size: 9px;
+  text-align: right;
+}
+.profile-joined {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  color: var(--screen-muted);
+  font-size: 10px;
 }
 .profile-avatar {
   position: relative;
@@ -5090,6 +5297,18 @@ html[data-sidebar-collapsed] .cookie-banner {
   display: block;
   padding: 13px 0;
   border-top: 1px solid var(--shell-line);
+}
+.profile-lists > a small {
+  display: block;
+  margin-top: 6px;
+  color: var(--screen-muted);
+  font-size: 9px;
+}
+.profile-lists-empty {
+  padding: 14px 0;
+  border-top: 1px solid var(--shell-line);
+  color: var(--screen-muted);
+  font-size: 11px;
 }
 
 @media (max-width: 960px) {
@@ -5160,6 +5379,19 @@ html[data-sidebar-collapsed] .cookie-banner {
     margin-top: -30px;
     padding: 0 10px;
   }
+  .profile-title-row {
+    gap: 10px;
+  }
+  .profile-edit-link,
+  .profile-follow-control button {
+    min-height: 34px;
+    padding-inline: 9px;
+    font-size: 0;
+  }
+  .profile-edit-link svg,
+  .profile-follow-control button svg {
+    margin: 0;
+  }
   .profile-avatar {
     flex-basis: 82px;
     width: 82px;
@@ -5177,7 +5409,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   }
   .profile-stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     margin: 22px 10px 32px;
   }

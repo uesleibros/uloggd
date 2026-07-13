@@ -55,6 +55,7 @@ export function CreateListForm({ lang }: { lang: "pt-BR" | "en" }) {
         <span>{pt ? "Visibilidade" : "Visibility"}</span>
         <select name="visibility">
           <option value="PUBLIC">{pt ? "Pública" : "Public"}</option>
+          <option value="FOLLOWERS">{pt ? "Seguidores" : "Followers"}</option>
           <option value="PRIVATE">{pt ? "Privada" : "Private"}</option>
         </select>
       </label>

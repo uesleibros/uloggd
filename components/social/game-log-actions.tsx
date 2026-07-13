@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { BookOpen, CalendarPlus, ListPlus, X } from "lucide-react";
+import { BookOpen, CalendarPlus, ListPlus, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -15,16 +15,26 @@ export function GameLogActions({
   lang,
   lists,
   initialRating,
+  initialReview,
 }: {
   game: { id: number; slug: string; name: string };
   lang: "pt-BR" | "en";
   lists: ListOption[];
   initialRating: number | null;
+  initialReview: {
+    id: string;
+    rating: number;
+    content: string | null;
+    contains_spoilers: boolean;
+    visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+  } | null;
 }) {
   const pt = lang === "pt-BR";
   const router = useRouter();
   const [mode, setMode] = useState<Mode | null>(null);
-  const [rating, setRating] = useState(initialRating ?? 80);
+  const [rating, setRating] = useState(
+    initialReview?.rating ?? initialRating ?? 80,
+  );
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -73,6 +83,32 @@ export function GameLogActions({
       setSuccess(pt ? "Salvo na sua jornada." : "Saved to your journey.");
       router.refresh();
       window.setTimeout(() => setMode(null), 650);
+    }
+    setPending(false);
+  }
+
+  async function removeReview() {
+    if (
+      !initialReview ||
+      pending ||
+      !window.confirm(pt ? "Remover esta avaliação?" : "Remove this review?")
+    )
+      return;
+    setPending(true);
+    setError(null);
+    const { data, error: actionError } = await createClient().rpc(
+      "delete_review",
+      { review_id: initialReview.id },
+    );
+    if (actionError || data !== true)
+      setError(
+        pt
+          ? "Não foi possível remover a avaliação."
+          : "Could not remove the review.",
+      );
+    else {
+      setMode(null);
+      router.refresh();
     }
     setPending(false);
   }
@@ -133,6 +169,7 @@ export function GameLogActions({
                         name="content"
                         maxLength={5000}
                         rows={8}
+                        defaultValue={initialReview?.content ?? ""}
                         placeholder={
                           pt
                             ? "O que funcionou? O que ficou com você?"
@@ -204,9 +241,19 @@ export function GameLogActions({
                   <div className="social-form-row social-form-options">
                     <label>
                       <span>{pt ? "Visibilidade" : "Visibility"}</span>
-                      <select name="visibility" defaultValue="PUBLIC">
+                      <select
+                        name="visibility"
+                        defaultValue={
+                          mode === "review"
+                            ? (initialReview?.visibility ?? "PUBLIC")
+                            : "PUBLIC"
+                        }
+                      >
                         <option value="PUBLIC">
                           {pt ? "Público" : "Public"}
+                        </option>
+                        <option value="FOLLOWERS">
+                          {pt ? "Seguidores" : "Followers"}
                         </option>
                         <option value="PRIVATE">
                           {pt ? "Privado" : "Private"}
@@ -214,7 +261,13 @@ export function GameLogActions({
                       </select>
                     </label>
                     <label className="social-check">
-                      <input type="checkbox" name="spoilers" />{" "}
+                      <input
+                        type="checkbox"
+                        name="spoilers"
+                        defaultChecked={
+                          mode === "review" && initialReview?.contains_spoilers
+                        }
+                      />{" "}
                       <span>
                         {pt ? "Contém spoilers" : "Contains spoilers"}
                       </span>
@@ -232,6 +285,16 @@ export function GameLogActions({
                   </p>
                 )}
                 <footer>
+                  {mode === "review" && initialReview && (
+                    <button
+                      className="social-delete-button"
+                      type="button"
+                      onClick={removeReview}
+                      disabled={pending}
+                    >
+                      <Trash2 size={14} /> {pt ? "Remover" : "Remove"}
+                    </button>
+                  )}
                   <Dialog.Close type="button">
                     {pt ? "Cancelar" : "Cancel"}
                   </Dialog.Close>

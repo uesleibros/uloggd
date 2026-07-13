@@ -1,52 +1,149 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { BookOpen, Gamepad2, List, Star } from "lucide-react";
+import {
+  BookOpen,
+  CalendarDays,
+  Gamepad2,
+  List,
+  Settings,
+  Star,
+  Users,
+} from "lucide-react";
 import { notFound } from "next/navigation";
-import { ActivityStream } from "@/components/social/activity-stream";
 import { QuickGameCard } from "@/components/library/quick-game-card";
+import { ActivityStream } from "@/components/social/activity-stream";
+import { FollowButton } from "@/components/social/follow-button";
 import { getGamesByIds } from "@/lib/igdb";
 import { getActivity } from "@/lib/social";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../dictionaries";
 
-export default async function ProfilePage({
-  params,
-}: PageProps<"/[lang]/u/[username]">) {
+type Props = PageProps<"/[lang]/u/[username]">;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, username } = await params;
-  if (!hasLocale(lang)) notFound();
+  if (!hasLocale(lang)) return {};
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select(
-      "id,username,display_name,pronouns,bio,avatar_url,banner_url,created_at",
-    )
+    .select("username,display_name,bio,avatar_url,banner_url")
     .ilike("username", username)
     .maybeSingle();
+  if (!profile?.username)
+    return {
+      title: lang === "pt-BR" ? "Perfil não encontrado" : "Profile not found",
+    };
+  const name = profile.display_name || `@${profile.username}`;
+  const description =
+    profile.bio?.slice(0, 180) ||
+    (lang === "pt-BR"
+      ? `Veja a biblioteca, avaliações e jornada de @${profile.username} no uloggd.`
+      : `See @${profile.username}'s library, reviews, and gaming journey on uloggd.`);
+  const image = profile.banner_url || profile.avatar_url || "/logo.jpg";
+  return {
+    title: name,
+    description,
+    alternates: { canonical: `/${lang}/u/${profile.username}` },
+    openGraph: {
+      title: `${name} · uloggd`,
+      description,
+      type: "profile",
+      siteName: "uloggd",
+      locale: lang === "pt-BR" ? "pt_BR" : "en_US",
+      images: [{ url: image, alt: name }],
+    },
+    twitter: {
+      card: profile.banner_url ? "summary_large_image" : "summary",
+      title: `${name} · uloggd`,
+      description,
+      images: [image],
+    },
+  };
+}
+
+export default async function ProfilePage({ params }: Props) {
+  const { lang, username } = await params;
+  if (!hasLocale(lang)) notFound();
+  const supabase = await createClient();
+  const [
+    { data: profile },
+    {
+      data: { user },
+    },
+  ] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select(
+        "id,username,display_name,pronouns,bio,avatar_url,banner_url,created_at",
+      )
+      .ilike("username", username)
+      .maybeSingle(),
+    supabase.auth.getUser(),
+  ]);
   if (!profile?.username) notFound();
-  const [{ data: library }, { data: lists }, entries] = await Promise.all([
+  const [
+    libraryResult,
+    listsResult,
+    reviewCount,
+    diaryCount,
+    followerCount,
+    followingCount,
+    followState,
+    entries,
+  ] = await Promise.all([
     supabase
       .from("user_games")
       .select(
         "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url,updated_at",
+        { count: "exact" },
       )
       .eq("profile_id", profile.id)
       .order("updated_at", { ascending: false })
-      .limit(12),
+      .limit(10),
     supabase
       .from("game_lists")
-      .select("id,name,description,game_list_items(count)")
+      .select("id,name,description,game_list_items(count)", { count: "exact" })
       .eq("profile_id", profile.id)
       .eq("visibility", "PUBLIC")
       .order("updated_at", { ascending: false })
       .limit(4),
-    getActivity(supabase, { profileId: profile.id, limit: 12 }),
+    supabase
+      .from("reviews")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", profile.id),
+    supabase
+      .from("diary_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", profile.id),
+    supabase
+      .from("follows")
+      .select("follower_id", { count: "exact", head: true })
+      .eq("following_id", profile.id),
+    supabase
+      .from("follows")
+      .select("following_id", { count: "exact", head: true })
+      .eq("follower_id", profile.id),
+    user && user.id !== profile.id
+      ? supabase
+          .from("follows")
+          .select("follower_id")
+          .eq("follower_id", user.id)
+          .eq("following_id", profile.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    getActivity(supabase, { profileId: profile.id, limit: 20 }),
   ]);
-  const games = await getGamesByIds(
-    (library ?? []).map((item) => item.igdb_id),
-  );
+  const library = libraryResult.data ?? [];
+  const lists = listsResult.data ?? [];
+  const games = await getGamesByIds(library.map((item) => item.igdb_id));
   const byId = new Map(games.map((game) => [game.id, game]));
   const pt = lang === "pt-BR";
-  const ratings = (library ?? []).filter((item) => item.quick_rating !== null);
+  const joined = new Intl.DateTimeFormat(lang, {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(profile.created_at));
   return (
     <main className="profile-page">
       <div className="profile-banner">
@@ -75,13 +172,36 @@ export default async function ProfilePage({
             profile.username.slice(0, 1).toUpperCase()
           )}
         </div>
-        <div>
-          <h1>{profile.display_name || `@${profile.username}`}</h1>
-          <p className="profile-handle">
-            @{profile.username}
-            {profile.pronouns ? ` · ${profile.pronouns}` : ""}
-          </p>
+        <div className="profile-identity">
+          <div className="profile-title-row">
+            <div>
+              <h1>{profile.display_name || `@${profile.username}`}</h1>
+              <p className="profile-handle">
+                @{profile.username}
+                {profile.pronouns ? ` · ${profile.pronouns}` : ""}
+              </p>
+            </div>
+            {user?.id === profile.id ? (
+              <Link
+                className="profile-edit-link"
+                href={`/${lang}/settings/profile`}
+              >
+                <Settings size={15} /> {pt ? "Editar perfil" : "Edit profile"}
+              </Link>
+            ) : (
+              <FollowButton
+                viewerId={user?.id ?? null}
+                profileId={profile.id}
+                initial={Boolean(followState.data)}
+                lang={lang}
+              />
+            )}
+          </div>
           {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+          <p className="profile-joined">
+            <CalendarDays size={13} />{" "}
+            {pt ? "No uloggd desde" : "On uloggd since"} {joined}
+          </p>
         </div>
       </header>
       <dl className="profile-stats">
@@ -89,37 +209,51 @@ export default async function ProfilePage({
           <dt>
             <Gamepad2 size={14} /> {pt ? "Jogos" : "Games"}
           </dt>
-          <dd>{library?.length ?? 0}</dd>
+          <dd>{libraryResult.count ?? 0}</dd>
         </div>
         <div>
           <dt>
-            <Star size={14} /> {pt ? "Avaliados" : "Rated"}
+            <Star size={14} /> {pt ? "Avaliações" : "Reviews"}
           </dt>
-          <dd>{ratings.length}</dd>
+          <dd>{reviewCount.count ?? 0}</dd>
         </div>
         <div>
           <dt>
-            <BookOpen size={14} /> {pt ? "Entradas" : "Entries"}
+            <BookOpen size={14} /> {pt ? "Sessões" : "Sessions"}
           </dt>
-          <dd>{entries.length}</dd>
+          <dd>{diaryCount.count ?? 0}</dd>
         </div>
         <div>
           <dt>
             <List size={14} /> {pt ? "Listas" : "Lists"}
           </dt>
-          <dd>{lists?.length ?? 0}</dd>
+          <dd>{listsResult.count ?? 0}</dd>
+        </div>
+        <div>
+          <dt>
+            <Users size={14} /> {pt ? "Seguidores" : "Followers"}
+          </dt>
+          <dd>{followerCount.count ?? 0}</dd>
+        </div>
+        <div>
+          <dt>{pt ? "Seguindo" : "Following"}</dt>
+          <dd>{followingCount.count ?? 0}</dd>
         </div>
       </dl>
-      {(library?.length ?? 0) > 0 && (
+      {library.length > 0 && (
         <section className="profile-shelf">
           <div className="social-section-title">
-            <h2>{pt ? "Jogos recentes" : "Recent games"}</h2>
-            <Link href={`/${lang}/library`}>
-              {pt ? "Ver biblioteca" : "View library"}
-            </Link>
+            <div>
+              <h2>{pt ? "Jogos recentes" : "Recent games"}</h2>
+              <p>
+                {pt
+                  ? "Últimas mudanças na biblioteca"
+                  : "Latest library changes"}
+              </p>
+            </div>
           </div>
           <div className="cover-shelf">
-            {(library ?? []).slice(0, 5).map((record) => {
+            {library.slice(0, 5).map((record) => {
               const game = byId.get(record.igdb_id);
               return game ? (
                 <QuickGameCard
@@ -127,7 +261,7 @@ export default async function ProfilePage({
                   game={game}
                   initial={record}
                   lang={lang}
-                  enabled={false}
+                  enabled={user?.id === profile.id}
                 />
               ) : null;
             })}
@@ -137,22 +271,45 @@ export default async function ProfilePage({
       <section className="profile-content-grid">
         <div>
           <div className="social-section-title">
-            <h2>{pt ? "Atividade" : "Activity"}</h2>
+            <div>
+              <h2>{pt ? "Atividade" : "Activity"}</h2>
+              <p>
+                {pt
+                  ? "Avaliações e sessões públicas"
+                  : "Public reviews and sessions"}
+              </p>
+            </div>
           </div>
-          <ActivityStream entries={entries} lang={lang} />
+          <ActivityStream entries={entries} lang={lang} viewerId={user?.id} />
         </div>
         <aside className="profile-lists">
           <div className="social-section-title">
             <h2>{pt ? "Listas" : "Lists"}</h2>
+            {user?.id === profile.id && (
+              <Link href={`/${lang}/lists`}>{pt ? "Gerenciar" : "Manage"}</Link>
+            )}
           </div>
-          {(lists ?? []).map((list) => (
-            <Link href={`/${lang}/lists/${list.id}`} key={list.id}>
-              <strong>{list.name}</strong>
-              <p>
-                {list.description || (pt ? "Sem descrição" : "No description")}
-              </p>
-            </Link>
-          ))}
+          {lists.length ? (
+            lists.map((list) => (
+              <Link href={`/${lang}/lists/${list.id}`} key={list.id}>
+                <strong>{list.name}</strong>
+                <p>
+                  {list.description ||
+                    (pt ? "Sem descrição" : "No description")}
+                </p>
+                <small>
+                  {Array.isArray(list.game_list_items)
+                    ? (list.game_list_items[0]?.count ?? 0)
+                    : 0}{" "}
+                  {pt ? "jogos" : "games"}
+                </small>
+              </Link>
+            ))
+          ) : (
+            <p className="profile-lists-empty">
+              {pt ? "Nenhuma lista pública." : "No public lists."}
+            </p>
+          )}
         </aside>
       </section>
     </main>

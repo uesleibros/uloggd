@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getGamesByIds } from "@/lib/igdb";
+import { resolveGameCover } from "@/lib/game-cover";
 import type { SocialEntry } from "@/components/social/activity-stream";
 
 type ProfileJoin = {
@@ -28,14 +29,14 @@ export async function getActivity(
   let reviewsQuery = supabase
     .from("reviews")
     .select(
-      "id,profile_id,igdb_id,game_slug,rating,content,contains_spoilers,created_at,profiles!reviews_profile_id_fkey(username,display_name,avatar_url)",
+      "id,profile_id,igdb_id,game_slug,rating,content,contains_spoilers,visibility,created_at,profiles!reviews_profile_id_fkey(username,display_name,avatar_url)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
   let diaryQuery = supabase
     .from("diary_entries")
     .select(
-      "id,profile_id,igdb_id,game_slug,played_on,minutes,note,contains_spoilers,created_at,profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url)",
+      "id,profile_id,igdb_id,game_slug,played_on,minutes,note,contains_spoilers,visibility,created_at,profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -54,7 +55,32 @@ export async function getActivity(
   const rows = [...(reviews ?? []), ...(diary ?? [])] as unknown as (Row &
     Record<string, unknown>)[];
   const games = await getGamesByIds(rows.map((row) => row.igdb_id));
-  const byId = new Map(games.map((game) => [game.id, game]));
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: covers } =
+    user && games.length
+      ? await supabase
+          .from("user_games")
+          .select("igdb_id,custom_cover_url")
+          .eq("profile_id", user.id)
+          .in(
+            "igdb_id",
+            games.map((game) => game.id),
+          )
+      : { data: [] };
+  const coversById = new Map(
+    (covers ?? []).map((cover) => [cover.igdb_id, cover.custom_cover_url]),
+  );
+  const byId = new Map(
+    games.map((game) => [
+      game.id,
+      {
+        ...game,
+        coverUrl: resolveGameCover(game.coverUrl, coversById.get(game.id)),
+      },
+    ]),
+  );
   return rows
     .flatMap((row): SocialEntry[] => {
       const profile = profileOf(row.profiles);
@@ -64,6 +90,7 @@ export async function getActivity(
         {
           id: row.id,
           kind: review ? "review" : "diary",
+          profileId: row.profile_id,
           profile,
           igdbId: row.igdb_id,
           gameSlug: row.game_slug,
@@ -73,6 +100,7 @@ export async function getActivity(
           playedOn: review ? undefined : String(row.played_on),
           minutes: review ? undefined : (row.minutes as number | null),
           spoilers: Boolean(row.contains_spoilers),
+          visibility: row.visibility as SocialEntry["visibility"],
           createdAt: row.created_at,
         },
       ];

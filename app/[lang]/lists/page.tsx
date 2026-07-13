@@ -50,9 +50,13 @@ export default async function ListsPage({
                     ? pt
                       ? "PRIVADA"
                       : "PRIVATE"
-                    : pt
-                      ? "PÚBLICA"
-                      : "PUBLIC"}
+                    : list.visibility === "FOLLOWERS"
+                      ? pt
+                        ? "SEGUIDORES"
+                        : "FOLLOWERS"
+                      : pt
+                        ? "PÚBLICA"
+                        : "PUBLIC"}
                 </span>
                 <h2>{list.name}</h2>
                 <p>
