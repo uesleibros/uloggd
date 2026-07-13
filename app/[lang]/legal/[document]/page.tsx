@@ -86,7 +86,7 @@ export default async function LegalPage({ params }: Props) {
           <Mail size={20} />
           <div>
             <strong>{d.legalUi.help}</strong>
-            <a href="mailto:uloggd.gg@gmail.com">uloggd.gg@gmail.com</a>
+            <a href="mailto:contact@uloggd.com">contact@uloggd.com</a>
           </div>
         </aside>
       </main>

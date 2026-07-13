@@ -8,7 +8,7 @@ export type LegalContent = {
   sections: Section[];
 };
 
-const contact = "uloggd.gg@gmail.com";
+const contact = "contact@uloggd.com";
 
 const pt: Record<LegalDocument, LegalContent> = {
   cookies: {
