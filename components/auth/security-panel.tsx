@@ -64,55 +64,49 @@ export function SecurityPanel({ lang }: { lang: "en" | "pt-BR" }) {
     e.currentTarget.reset();
   }
   return (
-    <main className="login-shell auth-single">
-      <section className="login-panel">
-        <div className="login-panel-heading">
-          <h1>{pt ? "Segurança da conta" : "Account security"}</h1>
-          <p>
-            {pt
-              ? "Reautentique antes de alterar dados sensíveis."
-              : "Reauthenticate before changing sensitive details."}
-          </p>
-        </div>
-        <button className="auth-primary" onClick={reauth}>
-          {pt ? "Reautenticar" : "Reauthenticate"}
+    <section className="settings-security-panel">
+      <div className="login-panel-heading">
+        <h1>{pt ? "Segurança da conta" : "Account security"}</h1>
+        <p>
+          {pt
+            ? "Reautentique antes de alterar dados sensíveis."
+            : "Reauthenticate before changing sensitive details."}
+        </p>
+      </div>
+      <button className="auth-primary" onClick={reauth}>
+        {pt ? "Reautenticar" : "Reauthenticate"}
+      </button>
+      <form className="auth-form" onSubmit={update}>
+        <label>
+          {pt ? "Código de reautenticação" : "Reauthentication code"}
+          <input
+            name="nonce"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+          />
+        </label>
+        <label>
+          {pt ? "Novo e-mail" : "New email"}
+          <input name="email" type="email" autoComplete="email" />
+        </label>
+        <label>
+          {pt ? "Nova senha" : "New password"}
+          <input name="password" type="password" autoComplete="new-password" />
+        </label>
+        <button className="auth-primary">
+          {pt ? "Salvar alteração" : "Save change"}
         </button>
-        <form className="auth-form" onSubmit={update}>
-          <label>
-            {pt ? "Código de reautenticação" : "Reauthentication code"}
-            <input
-              name="nonce"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-            />
-          </label>
-          <label>
-            {pt ? "Novo e-mail" : "New email"}
-            <input name="email" type="email" autoComplete="email" />
-          </label>
-          <label>
-            {pt ? "Nova senha" : "New password"}
-            <input
-              name="password"
-              type="password"
-              autoComplete="new-password"
-            />
-          </label>
-          <button className="auth-primary">
-            {pt ? "Salvar alteração" : "Save change"}
-          </button>
-        </form>
-        {error && (
-          <div className="auth-error" role="alert">
-            {error}
-          </div>
-        )}
-        {message && (
-          <div className="auth-success" role="status">
-            {message}
-          </div>
-        )}
-      </section>
-    </main>
+      </form>
+      {error && (
+        <div className="auth-error" role="alert">
+          {error}
+        </div>
+      )}
+      {message && (
+        <div className="auth-success" role="status">
+          {message}
+        </div>
+      )}
+    </section>
   );
 }

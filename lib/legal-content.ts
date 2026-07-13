@@ -108,7 +108,7 @@ const pt: Record<LegalDocument, LegalContent> = {
         title: "1. Dados tratados",
         paragraphs: [
           "Tratamos dados técnicos essenciais, como endereço IP, tipo de navegador e registros de segurança, além de e-mail, username, perfil, biblioteca, avaliações, listas e preferências quando você usa esses recursos.",
-          "Supabase fornece autenticação e banco de dados; Resend entrega e-mails transacionais configurados no Supabase; Cloudflare Turnstile previne abuso. Google, Discord ou Twitch tratam dados quando você escolhe o respectivo login. Dados de catálogo vêm da IGDB.",
+          "Supabase fornece autenticação e banco de dados; Resend entrega e-mails transacionais configurados no Supabase; Cloudflare Turnstile previne abuso; e o ImgChest hospeda avatares e banners enviados voluntariamente. Google, Discord ou Twitch tratam dados quando você escolhe o respectivo login. Dados de catálogo vêm da IGDB.",
           "Usamos cookies de sessão necessários e armazenamento funcional conforme descrito na Política de Cookies. Não usamos atualmente analytics ou marketing.",
         ],
       },
@@ -304,7 +304,7 @@ const en: Record<LegalDocument, LegalContent> = {
         title: "1. Data we process",
         paragraphs: [
           "We process essential technical data such as IP address, browser type, and security logs, as well as email, username, profile, game library, reviews, lists, and preferences when you use those features.",
-          "Supabase provides authentication and database services; Resend delivers transactional email configured through Supabase; Cloudflare Turnstile prevents abuse. Google, Discord, or Twitch process data when you choose that sign-in provider. Catalog data comes from IGDB.",
+          "Supabase provides authentication and database services; Resend delivers transactional email configured through Supabase; Cloudflare Turnstile prevents abuse; and ImgChest hosts avatars and banners you voluntarily upload. Google, Discord, or Twitch process data when you choose that sign-in provider. Catalog data comes from IGDB.",
           "We use necessary session cookies and functional storage as described in the Cookie Policy. We do not currently use analytics or marketing.",
         ],
       },

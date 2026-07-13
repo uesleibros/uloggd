@@ -144,6 +144,13 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 ## Reusable Component Patterns
 
+### Profile settings
+
+- Settings use a 180px local navigation rail and a focused content column up to 760px; mobile converts the rail into two equal segmented tabs.
+- Public identity separates imagery from text: a 3:1 banner, circular avatar, then optional display name, free-form pronouns (30 characters), and bio (500 characters).
+- Avatar and banner uploads always pass through a Radix crop modal. Avatar crops at 1:1 to a maximum 640px; banner crops at 3:1 to a maximum 1800px; both export compressed WebP before server upload.
+- Image-provider credentials remain server-only. Upload controls expose loading, invalid-file, provider-failure, remove, and empty states.
+
 ### Brand
 
 - Real `/logo.jpg`, 38×38px desktop.

@@ -9,6 +9,7 @@ import { CookieConsent } from "@/components/cookie-consent";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
 import "../globals.css";
+import "react-image-crop/dist/ReactCrop.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({

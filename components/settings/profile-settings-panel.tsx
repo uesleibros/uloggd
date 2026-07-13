@@ -1,0 +1,277 @@
+"use client";
+
+/* eslint-disable @next/next/no-img-element */
+
+import { Camera, ImageIcon, LoaderCircle, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { ImageCropDialog } from "./image-crop-dialog";
+
+type Profile = {
+  username: string;
+  display_name: string | null;
+  pronouns: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  banner_url: string | null;
+};
+
+export function ProfileSettingsPanel({
+  initial,
+  lang,
+}: {
+  initial: Profile;
+  lang: "pt-BR" | "en";
+}) {
+  const pt = lang === "pt-BR";
+  const [profile, setProfile] = useState(initial);
+  const [crop, setCrop] = useState<{
+    source: string;
+    kind: "avatar" | "banner";
+  } | null>(null);
+  const [pending, setPending] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const avatarInput = useRef<HTMLInputElement>(null);
+  const bannerInput = useRef<HTMLInputElement>(null);
+
+  function chooseImage(file: File | undefined, kind: "avatar" | "banner") {
+    if (!file) return;
+    if (
+      !file.type.match(/^image\/(jpeg|png|webp)$/) ||
+      file.size > 8 * 1024 * 1024
+    ) {
+      setError(
+        pt
+          ? "Escolha uma imagem JPG, PNG ou WebP de até 8 MB."
+          : "Choose a JPG, PNG, or WebP image up to 8 MB.",
+      );
+      return;
+    }
+    setError(null);
+    setCrop({ source: URL.createObjectURL(file), kind });
+  }
+
+  async function saveDetails(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (pending) return;
+    const values = new FormData(event.currentTarget);
+    const displayName = String(values.get("displayName") ?? "").trim();
+    const pronouns = String(values.get("pronouns") ?? "").trim();
+    const bio = String(values.get("bio") ?? "").trim();
+    if (displayName.length > 80 || pronouns.length > 30 || bio.length > 500) {
+      setError(
+        pt
+          ? "Revise os limites dos campos antes de salvar."
+          : "Review the field limits before saving.",
+      );
+      return;
+    }
+    setPending("details");
+    setError(null);
+    setMessage(null);
+    const { data, error: actionError } = await createClient().rpc(
+      "update_profile_settings",
+      {
+        new_display_name: displayName,
+        new_pronouns: pronouns,
+        new_bio: bio,
+      },
+    );
+    if (actionError || !data)
+      setError(
+        pt
+          ? "Não foi possível salvar o perfil."
+          : "Could not save the profile.",
+      );
+    else {
+      setProfile((current) => ({
+        ...current,
+        display_name: displayName || null,
+        pronouns: pronouns || null,
+        bio: bio || null,
+      }));
+      setMessage(pt ? "Perfil atualizado." : "Profile updated.");
+    }
+    setPending(null);
+  }
+
+  async function removeImage(kind: "avatar" | "banner") {
+    if (pending) return;
+    setPending(kind);
+    setError(null);
+    const response = await fetch(`/api/profile/image?kind=${kind}`, {
+      method: "DELETE",
+    });
+    if (!response.ok)
+      setError(
+        pt
+          ? "Não foi possível remover a imagem."
+          : "Could not remove the image.",
+      );
+    else
+      setProfile((current) => ({
+        ...current,
+        [kind === "avatar" ? "avatar_url" : "banner_url"]: null,
+      }));
+    setPending(null);
+  }
+
+  return (
+    <div className="profile-settings-content">
+      <section className="profile-visual-settings">
+        <div className="profile-banner-preview">
+          {profile.banner_url ? (
+            <img src={profile.banner_url} alt="" />
+          ) : (
+            <ImageIcon size={24} />
+          )}
+          <button type="button" onClick={() => bannerInput.current?.click()}>
+            <Camera size={15} />
+            {pt ? "Alterar banner" : "Change banner"}
+          </button>
+        </div>
+        <div className="profile-avatar-row">
+          <div className="profile-avatar-preview">
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt="" />
+            ) : (
+              <span>{profile.username.slice(0, 1).toUpperCase()}</span>
+            )}
+          </div>
+          <div>
+            <strong>@{profile.username}</strong>
+            <p>
+              {pt
+                ? "Avatar quadrado e banner panorâmico. JPG, PNG ou WebP, até 8 MB."
+                : "Square avatar and wide banner. JPG, PNG, or WebP, up to 8 MB."}
+            </p>
+            <div className="profile-image-actions">
+              <button
+                type="button"
+                onClick={() => avatarInput.current?.click()}
+              >
+                <Camera size={14} />
+                {pt ? "Alterar avatar" : "Change avatar"}
+              </button>
+              {profile.avatar_url && (
+                <button
+                  type="button"
+                  onClick={() => removeImage("avatar")}
+                  disabled={Boolean(pending)}
+                >
+                  <Trash2 size={14} />
+                  {pt ? "Remover" : "Remove"}
+                </button>
+              )}
+              {profile.banner_url && (
+                <button
+                  type="button"
+                  onClick={() => removeImage("banner")}
+                  disabled={Boolean(pending)}
+                >
+                  <Trash2 size={14} />
+                  {pt ? "Remover banner" : "Remove banner"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        <input
+          ref={avatarInput}
+          hidden
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={(event) => chooseImage(event.target.files?.[0], "avatar")}
+        />
+        <input
+          ref={bannerInput}
+          hidden
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={(event) => chooseImage(event.target.files?.[0], "banner")}
+        />
+      </section>
+
+      <form className="profile-details-form" onSubmit={saveDetails}>
+        <header>
+          <h2>{pt ? "Informações públicas" : "Public information"}</h2>
+          <p>
+            {pt
+              ? "Esses dados aparecerão no seu perfil. Todos são opcionais."
+              : "These details appear on your profile. They are all optional."}
+          </p>
+        </header>
+        <label>
+          {pt ? "Nome de exibição" : "Display name"}
+          <input
+            name="displayName"
+            defaultValue={profile.display_name ?? ""}
+            maxLength={80}
+            placeholder={
+              pt ? "Como você quer ser chamado" : "How you want to be known"
+            }
+          />
+        </label>
+        <label>
+          {pt ? "Pronomes" : "Pronouns"}
+          <input
+            name="pronouns"
+            defaultValue={profile.pronouns ?? ""}
+            maxLength={30}
+            placeholder={
+              pt
+                ? "Ex.: ele/dele, ela/dela, elu/delu"
+                : "E.g. he/him, she/her, they/them"
+            }
+          />
+        </label>
+        <label>
+          {pt ? "Bio" : "Bio"}
+          <textarea
+            name="bio"
+            defaultValue={profile.bio ?? ""}
+            maxLength={500}
+            rows={5}
+            placeholder={
+              pt
+                ? "Conte um pouco sobre você e os jogos que gosta."
+                : "Share a little about yourself and the games you enjoy."
+            }
+          />
+        </label>
+        <div className="profile-form-footer">
+          <span>{message}</span>
+          <button type="submit" disabled={Boolean(pending)}>
+            {pending === "details" && (
+              <LoaderCircle className="spin" size={15} />
+            )}
+            {pt ? "Salvar perfil" : "Save profile"}
+          </button>
+        </div>
+      </form>
+      {error && (
+        <div className="auth-error" role="alert">
+          {error}
+        </div>
+      )}
+      {crop && (
+        <ImageCropDialog
+          source={crop.source}
+          kind={crop.kind}
+          lang={lang}
+          onClose={() => {
+            URL.revokeObjectURL(crop.source);
+            setCrop(null);
+          }}
+          onSaved={(url) =>
+            setProfile((current) => ({
+              ...current,
+              [crop.kind === "avatar" ? "avatar_url" : "banner_url"]: url,
+            }))
+          }
+        />
+      )}
+    </div>
+  );
+}
