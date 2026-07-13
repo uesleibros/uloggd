@@ -24,12 +24,18 @@
   box-sizing: border-box;
 }
 html {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
   background: var(--console-black);
   -webkit-font-smoothing: antialiased;
 }
 body {
+  width: 100%;
   min-height: 100%;
   margin: 0;
+  padding: 0;
   overflow-x: clip;
   background: var(--console-black);
   color: var(--screen-white);
@@ -80,6 +86,8 @@ a {
   display: grid;
   grid-template-columns: 264px minmax(0, 1fr);
   width: 100%;
+  margin: 0;
+  padding: 0;
   min-height: 100vh;
   background: var(--console-canvas);
 }
@@ -132,9 +140,12 @@ a {
   position: sticky;
   z-index: 10;
   top: 0;
+  inset-inline-start: 0;
   display: flex;
   flex-direction: column;
   height: 100vh;
+  width: 100%;
+  margin: 0;
   padding: 0;
   border-right: 1px solid var(--shell-line-strong);
   background: var(--console-panel);
