@@ -204,6 +204,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Similar games appear as a short compact-cover list in the context rail, not as another full related-games tab.
 - Tablet moves the rail below primary content; mobile stacks cover, content, and context without a persistent side column.
 - After About, gallery, videos, events, links, and related games span the combined cover + primary-content width while the context rail continues independently at the right.
+- On mobile, game media sections are strictly contained to the viewport: grids use zero-minimum columns, embeds cap at 100%, long metadata wraps, and horizontal overflow belongs only to the related-game shelf without negative outer margins.
 
 ### Compact game row
 
@@ -233,6 +234,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Personal ratings use five gold stars with half-star precision backed by the existing 0–100 value (10 points per half-star).
 - The game page shows the full labeled control; cover menus use the compact five-star variant.
 - Clicking the currently selected half-star again clears only the rating and returns the control to five empty stars; no separate remove button or numeric “x of 5” label is shown.
+- When that repeated click clears a rating, the hover preview is reset immediately so the stars visibly empty without requiring the pointer to leave first.
 - Hovering or keyboard-focusing either half of a star previews that half-step and every preceding star before the rating is committed.
 - Rating a new game adds it to the library as Backlog. Library cards expose a clearly destructive remove action in their overflow menu.
 

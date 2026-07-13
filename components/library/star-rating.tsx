@@ -69,9 +69,10 @@ export function StarRating({
                     disabled={disabled}
                     onMouseEnter={() => setPreview(halfSteps)}
                     onFocus={() => setPreview(halfSteps)}
-                    onClick={() =>
-                      onChange(removesRating ? null : halfSteps * 10)
-                    }
+                    onClick={() => {
+                      if (removesRating) setPreview(null);
+                      onChange(removesRating ? null : halfSteps * 10);
+                    }}
                     aria-label={
                       removesRating
                         ? pt
