@@ -3722,12 +3722,6 @@ html[data-sidebar-collapsed] .cookie-banner {
   .featured-copy p {
     display: none;
   }
-  .featured-actions {
-    margin-top: 16px;
-  }
-  .featured-actions button:first-child {
-    padding-inline: 11px;
-  }
   .library-section,
   .explore-section,
   .discoveries-section {
@@ -3737,7 +3731,28 @@ html[data-sidebar-collapsed] .cookie-banner {
     grid-template-columns: 84px minmax(0, 1fr);
   }
   .discovery-lane {
-    grid-template-columns: 148px minmax(0, 1fr);
+    display: block;
+  }
+  .discovery-lane > header {
+    margin-bottom: 14px;
+  }
+  .discovery-games {
+    display: flex;
+    gap: 12px;
+    margin-right: -18px;
+    padding-right: 18px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    scroll-padding-inline: 0 18px;
+    scroll-snap-type: x mandatory;
+  }
+  .discovery-games::-webkit-scrollbar {
+    display: none;
+  }
+  .discovery-games .quick-game-card {
+    flex: 0 0 clamp(112px, 28vw, 132px);
+    scroll-snap-align: start;
   }
   .cover-shelf {
     display: flex;
@@ -3904,14 +3919,6 @@ html[data-sidebar-collapsed] .cookie-banner {
   .featured-copy h2 {
     font-size: 22px;
   }
-  .featured-actions button {
-    min-height: 36px;
-    padding-inline: 9px;
-    font-size: 10px;
-  }
-  .featured-actions button:last-child {
-    width: 36px;
-  }
   .library-section,
   .explore-section,
   .discoveries-section {
@@ -3934,6 +3941,7 @@ html[data-sidebar-collapsed] .cookie-banner {
     display: flex;
     gap: 10px;
     margin-right: -14px;
+    padding-right: 14px;
     overflow-x: auto;
     scrollbar-width: none;
     scroll-snap-type: x mandatory;
@@ -3942,11 +3950,8 @@ html[data-sidebar-collapsed] .cookie-banner {
     display: none;
   }
   .discovery-games .quick-game-card {
-    flex: 0 0 92px;
+    flex-basis: 112px;
     scroll-snap-align: start;
-  }
-  .discovery-games .quick-game-card:last-child {
-    margin-right: 14px;
   }
   .library-page {
     padding: 32px 14px 48px;

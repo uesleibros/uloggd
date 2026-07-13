@@ -174,6 +174,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Rank label sits at the bottom-left over the image.
 - Save action appears on hover/focus desktop and remains visible on touch devices.
 - A saved custom cover is a library-wide preference: every authenticated catalog surface resolves it before the IGDB default.
+- Mobile discovery lanes become horizontal snap shelves across the full 0–620px range; cards stay between 112px and 132px so cover art, titles, and three quick-action targets remain usable instead of compressing into a four-column grid.
 
 ### Cover picker
 
