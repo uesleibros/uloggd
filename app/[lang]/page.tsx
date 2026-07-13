@@ -8,8 +8,6 @@ import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
 import { resolveGameCover } from "@/lib/game-cover";
 import { QuickGameCard } from "@/components/library/quick-game-card";
-import { ActivityStream } from "@/components/social/activity-stream";
-import { getActivity } from "@/lib/social";
 import { getDictionary, hasLocale } from "./dictionaries";
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
@@ -32,17 +30,14 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const [{ data: savedGames }, communityEntries] = await Promise.all([
-    user
-      ? supabase
-          .from("user_games")
-          .select(
-            "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-          )
-          .eq("profile_id", user.id)
-      : Promise.resolve({ data: [] }),
-    getActivity(supabase, { limit: 6, viewerId: user?.id ?? null }),
-  ]);
+  const { data: savedGames } = user
+    ? await supabase
+        .from("user_games")
+        .select(
+          "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
+        )
+        .eq("profile_id", user.id)
+    : { data: [] };
   const savedById = new Map(
     (savedGames ?? []).map((item) => [item.igdb_id, item]),
   );
@@ -261,23 +256,6 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
               </article>
             ))}
           </div>
-        </section>
-        <section className="home-activity-section">
-          <div className="section-heading">
-            <div>
-              <h2>
-                {lang === "pt-BR"
-                  ? "Agora na comunidade"
-                  : "Now in the community"}
-              </h2>
-              <p>
-                {lang === "pt-BR"
-                  ? "Sessões e avaliações publicadas recentemente"
-                  : "Recently published sessions and reviews"}
-              </p>
-            </div>
-          </div>
-          <ActivityStream entries={communityEntries} lang={lang} />
         </section>
       </main>
 
