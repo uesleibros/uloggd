@@ -36,7 +36,7 @@ const pt: Record<LegalDocument, LegalContent> = {
       {
         title: "3. Suas escolhas",
         paragraphs: [
-          "Como não há analytics ou marketing ativos, não exibimos um banner enganoso de aceite. Cookies necessários não podem ser desativados pela interface sem impedir login e recursos de segurança. Quando categorias opcionais forem adicionadas, ficarão bloqueadas até sua escolha e esta página oferecerá controles equivalentes para aceitar ou recusar.",
+          "O aviso de cookies informa o uso atual e permite abrir as Configurações de cookies a qualquer momento pelo rodapé. Como não há analytics ou marketing ativos, não solicitamos um aceite enganoso para essas categorias. Cookies necessários não podem ser desativados pela interface sem impedir login e recursos de segurança. Se categorias opcionais forem adicionadas, permanecerão bloqueadas até uma escolha válida, com opções equivalentes para aceitar ou recusar.",
         ],
       },
     ],
@@ -232,7 +232,7 @@ const en: Record<LegalDocument, LegalContent> = {
       {
         title: "3. Your choices",
         paragraphs: [
-          "Because no analytics or marketing is active, we do not show a misleading consent banner. Necessary cookies cannot be disabled in the interface without preventing sign-in and security features. If optional categories are added, they will remain blocked until you choose and this page will provide equivalent accept and reject controls.",
+          "The cookie notice explains current use, and Cookie settings can be reopened at any time from the footer. Because no analytics or marketing is active, we do not request misleading consent for those categories. Necessary cookies cannot be disabled in the interface without preventing sign-in and security features. If optional categories are added, they will remain blocked until a valid choice, with equivalent accept and reject options.",
         ],
       },
     ],

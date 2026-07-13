@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
+import { CookieSettingsButton } from "./cookie-settings-button";
 
 export function PlatformFooter({
   lang,
@@ -20,6 +21,7 @@ export function PlatformFooter({
         <Link href={`/${lang}/legal/cookies`}>
           {lang === "pt-BR" ? "Cookies" : "Cookies"}
         </Link>
+        <CookieSettingsButton lang={lang} />
         <Link href={`/${lang}/legal/child-safety`}>{d.legal.safety}</Link>
       </nav>
     </footer>

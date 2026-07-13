@@ -230,6 +230,12 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Desktop uses three compact horizontal segments.
 - Mobile keeps three equal columns with stacked icon and balanced label; never hide documents behind horizontal scrolling.
 
+### Cookie notice and settings
+
+- When only necessary storage exists, show a compact informational notice with “Continue with necessary” and “Settings”; never fabricate an “Accept all” choice for inactive categories.
+- Cookie settings use a focused Radix modal listing Necessary, Preferences, Analytics, and Marketing. Necessary is always active; unused optional categories remain visibly unavailable.
+- The footer always reopens settings. Any future optional category must remain off until a valid choice and offer equally prominent accept and reject actions.
+
 ## Interaction States
 
 Every interactive control requires:

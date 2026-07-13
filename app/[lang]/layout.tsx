@@ -5,6 +5,7 @@ import { PlatformNavigation } from "@/components/platform-navigation";
 import { DesktopGameSearch } from "@/components/game-search";
 import { PlatformFooter } from "@/components/platform-footer";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { CookieConsent } from "@/components/cookie-consent";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
 import "../globals.css";
@@ -81,6 +82,7 @@ export default async function LocaleLayout({
             {children}
             <PlatformFooter lang={lang} dictionary={dictionary} />
           </div>
+          <CookieConsent lang={lang} />
         </div>
       </body>
     </html>
