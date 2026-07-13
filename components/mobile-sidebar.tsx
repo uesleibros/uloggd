@@ -6,7 +6,6 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Compass,
   HomeIcon,
   LibraryBig,
   ListTree,
@@ -29,7 +28,6 @@ type MobileSidebarProps = {
     menu: string;
     close: string;
     home: string;
-    explore: string;
     library: string;
     reviews: string;
     lists: string;
@@ -50,7 +48,6 @@ export function MobileSidebar({
   const pathname = usePathname();
   const links = [
     [HomeIcon, labels.home, `/${lang}`, false],
-    [Compass, labels.explore, `/${lang}/explore`, false],
     [LibraryBig, labels.library, `/${lang}/library`, true],
     [Star, labels.reviews, `/${lang}/reviews`, true],
     [ListTree, labels.lists, `/${lang}/lists`, true],

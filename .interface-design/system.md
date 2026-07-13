@@ -113,7 +113,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Quick-log action is tonal, not a large saturated pill.
 - Account control stays at the bottom and must not fabricate authenticated state.
 - Signed-out account controls use a neutral login glyph; initials and avatars are reserved for real authenticated profiles.
-- Signed-out navigation keeps Home, Explore, search, language, and legal documents available. Library, Reviews, Profile, Settings, and quick-log render as non-interactive muted rows with a small lock glyph and an accessible sign-in requirement.
+- Signed-out navigation keeps Home, search, language, and legal documents available. Library, Reviews, Profile, Settings, and quick-log render as non-interactive muted rows with a small lock glyph and an accessible sign-in requirement.
 - Above 1100px, the sidebar can collapse from 264px to 76px using a persistent edge control; the compact state keeps 44px icon targets, route state, account access, and the content canvas expansion.
 
 ### Compact sidebar
@@ -293,7 +293,14 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Profile metadata uses display name/username, bio, and the uploaded banner (avatar fallback) for Open Graph and Twitter embeds.
 - List cards emphasize title and description over counts. Detail views reuse active-shelf covers with a small physical index marker for manual order.
 - Creating a list is a focused inline form; adding a game remains contextual on the game page.
+- List previews lead with a five-column cover strip (empty slots stay tonal), followed by title, visibility, description, and count. This same recognizable object is reused on the lists page and profile rail.
 - Owners can edit or delete reviews, diary sessions, and lists without exposing management controls to other viewers. Destructive actions require confirmation and remain visually secondary until hovered.
+
+### Review and journal editor
+
+- Review and Journal share one Radix modal with persistent tabs, game identity in the header, a scrollable form body, and a sticky action footer. Switching tabs never dismisses the surface.
+- Desktop uses a centered surface up to 640px; mobile becomes a bottom sheet with safe-area padding. Both keep their mode mounted through the closing animation so the backdrop and surface exit together.
+- Diary entries are repeatable sessions, not a single game-level field. “View logs” opens a private per-game timeline with total entries and playtime; every session can be edited or removed independently.
 
 - Never fabricate user activity, online counts, progress, or authenticated identity.
 - IGDB catalog data may populate discovery surfaces; clearly distinguish it from uloggd community data.

@@ -264,10 +264,6 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                   : "Recently published sessions and reviews"}
               </p>
             </div>
-            <Link href={`/${lang}/explore`}>
-              {d.actions.seeAll}
-              <ArrowUpRight size={14} />
-            </Link>
           </div>
           <ActivityStream entries={communityEntries} lang={lang} />
         </section>

@@ -9,7 +9,6 @@ const publicSegments = new Set([
   "legal",
   "onboarding",
   "game",
-  "explore",
   "u",
   "lists",
 ]);
@@ -44,9 +43,12 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   const segment = pathname.slice(lang.length + 2).split("/")[0] || "";
+  if (segment === "explore")
+    return NextResponse.redirect(new URL(`/${lang}`, request.url));
   if (!user) {
     const privateListsIndex = pathname === `/${lang}/lists`;
-    if (!publicSegments.has(segment) || privateListsIndex) {
+    const privateGameLogs = /^\/(pt-BR|en)\/game\/[^/]+\/logs$/.test(pathname);
+    if (!publicSegments.has(segment) || privateListsIndex || privateGameLogs) {
       const url = new URL(`/${lang}/login`, request.url);
       url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);

@@ -30,17 +30,21 @@ export default async function LibraryPage({
   );
 
   return (
-    <main className="library-page">
-      <header>
-        <span>{lang === "pt-BR" ? "Sua coleção" : "Your collection"}</span>
+    <main className="social-page library-page">
+      <header className="social-page-header">
+        <span>
+          <LibraryBig size={14} />{" "}
+          {lang === "pt-BR" ? "SUA COLEÇÃO" : "YOUR COLLECTION"}
+        </span>
         <h1>{lang === "pt-BR" ? "Biblioteca" : "Library"}</h1>
         <p>
           {lang === "pt-BR"
-            ? "Passe sobre uma capa para atualizar status, nota ou escolher outra imagem."
-            : "Hover over a cover to update status, rating, or choose another image."}
+            ? "Organize, filtre e atualize os jogos que fazem parte da sua jornada."
+            : "Organize, filter, and update the games in your journey."}
         </p>
       </header>
       <LibraryCollection games={games} records={records ?? []} lang={lang} />
     </main>
   );
 }
+import { LibraryBig } from "lucide-react";

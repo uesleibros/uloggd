@@ -3,6 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { BookOpen, CalendarPlus, ListPlus, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "@/components/library/star-rating";
@@ -16,8 +17,9 @@ export function GameLogActions({
   lists,
   initialRating,
   initialReview,
+  logCount,
 }: {
-  game: { id: number; slug: string; name: string };
+  game: { id: number; slug: string; name: string; releaseYear: number | null };
   lang: "pt-BR" | "en";
   lists: ListOption[];
   initialRating: number | null;
@@ -28,10 +30,12 @@ export function GameLogActions({
     contains_spoilers: boolean;
     visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
   } | null;
+  logCount: number;
 }) {
   const pt = lang === "pt-BR";
   const router = useRouter();
   const [mode, setMode] = useState<Mode | null>(null);
+  const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(
     initialReview?.rating ?? initialRating ?? 80,
   );
@@ -82,7 +86,7 @@ export function GameLogActions({
     } else {
       setSuccess(pt ? "Salvo na sua jornada." : "Saved to your journey.");
       router.refresh();
-      window.setTimeout(() => setMode(null), 650);
+      window.setTimeout(() => setOpen(false), 420);
     }
     setPending(false);
   }
@@ -107,7 +111,7 @@ export function GameLogActions({
           : "Could not remove the review.",
       );
     else {
-      setMode(null);
+      setOpen(false);
       router.refresh();
     }
     setPending(false);
@@ -118,24 +122,32 @@ export function GameLogActions({
     diary: pt ? "Registrar sessão" : "Log session",
     list: pt ? "Adicionar à lista" : "Add to list",
   };
+  function openMode(nextMode: Mode) {
+    setError(null);
+    setSuccess(null);
+    setMode(nextMode);
+    setOpen(true);
+  }
 
   return (
     <>
       <div className="game-log-actions">
-        <button type="button" onClick={() => setMode("review")}>
+        <button type="button" onClick={() => openMode("review")}>
           <BookOpen size={15} /> {labels.review}
         </button>
-        <button type="button" onClick={() => setMode("diary")}>
+        <button type="button" onClick={() => openMode("diary")}>
           <CalendarPlus size={15} /> {labels.diary}
         </button>
-        <button type="button" onClick={() => setMode("list")}>
+        {logCount > 0 && (
+          <Link href={`/${lang}/game/${game.slug}/logs`}>
+            {pt ? `Ver registros (${logCount})` : `View logs (${logCount})`}
+          </Link>
+        )}
+        <button type="button" onClick={() => openMode("list")}>
           <ListPlus size={15} /> {labels.list}
         </button>
       </div>
-      <Dialog.Root
-        open={Boolean(mode)}
-        onOpenChange={(open) => !open && setMode(null)}
-      >
+      <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="drawer-backdrop" />
           <Dialog.Content
@@ -144,13 +156,35 @@ export function GameLogActions({
           >
             <header>
               <div>
-                <span>{game.name}</span>
-                <Dialog.Title>{mode ? labels[mode] : ""}</Dialog.Title>
+                <span>{mode ? labels[mode] : ""}</span>
+                <Dialog.Title>{game.name}</Dialog.Title>
               </div>
+              {game.releaseYear && <time>{game.releaseYear}</time>}
               <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
                 <X size={19} />
               </Dialog.Close>
             </header>
+            {(mode === "review" || mode === "diary") && (
+              <nav
+                className="game-editor-tabs"
+                aria-label={pt ? "Tipo de registro" : "Entry type"}
+              >
+                <button
+                  type="button"
+                  data-active={mode === "review" || undefined}
+                  onClick={() => setMode("review")}
+                >
+                  <BookOpen size={16} /> {pt ? "Avaliação" : "Review"}
+                </button>
+                <button
+                  type="button"
+                  data-active={mode === "diary" || undefined}
+                  onClick={() => setMode("diary")}
+                >
+                  <CalendarPlus size={16} /> {pt ? "Diário" : "Journal"}
+                </button>
+              </nav>
+            )}
             {mode && (
               <form action={submit} className="social-editor-form">
                 {mode === "review" && (

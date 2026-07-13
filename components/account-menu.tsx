@@ -3,14 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import {
-  ChevronDown,
-  LoaderCircle,
-  LogOut,
-  Settings,
-  UserRound,
-} from "lucide-react";
-import Link from "next/link";
+import { ChevronDown, LoaderCircle, LogOut } from "lucide-react";
 import { useState } from "react";
 
 export type NavigationAccount = {
@@ -71,21 +64,6 @@ export function AccountMenu({
             <span>{handle}</span>
             <small>{account.email}</small>
           </div>
-          <DropdownMenu.Separator />
-          {account.username && (
-            <DropdownMenu.Item asChild>
-              <Link href={`/${lang}/u/${account.username}`}>
-                <UserRound size={16} />
-                {lang === "pt-BR" ? "Ver perfil" : "View profile"}
-              </Link>
-            </DropdownMenu.Item>
-          )}
-          <DropdownMenu.Item asChild>
-            <Link href={`/${lang}/settings/profile`}>
-              <Settings size={16} />
-              {lang === "pt-BR" ? "Configurações" : "Settings"}
-            </Link>
-          </DropdownMenu.Item>
           <DropdownMenu.Separator />
           <DropdownMenu.Item
             className="account-menu-signout"

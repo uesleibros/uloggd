@@ -14,7 +14,9 @@ import { notFound } from "next/navigation";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { FollowButton } from "@/components/social/follow-button";
+import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { getGamesByIds } from "@/lib/igdb";
+import { resolveGameCover } from "@/lib/game-cover";
 import { getActivity } from "@/lib/social";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../dictionaries";
@@ -103,7 +105,10 @@ export default async function ProfilePage({ params }: Props) {
       .limit(10),
     supabase
       .from("game_lists")
-      .select("id,name,description,game_list_items(count)", { count: "exact" })
+      .select(
+        "id,name,description,visibility,game_list_items(igdb_id,position)",
+        { count: "exact" },
+      )
       .eq("profile_id", profile.id)
       .eq("visibility", "PUBLIC")
       .order("updated_at", { ascending: false })
@@ -136,8 +141,23 @@ export default async function ProfilePage({ params }: Props) {
   ]);
   const library = libraryResult.data ?? [];
   const lists = listsResult.data ?? [];
-  const games = await getGamesByIds(library.map((item) => item.igdb_id));
+  const listGameIds = lists.flatMap((list) =>
+    list.game_list_items.map((item) => item.igdb_id),
+  );
+  const [games, { data: listCoverRows }] = await Promise.all([
+    getGamesByIds([...library.map((item) => item.igdb_id), ...listGameIds]),
+    listGameIds.length
+      ? supabase
+          .from("user_games")
+          .select("igdb_id,custom_cover_url")
+          .eq("profile_id", profile.id)
+          .in("igdb_id", listGameIds)
+      : Promise.resolve({ data: [] }),
+  ]);
   const byId = new Map(games.map((game) => [game.id, game]));
+  const listCoversById = new Map(
+    (listCoverRows ?? []).map((item) => [item.igdb_id, item.custom_cover_url]),
+  );
   const pt = lang === "pt-BR";
   const joined = new Intl.DateTimeFormat(lang, {
     month: "long",
@@ -290,21 +310,39 @@ export default async function ProfilePage({ params }: Props) {
             )}
           </div>
           {lists.length ? (
-            lists.map((list) => (
-              <Link href={`/${lang}/lists/${list.id}`} key={list.id}>
-                <strong>{list.name}</strong>
-                <p>
-                  {list.description ||
-                    (pt ? "Sem descrição" : "No description")}
-                </p>
-                <small>
-                  {Array.isArray(list.game_list_items)
-                    ? (list.game_list_items[0]?.count ?? 0)
-                    : 0}{" "}
-                  {pt ? "jogos" : "games"}
-                </small>
-              </Link>
-            ))
+            lists.map((list) => {
+              const items = [...list.game_list_items].sort(
+                (a, b) => a.position - b.position,
+              );
+              const covers = items.slice(0, 5).flatMap((item) => {
+                const game = byId.get(item.igdb_id);
+                return game
+                  ? [
+                      {
+                        url: resolveGameCover(
+                          game.coverUrl,
+                          listCoversById.get(game.id),
+                        ),
+                        name: game.name,
+                      },
+                    ]
+                  : [];
+              });
+              return (
+                <ListPreviewCard
+                  key={list.id}
+                  list={{
+                    id: list.id,
+                    name: list.name,
+                    description: list.description,
+                    visibility: list.visibility,
+                    count: items.length,
+                  }}
+                  covers={covers}
+                  lang={lang}
+                />
+              );
+            })
           ) : (
             <p className="profile-lists-empty">
               {pt ? "Nenhuma lista pública." : "No public lists."}

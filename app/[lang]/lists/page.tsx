@@ -1,7 +1,9 @@
-import Link from "next/link";
 import { List } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { CreateListForm } from "@/components/social/create-list-form";
+import { ListPreviewCard } from "@/components/social/list-preview-card";
+import { getGamesByIds } from "@/lib/igdb";
+import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../dictionaries";
 
@@ -17,10 +19,29 @@ export default async function ListsPage({
   if (!user) redirect(`/${lang}/login?next=/${lang}/lists`);
   const { data: lists } = await supabase
     .from("game_lists")
-    .select("id,name,description,visibility,updated_at,game_list_items(count)")
+    .select(
+      "id,name,description,visibility,updated_at,game_list_items(igdb_id,position)",
+    )
     .eq("profile_id", user.id)
     .order("updated_at", { ascending: false });
   const pt = lang === "pt-BR";
+  const itemIds = (lists ?? []).flatMap((list) =>
+    list.game_list_items.map((item) => item.igdb_id),
+  );
+  const [games, { data: savedCovers }] = await Promise.all([
+    getGamesByIds(itemIds),
+    itemIds.length
+      ? supabase
+          .from("user_games")
+          .select("igdb_id,custom_cover_url")
+          .eq("profile_id", user.id)
+          .in("igdb_id", itemIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+  const gamesById = new Map(games.map((game) => [game.id, game]));
+  const customById = new Map(
+    (savedCovers ?? []).map((item) => [item.igdb_id, item.custom_cover_url]),
+  );
   return (
     <main className="social-page">
       <header className="social-page-header social-page-header-actions">
@@ -40,33 +61,36 @@ export default async function ListsPage({
       {lists?.length ? (
         <div className="lists-grid">
           {lists.map((list) => {
-            const count = Array.isArray(list.game_list_items)
-              ? (list.game_list_items[0]?.count ?? 0)
-              : 0;
+            const items = [...list.game_list_items].sort(
+              (a, b) => a.position - b.position,
+            );
+            const covers = items.slice(0, 5).flatMap((item) => {
+              const game = gamesById.get(item.igdb_id);
+              return game
+                ? [
+                    {
+                      url: resolveGameCover(
+                        game.coverUrl,
+                        customById.get(game.id),
+                      ),
+                      name: game.name,
+                    },
+                  ]
+                : [];
+            });
             return (
-              <Link href={`/${lang}/lists/${list.id}`} key={list.id}>
-                <span>
-                  {list.visibility === "PRIVATE"
-                    ? pt
-                      ? "PRIVADA"
-                      : "PRIVATE"
-                    : list.visibility === "FOLLOWERS"
-                      ? pt
-                        ? "SEGUIDORES"
-                        : "FOLLOWERS"
-                      : pt
-                        ? "PÚBLICA"
-                        : "PUBLIC"}
-                </span>
-                <h2>{list.name}</h2>
-                <p>
-                  {list.description ||
-                    (pt ? "Sem descrição." : "No description.")}
-                </p>
-                <small>
-                  {count} {pt ? "jogos" : "games"}
-                </small>
-              </Link>
+              <ListPreviewCard
+                key={list.id}
+                list={{
+                  id: list.id,
+                  name: list.name,
+                  description: list.description,
+                  visibility: list.visibility,
+                  count: items.length,
+                }}
+                covers={covers}
+                lang={lang}
+              />
             );
           })}
         </div>

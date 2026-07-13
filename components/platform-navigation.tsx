@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  Compass,
   HomeIcon,
   LibraryBig,
   ListTree,
@@ -21,7 +20,6 @@ import { SidebarCollapseButton } from "./sidebar-collapse-button";
 
 const iconMap = {
   home: HomeIcon,
-  compass: Compass,
   library: LibraryBig,
   star: Star,
   user: UserRound,
@@ -42,7 +40,6 @@ export function PlatformNavigation({
   const isAuthenticated = Boolean(account);
   const nav = [
     ["home", d.nav.home, false],
-    ["compass", d.nav.explore, false],
     ["library", d.nav.library, true],
     ["star", d.nav.reviews, true],
     ["list", d.nav.lists, true],
@@ -78,17 +75,15 @@ export function PlatformNavigation({
               }
               if (index !== 0) {
                 const href =
-                  icon === "compass"
-                    ? `/${lang}/explore`
-                    : icon === "library"
-                      ? `/${lang}/library`
-                      : icon === "star"
-                        ? `/${lang}/reviews`
-                        : icon === "list"
-                          ? `/${lang}/lists`
-                          : account?.username
-                            ? `/${lang}/u/${account.username}`
-                            : `/${lang}/onboarding/username`;
+                  icon === "library"
+                    ? `/${lang}/library`
+                    : icon === "star"
+                      ? `/${lang}/reviews`
+                      : icon === "list"
+                        ? `/${lang}/lists`
+                        : account?.username
+                          ? `/${lang}/u/${account.username}`
+                          : `/${lang}/onboarding/username`;
                 return (
                   <ActiveLink
                     key={label}
@@ -162,7 +157,6 @@ export function PlatformNavigation({
             menu: d.actions.menu,
             close: d.actions.close,
             home: d.nav.home,
-            explore: d.nav.explore,
             library: d.nav.library,
             reviews: d.nav.reviews,
             lists: d.nav.lists,

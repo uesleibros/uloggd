@@ -87,6 +87,13 @@ export default async function GamePage({ params }: Props) {
         .eq("igdb_id", game.id)
         .maybeSingle()
     : { data: null };
+  const { count: ownLogCount } = user
+    ? await supabase
+        .from("diary_entries")
+        .select("id", { count: "exact", head: true })
+        .eq("profile_id", user.id)
+        .eq("igdb_id", game.id)
+    : { count: 0 };
   const communityEntries = await getActivity(supabase, {
     gameId: game.id,
     limit: 12,
@@ -162,6 +169,7 @@ export default async function GamePage({ params }: Props) {
               lists={userLists ?? []}
               initialRating={state?.quick_rating ?? null}
               initialReview={ownReview}
+              logCount={ownLogCount ?? 0}
             />
           )}
           <section className="game-summary">
