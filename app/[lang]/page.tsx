@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { ArrowUpRight, Star } from "lucide-react";
+import { HomeSkeleton } from "@/components/home-skeleton";
 import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
 import { resolveGameCover } from "@/lib/game-cover";
@@ -13,6 +15,14 @@ import { getDictionary, hasLocale } from "./dictionaries";
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
+  return (
+    <Suspense fallback={<HomeSkeleton />}>
+      <HomeContent lang={lang} />
+    </Suspense>
+  );
+}
+
+async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
   const [d, games, discoveries, supabase] = await Promise.all([
     getDictionary(lang),
     getPopularGames(),

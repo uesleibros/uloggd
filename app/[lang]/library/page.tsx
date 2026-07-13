@@ -1,3 +1,4 @@
+import { LibraryBig } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { LibraryCollection } from "@/components/library/library-collection";
 import { getGamesByIds } from "@/lib/igdb";
@@ -47,4 +48,3 @@ export default async function LibraryPage({
     </main>
   );
 }
-import { LibraryBig } from "lucide-react";
