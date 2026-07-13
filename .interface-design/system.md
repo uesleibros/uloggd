@@ -220,7 +220,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 - Personal ratings use five gold stars with half-star precision backed by the existing 0–100 value (10 points per half-star).
 - The game page shows the full labeled control; cover menus use the compact five-star variant.
-- A saved rating always exposes a nearby remove action that clears only the rating, not the library entry.
+- Clicking the currently selected half-star again clears only the rating and returns the control to five empty stars; no separate remove button or numeric “x of 5” label is shown.
 - Hovering or keyboard-focusing either half of a star previews that half-step and every preceding star before the rating is committed.
 - Rating a new game adds it to the library as Backlog. Library cards expose a clearly destructive remove action in their overflow menu.
 

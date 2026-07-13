@@ -1721,31 +1721,9 @@ a {
   background: rgb(211 181 91 / 8%);
   border-radius: 5px;
 }
-.star-rating-star:has(button:disabled),
-.star-rating-clear:disabled {
+.star-rating-star:has(button:disabled) {
   opacity: 0.5;
   cursor: wait;
-}
-.star-rating-clear {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 28px;
-  padding: 0 7px;
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  color: var(--screen-muted);
-  font-size: 9px;
-  cursor: pointer;
-}
-.star-rating-clear:hover {
-  background: var(--console-hover);
-  color: var(--screen-dim);
-}
-.star-rating-value {
-  color: var(--screen-muted);
-  font: 550 10px var(--font-geist-mono);
 }
 .star-rating-compact {
   gap: 4px;
@@ -1771,13 +1749,6 @@ a {
 }
 .star-rating-compact .star-rating-star[data-fill="full"] .star-rating-fill {
   width: 18px;
-}
-.star-rating-compact .star-rating-clear {
-  width: 24px;
-  height: 26px;
-  min-height: 26px;
-  padding: 0;
-  justify-content: center;
 }
 .game-action-panel > button,
 .game-status-button {

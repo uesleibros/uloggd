@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, X } from "lucide-react";
+import { Star } from "lucide-react";
 import { useState } from "react";
 
 export function StarRating({
@@ -58,6 +58,7 @@ export function StarRating({
               </span>
               {[firstHalf, secondHalf].map((halfSteps, index) => {
                 const label = formatRating(halfSteps);
+                const removesRating = selected === halfSteps;
                 return (
                   <button
                     className={
@@ -68,11 +69,17 @@ export function StarRating({
                     disabled={disabled}
                     onMouseEnter={() => setPreview(halfSteps)}
                     onFocus={() => setPreview(halfSteps)}
-                    onClick={() => onChange(halfSteps * 10)}
+                    onClick={() =>
+                      onChange(removesRating ? null : halfSteps * 10)
+                    }
                     aria-label={
-                      pt
-                        ? `Avaliar com ${label} ${label === "1" ? "estrela" : "estrelas"}`
-                        : `Rate ${label} ${label === "1" ? "star" : "stars"}`
+                      removesRating
+                        ? pt
+                          ? `Remover avaliação de ${label} ${label === "1" ? "estrela" : "estrelas"}`
+                          : `Remove ${label} ${label === "1" ? "star" : "stars"} rating`
+                        : pt
+                          ? `Avaliar com ${label} ${label === "1" ? "estrela" : "estrelas"}`
+                          : `Rate ${label} ${label === "1" ? "star" : "stars"}`
                     }
                     aria-pressed={selected === halfSteps}
                   />
@@ -82,30 +89,6 @@ export function StarRating({
           );
         })}
       </div>
-      {value !== null && (
-        <button
-          className="star-rating-clear"
-          type="button"
-          disabled={disabled}
-          onClick={() => onChange(null)}
-          aria-label={pt ? "Remover avaliação" : "Remove rating"}
-          title={pt ? "Remover avaliação" : "Remove rating"}
-        >
-          <X size={compact ? 13 : 14} />
-          {!compact && (pt ? "Remover" : "Remove")}
-        </button>
-      )}
-      {!compact && (
-        <span className="star-rating-value" aria-live="polite">
-          {visibleValue
-            ? pt
-              ? `${formatRating(visibleValue)} de 5`
-              : `${formatRating(visibleValue)} out of 5`
-            : pt
-              ? "Sem nota"
-              : "Not rated"}
-        </span>
-      )}
     </div>
   );
 }
