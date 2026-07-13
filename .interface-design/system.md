@@ -108,7 +108,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - 264px wide, sticky, full viewport height.
 - Solid `console-panel` background with `shell-line-strong` right border.
 - Brand plus subtle beta stage at top.
-- Navigation rows are 44px high with an 8px radius.
+- Navigation rows are uniformly 48px high with an 8px radius on desktop, compact, and mobile drawer states.
 - Current route uses a graphite hover surface, white icon and label, and one small blurple status dot. Blurple never floods the navigation row.
 - Quick-log action is tonal, not a large saturated pill.
 - Account control stays at the bottom and must not fabricate authenticated state.
@@ -148,7 +148,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 - Profile settings use one focused content column up to 820px while profile is the only available settings area; do not show empty local navigation or unfinished security sections.
 - Public identity separates imagery from text: a 3:1 banner, circular avatar, then optional display name, free-form pronouns (30 characters), and bio (500 characters).
-- Banner and avatar form one profile-preview composition: the avatar overlaps the lower banner edge and identity/actions settle into the quieter surface below.
+- Public details, avatar, and banner use three distinct settings sections. Each image section includes a domain icon, preview, upload/remove actions, recommended dimensions, the 8 MB source limit, and supported JPG/PNG/WebP formats.
 - Avatar and banner uploads always pass through a Radix crop modal. Avatar crops at 1:1 to a maximum 640px; banner crops at 3:1 to a maximum 1800px; both export compressed WebP before server upload.
 - Image-provider credentials remain server-only. Upload controls expose loading, invalid-file, provider-failure, remove, and empty states.
 
@@ -273,6 +273,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Avoid animation on repeated keyboard-driven actions.
 - Respect `prefers-reduced-motion` by removing movement while preserving immediate state changes.
 - Dropdowns enter in 140–160ms from their trigger origin. Centered modals use a 200ms opacity plus subtle 0.985 scale/vertical offset; mobile sheets enter upward by 12px. Overlays fade in over 160ms. Never animate layout dimensions.
+- Radix menus and dialogs must also animate their `data-state="closed"` state for 110–150ms; conditional parents remain mounted until that exit finishes so overlays never disappear abruptly.
 
 ## Content Principles
 

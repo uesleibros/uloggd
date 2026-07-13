@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { Camera, ImageIcon, LoaderCircle, Trash2 } from "lucide-react";
+import { ImageIcon, LoaderCircle, Save, Trash2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -124,92 +124,13 @@ export function ProfileSettingsPanel({
 
   return (
     <div className="profile-settings-content">
-      <section className="profile-visual-settings">
-        <div className="profile-banner-preview">
-          {profile.banner_url ? (
-            <img src={profile.banner_url} alt="" />
-          ) : (
-            <ImageIcon size={24} />
-          )}
-          <button type="button" onClick={() => bannerInput.current?.click()}>
-            <Camera size={15} />
-            {pt ? "Alterar banner" : "Change banner"}
-          </button>
-        </div>
-        <div className="profile-avatar-row">
-          <div className="profile-avatar-preview">
-            {profile.avatar_url ? (
-              <img src={profile.avatar_url} alt="" />
-            ) : (
-              <span>{profile.username.slice(0, 1).toUpperCase()}</span>
-            )}
-          </div>
-          <div>
-            <strong>{profile.display_name || `@${profile.username}`}</strong>
-            {profile.display_name && (
-              <span className="profile-settings-handle">
-                @{profile.username}
-              </span>
-            )}
-            <p>
-              {pt
-                ? "Avatar quadrado e banner panorâmico. JPG, PNG ou WebP, até 8 MB."
-                : "Square avatar and wide banner. JPG, PNG, or WebP, up to 8 MB."}
-            </p>
-            <div className="profile-image-actions">
-              <button
-                type="button"
-                onClick={() => avatarInput.current?.click()}
-              >
-                <Camera size={14} />
-                {pt ? "Alterar avatar" : "Change avatar"}
-              </button>
-              {profile.avatar_url && (
-                <button
-                  type="button"
-                  onClick={() => removeImage("avatar")}
-                  disabled={Boolean(pending)}
-                >
-                  <Trash2 size={14} />
-                  {pt ? "Remover" : "Remove"}
-                </button>
-              )}
-              {profile.banner_url && (
-                <button
-                  type="button"
-                  onClick={() => removeImage("banner")}
-                  disabled={Boolean(pending)}
-                >
-                  <Trash2 size={14} />
-                  {pt ? "Remover banner" : "Remove banner"}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-        <input
-          ref={avatarInput}
-          hidden
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={(event) => chooseImage(event.target.files?.[0], "avatar")}
-        />
-        <input
-          ref={bannerInput}
-          hidden
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={(event) => chooseImage(event.target.files?.[0], "banner")}
-        />
-      </section>
-
       <form className="profile-details-form" onSubmit={saveDetails}>
         <header>
           <h2>{pt ? "Informações públicas" : "Public information"}</h2>
           <p>
             {pt
-              ? "Esses dados aparecerão no seu perfil. Todos são opcionais."
-              : "These details appear on your profile. They are all optional."}
+              ? "Nome de exibição, pronomes e bio aparecem no seu perfil. Todos são opcionais."
+              : "Display name, pronouns, and bio appear on your profile. All are optional."}
           </p>
         </header>
         <label>
@@ -256,10 +177,132 @@ export function ProfileSettingsPanel({
             {pending === "details" && (
               <LoaderCircle className="spin" size={15} />
             )}
+            {pending !== "details" && <Save size={14} />}
             {pt ? "Salvar perfil" : "Save profile"}
           </button>
         </div>
       </form>
+
+      <section className="profile-image-setting avatar-setting">
+        <header>
+          <div>
+            <h2>{pt ? "Avatar do perfil" : "Profile avatar"}</h2>
+            <p>
+              {pt
+                ? "A imagem que identifica você em todo o uloggd."
+                : "The image that identifies you across uloggd."}
+            </p>
+          </div>
+        </header>
+        <div className="profile-image-setting-body">
+          <div className="profile-avatar-preview">
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt="" />
+            ) : (
+              <span>{profile.username.slice(0, 1).toUpperCase()}</span>
+            )}
+          </div>
+          <div>
+            <strong>{profile.display_name || `@${profile.username}`}</strong>
+            {profile.display_name && (
+              <span className="profile-settings-handle">
+                @{profile.username}
+              </span>
+            )}
+            <div className="profile-image-actions">
+              <button
+                type="button"
+                onClick={() => avatarInput.current?.click()}
+              >
+                <Upload size={14} />
+                {profile.avatar_url
+                  ? pt
+                    ? "Trocar avatar"
+                    : "Change avatar"
+                  : pt
+                    ? "Enviar avatar"
+                    : "Upload avatar"}
+              </button>
+              {profile.avatar_url && (
+                <button
+                  type="button"
+                  onClick={() => removeImage("avatar")}
+                  disabled={Boolean(pending)}
+                >
+                  <Trash2 size={14} />
+                  {pt ? "Remover" : "Remove"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        <small>
+          {pt
+            ? "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG ou WebP"
+            : "Recommended: 640×640px · Max 8 MB · JPG, PNG, or WebP"}
+        </small>
+      </section>
+
+      <section className="profile-image-setting banner-setting">
+        <header>
+          <div>
+            <h2>{pt ? "Banner do perfil" : "Profile banner"}</h2>
+            <p>
+              {pt
+                ? "Uma imagem panorâmica para o cabeçalho do seu perfil."
+                : "A wide image for your profile header."}
+            </p>
+          </div>
+        </header>
+        <div className="profile-banner-preview">
+          {profile.banner_url ? (
+            <img src={profile.banner_url} alt="" />
+          ) : (
+            <ImageIcon size={28} />
+          )}
+        </div>
+        <div className="profile-banner-actions">
+          <button type="button" onClick={() => bannerInput.current?.click()}>
+            <Upload size={15} />
+            {profile.banner_url
+              ? pt
+                ? "Trocar banner"
+                : "Change banner"
+              : pt
+                ? "Enviar banner"
+                : "Upload banner"}
+          </button>
+          {profile.banner_url && (
+            <button
+              type="button"
+              onClick={() => removeImage("banner")}
+              disabled={Boolean(pending)}
+            >
+              <Trash2 size={14} />
+              {pt ? "Remover banner" : "Remove banner"}
+            </button>
+          )}
+          <small>
+            {pt
+              ? "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG ou WebP"
+              : "Recommended: 1800×600px · Max 8 MB · JPG, PNG, or WebP"}
+          </small>
+        </div>
+        <input
+          ref={avatarInput}
+          hidden
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={(event) => chooseImage(event.target.files?.[0], "avatar")}
+        />
+        <input
+          ref={bannerInput}
+          hidden
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={(event) => chooseImage(event.target.files?.[0], "banner")}
+        />
+      </section>
       {error && (
         <div className="auth-error" role="alert">
           {error}

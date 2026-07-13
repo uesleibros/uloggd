@@ -3,6 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { Check, LoaderCircle, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
+import { useEffect } from "react";
 import ReactCrop, {
   centerCrop,
   convertToPixelCrop,
@@ -64,10 +65,28 @@ export function ImageCropDialog({
   const pt = lang === "pt-BR";
   const aspect = kind === "avatar" ? 1 : 3;
   const imageRef = useRef<HTMLImageElement>(null);
+  const closeTimer = useRef<number | null>(null);
+  const [open, setOpen] = useState(true);
   const [crop, setCrop] = useState<Crop>();
   const [completed, setCompleted] = useState<PixelCrop>();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(
+    () => () => {
+      if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    },
+    [],
+  );
+
+  function close() {
+    if (!open) return;
+    setOpen(false);
+    const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? 0
+      : 150;
+    closeTimer.current = window.setTimeout(onClose, delay);
+  }
 
   const load = useCallback(
     (event: React.SyntheticEvent<HTMLImageElement>) => {
@@ -104,7 +123,7 @@ export function ImageCropDialog({
       const result = (await response.json()) as { url?: string };
       if (!response.ok || !result.url) throw new Error("upload_failed");
       onSaved(result.url);
-      onClose();
+      close();
     } catch {
       setError(
         pt
@@ -117,7 +136,7 @@ export function ImageCropDialog({
   }
 
   return (
-    <Dialog.Root open onOpenChange={(open) => !open && onClose()}>
+    <Dialog.Root open={open} onOpenChange={(next) => !next && close()}>
       <Dialog.Portal>
         <Dialog.Overlay className="profile-crop-backdrop" />
         <Dialog.Content className="profile-crop-modal">
@@ -161,7 +180,7 @@ export function ImageCropDialog({
             </p>
           )}
           <footer>
-            <button type="button" onClick={onClose} disabled={pending}>
+            <button type="button" onClick={close} disabled={pending}>
               {pt ? "Cancelar" : "Cancel"}
             </button>
             <button
