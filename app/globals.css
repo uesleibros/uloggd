@@ -91,6 +91,9 @@ a {
   min-height: 100vh;
   background: var(--console-canvas);
 }
+html[data-sidebar-collapsed] .platform-shell {
+  grid-template-columns: 76px minmax(0, 1fr);
+}
 
 .platform-content {
   display: flex;
@@ -152,7 +155,79 @@ a {
   box-shadow: 12px 0 32px rgb(0 0 0 / 18%);
   grid-column: 1;
   grid-row: 1;
-  overflow: hidden;
+  overflow: visible;
+}
+.sidebar-collapse-button {
+  position: absolute;
+  z-index: 2;
+  top: 25px;
+  right: -14px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 7px;
+  background: var(--console-raised);
+  color: var(--screen-muted);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 28%);
+  cursor: pointer;
+  transition:
+    background-color 130ms ease-out,
+    color 130ms ease-out,
+    transform 100ms ease-out;
+}
+.sidebar-collapse-button:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.sidebar-collapse-button:active {
+  transform: scale(0.97);
+}
+html[data-sidebar-collapsed] .sidebar {
+  align-items: center;
+}
+html[data-sidebar-collapsed] .sidebar-brand {
+  margin: 20px 0 0;
+  padding: 0;
+}
+html[data-sidebar-collapsed] .sidebar-scroll {
+  width: 100%;
+  margin: 16px 0 0;
+  padding: 0 16px 12px;
+}
+html[data-sidebar-collapsed] .sidebar-brand .brand span,
+html[data-sidebar-collapsed] .product-stage,
+html[data-sidebar-collapsed] .nav-label,
+html[data-sidebar-collapsed] .main-nav a > span,
+html[data-sidebar-collapsed] .main-nav > .nav-disabled > span,
+html[data-sidebar-collapsed] .sidebar-bottom > a span,
+html[data-sidebar-collapsed] .account-copy,
+html[data-sidebar-collapsed] .account-button > div,
+html[data-sidebar-collapsed] .account-button > span:last-child,
+html[data-sidebar-collapsed] .account-button > svg {
+  display: none;
+}
+html[data-sidebar-collapsed] .main-nav a,
+html[data-sidebar-collapsed] .sidebar-bottom > a,
+html[data-sidebar-collapsed] .main-nav > .nav-disabled,
+html[data-sidebar-collapsed] .sidebar-bottom > .nav-disabled {
+  justify-content: center;
+  width: 44px;
+  padding: 0;
+}
+html[data-sidebar-collapsed] .nav-disabled .nav-lock {
+  display: none;
+}
+html[data-sidebar-collapsed] .account-button {
+  display: block;
+  width: 44px;
+  margin: 0 0 16px;
+  padding-inline: 4px;
+}
+html[data-sidebar-collapsed] .cookie-banner {
+  left: 96px;
 }
 .sidebar-brand {
   flex: none;
@@ -792,7 +867,7 @@ a {
 .featured-copy h2 {
   margin: 10px 0 7px;
   font-size: clamp(28px, 4vw, 42px);
-  font-weight: 680;
+  font-weight: 640;
   line-height: 1.02;
   letter-spacing: -0.055em;
   text-wrap: balance;
@@ -845,7 +920,7 @@ a {
 .section-heading h2 {
   margin: 0;
   font-size: 16px;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.025em;
 }
 .section-heading p {
@@ -1111,7 +1186,7 @@ a {
   margin: 9px 0 3px;
   overflow: hidden;
   font-size: 11px;
-  font-weight: 620;
+  font-weight: 550;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1143,7 +1218,7 @@ a {
 .discoveries-heading h2 {
   margin: 0;
   font-size: 21px;
-  font-weight: 660;
+  font-weight: 620;
   letter-spacing: -0.035em;
 }
 .discoveries-heading p,
@@ -1183,7 +1258,7 @@ a {
 .discovery-lane h3 {
   margin: 0;
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 .discovery-lane header p {
@@ -2228,7 +2303,7 @@ a {
 .list-main h3 {
   margin: 0 0 4px;
   font-size: 12px;
-  font-weight: 620;
+  font-weight: 560;
 }
 .list-main p {
   margin: 0;
@@ -2278,7 +2353,7 @@ a {
 .rail-intro h2 {
   margin: 15px 0 8px;
   font-size: 19px;
-  font-weight: 650;
+  font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.035em;
   text-wrap: balance;
@@ -2350,7 +2425,7 @@ a {
 .rail-title h2 {
   margin: 0;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
 }
 .rail-title span {
   color: var(--screen-muted);
@@ -2391,7 +2466,7 @@ a {
 }
 .trend strong {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 550;
 }
 .trend small {
   margin-top: 3px;
@@ -2754,7 +2829,7 @@ a {
 }
 .drawer-navigation a[data-active] {
   color: white;
-  font-weight: 650;
+  font-weight: 600;
 }
 .drawer-navigation a[data-active] svg {
   color: var(--screen-white);
@@ -2858,7 +2933,7 @@ a {
   max-width: 370px;
   margin: 0 0 10px;
   font-size: clamp(29px, 3.4vw, 43px);
-  font-weight: 660;
+  font-weight: 620;
   letter-spacing: -0.055em;
   line-height: 1.03;
   text-wrap: balance;
@@ -2894,7 +2969,7 @@ a {
 .login-highlight-list h3 {
   margin: 0;
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 600;
 }
 .login-highlight-list p {
   max-width: 380px;
@@ -2916,7 +2991,7 @@ a {
 .login-panel-heading h1 {
   margin: 0 0 10px;
   font-size: 32px;
-  font-weight: 660;
+  font-weight: 620;
   letter-spacing: -0.05em;
   line-height: 1.08;
   text-wrap: balance;
@@ -2966,7 +3041,7 @@ a {
 }
 .passkey-button strong {
   font-size: 13px;
-  font-weight: 750;
+  font-weight: 620;
 }
 .passkey-button small {
   margin-top: 3px;
@@ -3034,7 +3109,7 @@ a {
   gap: 7px;
   color: var(--screen-dim);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
 }
 .auth-form input:not([type="checkbox"]) {
   width: 100%;
@@ -3160,7 +3235,14 @@ a {
 }
 .auth-single {
   grid-template-columns: minmax(320px, 560px);
+  place-content: center;
   justify-content: center;
+  min-height: calc(100dvh - 64px);
+  padding: 32px 16px;
+}
+.auth-single .username-panel {
+  align-self: auto;
+  margin: 0 auto;
 }
 .username-input {
   display: grid;
@@ -3418,6 +3500,9 @@ a {
   .sidebar {
     align-items: center;
   }
+  .sidebar-collapse-button {
+    display: none;
+  }
   .sidebar-brand {
     margin: 20px 0 0;
     padding: 0;
@@ -3434,6 +3519,8 @@ a {
   .main-nav > .nav-disabled > span,
   .sidebar-bottom > a span,
   .account-copy,
+  .account-button > div,
+  .account-button > span:last-child,
   .account-button > svg {
     display: none;
   }
@@ -3511,6 +3598,13 @@ a {
     grid-template-columns: 32px minmax(0, 1fr);
     gap: 10px;
     padding: 12px;
+  }
+  html[data-sidebar-collapsed] .cookie-banner {
+    left: 12px;
+  }
+  .auth-single {
+    min-height: calc(100dvh - 60px);
+    padding: 24px 16px;
   }
   .cookie-banner-icon {
     width: 32px;

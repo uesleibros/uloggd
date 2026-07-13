@@ -16,6 +16,7 @@ import { ActiveLink } from "./active-link";
 import { LocaleSwitcher } from "./locale-switcher";
 import { MobileSidebar } from "./mobile-sidebar";
 import { MobileGameSearch } from "./game-search";
+import { SidebarCollapseButton } from "./sidebar-collapse-button";
 
 const iconMap = {
   home: HomeIcon,
@@ -48,6 +49,7 @@ export function PlatformNavigation({
   return (
     <>
       <aside className="sidebar">
+        <SidebarCollapseButton lang={lang} />
         <div className="sidebar-brand">
           <Brand lang={lang} />
           <span className="product-stage">{d.platform.beta}</span>
@@ -76,21 +78,36 @@ export function PlatformNavigation({
                   icon === "library" ? `/${lang}/library` : `/${lang}`;
                 if (icon === "library") {
                   return (
-                    <ActiveLink key={label} href={href}>
+                    <ActiveLink
+                      key={label}
+                      href={href}
+                      aria-label={label}
+                      title={label}
+                    >
                       <NavIcon size={20} />
                       <span>{label}</span>
                     </ActiveLink>
                   );
                 }
                 return (
-                  <Link key={label} href={href}>
+                  <Link
+                    key={label}
+                    href={href}
+                    aria-label={label}
+                    title={label}
+                  >
                     <NavIcon size={20} />
                     <span>{label}</span>
                   </Link>
                 );
               }
               return (
-                <ActiveLink key={label} href={`/${lang}`}>
+                <ActiveLink
+                  key={label}
+                  href={`/${lang}`}
+                  aria-label={label}
+                  title={label}
+                >
                   <NavIcon size={20} />
                   <span>{label}</span>
                 </ActiveLink>
@@ -99,7 +116,11 @@ export function PlatformNavigation({
           </nav>
           <div className="sidebar-bottom">
             {isAuthenticated ? (
-              <Link href={`/${lang}`}>
+              <Link
+                href={`/${lang}`}
+                aria-label={d.nav.settings}
+                title={d.nav.settings}
+              >
                 <Settings size={19} />
                 <span>{d.nav.settings}</span>
               </Link>

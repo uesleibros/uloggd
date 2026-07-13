@@ -90,6 +90,8 @@ Approximate scale:
 
 Use weight and color before adding font size. Headings use balanced wrapping; paragraphs use pretty wrapping. Dynamic numbers use tabular numerals.
 
+Reserve 640+ weights for page/editorial focal points and the wordmark. Section headings and active navigation use 600–620; card titles, rail rows, labels, and secondary controls use 500–600 so multiple elements do not compete for attention.
+
 ## Radius Scale
 
 - Small controls and image thumbnails: 5–7px.
@@ -112,6 +114,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Account control stays at the bottom and must not fabricate authenticated state.
 - Signed-out account controls use a neutral login glyph; initials and avatars are reserved for real authenticated profiles.
 - Signed-out navigation keeps Home, Explore, search, language, and legal documents available. Library, Reviews, Profile, Settings, and quick-log render as non-interactive muted rows with a small lock glyph and an accessible sign-in requirement.
+- Above 1100px, the sidebar can collapse from 264px to 76px using a persistent edge control; the compact state keeps 44px icon targets, route state, account access, and the content canvas expansion.
 
 ### Compact sidebar
 
