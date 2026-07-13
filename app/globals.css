@@ -91,6 +91,9 @@ a {
   min-height: 100vh;
   background: var(--console-canvas);
 }
+html[data-sidebar-ready] .platform-shell {
+  transition: grid-template-columns 240ms cubic-bezier(0.23, 1, 0.32, 1);
+}
 html[data-sidebar-collapsed] .platform-shell {
   grid-template-columns: 76px minmax(0, 1fr);
 }
@@ -208,7 +211,20 @@ html[data-sidebar-collapsed] .account-copy,
 html[data-sidebar-collapsed] .account-button > div,
 html[data-sidebar-collapsed] .account-button > span:last-child,
 html[data-sidebar-collapsed] .account-button > svg {
-  display: none;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateX(-6px);
+  white-space: nowrap;
+}
+html[data-sidebar-collapsed] .product-stage {
+  padding-inline: 0;
+  border-color: transparent;
+}
+html[data-sidebar-collapsed] .nav-label {
+  max-height: 0;
+  margin-block: 0;
 }
 html[data-sidebar-collapsed] .main-nav a,
 html[data-sidebar-collapsed] .sidebar-bottom > a,
@@ -222,7 +238,8 @@ html[data-sidebar-collapsed] .nav-disabled .nav-lock {
   display: none;
 }
 html[data-sidebar-collapsed] .account-button {
-  display: block;
+  display: flex;
+  justify-content: center;
   width: 44px;
   margin: 0 0 16px;
   padding-inline: 4px;
@@ -248,6 +265,59 @@ html[data-sidebar-collapsed] .cookie-banner {
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--shell-line-strong) transparent;
+}
+html[data-sidebar-ready] .sidebar-brand,
+html[data-sidebar-ready] .sidebar-scroll,
+html[data-sidebar-ready] .main-nav a,
+html[data-sidebar-ready] .sidebar-bottom > a,
+html[data-sidebar-ready] .main-nav > .nav-disabled,
+html[data-sidebar-ready] .sidebar-bottom > .nav-disabled,
+html[data-sidebar-ready] .account-button {
+  transition:
+    width 240ms cubic-bezier(0.23, 1, 0.32, 1),
+    margin 240ms cubic-bezier(0.23, 1, 0.32, 1),
+    padding 240ms cubic-bezier(0.23, 1, 0.32, 1),
+    gap 180ms ease-out,
+    background-color 140ms ease-out,
+    color 140ms ease-out;
+}
+html[data-sidebar-ready] .sidebar-brand .brand span,
+html[data-sidebar-ready] .product-stage,
+html[data-sidebar-ready] .nav-label,
+html[data-sidebar-ready] .main-nav a > span,
+html[data-sidebar-ready] .main-nav > .nav-disabled > span,
+html[data-sidebar-ready] .sidebar-bottom > a span,
+html[data-sidebar-ready] .sidebar-bottom > .nav-disabled > span,
+html[data-sidebar-ready] .account-copy,
+html[data-sidebar-ready] .account-button > div,
+html[data-sidebar-ready] .account-button > span:last-child,
+html[data-sidebar-ready] .account-button > svg {
+  transition:
+    max-width 210ms cubic-bezier(0.23, 1, 0.32, 1),
+    max-height 210ms cubic-bezier(0.23, 1, 0.32, 1),
+    margin 210ms cubic-bezier(0.23, 1, 0.32, 1),
+    padding 210ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 140ms ease-out,
+    opacity 130ms ease-out,
+    transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.sidebar-brand .brand span,
+.product-stage,
+.nav-label,
+.main-nav a > span,
+.main-nav > .nav-disabled > span,
+.sidebar-bottom > a span,
+.sidebar-bottom > .nav-disabled > span,
+.account-copy,
+.account-button > div,
+.account-button > span:last-child,
+.account-button > svg {
+  max-width: 190px;
+  opacity: 1;
+  transform: translateX(0);
+}
+.nav-label {
+  max-height: 24px;
 }
 .product-stage {
   padding: 3px 6px;
@@ -4482,11 +4552,16 @@ html[data-sidebar-collapsed] .cookie-banner {
   background:
     linear-gradient(
       90deg,
-      rgb(11 11 13 / 88%) 0%,
-      rgb(11 11 13 / 50%) 58%,
-      rgb(11 11 13 / 72%) 100%
+      rgb(8 8 10 / 94%) 0%,
+      rgb(8 8 10 / 78%) 48%,
+      rgb(8 8 10 / 84%) 100%
     ),
-    linear-gradient(0deg, var(--console-panel) 0%, transparent 62%);
+    linear-gradient(
+      0deg,
+      var(--console-panel) 0%,
+      rgb(12 11 14 / 68%) 36%,
+      transparent 78%
+    );
 }
 
 .game-stage-inner {
@@ -4509,6 +4584,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   width: 100%;
   max-width: 650px;
   padding: 0 0 2px;
+  text-shadow: 0 1px 16px rgb(0 0 0 / 52%);
 }
 
 .game-stage .game-page-content h1 {
@@ -4516,15 +4592,13 @@ html[data-sidebar-collapsed] .cookie-banner {
   font-size: clamp(30px, 3.6vw, 42px);
 }
 
-.game-stage-facts,
-.game-genre-chips {
+.game-stage-facts {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.game-stage-facts > span,
-.game-genre-chips > span {
+.game-stage-facts > span {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -4555,12 +4629,14 @@ html[data-sidebar-collapsed] .cookie-banner {
   -webkit-line-clamp: 3;
 }
 
-.game-genre-chips {
-  margin-bottom: 16px;
-}
-
 .game-stage .game-action-panel {
   margin-bottom: 10px;
+}
+
+.game-stage .game-action-panel > button,
+.game-stage .game-status-button {
+  background: rgb(12 12 15 / 76%);
+  backdrop-filter: blur(10px);
 }
 
 .game-stage .game-user-rating {
@@ -5007,7 +5083,6 @@ a,
   }
 
   .game-stage-description,
-  .game-genre-chips,
   .game-stage .game-action-panel,
   .game-stage .game-log-actions {
     grid-column: 1 / -1;
@@ -5015,10 +5090,6 @@ a,
 
   .game-stage-description {
     display: none;
-  }
-
-  .game-genre-chips {
-    margin-top: 12px;
   }
 
   .game-stage .game-action-panel {
@@ -6753,7 +6824,6 @@ a,
   }
 
   .game-stage-description,
-  .game-genre-chips,
   .game-stage .game-action-panel,
   .game-stage .game-log-actions {
     grid-column: auto;

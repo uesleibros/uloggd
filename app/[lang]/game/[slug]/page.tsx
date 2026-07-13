@@ -173,19 +173,9 @@ export default async function GamePage({ params }: Props) {
                   {game.rating}/100
                 </span>
               )}
-              {game.platforms.slice(0, 2).map((platform) => (
-                <span key={platform}>{platform}</span>
-              ))}
             </div>
             {game.summary && (
               <p className="game-stage-description">{game.summary}</p>
-            )}
-            {game.genres.length > 0 && (
-              <div className="game-genre-chips">
-                {game.genres.map((genre) => (
-                  <span key={genre}>{genre}</span>
-                ))}
-              </div>
             )}
             <GameActionPanel
               game={game}

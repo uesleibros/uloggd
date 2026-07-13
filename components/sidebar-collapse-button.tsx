@@ -10,6 +10,7 @@ export function SidebarCollapseButton({ lang }: { lang: "pt-BR" | "en" }) {
   const pt = lang === "pt-BR";
 
   useEffect(() => {
+    let readyFrame = 0;
     const hydrate = window.setTimeout(() => {
       let saved = false;
       try {
@@ -19,8 +20,14 @@ export function SidebarCollapseButton({ lang }: { lang: "pt-BR" | "en" }) {
       }
       setCollapsed(saved);
       document.documentElement.toggleAttribute("data-sidebar-collapsed", saved);
+      readyFrame = window.requestAnimationFrame(() => {
+        document.documentElement.setAttribute("data-sidebar-ready", "");
+      });
     }, 0);
-    return () => window.clearTimeout(hydrate);
+    return () => {
+      window.clearTimeout(hydrate);
+      window.cancelAnimationFrame(readyFrame);
+    };
   }, []);
 
   function toggle() {
