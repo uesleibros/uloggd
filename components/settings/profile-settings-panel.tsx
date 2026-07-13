@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { Camera, ImageIcon, LoaderCircle, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageCropDialog } from "./image-crop-dialog";
@@ -24,6 +25,7 @@ export function ProfileSettingsPanel({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const router = useRouter();
   const [profile, setProfile] = useState(initial);
   const [crop, setCrop] = useState<{
     source: string;
@@ -92,6 +94,7 @@ export function ProfileSettingsPanel({
         bio: bio || null,
       }));
       setMessage(pt ? "Perfil atualizado." : "Profile updated.");
+      router.refresh();
     }
     setPending(null);
   }
@@ -109,11 +112,13 @@ export function ProfileSettingsPanel({
           ? "Não foi possível remover a imagem."
           : "Could not remove the image.",
       );
-    else
+    else {
       setProfile((current) => ({
         ...current,
         [kind === "avatar" ? "avatar_url" : "banner_url"]: null,
       }));
+      router.refresh();
+    }
     setPending(null);
   }
 
@@ -140,7 +145,12 @@ export function ProfileSettingsPanel({
             )}
           </div>
           <div>
-            <strong>@{profile.username}</strong>
+            <strong>{profile.display_name || `@${profile.username}`}</strong>
+            {profile.display_name && (
+              <span className="profile-settings-handle">
+                @{profile.username}
+              </span>
+            )}
             <p>
               {pt
                 ? "Avatar quadrado e banner panorâmico. JPG, PNG ou WebP, até 8 MB."
@@ -264,12 +274,13 @@ export function ProfileSettingsPanel({
             URL.revokeObjectURL(crop.source);
             setCrop(null);
           }}
-          onSaved={(url) =>
+          onSaved={(url) => {
             setProfile((current) => ({
               ...current,
               [crop.kind === "avatar" ? "avatar_url" : "banner_url"]: url,
-            }))
-          }
+            }));
+            router.refresh();
+          }}
         />
       )}
     </div>

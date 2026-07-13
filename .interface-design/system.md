@@ -146,8 +146,9 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 ### Profile settings
 
-- Settings use a 180px local navigation rail and a focused content column up to 760px; mobile converts the rail into two equal segmented tabs.
+- Profile settings use one focused content column up to 820px while profile is the only available settings area; do not show empty local navigation or unfinished security sections.
 - Public identity separates imagery from text: a 3:1 banner, circular avatar, then optional display name, free-form pronouns (30 characters), and bio (500 characters).
+- Banner and avatar form one profile-preview composition: the avatar overlaps the lower banner edge and identity/actions settle into the quieter surface below.
 - Avatar and banner uploads always pass through a Radix crop modal. Avatar crops at 1:1 to a maximum 640px; banner crops at 3:1 to a maximum 1800px; both export compressed WebP before server upload.
 - Image-provider credentials remain server-only. Upload controls expose loading, invalid-file, provider-failure, remove, and empty states.
 
@@ -271,6 +272,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Drawer exit: 160ms using `cubic-bezier(0.77, 0, 0.175, 1)`.
 - Avoid animation on repeated keyboard-driven actions.
 - Respect `prefers-reduced-motion` by removing movement while preserving immediate state changes.
+- Dropdowns enter in 140–160ms from their trigger origin. Centered modals use a 200ms opacity plus subtle 0.985 scale/vertical offset; mobile sheets enter upward by 12px. Overlays fade in over 160ms. Never animate layout dimensions.
 
 ## Content Principles
 

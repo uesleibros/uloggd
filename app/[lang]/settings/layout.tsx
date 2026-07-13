@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { SettingsNavigation } from "@/components/settings/settings-navigation";
 import { hasLocale } from "../dictionaries";
 
 export default async function SettingsLayout({
@@ -19,14 +18,11 @@ export default async function SettingsLayout({
         <h1>{lang === "pt-BR" ? "Configurações" : "Settings"}</h1>
         <p>
           {lang === "pt-BR"
-            ? "Gerencie sua identidade pública e a segurança da conta."
-            : "Manage your public identity and account security."}
+            ? "Ajuste como sua identidade aparece no uloggd."
+            : "Control how your identity appears across uloggd."}
         </p>
       </header>
-      <div className="settings-layout">
-        <SettingsNavigation lang={lang} />
-        <div className="settings-main">{children}</div>
-      </div>
+      <div className="settings-main">{children}</div>
     </main>
   );
 }

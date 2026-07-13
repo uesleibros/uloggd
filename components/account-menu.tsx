@@ -1,10 +1,17 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, LoaderCircle, LogOut } from "lucide-react";
 import { useState } from "react";
 
-export type NavigationAccount = { email: string; username: string | null };
+export type NavigationAccount = {
+  email: string;
+  username: string | null;
+  displayName: string | null;
+  avatarUrl: string | null;
+};
 
 export function AccountMenu({
   account,
@@ -14,7 +21,8 @@ export function AccountMenu({
   lang: "pt-BR" | "en";
 }) {
   const [signingOut, setSigningOut] = useState(false);
-  const label = account.username ? `@${account.username}` : account.email;
+  const handle = account.username ? `@${account.username}` : account.email;
+  const label = account.displayName || handle;
   const initial = (account.username || account.email).slice(0, 1).toUpperCase();
 
   async function signOut() {
@@ -34,10 +42,12 @@ export function AccountMenu({
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger className="account-button">
-        <span className="account-initial">{initial}</span>
+        <span className="account-initial">
+          {account.avatarUrl ? <img src={account.avatarUrl} alt="" /> : initial}
+        </span>
         <span className="account-copy">
           <strong>{label}</strong>
-          <small>{account.email}</small>
+          <small>{handle}</small>
         </span>
         <ChevronDown size={15} />
       </DropdownMenu.Trigger>
@@ -51,7 +61,8 @@ export function AccountMenu({
         >
           <div className="account-menu-identity">
             <strong>{label}</strong>
-            <span>{account.email}</span>
+            <span>{handle}</span>
+            <small>{account.email}</small>
           </div>
           <DropdownMenu.Separator />
           <DropdownMenu.Item
