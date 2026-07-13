@@ -2,23 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  BookOpen,
-  CalendarDays,
-  Clock3,
-  Film,
-  Gauge,
-  Images,
-  Info,
-  Layers3,
-  Link2,
-  MessageSquare,
-  Play,
-  Star,
-  Trophy,
-} from "lucide-react";
+import { Clock3, Gauge, Play, Star, Trophy } from "lucide-react";
 import { GameExtendedContent } from "@/components/game-extended-content";
 import { GameMediaGallery } from "@/components/game-media-gallery";
+import { GamePageTabs } from "@/components/game-page-tabs";
 import { CoverSelector } from "@/components/library/cover-selector";
 import { GameActionPanel } from "@/components/library/game-action-panel";
 import { GameLogActions } from "@/components/social/game-log-actions";
@@ -232,17 +219,80 @@ export default async function GamePage({ params }: Props) {
                 {lang === "pt-BR" ? "avaliações" : "ratings"}
               </p>
             </div>
-            {game.timeToBeat && (
-              <section className="game-time-panel">
-                <header>
-                  <Clock3 size={15} />
+          </aside>
+        </div>
+      </section>
+      <GamePageTabs
+        lang={lang}
+        overview={
+          <div className="game-body-layout">
+            <div className="game-wide-content">
+              <section className="game-summary game-surface">
+                <header className="game-panel-heading">
+                  <span>{lang === "pt-BR" ? "VISÃO GERAL" : "OVERVIEW"}</span>
+                  <h2>
+                    {lang === "pt-BR" ? "Sobre o jogo" : "About the game"}
+                  </h2>
+                </header>
+                <p>
+                  {game.summary ||
+                    (lang === "pt-BR"
+                      ? "Mais informações em breve."
+                      : "More information coming soon.")}
+                </p>
+              </section>
+              <section className="game-details-panel game-surface">
+                <header className="game-panel-heading">
+                  <span>
+                    {lang === "pt-BR" ? "INFORMAÇÕES" : "INFORMATION"}
+                  </span>
+                  <h2>{lang === "pt-BR" ? "Detalhes" : "Details"}</h2>
+                </header>
+                <dl className="game-details">
                   <div>
-                    <span>
-                      {lang === "pt-BR"
-                        ? "TEMPO PARA TERMINAR"
-                        : "TIME TO BEAT"}
-                    </span>
-                    <h2>{lang === "pt-BR" ? "Duração" : "Playtime"}</h2>
+                    <dt>{lang === "pt-BR" ? "Lançamento" : "Released"}</dt>
+                    <dd>{releaseDate}</dd>
+                  </div>
+                  <div>
+                    <dt>{lang === "pt-BR" ? "Gêneros" : "Genres"}</dt>
+                    <dd>{game.genres.join(" · ") || "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>{lang === "pt-BR" ? "Plataformas" : "Platforms"}</dt>
+                    <dd>{game.platforms.join(" · ") || "—"}</dd>
+                  </div>
+                  {game.publishers.length > 0 && (
+                    <div>
+                      <dt>
+                        {lang === "pt-BR" ? "Publicação" : "Published by"}
+                      </dt>
+                      <dd>{game.publishers.join(" · ")}</dd>
+                    </div>
+                  )}
+                  {game.themes.length > 0 && (
+                    <div>
+                      <dt>{lang === "pt-BR" ? "Temas" : "Themes"}</dt>
+                      <dd>{game.themes.join(" · ")}</dd>
+                    </div>
+                  )}
+                  {game.modes.length > 0 && (
+                    <div>
+                      <dt>{lang === "pt-BR" ? "Modos" : "Modes"}</dt>
+                      <dd>{game.modes.join(" · ")}</dd>
+                    </div>
+                  )}
+                </dl>
+              </section>
+            </div>
+            <aside className="game-context-rail">
+              <section className="game-time-panel game-surface">
+                <header>
+                  <Clock3 size={16} />
+                  <div>
+                    <span>{lang === "pt-BR" ? "DURAÇÃO" : "PLAYTIME"}</span>
+                    <h2>
+                      {lang === "pt-BR" ? "Tempo para zerar" : "Time to beat"}
+                    </h2>
                   </div>
                 </header>
                 <dl>
@@ -251,108 +301,122 @@ export default async function GamePage({ params }: Props) {
                       <Gauge size={13} />
                       {lang === "pt-BR" ? "Campanha" : "Main story"}
                     </dt>
-                    <dd>{duration(game.timeToBeat.hastily)}</dd>
+                    <dd>{duration(game.timeToBeat?.hastily ?? null)}</dd>
                   </div>
                   <div>
                     <dt>
                       <Play size={13} />
                       {lang === "pt-BR" ? "Com extras" : "With extras"}
                     </dt>
-                    <dd>{duration(game.timeToBeat.normally)}</dd>
+                    <dd>{duration(game.timeToBeat?.normally ?? null)}</dd>
                   </div>
                   <div>
                     <dt>
                       <Trophy size={13} />
                       100%
                     </dt>
-                    <dd>{duration(game.timeToBeat.completely)}</dd>
+                    <dd>{duration(game.timeToBeat?.completely ?? null)}</dd>
                   </div>
                 </dl>
-                {game.timeToBeat.count > 0 && (
+                {game.timeToBeat && game.timeToBeat.count > 0 ? (
                   <p>
                     {game.timeToBeat.count.toLocaleString(lang)}{" "}
                     {lang === "pt-BR"
-                      ? "registros de duração no IGDB"
-                      : "playtime submissions on IGDB"}
+                      ? "registros no IGDB"
+                      : "IGDB submissions"}
+                  </p>
+                ) : (
+                  <p>
+                    {lang === "pt-BR"
+                      ? "Duração ainda não disponível na IGDB."
+                      : "Playtime is not available on IGDB yet."}
                   </p>
                 )}
               </section>
-            )}
-          </aside>
-        </div>
-      </section>
-
-      <nav
-        className="game-page-nav"
-        aria-label={lang === "pt-BR" ? "Nesta página" : "On this page"}
-      >
-        <a href="#overview">
-          <BookOpen size={14} /> {lang === "pt-BR" ? "Visão geral" : "Overview"}
-        </a>
-        <a href="#details">
-          <Info size={14} /> {lang === "pt-BR" ? "Detalhes" : "Details"}
-        </a>
-        {game.gallery.length > 0 && (
-          <a href="#media">
-            <Images size={14} /> {lang === "pt-BR" ? "Mídia" : "Media"}
-          </a>
-        )}
-        {game.videos.length > 0 && (
-          <a href="#videos">
-            <Film size={14} /> {lang === "pt-BR" ? "Vídeos" : "Videos"}
-          </a>
-        )}
-        {game.events.length > 0 && (
-          <a href="#updates">
-            <CalendarDays size={14} />
-            {lang === "pt-BR" ? "Atualizações" : "Updates"}
-          </a>
-        )}
-        {game.websites.length > 0 && (
-          <a href="#links">
-            <Link2 size={14} /> Links
-          </a>
-        )}
-        {tabbedRelated.length > 0 && (
-          <a href="#related">
-            <Layers3 size={14} />{" "}
-            {lang === "pt-BR" ? "Relacionados" : "Related"}
-          </a>
-        )}
-        <a href="#community">
-          <MessageSquare size={14} />{" "}
-          {lang === "pt-BR" ? "Comunidade" : "Community"}
-        </a>
-      </nav>
-
-      <div className="game-body-layout">
-        <div className="game-wide-content">
-          <section className="game-summary game-surface" id="overview">
-            <header className="game-panel-heading">
-              <span>{lang === "pt-BR" ? "VISÃO GERAL" : "OVERVIEW"}</span>
-              <h2>{lang === "pt-BR" ? "Sobre o jogo" : "About the game"}</h2>
-            </header>
-            <p>
-              {game.summary ||
-                (lang === "pt-BR"
-                  ? "Mais informações em breve."
-                  : "More information coming soon.")}
-            </p>
-          </section>
-          <div id="media">
-            <GameMediaGallery items={game.gallery} lang={lang} />
+              {similarGames.length > 0 && (
+                <section className="game-similar-rail game-surface">
+                  <header>
+                    <span>{lang === "pt-BR" ? "DESCUBRA" : "DISCOVER"}</span>
+                    <h2>
+                      {lang === "pt-BR" ? "Jogos similares" : "Similar games"}
+                    </h2>
+                  </header>
+                  <div>
+                    {similarGames.slice(0, 5).map((similar) => (
+                      <Link
+                        key={similar.id}
+                        href={`/${lang}/game/${similar.slug}`}
+                      >
+                        <span className="game-similar-cover">
+                          <Image
+                            src={resolveGameCover(
+                              similar.coverUrl,
+                              savedById.get(similar.id)?.custom_cover_url,
+                            )}
+                            alt=""
+                            fill
+                            sizes="42px"
+                          />
+                        </span>
+                        <span>
+                          <strong>{similar.name}</strong>
+                          <small>
+                            {[similar.releaseYear, similar.genres[0]]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </small>
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </aside>
           </div>
-          <GameExtendedContent
-            game={game}
-            groups={tabbedRelated}
-            saved={savedRelated}
-            lang={lang}
-            enabled={Boolean(user)}
-          />
-          <section
-            className="game-community-section game-surface"
-            id="community"
-          >
+        }
+        media={
+          game.gallery.length > 0 || game.videos.length > 0 ? (
+            <div className="game-tab-stack">
+              <GameMediaGallery items={game.gallery} lang={lang} />
+              <GameExtendedContent
+                game={game}
+                groups={[]}
+                saved={{}}
+                lang={lang}
+                enabled={Boolean(user)}
+                sections={["videos"]}
+                showRelated={false}
+              />
+            </div>
+          ) : undefined
+        }
+        updates={
+          game.events.length > 0 || game.websites.length > 0 ? (
+            <GameExtendedContent
+              game={game}
+              groups={[]}
+              saved={{}}
+              lang={lang}
+              enabled={Boolean(user)}
+              sections={["updates", "links"]}
+              showRelated={false}
+            />
+          ) : undefined
+        }
+        related={
+          tabbedRelated.length > 0 ? (
+            <GameExtendedContent
+              game={game}
+              groups={tabbedRelated}
+              saved={savedRelated}
+              lang={lang}
+              enabled={Boolean(user)}
+              sections={[]}
+            />
+          ) : undefined
+        }
+        community={
+          <section className="game-community-section game-surface">
             <div className="social-section-title">
               <div>
                 <h2>{lang === "pt-BR" ? "Comunidade" : "Community"}</h2>
@@ -369,83 +433,8 @@ export default async function GamePage({ params }: Props) {
               viewerId={user?.id}
             />
           </section>
-        </div>
-        <aside className="game-context-rail">
-          <section className="game-details-panel game-surface" id="details">
-            <header className="game-panel-heading">
-              <span>{lang === "pt-BR" ? "CATÁLOGO" : "CATALOG"}</span>
-              <h2>{lang === "pt-BR" ? "Detalhes" : "Details"}</h2>
-            </header>
-            <dl className="game-details">
-              <div>
-                <dt>{lang === "pt-BR" ? "Lançamento" : "Released"}</dt>
-                <dd>{releaseDate}</dd>
-              </div>
-              <div>
-                <dt>{lang === "pt-BR" ? "Gêneros" : "Genres"}</dt>
-                <dd>{game.genres.join(" · ") || "—"}</dd>
-              </div>
-              <div>
-                <dt>{lang === "pt-BR" ? "Plataformas" : "Platforms"}</dt>
-                <dd>{game.platforms.join(" · ") || "—"}</dd>
-              </div>
-              {game.publishers.length > 0 && (
-                <div>
-                  <dt>{lang === "pt-BR" ? "Publicação" : "Published by"}</dt>
-                  <dd>{game.publishers.join(" · ")}</dd>
-                </div>
-              )}
-              {game.themes.length > 0 && (
-                <div>
-                  <dt>{lang === "pt-BR" ? "Temas" : "Themes"}</dt>
-                  <dd>{game.themes.join(" · ")}</dd>
-                </div>
-              )}
-              {game.modes.length > 0 && (
-                <div>
-                  <dt>{lang === "pt-BR" ? "Modos" : "Modes"}</dt>
-                  <dd>{game.modes.join(" · ")}</dd>
-                </div>
-              )}
-            </dl>
-          </section>
-          {similarGames.length > 0 && (
-            <section className="game-similar-rail game-surface">
-              <header>
-                <span>{lang === "pt-BR" ? "DESCUBRA" : "DISCOVER"}</span>
-                <h2>
-                  {lang === "pt-BR" ? "Jogos similares" : "Similar games"}
-                </h2>
-              </header>
-              <div>
-                {similarGames.slice(0, 5).map((similar) => (
-                  <Link key={similar.id} href={`/${lang}/game/${similar.slug}`}>
-                    <span className="game-similar-cover">
-                      <Image
-                        src={resolveGameCover(
-                          similar.coverUrl,
-                          savedById.get(similar.id)?.custom_cover_url,
-                        )}
-                        alt=""
-                        fill
-                        sizes="42px"
-                      />
-                    </span>
-                    <span>
-                      <strong>{similar.name}</strong>
-                      <small>
-                        {[similar.releaseYear, similar.genres[0]]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </small>
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-        </aside>
-      </div>
+        }
+      />
     </main>
   );
 }

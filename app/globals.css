@@ -253,7 +253,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   border: 1px solid var(--shell-line-strong);
   border-radius: 5px;
   color: var(--screen-muted);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -342,7 +342,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .locale-switcher-trigger small {
   color: var(--screen-muted);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
 }
 .locale-switcher-trigger[data-state="open"] > svg:last-child {
   transform: rotate(180deg);
@@ -365,7 +365,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 .locale-menu-label {
   padding: 7px 9px 6px;
   color: var(--screen-muted);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -384,7 +384,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .locale-menu-item small {
   color: var(--screen-muted);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
 }
 .locale-menu-item svg {
   color: var(--brand-blurple-bright);
@@ -465,7 +465,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 700 12px var(--font-geist-mono);
+  font: 700 12px var(--font-inter);
   overflow: hidden;
 }
 .account-initial img {
@@ -564,7 +564,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .feed-header > div > span {
   color: var(--screen-muted);
-  font: 600 10px var(--font-geist-mono);
+  font: 600 10px var(--font-inter);
   letter-spacing: 0.08em;
 }
 .feed-header h1 {
@@ -627,7 +627,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .catalog-search-field kbd {
   border: 1px solid var(--shell-line);
-  font: 500 10px var(--font-geist-mono);
+  font: 500 10px var(--font-inter);
 }
 .desktop-search-dropdown {
   position: absolute;
@@ -652,7 +652,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   border-bottom: 1px solid var(--shell-line);
   background: rgb(21 19 24 / 96%);
   color: var(--screen-muted);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -716,7 +716,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   border: 1px solid var(--shell-line);
   border-radius: 4px;
   color: var(--screen-muted);
-  font: 600 8px var(--font-geist-mono);
+  font: 600 8px var(--font-inter);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -1011,7 +1011,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   background: rgb(8 7 10 / 80%);
   color: #d8d3dc;
   backdrop-filter: blur(6px);
-  font: 650 9px var(--font-geist-mono);
+  font: 650 9px var(--font-inter);
   pointer-events: none;
 }
 .quick-card-details {
@@ -1044,7 +1044,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   align-items: center;
   gap: 3px;
   color: var(--achievement-gold);
-  font: 650 9px var(--font-geist-mono);
+  font: 650 9px var(--font-inter);
 }
 .quick-action-bar {
   position: absolute;
@@ -1236,7 +1236,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .discoveries-heading > span {
   color: var(--brand-blurple-bright);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
   letter-spacing: 0.08em;
 }
 .discoveries-heading h2 {
@@ -1276,7 +1276,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .discovery-lane > header > span {
   color: var(--screen-muted);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
   font-variant-numeric: tabular-nums;
 }
 .discovery-lane h3 {
@@ -1407,7 +1407,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 .game-cover-change span {
   margin-left: auto;
   color: var(--screen-muted);
-  font: 550 8px var(--font-geist-mono);
+  font: 550 8px var(--font-inter);
 }
 .cover-modal-backdrop {
   position: fixed;
@@ -1605,7 +1605,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .game-time-panel header span {
   color: var(--brand-blurple-bright);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
   letter-spacing: 0.07em;
 }
 .game-time-panel h2 {
@@ -1634,7 +1634,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 .game-time-panel dd {
   margin: 0;
   color: var(--screen-white);
-  font: 630 11px var(--font-geist-mono);
+  font: 630 11px var(--font-inter);
   font-variant-numeric: tabular-nums;
 }
 .game-time-panel > p {
@@ -1660,7 +1660,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .game-similar-rail > header span {
   color: var(--brand-blurple-bright);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
   letter-spacing: 0.07em;
 }
 .game-similar-rail > header h2 {
@@ -1719,7 +1719,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   flex-wrap: wrap;
   gap: 6px 12px;
   color: var(--screen-muted);
-  font: 600 10px var(--font-geist-mono);
+  font: 600 10px var(--font-inter);
 }
 .game-page-content h1 {
   margin: 10px 0 16px;
@@ -1743,7 +1743,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   display: block;
   margin-bottom: 5px;
   color: var(--screen-muted);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
   letter-spacing: 0.07em;
 }
 .star-rating {
@@ -1891,7 +1891,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .game-score-line strong {
   color: white;
-  font: 680 22px var(--font-geist-mono);
+  font: 680 22px var(--font-inter);
 }
 .game-score-line span,
 .game-score-line p {
@@ -1960,7 +1960,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .game-section-heading span {
   color: var(--brand-blurple-bright);
-  font: 600 8px var(--font-geist-mono);
+  font: 600 8px var(--font-inter);
   letter-spacing: 0.09em;
 }
 .game-section-heading h2 {
@@ -1971,7 +1971,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .game-section-heading small {
   color: var(--screen-muted);
-  font: 550 9px var(--font-geist-mono);
+  font: 550 9px var(--font-inter);
 }
 .game-gallery-grid {
   display: grid;
@@ -2013,7 +2013,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   gap: 5px;
   background: rgb(7 6 9 / 62%);
   color: white;
-  font: 650 12px var(--font-geist-mono);
+  font: 650 12px var(--font-inter);
 }
 .media-lightbox-backdrop {
   position: fixed;
@@ -2073,7 +2073,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   border-radius: 5px;
   background: rgb(15 14 17 / 82%);
   color: var(--screen-dim);
-  font: 550 9px var(--font-geist-mono);
+  font: 550 9px var(--font-inter);
   transform: translateX(-50%);
 }
 .game-video-grid {
@@ -2141,7 +2141,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .game-event-list span {
   color: var(--brand-blurple-bright);
-  font: 550 8px var(--font-geist-mono);
+  font: 550 8px var(--font-inter);
   text-transform: uppercase;
 }
 .game-event-list h3 {
@@ -2231,7 +2231,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .related-tabs button span {
   color: var(--screen-muted);
-  font: 550 8px var(--font-geist-mono);
+  font: 550 8px var(--font-inter);
 }
 .shelf-game {
   min-width: 0;
@@ -2266,7 +2266,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   background: rgb(8 7 10 / 80%);
   color: #d8d3dc;
   backdrop-filter: blur(6px);
-  font: 650 9px var(--font-geist-mono);
+  font: 650 9px var(--font-inter);
 }
 .shelf-cover > button {
   position: absolute;
@@ -2447,7 +2447,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 .rail-library-stats dd {
   margin: 5px 0 0;
   color: var(--screen-white);
-  font: 650 15px var(--font-geist-mono);
+  font: 650 15px var(--font-inter);
   font-variant-numeric: tabular-nums;
 }
 .rail-section {
@@ -2467,7 +2467,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .rail-title span {
   color: var(--screen-muted);
-  font: 500 9px var(--font-geist-mono);
+  font: 500 9px var(--font-inter);
 }
 .trend {
   display: grid;
@@ -2492,7 +2492,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .trend > span {
   color: #5f5a65;
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
   font-variant-numeric: tabular-nums;
 }
 .trend strong,
@@ -2716,7 +2716,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   display: block;
   margin-top: 3px;
   color: var(--screen-muted);
-  font: 550 8px var(--font-geist-mono);
+  font: 550 8px var(--font-inter);
   text-transform: uppercase;
 }
 .cookie-category-state {
@@ -2791,7 +2791,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   border-radius: 50%;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 600 11px var(--font-geist-mono);
+  font: 600 11px var(--font-inter);
 }
 .mobile-menu-identity img {
   display: block;
@@ -2963,7 +2963,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .settings-page-header > span {
   color: var(--brand-blurple-bright);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
   letter-spacing: 0.09em;
 }
 .settings-page-header h1 {
@@ -3052,7 +3052,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   background: var(--console-inset);
   box-shadow: 0 0 0 1px var(--shell-line-strong);
   color: var(--screen-white);
-  font: 620 24px var(--font-geist-mono);
+  font: 620 24px var(--font-inter);
 }
 .profile-avatar-preview img {
   width: 100%;
@@ -3068,7 +3068,7 @@ html[data-sidebar-collapsed] .cookie-banner {
   display: block;
   margin-top: 3px;
   color: var(--screen-muted);
-  font: 500 9px var(--font-geist-mono);
+  font: 500 9px var(--font-inter);
 }
 .profile-image-actions {
   display: flex;
@@ -3446,7 +3446,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 .login-highlight-list article > span {
   color: var(--screen-muted);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
 }
 .login-highlight-list article > svg {
   color: #8f97f7;
@@ -4621,7 +4621,7 @@ html[data-sidebar-collapsed] .cookie-banner {
 .game-stage-rail .game-score-line > span,
 .game-panel-heading > span {
   color: var(--screen-muted);
-  font: 600 8px var(--font-geist-mono);
+  font: 600 8px var(--font-inter);
   letter-spacing: 0.09em;
 }
 
@@ -4668,14 +4668,16 @@ html[data-sidebar-collapsed] .cookie-banner {
   display: none;
 }
 
-.game-page-nav a {
+.game-page-nav button {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   flex: 0 0 auto;
   min-height: 38px;
   padding: 0 12px;
+  border: 0;
   border-radius: 7px;
+  background: transparent;
   color: var(--screen-muted);
   font-size: 10px;
   font-weight: 520;
@@ -4685,14 +4687,88 @@ html[data-sidebar-collapsed] .cookie-banner {
     transform 120ms ease-out;
 }
 
-.game-page-nav a:first-child,
-.game-page-nav a:hover {
+.game-page-nav button[aria-selected="true"],
+.game-page-nav button:hover {
   background: var(--console-hover);
   color: var(--screen-white);
 }
 
-.game-page-nav a:active {
+.game-page-nav button[aria-selected="true"]::after {
+  position: absolute;
+  right: 10px;
+  bottom: -11px;
+  left: 10px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--screen-white);
+  content: "";
+}
+
+.game-page-nav button {
+  position: relative;
+}
+
+.game-page-nav button:active {
   transform: scale(0.98);
+}
+
+.game-tabs {
+  min-width: 0;
+}
+
+.game-tab-panel {
+  min-width: 0;
+  padding-top: 16px;
+  outline: 0;
+  animation: game-tab-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.game-tab-stack,
+.game-tab-stack .game-primary-sections,
+.game-tab-panel > .game-primary-sections {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.game-tab-panel .game-body-layout {
+  padding-top: 0;
+}
+
+.game-tab-panel .game-section,
+.game-tab-panel .game-community-section {
+  margin: 0;
+}
+
+.game-page .game-title-meta,
+.game-page .game-time-panel header span,
+.game-page .game-section-heading span,
+.game-page .game-similar-rail > header span,
+.game-page .game-panel-heading > span {
+  color: var(--screen-muted);
+  font-family: var(--font-inter);
+  letter-spacing: 0.045em;
+}
+
+.game-wide-content .game-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 24px;
+}
+
+.game-wide-content .game-details > div:nth-child(-n + 2) {
+  border-top: 1px solid var(--shell-line);
+}
+
+@keyframes game-tab-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .game-body-layout {
@@ -5206,7 +5282,7 @@ a,
   align-items: center;
   gap: 7px;
   color: var(--brand-blurple-bright);
-  font: 600 10px var(--font-geist-mono);
+  font: 600 10px var(--font-inter);
   letter-spacing: 0.09em;
 }
 .social-page-header h1,
@@ -5331,7 +5407,7 @@ a,
   border-radius: 50%;
   background: var(--console-raised);
   color: var(--screen-white);
-  font: 600 11px var(--font-geist-mono);
+  font: 600 11px var(--font-inter);
 }
 .activity-avatar img {
   object-fit: cover;
@@ -5368,7 +5444,7 @@ a,
   gap: 5px;
   margin-top: 9px;
   color: var(--achievement-gold);
-  font: 600 12px var(--font-geist-mono);
+  font: 600 12px var(--font-inter);
 }
 .activity-meta {
   display: flex;
@@ -5573,7 +5649,7 @@ a,
 .social-editor-dialog > header time {
   margin-left: auto;
   color: var(--screen-muted);
-  font: 400 12px var(--font-geist-mono);
+  font: 400 12px var(--font-inter);
 }
 .social-editor-form,
 .create-list-form {
@@ -5804,7 +5880,7 @@ a,
 }
 .list-preview-copy > span {
   color: var(--brand-blurple-bright);
-  font: 600 9px var(--font-geist-mono);
+  font: 600 9px var(--font-inter);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -5885,7 +5961,7 @@ a,
   border-radius: 5px;
   background: rgb(11 10 13 / 88%);
   color: var(--screen-white);
-  font: 600 10px var(--font-geist-mono);
+  font: 600 10px var(--font-inter);
 }
 .ranked-list-item > p {
   margin-top: 7px;
@@ -5973,7 +6049,7 @@ a,
   border-radius: 50%;
   background: var(--console-raised);
   color: var(--screen-white);
-  font: 650 28px var(--font-geist-mono);
+  font: 650 28px var(--font-inter);
 }
 .profile-avatar img {
   object-fit: cover;
@@ -6013,7 +6089,7 @@ a,
 .profile-stats dd {
   margin-top: 4px;
   color: var(--screen-white);
-  font: 620 18px var(--font-geist-mono);
+  font: 620 18px var(--font-inter);
 }
 .profile-shelf {
   margin-bottom: 40px;
@@ -6690,5 +6766,13 @@ a,
 
   .game-route-skeleton-stage .game-route-skeleton-rail {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .game-wide-content .game-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .game-wide-content .game-details > div:nth-child(2) {
+    border-top: 0;
   }
 }

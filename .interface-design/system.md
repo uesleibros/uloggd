@@ -76,7 +76,7 @@ The feed should alternate between expressive/editorial zones and compact working
 
 ## Typography
 
-Primary typeface: Inter Variable through `next/font`, followed by the native Apple system stack (`-apple-system`, `BlinkMacSystemFont`, `SF Pro Text`) as fallback. Never place Arial before the loaded font. Monospace metadata uses Geist Mono.
+Primary typeface: Inter Variable through `next/font`, followed by the native Apple system stack (`-apple-system`, `BlinkMacSystemFont`, `SF Pro Text`) as fallback. Never place Arial before the loaded font. Metadata uses the same Inter family with size, weight, color, and tabular numerals providing hierarchy; avoid code-like monospaced labels in the product interface.
 
 Approximate scale:
 

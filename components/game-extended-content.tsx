@@ -9,12 +9,16 @@ export function GameExtendedContent({
   saved,
   lang,
   enabled,
+  sections = ["videos", "updates", "links"],
+  showRelated = true,
 }: {
   game: GameDetail;
   groups: GameDetail["related"];
   saved: Record<number, SavedState>;
   lang: "pt-BR" | "en";
   enabled: boolean;
+  sections?: ("videos" | "updates" | "links")[];
+  showRelated?: boolean;
 }) {
   const eventDate = (timestamp: number | null) =>
     timestamp
@@ -28,8 +32,8 @@ export function GameExtendedContent({
 
   return (
     <div className="game-primary-sections">
-      {game.videos.length > 0 && (
-        <section className="game-section" id="videos">
+      {sections.includes("videos") && game.videos.length > 0 && (
+        <section className="game-section">
           <header className="game-section-heading">
             <div>
               <span>VIDEO</span>
@@ -58,8 +62,8 @@ export function GameExtendedContent({
           </div>
         </section>
       )}
-      {game.events.length > 0 && (
-        <section className="game-section" id="updates">
+      {sections.includes("updates") && game.events.length > 0 && (
+        <section className="game-section">
           <header className="game-section-heading">
             <div>
               <span>{lang === "pt-BR" ? "ATUALIZAÇÕES" : "UPDATES"}</span>
@@ -99,8 +103,8 @@ export function GameExtendedContent({
           </div>
         </section>
       )}
-      {game.websites.length > 0 && (
-        <section className="game-section game-links-section" id="links">
+      {sections.includes("links") && game.websites.length > 0 && (
+        <section className="game-section game-links-section">
           <header className="game-section-heading">
             <div>
               <span>WEB</span>
@@ -125,12 +129,14 @@ export function GameExtendedContent({
           </div>
         </section>
       )}
-      <RelatedGamesTabs
-        groups={groups}
-        saved={saved}
-        lang={lang}
-        enabled={enabled}
-      />
+      {showRelated && (
+        <RelatedGamesTabs
+          groups={groups}
+          saved={saved}
+          lang={lang}
+          enabled={enabled}
+        />
+      )}
     </div>
   );
 }
