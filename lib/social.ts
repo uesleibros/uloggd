@@ -23,7 +23,12 @@ function profileOf(value: Row["profiles"]): ProfileJoin | null {
 
 export async function getActivity(
   supabase: SupabaseClient,
-  options: { profileId?: string; gameId?: number; limit?: number } = {},
+  options: {
+    profileId?: string;
+    gameId?: number;
+    limit?: number;
+    viewerId?: string | null;
+  } = {},
 ) {
   const limit = options.limit ?? 30;
   let reviewsQuery = supabase
@@ -55,15 +60,16 @@ export async function getActivity(
   const rows = [...(reviews ?? []), ...(diary ?? [])] as unknown as (Row &
     Record<string, unknown>)[];
   const games = await getGamesByIds(rows.map((row) => row.igdb_id));
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const viewerId =
+    options.viewerId === undefined
+      ? (await supabase.auth.getUser()).data.user?.id
+      : options.viewerId;
   const { data: covers } =
-    user && games.length
+    viewerId && games.length
       ? await supabase
           .from("user_games")
           .select("igdb_id,custom_cover_url")
-          .eq("profile_id", user.id)
+          .eq("profile_id", viewerId)
           .in(
             "igdb_id",
             games.map((game) => game.id),

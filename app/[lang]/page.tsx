@@ -22,15 +22,17 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const { data: savedGames } = user
-    ? await supabase
-        .from("user_games")
-        .select(
-          "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-        )
-        .eq("profile_id", user.id)
-    : { data: [] };
-  const communityEntries = await getActivity(supabase, { limit: 6 });
+  const [{ data: savedGames }, communityEntries] = await Promise.all([
+    user
+      ? supabase
+          .from("user_games")
+          .select(
+            "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
+          )
+          .eq("profile_id", user.id)
+      : Promise.resolve({ data: [] }),
+    getActivity(supabase, { limit: 6, viewerId: user?.id ?? null }),
+  ]);
   const savedById = new Map(
     (savedGames ?? []).map((item) => [item.igdb_id, item]),
   );

@@ -63,41 +63,49 @@ export default async function GamePage({ params }: Props) {
   const relatedIds = game.related.flatMap((group) =>
     group.games.map((related) => related.id),
   );
-  const { data: savedGames } = user
-    ? await supabase
-        .from("user_games")
-        .select(
-          "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-        )
-        .eq("profile_id", user.id)
-        .in("igdb_id", [game.id, ...relatedIds])
-    : { data: [] };
-  const { data: userLists } = user
-    ? await supabase
-        .from("game_lists")
-        .select("id,name")
-        .eq("profile_id", user.id)
-        .order("updated_at", { ascending: false })
-    : { data: [] };
-  const { data: ownReview } = user
-    ? await supabase
-        .from("reviews")
-        .select("id,rating,content,contains_spoilers,visibility")
-        .eq("profile_id", user.id)
-        .eq("igdb_id", game.id)
-        .maybeSingle()
-    : { data: null };
-  const { count: ownLogCount } = user
-    ? await supabase
-        .from("diary_entries")
-        .select("id", { count: "exact", head: true })
-        .eq("profile_id", user.id)
-        .eq("igdb_id", game.id)
-    : { count: 0 };
-  const communityEntries = await getActivity(supabase, {
-    gameId: game.id,
-    limit: 12,
-  });
+  const [savedResult, listsResult, reviewResult, logResult, communityEntries] =
+    await Promise.all([
+      user
+        ? supabase
+            .from("user_games")
+            .select(
+              "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
+            )
+            .eq("profile_id", user.id)
+            .in("igdb_id", [game.id, ...relatedIds])
+        : Promise.resolve({ data: [] }),
+      user
+        ? supabase
+            .from("game_lists")
+            .select("id,name")
+            .eq("profile_id", user.id)
+            .order("updated_at", { ascending: false })
+        : Promise.resolve({ data: [] }),
+      user
+        ? supabase
+            .from("reviews")
+            .select("id,rating,content,contains_spoilers,visibility")
+            .eq("profile_id", user.id)
+            .eq("igdb_id", game.id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      user
+        ? supabase
+            .from("diary_entries")
+            .select("id", { count: "exact", head: true })
+            .eq("profile_id", user.id)
+            .eq("igdb_id", game.id)
+        : Promise.resolve({ count: 0 }),
+      getActivity(supabase, {
+        gameId: game.id,
+        limit: 12,
+        viewerId: user?.id ?? null,
+      }),
+    ]);
+  const savedGames = savedResult.data;
+  const userLists = listsResult.data;
+  const ownReview = reviewResult.data;
+  const ownLogCount = logResult.count;
   const savedById = new Map(
     (savedGames ?? []).map((saved) => [saved.igdb_id, saved]),
   );
