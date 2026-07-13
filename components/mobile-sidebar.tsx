@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -56,7 +58,19 @@ export function MobileSidebar({
     <Dialog.Root>
       <Dialog.Trigger asChild>
         <button className="mobile-menu-button" aria-label={labels.menu}>
-          <Menu size={22} />
+          {account ? (
+            <span className="mobile-menu-identity" aria-hidden>
+              {account.avatarUrl ? (
+                <img src={account.avatarUrl} alt="" />
+              ) : (
+                (account.displayName || account.username || account.email)
+                  .slice(0, 1)
+                  .toUpperCase()
+              )}
+            </span>
+          ) : (
+            <Menu size={22} />
+          )}
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
@@ -105,7 +119,7 @@ export function MobileSidebar({
               {isAuthenticated ? (
                 <Dialog.Close asChild>
                   <Link href={`/${lang}/settings/profile`}>
-                    <Settings size={19} />
+                    <Settings size={21} />
                     {labels.settings}
                   </Link>
                 </Dialog.Close>
@@ -115,7 +129,7 @@ export function MobileSidebar({
                   aria-disabled="true"
                   title={labels.requiresSignIn}
                 >
-                  <Settings size={19} />
+                  <Settings size={21} />
                   <span>{labels.settings}</span>
                   <LockKeyhole className="nav-lock" size={13} />
                 </span>

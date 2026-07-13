@@ -121,7 +121,7 @@ export function PlatformNavigation({
                 aria-label={d.nav.settings}
                 title={d.nav.settings}
               >
-                <Settings size={19} />
+                <Settings size={20} />
                 <span>{d.nav.settings}</span>
               </Link>
             ) : (
@@ -130,7 +130,7 @@ export function PlatformNavigation({
                 aria-disabled="true"
                 title={d.actions.requiresSignIn}
               >
-                <Settings size={19} />
+                <Settings size={20} />
                 <span>{d.nav.settings}</span>
                 <LockKeyhole className="nav-lock" size={12} />
               </span>

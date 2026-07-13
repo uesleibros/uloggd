@@ -108,7 +108,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - 264px wide, sticky, full viewport height.
 - Solid `console-panel` background with `shell-line-strong` right border.
 - Brand plus subtle beta stage at top.
-- Navigation rows are uniformly 48px high with an 8px radius on desktop, compact, and mobile drawer states.
+- Navigation rows are uniformly 52px high with an 8px radius on desktop, compact, and mobile drawer states; compact icon hit areas are 48px wide inside the 76px rail.
 - Current route uses a graphite hover surface, white icon and label, and one small blurple status dot. Blurple never floods the navigation row.
 - Quick-log action is tonal, not a large saturated pill.
 - Account control stays at the bottom and must not fabricate authenticated state.
@@ -130,6 +130,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Drawer behavior uses Radix Dialog for focus trapping, Escape handling, focus return, and accessible overlay state.
 - Drawer animation: 240ms entry, 160ms exit, transform and opacity only.
 - The authenticated account control spans the full drawer width at the bottom; compact desktop sidebar rules must never collapse its identity, metadata, or menu chevron.
+- The mobile drawer trigger shows the signed-in avatar (or account initial fallback) instead of a hamburger; signed-out visitors keep the menu icon.
 
 ## Authentication Pattern
 
@@ -182,6 +183,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Rank label sits at the bottom-left over the image.
 - Save action appears on hover/focus desktop and remains visible on touch devices.
 - A saved custom cover is a library-wide preference: every authenticated catalog surface resolves it before the IGDB default.
+- Cover cards remain stationary on hover; reveal titles and quick actions through overlays only, without vertical lift.
 - Mobile discovery lanes become horizontal snap shelves across the full 0–620px range; cards stay between 112px and 132px so cover art, titles, and three quick-action targets remain usable instead of compressing into a four-column grid.
 
 ### Cover picker
