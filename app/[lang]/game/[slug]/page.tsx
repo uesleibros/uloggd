@@ -4,10 +4,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   BookOpen,
+  CalendarDays,
   Clock3,
+  Film,
   Gauge,
   Images,
+  Info,
   Layers3,
+  Link2,
   MessageSquare,
   Play,
   Star,
@@ -264,6 +268,14 @@ export default async function GamePage({ params }: Props) {
                     <dd>{duration(game.timeToBeat.completely)}</dd>
                   </div>
                 </dl>
+                {game.timeToBeat.count > 0 && (
+                  <p>
+                    {game.timeToBeat.count.toLocaleString(lang)}{" "}
+                    {lang === "pt-BR"
+                      ? "registros de duração no IGDB"
+                      : "playtime submissions on IGDB"}
+                  </p>
+                )}
               </section>
             )}
           </aside>
@@ -277,21 +289,40 @@ export default async function GamePage({ params }: Props) {
         <a href="#overview">
           <BookOpen size={14} /> {lang === "pt-BR" ? "Visão geral" : "Overview"}
         </a>
+        <a href="#details">
+          <Info size={14} /> {lang === "pt-BR" ? "Detalhes" : "Details"}
+        </a>
         {game.gallery.length > 0 && (
           <a href="#media">
             <Images size={14} /> {lang === "pt-BR" ? "Mídia" : "Media"}
           </a>
         )}
-        <a href="#community">
-          <MessageSquare size={14} />{" "}
-          {lang === "pt-BR" ? "Comunidade" : "Community"}
-        </a>
+        {game.videos.length > 0 && (
+          <a href="#videos">
+            <Film size={14} /> {lang === "pt-BR" ? "Vídeos" : "Videos"}
+          </a>
+        )}
+        {game.events.length > 0 && (
+          <a href="#updates">
+            <CalendarDays size={14} />
+            {lang === "pt-BR" ? "Atualizações" : "Updates"}
+          </a>
+        )}
+        {game.websites.length > 0 && (
+          <a href="#links">
+            <Link2 size={14} /> Links
+          </a>
+        )}
         {tabbedRelated.length > 0 && (
           <a href="#related">
             <Layers3 size={14} />{" "}
             {lang === "pt-BR" ? "Relacionados" : "Related"}
           </a>
         )}
+        <a href="#community">
+          <MessageSquare size={14} />{" "}
+          {lang === "pt-BR" ? "Comunidade" : "Community"}
+        </a>
       </nav>
 
       <div className="game-body-layout">
@@ -311,15 +342,13 @@ export default async function GamePage({ params }: Props) {
           <div id="media">
             <GameMediaGallery items={game.gallery} lang={lang} />
           </div>
-          <div id="related">
-            <GameExtendedContent
-              game={game}
-              groups={tabbedRelated}
-              saved={savedRelated}
-              lang={lang}
-              enabled={Boolean(user)}
-            />
-          </div>
+          <GameExtendedContent
+            game={game}
+            groups={tabbedRelated}
+            saved={savedRelated}
+            lang={lang}
+            enabled={Boolean(user)}
+          />
           <section
             className="game-community-section game-surface"
             id="community"
@@ -342,7 +371,7 @@ export default async function GamePage({ params }: Props) {
           </section>
         </div>
         <aside className="game-context-rail">
-          <section className="game-details-panel game-surface">
+          <section className="game-details-panel game-surface" id="details">
             <header className="game-panel-heading">
               <span>{lang === "pt-BR" ? "CATÁLOGO" : "CATALOG"}</span>
               <h2>{lang === "pt-BR" ? "Detalhes" : "Details"}</h2>

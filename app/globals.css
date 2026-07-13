@@ -40,7 +40,7 @@ body {
   background: var(--console-black);
   color: var(--screen-white);
   font-family:
-    var(--font-geist-sans),
+    var(--font-inter),
     -apple-system,
     BlinkMacSystemFont,
     "SF Pro Text",
@@ -4649,7 +4649,9 @@ html[data-sidebar-collapsed] .cookie-banner {
 }
 
 .game-stage-rail .game-time-panel > p {
-  display: none;
+  margin-top: 9px;
+  font-size: 8px;
+  text-align: left;
 }
 
 .game-page-nav {
@@ -5174,7 +5176,7 @@ a,
   outline: 0;
   background: transparent;
   color: var(--screen-dim);
-  font: 400 12px var(--font-geist-sans);
+  font: 400 12px var(--font-inter);
 }
 .library-filter-empty {
   padding: 40px 16px;
@@ -5629,7 +5631,7 @@ a,
   outline: none;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 400 13px var(--font-geist-sans);
+  font: 400 13px var(--font-inter);
 }
 .social-editor-form textarea,
 .create-list-form textarea {

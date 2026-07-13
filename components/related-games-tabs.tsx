@@ -45,7 +45,7 @@ export function RelatedGamesTabs({
   const group = groups.find((item) => item.kind === active) ?? groups[0];
 
   return (
-    <section className="game-section game-related-section">
+    <section className="game-section game-related-section" id="related">
       <header className="game-section-heading">
         <div>
           <span>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import { notFound } from "next/navigation";
 import { PlatformNavigation } from "@/components/platform-navigation";
 import { DesktopGameSearch } from "@/components/game-search";
@@ -11,7 +11,7 @@ import { getDictionary, hasLocale, locales } from "./dictionaries";
 import "../globals.css";
 import "react-image-crop/dist/ReactCrop.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -58,7 +58,7 @@ export default async function LocaleLayout({
     : { data: null };
 
   return (
-    <html lang={lang} className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang={lang} className={`${inter.variable} ${geistMono.variable}`}>
       <body>
         <div className="platform-shell">
           <PlatformNavigation

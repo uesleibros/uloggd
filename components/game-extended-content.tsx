@@ -29,7 +29,7 @@ export function GameExtendedContent({
   return (
     <div className="game-primary-sections">
       {game.videos.length > 0 && (
-        <section className="game-section">
+        <section className="game-section" id="videos">
           <header className="game-section-heading">
             <div>
               <span>VIDEO</span>
@@ -59,7 +59,7 @@ export function GameExtendedContent({
         </section>
       )}
       {game.events.length > 0 && (
-        <section className="game-section">
+        <section className="game-section" id="updates">
           <header className="game-section-heading">
             <div>
               <span>{lang === "pt-BR" ? "ATUALIZAÇÕES" : "UPDATES"}</span>
@@ -100,7 +100,7 @@ export function GameExtendedContent({
         </section>
       )}
       {game.websites.length > 0 && (
-        <section className="game-section game-links-section">
+        <section className="game-section game-links-section" id="links">
           <header className="game-section-heading">
             <div>
               <span>WEB</span>
