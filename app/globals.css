@@ -528,12 +528,13 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--screen-muted);
 }
 .account-initial {
+  flex: 0 0 36px;
   display: grid;
   place-items: center;
   width: 36px;
   height: 36px;
   border: 1px solid var(--shell-line-strong);
-  border-radius: 8px;
+  border-radius: 50%;
   background: var(--console-inset);
   color: var(--screen-white);
   font: 700 12px var(--font-inter);
