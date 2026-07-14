@@ -8,9 +8,11 @@ import {
   Layers3,
   MessageSquare,
   Newspaper,
+  Gamepad2,
 } from "lucide-react";
 
-type TabId = "overview" | "media" | "updates" | "related" | "community";
+type TabId =
+  "overview" | "media" | "updates" | "related" | "spawnd" | "community";
 
 export function GamePageTabs({
   lang,
@@ -18,6 +20,7 @@ export function GamePageTabs({
   media,
   updates,
   related,
+  spawnd,
   community,
 }: {
   lang: "pt-BR" | "en";
@@ -25,6 +28,7 @@ export function GamePageTabs({
   media?: ReactNode;
   updates?: ReactNode;
   related?: ReactNode;
+  spawnd: ReactNode;
   community: ReactNode;
 }) {
   const [active, setActive] = useState<TabId>("overview");
@@ -60,6 +64,12 @@ export function GamePageTabs({
           content: related,
         }
       : null,
+    {
+      id: "spawnd" as const,
+      label: "spawnd",
+      icon: Gamepad2,
+      content: spawnd,
+    },
     {
       id: "community" as const,
       label: pt ? "Comunidade" : "Community",

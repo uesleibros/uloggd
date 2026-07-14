@@ -209,6 +209,11 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - After About, gallery, videos, events, links, and related games span the combined cover + primary-content width while the context rail continues independently at the right.
 - On mobile, game media sections are strictly contained to the viewport: grids use zero-minimum columns, embeds cap at 100%, long metadata wraps, and horizontal overflow belongs only to the related-game shelf without negative outer margins.
 
+### spawnd game tab
+
+- Every game page exposes a spawnd tab. Confirmed supported titles lead to their official playable demo; unsupported titles show an honest unavailable state and link to the wider catalog.
+- The integration links out instead of loading a third-party iframe, keeping external storage and analytics off uloggd pages. The explainer states that demos run locally in the browser without download, installation, or game streaming.
+
 ### Compact game row
 
 - 62px minimum height.

@@ -6,6 +6,7 @@ import { Clock3, Gauge, Play, Star, Trophy } from "lucide-react";
 import { GameExtendedContent } from "@/components/game-extended-content";
 import { GameMediaGallery } from "@/components/game-media-gallery";
 import { GamePageTabs } from "@/components/game-page-tabs";
+import { SpawndGamePanel } from "@/components/spawnd-game-panel";
 import { CoverSelector } from "@/components/library/cover-selector";
 import { GameActionPanel } from "@/components/library/game-action-panel";
 import { GameLogActions } from "@/components/social/game-log-actions";
@@ -14,6 +15,7 @@ import { getGameBySlug } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/server";
 import { getActivity } from "@/lib/social";
+import { getSpawndGame } from "@/lib/spawnd";
 import { hasLocale } from "../../dictionaries";
 
 type Props = PageProps<"/[lang]/game/[slug]">;
@@ -135,6 +137,11 @@ export default async function GamePage({ params }: Props) {
     const minutes = Math.round((seconds % 3600) / 60);
     return `${hours}h${minutes ? ` ${minutes}m` : ""}`;
   };
+  const spawnd = getSpawndGame({
+    name: game.name,
+    websites: game.websites,
+    lang,
+  });
 
   return (
     <main className="game-page">
@@ -396,6 +403,15 @@ export default async function GamePage({ params }: Props) {
               sections={[]}
             />
           ) : undefined
+        }
+        spawnd={
+          <SpawndGamePanel
+            lang={lang}
+            gameName={game.name}
+            available={spawnd.available}
+            gameUrl={spawnd.gameUrl}
+            catalogUrl={spawnd.catalogUrl}
+          />
         }
         community={
           <section className="game-community-section game-surface">
