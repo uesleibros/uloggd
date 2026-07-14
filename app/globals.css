@@ -4941,6 +4941,84 @@ html[data-sidebar-ready] .account-button > svg {
     color 150ms ease-out;
 }
 
+.spawnd-tab-content {
+  display: grid;
+  gap: 16px;
+}
+
+.spawnd-player-shell {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--console-inset);
+}
+
+.spawnd-player-shell iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.spawnd-player-consent {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+}
+
+.spawnd-player-consent > svg {
+  color: var(--brand-blurple-bright);
+}
+
+.spawnd-player-consent h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 620;
+  letter-spacing: -0.025em;
+}
+
+.spawnd-player-consent p {
+  max-width: 520px;
+  margin: 7px 0 0;
+  color: var(--screen-dim);
+  font-size: 11px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.spawnd-player-consent button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--screen-white);
+  color: var(--console-black);
+  font-size: 11px;
+  font-weight: 620;
+  cursor: pointer;
+}
+
+.spawnd-player-consent button:hover {
+  opacity: 0.9;
+}
+
+.spawnd-player-consent button:active {
+  transform: scale(0.98);
+}
+
 .spawnd-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.72fr);
@@ -5064,6 +5142,31 @@ html[data-sidebar-ready] .account-button > svg {
 }
 
 @media (max-width: 620px) {
+  .spawnd-player-shell {
+    border-radius: 9px;
+  }
+
+  .spawnd-player-consent {
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .spawnd-player-consent > svg {
+    display: none;
+  }
+
+  .spawnd-player-consent h2 {
+    font-size: 15px;
+  }
+
+  .spawnd-player-consent p {
+    font-size: 10px;
+  }
+
+  .spawnd-player-consent button {
+    min-height: 36px;
+  }
+
   .spawnd-panel {
     padding: 16px;
   }

@@ -410,6 +410,7 @@ export default async function GamePage({ params }: Props) {
             gameName={game.name}
             available={spawnd.available}
             gameUrl={spawnd.gameUrl}
+            embedUrl={spawnd.embedUrl}
             catalogUrl={spawnd.catalogUrl}
           />
         }

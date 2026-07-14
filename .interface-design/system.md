@@ -212,7 +212,8 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 ### spawnd game tab
 
 - Every game page exposes a spawnd tab. Confirmed supported titles lead to their official playable demo; unsupported titles show an honest unavailable state and link to the wider catalog.
-- The integration links out instead of loading a third-party iframe, keeping external storage and analytics off uloggd pages. The explainer states that demos run locally in the browser without download, installation, or game streaming.
+- Confirmed embed IDs render a responsive 16:9 player inside the tab using spawnd's documented iframe contract. The iframe loads only after an explicit player action, before which no spawnd request is made; an external-page fallback remains available.
+- The explainer states that demos run locally in the browser without download, installation, or game streaming.
 
 ### Compact game row
 
