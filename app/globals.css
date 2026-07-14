@@ -2,6 +2,7 @@
 
 :root {
   color-scheme: dark;
+  --sidebar-width: 264px;
   --console-black: #0b0a0d;
   --console-canvas: #0f0e11;
   --console-panel: #17151b;
@@ -84,18 +85,18 @@ a {
 
 .platform-shell {
   display: grid;
-  grid-template-columns: 264px minmax(0, 1fr);
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   width: 100%;
   margin: 0;
   padding: 0;
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--console-canvas);
 }
 html[data-sidebar-ready] .platform-shell {
   transition: grid-template-columns 240ms cubic-bezier(0.23, 1, 0.32, 1);
 }
-html[data-sidebar-collapsed] .platform-shell {
-  grid-template-columns: 64px minmax(0, 1fr);
+html[data-sidebar-collapsed] {
+  --sidebar-width: 64px;
 }
 
 .platform-content {
@@ -104,7 +105,7 @@ html[data-sidebar-collapsed] .platform-shell {
   grid-column: 2;
   grid-row: 1;
   min-width: 0;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 .content-header {
   position: sticky;
@@ -146,10 +147,10 @@ html[data-sidebar-collapsed] .platform-shell {
   position: sticky;
   z-index: 10;
   top: 0;
-  inset-inline-start: 0;
+  left: 0;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   width: 100%;
   margin: 0;
   padding: 0;
@@ -243,9 +244,6 @@ html[data-sidebar-collapsed] .account-button {
   width: 44px;
   margin: 0 0 16px;
   padding-inline: 4px;
-}
-html[data-sidebar-collapsed] .cookie-banner {
-  left: 84px;
 }
 .sidebar-brand {
   flex: none;
@@ -2633,7 +2631,7 @@ html[data-sidebar-ready] .account-button > svg {
   z-index: 65;
   right: 20px;
   bottom: 20px;
-  left: 284px;
+  left: calc(var(--sidebar-width) + 20px);
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr) auto;
   align-items: center;
@@ -4045,14 +4043,11 @@ html[data-sidebar-ready] .account-button > svg {
 }
 
 @media (max-width: 1100px) {
-  .platform-shell {
-    grid-template-columns: 64px minmax(0, 1fr);
+  :root {
+    --sidebar-width: 64px;
   }
   .home-shell {
     grid-template-columns: minmax(560px, 1fr) 290px;
-  }
-  .cookie-banner {
-    left: 84px;
   }
   .sidebar {
     align-items: center;
@@ -4130,9 +4125,6 @@ html[data-sidebar-ready] .account-button > svg {
 }
 
 @media (max-width: 960px) {
-  .platform-shell {
-    grid-template-columns: 64px minmax(0, 1fr);
-  }
   .home-shell {
     display: block;
   }
@@ -4526,7 +4518,7 @@ html[data-sidebar-ready] .account-button > svg {
 
 /* Editorial game stage: identity first, catalog modules second. */
 .game-page {
-  padding: 16px 16px 64px;
+  padding: 16px 0 64px;
 }
 
 .game-stage {
@@ -4770,6 +4762,7 @@ html[data-sidebar-ready] .account-button > svg {
 
 .game-tabs {
   min-width: 0;
+  padding-inline: 16px;
 }
 
 .game-tab-panel {
@@ -5016,6 +5009,10 @@ a,
 @media (max-width: 620px) {
   .game-page {
     padding: 10px 10px 48px;
+  }
+
+  .game-tabs {
+    padding-inline: 0;
   }
 
   .game-stage {
