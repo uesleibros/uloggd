@@ -166,14 +166,6 @@ export default async function GamePage({ params }: Props) {
               <span>{game.releaseYear ?? "TBA"}</span>
             </div>
             <h1>{game.name}</h1>
-            <div className="game-stage-facts">
-              {game.rating !== null && (
-                <span className="game-stage-rating">
-                  <Star size={12} fill="currentColor" />
-                  {game.rating}/100
-                </span>
-              )}
-            </div>
             {game.summary && (
               <p className="game-stage-description">{game.summary}</p>
             )}

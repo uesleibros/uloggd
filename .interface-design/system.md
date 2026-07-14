@@ -64,7 +64,7 @@ Base unit: **4px**.
 - Card/internal padding: 16–20px.
 - Feed section padding: 32–36px desktop; 18–30px mobile.
 - Major separation: 32–40px.
-- Desktop sidebar: 264px full; 76px compact.
+- Desktop sidebar: 264px full; 64px compact.
 - The sidebar structural column itself has no outer padding; brand, scrollable navigation, and account control own their internal gutters so the panel remains flush with the application canvas.
 - The document, application shell, and sidebar explicitly use zero outer margin/padding; the sticky sidebar is anchored to the viewport's inline-start edge and fills its grid track.
 - Brand starts 20px from the top, navigation follows after 16px without a second nested top margin, and the 60px account control uses even 8px internal padding; these three zones share the same 20px visual gutter.
@@ -108,17 +108,17 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - 264px wide, sticky, full viewport height.
 - Solid `console-panel` background with `shell-line-strong` right border.
 - Brand plus subtle beta stage at top.
-- Navigation rows are uniformly 52px high with an 8px radius on desktop, compact, and mobile drawer states; compact icon hit areas are 48px wide inside the 76px rail.
+- Navigation rows are uniformly 52px high with an 8px radius on desktop, compact, and mobile drawer states; compact icon hit areas are 48px wide inside the 64px rail.
 - Current route uses a graphite hover surface, white icon and label, and one small blurple status dot. Blurple never floods the navigation row.
 - Quick-log action is tonal, not a large saturated pill.
 - Account control stays at the bottom and must not fabricate authenticated state.
 - Signed-out account controls use a neutral login glyph; initials and avatars are reserved for real authenticated profiles.
 - Signed-out navigation keeps Home, search, language, and legal documents available. Library, Reviews, Profile, Settings, and quick-log render as non-interactive muted rows with a small lock glyph and an accessible sign-in requirement.
-- Above 1100px, the sidebar can collapse from 264px to 76px using a persistent edge control; the compact state keeps 44px icon targets, route state, account access, and the content canvas expansion.
+- Above 1100px, the sidebar can collapse from 264px to 64px using a persistent edge control; the compact state keeps 44px icon targets, route state, account access, and the content canvas expansion.
 
 ### Compact sidebar
 
-- 76px wide below 1100px.
+- 64px wide below 1100px.
 - Icons remain centered in 44px hit areas.
 - Text, keyboard hint, beta label, and account metadata collapse.
 
