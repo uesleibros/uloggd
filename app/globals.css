@@ -192,7 +192,11 @@ html[data-sidebar-collapsed] {
 html[data-sidebar-collapsed] .sidebar {
   align-items: center;
 }
+html[data-sidebar-collapsed] .sidebar-frame {
+  padding-inline: 8px;
+}
 html[data-sidebar-collapsed] .sidebar-brand {
+  justify-content: center;
   margin: 20px 0 0;
   padding: 0;
 }
@@ -238,12 +242,29 @@ html[data-sidebar-collapsed] .sidebar-bottom > .nav-disabled {
 html[data-sidebar-collapsed] .nav-disabled .nav-lock {
   display: none;
 }
+html[data-sidebar-collapsed] .sidebar-brand .brand,
+html[data-sidebar-collapsed] .main-nav a,
+html[data-sidebar-collapsed] .sidebar-bottom > a,
+html[data-sidebar-collapsed] .main-nav > .nav-disabled,
+html[data-sidebar-collapsed] .sidebar-bottom > .nav-disabled,
+html[data-sidebar-collapsed] .account-button {
+  gap: 0;
+}
 html[data-sidebar-collapsed] .account-button {
   display: flex;
   justify-content: center;
   width: 44px;
-  margin: 0 0 16px;
+  margin: 0 auto 16px;
   padding-inline: 4px;
+}
+.sidebar-frame {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding-inline: 12px;
 }
 .sidebar-brand {
   flex: none;
@@ -251,7 +272,7 @@ html[data-sidebar-collapsed] .account-button {
   align-items: center;
   justify-content: space-between;
   margin: 20px 0 0;
-  padding: 0 12px;
+  padding: 0;
 }
 .sidebar-scroll {
   min-height: 0;
@@ -265,6 +286,7 @@ html[data-sidebar-collapsed] .account-button {
   scrollbar-color: var(--shell-line-strong) transparent;
 }
 html[data-sidebar-ready] .sidebar-brand,
+html[data-sidebar-ready] .sidebar-frame,
 html[data-sidebar-ready] .sidebar-scroll,
 html[data-sidebar-ready] .main-nav a,
 html[data-sidebar-ready] .sidebar-bottom > a,
@@ -488,7 +510,7 @@ html[data-sidebar-ready] .account-button > svg {
   width: 100%;
   min-height: 60px;
   margin: 0 0 16px;
-  padding: 8px 12px;
+  padding: 8px 0;
   border: 0;
   border-top: 1px solid var(--shell-line);
   background: transparent;
@@ -4052,10 +4074,14 @@ html[data-sidebar-ready] .account-button > svg {
   .sidebar {
     align-items: center;
   }
+  .sidebar-frame {
+    padding-inline: 8px;
+  }
   .sidebar-collapse-button {
     display: none;
   }
   .sidebar-brand {
+    justify-content: center;
     margin: 20px 0 0;
     padding: 0;
   }
@@ -4092,7 +4118,7 @@ html[data-sidebar-ready] .account-button > svg {
     display: flex;
     justify-content: center;
     width: 44px;
-    margin: 0 0 16px;
+    margin: 0 auto 16px;
     padding-inline: 4px;
   }
   .login-shell {

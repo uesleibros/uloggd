@@ -50,44 +50,57 @@ export function PlatformNavigation({
     <>
       <aside className="sidebar">
         <SidebarCollapseButton lang={lang} />
-        <div className="sidebar-brand">
-          <Brand lang={lang} />
-          <span className="product-stage">{d.platform.beta}</span>
-        </div>
-        <div className="sidebar-scroll">
-          <nav className="main-nav" aria-label={d.platform.navigation}>
-            <span className="nav-label">{d.platform.navigation}</span>
-            {nav.map(([icon, label, requiresAuth], index) => {
-              const NavIcon = iconMap[icon];
-              if (requiresAuth && !isAuthenticated) {
-                return (
-                  <span
-                    className="nav-disabled"
-                    key={label}
-                    aria-disabled="true"
-                    title={d.actions.requiresSignIn}
-                  >
-                    <NavIcon size={20} />
-                    <span>{label}</span>
-                    <LockKeyhole className="nav-lock" size={12} />
-                  </span>
-                );
-              }
-              if (index !== 0) {
-                const href =
-                  icon === "library"
-                    ? `/${lang}/library`
-                    : icon === "star"
-                      ? `/${lang}/reviews`
-                      : icon === "list"
-                        ? `/${lang}/lists`
-                        : account?.username
-                          ? `/${lang}/u/${account.username}`
-                          : `/${lang}/onboarding/username`;
+        <div className="sidebar-frame">
+          <div className="sidebar-brand">
+            <Brand lang={lang} />
+            <span className="product-stage">{d.platform.beta}</span>
+          </div>
+          <div className="sidebar-scroll">
+            <nav className="main-nav" aria-label={d.platform.navigation}>
+              <span className="nav-label">{d.platform.navigation}</span>
+              {nav.map(([icon, label, requiresAuth], index) => {
+                const NavIcon = iconMap[icon];
+                if (requiresAuth && !isAuthenticated) {
+                  return (
+                    <span
+                      className="nav-disabled"
+                      key={label}
+                      aria-disabled="true"
+                      title={d.actions.requiresSignIn}
+                    >
+                      <NavIcon size={20} />
+                      <span>{label}</span>
+                      <LockKeyhole className="nav-lock" size={12} />
+                    </span>
+                  );
+                }
+                if (index !== 0) {
+                  const href =
+                    icon === "library"
+                      ? `/${lang}/library`
+                      : icon === "star"
+                        ? `/${lang}/reviews`
+                        : icon === "list"
+                          ? `/${lang}/lists`
+                          : account?.username
+                            ? `/${lang}/u/${account.username}`
+                            : `/${lang}/onboarding/username`;
+                  return (
+                    <ActiveLink
+                      key={label}
+                      href={href}
+                      aria-label={label}
+                      title={label}
+                    >
+                      <NavIcon size={20} />
+                      <span>{label}</span>
+                    </ActiveLink>
+                  );
+                }
                 return (
                   <ActiveLink
                     key={label}
-                    href={href}
+                    href={`/${lang}`}
                     aria-label={label}
                     title={label}
                   >
@@ -95,57 +108,46 @@ export function PlatformNavigation({
                     <span>{label}</span>
                   </ActiveLink>
                 );
-              }
-              return (
-                <ActiveLink
-                  key={label}
-                  href={`/${lang}`}
-                  aria-label={label}
-                  title={label}
+              })}
+            </nav>
+            <div className="sidebar-bottom">
+              {isAuthenticated ? (
+                <Link
+                  href={`/${lang}/settings/profile`}
+                  aria-label={d.nav.settings}
+                  title={d.nav.settings}
                 >
-                  <NavIcon size={20} />
-                  <span>{label}</span>
-                </ActiveLink>
-              );
-            })}
-          </nav>
-          <div className="sidebar-bottom">
-            {isAuthenticated ? (
-              <Link
-                href={`/${lang}/settings/profile`}
-                aria-label={d.nav.settings}
-                title={d.nav.settings}
-              >
-                <Settings size={20} />
-                <span>{d.nav.settings}</span>
-              </Link>
-            ) : (
-              <span
-                className="nav-disabled"
-                aria-disabled="true"
-                title={d.actions.requiresSignIn}
-              >
-                <Settings size={20} />
-                <span>{d.nav.settings}</span>
-                <LockKeyhole className="nav-lock" size={12} />
-              </span>
-            )}
-          </div>
-        </div>
-        {account ? (
-          <AccountMenu account={account} lang={lang} />
-        ) : (
-          <Link className="account-button" href={`/${lang}/login`}>
-            <span className="signed-out-icon" aria-hidden>
-              <LogIn size={18} />
-            </span>
-            <div>
-              <strong>{d.actions.signIn}</strong>
-              <small>{d.actions.syncJourney}</small>
+                  <Settings size={20} />
+                  <span>{d.nav.settings}</span>
+                </Link>
+              ) : (
+                <span
+                  className="nav-disabled"
+                  aria-disabled="true"
+                  title={d.actions.requiresSignIn}
+                >
+                  <Settings size={20} />
+                  <span>{d.nav.settings}</span>
+                  <LockKeyhole className="nav-lock" size={12} />
+                </span>
+              )}
             </div>
-            <span aria-hidden>↗</span>
-          </Link>
-        )}
+          </div>
+          {account ? (
+            <AccountMenu account={account} lang={lang} />
+          ) : (
+            <Link className="account-button" href={`/${lang}/login`}>
+              <span className="signed-out-icon" aria-hidden>
+                <LogIn size={18} />
+              </span>
+              <div>
+                <strong>{d.actions.signIn}</strong>
+                <small>{d.actions.syncJourney}</small>
+              </div>
+              <span aria-hidden>↗</span>
+            </Link>
+          )}
+        </div>
       </aside>
 
       <header className="mobile-header">
