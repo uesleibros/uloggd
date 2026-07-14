@@ -145,7 +145,7 @@ html[data-sidebar-collapsed] {
 /* Navigation shell */
 .sidebar {
   position: sticky;
-  z-index: 10;
+  z-index: 26;
   top: 0;
   left: 0;
   display: flex;
@@ -4834,6 +4834,49 @@ html[data-sidebar-ready] .account-button > svg {
 
 .game-wide-content .game-details > div:nth-child(-n + 2) {
   border-top: 1px solid var(--shell-line);
+}
+
+.game-language-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+  margin: 0;
+}
+
+.game-language-list > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  border-top: 1px solid var(--shell-line);
+}
+
+.game-language-list dt {
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 520;
+}
+
+.game-language-list dt small {
+  display: block;
+  margin-top: 2px;
+  color: var(--screen-muted);
+  font-size: 9px;
+  font-weight: 430;
+}
+
+.game-language-list dd {
+  margin: 0;
+  color: var(--screen-muted);
+  font-size: 9px;
+  text-align: right;
+}
+
+@media (max-width: 620px) {
+  .game-language-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 @keyframes game-tab-in {

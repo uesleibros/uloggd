@@ -142,6 +142,13 @@ export default async function GamePage({ params }: Props) {
     websites: game.websites,
     lang,
   });
+  const languageSupportLabel = (support: string) => {
+    if (lang !== "pt-BR") return support;
+    if (support === "Audio") return "Áudio";
+    if (support === "Subtitles") return "Legendas";
+    if (support === "Interface") return "Interface";
+    return support;
+  };
 
   return (
     <main className="game-page">
@@ -272,6 +279,38 @@ export default async function GamePage({ params }: Props) {
                   )}
                 </dl>
               </section>
+              {game.languages.length > 0 && (
+                <section className="game-languages-panel game-surface">
+                  <header className="game-panel-heading">
+                    <span>
+                      {lang === "pt-BR" ? "LOCALIZAÇÃO" : "LOCALIZATION"}
+                    </span>
+                    <h2>
+                      {lang === "pt-BR"
+                        ? "Idiomas suportados"
+                        : "Supported languages"}
+                    </h2>
+                  </header>
+                  <dl className="game-language-list">
+                    {game.languages.map((language) => (
+                      <div key={language.name}>
+                        <dt>
+                          {language.name}
+                          {language.nativeName &&
+                            language.nativeName !== language.name && (
+                              <small>{language.nativeName}</small>
+                            )}
+                        </dt>
+                        <dd>
+                          {language.support
+                            .map(languageSupportLabel)
+                            .join(" · ")}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              )}
             </div>
             <aside className="game-context-rail">
               <section className="game-time-panel game-surface">

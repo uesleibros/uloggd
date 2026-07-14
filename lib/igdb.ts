@@ -38,6 +38,10 @@ type IgdbGameResponse = {
   themes?: { name: string }[];
   game_modes?: { name: string }[];
   websites?: { url: string }[];
+  language_supports?: {
+    language?: { name: string; native_name?: string };
+    language_support_type?: { name: string };
+  }[];
   similar_games?: IgdbGameResponse[];
   dlcs?: IgdbGameResponse[];
   expansions?: IgdbGameResponse[];
@@ -326,6 +330,11 @@ export type GameDetail = Game & {
   themes: string[];
   modes: string[];
   websites: string[];
+  languages: {
+    name: string;
+    nativeName: string | null;
+    support: string[];
+  }[];
   related: {
     kind: "expansions" | "editions" | "remakes" | "similar";
     games: Game[];
@@ -348,6 +357,7 @@ export const getGameBySlug = cache(async function getGameBySlug(
       cover.image_id,artworks.image_id,screenshots.image_id,genres.name,
       platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
       videos.video_id,videos.name,themes.name,game_modes.name,websites.url,
+      language_supports.language.name,language_supports.language.native_name,language_supports.language_support_type.name,
       similar_games.name,similar_games.slug,similar_games.first_release_date,similar_games.total_rating,similar_games.total_rating_count,similar_games.cover.image_id,similar_games.genres.name,
       dlcs.name,dlcs.slug,dlcs.first_release_date,dlcs.total_rating,dlcs.total_rating_count,dlcs.cover.image_id,dlcs.genres.name,
       expansions.name,expansions.slug,expansions.first_release_date,expansions.total_rating,expansions.total_rating_count,expansions.cover.image_id,expansions.genres.name,
@@ -457,6 +467,19 @@ export const getGameBySlug = cache(async function getGameBySlug(
     { kind: "remakes", games: remakes },
     { kind: "similar", games: similar },
   ];
+  const languages = new Map<string, GameDetail["languages"][number]>();
+  for (const entry of raw.language_supports ?? []) {
+    if (!entry.language?.name || !entry.language_support_type?.name) continue;
+    const current = languages.get(entry.language.name) ?? {
+      name: entry.language.name,
+      nativeName: entry.language.native_name ?? null,
+      support: [],
+    };
+    if (!current.support.includes(entry.language_support_type.name)) {
+      current.support.push(entry.language_support_type.name);
+    }
+    languages.set(entry.language.name, current);
+  }
 
   return {
     ...normalize(raw),
@@ -490,6 +513,9 @@ export const getGameBySlug = cache(async function getGameBySlug(
       .map((website) => website.url)
       .filter((url) => url.startsWith("https://"))
       .slice(0, 8),
+    languages: [...languages.values()].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    ),
     related: related.filter((group) => group.games.length > 0),
     timeToBeat: time
       ? {
