@@ -67,7 +67,7 @@ Base unit: **4px**.
 - Desktop sidebar: 264px full; 64px compact.
 - The sidebar structural column itself has no outer padding; brand, scrollable navigation, and account control own their internal gutters so the panel remains flush with the application canvas.
 - The document, application shell, and sidebar explicitly use zero outer margin/padding; the sticky sidebar is anchored to the viewport's inline-start edge and fills its grid track.
-- Brand starts 20px from the top, navigation follows after 16px without a second nested top margin, and the 60px account control uses even 8px internal padding; these three zones share the same 20px visual gutter.
+- Brand starts 20px from the top and navigation follows after 16px; brand, navigation rows, and account identity share one 12px internal alignment without horizontal child margins.
 - Context rail: 320px full; 290px compact; hidden at 960px and below to prevent tablet overflow.
 - The application canvas is full-viewport; never cap the global shell or center it inside decorative outer gutters. Width constraints belong to readable text and focused controls, not the product frame.
 - Game pages use a compact 16px outer gutter; larger spacing belongs between cover, primary content, and context rail rather than outside the rails.
