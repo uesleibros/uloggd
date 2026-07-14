@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock3, Gauge, Play, Star, Trophy } from "lucide-react";
+import { Check, Clock3, Gauge, Play, Star, Trophy } from "lucide-react";
 import { GameExtendedContent } from "@/components/game-extended-content";
 import { GameMediaGallery } from "@/components/game-media-gallery";
 import { GamePageTabs } from "@/components/game-page-tabs";
@@ -142,14 +142,6 @@ export default async function GamePage({ params }: Props) {
     websites: game.websites,
     lang,
   });
-  const languageSupportLabel = (support: string) => {
-    if (lang !== "pt-BR") return support;
-    if (support === "Audio") return "Áudio";
-    if (support === "Subtitles") return "Legendas";
-    if (support === "Interface") return "Interface";
-    return support;
-  };
-
   return (
     <main className="game-page">
       <section className="game-stage">
@@ -291,24 +283,66 @@ export default async function GamePage({ params }: Props) {
                         : "Supported languages"}
                     </h2>
                   </header>
-                  <dl className="game-language-list">
-                    {game.languages.map((language) => (
-                      <div key={language.name}>
-                        <dt>
-                          {language.name}
-                          {language.nativeName &&
-                            language.nativeName !== language.name && (
-                              <small>{language.nativeName}</small>
+                  <div className="game-language-table-wrap">
+                    <table className="game-language-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">
+                            {lang === "pt-BR" ? "Idioma" : "Language"}
+                          </th>
+                          <th scope="col">Interface</th>
+                          <th scope="col">
+                            {lang === "pt-BR" ? "Áudio" : "Audio"}
+                          </th>
+                          <th scope="col">
+                            {lang === "pt-BR" ? "Legendas" : "Subtitles"}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {game.languages.map((language) => (
+                          <tr key={language.name}>
+                            <th scope="row">
+                              {language.name}
+                              {language.nativeName &&
+                                language.nativeName !== language.name && (
+                                  <small>{language.nativeName}</small>
+                                )}
+                            </th>
+                            {(["Interface", "Audio", "Subtitles"] as const).map(
+                              (support) => {
+                                const supported =
+                                  language.support.includes(support);
+                                return (
+                                  <td key={support}>
+                                    {supported ? (
+                                      <>
+                                        <Check size={14} aria-hidden />
+                                        <span className="sr-only">
+                                          {lang === "pt-BR"
+                                            ? "Disponível"
+                                            : "Available"}
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span aria-hidden>—</span>
+                                        <span className="sr-only">
+                                          {lang === "pt-BR"
+                                            ? "Indisponível"
+                                            : "Unavailable"}
+                                        </span>
+                                      </>
+                                    )}
+                                  </td>
+                                );
+                              },
                             )}
-                        </dt>
-                        <dd>
-                          {language.support
-                            .map(languageSupportLabel)
-                            .join(" · ")}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </section>
               )}
             </div>

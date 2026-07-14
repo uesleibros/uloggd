@@ -208,7 +208,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Tablet moves the rail below primary content; mobile stacks cover, content, and context without a persistent side column.
 - After About, gallery, videos, events, links, and related games span the combined cover + primary-content width while the context rail continues independently at the right.
 - On mobile, game media sections are strictly contained to the viewport: grids use zero-minimum columns, embeds cap at 100%, long metadata wraps, and horizontal overflow belongs only to the related-game shelf without negative outer margins.
-- Supported languages live in a dedicated overview surface and group IGDB interface, audio, and subtitle support per language; native names remain secondary metadata.
+- Supported languages use a compact Steam-like comparison table in the overview: languages form rows, interface/audio/subtitle support form fixed columns, green checks indicate availability, and native names remain secondary metadata.
 
 ### spawnd game tab
 

@@ -4836,29 +4836,55 @@ html[data-sidebar-ready] .account-button > svg {
   border-top: 1px solid var(--shell-line);
 }
 
-.game-language-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 24px;
-  margin: 0;
+.game-language-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--shell-line-strong) transparent;
 }
 
-.game-language-list > div {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  min-height: 44px;
+.game-language-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.game-language-table th,
+.game-language-table td {
+  height: 42px;
+  padding: 0 10px;
   border-top: 1px solid var(--shell-line);
 }
 
-.game-language-list dt {
+.game-language-table thead th {
+  height: 34px;
+  color: var(--screen-muted);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.045em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.game-language-table th:first-child {
+  width: auto;
+  padding-left: 0;
+  text-align: left;
+}
+
+.game-language-table th:not(:first-child),
+.game-language-table td {
+  width: 76px;
+  text-align: center;
+}
+
+.game-language-table tbody th {
   color: var(--screen-dim);
   font-size: 11px;
   font-weight: 520;
 }
 
-.game-language-list dt small {
+.game-language-table tbody th small {
   display: block;
   margin-top: 2px;
   color: var(--screen-muted);
@@ -4866,16 +4892,30 @@ html[data-sidebar-ready] .account-button > svg {
   font-weight: 430;
 }
 
-.game-language-list dd {
-  margin: 0;
+.game-language-table td {
   color: var(--screen-muted);
-  font-size: 9px;
-  text-align: right;
+  font-size: 11px;
+}
+
+.game-language-table td svg {
+  color: var(--safe-green);
+  stroke-width: 2.5;
 }
 
 @media (max-width: 620px) {
-  .game-language-list {
-    grid-template-columns: minmax(0, 1fr);
+  .game-language-table th,
+  .game-language-table td {
+    padding-inline: 5px;
+  }
+
+  .game-language-table th:not(:first-child),
+  .game-language-table td {
+    width: 58px;
+  }
+
+  .game-language-table thead th {
+    font-size: 7px;
+    letter-spacing: 0;
   }
 }
 
