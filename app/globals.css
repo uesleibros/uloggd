@@ -203,7 +203,7 @@ html[data-sidebar-collapsed] .sidebar-brand {
 html[data-sidebar-collapsed] .sidebar-scroll {
   width: 100%;
   margin: 16px 0 0;
-  padding: 0 8px 12px;
+  padding: 0 0 12px;
 }
 html[data-sidebar-collapsed] .sidebar-brand .brand span,
 html[data-sidebar-collapsed] .product-stage,
@@ -253,9 +253,9 @@ html[data-sidebar-collapsed] .account-button {
 html[data-sidebar-collapsed] .account-button {
   display: flex;
   justify-content: center;
-  width: 44px;
+  width: 48px;
   margin: 0 auto 16px;
-  padding-inline: 4px;
+  padding-inline: 6px;
 }
 .sidebar-frame {
   display: flex;
@@ -265,6 +265,7 @@ html[data-sidebar-collapsed] .account-button {
   min-height: 0;
   height: 100%;
   padding-inline: 12px;
+  overflow: hidden;
 }
 .sidebar-brand {
   flex: none;
@@ -272,7 +273,7 @@ html[data-sidebar-collapsed] .account-button {
   align-items: center;
   justify-content: space-between;
   margin: 20px 0 0;
-  padding: 0;
+  padding: 0 12px;
 }
 .sidebar-scroll {
   min-height: 0;
@@ -280,6 +281,7 @@ html[data-sidebar-collapsed] .account-button {
   width: 100%;
   margin: 16px 0 0;
   padding: 0 0 12px;
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -510,7 +512,7 @@ html[data-sidebar-ready] .account-button > svg {
   width: 100%;
   min-height: 60px;
   margin: 0 0 16px;
-  padding: 8px 0;
+  padding: 8px 12px;
   border: 0;
   border-top: 1px solid var(--shell-line);
   background: transparent;
@@ -4088,7 +4090,7 @@ html[data-sidebar-ready] .account-button > svg {
   .sidebar-scroll {
     width: 100%;
     margin: 16px 0 0;
-    padding: 0 8px 12px;
+    padding: 0 0 12px;
   }
   .sidebar-brand .brand span,
   .product-stage,
@@ -4117,9 +4119,9 @@ html[data-sidebar-ready] .account-button > svg {
   .account-button {
     display: flex;
     justify-content: center;
-    width: 44px;
+    width: 48px;
     margin: 0 auto 16px;
-    padding-inline: 4px;
+    padding-inline: 6px;
   }
   .login-shell {
     grid-template-columns: minmax(300px, 1fr) minmax(370px, 470px);
