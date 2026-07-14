@@ -4903,11 +4903,27 @@ html[data-sidebar-ready] .account-button > svg {
 .game-language-table td {
   color: var(--screen-muted);
   font-size: 11px;
+  vertical-align: middle;
 }
 
-.game-language-table td svg {
+.game-language-status {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-inline: auto;
+  line-height: 1;
+}
+
+.game-language-status svg {
+  display: block;
   color: var(--safe-green);
   stroke-width: 2.5;
+}
+
+.game-language-status > span {
+  display: block;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 620px) {

@@ -315,25 +315,22 @@ export default async function GamePage({ params }: Props) {
                                   language.support.includes(support);
                                 return (
                                   <td key={support}>
-                                    {supported ? (
-                                      <>
+                                    <span className="game-language-status">
+                                      {supported ? (
                                         <Check size={14} aria-hidden />
-                                        <span className="sr-only">
-                                          {lang === "pt-BR"
-                                            ? "Disponível"
-                                            : "Available"}
-                                        </span>
-                                      </>
-                                    ) : (
-                                      <>
+                                      ) : (
                                         <span aria-hidden>—</span>
-                                        <span className="sr-only">
-                                          {lang === "pt-BR"
-                                            ? "Indisponível"
-                                            : "Unavailable"}
-                                        </span>
-                                      </>
-                                    )}
+                                      )}
+                                    </span>
+                                    <span className="sr-only">
+                                      {supported
+                                        ? lang === "pt-BR"
+                                          ? "Disponível"
+                                          : "Available"
+                                        : lang === "pt-BR"
+                                          ? "Indisponível"
+                                          : "Unavailable"}
+                                    </span>
                                   </td>
                                 );
                               },
