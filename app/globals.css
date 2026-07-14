@@ -4518,7 +4518,7 @@ html[data-sidebar-ready] .account-button > svg {
 
 /* Editorial game stage: identity first, catalog modules second. */
 .game-page {
-  padding: 16px 0 64px;
+  padding: 16px 16px 64px;
 }
 
 .game-stage {
@@ -4762,7 +4762,6 @@ html[data-sidebar-ready] .account-button > svg {
 
 .game-tabs {
   min-width: 0;
-  padding-inline: 16px;
 }
 
 .game-tab-panel {
@@ -5009,10 +5008,6 @@ a,
 @media (max-width: 620px) {
   .game-page {
     padding: 10px 10px 48px;
-  }
-
-  .game-tabs {
-    padding-inline: 0;
   }
 
   .game-stage {

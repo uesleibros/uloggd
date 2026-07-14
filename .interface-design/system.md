@@ -70,7 +70,7 @@ Base unit: **4px**.
 - Brand starts 20px from the top, navigation follows after 16px without a second nested top margin, and the 60px account control uses even 8px internal padding; these three zones share the same 20px visual gutter.
 - Context rail: 320px full; 290px compact; hidden at 960px and below to prevent tablet overflow.
 - The application canvas is full-viewport; never cap the global shell or center it inside decorative outer gutters. Width constraints belong to readable text and focused controls, not the product frame.
-- The game stage is flush with the content column so it never creates a false gutter beside the sidebar; tabs and lower game modules retain a 16px internal content gutter.
+- Game pages use a compact 16px outer gutter; larger spacing belongs between cover, primary content, and context rail rather than outside the rails.
 
 The feed should alternate between expressive/editorial zones and compact working zones. Do not give every section the same gap, card shape, or density.
 
