@@ -49,7 +49,6 @@ export function PlatformNavigation({
   return (
     <>
       <aside className="sidebar">
-        <SidebarCollapseButton lang={lang} />
         <div className="sidebar-frame">
           <div className="sidebar-brand">
             <Brand lang={lang} />
@@ -149,6 +148,7 @@ export function PlatformNavigation({
           )}
         </div>
       </aside>
+      <SidebarCollapseButton lang={lang} />
 
       <header className="mobile-header">
         <MobileSidebar
