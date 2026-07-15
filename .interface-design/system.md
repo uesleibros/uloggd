@@ -222,7 +222,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 ### Age rating
 
 - Game overviews show available IGDB age ratings at the top of the right context rail, before time-to-beat and similar games.
-- The panel uses IGDB's official `rating_cover_url` artwork per organization, with the exact rating and organization names alongside it. A neutral textual badge is only the fallback when IGDB has no image.
+- The panel maps IGDB's current organization and rating-category names to official local PNG assets under `public/age-ratings/`, based on the legacy uloggd rating mapper. It shows the full organization name and region alongside the mark; a neutral textual badge is only the fallback when no local mark exists.
 - Portuguese prioritizes ClassInd, then ESRB and PEGI; English prioritizes ESRB, then PEGI and ClassInd. Show no more than three organizations and omit the panel when IGDB has no rating data.
 - Read the current IGDB `organization` and `rating_category` relations; do not add new code against deprecated `category` or `rating` fields.
 

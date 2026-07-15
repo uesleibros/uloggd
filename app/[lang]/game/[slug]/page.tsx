@@ -400,7 +400,9 @@ export default async function GamePage({ params }: Props) {
                         </span>
                         <span>
                           <strong>{rating.rating}</strong>
-                          <small>{rating.organization}</small>
+                          <small>
+                            {rating.organization} · {rating.region}
+                          </small>
                         </span>
                       </div>
                     ))}
