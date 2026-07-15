@@ -16,6 +16,7 @@ import { ActivityStream } from "@/components/social/activity-stream";
 import { FollowButton } from "@/components/social/follow-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
+import { ProfileActions } from "@/components/profile-actions";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getActivity } from "@/lib/social";
@@ -78,7 +79,7 @@ export default async function ProfilePage({ params }: Props) {
     supabase
       .from("profiles")
       .select(
-        "id,username,display_name,pronouns,bio,avatar_url,banner_url,created_at,verified",
+        "id,username,display_name,pronouns,bio,avatar_url,banner_url,created_at,verified,youtube_username,instagram_username,twitter_username",
       )
       .ilike("username", username)
       .maybeSingle(),
@@ -226,6 +227,51 @@ export default async function ProfilePage({ params }: Props) {
             <CalendarDays size={13} />{" "}
             {pt ? "No uloggd desde" : "On uloggd since"} {joined}
           </p>
+          {(profile.youtube_username ||
+            profile.instagram_username ||
+            profile.twitter_username) && (
+            <nav
+              className="profile-social-links"
+              aria-label={pt ? "Redes sociais" : "Social networks"}
+            >
+              {profile.youtube_username && (
+                <a
+                  href={`https://youtube.com/@${profile.youtube_username}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <b>YT</b>
+                  <span>YouTube</span>
+                </a>
+              )}
+              {profile.instagram_username && (
+                <a
+                  href={`https://instagram.com/${profile.instagram_username}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <b>IG</b>
+                  <span>Instagram</span>
+                </a>
+              )}
+              {profile.twitter_username && (
+                <a
+                  href={`https://x.com/${profile.twitter_username}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <b>X</b>
+                  <span>Twitter</span>
+                </a>
+              )}
+            </nav>
+          )}
+          <ProfileActions
+            profileId={profile.id}
+            viewerId={user?.id ?? null}
+            username={profile.username}
+            lang={lang}
+          />
         </div>
       </header>
       <dl className="profile-stats">

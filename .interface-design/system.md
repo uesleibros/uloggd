@@ -228,6 +228,14 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - The badge follows the account into profile headers and community activity without changing name hierarchy.
 - Verification is assigned only by moderators after an external Google Forms review. Profile settings never expose an in-product request form or request status; verified accounts simply receive the public badge across identity surfaces.
 
+### Account settings
+
+- Settings use the same 38px horizontal tab anatomy as game pages: General, Profile, and Security. General owns immutable account identity, birth date, and owner-only infraction standing; Profile owns public copy, imagery, and social usernames; Security owns passkey management.
+- Social fields accept usernames only for YouTube, Instagram, and Twitter/X. Public profiles construct safe canonical links and keep them in a compact secondary action row.
+- Passkeys use Supabase Auth's experimental passkey API to list, register, and remove device credentials. Security copy explains the device-bound private key and exposes unsupported/disabled states inline.
+- Share actions use the native Web Share sheet when available and copy the canonical current URL otherwise. Profile reports use one Radix modal, write to the existing owner-readable reports table, and never render a report action against oneself.
+- Mobile profiles preserve the banner/avatar focal point, keep identity actions in normal flow, move social/share/report actions full-width below identity, and turn the six metrics into a contained horizontal snap rail instead of squeezing labels.
+
 ### Search recents
 
 - Opening an empty global search shows up to six recently selected games stored only in browser local storage. Rows reuse the standard search result anatomy and include an explicit clear action.

@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { ProfileSettingsPanel } from "@/components/settings/profile-settings-panel";
+import { AccountSettings } from "@/components/settings/account-settings";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../dictionaries";
 
@@ -15,13 +15,25 @@ export default async function ProfileSettingsPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect(`/${lang}/login?next=/${lang}/settings/profile`);
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select(
-      "username,display_name,pronouns,bio,avatar_url,banner_url,birth_date",
-    )
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, { count: infractions }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select(
+        "username,display_name,pronouns,bio,avatar_url,banner_url,birth_date,youtube_username,instagram_username,twitter_username",
+      )
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("profile_infractions")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", user.id),
+  ]);
   if (!profile?.username) redirect(`/${lang}/onboarding/username`);
-  return <ProfileSettingsPanel initial={profile} lang={lang} />;
+  return (
+    <AccountSettings
+      profile={profile}
+      infractions={infractions ?? 0}
+      lang={lang}
+    />
+  );
 }

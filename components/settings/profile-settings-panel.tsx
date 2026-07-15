@@ -2,21 +2,13 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import {
-  CalendarDays,
-  ImageIcon,
-  LoaderCircle,
-  LockKeyhole,
-  Save,
-  Trash2,
-  Upload,
-} from "lucide-react";
+import { ImageIcon, LoaderCircle, Save, Trash2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageCropDialog } from "./image-crop-dialog";
 
-type Profile = {
+export type Profile = {
   username: string;
   display_name: string | null;
   pronouns: string | null;
@@ -24,6 +16,9 @@ type Profile = {
   avatar_url: string | null;
   banner_url: string | null;
   birth_date: string;
+  youtube_username: string | null;
+  instagram_username: string | null;
+  twitter_username: string | null;
 };
 
 export function ProfileSettingsPanel({
@@ -70,6 +65,9 @@ export function ProfileSettingsPanel({
     const displayName = String(values.get("displayName") ?? "").trim();
     const pronouns = String(values.get("pronouns") ?? "").trim();
     const bio = String(values.get("bio") ?? "").trim();
+    const youtube = String(values.get("youtube") ?? "").trim();
+    const instagram = String(values.get("instagram") ?? "").trim();
+    const twitter = String(values.get("twitter") ?? "").trim();
     if (displayName.length > 80 || pronouns.length > 30 || bio.length > 500) {
       setError(
         pt
@@ -87,6 +85,9 @@ export function ProfileSettingsPanel({
         new_display_name: displayName,
         new_pronouns: pronouns,
         new_bio: bio,
+        new_youtube_username: youtube,
+        new_instagram_username: instagram,
+        new_twitter_username: twitter,
       },
     );
     if (actionError || !data)
@@ -101,6 +102,9 @@ export function ProfileSettingsPanel({
         display_name: displayName || null,
         pronouns: pronouns || null,
         bio: bio || null,
+        youtube_username: youtube.replace(/^@/, "") || null,
+        instagram_username: instagram.replace(/^@/, "") || null,
+        twitter_username: twitter.replace(/^@/, "") || null,
       }));
       setMessage(pt ? "Perfil atualizado." : "Profile updated.");
       router.refresh();
@@ -180,6 +184,41 @@ export function ProfileSettingsPanel({
             }
           />
         </label>
+        <fieldset className="profile-social-fields">
+          <legend>{pt ? "Redes sociais" : "Social networks"}</legend>
+          <p>
+            {pt
+              ? "Informe apenas o nome de usuário. Os links são montados automaticamente."
+              : "Enter only the username. Links are built automatically."}
+          </p>
+          <label>
+            <span className="social-network-mark">YT</span> YouTube
+            <input
+              name="youtube"
+              defaultValue={profile.youtube_username ?? ""}
+              maxLength={100}
+              placeholder="seucanal"
+            />
+          </label>
+          <label>
+            <span className="social-network-mark">IG</span> Instagram
+            <input
+              name="instagram"
+              defaultValue={profile.instagram_username ?? ""}
+              maxLength={30}
+              placeholder="seuusuario"
+            />
+          </label>
+          <label>
+            <span className="social-x-mark">X</span> Twitter / X
+            <input
+              name="twitter"
+              defaultValue={profile.twitter_username ?? ""}
+              maxLength={15}
+              placeholder="seuusuario"
+            />
+          </label>
+        </fieldset>
         <div className="profile-form-footer">
           <span>{message}</span>
           <button type="submit" disabled={Boolean(pending)}>
@@ -311,28 +350,6 @@ export function ProfileSettingsPanel({
           accept="image/jpeg,image/png,image/webp"
           onChange={(event) => chooseImage(event.target.files?.[0], "banner")}
         />
-      </section>
-      <section className="profile-birth-date-setting">
-        <span>
-          <CalendarDays size={20} />
-        </span>
-        <div>
-          <h2>{pt ? "Data de nascimento" : "Birth date"}</h2>
-          <strong>
-            {new Intl.DateTimeFormat(lang, {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-              timeZone: "UTC",
-            }).format(new Date(`${profile.birth_date}T00:00:00Z`))}
-          </strong>
-          <p>
-            <LockKeyhole size={13} />
-            {pt
-              ? "Informação privada e permanente. Não pode ser alterada depois da confirmação."
-              : "Private and permanent information. It cannot be changed after confirmation."}
-          </p>
-        </div>
       </section>
       {error && (
         <div className="auth-error" role="alert">

@@ -34,6 +34,7 @@ import { getActivity } from "@/lib/social";
 import { getSpawndGame } from "@/lib/spawnd";
 import { SpawndLogo } from "@/components/spawnd-logo";
 import { hasLocale } from "../../dictionaries";
+import { ShareButton } from "@/components/share-button";
 
 type Props = PageProps<"/[lang]/game/[slug]">;
 
@@ -233,6 +234,17 @@ export default async function GamePage({ params }: Props) {
               <span>{game.releaseYear ?? "TBA"}</span>
             </div>
             <h1>{game.name}</h1>
+            <ShareButton
+              className="game-share-action"
+              title={`${game.name} · uloggd`}
+              text={
+                lang === "pt-BR"
+                  ? `Veja ${game.name} no uloggd`
+                  : `See ${game.name} on uloggd`
+              }
+              label={lang === "pt-BR" ? "Compartilhar jogo" : "Share game"}
+              copiedLabel={lang === "pt-BR" ? "Link copiado" : "Link copied"}
+            />
             <GameActionPanel
               game={game}
               initial={state}

@@ -5131,6 +5131,421 @@ html[data-sidebar-ready] .account-button > svg {
   color: #ffaaa4;
 }
 
+/* Account settings workspace and public identity actions. */
+.account-settings-page {
+  width: 100%;
+  max-width: 980px;
+  padding: 36px 36px 64px;
+}
+.account-settings-heading {
+  max-width: 620px;
+  margin-bottom: 22px;
+}
+.account-settings-heading > span {
+  color: var(--brand-blurple-bright);
+  font: 650 9px var(--font-inter);
+  letter-spacing: 0.1em;
+}
+.account-settings-heading h1 {
+  margin: 7px 0 0;
+  color: var(--screen-white);
+  font-size: 30px;
+  letter-spacing: -0.045em;
+}
+.account-settings-heading p {
+  margin: 8px 0 0;
+  color: var(--screen-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.account-settings-tabs {
+  margin: 0 0 22px;
+}
+.account-settings-panel {
+  min-width: 0;
+}
+.settings-general-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.settings-account-card {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 13px;
+  padding: 18px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: rgb(255 255 255 / 2%);
+}
+.settings-account-card:last-child {
+  grid-column: 1 / -1;
+}
+.settings-account-card > span,
+.settings-security-card > header > span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-dim);
+}
+.settings-account-card[data-safe] > span {
+  color: var(--safe-green);
+}
+.settings-account-card small {
+  color: var(--screen-muted);
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+}
+.settings-account-card strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--screen-white);
+  font-size: 14px;
+  font-weight: 620;
+}
+.settings-account-card p {
+  margin: 5px 0 0;
+  color: var(--screen-muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+.profile-social-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 4px 20px 0;
+  padding: 16px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+}
+.profile-social-fields legend {
+  padding: 0 6px;
+  color: var(--screen-white);
+  font-size: 11px;
+  font-weight: 620;
+}
+.profile-social-fields > p {
+  grid-column: 1 / -1;
+  margin: 0 0 4px;
+  color: var(--screen-muted);
+  font-size: 9px;
+}
+.profile-social-fields label {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  align-items: center;
+  gap: 6px;
+}
+.profile-social-fields input {
+  grid-column: 1 / -1;
+}
+.social-x-mark {
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.settings-security-card {
+  padding: 20px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: rgb(255 255 255 / 2%);
+}
+.settings-security-card > header {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 13px;
+}
+.settings-security-card h2 {
+  margin: 0;
+  color: var(--screen-white);
+  font-size: 17px;
+}
+.settings-security-card header p {
+  max-width: 600px;
+  margin: 5px 0 0;
+  color: var(--screen-muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+.settings-passkey-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+}
+.settings-passkey-list article {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 9px;
+  border-radius: 8px;
+  background: var(--console-inset);
+}
+.settings-passkey-list article > span {
+  display: grid;
+  place-items: center;
+  color: var(--brand-blurple-bright);
+}
+.settings-passkey-list strong,
+.settings-passkey-list small {
+  display: block;
+}
+.settings-passkey-list strong {
+  color: var(--screen-white);
+  font-size: 11px;
+}
+.settings-passkey-list small {
+  margin-top: 3px;
+  color: var(--screen-muted);
+  font-size: 8px;
+}
+.settings-passkey-list button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #e2aaaa;
+  cursor: pointer;
+}
+.settings-passkey-list button:hover {
+  background: rgb(210 105 105 / 10%);
+}
+.settings-passkey-empty,
+.settings-passkey-loading {
+  margin: 18px 0 0;
+  padding: 18px;
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.settings-passkey-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  margin-top: 14px;
+  padding: 0 12px;
+  border: 1px solid rgb(88 101 242 / 42%);
+  border-radius: 7px;
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
+  font-size: 10px;
+  font-weight: 620;
+  cursor: pointer;
+}
+.settings-security-error {
+  color: #e2aaaa;
+  font-size: 9px;
+}
+.profile-secondary-actions,
+.profile-social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.quiet-icon-action,
+.profile-social-links a,
+.game-share-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--shell-line);
+  border-radius: 7px;
+  background: rgb(255 255 255 / 3%);
+  color: var(--screen-muted);
+  font-size: 9px;
+  cursor: pointer;
+}
+.quiet-icon-action:hover,
+.profile-social-links a:hover,
+.game-share-action:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.game-share-action {
+  margin: -3px 0 10px;
+}
+.report-dialog {
+  position: fixed;
+  z-index: 101;
+  top: 50%;
+  left: 50%;
+  width: min(480px, calc(100vw - 28px));
+  max-height: calc(100dvh - 28px);
+  overflow-y: auto;
+  padding: 18px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--console-raised);
+  box-shadow: 0 24px 70px rgb(0 0 0 / 52%);
+  transform: translate(-50%, -50%);
+}
+.report-dialog > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.report-dialog header span {
+  color: var(--brand-blurple-bright);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+.report-dialog h2 {
+  margin: 5px 0 0;
+  color: var(--screen-white);
+  font-size: 18px;
+}
+.report-dialog header button {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--screen-muted);
+}
+.report-dialog form,
+.report-dialog fieldset {
+  display: grid;
+  gap: 10px;
+}
+.report-dialog form {
+  margin-top: 18px;
+}
+.report-dialog fieldset {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+}
+.report-dialog legend {
+  padding: 0 5px;
+  color: var(--screen-dim);
+  font-size: 10px;
+}
+.report-dialog label {
+  display: grid;
+  gap: 6px;
+  color: var(--screen-dim);
+  font-size: 10px;
+}
+.report-dialog fieldset label {
+  display: flex;
+  align-items: center;
+}
+.report-dialog textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  resize: vertical;
+}
+.report-dialog form > button {
+  min-height: 38px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--brand-blurple);
+  color: white;
+  font-size: 10px;
+  font-weight: 620;
+}
+.report-success {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 36px 16px 22px;
+  color: var(--safe-green);
+  text-align: center;
+}
+.report-success strong {
+  color: var(--screen-white);
+}
+.report-success p {
+  margin: 0;
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+
+@media (max-width: 620px) {
+  .account-settings-page {
+    padding: 24px 14px 48px;
+  }
+  .account-settings-tabs {
+    position: sticky;
+    z-index: 8;
+    top: 0;
+    margin-inline: -2px;
+    background: var(--console-canvas);
+  }
+  .settings-general-grid {
+    grid-template-columns: 1fr;
+  }
+  .settings-account-card:last-child {
+    grid-column: auto;
+  }
+  .profile-social-fields {
+    grid-template-columns: 1fr;
+    margin-inline: 14px;
+  }
+  .profile-social-fields > p {
+    grid-column: auto;
+  }
+  .profile-title-row {
+    min-width: 0;
+  }
+  .profile-title-row > div {
+    min-width: 0;
+  }
+  .profile-verified-title h1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .profile-secondary-actions {
+    grid-column: 1 / -1;
+  }
+  .profile-social-links {
+    grid-column: 1 / -1;
+  }
+  .profile-stats {
+    overflow-x: auto;
+    grid-template-columns: repeat(6, minmax(86px, 1fr));
+    padding-bottom: 12px;
+    scroll-snap-type: x proximity;
+  }
+  .profile-stats > div {
+    scroll-snap-align: start;
+  }
+  .report-dialog {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: calc(100dvh - 24px);
+    border-radius: 14px 14px 0 0;
+    transform: none;
+  }
+  .report-dialog fieldset {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Library native-feeling controls and mutation motion. */
 .library-sort-trigger {
   display: inline-flex;
