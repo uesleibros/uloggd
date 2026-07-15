@@ -1,7 +1,19 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { BookOpen, CalendarPlus, ListPlus, Trash2, X } from "lucide-react";
+import * as Select from "@radix-ui/react-select";
+import {
+  BookOpen,
+  CalendarPlus,
+  Check,
+  ChevronDown,
+  Eye,
+  ListPlus,
+  Lock,
+  Trash2,
+  Users,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
@@ -40,6 +52,14 @@ export function GameLogActions({
     initialReview?.rating ?? initialRating ?? 80,
   );
   const [pending, setPending] = useState(false);
+  const [content, setContent] = useState(initialReview?.content ?? "");
+  const [spoilers, setSpoilers] = useState(
+    initialReview?.contains_spoilers ?? false,
+  );
+  const [visibility, setVisibility] = useState(
+    initialReview?.visibility ?? "PUBLIC",
+  );
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -55,9 +75,9 @@ export function GameLogActions({
         game_id: game.id,
         game_slug: game.slug,
         review_rating: rating,
-        review_content: String(formData.get("content") ?? ""),
-        spoilers: formData.get("spoilers") === "on",
-        review_visibility: formData.get("visibility"),
+        review_content: content,
+        spoilers,
+        review_visibility: visibility,
       });
     } else if (mode === "diary") {
       const minutes = String(formData.get("minutes") ?? "");
@@ -85,6 +105,8 @@ export function GameLogActions({
       );
     } else {
       setSuccess(pt ? "Salvo na sua jornada." : "Saved to your journey.");
+      if (mode === "review")
+        localStorage.removeItem(`uloggd:review-draft:${game.id}`);
       router.refresh();
       window.setTimeout(() => setOpen(false), 420);
     }
@@ -92,12 +114,7 @@ export function GameLogActions({
   }
 
   async function removeReview() {
-    if (
-      !initialReview ||
-      pending ||
-      !window.confirm(pt ? "Remover esta avaliação?" : "Remove this review?")
-    )
-      return;
+    if (!initialReview || pending) return;
     setPending(true);
     setError(null);
     const { data, error: actionError } = await createClient().rpc(
@@ -126,6 +143,11 @@ export function GameLogActions({
     setError(null);
     setSuccess(null);
     setMode(nextMode);
+    if (nextMode === "review" && !initialReview) {
+      const draft = localStorage.getItem(`uloggd:review-draft:${game.id}`);
+      if (draft) setContent(draft);
+    }
+    setConfirmingDelete(false);
     setOpen(true);
   }
 
@@ -196,14 +218,30 @@ export function GameLogActions({
                         onChange={(value) => value !== null && setRating(value)}
                         lang={lang}
                       />
+                      <strong className="review-rating-copy">
+                        {(rating / 20).toLocaleString(lang)} / 5 ·{" "}
+                        {ratingLabel(rating, pt)}
+                      </strong>
                     </label>
-                    <label>
-                      <span>{pt ? "Avaliação" : "Review"}</span>
+                    <label className="review-writing-field">
+                      <span>
+                        <b>{pt ? "Sua avaliação" : "Your review"}</b>
+                        <small>
+                          {content.length.toLocaleString(lang)} / 5.000
+                        </small>
+                      </span>
                       <textarea
                         name="content"
                         maxLength={5000}
                         rows={8}
-                        defaultValue={initialReview?.content ?? ""}
+                        value={content}
+                        onChange={(event) => {
+                          setContent(event.target.value);
+                          localStorage.setItem(
+                            `uloggd:review-draft:${game.id}`,
+                            event.target.value,
+                          );
+                        }}
                         placeholder={
                           pt
                             ? "O que funcionou? O que ficou com você?"
@@ -272,34 +310,27 @@ export function GameLogActions({
                     </p>
                   ))}
                 {mode !== "list" && (
-                  <div className="social-form-row social-form-options">
+                  <div
+                    key={mode}
+                    className="social-form-row social-form-options"
+                  >
                     <label>
                       <span>{pt ? "Visibilidade" : "Visibility"}</span>
-                      <select
-                        name="visibility"
-                        defaultValue={
-                          mode === "review"
-                            ? (initialReview?.visibility ?? "PUBLIC")
-                            : "PUBLIC"
-                        }
-                      >
-                        <option value="PUBLIC">
-                          {pt ? "Público" : "Public"}
-                        </option>
-                        <option value="FOLLOWERS">
-                          {pt ? "Seguidores" : "Followers"}
-                        </option>
-                        <option value="PRIVATE">
-                          {pt ? "Privado" : "Private"}
-                        </option>
-                      </select>
+                      <EditorVisibilitySelect
+                        value={mode === "review" ? visibility : "PUBLIC"}
+                        onChange={mode === "review" ? setVisibility : undefined}
+                        pt={pt}
+                      />
                     </label>
                     <label className="social-check">
                       <input
                         type="checkbox"
                         name="spoilers"
-                        defaultChecked={
-                          mode === "review" && initialReview?.contains_spoilers
+                        checked={mode === "review" ? spoilers : undefined}
+                        onChange={
+                          mode === "review"
+                            ? (event) => setSpoilers(event.target.checked)
+                            : undefined
                         }
                       />{" "}
                       <span>
@@ -319,16 +350,37 @@ export function GameLogActions({
                   </p>
                 )}
                 <footer>
-                  {mode === "review" && initialReview && (
-                    <button
-                      className="social-delete-button"
-                      type="button"
-                      onClick={removeReview}
-                      disabled={pending}
-                    >
-                      <Trash2 size={14} /> {pt ? "Remover" : "Remove"}
-                    </button>
-                  )}
+                  {mode === "review" &&
+                    initialReview &&
+                    (confirmingDelete ? (
+                      <div className="review-delete-confirm">
+                        <span>
+                          {pt ? "Remover de vez?" : "Delete permanently?"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmingDelete(false)}
+                        >
+                          {pt ? "Não" : "No"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={removeReview}
+                          disabled={pending}
+                        >
+                          {pt ? "Sim, remover" : "Yes, delete"}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className="social-delete-button"
+                        type="button"
+                        onClick={() => setConfirmingDelete(true)}
+                        disabled={pending}
+                      >
+                        <Trash2 size={14} /> {pt ? "Remover" : "Remove"}
+                      </button>
+                    ))}
                   <Dialog.Close type="button">
                     {pt ? "Cancelar" : "Cancel"}
                   </Dialog.Close>
@@ -351,5 +403,76 @@ export function GameLogActions({
         </Dialog.Portal>
       </Dialog.Root>
     </>
+  );
+}
+
+function ratingLabel(rating: number, pt: boolean) {
+  if (rating >= 90) return pt ? "Excepcional" : "Exceptional";
+  if (rating >= 80) return pt ? "Ótimo" : "Great";
+  if (rating >= 70) return pt ? "Muito bom" : "Very good";
+  if (rating >= 60) return pt ? "Bom" : "Good";
+  if (rating >= 40) return pt ? "Regular" : "Mixed";
+  return pt ? "Não funcionou para mim" : "Not for me";
+}
+
+function EditorVisibilitySelect({
+  value,
+  onChange,
+  pt,
+}: {
+  value: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+  onChange?: (value: "PUBLIC" | "FOLLOWERS" | "PRIVATE") => void;
+  pt: boolean;
+}) {
+  const options = [
+    { value: "PUBLIC" as const, label: pt ? "Público" : "Public", icon: Eye },
+    {
+      value: "FOLLOWERS" as const,
+      label: pt ? "Seguidores" : "Followers",
+      icon: Users,
+    },
+    {
+      value: "PRIVATE" as const,
+      label: pt ? "Privado" : "Private",
+      icon: Lock,
+    },
+  ];
+  return (
+    <Select.Root
+      name="visibility"
+      value={value}
+      onValueChange={(next) => onChange?.(next as typeof value)}
+    >
+      <Select.Trigger className="editor-select-trigger">
+        <Select.Value />
+        <Select.Icon>
+          <ChevronDown size={14} />
+        </Select.Icon>
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Content
+          className="editor-select-menu"
+          position="popper"
+          sideOffset={6}
+          collisionPadding={12}
+        >
+          <Select.Viewport>
+            {options.map(({ value: option, label, icon: Icon }) => (
+              <Select.Item
+                className="editor-select-option"
+                key={option}
+                value={option}
+              >
+                <Icon size={14} />
+                <Select.ItemText>{label}</Select.ItemText>
+                <Select.ItemIndicator>
+                  <Check size={13} />
+                </Select.ItemIndicator>
+              </Select.Item>
+            ))}
+          </Select.Viewport>
+        </Select.Content>
+      </Select.Portal>
+    </Select.Root>
   );
 }

@@ -106,6 +106,12 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Every native button and button-like action link receives a low-specificity motion baseline: 150ms ease-out hover lift/brightness, 90–130ms `scale(.97)` press feedback, animated focus shadow, muted disabled state, and a short icon confirmation when `aria-pressed` becomes true.
 - Component-specific motion overrides the baseline through normal CSS specificity; repetitive or precision controls can opt out with `data-motion="none"`. Reduced-motion removes transforms and animations globally while preserving immediate color/opacity feedback.
 
+### Reviews
+
+- Review writing is an editorial state inside the shared journal Radix modal: rating leads in a gold-tinted focus surface with a plain-language descriptor, followed by a controlled 5,000-character writing field and live counter.
+- New review text persists as a local per-IGDB draft until a successful save. Spoiler and visibility choices remain stable while switching editor tabs; visibility uses the shared Radix Select language rather than a native browser select.
+- Destructive review removal uses an inline two-step confirmation in the sticky footer, never a blocking browser confirm. The review history starts with review count, average rating, session count, and spoiler count; review entries use an inset editorial card distinct from diary rows.
+
 ## Navigation Patterns
 
 ### Desktop sidebar

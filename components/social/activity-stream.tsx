@@ -57,7 +57,11 @@ export function ActivityStream({
   return (
     <div className="activity-stream">
       {entries.map((entry) => (
-        <article className="activity-entry" key={`${entry.kind}-${entry.id}`}>
+        <article
+          className="activity-entry"
+          data-kind={entry.kind}
+          key={`${entry.kind}-${entry.id}`}
+        >
           <Link
             className="activity-cover"
             href={`/${lang}/game/${entry.gameSlug}`}

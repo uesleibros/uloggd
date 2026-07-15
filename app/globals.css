@@ -5131,6 +5131,186 @@ html[data-sidebar-ready] .account-button > svg {
   color: #ffaaa4;
 }
 
+/* Professional review writing and reading surfaces. */
+.reviews-overview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: -8px 0 30px;
+}
+.reviews-overview > div {
+  padding: 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: rgb(255 255 255 / 2%);
+}
+.reviews-overview dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--screen-muted);
+  font-size: 9px;
+}
+.reviews-overview dt svg {
+  color: var(--brand-blurple-bright);
+}
+.reviews-overview dd {
+  margin: 7px 0 0;
+  color: var(--screen-white);
+  font-size: 19px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.activity-entry[data-kind="review"] {
+  position: relative;
+  padding: 18px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: rgb(255 255 255 / 2%);
+}
+.activity-entry[data-kind="review"] + .activity-entry {
+  border-top: 1px solid var(--shell-line);
+}
+.activity-entry[data-kind="review"] .activity-rating {
+  width: fit-content;
+  min-height: 30px;
+  padding: 0 9px;
+  border-radius: 7px;
+  background: rgb(211 181 91 / 10%);
+  color: var(--achievement-gold);
+}
+.social-rating-field {
+  padding: 16px;
+  border: 1px solid rgb(211 181 91 / 18%);
+  border-radius: 10px;
+  background: rgb(211 181 91 / 5%);
+}
+.review-rating-copy {
+  color: var(--achievement-gold);
+  font-size: 11px;
+  font-weight: 620;
+}
+.review-writing-field > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.review-writing-field > span b {
+  color: var(--screen-dim);
+  font-size: 11px;
+}
+.review-writing-field > span small {
+  color: var(--screen-muted);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+.review-writing-field textarea {
+  min-height: 190px;
+}
+.editor-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font-size: 12px;
+  cursor: pointer;
+}
+.editor-select-trigger[data-state="open"] svg {
+  transform: rotate(180deg);
+}
+.editor-select-trigger svg {
+  transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.editor-select-menu {
+  z-index: 110;
+  min-width: var(--radix-select-trigger-width);
+  padding: 5px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  box-shadow: 0 16px 42px rgb(0 0 0 / 42%);
+  transform-origin: var(--radix-select-content-transform-origin);
+  animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.editor-select-option {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: 5px;
+  outline: 0;
+  color: var(--screen-dim);
+  font-size: 10px;
+  cursor: pointer;
+}
+.editor-select-option[data-highlighted] {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.editor-select-option[data-state="checked"] {
+  color: #d8d2ff;
+}
+.review-delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: auto;
+  padding: 4px;
+  border: 1px solid rgb(210 105 105 / 22%);
+  border-radius: 8px;
+  background: rgb(210 105 105 / 7%);
+}
+.review-delete-confirm span {
+  padding: 0 5px;
+  color: #e2aaaa;
+  font-size: 9px;
+}
+.review-delete-confirm button {
+  min-height: 30px !important;
+  padding-inline: 8px !important;
+}
+.review-delete-confirm button:last-child {
+  background: rgb(210 105 105 / 18%) !important;
+  color: #ffc1bc !important;
+}
+@media (max-width: 620px) {
+  .reviews-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 22px;
+  }
+  .activity-entry[data-kind="review"] {
+    grid-template-columns: 52px minmax(0, 1fr);
+    margin-inline: 0;
+    padding: 14px;
+  }
+  .social-rating-field {
+    padding: 13px;
+  }
+  .review-writing-field textarea {
+    min-height: 220px;
+  }
+  .review-delete-confirm {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .review-delete-confirm span {
+    flex: 1;
+  }
+  .review-delete-confirm button {
+    flex: 1;
+  }
+}
+
 /* Site-wide interaction baseline: no dry button states. */
 :where(
   button:not([data-motion="none"]),

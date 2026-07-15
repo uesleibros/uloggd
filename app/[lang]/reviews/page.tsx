@@ -1,4 +1,4 @@
-import { BookOpen } from "lucide-react";
+import { BookOpen, CalendarDays, EyeOff, Star } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ActivityStream } from "@/components/social/activity-stream";
@@ -30,6 +30,13 @@ export default async function ReviewsPage({
     activeType === "all"
       ? entries
       : entries.filter((entry) => entry.kind === activeType);
+  const reviews = entries.filter((entry) => entry.kind === "review");
+  const sessions = entries.filter((entry) => entry.kind === "diary");
+  const average = reviews.length
+    ? reviews.reduce((sum, entry) => sum + (entry.rating ?? 0), 0) /
+      reviews.length /
+      20
+    : null;
   const pt = lang === "pt-BR";
   return (
     <main className="social-page">
@@ -44,6 +51,40 @@ export default async function ReviewsPage({
             : "Every session and opinion that shapes your journey."}
         </p>
       </header>
+      <dl className="reviews-overview">
+        <div>
+          <dt>
+            <BookOpen size={14} />
+            {pt ? "Avaliações" : "Reviews"}
+          </dt>
+          <dd>{reviews.length}</dd>
+        </div>
+        <div>
+          <dt>
+            <Star size={14} />
+            {pt ? "Nota média" : "Average rating"}
+          </dt>
+          <dd>
+            {average === null
+              ? "—"
+              : `${average.toLocaleString(lang, { maximumFractionDigits: 1 })}/5`}
+          </dd>
+        </div>
+        <div>
+          <dt>
+            <CalendarDays size={14} />
+            {pt ? "Sessões" : "Sessions"}
+          </dt>
+          <dd>{sessions.length}</dd>
+        </div>
+        <div>
+          <dt>
+            <EyeOff size={14} />
+            {pt ? "Com spoilers" : "With spoilers"}
+          </dt>
+          <dd>{reviews.filter((entry) => entry.spoilers).length}</dd>
+        </div>
+      </dl>
       <nav
         className="social-filter-tabs"
         aria-label={pt ? "Filtrar registros" : "Filter entries"}
