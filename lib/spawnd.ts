@@ -1,4 +1,4 @@
-import spawndCatalog from "@/data/spawnd-games.json";
+import spawndCatalogJson from "@/data/spawnd-games.json";
 
 const SPAWND_ORIGIN = "https://www.spawnd.gg";
 
@@ -33,33 +33,55 @@ type SpawndReference = {
   embedId?: number;
 };
 
-const catalog = spawndCatalog as SpawndCatalog;
+type GetSpawndGameParams = {
+  igdbId: number;
+  name: string;
+  websites?: string[];
+  lang: SupportedLanguage;
+};
 
-const gamesByIgdbId = new Map<number, SpawndCatalogGame>(
-  catalog.games
-    .filter(
-      (
-        game,
-      ): game is SpawndCatalogGame & {
-        igdb_id: number;
-      } => game.igdb_id !== null,
-    )
-    .map((game) => [game.igdb_id, game]),
-);
+const spawndCatalog = spawndCatalogJson as SpawndCatalog;
+
+const gamesByIgdbId =
+  spawndCatalog.by_igdb_id ??
+  Object.fromEntries(
+    spawndCatalog.games
+      .filter(
+        (
+          game,
+        ): game is SpawndCatalogGame & {
+          igdb_id: number;
+        } => game.igdb_id !== null,
+      )
+      .map((game) => [String(game.igdb_id), game]),
+  );
 
 const gamesBySlug = new Map<string, SpawndCatalogGame>(
-  catalog.games.map((game) => [
-    game.slug.toLowerCase(),
+  spawndCatalog.games.map((game) => [
+    game.slug.trim().toLowerCase(),
     game,
   ]),
 );
 
-const gamesByName = new Map<string, SpawndCatalogGame>(
-  catalog.games.map((game) => [
-    normalizeGameName(game.name),
+const gamesBySpawndId = new Map<number, SpawndCatalogGame>(
+  spawndCatalog.games.map((game) => [
+    game.spawnd_id,
     game,
   ]),
 );
+
+const gamesByName = new Map<string, SpawndCatalogGame>();
+
+for (const game of spawndCatalog.games) {
+  const normalizedName = normalizeGameName(game.name);
+
+  if (gamesByName.has(normalizedName)) {
+    gamesByName.delete(normalizedName);
+    continue;
+  }
+
+  gamesByName.set(normalizedName, game);
+}
 
 function normalizeGameName(value: string) {
   return value
@@ -94,8 +116,14 @@ function spawndReference(
     );
 
     if (embedMatch) {
+      const embedId = Number(embedMatch[1]);
+
+      if (!Number.isSafeInteger(embedId) || embedId <= 0) {
+        return null;
+      }
+
       return {
-        embedId: Number(embedMatch[1]),
+        embedId,
       };
     }
 
@@ -126,10 +154,7 @@ function findGameByWebsite(
     }
 
     if (reference.embedId !== undefined) {
-      const game = catalog.games.find(
-        (item) =>
-          item.spawnd_id === reference.embedId,
-      );
+      const game = gamesBySpawndId.get(reference.embedId);
 
       if (game) {
         return game;
@@ -138,7 +163,7 @@ function findGameByWebsite(
 
     if (reference.slug) {
       const game = gamesBySlug.get(
-        reference.slug.toLowerCase(),
+        reference.slug.trim().toLowerCase(),
       );
 
       if (game) {
@@ -150,21 +175,20 @@ function findGameByWebsite(
   return null;
 }
 
+function getLocale(lang: SupportedLanguage) {
+  return lang === "pt-BR" ? "pt" : "en";
+}
+
 export function getSpawndGame({
   igdbId,
   name,
   websites = [],
   lang,
-}: {
-  igdbId: number;
-  name: string;
-  websites?: string[];
-  lang: SupportedLanguage;
-}) {
-  const locale = lang === "pt-BR" ? "pt" : "en";
+}: GetSpawndGameParams) {
+  const locale = getLocale(lang);
 
   const game =
-    gamesByIgdbId.get(igdbId) ??
+    gamesByIgdbId[String(igdbId)] ??
     findGameByWebsite(websites) ??
     gamesByName.get(normalizeGameName(name)) ??
     null;
@@ -199,8 +223,9 @@ export function getSpawndGame({
           description:
             game.embed_description ??
             game.description,
-          platforms: game.platforms,
           status: game.status,
+          gameType: game.game_type,
+          platforms: game.platforms,
           stores: game.stores,
           wishlistUrl: game.wishlist_url,
         }
