@@ -108,7 +108,9 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 ### Reviews
 
-- Review writing is an editorial state inside the shared journal Radix modal: rating leads in a gold-tinted focus surface with a plain-language descriptor, followed by a controlled 5,000-character writing field and live counter.
+- Review writing is a dedicated experience studio inside the shared journal Radix modal. A new review always begins unrated; quick-rating state never leaks into the editor. The user explicitly chooses stars (half steps), five levels, 0–10 points, 0–100 precision, or recommend/do-not-recommend, while storage normalizes numeric methods to 0–100.
+- The studio divides Review, Aspects, and Details without turning them into required steps. Rating and prose lead; up to eight optional aspect tracks add independent 0–100 judgments and short notes; mastered, replay, platform, dates, spoilers, and visibility remain secondary details.
+- Desktop uses a 780px focused sheet with a sticky internal section rail. Mobile becomes a near-full-height bottom sheet with compact header, reachable sticky commit actions, horizontal preset rail, and single-column aspect/detail controls.
 - New review text persists as a local per-IGDB draft until a successful save. Spoiler and visibility choices remain stable while switching editor tabs; visibility uses the shared Radix Select language rather than a native browser select.
 - Destructive review removal uses an inline two-step confirmation in the sticky footer, never a blocking browser confirm. The review history starts with review count, average rating, session count, and spoiler count; review entries use an inset editorial card distinct from diary rows.
 

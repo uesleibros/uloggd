@@ -1,6 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, Clock3, EyeOff, Star } from "lucide-react";
+import {
+  CalendarDays,
+  Check,
+  Clock3,
+  EyeOff,
+  Star,
+  Trophy,
+  X,
+} from "lucide-react";
 import type { Game } from "@/lib/igdb";
 import { ActivityEntryActions } from "./activity-entry-actions";
 import { VerifiedBadge } from "../verified-badge";
@@ -19,6 +27,13 @@ export type SocialEntry = {
   gameSlug: string;
   game: Game | null;
   rating?: number;
+  ratingMode?: "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
+  recommended?: boolean | null;
+  title?: string | null;
+  aspects?: Array<{ label: string; rating: number; note?: string | null }>;
+  mastered?: boolean;
+  replay?: boolean;
+  platform?: string | null;
   content?: string | null;
   playedOn?: string;
   minutes?: number | null;
@@ -121,12 +136,47 @@ export function ActivityStream({
             {entry.kind === "review" && typeof entry.rating === "number" && (
               <div
                 className="activity-rating"
-                aria-label={`${entry.rating / 20} / 5`}
+                aria-label={formatActivityRating(
+                  entry.rating,
+                  entry.ratingMode,
+                  lang,
+                )}
               >
-                <Star size={14} fill="currentColor" />{" "}
-                {(entry.rating / 20).toLocaleString(lang)}
+                {entry.ratingMode === "recommend" ? (
+                  entry.recommended ? (
+                    <Check size={14} />
+                  ) : (
+                    <X size={14} />
+                  )
+                ) : (
+                  <Star size={14} fill="currentColor" />
+                )}{" "}
+                {entry.ratingMode === "recommend"
+                  ? entry.recommended
+                    ? pt
+                      ? "Recomendo"
+                      : "Recommended"
+                    : pt
+                      ? "Não recomendo"
+                      : "Not recommended"
+                  : formatActivityRating(entry.rating, entry.ratingMode, lang)}
               </div>
             )}
+            {entry.kind === "review" && entry.title && (
+              <h3 className="activity-review-title">{entry.title}</h3>
+            )}
+            {entry.kind === "review" &&
+              (entry.mastered || entry.replay || entry.platform) && (
+                <div className="activity-meta activity-review-meta">
+                  {entry.mastered && (
+                    <span>
+                      <Trophy size={13} /> {pt ? "Dominado" : "Mastered"}
+                    </span>
+                  )}
+                  {entry.replay && <span>{pt ? "Rejogada" : "Replay"}</span>}
+                  {entry.platform && <span>{entry.platform}</span>}
+                </div>
+              )}
             {entry.kind === "diary" && (
               <div className="activity-meta">
                 <span>
@@ -156,6 +206,18 @@ export function ActivityStream({
               ) : (
                 <p className="activity-content">{entry.content}</p>
               ))}
+            {entry.kind === "review" &&
+              entry.aspects &&
+              entry.aspects.length > 0 && (
+                <dl className="activity-aspects">
+                  {entry.aspects.map((aspect) => (
+                    <div key={aspect.label}>
+                      <dt>{aspect.label}</dt>
+                      <dd>{aspect.rating}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
             {viewerId === entry.profileId && (
               <ActivityEntryActions
                 id={entry.id}
@@ -174,4 +236,16 @@ export function ActivityStream({
       ))}
     </div>
   );
+}
+
+function formatActivityRating(
+  rating: number,
+  mode: SocialEntry["ratingMode"],
+  lang: "pt-BR" | "en",
+) {
+  if (mode === "score_100") return `${rating}/100`;
+  if (mode === "score_10")
+    return `${(rating / 10).toLocaleString(lang, { maximumFractionDigits: 1 })}/10`;
+  if (mode === "level_5") return `${Math.round(rating / 20)}/5`;
+  return `${(rating / 20).toLocaleString(lang, { maximumFractionDigits: 1 })}/5`;
 }

@@ -35,7 +35,7 @@ export async function getActivity(
   let reviewsQuery = supabase
     .from("reviews")
     .select(
-      "id,profile_id,igdb_id,game_slug,rating,content,contains_spoilers,visibility,created_at,profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
+      "id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,content,contains_spoilers,visibility,created_at,profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -102,7 +102,19 @@ export async function getActivity(
           igdbId: row.igdb_id,
           gameSlug: row.game_slug,
           game: byId.get(row.igdb_id) ?? null,
-          rating: review ? Number(row.rating) : undefined,
+          rating:
+            review && typeof row.rating === "number" ? row.rating : undefined,
+          ratingMode: review
+            ? (row.rating_mode as SocialEntry["ratingMode"])
+            : undefined,
+          recommended: review ? (row.recommended as boolean | null) : undefined,
+          title: review ? String(row.title ?? "") || null : undefined,
+          aspects: review
+            ? (row.aspect_ratings as SocialEntry["aspects"])
+            : undefined,
+          mastered: review ? Boolean(row.mastered) : undefined,
+          replay: review ? Boolean(row.replay) : undefined,
+          platform: review ? String(row.platform ?? "") || null : undefined,
           content: String((review ? row.content : row.note) ?? "") || null,
           playedOn: review ? undefined : String(row.played_on),
           minutes: review ? undefined : (row.minutes as number | null),

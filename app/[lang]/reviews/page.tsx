@@ -32,9 +32,13 @@ export default async function ReviewsPage({
       : entries.filter((entry) => entry.kind === activeType);
   const reviews = entries.filter((entry) => entry.kind === "review");
   const sessions = entries.filter((entry) => entry.kind === "diary");
-  const average = reviews.length
-    ? reviews.reduce((sum, entry) => sum + (entry.rating ?? 0), 0) /
-      reviews.length /
+  const ratedReviews = reviews.filter(
+    (entry): entry is typeof entry & { rating: number } =>
+      typeof entry.rating === "number",
+  );
+  const average = ratedReviews.length
+    ? ratedReviews.reduce((sum, entry) => sum + entry.rating, 0) /
+      ratedReviews.length /
       20
     : null;
   const pt = lang === "pt-BR";

@@ -137,7 +137,9 @@ export default async function GamePage({ params }: Props) {
       user
         ? supabase
             .from("reviews")
-            .select("id,rating,content,contains_spoilers,visibility")
+            .select(
+              "id,rating,content,contains_spoilers,visibility,title,rating_mode,recommended,mastered,replay,started_on,finished_on,platform,aspect_ratings",
+            )
             .eq("profile_id", user.id)
             .eq("igdb_id", game.id)
             .maybeSingle()
@@ -264,7 +266,6 @@ export default async function GamePage({ params }: Props) {
                 game={game}
                 lang={lang}
                 lists={userLists ?? []}
-                initialRating={state?.quick_rating ?? null}
                 initialReview={ownReview}
                 logCount={ownLogCount ?? 0}
               />
