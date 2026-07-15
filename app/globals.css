@@ -5131,6 +5131,205 @@ html[data-sidebar-ready] .account-button > svg {
   color: #ffaaa4;
 }
 
+.share-dialog {
+  position: fixed;
+  z-index: 102;
+  top: 50%;
+  left: 50%;
+  width: min(460px, calc(100vw - 28px));
+  padding: 18px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--console-raised);
+  box-shadow: 0 24px 70px rgb(0 0 0 / 52%);
+  transform: translate(-50%, -50%);
+}
+.share-dialog > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.share-dialog header > div {
+  min-width: 0;
+}
+.share-dialog header span {
+  color: var(--brand-blurple-bright);
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+}
+.share-dialog h2 {
+  margin: 5px 0 0;
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.share-dialog header p {
+  margin: 5px 0 0;
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.share-dialog header button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--screen-muted);
+  cursor: pointer;
+}
+.share-dialog header button:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.share-dialog-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+.share-dialog-actions > button {
+  display: grid;
+  justify-items: start;
+  gap: 5px;
+  min-height: 126px;
+  padding: 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  text-align: left;
+  cursor: pointer;
+}
+.share-dialog-actions > button:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--console-hover);
+}
+.share-dialog-actions > button > span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 5px;
+  border-radius: 8px;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
+.share-dialog-actions > button[data-success] > span {
+  background: rgb(73 174 122 / 16%);
+  color: var(--safe-green);
+}
+.share-dialog-actions strong {
+  color: var(--screen-white);
+  font-size: 11px;
+}
+.share-dialog-actions small {
+  color: var(--screen-muted);
+  font-size: 8px;
+}
+.profile-social-links a svg,
+.profile-social-fields label > svg {
+  flex: none;
+}
+.profile-social-links a:first-child svg {
+  color: #ff4d55;
+}
+.profile-social-links a:nth-child(2) svg {
+  color: #ef7aaa;
+}
+.profile-social-links a:nth-child(3) svg {
+  color: var(--screen-white);
+}
+
+@media (max-width: 620px) {
+  .profile-header {
+    display: block;
+    margin-top: -38px;
+    padding: 0 4px;
+  }
+  .profile-avatar {
+    width: 82px;
+    height: 82px;
+  }
+  .profile-identity {
+    display: block;
+    padding: 0;
+  }
+  .profile-title-row {
+    align-items: flex-end;
+    margin-top: 12px;
+  }
+  .profile-title-row > div {
+    min-width: 0;
+  }
+  .profile-edit-link,
+  .profile-follow-control button {
+    min-height: 40px;
+    padding-inline: 12px;
+    font-size: 10px;
+  }
+  .profile-edit-link svg,
+  .profile-follow-control button svg {
+    margin-right: 1px;
+  }
+  .profile-bio {
+    margin-top: 12px;
+  }
+  .profile-joined {
+    margin-top: 9px;
+  }
+  .profile-social-links {
+    margin-top: 12px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+  .profile-social-links a {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding-inline: 12px;
+  }
+  .profile-secondary-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 10px;
+  }
+  .profile-secondary-actions .quiet-icon-action {
+    justify-content: center;
+    min-height: 42px;
+    font-size: 10px;
+  }
+  .share-dialog {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    border-radius: 14px 14px 0 0;
+    transform: none;
+  }
+  .share-dialog-actions {
+    grid-template-columns: 1fr;
+  }
+  .share-dialog-actions > button {
+    grid-template-columns: 34px minmax(0, 1fr);
+    align-items: center;
+    min-height: 72px;
+  }
+  .share-dialog-actions > button > span {
+    grid-row: 1 / 3;
+    margin: 0;
+  }
+  .share-dialog-actions strong,
+  .share-dialog-actions small {
+    grid-column: 2;
+  }
+}
+
 /* Account settings workspace and public identity actions. */
 .account-settings-page {
   width: 100%;

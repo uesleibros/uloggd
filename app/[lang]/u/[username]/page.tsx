@@ -11,6 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { notFound } from "next/navigation";
+import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { FollowButton } from "@/components/social/follow-button";
@@ -240,7 +241,7 @@ export default async function ProfilePage({ params }: Props) {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <b>YT</b>
+                  <FaYoutube size={15} />
                   <span>YouTube</span>
                 </a>
               )}
@@ -250,7 +251,7 @@ export default async function ProfilePage({ params }: Props) {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <b>IG</b>
+                  <FaInstagram size={15} />
                   <span>Instagram</span>
                 </a>
               )}
@@ -260,7 +261,7 @@ export default async function ProfilePage({ params }: Props) {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <b>X</b>
+                  <FaXTwitter size={14} />
                   <span>Twitter</span>
                 </a>
               )}

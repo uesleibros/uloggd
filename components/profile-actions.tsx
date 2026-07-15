@@ -72,6 +72,7 @@ export function ProfileActions({
         text={pt ? "Veja este perfil no uloggd" : "See this profile on uloggd"}
         label={pt ? "Compartilhar" : "Share"}
         copiedLabel={pt ? "Link copiado" : "Link copied"}
+        lang={lang}
       />
       {viewerId !== profileId &&
         (viewerId ? (

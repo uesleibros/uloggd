@@ -244,6 +244,7 @@ export default async function GamePage({ params }: Props) {
               }
               label={lang === "pt-BR" ? "Compartilhar jogo" : "Share game"}
               copiedLabel={lang === "pt-BR" ? "Link copiado" : "Link copied"}
+              lang={lang}
             />
             <GameActionPanel
               game={game}

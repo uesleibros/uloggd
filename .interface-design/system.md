@@ -231,9 +231,9 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 ### Account settings
 
 - Settings use the same 38px horizontal tab anatomy as game pages: General, Profile, and Security. General owns immutable account identity, birth date, and owner-only infraction standing; Profile owns public copy, imagery, and social usernames; Security owns passkey management.
-- Social fields accept usernames only for YouTube, Instagram, and Twitter/X. Public profiles construct safe canonical links and keep them in a compact secondary action row.
+- Social fields accept usernames only for YouTube, Instagram, and Twitter/X. Settings and public profiles use the official vector brand marks, construct safe canonical links, and keep them in a compact secondary action row.
 - Passkeys use Supabase Auth's experimental passkey API to list, register, and remove device credentials. Security copy explains the device-bound private key and exposes unsupported/disabled states inline.
-- Share actions use the native Web Share sheet when available and copy the canonical current URL otherwise. Profile reports use one Radix modal, write to the existing owner-readable reports table, and never render a report action against oneself.
+- Share actions open one Radix choice modal: copy the canonical current URL or send through the native Web Share sheet, with an email fallback where Web Share is unavailable. Profile reports use a separate Radix modal, write to the existing owner-readable reports table, and never render a report action against oneself.
 - Mobile profiles preserve the banner/avatar focal point, keep identity actions in normal flow, move social/share/report actions full-width below identity, and turn the six metrics into a contained horizontal snap rail instead of squeezing labels.
 
 ### Search recents

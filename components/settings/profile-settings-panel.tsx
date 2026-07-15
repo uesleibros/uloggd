@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { ImageIcon, LoaderCircle, Save, Trash2, Upload } from "lucide-react";
+import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -192,7 +193,7 @@ export function ProfileSettingsPanel({
               : "Enter only the username. Links are built automatically."}
           </p>
           <label>
-            <span className="social-network-mark">YT</span> YouTube
+            <FaYoutube size={15} /> YouTube
             <input
               name="youtube"
               defaultValue={profile.youtube_username ?? ""}
@@ -201,7 +202,7 @@ export function ProfileSettingsPanel({
             />
           </label>
           <label>
-            <span className="social-network-mark">IG</span> Instagram
+            <FaInstagram size={15} /> Instagram
             <input
               name="instagram"
               defaultValue={profile.instagram_username ?? ""}
@@ -210,7 +211,7 @@ export function ProfileSettingsPanel({
             />
           </label>
           <label>
-            <span className="social-x-mark">X</span> Twitter / X
+            <FaXTwitter size={14} /> Twitter / X
             <input
               name="twitter"
               defaultValue={profile.twitter_username ?? ""}
