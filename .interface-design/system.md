@@ -182,11 +182,11 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 ### Editorial featured game
 
-- Artwork backdrop plus separate 3:4 cover object.
-- One dominant game title; rating/year/genre form a single metadata line.
+- Home uses a full-width, 440px cinematic IGDB artwork stage inspired by streaming catalog openers; it does not place a separate cover over the art.
+- Copy stays anchored at the lower left over a functional dark scrim: one dominant game title, rating/year/genre metadata, a short description, and explicit view/explore actions.
 - Description is clamped to three lines.
-- Primary action is neutral white; save action is a quiet secondary square.
-- Mobile reduces cover to 96px and removes long description rather than squeezing it.
+- Primary action is neutral white; catalog exploration is a quiet translucent secondary action.
+- Mobile uses a 390px edge-to-edge stage, shifts artwork focus right, and clamps description to two lines.
 
 ### Active shelf
 
@@ -199,6 +199,8 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Cover cards remain stationary on hover; reveal titles and quick actions through overlays only, without vertical lift.
 - Mobile discovery lanes become horizontal snap shelves across the full 0–620px range; cards stay between 112px and 132px so cover art, titles, and three quick-action targets remain usable instead of compressing into a four-column grid.
 - Home shelves use user-controlled horizontal carousels with snap, drag/touch scrolling, and quiet 36px previous/next controls. They never auto-advance.
+- Home adds live RPG, Shooter, Adventure, Strategy, and Indie catalog lanes from IGDB. Genre lanes use six covers per desktop viewport and touch-sized cards on mobile.
+- “Hidden gems” requires an 80+ catalog score, 50–349 ratings, release at least two years ago, main-game type, and no IGDB franchise or collection association; current hits, famous franchise editions, ports, and remasters must not qualify merely because one entry has few ratings.
 
 ### Verified identity
 

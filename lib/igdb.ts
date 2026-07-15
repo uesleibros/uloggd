@@ -287,7 +287,7 @@ export async function getPopularGames(): Promise<Game[]> {
     fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
     where cover != null & total_rating_count > 500 & game_type = (0,8,9);
     sort total_rating_count desc;
-    limit 10;
+    limit 12;
   `,
     6 * CACHE_HOURS,
   );
@@ -313,6 +313,12 @@ export type DiscoveryGames = {
   anticipated: Game[];
   upcoming: Game[];
   hiddenGems: Game[];
+};
+
+export type GenreCollection = {
+  id: number;
+  name: { "pt-BR": string; en: string };
+  games: Game[];
 };
 
 export type GameDetail = Game & {
@@ -559,6 +565,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
   // A day boundary keeps the IGDB request body stable so the data cache can hit.
   const now = Math.floor(Date.now() / (24 * 60 * 60 * 1000)) * 24 * 60 * 60;
   const inFourMonths = now + 60 * 60 * 24 * 120;
+  const twoYearsAgo = now - 60 * 60 * 24 * 365 * 2;
   const fields =
     "name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name";
 
@@ -584,7 +591,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
     queryGames(
       `
       fields ${fields};
-      where cover != null & first_release_date < ${now} & total_rating >= 78 & total_rating_count >= 20 & total_rating_count < 400 & game_type = (0,8,9);
+      where cover != null & first_release_date < ${twoYearsAgo} & total_rating >= 80 & total_rating_count >= 50 & total_rating_count < 350 & game_type = 0 & franchises = null & collections = null;
       sort total_rating desc;
       limit 8;
     `,
@@ -593,4 +600,28 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
   ]);
 
   return { anticipated, upcoming, hiddenGems };
+}
+
+export async function getGenreCollections(): Promise<GenreCollection[]> {
+  const genres = [
+    { id: 12, name: { "pt-BR": "RPG", en: "RPG" } },
+    { id: 5, name: { "pt-BR": "Tiro", en: "Shooter" } },
+    { id: 31, name: { "pt-BR": "Aventura", en: "Adventure" } },
+    { id: 15, name: { "pt-BR": "Estratégia", en: "Strategy" } },
+    { id: 32, name: { "pt-BR": "Independentes", en: "Indie" } },
+  ] as const;
+  const games = await Promise.all(
+    genres.map((genre) =>
+      queryGames(
+        `
+        fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
+        where cover != null & genres = (${genre.id}) & total_rating_count >= 40 & game_type = 0;
+        sort total_rating_count desc;
+        limit 10;
+      `,
+        12 * CACHE_HOURS,
+      ),
+    ),
+  );
+  return genres.map((genre, index) => ({ ...genre, games: games[index] }));
 }

@@ -9,12 +9,7 @@ export function HomeSkeleton() {
       aria-label="Loading"
     >
       <main className="feed">
-        <div className="home-loading-heading">
-          <span className="skeleton-block" />
-          <span className="skeleton-block" />
-        </div>
         <section className="home-loading-feature skeleton-block">
-          <span />
           <div>
             <span />
             <span />

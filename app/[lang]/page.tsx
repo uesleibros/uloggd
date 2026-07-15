@@ -2,9 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ArrowUpRight, Star } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Info, Star } from "lucide-react";
 import { HomeSkeleton } from "@/components/home-skeleton";
-import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
+import {
+  getDiscoveryGames,
+  getGenreCollections,
+  getPopularGames,
+  type Game,
+} from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
 import { resolveGameCover } from "@/lib/game-cover";
 import { QuickGameCard } from "@/components/library/quick-game-card";
@@ -22,12 +27,15 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 }
 
 async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
-  const [d, games, discoveries, supabase] = await Promise.all([
-    getDictionary(lang),
-    getPopularGames(),
-    getDiscoveryGames(),
-    createClient(),
-  ]);
+  const [d, games, discoveries, genreCollections, supabase] = await Promise.all(
+    [
+      getDictionary(lang),
+      getPopularGames(),
+      getDiscoveryGames(),
+      getGenreCollections(),
+      createClient(),
+    ],
+  );
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -108,22 +116,12 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
               className="featured-backdrop"
             />
             <div className="featured-scrim" />
-            <Link
-              className="featured-cover"
-              href={`/${lang}/game/${featured.slug}`}
-            >
-              <Image
-                src={resolveGameCover(
-                  featured.coverUrl,
-                  savedById.get(featured.id)?.custom_cover_url,
-                )}
-                alt={`${featured.name} cover`}
-                fill
-                priority
-                sizes="150px"
-              />
-            </Link>
             <div className="featured-copy">
+              <span className="featured-kicker">
+                {lang === "pt-BR"
+                  ? "DESTAQUE DO CATÁLOGO"
+                  : "CATALOG SPOTLIGHT"}
+              </span>
               <h2>
                 <Link href={`/${lang}/game/${featured.slug}`}>
                   {featured.name}
@@ -138,11 +136,21 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
                 <span>{featured.genres.join(" · ")}</span>
               </div>
               <p>{featured.summary || d.home.subtitle}</p>
+              <div className="featured-actions">
+                <Link href={`/${lang}/game/${featured.slug}`}>
+                  <Info size={17} />
+                  {lang === "pt-BR" ? "Ver jogo" : "View game"}
+                </Link>
+                <a href="#popular-catalog">
+                  {lang === "pt-BR" ? "Explorar catálogo" : "Explore catalog"}
+                  <ArrowRight size={16} />
+                </a>
+              </div>
             </div>
           </section>
         )}
 
-        <section className="library-section">
+        <section className="library-section" id="popular-catalog">
           <div className="section-heading">
             <div>
               <h2>{d.home.mostLogged}</h2>
@@ -165,6 +173,52 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
               />
             ))}
           </ShelfCarousel>
+        </section>
+
+        <section className="genre-section">
+          <div className="genre-section-heading">
+            <span>
+              {lang === "pt-BR" ? "NAVEGUE POR GÊNERO" : "BROWSE BY GENRE"}
+            </span>
+            <h2>
+              {lang === "pt-BR"
+                ? "Encontre seu próximo mundo"
+                : "Find your next world"}
+            </h2>
+            <p>
+              {lang === "pt-BR"
+                ? "Coleções vivas do catálogo, organizadas pelo tipo de experiência."
+                : "Living catalog collections organized by the kind of experience."}
+            </p>
+          </div>
+          <div className="genre-collections">
+            {genreCollections.map((collection) => (
+              <section className="genre-collection" key={collection.id}>
+                <div className="section-heading">
+                  <div>
+                    <h3>{collection.name[lang]}</h3>
+                    <p>
+                      {lang === "pt-BR"
+                        ? `${collection.games.length} escolhas populares`
+                        : `${collection.games.length} popular picks`}
+                    </p>
+                  </div>
+                </div>
+                <ShelfCarousel label={collection.name[lang]} lang={lang}>
+                  {collection.games.map((game) => (
+                    <QuickGameCard
+                      key={game.id}
+                      game={game}
+                      initial={savedById.get(game.id) ?? null}
+                      lang={lang}
+                      enabled={Boolean(user)}
+                      meta={game.rating ? `${game.rating}/100` : undefined}
+                    />
+                  ))}
+                </ShelfCarousel>
+              </section>
+            ))}
+          </div>
         </section>
 
         <section className="discoveries-section">
