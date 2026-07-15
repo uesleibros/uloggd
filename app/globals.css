@@ -9466,3 +9466,35 @@ a,
     padding-inline: 10px;
   }
 }
+
+/* Final liked-state lock: warm pink across every action surface. */
+.game-action-panel > button[data-action="liked"][aria-pressed="true"],
+.game-stage
+  .game-action-panel
+  > button[data-action="liked"][aria-pressed="true"] {
+  border-color: rgb(255 170 164 / 68%);
+  background: rgb(255 170 164 / 24%);
+  color: #ffaaa4;
+  box-shadow: inset 0 0 0 1px rgb(255 213 209 / 16%);
+}
+
+.quick-menu
+  [role="menuitemcheckbox"][data-action="liked"][data-state="checked"] {
+  background: rgb(255 170 164 / 16%);
+  color: #ffaaa4;
+  box-shadow: inset 0 0 0 1px rgb(255 170 164 / 24%);
+}
+
+.quick-menu
+  [role="menuitemcheckbox"][data-action="liked"][data-state="checked"]
+  > span:last-child {
+  background: rgb(255 170 164 / 26%);
+  color: #ffaaa4;
+}
+
+.quick-menu
+  [role="menuitemcheckbox"][data-action="liked"][data-state="checked"]
+  > svg:first-child,
+.quick-card-flags span[data-action="liked"] {
+  color: #ffaaa4;
+}
