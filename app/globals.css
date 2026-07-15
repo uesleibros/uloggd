@@ -12701,3 +12701,14 @@ a,
     background: rgb(23 21 27 / 0.97);
   }
 }
+
+@media (max-width: 620px) {
+  .platform-content > .home-shell {
+    margin-top: -64px;
+  }
+
+  .home-shell .featured-game {
+    min-height: 454px;
+    padding-top: 92px;
+  }
+}
