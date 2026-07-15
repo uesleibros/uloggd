@@ -2,7 +2,7 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
-import { ShieldCheck, Sparkles, X } from "lucide-react";
+import { X } from "lucide-react";
 
 export function VerifiedMark({ size = 18 }: { size?: number }) {
   return (
@@ -59,7 +59,6 @@ export function VerifiedBadge({ lang }: { lang: "pt-BR" | "en" }) {
 
           <div className="verified-dialog-facts">
             <div>
-              <ShieldCheck size={18} />
               <p>
                 <strong>
                   {pt ? "Identidade confirmada" : "Identity confirmed"}
@@ -72,7 +71,6 @@ export function VerifiedBadge({ lang }: { lang: "pt-BR" | "en" }) {
               </p>
             </div>
             <div>
-              <Sparkles size={18} />
               <p>
                 <strong>
                   {pt ? "Sinal de autenticidade" : "Authenticity signal"}

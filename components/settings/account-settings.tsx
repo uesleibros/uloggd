@@ -11,6 +11,7 @@ import { useState } from "react";
 import { ProfileSettingsPanel } from "./profile-settings-panel";
 import { PasskeySettings } from "./passkey-settings";
 import { TwoFactorSettings } from "./two-factor-settings";
+import { DeleteAccount } from "./delete-account";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"];
 type Tab = "general" | "profile" | "security";
@@ -126,6 +127,7 @@ export function AccountSettings({
                 </p>
               </div>
             </section>
+            <DeleteAccount username={profile.username} lang={lang} />
           </div>
         )}
         {tab === "profile" && (

@@ -235,13 +235,14 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 ### Verified identity
 
-- Verified profiles use one compact blurple rosette beside the display name. Activating it explains that verification confirms the represented identity and is not an endorsement.
+- Verified profiles use one compact blurple rosette beside the display name. Activating it opens a restrained, text-led explanation that verification confirms the represented identity and is not an endorsement; supporting facts never use decorative icons.
 - The badge follows the account into profile headers and community activity without changing name hierarchy.
 - Verification is assigned only by moderators after an external Google Forms review. Profile settings never expose an in-product request form or request status; verified accounts simply receive the public badge across identity surfaces.
 
 ### Account settings
 
 - Settings use the same 38px horizontal tab anatomy as game pages: General, Profile, and Security. General owns immutable account identity, birth date, and owner-only infraction standing; Profile owns public copy, imagery, and social usernames; Security owns passkey management.
+- General ends with a full-width danger zone for permanent account deletion. Its motion-polished confirmation dialog names the affected data, requires both an acknowledgement and the exact `@username`, and keeps the safe cancellation action visually dominant until every condition is met.
 - Social fields accept usernames only for YouTube, Instagram, and Twitter/X. Settings use the official vector marks beside inputs; public profiles expose only 42px square brand-color logo buttons (YouTube red, Instagram magenta, X black), with no redundant text labels.
 - Passkeys use Supabase Auth's experimental passkey API to list, register, and remove device credentials. Security copy explains the device-bound private key and exposes unsupported/disabled states inline.
 - Share actions open one motion-polished Radix choice modal: copy the canonical current URL with an animated confirmation, or send exclusively through the native Web Share sheet. When Web Share is unavailable, the send choice is visibly disabled rather than silently changing channels. Profile reports use a separate Radix modal, write to the existing owner-readable reports table, and never render a report action against oneself.
@@ -388,7 +389,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - The global header is a detached glass surface: desktop uses a wide 56px bar with restrained blur and search space, while mobile uses a compact 54px capsule inset 10px from the viewport. Both retain an opaque fallback when backdrop filters are unavailable.
 - On mobile home, the catalog spotlight backdrop starts at the viewport top and passes behind the glass header; its content retains a 64px safe offset so controls never sit beneath navigation.
 - Mobile header menu and search triggers use explicit 40×40px boxes with zero inherited padding and optically centered icons; the right-side action cluster uses a fixed 4px gap.
-- Full-backdrop mobile routes (home spotlight, library hero, and game stage, including skeletons) begin 64px behind the glass header and add the same space back inside the hero. Inset editorial cards such as profile banners and lists retain their intentional top margin.
+- Full-bleed mobile routes (home spotlight and library hero, including skeletons) begin 64px behind the glass header and add the same space back inside the hero. Editorial surfaces such as the game stage, profile banner, and lists retain their intentional top margin and complete border radius.
 - Workspace headers state each page concept once; eyebrow copy adds context instead of repeating the title. Lists use real collection/game/public counts, a responsive two-column card grid, and a motion-enabled Radix creation dialog with a custom visibility select.
 - Profile statistics always use exact database counts rather than the number of preview rows currently rendered. The owner gets a quiet edit action; visitors get a follow control in the same position.
 - Profile metadata uses display name/username, bio, and the uploaded banner (avatar fallback) for Open Graph and Twitter embeds.
