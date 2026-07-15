@@ -72,11 +72,11 @@ export function ActivityStream({
           </Link>
           <div className="activity-body">
             <header>
-              <Link
-                href={`/${lang}/u/${entry.profile.username}`}
-                className="activity-user"
-              >
-                <span className="activity-avatar">
+              <div className="activity-user">
+                <Link
+                  href={`/${lang}/u/${entry.profile.username}`}
+                  className="activity-avatar"
+                >
                   {entry.profile.avatar_url ? (
                     <Image
                       src={entry.profile.avatar_url}
@@ -88,15 +88,20 @@ export function ActivityStream({
                   ) : (
                     entry.profile.username.slice(0, 1).toUpperCase()
                   )}
-                </span>
+                </Link>
                 <span>
                   <strong>
-                    {entry.profile.display_name || `@${entry.profile.username}`}
+                    <Link href={`/${lang}/u/${entry.profile.username}`}>
+                      {entry.profile.display_name ||
+                        `@${entry.profile.username}`}
+                    </Link>
                     {entry.profile.verified && <VerifiedBadge lang={lang} />}
                   </strong>
-                  <small>@{entry.profile.username}</small>
+                  <Link href={`/${lang}/u/${entry.profile.username}`}>
+                    <small>@{entry.profile.username}</small>
+                  </Link>
                 </span>
-              </Link>
+              </div>
               <time dateTime={entry.createdAt}>
                 {date.format(new Date(entry.createdAt))}
               </time>

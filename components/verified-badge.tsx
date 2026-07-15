@@ -1,23 +1,82 @@
-import { BadgeCheck, ShieldCheck } from "lucide-react";
+"use client";
+
+import * as Dialog from "@radix-ui/react-dialog";
+import { BadgeCheck, ShieldCheck, Sparkles, X } from "lucide-react";
 
 export function VerifiedBadge({ lang }: { lang: "pt-BR" | "en" }) {
   const pt = lang === "pt-BR";
+
   return (
-    <details className="verified-badge">
-      <summary aria-label={pt ? "Conta verificada" : "Verified account"}>
-        <BadgeCheck size={18} fill="currentColor" />
-      </summary>
-      <div className="verified-badge-info">
-        <ShieldCheck size={17} />
-        <div>
-          <strong>{pt ? "Conta verificada" : "Verified account"}</strong>
-          <p>
+    <Dialog.Root>
+      <Dialog.Trigger asChild>
+        <button
+          className="verified-badge"
+          type="button"
+          aria-label={
+            pt
+              ? "Saiba mais sobre esta conta verificada"
+              : "Learn about this verified account"
+          }
+        >
+          <BadgeCheck size={18} fill="currentColor" />
+        </button>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="verified-dialog-overlay" />
+        <Dialog.Content className="verified-dialog">
+          <Dialog.Close
+            className="verified-dialog-close"
+            aria-label={pt ? "Fechar" : "Close"}
+          >
+            <X size={18} />
+          </Dialog.Close>
+
+          <div className="verified-dialog-mark" aria-hidden="true">
+            <BadgeCheck size={42} fill="currentColor" />
+          </div>
+          <Dialog.Title>
+            {pt ? "Esta conta é verificada" : "This account is verified"}
+          </Dialog.Title>
+          <Dialog.Description>
             {pt
               ? "O uloggd confirmou que esta conta representa a pessoa, marca ou organização indicada no perfil."
               : "uloggd confirmed that this account represents the person, brand, or organization shown on the profile."}
-          </p>
-        </div>
-      </div>
-    </details>
+          </Dialog.Description>
+
+          <div className="verified-dialog-facts">
+            <div>
+              <ShieldCheck size={18} />
+              <p>
+                <strong>
+                  {pt ? "Identidade confirmada" : "Identity confirmed"}
+                </strong>
+                <span>
+                  {pt
+                    ? "A badge é atribuída pela moderação após análise."
+                    : "The badge is assigned by moderation after review."}
+                </span>
+              </p>
+            </div>
+            <div>
+              <Sparkles size={18} />
+              <p>
+                <strong>
+                  {pt ? "Sinal de autenticidade" : "Authenticity signal"}
+                </strong>
+                <span>
+                  {pt
+                    ? "A verificação identifica a conta; ela não endossa o conteúdo publicado."
+                    : "Verification identifies the account; it does not endorse published content."}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <Dialog.Close className="verified-dialog-confirm">
+            {pt ? "Entendi" : "Got it"}
+          </Dialog.Close>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

@@ -9130,70 +9130,240 @@ a,
   gap: 6px;
 }
 .verified-badge {
-  position: relative;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: none;
-  line-height: 1;
-}
-.verified-badge summary {
-  display: grid;
-  place-items: center;
   width: 24px;
   height: 24px;
+  padding: 0;
+  border: 0;
   border-radius: 6px;
+  background: transparent;
   color: var(--brand-blurple-bright);
   cursor: pointer;
-  list-style: none;
+  line-height: 1;
+  transition:
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 140ms ease-out,
+    color 140ms ease-out;
 }
-.verified-badge summary::-webkit-details-marker {
-  display: none;
-}
-.verified-badge summary:hover {
+.verified-badge:hover {
   background: var(--brand-blurple-wash);
+  transform: translateY(-1px);
 }
-.verified-badge summary:focus-visible {
+.verified-badge:active {
+  transform: scale(0.92);
+}
+.verified-badge:focus-visible {
   outline: 2px solid var(--brand-blurple-bright);
   outline-offset: 2px;
 }
-.verified-badge-info {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 8px);
-  left: 0;
-  display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
-  gap: 10px;
-  width: min(300px, calc(100vw - 40px));
-  padding: 14px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 9px;
-  background: var(--console-raised);
-  box-shadow: 0 18px 48px rgb(0 0 0 / 44%);
-  color: var(--brand-blurple-bright);
-  text-align: left;
-  white-space: normal;
-  animation: search-surface-in 140ms cubic-bezier(0.23, 1, 0.32, 1);
+.verified-dialog-overlay {
+  position: fixed;
+  z-index: 110;
+  inset: 0;
+  background: rgb(4 3 8 / 0.72);
+  backdrop-filter: blur(6px);
 }
-.verified-badge-info strong {
-  display: block;
+.verified-dialog-overlay[data-state="open"] {
+  animation: verified-overlay-in 180ms ease-out both;
+}
+.verified-dialog-overlay[data-state="closed"] {
+  animation: verified-overlay-out 130ms ease-in both;
+}
+.verified-dialog {
+  position: fixed;
+  z-index: 111;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  width: min(430px, calc(100vw - 28px));
+  max-height: calc(100dvh - 28px);
+  overflow-y: auto;
+  padding: 28px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 16px;
+  background: var(--console-raised);
+  box-shadow: 0 28px 80px rgb(0 0 0 / 0.52);
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+.verified-dialog[data-state="open"] {
+  animation: verified-dialog-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.verified-dialog[data-state="closed"] {
+  pointer-events: none;
+  animation: verified-dialog-out 140ms cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+.verified-dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--screen-muted);
+}
+.verified-dialog-mark {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin-bottom: 18px;
+  border-radius: 50%;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+  box-shadow: inset 0 0 0 1px rgb(132 141 255 / 0.22);
+}
+.verified-dialog h2 {
+  color: var(--screen-white);
+  font-size: 23px;
+  font-weight: 660;
+  letter-spacing: -0.035em;
+}
+.verified-dialog > p {
+  max-width: 350px;
+  margin-top: 10px;
+  color: var(--screen-muted);
+  font-size: 12px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.verified-dialog-facts {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin-top: 22px;
+  text-align: left;
+}
+.verified-dialog-facts > div {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-inset);
+  color: var(--brand-blurple-bright);
+}
+.verified-dialog-facts p {
+  display: grid;
+  gap: 4px;
+}
+.verified-dialog-facts strong {
   color: var(--screen-white);
   font-size: 11px;
   font-weight: 620;
 }
-.verified-badge-info p {
-  margin: 5px 0 0;
+.verified-dialog-facts span {
   color: var(--screen-muted);
   font-size: 9px;
-  font-weight: 400;
-  line-height: 1.55;
-  text-wrap: pretty;
+  line-height: 1.5;
 }
-.activity-user .verified-badge summary {
+.verified-dialog-confirm {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 20px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--brand-blurple);
+  color: white;
+  font-size: 11px;
+  font-weight: 620;
+}
+.verified-dialog-close,
+.verified-dialog-confirm {
+  transition:
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+.verified-dialog-close:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.verified-dialog-confirm:hover {
+  background: var(--brand-blurple-bright);
+  transform: translateY(-1px);
+}
+.verified-dialog-close:active,
+.verified-dialog-confirm:active {
+  transform: scale(0.96);
+}
+.activity-user .verified-badge {
   width: 18px;
   height: 18px;
 }
-.activity-user .verified-badge-info {
-  left: -90px;
+.activity-user strong > a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@keyframes verified-overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes verified-overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes verified-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 10px)) scale(0.98);
+  }
+}
+@keyframes verified-dialog-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 6px)) scale(0.985);
+  }
+}
+@media (max-width: 620px) {
+  .verified-dialog {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: calc(100dvh - 24px);
+    padding: 26px 20px calc(20px + env(safe-area-inset-bottom));
+    border-radius: 16px 16px 0 0;
+    transform: none;
+  }
+  .verified-dialog[data-state="open"] {
+    animation-name: verified-sheet-in;
+  }
+  .verified-dialog[data-state="closed"] {
+    animation-name: verified-sheet-out;
+  }
+}
+@keyframes verified-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+@keyframes verified-sheet-out {
+  to {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .verified-badge,
+  .verified-dialog-overlay[data-state],
+  .verified-dialog[data-state] {
+    animation: none;
+    transition-duration: 0.01ms;
+  }
 }
 
 /* Account age assurance, protected catalog states, and route recovery. */
