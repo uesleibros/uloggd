@@ -1,5 +1,17 @@
 "use client";
-import { Plus } from "lucide-react";
+
+import * as Dialog from "@radix-ui/react-dialog";
+import * as Select from "@radix-ui/react-select";
+import {
+  Check,
+  ChevronDown,
+  Globe2,
+  LoaderCircle,
+  Lock,
+  Plus,
+  Users,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -10,6 +22,8 @@ export function CreateListForm({ lang }: { lang: "pt-BR" | "en" }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [visibilityValue, setVisibilityValue] = useState("PUBLIC");
+
   async function submit(formData: FormData) {
     setPending(true);
     setError(null);
@@ -21,59 +35,156 @@ export function CreateListForm({ lang }: { lang: "pt-BR" | "en" }) {
         list_visibility: formData.get("visibility"),
       },
     );
-    if (actionError)
+    if (actionError) {
       setError(
         pt ? "Não foi possível criar a lista." : "Could not create the list.",
       );
-    else {
+    } else {
       setOpen(false);
       router.refresh();
     }
     setPending(false);
   }
-  if (!open)
-    return (
-      <button
-        className="create-list-trigger"
-        type="button"
-        onClick={() => setOpen(true)}
-      >
-        <Plus size={15} /> {pt ? "Nova lista" : "New list"}
-      </button>
-    );
+
+  const visibility = [
+    {
+      value: "PUBLIC",
+      label: pt ? "Pública" : "Public",
+      description: pt ? "Qualquer pessoa pode ver" : "Anyone can view it",
+      icon: Globe2,
+    },
+    {
+      value: "FOLLOWERS",
+      label: pt ? "Seguidores" : "Followers",
+      description: pt ? "Visível para seguidores" : "Visible to followers",
+      icon: Users,
+    },
+    {
+      value: "PRIVATE",
+      label: pt ? "Privada" : "Private",
+      description: pt ? "Somente você pode ver" : "Only you can view it",
+      icon: Lock,
+    },
+  ];
+
   return (
-    <form action={submit} className="create-list-form">
-      <label>
-        <span>{pt ? "Nome" : "Name"}</span>
-        <input name="name" required minLength={1} maxLength={100} autoFocus />
-      </label>
-      <label>
-        <span>{pt ? "Descrição" : "Description"}</span>
-        <textarea name="description" rows={3} maxLength={500} />
-      </label>
-      <label>
-        <span>{pt ? "Visibilidade" : "Visibility"}</span>
-        <select name="visibility">
-          <option value="PUBLIC">{pt ? "Pública" : "Public"}</option>
-          <option value="FOLLOWERS">{pt ? "Seguidores" : "Followers"}</option>
-          <option value="PRIVATE">{pt ? "Privada" : "Private"}</option>
-        </select>
-      </label>
-      {error && <p role="alert">{error}</p>}
-      <footer>
-        <button type="button" onClick={() => setOpen(false)}>
-          {pt ? "Cancelar" : "Cancel"}
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger asChild>
+        <button className="create-list-trigger" type="button">
+          <Plus size={16} /> {pt ? "Nova lista" : "New list"}
         </button>
-        <button type="submit" disabled={pending}>
-          {pending
-            ? pt
-              ? "Criando…"
-              : "Creating…"
-            : pt
-              ? "Criar lista"
-              : "Create list"}
-        </button>
-      </footer>
-    </form>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="create-list-overlay" />
+        <Dialog.Content className="create-list-dialog">
+          <header>
+            <div>
+              <span>{pt ? "NOVA COLEÇÃO" : "NEW COLLECTION"}</span>
+              <Dialog.Title>{pt ? "Criar lista" : "Create list"}</Dialog.Title>
+              <Dialog.Description>
+                {pt
+                  ? "Dê um tema à sua seleção. Você adiciona e organiza os jogos depois."
+                  : "Give your selection a theme. You can add and organize games later."}
+              </Dialog.Description>
+            </div>
+            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <X size={18} />
+            </Dialog.Close>
+          </header>
+          <form action={submit} className="create-list-form">
+            <label>
+              <span>{pt ? "Nome" : "Name"}</span>
+              <input
+                name="name"
+                required
+                minLength={1}
+                maxLength={100}
+                autoFocus
+                placeholder={
+                  pt ? "Ex.: RPGs inesquecíveis" : "E.g. Unforgettable RPGs"
+                }
+              />
+            </label>
+            <label>
+              <span>{pt ? "Descrição" : "Description"}</span>
+              <textarea
+                name="description"
+                rows={3}
+                maxLength={500}
+                placeholder={
+                  pt
+                    ? "O que conecta os jogos desta lista?"
+                    : "What connects the games in this list?"
+                }
+              />
+            </label>
+            <label>
+              <span>{pt ? "Visibilidade" : "Visibility"}</span>
+              <Select.Root
+                name="visibility"
+                value={visibilityValue}
+                onValueChange={setVisibilityValue}
+              >
+                <Select.Trigger className="create-list-select">
+                  <Select.Value>
+                    {
+                      visibility.find((item) => item.value === visibilityValue)
+                        ?.label
+                    }
+                  </Select.Value>
+                  <Select.Icon>
+                    <ChevronDown size={15} />
+                  </Select.Icon>
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Content
+                    className="create-list-select-content"
+                    position="popper"
+                    sideOffset={6}
+                  >
+                    <Select.Viewport>
+                      {visibility.map(
+                        ({ value, label, description, icon: Icon }) => (
+                          <Select.Item
+                            className="create-list-select-item"
+                            value={value}
+                            key={value}
+                          >
+                            <Icon size={16} />
+                            <span className="create-list-select-copy">
+                              <Select.ItemText>{label}</Select.ItemText>
+                              <small>{description}</small>
+                            </span>
+                            <Select.ItemIndicator>
+                              <Check size={14} />
+                            </Select.ItemIndicator>
+                          </Select.Item>
+                        ),
+                      )}
+                    </Select.Viewport>
+                  </Select.Content>
+                </Select.Portal>
+              </Select.Root>
+            </label>
+            {error && <p role="alert">{error}</p>}
+            <footer>
+              <Dialog.Close type="button">
+                {pt ? "Cancelar" : "Cancel"}
+              </Dialog.Close>
+              <button type="submit" disabled={pending}>
+                {pending && <LoaderCircle className="spin" size={15} />}
+                {pending
+                  ? pt
+                    ? "Criando…"
+                    : "Creating…"
+                  : pt
+                    ? "Criar lista"
+                    : "Create list"}
+              </button>
+            </footer>
+          </form>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

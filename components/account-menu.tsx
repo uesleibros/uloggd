@@ -5,12 +5,14 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, LoaderCircle, LogOut } from "lucide-react";
 import { useState } from "react";
+import { VerifiedMark } from "./verified-badge";
 
 export type NavigationAccount = {
   email: string;
   username: string | null;
   displayName: string | null;
   avatarUrl: string | null;
+  verified: boolean;
 };
 
 export function AccountMenu({
@@ -46,7 +48,10 @@ export function AccountMenu({
           {account.avatarUrl ? <img src={account.avatarUrl} alt="" /> : initial}
         </span>
         <span className="account-copy">
-          <strong>{label}</strong>
+          <strong>
+            <span>{label}</span>
+            {account.verified && <VerifiedMark size={16} />}
+          </strong>
           <small>{handle}</small>
         </span>
         <ChevronDown size={15} />
@@ -60,7 +65,10 @@ export function AccountMenu({
           collisionPadding={12}
         >
           <div className="account-menu-identity">
-            <strong>{label}</strong>
+            <strong>
+              <span>{label}</span>
+              {account.verified && <VerifiedMark size={16} />}
+            </strong>
             <span>{handle}</span>
             <small>{account.email}</small>
           </div>

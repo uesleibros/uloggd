@@ -64,7 +64,17 @@ export async function proxy(request: NextRequest) {
   const callback = pathname.startsWith(`/${lang}/auth/callback`);
   const reset = pathname.startsWith(`/${lang}/auth/reset-password`);
   const signout = pathname.startsWith(`/${lang}/auth/signout`);
+  const mfaChallenge = pathname.startsWith(`/${lang}/auth/mfa`);
   const onboardingIncomplete = !profile?.username || !profile.birth_date;
+  if (!mfaChallenge && !callback && !reset && !signout) {
+    const { data: assurance } =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (assurance?.nextLevel === "aal2" && assurance.currentLevel !== "aal2") {
+      const url = new URL(`/${lang}/auth/mfa`, request.url);
+      url.searchParams.set("next", pathname + request.nextUrl.search);
+      return NextResponse.redirect(url);
+    }
+  }
   if (onboardingIncomplete && !onboarding && !callback && !reset && !signout)
     return NextResponse.redirect(
       new URL(`/${lang}/onboarding/username`, request.url),

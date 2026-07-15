@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { ProfileSettingsPanel } from "./profile-settings-panel";
 import { PasskeySettings } from "./passkey-settings";
+import { TwoFactorSettings } from "./two-factor-settings";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"];
 type Tab = "general" | "profile" | "security";
@@ -44,15 +45,6 @@ export function AccountSettings({
   ];
   return (
     <main className="account-settings-page">
-      <header className="account-settings-heading">
-        <span>{pt ? "SUA CONTA" : "YOUR ACCOUNT"}</span>
-        <h1>{pt ? "Configurações" : "Settings"}</h1>
-        <p>
-          {pt
-            ? "Gerencie sua identidade pública, dados permanentes e formas de acesso."
-            : "Manage your public identity, permanent data, and sign-in methods."}
-        </p>
-      </header>
       <nav
         className="game-page-nav account-settings-tabs"
         role="tablist"
@@ -139,7 +131,12 @@ export function AccountSettings({
         {tab === "profile" && (
           <ProfileSettingsPanel initial={profile} lang={lang} />
         )}
-        {tab === "security" && <PasskeySettings lang={lang} />}
+        {tab === "security" && (
+          <div className="settings-security-stack">
+            <TwoFactorSettings lang={lang} />
+            <PasskeySettings lang={lang} />
+          </div>
+        )}
       </div>
     </main>
   );

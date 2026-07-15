@@ -1,7 +1,21 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { BadgeCheck, ShieldCheck, Sparkles, X } from "lucide-react";
+import Image from "next/image";
+import { ShieldCheck, Sparkles, X } from "lucide-react";
+
+export function VerifiedMark({ size = 18 }: { size?: number }) {
+  return (
+    <Image
+      className="verified-mark"
+      src="/twitter-verified-badge.svg"
+      width={size}
+      height={size}
+      alt=""
+      aria-hidden="true"
+    />
+  );
+}
 
 export function VerifiedBadge({ lang }: { lang: "pt-BR" | "en" }) {
   const pt = lang === "pt-BR";
@@ -18,7 +32,7 @@ export function VerifiedBadge({ lang }: { lang: "pt-BR" | "en" }) {
               : "Learn about this verified account"
           }
         >
-          <BadgeCheck size={18} fill="currentColor" />
+          <VerifiedMark />
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
@@ -32,7 +46,7 @@ export function VerifiedBadge({ lang }: { lang: "pt-BR" | "en" }) {
           </Dialog.Close>
 
           <div className="verified-dialog-mark" aria-hidden="true">
-            <BadgeCheck size={42} fill="currentColor" />
+            <VerifiedMark size={46} />
           </div>
           <Dialog.Title>
             {pt ? "Esta conta é verificada" : "This account is verified"}

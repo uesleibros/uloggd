@@ -381,6 +381,10 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Mobile profile actions retain their text label, use a consistent 44px touch target and at least 108px of width; the profile identity truncates before an action can leave the viewport.
 - Report dialogs fade their backdrop and enter with a centered scale/offset on desktop or an upward sheet on mobile. Closing always plays the inverse motion before Radix unmounts the surface.
 - Verified badges are interactive identity signals. Their modal explains what was confirmed, that moderation assigns the badge after review, and that verification is not an endorsement of published content.
+- Workspace headers state each page concept once; eyebrow copy adds context instead of repeating the title. Lists use real collection/game/public counts, a responsive two-column card grid, and a motion-enabled Radix creation dialog with a custom visibility select.
+- Verified identity uses the locally stored official blue verification mark across profiles, activity, and signed-in navigation identity.
+- Optional TOTP security covers enrollment, QR/manual secret setup, verification, multiple authenticators, protected removal, login challenge, SSR redirects, and database mutation enforcement for accounts whose next assurance level is AAL2.
+- Workspace headers state each page concept once; eyebrow copy adds context instead of repeating the title. Lists use real collection/game/public counts, a responsive two-column card grid, and a motion-enabled Radix creation dialog with a custom visibility select.
 - Profile statistics always use exact database counts rather than the number of preview rows currently rendered. The owner gets a quiet edit action; visitors get a follow control in the same position.
 - Profile metadata uses display name/username, bio, and the uploaded banner (avatar fallback) for Open Graph and Twitter embeds.
 - List cards emphasize title and description over counts. Detail views reuse active-shelf covers with a small physical index marker for manual order.

@@ -1,4 +1,4 @@
-import { List } from "lucide-react";
+import { Gamepad2, Globe2, Layers3, List } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { CreateListForm } from "@/components/social/create-list-form";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
@@ -42,60 +42,101 @@ export default async function ListsPage({
   const customById = new Map(
     (savedCovers ?? []).map((item) => [item.igdb_id, item.custom_cover_url]),
   );
+  const totalLists = lists?.length ?? 0;
+  const publicLists =
+    lists?.filter((list) => list.visibility === "PUBLIC").length ?? 0;
+
   return (
-    <main className="social-page">
-      <header className="social-page-header social-page-header-actions">
-        <div>
+    <main className="social-page lists-page">
+      <header className="lists-hero">
+        <div className="lists-hero-copy">
           <span>
-            <List size={14} /> {pt ? "COLEÇÕES CURADAS" : "CURATED COLLECTIONS"}
+            <List size={14} />{" "}
+            {pt ? "ORGANIZE DO SEU JEITO" : "ORGANIZE YOUR WAY"}
           </span>
-          <h1>{pt ? "Suas listas" : "Your lists"}</h1>
+          <h1>{pt ? "Listas" : "Lists"}</h1>
           <p>
             {pt
-              ? "Agrupe jogos por tema, ranking ou pelo motivo que quiser."
-              : "Group games by theme, ranking, or any reason you like."}
+              ? "Monte seleções por tema, ranking ou qualquer ideia que conecte seus jogos."
+              : "Build selections by theme, ranking, or any idea that connects your games."}
           </p>
+          <CreateListForm lang={lang} />
         </div>
-        <CreateListForm lang={lang} />
+        <dl className="lists-summary">
+          <div>
+            <dt>
+              <Layers3 size={14} /> {pt ? "Listas" : "Lists"}
+            </dt>
+            <dd>{totalLists}</dd>
+          </div>
+          <div>
+            <dt>
+              <Gamepad2 size={14} /> {pt ? "Jogos" : "Games"}
+            </dt>
+            <dd>{itemIds.length}</dd>
+          </div>
+          <div>
+            <dt>
+              <Globe2 size={14} /> {pt ? "Públicas" : "Public"}
+            </dt>
+            <dd>{publicLists}</dd>
+          </div>
+        </dl>
       </header>
       {lists?.length ? (
-        <div className="lists-grid">
-          {lists.map((list) => {
-            const items = [...list.game_list_items].sort(
-              (a, b) => a.position - b.position,
-            );
-            const covers = items.slice(0, 5).flatMap((item) => {
-              const game = gamesById.get(item.igdb_id);
-              return game
-                ? [
-                    {
-                      url: resolveGameCover(
-                        game.coverUrl,
-                        customById.get(game.id),
-                      ),
-                      name: game.name,
-                    },
-                  ]
-                : [];
-            });
-            return (
-              <ListPreviewCard
-                key={list.id}
-                list={{
-                  id: list.id,
-                  name: list.name,
-                  description: list.description,
-                  visibility: list.visibility,
-                  count: items.length,
-                }}
-                covers={covers}
-                lang={lang}
-              />
-            );
-          })}
-        </div>
+        <section className="lists-collection">
+          <header>
+            <div>
+              <h2>{pt ? "Todas as listas" : "All lists"}</h2>
+              <p>
+                {pt
+                  ? "Atualizadas recentemente primeiro"
+                  : "Recently updated first"}
+              </p>
+            </div>
+            <span>{totalLists}</span>
+          </header>
+          <div className="lists-grid">
+            {lists.map((list) => {
+              const items = [...list.game_list_items].sort(
+                (a, b) => a.position - b.position,
+              );
+              const covers = items.slice(0, 5).flatMap((item) => {
+                const game = gamesById.get(item.igdb_id);
+                return game
+                  ? [
+                      {
+                        url: resolveGameCover(
+                          game.coverUrl,
+                          customById.get(game.id),
+                        ),
+                        name: game.name,
+                      },
+                    ]
+                  : [];
+              });
+              return (
+                <ListPreviewCard
+                  key={list.id}
+                  list={{
+                    id: list.id,
+                    name: list.name,
+                    description: list.description,
+                    visibility: list.visibility,
+                    count: items.length,
+                  }}
+                  covers={covers}
+                  lang={lang}
+                />
+              );
+            })}
+          </div>
+        </section>
       ) : (
-        <div className="social-empty">
+        <div className="social-empty lists-empty">
+          <span>
+            <Layers3 size={22} />
+          </span>
           <h2>{pt ? "Nenhuma lista ainda" : "No lists yet"}</h2>
           <p>
             {pt

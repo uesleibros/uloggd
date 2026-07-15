@@ -48,7 +48,7 @@ export default async function LocaleLayout({
   const { data: profile } = user
     ? await supabase
         .from("profiles")
-        .select("username,display_name,avatar_url")
+        .select("username,display_name,avatar_url,verified")
         .eq("id", user.id)
         .maybeSingle()
     : { data: null };
@@ -68,6 +68,7 @@ export default async function LocaleLayout({
                     username: profile?.username ?? null,
                     displayName: profile?.display_name ?? null,
                     avatarUrl: profile?.avatar_url ?? null,
+                    verified: profile?.verified ?? false,
                   }
                 : null
             }

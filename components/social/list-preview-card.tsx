@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowUpRight, Globe2, Lock, Users } from "lucide-react";
 
 export function ListPreviewCard({
   list,
@@ -29,6 +30,12 @@ export function ListPreviewCard({
         : pt
           ? "Pública"
           : "Public";
+  const VisibilityIcon =
+    list.visibility === "PRIVATE"
+      ? Lock
+      : list.visibility === "FOLLOWERS"
+        ? Users
+        : Globe2;
   return (
     <Link className="list-preview-card" href={`/${lang}/lists/${list.id}`}>
       <div className="list-cover-strip" data-count={covers.length}>
@@ -42,12 +49,19 @@ export function ListPreviewCard({
         ))}
       </div>
       <div className="list-preview-copy">
-        <span>{visibility}</span>
-        <h2>{list.name}</h2>
+        <div className="list-preview-meta">
+          <span>
+            <VisibilityIcon size={12} /> {visibility}
+          </span>
+          <small>
+            {list.count} {pt ? "jogos" : "games"}
+          </small>
+        </div>
+        <div className="list-preview-title">
+          <h2>{list.name}</h2>
+          <ArrowUpRight size={17} />
+        </div>
         {list.description && <p>{list.description}</p>}
-        <small>
-          {list.count} {pt ? "jogos" : "games"}
-        </small>
       </div>
     </Link>
   );

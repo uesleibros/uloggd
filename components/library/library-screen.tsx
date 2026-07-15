@@ -57,17 +57,13 @@ export async function LibraryScreen({
             )}
           </div>
           <div className="library-owner-copy">
-            <span>
-              <LibraryBig size={14} />
-              {owner
-                ? pt
-                  ? "SUA BIBLIOTECA"
-                  : "YOUR LIBRARY"
-                : pt
-                  ? "BIBLIOTECA PÚBLICA"
-                  : "PUBLIC LIBRARY"}
-            </span>
-            <h1>{owner ? (pt ? "Minha coleção" : "My collection") : name}</h1>
+            {!owner && (
+              <span>
+                <LibraryBig size={14} />
+                {pt ? "BIBLIOTECA PÚBLICA" : "PUBLIC LIBRARY"}
+              </span>
+            )}
+            <h1>{owner ? (pt ? "Sua biblioteca" : "Your library") : name}</h1>
             <p>
               {owner
                 ? pt

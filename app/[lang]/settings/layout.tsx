@@ -14,7 +14,6 @@ export default async function SettingsLayout({
   return (
     <main className="settings-page">
       <header className="settings-page-header">
-        <span>{lang === "pt-BR" ? "SUA CONTA" : "YOUR ACCOUNT"}</span>
         <h1>{lang === "pt-BR" ? "Configurações" : "Settings"}</h1>
         <p>
           {lang === "pt-BR"
