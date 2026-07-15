@@ -31,6 +31,7 @@ html {
   padding: 0;
   background: var(--console-black);
   -webkit-font-smoothing: antialiased;
+  scrollbar-gutter: stable;
 }
 body {
   width: 100%;
