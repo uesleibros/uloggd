@@ -12739,3 +12739,34 @@ a,
     gap: 4px;
   }
 }
+
+@media (max-width: 620px) {
+  .library-page,
+  .game-page {
+    margin-top: -64px;
+  }
+
+  .library-hero,
+  .library-hero-content,
+  .library-loading-hero {
+    min-height: 348px;
+  }
+
+  .game-page {
+    padding-top: 0;
+  }
+
+  .game-stage {
+    border-top: 0;
+    border-radius: 0 0 11px 11px;
+  }
+
+  .game-stage .game-hero {
+    height: 324px;
+  }
+
+  .game-stage-inner,
+  .game-route-skeleton-stage .game-stage-inner {
+    padding-top: 192px;
+  }
+}
