@@ -226,7 +226,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 - Verified profiles use one compact blurple rosette beside the display name. Activating it explains that verification confirms the represented identity and is not an endorsement.
 - The badge follows the account into profile headers and community activity without changing name hierarchy.
-- Verification requests live in profile settings with a statement, up to ten HTTPS evidence links, pending/reviewing feedback, and a persistent verified state.
+- Verification is assigned only by moderators after an external Google Forms review. Profile settings never expose an in-product request form or request status; verified accounts simply receive the public badge across identity surfaces.
 
 ### Search recents
 

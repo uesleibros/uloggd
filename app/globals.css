@@ -3387,11 +3387,6 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 11px;
   background: rgb(255 255 255 / 2%);
 }
-.verification-setting {
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 10px;
-  background: var(--console-panel);
-}
 .profile-birth-date-setting {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr);
@@ -3431,106 +3426,6 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--screen-muted);
   font-size: 9px;
   line-height: 1.5;
-}
-.verification-setting h2 {
-  margin: 0 0 5px;
-  font-size: 16px;
-  font-weight: 600;
-}
-.verification-setting p {
-  margin: 0;
-  color: var(--screen-muted);
-  font-size: 10px;
-  line-height: 1.55;
-  text-wrap: pretty;
-}
-.verification-complete,
-.verification-waiting {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: 12px;
-  padding: 20px;
-}
-.verification-complete > svg {
-  color: var(--brand-blurple-bright);
-}
-.verification-waiting > svg {
-  color: var(--screen-muted);
-}
-.verification-form {
-  display: grid;
-  gap: 16px;
-  padding: 20px;
-}
-.verification-form header {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: 12px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--shell-line);
-}
-.verification-form header > svg {
-  color: var(--brand-blurple-bright);
-}
-.verification-form label {
-  display: grid;
-  gap: 7px;
-  color: var(--screen-dim);
-  font-size: 10px;
-  font-weight: 500;
-}
-.verification-form textarea {
-  width: 100%;
-  min-height: 84px;
-  padding: 10px 11px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 8px;
-  outline: 0;
-  background: var(--console-inset);
-  color: var(--screen-white);
-  font: 12px/1.55 var(--font-inter);
-  resize: vertical;
-}
-.verification-form textarea:focus {
-  border-color: rgb(88 101 242 / 58%);
-}
-.verification-form > small {
-  color: var(--screen-muted);
-  font-size: 9px;
-  line-height: 1.5;
-}
-.verification-form > button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  justify-self: end;
-  gap: 6px;
-  min-height: 38px;
-  padding: 0 13px;
-  border: 1px solid rgb(88 101 242 / 45%);
-  border-radius: 7px;
-  background: var(--brand-blurple-wash);
-  color: var(--screen-white);
-  font-size: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    transform 110ms cubic-bezier(0.23, 1, 0.32, 1);
-}
-.verification-form > button:hover:not(:disabled) {
-  background: rgb(88 101 242 / 23%);
-  transform: translateY(-1px);
-}
-.verification-form > button:active:not(:disabled) {
-  transform: scale(0.97);
-}
-.verification-form > button:disabled {
-  opacity: 0.45;
-  cursor: wait;
-}
-.verification-error {
-  color: #e2aaaa !important;
 }
 .profile-image-setting > header {
   padding: 20px 20px 0;
