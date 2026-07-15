@@ -217,6 +217,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Large libraries load IGDB details in batches of 100 rather than silently truncating the collection. Loading mirrors the hero, tools, rail, and cover grid.
 - Library filters reuse the game-page tab anatomy exactly: 38px horizontal triggers, quiet hover fill, active underline, compact count badge, and touch scrolling on narrow screens. The former desktop-only vertical rail is retired so owner and public views keep one navigation language at every breakpoint.
 - Saved quick actions must read as state, not lighter text: active action buttons use a semantic filled surface, wishlist/backlog/favorite markers remain visible on the cover, checked Radix menu rows receive a tinted inset surface, and successful or failed mutations announce through a compact Radix toast.
+- Tracking colors are stable across the game page and cover quick actions: completed green, playing blue, backlog violet, wishlist gold, and liked coral. Active controls pair color with a stronger inset edge, filled surface, `aria-pressed`, and medium label weight so state never depends on hue alone.
 
 ### Verified identity
 

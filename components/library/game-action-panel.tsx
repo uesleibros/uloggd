@@ -170,8 +170,10 @@ export function GameActionPanel({
         <button
           key={key}
           type="button"
+          data-action={key}
           data-active={state?.[key] || undefined}
           data-liked={(key === "liked" && state?.liked) || undefined}
+          aria-pressed={state?.[key] ?? false}
           disabled={Boolean(pending)}
           onClick={() => update(key, !state?.[key])}
         >

@@ -221,17 +221,17 @@ export function QuickGameCard({
               aria-label={pt ? "Listas salvas" : "Saved lists"}
             >
               {state.wishlist && (
-                <span title={labels.WISHLIST}>
+                <span data-action="wishlist" title={labels.WISHLIST}>
                   <Gift size={11} />
                 </span>
               )}
               {state.backlog && (
-                <span title="Backlog">
+                <span data-action="backlog" title="Backlog">
                   <Clock3 size={11} />
                 </span>
               )}
               {state.liked && (
-                <span title={pt ? "Favorito" : "Favorite"}>
+                <span data-action="liked" title={pt ? "Favorito" : "Favorite"}>
                   <Heart size={11} fill="currentColor" />
                 </span>
               )}
@@ -250,6 +250,7 @@ export function QuickGameCard({
           <div className="quick-action-bar">
             <button
               type="button"
+              data-action="completed"
               data-active={played || undefined}
               aria-pressed={played}
               aria-label={labels.COMPLETED}
@@ -261,6 +262,7 @@ export function QuickGameCard({
             </button>
             <button
               type="button"
+              data-action="backlog"
               data-active={state?.backlog || undefined}
               aria-pressed={state?.backlog ?? false}
               aria-label="Backlog"
@@ -330,6 +332,7 @@ export function QuickGameCard({
                   </div>
                   <DropdownMenu.Separator />
                   <DropdownMenu.CheckboxItem
+                    data-action="playing"
                     checked={state?.playing ?? false}
                     onCheckedChange={(value) =>
                       update("playing", value === true)
@@ -342,6 +345,7 @@ export function QuickGameCard({
                     </DropdownMenu.ItemIndicator>
                   </DropdownMenu.CheckboxItem>
                   <DropdownMenu.CheckboxItem
+                    data-action="wishlist"
                     checked={state?.wishlist ?? false}
                     onCheckedChange={(value) =>
                       update("wishlist", value === true)
@@ -355,6 +359,7 @@ export function QuickGameCard({
                   </DropdownMenu.CheckboxItem>
                   <DropdownMenu.Separator />
                   <DropdownMenu.CheckboxItem
+                    data-action="liked"
                     checked={state?.liked ?? false}
                     data-liked={state?.liked || undefined}
                     onCheckedChange={(value) => update("liked", value === true)}

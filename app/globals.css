@@ -4982,6 +4982,77 @@ html[data-sidebar-ready] .account-button > svg {
   }
 }
 
+/* Semantic saved states shared by game actions and quick actions. */
+.game-action-panel > button[data-active] {
+  color: var(--screen-white);
+  font-weight: 590;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 16%);
+}
+
+.game-stage .game-action-panel > button[data-action="playing"][data-active],
+.game-action-panel > button[data-action="playing"][data-active] {
+  border-color: rgb(111 169 255 / 48%);
+  background: rgb(63 119 207 / 42%);
+  color: #dceaff;
+}
+
+.game-stage .game-action-panel > button[data-action="backlog"][data-active],
+.game-action-panel > button[data-action="backlog"][data-active],
+.quick-action-bar > button[data-action="backlog"][data-active] {
+  border-color: rgb(163 148 255 / 48%);
+  background: rgb(105 87 218 / 58%);
+  color: #eeeaff;
+}
+
+.game-stage .game-action-panel > button[data-action="wishlist"][data-active],
+.game-action-panel > button[data-action="wishlist"][data-active] {
+  border-color: rgb(232 190 91 / 48%);
+  background: rgb(170 119 31 / 42%);
+  color: #ffe7ad;
+}
+
+.game-stage .game-action-panel > button[data-action="liked"][data-active],
+.game-action-panel > button[data-action="liked"][data-active] {
+  border-color: rgb(255 139 148 / 48%);
+  background: rgb(181 66 79 / 42%);
+  color: #ffd9dc;
+}
+
+.quick-action-bar > button[data-action="completed"][data-active] {
+  background: rgb(56 151 104 / 76%);
+  color: #e1fff0;
+}
+
+.quick-menu
+  [role="menuitemcheckbox"][data-action="playing"][data-state="checked"] {
+  background: rgb(63 119 207 / 24%);
+  color: #dceaff;
+}
+
+.quick-menu
+  [role="menuitemcheckbox"][data-action="wishlist"][data-state="checked"] {
+  background: rgb(170 119 31 / 24%);
+  color: #ffe7ad;
+}
+
+.quick-menu
+  [role="menuitemcheckbox"][data-action="liked"][data-state="checked"] {
+  background: rgb(181 66 79 / 24%);
+  color: #ffd9dc;
+}
+
+.quick-card-flags span[data-action="wishlist"] {
+  color: #f1c968;
+}
+
+.quick-card-flags span[data-action="backlog"] {
+  color: #bdb3ff;
+}
+
+.quick-card-flags span[data-action="liked"] {
+  color: #ff9da5;
+}
+
 /* Library interaction polish — shared game-tab language and tactile saved states. */
 .library-workspace {
   display: grid;
