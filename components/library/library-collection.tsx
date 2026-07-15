@@ -1,5 +1,6 @@
 "use client";
 
+import * as Toast from "@radix-ui/react-toast";
 import {
   ChevronLeft,
   ChevronRight,
@@ -7,6 +8,8 @@ import {
   List,
   Search,
   X,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -56,6 +59,11 @@ export function LibraryCollection({
   const searchParams = useSearchParams();
   const [removedIds, setRemovedIds] = useState<Set<number>>(() => new Set());
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
+  const [toast, setToast] = useState<{
+    id: number;
+    message: string;
+    tone: "success" | "error";
+  } | null>(null);
   const requestedFilter = searchParams.get("filter")?.toUpperCase() as Filter;
   const filter: Filter = filters.includes(requestedFilter)
     ? requestedFilter
@@ -129,6 +137,9 @@ export function LibraryCollection({
     event.preventDefault();
     update({ q: query.trim() || null });
   }
+  function notify(message: string, tone: "success" | "error" = "success") {
+    setToast({ id: Date.now(), message, tone });
+  }
 
   if (!activeRecords.length)
     return (
@@ -164,203 +175,231 @@ export function LibraryCollection({
     RATED: pt ? "Avaliados" : "Rated",
   };
   return (
-    <div className="library-workspace">
-      <nav
-        className="library-smart-shelves"
-        aria-label={pt ? "Filtros da biblioteca" : "Library filters"}
-      >
-        {filters.map((item) => (
-          <button
-            type="button"
-            key={item}
-            data-active={filter === item || undefined}
-            onClick={() =>
-              update({ filter: item === "ALL" ? null : item.toLowerCase() })
-            }
-          >
-            <span>{labels[item]}</span>
-            <strong>{counts[item]}</strong>
-          </button>
-        ))}
-      </nav>
-      <div className="library-toolbar">
-        <form onSubmit={submitSearch} className="library-search">
-          <Search size={16} />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={
-              pt ? "Buscar por título ou gênero" : "Search title or genre"
-            }
-            aria-label={pt ? "Buscar na biblioteca" : "Search library"}
-          />
-          {query && (
+    <Toast.Provider swipeDirection="right" duration={3200}>
+      <div className="library-workspace">
+        <nav
+          className="game-page-nav library-smart-shelves"
+          role="tablist"
+          aria-label={pt ? "Filtros da biblioteca" : "Library filters"}
+        >
+          {filters.map((item) => (
             <button
               type="button"
-              aria-label={pt ? "Limpar busca" : "Clear search"}
+              role="tab"
+              key={item}
+              data-active={filter === item || undefined}
+              aria-selected={filter === item}
+              onClick={() =>
+                update({ filter: item === "ALL" ? null : item.toLowerCase() })
+              }
+            >
+              <span>{labels[item]}</span>
+              <strong>{counts[item]}</strong>
+            </button>
+          ))}
+        </nav>
+        <div className="library-toolbar">
+          <form onSubmit={submitSearch} className="library-search">
+            <Search size={16} />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={
+                pt ? "Buscar por título ou gênero" : "Search title or genre"
+              }
+              aria-label={pt ? "Buscar na biblioteca" : "Search library"}
+            />
+            {query && (
+              <button
+                type="button"
+                aria-label={pt ? "Limpar busca" : "Clear search"}
+                onClick={() => {
+                  setQuery("");
+                  update({ q: null });
+                }}
+              >
+                <X size={15} />
+              </button>
+            )}
+          </form>
+          <label className="library-sort">
+            <span>{pt ? "Ordenar" : "Sort"}</span>
+            <select
+              value={sort}
+              onChange={(event) =>
+                update({
+                  sort:
+                    event.target.value === "recent" ? null : event.target.value,
+                })
+              }
+            >
+              <option value="recent">
+                {pt ? "Atualizados recentemente" : "Recently updated"}
+              </option>
+              <option value="oldest">
+                {pt ? "Mais antigos primeiro" : "Oldest first"}
+              </option>
+              <option value="rating">
+                {pt ? "Minha maior nota" : "My highest rating"}
+              </option>
+              <option value="title">A–Z</option>
+              <option value="year">
+                {pt ? "Ano de lançamento" : "Release year"}
+              </option>
+            </select>
+          </label>
+          <div
+            className="library-view-switch"
+            aria-label={pt ? "Modo de visualização" : "View mode"}
+          >
+            <button
+              type="button"
+              data-active={view === "grid" || undefined}
+              onClick={() => update({ view: null })}
+              aria-label={pt ? "Visualizar em grade" : "Grid view"}
+            >
+              <LayoutGrid size={17} />
+            </button>
+            <button
+              type="button"
+              data-active={view === "list" || undefined}
+              onClick={() => update({ view: "list" })}
+              aria-label={pt ? "Visualizar em lista" : "List view"}
+            >
+              <List size={17} />
+            </button>
+          </div>
+        </div>
+        <div className="library-results-meta">
+          <span>
+            {visibleRecords.length.toLocaleString(lang)}{" "}
+            {visibleRecords.length === 1
+              ? pt
+                ? "jogo"
+                : "game"
+              : pt
+                ? "jogos"
+                : "games"}
+          </span>
+          {totalPages > 1 && (
+            <span>
+              {pt ? "Página" : "Page"} {currentPage} / {totalPages}
+            </span>
+          )}
+        </div>
+        {!pageRecords.length ? (
+          <div className="library-filter-empty">
+            <h2>{pt ? "Nenhum jogo encontrado" : "No games found"}</h2>
+            <p>
+              {pt
+                ? "Tente outra busca ou escolha uma prateleira diferente."
+                : "Try another search or choose a different shelf."}
+            </p>
+            <button
+              type="button"
               onClick={() => {
                 setQuery("");
-                update({ q: null });
+                update({ q: null, filter: null });
               }}
             >
-              <X size={15} />
+              {pt ? "Limpar filtros" : "Clear filters"}
             </button>
-          )}
-        </form>
-        <label className="library-sort">
-          <span>{pt ? "Ordenar" : "Sort"}</span>
-          <select
-            value={sort}
-            onChange={(event) =>
-              update({
-                sort:
-                  event.target.value === "recent" ? null : event.target.value,
-              })
-            }
-          >
-            <option value="recent">
-              {pt ? "Atualizados recentemente" : "Recently updated"}
-            </option>
-            <option value="oldest">
-              {pt ? "Mais antigos primeiro" : "Oldest first"}
-            </option>
-            <option value="rating">
-              {pt ? "Minha maior nota" : "My highest rating"}
-            </option>
-            <option value="title">A–Z</option>
-            <option value="year">
-              {pt ? "Ano de lançamento" : "Release year"}
-            </option>
-          </select>
-        </label>
-        <div
-          className="library-view-switch"
-          aria-label={pt ? "Modo de visualização" : "View mode"}
-        >
-          <button
-            type="button"
-            data-active={view === "grid" || undefined}
-            onClick={() => update({ view: null })}
-            aria-label={pt ? "Visualizar em grade" : "Grid view"}
-          >
-            <LayoutGrid size={17} />
-          </button>
-          <button
-            type="button"
-            data-active={view === "list" || undefined}
-            onClick={() => update({ view: "list" })}
-            aria-label={pt ? "Visualizar em lista" : "List view"}
-          >
-            <List size={17} />
-          </button>
-        </div>
-      </div>
-      <div className="library-results-meta">
-        <span>
-          {visibleRecords.length.toLocaleString(lang)}{" "}
-          {visibleRecords.length === 1
-            ? pt
-              ? "jogo"
-              : "game"
-            : pt
-              ? "jogos"
-              : "games"}
-        </span>
+          </div>
+        ) : (
+          <div className="library-results" data-view={view}>
+            {pageRecords.map((record) => {
+              const game = byId.get(record.igdb_id)!;
+              return (
+                <QuickGameCard
+                  key={game.id}
+                  game={game}
+                  initial={record}
+                  lang={lang}
+                  enabled={owner}
+                  removable={owner}
+                  onFeedback={notify}
+                  onRemove={
+                    owner
+                      ? () =>
+                          setRemovedIds((current) =>
+                            new Set(current).add(game.id),
+                          )
+                      : undefined
+                  }
+                  meta={[game.releaseYear, ...game.genres]
+                    .filter(Boolean)
+                    .join(" · ")}
+                />
+              );
+            })}
+          </div>
+        )}
         {totalPages > 1 && (
-          <span>
-            {pt ? "Página" : "Page"} {currentPage} / {totalPages}
-          </span>
+          <nav
+            className="library-pagination"
+            aria-label={pt ? "Paginação da biblioteca" : "Library pagination"}
+          >
+            <button
+              type="button"
+              disabled={currentPage === 1}
+              onClick={() => update({ page: String(currentPage - 1) })}
+            >
+              <ChevronLeft size={16} />
+              {pt ? "Anterior" : "Previous"}
+            </button>
+            <div>
+              {paginationItems(currentPage, totalPages).map((item, index) =>
+                item === "…" ? (
+                  <span key={`ellipsis-${index}`}>…</span>
+                ) : (
+                  <button
+                    type="button"
+                    key={item}
+                    data-current={item === currentPage || undefined}
+                    aria-current={item === currentPage ? "page" : undefined}
+                    onClick={() =>
+                      update({ page: item === 1 ? null : String(item) })
+                    }
+                  >
+                    {item}
+                  </button>
+                ),
+              )}
+            </div>
+            <button
+              type="button"
+              disabled={currentPage === totalPages}
+              onClick={() => update({ page: String(currentPage + 1) })}
+            >
+              {pt ? "Próxima" : "Next"}
+              <ChevronRight size={16} />
+            </button>
+          </nav>
         )}
       </div>
-      {!pageRecords.length ? (
-        <div className="library-filter-empty">
-          <h2>{pt ? "Nenhum jogo encontrado" : "No games found"}</h2>
-          <p>
-            {pt
-              ? "Tente outra busca ou escolha uma prateleira diferente."
-              : "Try another search or choose a different shelf."}
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setQuery("");
-              update({ q: null, filter: null });
-            }}
-          >
-            {pt ? "Limpar filtros" : "Clear filters"}
-          </button>
-        </div>
-      ) : (
-        <div className="library-results" data-view={view}>
-          {pageRecords.map((record) => {
-            const game = byId.get(record.igdb_id)!;
-            return (
-              <QuickGameCard
-                key={game.id}
-                game={game}
-                initial={record}
-                lang={lang}
-                enabled={owner}
-                removable={owner}
-                onRemove={
-                  owner
-                    ? () =>
-                        setRemovedIds((current) =>
-                          new Set(current).add(game.id),
-                        )
-                    : undefined
-                }
-                meta={[game.releaseYear, ...game.genres]
-                  .filter(Boolean)
-                  .join(" · ")}
-              />
-            );
-          })}
-        </div>
-      )}
-      {totalPages > 1 && (
-        <nav
-          className="library-pagination"
-          aria-label={pt ? "Paginação da biblioteca" : "Library pagination"}
+      {toast && (
+        <Toast.Root
+          key={toast.id}
+          className="library-toast"
+          data-tone={toast.tone}
+          defaultOpen
+          onOpenChange={(open) => !open && setToast(null)}
         >
-          <button
-            type="button"
-            disabled={currentPage === 1}
-            onClick={() => update({ page: String(currentPage - 1) })}
-          >
-            <ChevronLeft size={16} />
-            {pt ? "Anterior" : "Previous"}
-          </button>
-          <div>
-            {paginationItems(currentPage, totalPages).map((item, index) =>
-              item === "…" ? (
-                <span key={`ellipsis-${index}`}>…</span>
-              ) : (
-                <button
-                  type="button"
-                  key={item}
-                  data-current={item === currentPage || undefined}
-                  aria-current={item === currentPage ? "page" : undefined}
-                  onClick={() =>
-                    update({ page: item === 1 ? null : String(item) })
-                  }
-                >
-                  {item}
-                </button>
-              ),
-            )}
-          </div>
-          <button
-            type="button"
-            disabled={currentPage === totalPages}
-            onClick={() => update({ page: String(currentPage + 1) })}
-          >
-            {pt ? "Próxima" : "Next"}
-            <ChevronRight size={16} />
-          </button>
-        </nav>
+          {toast.tone === "success" ? (
+            <CheckCircle2 size={18} />
+          ) : (
+            <AlertCircle size={18} />
+          )}
+          <Toast.Title className="library-toast-title">
+            {toast.message}
+          </Toast.Title>
+          <Toast.Close aria-label={pt ? "Fechar aviso" : "Close notification"}>
+            <X size={15} />
+          </Toast.Close>
+        </Toast.Root>
       )}
-    </div>
+      <Toast.Viewport className="library-toast-viewport" />
+    </Toast.Provider>
   );
 }
 

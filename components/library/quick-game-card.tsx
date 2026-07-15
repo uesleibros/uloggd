@@ -42,6 +42,7 @@ export function QuickGameCard({
   meta,
   removable = false,
   onRemove,
+  onFeedback,
 }: {
   game: {
     id: number;
@@ -58,6 +59,7 @@ export function QuickGameCard({
   meta?: string;
   removable?: boolean;
   onRemove?: () => void;
+  onFeedback?: (message: string, tone?: "success" | "error") => void;
 }) {
   const pt = lang === "pt-BR";
   const [state, setState] = useState<State>(initial);
@@ -101,9 +103,34 @@ export function QuickGameCard({
       },
     );
     if (actionError) {
-      setError(pt ? "Não foi possível atualizar." : "Could not update.");
+      const message = pt ? "Não foi possível atualizar." : "Could not update.";
+      setError(message);
+      onFeedback?.(message, "error");
     } else {
       setState(data as State);
+      const actionLabel =
+        action === "status"
+          ? labels[value as Status]
+          : action === "playing"
+            ? pt
+              ? "Jogando"
+              : "Playing"
+            : action === "backlog"
+              ? "Backlog"
+              : action === "wishlist"
+                ? labels.WISHLIST
+                : pt
+                  ? "Favorito"
+                  : "Favorite";
+      onFeedback?.(
+        value === false
+          ? pt
+            ? `${actionLabel} removido.`
+            : `${actionLabel} removed.`
+          : pt
+            ? `${actionLabel} salvo.`
+            : `${actionLabel} saved.`,
+      );
     }
     setPending(null);
   }
@@ -116,13 +143,24 @@ export function QuickGameCard({
       "set_game_rating",
       { game_id: game.id, game_slug: game.slug, rating: value },
     );
-    if (actionError)
-      setError(
-        pt
-          ? "Não foi possível salvar sua nota."
-          : "Could not save your rating.",
+    if (actionError) {
+      const message = pt
+        ? "Não foi possível salvar sua nota."
+        : "Could not save your rating.";
+      setError(message);
+      onFeedback?.(message, "error");
+    } else {
+      setState(data as State);
+      onFeedback?.(
+        value === null
+          ? pt
+            ? "Nota removida."
+            : "Rating removed."
+          : pt
+            ? `Nota ${value / 20}/5 salva.`
+            : `${value / 20}/5 rating saved.`,
       );
-    else setState(data as State);
+    }
     setPending(null);
   }
 
@@ -140,11 +178,20 @@ export function QuickGameCard({
           ? "Não foi possível remover este jogo."
           : "Could not remove this game.",
       );
+      onFeedback?.(
+        pt
+          ? "Não foi possível remover este jogo."
+          : "Could not remove this game.",
+        "error",
+      );
       setPending(null);
       return;
     }
     setRemoved(true);
     onRemove?.();
+    onFeedback?.(
+      pt ? `${game.name} removido da biblioteca.` : `${game.name} removed.`,
+    );
   }
 
   const played = state?.status === "COMPLETED";
@@ -166,6 +213,30 @@ export function QuickGameCard({
         {rank && (
           <span className="quick-rank">{String(rank).padStart(2, "0")}</span>
         )}
+        {enabled &&
+          state &&
+          (state.wishlist || state.backlog || state.liked) && (
+            <div
+              className="quick-card-flags"
+              aria-label={pt ? "Listas salvas" : "Saved lists"}
+            >
+              {state.wishlist && (
+                <span title={labels.WISHLIST}>
+                  <Gift size={11} />
+                </span>
+              )}
+              {state.backlog && (
+                <span title="Backlog">
+                  <Clock3 size={11} />
+                </span>
+              )}
+              {state.liked && (
+                <span title={pt ? "Favorito" : "Favorite"}>
+                  <Heart size={11} fill="currentColor" />
+                </span>
+              )}
+            </div>
+          )}
         <div className="quick-card-details">
           <strong>{game.name}</strong>
           {state?.quick_rating ? (
@@ -180,6 +251,7 @@ export function QuickGameCard({
             <button
               type="button"
               data-active={played || undefined}
+              aria-pressed={played}
               aria-label={labels.COMPLETED}
               title={labels.COMPLETED}
               disabled={Boolean(pending)}
@@ -190,6 +262,7 @@ export function QuickGameCard({
             <button
               type="button"
               data-active={state?.backlog || undefined}
+              aria-pressed={state?.backlog ?? false}
               aria-label="Backlog"
               title="Backlog"
               disabled={Boolean(pending)}

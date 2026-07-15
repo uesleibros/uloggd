@@ -212,9 +212,11 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Owner and public profile libraries share one Steam-inspired workspace: identity/banner stage, real collection counts, smart shelves, dense controls, and the active-shelf cover language.
 - Smart shelves expose All, Playing, Backlog, Wishlist, Completed, Favorites, and Rated with real counts. Search matches title or genre; sorting supports recent, oldest, personal rating, title, and release year.
 - Grid shows 24 games per page; compact list shows 14. Filter, sort, view, query, and page state live in the URL so a public collection view can be shared.
-- Desktop uses a 176px smart-shelf rail beside results. At 960px it becomes a horizontal snap filter strip; mobile keeps two cover columns or compact rows with full-width search and pagination actions.
+- Every breakpoint uses the same horizontal, touch-scrollable smart-shelf tabs above the results; mobile keeps two cover columns or compact rows with full-width search and pagination actions.
 - The owner can switch the library between Public and Private. Public `user_games` reads are enforced by RLS against `profiles.library_visibility`; quick actions and removal never render for visitors.
 - Large libraries load IGDB details in batches of 100 rather than silently truncating the collection. Loading mirrors the hero, tools, rail, and cover grid.
+- Library filters reuse the game-page tab anatomy exactly: 38px horizontal triggers, quiet hover fill, active underline, compact count badge, and touch scrolling on narrow screens. The former desktop-only vertical rail is retired so owner and public views keep one navigation language at every breakpoint.
+- Saved quick actions must read as state, not lighter text: active action buttons use a semantic filled surface, wishlist/backlog/favorite markers remain visible on the cover, checked Radix menu rows receive a tinted inset surface, and successful or failed mutations announce through a compact Radix toast.
 
 ### Verified identity
 
