@@ -7,21 +7,27 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageCropDialog } from "./image-crop-dialog";
+import { VerificationSetting } from "./verification-setting";
 
 type Profile = {
+  id: string;
   username: string;
   display_name: string | null;
   pronouns: string | null;
   bio: string | null;
   avatar_url: string | null;
   banner_url: string | null;
+  verified: boolean;
 };
 
 export function ProfileSettingsPanel({
   initial,
+  verificationStatus,
   lang,
 }: {
   initial: Profile;
+  verificationStatus:
+    "PENDING" | "REVIEWING" | "APPROVED" | "REJECTED" | "WITHDRAWN" | null;
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
@@ -303,6 +309,12 @@ export function ProfileSettingsPanel({
           onChange={(event) => chooseImage(event.target.files?.[0], "banner")}
         />
       </section>
+      <VerificationSetting
+        profileId={profile.id}
+        verified={profile.verified}
+        requestStatus={verificationStatus}
+        lang={lang}
+      />
       {error && (
         <div className="auth-error" role="alert">
           {error}

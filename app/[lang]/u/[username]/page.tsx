@@ -14,6 +14,7 @@ import { notFound } from "next/navigation";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { FollowButton } from "@/components/social/follow-button";
+import { VerifiedBadge } from "@/components/verified-badge";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
@@ -77,7 +78,7 @@ export default async function ProfilePage({ params }: Props) {
     supabase
       .from("profiles")
       .select(
-        "id,username,display_name,pronouns,bio,avatar_url,banner_url,created_at",
+        "id,username,display_name,pronouns,bio,avatar_url,banner_url,created_at,verified",
       )
       .ilike("username", username)
       .maybeSingle(),
@@ -195,7 +196,10 @@ export default async function ProfilePage({ params }: Props) {
         <div className="profile-identity">
           <div className="profile-title-row">
             <div>
-              <h1>{profile.display_name || `@${profile.username}`}</h1>
+              <div className="profile-verified-title">
+                <h1>{profile.display_name || `@${profile.username}`}</h1>
+                {profile.verified && <VerifiedBadge lang={lang} />}
+              </div>
               <p className="profile-handle">
                 @{profile.username}
                 {profile.pronouns ? ` · ${profile.pronouns}` : ""}

@@ -568,7 +568,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
       fields ${fields};
       where cover != null & first_release_date > ${now} & hypes > 5 & game_type = (0,8,9);
       sort hypes desc;
-      limit 4;
+      limit 8;
     `,
       6 * CACHE_HOURS,
     ),
@@ -577,7 +577,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
       fields ${fields};
       where cover != null & first_release_date > ${now} & first_release_date < ${inFourMonths} & game_type = (0,8,9);
       sort first_release_date asc;
-      limit 4;
+      limit 8;
     `,
       6 * CACHE_HOURS,
     ),
@@ -586,7 +586,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
       fields ${fields};
       where cover != null & first_release_date < ${now} & total_rating >= 78 & total_rating_count >= 20 & total_rating_count < 400 & game_type = (0,8,9);
       sort total_rating desc;
-      limit 4;
+      limit 8;
     `,
       6 * CACHE_HOURS,
     ),

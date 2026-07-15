@@ -762,6 +762,25 @@ html[data-sidebar-ready] .account-button > svg {
 .search-results-label span:last-child {
   font-variant-numeric: tabular-nums;
 }
+.search-results-label button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--screen-muted);
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.search-results-label button:hover {
+  color: var(--screen-white);
+}
+.search-recent-icon {
+  color: var(--screen-muted);
+}
 .search-result {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) auto;
@@ -959,7 +978,7 @@ html[data-sidebar-ready] .account-button > svg {
   align-items: end;
   gap: 24px;
   min-height: 300px;
-  margin: 0 32px;
+  margin: 32px 32px 0;
   padding: 28px;
   overflow: hidden;
   border: 1px solid var(--shell-line-strong);
@@ -1096,6 +1115,64 @@ html[data-sidebar-ready] .account-button > svg {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 14px;
   margin-top: 20px;
+}
+.shelf-carousel {
+  position: relative;
+  margin-top: 20px;
+}
+.shelf-carousel-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 56px) / 5);
+  gap: 14px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.shelf-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+.shelf-carousel-track > * {
+  scroll-snap-align: start;
+}
+.shelf-carousel-controls {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 16px);
+  display: flex;
+  gap: 6px;
+}
+.shelf-carousel-controls button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 7px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  cursor: pointer;
+  transition:
+    background-color 140ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 140ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.shelf-carousel-controls button:hover:not(:disabled) {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.shelf-carousel-controls button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.shelf-carousel-controls button:focus-visible {
+  outline: 2px solid var(--brand-blurple-bright);
+  outline-offset: 2px;
+}
+.shelf-carousel-controls button:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 .quick-game-card {
   min-width: 0;
@@ -1419,9 +1496,18 @@ html[data-sidebar-ready] .account-button > svg {
   text-wrap: pretty;
 }
 .discovery-games {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  min-width: 0;
+  margin-top: 0;
+  padding-top: 44px;
+}
+.discovery-games .shelf-carousel-track {
+  grid-auto-columns: calc((100% - 30px) / 4);
   gap: 10px;
+}
+.discovery-games .shelf-carousel-controls {
+  top: 0;
+  right: 0;
+  bottom: auto;
 }
 .discovery-games .quick-game-card {
   min-width: 0;
@@ -3179,6 +3265,111 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid var(--shell-line);
   border-radius: 11px;
   background: rgb(255 255 255 / 2%);
+}
+.verification-setting {
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 10px;
+  background: var(--console-panel);
+}
+.verification-setting h2 {
+  margin: 0 0 5px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.verification-setting p {
+  margin: 0;
+  color: var(--screen-muted);
+  font-size: 10px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.verification-complete,
+.verification-waiting {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  padding: 20px;
+}
+.verification-complete > svg {
+  color: var(--brand-blurple-bright);
+}
+.verification-waiting > svg {
+  color: var(--screen-muted);
+}
+.verification-form {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+.verification-form header {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.verification-form header > svg {
+  color: var(--brand-blurple-bright);
+}
+.verification-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--screen-dim);
+  font-size: 10px;
+  font-weight: 500;
+}
+.verification-form textarea {
+  width: 100%;
+  min-height: 84px;
+  padding: 10px 11px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font: 12px/1.55 var(--font-inter);
+  resize: vertical;
+}
+.verification-form textarea:focus {
+  border-color: rgb(88 101 242 / 58%);
+}
+.verification-form > small {
+  color: var(--screen-muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+.verification-form > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid rgb(88 101 242 / 45%);
+  border-radius: 7px;
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 110ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.verification-form > button:hover:not(:disabled) {
+  background: rgb(88 101 242 / 23%);
+  transform: translateY(-1px);
+}
+.verification-form > button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.verification-form > button:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+.verification-error {
+  color: #e2aaaa !important;
 }
 .profile-image-setting > header {
   padding: 20px 20px 0;
@@ -7388,6 +7579,80 @@ a,
   border-radius: 11px;
 }
 
+/* Public identity assurance */
+.profile-verified-title,
+.activity-user > span:last-child > strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.verified-badge {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  line-height: 1;
+}
+.verified-badge summary {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--brand-blurple-bright);
+  cursor: pointer;
+  list-style: none;
+}
+.verified-badge summary::-webkit-details-marker {
+  display: none;
+}
+.verified-badge summary:hover {
+  background: var(--brand-blurple-wash);
+}
+.verified-badge summary:focus-visible {
+  outline: 2px solid var(--brand-blurple-bright);
+  outline-offset: 2px;
+}
+.verified-badge-info {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  left: 0;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 10px;
+  width: min(300px, calc(100vw - 40px));
+  padding: 14px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-raised);
+  box-shadow: 0 18px 48px rgb(0 0 0 / 44%);
+  color: var(--brand-blurple-bright);
+  text-align: left;
+  white-space: normal;
+  animation: search-surface-in 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.verified-badge-info strong {
+  display: block;
+  color: var(--screen-white);
+  font-size: 11px;
+  font-weight: 620;
+}
+.verified-badge-info p {
+  margin: 5px 0 0;
+  color: var(--screen-muted);
+  font-size: 9px;
+  font-weight: 400;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.activity-user .verified-badge summary {
+  width: 18px;
+  height: 18px;
+}
+.activity-user .verified-badge-info {
+  left: -90px;
+}
+
 /* Account age assurance, protected catalog states, and route recovery. */
 .auth-single .birth-date-panel {
   align-self: auto;
@@ -7675,6 +7940,28 @@ a,
   .not-found-actions a,
   .not-found-actions button {
     width: 100%;
+  }
+  .featured-game {
+    margin-top: 16px;
+  }
+  .home-popular-carousel,
+  .discovery-games {
+    display: block;
+    margin-right: -18px;
+    padding-right: 18px;
+    overflow: visible;
+  }
+  .home-popular-carousel .shelf-carousel-track,
+  .discovery-games .shelf-carousel-track {
+    grid-auto-columns: clamp(112px, 28vw, 132px);
+    gap: 12px;
+    padding-right: 18px;
+  }
+  .shelf-carousel-controls {
+    display: none;
+  }
+  .discovery-games {
+    padding-top: 0;
   }
 }
 

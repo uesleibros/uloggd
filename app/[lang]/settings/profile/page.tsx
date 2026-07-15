@@ -15,11 +15,28 @@ export default async function ProfileSettingsPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect(`/${lang}/login?next=/${lang}/settings/profile`);
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username,display_name,pronouns,bio,avatar_url,banner_url")
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, { data: verificationRequest }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select(
+        "id,username,display_name,pronouns,bio,avatar_url,banner_url,verified",
+      )
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("verification_requests")
+      .select("status")
+      .eq("profile_id", user.id)
+      .order("submitted_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
   if (!profile?.username) redirect(`/${lang}/onboarding/username`);
-  return <ProfileSettingsPanel initial={profile} lang={lang} />;
+  return (
+    <ProfileSettingsPanel
+      initial={profile}
+      verificationStatus={verificationRequest?.status ?? null}
+      lang={lang}
+    />
+  );
 }

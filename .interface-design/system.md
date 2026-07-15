@@ -198,6 +198,17 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - A saved custom cover is a library-wide preference: every authenticated catalog surface resolves it before the IGDB default.
 - Cover cards remain stationary on hover; reveal titles and quick actions through overlays only, without vertical lift.
 - Mobile discovery lanes become horizontal snap shelves across the full 0–620px range; cards stay between 112px and 132px so cover art, titles, and three quick-action targets remain usable instead of compressing into a four-column grid.
+- Home shelves use user-controlled horizontal carousels with snap, drag/touch scrolling, and quiet 36px previous/next controls. They never auto-advance.
+
+### Verified identity
+
+- Verified profiles use one compact blurple rosette beside the display name. Activating it explains that verification confirms the represented identity and is not an endorsement.
+- The badge follows the account into profile headers and community activity without changing name hierarchy.
+- Verification requests live in profile settings with a statement, up to ten HTTPS evidence links, pending/reviewing feedback, and a persistent verified state.
+
+### Search recents
+
+- Opening an empty global search shows up to six recently selected games stored only in browser local storage. Rows reuse the standard search result anatomy and include an explicit clear action.
 
 ### Cover picker
 

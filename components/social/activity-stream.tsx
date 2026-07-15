@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CalendarDays, Clock3, EyeOff, Star } from "lucide-react";
 import type { Game } from "@/lib/igdb";
 import { ActivityEntryActions } from "./activity-entry-actions";
+import { VerifiedBadge } from "../verified-badge";
 
 export type SocialEntry = {
   id: string;
@@ -12,6 +13,7 @@ export type SocialEntry = {
     username: string;
     display_name: string | null;
     avatar_url: string | null;
+    verified: boolean;
   };
   igdbId: number;
   gameSlug: string;
@@ -86,6 +88,7 @@ export function ActivityStream({
                 <span>
                   <strong>
                     {entry.profile.display_name || `@${entry.profile.username}`}
+                    {entry.profile.verified && <VerifiedBadge lang={lang} />}
                   </strong>
                   <small>@{entry.profile.username}</small>
                 </span>

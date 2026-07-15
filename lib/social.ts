@@ -8,6 +8,7 @@ type ProfileJoin = {
   username: string;
   display_name: string | null;
   avatar_url: string | null;
+  verified: boolean;
 };
 type Row = {
   id: string;
@@ -34,14 +35,14 @@ export async function getActivity(
   let reviewsQuery = supabase
     .from("reviews")
     .select(
-      "id,profile_id,igdb_id,game_slug,rating,content,contains_spoilers,visibility,created_at,profiles!reviews_profile_id_fkey(username,display_name,avatar_url)",
+      "id,profile_id,igdb_id,game_slug,rating,content,contains_spoilers,visibility,created_at,profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
   let diaryQuery = supabase
     .from("diary_entries")
     .select(
-      "id,profile_id,igdb_id,game_slug,played_on,minutes,note,contains_spoilers,visibility,created_at,profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url)",
+      "id,profile_id,igdb_id,game_slug,played_on,minutes,note,contains_spoilers,visibility,created_at,profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);

@@ -8,6 +8,7 @@ import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
 import { resolveGameCover } from "@/lib/game-cover";
 import { QuickGameCard } from "@/components/library/quick-game-card";
+import { ShelfCarousel } from "@/components/shelf-carousel";
 import { getDictionary, hasLocale } from "./dictionaries";
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
@@ -48,14 +49,6 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
   const ratedCount =
     savedGames?.filter((item) => item.quick_rating !== null).length ?? 0;
   const [featured, ...catalog] = games;
-  const date = new Intl.DateTimeFormat(lang, {
-    day: "2-digit",
-    month: "short",
-    weekday: "long",
-    timeZone: "America/Sao_Paulo",
-  })
-    .format(new Date())
-    .toUpperCase();
   const releaseFormatter = new Intl.DateTimeFormat(lang, {
     day: "numeric",
     month: "short",
@@ -104,13 +97,6 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
   return (
     <div className="home-shell">
       <main className="feed">
-        <header className="feed-header">
-          <div>
-            <span>{date}</span>
-            <h1>{d.home.todayTitle}</h1>
-          </div>
-        </header>
-
         {featured && (
           <section className="featured-game">
             <Image
@@ -146,7 +132,7 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
               <div className="featured-meta">
                 <span>
                   <Star size={13} fill="currentColor" />
-                  {featured.rating ?? "—"}
+                  {featured.rating ? `${featured.rating}/100` : "—"}
                 </span>
                 <span>{featured.releaseYear}</span>
                 <span>{featured.genres.join(" · ")}</span>
@@ -162,13 +148,13 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
               <h2>{d.home.mostLogged}</h2>
               <p>{d.home.mostLoggedDescription}</p>
             </div>
-            <Link href={`/${lang}`}>
-              {d.actions.seeAll}
-              <ArrowUpRight size={14} />
-            </Link>
           </div>
-          <div className="cover-shelf">
-            {catalog.slice(0, 5).map((game, index) => (
+          <ShelfCarousel
+            label={d.home.mostLogged}
+            lang={lang}
+            className="home-popular-carousel"
+          >
+            {catalog.map((game, index) => (
               <QuickGameCard
                 key={game.id}
                 game={game}
@@ -178,7 +164,7 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
                 enabled={Boolean(user)}
               />
             ))}
-          </div>
+          </ShelfCarousel>
         </section>
 
         <section className="discoveries-section">
@@ -199,7 +185,11 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
                     <p>{lane.description}</p>
                   </div>
                 </header>
-                <div className="discovery-games">
+                <ShelfCarousel
+                  label={lane.title}
+                  lang={lang}
+                  className="discovery-games"
+                >
                   {lane.games.map((game) => (
                     <QuickGameCard
                       key={game.id}
@@ -210,7 +200,7 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
                       meta={lane.meta(game)}
                     />
                   ))}
-                </div>
+                </ShelfCarousel>
               </section>
             ))}
           </div>
