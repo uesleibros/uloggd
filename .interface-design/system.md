@@ -109,7 +109,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Solid `console-panel` background with `shell-line-strong` right border.
 - Brand plus subtle beta stage at top.
 - Navigation rows are uniformly 52px high with an 8px radius on desktop, compact, and mobile drawer states; compact icon hit areas are 48px wide inside the 64px rail.
-- Current route uses a graphite hover surface, white icon and label, and one small blurple status dot. Blurple never floods the navigation row.
+- Current route uses the same persistent graphite surface as hover, with a white icon and label. Do not add a dot, rail, or blurple fill to the selected row.
 - Quick-log action is tonal, not a large saturated pill.
 - Account control stays at the bottom and must not fabricate authenticated state.
 - Signed-out account controls use a neutral login glyph; initials and avatars are reserved for real authenticated profiles.
@@ -128,6 +128,8 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Sidebar remains available through the menu trigger.
 - Do not use a bottom navigation bar; all destinations live in the drawer to avoid competing navigation systems.
 - Drawer behavior uses Radix Dialog for focus trapping, Escape handling, focus return, and accessible overlay state.
+- Drawer routes, including Settings, use the same persistent graphite selected surface as desktop navigation.
+- Mobile drawer width is `min(82vw, 296px)` so it keeps context visible and does not feel like a second full-screen page.
 - Drawer animation: 240ms entry, 160ms exit, transform and opacity only.
 - The authenticated account control spans the full drawer width at the bottom; compact desktop sidebar rules must never collapse its identity, metadata, or menu chevron.
 - The mobile drawer trigger shows the signed-in avatar (or account initial fallback) instead of a hamburger; signed-out visitors keep the menu icon.

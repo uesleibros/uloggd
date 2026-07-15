@@ -409,16 +409,6 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--screen-white);
   font-weight: 650;
 }
-.main-nav a[aria-current="page"]::after,
-.sidebar-bottom > a[aria-current="page"]::after {
-  position: absolute;
-  right: 10px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--brand-blurple-bright);
-  content: "";
-}
 .main-nav a[aria-current="page"] svg,
 .sidebar-bottom > a[aria-current="page"] svg {
   color: var(--screen-white);
@@ -3181,7 +3171,7 @@ html[data-sidebar-ready] .account-button > svg {
   position: fixed;
   z-index: 61;
   inset: 0 auto 0 0;
-  width: min(84vw, 328px);
+  width: min(82vw, 296px);
   padding: 20px 16px 16px;
   border: 0;
   border-right: 1px solid var(--shell-line-strong);
@@ -3241,6 +3231,11 @@ html[data-sidebar-ready] .account-button > svg {
   font-size: 13px;
   font-weight: 430;
 }
+.drawer-navigation a:hover,
+.drawer-secondary a:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
 .drawer-navigation > .drawer-disabled,
 .drawer-secondary > .drawer-disabled {
   cursor: not-allowed;
@@ -3251,12 +3246,19 @@ html[data-sidebar-ready] .account-button > svg {
   color: #55505a;
 }
 .drawer-navigation a[data-active] {
+  background: var(--console-hover);
   color: white;
   font-weight: 600;
 }
-.drawer-navigation a[data-active] svg {
+.drawer-navigation a[data-active] svg,
+.drawer-secondary a[data-active] svg {
   color: var(--screen-white);
   stroke-width: 2.5;
+}
+.drawer-secondary a[data-active] {
+  background: var(--console-hover);
+  color: var(--screen-white);
+  font-weight: 600;
 }
 .drawer-secondary {
   display: grid;

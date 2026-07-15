@@ -125,7 +125,12 @@ export function MobileSidebar({
             <div className="drawer-secondary">
               {isAuthenticated ? (
                 <Dialog.Close asChild>
-                  <Link href={`/${lang}/settings/profile`}>
+                  <Link
+                    href={`/${lang}/settings/profile`}
+                    data-active={
+                      pathname.startsWith(`/${lang}/settings`) || undefined
+                    }
+                  >
                     <Settings size={21} />
                     {labels.settings}
                   </Link>
