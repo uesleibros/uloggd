@@ -138,6 +138,7 @@ export default async function GamePage({ params }: Props) {
     return `${hours}h${minutes ? ` ${minutes}m` : ""}`;
   };
   const spawnd = getSpawndGame({
+    igdbId: game.id,
     name: game.name,
     websites: game.websites,
     lang,
