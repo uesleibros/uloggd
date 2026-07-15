@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import {
   Check,
   Clock3,
@@ -23,6 +24,10 @@ import { GameLogActions } from "@/components/social/game-log-actions";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { getGameBySlug } from "@/lib/igdb";
 import { isOldEnough } from "@/lib/age-access";
+import {
+  ANONYMOUS_AGE_COOKIE,
+  readAnonymousAgeAssertion,
+} from "@/lib/anonymous-age";
 import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/server";
 import { getActivity } from "@/lib/social";
@@ -77,6 +82,11 @@ export default async function GamePage({ params }: Props) {
   } = await supabase.auth.getUser();
   const brazilRating = game.ageRatings.find((rating) => rating.region === "BR");
   const minimumAge = brazilRating?.minimumAge ?? 0;
+  const anonymousAge = user
+    ? null
+    : readAnonymousAgeAssertion(
+        (await cookies()).get(ANONYMOUS_AGE_COOKIE)?.value,
+      );
   const { data: ageProfile } = user
     ? await supabase
         .from("profiles")
@@ -88,7 +98,10 @@ export default async function GamePage({ params }: Props) {
   if (
     brazilRating &&
     minimumAge > 0 &&
-    (!ageProfile?.birth_date || !isOldEnough(ageProfile.birth_date, minimumAge))
+    (user
+      ? !ageProfile?.birth_date ||
+        !isOldEnough(ageProfile.birth_date, minimumAge)
+      : anonymousAge === null || anonymousAge < minimumAge)
   ) {
     return (
       <GameAgeGate

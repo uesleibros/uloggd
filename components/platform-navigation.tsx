@@ -111,14 +111,14 @@ export function PlatformNavigation({
             </nav>
             <div className="sidebar-bottom">
               {isAuthenticated ? (
-                <Link
+                <ActiveLink
                   href={`/${lang}/settings/profile`}
                   aria-label={d.nav.settings}
                   title={d.nav.settings}
                 >
                   <Settings size={20} />
                   <span>{d.nav.settings}</span>
-                </Link>
+                </ActiveLink>
               ) : (
                 <span
                   className="nav-disabled"

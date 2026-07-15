@@ -2,7 +2,7 @@
 
 :root {
   color-scheme: dark;
-  --sidebar-width: 264px;
+  --sidebar-width: 232px;
   --console-black: #0b0a0d;
   --console-canvas: #0f0e11;
   --console-panel: #17151b;
@@ -403,11 +403,24 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--screen-white);
   background: var(--console-hover);
 }
-.main-nav a[aria-current="page"] {
+.main-nav a[aria-current="page"],
+.sidebar-bottom > a[aria-current="page"] {
+  background: var(--console-hover);
   color: var(--screen-white);
   font-weight: 650;
 }
-.main-nav a[aria-current="page"] svg {
+.main-nav a[aria-current="page"]::after,
+.sidebar-bottom > a[aria-current="page"]::after {
+  position: absolute;
+  right: 10px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--brand-blurple-bright);
+  content: "";
+}
+.main-nav a[aria-current="page"] svg,
+.sidebar-bottom > a[aria-current="page"] svg {
   color: var(--screen-white);
   stroke-width: 2.5;
 }
@@ -3355,6 +3368,46 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid var(--shell-line-strong);
   border-radius: 10px;
   background: var(--console-panel);
+}
+.profile-birth-date-setting {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: rgb(255 255 255 / 2%);
+}
+.profile-birth-date-setting > span {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-dim);
+}
+.profile-birth-date-setting h2 {
+  margin: 0 0 7px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.profile-birth-date-setting strong {
+  display: block;
+  color: var(--screen-white);
+  font-size: 12px;
+  font-weight: 560;
+  text-transform: capitalize;
+}
+.profile-birth-date-setting p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 7px 0 0;
+  color: var(--screen-muted);
+  font-size: 9px;
+  line-height: 1.5;
 }
 .verification-setting h2 {
   margin: 0 0 5px;
@@ -7908,6 +7961,91 @@ a,
   gap: 8px;
   margin-top: 28px;
 }
+.anonymous-age-form {
+  display: grid;
+  width: min(100%, 420px);
+  gap: 10px;
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-inset);
+  text-align: left;
+}
+.anonymous-age-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--screen-dim);
+  font-size: 10px;
+  font-weight: 550;
+}
+.anonymous-age-form label > span {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-black);
+  color: var(--screen-muted);
+}
+.anonymous-age-form label svg {
+  justify-self: center;
+}
+.anonymous-age-form input {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  padding: 0 10px;
+  border: 0;
+  border-left: 1px solid var(--shell-line);
+  outline: 0;
+  background: transparent;
+  color: var(--screen-white);
+  color-scheme: dark;
+}
+.anonymous-age-form label > span:focus-within {
+  border-color: rgb(88 101 242 / 58%);
+}
+.anonymous-age-form button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+  border: 1px solid rgb(88 101 242 / 42%);
+  border-radius: 8px;
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
+  font-size: 10px;
+  font-weight: 620;
+  cursor: pointer;
+  transition:
+    background-color 140ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.anonymous-age-form button:hover:not(:disabled) {
+  background: rgb(88 101 242 / 23%);
+}
+.anonymous-age-form button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.anonymous-age-form button:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+.anonymous-age-form > p {
+  margin: 0;
+  color: #e2aaaa;
+  font-size: 9px;
+  line-height: 1.45;
+}
+.anonymous-age-form > small {
+  color: var(--screen-muted);
+  font-size: 8px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
 .age-gate-actions a,
 .not-found-actions a,
 .not-found-actions button {
@@ -7935,6 +8073,11 @@ a,
   background: var(--brand-blurple);
   color: white;
 }
+.age-gate-actions-guest a:first-child {
+  border-color: var(--shell-line-strong);
+  background: var(--console-raised);
+  color: var(--screen-dim);
+}
 .age-gate-actions a:hover,
 .not-found-actions a:hover,
 .not-found-actions button:hover {
@@ -7945,6 +8088,10 @@ a,
 .age-gate-actions a:first-child:hover,
 .not-found-actions a:hover {
   background: var(--brand-blurple-bright);
+}
+.age-gate-actions-guest a:first-child:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
 }
 .age-gate-actions a:active,
 .not-found-actions a:active,

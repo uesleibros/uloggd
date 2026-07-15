@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, LockKeyhole, LogIn, ShieldCheck } from "lucide-react";
+import { AnonymousAgeForm } from "./anonymous-age-form";
 
 type Rating = {
   organization: string;
@@ -52,14 +53,19 @@ export function GameAgeGate({
               ? `${gameName} recebeu classificação ${rating.rating}. O uloggd protege páginas acima da idade registrada na sua conta.`
               : `${gameName} is rated ${rating.rating}. uloggd protects pages above the age recorded on your account.`
             : pt
-              ? `${gameName} exige confirmação de idade por ter classificação ${rating.rating}. Entre para verificarmos sua faixa etária.`
-              : `${gameName} requires age confirmation because it is rated ${rating.rating}. Sign in so we can check your age group.`}
+              ? `${gameName} exige confirmação de idade por ter classificação ${rating.rating}. Informe sua data abaixo ou entre na sua conta.`
+              : `${gameName} requires age confirmation because it is rated ${rating.rating}. Enter your date below or sign in to your account.`}
         </p>
-        <div className="age-gate-actions">
+        {!signedIn && rating.minimumAge !== null && (
+          <AnonymousAgeForm minimumAge={rating.minimumAge} lang={lang} />
+        )}
+        <div
+          className={`age-gate-actions${signedIn ? "" : " age-gate-actions-guest"}`}
+        >
           {!signedIn && (
             <Link href={`/${lang}/login`}>
               <LogIn size={16} aria-hidden />
-              {pt ? "Entrar para verificar" : "Sign in to verify"}
+              {pt ? "Entrar na sua conta" : "Sign in to your account"}
             </Link>
           )}
           <Link href={`/${lang}`}>

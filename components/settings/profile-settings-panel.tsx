@@ -2,7 +2,15 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { ImageIcon, LoaderCircle, Save, Trash2, Upload } from "lucide-react";
+import {
+  CalendarDays,
+  ImageIcon,
+  LoaderCircle,
+  LockKeyhole,
+  Save,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -18,6 +26,7 @@ type Profile = {
   avatar_url: string | null;
   banner_url: string | null;
   verified: boolean;
+  birth_date: string;
 };
 
 export function ProfileSettingsPanel({
@@ -308,6 +317,28 @@ export function ProfileSettingsPanel({
           accept="image/jpeg,image/png,image/webp"
           onChange={(event) => chooseImage(event.target.files?.[0], "banner")}
         />
+      </section>
+      <section className="profile-birth-date-setting">
+        <span>
+          <CalendarDays size={20} />
+        </span>
+        <div>
+          <h2>{pt ? "Data de nascimento" : "Birth date"}</h2>
+          <strong>
+            {new Intl.DateTimeFormat(lang, {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+              timeZone: "UTC",
+            }).format(new Date(`${profile.birth_date}T00:00:00Z`))}
+          </strong>
+          <p>
+            <LockKeyhole size={13} />
+            {pt
+              ? "Informação privada e permanente. Não pode ser alterada depois da confirmação."
+              : "Private and permanent information. It cannot be changed after confirmation."}
+          </p>
+        </div>
       </section>
       <VerificationSetting
         profileId={profile.id}

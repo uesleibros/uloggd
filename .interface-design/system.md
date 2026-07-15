@@ -64,7 +64,7 @@ Base unit: **4px**.
 - Card/internal padding: 16–20px.
 - Feed section padding: 32–36px desktop; 18–30px mobile.
 - Major separation: 32–40px.
-- Desktop sidebar: 264px full; 64px compact.
+- Desktop sidebar: 232px full; 64px compact.
 - The sidebar structural column itself has no outer padding; brand, scrollable navigation, and account control own their internal gutters so the panel remains flush with the application canvas.
 - The document, application shell, and sidebar explicitly use zero outer margin/padding; the sticky sidebar is anchored to the viewport's inline-start edge and fills its grid track.
 - The sidebar shell itself stays at zero margin and padding. A single full-height `sidebar-frame` owns the 12px expanded and 8px compact internal gutter; compact brand, navigation, and account targets are all exactly 48px and the scroll region never adds a second horizontal gutter.
@@ -160,6 +160,8 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Birth date is presented as a dark inset native date control with an explicit permanence confirmation. Safety copy explains the 12-year account minimum and that the date is private.
 - A blocked game page never reveals artwork or descriptive content. The official local ClassInd mark is the focal object, followed by the restriction reason and one safe route back to the catalog.
 - Blurple remains reserved for authentication or completion actions; protection status uses neutral surfaces and `safe-green` only for the shield marker.
+- Anonymous visitors can self-declare birth date inside a protected game gate, similar to storefront age checks. The server stores no raw date: it issues a signed, HttpOnly, 30-day cookie containing only calculated age and issue time.
+- Profile settings show the confirmed account birth date as private, read-only information with an explicit permanent-state notice.
 
 ### Not found
 
