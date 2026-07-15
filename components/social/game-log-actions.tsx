@@ -15,7 +15,6 @@ import {
   Lock,
   Plus,
   RotateCcw,
-  Trash2,
   Trophy,
   Users,
   X,
@@ -30,35 +29,26 @@ type Mode = "review" | "diary" | "list";
 type ReviewSection = "review" | "aspects" | "details";
 type RatingMode =
   "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
-type Aspect = { id: string; label: string; rating: number; note: string };
+type Aspect = {
+  id: string;
+  label: string;
+  rating: number;
+  note: string;
+  custom?: boolean;
+};
 type ListOption = { id: string; name: string };
 
 export function GameLogActions({
   game,
+  platforms,
   lang,
   lists,
-  initialReview,
   logCount,
 }: {
   game: { id: number; slug: string; name: string; releaseYear: number | null };
+  platforms: string[];
   lang: "pt-BR" | "en";
   lists: ListOption[];
-  initialReview: {
-    id: string;
-    rating: number | null;
-    content: string | null;
-    contains_spoilers: boolean;
-    visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-    title: string | null;
-    rating_mode: RatingMode;
-    recommended: boolean | null;
-    mastered: boolean;
-    replay: boolean;
-    started_on: string | null;
-    finished_on: string | null;
-    platform: string | null;
-    aspect_ratings: Array<{ label: string; rating: number; note?: string }>;
-  } | null;
   logCount: number;
 }) {
   const pt = lang === "pt-BR";
@@ -66,43 +56,25 @@ export function GameLogActions({
   const [mode, setMode] = useState<Mode | null>(null);
   const [open, setOpen] = useState(false);
   const [reviewSection, setReviewSection] = useState<ReviewSection>("review");
-  const [rating, setRating] = useState<number | null>(
-    initialReview?.rating ?? null,
-  );
-  const [ratingMode, setRatingMode] = useState<RatingMode>(
-    initialReview?.rating_mode ?? "stars_5",
-  );
-  const [recommended, setRecommended] = useState<boolean | null>(
-    initialReview?.recommended ?? null,
-  );
+  const [rating, setRating] = useState<number | null>(null);
+  const [ratingMode, setRatingMode] = useState<RatingMode>("stars_5");
+  const [recommended, setRecommended] = useState<boolean | null>(null);
   const [pending, setPending] = useState(false);
-  const [content, setContent] = useState(initialReview?.content ?? "");
-  const [spoilers, setSpoilers] = useState(
-    initialReview?.contains_spoilers ?? false,
-  );
-  const [visibility, setVisibility] = useState(
-    initialReview?.visibility ?? "PUBLIC",
-  );
+  const [content, setContent] = useState("");
+  const [spoilers, setSpoilers] = useState(false);
+  const [visibility, setVisibility] = useState<
+    "PUBLIC" | "FOLLOWERS" | "PRIVATE"
+  >("PUBLIC");
   const [diaryVisibility, setDiaryVisibility] = useState<
     "PUBLIC" | "FOLLOWERS" | "PRIVATE"
   >("PUBLIC");
-  const [title, setTitle] = useState(initialReview?.title ?? "");
-  const [mastered, setMastered] = useState(initialReview?.mastered ?? false);
-  const [replay, setReplay] = useState(initialReview?.replay ?? false);
-  const [startedOn, setStartedOn] = useState(initialReview?.started_on ?? "");
-  const [finishedOn, setFinishedOn] = useState(
-    initialReview?.finished_on ?? "",
-  );
-  const [platform, setPlatform] = useState(initialReview?.platform ?? "");
-  const [aspects, setAspects] = useState<Aspect[]>(() =>
-    (initialReview?.aspect_ratings ?? []).map((aspect) => ({
-      id: crypto.randomUUID(),
-      label: aspect.label,
-      rating: aspect.rating,
-      note: aspect.note ?? "",
-    })),
-  );
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [title, setTitle] = useState("");
+  const [mastered, setMastered] = useState(false);
+  const [replay, setReplay] = useState(false);
+  const [startedOn, setStartedOn] = useState("");
+  const [finishedOn, setFinishedOn] = useState("");
+  const [platform, setPlatform] = useState("");
+  const [aspects, setAspects] = useState<Aspect[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -128,7 +100,7 @@ export function GameLogActions({
     const supabase = createClient();
     let result;
     if (mode === "review") {
-      result = await supabase.rpc("save_review", {
+      result = await supabase.rpc("create_review", {
         game_id: game.id,
         game_slug: game.slug,
         review_rating: rating,
@@ -145,10 +117,11 @@ export function GameLogActions({
         review_platform: platform,
         review_aspects: aspects
           .filter(({ label }) => label.trim())
-          .map(({ label, rating, note }) => ({
+          .map(({ label, rating, note, custom }) => ({
             label: label.trim(),
             rating,
             note: note.trim() || null,
+            custom: Boolean(custom),
           })),
       });
     } else if (mode === "diary") {
@@ -180,34 +153,33 @@ export function GameLogActions({
       if (mode === "review")
         localStorage.removeItem(`uloggd:review-draft:${game.id}`);
       router.refresh();
-      window.setTimeout(() => setOpen(false), 420);
+      window.setTimeout(() => {
+        setOpen(false);
+        if (mode === "review") resetReview();
+      }, 420);
     }
     setPending(false);
   }
 
-  async function removeReview() {
-    if (!initialReview || pending) return;
-    setPending(true);
-    setError(null);
-    const { data, error: actionError } = await createClient().rpc(
-      "delete_review",
-      { review_id: initialReview.id },
-    );
-    if (actionError || data !== true)
-      setError(
-        pt
-          ? "Não foi possível remover a avaliação."
-          : "Could not remove the review.",
-      );
-    else {
-      setOpen(false);
-      router.refresh();
-    }
-    setPending(false);
+  function resetReview() {
+    setReviewSection("review");
+    setRating(null);
+    setRatingMode("stars_5");
+    setRecommended(null);
+    setContent("");
+    setSpoilers(false);
+    setVisibility("PUBLIC");
+    setTitle("");
+    setMastered(false);
+    setReplay(false);
+    setStartedOn("");
+    setFinishedOn("");
+    setPlatform("");
+    setAspects([]);
   }
 
   const labels = {
-    review: pt ? "Escrever avaliação" : "Write review",
+    review: pt ? "Nova avaliação" : "New review",
     diary: pt ? "Registrar sessão" : "Log session",
     list: pt ? "Adicionar à lista" : "Add to list",
   };
@@ -219,11 +191,10 @@ export function GameLogActions({
     setError(null);
     setSuccess(null);
     setMode(nextMode);
-    if (nextMode === "review" && !initialReview) {
+    if (nextMode === "review") {
       const draft = localStorage.getItem(`uloggd:review-draft:${game.id}`);
       if (draft) setContent(draft);
     }
-    setConfirmingDelete(false);
     setReviewSection("review");
     setOpen(true);
   }
@@ -263,27 +234,6 @@ export function GameLogActions({
                 <X size={19} />
               </Dialog.Close>
             </header>
-            {(mode === "review" || mode === "diary") && (
-              <nav
-                className="game-editor-tabs"
-                aria-label={pt ? "Tipo de registro" : "Entry type"}
-              >
-                <button
-                  type="button"
-                  data-active={mode === "review" || undefined}
-                  onClick={() => setMode("review")}
-                >
-                  <BookOpen size={16} /> {pt ? "Avaliação" : "Review"}
-                </button>
-                <button
-                  type="button"
-                  data-active={mode === "diary" || undefined}
-                  onClick={() => setMode("diary")}
-                >
-                  <CalendarPlus size={16} /> {pt ? "Diário" : "Journal"}
-                </button>
-              </nav>
-            )}
             {mode && (
               <form action={submit} className="social-editor-form">
                 {mode === "review" && (
@@ -498,17 +448,11 @@ export function GameLogActions({
                           <span>
                             {pt ? "Plataforma jogada" : "Platform played"}
                           </span>
-                          <input
+                          <PlatformSelect
                             value={platform}
-                            onChange={(event) =>
-                              setPlatform(event.target.value)
-                            }
-                            maxLength={80}
-                            placeholder={
-                              pt
-                                ? "Ex.: PC, PlayStation 5, Switch"
-                                : "E.g. PC, PlayStation 5, Switch"
-                            }
+                            onChange={setPlatform}
+                            platforms={platforms}
+                            pt={pt}
                           />
                         </label>
                         <div className="social-form-row review-date-fields">
@@ -660,37 +604,6 @@ export function GameLogActions({
                   </p>
                 )}
                 <footer>
-                  {mode === "review" &&
-                    initialReview &&
-                    (confirmingDelete ? (
-                      <div className="review-delete-confirm">
-                        <span>
-                          {pt ? "Remover de vez?" : "Delete permanently?"}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setConfirmingDelete(false)}
-                        >
-                          {pt ? "Não" : "No"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={removeReview}
-                          disabled={pending}
-                        >
-                          {pt ? "Sim, remover" : "Yes, delete"}
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        className="social-delete-button"
-                        type="button"
-                        onClick={() => setConfirmingDelete(true)}
-                        disabled={pending}
-                      >
-                        <Trash2 size={14} /> {pt ? "Remover" : "Remove"}
-                      </button>
-                    ))}
                   <Dialog.Close type="button">
                     {pt ? "Cancelar" : "Cancel"}
                   </Dialog.Close>
@@ -805,6 +718,56 @@ function RatingModeSelect({
   );
 }
 
+function PlatformSelect({
+  value,
+  onChange,
+  platforms,
+  pt,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  platforms: string[];
+  pt: boolean;
+}) {
+  const options = Array.from(new Set(platforms.filter(Boolean)));
+  return (
+    <Select.Root value={value || undefined} onValueChange={onChange}>
+      <Select.Trigger className="editor-select-trigger review-platform-trigger">
+        <Select.Value
+          placeholder={pt ? "Selecione uma plataforma" : "Select a platform"}
+        />
+        <Select.Icon>
+          <ChevronDown size={14} />
+        </Select.Icon>
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Content
+          className="editor-select-menu review-platform-menu"
+          position="popper"
+          sideOffset={6}
+          collisionPadding={12}
+        >
+          <Select.Viewport>
+            {options.map((option) => (
+              <Select.Item
+                className="editor-select-option"
+                value={option}
+                key={option}
+              >
+                <Gamepad2 size={14} />
+                <Select.ItemText>{option}</Select.ItemText>
+                <Select.ItemIndicator>
+                  <Check size={13} />
+                </Select.ItemIndicator>
+              </Select.Item>
+            ))}
+          </Select.Viewport>
+        </Select.Content>
+      </Select.Portal>
+    </Select.Root>
+  );
+}
+
 function RatingInput({
   mode,
   value,
@@ -907,11 +870,12 @@ function AspectEditor({
   const available = aspectPresets[lang].filter(
     (label) => !aspects.some((aspect) => aspect.label === label),
   );
-  function add(label: string) {
+  const customCount = aspects.filter((aspect) => aspect.custom).length;
+  function add(label: string, custom = false) {
     if (aspects.length >= 8) return;
     onChange([
       ...aspects,
-      { id: crypto.randomUUID(), label, rating: 50, note: "" },
+      { id: crypto.randomUUID(), label, rating: 50, note: "", custom },
     ]);
   }
   function update(id: string, patch: Partial<Aspect>) {
@@ -942,13 +906,24 @@ function AspectEditor({
         </div>
         <span>{aspects.length}/8</span>
       </header>
-      {available.length > 0 && aspects.length < 8 && (
+      {aspects.length < 8 && (
         <div className="review-aspect-presets">
           {available.map((label) => (
             <button type="button" key={label} onClick={() => add(label)}>
               <Plus size={13} /> {label}
             </button>
           ))}
+          {customCount < 5 && (
+            <button
+              type="button"
+              data-custom
+              onClick={() => add(pt ? "Novo aspecto" : "Custom aspect", true)}
+            >
+              <Plus size={13} />{" "}
+              {pt ? "Aspecto personalizado" : "Custom aspect"}
+              <small>{customCount}/5</small>
+            </button>
+          )}
         </div>
       )}
       {aspects.length === 0 ? (

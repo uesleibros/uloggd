@@ -173,7 +173,24 @@ function ResultList({
                     .join(" · ") || d.search.kind[game.kind]}
                 </small>
               </span>
-              <Clock3 size={14} className="search-recent-icon" />
+              <span className="search-result-badges">
+                {game.spawndAvailable && (
+                  <span
+                    className="search-result-spawnd"
+                    title={
+                      lang === "pt-BR"
+                        ? "Jogável no spawnd"
+                        : "Playable on spawnd"
+                    }
+                  >
+                    <SpawndLogo compact />
+                    <span>{lang === "pt-BR" ? "Jogável" : "Playable"}</span>
+                  </span>
+                )}
+                {!game.spawndAvailable && (
+                  <Clock3 size={14} className="search-recent-icon" />
+                )}
+              </span>
             </Link>
           ))}
         </div>
@@ -264,17 +281,46 @@ function SearchSurface({
   const listId = useId();
 
   useEffect(() => {
+    const controller = new AbortController();
     try {
       const stored = JSON.parse(
         localStorage.getItem(RECENT_SEARCHES_KEY) ?? "[]",
       );
       if (Array.isArray(stored)) {
-        const timer = window.setTimeout(() => setRecent(stored.slice(0, 6)), 0);
-        return () => window.clearTimeout(timer);
+        const initial = (stored as GameSearchResult[]).slice(0, 6);
+        const timer = window.setTimeout(() => setRecent(initial), 0);
+        if (initial.length) {
+          void fetch(
+            `/api/igdb/search?ids=${initial.map((game) => game.id).join(",")}`,
+            {
+              signal: controller.signal,
+            },
+          )
+            .then((response) => (response.ok ? response.json() : null))
+            .then((payload: { results?: GameSearchResult[] } | null) => {
+              if (!payload?.results) return;
+              const refreshed = new Map(
+                payload.results.map((game) => [game.id, game]),
+              );
+              const next = initial.map(
+                (game) => refreshed.get(game.id) ?? game,
+              );
+              setRecent(next);
+              localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
+            })
+            .catch((error: Error) => {
+              if (error.name !== "AbortError") return;
+            });
+        }
+        return () => {
+          window.clearTimeout(timer);
+          controller.abort();
+        };
       }
     } catch {
       localStorage.removeItem(RECENT_SEARCHES_KEY);
     }
+    return () => controller.abort();
   }, []);
   const remember = useCallback((game: GameSearchResult) => {
     setRecent((current) => {

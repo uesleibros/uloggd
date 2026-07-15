@@ -2,7 +2,6 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { Pencil, Trash2, X } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -11,7 +10,6 @@ type Props = {
   id: string;
   kind: "review" | "diary";
   lang: "pt-BR" | "en";
-  gameSlug: string;
   playedOn?: string;
   minutes?: number | null;
   content?: string | null;
@@ -75,11 +73,7 @@ export function ActivityEntryActions(props: Props) {
   return (
     <>
       <div className="activity-entry-actions">
-        {kind === "review" ? (
-          <Link href={`/${lang}/game/${props.gameSlug}`}>
-            <Pencil size={14} /> {pt ? "Editar" : "Edit"}
-          </Link>
-        ) : (
+        {kind === "diary" && (
           <button type="button" onClick={() => setEditing(true)}>
             <Pencil size={14} /> {pt ? "Editar" : "Edit"}
           </button>

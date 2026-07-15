@@ -1,16 +1,26 @@
 import type { NextRequest } from "next/server";
 import { resolveGameCover } from "@/lib/game-cover";
-import { searchGames } from "@/lib/igdb";
+import { getGamesByIds, searchGames } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
 import { getSpawndGame } from "@/lib/spawnd";
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
-  if (query.length < 2) return Response.json({ results: [] });
+  const ids = (request.nextUrl.searchParams.get("ids") ?? "")
+    .split(",")
+    .map(Number)
+    .filter((id) => Number.isSafeInteger(id) && id > 0)
+    .slice(0, 6);
+  if (query.length < 2 && ids.length === 0)
+    return Response.json({ results: [] });
 
   try {
     const [results, supabase] = await Promise.all([
-      searchGames(query),
+      ids.length
+        ? getGamesByIds(ids).then((games) =>
+            games.map((game) => ({ ...game, kind: "game" as const })),
+          )
+        : searchGames(query),
       createClient(),
     ]);
     const {

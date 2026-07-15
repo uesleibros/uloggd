@@ -223,7 +223,6 @@ export function ActivityStream({
                 id={entry.id}
                 kind={entry.kind}
                 lang={lang}
-                gameSlug={entry.gameSlug}
                 playedOn={entry.playedOn}
                 minutes={entry.minutes}
                 content={entry.content}

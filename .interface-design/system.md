@@ -110,6 +110,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 - Review writing is a dedicated experience studio inside the shared journal Radix modal. A new review always begins unrated; quick-rating state never leaks into the editor. The user explicitly chooses stars (half steps), five levels, 0–10 points, 0–100 precision, or recommend/do-not-recommend, while storage normalizes numeric methods to 0–100.
 - The studio divides Review, Aspects, and Details without turning them into required steps. Rating and prose lead; up to eight optional aspect tracks add independent 0–100 judgments and short notes; mastered, replay, platform, dates, spoilers, and visibility remain secondary details.
+- Every save creates an independent review entry, so one game can hold several opinions across replays or editions. The editor always opens as a new unrated entry; prior reviews remain in the activity stream and never get silently overwritten. Platform is a Radix Select restricted to the game's real IGDB release platforms. Up to five of the eight aspects may be custom-created and renamed.
 - Desktop uses a 780px focused sheet with a sticky internal section rail. Mobile becomes a near-full-height bottom sheet with compact header, reachable sticky commit actions, horizontal preset rail, and single-column aspect/detail controls.
 - New review text persists as a local per-IGDB draft until a successful save. Spoiler and visibility choices remain stable while switching editor tabs; visibility uses the shared Radix Select language rather than a native browser select.
 - Destructive review removal uses an inline two-step confirmation in the sticky footer, never a blocking browser confirm. The review history starts with review count, average rating, session count, and spoiler count; review entries use an inset editorial card distinct from diary rows.
@@ -249,10 +250,11 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Passkeys use Supabase Auth's experimental passkey API to list, register, and remove device credentials. Security copy explains the device-bound private key and exposes unsupported/disabled states inline.
 - Share actions open one motion-polished Radix choice modal: copy the canonical current URL with an animated confirmation, or send exclusively through the native Web Share sheet. When Web Share is unavailable, the send choice is visibly disabled rather than silently changing channels. Profile reports use a separate Radix modal, write to the existing owner-readable reports table, and never render a report action against oneself.
 - Mobile profiles preserve the banner/avatar focal point, keep identity actions in normal flow, move social/share/report actions full-width below identity, and turn the six metrics into a contained horizontal snap rail instead of squeezing labels.
+- Profile thoughts grow toward the content side of the avatar: rightward on desktop so they never pass beneath the sidebar, and inward on mobile. Their entrance uses a short overshoot followed by a restrained floating drift, removed entirely under reduced motion.
 
 ### Search recents
 
-- Opening an empty global search shows up to six recently selected games stored only in browser local storage. Rows reuse the standard search result anatomy and include an explicit clear action.
+- Opening an empty global search shows up to six recently selected games stored only in browser local storage. Rows reuse the standard search result anatomy, refresh their current catalog metadata, preserve the spawnd playable mark, and include an explicit clear action. Desktop results stay centered to the input bar rather than drifting toward header actions.
 
 ### Cover picker
 

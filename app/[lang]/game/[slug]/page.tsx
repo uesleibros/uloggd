@@ -116,7 +116,7 @@ export default async function GamePage({ params }: Props) {
   const relatedIds = game.related.flatMap((group) =>
     group.games.map((related) => related.id),
   );
-  const [savedResult, listsResult, reviewResult, logResult, communityEntries] =
+  const [savedResult, listsResult, logResult, communityEntries] =
     await Promise.all([
       user
         ? supabase
@@ -136,16 +136,6 @@ export default async function GamePage({ params }: Props) {
         : Promise.resolve({ data: [] }),
       user
         ? supabase
-            .from("reviews")
-            .select(
-              "id,rating,content,contains_spoilers,visibility,title,rating_mode,recommended,mastered,replay,started_on,finished_on,platform,aspect_ratings",
-            )
-            .eq("profile_id", user.id)
-            .eq("igdb_id", game.id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      user
-        ? supabase
             .from("diary_entries")
             .select("id", { count: "exact", head: true })
             .eq("profile_id", user.id)
@@ -159,7 +149,6 @@ export default async function GamePage({ params }: Props) {
     ]);
   const savedGames = savedResult.data;
   const userLists = listsResult.data;
-  const ownReview = reviewResult.data;
   const ownLogCount = logResult.count;
   const savedById = new Map(
     (savedGames ?? []).map((saved) => [saved.igdb_id, saved]),
@@ -264,9 +253,9 @@ export default async function GamePage({ params }: Props) {
             {user && (
               <GameLogActions
                 game={game}
+                platforms={game.platforms}
                 lang={lang}
                 lists={userLists ?? []}
-                initialReview={ownReview}
                 logCount={ownLogCount ?? 0}
               />
             )}
