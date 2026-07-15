@@ -66,7 +66,7 @@ export function GamePageTabs({
       : null,
     {
       id: "spawnd" as const,
-      label: "spawnd",
+      label: "Spawnd.gg",
       icon: Gamepad2,
       content: spawnd,
     },
