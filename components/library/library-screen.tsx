@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Gamepad2, LibraryBig, Star } from "lucide-react";
 import { getGamesByIds } from "@/lib/igdb";
 import { LibraryCollection, type LibraryRecord } from "./library-collection";
+import { LibraryLiveStats } from "./library-live-stats";
 import { LibraryPrivacyControl } from "./library-privacy-control";
 
 type Profile = {
@@ -26,10 +27,6 @@ export async function LibraryScreen({
 }) {
   const pt = lang === "pt-BR";
   const games = await getGamesByIds(records.map((record) => record.igdb_id));
-  const playing = records.filter(
-    (record) => record.playing || record.status === "PLAYING",
-  ).length;
-  const rated = records.filter((record) => record.quick_rating !== null).length;
   const name = profile.display_name || `@${profile.username}`;
   return (
     <main className="library-page">
@@ -81,20 +78,7 @@ export async function LibraryScreen({
                   : `Explore the games in @${profile.username}'s journey.`}
             </p>
           </div>
-          <dl className="library-hero-stats">
-            <div>
-              <dt>{pt ? "Jogos" : "Games"}</dt>
-              <dd>{records.length}</dd>
-            </div>
-            <div>
-              <dt>{pt ? "Jogando" : "Playing"}</dt>
-              <dd>{playing}</dd>
-            </div>
-            <div>
-              <dt>{pt ? "Avaliados" : "Rated"}</dt>
-              <dd>{rated}</dd>
-            </div>
-          </dl>
+          <LibraryLiveStats records={records} lang={lang} />
         </div>
       </header>
       <div className="library-page-body">

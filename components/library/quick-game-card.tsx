@@ -14,7 +14,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { resolveGameCover } from "@/lib/game-cover";
 import { StarRating } from "./star-rating";
@@ -43,7 +43,6 @@ export function QuickGameCard({
   meta,
   removable = false,
   onRemove,
-  onFeedback,
   onStateChange,
 }: {
   game: {
@@ -61,7 +60,6 @@ export function QuickGameCard({
   meta?: string;
   removable?: boolean;
   onRemove?: () => void;
-  onFeedback?: (message: string, tone?: "success" | "error") => void;
   onStateChange?: (state: NonNullable<State>) => void;
 }) {
   const pt = lang === "pt-BR";
@@ -70,6 +68,17 @@ export function QuickGameCard({
   const [error, setError] = useState<string | null>(null);
   const [removed, setRemoved] = useState(false);
   const [removing, setRemoving] = useState(false);
+
+  useEffect(() => {
+    function sync(event: Event) {
+      const detail = (event as CustomEvent<GameStateEvent>).detail;
+      if (detail.gameId !== game.id) return;
+      if (detail.removed) setRemoved(true);
+      else if (detail.state) setState(detail.state);
+    }
+    window.addEventListener(GAME_STATE_EVENT, sync);
+    return () => window.removeEventListener(GAME_STATE_EVENT, sync);
+  }, [game.id]);
 
   const labels: Record<Status, string> = pt
     ? {
@@ -109,34 +118,11 @@ export function QuickGameCard({
     if (actionError) {
       const message = pt ? "Não foi possível atualizar." : "Could not update.";
       setError(message);
-      onFeedback?.(message, "error");
     } else {
       const next = data as NonNullable<State>;
       setState(next);
       onStateChange?.(next);
-      const actionLabel =
-        action === "status"
-          ? labels[value as Status]
-          : action === "playing"
-            ? pt
-              ? "Jogando"
-              : "Playing"
-            : action === "backlog"
-              ? "Backlog"
-              : action === "wishlist"
-                ? labels.WISHLIST
-                : pt
-                  ? "Favorito"
-                  : "Favorite";
-      onFeedback?.(
-        value === false
-          ? pt
-            ? `${actionLabel} removido.`
-            : `${actionLabel} removed.`
-          : pt
-            ? `${actionLabel} salvo.`
-            : `${actionLabel} saved.`,
-      );
+      broadcastGameState(game.id, next);
     }
     setPending(null);
   }
@@ -154,20 +140,11 @@ export function QuickGameCard({
         ? "Não foi possível salvar sua nota."
         : "Could not save your rating.";
       setError(message);
-      onFeedback?.(message, "error");
     } else {
       const next = data as NonNullable<State>;
       setState(next);
       onStateChange?.(next);
-      onFeedback?.(
-        value === null
-          ? pt
-            ? "Nota removida."
-            : "Rating removed."
-          : pt
-            ? `Nota ${value / 20}/5 salva.`
-            : `${value / 20}/5 rating saved.`,
-      );
+      broadcastGameState(game.id, next);
     }
     setPending(null);
   }
@@ -186,12 +163,6 @@ export function QuickGameCard({
           ? "Não foi possível remover este jogo."
           : "Could not remove this game.",
       );
-      onFeedback?.(
-        pt
-          ? "Não foi possível remover este jogo."
-          : "Could not remove this game.",
-        "error",
-      );
       setPending(null);
       return;
     }
@@ -199,10 +170,8 @@ export function QuickGameCard({
     window.setTimeout(() => {
       setRemoved(true);
       onRemove?.();
+      broadcastGameState(game.id, null, true);
     }, 180);
-    onFeedback?.(
-      pt ? `${game.name} removido da biblioteca.` : `${game.name} removed.`,
-    );
   }
 
   const played = state?.status === "COMPLETED";
@@ -439,5 +408,24 @@ export function QuickGameCard({
         ) : null}
       </p>
     </article>
+  );
+}
+
+const GAME_STATE_EVENT = "uloggd:game-state";
+type GameStateEvent = {
+  gameId: number;
+  state: NonNullable<State> | null;
+  removed?: boolean;
+};
+
+function broadcastGameState(
+  gameId: number,
+  state: NonNullable<State> | null,
+  removed = false,
+) {
+  window.dispatchEvent(
+    new CustomEvent<GameStateEvent>(GAME_STATE_EVENT, {
+      detail: { gameId, state, removed },
+    }),
   );
 }
