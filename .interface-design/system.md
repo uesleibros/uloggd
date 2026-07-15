@@ -218,6 +218,8 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Library filters reuse the game-page tab anatomy exactly: 38px horizontal triggers, quiet hover fill, active underline, compact count badge, and touch scrolling on narrow screens. The former desktop-only vertical rail is retired so owner and public views keep one navigation language at every breakpoint.
 - Saved quick actions must read as state, not lighter text: active action buttons use a semantic filled surface, wishlist/backlog/favorite markers remain visible on the cover, checked Radix menu rows receive a tinted inset surface, and successful or failed mutations announce through a compact Radix toast.
 - Tracking colors are stable across the game page and cover quick actions: completed green, playing blue, backlog violet, wishlist gold, and liked coral. Active controls pair color with a stronger inset edge, filled surface, `aria-pressed`, and medium label weight so state never depends on hue alone.
+- Status menus include an explicit clear action, represented by the existing Backlog sentinel in storage while the UI returns to “Set status”. Card mutations update the collection's local record immediately so counts, shelves, order, and visibility stay synchronized without a refresh.
+- Library removal uses a 170ms card exit followed by a 260ms View Transition reflow, with an opacity-only reduced-motion fallback. Sorting uses a Radix Select matching the inset toolbar; mutation toasts portal to `document.body`, and nested mobile menus keep a 12px viewport collision boundary.
 
 ### Verified identity
 

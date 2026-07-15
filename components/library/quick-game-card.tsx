@@ -12,6 +12,7 @@ import {
   Play,
   Star,
   Trash2,
+  X,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -43,6 +44,7 @@ export function QuickGameCard({
   removable = false,
   onRemove,
   onFeedback,
+  onStateChange,
 }: {
   game: {
     id: number;
@@ -60,12 +62,14 @@ export function QuickGameCard({
   removable?: boolean;
   onRemove?: () => void;
   onFeedback?: (message: string, tone?: "success" | "error") => void;
+  onStateChange?: (state: NonNullable<State>) => void;
 }) {
   const pt = lang === "pt-BR";
   const [state, setState] = useState<State>(initial);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [removed, setRemoved] = useState(false);
+  const [removing, setRemoving] = useState(false);
 
   const labels: Record<Status, string> = pt
     ? {
@@ -107,7 +111,9 @@ export function QuickGameCard({
       setError(message);
       onFeedback?.(message, "error");
     } else {
-      setState(data as State);
+      const next = data as NonNullable<State>;
+      setState(next);
+      onStateChange?.(next);
       const actionLabel =
         action === "status"
           ? labels[value as Status]
@@ -150,7 +156,9 @@ export function QuickGameCard({
       setError(message);
       onFeedback?.(message, "error");
     } else {
-      setState(data as State);
+      const next = data as NonNullable<State>;
+      setState(next);
+      onStateChange?.(next);
       onFeedback?.(
         value === null
           ? pt
@@ -187,8 +195,11 @@ export function QuickGameCard({
       setPending(null);
       return;
     }
-    setRemoved(true);
-    onRemove?.();
+    setRemoving(true);
+    window.setTimeout(() => {
+      setRemoved(true);
+      onRemove?.();
+    }, 180);
     onFeedback?.(
       pt ? `${game.name} removido da biblioteca.` : `${game.name} removed.`,
     );
@@ -200,7 +211,11 @@ export function QuickGameCard({
   if (removed) return null;
 
   return (
-    <article className="quick-game-card">
+    <article
+      className="quick-game-card"
+      data-removing={removing || undefined}
+      style={{ viewTransitionName: `library-game-${game.id}` }}
+    >
       <div className="quick-cover">
         {/* Custom cover selection belongs to the game page; cards only display it. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -288,6 +303,7 @@ export function QuickGameCard({
                   className="quick-menu"
                   sideOffset={6}
                   align="end"
+                  collisionPadding={12}
                 >
                   <DropdownMenu.Sub>
                     <DropdownMenu.SubTrigger>
@@ -303,6 +319,7 @@ export function QuickGameCard({
                       <DropdownMenu.SubContent
                         className="quick-menu"
                         sideOffset={4}
+                        collisionPadding={12}
                       >
                         {statuses.map((status) => (
                           <DropdownMenu.Item
@@ -316,6 +333,18 @@ export function QuickGameCard({
                             {state?.status === status && <Check size={13} />}
                           </DropdownMenu.Item>
                         ))}
+                        {state?.status !== "BACKLOG" && (
+                          <>
+                            <DropdownMenu.Separator />
+                            <DropdownMenu.Item
+                              className="quick-menu-clear"
+                              onSelect={() => update("status", "BACKLOG")}
+                            >
+                              <X size={13} />
+                              {pt ? "Limpar status" : "Clear status"}
+                            </DropdownMenu.Item>
+                          </>
+                        )}
                       </DropdownMenu.SubContent>
                     </DropdownMenu.Portal>
                   </DropdownMenu.Sub>

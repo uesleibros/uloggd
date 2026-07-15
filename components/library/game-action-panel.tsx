@@ -1,7 +1,7 @@
 "use client";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { Check, ChevronDown, Clock3, Gift, Heart, Play } from "lucide-react";
+import { Check, ChevronDown, Clock3, Gift, Heart, Play, X } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "./star-rating";
@@ -150,6 +150,7 @@ export function GameActionPanel({
             className="quick-menu"
             sideOffset={6}
             align="start"
+            collisionPadding={12}
           >
             {statusOptions.map((status) => (
               <DropdownMenu.Item
@@ -163,6 +164,18 @@ export function GameActionPanel({
                 {state?.status === status && <Check size={13} />}
               </DropdownMenu.Item>
             ))}
+            {state?.status !== "BACKLOG" && (
+              <>
+                <DropdownMenu.Separator />
+                <DropdownMenu.Item
+                  className="quick-menu-clear"
+                  onSelect={() => update("status", "BACKLOG")}
+                >
+                  <X size={13} />
+                  {pt ? "Limpar status" : "Clear status"}
+                </DropdownMenu.Item>
+              </>
+            )}
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>

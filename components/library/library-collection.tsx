@@ -1,9 +1,12 @@
 "use client";
 
+import * as Select from "@radix-ui/react-select";
 import * as Toast from "@radix-ui/react-toast";
 import {
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  Check,
   LayoutGrid,
   List,
   Search,
@@ -12,7 +15,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import type { Game } from "@/lib/igdb";
 import { QuickGameCard } from "./quick-game-card";
 
@@ -58,6 +62,12 @@ export function LibraryCollection({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [removedIds, setRemovedIds] = useState<Set<number>>(() => new Set());
+  const [liveRecords, setLiveRecords] = useState(records);
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [toast, setToast] = useState<{
     id: number;
@@ -84,10 +94,10 @@ export function LibraryCollection({
   );
   const activeRecords = useMemo(
     () =>
-      records.filter(
+      liveRecords.filter(
         (record) => byId.has(record.igdb_id) && !removedIds.has(record.igdb_id),
       ),
-    [records, byId, removedIds],
+    [liveRecords, byId, removedIds],
   );
   const counts = useMemo(
     () =>
@@ -139,6 +149,33 @@ export function LibraryCollection({
   }
   function notify(message: string, tone: "success" | "error" = "success") {
     setToast({ id: Date.now(), message, tone });
+  }
+  function updateRecord(igdbId: number, next: Partial<LibraryRecord>) {
+    runLayoutTransition(() =>
+      setLiveRecords((current) =>
+        current.map((record) =>
+          record.igdb_id === igdbId
+            ? { ...record, ...next, updated_at: new Date().toISOString() }
+            : record,
+        ),
+      ),
+    );
+  }
+
+  function removeRecord(igdbId: number) {
+    const commit = () =>
+      setRemovedIds((current) => new Set(current).add(igdbId));
+    runLayoutTransition(commit);
+  }
+
+  function runLayoutTransition(commit: () => void) {
+    const transitionDocument = document as Document & {
+      startViewTransition?: (callback: () => void) => void;
+    };
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) commit();
+    else if (transitionDocument.startViewTransition)
+      transitionDocument.startViewTransition(commit);
+    else commit();
   }
 
   if (!activeRecords.length)
@@ -222,32 +259,59 @@ export function LibraryCollection({
               </button>
             )}
           </form>
-          <label className="library-sort">
+          <div className="library-sort">
             <span>{pt ? "Ordenar" : "Sort"}</span>
-            <select
+            <Select.Root
               value={sort}
-              onChange={(event) =>
+              onValueChange={(value) =>
                 update({
-                  sort:
-                    event.target.value === "recent" ? null : event.target.value,
+                  sort: value === "recent" ? null : value,
                 })
               }
             >
-              <option value="recent">
-                {pt ? "Atualizados recentemente" : "Recently updated"}
-              </option>
-              <option value="oldest">
-                {pt ? "Mais antigos primeiro" : "Oldest first"}
-              </option>
-              <option value="rating">
-                {pt ? "Minha maior nota" : "My highest rating"}
-              </option>
-              <option value="title">A–Z</option>
-              <option value="year">
-                {pt ? "Ano de lançamento" : "Release year"}
-              </option>
-            </select>
-          </label>
+              <Select.Trigger
+                className="library-sort-trigger"
+                aria-label={pt ? "Ordenar biblioteca" : "Sort library"}
+              >
+                <Select.Value />
+                <Select.Icon>
+                  <ChevronDown size={14} />
+                </Select.Icon>
+              </Select.Trigger>
+              <Select.Portal>
+                <Select.Content
+                  className="library-sort-menu"
+                  position="popper"
+                  sideOffset={6}
+                  collisionPadding={12}
+                >
+                  <Select.Viewport>
+                    {[
+                      [
+                        "recent",
+                        pt ? "Atualizados recentemente" : "Recently updated",
+                      ],
+                      ["oldest", pt ? "Mais antigos primeiro" : "Oldest first"],
+                      ["rating", pt ? "Minha maior nota" : "My highest rating"],
+                      ["title", "A–Z"],
+                      ["year", pt ? "Ano de lançamento" : "Release year"],
+                    ].map(([value, label]) => (
+                      <Select.Item
+                        key={value}
+                        value={value}
+                        className="library-sort-option"
+                      >
+                        <Select.ItemText>{label}</Select.ItemText>
+                        <Select.ItemIndicator>
+                          <Check size={13} />
+                        </Select.ItemIndicator>
+                      </Select.Item>
+                    ))}
+                  </Select.Viewport>
+                </Select.Content>
+              </Select.Portal>
+            </Select.Root>
+          </div>
           <div
             className="library-view-switch"
             aria-label={pt ? "Modo de visualização" : "View mode"}
@@ -318,14 +382,8 @@ export function LibraryCollection({
                   enabled={owner}
                   removable={owner}
                   onFeedback={notify}
-                  onRemove={
-                    owner
-                      ? () =>
-                          setRemovedIds((current) =>
-                            new Set(current).add(game.id),
-                          )
-                      : undefined
-                  }
+                  onStateChange={(next) => updateRecord(game.id, next)}
+                  onRemove={owner ? () => removeRecord(game.id) : undefined}
                   meta={[game.releaseYear, ...game.genres]
                     .filter(Boolean)
                     .join(" · ")}
@@ -377,28 +435,36 @@ export function LibraryCollection({
           </nav>
         )}
       </div>
-      {toast && (
-        <Toast.Root
-          key={toast.id}
-          className="library-toast"
-          data-tone={toast.tone}
-          defaultOpen
-          onOpenChange={(open) => !open && setToast(null)}
-        >
-          {toast.tone === "success" ? (
-            <CheckCircle2 size={18} />
-          ) : (
-            <AlertCircle size={18} />
-          )}
-          <Toast.Title className="library-toast-title">
-            {toast.message}
-          </Toast.Title>
-          <Toast.Close aria-label={pt ? "Fechar aviso" : "Close notification"}>
-            <X size={15} />
-          </Toast.Close>
-        </Toast.Root>
-      )}
-      <Toast.Viewport className="library-toast-viewport" />
+      {mounted &&
+        createPortal(
+          <>
+            {toast && (
+              <Toast.Root
+                key={toast.id}
+                className="library-toast"
+                data-tone={toast.tone}
+                defaultOpen
+                onOpenChange={(open) => !open && setToast(null)}
+              >
+                {toast.tone === "success" ? (
+                  <CheckCircle2 size={18} />
+                ) : (
+                  <AlertCircle size={18} />
+                )}
+                <Toast.Title className="library-toast-title">
+                  {toast.message}
+                </Toast.Title>
+                <Toast.Close
+                  aria-label={pt ? "Fechar aviso" : "Close notification"}
+                >
+                  <X size={15} />
+                </Toast.Close>
+              </Toast.Root>
+            )}
+            <Toast.Viewport className="library-toast-viewport" />
+          </>,
+          document.body,
+        )}
     </Toast.Provider>
   );
 }
