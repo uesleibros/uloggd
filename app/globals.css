@@ -10498,3 +10498,40 @@ a,
 .quick-card-flags span[data-action="liked"] {
   color: #ffaaa4;
 }
+
+/* Profile header actions keep a reliable touch target without collapsing labels. */
+@media (max-width: 620px) {
+  .profile-title-row {
+    align-items: flex-end;
+    gap: 12px;
+  }
+
+  .profile-title-row > div:first-child {
+    min-width: 0;
+  }
+
+  .profile-edit-link,
+  .profile-follow-control button {
+    flex: 0 0 auto;
+    min-width: 108px;
+    min-height: 44px;
+    padding-inline: 13px;
+    border-radius: 9px;
+    font-size: 10px;
+  }
+
+  .profile-follow-control {
+    flex: 0 0 auto;
+  }
+
+  .profile-edit-link svg,
+  .profile-follow-control button svg {
+    flex: 0 0 auto;
+    margin-right: 1px;
+  }
+
+  .profile-edit-link:active,
+  .profile-follow-control button:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+}

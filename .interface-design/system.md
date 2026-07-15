@@ -378,6 +378,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 
 - Profiles use a 4:1 banner, overlapping 112px avatar, compact statistic line, active shelf, activity stream, and lists rail; mobile uses a 3:1 banner and 82px avatar.
 - A profile thought is a single-line, 100-character status rendered as a compact speech bubble anchored above the avatar. It may overlap the banner, but never the identity or profile actions; mobile constrains it to the viewport.
+- Mobile profile actions retain their text label, use a consistent 44px touch target and at least 108px of width; the profile identity truncates before an action can leave the viewport.
 - Profile statistics always use exact database counts rather than the number of preview rows currently rendered. The owner gets a quiet edit action; visitors get a follow control in the same position.
 - Profile metadata uses display name/username, bio, and the uploaded banner (avatar fallback) for Open Graph and Twitter embeds.
 - List cards emphasize title and description over counts. Detail views reuse active-shelf covers with a small physical index marker for manual order.
