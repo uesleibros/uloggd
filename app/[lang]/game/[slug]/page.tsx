@@ -2,7 +2,16 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, Clock3, Gauge, Play, Star, Trophy } from "lucide-react";
+import {
+  Check,
+  Clock3,
+  ExternalLink,
+  Gauge,
+  Play,
+  ShieldCheck,
+  Star,
+  Trophy,
+} from "lucide-react";
 import { GameExtendedContent } from "@/components/game-extended-content";
 import { GameMediaGallery } from "@/components/game-media-gallery";
 import { GamePageTabs } from "@/components/game-page-tabs";
@@ -16,6 +25,7 @@ import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/server";
 import { getActivity } from "@/lib/social";
 import { getSpawndGame } from "@/lib/spawnd";
+import { SpawndLogo } from "@/components/spawnd-logo";
 import { hasLocale } from "../../dictionaries";
 
 type Props = PageProps<"/[lang]/game/[slug]">;
@@ -143,6 +153,19 @@ export default async function GamePage({ params }: Props) {
     websites: game.websites,
     lang,
   });
+  const ageRatings = [...game.ageRatings].sort((a, b) => {
+    const preferred =
+      lang === "pt-BR"
+        ? ["ClassInd", "ESRB", "PEGI"]
+        : ["ESRB", "PEGI", "ClassInd"];
+    const rank = (name: string) => {
+      const index = preferred.findIndex((item) =>
+        name.toLowerCase().includes(item.toLowerCase()),
+      );
+      return index === -1 ? preferred.length : index;
+    };
+    return rank(a.organization) - rank(b.organization);
+  });
   return (
     <main className="game-page">
       <section className="game-stage">
@@ -179,6 +202,18 @@ export default async function GamePage({ params }: Props) {
               lang={lang}
               enabled={Boolean(user)}
             />
+            {spawnd.available && spawnd.gameUrl && (
+              <a
+                className="game-spawnd-cta"
+                href={spawnd.gameUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <SpawndLogo compact />
+                <span>{lang === "pt-BR" ? "Jogar agora" : "Play now"}</span>
+                <ExternalLink size={14} aria-hidden />
+              </a>
+            )}
             {user && (
               <GameLogActions
                 game={game}
@@ -342,6 +377,34 @@ export default async function GamePage({ params }: Props) {
               )}
             </div>
             <aside className="game-context-rail">
+              {ageRatings.length > 0 && (
+                <section className="game-age-panel game-surface">
+                  <header>
+                    <ShieldCheck size={16} aria-hidden />
+                    <div>
+                      <span>
+                        {lang === "pt-BR" ? "CLASSIFICAÇÃO" : "AGE RATING"}
+                      </span>
+                      <h2>
+                        {lang === "pt-BR" ? "Faixa etária" : "Content rating"}
+                      </h2>
+                    </div>
+                  </header>
+                  <div className="game-age-ratings">
+                    {ageRatings.slice(0, 3).map((rating) => (
+                      <div key={`${rating.organization}-${rating.rating}`}>
+                        <strong>{rating.rating}</strong>
+                        <span>{rating.organization}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p>
+                    {lang === "pt-BR"
+                      ? "Classificações informadas pela IGDB."
+                      : "Ratings provided by IGDB."}
+                  </p>
+                </section>
+              )}
               <section className="game-time-panel game-surface">
                 <header>
                   <Clock3 size={16} />

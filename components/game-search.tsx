@@ -9,6 +9,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 import type { GameSearchResult } from "@/lib/igdb";
+import { SpawndLogo } from "./spawnd-logo";
 
 const searchCache = new Map<string, GameSearchResult[]>();
 
@@ -163,11 +164,26 @@ function ResultList({
                   .join(" · ") || d.search.kind[game.kind]}
               </small>
             </span>
-            {game.kind !== "game" && (
-              <span className="search-result-kind">
-                {d.search.kind[game.kind]}
-              </span>
-            )}
+            <span className="search-result-badges">
+              {game.spawndAvailable && (
+                <span
+                  className="search-result-spawnd"
+                  title={
+                    lang === "pt-BR"
+                      ? "Jogável no spawnd"
+                      : "Playable on spawnd"
+                  }
+                >
+                  <SpawndLogo compact />
+                  <span>{lang === "pt-BR" ? "Jogável" : "Playable"}</span>
+                </span>
+              )}
+              {game.kind !== "game" && (
+                <span className="search-result-kind">
+                  {d.search.kind[game.kind]}
+                </span>
+              )}
+            </span>
           </Link>
         ))}
       </div>

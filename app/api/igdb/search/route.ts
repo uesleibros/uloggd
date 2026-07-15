@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { resolveGameCover } from "@/lib/game-cover";
 import { searchGames } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
+import { getSpawndGame } from "@/lib/spawnd";
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
@@ -32,6 +33,11 @@ export async function GET(request: NextRequest) {
     const personalizedResults = results.map((game) => ({
       ...game,
       coverUrl: resolveGameCover(game.coverUrl, covers.get(game.id)),
+      spawndAvailable: getSpawndGame({
+        igdbId: game.id,
+        name: game.name,
+        lang: "en",
+      }).available,
     }));
     return Response.json(
       { results: personalizedResults },

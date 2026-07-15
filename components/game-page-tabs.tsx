@@ -10,6 +10,7 @@ import {
   Newspaper,
   Gamepad2,
 } from "lucide-react";
+import { SpawndLogo } from "./spawnd-logo";
 
 type TabId =
   "overview" | "media" | "updates" | "related" | "spawnd" | "community";
@@ -118,7 +119,11 @@ export function GamePageTabs({
               onClick={() => setActive(tab.id)}
               onKeyDown={(event) => navigate(event, index)}
             >
-              <Icon size={15} />
+              {tab.id === "spawnd" ? (
+                <SpawndLogo compact />
+              ) : (
+                <Icon size={15} />
+              )}
               {tab.label}
             </button>
           );

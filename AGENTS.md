@@ -3,3 +3,8 @@
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
+
+## Delivery workflow
+
+- At the end of completed implementation work, create a commit and push it to the current branch using the repository's existing Git configuration.
+- Do not change Git remotes, credentials, identity, hooks, or other Git configuration.

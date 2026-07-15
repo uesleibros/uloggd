@@ -9,6 +9,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useState } from "react";
+import { SpawndLogo } from "./spawnd-logo";
 
 type SpawndGamePanelProps = {
   lang: "pt-BR" | "en";
@@ -32,12 +33,10 @@ export function SpawndGamePanel({
   const pt = lang === "pt-BR";
   const href = available && gameUrl ? gameUrl : catalogUrl;
 
-  const [playerState, setPlayerState] =
-    useState<PlayerState>("idle");
+  const [playerState, setPlayerState] = useState<PlayerState>("idle");
 
   const canEmbed = available && Boolean(embedUrl);
-  const playerVisible =
-    playerState === "loading" || playerState === "loaded";
+  const playerVisible = playerState === "loading" || playerState === "loaded";
 
   const text = pt
     ? {
@@ -173,11 +172,7 @@ export function SpawndGamePanel({
                 </button>
 
                 {gameUrl && (
-                  <a
-                    href={gameUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href={gameUrl} target="_blank" rel="noopener noreferrer">
                     {text.openExternally}
                     <ExternalLink size={15} aria-hidden />
                   </a>
@@ -205,16 +200,14 @@ export function SpawndGamePanel({
       <div className="spawnd-panel game-surface">
         <div className="spawnd-panel-primary">
           <span className="spawnd-mark" aria-hidden>
-            <Gamepad2 size={22} />
+            <SpawndLogo compact />
           </span>
 
           <div>
-            <span className="spawnd-eyebrow">SPAWND.GG</span>
+            <SpawndLogo />
 
             <h2 id="spawnd-panel-title">
-              {available
-                ? text.availableTitle
-                : text.unavailableTitle}
+              {available ? text.availableTitle : text.unavailableTitle}
             </h2>
 
             <p>
@@ -223,14 +216,8 @@ export function SpawndGamePanel({
                 : text.unavailableDescription}
             </p>
 
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {available
-                ? text.playOnSpawnd
-                : text.exploreDemos}
+            <a href={href} target="_blank" rel="noopener noreferrer">
+              {available ? text.playOnSpawnd : text.exploreDemos}
 
               <ExternalLink size={15} aria-hidden />
             </a>

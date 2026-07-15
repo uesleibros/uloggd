@@ -823,6 +823,30 @@ html[data-sidebar-ready] .account-button > svg {
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+.search-result-badges {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 5px;
+}
+.search-result-spawnd {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 22px;
+  padding: 0 7px 0 5px;
+  border: 1px solid rgb(244 128 44 / 22%);
+  border-radius: 6px;
+  background: rgb(244 128 44 / 8%);
+  color: #f3b07e;
+  font-size: 8px;
+  font-weight: 620;
+  letter-spacing: 0.025em;
+}
+.search-result-spawnd .spawnd-logo-mark {
+  width: 12px;
+  height: 16px;
+}
 .search-message {
   display: flex;
   align-items: center;
@@ -4640,6 +4664,33 @@ html[data-sidebar-ready] .account-button > svg {
   margin-bottom: 10px;
 }
 
+.game-spawnd-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  margin: 0 0 10px;
+  padding: 0 13px 0 11px;
+  border: 1px solid rgb(244 128 44 / 28%);
+  border-radius: 8px;
+  background: rgb(16 14 16 / 82%);
+  color: var(--screen-white);
+  font-size: 11px;
+  font-weight: 620;
+  backdrop-filter: blur(10px);
+}
+.game-spawnd-cta:hover {
+  border-color: rgb(244 128 44 / 52%);
+  background: rgb(244 128 44 / 12%);
+}
+.game-spawnd-cta:active {
+  transform: scale(0.98);
+}
+.game-spawnd-cta .spawnd-logo-mark {
+  width: 15px;
+  height: 21px;
+}
+
 .game-stage .game-action-panel > button,
 .game-stage .game-status-button {
   background: rgb(12 12 15 / 76%);
@@ -4795,6 +4846,11 @@ html[data-sidebar-ready] .account-button > svg {
 
 .game-page-nav button:active {
   transform: scale(0.98);
+}
+
+.game-page-nav .spawnd-logo-mark {
+  width: 11px;
+  height: 15px;
 }
 
 .game-tabs {
@@ -5142,6 +5198,17 @@ html[data-sidebar-ready] .account-button > svg {
   gap: 16px;
 }
 
+.spawnd-logo-full,
+.spawnd-logo-mark {
+  display: block;
+  width: auto;
+  object-fit: contain;
+}
+
+.spawnd-logo-full {
+  height: 30px;
+}
+
 .spawnd-mark {
   display: grid;
   place-items: center;
@@ -5153,12 +5220,80 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--screen-white);
 }
 
+.spawnd-mark .spawnd-logo-mark {
+  width: 20px;
+  height: 28px;
+}
+
 .spawnd-eyebrow,
 .spawnd-explainer header > span {
   color: var(--screen-muted);
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.08em;
+}
+
+.spawnd-panel-primary > div > .spawnd-logo-full {
+  margin-bottom: 8px;
+}
+
+.game-age-panel {
+  padding: 18px;
+}
+.game-age-panel > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.game-age-panel > header > svg {
+  color: var(--screen-dim);
+}
+.game-age-panel header span {
+  color: var(--screen-muted);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.game-age-panel h2 {
+  margin: 3px 0 0;
+  font-size: 14px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+}
+.game-age-ratings {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+.game-age-ratings > div {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+.game-age-ratings strong {
+  display: grid;
+  place-items: center;
+  min-height: 36px;
+  padding: 4px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 6px;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+.game-age-ratings span {
+  color: var(--screen-dim);
+  font-size: 10px;
+}
+.game-age-panel > p {
+  margin: 14px 0 0;
+  color: var(--screen-muted);
+  font-size: 8px;
+  line-height: 1.5;
 }
 
 .spawnd-panel h2,
