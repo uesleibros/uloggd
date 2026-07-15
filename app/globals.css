@@ -5745,6 +5745,155 @@ html[data-sidebar-ready] .account-button > svg {
   }
 }
 
+/* Brand-only social marks and tactile sharing feedback. */
+.profile-social-links {
+  gap: 8px;
+}
+.profile-social-links a {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  min-height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  color: white;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%);
+  transition:
+    transform 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    filter 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.profile-social-links a[data-network="youtube"] {
+  background: #ff0033;
+}
+.profile-social-links a[data-network="instagram"] {
+  background: #d62976;
+}
+.profile-social-links a[data-network="twitter"] {
+  background: #050505;
+}
+.profile-social-links a:hover {
+  color: white;
+  filter: brightness(1.12);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 22%),
+    0 7px 18px rgb(0 0 0 / 24%);
+}
+.profile-social-links a:active {
+  transform: scale(0.95);
+}
+.profile-social-links a:focus-visible {
+  outline: 2px solid var(--screen-white);
+  outline-offset: 2px;
+}
+.profile-social-links a svg {
+  color: white !important;
+}
+
+.share-dialog[data-state="open"] {
+  animation: share-dialog-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.share-dialog[data-state="closed"] {
+  animation: share-dialog-out 130ms cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+.share-dialog-actions > button {
+  transition:
+    transform 140ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.share-dialog-actions > button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgb(0 0 0 / 20%);
+}
+.share-dialog-actions > button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.share-dialog-actions > button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+.share-dialog-actions > button[data-success] {
+  border-color: rgb(73 174 122 / 40%);
+  background: rgb(73 174 122 / 8%);
+  animation: share-copy-confirm 320ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.share-dialog-actions > button[data-success] > span svg {
+  animation: share-check-pop 260ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.share-dialog header button {
+  transition:
+    background-color 140ms ease-out,
+    color 140ms ease-out,
+    transform 110ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.share-dialog header button:active {
+  transform: scale(0.94);
+}
+@keyframes share-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 8px)) scale(0.98);
+  }
+}
+@keyframes share-dialog-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 5px)) scale(0.985);
+  }
+}
+@keyframes share-copy-confirm {
+  50% {
+    transform: scale(0.98);
+  }
+}
+@keyframes share-check-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.7) rotate(-12deg);
+  }
+}
+@media (max-width: 620px) {
+  .profile-social-links a {
+    flex-basis: 44px;
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+  .share-dialog[data-state="open"] {
+    animation-name: share-sheet-in;
+  }
+  .share-dialog[data-state="closed"] {
+    animation-name: share-sheet-out;
+  }
+}
+@keyframes share-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+@keyframes share-sheet-out {
+  to {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .profile-social-links a,
+  .share-dialog[data-state],
+  .share-dialog-actions > button,
+  .share-dialog-actions > button[data-success],
+  .share-dialog-actions > button[data-success] > span svg {
+    animation: none;
+    transition-duration: 0.01ms;
+  }
+}
+
 /* Library native-feeling controls and mutation motion. */
 .library-sort-trigger {
   display: inline-flex;

@@ -237,32 +237,35 @@ export default async function ProfilePage({ params }: Props) {
             >
               {profile.youtube_username && (
                 <a
+                  data-network="youtube"
                   href={`https://youtube.com/@${profile.youtube_username}`}
                   target="_blank"
                   rel="noreferrer"
+                  aria-label={`YouTube · @${profile.youtube_username}`}
                 >
-                  <FaYoutube size={15} />
-                  <span>YouTube</span>
+                  <FaYoutube size={19} />
                 </a>
               )}
               {profile.instagram_username && (
                 <a
+                  data-network="instagram"
                   href={`https://instagram.com/${profile.instagram_username}`}
                   target="_blank"
                   rel="noreferrer"
+                  aria-label={`Instagram · @${profile.instagram_username}`}
                 >
-                  <FaInstagram size={15} />
-                  <span>Instagram</span>
+                  <FaInstagram size={19} />
                 </a>
               )}
               {profile.twitter_username && (
                 <a
+                  data-network="twitter"
                   href={`https://x.com/${profile.twitter_username}`}
                   target="_blank"
                   rel="noreferrer"
+                  aria-label={`Twitter / X · @${profile.twitter_username}`}
                 >
-                  <FaXTwitter size={14} />
-                  <span>Twitter</span>
+                  <FaXTwitter size={18} />
                 </a>
               )}
             </nav>

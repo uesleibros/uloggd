@@ -2,7 +2,9 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { Check, Copy, Send, Share2, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
+
+const subscribe = () => () => undefined;
 
 export function ShareButton({
   title,
@@ -21,6 +23,11 @@ export function ShareButton({
 }) {
   const pt = lang === "pt-BR";
   const [copied, setCopied] = useState(false);
+  const canShare = useSyncExternalStore(
+    subscribe,
+    () => typeof navigator.share === "function",
+    () => false,
+  );
   async function copy() {
     const url = window.location.href;
     await navigator.clipboard.writeText(url);
@@ -29,15 +36,12 @@ export function ShareButton({
   }
   async function send() {
     const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, text, url });
-        return;
-      } catch {
-        return;
-      }
+    if (!navigator.share) return;
+    try {
+      await navigator.share({ title, text, url });
+    } catch {
+      return;
     }
-    window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`${text}\n\n${url}`)}`;
   }
   return (
     <Dialog.Root>
@@ -72,13 +76,19 @@ export function ShareButton({
               </strong>
               <small>{pt ? "URL desta página" : "This page URL"}</small>
             </button>
-            <button type="button" onClick={send}>
+            <button type="button" onClick={send} disabled={!canShare}>
               <span>
                 <Send size={19} />
               </span>
               <strong>{pt ? "Enviar para alguém" : "Send to someone"}</strong>
               <small>
-                {pt ? "Apps, contatos ou e-mail" : "Apps, contacts, or email"}
+                {canShare
+                  ? pt
+                    ? "Abrir opções do dispositivo"
+                    : "Open device sharing options"
+                  : pt
+                    ? "Indisponível neste navegador"
+                    : "Unavailable in this browser"}
               </small>
             </button>
           </div>
