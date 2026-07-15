@@ -93,7 +93,24 @@ export function GameMediaGallery({
                 >
                   <ChevronRight size={24} />
                 </button>
-                <span>
+                <div
+                  className="media-lightbox-pages"
+                  aria-label={pt ? "Escolher imagem" : "Choose image"}
+                >
+                  {items.map((item, index) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      aria-label={`${pt ? "Ver imagem" : "View image"} ${index + 1}`}
+                      aria-current={active === index ? "true" : undefined}
+                      onClick={() => setActive(index)}
+                    >
+                      <Image src={item.url} alt="" fill sizes="64px" />
+                      <span>{index + 1}</span>
+                    </button>
+                  ))}
+                </div>
+                <span className="media-lightbox-counter">
                   {active + 1} / {items.length}
                 </span>
               </>

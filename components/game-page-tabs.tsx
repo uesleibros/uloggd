@@ -1,7 +1,7 @@
 "use client";
 
 import type { KeyboardEvent, ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
   Images,
@@ -33,6 +33,7 @@ export function GamePageTabs({
   community: ReactNode;
 }) {
   const [active, setActive] = useState<TabId>("overview");
+  const tabsRef = useRef<HTMLElement>(null);
   const pt = lang === "pt-BR";
   const tabs = [
     {
@@ -80,6 +81,22 @@ export function GamePageTabs({
   ].filter((tab): tab is NonNullable<typeof tab> => Boolean(tab));
   const selected = tabs.find((tab) => tab.id === active) ?? tabs[0];
 
+  useEffect(() => {
+    function openTab(event: Event) {
+      const tab = (event as CustomEvent<TabId>).detail;
+      if (!tabs.some((item) => item.id === tab)) return;
+      setActive(tab);
+      window.requestAnimationFrame(() => {
+        tabsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        tabsRef.current
+          ?.querySelector<HTMLButtonElement>(`#game-tab-${tab}`)
+          ?.focus({ preventScroll: true });
+      });
+    }
+    window.addEventListener("uloggd:open-game-tab", openTab);
+    return () => window.removeEventListener("uloggd:open-game-tab", openTab);
+  }, [tabs]);
+
   function navigate(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     let next = index;
     if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
@@ -98,7 +115,7 @@ export function GamePageTabs({
   }
 
   return (
-    <section className="game-tabs">
+    <section className="game-tabs" ref={tabsRef}>
       <div
         className="game-page-nav"
         role="tablist"

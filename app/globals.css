@@ -2162,6 +2162,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .media-lightbox > img {
   object-fit: contain;
+  padding-bottom: 66px;
 }
 .media-lightbox > button {
   position: absolute;
@@ -2191,10 +2192,10 @@ html[data-sidebar-ready] .account-button > svg {
 .media-lightbox-next {
   right: 12px;
 }
-.media-lightbox > span {
+.media-lightbox-counter {
   position: absolute;
   z-index: 3;
-  bottom: 12px;
+  bottom: 76px;
   left: 50%;
   padding: 5px 8px;
   border-radius: 5px;
@@ -2202,6 +2203,59 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--screen-dim);
   font: 550 9px var(--font-inter);
   transform: translateX(-50%);
+}
+.media-lightbox-pages {
+  position: absolute;
+  z-index: 3;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  overflow-x: auto;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: rgb(15 14 17 / 88%);
+  scrollbar-width: thin;
+  scrollbar-color: var(--shell-line-strong) transparent;
+  backdrop-filter: blur(10px);
+}
+.media-lightbox-pages button {
+  position: relative;
+  flex: 0 0 64px;
+  height: 42px;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  opacity: 0.58;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  cursor: pointer;
+}
+.media-lightbox-pages button:hover,
+.media-lightbox-pages button[aria-current="true"] {
+  border-color: rgb(255 255 255 / 54%);
+  opacity: 1;
+}
+.media-lightbox-pages img {
+  object-fit: cover;
+}
+.media-lightbox-pages button > span {
+  position: absolute;
+  z-index: 1;
+  right: 3px;
+  bottom: 3px;
+  display: grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding-inline: 3px;
+  border-radius: 4px;
+  background: rgb(7 6 9 / 78%);
+  font: 650 8px var(--font-inter);
+  font-variant-numeric: tabular-nums;
 }
 .game-video-grid {
   display: grid;
@@ -4677,6 +4731,7 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--screen-white);
   font-size: 11px;
   font-weight: 620;
+  cursor: pointer;
   backdrop-filter: blur(10px);
 }
 .game-spawnd-cta:hover {
@@ -5267,27 +5322,47 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .game-age-ratings > div {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr);
+  grid-template-columns: 56px minmax(0, 1fr);
   align-items: center;
   gap: 10px;
 }
-.game-age-ratings strong {
+.game-age-rating-mark {
   display: grid;
   place-items: center;
-  min-height: 36px;
-  padding: 4px;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
   border: 1px solid var(--shell-line-strong);
   border-radius: 6px;
   background: var(--console-inset);
+}
+.game-age-rating-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.game-age-rating-mark > strong {
   color: var(--screen-white);
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
   text-align: center;
 }
-.game-age-ratings span {
+.game-age-ratings > div > span:last-child {
+  display: grid;
+  gap: 5px;
   color: var(--screen-dim);
   font-size: 10px;
+}
+.game-age-ratings > div > span:last-child strong {
+  color: var(--screen-white);
+  font-size: 12px;
+  font-weight: 620;
+}
+.game-age-ratings > div > span:last-child small {
+  color: var(--screen-muted);
+  font-size: 9px;
+  line-height: 1.35;
 }
 .game-age-panel > p {
   margin: 14px 0 0;
@@ -5589,7 +5664,30 @@ a,
 
   .game-stage-rail {
     grid-column: 1 / -1;
+    grid-row: 2;
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .game-stage-rail .game-score-line {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 3px 12px;
+    padding: 10px 12px;
+  }
+
+  .game-stage-rail .game-score-line > span,
+  .game-stage-rail .game-score-line > p {
+    grid-column: 1;
+  }
+
+  .game-stage-rail .game-score-line > div {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .game-stage-rail .game-score-line strong {
+    font-size: 21px;
   }
 
   .game-stage-rail .game-time-panel dl {

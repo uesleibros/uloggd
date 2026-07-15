@@ -216,15 +216,21 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Confirmed embed IDs render a responsive 16:9 player inside the tab using spawnd's documented iframe contract. The iframe loads only after an explicit player action, before which no spawnd request is made; an external-page fallback remains available.
 - The explainer states that demos run locally in the browser without download, installation, or game streaming.
 - Use the official spawnd wordmark and compact mark from local SVG assets. Preserve their orange identity as a partner-brand exception; do not promote orange into the uloggd product palette.
-- Supported games expose a compact 40px “Play now” action in the game stage. Search results use a quiet playable badge with the compact mark; both render only after catalog compatibility is confirmed.
+- Supported games expose a compact 40px “Play now” action in the game stage. It activates and focuses the internal spawnd tab instead of navigating away. Search results use a quiet playable badge with the compact mark; both render only when the spawnd catalog contains the exact IGDB ID, never through name, slug, or website inference.
 - The spawnd tab uses the official compact mark in navigation and the full wordmark in its primary panel. The playable action remains the focal element, while privacy consent, external fallback, loading, and error states remain explicit.
 
 ### Age rating
 
 - Game overviews show available IGDB age ratings at the top of the right context rail, before time-to-beat and similar games.
-- The panel uses a compact editorial badge per organization, with the rating value leading and the organization name secondary. It remains neutral rather than recreating unofficial rating-board colors or artwork.
+- The panel uses IGDB's official `rating_cover_url` artwork per organization, with the exact rating and organization names alongside it. A neutral textual badge is only the fallback when IGDB has no image.
 - Portuguese prioritizes ClassInd, then ESRB and PEGI; English prioritizes ESRB, then PEGI and ClassInd. Show no more than three organizations and omit the panel when IGDB has no rating data.
 - Read the current IGDB `organization` and `rating_category` relations; do not add new code against deprecated `category` or `rating` fields.
+
+### Media lightbox
+
+- The full-screen gallery keeps previous/next controls for sequential browsing and adds a bottom thumbnail strip with numbered direct navigation for jumping to any image.
+- The active thumbnail uses an emphasis border and full opacity; inactive thumbnails remain subdued. The strip scrolls horizontally on narrow screens without changing the image stage geometry.
+- On mobile game stages, the catalog score is a compact horizontal row after the cover/title quick-action area. It must not sit above the cover or compete with the artwork banner.
 
 ### Compact game row
 

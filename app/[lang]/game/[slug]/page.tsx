@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import {
   Check,
   Clock3,
-  ExternalLink,
   Gauge,
   Play,
   ShieldCheck,
@@ -15,6 +14,7 @@ import {
 import { GameExtendedContent } from "@/components/game-extended-content";
 import { GameMediaGallery } from "@/components/game-media-gallery";
 import { GamePageTabs } from "@/components/game-page-tabs";
+import { GameTabTrigger } from "@/components/game-tab-trigger";
 import { SpawndGamePanel } from "@/components/spawnd-game-panel";
 import { CoverSelector } from "@/components/library/cover-selector";
 import { GameActionPanel } from "@/components/library/game-action-panel";
@@ -149,14 +149,12 @@ export default async function GamePage({ params }: Props) {
   };
   const spawnd = getSpawndGame({
     igdbId: game.id,
-    name: game.name,
-    websites: game.websites,
     lang,
   });
   const ageRatings = [...game.ageRatings].sort((a, b) => {
     const preferred =
       lang === "pt-BR"
-        ? ["ClassInd", "ESRB", "PEGI"]
+        ? ["ClassInd", "Classificação Indicativa", "ESRB", "PEGI"]
         : ["ESRB", "PEGI", "ClassInd"];
     const rank = (name: string) => {
       const index = preferred.findIndex((item) =>
@@ -202,17 +200,12 @@ export default async function GamePage({ params }: Props) {
               lang={lang}
               enabled={Boolean(user)}
             />
-            {spawnd.available && spawnd.gameUrl && (
-              <a
-                className="game-spawnd-cta"
-                href={spawnd.gameUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+            {spawnd.available && (
+              <GameTabTrigger className="game-spawnd-cta" tab="spawnd">
                 <SpawndLogo compact />
                 <span>{lang === "pt-BR" ? "Jogar agora" : "Play now"}</span>
-                <ExternalLink size={14} aria-hidden />
-              </a>
+                <Play size={14} fill="currentColor" aria-hidden />
+              </GameTabTrigger>
             )}
             {user && (
               <GameLogActions
@@ -393,8 +386,22 @@ export default async function GamePage({ params }: Props) {
                   <div className="game-age-ratings">
                     {ageRatings.slice(0, 3).map((rating) => (
                       <div key={`${rating.organization}-${rating.rating}`}>
-                        <strong>{rating.rating}</strong>
-                        <span>{rating.organization}</span>
+                        <span className="game-age-rating-mark">
+                          {rating.imageUrl ? (
+                            <Image
+                              src={rating.imageUrl}
+                              alt={`${rating.organization}: ${rating.rating}`}
+                              width={72}
+                              height={72}
+                            />
+                          ) : (
+                            <strong>{rating.rating}</strong>
+                          )}
+                        </span>
+                        <span>
+                          <strong>{rating.rating}</strong>
+                          <small>{rating.organization}</small>
+                        </span>
                       </div>
                     ))}
                   </div>

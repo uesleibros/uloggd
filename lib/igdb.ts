@@ -40,6 +40,7 @@ type IgdbGameResponse = {
   age_ratings?: {
     organization?: { name: string };
     rating_category?: { rating: string };
+    rating_cover_url?: string;
   }[];
   websites?: { url: string }[];
   language_supports?: {
@@ -315,7 +316,11 @@ export type DiscoveryGames = {
 };
 
 export type GameDetail = Game & {
-  ageRatings: { organization: string; rating: string }[];
+  ageRatings: {
+    organization: string;
+    rating: string;
+    imageUrl: string | null;
+  }[];
   alternativeCovers: {
     url: string;
     source: "default" | "localized" | "edition";
@@ -363,7 +368,7 @@ export const getGameBySlug = cache(async function getGameBySlug(
       cover.image_id,artworks.image_id,screenshots.image_id,genres.name,
       platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
       videos.video_id,videos.name,themes.name,game_modes.name,websites.url,
-      age_ratings.organization.name,age_ratings.rating_category.rating,
+      age_ratings.organization.name,age_ratings.rating_category.rating,age_ratings.rating_cover_url,
       language_supports.language.name,language_supports.language.native_name,language_supports.language_support_type.name,
       similar_games.name,similar_games.slug,similar_games.first_release_date,similar_games.total_rating,similar_games.total_rating_count,similar_games.cover.image_id,similar_games.genres.name,
       dlcs.name,dlcs.slug,dlcs.first_release_date,dlcs.total_rating,dlcs.total_rating_count,dlcs.cover.image_id,dlcs.genres.name,
@@ -497,11 +502,17 @@ export const getGameBySlug = cache(async function getGameBySlug(
         ): item is {
           organization: { name: string };
           rating_category: { rating: string };
+          rating_cover_url?: string;
         } => Boolean(item.organization?.name && item.rating_category?.rating),
       )
       .map((item) => ({
         organization: item.organization.name,
         rating: item.rating_category.rating,
+        imageUrl: item.rating_cover_url
+          ? item.rating_cover_url.startsWith("//")
+            ? `https:${item.rating_cover_url}`
+            : item.rating_cover_url.replace(/^http:/, "https:")
+          : null,
       })),
     alternativeCovers: [...coverOptions.values()].slice(0, 24),
     gallery,

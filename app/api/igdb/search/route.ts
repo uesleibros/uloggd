@@ -35,7 +35,6 @@ export async function GET(request: NextRequest) {
       coverUrl: resolveGameCover(game.coverUrl, covers.get(game.id)),
       spawndAvailable: getSpawndGame({
         igdbId: game.id,
-        name: game.name,
         lang: "en",
       }).available,
     }));
