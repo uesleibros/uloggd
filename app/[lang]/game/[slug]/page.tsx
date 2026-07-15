@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   Check,
   Clock3,
@@ -12,6 +12,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { GameExtendedContent } from "@/components/game-extended-content";
+import { GameAgeGate } from "@/components/game-age-gate";
 import { GameMediaGallery } from "@/components/game-media-gallery";
 import { GamePageTabs } from "@/components/game-page-tabs";
 import { GameTabTrigger } from "@/components/game-tab-trigger";
@@ -21,6 +22,7 @@ import { GameActionPanel } from "@/components/library/game-action-panel";
 import { GameLogActions } from "@/components/social/game-log-actions";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { getGameBySlug } from "@/lib/igdb";
+import { isOldEnough } from "@/lib/age-access";
 import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/server";
 import { getActivity } from "@/lib/social";
@@ -73,6 +75,30 @@ export default async function GamePage({ params }: Props) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const brazilRating = game.ageRatings.find((rating) => rating.region === "BR");
+  const minimumAge = brazilRating?.minimumAge ?? 0;
+  const { data: ageProfile } = user
+    ? await supabase
+        .from("profiles")
+        .select("birth_date")
+        .eq("id", user.id)
+        .maybeSingle()
+    : { data: null };
+  if (user && !ageProfile?.birth_date) redirect(`/${lang}/onboarding/username`);
+  if (
+    brazilRating &&
+    minimumAge > 0 &&
+    (!ageProfile?.birth_date || !isOldEnough(ageProfile.birth_date, minimumAge))
+  ) {
+    return (
+      <GameAgeGate
+        gameName={game.name}
+        rating={brazilRating}
+        lang={lang}
+        signedIn={Boolean(user)}
+      />
+    );
+  }
   const relatedIds = game.related.flatMap((group) =>
     group.games.map((related) => related.id),
   );

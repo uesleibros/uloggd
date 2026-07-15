@@ -320,6 +320,7 @@ export type GameDetail = Game & {
     organization: string;
     region: string;
     rating: string;
+    minimumAge: number | null;
     imageUrl: string | null;
   }[];
   alternativeCovers: {

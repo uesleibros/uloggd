@@ -116,11 +116,19 @@ export function UsernamePanel({ lang }: { lang: "en" | "pt-BR" }) {
       setPending(false);
       return;
     }
-    router.replace(`/${lang}`);
+    router.replace(`/${lang}/onboarding/username`);
     router.refresh();
   }
   return (
     <section className="login-panel username-panel">
+      <div
+        className="onboarding-progress"
+        aria-label={pt ? "Etapa 1 de 2" : "Step 1 of 2"}
+      >
+        <span data-current>1</span>
+        <i />
+        <span>2</span>
+      </div>
       <div className="login-panel-heading">
         <h1>{pt ? "Escolha seu username" : "Choose your username"}</h1>
         <p>

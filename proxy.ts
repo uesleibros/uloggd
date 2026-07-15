@@ -57,23 +57,24 @@ export async function proxy(request: NextRequest) {
   }
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username")
+    .select("username,birth_date")
     .eq("id", user.id)
     .maybeSingle();
   const onboarding = pathname.startsWith(`/${lang}/onboarding`);
   const callback = pathname.startsWith(`/${lang}/auth/callback`);
   const reset = pathname.startsWith(`/${lang}/auth/reset-password`);
   const signout = pathname.startsWith(`/${lang}/auth/signout`);
-  if (!profile?.username && !onboarding && !callback && !reset && !signout)
+  const onboardingIncomplete = !profile?.username || !profile.birth_date;
+  if (onboardingIncomplete && !onboarding && !callback && !reset && !signout)
     return NextResponse.redirect(
       new URL(`/${lang}/onboarding/username`, request.url),
     );
-  if (profile?.username && onboarding)
+  if (!onboardingIncomplete && onboarding)
     return NextResponse.redirect(new URL(`/${lang}`, request.url));
   if (user && pathname === `/${lang}/login`)
     return NextResponse.redirect(
       new URL(
-        profile?.username ? `/${lang}` : `/${lang}/onboarding/username`,
+        onboardingIncomplete ? `/${lang}/onboarding/username` : `/${lang}`,
         request.url,
       ),
     );

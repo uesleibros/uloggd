@@ -4,6 +4,19 @@ type RatingOrganization = {
   region: string;
 };
 
+const MINIMUM_AGES: Record<
+  RatingOrganization["slug"],
+  Record<string, number>
+> = {
+  esrb: { e: 0, ec: 0, e10: 10, t: 13, m: 17, ao: 18, rp: 18 },
+  pegi: { "3": 3, "7": 7, "12": 12, "16": 16, "18": 18 },
+  cero: { a: 0, b: 12, c: 15, d: 17, z: 18 },
+  usk: { "0": 0, "6": 6, "12": 12, "16": 16, "18": 18 },
+  grac: { all: 0, "12": 12, "15": 15, "19": 19, testing: 19 },
+  class_ind: { l: 0, "10": 10, "12": 12, "14": 14, "16": 16, "18": 18 },
+  acb: { g: 0, pg: 8, m: 15, ma_15: 15, r_18: 18, rc: 18 },
+};
+
 const ORGANIZATIONS: Record<RatingOrganization["slug"], RatingOrganization> = {
   esrb: {
     slug: "esrb",
@@ -135,6 +148,7 @@ export function resolveAgeRating(organizationName: string, ratingName: string) {
     organization: organization.name,
     region: organization.region,
     rating: ratingName,
+    minimumAge: rating ? MINIMUM_AGES[slug][rating] : null,
     imageUrl: rating ? `/age-ratings/${slug}/${slug}_${rating}.png` : null,
   };
 }

@@ -3387,6 +3387,27 @@ html[data-sidebar-ready] .account-button > svg {
   font-size: 10px;
   font-weight: 600;
   cursor: pointer;
+  transition:
+    background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 150ms ease-out,
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.profile-form-footer button:hover:not(:disabled),
+.profile-crop-modal > footer button:last-child:hover:not(:disabled) {
+  border-color: rgb(121 131 245 / 68%);
+  background: rgb(88 101 242 / 23%);
+  color: var(--screen-white);
+  transform: translateY(-1px);
+}
+.profile-form-footer button:active:not(:disabled),
+.profile-crop-modal > footer button:last-child:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.profile-form-footer button:focus-visible,
+.profile-crop-modal > footer button:focus-visible {
+  outline: 2px solid var(--brand-blurple-bright);
+  outline-offset: 3px;
 }
 .profile-crop-backdrop {
   position: fixed;
@@ -7365,6 +7386,296 @@ a,
 .game-route-skeleton-panel {
   min-height: 260px;
   border-radius: 11px;
+}
+
+/* Account age assurance, protected catalog states, and route recovery. */
+.auth-single .birth-date-panel {
+  align-self: auto;
+  margin: 0 auto;
+}
+.onboarding-progress {
+  display: grid;
+  grid-template-columns: 24px 44px 24px;
+  align-items: center;
+  width: max-content;
+  color: var(--screen-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.onboarding-progress span {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 50%;
+  background: var(--console-inset);
+}
+.onboarding-progress span:first-child,
+.onboarding-progress span[data-current] {
+  border-color: rgb(88 101 242 / 52%);
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
+}
+.onboarding-progress i {
+  height: 1px;
+  background: rgb(88 101 242 / 38%);
+}
+.onboarding-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 16px;
+  border: 1px solid rgb(115 198 154 / 24%);
+  border-radius: 10px;
+  background: rgb(115 198 154 / 8%);
+  color: var(--safe-green);
+}
+.birth-date-input {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.birth-date-input > svg {
+  justify-self: center;
+}
+.birth-date-input input {
+  border: 0 !important;
+  border-left: 1px solid var(--shell-line) !important;
+  border-radius: 0 !important;
+  color-scheme: dark;
+}
+.birth-date-input:focus-within {
+  border-color: rgb(88 101 242 / 58%);
+}
+.birth-date-confirmation {
+  grid-template-columns: 20px minmax(0, 1fr) !important;
+  align-items: start;
+  gap: 10px !important;
+  line-height: 1.55;
+  cursor: pointer;
+}
+.birth-date-confirmation input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--brand-blurple);
+}
+.birth-date-privacy {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.birth-date-privacy svg {
+  margin-top: 2px;
+  color: var(--safe-green);
+}
+.birth-date-privacy p {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.age-gate-page,
+.not-found-page {
+  display: grid;
+  place-items: center;
+  min-height: calc(100dvh - 64px);
+  padding: 48px 20px;
+}
+.age-gate-card,
+.not-found-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 620px);
+  padding: 40px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 14px;
+  background: var(--console-panel);
+  text-align: center;
+}
+.age-gate-mark {
+  display: grid;
+  place-items: center;
+  min-width: 112px;
+  min-height: 112px;
+  margin-bottom: 24px;
+  border: 1px solid var(--shell-line);
+  border-radius: 12px;
+  background: var(--console-inset);
+  color: var(--safe-green);
+}
+.age-gate-mark img {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+}
+.age-gate-eyebrow,
+.not-found-code {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--screen-muted);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+}
+.age-gate-card h1,
+.not-found-card h1 {
+  max-width: 520px;
+  margin: 12px 0 0;
+  font-size: clamp(26px, 4vw, 36px);
+  font-weight: 650;
+  letter-spacing: -0.05em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+.age-gate-card > p,
+.not-found-card > p {
+  max-width: 460px;
+  margin: 14px 0 0;
+  color: var(--screen-dim);
+  font-size: 13px;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+.age-gate-actions,
+.not-found-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 28px;
+}
+.age-gate-actions a,
+.not-found-actions a,
+.not-found-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font: 620 11px var(--font-inter);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.age-gate-actions a:first-child,
+.not-found-actions a {
+  border-color: rgb(88 101 242 / 48%);
+  background: var(--brand-blurple);
+  color: white;
+}
+.age-gate-actions a:hover,
+.not-found-actions a:hover,
+.not-found-actions button:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+  transform: translateY(-1px);
+}
+.age-gate-actions a:first-child:hover,
+.not-found-actions a:hover {
+  background: var(--brand-blurple-bright);
+}
+.age-gate-actions a:active,
+.not-found-actions a:active,
+.not-found-actions button:active {
+  transform: scale(0.97);
+}
+.age-gate-actions a:focus-visible,
+.not-found-actions a:focus-visible,
+.not-found-actions button:focus-visible,
+.birth-date-confirmation input:focus-visible {
+  outline: 2px solid rgb(121 131 245 / 82%);
+  outline-offset: 3px;
+}
+.age-gate-card small,
+.not-found-card small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  color: var(--screen-muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+.not-found-orbit {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 124px;
+  height: 124px;
+  margin-bottom: 24px;
+  border: 1px solid var(--shell-line);
+  border-radius: 50%;
+}
+.not-found-orbit::before {
+  position: absolute;
+  inset: 19px;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 50%;
+  content: "";
+}
+.not-found-orbit span {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+}
+.not-found-orbit i {
+  position: absolute;
+  top: 9px;
+  right: 25px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--brand-blurple);
+  box-shadow: 0 0 0 5px var(--brand-blurple-wash);
+}
+
+@media (max-width: 620px) {
+  .age-gate-page,
+  .not-found-page {
+    min-height: calc(100dvh - 60px);
+    padding: 20px 14px;
+  }
+  .age-gate-card,
+  .not-found-card {
+    padding: 28px 20px;
+  }
+  .age-gate-actions,
+  .not-found-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .age-gate-actions a,
+  .not-found-actions a,
+  .not-found-actions button {
+    width: 100%;
+  }
 }
 
 @media (max-width: 960px) {

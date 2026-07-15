@@ -152,6 +152,19 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Public details, avatar, and banner use three distinct settings sections. Each image section includes a domain icon, preview, upload/remove actions, recommended dimensions, the 8 MB source limit, and supported JPG/PNG/WebP formats.
 - Avatar and banner uploads always pass through a Radix crop modal. Avatar crops at 1:1 to a maximum 640px; banner crops at 3:1 to a maximum 1800px; both export compressed WebP before server upload.
 - Image-provider credentials remain server-only. Upload controls expose loading, invalid-file, provider-failure, remove, and empty states.
+- Primary save controls use blurple only at the commit point, with a 160ms lift on hover, 0.97 press feedback, visible focus ring, and a clearly muted disabled state.
+
+### Age protection
+
+- Account onboarding has two explicit steps: public username first, immutable birth date second. The progress marker stays compact and subordinate to the form heading.
+- Birth date is presented as a dark inset native date control with an explicit permanence confirmation. Safety copy explains the 12-year account minimum and that the date is private.
+- A blocked game page never reveals artwork or descriptive content. The official local ClassInd mark is the focal object, followed by the restriction reason and one safe route back to the catalog.
+- Blurple remains reserved for authentication or completion actions; protection status uses neutral surfaces and `safe-green` only for the shield marker.
+
+### Not found
+
+- The 404 state belongs to the game-library world: a restrained gamepad-orbit object, “fora do mapa” language, and routes back to catalog or browser history.
+- Keep the product shell visible. The error surface is centered within the content canvas and uses surface shifts plus quiet borders rather than an oversized promotional illustration.
 
 ### Brand
 
