@@ -12277,3 +12277,318 @@ a,
     transition-duration: 0.01ms;
   }
 }
+
+/* Profile statistics are compact navigation into complete public subpages. */
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.profile-stats > a {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px;
+  border-radius: 8px;
+  transition:
+    transform 140ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.profile-stats > a:hover {
+  background: var(--console-hover);
+  transform: translateY(-2px);
+}
+
+.profile-stats > a:active {
+  transform: scale(0.97);
+}
+
+.profile-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-stats > a strong {
+  color: var(--screen-white);
+  font-size: 18px;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+}
+
+.profile-subpage {
+  max-width: 1120px;
+  margin-inline: auto;
+}
+
+.profile-subpage-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  margin-bottom: 18px;
+  color: var(--screen-muted);
+  font-size: 10px;
+  font-weight: 560;
+  transition:
+    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 140ms ease-out;
+}
+
+.profile-subpage-back:hover {
+  color: var(--screen-white);
+  transform: translateX(-2px);
+}
+
+.profile-subpage-header {
+  max-width: 720px;
+  margin-bottom: 24px;
+}
+
+.profile-subpage-header > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--brand-blurple-bright);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+}
+
+.profile-subpage-header h1 {
+  margin-top: 8px;
+  color: var(--screen-white);
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 660;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.profile-subpage-header p {
+  max-width: 600px;
+  margin-top: 9px;
+  color: var(--screen-dim);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.profile-subpage-summary {
+  display: flex;
+  gap: 8px;
+  margin: -8px 0 26px;
+}
+
+.profile-subpage-summary > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  font-size: 9px;
+}
+
+.profile-subpage-summary strong {
+  color: var(--screen-white);
+  font-size: 12px;
+}
+
+.profile-lists-grid {
+  gap: 18px;
+}
+
+.profile-subpage-empty {
+  display: grid;
+  justify-items: center;
+  padding: 52px 20px;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 12px;
+  color: var(--brand-blurple-bright);
+}
+
+.profile-connections-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.profile-connection-card {
+  min-width: 0;
+}
+
+.profile-connection-card > a {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 12px;
+  min-height: 84px;
+  padding: 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: rgb(255 255 255 / 0.02);
+  transition:
+    transform 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 150ms ease-out,
+    border-color 150ms ease-out,
+    box-shadow 160ms ease-out;
+}
+
+.profile-connection-card > a:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--console-raised);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.18);
+  transform: translateY(-2px);
+}
+
+.profile-connection-card > a:active {
+  transform: scale(0.98);
+}
+
+.profile-connection-avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 50%;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.profile-connection-avatar img {
+  object-fit: cover;
+}
+
+.profile-connection-copy {
+  min-width: 0;
+}
+
+.profile-connection-copy > strong {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--screen-white);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.profile-connection-copy > strong > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-connection-copy > small {
+  display: block;
+  margin-top: 2px;
+  color: var(--screen-muted);
+  font-size: 9px;
+}
+
+.profile-connection-copy > p {
+  display: -webkit-box;
+  margin-top: 6px;
+  overflow: hidden;
+  color: var(--screen-dim);
+  font-size: 9px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.profile-connection-arrow {
+  color: var(--screen-muted);
+  transition:
+    transform 140ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 140ms ease-out;
+}
+
+.profile-connection-card > a:hover .profile-connection-arrow {
+  color: var(--screen-white);
+  transform: translateX(2px);
+}
+
+.profile-subpage .social-filter-tabs a > span {
+  margin-left: 5px;
+  color: var(--screen-muted);
+  font-size: 8px;
+}
+
+@media (max-width: 760px) {
+  .profile-stats {
+    grid-template-columns: repeat(6, minmax(92px, 1fr));
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .profile-stats::-webkit-scrollbar {
+    display: none;
+  }
+
+  .profile-stats > a {
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 620px) {
+  .profile-stats {
+    display: grid;
+    margin: 22px 4px 32px;
+    padding: 10px 0;
+  }
+
+  .profile-stats > a {
+    padding: 9px;
+  }
+
+  .profile-stat-label svg {
+    display: block;
+  }
+
+  .profile-connections-grid,
+  .profile-lists-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-subpage-summary {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .profile-connection-card > a {
+    grid-template-columns: 46px minmax(0, 1fr) 20px;
+    padding: 12px;
+  }
+
+  .profile-connection-avatar {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-stats > a,
+  .profile-subpage-back,
+  .profile-connection-card > a,
+  .profile-connection-arrow {
+    transition-duration: 0.01ms;
+  }
+}

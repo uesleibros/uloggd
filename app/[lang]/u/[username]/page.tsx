@@ -285,42 +285,47 @@ export default async function ProfilePage({ params }: Props) {
           />
         </div>
       </header>
-      <dl className="profile-stats">
-        <div>
-          <dt>
+      <nav
+        className="profile-stats"
+        aria-label={pt ? "Explorar perfil" : "Explore profile"}
+      >
+        <Link href={`/${lang}/u/${profile.username}/library`}>
+          <span className="profile-stat-label">
             <Gamepad2 size={14} /> {pt ? "Jogos" : "Games"}
-          </dt>
-          <dd>{libraryResult.count ?? 0}</dd>
-        </div>
-        <div>
-          <dt>
+          </span>
+          <strong>{libraryResult.count ?? 0}</strong>
+        </Link>
+        <Link href={`/${lang}/u/${profile.username}/activity?type=review`}>
+          <span className="profile-stat-label">
             <Star size={14} /> {pt ? "Avaliações" : "Reviews"}
-          </dt>
-          <dd>{reviewCount.count ?? 0}</dd>
-        </div>
-        <div>
-          <dt>
+          </span>
+          <strong>{reviewCount.count ?? 0}</strong>
+        </Link>
+        <Link href={`/${lang}/u/${profile.username}/activity?type=diary`}>
+          <span className="profile-stat-label">
             <BookOpen size={14} /> {pt ? "Sessões" : "Sessions"}
-          </dt>
-          <dd>{diaryCount.count ?? 0}</dd>
-        </div>
-        <div>
-          <dt>
+          </span>
+          <strong>{diaryCount.count ?? 0}</strong>
+        </Link>
+        <Link href={`/${lang}/u/${profile.username}/lists`}>
+          <span className="profile-stat-label">
             <List size={14} /> {pt ? "Listas" : "Lists"}
-          </dt>
-          <dd>{listsResult.count ?? 0}</dd>
-        </div>
-        <div>
-          <dt>
+          </span>
+          <strong>{listsResult.count ?? 0}</strong>
+        </Link>
+        <Link href={`/${lang}/u/${profile.username}/connections?tab=followers`}>
+          <span className="profile-stat-label">
             <Users size={14} /> {pt ? "Seguidores" : "Followers"}
-          </dt>
-          <dd>{followerCount.count ?? 0}</dd>
-        </div>
-        <div>
-          <dt>{pt ? "Seguindo" : "Following"}</dt>
-          <dd>{followingCount.count ?? 0}</dd>
-        </div>
-      </dl>
+          </span>
+          <strong>{followerCount.count ?? 0}</strong>
+        </Link>
+        <Link href={`/${lang}/u/${profile.username}/connections?tab=following`}>
+          <span className="profile-stat-label">
+            <Users size={14} /> {pt ? "Seguindo" : "Following"}
+          </span>
+          <strong>{followingCount.count ?? 0}</strong>
+        </Link>
+      </nav>
       {library.length > 0 && (
         <section className="profile-shelf">
           <div className="social-section-title">
@@ -332,6 +337,9 @@ export default async function ProfilePage({ params }: Props) {
                   : "Latest library changes"}
               </p>
             </div>
+            <Link href={`/${lang}/u/${profile.username}/activity`}>
+              {pt ? "Ver histórico" : "View history"}
+            </Link>
             <Link href={`/${lang}/u/${profile.username}/library`}>
               {pt ? "Ver biblioteca" : "View library"}
             </Link>
@@ -369,9 +377,9 @@ export default async function ProfilePage({ params }: Props) {
         <aside className="profile-lists">
           <div className="social-section-title">
             <h2>{pt ? "Listas" : "Lists"}</h2>
-            {user?.id === profile.id && (
-              <Link href={`/${lang}/lists`}>{pt ? "Gerenciar" : "Manage"}</Link>
-            )}
+            <Link href={`/${lang}/u/${profile.username}/lists`}>
+              {pt ? "Ver todas" : "View all"}
+            </Link>
           </div>
           {lists.length ? (
             lists.map((list) => {
