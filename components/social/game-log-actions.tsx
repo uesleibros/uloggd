@@ -12,6 +12,7 @@ import {
   Gamepad2,
   Heart,
   ListPlus,
+  LoaderCircle,
   Lock,
   Plus,
   RotateCcw,
@@ -217,7 +218,12 @@ export function GameLogActions({
           <ListPlus size={15} /> {labels.list}
         </button>
       </div>
-      <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Root
+        open={open}
+        onOpenChange={(next) => {
+          if (!pending) setOpen(next);
+        }}
+      >
         <Dialog.Portal>
           <Dialog.Overlay className="drawer-backdrop" />
           <Dialog.Content
@@ -230,7 +236,10 @@ export function GameLogActions({
                 <Dialog.Title>{game.name}</Dialog.Title>
               </div>
               {game.releaseYear && <time>{game.releaseYear}</time>}
-              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <Dialog.Close
+                aria-label={pt ? "Fechar" : "Close"}
+                disabled={pending}
+              >
                 <X size={19} />
               </Dialog.Close>
             </header>
@@ -603,25 +612,50 @@ export function GameLogActions({
                     {success}
                   </p>
                 )}
-                <footer>
-                  <Dialog.Close type="button">
+                <footer
+                  className={
+                    mode === "review" ? "review-action-bar" : undefined
+                  }
+                >
+                  {mode === "review" && (
+                    <span className="review-action-status" aria-live="polite">
+                      {pending
+                        ? pt
+                          ? "Publicando sua avaliação…"
+                          : "Publishing your review…"
+                        : success || ""}
+                    </span>
+                  )}
+                  <Dialog.Close type="button" disabled={pending}>
                     {pt ? "Cancelar" : "Cancel"}
                   </Dialog.Close>
                   <button
                     type="submit"
+                    data-loading={pending || undefined}
                     disabled={
                       pending ||
                       (mode === "list" && !lists.length) ||
                       (mode === "review" && !reviewHasSubstance)
                     }
                   >
+                    {pending && (
+                      <LoaderCircle className="spin" size={15} aria-hidden />
+                    )}
                     {pending
-                      ? pt
-                        ? "Salvando…"
-                        : "Saving…"
-                      : pt
-                        ? "Salvar"
-                        : "Save"}
+                      ? mode === "review"
+                        ? pt
+                          ? "Publicando…"
+                          : "Publishing…"
+                        : pt
+                          ? "Salvando…"
+                          : "Saving…"
+                      : mode === "review"
+                        ? pt
+                          ? "Publicar avaliação"
+                          : "Publish review"
+                        : pt
+                          ? "Salvar"
+                          : "Save"}
                   </button>
                 </footer>
               </form>
