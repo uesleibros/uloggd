@@ -172,9 +172,6 @@ export default async function GamePage({ params }: Props) {
               <span>{game.releaseYear ?? "TBA"}</span>
             </div>
             <h1>{game.name}</h1>
-            {game.summary && (
-              <p className="game-stage-description">{game.summary}</p>
-            )}
             <GameActionPanel
               game={game}
               initial={state}
