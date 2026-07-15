@@ -14,6 +14,7 @@ export type Profile = {
   display_name: string | null;
   pronouns: string | null;
   bio: string | null;
+  thought: string | null;
   avatar_url: string | null;
   banner_url: string | null;
   birth_date: string;
@@ -32,6 +33,7 @@ export function ProfileSettingsPanel({
   const pt = lang === "pt-BR";
   const router = useRouter();
   const [profile, setProfile] = useState(initial);
+  const [thought, setThought] = useState(initial.thought ?? "");
   const [crop, setCrop] = useState<{
     source: string;
     kind: "avatar" | "banner";
@@ -66,10 +68,17 @@ export function ProfileSettingsPanel({
     const displayName = String(values.get("displayName") ?? "").trim();
     const pronouns = String(values.get("pronouns") ?? "").trim();
     const bio = String(values.get("bio") ?? "").trim();
+    const currentThought = String(values.get("thought") ?? "").trim();
     const youtube = String(values.get("youtube") ?? "").trim();
     const instagram = String(values.get("instagram") ?? "").trim();
     const twitter = String(values.get("twitter") ?? "").trim();
-    if (displayName.length > 80 || pronouns.length > 30 || bio.length > 500) {
+    if (
+      displayName.length > 80 ||
+      pronouns.length > 30 ||
+      bio.length > 500 ||
+      currentThought.length > 100 ||
+      /[\r\n]/.test(currentThought)
+    ) {
       setError(
         pt
           ? "Revise os limites dos campos antes de salvar."
@@ -86,6 +95,7 @@ export function ProfileSettingsPanel({
         new_display_name: displayName,
         new_pronouns: pronouns,
         new_bio: bio,
+        new_thought: currentThought,
         new_youtube_username: youtube,
         new_instagram_username: instagram,
         new_twitter_username: twitter,
@@ -103,6 +113,7 @@ export function ProfileSettingsPanel({
         display_name: displayName || null,
         pronouns: pronouns || null,
         bio: bio || null,
+        thought: currentThought || null,
         youtube_username: youtube.replace(/^@/, "") || null,
         instagram_username: instagram.replace(/^@/, "") || null,
         twitter_username: twitter.replace(/^@/, "") || null,
@@ -170,6 +181,28 @@ export function ProfileSettingsPanel({
                 : "E.g. he/him, she/her, they/them"
             }
           />
+        </label>
+        <label className="profile-thought-field">
+          <span className="profile-field-label">
+            <span>{pt ? "Pensamento atual" : "Current thought"}</span>
+            <small>{thought.length}/100</small>
+          </span>
+          <input
+            name="thought"
+            value={thought}
+            onChange={(event) => setThought(event.target.value)}
+            maxLength={100}
+            placeholder={
+              pt
+                ? "O que está passando pela sua cabeça?"
+                : "What's on your mind?"
+            }
+          />
+          <small>
+            {pt
+              ? "Aparece em um balão sobre seu avatar."
+              : "Appears in a bubble above your avatar."}
+          </small>
         </label>
         <label>
           {pt ? "Bio" : "Bio"}

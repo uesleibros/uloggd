@@ -80,7 +80,7 @@ export default async function ProfilePage({ params }: Props) {
     supabase
       .from("profiles")
       .select(
-        "id,username,display_name,pronouns,bio,avatar_url,banner_url,created_at,verified,youtube_username,instagram_username,twitter_username",
+        "id,username,display_name,pronouns,bio,thought,avatar_url,banner_url,created_at,verified,youtube_username,instagram_username,twitter_username",
       )
       .ilike("username", username)
       .maybeSingle(),
@@ -182,18 +182,25 @@ export default async function ProfilePage({ params }: Props) {
         )}
       </div>
       <header className="profile-header">
-        <div className="profile-avatar">
-          {profile.avatar_url ? (
-            <Image
-              src={profile.avatar_url}
-              alt=""
-              fill
-              sizes="112px"
-              unoptimized
-            />
-          ) : (
-            profile.username.slice(0, 1).toUpperCase()
+        <div className="profile-avatar-anchor">
+          {profile.thought && (
+            <div className="profile-thought-bubble">
+              <p>{profile.thought}</p>
+            </div>
           )}
+          <div className="profile-avatar">
+            {profile.avatar_url ? (
+              <Image
+                src={profile.avatar_url}
+                alt=""
+                fill
+                sizes="112px"
+                unoptimized
+              />
+            ) : (
+              profile.username.slice(0, 1).toUpperCase()
+            )}
+          </div>
         </div>
         <div className="profile-identity">
           <div className="profile-title-row">

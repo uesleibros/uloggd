@@ -3585,6 +3585,21 @@ html[data-sidebar-ready] .account-button > svg {
   font-size: 10px;
   font-weight: 500;
 }
+.profile-field-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.profile-field-label small,
+.profile-thought-field > small {
+  color: var(--screen-muted);
+  font-size: 9px;
+  font-weight: 450;
+}
+.profile-thought-field > small {
+  margin-top: -2px;
+}
 .profile-details-form input,
 .profile-details-form textarea {
   width: 100%;
@@ -8361,11 +8376,15 @@ a,
   color: var(--screen-muted);
   font-size: 10px;
 }
+.profile-avatar-anchor {
+  position: relative;
+  flex: 0 0 112px;
+  width: 112px;
+}
 .profile-avatar {
   position: relative;
   display: grid;
   place-items: center;
-  flex: 0 0 112px;
   width: 112px;
   height: 112px;
   overflow: hidden;
@@ -8374,6 +8393,57 @@ a,
   background: var(--console-raised);
   color: var(--screen-white);
   font: 650 28px var(--font-inter);
+}
+.profile-thought-bubble {
+  position: absolute;
+  right: 58px;
+  bottom: calc(100% + 13px);
+  z-index: 2;
+  width: max-content;
+  max-width: min(280px, calc(100vw - 64px));
+  padding: 11px 14px;
+  border: 1px solid color-mix(in srgb, var(--screen-white) 16%, transparent);
+  border-radius: 13px 13px 4px 13px;
+  background: color-mix(in srgb, var(--console-raised) 92%, transparent);
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.3);
+  backdrop-filter: blur(14px);
+  color: var(--screen-white);
+  transform-origin: right bottom;
+  animation:
+    profile-thought-in 240ms cubic-bezier(0.23, 1, 0.32, 1) both,
+    profile-thought-float 5s ease-in-out 500ms infinite;
+}
+.profile-thought-bubble::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: -8px;
+  width: 16px;
+  height: 13px;
+  background: inherit;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.profile-thought-bubble p {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  font-weight: 520;
+  line-height: 1.45;
+  text-wrap: balance;
+}
+@keyframes profile-thought-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px) scale(0.96);
+  }
+}
+@keyframes profile-thought-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
 }
 .profile-avatar img {
   object-fit: cover;
@@ -8532,11 +8602,26 @@ a,
     margin: 0;
   }
   .profile-avatar {
-    flex-basis: 82px;
     width: 82px;
     height: 82px;
     border-width: 4px;
     font-size: 20px;
+  }
+  .profile-avatar-anchor {
+    width: 82px;
+  }
+  .profile-thought-bubble {
+    right: auto;
+    bottom: calc(100% + 10px);
+    left: 12px;
+    max-width: calc(100vw - 52px);
+    border-radius: 12px 12px 12px 4px;
+    transform-origin: left bottom;
+  }
+  .profile-thought-bubble::after {
+    right: auto;
+    left: -1px;
+    clip-path: polygon(0 0, 100% 0, 0 100%);
   }
   .profile-header h1 {
     font-size: 21px;
