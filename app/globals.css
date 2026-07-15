@@ -5131,6 +5131,83 @@ html[data-sidebar-ready] .account-button > svg {
   color: #ffaaa4;
 }
 
+/* Site-wide interaction baseline: no dry button states. */
+:where(
+  button:not([data-motion="none"]),
+  a[class*="button"],
+  a[class*="action"],
+  a[class*="control"],
+  a[class*="edit-link"]
+) {
+  transition:
+    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
+    filter 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+:where(
+  button:not(:disabled, [data-motion="none"]),
+  a[class*="button"],
+  a[class*="action"],
+  a[class*="control"],
+  a[class*="edit-link"]
+):hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+:where(
+  button:not(:disabled, [data-motion="none"]),
+  a[class*="button"],
+  a[class*="action"],
+  a[class*="control"],
+  a[class*="edit-link"]
+):active {
+  filter: brightness(0.97);
+  transform: scale(0.97);
+  transition-duration: 90ms;
+}
+:where(button:disabled) {
+  filter: saturate(0.72);
+  cursor: not-allowed;
+}
+:where(button[aria-pressed="true"] > svg) {
+  animation: global-state-confirm 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+:where(
+  button:not([data-motion="none"]),
+  a[class*="button"],
+  a[class*="action"],
+  a[class*="control"],
+  a[class*="edit-link"]
+):focus-visible {
+  box-shadow: 0 0 0 3px rgb(88 101 242 / 18%);
+}
+@keyframes global-state-confirm {
+  from {
+    opacity: 0.5;
+    transform: scale(0.76) rotate(-7deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(
+    button,
+    a[class*="button"],
+    a[class*="action"],
+    a[class*="control"],
+    a[class*="edit-link"]
+  ) {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+  :where(button, a):hover,
+  :where(button, a):active {
+    transform: none;
+  }
+}
+
 .share-dialog {
   position: fixed;
   z-index: 102;

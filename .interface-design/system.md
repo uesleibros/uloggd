@@ -101,6 +101,11 @@ Reserve 640+ weights for page/editorial focal points and the wordmark. Section h
 
 Nested radii must be concentric: outer radius equals the inner radius plus surrounding padding where visually applicable.
 
+### Interaction motion baseline
+
+- Every native button and button-like action link receives a low-specificity motion baseline: 150ms ease-out hover lift/brightness, 90–130ms `scale(.97)` press feedback, animated focus shadow, muted disabled state, and a short icon confirmation when `aria-pressed` becomes true.
+- Component-specific motion overrides the baseline through normal CSS specificity; repetitive or precision controls can opt out with `data-motion="none"`. Reduced-motion removes transforms and animations globally while preserving immediate color/opacity feedback.
+
 ## Navigation Patterns
 
 ### Desktop sidebar
