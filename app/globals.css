@@ -1109,10 +1109,15 @@ html[data-sidebar-ready] .account-button > svg {
 }
 
 .genre-section {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   padding: 40px 32px 44px;
+  overflow: hidden;
   border-bottom: 1px solid var(--shell-line);
 }
 .genre-section-heading {
+  min-width: 0;
   max-width: 560px;
   margin-bottom: 32px;
 }
@@ -1126,6 +1131,8 @@ html[data-sidebar-ready] .account-button > svg {
   font-size: 24px;
   font-weight: 640;
   letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 .genre-section-heading p {
   margin: 7px 0 0;
@@ -1135,7 +1142,14 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .genre-collections {
   display: grid;
+  min-width: 0;
   gap: 40px;
+}
+.genre-collection {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 .genre-collection .section-heading h3 {
   margin: 0;
@@ -1182,10 +1196,17 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .shelf-carousel {
   position: relative;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   margin-top: 20px;
+  overflow: hidden;
 }
 .shelf-carousel-track {
   display: grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   grid-auto-flow: column;
   grid-auto-columns: calc((100% - 56px) / 5);
   gap: 14px;
@@ -8046,6 +8067,7 @@ a,
   }
   .genre-section-heading h2 {
     font-size: 21px;
+    line-height: 1.15;
   }
   .genre-collections {
     gap: 34px;
@@ -8053,16 +8075,19 @@ a,
   .home-popular-carousel,
   .discovery-games {
     display: block;
-    margin-right: -18px;
-    padding-right: 18px;
-    overflow: visible;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin-right: 0;
+    padding-right: 0;
+    overflow: hidden;
   }
   .home-popular-carousel .shelf-carousel-track,
   .discovery-games .shelf-carousel-track,
   .genre-collection .shelf-carousel-track {
     grid-auto-columns: clamp(112px, 28vw, 132px);
     gap: 12px;
-    padding-right: 18px;
+    padding-right: 0;
   }
   .shelf-carousel-controls {
     display: none;
