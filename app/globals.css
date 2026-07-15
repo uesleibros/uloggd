@@ -10535,3 +10535,130 @@ a,
     transform: scale(0.97);
   }
 }
+
+/* Report dialog: Radix keeps both states mounted so entry and exit stay tactile. */
+.report-dialog-overlay {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  background: rgb(4 3 8 / 0.72);
+  backdrop-filter: blur(5px);
+}
+
+.report-dialog-overlay[data-state="open"] {
+  animation: report-overlay-in 180ms ease-out both;
+}
+
+.report-dialog-overlay[data-state="closed"] {
+  animation: report-overlay-out 130ms ease-in both;
+}
+
+.report-dialog[data-state="open"] {
+  animation: report-dialog-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.report-dialog[data-state="closed"] {
+  pointer-events: none;
+  animation: report-dialog-out 140ms cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+.report-dialog header button,
+.report-dialog form > button,
+.report-dialog fieldset label {
+  transition:
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 150ms ease-out,
+    border-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.report-dialog header button:hover,
+.report-dialog fieldset label:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+
+.report-dialog header button:active,
+.report-dialog form > button:active:not(:disabled),
+.report-dialog fieldset label:active {
+  transform: scale(0.96);
+}
+
+.report-dialog form > button:hover:not(:disabled) {
+  background: var(--brand-blurple-bright);
+  transform: translateY(-1px);
+}
+
+.report-dialog form > button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.report-success {
+  animation: report-success-in 240ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes report-overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes report-overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes report-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 10px)) scale(0.98);
+  }
+}
+
+@keyframes report-dialog-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 6px)) scale(0.985);
+  }
+}
+
+@keyframes report-success-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+
+@media (max-width: 620px) {
+  .report-dialog[data-state="open"] {
+    animation-name: report-sheet-in;
+  }
+
+  .report-dialog[data-state="closed"] {
+    animation-name: report-sheet-out;
+  }
+}
+
+@keyframes report-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@keyframes report-sheet-out {
+  to {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-dialog-overlay[data-state],
+  .report-dialog[data-state],
+  .report-success {
+    animation: none;
+  }
+}

@@ -84,7 +84,7 @@ export function ProfileActions({
               </button>
             </Dialog.Trigger>
             <Dialog.Portal>
-              <Dialog.Overlay className="social-editor-overlay" />
+              <Dialog.Overlay className="report-dialog-overlay" />
               <Dialog.Content className="report-dialog">
                 <header>
                   <div>
