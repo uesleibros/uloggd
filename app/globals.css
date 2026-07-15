@@ -12712,3 +12712,30 @@ a,
     padding-top: 92px;
   }
 }
+
+@media (max-width: 620px) {
+  .mobile-menu-button,
+  .mobile-search-trigger {
+    display: grid;
+    place-items: center;
+    flex: 0 0 40px;
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    line-height: 0;
+  }
+
+  .mobile-search-trigger svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+  }
+
+  .mobile-header-actions {
+    flex: 0 0 auto;
+    gap: 4px;
+  }
+}
