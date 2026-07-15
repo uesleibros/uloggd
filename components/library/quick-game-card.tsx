@@ -320,8 +320,16 @@ export function QuickGameCard({
         )}
       </div>
       <h3>{game.name}</h3>
-      <p>
-        {meta ?? [game.releaseYear, game.genres[0]].filter(Boolean).join(" · ")}
+      <p className="quick-card-meta">
+        <span>
+          {meta ??
+            [game.releaseYear, game.genres[0]].filter(Boolean).join(" · ")}
+        </span>
+        {state?.quick_rating ? (
+          <strong>
+            <Star size={10} fill="currentColor" /> {state.quick_rating / 20}/5
+          </strong>
+        ) : null}
       </p>
     </article>
   );

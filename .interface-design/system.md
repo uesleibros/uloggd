@@ -207,6 +207,15 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Every home lane is contained through a zero-minimum-width chain from section to carousel track. Mobile never uses negative outer margins; only the track owns horizontal overflow, keeping the document itself locked to the viewport.
 - “Hidden gems” requires an 80+ catalog score, 50–349 ratings, release at least two years ago, main-game type, and no IGDB franchise or collection association; current hits, famous franchise editions, ports, and remasters must not qualify merely because one entry has few ratings.
 
+### Library workspace
+
+- Owner and public profile libraries share one Steam-inspired workspace: identity/banner stage, real collection counts, smart shelves, dense controls, and the active-shelf cover language.
+- Smart shelves expose All, Playing, Backlog, Wishlist, Completed, Favorites, and Rated with real counts. Search matches title or genre; sorting supports recent, oldest, personal rating, title, and release year.
+- Grid shows 24 games per page; compact list shows 14. Filter, sort, view, query, and page state live in the URL so a public collection view can be shared.
+- Desktop uses a 176px smart-shelf rail beside results. At 960px it becomes a horizontal snap filter strip; mobile keeps two cover columns or compact rows with full-width search and pagination actions.
+- The owner can switch the library between Public and Private. Public `user_games` reads are enforced by RLS against `profiles.library_visibility`; quick actions and removal never render for visitors.
+- Large libraries load IGDB details in batches of 100 rather than silently truncating the collection. Loading mirrors the hero, tools, rail, and cover grid.
+
 ### Verified identity
 
 - Verified profiles use one compact blurple rosette beside the display name. Activating it explains that verification confirms the represented identity and is not an endorsement.

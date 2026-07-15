@@ -275,6 +275,9 @@ export default async function ProfilePage({ params }: Props) {
                   : "Latest library changes"}
               </p>
             </div>
+            <Link href={`/${lang}/u/${profile.username}/library`}>
+              {pt ? "Ver biblioteca" : "View library"}
+            </Link>
           </div>
           <div className="cover-shelf">
             {library.slice(0, 5).map((record) => {

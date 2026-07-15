@@ -1,0 +1,141 @@
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowLeft, Gamepad2, LibraryBig, Star } from "lucide-react";
+import { getGamesByIds } from "@/lib/igdb";
+import { LibraryCollection, type LibraryRecord } from "./library-collection";
+import { LibraryPrivacyControl } from "./library-privacy-control";
+
+type Profile = {
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  banner_url: string | null;
+  library_visibility: "PUBLIC" | "PRIVATE";
+};
+
+export async function LibraryScreen({
+  profile,
+  records,
+  owner,
+  lang,
+}: {
+  profile: Profile;
+  records: LibraryRecord[];
+  owner: boolean;
+  lang: "pt-BR" | "en";
+}) {
+  const pt = lang === "pt-BR";
+  const games = await getGamesByIds(records.map((record) => record.igdb_id));
+  const playing = records.filter(
+    (record) => record.playing || record.status === "PLAYING",
+  ).length;
+  const rated = records.filter((record) => record.quick_rating !== null).length;
+  const name = profile.display_name || `@${profile.username}`;
+  return (
+    <main className="library-page">
+      <header className="library-hero">
+        {profile.banner_url && (
+          <Image
+            src={profile.banner_url}
+            alt=""
+            fill
+            priority
+            sizes="1200px"
+            unoptimized
+          />
+        )}
+        <div className="library-hero-scrim" />
+        <div className="library-hero-content">
+          <div className="library-owner-avatar">
+            {profile.avatar_url ? (
+              <Image
+                src={profile.avatar_url}
+                alt=""
+                fill
+                sizes="64px"
+                unoptimized
+              />
+            ) : (
+              profile.username.slice(0, 1).toUpperCase()
+            )}
+          </div>
+          <div className="library-owner-copy">
+            <span>
+              <LibraryBig size={14} />
+              {owner
+                ? pt
+                  ? "SUA BIBLIOTECA"
+                  : "YOUR LIBRARY"
+                : pt
+                  ? "BIBLIOTECA PÚBLICA"
+                  : "PUBLIC LIBRARY"}
+            </span>
+            <h1>{owner ? (pt ? "Minha coleção" : "My collection") : name}</h1>
+            <p>
+              {owner
+                ? pt
+                  ? "Organize sua jornada, encontre o próximo jogo e ajuste cada prateleira ao seu jeito."
+                  : "Organize your journey, find what to play next, and shape every shelf your way."
+                : pt
+                  ? `Explore os jogos que fazem parte da jornada de @${profile.username}.`
+                  : `Explore the games in @${profile.username}'s journey.`}
+            </p>
+          </div>
+          <dl className="library-hero-stats">
+            <div>
+              <dt>{pt ? "Jogos" : "Games"}</dt>
+              <dd>{records.length}</dd>
+            </div>
+            <div>
+              <dt>{pt ? "Jogando" : "Playing"}</dt>
+              <dd>{playing}</dd>
+            </div>
+            <div>
+              <dt>{pt ? "Avaliados" : "Rated"}</dt>
+              <dd>{rated}</dd>
+            </div>
+          </dl>
+        </div>
+      </header>
+      <div className="library-page-body">
+        <div className="library-context-bar">
+          {!owner && (
+            <Link href={`/${lang}/u/${profile.username}`}>
+              <ArrowLeft size={15} />
+              {pt ? "Voltar ao perfil" : "Back to profile"}
+            </Link>
+          )}
+          {owner ? (
+            <LibraryPrivacyControl
+              initial={profile.library_visibility}
+              lang={lang}
+            />
+          ) : (
+            <div className="library-public-note">
+              <Gamepad2 size={16} />
+              <span>
+                {pt
+                  ? "Você está vendo uma coleção pública. As notas e capas representam as escolhas deste usuário."
+                  : "You are viewing a public collection. Ratings and covers reflect this user's choices."}
+              </span>
+            </div>
+          )}
+          {records.some((record) => record.quick_rating !== null) && (
+            <span className="library-rating-note">
+              <Star size={13} fill="currentColor" />
+              {pt
+                ? "Notas pessoais em escala de 5 estrelas"
+                : "Personal ratings on a 5-star scale"}
+            </span>
+          )}
+        </div>
+        <LibraryCollection
+          games={games}
+          records={records}
+          lang={lang}
+          owner={owner}
+        />
+      </div>
+    </main>
+  );
+}

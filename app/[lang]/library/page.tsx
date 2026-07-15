@@ -1,50 +1,38 @@
-import { LibraryBig } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-import { LibraryCollection } from "@/components/library/library-collection";
-import { getGamesByIds } from "@/lib/igdb";
+import { LibraryScreen } from "@/components/library/library-screen";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../dictionaries";
 
 export default async function LibraryPage({
   params,
-}: {
-  params: Promise<{ lang: string }>;
-}) {
+}: PageProps<"/[lang]/library">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect(`/${lang}/login?next=/${lang}/library`);
-
-  const { data: records } = await supabase
-    .from("user_games")
-    .select(
-      "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url,updated_at",
-    )
-    .eq("profile_id", user.id)
-    .order("updated_at", { ascending: false });
-  const games = await getGamesByIds(
-    (records ?? []).map((record) => record.igdb_id),
-  );
-
+  const [{ data: profile }, { data: records }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("username,display_name,avatar_url,banner_url,library_visibility")
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("user_games")
+      .select(
+        "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url,updated_at",
+      )
+      .eq("profile_id", user.id),
+  ]);
+  if (!profile?.username) redirect(`/${lang}/onboarding/username`);
   return (
-    <main className="social-page library-page">
-      <header className="social-page-header">
-        <span>
-          <LibraryBig size={14} />{" "}
-          {lang === "pt-BR" ? "SUA COLEÇÃO" : "YOUR COLLECTION"}
-        </span>
-        <h1>{lang === "pt-BR" ? "Biblioteca" : "Library"}</h1>
-        <p>
-          {lang === "pt-BR"
-            ? "Organize, filtre e atualize os jogos que fazem parte da sua jornada."
-            : "Organize, filter, and update the games in your journey."}
-        </p>
-      </header>
-      <LibraryCollection games={games} records={records ?? []} lang={lang} />
-    </main>
+    <LibraryScreen
+      profile={profile}
+      records={records ?? []}
+      owner
+      lang={lang}
+    />
   );
 }

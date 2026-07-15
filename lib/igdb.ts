@@ -296,17 +296,26 @@ export async function getPopularGames(): Promise<Game[]> {
 export async function getGamesByIds(ids: number[]): Promise<Game[]> {
   const safeIds = [...new Set(ids)]
     .filter((id) => Number.isInteger(id) && id > 0)
-    .sort((a, b) => a - b)
-    .slice(0, 100);
+    .sort((a, b) => a - b);
   if (!safeIds.length) return [];
-  return queryGames(
-    `
-    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
-    where id = (${safeIds.join(",")});
-    limit ${safeIds.length};
-  `,
-    12 * CACHE_HOURS,
+  const batches = Array.from(
+    { length: Math.ceil(safeIds.length / 100) },
+    (_, index) => safeIds.slice(index * 100, index * 100 + 100),
   );
+  return (
+    await Promise.all(
+      batches.map((batch) =>
+        queryGames(
+          `
+          fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
+          where id = (${batch.join(",")});
+          limit ${batch.length};
+        `,
+          12 * CACHE_HOURS,
+        ),
+      ),
+    )
+  ).flat();
 }
 
 export type DiscoveryGames = {
