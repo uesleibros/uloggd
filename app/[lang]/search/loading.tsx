@@ -59,6 +59,19 @@ export default function SearchLoading() {
             ))}
           </div>
         </section>
+        <aside className="catalog-context-rail catalog-context-loading">
+          <section>
+            <span className="skeleton-block" />
+            <i className="skeleton-block" />
+            <i className="skeleton-block" />
+          </section>
+          <section>
+            <span className="skeleton-block" />
+            {Array.from({ length: 4 }, (_, index) => (
+              <i className="skeleton-block" key={index} />
+            ))}
+          </section>
+        </aside>
       </div>
     </main>
   );

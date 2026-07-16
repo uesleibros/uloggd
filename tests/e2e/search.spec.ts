@@ -103,3 +103,34 @@ test("keeps the mobile explorer inside the viewport", async ({
   await page.getByText("Filtros avançados", { exact: true }).click();
   await expect(page.getByText("REFINE A BUSCA", { exact: true })).toBeHidden();
 });
+
+test("uses the contextual rail without squeezing the wide catalog", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name.startsWith("mobile"));
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await openSearch(page, "/pt-BR/search?genres=31&sort=name");
+
+  const filters = page.locator(".catalog-filter-shell");
+  const results = page.locator(".catalog-results-panel");
+  const context = page.locator(".catalog-context-rail");
+  await expect(context).toBeVisible();
+  await expect(context.getByText("Sua busca", { exact: true })).toBeVisible();
+
+  const [filterBox, resultBox, contextBox] = await Promise.all([
+    filters.boundingBox(),
+    results.boundingBox(),
+    context.boundingBox(),
+  ]);
+  expect(filterBox).not.toBeNull();
+  expect(resultBox).not.toBeNull();
+  expect(contextBox).not.toBeNull();
+  expect(filterBox!.x + filterBox!.width).toBeLessThan(resultBox!.x);
+  expect(resultBox!.x + resultBox!.width).toBeLessThan(contextBox!.x);
+
+  const dimensions = await page.evaluate(() => ({
+    viewport: window.innerWidth,
+    document: document.documentElement.scrollWidth,
+  }));
+  expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport);
+});

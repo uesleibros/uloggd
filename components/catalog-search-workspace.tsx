@@ -268,6 +268,29 @@ export function CatalogSearchWorkspace({
     { value: "hype", label: pt ? "Mais aguardados" : "Most anticipated" },
     { value: "name", label: pt ? "Nome A–Z" : "Name A–Z" },
   ];
+  const activeSort =
+    sortOptions.find((option) => option.value === filters.sort)?.label ??
+    sortOptions[0].label;
+  const scopeRows = [
+    filters.yearFrom !== null || filters.yearTo !== null
+      ? {
+          label: pt ? "Lançamento" : "Release",
+          value: `${filters.yearFrom ?? "…"}–${filters.yearTo ?? "…"}`,
+        }
+      : null,
+    filters.ratingMin !== null
+      ? {
+          label: pt ? "Nota mínima" : "Minimum score",
+          value: `${filters.ratingMin}/100`,
+        }
+      : null,
+    filters.ratingCountMin !== null
+      ? {
+          label: pt ? "Avaliações" : "Ratings",
+          value: `${filters.ratingCountMin.toLocaleString(lang)}+`,
+        }
+      : null,
+  ].filter((row): row is { label: string; value: string } => Boolean(row));
 
   return (
     <main
@@ -624,6 +647,98 @@ export function CatalogSearchWorkspace({
             </nav>
           )}
         </section>
+
+        <aside
+          className="catalog-context-rail"
+          aria-label={pt ? "Resumo da busca" : "Search summary"}
+          key={`${filters.page}-${filters.sort}-${activeCount}`}
+        >
+          <section className="catalog-context-total">
+            <span>{pt ? "CATÁLOGO ENCONTRADO" : "CATALOG FOUND"}</span>
+            <strong>{total.toLocaleString(lang)}</strong>
+            <small>
+              {pt ? "jogos correspondem à busca" : "games match this search"}
+            </small>
+          </section>
+
+          <section className="catalog-context-card">
+            <header>
+              <strong>{pt ? "Sua busca" : "Your search"}</strong>
+              {activeCount > 0 && <span>{activeCount}</span>}
+            </header>
+            <dl>
+              <div>
+                <dt>{pt ? "Ordenação" : "Sorting"}</dt>
+                <dd>{activeSort}</dd>
+              </div>
+              {scopeRows.map((row) => (
+                <div key={row.label}>
+                  <dt>{row.label}</dt>
+                  <dd>{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+            {selectedChips.length > 0 ? (
+              <div className="catalog-context-chips">
+                {selectedChips.map((chip) => (
+                  <button
+                    type="button"
+                    key={`${chip.key}-${chip.id}`}
+                    onClick={() =>
+                      updateArray(
+                        chip.key,
+                        filters[chip.key].filter((id) => id !== chip.id),
+                      )
+                    }
+                  >
+                    <span>{chip.label}</span>
+                    <X size={12} />
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p>
+                {pt
+                  ? "Nenhum filtro de categoria aplicado."
+                  : "No category filters applied."}
+              </p>
+            )}
+            {activeCount > 0 && (
+              <Link href={pathname}>
+                {pt ? "Limpar filtros" : "Clear filters"}
+              </Link>
+            )}
+          </section>
+
+          {totalPages > 1 && (
+            <section className="catalog-context-card catalog-context-navigation">
+              <div>
+                <strong>
+                  {pt ? `Página ${filters.page}` : `Page ${filters.page}`}
+                </strong>
+                <span>{pt ? `de ${totalPages}` : `of ${totalPages}`}</span>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  disabled={filters.page === 1 || pending}
+                  onClick={() =>
+                    navigate({ page: filters.page - 1 || null }, true)
+                  }
+                >
+                  {pt ? "Anterior" : "Previous"}
+                </button>
+                <button
+                  type="button"
+                  disabled={filters.page === totalPages || pending}
+                  onClick={() => navigate({ page: filters.page + 1 }, true)}
+                >
+                  {pt ? "Próxima" : "Next"}
+                </button>
+              </div>
+            </section>
+          )}
+        </aside>
       </div>
     </main>
   );
