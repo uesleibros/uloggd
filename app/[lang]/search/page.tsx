@@ -104,7 +104,8 @@ export default async function SearchPage({
       filters={filters}
       options={options}
       games={games}
-      hasMore={result.hasMore}
+      total={result.total}
+      totalPages={result.totalPages}
       saved={saved}
       enabled={Boolean(user)}
     />

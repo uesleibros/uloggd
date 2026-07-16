@@ -446,8 +446,9 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
     name: "name asc",
   };
   const where = clauses.join(" & ");
-  const rows = await queryGamesRaw(
-    `
+  const [rows, countRows] = await Promise.all([
+    queryGamesRaw(
+      `
       fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
         cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,
         themes.name,game_modes.name,game_type.type;
@@ -456,8 +457,19 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
       limit ${limit + 1};
       offset ${offset};
     `,
-    15 * CACHE_MINUTES,
+      15 * CACHE_MINUTES,
+    ),
+    queryIgdbRaw<{ count: number }>(
+      "games/count",
+      `where ${where};`,
+      15 * CACHE_MINUTES,
+    ),
+  ]);
+  const total = Math.max(
+    0,
+    (countRows as unknown as { count: number }).count ?? 0,
   );
+  const totalPages = Math.min(100, Math.max(1, Math.ceil(total / limit)));
   const hasMore = rows.length > limit;
   const games: CatalogGame[] = rows.slice(0, limit).map((game) => ({
     ...normalize(game),
@@ -467,7 +479,7 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
     modes: game.game_modes?.map(({ name }) => name) ?? [],
     typeName: typeof game.game_type === "object" ? game.game_type.type : null,
   }));
-  return { games, hasMore, page: filters.page };
+  return { games, hasMore, page: filters.page, total, totalPages };
 }
 
 export async function getPopularGames(): Promise<Game[]> {

@@ -3,20 +3,7 @@
 import * as Select from "@radix-ui/react-select";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Check,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Gamepad2,
-  Layers3,
-  ListFilter,
-  Search,
-  SlidersHorizontal,
-  Sparkles,
-  Star,
-  X,
-} from "lucide-react";
+import { Check, ChevronDown, Search, X } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import type {
   CatalogGame,
@@ -39,7 +26,6 @@ type SavedState = {
 
 function OptionGroup({
   title,
-  icon: Icon,
   param,
   options,
   selected,
@@ -49,7 +35,6 @@ function OptionGroup({
   lang,
 }: {
   title: string;
-  icon: typeof Gamepad2;
   param: string;
   options: CatalogOption[];
   selected: number[];
@@ -72,9 +57,7 @@ function OptionGroup({
   return (
     <details className="catalog-filter-group" open={initiallyOpen}>
       <summary>
-        <span>
-          <Icon size={15} /> {title}
-        </span>
+        <span>{title}</span>
         <span>
           {selected.length > 0 && <b>{selected.length}</b>}
           <ChevronDown size={14} />
@@ -153,7 +136,6 @@ function CatalogSelect({
   return (
     <Select.Root value={value} onValueChange={onChange}>
       <Select.Trigger className="catalog-sort-trigger" aria-label={label}>
-        <SlidersHorizontal size={14} />
         <Select.Value />
         <Select.Icon>
           <ChevronDown size={13} />
@@ -185,12 +167,27 @@ function CatalogSelect({
   );
 }
 
+function paginationItems(current: number, total: number) {
+  const pages = new Set([1, total]);
+  for (let page = current - 2; page <= current + 2; page += 1) {
+    if (page > 0 && page <= total) pages.add(page);
+  }
+  const ordered = [...pages].sort((a, b) => a - b);
+  return ordered.flatMap<number | string>((page, index) => {
+    const previous = ordered[index - 1];
+    return previous && page - previous > 1
+      ? [`gap-${previous}-${page}`, page]
+      : [page];
+  });
+}
+
 export function CatalogSearchWorkspace({
   lang,
   filters,
   options,
   games,
-  hasMore,
+  total,
+  totalPages,
   saved,
   enabled,
 }: {
@@ -198,7 +195,8 @@ export function CatalogSearchWorkspace({
   filters: CatalogSearchFilters;
   options: CatalogSearchOptions;
   games: CatalogGame[];
-  hasMore: boolean;
+  total: number;
+  totalPages: number;
   saved: Record<number, SavedState>;
   enabled: boolean;
 }) {
@@ -269,7 +267,6 @@ export function CatalogSearchWorkspace({
   return (
     <main className="catalog-search-page" data-pending={pending || undefined}>
       <header className="catalog-search-hero">
-        <span>{pt ? "EXPLORADOR DO CATÁLOGO" : "CATALOG EXPLORER"}</span>
         <h1>
           {pt ? "Encontre exatamente o que jogar" : "Find exactly what to play"}
         </h1>
@@ -305,23 +302,14 @@ export function CatalogSearchWorkspace({
               <X size={17} />
             </button>
           )}
-          <button type="submit">
-            {pt ? "Buscar" : "Search"}
-            <ChevronRight size={16} />
-          </button>
+          <button type="submit">{pt ? "Buscar" : "Search"}</button>
         </form>
         <div className="catalog-search-signals">
+          <span>IGDB</span>
           <span>
-            <Layers3 size={13} />{" "}
-            {pt ? "Dados vivos da IGDB" : "Live IGDB data"}
+            {pt ? "Filtros persistem na URL" : "Filters persist in the URL"}
           </span>
-          <span>
-            <SlidersHorizontal size={13} />{" "}
-            {pt ? "Filtros combináveis" : "Composable filters"}
-          </span>
-          <span>
-            <Sparkles size={13} /> {pt ? "URL compartilhável" : "Shareable URL"}
-          </span>
+          <span>{pt ? "24 jogos por página" : "24 games per page"}</span>
         </div>
       </header>
 
@@ -351,10 +339,7 @@ export function CatalogSearchWorkspace({
       <div className="catalog-search-workspace">
         <details className="catalog-filter-shell" open>
           <summary>
-            <span>
-              <ListFilter size={16} />{" "}
-              {pt ? "Filtros avançados" : "Advanced filters"}
-            </span>
+            <span>{pt ? "Filtros avançados" : "Advanced filters"}</span>
             {activeCount > 0 && <b>{activeCount}</b>}
             <ChevronDown size={15} />
           </summary>
@@ -370,7 +355,6 @@ export function CatalogSearchWorkspace({
             </div>
             <OptionGroup
               title={pt ? "Plataformas e consoles" : "Platforms & consoles"}
-              icon={Gamepad2}
               param="platforms"
               options={options.platforms}
               selected={filters.platforms}
@@ -381,7 +365,6 @@ export function CatalogSearchWorkspace({
             />
             <OptionGroup
               title={pt ? "Gêneros" : "Genres"}
-              icon={Layers3}
               param="genres"
               options={options.genres}
               selected={filters.genres}
@@ -392,7 +375,6 @@ export function CatalogSearchWorkspace({
             />
             <OptionGroup
               title={pt ? "Temas" : "Themes"}
-              icon={Sparkles}
               param="themes"
               options={options.themes}
               selected={filters.themes}
@@ -402,7 +384,6 @@ export function CatalogSearchWorkspace({
             />
             <OptionGroup
               title={pt ? "Modos de jogo" : "Game modes"}
-              icon={Gamepad2}
               param="modes"
               options={options.modes}
               selected={filters.modes}
@@ -411,7 +392,6 @@ export function CatalogSearchWorkspace({
             />
             <OptionGroup
               title={pt ? "Tipo de conteúdo" : "Content type"}
-              icon={ListFilter}
               param="types"
               options={options.types}
               selected={filters.types}
@@ -422,9 +402,7 @@ export function CatalogSearchWorkspace({
 
             <section className="catalog-range-filter">
               <header>
-                <span>
-                  <Star size={14} /> {pt ? "Recepção" : "Reception"}
-                </span>
+                <span>{pt ? "Recepção" : "Reception"}</span>
               </header>
               <label>
                 {pt ? "Nota mínima" : "Minimum score"}
@@ -503,8 +481,8 @@ export function CatalogSearchWorkspace({
               </h2>
               <p>
                 {pt
-                  ? `${games.length} jogos nesta página`
-                  : `${games.length} games on this page`}
+                  ? `${total.toLocaleString("pt-BR")} encontrados · ${games.length} nesta página`
+                  : `${total.toLocaleString("en-US")} found · ${games.length} on this page`}
               </p>
             </div>
             <CatalogSelect
@@ -518,28 +496,32 @@ export function CatalogSearchWorkspace({
           </header>
 
           {games.length ? (
-            <div className="catalog-results-grid">
-              {games.map((game) => (
-                <QuickGameCard
+            <div className="catalog-results-grid" key={filters.page}>
+              {games.map((game, index) => (
+                <div
+                  className="catalog-result-entry"
                   key={game.id}
-                  game={game}
-                  initial={saved[game.id] ?? null}
-                  lang={lang}
-                  enabled={enabled}
-                  spawndAvailable={game.spawndAvailable}
-                  meta={[
-                    game.releaseYear,
-                    game.platforms[0],
-                    game.rating ? `${game.rating}/100` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                />
+                  style={{ "--result-index": index % 8 } as React.CSSProperties}
+                >
+                  <QuickGameCard
+                    game={game}
+                    initial={saved[game.id] ?? null}
+                    lang={lang}
+                    enabled={enabled}
+                    spawndAvailable={game.spawndAvailable}
+                    meta={[
+                      game.releaseYear,
+                      game.platforms[0],
+                      game.rating ? `${game.rating}/100` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  />
+                </div>
               ))}
             </div>
           ) : (
             <div className="catalog-results-empty">
-              <Search size={24} />
               <h2>
                 {pt
                   ? "Nenhum jogo nesse cruzamento"
@@ -556,30 +538,80 @@ export function CatalogSearchWorkspace({
             </div>
           )}
 
-          {(filters.page > 1 || hasMore) && (
+          {totalPages > 1 && (
             <nav
               className="catalog-pagination"
               aria-label={pt ? "Paginação" : "Pagination"}
             >
-              <button
-                type="button"
-                disabled={filters.page <= 1 || pending}
-                onClick={() =>
-                  navigate({ page: filters.page - 1 || null }, true)
-                }
+              <div className="catalog-pagination-summary">
+                <strong>
+                  {pt ? `Página ${filters.page}` : `Page ${filters.page}`}
+                </strong>
+                <span>{pt ? `de ${totalPages}` : `of ${totalPages}`}</span>
+              </div>
+              <div className="catalog-pagination-pages">
+                <button
+                  type="button"
+                  disabled={filters.page === 1 || pending}
+                  onClick={() => navigate({ page: null }, true)}
+                >
+                  {pt ? "Primeira" : "First"}
+                </button>
+                {paginationItems(filters.page, totalPages).map((item) =>
+                  typeof item === "number" ? (
+                    <button
+                      type="button"
+                      key={item}
+                      aria-current={item === filters.page ? "page" : undefined}
+                      disabled={pending}
+                      onClick={() =>
+                        navigate({ page: item === 1 ? null : item }, true)
+                      }
+                    >
+                      {item}
+                    </button>
+                  ) : (
+                    <span key={item} aria-hidden>
+                      …
+                    </span>
+                  ),
+                )}
+                <button
+                  type="button"
+                  disabled={filters.page === totalPages || pending}
+                  onClick={() => navigate({ page: totalPages }, true)}
+                >
+                  {pt ? "Última" : "Last"}
+                </button>
+              </div>
+              <form
+                className="catalog-pagination-jump"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  const value = new FormData(event.currentTarget).get("page");
+                  const page = Math.max(
+                    1,
+                    Math.min(totalPages, Number(value) || 1),
+                  );
+                  navigate({ page: page === 1 ? null : page }, true);
+                }}
               >
-                <ChevronLeft size={15} /> {pt ? "Anterior" : "Previous"}
-              </button>
-              <span>
-                {pt ? "Página" : "Page"} <strong>{filters.page}</strong>
-              </span>
-              <button
-                type="button"
-                disabled={!hasMore || pending}
-                onClick={() => navigate({ page: filters.page + 1 }, true)}
-              >
-                {pt ? "Próxima" : "Next"} <ChevronRight size={15} />
-              </button>
+                <label htmlFor="catalog-jump-page">
+                  {pt ? "Ir para" : "Go to"}
+                </label>
+                <input
+                  id="catalog-jump-page"
+                  type="number"
+                  name="page"
+                  min="1"
+                  max={totalPages}
+                  defaultValue={filters.page}
+                  key={filters.page}
+                />
+                <button type="submit" disabled={pending}>
+                  {pt ? "Ir" : "Go"}
+                </button>
+              </form>
             </nav>
           )}
         </section>

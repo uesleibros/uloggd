@@ -263,6 +263,8 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Desktop uses a 276px sticky refinement rail beside a responsive active-shelf result grid. Mobile turns that same rail into one collapsible advanced-filter surface and preserves two cover columns; no filtering capability disappears at a breakpoint.
 - Filter vocabularies come from the current IGDB genres, platforms, themes, game modes, and game types endpoints rather than hardcoded product lists. Platform choices expose abbreviation and family/type metadata and are searchable locally. Result queries use current `game_type`, never deprecated `category`, combine filters server-side, and paginate 24 covers at a time.
 - Active filters become removable tonal chips above the workspace. Sort uses the shared Radix surface language; result cards retain live quick actions, personalized covers, URL pagination, loading attenuation, empty recovery, and a shape-matched route skeleton.
+- Catalog pagination uses the real filtered IGDB count, adjacent page numbers, explicit first/last actions, and a direct numeric jump capped to the supported 100-page window. Desktop keeps the three control groups on one quiet divider; mobile stacks them and makes the page rail horizontally scrollable. Result changes use a 220ms cover stagger plus a thin pending line, with all movement removed under reduced motion.
+- The explorer avoids decorative glyph clusters, promotional glow, and icon-led section labels. Icons remain only where they communicate a control state (search, disclosure, selection, removal); catalog provenance and URL persistence read as restrained text metadata.
 
 ### Cover picker
 
