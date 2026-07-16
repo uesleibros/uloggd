@@ -72,8 +72,22 @@ export default async function SearchPage({
   const [options, result, supabase] = await Promise.all([
     getCatalogSearchOptions(),
     searchCatalogGames(filters),
-    createClient(),
+    process.env.ULOGGD_E2E === "1" ? null : createClient(),
   ]);
+  if (!supabase) {
+    return (
+      <CatalogSearchWorkspace
+        lang={lang}
+        filters={filters}
+        options={options}
+        games={result.games}
+        total={result.total}
+        totalPages={result.totalPages}
+        saved={{}}
+        enabled={false}
+      />
+    );
+  }
   const {
     data: { user },
   } = await supabase.auth.getUser();

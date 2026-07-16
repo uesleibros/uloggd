@@ -381,10 +381,18 @@ const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
 });
 
 export function getCatalogSearchOptions() {
+  if (process.env.ULOGGD_E2E === "1")
+    return import("@/lib/igdb-e2e").then(
+      ({ e2eCatalogOptions }) => e2eCatalogOptions,
+    );
   return catalogOptions();
 }
 
 export async function searchCatalogGames(filters: CatalogSearchFilters) {
+  if (process.env.ULOGGD_E2E === "1") {
+    const { searchE2eCatalog } = await import("@/lib/igdb-e2e");
+    return searchE2eCatalog(filters);
+  }
   const limit = 24;
   const offset = (Math.max(1, filters.page) - 1) * limit;
   const clauses = ["cover != null"];

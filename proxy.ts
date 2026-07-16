@@ -24,6 +24,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(request.nextUrl);
   }
   let response = NextResponse.next({ request });
+  if (process.env.ULOGGD_E2E === "1") return response;
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,

@@ -265,6 +265,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Active filters become removable tonal chips above the workspace. Sort uses the shared Radix surface language; result cards retain live quick actions, personalized covers, URL pagination, loading attenuation, empty recovery, and a shape-matched route skeleton.
 - Catalog pagination uses the real filtered IGDB count, adjacent page numbers, explicit first/last actions, and a direct numeric jump capped to the supported 100-page window. Desktop keeps the three control groups on one quiet divider; mobile stacks them and makes the page rail horizontally scrollable. Result changes use a 220ms cover stagger plus a thin pending line, with all movement removed under reduced motion.
 - The explorer avoids decorative glyph clusters, promotional glow, and icon-led section labels. Icons remain only where they communicate a control state (search, disclosure, selection, removal); catalog provenance and URL persistence read as restrained text metadata.
+- Search loading mirrors the final geometry rather than using monolithic placeholders: real hero copy/search/meta rows, the desktop sticky filter rail or mobile disclosure shell, the result heading and sort control, plus 3:4 covers with title and metadata lines. Skeleton spacing shares the final 32px desktop / 24px mobile workspace separation so hydration never produces a visible layout jump.
 
 ### Cover picker
 

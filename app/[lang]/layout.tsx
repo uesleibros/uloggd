@@ -40,18 +40,17 @@ export default async function LocaleLayout({
   if (!hasLocale(lang)) notFound();
   const [dictionary, supabase] = await Promise.all([
     getDictionary(lang),
-    createClient(),
+    process.env.ULOGGD_E2E === "1" ? null : createClient(),
   ]);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: profile } = user
-    ? await supabase
-        .from("profiles")
-        .select("username,display_name,avatar_url,verified")
-        .eq("id", user.id)
-        .maybeSingle()
-    : { data: null };
+  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
+  const { data: profile } =
+    user && supabase
+      ? await supabase
+          .from("profiles")
+          .select("username,display_name,avatar_url,verified")
+          .eq("id", user.id)
+          .maybeSingle()
+      : { data: null };
 
   return (
     <html lang={lang} className={inter.variable}>
