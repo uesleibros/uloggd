@@ -9,6 +9,7 @@ const publicSegments = new Set([
   "legal",
   "onboarding",
   "game",
+  "search",
   "u",
   "lists",
 ]);
@@ -23,6 +24,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(request.nextUrl);
   }
   let response = NextResponse.next({ request });
+  if (process.env.ULOGGD_E2E === "1") return response;
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -91,5 +93,5 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+  matcher: ["/((?!api|_next|favicon.ico|.*\\..*).*)"],
 };

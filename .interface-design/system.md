@@ -70,7 +70,7 @@ Base unit: **4px**.
 - The sidebar shell itself stays at zero margin and padding. A single full-height `sidebar-frame` owns the 12px expanded and 8px compact internal gutter; compact brand, navigation, and account targets are all exactly 48px and the scroll region never adds a second horizontal gutter.
 - Context rail: 320px full; 290px compact; hidden at 960px and below to prevent tablet overflow.
 - The application canvas is full-viewport; never cap the global shell or center it inside decorative outer gutters. Width constraints belong to readable text and focused controls, not the product frame.
-- Game pages use a compact 16px outer gutter; larger spacing belongs between cover, primary content, and context rail rather than outside the rails.
+- Game pages use a full-bleed artwork stage behind the floating header with only a quiet bottom divider. The tabbed content below retains a compact 16px desktop / 10px mobile gutter; larger spacing belongs between cover, primary content, and context rail rather than outside the hero.
 
 The feed should alternate between expressive/editorial zones and compact working zones. Do not give every section the same gap, card shape, or density.
 
@@ -219,7 +219,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Mobile discovery lanes become horizontal snap shelves across the full 0–620px range; cards stay between 112px and 132px so cover art, titles, and three quick-action targets remain usable instead of compressing into a four-column grid.
 - Home shelves use user-controlled horizontal carousels with snap, drag/touch scrolling, and quiet 36px previous/next controls. They never auto-advance.
 - Home adds live RPG, Shooter, Adventure, Strategy, and Indie catalog lanes from IGDB. Genre lanes use six covers per desktop viewport and touch-sized cards on mobile.
-- A game appears only once across the entire home: the spotlight, popular shelf, compact exploration list, genre lanes, and discovery lanes share one ordered ID registry. Larger IGDB candidate pools absorb overlap while preserving the editorial priority of each section.
+- A game appears only once across the entire home: the spotlight, popular shelf, compact exploration list, genre lanes, and discovery lanes share one ordered ID registry. Multi-lane areas allocate candidates round-robin so an earlier genre cannot starve a later one; larger IGDB candidate pools absorb overlap while preserving source ranking inside each lane.
 - Every home lane is contained through a zero-minimum-width chain from section to carousel track. Mobile never uses negative outer margins; only the track owns horizontal overflow, keeping the document itself locked to the viewport.
 - “Hidden gems” requires an 80+ catalog score, 50–349 ratings, release at least two years ago, main-game type, and no IGDB franchise or collection association; current hits, famous franchise editions, ports, and remasters must not qualify merely because one entry has few ratings.
 
@@ -259,6 +259,14 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 ### Search recents
 
 - Opening an empty global search shows up to six recently selected games stored only in browser local storage. Rows reuse the standard search result anatomy, refresh their current catalog metadata, preserve the spawnd playable mark, and include an explicit clear action. Desktop results stay centered to the input bar rather than drifting toward header actions.
+- The dedicated catalog explorer is public and reachable from desktop navigation, the global search footer, and Enter on a typed global query. Its complete state is URL-owned: query, multi-select genres/platforms/themes/modes/types, release years, minimum score/votes, sorting, and page.
+- Standard desktop and tablet use a 276px/240px sticky refinement rail beside a responsive active-shelf result grid. At 1440px and above the explorer becomes a deliberate three-zone workspace: a 260px refinement rail, the catalog grid, and a 224px contextual rail for result count, active scope, removable filters, and adjacent-page navigation. Below that threshold the context returns to removable chips above the grid instead of compressing cover art.
+- Mobile turns the refinement rail into one contained collapsible surface, keeps sorting full-width, preserves two cover columns, and moves active chips into a horizontal overflow rail; no filtering capability disappears at a breakpoint and the document itself must never scroll horizontally.
+- Filter vocabularies come from the current IGDB genres, platforms, themes, game modes, and game types endpoints rather than hardcoded product lists. Platform choices expose abbreviation and family/type metadata and are searchable locally. Result queries use current `game_type`, never deprecated `category`, combine filters server-side, and paginate 24 covers at a time.
+- Active filters become removable tonal chips above the workspace. Sort uses the shared Radix surface language; result cards retain live quick actions, personalized covers, URL pagination, loading attenuation, empty recovery, and a shape-matched route skeleton.
+- Catalog pagination uses the real filtered IGDB count, adjacent page numbers, explicit first/last actions, and a direct numeric jump capped to the supported 100-page window. Desktop keeps the three control groups on one quiet divider; mobile stacks them and makes the page rail horizontally scrollable. Hero and workspace surfaces enter in 220–260ms, opened filter content settles in 160ms, result changes use a 220ms cover stagger plus a thin pending line, and the wide contextual rail re-enters on scope changes. All movement is removed under reduced motion.
+- The explorer avoids decorative glyph clusters, promotional glow, and icon-led section labels. Icons remain only where they communicate a control state (search, disclosure, selection, removal); catalog provenance and URL persistence read as restrained text metadata.
+- Search loading mirrors the final geometry rather than using monolithic placeholders: real hero copy/search/meta rows, the desktop sticky filter rail or mobile disclosure shell, the result heading and sort control, plus 3:4 covers with title and metadata lines. At wide desktop it also reserves the contextual rail. Skeleton spacing shares the final 32px desktop / 24px mobile workspace separation so hydration never produces a visible layout jump.
 
 ### Cover picker
 
@@ -277,6 +285,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 ### Game context rail
 
 - Desktop game pages use cover / primary content / context rail columns.
+- The game stage is a cinematic full-width banner rather than a floating card: no side/top border or radius, artwork starts at the content canvas top behind navigation, and the identity grid adds the header height back internally so controls remain unobscured. Its loading skeleton mirrors the same geometry.
 - The context rail owns IGDB time-to-beat data, catalog score, release, genres, platforms, publisher, themes, and modes.
 - Similar games appear as a short compact-cover list in the context rail, not as another full related-games tab.
 - Tablet moves the rail below primary content; mobile stacks cover, content, and context without a persistent side column.
@@ -397,7 +406,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - The global header is a detached glass surface: desktop uses a wide 56px bar with restrained blur and search space, while mobile uses a compact 54px capsule inset 10px from the viewport. Both retain an opaque fallback when backdrop filters are unavailable.
 - On mobile home, the catalog spotlight backdrop starts at the viewport top and passes behind the glass header; its content retains a 64px safe offset so controls never sit beneath navigation.
 - Mobile header menu and search triggers use explicit 40×40px boxes with zero inherited padding and optically centered icons; the right-side action cluster uses a fixed 4px gap.
-- Full-bleed mobile routes (home spotlight and library hero, including skeletons) begin 64px behind the glass header and add the same space back inside the hero. Editorial surfaces such as the game stage, profile banner, and lists retain their intentional top margin and complete border radius.
+- Full-bleed mobile routes (home spotlight, library hero, and game stage, including skeletons) begin 64px behind the glass header and add the same space back inside the hero. Profile banners and lists retain their intentional top margin and complete border radius.
 - Workspace headers state each page concept once; eyebrow copy adds context instead of repeating the title. Lists use real collection/game/public counts, a responsive two-column card grid, and a motion-enabled Radix creation dialog with a custom visibility select.
 - Profile statistics always use exact database counts rather than the number of preview rows currently rendered. The owner gets a quiet edit action; visitors get a follow control in the same position.
 - Profile metadata uses display name/username, bio, and the uploaded banner (avatar fallback) for Open Graph and Twitter embeds.

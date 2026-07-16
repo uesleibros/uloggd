@@ -69,21 +69,38 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
     }
     return unique;
   };
+  const distributeUniqueLanes = <T extends { games: Game[] }>(
+    lanes: T[],
+    limit: number,
+  ) => {
+    const cursors = lanes.map(() => 0);
+    const allocated = lanes.map(() => [] as Game[]);
+    for (let round = 0; round < limit; round += 1) {
+      lanes.forEach((lane, laneIndex) => {
+        while (cursors[laneIndex] < lane.games.length) {
+          const game = lane.games[cursors[laneIndex]];
+          cursors[laneIndex] += 1;
+          if (visibleGameIds.has(game.id)) continue;
+          visibleGameIds.add(game.id);
+          allocated[laneIndex].push(game);
+          break;
+        }
+      });
+    }
+    return lanes
+      .map((lane, index) => ({ ...lane, games: allocated[index] }))
+      .filter((lane) => lane.games.length > 0);
+  };
   const popularGames = takeUnique(catalog, 10);
   const exploreGames = takeUnique(catalog, 4);
-  const uniqueGenreCollections = genreCollections
-    .map((collection) => ({
-      ...collection,
-      games: takeUnique(collection.games, 10),
-    }))
-    .filter((collection) => collection.games.length > 0);
+  const uniqueGenreCollections = distributeUniqueLanes(genreCollections, 10);
   const releaseFormatter = new Intl.DateTimeFormat(lang, {
     day: "numeric",
     month: "short",
     year: "numeric",
     timeZone: "UTC",
   });
-  const discoveryLanes: {
+  const discoveryCandidates: {
     key: string;
     title: string;
     description: string;
@@ -94,7 +111,7 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
       key: "anticipated",
       title: d.home.mostAnticipated,
       description: d.home.mostAnticipatedDescription,
-      games: takeUnique(discoveries.anticipated, 8),
+      games: discoveries.anticipated,
       meta: (game) =>
         game.hype
           ? `${game.hype.toLocaleString(lang)} ${lang === "pt-BR" ? "interessados" : "following"}`
@@ -104,7 +121,7 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
       key: "upcoming",
       title: d.home.comingSoon,
       description: d.home.comingSoonDescription,
-      games: takeUnique(discoveries.upcoming, 8),
+      games: discoveries.upcoming,
       meta: (game) =>
         game.releaseTimestamp
           ? releaseFormatter.format(new Date(game.releaseTimestamp * 1000))
@@ -114,13 +131,14 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
       key: "hidden-gems",
       title: d.home.hiddenGems,
       description: d.home.hiddenGemsDescription,
-      games: takeUnique(discoveries.hiddenGems, 8),
+      games: discoveries.hiddenGems,
       meta: (game) =>
         game.rating
           ? `${game.rating}/100 · ${game.ratingCount.toLocaleString(lang)} ${d.home.registrations}`
           : d.home.releaseDatePending,
     },
   ];
+  const discoveryLanes = distributeUniqueLanes(discoveryCandidates, 8);
 
   return (
     <div className="home-shell">

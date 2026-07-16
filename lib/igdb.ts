@@ -22,7 +22,7 @@ type IgdbGameResponse = {
   genres?: { name: string }[];
   platforms?: { name: string }[];
   alternative_names?: { name: string }[];
-  game_type?: number;
+  game_type?: number | { id: number; type: string };
   hypes?: number;
   game_localizations?: { cover?: IgdbImage }[];
   version_parent?: {
@@ -100,6 +100,44 @@ export type Game = {
   genres: string[];
   platforms: string[];
   developers: string[];
+};
+
+export type CatalogOption = {
+  id: number;
+  name: string;
+  abbreviation?: string | null;
+  group?: string | null;
+  generation?: number | null;
+};
+
+export type CatalogSearchFilters = {
+  query: string;
+  genres: number[];
+  platforms: number[];
+  themes: number[];
+  modes: number[];
+  types: number[];
+  yearFrom: number | null;
+  yearTo: number | null;
+  ratingMin: number | null;
+  ratingCountMin: number | null;
+  sort: "popular" | "rating" | "newest" | "oldest" | "hype" | "name";
+  page: number;
+};
+
+export type CatalogGame = Game & {
+  themes: string[];
+  modes: string[];
+  typeName: string | null;
+  spawndAvailable?: boolean;
+};
+
+export type CatalogSearchOptions = {
+  genres: CatalogOption[];
+  platforms: CatalogOption[];
+  themes: CatalogOption[];
+  modes: CatalogOption[];
+  types: CatalogOption[];
 };
 
 let tokenCache: { value: string; expiresAt: number } | null = null;
@@ -186,7 +224,8 @@ async function queryIgdbRaw<T>(
         cache: "no-store",
       });
       if (!response.ok) {
-        throw new Error(`IGDB request failed (${response.status})`);
+        const detail = (await response.text()).slice(0, 600);
+        throw new Error(`IGDB request failed (${response.status}): ${detail}`);
       }
       return (await response.json()) as T[];
     },
@@ -230,10 +269,17 @@ function searchRelevance(game: IgdbGameResponse, query: string) {
   return nameScore + Math.min((game.total_rating_count ?? 0) / 100, 20);
 }
 
-function searchKind(gameType?: number): GameSearchResult["kind"] {
-  if (gameType === 1) return "dlc";
-  if (gameType === 2 || gameType === 4) return "expansion";
-  if (gameType === 10 || gameType === 11 || gameType === 14) return "edition";
+function gameTypeId(gameType?: IgdbGameResponse["game_type"]) {
+  return typeof gameType === "number" ? gameType : gameType?.id;
+}
+
+function searchKind(
+  gameType?: IgdbGameResponse["game_type"],
+): GameSearchResult["kind"] {
+  const id = gameTypeId(gameType);
+  if (id === 1) return "dlc";
+  if (id === 2 || id === 4) return "expansion";
+  if (id === 10 || id === 11 || id === 14) return "edition";
   return "game";
 }
 
@@ -279,6 +325,169 @@ export async function searchGames(
       platforms: game.platforms?.map(({ name }) => name).slice(0, 3) ?? [],
       kind: searchKind(game.game_type),
     }));
+}
+
+const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
+  type Named = { id: number; name: string };
+  type Platform = Named & {
+    abbreviation?: string;
+    generation?: number;
+    platform_family?: { name?: string };
+    platform_type?: { name?: string };
+  };
+  const [genres, platforms, themes, modes, rawTypes] = await Promise.all([
+    queryIgdbRaw<Named>(
+      "genres",
+      "fields id,name; sort name asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+    queryIgdbRaw<Platform>(
+      "platforms",
+      "fields id,name,abbreviation,generation,platform_family.name,platform_type.name; sort name asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+    queryIgdbRaw<Named>(
+      "themes",
+      "fields id,name; sort name asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+    queryIgdbRaw<Named>(
+      "game_modes",
+      "fields id,name; sort name asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+    queryIgdbRaw<{ id: number; type: string }>(
+      "game_types",
+      "fields id,type; sort type asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+  ]);
+  const named = (items: Named[]): CatalogOption[] =>
+    items.map(({ id, name }) => ({ id, name }));
+  return {
+    genres: named(genres),
+    platforms: platforms.map((platform) => ({
+      id: platform.id,
+      name: platform.name,
+      abbreviation: platform.abbreviation ?? null,
+      generation: platform.generation ?? null,
+      group:
+        platform.platform_family?.name ?? platform.platform_type?.name ?? null,
+    })),
+    themes: named(themes),
+    modes: named(modes),
+    types: rawTypes.map(({ id, type }) => ({ id, name: type })),
+  };
+});
+
+export function getCatalogSearchOptions() {
+  if (process.env.ULOGGD_E2E === "1")
+    return import("@/lib/igdb-e2e").then(
+      ({ e2eCatalogOptions }) => e2eCatalogOptions,
+    );
+  return catalogOptions();
+}
+
+export async function searchCatalogGames(filters: CatalogSearchFilters) {
+  if (process.env.ULOGGD_E2E === "1") {
+    const { searchE2eCatalog } = await import("@/lib/igdb-e2e");
+    return searchE2eCatalog(filters);
+  }
+  const limit = 24;
+  const offset = (Math.max(1, filters.page) - 1) * limit;
+  const clauses = ["cover != null"];
+  const ids = (values: number[]) =>
+    [...new Set(values)]
+      .filter((value) => Number.isSafeInteger(value) && value > 0)
+      .slice(0, 24);
+  const addIds = (field: string, values: number[]) => {
+    const safe = ids(values);
+    if (safe.length) clauses.push(`${field} = (${safe.join(",")})`);
+  };
+  addIds("genres", filters.genres);
+  addIds("platforms", filters.platforms);
+  addIds("themes", filters.themes);
+  addIds("game_modes", filters.modes);
+  const types = ids(filters.types);
+  clauses.push(
+    types.length ? `game_type = (${types.join(",")})` : "game_type = (0,8,9)",
+  );
+  if (filters.yearFrom) {
+    clauses.push(
+      `first_release_date >= ${Math.floor(Date.UTC(filters.yearFrom, 0, 1) / 1000)}`,
+    );
+  }
+  if (filters.yearTo) {
+    clauses.push(
+      `first_release_date < ${Math.floor(Date.UTC(filters.yearTo + 1, 0, 1) / 1000)}`,
+    );
+  }
+  if (filters.ratingMin !== null)
+    clauses.push(
+      `total_rating >= ${Math.max(0, Math.min(100, filters.ratingMin))}`,
+    );
+  if (filters.ratingCountMin !== null)
+    clauses.push(
+      `total_rating_count >= ${Math.max(0, filters.ratingCountMin)}`,
+    );
+  const words = filters.query
+    .trim()
+    .replace(/\s+/g, " ")
+    .slice(0, 80)
+    .split(" ")
+    .map(escapeIgdb)
+    .filter((word) => word.length >= 2)
+    .slice(0, 6);
+  if (words.length) {
+    const names = words.map((word) => `name ~ *"${word}"*`).join(" & ");
+    const alternatives = words
+      .map((word) => `alternative_names.name ~ *"${word}"*`)
+      .join(" & ");
+    clauses.push(`(${names} | ${alternatives})`);
+  }
+  const sorts: Record<CatalogSearchFilters["sort"], string> = {
+    popular: "total_rating_count desc",
+    rating: "total_rating desc",
+    newest: "first_release_date desc",
+    oldest: "first_release_date asc",
+    hype: "hypes desc",
+    name: "name asc",
+  };
+  const where = clauses.join(" & ");
+  const [rows, countRows] = await Promise.all([
+    queryGamesRaw(
+      `
+      fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
+        cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,
+        themes.name,game_modes.name,game_type.type;
+      where ${where};
+      sort ${sorts[filters.sort]};
+      limit ${limit + 1};
+      offset ${offset};
+    `,
+      15 * CACHE_MINUTES,
+    ),
+    queryIgdbRaw<{ count: number }>(
+      "games/count",
+      `where ${where};`,
+      15 * CACHE_MINUTES,
+    ),
+  ]);
+  const total = Math.max(
+    0,
+    (countRows as unknown as { count: number }).count ?? 0,
+  );
+  const totalPages = Math.min(100, Math.max(1, Math.ceil(total / limit)));
+  const hasMore = rows.length > limit;
+  const games: CatalogGame[] = rows.slice(0, limit).map((game) => ({
+    ...normalize(game),
+    genres: game.genres?.map(({ name }) => name) ?? [],
+    platforms: game.platforms?.map(({ name }) => name) ?? [],
+    themes: game.themes?.map(({ name }) => name) ?? [],
+    modes: game.game_modes?.map(({ name }) => name) ?? [],
+    typeName: typeof game.game_type === "object" ? game.game_type.type : null,
+  }));
+  return { games, hasMore, page: filters.page, total, totalPages };
 }
 
 export async function getPopularGames(): Promise<Game[]> {
@@ -626,7 +835,7 @@ export async function getGenreCollections(): Promise<GenreCollection[]> {
         fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
         where cover != null & genres = (${genre.id}) & total_rating_count >= 40 & game_type = 0;
         sort total_rating_count desc;
-        limit 18;
+        limit 40;
       `,
         12 * CACHE_HOURS,
       ),

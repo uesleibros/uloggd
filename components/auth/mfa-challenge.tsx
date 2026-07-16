@@ -1,7 +1,7 @@
 "use client";
 
 import { KeyRound, LoaderCircle, LogOut, ShieldCheck } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { safeInternalNext } from "@/lib/auth-validation";
 import { createClient } from "@/lib/supabase/client";
@@ -10,7 +10,6 @@ type Factor = { id: string; friendly_name?: string; status: string };
 
 export function MfaChallenge({ lang }: { lang: "pt-BR" | "en" }) {
   const pt = lang === "pt-BR";
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [factors, setFactors] = useState<Factor[]>([]);
   const [selected, setSelected] = useState("");
@@ -60,8 +59,7 @@ export function MfaChallenge({ lang }: { lang: "pt-BR" | "en" }) {
       setPending(false);
       return;
     }
-    router.replace(safeInternalNext(searchParams.get("next"), lang));
-    router.refresh();
+    window.location.replace(safeInternalNext(searchParams.get("next"), lang));
   }
 
   async function signOut() {

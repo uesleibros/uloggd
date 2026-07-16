@@ -4,7 +4,15 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clock3, LoaderCircle, Search, Trash2, X } from "lucide-react";
+import {
+  ChevronRight,
+  Clock3,
+  LoaderCircle,
+  Search,
+  SlidersHorizontal,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
@@ -391,6 +399,11 @@ function SearchSurface({
         router.push(`/${lang}/game/${selected.slug}`);
         setExpanded(false);
         onSelect?.();
+      } else if (event.key === "Enter" && query.trim().length >= 2) {
+        event.preventDefault();
+        router.push(`/${lang}/search?q=${encodeURIComponent(query.trim())}`);
+        setExpanded(false);
+        onSelect?.();
       } else if (event.key === "Escape" && !mobile) {
         setExpanded(false);
         inputRef.current?.blur();
@@ -474,6 +487,22 @@ function SearchSurface({
               onSelect?.();
             }}
           />
+          <Link
+            className="advanced-search-link"
+            href={`/${lang}/search${query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ""}`}
+            onClick={() => {
+              setExpanded(false);
+              onSelect?.();
+            }}
+          >
+            <SlidersHorizontal size={14} />
+            <span>
+              {lang === "pt-BR"
+                ? "Abrir busca avançada"
+                : "Open advanced search"}
+            </span>
+            <ChevronRight size={14} />
+          </Link>
         </div>
       )}
     </div>

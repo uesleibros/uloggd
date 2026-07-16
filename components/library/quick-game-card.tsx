@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { resolveGameCover } from "@/lib/game-cover";
 import { StarRating } from "./star-rating";
+import { SpawndLogo } from "../spawnd-logo";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -44,6 +45,7 @@ export function QuickGameCard({
   removable = false,
   onRemove,
   onStateChange,
+  spawndAvailable = false,
 }: {
   game: {
     id: number;
@@ -61,6 +63,7 @@ export function QuickGameCard({
   removable?: boolean;
   onRemove?: () => void;
   onStateChange?: (state: NonNullable<State>) => void;
+  spawndAvailable?: boolean;
 }) {
   const pt = lang === "pt-BR";
   const [state, setState] = useState<State>(initial);
@@ -196,6 +199,15 @@ export function QuickGameCard({
         />
         {rank && (
           <span className="quick-rank">{String(rank).padStart(2, "0")}</span>
+        )}
+        {spawndAvailable && (
+          <span
+            className="quick-spawnd-badge"
+            title={pt ? "Jogável no spawnd" : "Playable on spawnd"}
+          >
+            <SpawndLogo compact />
+            {pt ? "Jogável" : "Playable"}
+          </span>
         )}
         {enabled &&
           state &&
