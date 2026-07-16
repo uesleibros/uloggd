@@ -5908,9 +5908,14 @@ html[data-sidebar-ready] .account-button > svg {
   .review-writing-field textarea {
     min-height: 220px;
   }
-  .review-studio-dialog {
+  .social-editor-dialog.review-studio-dialog {
+    right: 0;
+    left: 0;
+    width: 100%;
+    max-width: 100%;
     height: calc(100dvh - 8px);
     max-height: calc(100dvh - 8px);
+    margin: 0;
     border-radius: 14px 14px 0 0;
   }
   .review-studio-dialog > header {
@@ -7473,17 +7478,23 @@ html[data-sidebar-ready] .account-button > svg {
 
 /* Editorial game stage: identity first, catalog modules second. */
 .game-page {
-  padding: 16px 16px 64px;
+  margin-top: -76px;
+  padding: 0 0 64px;
 }
 
 .game-stage {
   position: relative;
-  min-height: 430px;
+  min-height: 522px;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
-  border-radius: 14px;
+  border: 0;
+  border-bottom: 1px solid var(--shell-line);
+  border-radius: 0;
   background: var(--console-panel);
   isolation: isolate;
+}
+
+.game-page > .game-tabs {
+  padding-inline: 16px;
 }
 
 .game-stage .game-hero {
@@ -7518,8 +7529,8 @@ html[data-sidebar-ready] .account-button > svg {
   grid-template-columns: 200px minmax(0, 1fr) 250px;
   align-items: end;
   gap: 24px;
-  min-height: 430px;
-  padding: 52px 24px 24px;
+  min-height: 522px;
+  padding: 144px 24px 24px;
 }
 
 .game-stage .game-cover-picker,
@@ -8443,16 +8454,17 @@ a,
 
 @media (max-width: 620px) {
   .game-page {
-    padding: 10px 10px 48px;
+    margin-top: -64px;
+    padding: 0 0 48px;
   }
 
   .game-stage {
     min-height: 0;
-    border-radius: 11px;
+    border-radius: 0;
   }
 
   .game-stage .game-hero {
-    height: 250px;
+    height: 324px;
   }
 
   .game-stage .game-hero > div {
@@ -8472,7 +8484,11 @@ a,
     align-items: end;
     gap: 14px;
     min-height: 0;
-    padding: 118px 14px 14px;
+    padding: 192px 14px 14px;
+  }
+
+  .game-page > .game-tabs {
+    padding-inline: 10px;
   }
 
   .game-stage .game-cover-picker {

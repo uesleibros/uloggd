@@ -70,7 +70,7 @@ Base unit: **4px**.
 - The sidebar shell itself stays at zero margin and padding. A single full-height `sidebar-frame` owns the 12px expanded and 8px compact internal gutter; compact brand, navigation, and account targets are all exactly 48px and the scroll region never adds a second horizontal gutter.
 - Context rail: 320px full; 290px compact; hidden at 960px and below to prevent tablet overflow.
 - The application canvas is full-viewport; never cap the global shell or center it inside decorative outer gutters. Width constraints belong to readable text and focused controls, not the product frame.
-- Game pages use a compact 16px outer gutter; larger spacing belongs between cover, primary content, and context rail rather than outside the rails.
+- Game pages use a full-bleed artwork stage behind the floating header with only a quiet bottom divider. The tabbed content below retains a compact 16px desktop / 10px mobile gutter; larger spacing belongs between cover, primary content, and context rail rather than outside the hero.
 
 The feed should alternate between expressive/editorial zones and compact working zones. Do not give every section the same gap, card shape, or density.
 
@@ -277,6 +277,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 ### Game context rail
 
 - Desktop game pages use cover / primary content / context rail columns.
+- The game stage is a cinematic full-width banner rather than a floating card: no side/top border or radius, artwork starts at the content canvas top behind navigation, and the identity grid adds the header height back internally so controls remain unobscured. Its loading skeleton mirrors the same geometry.
 - The context rail owns IGDB time-to-beat data, catalog score, release, genres, platforms, publisher, themes, and modes.
 - Similar games appear as a short compact-cover list in the context rail, not as another full related-games tab.
 - Tablet moves the rail below primary content; mobile stacks cover, content, and context without a persistent side column.
@@ -397,7 +398,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - The global header is a detached glass surface: desktop uses a wide 56px bar with restrained blur and search space, while mobile uses a compact 54px capsule inset 10px from the viewport. Both retain an opaque fallback when backdrop filters are unavailable.
 - On mobile home, the catalog spotlight backdrop starts at the viewport top and passes behind the glass header; its content retains a 64px safe offset so controls never sit beneath navigation.
 - Mobile header menu and search triggers use explicit 40×40px boxes with zero inherited padding and optically centered icons; the right-side action cluster uses a fixed 4px gap.
-- Full-bleed mobile routes (home spotlight and library hero, including skeletons) begin 64px behind the glass header and add the same space back inside the hero. Editorial surfaces such as the game stage, profile banner, and lists retain their intentional top margin and complete border radius.
+- Full-bleed mobile routes (home spotlight, library hero, and game stage, including skeletons) begin 64px behind the glass header and add the same space back inside the hero. Profile banners and lists retain their intentional top margin and complete border radius.
 - Workspace headers state each page concept once; eyebrow copy adds context instead of repeating the title. Lists use real collection/game/public counts, a responsive two-column card grid, and a motion-enabled Radix creation dialog with a custom visibility select.
 - Profile statistics always use exact database counts rather than the number of preview rows currently rendered. The owner gets a quiet edit action; visitors get a follow control in the same position.
 - Profile metadata uses display name/username, bio, and the uploaded banner (avatar fallback) for Open Graph and Twitter embeds.
