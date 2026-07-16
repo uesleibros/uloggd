@@ -9,6 +9,7 @@ const publicSegments = new Set([
   "legal",
   "onboarding",
   "game",
+  "search",
   "u",
   "lists",
 ]);

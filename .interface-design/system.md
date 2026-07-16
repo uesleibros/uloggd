@@ -259,6 +259,10 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 ### Search recents
 
 - Opening an empty global search shows up to six recently selected games stored only in browser local storage. Rows reuse the standard search result anatomy, refresh their current catalog metadata, preserve the spawnd playable mark, and include an explicit clear action. Desktop results stay centered to the input bar rather than drifting toward header actions.
+- The dedicated catalog explorer is public and reachable from desktop navigation, the global search footer, and Enter on a typed global query. Its complete state is URL-owned: query, multi-select genres/platforms/themes/modes/types, release years, minimum score/votes, sorting, and page.
+- Desktop uses a 276px sticky refinement rail beside a responsive active-shelf result grid. Mobile turns that same rail into one collapsible advanced-filter surface and preserves two cover columns; no filtering capability disappears at a breakpoint.
+- Filter vocabularies come from the current IGDB genres, platforms, themes, game modes, and game types endpoints rather than hardcoded product lists. Platform choices expose abbreviation and family/type metadata and are searchable locally. Result queries use current `game_type`, never deprecated `category`, combine filters server-side, and paginate 24 covers at a time.
+- Active filters become removable tonal chips above the workspace. Sort uses the shared Radix surface language; result cards retain live quick actions, personalized covers, URL pagination, loading attenuation, empty recovery, and a shape-matched route skeleton.
 
 ### Cover picker
 

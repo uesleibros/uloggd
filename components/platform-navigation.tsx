@@ -5,6 +5,7 @@ import {
   ListTree,
   LogIn,
   LockKeyhole,
+  Search,
   Settings,
   Star,
   UserRound,
@@ -24,6 +25,7 @@ const iconMap = {
   star: Star,
   user: UserRound,
   list: ListTree,
+  search: Search,
 };
 
 export function PlatformNavigation({
@@ -40,6 +42,7 @@ export function PlatformNavigation({
   const isAuthenticated = Boolean(account);
   const nav = [
     ["home", d.nav.home, false],
+    ["search", d.platform.search, false],
     ["library", d.nav.library, true],
     ["star", d.nav.reviews, true],
     ["list", d.nav.lists, true],
@@ -75,15 +78,17 @@ export function PlatformNavigation({
                 }
                 if (index !== 0) {
                   const href =
-                    icon === "library"
-                      ? `/${lang}/library`
-                      : icon === "star"
-                        ? `/${lang}/reviews`
-                        : icon === "list"
-                          ? `/${lang}/lists`
-                          : account?.username
-                            ? `/${lang}/u/${account.username}`
-                            : `/${lang}/onboarding/username`;
+                    icon === "search"
+                      ? `/${lang}/search`
+                      : icon === "library"
+                        ? `/${lang}/library`
+                        : icon === "star"
+                          ? `/${lang}/reviews`
+                          : icon === "list"
+                            ? `/${lang}/lists`
+                            : account?.username
+                              ? `/${lang}/u/${account.username}`
+                              : `/${lang}/onboarding/username`;
                   return (
                     <ActiveLink
                       key={label}
