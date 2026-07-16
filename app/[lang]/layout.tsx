@@ -7,6 +7,8 @@ import { PlatformFooter } from "@/components/platform-footer";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { CookieConsent } from "@/components/cookie-consent";
 import { SmartHeader } from "@/components/smart-header";
+import { ThemeManager } from "@/components/theme-manager";
+import { themeBootstrapScript } from "@/lib/theme";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
 import "../globals.css";
@@ -54,8 +56,15 @@ export default async function LocaleLayout({
       : { data: null };
 
   return (
-    <html lang={lang} className={inter.variable}>
+    <html lang={lang} className={inter.variable} suppressHydrationWarning>
+      <head>
+        <script
+          id="uloggd-theme-bootstrap"
+          dangerouslySetInnerHTML={{ __html: themeBootstrapScript }}
+        />
+      </head>
       <body>
+        <ThemeManager />
         <div className="platform-shell">
           <PlatformNavigation
             lang={lang}

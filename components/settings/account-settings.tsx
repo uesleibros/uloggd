@@ -5,6 +5,7 @@ import {
   CalendarDays,
   CircleUserRound,
   ShieldCheck,
+  SwatchBook,
   UserRound,
 } from "lucide-react";
 import { useState } from "react";
@@ -12,9 +13,10 @@ import { ProfileSettingsPanel } from "./profile-settings-panel";
 import { PasskeySettings } from "./passkey-settings";
 import { TwoFactorSettings } from "./two-factor-settings";
 import { DeleteAccount } from "./delete-account";
+import { AppearanceSettings } from "./appearance-settings";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"];
-type Tab = "general" | "profile" | "security";
+type Tab = "general" | "profile" | "appearance" | "security";
 
 export function AccountSettings({
   profile,
@@ -37,6 +39,11 @@ export function AccountSettings({
       id: "profile" as const,
       label: pt ? "Perfil" : "Profile",
       icon: UserRound,
+    },
+    {
+      id: "appearance" as const,
+      label: pt ? "Aparência" : "Appearance",
+      icon: SwatchBook,
     },
     {
       id: "security" as const,
@@ -133,6 +140,7 @@ export function AccountSettings({
         {tab === "profile" && (
           <ProfileSettingsPanel initial={profile} lang={lang} />
         )}
+        {tab === "appearance" && <AppearanceSettings lang={lang} />}
         {tab === "security" && (
           <div className="settings-security-stack">
             <TwoFactorSettings lang={lang} />

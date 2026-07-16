@@ -41,6 +41,12 @@ Colors come from console hardware and late-night screens:
 
 Use approximately 60% canvas, 30% panel/raised surfaces, and no more than 10% accent. Do not introduce new accent hues without a semantic role.
 
+### Theme system
+
+- Appearance offers Automatic, Light, Gray, Dark, and Onyx. Automatic resolves live from `prefers-color-scheme`; explicit choices remain stable regardless of device changes. Preference is device-local in `uloggd:theme`, is applied before hydration to prevent a flash, and synchronizes across tabs.
+- Light uses cool paper surfaces (`#f5f6f8` canvas, white panels, charcoal text); Gray uses Discord-like Ash (`#2b2d31` canvas, `#313338` panels); Dark preserves the original late-night console palette; Onyx uses near-black canvas and relies on slightly stronger neutral borders for depth.
+- Theme selection is immediate through a two-column desktop / single-column mobile radio-card grid. Every card previews sidebar, canvas, and content layers; selection uses the existing blurple state plus a check so it never depends on color alone. Theme changes animate only high-level surface, border, and text colors for 180–220ms.
+
 ## Depth Strategy
 
 Use **surface shifts plus quiet borders**. Dark-mode shadows are secondary and should never define the hierarchy alone.
