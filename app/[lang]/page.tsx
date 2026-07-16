@@ -57,6 +57,26 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
   const ratedCount =
     savedGames?.filter((item) => item.quick_rating !== null).length ?? 0;
   const [featured, ...catalog] = games;
+  const visibleGameIds = new Set<number>();
+  if (featured) visibleGameIds.add(featured.id);
+  const takeUnique = (source: Game[], limit: number) => {
+    const unique: Game[] = [];
+    for (const game of source) {
+      if (visibleGameIds.has(game.id)) continue;
+      visibleGameIds.add(game.id);
+      unique.push(game);
+      if (unique.length === limit) break;
+    }
+    return unique;
+  };
+  const popularGames = takeUnique(catalog, 10);
+  const exploreGames = takeUnique(catalog, 4);
+  const uniqueGenreCollections = genreCollections
+    .map((collection) => ({
+      ...collection,
+      games: takeUnique(collection.games, 10),
+    }))
+    .filter((collection) => collection.games.length > 0);
   const releaseFormatter = new Intl.DateTimeFormat(lang, {
     day: "numeric",
     month: "short",
@@ -74,7 +94,7 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
       key: "anticipated",
       title: d.home.mostAnticipated,
       description: d.home.mostAnticipatedDescription,
-      games: discoveries.anticipated,
+      games: takeUnique(discoveries.anticipated, 8),
       meta: (game) =>
         game.hype
           ? `${game.hype.toLocaleString(lang)} ${lang === "pt-BR" ? "interessados" : "following"}`
@@ -84,7 +104,7 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
       key: "upcoming",
       title: d.home.comingSoon,
       description: d.home.comingSoonDescription,
-      games: discoveries.upcoming,
+      games: takeUnique(discoveries.upcoming, 8),
       meta: (game) =>
         game.releaseTimestamp
           ? releaseFormatter.format(new Date(game.releaseTimestamp * 1000))
@@ -94,7 +114,7 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
       key: "hidden-gems",
       title: d.home.hiddenGems,
       description: d.home.hiddenGemsDescription,
-      games: discoveries.hiddenGems,
+      games: takeUnique(discoveries.hiddenGems, 8),
       meta: (game) =>
         game.rating
           ? `${game.rating}/100 · ${game.ratingCount.toLocaleString(lang)} ${d.home.registrations}`
@@ -162,7 +182,7 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
             lang={lang}
             className="home-popular-carousel"
           >
-            {catalog.map((game, index) => (
+            {popularGames.map((game, index) => (
               <QuickGameCard
                 key={game.id}
                 game={game}
@@ -192,7 +212,7 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
             </p>
           </div>
           <div className="genre-collections">
-            {genreCollections.map((collection) => (
+            {uniqueGenreCollections.map((collection) => (
               <section className="genre-collection" key={collection.id}>
                 <div className="section-heading">
                   <div>
@@ -268,7 +288,7 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
             </div>
           </div>
           <div className="game-list">
-            {catalog.slice(5, 9).map((game) => (
+            {exploreGames.map((game) => (
               <article className="game-list-row" key={game.id}>
                 <Link
                   className="list-cover"

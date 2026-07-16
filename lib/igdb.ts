@@ -287,7 +287,7 @@ export async function getPopularGames(): Promise<Game[]> {
     fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
     where cover != null & total_rating_count > 500 & game_type = (0,8,9);
     sort total_rating_count desc;
-    limit 12;
+    limit 16;
   `,
     6 * CACHE_HOURS,
   );
@@ -584,7 +584,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
       fields ${fields};
       where cover != null & first_release_date > ${now} & hypes > 5 & game_type = (0,8,9);
       sort hypes desc;
-      limit 8;
+      limit 12;
     `,
       6 * CACHE_HOURS,
     ),
@@ -593,7 +593,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
       fields ${fields};
       where cover != null & first_release_date > ${now} & first_release_date < ${inFourMonths} & game_type = (0,8,9);
       sort first_release_date asc;
-      limit 8;
+      limit 12;
     `,
       6 * CACHE_HOURS,
     ),
@@ -602,7 +602,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
       fields ${fields};
       where cover != null & first_release_date < ${twoYearsAgo} & total_rating >= 80 & total_rating_count >= 50 & total_rating_count < 350 & game_type = 0 & franchises = null & collections = null;
       sort total_rating desc;
-      limit 8;
+      limit 12;
     `,
       6 * CACHE_HOURS,
     ),
@@ -626,7 +626,7 @@ export async function getGenreCollections(): Promise<GenreCollection[]> {
         fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
         where cover != null & genres = (${genre.id}) & total_rating_count >= 40 & game_type = 0;
         sort total_rating_count desc;
-        limit 10;
+        limit 18;
       `,
         12 * CACHE_HOURS,
       ),

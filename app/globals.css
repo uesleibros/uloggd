@@ -4977,7 +4977,7 @@ html[data-sidebar-ready] .account-button > svg {
   display: flex;
   gap: 4px;
   margin: 0 0 16px;
-  padding: 0 4px 10px;
+  padding: 4px 4px 10px;
   overflow-x: auto;
   border: 0;
   border-bottom: 1px solid var(--shell-line);
@@ -7689,7 +7689,7 @@ html[data-sidebar-ready] .account-button > svg {
   display: flex;
   gap: 4px;
   margin-top: 14px;
-  padding: 0 4px 10px;
+  padding: 4px 4px 10px;
   overflow-x: auto;
   border-bottom: 1px solid var(--shell-line);
   scrollbar-width: none;
@@ -11606,11 +11606,12 @@ a,
   width: 100%;
   min-width: 0;
   overflow-x: clip;
+  margin-top: -76px;
   padding: 0 0 72px;
 }
 .library-hero {
   position: relative;
-  min-height: 268px;
+  min-height: 344px;
   overflow: hidden;
   border-bottom: 1px solid var(--shell-line);
   background: var(--console-panel);
@@ -11640,8 +11641,8 @@ a,
   grid-template-columns: 64px minmax(0, 1fr) auto;
   align-items: end;
   gap: 16px;
-  min-height: 268px;
-  padding: 44px 36px 34px;
+  min-height: 344px;
+  padding: 120px 36px 34px;
 }
 .library-owner-avatar {
   position: relative;
@@ -12215,8 +12216,8 @@ a,
   display: flex;
   align-items: end;
   gap: 16px;
-  min-height: 268px;
-  padding: 44px 36px 34px;
+  min-height: 344px;
+  padding: 120px 36px 34px;
 }
 .library-loading-hero > span {
   width: 64px;
@@ -12308,7 +12309,7 @@ a,
   display: flex;
   gap: 4px;
   margin: 0 0 16px;
-  padding: 0 4px 10px;
+  padding: 4px 4px 10px;
   overflow-x: auto;
   border: 0;
   border-bottom: 1px solid var(--shell-line);
