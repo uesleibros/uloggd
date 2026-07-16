@@ -117,6 +117,10 @@ export type CatalogSearchFilters = {
   themes: number[];
   modes: number[];
   types: number[];
+  perspectives: number[];
+  releaseStatus: "all" | "released" | "upcoming";
+  ratedOnly: boolean;
+  anticipatedOnly: boolean;
   yearFrom: number | null;
   yearTo: number | null;
   ratingMin: number | null;
@@ -138,6 +142,7 @@ export type CatalogSearchOptions = {
   themes: CatalogOption[];
   modes: CatalogOption[];
   types: CatalogOption[];
+  perspectives: CatalogOption[];
 };
 
 let tokenCache: { value: string; expiresAt: number } | null = null;
@@ -335,33 +340,39 @@ const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
     platform_family?: { name?: string };
     platform_type?: { name?: string };
   };
-  const [genres, platforms, themes, modes, rawTypes] = await Promise.all([
-    queryIgdbRaw<Named>(
-      "genres",
-      "fields id,name; sort name asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-    queryIgdbRaw<Platform>(
-      "platforms",
-      "fields id,name,abbreviation,generation,platform_family.name,platform_type.name; sort name asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-    queryIgdbRaw<Named>(
-      "themes",
-      "fields id,name; sort name asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-    queryIgdbRaw<Named>(
-      "game_modes",
-      "fields id,name; sort name asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-    queryIgdbRaw<{ id: number; type: string }>(
-      "game_types",
-      "fields id,type; sort type asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-  ]);
+  const [genres, platforms, themes, modes, rawTypes, perspectives] =
+    await Promise.all([
+      queryIgdbRaw<Named>(
+        "genres",
+        "fields id,name; sort name asc; limit 500;",
+        24 * CACHE_HOURS,
+      ),
+      queryIgdbRaw<Platform>(
+        "platforms",
+        "fields id,name,abbreviation,generation,platform_family.name,platform_type.name; sort name asc; limit 500;",
+        24 * CACHE_HOURS,
+      ),
+      queryIgdbRaw<Named>(
+        "themes",
+        "fields id,name; sort name asc; limit 500;",
+        24 * CACHE_HOURS,
+      ),
+      queryIgdbRaw<Named>(
+        "game_modes",
+        "fields id,name; sort name asc; limit 500;",
+        24 * CACHE_HOURS,
+      ),
+      queryIgdbRaw<{ id: number; type: string }>(
+        "game_types",
+        "fields id,type; sort type asc; limit 500;",
+        24 * CACHE_HOURS,
+      ),
+      queryIgdbRaw<Named>(
+        "player_perspectives",
+        "fields id,name; sort name asc; limit 500;",
+        24 * CACHE_HOURS,
+      ),
+    ]);
   const named = (items: Named[]): CatalogOption[] =>
     items.map(({ id, name }) => ({ id, name }));
   return {
@@ -377,6 +388,7 @@ const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
     themes: named(themes),
     modes: named(modes),
     types: rawTypes.map(({ id, type }) => ({ id, name: type })),
+    perspectives: named(perspectives),
   };
 });
 
@@ -408,10 +420,18 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
   addIds("platforms", filters.platforms);
   addIds("themes", filters.themes);
   addIds("game_modes", filters.modes);
+  addIds("player_perspectives", filters.perspectives);
   const types = ids(filters.types);
   clauses.push(
     types.length ? `game_type = (${types.join(",")})` : "game_type = (0,8,9)",
   );
+  const now = Math.floor(Date.now() / (24 * 60 * 60 * 1000)) * 24 * 60 * 60;
+  if (filters.releaseStatus === "released")
+    clauses.push(`first_release_date <= ${now}`);
+  if (filters.releaseStatus === "upcoming")
+    clauses.push(`first_release_date > ${now}`);
+  if (filters.ratedOnly) clauses.push("total_rating_count > 0");
+  if (filters.anticipatedOnly) clauses.push("hypes > 0");
   if (filters.yearFrom) {
     clauses.push(
       `first_release_date >= ${Math.floor(Date.UTC(filters.yearFrom, 0, 1) / 1000)}`,

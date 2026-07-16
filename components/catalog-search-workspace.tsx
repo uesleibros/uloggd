@@ -24,6 +24,57 @@ type SavedState = {
   custom_cover_url: string | null;
 } | null;
 
+type DraftArrayKey =
+  "genres" | "platforms" | "themes" | "modes" | "types" | "perspectives";
+
+type FilterDraft = Pick<
+  CatalogSearchFilters,
+  | DraftArrayKey
+  | "releaseStatus"
+  | "ratedOnly"
+  | "anticipatedOnly"
+  | "yearFrom"
+  | "yearTo"
+  | "ratingMin"
+  | "ratingCountMin"
+>;
+
+function draftFromFilters(filters: CatalogSearchFilters): FilterDraft {
+  return {
+    genres: filters.genres,
+    platforms: filters.platforms,
+    themes: filters.themes,
+    modes: filters.modes,
+    types: filters.types,
+    perspectives: filters.perspectives,
+    releaseStatus: filters.releaseStatus,
+    ratedOnly: filters.ratedOnly,
+    anticipatedOnly: filters.anticipatedOnly,
+    yearFrom: filters.yearFrom,
+    yearTo: filters.yearTo,
+    ratingMin: filters.ratingMin,
+    ratingCountMin: filters.ratingCountMin,
+  };
+}
+
+function emptyDraft(): FilterDraft {
+  return {
+    genres: [],
+    platforms: [],
+    themes: [],
+    modes: [],
+    types: [],
+    perspectives: [],
+    releaseStatus: "all",
+    ratedOnly: false,
+    anticipatedOnly: false,
+    yearFrom: null,
+    yearTo: null,
+    ratingMin: null,
+    ratingCountMin: null,
+  };
+}
+
 function OptionGroup({
   title,
   param,
@@ -35,10 +86,10 @@ function OptionGroup({
   lang,
 }: {
   title: string;
-  param: string;
+  param: DraftArrayKey;
   options: CatalogOption[];
   selected: number[];
-  onChange: (param: string, values: number[]) => void;
+  onChange: (param: DraftArrayKey, values: number[]) => void;
   searchable?: boolean;
   initiallyOpen?: boolean;
   lang: "pt-BR" | "en";
@@ -206,6 +257,9 @@ export function CatalogSearchWorkspace({
   const pageRef = useRef<HTMLElement>(null);
   const [pending, startTransition] = useTransition();
   const [query, setQuery] = useState(filters.query);
+  const [draft, setDraft] = useState<FilterDraft>(() =>
+    draftFromFilters(filters),
+  );
 
   useEffect(() => {
     pageRef.current?.setAttribute("data-hydrated", "true");
@@ -231,11 +285,35 @@ export function CatalogSearchWorkspace({
     navigate({ [param]: values.length ? values.join(",") : null });
   }
 
+  function updateDraftArray(param: DraftArrayKey, values: number[]) {
+    setDraft((current) => ({ ...current, [param]: values }));
+  }
+
+  function applyFilters() {
+    navigate({
+      genres: draft.genres.length ? draft.genres.join(",") : null,
+      platforms: draft.platforms.length ? draft.platforms.join(",") : null,
+      themes: draft.themes.length ? draft.themes.join(",") : null,
+      modes: draft.modes.length ? draft.modes.join(",") : null,
+      types: draft.types.length ? draft.types.join(",") : null,
+      perspectives: draft.perspectives.length
+        ? draft.perspectives.join(",")
+        : null,
+      release: draft.releaseStatus === "all" ? null : draft.releaseStatus,
+      rated: draft.ratedOnly ? 1 : null,
+      anticipated: draft.anticipatedOnly ? 1 : null,
+      yearFrom: draft.yearFrom,
+      yearTo: draft.yearTo,
+      rating: draft.ratingMin,
+      votes: draft.ratingCountMin,
+    });
+  }
+
   const selectedChips = useMemo(() => {
     const groups: [
       keyof Pick<
         CatalogSearchFilters,
-        "genres" | "platforms" | "themes" | "modes" | "types"
+        "genres" | "platforms" | "themes" | "modes" | "types" | "perspectives"
       >,
       CatalogOption[],
     ][] = [
@@ -244,6 +322,7 @@ export function CatalogSearchWorkspace({
       ["themes", options.themes],
       ["modes", options.modes],
       ["types", options.types],
+      ["perspectives", options.perspectives],
     ];
     return groups.flatMap(([key, list]) =>
       filters[key].map((id) => ({
@@ -260,6 +339,27 @@ export function CatalogSearchWorkspace({
     Number(filters.yearTo !== null) +
     Number(filters.ratingMin !== null) +
     Number(filters.ratingCountMin !== null);
+  const appliedCount =
+    activeCount +
+    Number(filters.releaseStatus !== "all") +
+    Number(filters.ratedOnly) +
+    Number(filters.anticipatedOnly);
+  const draftCount =
+    draft.genres.length +
+    draft.platforms.length +
+    draft.themes.length +
+    draft.modes.length +
+    draft.types.length +
+    draft.perspectives.length +
+    Number(draft.releaseStatus !== "all") +
+    Number(draft.ratedOnly) +
+    Number(draft.anticipatedOnly) +
+    Number(draft.yearFrom !== null) +
+    Number(draft.yearTo !== null) +
+    Number(draft.ratingMin !== null) +
+    Number(draft.ratingCountMin !== null);
+  const draftDirty =
+    JSON.stringify(draft) !== JSON.stringify(draftFromFilters(filters));
   const sortOptions = [
     { value: "popular", label: pt ? "Mais populares" : "Most popular" },
     { value: "rating", label: pt ? "Melhor avaliados" : "Highest rated" },
@@ -290,7 +390,81 @@ export function CatalogSearchWorkspace({
           value: `${filters.ratingCountMin.toLocaleString(lang)}+`,
         }
       : null,
+    filters.releaseStatus !== "all"
+      ? {
+          label: pt ? "Lançamento" : "Release status",
+          value:
+            filters.releaseStatus === "released"
+              ? pt
+                ? "Já lançados"
+                : "Released"
+              : pt
+                ? "Próximos lançamentos"
+                : "Upcoming",
+        }
+      : null,
+    filters.ratedOnly
+      ? {
+          label: pt ? "Recepção" : "Reception",
+          value: pt ? "Somente avaliados" : "Rated only",
+        }
+      : null,
+    filters.anticipatedOnly
+      ? {
+          label: pt ? "Interesse" : "Interest",
+          value: pt ? "Mais aguardados" : "Anticipated only",
+        }
+      : null,
   ].filter((row): row is { label: string; value: string } => Boolean(row));
+  const scalarChips: {
+    key: string;
+    label: string;
+    changes: Record<string, string | number | null>;
+  }[] = [];
+  if (filters.releaseStatus !== "all") {
+    scalarChips.push({
+      key: "release",
+      label:
+        filters.releaseStatus === "released"
+          ? pt
+            ? "Já lançados"
+            : "Released"
+          : pt
+            ? "Próximos lançamentos"
+            : "Upcoming",
+      changes: { release: null },
+    });
+  }
+  if (filters.ratedOnly)
+    scalarChips.push({
+      key: "rated",
+      label: pt ? "Somente avaliados" : "Rated only",
+      changes: { rated: null },
+    });
+  if (filters.anticipatedOnly)
+    scalarChips.push({
+      key: "anticipated",
+      label: pt ? "Somente aguardados" : "Anticipated only",
+      changes: { anticipated: null },
+    });
+  if (filters.yearFrom !== null || filters.yearTo !== null)
+    scalarChips.push({
+      key: "years",
+      label: `${filters.yearFrom ?? "…"}–${filters.yearTo ?? "…"}`,
+      changes: { yearFrom: null, yearTo: null },
+    });
+  if (filters.ratingMin !== null)
+    scalarChips.push({
+      key: "rating",
+      label: `${pt ? "Nota" : "Score"} ${filters.ratingMin}+`,
+      changes: { rating: null },
+    });
+  if (filters.ratingCountMin !== null)
+    scalarChips.push({
+      key: "votes",
+      label: `${filters.ratingCountMin.toLocaleString(lang)}+ ${pt ? "avaliações" : "ratings"}`,
+      changes: { votes: null },
+    });
 
   return (
     <main
@@ -345,7 +519,7 @@ export function CatalogSearchWorkspace({
         </div>
       </header>
 
-      {selectedChips.length > 0 && (
+      {(selectedChips.length > 0 || scalarChips.length > 0) && (
         <div
           className="catalog-active-filters"
           aria-label={pt ? "Filtros ativos" : "Active filters"}
@@ -364,6 +538,15 @@ export function CatalogSearchWorkspace({
               {chip.label} <X size={12} />
             </button>
           ))}
+          {scalarChips.map((chip) => (
+            <button
+              type="button"
+              key={chip.key}
+              onClick={() => navigate(chip.changes)}
+            >
+              {chip.label} <X size={12} />
+            </button>
+          ))}
           <Link href={pathname}>{pt ? "Limpar tudo" : "Clear all"}</Link>
         </div>
       )}
@@ -372,7 +555,7 @@ export function CatalogSearchWorkspace({
         <details className="catalog-filter-shell" open>
           <summary>
             <span>{pt ? "Filtros avançados" : "Advanced filters"}</span>
-            {activeCount > 0 && <b>{activeCount}</b>}
+            {appliedCount > 0 && <b>{appliedCount}</b>}
             <ChevronDown size={15} />
           </summary>
           <aside>
@@ -381,120 +564,244 @@ export function CatalogSearchWorkspace({
                 <span>{pt ? "REFINE A BUSCA" : "REFINE SEARCH"}</span>
                 <strong>{pt ? "Filtros" : "Filters"}</strong>
               </div>
-              {activeCount > 0 && (
-                <Link href={pathname}>{pt ? "Limpar" : "Clear"}</Link>
+              {draftCount > 0 && (
+                <button type="button" onClick={() => setDraft(emptyDraft())}>
+                  {pt ? "Limpar" : "Clear"}
+                </button>
               )}
             </div>
-            <OptionGroup
-              title={pt ? "Plataformas e consoles" : "Platforms & consoles"}
-              param="platforms"
-              options={options.platforms}
-              selected={filters.platforms}
-              onChange={updateArray}
-              searchable
-              initiallyOpen
-              lang={lang}
-            />
-            <OptionGroup
-              title={pt ? "Gêneros" : "Genres"}
-              param="genres"
-              options={options.genres}
-              selected={filters.genres}
-              onChange={updateArray}
-              searchable
-              initiallyOpen
-              lang={lang}
-            />
-            <OptionGroup
-              title={pt ? "Temas" : "Themes"}
-              param="themes"
-              options={options.themes}
-              selected={filters.themes}
-              onChange={updateArray}
-              searchable
-              lang={lang}
-            />
-            <OptionGroup
-              title={pt ? "Modos de jogo" : "Game modes"}
-              param="modes"
-              options={options.modes}
-              selected={filters.modes}
-              onChange={updateArray}
-              lang={lang}
-            />
-            <OptionGroup
-              title={pt ? "Tipo de conteúdo" : "Content type"}
-              param="types"
-              options={options.types}
-              selected={filters.types}
-              onChange={updateArray}
-              searchable
-              lang={lang}
-            />
+            <div className="catalog-filter-body">
+              <section className="catalog-choice-filter">
+                <header>
+                  {pt ? "Situação de lançamento" : "Release status"}
+                </header>
+                <div className="catalog-segmented-filter">
+                  {[
+                    ["all", pt ? "Todos" : "All"],
+                    ["released", pt ? "Lançados" : "Released"],
+                    ["upcoming", pt ? "Em breve" : "Upcoming"],
+                  ].map(([value, label]) => (
+                    <label
+                      key={value}
+                      data-selected={draft.releaseStatus === value || undefined}
+                    >
+                      <input
+                        type="radio"
+                        name="release-status"
+                        checked={draft.releaseStatus === value}
+                        onChange={() =>
+                          setDraft((current) => ({
+                            ...current,
+                            releaseStatus:
+                              value as FilterDraft["releaseStatus"],
+                          }))
+                        }
+                      />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+                <div className="catalog-boolean-filters">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={draft.ratedOnly}
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          ratedOnly: event.target.checked,
+                        }))
+                      }
+                    />
+                    <span>
+                      <i />
+                    </span>
+                    <b>{pt ? "Somente jogos avaliados" : "Rated games only"}</b>
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={draft.anticipatedOnly}
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          anticipatedOnly: event.target.checked,
+                        }))
+                      }
+                    />
+                    <span>
+                      <i />
+                    </span>
+                    <b>
+                      {pt
+                        ? "Somente jogos aguardados"
+                        : "Anticipated games only"}
+                    </b>
+                  </label>
+                </div>
+              </section>
+              <OptionGroup
+                title={pt ? "Plataformas e consoles" : "Platforms & consoles"}
+                param="platforms"
+                options={options.platforms}
+                selected={draft.platforms}
+                onChange={updateDraftArray}
+                searchable
+                initiallyOpen
+                lang={lang}
+              />
+              <OptionGroup
+                title={pt ? "Gêneros" : "Genres"}
+                param="genres"
+                options={options.genres}
+                selected={draft.genres}
+                onChange={updateDraftArray}
+                searchable
+                lang={lang}
+              />
+              <OptionGroup
+                title={pt ? "Perspectiva" : "Player perspective"}
+                param="perspectives"
+                options={options.perspectives}
+                selected={draft.perspectives}
+                onChange={updateDraftArray}
+                lang={lang}
+              />
+              <OptionGroup
+                title={pt ? "Temas" : "Themes"}
+                param="themes"
+                options={options.themes}
+                selected={draft.themes}
+                onChange={updateDraftArray}
+                searchable
+                lang={lang}
+              />
+              <OptionGroup
+                title={pt ? "Modos de jogo" : "Game modes"}
+                param="modes"
+                options={options.modes}
+                selected={draft.modes}
+                onChange={updateDraftArray}
+                lang={lang}
+              />
+              <OptionGroup
+                title={pt ? "Tipo de conteúdo" : "Content type"}
+                param="types"
+                options={options.types}
+                selected={draft.types}
+                onChange={updateDraftArray}
+                searchable
+                lang={lang}
+              />
 
-            <section className="catalog-range-filter">
-              <header>
-                <span>{pt ? "Recepção" : "Reception"}</span>
-              </header>
-              <label>
-                {pt ? "Nota mínima" : "Minimum score"}
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  defaultValue={filters.ratingMin ?? ""}
-                  onBlur={(event) =>
-                    navigate({ rating: event.target.value || null })
-                  }
-                  placeholder="0–100"
-                />
-              </label>
-              <label>
-                {pt ? "Mínimo de avaliações" : "Minimum ratings"}
-                <input
-                  type="number"
-                  min="0"
-                  defaultValue={filters.ratingCountMin ?? ""}
-                  onBlur={(event) =>
-                    navigate({ votes: event.target.value || null })
-                  }
-                  placeholder="ex: 100"
-                />
-              </label>
-            </section>
-            <section className="catalog-range-filter">
-              <header>
-                <span>{pt ? "Janela de lançamento" : "Release window"}</span>
-              </header>
-              <div>
+              <section className="catalog-range-filter">
+                <header>
+                  <span>{pt ? "Recepção" : "Reception"}</span>
+                </header>
                 <label>
-                  {pt ? "De" : "From"}
+                  {pt ? "Nota mínima" : "Minimum score"}
                   <input
                     type="number"
-                    min="1950"
-                    max="2100"
-                    defaultValue={filters.yearFrom ?? ""}
-                    onBlur={(event) =>
-                      navigate({ yearFrom: event.target.value || null })
+                    min="0"
+                    max="100"
+                    value={draft.ratingMin ?? ""}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        ratingMin: event.target.value
+                          ? Number(event.target.value)
+                          : null,
+                      }))
                     }
-                    placeholder="1950"
+                    placeholder="0–100"
                   />
                 </label>
                 <label>
-                  {pt ? "Até" : "To"}
+                  {pt ? "Mínimo de avaliações" : "Minimum ratings"}
                   <input
                     type="number"
-                    min="1950"
-                    max="2100"
-                    defaultValue={filters.yearTo ?? ""}
-                    onBlur={(event) =>
-                      navigate({ yearTo: event.target.value || null })
+                    min="0"
+                    value={draft.ratingCountMin ?? ""}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        ratingCountMin: event.target.value
+                          ? Number(event.target.value)
+                          : null,
+                      }))
                     }
-                    placeholder="2026"
+                    placeholder="ex: 100"
                   />
                 </label>
-              </div>
-            </section>
+              </section>
+              <section className="catalog-range-filter">
+                <header>
+                  <span>{pt ? "Janela de lançamento" : "Release window"}</span>
+                </header>
+                <div>
+                  <label>
+                    {pt ? "De" : "From"}
+                    <input
+                      type="number"
+                      min="1950"
+                      max="2100"
+                      value={draft.yearFrom ?? ""}
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          yearFrom: event.target.value
+                            ? Number(event.target.value)
+                            : null,
+                        }))
+                      }
+                      placeholder="1950"
+                    />
+                  </label>
+                  <label>
+                    {pt ? "Até" : "To"}
+                    <input
+                      type="number"
+                      min="1950"
+                      max="2100"
+                      value={draft.yearTo ?? ""}
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          yearTo: event.target.value
+                            ? Number(event.target.value)
+                            : null,
+                        }))
+                      }
+                      placeholder="2026"
+                    />
+                  </label>
+                </div>
+              </section>
+            </div>
+            <footer className="catalog-filter-actions">
+              <span>
+                {draftDirty
+                  ? pt
+                    ? "Alterações pendentes"
+                    : "Pending changes"
+                  : pt
+                    ? `${appliedCount} filtro(s) ativo(s)`
+                    : `${appliedCount} active filter(s)`}
+              </span>
+              <button
+                type="button"
+                disabled={!draftDirty || pending}
+                onClick={applyFilters}
+              >
+                {pending
+                  ? pt
+                    ? "Aplicando…"
+                    : "Applying…"
+                  : pt
+                    ? "Aplicar filtros"
+                    : "Apply filters"}
+              </button>
+            </footer>
           </aside>
         </details>
 
@@ -651,7 +958,7 @@ export function CatalogSearchWorkspace({
         <aside
           className="catalog-context-rail"
           aria-label={pt ? "Resumo da busca" : "Search summary"}
-          key={`${filters.page}-${filters.sort}-${activeCount}`}
+          key={`${filters.page}-${filters.sort}-${appliedCount}`}
         >
           <section className="catalog-context-total">
             <span>{pt ? "CATÁLOGO ENCONTRADO" : "CATALOG FOUND"}</span>
@@ -664,7 +971,7 @@ export function CatalogSearchWorkspace({
           <section className="catalog-context-card">
             <header>
               <strong>{pt ? "Sua busca" : "Your search"}</strong>
-              {activeCount > 0 && <span>{activeCount}</span>}
+              {appliedCount > 0 && <span>{appliedCount}</span>}
             </header>
             <dl>
               <div>
@@ -703,7 +1010,7 @@ export function CatalogSearchWorkspace({
                   : "No category filters applied."}
               </p>
             )}
-            {activeCount > 0 && (
+            {appliedCount > 0 && (
               <Link href={pathname}>
                 {pt ? "Limpar filtros" : "Clear filters"}
               </Link>

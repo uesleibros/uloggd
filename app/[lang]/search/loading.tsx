@@ -28,16 +28,22 @@ export default function SearchLoading() {
               <span className="skeleton-block" />
               <i className="skeleton-block" />
             </div>
-            {Array.from({ length: 6 }, (_, index) => (
-              <div className="catalog-filter-group-loading" key={index}>
-                <span className="skeleton-block" />
-                <div>
-                  <i className="skeleton-block" />
-                  <i className="skeleton-block" />
-                  <i className="skeleton-block" />
+            <div className="catalog-filter-body catalog-filter-body-loading">
+              {Array.from({ length: 6 }, (_, index) => (
+                <div className="catalog-filter-group-loading" key={index}>
+                  <span className="skeleton-block" />
+                  <div>
+                    <i className="skeleton-block" />
+                    <i className="skeleton-block" />
+                    <i className="skeleton-block" />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="catalog-filter-actions catalog-filter-actions-loading">
+              <span className="skeleton-block" />
+              <i className="skeleton-block" />
+            </div>
           </aside>
         </details>
         <section className="catalog-results-loading">

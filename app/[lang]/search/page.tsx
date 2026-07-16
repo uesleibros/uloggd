@@ -60,6 +60,13 @@ export default async function SearchPage({
     themes: numberList(query.themes),
     modes: numberList(query.modes),
     types: numberList(query.types),
+    perspectives: numberList(query.perspectives),
+    releaseStatus:
+      first(query.release) === "released" || first(query.release) === "upcoming"
+        ? (first(query.release) as "released" | "upcoming")
+        : "all",
+    ratedOnly: first(query.rated) === "1",
+    anticipatedOnly: first(query.anticipated) === "1",
     yearFrom: boundedNumber(query.yearFrom, 1950, 2100),
     yearTo: boundedNumber(query.yearTo, 1950, 2100),
     ratingMin: boundedNumber(query.rating, 0, 100),
@@ -77,6 +84,7 @@ export default async function SearchPage({
   if (!supabase) {
     return (
       <CatalogSearchWorkspace
+        key={JSON.stringify(filters)}
         lang={lang}
         filters={filters}
         options={options}
@@ -114,6 +122,7 @@ export default async function SearchPage({
 
   return (
     <CatalogSearchWorkspace
+      key={JSON.stringify(filters)}
       lang={lang}
       filters={filters}
       options={options}

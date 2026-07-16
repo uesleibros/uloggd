@@ -53,6 +53,8 @@ test("persists combined filters and sorting in the URL", async ({ page }) => {
     .locator(".catalog-filter-options > label")
     .filter({ hasText: "Adventure" })
     .click();
+  await expect(page).not.toHaveURL(/genres=31/);
+  await page.getByRole("button", { name: "Aplicar filtros" }).click();
   await expect(page).toHaveURL(/genres=31/);
   await expect(
     page.getByText("31 encontrados · 24 nesta página"),
@@ -66,6 +68,32 @@ test("persists combined filters and sorting in the URL", async ({ page }) => {
       exact: true,
     }),
   ).toBeVisible();
+});
+
+test("keeps the filter rail bounded and applies a complete draft once", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name.startsWith("mobile"));
+  await openSearch(page);
+
+  const rail = page.locator(".catalog-filter-shell > aside");
+  const box = await rail.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.height).toBeLessThanOrEqual(620);
+
+  await page.getByText("Lançados", { exact: true }).click();
+  await page.getByText("Somente jogos avaliados", { exact: true }).click();
+  await page.getByText("Perspectiva", { exact: true }).click();
+  await page
+    .locator(".catalog-filter-options > label")
+    .filter({ hasText: "First person" })
+    .click();
+  await expect(page).not.toHaveURL(/release=released/);
+
+  await page.getByRole("button", { name: "Aplicar filtros" }).click();
+  await expect(page).toHaveURL(/release=released/);
+  await expect(page).toHaveURL(/rated=1/);
+  await expect(page).toHaveURL(/perspectives=1/);
 });
 
 test("navigates by page number, last page, and direct jump", async ({

@@ -25,6 +25,11 @@ export const e2eCatalogOptions: CatalogSearchOptions = {
     { id: 2, name: "Multiplayer" },
   ],
   types: [{ id: 0, name: "Main Game" }],
+  perspectives: [
+    { id: 1, name: "First person" },
+    { id: 2, name: "Third person" },
+    { id: 4, name: "Side view" },
+  ],
 };
 
 const allGames: CatalogGame[] = Array.from({ length: 61 }, (_, index) => {
@@ -74,7 +79,28 @@ export async function searchE2eCatalog(filters: CatalogSearchFilters) {
             ?.name ?? "",
         ),
       );
-    return matchesQuery && matchesGenres && matchesPlatforms;
+    const matchesPerspectives =
+      !filters.perspectives.length ||
+      filters.perspectives.some((id) =>
+        id === 1 ? game.id % 2 === 0 : id === 2 ? game.id % 2 === 1 : false,
+      );
+    const currentYear = new Date().getUTCFullYear();
+    const matchesRelease =
+      filters.releaseStatus === "all" ||
+      (filters.releaseStatus === "released"
+        ? (game.releaseYear ?? 0) <= currentYear
+        : (game.releaseYear ?? 0) > currentYear);
+    const matchesRated = !filters.ratedOnly || game.ratingCount > 0;
+    const matchesAnticipated = !filters.anticipatedOnly || game.hype > 0;
+    return (
+      matchesQuery &&
+      matchesGenres &&
+      matchesPlatforms &&
+      matchesPerspectives &&
+      matchesRelease &&
+      matchesRated &&
+      matchesAnticipated
+    );
   });
   if (filters.sort === "name")
     games = games.toSorted((a, b) => a.name.localeCompare(b.name));
