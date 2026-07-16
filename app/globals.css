@@ -8612,7 +8612,7 @@ a,
 }
 .skeleton-banner {
   width: 100%;
-  height: min(24vw, 260px);
+  height: clamp(144px, 15vw, 200px);
   margin: 0;
   border-radius: 12px;
 }
@@ -9482,8 +9482,7 @@ a,
 .profile-banner {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 1;
-  max-height: 280px;
+  height: clamp(144px, 15vw, 200px);
   overflow: hidden;
   border-radius: 12px;
   background: var(--console-panel);
@@ -9758,6 +9757,12 @@ a,
     animation-name: social-modal-sheet-out;
   }
   .profile-banner {
+    height: auto;
+    aspect-ratio: 3 / 1;
+    border-radius: 9px;
+  }
+  .skeleton-banner {
+    height: auto;
     aspect-ratio: 3 / 1;
     border-radius: 9px;
   }

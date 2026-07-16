@@ -254,6 +254,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Passkeys use Supabase Auth's experimental passkey API to list, register, and remove device credentials. Security copy explains the device-bound private key and exposes unsupported/disabled states inline.
 - Share actions open one motion-polished Radix choice modal: copy the canonical current URL with an animated confirmation, or send exclusively through the native Web Share sheet. When Web Share is unavailable, the send choice is visibly disabled rather than silently changing channels. Profile reports use a separate Radix modal, write to the existing owner-readable reports table, and never render a report action against oneself.
 - Mobile profiles preserve the banner/avatar focal point, keep identity actions in normal flow, move social/share/report actions full-width below identity, and turn the six metrics into a contained horizontal snap rail instead of squeezing labels.
+- Desktop profile banners are quiet identity strips rather than page heroes: 144–200px tall with a 15vw fluid target, preserving the existing cover crop while letting avatar, name, thought, and actions lead. Mobile retains the roomier 3:1 banner because its identity stack needs the visual anchor.
 - Profile thoughts grow toward the content side of the avatar: rightward on desktop so they never pass beneath the sidebar, and inward on mobile. Their entrance uses a short overshoot followed by a restrained floating drift, removed entirely under reduced motion.
 
 ### Search recents
