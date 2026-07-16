@@ -58,7 +58,7 @@ test("persists combined filters and sorting in the URL", async ({ page }) => {
     page.getByText("31 encontrados · 24 nesta página"),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: "Ordenar resultados" }).click();
+  await page.getByRole("combobox", { name: "Ordenar resultados" }).click();
   await page.getByRole("option", { name: "Nome A–Z" }).click();
   await expect(page).toHaveURL(/sort=name/);
   await expect(
