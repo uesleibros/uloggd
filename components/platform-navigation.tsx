@@ -18,6 +18,7 @@ import { LocaleSwitcher } from "./locale-switcher";
 import { MobileSidebar } from "./mobile-sidebar";
 import { MobileGameSearch } from "./game-search";
 import { SidebarCollapseButton } from "./sidebar-collapse-button";
+import { SmartHeader } from "./smart-header";
 
 const iconMap = {
   home: HomeIcon,
@@ -155,7 +156,7 @@ export function PlatformNavigation({
       </aside>
       <SidebarCollapseButton lang={lang} />
 
-      <header className="mobile-header">
+      <SmartHeader className="mobile-header">
         <MobileSidebar
           lang={lang}
           isAuthenticated={isAuthenticated}
@@ -182,7 +183,7 @@ export function PlatformNavigation({
             cacheScope={searchCacheScope}
           />
         </div>
-      </header>
+      </SmartHeader>
     </>
   );
 }

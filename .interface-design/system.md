@@ -41,6 +41,12 @@ Colors come from console hardware and late-night screens:
 
 Use approximately 60% canvas, 30% panel/raised surfaces, and no more than 10% accent. Do not introduce new accent hues without a semantic role.
 
+### Theme system
+
+- Appearance offers Automatic, Light, Gray, Dark, and Onyx. Automatic resolves live from `prefers-color-scheme`; explicit choices remain stable regardless of device changes. Preference is device-local in `uloggd:theme`, is applied before hydration to prevent a flash, and synchronizes across tabs.
+- Light uses cool paper surfaces (`#f5f6f8` canvas, white panels, charcoal text); Gray uses Discord-like Ash (`#2b2d31` canvas, `#313338` panels); Dark preserves the original late-night console palette; Onyx uses near-black canvas and relies on slightly stronger neutral borders for depth.
+- Theme selection is immediate through a two-column desktop / single-column mobile radio-card grid. Every card previews sidebar, canvas, and content layers; selection uses the existing blurple state plus a check so it never depends on color alone. Theme changes animate only high-level surface, border, and text colors for 180–220ms.
+
 ## Depth Strategy
 
 Use **surface shifts plus quiet borders**. Dark-mode shadows are secondary and should never define the hierarchy alone.
@@ -149,6 +155,12 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - The authenticated account control spans the full drawer width at the bottom; compact desktop sidebar rules must never collapse its identity, metadata, or menu chevron.
 - The mobile drawer trigger shows the signed-in avatar (or account initial fallback) instead of a hamburger; signed-out visitors keep the menu icon.
 
+### Adaptive header
+
+- The floating desktop and mobile headers remain visible through the first 80px, conceal after a deliberate downward scroll beyond 128px, and reveal immediately on upward intent. The layout never collapses when visibility changes, preventing content jumps.
+- Desktop pointer movement within the top 14px reveals a concealed header without an invisible click-blocking hotspot. Hover, keyboard focus, expanded controls, and open header menus lock it visible; leaving after downward intent restores the concealed state after a short grace period.
+- Mobile relies on scroll direction because hover does not exist. Visibility uses only opacity and vertical transform over 160–210ms; reduced motion removes translation while preserving the state change.
+
 ## Authentication Pattern
 
 - Authentication keeps the product shell and navigation visible; it is an entry point to the library, not a detached marketing page.
@@ -254,6 +266,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Passkeys use Supabase Auth's experimental passkey API to list, register, and remove device credentials. Security copy explains the device-bound private key and exposes unsupported/disabled states inline.
 - Share actions open one motion-polished Radix choice modal: copy the canonical current URL with an animated confirmation, or send exclusively through the native Web Share sheet. When Web Share is unavailable, the send choice is visibly disabled rather than silently changing channels. Profile reports use a separate Radix modal, write to the existing owner-readable reports table, and never render a report action against oneself.
 - Mobile profiles preserve the banner/avatar focal point, keep identity actions in normal flow, move social/share/report actions full-width below identity, and turn the six metrics into a contained horizontal snap rail instead of squeezing labels.
+- Desktop profile banners are quiet identity strips rather than page heroes: 144–200px tall with a 15vw fluid target, preserving the existing cover crop while letting avatar, name, thought, and actions lead. Mobile retains the roomier 3:1 banner because its identity stack needs the visual anchor.
 - Profile thoughts grow toward the content side of the avatar: rightward on desktop so they never pass beneath the sidebar, and inward on mobile. Their entrance uses a short overshoot followed by a restrained floating drift, removed entirely under reduced motion.
 
 ### Search recents
