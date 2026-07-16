@@ -4,7 +4,7 @@ import * as Select from "@radix-ui/react-select";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Check, ChevronDown, Search, X } from "lucide-react";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type {
   CatalogGame,
   CatalogOption,
@@ -203,8 +203,13 @@ export function CatalogSearchWorkspace({
   const pt = lang === "pt-BR";
   const router = useRouter();
   const pathname = usePathname();
+  const pageRef = useRef<HTMLElement>(null);
   const [pending, startTransition] = useTransition();
   const [query, setQuery] = useState(filters.query);
+
+  useEffect(() => {
+    pageRef.current?.setAttribute("data-hydrated", "true");
+  }, []);
 
   function navigate(
     changes: Record<string, string | number | null>,
@@ -265,7 +270,11 @@ export function CatalogSearchWorkspace({
   ];
 
   return (
-    <main className="catalog-search-page" data-pending={pending || undefined}>
+    <main
+      ref={pageRef}
+      className="catalog-search-page"
+      data-pending={pending || undefined}
+    >
       <header className="catalog-search-hero">
         <h1>
           {pt ? "Encontre exatamente o que jogar" : "Find exactly what to play"}

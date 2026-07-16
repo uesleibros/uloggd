@@ -1,5 +1,17 @@
 import { expect, test } from "@playwright/test";
 
+async function openSearch(
+  page: import("@playwright/test").Page,
+  path = "/pt-BR/search",
+) {
+  await page.goto(path);
+  await expect(
+    page.locator('.catalog-search-page[data-hydrated="true"]'),
+  ).toBeVisible({
+    timeout: 30_000,
+  });
+}
+
 test("renders a shape-matched skeleton before the catalog", async ({
   page,
 }) => {
@@ -10,11 +22,16 @@ test("renders a shape-matched skeleton before the catalog", async ({
   await expect(
     page.getByRole("heading", { name: "Explore o catálogo" }),
   ).toBeVisible();
+  await expect(
+    page.locator('.catalog-search-page[data-hydrated="true"]'),
+  ).toBeVisible({
+    timeout: 30_000,
+  });
   await expect(page.locator(".catalog-search-loading")).toHaveCount(0);
 });
 
 test("persists combined filters and sorting in the URL", async ({ page }) => {
-  await page.goto("/pt-BR/search");
+  await openSearch(page);
 
   await page
     .locator(".catalog-filter-options > label")
@@ -36,7 +53,7 @@ test("persists combined filters and sorting in the URL", async ({ page }) => {
 test("navigates by page number, last page, and direct jump", async ({
   page,
 }) => {
-  await page.goto("/pt-BR/search");
+  await openSearch(page);
 
   await page.getByRole("button", { name: "2", exact: true }).click();
   await expect(page).toHaveURL(/page=2/);
@@ -56,7 +73,7 @@ test("keeps the mobile explorer inside the viewport", async ({
   page,
 }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith("mobile"));
-  await page.goto("/pt-BR/search");
+  await openSearch(page);
 
   await expect(
     page.getByText("Filtros avançados", { exact: true }),
