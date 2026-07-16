@@ -626,7 +626,7 @@ export async function getGenreCollections(): Promise<GenreCollection[]> {
         fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
         where cover != null & genres = (${genre.id}) & total_rating_count >= 40 & game_type = 0;
         sort total_rating_count desc;
-        limit 18;
+        limit 40;
       `,
         12 * CACHE_HOURS,
       ),
