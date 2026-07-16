@@ -62,7 +62,9 @@ test("persists combined filters and sorting in the URL", async ({ page }) => {
   await page.getByRole("option", { name: "Nome A–Z" }).click();
   await expect(page).toHaveURL(/sort=name/);
   await expect(
-    page.getByText("Adventure", { exact: true }).last(),
+    page.locator(".catalog-active-filters").getByText("Adventure", {
+      exact: true,
+    }),
   ).toBeVisible();
 });
 
@@ -73,16 +75,17 @@ test("navigates by page number, last page, and direct jump", async ({
 
   await page.getByRole("button", { name: "2", exact: true }).click();
   await expect(page).toHaveURL(/page=2/);
-  await expect(page.getByText("Página 2", { exact: true })).toBeVisible();
+  const pagination = page.getByRole("navigation", { name: "Paginação" });
+  await expect(pagination.getByText("Página 2", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Última" }).click();
   await expect(page).toHaveURL(/page=3/);
-  await expect(page.getByText("Página 3", { exact: true })).toBeVisible();
+  await expect(pagination.getByText("Página 3", { exact: true })).toBeVisible();
 
   await page.getByLabel("Ir para").fill("1");
   await page.getByRole("button", { name: "Ir", exact: true }).click();
   await expect(page).not.toHaveURL(/page=/);
-  await expect(page.getByText("Página 1", { exact: true })).toBeVisible();
+  await expect(pagination.getByText("Página 1", { exact: true })).toBeVisible();
 });
 
 test("keeps the mobile explorer inside the viewport", async ({
