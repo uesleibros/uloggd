@@ -122,6 +122,17 @@ html[data-sidebar-collapsed] {
   background: rgb(15 14 17 / 94%);
   backdrop-filter: blur(16px);
 }
+.smart-header {
+  transition:
+    transform 210ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 160ms ease-out;
+  will-change: transform;
+}
+.smart-header[data-scroll-hidden="true"] {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(calc(-100% - 20px));
+}
 
 .home-shell {
   display: grid;
@@ -14903,6 +14914,12 @@ a,
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .smart-header {
+    transition: opacity 0.01ms linear;
+  }
+  .smart-header[data-scroll-hidden="true"] {
+    transform: none;
+  }
   .profile-stats > a,
   .profile-subpage-back,
   .profile-connection-card > a,

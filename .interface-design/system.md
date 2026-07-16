@@ -149,6 +149,12 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - The authenticated account control spans the full drawer width at the bottom; compact desktop sidebar rules must never collapse its identity, metadata, or menu chevron.
 - The mobile drawer trigger shows the signed-in avatar (or account initial fallback) instead of a hamburger; signed-out visitors keep the menu icon.
 
+### Adaptive header
+
+- The floating desktop and mobile headers remain visible through the first 80px, conceal after a deliberate downward scroll beyond 128px, and reveal immediately on upward intent. The layout never collapses when visibility changes, preventing content jumps.
+- Desktop pointer movement within the top 14px reveals a concealed header without an invisible click-blocking hotspot. Hover, keyboard focus, expanded controls, and open header menus lock it visible; leaving after downward intent restores the concealed state after a short grace period.
+- Mobile relies on scroll direction because hover does not exist. Visibility uses only opacity and vertical transform over 160–210ms; reduced motion removes translation while preserving the state change.
+
 ## Authentication Pattern
 
 - Authentication keeps the product shell and navigation visible; it is an entry point to the library, not a detached marketing page.
