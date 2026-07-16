@@ -23,10 +23,12 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev -- --webpack -p 3100",
+    command: process.env.CI
+      ? "npm run build -- --webpack && npm run start -- -p 3100"
+      : "npm run dev -- --webpack -p 3100",
     url: "http://127.0.0.1:3100/pt-BR/search",
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 180_000,
     env: {
       ...process.env,
       ULOGGD_E2E: "1",
