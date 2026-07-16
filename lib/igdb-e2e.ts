@@ -53,7 +53,7 @@ const allGames: CatalogGame[] = Array.from({ length: 61 }, (_, index) => {
 });
 
 export async function searchE2eCatalog(filters: CatalogSearchFilters) {
-  await new Promise((resolve) => setTimeout(resolve, 400));
+  await new Promise((resolve) => setTimeout(resolve, 1_000));
   let games = allGames.filter((game) => {
     const matchesQuery = game.name
       .toLowerCase()
