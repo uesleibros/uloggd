@@ -8,9 +8,25 @@ async function openSearch(
   await expect(
     page.locator('.catalog-search-page[data-hydrated="true"]'),
   ).toBeVisible({
-    timeout: 30_000,
+    timeout: 12_000,
   });
 }
+
+test.beforeEach(async ({ page }) => {
+  page.on("pageerror", (error) =>
+    console.error(`[browser error] ${error.stack}`),
+  );
+  page.on("console", (message) => {
+    if (message.type() === "error")
+      console.error(`[browser console] ${message.text()}`);
+  });
+  page.on("requestfailed", (request) => {
+    if (request.resourceType() === "script")
+      console.error(
+        `[browser request] ${request.url()} ${request.failure()?.errorText}`,
+      );
+  });
+});
 
 test("renders a shape-matched skeleton before the catalog", async ({
   page,
@@ -25,7 +41,7 @@ test("renders a shape-matched skeleton before the catalog", async ({
   await expect(
     page.locator('.catalog-search-page[data-hydrated="true"]'),
   ).toBeVisible({
-    timeout: 30_000,
+    timeout: 12_000,
   });
   await expect(page.locator(".catalog-search-loading")).toHaveCount(0);
 });
