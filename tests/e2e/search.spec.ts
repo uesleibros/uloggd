@@ -49,6 +49,7 @@ test("renders a shape-matched skeleton before the catalog", async ({
 test("persists combined filters and sorting in the URL", async ({ page }) => {
   await openSearch(page);
 
+  await page.getByText("Gêneros", { exact: true }).click();
   await page
     .locator(".catalog-filter-options > label")
     .filter({ hasText: "Adventure" })
