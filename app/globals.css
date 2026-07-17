@@ -6200,7 +6200,7 @@ html[data-sidebar-ready] .account-button > svg {
     > footer.review-action-bar {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
     gap: 8px;
-    padding: 10px 12px max(10px, env(safe-area-inset-bottom));
+    padding: 10px 12px max(16px, env(safe-area-inset-bottom));
   }
   .review-action-status {
     grid-column: 1 / -1;
