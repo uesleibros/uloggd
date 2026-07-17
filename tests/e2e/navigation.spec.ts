@@ -25,5 +25,19 @@ test("conceals and reveals the adaptive header without shifting the page", async
     await expect(header).toHaveAttribute("data-scroll-hidden", "true");
     await page.mouse.move(600, 2);
     await expect(header).toHaveAttribute("data-scroll-hidden", "false");
+  } else {
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    await expect(header).toHaveAttribute("data-scroll-hidden", "false");
+
+    const box = await header.boundingBox();
+    expect(box).not.toBeNull();
+    await page.touchscreen.tap(
+      box!.x + box!.width / 2,
+      box!.y + box!.height / 2,
+    );
+    await page.evaluate(() =>
+      window.scrollTo({ top: 700, behavior: "instant" }),
+    );
+    await expect(header).toHaveAttribute("data-scroll-hidden", "true");
   }
 });

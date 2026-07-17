@@ -104,6 +104,25 @@ test("keeps the filter rail bounded and applies a complete draft once", async ({
     });
   expect(trailingSpace).toBeLessThanOrEqual(16);
 
+  const scrollGeometry = await rail
+    .locator(".catalog-filter-body")
+    .evaluate((body) => {
+      body.scrollTop = body.scrollHeight;
+      const lastFilter = body.lastElementChild;
+      const bodyRect = body.getBoundingClientRect();
+      const lastRect = lastFilter?.getBoundingClientRect();
+      return {
+        remaining: Math.round(
+          body.scrollHeight - body.scrollTop - body.clientHeight,
+        ),
+        lastBottomGap: lastRect
+          ? Math.round(bodyRect.bottom - lastRect.bottom)
+          : Number.POSITIVE_INFINITY,
+      };
+    });
+  expect(scrollGeometry.remaining).toBeLessThanOrEqual(1);
+  expect(scrollGeometry.lastBottomGap).toBeLessThanOrEqual(16);
+
   await page.getByText("Lançados", { exact: true }).click();
   await page.getByText("Somente jogos avaliados", { exact: true }).click();
   await page.getByText("Perspectiva", { exact: true }).click();

@@ -25,6 +25,9 @@ export function SmartHeader({
   useEffect(() => {
     const header = headerRef.current;
     if (!header) return;
+    const supportsPersistentHover = window.matchMedia(
+      "(hover: hover) and (pointer: fine)",
+    );
     anchorY.current = window.scrollY;
 
     const clearHideTimer = () => {
@@ -36,9 +39,18 @@ export function SmartHeader({
       clearHideTimer();
       setHidden(false);
     };
+    const hasFocusThatNeedsVisibility = () => {
+      const activeElement = document.activeElement;
+      if (!(activeElement instanceof HTMLElement)) return false;
+      if (!header.contains(activeElement)) return false;
+      return (
+        activeElement.matches("input, textarea, select, [contenteditable]") ||
+        activeElement.matches(":focus-visible")
+      );
+    };
     const isLockedOpen = () =>
-      header.matches(":hover") ||
-      header.contains(document.activeElement) ||
+      (supportsPersistentHover.matches && header.matches(":hover")) ||
+      hasFocusThatNeedsVisibility() ||
       Boolean(
         header.querySelector(
           '[aria-expanded="true"], [data-state="open"], [aria-pressed="true"]',
