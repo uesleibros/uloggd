@@ -478,8 +478,8 @@ export function CatalogSearchWorkspace({
         </h1>
         <p>
           {pt
-            ? "Cruze plataformas, gêneros, temas, modos, época e recepção em todo o catálogo da IGDB."
-            : "Cross platforms, genres, themes, modes, era, and reception across the IGDB catalog."}
+            ? "Cruze plataformas, gêneros, temas, modos, época e recepção para encontrar o jogo certo."
+            : "Cross platforms, genres, themes, modes, era, and reception to find the right game."}
         </p>
         <form
           className="catalog-search-main-form"
@@ -511,7 +511,6 @@ export function CatalogSearchWorkspace({
           <button type="submit">{pt ? "Buscar" : "Search"}</button>
         </form>
         <div className="catalog-search-signals">
-          <span>IGDB</span>
           <span>
             {pt ? "Filtros persistem na URL" : "Filters persist in the URL"}
           </span>

@@ -71,6 +71,16 @@ test("persists combined filters and sorting in the URL", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("keeps catalog credit in the global footer only", async ({ page }) => {
+  await openSearch(page);
+
+  await expect(page.locator(".catalog-search-hero")).not.toContainText("IGDB");
+  await expect(page.getByRole("link", { name: "IGDB" })).toHaveAttribute(
+    "href",
+    "https://www.igdb.com/",
+  );
+});
+
 test("keeps the filter rail bounded and applies a complete draft once", async ({
   page,
 }, testInfo) => {
@@ -81,6 +91,19 @@ test("keeps the filter rail bounded and applies a complete draft once", async ({
   const box = await rail.boundingBox();
   expect(box).not.toBeNull();
   expect(box!.height).toBeLessThanOrEqual(620);
+
+  const trailingSpace = await rail
+    .locator(".catalog-filter-body")
+    .evaluate((body) => {
+      body.scrollTop = body.scrollHeight;
+      const lastFilter = body.lastElementChild;
+      if (!lastFilter) return 0;
+      return Math.round(
+        body.getBoundingClientRect().bottom -
+          lastFilter.getBoundingClientRect().bottom,
+      );
+    });
+  expect(trailingSpace).toBeLessThanOrEqual(16);
 
   await page.getByText("Lançados", { exact: true }).click();
   await page.getByText("Somente jogos avaliados", { exact: true }).click();

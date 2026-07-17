@@ -12,7 +12,6 @@ export default function SearchLoading() {
         <div className="catalog-search-signals-loading">
           <i className="skeleton-block" />
           <i className="skeleton-block" />
-          <i className="skeleton-block" />
         </div>
       </header>
       <div className="catalog-search-workspace">

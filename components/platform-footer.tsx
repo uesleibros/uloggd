@@ -13,7 +13,17 @@ export function PlatformFooter({
     <footer className="platform-footer">
       <div>
         <strong>© 2026 uloggd</strong>
-        <span>{d.platform.gameData}</span>
+        <span>
+          {d.platform.gameData}{" "}
+          <a
+            className="platform-data-link"
+            href="https://www.igdb.com/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            IGDB
+          </a>
+        </span>
       </div>
       <nav aria-label={lang === "pt-BR" ? "Links do rodapé" : "Footer links"}>
         <Link href={`/${lang}/legal/terms`}>{d.legal.terms}</Link>
