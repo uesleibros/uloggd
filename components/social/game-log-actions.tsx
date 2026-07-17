@@ -249,6 +249,7 @@ export function GameLogActions({
                   <>
                     <nav
                       className="review-section-tabs"
+                      role="tablist"
                       aria-label={
                         pt ? "Partes da avaliação" : "Review sections"
                       }
@@ -263,6 +264,10 @@ export function GameLogActions({
                         <button
                           key={section}
                           type="button"
+                          role="tab"
+                          id={`review-tab-${section}`}
+                          aria-controls={`review-panel-${section}`}
+                          aria-selected={reviewSection === section}
                           data-active={reviewSection === section || undefined}
                           onClick={() => setReviewSection(section)}
                         >
@@ -278,6 +283,9 @@ export function GameLogActions({
                     {reviewSection === "review" && (
                       <div
                         className="review-editor-section"
+                        id="review-panel-review"
+                        role="tabpanel"
+                        aria-labelledby="review-tab-review"
                         data-section="review"
                       >
                         <section className="review-score-stage">
@@ -419,6 +427,9 @@ export function GameLogActions({
                     {reviewSection === "details" && (
                       <div
                         className="review-editor-section review-details-section"
+                        id="review-panel-details"
+                        role="tabpanel"
+                        aria-labelledby="review-tab-details"
                         data-section="details"
                       >
                         <div className="review-achievement-toggles">
@@ -619,11 +630,7 @@ export function GameLogActions({
                 >
                   {mode === "review" && (
                     <span className="review-action-status" aria-live="polite">
-                      {pending
-                        ? pt
-                          ? "Publicando sua avaliação…"
-                          : "Publishing your review…"
-                        : success || ""}
+                      {success || ""}
                     </span>
                   )}
                   <Dialog.Close type="button" disabled={pending}>
@@ -631,6 +638,7 @@ export function GameLogActions({
                   </Dialog.Close>
                   <button
                     type="submit"
+                    aria-busy={pending}
                     data-loading={pending || undefined}
                     disabled={
                       pending ||
@@ -922,6 +930,9 @@ function AspectEditor({
   return (
     <div
       className="review-editor-section review-aspects-section"
+      id="review-panel-aspects"
+      role="tabpanel"
+      aria-labelledby="review-tab-aspects"
       data-section="aspects"
     >
       <header>
