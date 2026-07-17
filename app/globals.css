@@ -35,6 +35,27 @@
   --image-muted: #8c8791;
   --image-control: rgb(12 12 15 / 76%);
   --image-control-strong: rgb(15 14 17 / 88%);
+  --state-playing-border: rgb(111 169 255 / 48%);
+  --state-playing-bg: rgb(63 119 207 / 42%);
+  --state-playing-soft-bg: rgb(63 119 207 / 24%);
+  --state-playing-text: #dceaff;
+  --state-backlog-border: rgb(163 148 255 / 48%);
+  --state-backlog-bg: rgb(105 87 218 / 58%);
+  --state-backlog-soft-bg: rgb(118 101 232 / 18%);
+  --state-backlog-text: #eeeaff;
+  --state-wishlist-border: rgb(232 190 91 / 48%);
+  --state-wishlist-bg: rgb(170 119 31 / 42%);
+  --state-wishlist-soft-bg: rgb(170 119 31 / 24%);
+  --state-wishlist-text: #ffe7ad;
+  --state-liked-border: rgb(255 170 164 / 68%);
+  --state-liked-bg: rgb(255 170 164 / 24%);
+  --state-liked-soft-bg: rgb(255 170 164 / 16%);
+  --state-liked-text: #ffaaa4;
+  --state-completed-border: rgb(115 198 154 / 52%);
+  --state-completed-bg: rgb(56 151 104 / 76%);
+  --state-completed-soft-bg: rgb(56 151 104 / 18%);
+  --state-completed-text: #e1fff0;
+  --danger-text: #e2aaaa;
 }
 
 :root[data-theme="light"] {
@@ -65,6 +86,27 @@
   --quiet-hover: rgb(24 27 35 / 4%);
   --header-control: rgb(255 255 255 / 62%);
   --skeleton-fill: rgb(24 27 35 / 7%);
+  --state-playing-border: rgb(37 99 185 / 42%);
+  --state-playing-bg: rgb(37 99 185 / 14%);
+  --state-playing-soft-bg: rgb(37 99 185 / 14%);
+  --state-playing-text: #18549d;
+  --state-backlog-border: rgb(88 70 196 / 40%);
+  --state-backlog-bg: rgb(88 70 196 / 14%);
+  --state-backlog-soft-bg: rgb(88 70 196 / 14%);
+  --state-backlog-text: #4935a8;
+  --state-wishlist-border: rgb(150 107 16 / 42%);
+  --state-wishlist-bg: rgb(190 139 28 / 16%);
+  --state-wishlist-soft-bg: rgb(190 139 28 / 16%);
+  --state-wishlist-text: #765300;
+  --state-liked-border: rgb(202 60 91 / 42%);
+  --state-liked-bg: rgb(226 76 110 / 14%);
+  --state-liked-soft-bg: rgb(226 76 110 / 14%);
+  --state-liked-text: #ad294d;
+  --state-completed-border: rgb(45 132 84 / 42%);
+  --state-completed-bg: rgb(53 151 99 / 15%);
+  --state-completed-soft-bg: rgb(53 151 99 / 15%);
+  --state-completed-text: #236f48;
+  --danger-text: #a83e44;
 }
 
 :root[data-theme="gray"] {
@@ -124,6 +166,21 @@
   --shell-line: rgb(255 255 255 / 7%);
   --shell-line-strong: rgb(255 255 255 / 11%);
   --skeleton-fill: rgb(255 255 255 / 7%);
+  --state-playing-border: rgb(111 169 255 / 48%);
+  --state-playing-bg: rgb(63 119 207 / 42%);
+  --state-playing-text: #dceaff;
+  --state-backlog-border: rgb(163 148 255 / 48%);
+  --state-backlog-bg: rgb(105 87 218 / 58%);
+  --state-backlog-text: #eeeaff;
+  --state-wishlist-border: rgb(232 190 91 / 48%);
+  --state-wishlist-bg: rgb(170 119 31 / 42%);
+  --state-wishlist-text: #ffe7ad;
+  --state-liked-border: rgb(255 170 164 / 68%);
+  --state-liked-bg: rgb(255 170 164 / 24%);
+  --state-liked-text: #ffaaa4;
+  --state-completed-border: rgb(115 198 154 / 52%);
+  --state-completed-bg: rgb(56 151 104 / 76%);
+  --state-completed-text: #e1fff0;
   color: var(--screen-white);
 }
 
@@ -1471,6 +1528,24 @@ html[data-sidebar-ready] .account-button > svg {
   font: 650 9px var(--font-inter);
 }
 .quick-action-bar {
+  --screen-white: var(--image-foreground);
+  --screen-dim: var(--image-secondary);
+  --screen-muted: var(--image-muted);
+  --state-playing-border: rgb(111 169 255 / 48%);
+  --state-playing-bg: rgb(63 119 207 / 78%);
+  --state-playing-text: #eef6ff;
+  --state-backlog-border: rgb(163 148 255 / 56%);
+  --state-backlog-bg: rgb(105 87 218 / 82%);
+  --state-backlog-text: #f4f1ff;
+  --state-wishlist-border: rgb(232 190 91 / 54%);
+  --state-wishlist-bg: rgb(170 119 31 / 78%);
+  --state-wishlist-text: #fff2c9;
+  --state-liked-border: rgb(255 170 164 / 62%);
+  --state-liked-bg: rgb(190 65 86 / 78%);
+  --state-liked-text: #fff0ef;
+  --state-completed-border: rgb(115 198 154 / 58%);
+  --state-completed-bg: rgb(56 151 104 / 82%);
+  --state-completed-text: #edfff5;
   position: absolute;
   z-index: 4;
   right: 0;
@@ -1565,7 +1640,7 @@ html[data-sidebar-ready] .account-button > svg {
   margin-left: auto;
 }
 .quick-menu [data-liked] {
-  color: #ffaaa4;
+  color: var(--state-liked-text);
 }
 .quick-rating-menu {
   padding: 7px 8px 8px;
@@ -1989,7 +2064,7 @@ html[data-sidebar-ready] .account-button > svg {
 .cover-modal > p {
   margin: 0;
   padding: 0 20px 12px;
-  color: #ffaaa4;
+  color: var(--danger-text);
   font-size: 9px;
 }
 .cover-modal > footer {
@@ -2317,12 +2392,12 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--screen-white);
 }
 .game-action-panel > button[data-liked] {
-  color: #ffaaa4;
+  color: var(--state-liked-text);
 }
 .game-action-panel > p {
   flex-basis: 100%;
   margin: 0;
-  color: #ffaaa4;
+  color: var(--state-liked-text);
   font-size: 9px;
 }
 .game-actions-signed-out {
@@ -5034,54 +5109,71 @@ html[data-sidebar-ready] .account-button > svg {
 
 .game-stage .game-action-panel > button[data-action="playing"][data-active],
 .game-action-panel > button[data-action="playing"][data-active] {
-  border-color: rgb(111 169 255 / 48%);
-  background: rgb(63 119 207 / 42%);
-  color: #dceaff;
+  border-color: var(--state-playing-border);
+  background: var(--state-playing-bg);
+  color: var(--state-playing-text);
 }
 
 .game-stage .game-action-panel > button[data-action="backlog"][data-active],
 .game-action-panel > button[data-action="backlog"][data-active],
 .quick-action-bar > button[data-action="backlog"][data-active] {
-  border-color: rgb(163 148 255 / 48%);
-  background: rgb(105 87 218 / 58%);
-  color: #eeeaff;
+  border-color: var(--state-backlog-border);
+  background: var(--state-backlog-bg);
+  color: var(--state-backlog-text);
 }
 
 .game-stage .game-action-panel > button[data-action="wishlist"][data-active],
 .game-action-panel > button[data-action="wishlist"][data-active] {
-  border-color: rgb(232 190 91 / 48%);
-  background: rgb(170 119 31 / 42%);
-  color: #ffe7ad;
+  border-color: var(--state-wishlist-border);
+  background: var(--state-wishlist-bg);
+  color: var(--state-wishlist-text);
 }
 
 .game-stage .game-action-panel > button[data-action="liked"][data-active],
 .game-action-panel > button[data-action="liked"][data-active] {
-  border-color: rgb(255 139 148 / 48%);
-  background: rgb(181 66 79 / 42%);
-  color: #ffd9dc;
+  border-color: var(--state-liked-border);
+  background: var(--state-liked-bg);
+  color: var(--state-liked-text);
 }
 
 .quick-action-bar > button[data-action="completed"][data-active] {
-  background: rgb(56 151 104 / 76%);
-  color: #e1fff0;
+  background: var(--state-completed-bg);
+  color: var(--state-completed-text);
 }
 
 .quick-menu
   [role="menuitemcheckbox"][data-action="playing"][data-state="checked"] {
-  background: rgb(63 119 207 / 24%);
-  color: #dceaff;
+  background: var(--state-playing-soft-bg);
+  color: var(--state-playing-text);
+  box-shadow: inset 0 0 0 1px var(--state-playing-border);
+}
+
+.quick-menu
+  [role="menuitemcheckbox"][data-action="backlog"][data-state="checked"] {
+  background: var(--state-backlog-soft-bg);
+  color: var(--state-backlog-text);
+  box-shadow: inset 0 0 0 1px var(--state-backlog-border);
 }
 
 .quick-menu
   [role="menuitemcheckbox"][data-action="wishlist"][data-state="checked"] {
-  background: rgb(170 119 31 / 24%);
-  color: #ffe7ad;
+  background: var(--state-wishlist-soft-bg);
+  color: var(--state-wishlist-text);
+  box-shadow: inset 0 0 0 1px var(--state-wishlist-border);
+}
+
+.quick-menu
+  [role="menuitemcheckbox"][data-action="completed"][data-state="checked"] {
+  background: var(--state-completed-soft-bg);
+  color: var(--state-completed-text);
+  box-shadow: inset 0 0 0 1px var(--state-completed-border);
 }
 
 .quick-menu
   [role="menuitemcheckbox"][data-action="liked"][data-state="checked"] {
-  background: rgb(181 66 79 / 24%);
-  color: #ffd9dc;
+  background: var(--state-liked-soft-bg);
+  color: var(--state-liked-text);
+  box-shadow: inset 0 0 0 1px var(--state-liked-border);
 }
 
 .quick-card-flags span[data-action="wishlist"] {
@@ -5177,17 +5269,19 @@ html[data-sidebar-ready] .account-button > svg {
 }
 
 .quick-action-bar > button:first-child[data-active] {
-  background: rgb(73 174 122 / 78%);
-  box-shadow: inset 0 0 0 1px rgb(173 255 212 / 28%);
+  background: var(--state-completed-bg);
+  color: var(--state-completed-text);
+  box-shadow: inset 0 0 0 1px var(--state-completed-border);
 }
 
 .quick-action-bar > button:nth-child(2)[data-active] {
-  background: rgb(117 101 232 / 76%);
-  color: white;
-  box-shadow: inset 0 0 0 1px rgb(203 197 255 / 26%);
+  background: var(--state-backlog-bg);
+  color: var(--state-backlog-text);
+  box-shadow: inset 0 0 0 1px var(--state-backlog-border);
 }
 
 .quick-card-flags {
+  --state-liked-text: #ffaaa4;
   position: absolute;
   z-index: 3;
   top: 7px;
@@ -5217,7 +5311,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 
 .quick-menu [role="menuitemcheckbox"][data-state="checked"] > svg:first-child {
-  color: #b9afff;
+  color: var(--tonal-brand-text);
 }
 
 .quick-menu [role="menuitemcheckbox"] > span:last-child {
@@ -5263,16 +5357,16 @@ html[data-sidebar-ready] .account-button > svg {
 /* Liked always uses the original warm pink, never the tracking violet. */
 .game-stage .game-action-panel > button[data-action="liked"][data-active],
 .game-action-panel > button[data-action="liked"][data-active] {
-  border-color: rgb(255 170 164 / 46%);
-  background: rgb(255 170 164 / 14%);
-  color: #ffaaa4;
+  border-color: var(--state-liked-border);
+  background: var(--state-liked-bg);
+  color: var(--state-liked-text);
 }
 
 .quick-menu
   [role="menuitemcheckbox"][data-action="liked"][data-state="checked"] {
-  background: rgb(255 170 164 / 12%);
-  color: #ffaaa4;
-  box-shadow: inset 0 0 0 1px rgb(255 170 164 / 18%);
+  background: var(--state-liked-soft-bg);
+  color: var(--state-liked-text);
+  box-shadow: inset 0 0 0 1px var(--state-liked-border);
 }
 
 .quick-card-flags span[data-action="liked"] {
@@ -14095,31 +14189,31 @@ a,
 .game-stage
   .game-action-panel
   > button[data-action="liked"][aria-pressed="true"] {
-  border-color: rgb(255 170 164 / 68%);
-  background: rgb(255 170 164 / 24%);
-  color: #ffaaa4;
-  box-shadow: inset 0 0 0 1px rgb(255 213 209 / 16%);
+  border-color: var(--state-liked-border);
+  background: var(--state-liked-bg);
+  color: var(--state-liked-text);
+  box-shadow: inset 0 0 0 1px var(--state-liked-border);
 }
 
 .quick-menu
   [role="menuitemcheckbox"][data-action="liked"][data-state="checked"] {
-  background: rgb(255 170 164 / 16%);
-  color: #ffaaa4;
-  box-shadow: inset 0 0 0 1px rgb(255 170 164 / 24%);
+  background: var(--state-liked-soft-bg);
+  color: var(--state-liked-text);
+  box-shadow: inset 0 0 0 1px var(--state-liked-border);
 }
 
 .quick-menu
   [role="menuitemcheckbox"][data-action="liked"][data-state="checked"]
   > span:last-child {
-  background: rgb(255 170 164 / 26%);
-  color: #ffaaa4;
+  background: var(--state-liked-soft-bg);
+  color: var(--state-liked-text);
 }
 
 .quick-menu
   [role="menuitemcheckbox"][data-action="liked"][data-state="checked"]
   > svg:first-child,
 .quick-card-flags span[data-action="liked"] {
-  color: #ffaaa4;
+  color: var(--state-liked-text);
 }
 
 /* Profile header actions keep a reliable touch target without collapsing labels. */
@@ -15626,6 +15720,55 @@ a,
 :root[data-theme="light"] .lists-page .list-preview-card:hover,
 :root[data-theme="light"] .profile-connection-card > a:hover {
   box-shadow: 0 12px 30px rgb(40 44 54 / 12%);
+}
+
+:root[data-theme="light"] .catalog-active-filters button,
+:root[data-theme="light"] .catalog-context-chips button,
+:root[data-theme="light"] .catalog-results-empty a,
+:root[data-theme="light"] .catalog-pagination-pages button[aria-current="page"],
+:root[data-theme="light"] .mfa-factor-picker button[aria-checked="true"] {
+  border-color: rgb(88 101 242 / 34%);
+  background: rgb(88 101 242 / 15%);
+  color: var(--tonal-brand-text);
+}
+
+:root[data-theme="light"] .settings-security-title-row small[data-active],
+:root[data-theme="light"] .settings-mfa-card > header > span[data-active],
+:root[data-theme="light"]
+  .review-recommend-control
+  button:first-child[aria-pressed="true"] {
+  border-color: rgb(45 132 84 / 42%);
+  background: rgb(53 151 99 / 15%);
+  color: var(--state-completed-text);
+}
+
+:root[data-theme="light"]
+  .review-recommend-control
+  button:last-child[aria-pressed="true"] {
+  border-color: rgb(202 60 91 / 42%);
+  background: rgb(226 76 110 / 14%);
+  color: var(--state-liked-text);
+}
+
+:root[data-theme="light"]
+  .review-achievement-toggles
+  button[aria-pressed="true"] {
+  border-color: rgb(143 116 35 / 42%);
+  background: rgb(211 181 91 / 17%);
+}
+
+:root[data-theme="light"] .search-message-error,
+:root[data-theme="light"] .quick-menu [role="menuitem"].quick-menu-remove,
+:root[data-theme="light"] .profile-crop-error,
+:root[data-theme="light"] .auth-field-error,
+:root[data-theme="light"] .field-error,
+:root[data-theme="light"] .review-delete-confirm span,
+:root[data-theme="light"] .settings-security-error,
+:root[data-theme="light"] .anonymous-age-form > p,
+:root[data-theme="light"] .mfa-setup-dialog [role="alert"],
+:root[data-theme="light"] .mfa-remove-dialog [role="alert"],
+:root[data-theme="light"] .mfa-challenge-card form > p {
+  color: var(--danger-text);
 }
 
 @media (max-width: 620px) {

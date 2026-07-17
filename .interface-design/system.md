@@ -48,6 +48,7 @@ Use approximately 60% canvas, 30% panel/raised surfaces, and no more than 10% ac
 - Theme selection is immediate through a two-column desktop / single-column mobile radio-card grid. Every card previews sidebar, canvas, and content layers; selection uses the existing blurple state plus a check so it never depends on color alone. Theme changes animate only high-level surface, border, and text colors for 180–220ms.
 - Theme tokens cover every product surface: catalog/game modules, library, lists, profile, reviews, settings, authentication, age gates, legal pages, empty states, skeletons, menus, dialogs, and responsive navigation. Component CSS must use semantic surface/text/control tokens instead of translucent white or fixed dark fills.
 - Artwork contexts are intentionally theme-invariant. Home spotlights, game stages, library banners, and media lightboxes retain the late-night foreground, scrims, controls, borders, and skeletons so artwork remains cinematic and readable; only the workspace surrounding them follows the selected preference.
+- Saved game states use semantic pairs, not one shared accent: blue for playing, violet for backlog, gold for wishlist, warm pink for liked, and green for completed. Light mode uses a 14–17% tint, a 34–42% border, and a darker hue for text; artwork controls use the same hues with filled dark-context variants. Quick actions always inherit the artwork foreground instead of the page theme.
 
 ## Depth Strategy
 

@@ -41,6 +41,18 @@ test("applies a saved theme before the interface becomes interactive", async ({
     return value;
   });
   expect(artworkForeground).toBe("rgb(244, 242, 246)");
+
+  const lightStateColors = await page.evaluate(() => {
+    const styles = getComputedStyle(document.documentElement);
+    return {
+      liked: styles.getPropertyValue("--state-liked-text").trim(),
+      completed: styles.getPropertyValue("--state-completed-text").trim(),
+    };
+  });
+  expect(lightStateColors).toEqual({
+    liked: "#ad294d",
+    completed: "#236f48",
+  });
 });
 
 test("automatic theme follows device appearance changes", async ({ page }) => {
