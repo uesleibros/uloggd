@@ -12883,10 +12883,10 @@ a,
   color: var(--screen-white);
 }
 .catalog-filter-body {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   overflow-y: auto;
-  overscroll-behavior: contain;
+  overscroll-behavior-y: none;
   scrollbar-width: thin;
   scrollbar-color: var(--shell-line-strong) transparent;
 }

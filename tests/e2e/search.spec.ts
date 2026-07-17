@@ -95,13 +95,12 @@ test("keeps the filter rail bounded and applies a complete draft once", async ({
   const trailingSpace = await rail
     .locator(".catalog-filter-body")
     .evaluate((body) => {
-      body.scrollTop = body.scrollHeight;
       const lastFilter = body.lastElementChild;
       if (!lastFilter) return 0;
-      return Math.round(
-        body.getBoundingClientRect().bottom -
-          lastFilter.getBoundingClientRect().bottom,
-      );
+      const bodyRect = body.getBoundingClientRect();
+      const lastRect = lastFilter.getBoundingClientRect();
+      const lastContentBottom = lastRect.bottom - bodyRect.top + body.scrollTop;
+      return Math.max(0, Math.round(body.scrollHeight - lastContentBottom));
     });
   expect(trailingSpace).toBeLessThanOrEqual(16);
 
