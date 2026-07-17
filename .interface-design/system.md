@@ -376,6 +376,11 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 ## Interaction States
 
+Light mode uses white elevated overlays, cool-gray neutral controls, charcoal text,
+and dark blurple text on tonal brand surfaces. Pure white text is reserved for
+filled brand/semantic actions and content placed over artwork. Focused fields must
+never fall back to a dark surface when the active color scheme is light.
+
 Every interactive control requires:
 
 - Visible keyboard focus using a 2px violet outline with 3px offset.

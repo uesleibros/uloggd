@@ -18,6 +18,16 @@ test("applies a saved theme before the interface becomes interactive", async ({
       ),
     )
     .toBe("#f5f6f8");
+
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--control-focus")
+          .trim(),
+      ),
+    )
+    .toBe("#ffffff");
 });
 
 test("automatic theme follows device appearance changes", async ({ page }) => {
