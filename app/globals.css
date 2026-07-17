@@ -12874,18 +12874,14 @@ a,
   display: none;
 }
 .catalog-filter-shell > aside {
-  position: sticky;
-  top: 80px;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  position: static;
+  display: block;
   width: 100%;
-  height: min(620px, calc(100dvh - 112px));
-  overflow: hidden;
+  height: auto;
+  overflow: visible;
   border: 1px solid var(--shell-line);
   border-radius: 11px;
   background: var(--console-panel);
-  scrollbar-width: thin;
-  scrollbar-color: var(--shell-line-strong) transparent;
 }
 .catalog-filter-heading {
   flex: none;
@@ -12915,11 +12911,7 @@ a,
   color: var(--screen-white);
 }
 .catalog-filter-body {
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior-y: none;
-  scrollbar-width: thin;
-  scrollbar-color: var(--shell-line-strong) transparent;
+  overflow: visible;
 }
 .catalog-choice-filter {
   display: grid;
@@ -13970,8 +13962,6 @@ a,
     transform: rotate(180deg);
   }
   .catalog-filter-shell > aside {
-    position: static;
-    height: min(68dvh, 620px);
     border-top: 0;
     border-radius: 0 0 9px 9px;
   }

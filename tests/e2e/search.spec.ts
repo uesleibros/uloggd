@@ -81,47 +81,30 @@ test("keeps catalog credit in the global footer only", async ({ page }) => {
   );
 });
 
-test("keeps the filter rail bounded and applies a complete draft once", async ({
+test("sizes the filter rail to its content and applies a complete draft once", async ({
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name.startsWith("mobile"));
   await openSearch(page);
 
   const rail = page.locator(".catalog-filter-shell > aside");
-  const box = await rail.boundingBox();
-  expect(box).not.toBeNull();
-  expect(box!.height).toBeLessThanOrEqual(620);
-
-  const trailingSpace = await rail
+  const geometry = await rail
     .locator(".catalog-filter-body")
     .evaluate((body) => {
-      const lastFilter = body.lastElementChild;
-      if (!lastFilter) return 0;
-      const bodyRect = body.getBoundingClientRect();
-      const lastRect = lastFilter.getBoundingClientRect();
-      const lastContentBottom = lastRect.bottom - bodyRect.top + body.scrollTop;
-      return Math.max(0, Math.round(body.scrollHeight - lastContentBottom));
-    });
-  expect(trailingSpace).toBeLessThanOrEqual(16);
-
-  const scrollGeometry = await rail
-    .locator(".catalog-filter-body")
-    .evaluate((body) => {
-      body.scrollTop = body.scrollHeight;
       const lastFilter = body.lastElementChild;
       const bodyRect = body.getBoundingClientRect();
       const lastRect = lastFilter?.getBoundingClientRect();
       return {
-        remaining: Math.round(
-          body.scrollHeight - body.scrollTop - body.clientHeight,
-        ),
-        lastBottomGap: lastRect
-          ? Math.round(bodyRect.bottom - lastRect.bottom)
+        overflowY: getComputedStyle(body).overflowY,
+        internalOverflow: Math.round(body.scrollHeight - body.clientHeight),
+        trailingSpace: lastRect
+          ? Math.max(0, Math.round(bodyRect.bottom - lastRect.bottom))
           : Number.POSITIVE_INFINITY,
       };
     });
-  expect(scrollGeometry.remaining).toBeLessThanOrEqual(1);
-  expect(scrollGeometry.lastBottomGap).toBeLessThanOrEqual(16);
+  expect(geometry.overflowY).toBe("visible");
+  expect(geometry.internalOverflow).toBeLessThanOrEqual(1);
+  expect(geometry.trailingSpace).toBeLessThanOrEqual(1);
 
   await page.getByText("Lançados", { exact: true }).click();
   await page.getByText("Somente jogos avaliados", { exact: true }).click();
