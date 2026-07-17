@@ -28,6 +28,19 @@ test("applies a saved theme before the interface becomes interactive", async ({
       ),
     )
     .toBe("#ffffff");
+
+  const artworkForeground = await page.evaluate(() => {
+    const stage = document.createElement("div");
+    stage.className = "game-stage";
+    const copy = document.createElement("span");
+    copy.style.color = "var(--screen-white)";
+    stage.append(copy);
+    document.body.append(stage);
+    const value = getComputedStyle(copy).color;
+    stage.remove();
+    return value;
+  });
+  expect(artworkForeground).toBe("rgb(244, 242, 246)");
 });
 
 test("automatic theme follows device appearance changes", async ({ page }) => {

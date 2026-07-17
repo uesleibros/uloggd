@@ -29,6 +29,12 @@
   --tonal-brand-text: #cfd2ff;
   --quiet-hover: rgb(255 255 255 / 3%);
   --header-control: rgb(9 8 11 / 32%);
+  --skeleton-fill: rgb(255 255 255 / 7%);
+  --image-foreground: #f4f2f6;
+  --image-secondary: #c6c1ca;
+  --image-muted: #8c8791;
+  --image-control: rgb(12 12 15 / 76%);
+  --image-control-strong: rgb(15 14 17 / 88%);
 }
 
 :root[data-theme="light"] {
@@ -58,6 +64,7 @@
   --tonal-brand-text: #3f4cc8;
   --quiet-hover: rgb(24 27 35 / 4%);
   --header-control: rgb(255 255 255 / 62%);
+  --skeleton-fill: rgb(24 27 35 / 7%);
 }
 
 :root[data-theme="gray"] {
@@ -98,6 +105,26 @@
   --header-glass-start: rgb(18 18 21 / 88%);
   --header-glass-end: rgb(4 4 5 / 84%);
   --header-glass-base: rgb(8 8 10 / 84%);
+}
+
+/* Artwork stages remain cinematic in every preference; the surrounding UI themes. */
+.featured-game,
+.game-stage,
+.library-hero,
+.media-lightbox {
+  --console-black: #0b0a0d;
+  --console-canvas: #0f0e11;
+  --console-panel: #17151b;
+  --console-raised: #1c1a20;
+  --console-inset: #0c0b0e;
+  --console-hover: #222027;
+  --screen-white: var(--image-foreground);
+  --screen-dim: var(--image-secondary);
+  --screen-muted: var(--image-muted);
+  --shell-line: rgb(255 255 255 / 7%);
+  --shell-line-strong: rgb(255 255 255 / 11%);
+  --skeleton-fill: rgb(255 255 255 / 7%);
+  color: var(--screen-white);
 }
 
 * {
@@ -210,7 +237,7 @@ html[data-sidebar-collapsed] {
   height: 64px;
   padding: 0 24px;
   border-bottom: 1px solid var(--shell-line);
-  background: rgb(15 14 17 / 94%);
+  background: var(--header-glass-base);
   backdrop-filter: blur(16px);
 }
 .smart-header {
@@ -467,7 +494,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .nav-label {
   margin: 0 10px 9px;
-  color: #625e68;
+  color: var(--screen-muted);
   font-size: 10px;
   font-weight: 650;
   letter-spacing: 0.08em;
@@ -494,11 +521,12 @@ html[data-sidebar-ready] .account-button > svg {
 .main-nav > .nav-disabled,
 .sidebar-bottom > .nav-disabled {
   cursor: not-allowed;
-  color: #5f5a65;
+  color: var(--screen-muted);
+  opacity: 0.62;
 }
 .nav-disabled .nav-lock {
   margin-left: auto;
-  color: #55505a;
+  color: var(--screen-muted);
 }
 .main-nav a:hover,
 .sidebar-bottom > a:hover {
@@ -722,7 +750,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .account-menu-identity small {
   margin-top: 3px;
-  color: #5f5a65;
+  color: var(--screen-muted);
   font-size: 8px;
 }
 .account-menu [role="separator"] {
@@ -1819,7 +1847,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 0 10px;
   border: 1px solid var(--shell-line);
   border-radius: 7px;
-  background: rgb(255 255 255 / 4%);
+  background: var(--console-raised);
   color: var(--screen-dim);
   font-size: 10px;
   font-weight: 500;
@@ -1828,7 +1856,7 @@ html[data-sidebar-ready] .account-button > svg {
 .game-cover-change:hover {
   border-color: var(--shell-line-strong);
   background: var(--console-hover);
-  color: white;
+  color: var(--screen-white);
 }
 .game-cover-change span {
   margin-left: auto;
@@ -1894,7 +1922,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .cover-modal > header button:hover {
   background: var(--console-hover);
-  color: white;
+  color: var(--screen-white);
 }
 .cover-modal-grid {
   display: grid;
@@ -1991,7 +2019,7 @@ html[data-sidebar-ready] .account-button > svg {
 .cover-modal > footer button:last-child {
   border-color: rgb(88 101 242 / 32%);
   background: var(--brand-blurple-wash);
-  color: white;
+  color: var(--tonal-brand-text);
 }
 .cover-modal > footer button:disabled {
   opacity: 0.45;
@@ -2186,7 +2214,7 @@ html[data-sidebar-ready] .account-button > svg {
   display: block;
   width: 28px;
   height: 30px;
-  color: #4f4a52;
+  color: var(--screen-muted);
 }
 .star-rating-star > svg,
 .star-rating-fill {
@@ -2275,7 +2303,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 0 12px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 7px;
-  background: rgb(255 255 255 / 4%);
+  background: var(--console-raised);
   color: var(--screen-dim);
   font-size: 11px;
   font-weight: 450;
@@ -2286,7 +2314,7 @@ html[data-sidebar-ready] .account-button > svg {
 .game-status-button:hover,
 .game-status-button[data-state="open"] {
   background: var(--console-hover);
-  color: white;
+  color: var(--screen-white);
 }
 .game-action-panel > button[data-liked] {
   color: #ffaaa4;
@@ -2316,7 +2344,7 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--achievement-gold);
 }
 .game-score-line strong {
-  color: white;
+  color: var(--screen-white);
   font: 680 22px var(--font-inter);
 }
 .game-score-line span,
@@ -2665,7 +2693,7 @@ html[data-sidebar-ready] .account-button > svg {
 .game-links-section a:hover {
   border-color: var(--shell-line-strong);
   background: var(--console-hover);
-  color: white;
+  color: var(--screen-white);
 }
 .game-related-shelf {
   display: grid;
@@ -2706,7 +2734,7 @@ html[data-sidebar-ready] .account-button > svg {
 .related-tabs button[aria-selected="true"] {
   border-color: var(--shell-line-strong);
   background: var(--console-raised);
-  color: white;
+  color: var(--screen-white);
   font-weight: 620;
 }
 .related-tabs button span {
@@ -2849,7 +2877,7 @@ html[data-sidebar-ready] .account-button > svg {
   min-height: 100vh;
   padding: 24px 20px;
   border-left: 1px solid var(--shell-line);
-  background: #111014;
+  background: var(--console-canvas);
 }
 .rail-intro {
   padding: 20px;
@@ -2894,7 +2922,7 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid var(--shell-line-strong);
   border-radius: 7px;
   background: var(--console-raised);
-  color: #d8d4dc;
+  color: var(--screen-dim);
   font-size: 10px;
   font-weight: 620;
   cursor: pointer;
@@ -2971,7 +2999,7 @@ html[data-sidebar-ready] .account-button > svg {
   object-fit: cover;
 }
 .trend > span {
-  color: #5f5a65;
+  color: var(--screen-muted);
   font: 600 9px var(--font-inter);
   font-variant-numeric: tabular-nums;
 }
@@ -2992,7 +3020,7 @@ html[data-sidebar-ready] .account-button > svg {
   font-size: 8px;
 }
 .trend > svg {
-  color: #55515a;
+  color: var(--screen-muted);
   opacity: 0;
   transform: translate(-3px, 3px);
   transition:
@@ -3051,8 +3079,8 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 14px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 11px;
-  background: rgb(28 26 32 / 97%);
-  box-shadow: 0 18px 54px rgb(0 0 0 / 48%);
+  background: var(--overlay-panel-sticky);
+  box-shadow: 0 18px 54px var(--overlay-shadow);
   backdrop-filter: blur(16px);
   animation: cookie-banner-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -3364,11 +3392,12 @@ html[data-sidebar-ready] .account-button > svg {
 .drawer-navigation > .drawer-disabled,
 .drawer-secondary > .drawer-disabled {
   cursor: not-allowed;
-  color: #5f5a65;
+  color: var(--screen-muted);
+  opacity: 0.62;
 }
 .drawer-disabled .nav-lock {
   margin-left: auto;
-  color: #55505a;
+  color: var(--screen-muted);
 }
 .drawer-navigation a[data-active] {
   background: var(--console-hover);
@@ -3489,7 +3518,7 @@ html[data-sidebar-ready] .account-button > svg {
   overflow: hidden;
   border: 1px solid var(--shell-line);
   border-radius: 11px;
-  background: rgb(255 255 255 / 2%);
+  background: var(--console-panel);
 }
 .profile-birth-date-setting {
   display: grid;
@@ -3498,7 +3527,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 20px;
   border: 1px solid var(--shell-line);
   border-radius: 11px;
-  background: rgb(255 255 255 / 2%);
+  background: var(--console-panel);
 }
 .profile-birth-date-setting > span {
   display: grid;
@@ -4465,7 +4494,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .legal-document-nav a:hover {
   color: var(--screen-white);
-  background: rgb(255 255 255 / 3%);
+  background: var(--quiet-hover);
 }
 .legal-document-nav a[aria-current="page"] {
   color: var(--screen-white);
@@ -4480,7 +4509,7 @@ html[data-sidebar-ready] .account-button > svg {
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #b7a5ff;
+  color: var(--brand-blurple-bright);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.07em;
@@ -4528,7 +4557,7 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid rgb(88 101 242 / 27%);
   border-radius: 10px;
   background: var(--brand-blurple-wash);
-  color: #aeb5ff;
+  color: var(--tonal-brand-text);
 }
 .legal-contact strong,
 .legal-contact a {
@@ -4536,7 +4565,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .legal-contact a {
   margin-top: 5px;
-  color: #d5d8ff;
+  color: var(--tonal-brand-text);
   font-size: 12px;
 }
 
@@ -4785,7 +4814,7 @@ html[data-sidebar-ready] .account-button > svg {
     height: 60px;
     padding: 0 12px;
     border-bottom: 1px solid var(--shell-line-strong);
-    background: rgb(23 21 27 / 96%);
+    background: var(--header-glass-base);
     backdrop-filter: blur(14px);
   }
   .mobile-header button {
@@ -5103,7 +5132,7 @@ html[data-sidebar-ready] .account-button > svg {
   height: 18px;
   padding: 0 5px;
   border-radius: 5px;
-  background: rgb(255 255 255 / 6%);
+  background: var(--quiet-hover);
   color: var(--screen-muted);
   font-size: 8px;
   transition:
@@ -5112,8 +5141,8 @@ html[data-sidebar-ready] .account-button > svg {
 }
 
 .library-smart-shelves.game-page-nav button[aria-selected="true"] strong {
-  background: rgb(255 255 255 / 12%);
-  color: var(--screen-white);
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
 }
 
 .library-toolbar,
@@ -5198,7 +5227,7 @@ html[data-sidebar-ready] .account-button > svg {
   height: 18px;
   border-radius: 5px;
   background: rgb(151 137 255 / 20%);
-  color: #d8d2ff;
+  color: var(--tonal-brand-text);
 }
 
 @media (max-width: 620px) {
@@ -5261,7 +5290,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 14px;
   border: 1px solid var(--shell-line);
   border-radius: 9px;
-  background: rgb(255 255 255 / 2%);
+  background: var(--console-panel);
 }
 .reviews-overview dt {
   display: flex;
@@ -5285,7 +5314,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 18px;
   border: 1px solid var(--shell-line);
   border-radius: 11px;
-  background: rgb(255 255 255 / 2%);
+  background: var(--console-panel);
 }
 .activity-entry[data-kind="review"] + .activity-entry {
   border-top: 1px solid var(--shell-line);
@@ -5394,7 +5423,7 @@ html[data-sidebar-ready] .account-button > svg {
   grid-template-columns: repeat(3, 1fr);
   padding: 8px 20px 0;
   border-bottom: 1px solid var(--shell-line);
-  background: rgb(23 21 27 / 96%);
+  background: var(--overlay-panel-sticky);
   backdrop-filter: blur(12px);
 }
 .review-section-tabs button {
@@ -5442,7 +5471,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 0 5px;
   border-radius: 5px;
   background: var(--brand-blurple-wash);
-  color: #c7caff;
+  color: var(--tonal-brand-text);
   font-size: 8px;
   font-variant-numeric: tabular-nums;
 }
@@ -5500,7 +5529,7 @@ html[data-sidebar-ready] .account-button > svg {
   font-size: 9px;
 }
 .review-score-stage > header button:hover {
-  background: rgb(255 255 255 / 0.04);
+  background: var(--quiet-hover);
   color: var(--screen-white);
 }
 .review-mode-trigger {
@@ -5714,7 +5743,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 13px;
   border: 1px solid var(--shell-line);
   border-radius: 10px;
-  background: rgb(255 255 255 / 0.018);
+  background: var(--console-panel);
   animation: aspect-card-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 @keyframes aspect-card-in {
@@ -5779,7 +5808,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 10px 12px;
   border: 1px solid var(--shell-line);
   border-radius: 9px;
-  background: rgb(255 255 255 / 0.018);
+  background: var(--console-panel);
   color: var(--screen-muted);
   text-align: left;
 }
@@ -5891,8 +5920,8 @@ html[data-sidebar-ready] .account-button > svg {
   margin: 0;
   padding: 14px 20px max(14px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--shell-line-strong);
-  background: rgb(23 21 27 / 0.97);
-  box-shadow: 0 -14px 30px rgb(0 0 0 / 0.18);
+  background: var(--overlay-panel-sticky);
+  box-shadow: 0 -14px 30px var(--overlay-shadow);
   backdrop-filter: blur(14px) saturate(1.18);
 }
 .review-action-status {
@@ -5970,7 +5999,7 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--screen-white);
 }
 .editor-select-option[data-state="checked"] {
-  color: #d8d2ff;
+  color: var(--tonal-brand-text);
 }
 .review-delete-confirm {
   display: flex;
@@ -6731,7 +6760,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 18px;
   border: 1px solid var(--shell-line);
   border-radius: 11px;
-  background: rgb(255 255 255 / 2%);
+  background: var(--console-panel);
 }
 .settings-account-card:nth-child(3) {
   grid-column: 1 / -1;
@@ -7120,7 +7149,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 20px;
   border: 1px solid var(--shell-line);
   border-radius: 11px;
-  background: rgb(255 255 255 / 2%);
+  background: var(--console-panel);
 }
 .settings-security-card > header {
   display: grid;
@@ -7231,7 +7260,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 0 9px;
   border: 1px solid var(--shell-line);
   border-radius: 7px;
-  background: rgb(255 255 255 / 3%);
+  background: var(--console-raised);
   color: var(--screen-muted);
   font-size: 9px;
   cursor: pointer;
@@ -7691,7 +7720,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 
 .library-sort-option[data-state="checked"] {
-  color: #d8d2ff;
+  color: var(--tonal-brand-text);
 }
 
 .quick-menu [role="menuitem"].quick-menu-clear {
@@ -7700,7 +7729,7 @@ html[data-sidebar-ready] .account-button > svg {
 
 .quick-menu [role="menuitem"].quick-menu-clear:hover,
 .quick-menu [role="menuitem"].quick-menu-clear:focus {
-  background: rgb(255 255 255 / 7%);
+  background: var(--console-hover);
   color: var(--screen-white);
 }
 
@@ -8243,7 +8272,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 20px;
   border: 1px solid var(--shell-line);
   border-radius: 11px;
-  background: rgb(255 255 255 / 2%);
+  background: var(--console-panel);
 }
 
 .game-panel-heading {
@@ -9566,7 +9595,7 @@ a,
   margin: 4px -20px -20px;
   padding: 14px 20px max(14px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--shell-line);
-  background: rgb(23 21 27 / 96%);
+  background: var(--overlay-panel-sticky);
   backdrop-filter: blur(10px);
 }
 @keyframes social-modal-center-in {
@@ -10509,7 +10538,7 @@ a,
   width: 112px;
   aspect-ratio: 3 / 4;
   border-radius: 7px;
-  background: rgb(255 255 255 / 7%);
+  background: var(--skeleton-fill);
 }
 
 .home-loading-feature > div {
@@ -10523,7 +10552,7 @@ a,
 .home-loading-feature > div span {
   height: 10px;
   border-radius: 4px;
-  background: rgb(255 255 255 / 7%);
+  background: var(--skeleton-fill);
 }
 
 .home-loading-feature > div span:first-child {
@@ -10961,7 +10990,7 @@ a,
   overflow: hidden;
   border: 1px solid var(--shell-line-strong);
   border-radius: 11px;
-  background: rgb(12 11 14 / 0.72);
+  background: color-mix(in srgb, var(--console-raised) 82%, transparent);
   backdrop-filter: blur(12px);
 }
 
@@ -11466,7 +11495,7 @@ a,
   border: 0 !important;
   border-left: 1px solid var(--shell-line) !important;
   border-radius: 0 !important;
-  color-scheme: dark;
+  color-scheme: inherit;
 }
 .birth-date-input:focus-within {
   border-color: rgb(88 101 242 / 58%);
@@ -11615,7 +11644,7 @@ a,
   outline: 0;
   background: transparent;
   color: var(--screen-white);
-  color-scheme: dark;
+  color-scheme: inherit;
 }
 .anonymous-age-form label > span:focus-within {
   border-color: rgb(88 101 242 / 58%);
@@ -12927,7 +12956,7 @@ a,
   padding: 0 5px;
   border-radius: 5px;
   background: var(--brand-blurple-wash);
-  color: #cfd2ff;
+  color: var(--tonal-brand-text);
   font-size: 8px;
 }
 .catalog-filter-group[open] > summary svg:last-child {
@@ -13137,7 +13166,7 @@ a,
   padding-inline: 5px;
   border-radius: 6px;
   background: var(--brand-blurple-wash);
-  color: #cfd2ff;
+  color: var(--tonal-brand-text);
   font-size: 8px;
   font-weight: 650;
 }
@@ -13927,7 +13956,7 @@ a,
   width: 64px;
   height: 64px;
   border-radius: 12px;
-  background: rgb(255 255 255 / 7%);
+  background: var(--skeleton-fill);
 }
 .library-loading-hero > div {
   display: grid;
@@ -13937,7 +13966,7 @@ a,
 .library-loading-hero i {
   height: 10px;
   border-radius: 4px;
-  background: rgb(255 255 255 / 7%);
+  background: var(--skeleton-fill);
 }
 .library-loading-hero i:first-child {
   width: 58%;
@@ -15214,7 +15243,7 @@ a,
   padding: 14px;
   border: 1px solid var(--shell-line);
   border-radius: 11px;
-  background: rgb(255 255 255 / 0.02);
+  background: var(--console-panel);
   transition:
     transform 150ms cubic-bezier(0.23, 1, 0.32, 1),
     background-color 150ms ease-out,
@@ -15558,6 +15587,45 @@ a,
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 80%),
     0 1px 3px rgb(38 42 52 / 6%);
+}
+
+:root[data-theme="light"] .account-menu,
+:root[data-theme="light"] .locale-menu,
+:root[data-theme="light"] .cover-modal,
+:root[data-theme="light"] .profile-crop-modal,
+:root[data-theme="light"] .social-editor-dialog,
+:root[data-theme="light"] .create-list-dialog,
+:root[data-theme="light"] .create-list-select-content,
+:root[data-theme="light"] .report-dialog,
+:root[data-theme="light"] .verified-dialog,
+:root[data-theme="light"] .account-delete-dialog,
+:root[data-theme="light"] .mfa-setup-dialog,
+:root[data-theme="light"] .mfa-remove-dialog,
+:root[data-theme="light"] .cookie-modal {
+  box-shadow:
+    0 0 0 1px rgb(24 27 35 / 4%),
+    0 18px 48px rgb(40 44 54 / 14%);
+}
+
+:root[data-theme="light"] .game-surface,
+:root[data-theme="light"] .game-body-layout .game-section,
+:root[data-theme="light"] .reviews-overview > div,
+:root[data-theme="light"] .activity-entry[data-kind="review"],
+:root[data-theme="light"] .settings-account-card,
+:root[data-theme="light"] .settings-security-card,
+:root[data-theme="light"] .profile-image-setting,
+:root[data-theme="light"] .profile-details-form,
+:root[data-theme="light"] .profile-birth-date-setting,
+:root[data-theme="light"] .profile-connection-card > a {
+  box-shadow:
+    0 0 0 1px rgb(24 27 35 / 2%),
+    0 2px 7px rgb(40 44 54 / 5%);
+}
+
+:root[data-theme="light"] .profile-thought-bubble,
+:root[data-theme="light"] .lists-page .list-preview-card:hover,
+:root[data-theme="light"] .profile-connection-card > a:hover {
+  box-shadow: 0 12px 30px rgb(40 44 54 / 12%);
 }
 
 @media (max-width: 620px) {
