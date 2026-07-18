@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { LikeButton } from "@/components/social/like-button";
+import { ShareButton } from "@/components/share-button";
 import { ListAddGame } from "@/components/social/list-add-game";
 import { ListItemTools } from "@/components/social/list-item-tools";
 import {
@@ -94,6 +95,18 @@ export default async function ListPage({ params }: Props) {
             count={Number(likeState?.like_count ?? 0)}
             liked={Boolean(likeState?.liked_by_viewer)}
             canLike={Boolean(user) && !isOwner}
+            lang={lang}
+          />
+          <ShareButton
+            className="content-share-action"
+            title={list.name}
+            text={
+              pt
+                ? `Lista de jogos por @${owner?.username} no uloggd`
+                : `Game list by @${owner?.username} on uloggd`
+            }
+            label={pt ? "Compartilhar" : "Share"}
+            copiedLabel={pt ? "Link copiado" : "Link copied"}
             lang={lang}
           />
         </div>

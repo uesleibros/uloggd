@@ -314,7 +314,7 @@ export default async function ReviewPage({ params }: Props) {
             lang={lang}
           />
           <ShareButton
-            className="review-page-share"
+            className="content-share-action"
             title={review.title || (game?.name ?? "uloggd")}
             text={
               pt

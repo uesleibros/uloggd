@@ -8811,7 +8811,7 @@ details.review-page-content p {
   padding-top: 16px;
   border-top: 1px solid var(--shell-line);
 }
-.review-page-share {
+.content-share-action {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -8824,7 +8824,7 @@ details.review-page-content p {
   font-size: 11px;
   font-weight: 600;
 }
-.review-page-share:hover {
+.content-share-action:hover {
   background: var(--quiet-hover);
   color: var(--screen-white);
 }
@@ -9262,23 +9262,49 @@ details.review-page-content p {
   border-color: var(--shell-line-strong);
   background: var(--console-raised);
 }
+/* Stacked-card cover preview: each cover is a rounded physical card, the
+   first sits on top and every next one tucks partially underneath, filling
+   the strip edge to edge. */
 .list-cover-strip {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  display: flex;
+  align-items: center;
   width: 100%;
   aspect-ratio: 2.45 / 1;
   overflow: hidden;
+  padding: 11px 12px;
+  border-radius: 12px 12px 0 0;
   background: var(--console-inset);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 7%);
 }
 .list-cover-strip > span {
   position: relative;
-  min-width: 0;
+  flex: none;
+  height: 100%;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
-  border-right: 1px solid rgb(0 0 0 / 28%);
+  border-radius: 9px;
+  background: var(--console-raised);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    7px 0 18px rgb(0 0 0 / 44%);
 }
-.list-cover-strip > span:last-child {
-  border-right: 0;
+.list-cover-strip > span + span {
+  margin-left: -11.5%;
+}
+.list-cover-strip > span:nth-child(1) {
+  z-index: 5;
+}
+.list-cover-strip > span:nth-child(2) {
+  z-index: 4;
+}
+.list-cover-strip > span:nth-child(3) {
+  z-index: 3;
+}
+.list-cover-strip > span:nth-child(4) {
+  z-index: 2;
+}
+.list-cover-strip > span:nth-child(5) {
+  z-index: 1;
 }
 .list-cover-strip img {
   object-fit: cover;
