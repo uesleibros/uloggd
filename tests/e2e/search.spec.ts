@@ -49,6 +49,8 @@ test("renders a shape-matched skeleton before the catalog", async ({
 test("persists combined filters and sorting in the URL", async ({ page }) => {
   await openSearch(page);
 
+  await page.getByRole("button", { name: "Filtros avançados" }).click();
+  await expect(page.getByText("REFINE A BUSCA", { exact: true })).toBeVisible();
   await page.getByText("Gêneros", { exact: true }).click();
   await page
     .locator(".catalog-filter-options > label")
@@ -81,30 +83,16 @@ test("keeps catalog credit in the global footer only", async ({ page }) => {
   );
 });
 
-test("sizes the filter rail to its content and applies a complete draft once", async ({
+test("opens the filters dialog and applies a complete draft once", async ({
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name.startsWith("mobile"));
   await openSearch(page);
 
-  const rail = page.locator(".catalog-filter-shell > aside");
-  const geometry = await rail
-    .locator(".catalog-filter-body")
-    .evaluate((body) => {
-      const lastFilter = body.lastElementChild;
-      const bodyRect = body.getBoundingClientRect();
-      const lastRect = lastFilter?.getBoundingClientRect();
-      return {
-        overflowY: getComputedStyle(body).overflowY,
-        internalOverflow: Math.round(body.scrollHeight - body.clientHeight),
-        trailingSpace: lastRect
-          ? Math.max(0, Math.round(bodyRect.bottom - lastRect.bottom))
-          : Number.POSITIVE_INFINITY,
-      };
-    });
-  expect(geometry.overflowY).toBe("visible");
-  expect(geometry.internalOverflow).toBeLessThanOrEqual(1);
-  expect(geometry.trailingSpace).toBeLessThanOrEqual(1);
+  await expect(page.getByText("REFINE A BUSCA", { exact: true })).toBeHidden();
+  await page.getByRole("button", { name: "Filtros avançados" }).click();
+  await expect(page.locator(".catalog-filter-dialog")).toBeVisible();
+  await expect(page.getByText("REFINE A BUSCA", { exact: true })).toBeVisible();
 
   await page.getByText("Lançados", { exact: true }).click();
   await page.getByText("Somente jogos avaliados", { exact: true }).click();
@@ -148,7 +136,7 @@ test("keeps the mobile explorer inside the viewport", async ({
   await openSearch(page);
 
   await expect(
-    page.getByText("Filtros avançados", { exact: true }),
+    page.getByRole("button", { name: "Filtros avançados" }),
   ).toBeVisible();
   const dimensions = await page.evaluate(() => ({
     viewport: window.innerWidth,
@@ -156,8 +144,16 @@ test("keeps the mobile explorer inside the viewport", async ({
   }));
   expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport);
 
-  await page.getByText("Filtros avançados", { exact: true }).click();
   await expect(page.getByText("REFINE A BUSCA", { exact: true })).toBeHidden();
+  await page.getByRole("button", { name: "Filtros avançados" }).click();
+  await expect(page.locator(".catalog-filter-dialog")).toBeVisible();
+  await expect(page.getByText("REFINE A BUSCA", { exact: true })).toBeVisible();
+
+  const openDimensions = await page.evaluate(() => ({
+    viewport: window.innerWidth,
+    document: document.documentElement.scrollWidth,
+  }));
+  expect(openDimensions.document).toBeLessThanOrEqual(openDimensions.viewport);
 });
 
 test("uses the contextual rail without squeezing the wide catalog", async ({
@@ -167,21 +163,20 @@ test("uses the contextual rail without squeezing the wide catalog", async ({
   await page.setViewportSize({ width: 1500, height: 900 });
   await openSearch(page, "/pt-BR/search?genres=31&sort=name");
 
-  const filters = page.locator(".catalog-filter-shell");
   const results = page.locator(".catalog-results-panel");
   const context = page.locator(".catalog-context-rail");
   await expect(context).toBeVisible();
   await expect(context.getByText("Sua busca", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Filtros avançados" }),
+  ).toBeVisible();
 
-  const [filterBox, resultBox, contextBox] = await Promise.all([
-    filters.boundingBox(),
+  const [resultBox, contextBox] = await Promise.all([
     results.boundingBox(),
     context.boundingBox(),
   ]);
-  expect(filterBox).not.toBeNull();
   expect(resultBox).not.toBeNull();
   expect(contextBox).not.toBeNull();
-  expect(filterBox!.x + filterBox!.width).toBeLessThan(resultBox!.x);
   expect(resultBox!.x + resultBox!.width).toBeLessThan(contextBox!.x);
 
   const dimensions = await page.evaluate(() => ({

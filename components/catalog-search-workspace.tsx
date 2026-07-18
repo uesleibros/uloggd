@@ -1,9 +1,10 @@
 "use client";
 
+import * as Dialog from "@radix-ui/react-dialog";
 import * as Select from "@radix-ui/react-select";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Check, ChevronDown, Search, X } from "lucide-react";
+import { Check, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type {
   CatalogGame,
@@ -257,6 +258,7 @@ export function CatalogSearchWorkspace({
   const pageRef = useRef<HTMLElement>(null);
   const [pending, startTransition] = useTransition();
   const [query, setQuery] = useState(filters.query);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [draft, setDraft] = useState<FilterDraft>(() =>
     draftFromFilters(filters),
   );
@@ -290,6 +292,7 @@ export function CatalogSearchWorkspace({
   }
 
   function applyFilters() {
+    setFiltersOpen(false);
     navigate({
       genres: draft.genres.length ? draft.genres.join(",") : null,
       platforms: draft.platforms.length ? draft.platforms.join(",") : null,
@@ -550,26 +553,45 @@ export function CatalogSearchWorkspace({
         </div>
       )}
 
-      <div className="catalog-search-workspace">
-        <details className="catalog-filter-shell" open>
-          <summary>
-            <span>{pt ? "Filtros avançados" : "Advanced filters"}</span>
-            {appliedCount > 0 && <b>{appliedCount}</b>}
-            <ChevronDown size={15} />
-          </summary>
-          <aside>
-            <div className="catalog-filter-heading">
+      <Dialog.Root
+        open={filtersOpen}
+        onOpenChange={(open) => {
+          if (open) setDraft(draftFromFilters(filters));
+          setFiltersOpen(open);
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="catalog-filter-overlay" />
+          <Dialog.Content
+            className="catalog-filter-dialog"
+            aria-describedby={undefined}
+          >
+            <header className="catalog-filter-dialog-head">
               <div>
                 <span>{pt ? "REFINE A BUSCA" : "REFINE SEARCH"}</span>
-                <strong>{pt ? "Filtros" : "Filters"}</strong>
+                <Dialog.Title>
+                  {pt ? "Filtros avançados" : "Advanced filters"}
+                </Dialog.Title>
               </div>
-              {draftCount > 0 && (
-                <button type="button" onClick={() => setDraft(emptyDraft())}>
-                  {pt ? "Limpar" : "Clear"}
-                </button>
-              )}
-            </div>
-            <div className="catalog-filter-body">
+              <div className="catalog-filter-dialog-head-actions">
+                {draftCount > 0 && (
+                  <button
+                    type="button"
+                    className="catalog-filter-clear"
+                    onClick={() => setDraft(emptyDraft())}
+                  >
+                    {pt ? "Limpar" : "Clear"}
+                  </button>
+                )}
+                <Dialog.Close
+                  className="catalog-filter-dialog-close"
+                  aria-label={pt ? "Fechar" : "Close"}
+                >
+                  <X size={17} />
+                </Dialog.Close>
+              </div>
+            </header>
+            <div className="catalog-filter-dialog-body">
               <section className="catalog-choice-filter">
                 <header>
                   {pt ? "Situação de lançamento" : "Release status"}
@@ -777,7 +799,7 @@ export function CatalogSearchWorkspace({
                 </div>
               </section>
             </div>
-            <footer className="catalog-filter-actions">
+            <footer className="catalog-filter-dialog-actions">
               <span>
                 {draftDirty
                   ? pt
@@ -801,12 +823,13 @@ export function CatalogSearchWorkspace({
                     : "Apply filters"}
               </button>
             </footer>
-          </aside>
-        </details>
+          </Dialog.Content>
+        </Dialog.Portal>
 
+        <div className="catalog-search-workspace">
         <section className="catalog-results-panel" aria-busy={pending}>
           <header className="catalog-results-heading">
-            <div>
+            <div className="catalog-results-heading-copy">
               <span>{pt ? "RESULTADOS" : "RESULTS"}</span>
               <h2>
                 {filters.query
@@ -823,14 +846,23 @@ export function CatalogSearchWorkspace({
                   : `${total.toLocaleString("en-US")} found · ${games.length} on this page`}
               </p>
             </div>
-            <CatalogSelect
-              value={filters.sort}
-              onChange={(value) =>
-                navigate({ sort: value === "popular" ? null : value })
-              }
-              options={sortOptions}
-              label={pt ? "Ordenar resultados" : "Sort results"}
-            />
+            <div className="catalog-results-tools">
+              <Dialog.Trigger asChild>
+                <button type="button" className="catalog-filter-trigger">
+                  <SlidersHorizontal size={15} />
+                  <span>{pt ? "Filtros avançados" : "Advanced filters"}</span>
+                  {appliedCount > 0 && <b>{appliedCount}</b>}
+                </button>
+              </Dialog.Trigger>
+              <CatalogSelect
+                value={filters.sort}
+                onChange={(value) =>
+                  navigate({ sort: value === "popular" ? null : value })
+                }
+                options={sortOptions}
+                label={pt ? "Ordenar resultados" : "Sort results"}
+              />
+            </div>
           </header>
 
           {games.length ? (
@@ -1045,7 +1077,8 @@ export function CatalogSearchWorkspace({
             </section>
           )}
         </aside>
-      </div>
+        </div>
+      </Dialog.Root>
     </main>
   );
 }
