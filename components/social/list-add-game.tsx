@@ -1,5 +1,6 @@
 "use client";
 
+import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { LoaderCircle, Plus, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -25,6 +26,7 @@ export function ListAddGame({
 }) {
   const pt = lang === "pt-BR";
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -58,7 +60,7 @@ export function ListAddGame({
         const payload = (await response.json()) as {
           results?: SearchResult[];
         };
-        setResults((payload.results ?? []).slice(0, 6));
+        setResults((payload.results ?? []).slice(0, 8));
         setSearching(false);
       } catch {
         if (!controller.signal.aborted) setSearching(false);
@@ -90,76 +92,124 @@ export function ListAddGame({
   const inList = new Set([...existingIds, ...added]);
 
   return (
-    <section className="list-add-game">
-      <label>
-        <Search size={15} />
-        <input
-          value={query}
-          onChange={(event) => handleQueryChange(event.target.value)}
-          placeholder={
-            pt ? "Buscar jogo para adicionar…" : "Search a game to add…"
-          }
-          aria-label={pt ? "Buscar jogo" : "Search game"}
-        />
-        {query && (
-          <button
-            type="button"
-            onClick={() => handleQueryChange("")}
-            aria-label={pt ? "Limpar" : "Clear"}
-          >
-            <X size={14} />
-          </button>
-        )}
-      </label>
-      {error && (
-        <p className="social-form-error" role="alert">
-          {pt ? "Não foi possível adicionar." : "Could not add."}
-        </p>
-      )}
-      {query.trim().length >= 2 && (
-        <div className="list-add-game-results" aria-busy={searching}>
-          {searching && !results.length ? (
-            <p>{pt ? "Buscando…" : "Searching…"}</p>
-          ) : results.length ? (
-            results.map((game) => {
-              const already = inList.has(game.id);
-              return (
-                <div className="list-add-game-row" key={game.id}>
-                  <span className="list-add-game-cover">
-                    {game.coverUrl && (
-                      <Image src={game.coverUrl} alt="" fill sizes="40px" />
-                    )}
-                  </span>
-                  <span className="list-add-game-copy">
-                    <strong>{game.name}</strong>
-                    {game.releaseYear && <small>{game.releaseYear}</small>}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={already || addingId !== null}
-                    onClick={() => add(game)}
-                  >
-                    {addingId === game.id ? (
-                      <LoaderCircle className="spin" size={13} aria-hidden />
-                    ) : (
-                      <Plus size={13} />
-                    )}
-                    {already
-                      ? pt
-                        ? "Na lista"
-                        : "In list"
-                      : pt
-                        ? "Adicionar"
-                        : "Add"}
-                  </button>
-                </div>
-              );
-            })
-          ) : (
-            <p>{pt ? "Nenhum jogo encontrado." : "No games found."}</p>
-          )}
-        </div>
-      )}
-    </section>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) handleQueryChange("");
+      }}
+    >
+      <Dialog.Trigger asChild>
+        <button type="button" className="list-add-game-trigger">
+          <Plus size={15} /> {pt ? "Adicionar jogos" : "Add games"}
+        </button>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="drawer-backdrop" />
+        <Dialog.Content
+          className="social-editor-dialog list-add-game-dialog"
+          aria-describedby={undefined}
+        >
+          <header>
+            <div>
+              <span>{pt ? "CATÁLOGO" : "CATALOG"}</span>
+              <Dialog.Title>
+                {pt ? "Adicionar jogos à lista" : "Add games to the list"}
+              </Dialog.Title>
+            </div>
+            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <X size={19} />
+            </Dialog.Close>
+          </header>
+          <div className="list-add-game">
+            <label>
+              <Search size={15} />
+              <input
+                value={query}
+                onChange={(event) => handleQueryChange(event.target.value)}
+                placeholder={
+                  pt ? "Buscar jogo para adicionar…" : "Search a game to add…"
+                }
+                aria-label={pt ? "Buscar jogo" : "Search game"}
+                autoFocus
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => handleQueryChange("")}
+                  aria-label={pt ? "Limpar" : "Clear"}
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </label>
+            {error && (
+              <p className="social-form-error" role="alert">
+                {pt ? "Não foi possível adicionar." : "Could not add."}
+              </p>
+            )}
+            {query.trim().length >= 2 ? (
+              <div className="list-add-game-results" aria-busy={searching}>
+                {searching && !results.length ? (
+                  <p>{pt ? "Buscando…" : "Searching…"}</p>
+                ) : results.length ? (
+                  results.map((game) => {
+                    const already = inList.has(game.id);
+                    return (
+                      <div className="list-add-game-row" key={game.id}>
+                        <span className="list-add-game-cover">
+                          {game.coverUrl && (
+                            <Image
+                              src={game.coverUrl}
+                              alt=""
+                              fill
+                              sizes="40px"
+                            />
+                          )}
+                        </span>
+                        <span className="list-add-game-copy">
+                          <strong>{game.name}</strong>
+                          {game.releaseYear && <small>{game.releaseYear}</small>}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={already || addingId !== null}
+                          onClick={() => add(game)}
+                        >
+                          {addingId === game.id ? (
+                            <LoaderCircle
+                              className="spin"
+                              size={13}
+                              aria-hidden
+                            />
+                          ) : (
+                            <Plus size={13} />
+                          )}
+                          {already
+                            ? pt
+                              ? "Na lista"
+                              : "In list"
+                            : pt
+                              ? "Adicionar"
+                              : "Add"}
+                        </button>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p>{pt ? "Nenhum jogo encontrado." : "No games found."}</p>
+                )}
+              </div>
+            ) : (
+              <p className="list-add-game-empty">
+                {pt
+                  ? "Digite ao menos duas letras para buscar no catálogo."
+                  : "Type at least two letters to search the catalog."}
+              </p>
+            )}
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

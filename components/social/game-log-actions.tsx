@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { JourneyCalendar } from "./journey-calendar";
+import { JourneyCalendar, type JourneyInterval } from "./journey-calendar";
 import {
   EditorVisibilitySelect,
   ReviewStudioForm,
@@ -30,12 +30,14 @@ export function GameLogActions({
   lang,
   lists,
   logCount,
+  journeys = [],
 }: {
   game: { id: number; slug: string; name: string; releaseYear: number | null };
   platforms: string[];
   lang: "pt-BR" | "en";
   lists: ListOption[];
   logCount: number;
+  journeys?: JourneyInterval[];
 }) {
   const pt = lang === "pt-BR";
   const router = useRouter();
@@ -187,6 +189,7 @@ export function GameLogActions({
                       start={journeyStart}
                       end={journeyEnd}
                       maxDate={today}
+                      played={journeys}
                       onChange={(range) => {
                         setJourneyStart(range.start);
                         setJourneyEnd(range.end);

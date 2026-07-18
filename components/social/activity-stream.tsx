@@ -192,7 +192,9 @@ export function ActivityStream({
               </div>
             )}
             {entry.kind === "review" && entry.title && (
-              <h3 className="activity-review-title">{entry.title}</h3>
+              <h3 className="activity-review-title">
+                <Link href={`/${lang}/review/${entry.id}`}>{entry.title}</Link>
+              </h3>
             )}
             {entry.kind === "review" &&
               (entry.mastered || entry.replay || entry.platform) && (
@@ -263,6 +265,14 @@ export function ActivityStream({
                   ))}
                 </dl>
               )}
+            {entry.kind === "review" && (
+              <Link
+                className="activity-read-more"
+                href={`/${lang}/review/${entry.id}`}
+              >
+                {pt ? "Ver avaliação completa" : "View full review"}
+              </Link>
+            )}
             <div className="activity-entry-footer">
               <LikeButton
                 contentType={entry.kind}
