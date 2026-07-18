@@ -8339,11 +8339,35 @@ a,
   justify-content: space-between;
   gap: 8px;
 }
+.journey-calendar > header > div {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
 .journey-calendar > header strong {
+  overflow: hidden;
   color: var(--screen-white);
   font-size: 12px;
   font-weight: 600;
+  text-overflow: ellipsis;
   text-transform: capitalize;
+  white-space: nowrap;
+}
+.journey-calendar-today {
+  flex: none;
+  min-height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--shell-line);
+  border-radius: 6px;
+  background: var(--console-raised);
+  color: var(--screen-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+.journey-calendar-today:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
 }
 .journey-calendar > header button {
   display: grid;
@@ -8377,10 +8401,12 @@ a,
   text-transform: uppercase;
 }
 .journey-calendar-grid > span:not(.journey-calendar-weekday) {
+  position: relative;
   display: grid;
-  place-items: center;
+  place-items: start center;
   aspect-ratio: 1;
   min-width: 0;
+  padding-top: 5px;
   border-radius: 7px;
   color: var(--screen-dim);
   font-size: 12px;
@@ -8411,6 +8437,36 @@ a,
   background: var(--brand-blurple);
   color: white;
   font-weight: 620;
+}
+/* Played bands: existing journey entries drawn as continuous bars across
+   their days, bridging the 3px grid gap on non-cap segments. */
+.journey-calendar-grid > span > i {
+  position: absolute;
+  bottom: 4px;
+  left: -2px;
+  right: -2px;
+  height: 15px;
+  overflow: hidden;
+  background: var(--state-playing-bg);
+  color: var(--state-playing-text);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 620;
+  line-height: 15px;
+  text-align: left;
+  white-space: nowrap;
+}
+.journey-calendar-grid > span > i[data-cap-start] {
+  left: 3px;
+  padding-left: 4px;
+  border-radius: 4px 0 0 4px;
+}
+.journey-calendar-grid > span > i[data-cap-end] {
+  right: 3px;
+  border-radius: 0 4px 4px 0;
+}
+.journey-calendar-grid > span > i[data-cap-start][data-cap-end] {
+  border-radius: 4px;
 }
 .journey-calendar-hint {
   margin: 0;

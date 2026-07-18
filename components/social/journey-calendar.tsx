@@ -3,12 +3,20 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useState } from "react";
 
+export type JourneyInterval = { start: string; end: string | null };
+
 function pad(value: number) {
   return String(value).padStart(2, "0");
 }
 
 function dayKey(year: number, month: number, day: number) {
   return `${year}-${pad(month + 1)}-${pad(day)}`;
+}
+
+function shiftDay(key: string, delta: number) {
+  const date = new Date(`${key}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + delta);
+  return date.toISOString().slice(0, 10);
 }
 
 function monthOf(value: string | null): { year: number; month: number } {
@@ -24,21 +32,26 @@ function monthOf(value: string | null): { year: number; month: number } {
 
 /**
  * Month grid with drag-across-days range selection. A click selects a single
- * day; pressing and dragging selects the whole range. The calendar is a
- * pointer affordance only (aria-hidden): the paired date inputs rendered by
- * the parent form remain the keyboard and screen-reader path.
+ * day; pressing and dragging selects the whole range. Existing journey
+ * entries render as continuous "played" bands across their days, so the
+ * calendar reads as the game's play history while a new range is picked.
+ * The calendar is a pointer affordance only (aria-hidden): the paired date
+ * inputs rendered by the parent form remain the keyboard and screen-reader
+ * path.
  */
 export function JourneyCalendar({
   lang,
   start,
   end,
   maxDate,
+  played = [],
   onChange,
 }: {
   lang: "pt-BR" | "en";
   start: string;
   end: string;
   maxDate: string;
+  played?: JourneyInterval[];
   onChange: (range: { start: string; end: string }) => void;
 }) {
   const pt = lang === "pt-BR";
@@ -76,6 +89,21 @@ export function JourneyCalendar({
       : drag.anchor
     : end || start;
 
+  function covered(key: string) {
+    return played.some(
+      (interval) => key >= interval.start && key <= (interval.end ?? interval.start),
+    );
+  }
+
+  function bandFor(key: string, weekday: number) {
+    if (!covered(key)) return null;
+    return {
+      capStart: !covered(shiftDay(key, -1)) || weekday === 0,
+      capEnd: !covered(shiftDay(key, 1)) || weekday === 6,
+      label: played.some((interval) => interval.start === key),
+    };
+  }
+
   function dayFromPoint(clientX: number, clientY: number) {
     const target = document
       .elementFromPoint(clientX, clientY)
@@ -97,6 +125,11 @@ export function JourneyCalendar({
     });
   }
 
+  function selectToday() {
+    setView(monthOf(maxDate));
+    onChange({ start: maxDate, end: "" });
+  }
+
   return (
     <div className="journey-calendar">
       <header>
@@ -108,7 +141,16 @@ export function JourneyCalendar({
         >
           <ChevronLeft size={15} />
         </button>
-        <strong>{monthTitle}</strong>
+        <div>
+          <strong>{monthTitle}</strong>
+          <button
+            type="button"
+            className="journey-calendar-today"
+            onClick={selectToday}
+          >
+            {pt ? "Hoje" : "Today"}
+          </button>
+        </div>
         <button
           type="button"
           data-motion="none"
@@ -153,9 +195,11 @@ export function JourneyCalendar({
         ))}
         {Array.from({ length: daysInMonth }, (_, index) => {
           const key = dayKey(view.year, view.month, index + 1);
+          const weekday = (leadingBlanks + index) % 7;
           const disabled = key > maxDate;
           const selected =
             Boolean(rangeStart) && key >= rangeStart && key <= rangeEnd;
+          const band = bandFor(key, weekday);
           return (
             <span
               key={key}
@@ -169,6 +213,14 @@ export function JourneyCalendar({
               data-today={key === maxDate || undefined}
             >
               {index + 1}
+              {band && (
+                <i
+                  data-cap-start={band.capStart || undefined}
+                  data-cap-end={band.capEnd || undefined}
+                >
+                  {band.label ? (pt ? "Jogado" : "Played") : ""}
+                </i>
+              )}
             </span>
           );
         })}

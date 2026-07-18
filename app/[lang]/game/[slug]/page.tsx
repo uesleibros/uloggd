@@ -137,10 +137,12 @@ export default async function GamePage({ params }: Props) {
       user && supabase
         ? supabase
             .from("diary_entries")
-            .select("id", { count: "exact", head: true })
+            .select("played_on,ended_on")
             .eq("profile_id", user.id)
             .eq("igdb_id", game.id)
-        : Promise.resolve({ count: 0 }),
+            .order("played_on", { ascending: false })
+            .limit(200)
+        : Promise.resolve({ data: [] }),
     ]);
   const ageProfile = ageProfileResult.data;
   if (user && !ageProfile?.birth_date) redirect(`/${lang}/onboarding/username`);
@@ -163,7 +165,13 @@ export default async function GamePage({ params }: Props) {
   }
   const savedGames = savedResult.data;
   const userLists = listsResult.data;
-  const ownLogCount = logResult.count;
+  const ownJourneys = (logResult.data ?? []).map(
+    (entry: { played_on: string; ended_on: string | null }) => ({
+      start: entry.played_on,
+      end: entry.ended_on,
+    }),
+  );
+  const ownLogCount = ownJourneys.length;
   const savedById = new Map(
     (savedGames ?? []).map((saved) => [saved.igdb_id, saved]),
   );
@@ -270,7 +278,8 @@ export default async function GamePage({ params }: Props) {
                 platforms={game.platforms}
                 lang={lang}
                 lists={userLists ?? []}
-                logCount={ownLogCount ?? 0}
+                logCount={ownLogCount}
+                journeys={ownJourneys}
               />
             )}
           </div>
