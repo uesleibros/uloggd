@@ -282,7 +282,7 @@
   color: var(--screen-white);
 }
 .catalog-filter-dialog-body {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
