@@ -17,36 +17,6 @@ export default function SearchLoading() {
         </div>
       </header>
       <div className="catalog-search-workspace">
-        <details
-          className="catalog-filter-shell catalog-filter-shell-loading"
-          open
-        >
-          <summary>
-            <span className="skeleton-block" />
-          </summary>
-          <aside className="catalog-filter-loading">
-            <div className="catalog-filter-heading-loading">
-              <span className="skeleton-block" />
-              <i className="skeleton-block" />
-            </div>
-            <div className="catalog-filter-body catalog-filter-body-loading">
-              {Array.from({ length: 6 }, (_, index) => (
-                <div className="catalog-filter-group-loading" key={index}>
-                  <span className="skeleton-block" />
-                  <div>
-                    <i className="skeleton-block" />
-                    <i className="skeleton-block" />
-                    <i className="skeleton-block" />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="catalog-filter-actions catalog-filter-actions-loading">
-              <span className="skeleton-block" />
-              <i className="skeleton-block" />
-            </div>
-          </aside>
-        </details>
         <section className="catalog-results-loading">
           <header>
             <div>
@@ -54,7 +24,10 @@ export default function SearchLoading() {
               <i className="skeleton-block" />
               <i className="skeleton-block" />
             </div>
-            <span className="skeleton-block" />
+            <div className="catalog-results-tools">
+              <span className="skeleton-block catalog-filter-trigger-loading" />
+              <span className="skeleton-block catalog-sort-loading" />
+            </div>
           </header>
           <div className="catalog-results-loading-grid">
             {Array.from({ length: 18 }, (_, index) => (
