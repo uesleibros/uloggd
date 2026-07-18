@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { safeInternalNext } from "@/lib/auth-validation";
 import { createClient } from "@/lib/supabase/client";
+import "./mfa.css";
 
 type Factor = { id: string; friendly_name?: string; status: string };
 

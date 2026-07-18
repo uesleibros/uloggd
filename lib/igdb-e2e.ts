@@ -3,6 +3,10 @@ import type {
   CatalogGame,
   CatalogSearchFilters,
   CatalogSearchOptions,
+  DiscoveryGames,
+  Game,
+  GameDetail,
+  GenreCollection,
 } from "@/lib/igdb";
 
 export const e2eCatalogOptions: CatalogSearchOptions = {
@@ -56,6 +60,55 @@ const allGames: CatalogGame[] = Array.from({ length: 61 }, (_, index) => {
     spawndAvailable: number === 1,
   };
 });
+
+export function e2ePopularGames(): Game[] {
+  return allGames.slice(0, 16);
+}
+
+export function e2eDiscoveryGames(): DiscoveryGames {
+  return {
+    anticipated: allGames.slice(16, 28),
+    upcoming: allGames.slice(28, 40),
+    hiddenGems: allGames.slice(40, 52),
+  };
+}
+
+export function e2eGenreCollections(): GenreCollection[] {
+  return [
+    {
+      id: 12,
+      name: { "pt-BR": "RPG", en: "RPG" },
+      games: allGames.filter((game) => game.genres.includes("RPG")),
+    },
+    {
+      id: 31,
+      name: { "pt-BR": "Aventura", en: "Adventure" },
+      games: allGames.filter((game) => game.genres.includes("Adventure")),
+    },
+  ];
+}
+
+export function e2eGamesByIds(ids: number[]): Game[] {
+  return allGames.filter((game) => ids.includes(game.id));
+}
+
+export function e2eGameBySlug(slug: string): GameDetail | null {
+  const game = allGames.find((item) => item.slug === slug);
+  if (!game) return null;
+  return {
+    ...game,
+    ageRatings: [],
+    alternativeCovers: [],
+    gallery: [],
+    videos: [],
+    events: [],
+    publishers: [],
+    websites: [],
+    languages: [],
+    related: [],
+    timeToBeat: null,
+  };
+}
 
 export async function searchE2eCatalog(filters: CatalogSearchFilters) {
   await new Promise((resolve) => setTimeout(resolve, 1_000));

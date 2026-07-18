@@ -4,7 +4,7 @@ import { CreateListForm } from "@/components/social/create-list-form";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../dictionaries";
 
 export default async function ListsPage({
@@ -12,10 +12,8 @@ export default async function ListsPage({
 }: PageProps<"/[lang]/lists">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = await getSupabase();
+  const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login?next=/${lang}/lists`);
   const { data: lists } = await supabase
     .from("game_lists")

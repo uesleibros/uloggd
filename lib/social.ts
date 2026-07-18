@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getGamesByIds } from "@/lib/igdb";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { resolveGameCover } from "@/lib/game-cover";
 import type { SocialEntry } from "@/components/social/activity-stream";
 
@@ -63,7 +64,7 @@ export async function getActivity(
   const games = await getGamesByIds(rows.map((row) => row.igdb_id));
   const viewerId =
     options.viewerId === undefined
-      ? (await supabase.auth.getUser()).data.user?.id
+      ? (await getAuthUser())?.id
       : options.viewerId;
   const { data: covers } =
     viewerId && games.length

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { getActivity } from "@/lib/social";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../dictionaries";
 
 export default async function ReviewsPage({
@@ -12,10 +12,8 @@ export default async function ReviewsPage({
 }: PageProps<"/[lang]/reviews">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = await getSupabase();
+  const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login?next=/${lang}/reviews`);
   const entries = await getActivity(supabase, {
     profileId: user.id,

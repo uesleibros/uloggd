@@ -10,7 +10,7 @@ import {
   getPopularGames,
   type Game,
 } from "@/lib/igdb";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { resolveGameCover } from "@/lib/game-cover";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
@@ -27,35 +27,13 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 }
 
 async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
-  const [d, games, discoveries, genreCollections, supabase] = await Promise.all(
-    [
-      getDictionary(lang),
-      getPopularGames(),
-      getDiscoveryGames(),
-      getGenreCollections(),
-      createClient(),
-    ],
-  );
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: savedGames } = user
-    ? await supabase
-        .from("user_games")
-        .select(
-          "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-        )
-        .eq("profile_id", user.id)
-    : { data: [] };
-  const savedById = new Map(
-    (savedGames ?? []).map((item) => [item.igdb_id, item]),
-  );
-  const libraryCount = savedGames?.length ?? 0;
-  const playingCount =
-    savedGames?.filter((item) => item.playing || item.status === "PLAYING")
-      .length ?? 0;
-  const ratedCount =
-    savedGames?.filter((item) => item.quick_rating !== null).length ?? 0;
+  const [d, games, discoveries, genreCollections, user] = await Promise.all([
+    getDictionary(lang),
+    getPopularGames(),
+    getDiscoveryGames(),
+    getGenreCollections(),
+    getAuthUser(),
+  ]);
   const [featured, ...catalog] = games;
   const visibleGameIds = new Set<number>();
   if (featured) visibleGameIds.add(featured.id);
@@ -139,6 +117,48 @@ async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
     },
   ];
   const discoveryLanes = distributeUniqueLanes(discoveryCandidates, 8);
+  // Saved-state is only rendered for on-screen games and the counts come
+  // from head-only count queries, so a large library never ships extra rows.
+  const snapshot = user
+    ? await (async () => {
+        const supabase = await getSupabase();
+        const [saved, library, playing, rated] = await Promise.all([
+          supabase
+            .from("user_games")
+            .select(
+              "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
+            )
+            .eq("profile_id", user.id)
+            .in("igdb_id", [...visibleGameIds]),
+          supabase
+            .from("user_games")
+            .select("igdb_id", { count: "exact", head: true })
+            .eq("profile_id", user.id),
+          supabase
+            .from("user_games")
+            .select("igdb_id", { count: "exact", head: true })
+            .eq("profile_id", user.id)
+            .or("playing.eq.true,status.eq.PLAYING"),
+          supabase
+            .from("user_games")
+            .select("igdb_id", { count: "exact", head: true })
+            .eq("profile_id", user.id)
+            .not("quick_rating", "is", null),
+        ]);
+        return {
+          savedGames: saved.data ?? [],
+          libraryCount: library.count ?? 0,
+          playingCount: playing.count ?? 0,
+          ratedCount: rated.count ?? 0,
+        };
+      })()
+    : null;
+  const savedById = new Map(
+    (snapshot?.savedGames ?? []).map((item) => [item.igdb_id, item]),
+  );
+  const libraryCount = snapshot?.libraryCount ?? 0;
+  const playingCount = snapshot?.playingCount ?? 0;
+  const ratedCount = snapshot?.ratedCount ?? 0;
 
   return (
     <div className="home-shell">

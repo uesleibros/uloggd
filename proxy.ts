@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { defaultLocale, locales } from "./app/[lang]/dictionaries";
 
+const ONBOARDED_COOKIE = "uloggd-onboarded";
 const publicSegments = new Set([
   "",
   "login",
@@ -25,6 +26,22 @@ export async function proxy(request: NextRequest) {
   }
   let response = NextResponse.next({ request });
   if (process.env.ULOGGD_E2E === "1") return response;
+  const segment = pathname.slice(lang.length + 2).split("/")[0] || "";
+  if (segment === "explore")
+    return NextResponse.redirect(new URL(`/${lang}`, request.url));
+  const hasAuthCookies = request.cookies
+    .getAll()
+    .some(({ name }) => name.startsWith("sb-"));
+  if (!hasAuthCookies) {
+    const privateListsIndex = pathname === `/${lang}/lists`;
+    const privateGameLogs = /^\/(pt-BR|en)\/game\/[^/]+\/logs$/.test(pathname);
+    if (!publicSegments.has(segment) || privateListsIndex || privateGameLogs) {
+      const url = new URL(`/${lang}/login`, request.url);
+      url.searchParams.set("next", pathname);
+      return NextResponse.redirect(url);
+    }
+    return response;
+  }
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -41,12 +58,10 @@ export async function proxy(request: NextRequest) {
       },
     },
   );
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const segment = pathname.slice(lang.length + 2).split("/")[0] || "";
-  if (segment === "explore")
-    return NextResponse.redirect(new URL(`/${lang}`, request.url));
+  // Verifies the JWT locally (asymmetric signing keys) instead of a
+  // round-trip to the Auth server; still refreshes expiring sessions.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims.sub ? { id: claimsData.claims.sub } : null;
   if (!user) {
     const privateListsIndex = pathname === `/${lang}/lists`;
     const privateGameLogs = /^\/(pt-BR|en)\/game\/[^/]+\/logs$/.test(pathname);
@@ -57,17 +72,31 @@ export async function proxy(request: NextRequest) {
     }
     return response;
   }
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username,birth_date")
-    .eq("id", user.id)
-    .maybeSingle();
   const onboarding = pathname.startsWith(`/${lang}/onboarding`);
   const callback = pathname.startsWith(`/${lang}/auth/callback`);
   const reset = pathname.startsWith(`/${lang}/auth/reset-password`);
   const signout = pathname.startsWith(`/${lang}/auth/signout`);
   const mfaChallenge = pathname.startsWith(`/${lang}/auth/mfa`);
-  const onboardingIncomplete = !profile?.username || !profile.birth_date;
+  // Onboarding never becomes incomplete again once finished, so a cookie
+  // scoped to the user id lets us skip the profiles query on every request.
+  let onboardingIncomplete =
+    request.cookies.get(ONBOARDED_COOKIE)?.value !== user.id;
+  if (onboardingIncomplete) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username,birth_date")
+      .eq("id", user.id)
+      .maybeSingle();
+    onboardingIncomplete = !profile?.username || !profile.birth_date;
+    if (!onboardingIncomplete)
+      response.cookies.set(ONBOARDED_COOKIE, user.id, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60 * 24 * 30,
+        path: "/",
+      });
+  }
   if (!mfaChallenge && !callback && !reset && !signout) {
     const { data: assurance } =
       await supabase.auth.mfa.getAuthenticatorAssuranceLevel();

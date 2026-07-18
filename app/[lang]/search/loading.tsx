@@ -1,3 +1,5 @@
+import "./catalog.css";
+
 export default function SearchLoading() {
   return (
     <main

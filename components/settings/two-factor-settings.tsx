@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import "../auth/mfa.css";
 
 type TotpFactor = {
   id: string;
