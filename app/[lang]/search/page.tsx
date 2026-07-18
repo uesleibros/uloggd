@@ -6,7 +6,7 @@ import {
   searchCatalogGames,
   type CatalogSearchFilters,
 } from "@/lib/igdb";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getSpawndGame } from "@/lib/spawnd";
 import { hasLocale } from "../dictionaries";
 
@@ -79,7 +79,7 @@ export default async function SearchPage({
   const [options, result, supabase] = await Promise.all([
     getCatalogSearchOptions(),
     searchCatalogGames(filters),
-    process.env.ULOGGD_E2E === "1" ? null : createClient(),
+    process.env.ULOGGD_E2E === "1" ? null : getSupabase(),
   ]);
   if (!supabase) {
     return (
@@ -96,9 +96,7 @@ export default async function SearchPage({
       />
     );
   }
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   const { data: savedGames } =
     user && result.games.length
       ? await supabase

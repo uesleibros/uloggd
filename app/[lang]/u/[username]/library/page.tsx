@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LibraryBig } from "lucide-react";
 import { notFound } from "next/navigation";
 import { LibraryScreen } from "@/components/library/library-screen";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
 
 type Props = { params: Promise<{ lang: string; username: string }> };
@@ -21,13 +21,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PublicLibraryPage({ params }: Props) {
   const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await createClient();
-  const [
-    { data: profile },
-    {
-      data: { user },
-    },
-  ] = await Promise.all([
+  const supabase = await getSupabase();
+  const [{ data: profile }, user] = await Promise.all([
     supabase
       .from("profiles")
       .select(
@@ -35,7 +30,7 @@ export default async function PublicLibraryPage({ params }: Props) {
       )
       .ilike("username", username)
       .maybeSingle(),
-    supabase.auth.getUser(),
+    getAuthUser(),
   ]);
   if (!profile?.username) notFound();
   const owner = user?.id === profile.id;

@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { LibraryScreen } from "@/components/library/library-screen";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../dictionaries";
 
 export default async function LibraryPage({
@@ -8,10 +8,8 @@ export default async function LibraryPage({
 }: PageProps<"/[lang]/library">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = await getSupabase();
+  const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login?next=/${lang}/library`);
   const [{ data: profile }, { data: records }] = await Promise.all([
     supabase

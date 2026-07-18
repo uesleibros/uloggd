@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { getActivity } from "@/lib/social";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
 
 type Props = {
@@ -28,14 +28,14 @@ export default async function ProfileActivityPage({
 }: Props) {
   const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await createClient();
-  const [{ data: profile }, { data: viewer }] = await Promise.all([
+  const supabase = await getSupabase();
+  const [{ data: profile }, viewer] = await Promise.all([
     supabase
       .from("profiles")
       .select("id,username,display_name")
       .ilike("username", username)
       .maybeSingle(),
-    supabase.auth.getUser(),
+    getAuthUser(),
   ]);
   if (!profile?.username) notFound();
 
@@ -118,7 +118,7 @@ export default async function ProfileActivityPage({
       <ActivityStream
         entries={visibleEntries}
         lang={lang}
-        viewerId={viewer.user?.id}
+        viewerId={viewer?.id}
       />
     </main>
   );
