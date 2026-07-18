@@ -9738,6 +9738,33 @@ details.review-page-content p {
   .social-editor-dialog[data-state="closed"] {
     animation-name: social-modal-sheet-out;
   }
+  .activity-body > header time {
+    flex: none;
+    margin-top: 2px;
+    font-size: 10px;
+    text-align: right;
+  }
+  .activity-entry-footer {
+    gap: 8px;
+  }
+  .activity-entry-actions {
+    flex-wrap: wrap;
+  }
+  .list-detail-social {
+    flex-wrap: wrap;
+  }
+  .journey-calendar {
+    padding: 10px;
+  }
+  .journey-calendar-grid {
+    gap: 2px;
+  }
+  .journey-calendar-grid > span:not(.journey-calendar-weekday) {
+    font-size: 11px;
+  }
+  .review-page-verdict {
+    gap: 6px;
+  }
   .skeleton-banner {
     height: auto;
     aspect-ratio: 3 / 1;
