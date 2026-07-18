@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { LikeButton } from "@/components/social/like-button";
+import { ListAddGame } from "@/components/social/list-add-game";
+import { ListItemTools } from "@/components/social/list-item-tools";
 import {
   ListOwnerControls,
   RemoveListItem,
@@ -97,6 +99,13 @@ export default async function ListPage({ params }: Props) {
         </div>
         {isOwner && <ListOwnerControls list={list} lang={lang} />}
       </header>
+      {isOwner && (
+        <ListAddGame
+          listId={list.id}
+          existingIds={items.map((item) => item.igdb_id)}
+          lang={lang}
+        />
+      )}
       {items.length ? (
         <div className="library-grid">
           {items.map((item, index) => {
@@ -112,11 +121,21 @@ export default async function ListPage({ params }: Props) {
                 />
                 {item.note && <p>{item.note}</p>}
                 {isOwner && (
-                  <RemoveListItem
-                    listId={list.id}
-                    gameId={item.igdb_id}
-                    lang={lang}
-                  />
+                  <div className="list-item-owner-tools">
+                    <ListItemTools
+                      listId={list.id}
+                      itemId={item.id}
+                      note={item.note}
+                      first={index === 0}
+                      last={index === items.length - 1}
+                      lang={lang}
+                    />
+                    <RemoveListItem
+                      listId={list.id}
+                      gameId={item.igdb_id}
+                      lang={lang}
+                    />
+                  </div>
                 )}
               </div>
             ) : null;

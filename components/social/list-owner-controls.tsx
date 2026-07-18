@@ -3,8 +3,9 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { Pencil, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { EditorVisibilitySelect } from "./review-studio-form";
 
 export function ListOwnerControls({
   list,
@@ -22,7 +23,16 @@ export function ListOwnerControls({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  const [armed, setArmed] = useState(false);
+  const disarmTimer = useRef<number | null>(null);
+  const [visibility, setVisibility] = useState(list.visibility);
   const [error, setError] = useState<string | null>(null);
+  useEffect(
+    () => () => {
+      if (disarmTimer.current) window.clearTimeout(disarmTimer.current);
+    },
+    [],
+  );
   async function update(formData: FormData) {
     setPending(true);
     setError(null);
@@ -32,7 +42,7 @@ export function ListOwnerControls({
         target_list: list.id,
         list_name: formData.get("name"),
         list_description: formData.get("description"),
-        list_visibility: formData.get("visibility"),
+        list_visibility: visibility,
       },
     );
     if (actionError)
@@ -48,15 +58,15 @@ export function ListOwnerControls({
     setPending(false);
   }
   async function remove() {
-    if (
-      pending ||
-      !window.confirm(
-        pt
-          ? "Excluir esta lista e todos os itens?"
-          : "Delete this list and all items?",
-      )
-    )
+    if (pending) return;
+    if (!armed) {
+      setArmed(true);
+      if (disarmTimer.current) window.clearTimeout(disarmTimer.current);
+      disarmTimer.current = window.setTimeout(() => setArmed(false), 4000);
       return;
+    }
+    if (disarmTimer.current) window.clearTimeout(disarmTimer.current);
+    setArmed(false);
     setPending(true);
     const { data, error: actionError } = await createClient().rpc(
       "delete_game_list",
@@ -75,8 +85,21 @@ export function ListOwnerControls({
         <button type="button" onClick={() => setOpen(true)}>
           <Pencil size={14} /> {pt ? "Editar" : "Edit"}
         </button>
-        <button type="button" onClick={remove} disabled={pending}>
-          <Trash2 size={14} /> {pt ? "Excluir" : "Delete"}
+        <button
+          type="button"
+          onClick={remove}
+          disabled={pending}
+          data-armed={armed || undefined}
+          aria-live="polite"
+        >
+          <Trash2 size={14} />{" "}
+          {armed
+            ? pt
+              ? "Confirmar exclusão?"
+              : "Confirm deletion?"
+            : pt
+              ? "Excluir"
+              : "Delete"}
         </button>
       </div>
       <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -118,13 +141,11 @@ export function ListOwnerControls({
               </label>
               <label>
                 <span>{pt ? "Visibilidade" : "Visibility"}</span>
-                <select name="visibility" defaultValue={list.visibility}>
-                  <option value="PUBLIC">{pt ? "Pública" : "Public"}</option>
-                  <option value="FOLLOWERS">
-                    {pt ? "Seguidores" : "Followers"}
-                  </option>
-                  <option value="PRIVATE">{pt ? "Privada" : "Private"}</option>
-                </select>
+                <EditorVisibilitySelect
+                  value={visibility}
+                  onChange={setVisibility}
+                  pt={pt}
+                />
               </label>
               {error && (
                 <p className="social-form-error" role="alert">
