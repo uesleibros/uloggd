@@ -30,16 +30,27 @@ export type SocialEntry = {
   ratingMode?: "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
   recommended?: boolean | null;
   title?: string | null;
-  aspects?: Array<{ label: string; rating: number; note?: string | null }>;
+  aspects?: Array<{
+    label: string;
+    rating: number;
+    note?: string | null;
+    custom?: boolean;
+  }>;
   mastered?: boolean;
   replay?: boolean;
   platform?: string | null;
+  startedOn?: string | null;
+  finishedOn?: string | null;
   content?: string | null;
   playedOn?: string;
+  endedOn?: string | null;
   minutes?: number | null;
+  marksStart?: boolean;
+  marksFinish?: boolean;
   spoilers: boolean;
   visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
   createdAt: string;
+  updatedAt?: string;
 };
 
 export function ActivityStream({
@@ -119,6 +130,15 @@ export function ActivityStream({
               </div>
               <time dateTime={entry.createdAt}>
                 {date.format(new Date(entry.createdAt))}
+                {entry.updatedAt &&
+                  new Date(entry.updatedAt).getTime() -
+                    new Date(entry.createdAt).getTime() >
+                    1000 && (
+                    <small className="activity-edited">
+                      {" "}
+                      · {pt ? "editada" : "edited"}
+                    </small>
+                  )}
               </time>
             </header>
             <p className="activity-verb">
@@ -219,16 +239,7 @@ export function ActivityStream({
                 </dl>
               )}
             {viewerId === entry.profileId && (
-              <ActivityEntryActions
-                id={entry.id}
-                kind={entry.kind}
-                lang={lang}
-                playedOn={entry.playedOn}
-                minutes={entry.minutes}
-                content={entry.content}
-                spoilers={entry.spoilers}
-                visibility={entry.visibility}
-              />
+              <ActivityEntryActions entry={entry} lang={lang} />
             )}
           </div>
         </article>

@@ -5,20 +5,17 @@ import { Pencil, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { SocialEntry } from "./activity-stream";
+import { EditReviewDialog } from "./edit-review-dialog";
 
-type Props = {
-  id: string;
-  kind: "review" | "diary";
+export function ActivityEntryActions({
+  entry,
+  lang,
+}: {
+  entry: SocialEntry;
   lang: "pt-BR" | "en";
-  playedOn?: string;
-  minutes?: number | null;
-  content?: string | null;
-  spoilers: boolean;
-  visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-};
-
-export function ActivityEntryActions(props: Props) {
-  const { id, kind, lang } = props;
+}) {
+  const { id, kind } = entry;
   const pt = lang === "pt-BR";
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -73,11 +70,9 @@ export function ActivityEntryActions(props: Props) {
   return (
     <>
       <div className="activity-entry-actions">
-        {kind === "diary" && (
-          <button type="button" onClick={() => setEditing(true)}>
-            <Pencil size={14} /> {pt ? "Editar" : "Edit"}
-          </button>
-        )}
+        <button type="button" onClick={() => setEditing(true)}>
+          <Pencil size={14} /> {pt ? "Editar" : "Edit"}
+        </button>
         <button type="button" onClick={remove} disabled={pending}>
           <Trash2 size={14} />{" "}
           {pending
@@ -90,6 +85,14 @@ export function ActivityEntryActions(props: Props) {
         </button>
         {error && <span role="alert">{error}</span>}
       </div>
+      {kind === "review" && (
+        <EditReviewDialog
+          entry={entry}
+          lang={lang}
+          open={editing}
+          onOpenChange={setEditing}
+        />
+      )}
       {kind === "diary" && (
         <Dialog.Root open={editing} onOpenChange={setEditing}>
           <Dialog.Portal>
@@ -117,7 +120,7 @@ export function ActivityEntryActions(props: Props) {
                       name="playedOn"
                       type="date"
                       max={new Date().toISOString().slice(0, 10)}
-                      defaultValue={props.playedOn}
+                      defaultValue={entry.playedOn}
                       required
                     />
                   </label>
@@ -128,7 +131,7 @@ export function ActivityEntryActions(props: Props) {
                       type="number"
                       min={0}
                       max={100000}
-                      defaultValue={props.minutes ?? ""}
+                      defaultValue={entry.minutes ?? ""}
                     />
                   </label>
                 </div>
@@ -138,13 +141,13 @@ export function ActivityEntryActions(props: Props) {
                     name="note"
                     maxLength={1000}
                     rows={6}
-                    defaultValue={props.content ?? ""}
+                    defaultValue={entry.content ?? ""}
                   />
                 </label>
                 <div className="social-form-row social-form-options">
                   <label>
                     <span>{pt ? "Visibilidade" : "Visibility"}</span>
-                    <select name="visibility" defaultValue={props.visibility}>
+                    <select name="visibility" defaultValue={entry.visibility}>
                       <option value="PUBLIC">
                         {pt ? "Público" : "Public"}
                       </option>
@@ -160,7 +163,7 @@ export function ActivityEntryActions(props: Props) {
                     <input
                       type="checkbox"
                       name="spoilers"
-                      defaultChecked={props.spoilers}
+                      defaultChecked={entry.spoilers}
                     />
                     <span>{pt ? "Contém spoilers" : "Contains spoilers"}</span>
                   </label>

@@ -36,14 +36,14 @@ export async function getActivity(
   let reviewsQuery = supabase
     .from("reviews")
     .select(
-      "id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,content,contains_spoilers,visibility,created_at,profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
+      "id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
   let diaryQuery = supabase
     .from("diary_entries")
     .select(
-      "id,profile_id,igdb_id,game_slug,played_on,minutes,note,contains_spoilers,visibility,created_at,profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified)",
+      "id,profile_id,igdb_id,game_slug,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,created_at,updated_at,profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -116,12 +116,24 @@ export async function getActivity(
           mastered: review ? Boolean(row.mastered) : undefined,
           replay: review ? Boolean(row.replay) : undefined,
           platform: review ? String(row.platform ?? "") || null : undefined,
+          startedOn: review
+            ? String(row.started_on ?? "") || null
+            : undefined,
+          finishedOn: review
+            ? String(row.finished_on ?? "") || null
+            : undefined,
           content: String((review ? row.content : row.note) ?? "") || null,
           playedOn: review ? undefined : String(row.played_on),
+          endedOn: review
+            ? undefined
+            : String(row.ended_on ?? "") || null,
           minutes: review ? undefined : (row.minutes as number | null),
+          marksStart: review ? undefined : Boolean(row.marks_start),
+          marksFinish: review ? undefined : Boolean(row.marks_finish),
           spoilers: Boolean(row.contains_spoilers),
           visibility: row.visibility as SocialEntry["visibility"],
           createdAt: row.created_at,
+          updatedAt: String(row.updated_at ?? "") || undefined,
         },
       ];
     })

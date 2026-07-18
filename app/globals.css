@@ -8317,6 +8317,11 @@ a,
   color: var(--screen-muted);
   font-size: 10px;
 }
+.activity-edited {
+  color: var(--screen-muted);
+  font-size: 9px;
+  font-style: italic;
+}
 .activity-verb {
   margin-top: 11px;
   color: var(--screen-dim);
