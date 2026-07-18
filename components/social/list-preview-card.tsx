@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Globe2, Lock, Users } from "lucide-react";
+import { ArrowUpRight, Globe2, Heart, Lock, Users } from "lucide-react";
 
 export function ListPreviewCard({
   list,
   covers,
   lang,
+  likes = 0,
 }: {
   list: {
     id: string;
@@ -16,6 +17,7 @@ export function ListPreviewCard({
   };
   covers: { url: string; name: string }[];
   lang: "pt-BR" | "en";
+  likes?: number;
 }) {
   const pt = lang === "pt-BR";
   const visibility =
@@ -55,6 +57,12 @@ export function ListPreviewCard({
           </span>
           <small>
             {list.count} {pt ? "jogos" : "games"}
+            {likes > 0 && (
+              <>
+                {" · "}
+                <Heart size={10} /> {likes.toLocaleString(lang)}
+              </>
+            )}
           </small>
         </div>
         <div className="list-preview-title">

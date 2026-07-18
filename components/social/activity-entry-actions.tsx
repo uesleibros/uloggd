@@ -1,29 +1,34 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { Pencil, Trash2, X } from "lucide-react";
+import { Flag, FlagTriangleRight, Pencil, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { SocialEntry } from "./activity-stream";
+import { EditReviewDialog } from "./edit-review-dialog";
+import { JourneyCalendar } from "./journey-calendar";
+import { EditorVisibilitySelect } from "./review-studio-form";
 
-type Props = {
-  id: string;
-  kind: "review" | "diary";
+export function ActivityEntryActions({
+  entry,
+  lang,
+}: {
+  entry: SocialEntry;
   lang: "pt-BR" | "en";
-  playedOn?: string;
-  minutes?: number | null;
-  content?: string | null;
-  spoilers: boolean;
-  visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-};
-
-export function ActivityEntryActions(props: Props) {
-  const { id, kind, lang } = props;
+}) {
+  const { id, kind } = entry;
   const pt = lang === "pt-BR";
   const router = useRouter();
+  const today = new Date().toISOString().slice(0, 10);
   const [editing, setEditing] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [journeyStart, setJourneyStart] = useState(entry.playedOn ?? today);
+  const [journeyEnd, setJourneyEnd] = useState(entry.endedOn ?? "");
+  const [marksStart, setMarksStart] = useState(Boolean(entry.marksStart));
+  const [marksFinish, setMarksFinish] = useState(Boolean(entry.marksFinish));
+  const [visibility, setVisibility] = useState(entry.visibility);
   async function remove() {
     if (
       pending ||
@@ -51,11 +56,14 @@ export function ActivityEntryActions(props: Props) {
       "update_diary_entry",
       {
         entry_id: id,
-        entry_date: formData.get("playedOn"),
+        entry_date: journeyStart,
+        entry_end: journeyEnd || null,
         entry_minutes: minutes ? Number(minutes) : null,
         entry_note: formData.get("note"),
         spoilers: formData.get("spoilers") === "on",
-        entry_visibility: formData.get("visibility"),
+        entry_visibility: visibility,
+        entry_marks_start: marksStart,
+        entry_marks_finish: marksFinish,
       },
     );
     if (actionError)
@@ -73,11 +81,9 @@ export function ActivityEntryActions(props: Props) {
   return (
     <>
       <div className="activity-entry-actions">
-        {kind === "diary" && (
-          <button type="button" onClick={() => setEditing(true)}>
-            <Pencil size={14} /> {pt ? "Editar" : "Edit"}
-          </button>
-        )}
+        <button type="button" onClick={() => setEditing(true)}>
+          <Pencil size={14} /> {pt ? "Editar" : "Edit"}
+        </button>
         <button type="button" onClick={remove} disabled={pending}>
           <Trash2 size={14} />{" "}
           {pending
@@ -90,6 +96,14 @@ export function ActivityEntryActions(props: Props) {
         </button>
         {error && <span role="alert">{error}</span>}
       </div>
+      {kind === "review" && (
+        <EditReviewDialog
+          entry={entry}
+          lang={lang}
+          open={editing}
+          onOpenChange={setEditing}
+        />
+      )}
       {kind === "diary" && (
         <Dialog.Root open={editing} onOpenChange={setEditing}>
           <Dialog.Portal>
@@ -100,9 +114,9 @@ export function ActivityEntryActions(props: Props) {
             >
               <header>
                 <div>
-                  <span>{pt ? "DIÁRIO" : "DIARY"}</span>
+                  <span>{pt ? "JORNADA" : "JOURNEY"}</span>
                   <Dialog.Title>
-                    {pt ? "Editar sessão" : "Edit session"}
+                    {pt ? "Editar jornada" : "Edit journey"}
                   </Dialog.Title>
                 </div>
                 <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
@@ -110,17 +124,81 @@ export function ActivityEntryActions(props: Props) {
                 </Dialog.Close>
               </header>
               <form action={update} className="social-editor-form">
-                <div className="social-form-row">
+                <JourneyCalendar
+                  lang={lang}
+                  start={journeyStart}
+                  end={journeyEnd}
+                  maxDate={today}
+                  onChange={(range) => {
+                    setJourneyStart(range.start);
+                    setJourneyEnd(range.end);
+                  }}
+                />
+                <div className="social-form-row journey-date-fields">
                   <label>
-                    <span>{pt ? "Data" : "Date"}</span>
+                    <span>{pt ? "De" : "From"}</span>
                     <input
-                      name="playedOn"
                       type="date"
-                      max={new Date().toISOString().slice(0, 10)}
-                      defaultValue={props.playedOn}
+                      max={journeyEnd || today}
+                      value={journeyStart}
+                      onChange={(event) => {
+                        const next = event.target.value;
+                        setJourneyStart(next);
+                        if (journeyEnd && journeyEnd < next) setJourneyEnd("");
+                      }}
                       required
                     />
                   </label>
+                  <label>
+                    <span>{pt ? "Até (opcional)" : "Until (optional)"}</span>
+                    <input
+                      type="date"
+                      min={journeyStart || undefined}
+                      max={today}
+                      value={journeyEnd}
+                      onChange={(event) => setJourneyEnd(event.target.value)}
+                    />
+                  </label>
+                </div>
+                <div className="journey-milestones">
+                  <button
+                    type="button"
+                    data-milestone="start"
+                    aria-pressed={marksStart}
+                    onClick={() => setMarksStart((value) => !value)}
+                  >
+                    <Flag size={15} />
+                    <span>
+                      <strong>
+                        {pt ? "Comecei o jogo aqui" : "Started the game here"}
+                      </strong>
+                      <small>
+                        {pt
+                          ? "Marca o início da jornada"
+                          : "Marks the journey start"}
+                      </small>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    data-milestone="finish"
+                    aria-pressed={marksFinish}
+                    onClick={() => setMarksFinish((value) => !value)}
+                  >
+                    <FlagTriangleRight size={15} />
+                    <span>
+                      <strong>
+                        {pt ? "Terminei o jogo aqui" : "Finished the game here"}
+                      </strong>
+                      <small>
+                        {pt
+                          ? "Marca o fim da jornada"
+                          : "Marks the journey end"}
+                      </small>
+                    </span>
+                  </button>
+                </div>
+                <div className="social-form-row">
                   <label>
                     <span>{pt ? "Minutos" : "Minutes"}</span>
                     <input
@@ -128,39 +206,33 @@ export function ActivityEntryActions(props: Props) {
                       type="number"
                       min={0}
                       max={100000}
-                      defaultValue={props.minutes ?? ""}
+                      defaultValue={entry.minutes ?? ""}
                     />
                   </label>
                 </div>
                 <label>
-                  <span>{pt ? "Nota da sessão" : "Session note"}</span>
+                  <span>{pt ? "O que rolou na jornada" : "What happened"}</span>
                   <textarea
                     name="note"
                     maxLength={1000}
-                    rows={6}
-                    defaultValue={props.content ?? ""}
+                    rows={5}
+                    defaultValue={entry.content ?? ""}
                   />
                 </label>
                 <div className="social-form-row social-form-options">
                   <label>
                     <span>{pt ? "Visibilidade" : "Visibility"}</span>
-                    <select name="visibility" defaultValue={props.visibility}>
-                      <option value="PUBLIC">
-                        {pt ? "Público" : "Public"}
-                      </option>
-                      <option value="FOLLOWERS">
-                        {pt ? "Seguidores" : "Followers"}
-                      </option>
-                      <option value="PRIVATE">
-                        {pt ? "Privado" : "Private"}
-                      </option>
-                    </select>
+                    <EditorVisibilitySelect
+                      value={visibility}
+                      onChange={setVisibility}
+                      pt={pt}
+                    />
                   </label>
                   <label className="social-check">
                     <input
                       type="checkbox"
                       name="spoilers"
-                      defaultChecked={props.spoilers}
+                      defaultChecked={entry.spoilers}
                     />
                     <span>{pt ? "Contém spoilers" : "Contains spoilers"}</span>
                   </label>

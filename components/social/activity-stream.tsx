@@ -5,12 +5,15 @@ import {
   Check,
   Clock3,
   EyeOff,
+  Flag,
+  FlagTriangleRight,
   Star,
   Trophy,
   X,
 } from "lucide-react";
 import type { Game } from "@/lib/igdb";
 import { ActivityEntryActions } from "./activity-entry-actions";
+import { LikeButton } from "./like-button";
 import { VerifiedBadge } from "../verified-badge";
 
 export type SocialEntry = {
@@ -30,16 +33,29 @@ export type SocialEntry = {
   ratingMode?: "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
   recommended?: boolean | null;
   title?: string | null;
-  aspects?: Array<{ label: string; rating: number; note?: string | null }>;
+  aspects?: Array<{
+    label: string;
+    rating: number;
+    note?: string | null;
+    custom?: boolean;
+  }>;
   mastered?: boolean;
   replay?: boolean;
   platform?: string | null;
+  startedOn?: string | null;
+  finishedOn?: string | null;
   content?: string | null;
   playedOn?: string;
+  endedOn?: string | null;
   minutes?: number | null;
+  marksStart?: boolean;
+  marksFinish?: boolean;
   spoilers: boolean;
   visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
   createdAt: string;
+  updatedAt?: string;
+  likes?: number;
+  likedByViewer?: boolean;
 };
 
 export function ActivityStream({
@@ -119,6 +135,15 @@ export function ActivityStream({
               </div>
               <time dateTime={entry.createdAt}>
                 {date.format(new Date(entry.createdAt))}
+                {entry.updatedAt &&
+                  new Date(entry.updatedAt).getTime() -
+                    new Date(entry.createdAt).getTime() >
+                    1000 && (
+                    <small className="activity-edited">
+                      {" "}
+                      · {pt ? "editada" : "edited"}
+                    </small>
+                  )}
               </time>
             </header>
             <p className="activity-verb">
@@ -126,9 +151,13 @@ export function ActivityStream({
                 ? pt
                   ? "avaliou"
                   : "reviewed"
-                : pt
-                  ? "registrou uma sessão de"
-                  : "logged a session of"}{" "}
+                : entry.endedOn
+                  ? pt
+                    ? "registrou uma jornada em"
+                    : "logged a journey in"
+                  : pt
+                    ? "registrou uma sessão de"
+                    : "logged a session of"}{" "}
               <Link href={`/${lang}/game/${entry.gameSlug}`}>
                 {entry.game?.name ?? entry.gameSlug}
               </Link>
@@ -182,7 +211,9 @@ export function ActivityStream({
                 <span>
                   <CalendarDays size={13} />{" "}
                   {entry.playedOn
-                    ? date.format(new Date(`${entry.playedOn}T00:00:00Z`))
+                    ? entry.endedOn
+                      ? `${date.format(new Date(`${entry.playedOn}T00:00:00Z`))} – ${date.format(new Date(`${entry.endedOn}T00:00:00Z`))}`
+                      : date.format(new Date(`${entry.playedOn}T00:00:00Z`))
                     : "—"}
                 </span>
                 {entry.minutes ? (
@@ -190,6 +221,20 @@ export function ActivityStream({
                     <Clock3 size={13} /> {entry.minutes} min
                   </span>
                 ) : null}
+                {entry.marksStart && (
+                  <span className="journey-milestone-badge" data-milestone="start">
+                    <Flag size={12} /> {pt ? "Começou" : "Started"}
+                  </span>
+                )}
+                {entry.marksFinish && (
+                  <span
+                    className="journey-milestone-badge"
+                    data-milestone="finish"
+                  >
+                    <FlagTriangleRight size={12} />{" "}
+                    {pt ? "Terminou" : "Finished"}
+                  </span>
+                )}
               </div>
             )}
             {entry.content &&
@@ -218,18 +263,19 @@ export function ActivityStream({
                   ))}
                 </dl>
               )}
-            {viewerId === entry.profileId && (
-              <ActivityEntryActions
-                id={entry.id}
-                kind={entry.kind}
+            <div className="activity-entry-footer">
+              <LikeButton
+                contentType={entry.kind}
+                contentId={entry.id}
+                count={entry.likes ?? 0}
+                liked={Boolean(entry.likedByViewer)}
+                canLike={Boolean(viewerId) && viewerId !== entry.profileId}
                 lang={lang}
-                playedOn={entry.playedOn}
-                minutes={entry.minutes}
-                content={entry.content}
-                spoilers={entry.spoilers}
-                visibility={entry.visibility}
               />
-            )}
+              {viewerId === entry.profileId && (
+                <ActivityEntryActions entry={entry} lang={lang} />
+              )}
+            </div>
           </div>
         </article>
       ))}

@@ -16,7 +16,7 @@
 .catalog-results-heading-copy > span,
 .catalog-filter-dialog-head > div:first-child > span {
   color: var(--brand-blurple-bright);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 650;
   letter-spacing: 0.1em;
 }
@@ -76,7 +76,7 @@
   padding: 0 15px;
   border-radius: 8px;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 620;
 }
 .catalog-search-main-form button[type="submit"] {
@@ -97,7 +97,7 @@
   gap: 0;
   margin-top: 12px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .catalog-search-signals span {
   display: inline-flex;
@@ -129,7 +129,7 @@
   border-radius: 7px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 560;
   animation: catalog-chip-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
@@ -163,7 +163,7 @@
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
 }
 .catalog-filter-trigger > svg {
@@ -185,7 +185,7 @@
   border-radius: 5px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -260,7 +260,7 @@
   border-radius: 7px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 560;
 }
 .catalog-filter-clear:hover {
@@ -304,7 +304,7 @@
 .catalog-filter-dialog-actions > span {
   min-height: 12px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 .catalog-filter-dialog-actions > button {
   min-height: 40px;
@@ -313,7 +313,7 @@
   border-radius: 8px;
   background: var(--brand-blurple);
   color: white;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 640;
 }
 .catalog-filter-dialog-actions > button:hover:not(:disabled) {
@@ -333,7 +333,7 @@
 }
 .catalog-choice-filter > header {
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
 }
 .catalog-segmented-filter {
@@ -353,7 +353,7 @@
   padding-inline: 5px;
   border-radius: 5px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 580;
   cursor: pointer;
 }
@@ -422,7 +422,7 @@
   transform: translateX(12px);
 }
 .catalog-boolean-filters b {
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 540;
 }
 .catalog-filter-group {
@@ -437,7 +437,7 @@
   min-height: 46px;
   padding: 0 14px;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   list-style: none;
@@ -466,7 +466,7 @@
   border-radius: 5px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 8px;
+  font-size: 10px;
 }
 .catalog-filter-group[open] > summary svg:last-child {
   transform: rotate(180deg);
@@ -499,7 +499,7 @@
   outline: 0;
   background: transparent;
   color: var(--screen-dim);
-  font: 500 9px var(--font-inter);
+  font: 500 11px var(--font-inter);
 }
 .catalog-filter-options {
   display: grid;
@@ -554,7 +554,7 @@
 }
 .catalog-filter-options strong {
   overflow: hidden;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 540;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -563,14 +563,14 @@
   margin-top: 2px;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 7px;
+  font-size: 9px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .catalog-filter-options > p {
   margin: 8px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .catalog-range-filter {
   display: grid;
@@ -596,7 +596,7 @@
   display: grid;
   gap: 5px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 .catalog-range-filter input {
   width: 100%;
@@ -608,7 +608,7 @@
   outline: 0;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 500 10px var(--font-inter);
+  font: 500 11px var(--font-inter);
 }
 .catalog-range-filter input:focus {
   border-color: var(--brand-blurple);
@@ -636,7 +636,7 @@
 }
 .catalog-context-total > span {
   color: var(--brand-blurple-bright);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 650;
   letter-spacing: 0.1em;
 }
@@ -651,7 +651,7 @@
 }
 .catalog-context-total > small {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   line-height: 1.45;
 }
 .catalog-context-card > header,
@@ -664,7 +664,7 @@
 .catalog-context-card > header > strong,
 .catalog-context-navigation strong {
   color: var(--screen-white);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 610;
 }
 .catalog-context-card > header > span {
@@ -676,7 +676,7 @@
   border-radius: 6px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 650;
 }
 .catalog-context-card dl {
@@ -694,7 +694,7 @@
 .catalog-context-card dt,
 .catalog-context-card dd {
   margin: 0;
-  font-size: 8px;
+  font-size: 10px;
 }
 .catalog-context-card dt {
   color: var(--screen-muted);
@@ -723,7 +723,7 @@
   border-radius: 7px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 8px;
+  font-size: 10px;
   text-align: left;
 }
 .catalog-context-chips button:hover {
@@ -739,7 +739,7 @@
 .catalog-context-card > p {
   margin: 13px 0 0;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   line-height: 1.5;
 }
 .catalog-context-card > a {
@@ -748,7 +748,7 @@
   min-height: 30px;
   margin-top: 9px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 580;
 }
 .catalog-context-card > a:hover {
@@ -756,7 +756,7 @@
 }
 .catalog-context-navigation > div:first-child > span {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 .catalog-context-navigation > div:last-child {
   display: grid;
@@ -771,7 +771,7 @@
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 600;
 }
 .catalog-context-navigation button:hover:not(:disabled) {
@@ -824,7 +824,7 @@
 .catalog-results-heading p {
   margin: 5px 0 0;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .catalog-sort-trigger {
   display: inline-flex;
@@ -838,7 +838,7 @@
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-dim);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 560;
 }
 .catalog-sort-menu {
@@ -861,7 +861,7 @@
   border-radius: 5px;
   outline: 0;
   color: var(--screen-dim);
-  font-size: 9px;
+  font-size: 12px;
   cursor: pointer;
 }
 .catalog-sort-option[data-highlighted],
@@ -898,7 +898,7 @@
 .catalog-results-empty p {
   max-width: 440px;
   margin: 0;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.6;
 }
 .catalog-results-empty a {
@@ -908,7 +908,7 @@
   border-radius: 7px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   line-height: 36px;
 }
@@ -933,7 +933,7 @@
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 600;
 }
 .catalog-pagination button:hover:not(:disabled) {
@@ -946,13 +946,13 @@
 }
 .catalog-pagination-summary strong {
   color: var(--screen-white);
-  font-size: 10px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 .catalog-pagination-summary span {
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 .catalog-pagination-pages {
   display: flex;
@@ -964,7 +964,7 @@
 .catalog-pagination-pages > span {
   width: 24px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   text-align: center;
 }
 .catalog-pagination-pages button[aria-current="page"] {
@@ -983,7 +983,7 @@
 }
 .catalog-pagination-jump label {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 .catalog-pagination-jump input {
   width: 58px;
@@ -994,7 +994,7 @@
   outline: 0;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 560 10px var(--font-inter);
+  font: 560 11px var(--font-inter);
   font-variant-numeric: tabular-nums;
   text-align: center;
 }

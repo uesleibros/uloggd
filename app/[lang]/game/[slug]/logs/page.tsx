@@ -43,6 +43,15 @@ export default async function GameLogsPage({ params }: Props) {
     (total, entry) => total + (entry.minutes ?? 0),
     0,
   );
+  const totalDays = entries.reduce((total, entry) => {
+    if (!entry.playedOn) return total;
+    if (!entry.endedOn) return total + 1;
+    const span =
+      Math.round(
+        (Date.parse(entry.endedOn) - Date.parse(entry.playedOn)) / 86400000,
+      ) + 1;
+    return total + Math.max(1, span);
+  }, 0);
   return (
     <main className="social-page game-logs-page">
       <Link className="page-back-link" href={`/${lang}/game/${slug}`}>
@@ -50,11 +59,14 @@ export default async function GameLogsPage({ params }: Props) {
       </Link>
       <header className="social-page-header">
         <span>
-          <CalendarDays size={14} /> {pt ? "SEU DIÁRIO" : "YOUR JOURNAL"}
+          <CalendarDays size={14} /> {pt ? "SUA JORNADA" : "YOUR JOURNEY"}
         </span>
         <h1>{game.name}</h1>
         <p>
           {entries.length} {pt ? "registros" : "logs"}
+          {totalDays > 0
+            ? ` · ${totalDays} ${pt ? (totalDays === 1 ? "dia" : "dias") : totalDays === 1 ? "day" : "days"}`
+            : ""}
           {totalMinutes > 0
             ? ` · ${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`
             : ""}

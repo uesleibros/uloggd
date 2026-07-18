@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { QuickGameCard } from "@/components/library/quick-game-card";
+import { LikeButton } from "@/components/social/like-button";
+import { ListAddGame } from "@/components/social/list-add-game";
+import { ListItemTools } from "@/components/social/list-item-tools";
 import {
   ListOwnerControls,
   RemoveListItem,
@@ -59,7 +62,16 @@ export default async function ListPage({ params }: Props) {
   const items = [...(list.game_list_items ?? [])].sort(
     (a, b) => a.position - b.position,
   );
-  const games = await getGamesByIds(items.map((item) => item.igdb_id));
+  const [games, { data: likeRows }] = await Promise.all([
+    getGamesByIds(items.map((item) => item.igdb_id)),
+    supabase.rpc("get_content_likes", {
+      target_type: "list",
+      target_ids: [list.id],
+    }),
+  ]);
+  const likeState = likeRows?.[0] as
+    | { like_count: number; liked_by_viewer: boolean }
+    | undefined;
   const byId = new Map(games.map((game) => [game.id, game]));
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const pt = lang === "pt-BR";
@@ -75,8 +87,25 @@ export default async function ListPage({ params }: Props) {
         <small>
           {items.length} {pt ? "jogos" : "games"}
         </small>
+        <div className="list-detail-social">
+          <LikeButton
+            contentType="list"
+            contentId={list.id}
+            count={Number(likeState?.like_count ?? 0)}
+            liked={Boolean(likeState?.liked_by_viewer)}
+            canLike={Boolean(user) && !isOwner}
+            lang={lang}
+          />
+        </div>
         {isOwner && <ListOwnerControls list={list} lang={lang} />}
       </header>
+      {isOwner && (
+        <ListAddGame
+          listId={list.id}
+          existingIds={items.map((item) => item.igdb_id)}
+          lang={lang}
+        />
+      )}
       {items.length ? (
         <div className="library-grid">
           {items.map((item, index) => {
@@ -92,11 +121,21 @@ export default async function ListPage({ params }: Props) {
                 />
                 {item.note && <p>{item.note}</p>}
                 {isOwner && (
-                  <RemoveListItem
-                    listId={list.id}
-                    gameId={item.igdb_id}
-                    lang={lang}
-                  />
+                  <div className="list-item-owner-tools">
+                    <ListItemTools
+                      listId={list.id}
+                      itemId={item.id}
+                      note={item.note}
+                      first={index === 0}
+                      last={index === items.length - 1}
+                      lang={lang}
+                    />
+                    <RemoveListItem
+                      listId={list.id}
+                      gameId={item.igdb_id}
+                      lang={lang}
+                    />
+                  </div>
                 )}
               </div>
             ) : null;

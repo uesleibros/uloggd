@@ -26,7 +26,7 @@ export default async function ListsPage({
   const itemIds = (lists ?? []).flatMap((list) =>
     list.game_list_items.map((item) => item.igdb_id),
   );
-  const [games, { data: savedCovers }] = await Promise.all([
+  const [games, { data: savedCovers }, { data: likeRows }] = await Promise.all([
     getGamesByIds(itemIds),
     itemIds.length
       ? supabase
@@ -35,10 +35,21 @@ export default async function ListsPage({
           .eq("profile_id", user.id)
           .in("igdb_id", itemIds)
       : Promise.resolve({ data: [] }),
+    lists?.length
+      ? supabase.rpc("get_content_likes", {
+          target_type: "list",
+          target_ids: lists.map((list) => list.id),
+        })
+      : Promise.resolve({ data: [] }),
   ]);
   const gamesById = new Map(games.map((game) => [game.id, game]));
   const customById = new Map(
     (savedCovers ?? []).map((item) => [item.igdb_id, item.custom_cover_url]),
+  );
+  const likesById = new Map(
+    ((likeRows ?? []) as { content_id: string; like_count: number }[]).map(
+      (row) => [row.content_id, Number(row.like_count)],
+    ),
   );
   const totalLists = lists?.length ?? 0;
   const publicLists =
@@ -125,6 +136,7 @@ export default async function ListsPage({
                   }}
                   covers={covers}
                   lang={lang}
+                  likes={likesById.get(list.id) ?? 0}
                 />
               );
             })}
