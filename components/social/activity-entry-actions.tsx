@@ -1,13 +1,12 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { Flag, FlagTriangleRight, Pencil, Trash2, X } from "lucide-react";
+import { Flag, Pencil, Play, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { SocialEntry } from "./activity-stream";
 import { EditReviewDialog } from "./edit-review-dialog";
-import { JourneyCalendar } from "./journey-calendar";
 import { EditorVisibilitySelect } from "./review-studio-form";
 
 export function ActivityEntryActions({
@@ -29,6 +28,13 @@ export function ActivityEntryActions({
   const [marksStart, setMarksStart] = useState(Boolean(entry.marksStart));
   const [marksFinish, setMarksFinish] = useState(Boolean(entry.marksFinish));
   const [visibility, setVisibility] = useState(entry.visibility);
+  const totalMinutes = entry.minutes ?? 0;
+  const [hoursValue, setHoursValue] = useState(
+    totalMinutes >= 60 ? String(Math.floor(totalMinutes / 60)) : "",
+  );
+  const [minutesValue, setMinutesValue] = useState(
+    totalMinutes % 60 ? String(totalMinutes % 60) : "",
+  );
   async function remove() {
     if (
       pending ||
@@ -51,14 +57,15 @@ export function ActivityEntryActions({
   async function update(formData: FormData) {
     setPending(true);
     setError(null);
-    const minutes = String(formData.get("minutes") ?? "");
+    const total =
+      (Number(hoursValue) || 0) * 60 + Math.min(59, Number(minutesValue) || 0);
     const { error: actionError } = await createClient().rpc(
       "update_diary_entry",
       {
         entry_id: id,
         entry_date: journeyStart,
         entry_end: journeyEnd || null,
-        entry_minutes: minutes ? Number(minutes) : null,
+        entry_minutes: total > 0 ? total : null,
         entry_note: formData.get("note"),
         spoilers: formData.get("spoilers") === "on",
         entry_visibility: visibility,
@@ -124,16 +131,6 @@ export function ActivityEntryActions({
                 </Dialog.Close>
               </header>
               <form action={update} className="social-editor-form">
-                <JourneyCalendar
-                  lang={lang}
-                  start={journeyStart}
-                  end={journeyEnd}
-                  maxDate={today}
-                  onChange={(range) => {
-                    setJourneyStart(range.start);
-                    setJourneyEnd(range.end);
-                  }}
-                />
                 <div className="social-form-row journey-date-fields">
                   <label>
                     <span>{pt ? "De" : "From"}</span>
@@ -167,7 +164,7 @@ export function ActivityEntryActions({
                     aria-pressed={marksStart}
                     onClick={() => setMarksStart((value) => !value)}
                   >
-                    <Flag size={15} />
+                    <Play size={15} />
                     <span>
                       <strong>
                         {pt ? "Comecei o jogo aqui" : "Started the game here"}
@@ -185,7 +182,7 @@ export function ActivityEntryActions({
                     aria-pressed={marksFinish}
                     onClick={() => setMarksFinish((value) => !value)}
                   >
-                    <FlagTriangleRight size={15} />
+                    <Flag size={15} />
                     <span>
                       <strong>
                         {pt ? "Terminei o jogo aqui" : "Finished the game here"}
@@ -198,17 +195,37 @@ export function ActivityEntryActions({
                     </span>
                   </button>
                 </div>
-                <div className="social-form-row">
-                  <label>
-                    <span>{pt ? "Minutos" : "Minutes"}</span>
-                    <input
-                      name="minutes"
-                      type="number"
-                      min={0}
-                      max={100000}
-                      defaultValue={entry.minutes ?? ""}
-                    />
-                  </label>
+                <div className="journey-time-fields">
+                  <span>{pt ? "Tempo jogado" : "Time played"}</span>
+                  <div>
+                    <label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={24}
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={hoursValue}
+                        onChange={(event) => setHoursValue(event.target.value)}
+                      />
+                      <small>{pt ? "horas" : "hours"}</small>
+                    </label>
+                    <b>:</b>
+                    <label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={59}
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={minutesValue}
+                        onChange={(event) =>
+                          setMinutesValue(event.target.value)
+                        }
+                      />
+                      <small>{pt ? "minutos" : "minutes"}</small>
+                    </label>
+                  </div>
                 </div>
                 <label>
                   <span>{pt ? "O que rolou na jornada" : "What happened"}</span>

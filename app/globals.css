@@ -8354,21 +8354,6 @@ a,
   text-transform: capitalize;
   white-space: nowrap;
 }
-.journey-calendar-today {
-  flex: none;
-  min-height: 26px;
-  padding: 0 8px;
-  border: 1px solid var(--shell-line);
-  border-radius: 6px;
-  background: var(--console-raised);
-  color: var(--screen-muted);
-  font-size: 10px;
-  font-weight: 600;
-}
-.journey-calendar-today:hover {
-  background: var(--console-hover);
-  color: var(--screen-white);
-}
 .journey-calendar > header button {
   display: grid;
   place-items: center;
@@ -8400,23 +8385,46 @@ a,
   font-weight: 600;
   text-transform: uppercase;
 }
+/* Day cells: the calendar is the session editor. Logged days show their
+   played time over a playing-blue heat scale; contiguous logged days fuse
+   into bars by dropping the radius between them and bridging the grid gap. */
 .journey-calendar-grid > span:not(.journey-calendar-weekday) {
   position: relative;
   display: grid;
-  place-items: start center;
+  place-content: center;
+  justify-items: center;
+  gap: 1px;
   aspect-ratio: 1;
   min-width: 0;
-  padding-top: 5px;
   border-radius: 7px;
   color: var(--screen-dim);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   transition:
-    background-color 120ms ease-out,
-    color 120ms ease-out;
+    background-color 130ms ease-out,
+    color 130ms ease-out,
+    box-shadow 130ms ease-out,
+    transform 110ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.journey-calendar-grid > span b {
+  font-weight: inherit;
+  line-height: 1;
+}
+.journey-calendar-grid > span small {
+  color: inherit;
+  font-size: 9px;
+  line-height: 1;
+  opacity: 0.75;
 }
 .journey-calendar-grid > span[data-day] {
   cursor: pointer;
+}
+.journey-calendar-grid > span[data-day]:active {
+  transform: scale(0.92);
+}
+.journey-calendar[data-busy] .journey-calendar-grid {
+  opacity: 0.6;
+  pointer-events: none;
 }
 .journey-calendar-grid:not([data-dragging]) > span[data-day]:hover {
   background: var(--console-hover);
@@ -8426,52 +8434,247 @@ a,
   color: var(--screen-muted);
   opacity: 0.4;
 }
-.journey-calendar-grid > span[data-today] {
-  box-shadow: inset 0 0 0 1px var(--shell-line-strong);
-}
-.journey-calendar-grid > span[data-selected] {
-  background: var(--brand-blurple-wash);
-  color: var(--tonal-brand-text);
-}
-.journey-calendar-grid > span[data-edge] {
-  background: var(--brand-blurple);
-  color: white;
-  font-weight: 620;
-}
-/* Played bands: existing journey entries drawn as continuous bars across
-   their days, bridging the 3px grid gap on non-cap segments. */
-.journey-calendar-grid > span > i {
-  position: absolute;
-  bottom: 4px;
-  left: -2px;
-  right: -2px;
-  height: 15px;
-  overflow: hidden;
-  background: var(--state-playing-bg);
+.journey-calendar-grid > span[data-today]:not([data-logged]) {
+  box-shadow: inset 0 0 0 1px var(--state-playing-border);
   color: var(--state-playing-text);
-  font-size: 9px;
-  font-style: normal;
-  font-weight: 620;
-  line-height: 15px;
-  text-align: left;
-  white-space: nowrap;
 }
-.journey-calendar-grid > span > i[data-cap-start] {
-  left: 3px;
-  padding-left: 4px;
-  border-radius: 4px 0 0 4px;
+.journey-calendar-grid > span[data-logged] {
+  color: var(--state-playing-text);
+  font-weight: 600;
 }
-.journey-calendar-grid > span > i[data-cap-end] {
+.journey-calendar-grid > span[data-level="1"] {
+  background: color-mix(in srgb, var(--state-playing-bg) 40%, transparent);
+}
+.journey-calendar-grid > span[data-level="2"] {
+  background: color-mix(in srgb, var(--state-playing-bg) 55%, transparent);
+}
+.journey-calendar-grid > span[data-level="3"] {
+  background: color-mix(in srgb, var(--state-playing-bg) 70%, transparent);
+}
+.journey-calendar-grid > span[data-level="4"] {
+  background: color-mix(in srgb, var(--state-playing-bg) 85%, transparent);
+}
+.journey-calendar-grid > span[data-level="5"] {
+  background: var(--state-playing-bg);
+}
+.journey-calendar-grid > span[data-conn-left] {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  box-shadow: -3px 0 0 0
+    color-mix(in srgb, var(--state-playing-bg) 55%, transparent);
+}
+.journey-calendar-grid > span[data-conn-right] {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.journey-calendar-grid > span[data-adding] {
+  background: var(--brand-blurple-wash);
+  box-shadow: inset 0 0 0 1px rgb(88 101 242 / 45%);
+  color: var(--tonal-brand-text);
+  transform: scale(1.05);
+}
+.journey-calendar-grid > span[data-removing] {
+  background: rgb(231 154 154 / 14%);
+  box-shadow: inset 0 0 0 1px rgb(231 154 154 / 45%);
+  color: #e79a9a;
+  transform: scale(1.05);
+}
+.journey-day-marks {
+  position: absolute;
+  top: 3px;
   right: 3px;
-  border-radius: 0 4px 4px 0;
+  display: inline-flex;
+  gap: 2px;
+  font-style: normal;
 }
-.journey-calendar-grid > span > i[data-cap-start][data-cap-end] {
-  border-radius: 4px;
+.journey-day-marks svg[data-mark="start"] {
+  color: var(--state-playing-text);
+}
+.journey-day-marks svg[data-mark="finish"] {
+  color: var(--state-completed-text);
+}
+.journey-calendar-jumps {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.journey-calendar-jumps > span {
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.journey-calendar-jumps button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--shell-line);
+  border-radius: 7px;
+  background: var(--console-raised);
+  color: var(--screen-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+.journey-calendar-jumps button:hover:not(:disabled) {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.journey-calendar-jumps button:disabled {
+  opacity: 0.4;
 }
 .journey-calendar-hint {
   margin: 0;
   color: var(--screen-muted);
   font-size: 11px;
+  line-height: 1.5;
+}
+/* Floating count pill while painting days */
+.journey-drag-pill {
+  position: fixed;
+  z-index: 140;
+  bottom: 26px;
+  left: 50%;
+  padding: 9px 16px;
+  border: 1px solid rgb(88 101 242 / 34%);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--console-raised) 82%, transparent);
+  backdrop-filter: blur(10px);
+  color: var(--tonal-brand-text);
+  font-size: 12px;
+  font-weight: 620;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 12px) scale(0.9);
+  transition:
+    opacity 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-color 150ms ease-out,
+    color 150ms ease-out;
+}
+.journey-drag-pill[data-visible] {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+.journey-drag-pill[data-mode="remove"] {
+  border-color: rgb(231 154 154 / 40%);
+  color: #e79a9a;
+}
+/* Accessible fallback + day editor */
+.journey-open-day {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+}
+.journey-open-day > button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 600;
+}
+.journey-open-day > button:hover:not(:disabled) {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.journey-day-editor {
+  animation: catalog-filter-content-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.journey-day-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.journey-day-heading > button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+}
+.journey-day-heading > button:hover:not(:disabled) {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.journey-day-heading > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.journey-day-heading span {
+  color: var(--brand-blurple-bright);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+}
+.journey-day-heading strong {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 14px;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+.journey-time-fields > span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 600;
+}
+.journey-time-fields > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.journey-time-fields > div > b {
+  margin-top: 8px;
+  color: var(--screen-muted);
+  font-size: 18px;
+  font-weight: 400;
+}
+.journey-time-fields label {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+}
+.journey-time-fields input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font: 560 15px var(--font-inter);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.journey-time-fields input:focus {
+  border-color: var(--brand-blurple);
+  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+}
+.journey-time-fields small {
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.journey-day-actions .journey-day-remove {
+  margin-right: auto;
+  color: #e79a9a;
+}
+.journey-day-actions .journey-day-remove:hover:not(:disabled) {
+  border-color: rgb(231 154 154 / 34%);
 }
 .journey-date-fields {
   grid-column: 1 / -1;
@@ -9287,6 +9490,20 @@ details.review-page-content p {
   box-shadow:
     inset 0 0 0 1px rgb(255 255 255 / 10%),
     7px 0 18px rgb(0 0 0 / 44%);
+  transition: transform 260ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+/* The card stack fans out gently on hover. */
+.list-preview-card:hover .list-cover-strip > span:nth-child(2) {
+  transform: translateX(4px);
+}
+.list-preview-card:hover .list-cover-strip > span:nth-child(3) {
+  transform: translateX(8px);
+}
+.list-preview-card:hover .list-cover-strip > span:nth-child(4) {
+  transform: translateX(12px);
+}
+.list-preview-card:hover .list-cover-strip > span:nth-child(5) {
+  transform: translateX(16px);
 }
 .list-cover-strip > span + span {
   margin-left: -11.5%;
@@ -9392,6 +9609,47 @@ details.review-page-content p {
 .ranked-list-item {
   position: relative;
   min-width: 0;
+  transition:
+    opacity 150ms ease-out,
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.list-items-grid .ranked-list-item {
+  animation: catalog-result-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: calc(var(--item-index, 0) * 22ms);
+}
+.ranked-list-item[data-dragged] {
+  transform: scale(0.97);
+}
+@keyframes list-drop-indicator-in {
+  from {
+    opacity: 0;
+    transform: scaleY(0.4);
+  }
+}
+.ranked-list-item[data-drop-before]::before,
+.ranked-list-item[data-drop-after]::after {
+  animation: list-drop-indicator-in 150ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.list-add-game-row {
+  animation: catalog-chip-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .list-cover-strip > span,
+  .list-preview-card:hover .list-cover-strip > span,
+  .list-items-grid .ranked-list-item,
+  .ranked-list-item,
+  .ranked-list-item[data-drop-before]::before,
+  .ranked-list-item[data-drop-after]::after,
+  .list-add-game-row,
+  .journey-day-editor,
+  .journey-calendar-grid > span:not(.journey-calendar-weekday) {
+    animation: none;
+    transition-duration: 0.01ms;
+    transform: none;
+  }
+  .journey-drag-pill {
+    transition-duration: 0.01ms;
+  }
 }
 .ranked-list-item > span {
   position: absolute;

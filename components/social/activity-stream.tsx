@@ -6,7 +6,7 @@ import {
   Clock3,
   EyeOff,
   Flag,
-  FlagTriangleRight,
+  Play,
   Star,
   Trophy,
   X,
@@ -225,7 +225,8 @@ export function ActivityStream({
                 ) : null}
                 {entry.marksStart && (
                   <span className="journey-milestone-badge" data-milestone="start">
-                    <Flag size={12} /> {pt ? "Começou" : "Started"}
+                    <Play size={12} fill="currentColor" />{" "}
+                    {pt ? "Começou" : "Started"}
                   </span>
                 )}
                 {entry.marksFinish && (
@@ -233,7 +234,7 @@ export function ActivityStream({
                     className="journey-milestone-badge"
                     data-milestone="finish"
                   >
-                    <FlagTriangleRight size={12} />{" "}
+                    <Flag size={12} fill="currentColor" />{" "}
                     {pt ? "Terminou" : "Finished"}
                   </span>
                 )}
