@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { hasLocale } from "../dictionaries";
+import "./settings.css";
+import "../profile.css";
 
 export default async function SettingsLayout({
   children,

@@ -511,6 +511,10 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
 }
 
 export async function getPopularGames(): Promise<Game[]> {
+  if (process.env.ULOGGD_E2E === "1") {
+    const { e2ePopularGames } = await import("@/lib/igdb-e2e");
+    return e2ePopularGames();
+  }
   return queryGames(
     `
     fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
@@ -523,6 +527,10 @@ export async function getPopularGames(): Promise<Game[]> {
 }
 
 export async function getGamesByIds(ids: number[]): Promise<Game[]> {
+  if (process.env.ULOGGD_E2E === "1") {
+    const { e2eGamesByIds } = await import("@/lib/igdb-e2e");
+    return e2eGamesByIds(ids);
+  }
   const safeIds = [...new Set(ids)]
     .filter((id) => Number.isInteger(id) && id > 0)
     .sort((a, b) => a - b);
@@ -608,6 +616,10 @@ export const getGameBySlug = cache(async function getGameBySlug(
   slug: string,
 ): Promise<GameDetail | null> {
   if (!/^[a-z0-9-]{1,255}$/.test(slug)) return null;
+  if (process.env.ULOGGD_E2E === "1") {
+    const { e2eGameBySlug } = await import("@/lib/igdb-e2e");
+    return e2eGameBySlug(slug);
+  }
   const games = await queryGamesRaw(
     `
     fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
@@ -800,6 +812,10 @@ export const getGameBySlug = cache(async function getGameBySlug(
 });
 
 export async function getDiscoveryGames(): Promise<DiscoveryGames> {
+  if (process.env.ULOGGD_E2E === "1") {
+    const { e2eDiscoveryGames } = await import("@/lib/igdb-e2e");
+    return e2eDiscoveryGames();
+  }
   // A day boundary keeps the IGDB request body stable so the data cache can hit.
   const now = Math.floor(Date.now() / (24 * 60 * 60 * 1000)) * 24 * 60 * 60;
   const inFourMonths = now + 60 * 60 * 24 * 120;
@@ -841,6 +857,10 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
 }
 
 export async function getGenreCollections(): Promise<GenreCollection[]> {
+  if (process.env.ULOGGD_E2E === "1") {
+    const { e2eGenreCollections } = await import("@/lib/igdb-e2e");
+    return e2eGenreCollections();
+  }
   const genres = [
     { id: 12, name: { "pt-BR": "RPG", en: "RPG" } },
     { id: 5, name: { "pt-BR": "Tiro", en: "Shooter" } },

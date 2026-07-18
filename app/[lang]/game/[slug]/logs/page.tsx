@@ -5,7 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { getGameBySlug } from "@/lib/igdb";
 import { getActivity } from "@/lib/social";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
 
 type Props = PageProps<"/[lang]/game/[slug]/logs">;
@@ -26,12 +26,10 @@ export default async function GameLogsPage({ params }: Props) {
   if (!hasLocale(lang)) notFound();
   const [game, supabase] = await Promise.all([
     getGameBySlug(slug),
-    createClient(),
+    getSupabase(),
   ]);
   if (!game) notFound();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login?next=/${lang}/game/${slug}/logs`);
   const entries = (
     await getActivity(supabase, {

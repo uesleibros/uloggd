@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { Suspense } from "react";
 import {
   Check,
   Clock3,
@@ -29,7 +30,7 @@ import {
   readAnonymousAgeAssertion,
 } from "@/lib/anonymous-age";
 import { resolveGameCover } from "@/lib/game-cover";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getActivity } from "@/lib/social";
 import { getSpawndGame } from "@/lib/spawnd";
 import { SpawndLogo } from "@/components/spawnd-logo";
@@ -37,6 +38,28 @@ import { hasLocale } from "../../dictionaries";
 import { ShareButton } from "@/components/share-button";
 
 type Props = PageProps<"/[lang]/game/[slug]">;
+
+// Streams the community feed after first paint: getActivity fans out into
+// Supabase and IGDB lookups, so it must not block the page shell.
+async function GameCommunityStream({
+  gameId,
+  lang,
+  viewerId,
+}: {
+  gameId: number;
+  lang: "pt-BR" | "en";
+  viewerId?: string;
+}) {
+  if (process.env.ULOGGD_E2E === "1")
+    return <ActivityStream entries={[]} lang={lang} viewerId={viewerId} />;
+  const supabase = await getSupabase();
+  const entries = await getActivity(supabase, {
+    gameId,
+    limit: 12,
+    viewerId: viewerId ?? null,
+  });
+  return <ActivityStream entries={entries} lang={lang} viewerId={viewerId} />;
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, slug } = await params;
@@ -72,15 +95,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function GamePage({ params }: Props) {
   const { lang, slug } = await params;
   if (!hasLocale(lang)) notFound();
-  const [game, supabase] = await Promise.all([
-    getGameBySlug(slug),
-    createClient(),
-  ]);
+  const [game, user] = await Promise.all([getGameBySlug(slug), getAuthUser()]);
   if (!game) notFound();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = process.env.ULOGGD_E2E === "1" ? null : await getSupabase();
   const brazilRating = game.ageRatings.find((rating) => rating.region === "BR");
   const minimumAge = brazilRating?.minimumAge ?? 0;
   const anonymousAge = user
@@ -88,13 +106,43 @@ export default async function GamePage({ params }: Props) {
     : readAnonymousAgeAssertion(
         (await cookies()).get(ANONYMOUS_AGE_COOKIE)?.value,
       );
-  const { data: ageProfile } = user
-    ? await supabase
-        .from("profiles")
-        .select("birth_date")
-        .eq("id", user.id)
-        .maybeSingle()
-    : { data: null };
+  const relatedIds = game.related.flatMap((group) =>
+    group.games.map((related) => related.id),
+  );
+  const [ageProfileResult, savedResult, listsResult, logResult] =
+    await Promise.all([
+      user && supabase
+        ? supabase
+            .from("profiles")
+            .select("birth_date")
+            .eq("id", user.id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      user && supabase
+        ? supabase
+            .from("user_games")
+            .select(
+              "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
+            )
+            .eq("profile_id", user.id)
+            .in("igdb_id", [game.id, ...relatedIds])
+        : Promise.resolve({ data: [] }),
+      user && supabase
+        ? supabase
+            .from("game_lists")
+            .select("id,name")
+            .eq("profile_id", user.id)
+            .order("updated_at", { ascending: false })
+        : Promise.resolve({ data: [] }),
+      user && supabase
+        ? supabase
+            .from("diary_entries")
+            .select("id", { count: "exact", head: true })
+            .eq("profile_id", user.id)
+            .eq("igdb_id", game.id)
+        : Promise.resolve({ count: 0 }),
+    ]);
+  const ageProfile = ageProfileResult.data;
   if (user && !ageProfile?.birth_date) redirect(`/${lang}/onboarding/username`);
   if (
     brazilRating &&
@@ -113,40 +161,6 @@ export default async function GamePage({ params }: Props) {
       />
     );
   }
-  const relatedIds = game.related.flatMap((group) =>
-    group.games.map((related) => related.id),
-  );
-  const [savedResult, listsResult, logResult, communityEntries] =
-    await Promise.all([
-      user
-        ? supabase
-            .from("user_games")
-            .select(
-              "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-            )
-            .eq("profile_id", user.id)
-            .in("igdb_id", [game.id, ...relatedIds])
-        : Promise.resolve({ data: [] }),
-      user
-        ? supabase
-            .from("game_lists")
-            .select("id,name")
-            .eq("profile_id", user.id)
-            .order("updated_at", { ascending: false })
-        : Promise.resolve({ data: [] }),
-      user
-        ? supabase
-            .from("diary_entries")
-            .select("id", { count: "exact", head: true })
-            .eq("profile_id", user.id)
-            .eq("igdb_id", game.id)
-        : Promise.resolve({ count: 0 }),
-      getActivity(supabase, {
-        gameId: game.id,
-        limit: 12,
-        viewerId: user?.id ?? null,
-      }),
-    ]);
   const savedGames = savedResult.data;
   const userLists = listsResult.data;
   const ownLogCount = logResult.count;
@@ -608,11 +622,20 @@ export default async function GamePage({ params }: Props) {
                 </p>
               </div>
             </div>
-            <ActivityStream
-              entries={communityEntries}
-              lang={lang}
-              viewerId={user?.id}
-            />
+            <Suspense
+              fallback={
+                <div className="skeleton-stream" aria-hidden>
+                  <div className="skeleton-block skeleton-title" />
+                  <div className="skeleton-block skeleton-subtitle" />
+                </div>
+              }
+            >
+              <GameCommunityStream
+                gameId={game.id}
+                lang={lang}
+                viewerId={user?.id}
+              />
+            </Suspense>
           </section>
         }
       />

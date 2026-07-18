@@ -1,0 +1,505 @@
+/* MFA challenge and TOTP enrollment. Split out of globals.css. */
+.mfa-dialog-overlay {
+  position: fixed;
+  z-index: 140;
+  inset: 0;
+  background: rgb(4 3 8 / 0.76);
+  backdrop-filter: blur(6px);
+}
+
+.mfa-setup-dialog,
+.mfa-remove-dialog {
+  position: fixed;
+  z-index: 141;
+  top: 50%;
+  left: 50%;
+  max-height: calc(100dvh - 28px);
+  overflow: hidden auto;
+  border: 1px solid var(--shell-line-strong);
+  background: var(--console-panel);
+  box-shadow: 0 28px 90px rgb(0 0 0 / 0.58);
+  transform: translate(-50%, -50%);
+}
+
+.mfa-setup-dialog {
+  width: min(650px, calc(100vw - 28px));
+  border-radius: 15px;
+}
+
+.mfa-setup-dialog > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px;
+  border-bottom: 1px solid var(--shell-line);
+}
+
+.mfa-setup-dialog header > div > span {
+  color: var(--brand-blurple-bright);
+  font-size: 8px;
+  font-weight: 680;
+  letter-spacing: 0.09em;
+}
+
+.mfa-setup-dialog h2,
+.mfa-remove-dialog h2 {
+  color: var(--screen-white);
+  letter-spacing: -0.035em;
+}
+
+.mfa-setup-dialog h2 {
+  margin-top: 5px;
+  font-size: 20px;
+}
+
+.mfa-setup-dialog header p {
+  margin-top: 5px;
+  color: var(--screen-muted);
+  font-size: 9px;
+}
+
+.mfa-setup-dialog header button,
+.mfa-remove-dialog > button:first-child {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--screen-muted);
+}
+
+.mfa-setup-dialog > form {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.mfa-setup-grid {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+}
+
+.mfa-qr-frame {
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  border-radius: 12px;
+  background: white;
+}
+
+.mfa-qr-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.mfa-setup-steps {
+  display: grid;
+  gap: 12px;
+}
+
+.mfa-setup-steps > p {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  color: var(--screen-dim);
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.mfa-setup-steps > p > span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.mfa-secret {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-dim);
+}
+
+.mfa-secret code {
+  overflow: hidden;
+  font-size: 9px;
+  text-overflow: ellipsis;
+}
+
+.mfa-secret[data-copied] {
+  border-color: rgb(73 174 122 / 0.35);
+  color: var(--safe-green);
+  animation: mfa-copy-confirm 260ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mfa-setup-dialog form > label {
+  display: grid;
+  gap: 7px;
+  color: var(--screen-dim);
+  font-size: 10px;
+}
+
+.mfa-setup-dialog form > label input,
+.mfa-remove-dialog input,
+.mfa-challenge-card input {
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.22em;
+  text-align: center;
+}
+
+.mfa-setup-dialog form > p[role="alert"],
+.mfa-remove-dialog [role="alert"] {
+  color: #e2aaaa;
+  font-size: 9px;
+}
+
+.mfa-setup-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.mfa-setup-dialog footer button,
+.mfa-remove-dialog form button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+  padding-inline: 15px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 10px;
+  font-weight: 620;
+}
+
+.mfa-setup-dialog footer button[type="submit"] {
+  background: var(--brand-blurple);
+  color: white;
+}
+
+.mfa-remove-dialog {
+  display: grid;
+  justify-items: center;
+  width: min(400px, calc(100vw - 28px));
+  padding: 26px;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.mfa-remove-dialog > button:first-child {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.mfa-remove-dialog > span {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  background: rgb(210 105 105 / 0.1);
+  color: #e2aaaa;
+}
+
+.mfa-remove-dialog h2 {
+  font-size: 19px;
+}
+
+.mfa-remove-dialog > p {
+  margin-top: 8px;
+  color: var(--screen-muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.mfa-remove-dialog form {
+  display: grid;
+  gap: 9px;
+  width: 100%;
+  margin-top: 18px;
+}
+
+.mfa-remove-dialog form button {
+  background: rgb(184 70 70 / 0.16);
+  color: #efb0b0;
+}
+
+.mfa-dialog-overlay[data-state="open"] {
+  animation: mfa-overlay-in 180ms ease-out both;
+}
+
+.mfa-dialog-overlay[data-state="closed"] {
+  animation: mfa-overlay-out 130ms ease-in both;
+}
+
+.mfa-setup-dialog[data-state="open"],
+.mfa-remove-dialog[data-state="open"] {
+  animation: mfa-dialog-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.mfa-setup-dialog[data-state="closed"],
+.mfa-remove-dialog[data-state="closed"] {
+  pointer-events: none;
+  animation: mfa-dialog-out 140ms cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+.mfa-setup-dialog button,
+.mfa-remove-dialog button {
+  transition:
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 150ms ease-out,
+    color 150ms ease-out,
+    border-color 150ms ease-out;
+}
+
+.mfa-setup-dialog button:hover:not(:disabled),
+.mfa-remove-dialog button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.mfa-setup-dialog button:active:not(:disabled),
+.mfa-remove-dialog button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.mfa-challenge-page {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: calc(100dvh - 64px);
+  padding: 32px 18px;
+  background:
+    radial-gradient(
+      circle at 50% 22%,
+      var(--brand-blurple-wash),
+      transparent 34%
+    ),
+    var(--console-canvas);
+}
+
+.mfa-challenge-card {
+  display: grid;
+  justify-items: center;
+  width: min(430px, 100%);
+  padding: 30px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 15px;
+  background: var(--console-panel);
+  box-shadow: 0 24px 70px rgb(0 0 0 / 0.28);
+  text-align: center;
+  animation: mfa-card-in 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.mfa-challenge-mark {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  margin-bottom: 17px;
+  border-radius: 15px;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
+
+.mfa-challenge-card > span {
+  color: var(--brand-blurple-bright);
+  font-size: 8px;
+  font-weight: 680;
+  letter-spacing: 0.1em;
+}
+
+.mfa-challenge-card h1 {
+  margin-top: 7px;
+  color: var(--screen-white);
+  font-size: 25px;
+  letter-spacing: -0.045em;
+}
+
+.mfa-challenge-card > p {
+  max-width: 340px;
+  margin-top: 9px;
+  color: var(--screen-muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.mfa-factor-picker {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  margin-top: 18px;
+}
+
+.mfa-factor-picker button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding-inline: 11px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  font-size: 9px;
+}
+
+.mfa-factor-picker button[aria-checked="true"] {
+  border-color: rgb(88 101 242 / 0.48);
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
+}
+
+.mfa-challenge-card form {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.mfa-challenge-card label {
+  display: grid;
+  gap: 7px;
+  color: var(--screen-dim);
+  font-size: 9px;
+  text-align: left;
+}
+
+.mfa-challenge-card input {
+  width: 100%;
+  height: 50px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  outline: 0;
+  background: var(--console-inset);
+  color: var(--screen-white);
+}
+
+.mfa-challenge-card input:focus {
+  border-color: var(--brand-blurple);
+  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+}
+
+.mfa-challenge-card form > p {
+  color: #e2aaaa;
+  font-size: 9px;
+}
+
+.mfa-challenge-card form > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--brand-blurple);
+  color: white;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.mfa-challenge-signout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  margin-top: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--screen-muted);
+  font-size: 9px;
+}
+
+.mfa-challenge-card button {
+  transition:
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.mfa-challenge-card button:hover:not(:disabled) {
+  color: var(--screen-white);
+  transform: translateY(-1px);
+}
+
+.mfa-challenge-card button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+@media (max-width: 620px) {
+
+  .mfa-setup-dialog,
+  .mfa-remove-dialog {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    border-radius: 15px 15px 0 0;
+    transform: none;
+  }
+
+  .mfa-setup-dialog[data-state="open"],
+  .mfa-remove-dialog[data-state="open"] {
+    animation-name: mfa-sheet-in;
+  }
+
+  .mfa-setup-dialog[data-state="closed"],
+  .mfa-remove-dialog[data-state="closed"] {
+    animation-name: mfa-sheet-out;
+  }
+
+  .mfa-setup-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mfa-qr-frame {
+    width: min(210px, 100%);
+    margin-inline: auto;
+  }
+
+  .mfa-setup-dialog footer button {
+    flex: 1;
+  }
+
+  .mfa-challenge-card {
+    padding: 26px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mfa-dialog-overlay[data-state],
+  .mfa-setup-dialog[data-state],
+  .mfa-remove-dialog[data-state],
+  .mfa-challenge-card,
+  .mfa-secret[data-copied] {
+    animation: none;
+    transition-duration: 0.01ms;
+  }
+}

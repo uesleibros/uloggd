@@ -6,8 +6,13 @@ import { ImageIcon, LoaderCircle, Save, Trash2, Upload } from "lucide-react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
-import { ImageCropDialog } from "./image-crop-dialog";
+
+const ImageCropDialog = dynamic(
+  () => import("./image-crop-dialog").then((mod) => mod.ImageCropDialog),
+  { ssr: false },
+);
 
 export type Profile = {
   username: string;

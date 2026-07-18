@@ -21,15 +21,16 @@ import { ProfileActions } from "@/components/profile-actions";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getActivity } from "@/lib/social";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
+import "../../profile.css";
 
 type Props = PageProps<"/[lang]/u/[username]">;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, username } = await params;
   if (!hasLocale(lang)) return {};
-  const supabase = await createClient();
+  const supabase = await getSupabase();
   const { data: profile } = await supabase
     .from("profiles")
     .select("username,display_name,bio,avatar_url,banner_url")
@@ -70,13 +71,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProfilePage({ params }: Props) {
   const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await createClient();
-  const [
-    { data: profile },
-    {
-      data: { user },
-    },
-  ] = await Promise.all([
+  const supabase = await getSupabase();
+  const [{ data: profile }, user] = await Promise.all([
     supabase
       .from("profiles")
       .select(
@@ -84,7 +80,7 @@ export default async function ProfilePage({ params }: Props) {
       )
       .ilike("username", username)
       .maybeSingle(),
-    supabase.auth.getUser(),
+    getAuthUser(),
   ]);
   if (!profile?.username) notFound();
   const [

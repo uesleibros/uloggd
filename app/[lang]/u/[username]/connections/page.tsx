@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { VerifiedMark } from "@/components/verified-badge";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../../dictionaries";
+import "../../../profile.css";
 
 type Props = {
   params: Promise<{ lang: string; username: string }>;

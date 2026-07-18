@@ -6,7 +6,7 @@ import {
   RemoveListItem,
 } from "@/components/social/list-owner-controls";
 import { getGamesByIds } from "@/lib/igdb";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 
 type Props = PageProps<"/[lang]/lists/[id]">;
@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
   if (!hasLocale(lang) || !/^[0-9a-f-]{36}$/i.test(id)) return {};
   const { data: list } = await (
-    await createClient()
+    await getSupabase()
   )
     .from("game_lists")
     .select("name,description,profiles!game_lists_profile_id_fkey(username)")
@@ -44,13 +44,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ListPage({ params }: Props) {
   const { lang, id } = await params;
   if (!hasLocale(lang) || !/^[0-9a-f-]{36}$/i.test(id)) notFound();
-  const supabase = await createClient();
-  const [
-    { data: list },
-    {
-      data: { user },
-    },
-  ] = await Promise.all([
+  const supabase = await getSupabase();
+  const [{ data: list }, user] = await Promise.all([
     supabase
       .from("game_lists")
       .select(
@@ -58,7 +53,7 @@ export default async function ListPage({ params }: Props) {
       )
       .eq("id", id)
       .maybeSingle(),
-    supabase.auth.getUser(),
+    getAuthUser(),
   ]);
   if (!list) notFound();
   const items = [...(list.game_list_items ?? [])].sort(

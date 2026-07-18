@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LibraryBig, ListChecks, RefreshCw } from "lucide-react";
 import { redirect, notFound } from "next/navigation";
 import { LoginPanel } from "@/components/auth/login-panel";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getDictionary, hasLocale } from "../dictionaries";
 
 export async function generateMetadata({
@@ -19,13 +19,8 @@ export default async function LoginPage({
 }: PageProps<"/[lang]/login">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await createClient();
-  const [
-    {
-      data: { user },
-    },
-    d,
-  ] = await Promise.all([supabase.auth.getUser(), getDictionary(lang)]);
+  const supabase = await getSupabase();
+  const [user, d] = await Promise.all([getAuthUser(), getDictionary(lang)]);
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")

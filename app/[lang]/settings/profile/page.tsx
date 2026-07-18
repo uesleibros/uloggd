@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { AccountSettings } from "@/components/settings/account-settings";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 
 export default async function ProfileSettingsPage({
@@ -10,10 +10,8 @@ export default async function ProfileSettingsPage({
 }) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = await getSupabase();
+  const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login?next=/${lang}/settings/profile`);
   const [{ data: profile }, { count: infractions }] = await Promise.all([
     supabase

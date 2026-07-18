@@ -7,6 +7,7 @@ import { resolveGameCover } from "@/lib/game-cover";
 import { getGamesByIds } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../../dictionaries";
+import "../../../profile.css";
 
 type Props = { params: Promise<{ lang: string; username: string }> };
 

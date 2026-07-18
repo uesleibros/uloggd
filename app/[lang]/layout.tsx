@@ -9,10 +9,9 @@ import { CookieConsent } from "@/components/cookie-consent";
 import { SmartHeader } from "@/components/smart-header";
 import { ThemeManager } from "@/components/theme-manager";
 import { themeBootstrapScript } from "@/lib/theme";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getNavigationAccount } from "@/lib/supabase/auth";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
 import "../globals.css";
-import "react-image-crop/dist/ReactCrop.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
@@ -41,19 +40,11 @@ export default async function LocaleLayout({
 }: LayoutProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const [dictionary, supabase] = await Promise.all([
+  const [dictionary, user, account] = await Promise.all([
     getDictionary(lang),
-    process.env.ULOGGD_E2E === "1" ? null : createClient(),
+    getAuthUser(),
+    getNavigationAccount(),
   ]);
-  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
-  const { data: profile } =
-    user && supabase
-      ? await supabase
-          .from("profiles")
-          .select("username,display_name,avatar_url,verified")
-          .eq("id", user.id)
-          .maybeSingle()
-      : { data: null };
 
   return (
     <html lang={lang} className={inter.variable} suppressHydrationWarning>
@@ -70,17 +61,7 @@ export default async function LocaleLayout({
             lang={lang}
             dictionary={dictionary}
             searchCacheScope={user?.id ?? "anonymous"}
-            account={
-              user
-                ? {
-                    email: user.email ?? "",
-                    username: profile?.username ?? null,
-                    displayName: profile?.display_name ?? null,
-                    avatarUrl: profile?.avatar_url ?? null,
-                    verified: profile?.verified ?? false,
-                  }
-                : null
-            }
+            account={account}
           />
           <div className="platform-content">
             <SmartHeader className="content-header">
