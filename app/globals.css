@@ -540,7 +540,7 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid var(--shell-line-strong);
   border-radius: 5px;
   color: var(--screen-muted);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -552,7 +552,7 @@ html[data-sidebar-ready] .account-button > svg {
 .nav-label {
   margin: 0 10px 9px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -633,7 +633,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .locale-switcher-trigger small {
   color: var(--screen-muted);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
 }
 .locale-switcher-trigger[data-state="open"] > svg:last-child {
   transform: rotate(180deg);
@@ -656,7 +656,7 @@ html[data-sidebar-ready] .account-button > svg {
 .locale-menu-label {
   padding: 7px 9px 6px;
   color: var(--screen-muted);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -675,7 +675,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .locale-menu-item small {
   color: var(--screen-muted);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
 }
 .locale-menu-item svg {
   color: var(--brand-blurple-bright);
@@ -742,7 +742,7 @@ html[data-sidebar-ready] .account-button > svg {
 .account-button small {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .account-button > svg {
   color: var(--screen-muted);
@@ -803,12 +803,12 @@ html[data-sidebar-ready] .account-button > svg {
 .account-menu-identity span {
   margin-top: 4px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .account-menu-identity small {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 .account-menu [role="separator"] {
   height: 1px;
@@ -856,7 +856,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .feed-header > div > span {
   color: var(--screen-muted);
-  font: 600 10px var(--font-inter);
+  font: 600 11px var(--font-inter);
   letter-spacing: 0.08em;
 }
 .feed-header h1 {
@@ -920,7 +920,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .catalog-search-field kbd {
   border: 1px solid var(--shell-line);
-  font: 500 10px var(--font-inter);
+  font: 500 11px var(--font-inter);
 }
 .desktop-search-dropdown {
   position: absolute;
@@ -947,7 +947,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-bottom: 1px solid var(--shell-line);
   background: var(--overlay-panel-sticky);
   color: var(--screen-muted);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -1023,14 +1023,14 @@ html[data-sidebar-ready] .account-button > svg {
 .search-result-copy small {
   margin-top: 4px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .search-result-kind {
   padding: 3px 5px;
   border: 1px solid var(--shell-line);
   border-radius: 4px;
   color: var(--screen-muted);
-  font: 600 8px var(--font-inter);
+  font: 600 10px var(--font-inter);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -1050,7 +1050,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 6px;
   background: rgb(244 128 44 / 8%);
   color: #f3b07e;
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 620;
   letter-spacing: 0.025em;
 }
@@ -1108,7 +1108,7 @@ html[data-sidebar-ready] .account-button > svg {
 .mobile-search-heading p {
   margin: 4px 0 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .mobile-search-heading button {
   display: grid;
@@ -1199,7 +1199,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .featured-kicker {
   color: var(--brand-blurple-bright);
-  font: 650 9px var(--font-inter);
+  font: 650 11px var(--font-inter);
   letter-spacing: 0.1em;
 }
 .eyebrow {
@@ -1207,7 +1207,7 @@ html[data-sidebar-ready] .account-button > svg {
   align-items: center;
   gap: 6px;
   color: #bcaeff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 680;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1226,7 +1226,7 @@ html[data-sidebar-ready] .account-button > svg {
   align-items: center;
   gap: 8px;
   color: #c6c1ca;
-  font-size: 10px;
+  font-size: 11px;
 }
 .featured-meta > span {
   display: flex;
@@ -1315,7 +1315,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .genre-section-heading > span {
   color: var(--brand-blurple-bright);
-  font: 650 9px var(--font-inter);
+  font: 650 11px var(--font-inter);
   letter-spacing: 0.09em;
 }
 .genre-section-heading h2 {
@@ -1366,7 +1366,7 @@ html[data-sidebar-ready] .account-button > svg {
 .section-heading p {
   margin: 5px 0 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .section-heading > a {
   display: flex;
@@ -1374,7 +1374,7 @@ html[data-sidebar-ready] .account-button > svg {
   gap: 5px;
   min-height: 28px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
 }
 .section-heading > a:hover {
@@ -1492,7 +1492,7 @@ html[data-sidebar-ready] .account-button > svg {
   background: rgb(8 7 10 / 80%);
   color: #d8d3dc;
   backdrop-filter: blur(6px);
-  font: 650 9px var(--font-inter);
+  font: 650 11px var(--font-inter);
   pointer-events: none;
 }
 .quick-card-details {
@@ -1525,7 +1525,7 @@ html[data-sidebar-ready] .account-button > svg {
   align-items: center;
   gap: 3px;
   color: var(--achievement-gold);
-  font: 650 9px var(--font-inter);
+  font: 650 11px var(--font-inter);
 }
 .quick-action-bar {
   --screen-white: var(--image-foreground);
@@ -1622,7 +1622,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 0 8px;
   border-radius: 5px;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 450;
   outline: 0;
   cursor: pointer;
@@ -1649,7 +1649,7 @@ html[data-sidebar-ready] .account-button > svg {
   display: block;
   margin-bottom: 5px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .quick-menu [role="menuitem"].quick-menu-remove {
   color: #e2aaaa;
@@ -1692,7 +1692,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 4px;
   background: rgb(7 6 9 / 90%);
   color: #ffaaa4;
-  font-size: 8px;
+  font-size: 10px;
   text-align: center;
 }
 @keyframes quick-menu-in {
@@ -1717,7 +1717,7 @@ html[data-sidebar-ready] .account-button > svg {
   margin: 0;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1739,7 +1739,7 @@ html[data-sidebar-ready] .account-button > svg {
   flex: none;
   gap: 3px;
   color: var(--achievement-gold);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 620;
 }
 
@@ -1756,7 +1756,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .discoveries-heading > span {
   color: var(--brand-blurple-bright);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
   letter-spacing: 0.08em;
 }
 .discoveries-heading h2 {
@@ -1772,7 +1772,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .discoveries-heading p {
   margin: 5px 0 0;
-  font-size: 10px;
+  font-size: 11px;
 }
 .discovery-lanes {
   border-top: 1px solid var(--shell-line);
@@ -1796,7 +1796,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .discovery-lane > header > span {
   color: var(--screen-muted);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
   font-variant-numeric: tabular-nums;
 }
 .discovery-lane h3 {
@@ -1807,7 +1807,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .discovery-lane header p {
   margin: 5px 0 0;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.5;
   text-wrap: pretty;
 }
@@ -1924,7 +1924,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
 }
@@ -1936,7 +1936,7 @@ html[data-sidebar-ready] .account-button > svg {
 .game-cover-change span {
   margin-left: auto;
   color: var(--screen-muted);
-  font: 550 8px var(--font-inter);
+  font: 550 10px var(--font-inter);
 }
 .cover-modal-backdrop {
   position: fixed;
@@ -1980,7 +1980,7 @@ html[data-sidebar-ready] .account-button > svg {
 .cover-modal > header p {
   margin: 5px 0 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .cover-modal > header button {
   display: grid;
@@ -2050,7 +2050,7 @@ html[data-sidebar-ready] .account-button > svg {
   margin-top: 7px;
   overflow: hidden;
   color: var(--screen-dim);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 520;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2059,13 +2059,13 @@ html[data-sidebar-ready] .account-button > svg {
   display: block;
   margin-top: 2px;
   color: var(--safe-green);
-  font-size: 8px;
+  font-size: 10px;
 }
 .cover-modal > p {
   margin: 0;
   padding: 0 20px 12px;
   color: var(--danger-text);
-  font-size: 9px;
+  font-size: 11px;
 }
 .cover-modal > footer {
   display: flex;
@@ -2087,7 +2087,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 7px;
   background: transparent;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 520;
   cursor: pointer;
 }
@@ -2134,7 +2134,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .game-time-panel header span {
   color: var(--brand-blurple-bright);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
   letter-spacing: 0.07em;
 }
 .game-time-panel h2 {
@@ -2158,7 +2158,7 @@ html[data-sidebar-ready] .account-button > svg {
   align-items: center;
   gap: 6px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .game-time-panel dd {
   margin: 0;
@@ -2169,7 +2169,7 @@ html[data-sidebar-ready] .account-button > svg {
 .game-time-panel > p {
   margin: 10px 0 0;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   text-align: right;
 }
 .game-context-rail .game-score-line {
@@ -2189,7 +2189,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .game-similar-rail > header span {
   color: var(--brand-blurple-bright);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
   letter-spacing: 0.07em;
 }
 .game-similar-rail > header h2 {
@@ -2241,14 +2241,14 @@ html[data-sidebar-ready] .account-button > svg {
 .game-similar-rail small {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .game-title-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 12px;
   color: var(--screen-muted);
-  font: 600 10px var(--font-inter);
+  font: 600 11px var(--font-inter);
 }
 .game-page-content h1 {
   margin: 10px 0 16px;
@@ -2272,7 +2272,7 @@ html[data-sidebar-ready] .account-button > svg {
   display: block;
   margin-bottom: 5px;
   color: var(--screen-muted);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
   letter-spacing: 0.07em;
 }
 .star-rating {
@@ -2380,7 +2380,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 450;
   cursor: pointer;
 }
@@ -2398,7 +2398,7 @@ html[data-sidebar-ready] .account-button > svg {
   flex-basis: 100%;
   margin: 0;
   color: var(--state-liked-text);
-  font-size: 9px;
+  font-size: 11px;
 }
 .game-actions-signed-out {
   margin: 0 0 24px;
@@ -2425,7 +2425,7 @@ html[data-sidebar-ready] .account-button > svg {
 .game-score-line span,
 .game-score-line p {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .game-score-line p {
   margin: 0;
@@ -2460,7 +2460,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .game-details dt {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .game-details dd {
   margin: 0;
@@ -2489,7 +2489,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .game-section-heading span {
   color: var(--brand-blurple-bright);
-  font: 600 8px var(--font-inter);
+  font: 600 10px var(--font-inter);
   letter-spacing: 0.09em;
 }
 .game-section-heading h2 {
@@ -2500,7 +2500,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .game-section-heading small {
   color: var(--screen-muted);
-  font: 550 9px var(--font-inter);
+  font: 550 11px var(--font-inter);
 }
 .game-gallery-grid {
   display: grid;
@@ -2603,7 +2603,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 5px;
   background: rgb(15 14 17 / 82%);
   color: var(--screen-dim);
-  font: 550 9px var(--font-inter);
+  font: 550 11px var(--font-inter);
   transform: translateX(-50%);
 }
 .media-lightbox-pages {
@@ -2656,7 +2656,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding-inline: 3px;
   border-radius: 4px;
   background: rgb(7 6 9 / 78%);
-  font: 650 8px var(--font-inter);
+  font: 650 10px var(--font-inter);
   font-variant-numeric: tabular-nums;
 }
 .game-video-grid {
@@ -2687,7 +2687,7 @@ html[data-sidebar-ready] .account-button > svg {
   gap: 6px;
   margin: 8px 0 0;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
 }
 .game-event-list {
@@ -2724,7 +2724,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .game-event-list span {
   color: var(--brand-blurple-bright);
-  font: 550 8px var(--font-inter);
+  font: 550 10px var(--font-inter);
   text-transform: uppercase;
 }
 .game-event-list h3 {
@@ -2737,7 +2737,7 @@ html[data-sidebar-ready] .account-button > svg {
   margin: 5px 0 0;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.45;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -2759,7 +2759,7 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid var(--shell-line);
   border-radius: 6px;
   color: var(--screen-dim);
-  font-size: 9px;
+  font-size: 11px;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2798,7 +2798,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 6px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 480;
   cursor: pointer;
 }
@@ -2814,7 +2814,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .related-tabs button span {
   color: var(--screen-muted);
-  font: 550 8px var(--font-inter);
+  font: 550 10px var(--font-inter);
 }
 .shelf-game {
   min-width: 0;
@@ -2849,7 +2849,7 @@ html[data-sidebar-ready] .account-button > svg {
   background: rgb(8 7 10 / 80%);
   color: #d8d3dc;
   backdrop-filter: blur(6px);
-  font: 650 9px var(--font-inter);
+  font: 650 11px var(--font-inter);
 }
 .shelf-cover > button {
   position: absolute;
@@ -2889,7 +2889,7 @@ html[data-sidebar-ready] .account-button > svg {
   margin: 0;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2929,7 +2929,7 @@ html[data-sidebar-ready] .account-button > svg {
 .list-main p {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .list-rating {
   display: grid;
@@ -2943,7 +2943,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .list-rating span {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 
 /* Context rail */
@@ -2966,7 +2966,7 @@ html[data-sidebar-ready] .account-button > svg {
   align-items: center;
   gap: 5px;
   color: var(--safe-green);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 650;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -2982,7 +2982,7 @@ html[data-sidebar-ready] .account-button > svg {
 .rail-intro p {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.55;
   text-wrap: pretty;
 }
@@ -2998,7 +2998,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 620;
   cursor: pointer;
 }
@@ -3023,7 +3023,7 @@ html[data-sidebar-ready] .account-button > svg {
 .rail-library-stats dt {
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3050,7 +3050,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .rail-title span {
   color: var(--screen-muted);
-  font: 500 9px var(--font-inter);
+  font: 500 11px var(--font-inter);
 }
 .trend {
   display: grid;
@@ -3075,7 +3075,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .trend > span {
   color: var(--screen-muted);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
   font-variant-numeric: tabular-nums;
 }
 .trend strong,
@@ -3086,13 +3086,13 @@ html[data-sidebar-ready] .account-button > svg {
   white-space: nowrap;
 }
 .trend strong {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 550;
 }
 .trend small {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 .trend > svg {
   color: var(--screen-muted);
@@ -3115,7 +3115,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 24px 32px;
   border-top: 1px solid var(--shell-line);
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.5;
 }
 .platform-footer > div,
@@ -3183,7 +3183,7 @@ html[data-sidebar-ready] .account-button > svg {
 .cookie-banner-copy p {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
   text-wrap: pretty;
 }
@@ -3205,7 +3205,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 7px;
   background: transparent;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -3260,7 +3260,7 @@ html[data-sidebar-ready] .account-button > svg {
 .cookie-modal > header p {
   margin: 5px 0 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 .cookie-modal > header button {
@@ -3305,7 +3305,7 @@ html[data-sidebar-ready] .account-button > svg {
   display: block;
   margin-top: 3px;
   color: var(--screen-muted);
-  font: 550 8px var(--font-inter);
+  font: 550 10px var(--font-inter);
   text-transform: uppercase;
 }
 .cookie-category-state {
@@ -3327,7 +3327,7 @@ html[data-sidebar-ready] .account-button > svg {
   max-width: 470px;
   margin: 8px 0 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.55;
 }
 .cookie-modal > footer {
@@ -3340,7 +3340,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .cookie-modal > footer a {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -3527,7 +3527,7 @@ html[data-sidebar-ready] .account-button > svg {
 .drawer-account > div span {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 @keyframes veil-in {
   from {
@@ -3698,7 +3698,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .login-highlight-list article > span {
   color: var(--screen-muted);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
 }
 .login-highlight-list article > svg {
   color: #8f97f7;
@@ -3783,7 +3783,7 @@ html[data-sidebar-ready] .account-button > svg {
 .passkey-button small {
   margin-top: 3px;
   color: rgb(255 255 255 / 72%);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.35;
 }
 .auth-divider {
@@ -3792,7 +3792,7 @@ html[data-sidebar-ready] .account-button > svg {
   gap: 12px;
   margin: 0;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -3866,7 +3866,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .auth-field-error,
 .auth-field-hint {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 450;
   line-height: 1.45;
   text-wrap: pretty;
@@ -4006,14 +4006,14 @@ html[data-sidebar-ready] .account-button > svg {
   min-height: 18px;
   margin: -6px 0 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .field-success {
   color: var(--safe-green);
 }
 .field-error {
   color: #e2aaaa;
-  font-size: 10px;
+  font-size: 11px;
 }
 .provider-grid button {
   display: flex;
@@ -4051,7 +4051,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 7px;
   background: rgb(210 105 105 / 8%);
   color: #e2aaaa;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.45;
 }
 .auth-assurance {
@@ -4060,7 +4060,7 @@ html[data-sidebar-ready] .account-button > svg {
   gap: 9px;
   margin-top: 22px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.5;
 }
 .auth-assurance svg {
@@ -4071,12 +4071,12 @@ html[data-sidebar-ready] .account-button > svg {
   display: block;
   margin-bottom: 2px;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
 }
 .auth-legal {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.55;
   text-align: center;
 }
@@ -4569,7 +4569,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 5px;
   background: var(--quiet-hover);
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   transition:
     background-color 150ms ease-out,
     color 150ms ease-out;
@@ -4734,7 +4734,7 @@ html[data-sidebar-ready] .account-button > svg {
   align-items: center;
   gap: 6px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .reviews-overview dt svg {
   color: var(--brand-blurple-bright);
@@ -4792,12 +4792,12 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .activity-aspects dt {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 .activity-aspects dd {
   margin: 0;
   color: var(--achievement-gold);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -4824,7 +4824,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .review-writing-field > span small {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 .review-writing-field textarea {
@@ -4889,7 +4889,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 7px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 520;
   transition:
     background-color 150ms ease-out,
@@ -4932,7 +4932,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 5px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 8px;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
 .review-editor-section {
@@ -4971,7 +4971,7 @@ html[data-sidebar-ready] .account-button > svg {
 .review-score-stage > header small,
 .review-aspects-section > header small {
   color: var(--achievement-gold);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 680;
   letter-spacing: 0.09em;
 }
@@ -4991,7 +4991,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 0 8px;
   border-radius: 7px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .review-score-stage > header button:hover {
   background: var(--quiet-hover);
@@ -5037,7 +5037,7 @@ html[data-sidebar-ready] .account-button > svg {
 .review-range-control output small {
   margin-left: 2px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 520;
   letter-spacing: 0;
 }
@@ -5057,7 +5057,7 @@ html[data-sidebar-ready] .account-button > svg {
   justify-content: space-between;
   margin-top: -12px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
 .review-verdict-line {
@@ -5075,7 +5075,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .review-verdict-line span {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .review-verdict-line[data-empty] strong {
   color: var(--screen-dim);
@@ -5095,7 +5095,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
 }
 .review-recommend-control button:first-child[aria-pressed="true"] {
@@ -5115,7 +5115,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .review-title-field small {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -5129,12 +5129,12 @@ html[data-sidebar-ready] .account-button > svg {
   max-width: 520px;
   margin-top: 5px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.5;
 }
 .review-aspects-section > header > span {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 .review-aspect-presets {
@@ -5152,7 +5152,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 9px;
+  font-size: 11px;
 }
 .review-aspect-presets button:hover {
   border-color: var(--shell-line-strong);
@@ -5165,7 +5165,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .review-aspect-presets button[data-custom] small {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
 .review-platform-trigger {
@@ -5194,7 +5194,7 @@ html[data-sidebar-ready] .account-button > svg {
 .review-aspects-empty p {
   max-width: 300px;
   margin-top: 5px;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.5;
 }
 .review-aspect-list {
@@ -5226,7 +5226,7 @@ html[data-sidebar-ready] .account-button > svg {
 .review-aspect-list article > header input {
   min-height: 34px;
   padding: 0 8px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 620;
 }
 .review-aspect-list output {
@@ -5251,7 +5251,7 @@ html[data-sidebar-ready] .account-button > svg {
 .review-aspect-list textarea {
   min-height: 64px;
   padding: 8px 9px;
-  font-size: 10px;
+  font-size: 12px;
   resize: none;
 }
 
@@ -5283,11 +5283,11 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .review-achievement-toggles strong {
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
 }
 .review-achievement-toggles small {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   line-height: 1.4;
 }
 .review-achievement-toggles button[aria-pressed="true"] {
@@ -5363,11 +5363,11 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .review-spoiler-toggle strong {
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
 }
 .review-spoiler-toggle small {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   line-height: 1.4;
 }
 .social-editor-dialog.review-studio-dialog
@@ -5391,7 +5391,7 @@ html[data-sidebar-ready] .account-button > svg {
   min-width: 0;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -5459,7 +5459,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 5px;
   outline: 0;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   cursor: pointer;
 }
 .editor-select-option[data-highlighted] {
@@ -5482,7 +5482,7 @@ html[data-sidebar-ready] .account-button > svg {
 .review-delete-confirm span {
   padding: 0 5px;
   color: #e2aaaa;
-  font-size: 9px;
+  font-size: 11px;
 }
 .review-delete-confirm button {
   min-height: 30px !important;
@@ -5560,7 +5560,7 @@ html[data-sidebar-ready] .account-button > svg {
     min-height: 46px;
   }
   .review-section-tabs button span {
-    font-size: 9px;
+    font-size: 11px;
   }
   .review-editor-section {
     gap: 16px;
@@ -5831,7 +5831,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .share-dialog header span {
   color: var(--brand-blurple-bright);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 650;
   letter-spacing: 0.08em;
 }
@@ -5846,7 +5846,7 @@ html[data-sidebar-ready] .account-button > svg {
 .share-dialog header p {
   margin: 5px 0 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .share-dialog header button {
   display: grid;
@@ -5907,14 +5907,14 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .share-dialog-actions small {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 
 @media (max-width: 620px) {
   .profile-secondary-actions .quiet-icon-action {
     justify-content: center;
     min-height: 42px;
-    font-size: 10px;
+    font-size: 11px;
   }
   .share-dialog {
     top: auto;
@@ -5954,7 +5954,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .account-settings-heading > span {
   color: var(--brand-blurple-bright);
-  font: 650 9px var(--font-inter);
+  font: 650 11px var(--font-inter);
   letter-spacing: 0.1em;
 }
 .account-settings-heading h1 {
@@ -5987,7 +5987,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .appearance-settings > header > span {
   color: var(--brand-blurple-bright);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 650;
   letter-spacing: 0.1em;
 }
@@ -6002,7 +6002,7 @@ html[data-sidebar-ready] .account-button > svg {
   max-width: 610px;
   margin: 7px 0 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.6;
   text-wrap: pretty;
 }
@@ -6124,7 +6124,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .theme-option-copy small {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   line-height: 1.45;
 }
 .theme-option-check {
@@ -6151,7 +6151,7 @@ html[data-sidebar-ready] .account-button > svg {
   margin: 0;
   padding: 4px 22px 18px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .account-delete-overlay {
@@ -6244,13 +6244,13 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .account-delete-summary strong {
   color: var(--screen-white);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 650;
 }
 .account-delete-summary p {
   margin-top: 4px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.55;
 }
 .account-delete-dialog form {
@@ -6262,7 +6262,7 @@ html[data-sidebar-ready] .account-button > svg {
   display: grid;
   gap: 7px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .account-delete-confirmation strong {
   color: var(--screen-white);
@@ -6338,12 +6338,12 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .account-delete-understood p {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.55;
 }
 .account-delete-error {
   color: #ff8f95;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.5;
 }
 .account-delete-actions {
@@ -6355,7 +6355,7 @@ html[data-sidebar-ready] .account-button > svg {
 .account-delete-actions button {
   min-height: 43px;
   border-radius: 8px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 650;
   transition:
     transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
@@ -6410,7 +6410,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   cursor: pointer;
 }
 .quiet-icon-action:hover,
@@ -6444,7 +6444,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .report-dialog header span {
   color: var(--brand-blurple-bright);
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.08em;
 }
 .report-dialog h2 {
@@ -6477,13 +6477,13 @@ html[data-sidebar-ready] .account-button > svg {
 .report-dialog legend {
   padding: 0 5px;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
 }
 .report-dialog label {
   display: grid;
   gap: 6px;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
 }
 .report-dialog fieldset label {
   display: flex;
@@ -6505,7 +6505,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 7px;
   background: var(--brand-blurple);
   color: white;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 620;
 }
 .report-success {
@@ -6522,7 +6522,7 @@ html[data-sidebar-ready] .account-button > svg {
 .report-success p {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 @media (max-width: 620px) {
@@ -6717,7 +6717,7 @@ html[data-sidebar-ready] .account-button > svg {
   outline: 0;
   background: transparent;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -6759,7 +6759,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 5px;
   outline: 0;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -7040,7 +7040,7 @@ html[data-sidebar-ready] .account-button > svg {
 .game-stage-rail .game-score-line > span,
 .game-panel-heading > span {
   color: var(--screen-muted);
-  font: 600 8px var(--font-inter);
+  font: 600 10px var(--font-inter);
   letter-spacing: 0.09em;
 }
 
@@ -7056,11 +7056,11 @@ html[data-sidebar-ready] .account-button > svg {
 
 .game-stage-rail .game-score-line small {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .game-stage-rail .game-score-line p {
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .game-stage-rail .game-time-panel {
@@ -7069,7 +7069,7 @@ html[data-sidebar-ready] .account-button > svg {
 
 .game-stage-rail .game-time-panel > p {
   margin-top: 9px;
-  font-size: 8px;
+  font-size: 10px;
   text-align: left;
 }
 
@@ -7098,7 +7098,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 7px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 520;
   transition:
     background-color 150ms ease-out,
@@ -7207,7 +7207,7 @@ html[data-sidebar-ready] .account-button > svg {
 .game-language-table thead th {
   height: 34px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.045em;
   text-align: center;
@@ -7236,7 +7236,7 @@ html[data-sidebar-ready] .account-button > svg {
   display: block;
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 430;
 }
 
@@ -7278,7 +7278,7 @@ html[data-sidebar-ready] .account-button > svg {
   }
 
   .game-language-table thead th {
-    font-size: 7px;
+    font-size: 9px;
     letter-spacing: 0;
   }
 }
@@ -7511,7 +7511,7 @@ html[data-sidebar-ready] .account-button > svg {
 .spawnd-eyebrow,
 .spawnd-explainer header > span {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
 }
@@ -7533,7 +7533,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .game-age-panel header span {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.08em;
 }
@@ -7580,7 +7580,7 @@ html[data-sidebar-ready] .account-button > svg {
   display: grid;
   gap: 5px;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
 }
 .game-age-ratings > div > span:last-child strong {
   color: var(--screen-white);
@@ -7589,13 +7589,13 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .game-age-ratings > div > span:last-child small {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.35;
 }
 .game-age-panel > p {
   margin: 14px 0 0;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   line-height: 1.5;
 }
 
@@ -7706,7 +7706,7 @@ html[data-sidebar-ready] .account-button > svg {
   }
 
   .spawnd-player-consent p {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .spawnd-player-consent button {
@@ -8170,7 +8170,7 @@ a,
   align-items: center;
   gap: 7px;
   color: var(--brand-blurple-bright);
-  font: 600 10px var(--font-inter);
+  font: 600 11px var(--font-inter);
   letter-spacing: 0.09em;
 }
 .social-page-header h1,
@@ -8315,11 +8315,11 @@ a,
 .activity-user small,
 .activity-body time {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .activity-edited {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-style: italic;
 }
 
@@ -8372,7 +8372,7 @@ a,
   place-items: center;
   min-height: 22px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -8415,7 +8415,7 @@ a,
 .journey-calendar-hint {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .journey-date-fields {
   grid-column: 1 / -1;
@@ -8449,7 +8449,7 @@ a,
 }
 .journey-milestones small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.4;
 }
 .journey-milestones button[data-milestone="start"][aria-pressed="true"] {
@@ -8474,7 +8474,7 @@ a,
   padding: 0 8px;
   border: 1px solid var(--shell-line);
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
 }
 .journey-milestone-badge[data-milestone="start"] {
@@ -8603,7 +8603,7 @@ button.content-like:hover:not(:disabled) {
   padding: 0 8px;
   border-radius: 7px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 550;
   transition:
     background-color 130ms ease-out,
@@ -8619,7 +8619,7 @@ button.content-like:hover:not(:disabled) {
 }
 .activity-entry-actions span[role="alert"] {
   color: #e79a9a;
-  font-size: 10px;
+  font-size: 11px;
 }
 .spoiler-content {
   margin-top: 11px;
@@ -8670,7 +8670,7 @@ button.content-like:hover:not(:disabled) {
   display: block;
   margin-top: 6px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .social-empty {
   padding: 44px 20px;
@@ -8750,7 +8750,7 @@ button.content-like:hover:not(:disabled) {
 }
 .social-editor-dialog > header span {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .social-editor-dialog > header h2 {
   margin-top: 3px;
@@ -9000,7 +9000,7 @@ button.content-like:hover:not(:disabled) {
 }
 .list-preview-copy > span {
   color: var(--brand-blurple-bright);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -9024,7 +9024,7 @@ button.content-like:hover:not(:disabled) {
   display: block;
   margin-top: 10px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .list-detail-header {
   max-width: 760px;
@@ -9034,7 +9034,7 @@ button.content-like:hover:not(:disabled) {
   display: block;
   margin-top: 14px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .list-owner-actions {
   display: flex;
@@ -9052,7 +9052,7 @@ button.content-like:hover:not(:disabled) {
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 550;
 }
 .list-owner-actions button:last-child:hover,
@@ -9066,7 +9066,7 @@ button.content-like:hover:not(:disabled) {
 .list-item-owner-action span {
   margin-left: 7px;
   color: #e79a9a;
-  font-size: 9px;
+  font-size: 11px;
 }
 .ranked-list-item {
   position: relative;
@@ -9081,7 +9081,7 @@ button.content-like:hover:not(:disabled) {
   border-radius: 5px;
   background: rgb(11 10 13 / 88%);
   color: var(--screen-white);
-  font: 600 10px var(--font-inter);
+  font: 600 11px var(--font-inter);
 }
 .ranked-list-item > p {
   margin-top: 7px;
@@ -9132,7 +9132,7 @@ button.content-like:hover:not(:disabled) {
 }
 .list-item-tools > span {
   color: #e79a9a;
-  font-size: 10px;
+  font-size: 11px;
 }
 .list-add-game {
   margin-bottom: 22px;
@@ -9227,7 +9227,7 @@ button.content-like:hover:not(:disabled) {
 .list-add-game-copy small {
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .list-add-game-row > button {
   display: inline-flex;
@@ -9239,7 +9239,7 @@ button.content-like:hover:not(:disabled) {
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
 }
 .list-add-game-row > button:hover:not(:disabled) {
@@ -9283,7 +9283,7 @@ button.content-like:hover:not(:disabled) {
   font-size: 12px;
 }
 .profile-lists .list-preview-copy p {
-  font-size: 10px;
+  font-size: 11px;
 }
 
 @media (max-width: 960px) {
@@ -9438,7 +9438,7 @@ button.content-like:hover:not(:disabled) {
   .game-status-button {
     min-height: 34px;
     padding-inline: 9px;
-    font-size: 9px;
+    font-size: 11px;
   }
   .game-score-line {
     align-items: flex-start;
@@ -9568,7 +9568,7 @@ button.content-like:hover:not(:disabled) {
     margin-top: 26px;
   }
   .game-title-meta {
-    font-size: 9px;
+    font-size: 11px;
   }
   .game-page-content h1 {
     margin-top: 7px;
@@ -9582,7 +9582,7 @@ button.content-like:hover:not(:disabled) {
   .game-status-button {
     min-height: 38px;
     padding-inline: 10px;
-    font-size: 9px;
+    font-size: 11px;
   }
   .game-score-line {
     align-items: flex-start;
@@ -9967,7 +9967,7 @@ button.content-like:hover:not(:disabled) {
 }
 .verified-dialog-facts span {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.5;
 }
 .verified-dialog-confirm {
@@ -10127,7 +10127,7 @@ button.content-like:hover:not(:disabled) {
   align-items: center;
   gap: 7px;
   color: var(--brand-blurple-bright);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 650;
   letter-spacing: 0.09em;
 }
@@ -10195,7 +10195,7 @@ button.content-like:hover:not(:disabled) {
   align-items: center;
   gap: 5px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .lists-summary dd {
@@ -10226,7 +10226,7 @@ button.content-like:hover:not(:disabled) {
 .lists-collection > header p {
   margin-top: 4px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .lists-collection > header > span {
@@ -10239,7 +10239,7 @@ button.content-like:hover:not(:disabled) {
   border-radius: 999px;
   background: var(--console-inset);
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .lists-page .lists-grid {
@@ -10286,14 +10286,14 @@ button.content-like:hover:not(:disabled) {
   align-items: center;
   gap: 5px;
   color: var(--brand-blurple-bright);
-  font: 600 9px var(--font-inter);
+  font: 600 11px var(--font-inter);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .list-preview-meta small {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .list-preview-title {
@@ -10374,7 +10374,7 @@ button.content-like:hover:not(:disabled) {
 
 .create-list-dialog > header span {
   color: var(--brand-blurple-bright);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 650;
   letter-spacing: 0.09em;
 }
@@ -10390,7 +10390,7 @@ button.content-like:hover:not(:disabled) {
   max-width: 390px;
   margin-top: 6px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.55;
 }
 
@@ -10463,14 +10463,14 @@ button.content-like:hover:not(:disabled) {
 
 .create-list-select-copy > span {
   color: var(--screen-white);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 580;
 }
 
 .create-list-select-item small {
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .create-list-overlay[data-state="open"],
@@ -10632,7 +10632,7 @@ button.content-like:hover:not(:disabled) {
   align-items: center;
   width: max-content;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 .onboarding-progress span {
@@ -10716,7 +10716,7 @@ button.content-like:hover:not(:disabled) {
 }
 .birth-date-privacy p {
   margin: 0;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.55;
   text-wrap: pretty;
 }
@@ -10761,7 +10761,7 @@ button.content-like:hover:not(:disabled) {
   align-items: center;
   gap: 6px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 650;
   letter-spacing: 0.09em;
 }
@@ -10805,7 +10805,7 @@ button.content-like:hover:not(:disabled) {
   display: grid;
   gap: 7px;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 550;
 }
 .anonymous-age-form label > span {
@@ -10846,7 +10846,7 @@ button.content-like:hover:not(:disabled) {
   border-radius: 8px;
   background: var(--brand-blurple-wash);
   color: var(--screen-white);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 620;
   cursor: pointer;
   transition:
@@ -10866,12 +10866,12 @@ button.content-like:hover:not(:disabled) {
 .anonymous-age-form > p {
   margin: 0;
   color: #e2aaaa;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.45;
 }
 .anonymous-age-form > small {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   line-height: 1.5;
   text-wrap: pretty;
 }
@@ -10941,7 +10941,7 @@ button.content-like:hover:not(:disabled) {
   gap: 6px;
   margin-top: 24px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.5;
 }
 .not-found-orbit {
@@ -11206,7 +11206,7 @@ button.content-like:hover:not(:disabled) {
   align-items: center;
   gap: 7px;
   color: var(--brand-blurple-bright);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 650;
   letter-spacing: 0.09em;
 }
@@ -11245,7 +11245,7 @@ button.content-like:hover:not(:disabled) {
 }
 .library-hero-stats dt {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 .library-hero-stats dd {
   margin: 5px 0 0;
@@ -11272,7 +11272,7 @@ button.content-like:hover:not(:disabled) {
   gap: 7px;
   min-height: 38px;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 580;
 }
 .library-public-note,
@@ -11281,7 +11281,7 @@ button.content-like:hover:not(:disabled) {
   align-items: center;
   gap: 7px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .library-rating-note {
   margin-left: auto;
@@ -11306,13 +11306,13 @@ button.content-like:hover:not(:disabled) {
   display: block;
 }
 .library-privacy-control strong {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 590;
 }
 .library-privacy-control small {
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 .library-privacy-control > button {
   min-height: 32px;
@@ -11321,7 +11321,7 @@ button.content-like:hover:not(:disabled) {
   border-radius: 6px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 9px;
+  font-size: 11px;
   cursor: pointer;
 }
 .library-privacy-control > p {
@@ -11330,7 +11330,7 @@ button.content-like:hover:not(:disabled) {
   left: 24px;
   margin: 3px 0 0;
   color: #e2aaaa;
-  font-size: 8px;
+  font-size: 10px;
 }
 .library-workspace {
   display: grid;
@@ -11360,7 +11360,7 @@ button.content-like:hover:not(:disabled) {
   border-radius: 6px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 12px;
   cursor: pointer;
 }
 .library-smart-shelves button:hover,
@@ -11373,7 +11373,7 @@ button.content-like:hover:not(:disabled) {
 }
 .library-smart-shelves strong {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 550;
   font-variant-numeric: tabular-nums;
 }
@@ -11431,7 +11431,7 @@ button.content-like:hover:not(:disabled) {
 }
 .library-sort > span {
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -11442,7 +11442,7 @@ button.content-like:hover:not(:disabled) {
   outline: 0;
   background: transparent;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
 }
 .library-view-switch {
   display: grid;
@@ -11475,7 +11475,7 @@ button.content-like:hover:not(:disabled) {
   padding-bottom: 10px;
   border-bottom: 1px solid var(--shell-line);
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 .library-results {
@@ -11548,7 +11548,7 @@ button.content-like:hover:not(:disabled) {
   font-size: 14px;
 }
 .library-filter-empty p {
-  font-size: 10px;
+  font-size: 11px;
 }
 .library-filter-empty button {
   min-height: 34px;
@@ -11558,7 +11558,7 @@ button.content-like:hover:not(:disabled) {
   border-radius: 6px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 9px;
+  font-size: 11px;
   cursor: pointer;
 }
 .library-pagination {
@@ -11589,7 +11589,7 @@ button.content-like:hover:not(:disabled) {
   border-radius: 6px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 .library-pagination button {
   cursor: pointer;
@@ -11688,7 +11688,7 @@ button.content-like:hover:not(:disabled) {
     font-size: 28px;
   }
   .library-owner-copy p {
-    font-size: 10px;
+    font-size: 11px;
     -webkit-line-clamp: 2;
   }
   .library-hero-stats {
@@ -11760,7 +11760,7 @@ button.content-like:hover:not(:disabled) {
   border-top: 1px solid var(--shell-line);
   border-radius: 7px;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
 }
 .advanced-search-link:hover {
@@ -11784,7 +11784,7 @@ button.content-like:hover:not(:disabled) {
   border-radius: 6px;
   background: rgb(10 9 12 / 82%);
   color: var(--screen-white);
-  font-size: 7px;
+  font-size: 9px;
   font-weight: 650;
   backdrop-filter: blur(8px);
 }
@@ -12235,7 +12235,7 @@ button.content-like:hover:not(:disabled) {
 .profile-subpage .social-filter-tabs a > span {
   margin-left: 5px;
   color: var(--screen-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -87,10 +87,13 @@ The feed should alternate between expressive/editorial zones and compact working
 
 Primary typeface: Inter Variable through `next/font`, followed by the native Apple system stack (`-apple-system`, `BlinkMacSystemFont`, `SF Pro Text`) as fallback. Never place Arial before the loaded font. Metadata uses the same Inter family with size, weight, color, and tabular numerals providing hierarchy; avoid code-like monospaced labels in the product interface.
 
-Approximate scale:
+Approximate scale (raised in July 2026 after desktop legibility feedback —
+nothing in the product renders below 9px):
 
-- Micro metadata: 8–10px, 500–650, muted, optionally tracked.
+- Micro metadata and eyebrows: 9–10px, 500–650, muted, optionally tracked.
 - Supporting metadata: 10–11px, 400–600.
+- Interactive control labels (buttons, tabs, sort, menu items, form labels):
+  11–12px; primary navigation and typed inputs prefer 12px.
 - Product body: 12–14px, line-height 1.5–1.65.
 - Section title: 16–19px, 620–650, negative tracking.
 - Page title: 28px, 650, `-0.045em` tracking.
@@ -119,7 +122,8 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 - Review writing is a dedicated experience studio inside the shared journal Radix modal. A new review always begins unrated; quick-rating state never leaks into the editor. The user explicitly chooses stars (half steps), five levels, 0–10 points, 0–100 precision, or recommend/do-not-recommend, while storage normalizes numeric methods to 0–100.
 - The studio divides Review, Aspects, and Details without turning them into required steps. Rating and prose lead; up to eight optional aspect tracks add independent 0–100 judgments and short notes; mastered, replay, platform, dates, spoilers, and visibility remain secondary details.
-- Every save creates an independent review entry, so one game can hold several opinions across replays or editions. The editor always opens as a new unrated entry; prior reviews remain in the activity stream and never get silently overwritten. Platform is a Radix Select restricted to the game's real IGDB release platforms. Up to five of the eight aspects may be custom-created and renamed.
+- Every save creates an independent review entry, so one game can hold several opinions across replays or editions. The editor always opens as a new unrated entry; prior reviews remain in the activity stream and never get silently overwritten.
+- Owners can also edit an existing review in place from its activity row: the same studio form opens prefilled inside a Radix dialog and commits through a dedicated update path. Edited reviews carry a quiet italic "edited" marker beside their date; editing never creates a duplicate entry and drafts never leak into the edit flow. Platform is a Radix Select restricted to the game's real IGDB release platforms. Up to five of the eight aspects may be custom-created and renamed.
 - Desktop uses a 780px focused sheet with a sticky internal section rail. Mobile becomes a near-full-height bottom sheet with compact header, reachable sticky commit actions, horizontal preset rail, and single-column aspect/detail controls.
 - The review form is a full-height flex column: its identity header, shared navigation, and commit bar never scroll, while only the active Review, Aspects, or Details panel does. This keeps the commit bar on the safe-area bottom even when a short panel has no content to fill the mobile sheet.
 - Review navigation follows the same interaction language as game and settings tabs: a 38px tonal hover/active surface, blurple bottom marker, horizontal overflow on narrow screens, and proper tab/tabpanel semantics.
@@ -413,6 +417,8 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 ### Social journal
 
 - Reviews and diary sessions remain distinct: a review owns the lasting rating and opinion, while a diary entry records a dated play session, optional duration, and short note.
+- Diary entries are journeys: one entry covers a single day or a drag-selected day range on a month-grid calendar (click = one day, press-and-drag = range; the paired from/until date inputs stay visible as the keyboard and screen-reader path). Entries can mark "started here" and "finished here" milestones, colored by the tracking palette (playing blue for start, completed green for finish) both in the editor toggles and as compact badges on activity rows. The per-game timeline sums covered days alongside minutes.
+- Reviews, journeys, and lists can be liked by other signed-in users through a heart control with a tabular count in the liked coral palette. Liking is optimistic, toggles through one server round-trip, and never renders as an action on one's own content — authors and signed-out visitors see a static count instead. Like counts appear on activity rows, list preview cards, and list detail headers.
 - Activity rows use a 72px physical cover, compact identity, one activity verb, and optional body content; mobile reduces the cover to 56px instead of flattening the hierarchy.
 - Spoilers stay behind an explicit disclosure control, and public feeds never reveal private entries.
 - Game pages expose review, session, and list actions as quiet secondary controls below the primary library state.
@@ -437,7 +443,9 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Profile statistics always use exact database counts rather than the number of preview rows currently rendered. The owner gets a quiet edit action; visitors get a follow control in the same position.
 - Profile metadata uses display name/username, bio, and the uploaded banner (avatar fallback) for Open Graph and Twitter embeds.
 - List cards emphasize title and description over counts. Detail views reuse active-shelf covers with a small physical index marker for manual order.
-- Creating a list is a focused inline form; adding a game remains contextual on the game page.
+- Owners reorder list items with quiet up/down/top controls beside each entry (positions recompact server-side), and every item can carry a short 300-character note edited through a small Radix dialog; a note-bearing item tints its note control blurple.
+- Creating a list is a focused inline form; adding a game stays contextual on the game page, and owners can also search the catalog directly from the list detail page through a debounced inline search with compact result rows and in-list state.
+- List deletion never uses a browser confirm: the destructive action arms in place ("Confirm deletion?") and disarms after a few seconds if not confirmed.
 - List previews lead with a five-column cover strip (empty slots stay tonal), followed by title, visibility, description, and count. This same recognizable object is reused on the lists page and profile rail.
 - Owners can edit or delete reviews, diary sessions, and lists without exposing management controls to other viewers. Destructive actions require confirmation and remain visually secondary until hovered.
 
