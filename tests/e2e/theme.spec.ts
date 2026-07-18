@@ -19,15 +19,17 @@ test("applies a saved theme before the interface becomes interactive", async ({
     )
     .toBe("#f5f6f8");
 
+  // Production builds minify #ffffff to #fff; accept both forms.
   await expect
     .poll(() =>
       page.evaluate(() =>
         getComputedStyle(document.documentElement)
           .getPropertyValue("--control-focus")
-          .trim(),
+          .trim()
+          .toLowerCase(),
       ),
     )
-    .toBe("#ffffff");
+    .toMatch(/^#(?:ffffff|fff)$/);
 
   const artworkForeground = await page.evaluate(() => {
     const stage = document.createElement("div");
