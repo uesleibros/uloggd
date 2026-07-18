@@ -9414,6 +9414,52 @@ details.review-page-content p {
   background: rgb(231 154 154 / 12%);
   color: #e79a9a;
 }
+/* Drag reordering on list detail */
+.list-item-drag-handle {
+  position: absolute;
+  z-index: 4;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: rgb(11 10 13 / 85%);
+  color: var(--screen-dim);
+  cursor: grab;
+  touch-action: none;
+}
+.list-item-drag-handle:hover {
+  color: var(--screen-white);
+}
+.list-items-grid[data-reordering] {
+  cursor: grabbing;
+}
+.list-items-grid[data-reordering] .list-item-drag-handle {
+  cursor: grabbing;
+}
+.ranked-list-item[data-dragged] {
+  opacity: 0.45;
+}
+.ranked-list-item[data-drop-before]::before,
+.ranked-list-item[data-drop-after]::after {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--brand-blurple);
+  content: "";
+}
+.ranked-list-item[data-drop-before]::before {
+  left: -8px;
+}
+.ranked-list-item[data-drop-after]::after {
+  right: -8px;
+}
 .list-item-owner-tools {
   display: flex;
   align-items: center;
@@ -9455,12 +9501,32 @@ details.review-page-content p {
   color: #e79a9a;
   font-size: 11px;
 }
-.list-add-game {
-  margin-bottom: 22px;
-  padding: 14px;
-  border: 1px solid var(--shell-line);
-  border-radius: 11px;
-  background: var(--console-panel);
+.list-add-game-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  margin-bottom: 18px;
+  padding: 0 14px;
+  border: 1px solid rgb(88 101 242 / 26%);
+  border-radius: 9px;
+  background: var(--brand-blurple-wash);
+  color: var(--tonal-brand-text);
+  font-size: 12px;
+  font-weight: 620;
+}
+.list-add-game-trigger:hover {
+  border-color: rgb(88 101 242 / 40%);
+  background: rgb(88 101 242 / 20%);
+}
+.list-add-game-dialog .list-add-game {
+  padding: 16px 18px 18px;
+}
+.list-add-game-empty {
+  margin: 12px 2px 4px;
+  color: var(--screen-muted);
+  font-size: 11px;
+  line-height: 1.55;
 }
 .list-add-game > label {
   display: flex;
@@ -9503,7 +9569,10 @@ details.review-page-content p {
 .list-add-game-results {
   display: grid;
   gap: 4px;
+  max-height: min(46dvh, 380px);
   margin-top: 10px;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 .list-add-game-results > p {
   margin: 4px 2px;

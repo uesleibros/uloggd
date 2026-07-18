@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { QuickGameCard } from "@/components/library/quick-game-card";
 import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { ListAddGame } from "@/components/social/list-add-game";
-import { ListItemTools } from "@/components/social/list-item-tools";
-import {
-  ListOwnerControls,
-  RemoveListItem,
-} from "@/components/social/list-owner-controls";
+import { ListItemsGrid } from "@/components/social/list-items-grid";
+import { ListOwnerControls } from "@/components/social/list-owner-controls";
 import { getGamesByIds } from "@/lib/igdb";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
@@ -120,40 +116,19 @@ export default async function ListPage({ params }: Props) {
         />
       )}
       {items.length ? (
-        <div className="library-grid">
-          {items.map((item, index) => {
-            const game = byId.get(item.igdb_id);
-            return game ? (
-              <div className="ranked-list-item" key={item.id}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <QuickGameCard
-                  game={game}
-                  initial={null}
-                  lang={lang}
-                  enabled={false}
-                />
-                {item.note && <p>{item.note}</p>}
-                {isOwner && (
-                  <div className="list-item-owner-tools">
-                    <ListItemTools
-                      listId={list.id}
-                      itemId={item.id}
-                      note={item.note}
-                      first={index === 0}
-                      last={index === items.length - 1}
-                      lang={lang}
-                    />
-                    <RemoveListItem
-                      listId={list.id}
-                      gameId={item.igdb_id}
-                      lang={lang}
-                    />
-                  </div>
-                )}
-              </div>
-            ) : null;
-          })}
-        </div>
+        <ListItemsGrid
+          listId={list.id}
+          items={items
+            .filter((item) => byId.has(item.igdb_id))
+            .map((item) => ({
+              id: item.id,
+              igdbId: item.igdb_id,
+              note: item.note,
+            }))}
+          games={Object.fromEntries(byId)}
+          isOwner={isOwner}
+          lang={lang}
+        />
       ) : (
         <div className="social-empty">
           <h2>{pt ? "Lista vazia" : "Empty list"}</h2>
