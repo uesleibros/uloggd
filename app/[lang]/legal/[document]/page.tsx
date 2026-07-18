@@ -11,6 +11,7 @@ import {
 import { notFound } from "next/navigation";
 import { getLegalContent, isLegalDocument } from "@/lib/legal-content";
 import { getDictionary, hasLocale } from "../../dictionaries";
+import "../legal.css";
 
 type Props = PageProps<"/[lang]/legal/[document]">;
 

@@ -50,6 +50,8 @@ async function GameCommunityStream({
   lang: "pt-BR" | "en";
   viewerId?: string;
 }) {
+  if (process.env.ULOGGD_E2E === "1")
+    return <ActivityStream entries={[]} lang={lang} viewerId={viewerId} />;
   const supabase = await getSupabase();
   const entries = await getActivity(supabase, {
     gameId,
@@ -96,7 +98,7 @@ export default async function GamePage({ params }: Props) {
   const [game, user] = await Promise.all([getGameBySlug(slug), getAuthUser()]);
   if (!game) notFound();
 
-  const supabase = await getSupabase();
+  const supabase = process.env.ULOGGD_E2E === "1" ? null : await getSupabase();
   const brazilRating = game.ageRatings.find((rating) => rating.region === "BR");
   const minimumAge = brazilRating?.minimumAge ?? 0;
   const anonymousAge = user
@@ -109,14 +111,14 @@ export default async function GamePage({ params }: Props) {
   );
   const [ageProfileResult, savedResult, listsResult, logResult] =
     await Promise.all([
-      user
+      user && supabase
         ? supabase
             .from("profiles")
             .select("birth_date")
             .eq("id", user.id)
             .maybeSingle()
         : Promise.resolve({ data: null }),
-      user
+      user && supabase
         ? supabase
             .from("user_games")
             .select(
@@ -125,14 +127,14 @@ export default async function GamePage({ params }: Props) {
             .eq("profile_id", user.id)
             .in("igdb_id", [game.id, ...relatedIds])
         : Promise.resolve({ data: [] }),
-      user
+      user && supabase
         ? supabase
             .from("game_lists")
             .select("id,name")
             .eq("profile_id", user.id)
             .order("updated_at", { ascending: false })
         : Promise.resolve({ data: [] }),
-      user
+      user && supabase
         ? supabase
             .from("diary_entries")
             .select("id", { count: "exact", head: true })

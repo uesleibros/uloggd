@@ -23,6 +23,7 @@ import { resolveGameCover } from "@/lib/game-cover";
 import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
+import "../../profile.css";
 
 type Props = PageProps<"/[lang]/u/[username]">;
 

@@ -9,6 +9,7 @@ import {
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getSpawndGame } from "@/lib/spawnd";
 import { hasLocale } from "../dictionaries";
+import "./catalog.css";
 
 export const metadata: Metadata = { title: "Buscar jogos" };
 

@@ -1,0 +1,452 @@
+/* Settings workspace. Split out of globals.css. */
+.settings-page {
+  flex: 1;
+  width: 100%;
+  padding: 40px 32px 72px;
+}
+.settings-page-header {
+  max-width: 820px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.settings-page-header > span {
+  color: var(--brand-blurple-bright);
+  font: 600 9px var(--font-inter);
+  letter-spacing: 0.09em;
+}
+.settings-page-header h1 {
+  margin: 7px 0 6px;
+  font-size: 30px;
+  font-weight: 620;
+  letter-spacing: -0.045em;
+}
+.settings-main {
+  width: 100%;
+  max-width: 820px;
+  margin-top: 28px;
+}
+@media (max-width: 620px) {
+  .settings-page {
+    padding: 28px 14px 48px;
+  }
+  .settings-page-header h1 {
+    font-size: 26px;
+  }
+  .settings-main {
+    margin-top: 20px;
+  }
+}
+.settings-general-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.settings-account-card {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 13px;
+  padding: 18px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-panel);
+}
+.settings-account-card:nth-child(3) {
+  grid-column: 1 / -1;
+}
+.settings-account-card > span,
+.settings-security-card > header > span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-dim);
+}
+.settings-account-card[data-safe] > span {
+  color: var(--safe-green);
+}
+.settings-account-card small {
+  color: var(--screen-muted);
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+}
+.settings-account-card strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--screen-white);
+  font-size: 14px;
+  font-weight: 620;
+}
+.settings-account-card p {
+  margin: 5px 0 0;
+  color: var(--screen-muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+.settings-danger-zone {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 8px;
+  padding: 18px;
+  border: 1px solid rgb(239 83 92 / 0.28);
+  border-radius: 11px;
+  background: rgb(239 83 92 / 0.045);
+}
+.settings-danger-copy {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  min-width: 0;
+}
+.settings-danger-copy > span {
+  display: grid;
+  flex: 0 0 42px;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgb(239 83 92 / 0.24);
+  border-radius: 9px;
+  background: rgb(239 83 92 / 0.08);
+  color: #ff747c;
+}
+.settings-danger-copy small {
+  color: #ff747c;
+  font-size: 8px;
+  font-weight: 680;
+  letter-spacing: 0.08em;
+}
+.settings-danger-copy h2 {
+  margin-top: 4px;
+  color: var(--screen-white);
+  font-size: 14px;
+  font-weight: 640;
+}
+.settings-danger-copy p {
+  margin-top: 5px;
+  color: var(--screen-muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+.settings-delete-trigger {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 15px;
+  border: 1px solid rgb(239 83 92 / 0.35);
+  border-radius: 8px;
+  background: transparent;
+  color: #ff7f86;
+  font-size: 10px;
+  font-weight: 650;
+  transition:
+    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 160ms ease-out,
+    border-color 160ms ease-out,
+    color 160ms ease-out;
+}
+.settings-delete-trigger:hover {
+  border-color: rgb(255 116 124 / 0.68);
+  background: rgb(239 83 92 / 0.1);
+  color: #ff9ba0;
+  transform: translateY(-1px);
+}
+.settings-delete-trigger:active {
+  transform: scale(0.97);
+}
+.settings-security-card {
+  padding: 20px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-panel);
+}
+.settings-security-card > header {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 13px;
+}
+.settings-security-card h2 {
+  margin: 0;
+  color: var(--screen-white);
+  font-size: 17px;
+}
+.settings-security-card header p {
+  max-width: 600px;
+  margin: 5px 0 0;
+  color: var(--screen-muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+.settings-passkey-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+}
+.settings-passkey-list article {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 9px;
+  border-radius: 8px;
+  background: var(--console-inset);
+}
+.settings-passkey-list article > span {
+  display: grid;
+  place-items: center;
+  color: var(--brand-blurple-bright);
+}
+.settings-passkey-list strong,
+.settings-passkey-list small {
+  display: block;
+}
+.settings-passkey-list strong {
+  color: var(--screen-white);
+  font-size: 11px;
+}
+.settings-passkey-list small {
+  margin-top: 3px;
+  color: var(--screen-muted);
+  font-size: 8px;
+}
+.settings-passkey-list button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #e2aaaa;
+  cursor: pointer;
+}
+.settings-passkey-list button:hover {
+  background: rgb(210 105 105 / 10%);
+}
+.settings-passkey-empty,
+.settings-passkey-loading {
+  margin: 18px 0 0;
+  padding: 18px;
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.settings-passkey-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  margin-top: 14px;
+  padding: 0 12px;
+  border: 1px solid rgb(88 101 242 / 42%);
+  border-radius: 7px;
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
+  font-size: 10px;
+  font-weight: 620;
+  cursor: pointer;
+}
+.settings-security-error {
+  color: #e2aaaa;
+  font-size: 9px;
+}
+@media (max-width: 620px) {
+  .settings-general-grid {
+    grid-template-columns: 1fr;
+  }
+  .settings-account-card:nth-child(3) {
+    grid-column: auto;
+  }
+  .settings-danger-zone {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .settings-delete-trigger {
+    width: 100%;
+  }
+}
+.settings-security-stack {
+  display: grid;
+  gap: 16px;
+}
+.settings-security-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.settings-security-title-row small {
+  padding: 5px 7px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  color: var(--screen-muted);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.settings-security-title-row small[data-active] {
+  border-color: rgb(73 174 122 / 0.3);
+  background: rgb(73 174 122 / 0.08);
+  color: var(--safe-green);
+}
+.settings-mfa-card > header > span[data-active] {
+  border-color: rgb(73 174 122 / 0.28);
+  background: rgb(73 174 122 / 0.08);
+  color: var(--safe-green);
+}
+.settings-mfa-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+}
+.settings-mfa-list article {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 9px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: var(--console-inset);
+  transition:
+    border-color 150ms ease-out,
+    background-color 150ms ease-out;
+}
+.settings-mfa-list article:hover {
+  border-color: var(--shell-line);
+  background: var(--console-raised);
+}
+.settings-mfa-list article > span {
+  display: grid;
+  place-items: center;
+  color: var(--safe-green);
+}
+.settings-mfa-list strong,
+.settings-mfa-list small {
+  display: block;
+}
+.settings-mfa-list strong {
+  color: var(--screen-white);
+  font-size: 11px;
+}
+.settings-mfa-list small {
+  margin-top: 3px;
+  color: var(--screen-muted);
+  font-size: 8px;
+}
+.settings-mfa-list button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #e2aaaa;
+  transition:
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 140ms ease-out;
+}
+.settings-mfa-list button:hover {
+  background: rgb(210 105 105 / 0.1);
+  transform: translateY(-1px);
+}
+.settings-mfa-list button:active {
+  transform: scale(0.94);
+}
+.settings-mfa-backup-note {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 8px;
+  padding: 11px;
+  border: 1px solid rgb(214 166 76 / 0.2);
+  border-radius: 8px;
+  background: rgb(214 166 76 / 0.06);
+  color: #d6a64c;
+}
+.settings-mfa-backup-note p {
+  display: grid;
+  gap: 3px;
+}
+.settings-mfa-backup-note strong {
+  color: #e9c783;
+  font-size: 9px;
+}
+.settings-mfa-backup-note span {
+  color: var(--screen-muted);
+  font-size: 8px;
+  line-height: 1.5;
+}
+.settings-mfa-empty {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 13px;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 9px;
+  color: var(--brand-blurple-bright);
+}
+.settings-mfa-empty p {
+  display: grid;
+  gap: 4px;
+}
+.settings-mfa-empty strong {
+  color: var(--screen-white);
+  font-size: 10px;
+}
+.settings-mfa-empty span {
+  color: var(--screen-muted);
+  font-size: 8px;
+  line-height: 1.5;
+}
+.settings-mfa-enroll-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 14px;
+}
+.settings-mfa-enroll-row button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+  padding-inline: 13px;
+  border: 1px solid rgb(88 101 242 / 0.42);
+  border-radius: 8px;
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
+  font-size: 10px;
+  font-weight: 620;
+  transition:
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 150ms ease-out,
+    border-color 150ms ease-out;
+}
+.settings-mfa-enroll-row button:hover:not(:disabled) {
+  border-color: var(--brand-blurple);
+  background: rgb(88 101 242 / 0.2);
+  transform: translateY(-1px);
+}
+.settings-mfa-enroll-row button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+@media (max-width: 620px) {
+  .settings-mfa-enroll-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings-mfa-enroll-row button {
+    min-height: 44px;
+  }
+}
