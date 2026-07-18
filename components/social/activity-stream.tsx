@@ -5,6 +5,8 @@ import {
   Check,
   Clock3,
   EyeOff,
+  Flag,
+  FlagTriangleRight,
   Star,
   Trophy,
   X,
@@ -146,9 +148,13 @@ export function ActivityStream({
                 ? pt
                   ? "avaliou"
                   : "reviewed"
-                : pt
-                  ? "registrou uma sessão de"
-                  : "logged a session of"}{" "}
+                : entry.endedOn
+                  ? pt
+                    ? "registrou uma jornada em"
+                    : "logged a journey in"
+                  : pt
+                    ? "registrou uma sessão de"
+                    : "logged a session of"}{" "}
               <Link href={`/${lang}/game/${entry.gameSlug}`}>
                 {entry.game?.name ?? entry.gameSlug}
               </Link>
@@ -202,7 +208,9 @@ export function ActivityStream({
                 <span>
                   <CalendarDays size={13} />{" "}
                   {entry.playedOn
-                    ? date.format(new Date(`${entry.playedOn}T00:00:00Z`))
+                    ? entry.endedOn
+                      ? `${date.format(new Date(`${entry.playedOn}T00:00:00Z`))} – ${date.format(new Date(`${entry.endedOn}T00:00:00Z`))}`
+                      : date.format(new Date(`${entry.playedOn}T00:00:00Z`))
                     : "—"}
                 </span>
                 {entry.minutes ? (
@@ -210,6 +218,20 @@ export function ActivityStream({
                     <Clock3 size={13} /> {entry.minutes} min
                   </span>
                 ) : null}
+                {entry.marksStart && (
+                  <span className="journey-milestone-badge" data-milestone="start">
+                    <Flag size={12} /> {pt ? "Começou" : "Started"}
+                  </span>
+                )}
+                {entry.marksFinish && (
+                  <span
+                    className="journey-milestone-badge"
+                    data-milestone="finish"
+                  >
+                    <FlagTriangleRight size={12} />{" "}
+                    {pt ? "Terminou" : "Finished"}
+                  </span>
+                )}
               </div>
             )}
             {entry.content &&

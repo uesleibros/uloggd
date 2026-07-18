@@ -4,6 +4,8 @@ import * as Dialog from "@radix-ui/react-dialog";
 import {
   BookOpen,
   CalendarPlus,
+  Flag,
+  FlagTriangleRight,
   ListPlus,
   LoaderCircle,
   X,
@@ -12,6 +14,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { JourneyCalendar } from "./journey-calendar";
 import {
   EditorVisibilitySelect,
   ReviewStudioForm,
@@ -42,6 +45,11 @@ export function GameLogActions({
   const [diaryVisibility, setDiaryVisibility] = useState<
     "PUBLIC" | "FOLLOWERS" | "PRIVATE"
   >("PUBLIC");
+  const today = new Date().toISOString().slice(0, 10);
+  const [journeyStart, setJourneyStart] = useState(today);
+  const [journeyEnd, setJourneyEnd] = useState("");
+  const [marksStart, setMarksStart] = useState(false);
+  const [marksFinish, setMarksFinish] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -72,11 +80,14 @@ export function GameLogActions({
       result = await supabase.rpc("save_diary_entry", {
         game_id: game.id,
         game_slug: game.slug,
-        entry_date: formData.get("playedOn"),
+        entry_date: journeyStart,
+        entry_end: journeyEnd || null,
         entry_minutes: minutes ? Number(minutes) : null,
         entry_note: String(formData.get("note") ?? ""),
         spoilers: formData.get("spoilers") === "on",
         entry_visibility: formData.get("visibility"),
+        entry_marks_start: marksStart,
+        entry_marks_finish: marksFinish,
       });
     } else {
       result = await supabase.rpc("add_game_to_list", {
@@ -103,7 +114,7 @@ export function GameLogActions({
 
   const labels = {
     review: pt ? "Nova avaliação" : "New review",
-    diary: pt ? "Registrar sessão" : "Log session",
+    diary: pt ? "Registrar jornada" : "Log journey",
     list: pt ? "Adicionar à lista" : "Add to list",
   };
   function openMode(nextMode: Mode) {
@@ -171,17 +182,86 @@ export function GameLogActions({
               <form action={submit} className="social-editor-form">
                 {mode === "diary" && (
                   <>
-                    <div className="social-form-row">
+                    <JourneyCalendar
+                      lang={lang}
+                      start={journeyStart}
+                      end={journeyEnd}
+                      maxDate={today}
+                      onChange={(range) => {
+                        setJourneyStart(range.start);
+                        setJourneyEnd(range.end);
+                      }}
+                    />
+                    <div className="social-form-row journey-date-fields">
                       <label>
-                        <span>{pt ? "Data" : "Date"}</span>
+                        <span>{pt ? "De" : "From"}</span>
                         <input
-                          name="playedOn"
                           type="date"
-                          max={new Date().toISOString().slice(0, 10)}
-                          defaultValue={new Date().toISOString().slice(0, 10)}
+                          max={journeyEnd || today}
+                          value={journeyStart}
+                          onChange={(event) => {
+                            const next = event.target.value;
+                            setJourneyStart(next);
+                            if (journeyEnd && journeyEnd < next)
+                              setJourneyEnd("");
+                          }}
                           required
                         />
                       </label>
+                      <label>
+                        <span>
+                          {pt ? "Até (opcional)" : "Until (optional)"}
+                        </span>
+                        <input
+                          type="date"
+                          min={journeyStart || undefined}
+                          max={today}
+                          value={journeyEnd}
+                          onChange={(event) =>
+                            setJourneyEnd(event.target.value)
+                          }
+                        />
+                      </label>
+                    </div>
+                    <div className="journey-milestones">
+                      <button
+                        type="button"
+                        data-milestone="start"
+                        aria-pressed={marksStart}
+                        onClick={() => setMarksStart((value) => !value)}
+                      >
+                        <Flag size={15} />
+                        <span>
+                          <strong>
+                            {pt ? "Comecei o jogo aqui" : "Started the game here"}
+                          </strong>
+                          <small>
+                            {pt
+                              ? "Marca o início da jornada"
+                              : "Marks the journey start"}
+                          </small>
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        data-milestone="finish"
+                        aria-pressed={marksFinish}
+                        onClick={() => setMarksFinish((value) => !value)}
+                      >
+                        <FlagTriangleRight size={15} />
+                        <span>
+                          <strong>
+                            {pt ? "Terminei o jogo aqui" : "Finished the game here"}
+                          </strong>
+                          <small>
+                            {pt
+                              ? "Marca o fim da jornada"
+                              : "Marks the journey end"}
+                          </small>
+                        </span>
+                      </button>
+                    </div>
+                    <div className="social-form-row">
                       <label>
                         <span>{pt ? "Minutos jogados" : "Minutes played"}</span>
                         <input
@@ -194,15 +274,15 @@ export function GameLogActions({
                       </label>
                     </div>
                     <label>
-                      <span>{pt ? "Nota da sessão" : "Session note"}</span>
+                      <span>{pt ? "O que rolou na jornada" : "What happened"}</span>
                       <textarea
                         name="note"
                         maxLength={1000}
-                        rows={6}
+                        rows={5}
                         placeholder={
                           pt
-                            ? "Registre onde parou ou como foi a sessão."
-                            : "Note where you stopped or how the session went."
+                            ? "Conte o que você fez nesse dia ou intervalo de dias."
+                            : "Tell what you did on this day or range of days."
                         }
                       />
                     </label>
