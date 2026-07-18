@@ -8497,6 +8497,58 @@ a,
     transition-duration: 0.01ms;
   }
 }
+
+/* Content likes: reviews, journeys, and lists. */
+.activity-entry-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+.activity-entry-footer:empty {
+  display: none;
+}
+.activity-entry-footer .activity-entry-actions {
+  margin-top: 0;
+}
+.content-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--screen-muted);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+button.content-like:hover:not(:disabled) {
+  border-color: var(--state-liked-border);
+  background: var(--state-liked-soft-bg);
+  color: var(--state-liked-text);
+}
+.content-like[data-liked] {
+  border-color: var(--state-liked-border);
+  background: var(--state-liked-soft-bg);
+  color: var(--state-liked-text);
+}
+.content-like[data-static] {
+  border-color: transparent;
+  padding-inline: 0;
+}
+.list-detail-social {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.list-preview-meta small svg {
+  vertical-align: -1px;
+}
 .activity-verb {
   margin-top: 11px;
   color: var(--screen-dim);

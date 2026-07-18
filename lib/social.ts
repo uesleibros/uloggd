@@ -89,6 +89,31 @@ export async function getActivity(
       },
     ]),
   );
+  const reviewIds = (reviews ?? []).map((row) => row.id);
+  const diaryIds = (diary ?? []).map((row) => row.id);
+  const [reviewLikes, diaryLikes] = await Promise.all([
+    reviewIds.length
+      ? supabase.rpc("get_content_likes", {
+          target_type: "review",
+          target_ids: reviewIds,
+        })
+      : { data: [] },
+    diaryIds.length
+      ? supabase.rpc("get_content_likes", {
+          target_type: "diary",
+          target_ids: diaryIds,
+        })
+      : { data: [] },
+  ]);
+  const likesById = new Map(
+    [...(reviewLikes.data ?? []), ...(diaryLikes.data ?? [])].map(
+      (row: {
+        content_id: string;
+        like_count: number;
+        liked_by_viewer: boolean;
+      }) => [row.content_id, row],
+    ),
+  );
   return rows
     .flatMap((row): SocialEntry[] => {
       const profile = profileOf(row.profiles);
@@ -134,6 +159,8 @@ export async function getActivity(
           visibility: row.visibility as SocialEntry["visibility"],
           createdAt: row.created_at,
           updatedAt: String(row.updated_at ?? "") || undefined,
+          likes: Number(likesById.get(row.id)?.like_count ?? 0),
+          likedByViewer: Boolean(likesById.get(row.id)?.liked_by_viewer),
         },
       ];
     })

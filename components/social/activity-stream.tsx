@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { Game } from "@/lib/igdb";
 import { ActivityEntryActions } from "./activity-entry-actions";
+import { LikeButton } from "./like-button";
 import { VerifiedBadge } from "../verified-badge";
 
 export type SocialEntry = {
@@ -53,6 +54,8 @@ export type SocialEntry = {
   visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
   createdAt: string;
   updatedAt?: string;
+  likes?: number;
+  likedByViewer?: boolean;
 };
 
 export function ActivityStream({
@@ -260,9 +263,19 @@ export function ActivityStream({
                   ))}
                 </dl>
               )}
-            {viewerId === entry.profileId && (
-              <ActivityEntryActions entry={entry} lang={lang} />
-            )}
+            <div className="activity-entry-footer">
+              <LikeButton
+                contentType={entry.kind}
+                contentId={entry.id}
+                count={entry.likes ?? 0}
+                liked={Boolean(entry.likedByViewer)}
+                canLike={Boolean(viewerId) && viewerId !== entry.profileId}
+                lang={lang}
+              />
+              {viewerId === entry.profileId && (
+                <ActivityEntryActions entry={entry} lang={lang} />
+              )}
+            </div>
           </div>
         </article>
       ))}
