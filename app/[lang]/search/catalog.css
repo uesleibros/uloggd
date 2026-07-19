@@ -505,11 +505,16 @@
 .catalog-filter-options {
   display: grid;
   gap: 2px;
-  max-height: 230px;
+  max-height: min(230px, 32dvh);
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
   touch-action: pan-y;
+}
+.catalog-filter-options[data-scroll] {
+  height: min(230px, 32dvh);
+  contain: layout paint;
 }
 .catalog-filter-options > label {
   display: grid;

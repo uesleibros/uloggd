@@ -135,7 +135,10 @@ function OptionGroup({
             />
           </label>
         )}
-        <div className="catalog-filter-options">
+        <div
+          className="catalog-filter-options"
+          data-scroll={visible.length > 6 || undefined}
+        >
           {visible.map((option) => {
             const checked = selected.includes(option.id);
             return (
