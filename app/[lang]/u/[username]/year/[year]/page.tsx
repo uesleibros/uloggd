@@ -18,6 +18,10 @@ import { ShareButton } from "@/components/share-button";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/server";
+import {
+  MIN_WRAPPED_YEAR,
+  parseWrappedYear,
+} from "@/lib/year-wrapped";
 import { hasLocale } from "../../../../dictionaries";
 import "../../../../profile.css";
 
@@ -25,29 +29,38 @@ type Props = {
   params: Promise<{ lang: string; username: string; year: string }>;
 };
 
-const MIN_YEAR = 2000;
-
-function parseYear(raw: string): number | null {
-  if (!/^\d{4}$/.test(raw)) return null;
-  const year = Number(raw);
-  const current = new Date().getUTCFullYear();
-  return year >= MIN_YEAR && year <= current ? year : null;
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, username, year } = await params;
+  const pt = lang === "pt-BR";
+  const title = pt
+    ? `${year} em jogos de @${username}`
+    : `@${username}'s ${year} in games`;
+  const description = pt
+    ? `Veja a retrospectiva de jogos de @${username} em ${year} no uloggd.`
+    : `See @${username}'s ${year} year in games on uloggd.`;
   return {
-    title:
-      lang === "pt-BR"
-        ? `${year} em jogos de @${username}`
-        : `@${username}'s ${year} in games`,
+    title,
+    description,
+    alternates: { canonical: `/${lang}/u/${username}/year/${year}` },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      siteName: "uloggd",
+      locale: pt ? "pt_BR" : "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
 
 export default async function YearWrappedPage({ params }: Props) {
   const { lang, username, year: rawYear } = await params;
   if (!hasLocale(lang)) notFound();
-  const year = parseYear(rawYear);
+  const year = parseWrappedYear(rawYear);
   if (!year) notFound();
   const supabase = await createClient();
   const { data: profile } = await supabase
@@ -170,14 +183,19 @@ export default async function YearWrappedPage({ params }: Props) {
         </p>
       </header>
       <div className="year-toolbar">
-        <Link
-          className="year-step"
-          href={`/${lang}/u/${profile.username}/year/${year - 1}`}
-          aria-disabled={year <= MIN_YEAR || undefined}
-          aria-label={pt ? "Ano anterior" : "Previous year"}
-        >
-          <ChevronLeft size={16} />
-        </Link>
+        {year > MIN_WRAPPED_YEAR ? (
+          <Link
+            className="year-step"
+            href={`/${lang}/u/${profile.username}/year/${year - 1}`}
+            aria-label={pt ? "Ano anterior" : "Previous year"}
+          >
+            <ChevronLeft size={16} />
+          </Link>
+        ) : (
+          <span className="year-step" aria-hidden data-disabled>
+            <ChevronLeft size={16} />
+          </span>
+        )}
         <strong>{year}</strong>
         {year < currentYear ? (
           <Link

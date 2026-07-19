@@ -56,6 +56,8 @@ after the loading/skeleton consistency pass.
   table, game of the year by played time, top genres, share button, and
   year-to-year navigation. Aggregates respect RLS visibility. Entry tile on
   the profile stats nav.
+- Dynamic Open Graph and X cards for each wrapped page, with games, sessions,
+  logged hours, and reviews rendered into the shared image.
 
 ## Next: polish and correctness
 
@@ -65,8 +67,6 @@ after the loading/skeleton consistency pass.
    viewer's own follow graph.
 3. **Error telemetry storage.** `/api/telemetry` only logs; consider a
    Supabase table with retention if log scraping proves insufficient.
-4. **Wrapped share cards.** The year page shares a link today; a generated
-   Open Graph image with the headline numbers would travel much better.
 
 ## Later: features
 

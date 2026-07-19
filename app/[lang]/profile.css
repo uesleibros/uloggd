@@ -1000,7 +1000,7 @@
 }
 .profile-stats {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 5px;
 }
 .profile-stats > a {
@@ -1251,7 +1251,7 @@
 }
 @media (max-width: 760px) {
   .profile-stats {
-    grid-template-columns: repeat(6, minmax(92px, 1fr));
+    grid-template-columns: repeat(7, minmax(92px, 1fr));
     overflow-x: auto;
     scroll-snap-type: x proximity;
     scrollbar-width: none;
@@ -1555,6 +1555,13 @@ a.year-top-game:hover .year-top-copy strong {
   font-weight: 620;
 }
 @media (max-width: 620px) {
+  .year-toolbar {
+    flex-wrap: wrap;
+  }
+  .year-toolbar .share-action-button {
+    flex: 1 0 100%;
+    margin-left: 0;
+  }
   .year-stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
