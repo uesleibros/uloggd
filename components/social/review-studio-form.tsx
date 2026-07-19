@@ -12,6 +12,7 @@ import {
   Heart,
   LoaderCircle,
   Lock,
+  Map,
   Plus,
   RotateCcw,
   Trophy,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { StarRating } from "@/components/library/star-rating";
+import type { JourneyOption } from "@/components/social/journey-calendar";
 
 export type ReviewRatingMode =
   "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
@@ -47,6 +49,7 @@ export type ReviewFormInitial = {
   finishedOn: string;
   platform: string;
   aspects: ReviewAspect[];
+  journeyId?: string | null;
 };
 
 export type ReviewRpcFields = {
@@ -62,6 +65,7 @@ export type ReviewRpcFields = {
   review_started_on: string | null;
   review_finished_on: string | null;
   review_platform: string;
+  review_journey: string | null;
   review_aspects: Array<{
     label: string;
     rating: number;
@@ -73,6 +77,7 @@ export type ReviewRpcFields = {
 export function ReviewStudioForm({
   lang,
   platforms,
+  journeyOptions = [],
   initial,
   draftKey,
   submitLabel,
@@ -82,6 +87,7 @@ export function ReviewStudioForm({
 }: {
   lang: "pt-BR" | "en";
   platforms: string[];
+  journeyOptions?: JourneyOption[];
   initial?: ReviewFormInitial;
   draftKey?: string;
   submitLabel: string;
@@ -114,6 +120,9 @@ export function ReviewStudioForm({
   const [startedOn, setStartedOn] = useState(initial?.startedOn ?? "");
   const [finishedOn, setFinishedOn] = useState(initial?.finishedOn ?? "");
   const [platform, setPlatform] = useState(initial?.platform ?? "");
+  const [journeyId, setJourneyId] = useState<string | null>(
+    initial?.journeyId ?? null,
+  );
   const [aspects, setAspects] = useState<ReviewAspect[]>(
     initial?.aspects ?? [],
   );
@@ -152,6 +161,7 @@ export function ReviewStudioForm({
       review_started_on: startedOn || null,
       review_finished_on: finishedOn || null,
       review_platform: platform,
+      review_journey: journeyId,
       review_aspects: aspects
         .filter(({ label }) => label.trim())
         .map(({ label, rating, note, custom }) => ({
@@ -380,6 +390,17 @@ export function ReviewStudioForm({
               pt={pt}
             />
           </label>
+          {journeyOptions.length > 0 && (
+            <label>
+              <span>{pt ? "Jornada ligada" : "Linked journey"}</span>
+              <JourneySelect
+                value={journeyId}
+                onChange={setJourneyId}
+                options={journeyOptions}
+                pt={pt}
+              />
+            </label>
+          )}
           <div className="social-form-row review-date-fields">
             <label>
               <span>{pt ? "Comecei em" : "Started on"}</span>
@@ -591,6 +612,63 @@ function PlatformSelect({
               >
                 <Gamepad2 size={14} />
                 <Select.ItemText>{option}</Select.ItemText>
+                <Select.ItemIndicator>
+                  <Check size={13} />
+                </Select.ItemIndicator>
+              </Select.Item>
+            ))}
+          </Select.Viewport>
+        </Select.Content>
+      </Select.Portal>
+    </Select.Root>
+  );
+}
+
+function JourneySelect({
+  value,
+  onChange,
+  options,
+  pt,
+}: {
+  value: string | null;
+  onChange: (value: string | null) => void;
+  options: JourneyOption[];
+  pt: boolean;
+}) {
+  return (
+    <Select.Root
+      value={value ?? "none"}
+      onValueChange={(next) => onChange(next === "none" ? null : next)}
+    >
+      <Select.Trigger className="editor-select-trigger review-journey-trigger">
+        <Select.Value />
+        <Select.Icon>
+          <ChevronDown size={14} />
+        </Select.Icon>
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Content
+          className="editor-select-menu review-journey-menu"
+          position="popper"
+          sideOffset={6}
+          collisionPadding={12}
+        >
+          <Select.Viewport>
+            <Select.Item className="editor-select-option" value="none">
+              <X size={14} />
+              <Select.ItemText>{pt ? "Nenhuma" : "None"}</Select.ItemText>
+              <Select.ItemIndicator>
+                <Check size={13} />
+              </Select.ItemIndicator>
+            </Select.Item>
+            {options.map((option) => (
+              <Select.Item
+                className="editor-select-option"
+                value={option.id}
+                key={option.id}
+              >
+                <Map size={14} />
+                <Select.ItemText>{option.title}</Select.ItemText>
                 <Select.ItemIndicator>
                   <Check size={13} />
                 </Select.ItemIndicator>

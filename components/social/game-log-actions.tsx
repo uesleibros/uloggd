@@ -1,14 +1,20 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import * as Select from "@radix-ui/react-select";
 import {
   ArrowLeft,
   BookOpen,
   CalendarPlus,
+  Check,
+  ChevronDown,
   Flag,
   ListPlus,
   LoaderCircle,
+  Map,
+  Pencil,
   Play,
+  Plus,
   Trash2,
   X,
 } from "lucide-react";
@@ -16,7 +22,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { JourneyCalendar, type JourneySession } from "./journey-calendar";
+import {
+  JourneyCalendar,
+  type JourneyOption,
+  type JourneySession,
+} from "./journey-calendar";
 import {
   EditorVisibilitySelect,
   ReviewStudioForm,
@@ -26,6 +36,7 @@ import {
 type Mode = "review" | "diary" | "list";
 type ListOption = { id: string; name: string };
 type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+type SelectedJourney = string | "loose" | null;
 type DayPayload = {
   minutes: number | null;
   note: string;
@@ -42,6 +53,7 @@ export function GameLogActions({
   lists,
   logCount,
   journeys = [],
+  journeyOptions = [],
 }: {
   game: { id: number; slug: string; name: string; releaseYear: number | null };
   platforms: string[];
@@ -49,6 +61,7 @@ export function GameLogActions({
   lists: ListOption[];
   logCount: number;
   journeys?: JourneySession[];
+  journeyOptions?: JourneyOption[];
 }) {
   const pt = lang === "pt-BR";
   const router = useRouter();
@@ -57,23 +70,44 @@ export function GameLogActions({
   const [pending, setPending] = useState(false);
   const today = new Date().toISOString().slice(0, 10);
   const [sessions, setSessions] = useState(journeys);
+  const [journeyList, setJourneyList] = useState(journeyOptions);
   const [prevJourneys, setPrevJourneys] = useState(journeys);
   if (journeys !== prevJourneys) {
     setPrevJourneys(journeys);
     setSessions(journeys);
+    setJourneyList(journeyOptions);
     setPending(false);
   }
+  const hasLoose = sessions.some((session) => !session.journeyId);
+  const [selectedJourney, setSelectedJourney] = useState<SelectedJourney>(
+    journeyOptions[0]?.id ?? (hasLoose ? "loose" : null),
+  );
+  const [namingTitle, setNamingTitle] = useState("");
+  const [naming, setNaming] = useState<"create" | "rename" | null>(null);
+  const [journeyArmed, setJourneyArmed] = useState(false);
   const [dayEditor, setDayEditor] = useState<{
     day: string;
     session: JourneySession | null;
   } | null>(null);
   const [openDayValue, setOpenDayValue] = useState(today);
+  const [listChoice, setListChoice] = useState(lists[0]?.id ?? "");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const activeJourney =
+    typeof selectedJourney === "string" && selectedJourney !== "loose"
+      ? (journeyList.find((journey) => journey.id === selectedJourney) ?? null)
+      : null;
+  const entryJourney = activeJourney?.id ?? null;
+  const currentSessions = sessions.filter((session) =>
+    selectedJourney === "loose"
+      ? !session.journeyId
+      : session.journeyId === entryJourney,
+  );
+
   function sessionFor(day: string) {
     return (
-      sessions.find(
+      currentSessions.find(
         (session) =>
           day >= session.start && day <= (session.end ?? session.start),
       ) ?? null
@@ -95,6 +129,80 @@ export function GameLogActions({
     return !rpcError;
   }
 
+  async function submitJourneyName() {
+    const title = namingTitle.trim();
+    if (!title || pending) return;
+    setPending(true);
+    setError(null);
+    if (naming === "rename" && activeJourney) {
+      const { error: rpcError } = await createClient().rpc("rename_journey", {
+        target_journey: activeJourney.id,
+        journey_title: title,
+      });
+      if (rpcError) {
+        setError(pt ? "Não foi possível renomear." : "Could not rename.");
+      } else {
+        setJourneyList((current) =>
+          current.map((journey) =>
+            journey.id === activeJourney.id ? { ...journey, title } : journey,
+          ),
+        );
+        setNaming(null);
+        setNamingTitle("");
+        router.refresh();
+      }
+      setPending(false);
+      return;
+    }
+    const { data, error: rpcError } = await createClient().rpc(
+      "create_journey",
+      { game_id: game.id, game_slug: game.slug, journey_title: title },
+    );
+    if (rpcError || !data) {
+      setError(
+        pt ? "Não foi possível criar a jornada." : "Could not create journey.",
+      );
+    } else {
+      const created = { id: data.id as string, title: data.title as string };
+      setJourneyList((current) => [...current, created]);
+      setSelectedJourney(created.id);
+      setNaming(null);
+      setNamingTitle("");
+      router.refresh();
+    }
+    setPending(false);
+  }
+
+  async function deleteJourney() {
+    if (!activeJourney || pending) return;
+    if (!journeyArmed) {
+      setJourneyArmed(true);
+      window.setTimeout(() => setJourneyArmed(false), 4000);
+      return;
+    }
+    setJourneyArmed(false);
+    setPending(true);
+    const { error: rpcError } = await createClient().rpc("delete_journey", {
+      target_journey: activeJourney.id,
+    });
+    if (rpcError) {
+      setError(pt ? "Não foi possível excluir." : "Could not delete.");
+      setPending(false);
+      return;
+    }
+    setJourneyList((current) =>
+      current.filter((journey) => journey.id !== activeJourney.id),
+    );
+    setSessions((current) =>
+      current.filter((session) => session.journeyId !== activeJourney.id),
+    );
+    const fallback =
+      journeyList.find((journey) => journey.id !== activeJourney.id)?.id ??
+      (hasLoose ? "loose" : null);
+    setSelectedJourney(fallback);
+    router.refresh();
+  }
+
   function openDay(day: string, session: JourneySession | null) {
     if (pending || session?.id.startsWith("temp-")) return;
     setError(null);
@@ -102,7 +210,7 @@ export function GameLogActions({
   }
 
   async function bulkAdd(days: string[]) {
-    if (pending) return;
+    if (pending || selectedJourney === null) return;
     const fresh = days.filter((day) => !sessionFor(day));
     if (!fresh.length) return;
     setError(null);
@@ -119,11 +227,17 @@ export function GameLogActions({
         marksFinish: false,
         spoilers: false,
         visibility: "PUBLIC" as const,
+        journeyId: entryJourney,
       })),
     ]);
     const { error: rpcError } = await createClient().rpc(
       "bulk_save_diary_days",
-      { game_id: game.id, game_slug: game.slug, days: fresh },
+      {
+        game_id: game.id,
+        game_slug: game.slug,
+        days: fresh,
+        entry_journey: entryJourney,
+      },
     );
     if (rpcError) {
       setSessions(sessions);
@@ -135,9 +249,13 @@ export function GameLogActions({
   }
 
   async function bulkRemove(days: string[]) {
-    if (pending) return;
+    if (pending || selectedJourney === null) return;
     const daySet = new Set(days);
     const hit = (session: JourneySession) => {
+      if (
+        selectedJourney === "loose" ? session.journeyId : session.journeyId !== entryJourney
+      )
+        return false;
       for (const day of daySet) {
         if (day >= session.start && day <= (session.end ?? session.start))
           return true;
@@ -150,7 +268,7 @@ export function GameLogActions({
     setSessions((current) => current.filter((session) => !hit(session)));
     const { error: rpcError } = await createClient().rpc(
       "bulk_delete_diary_days",
-      { game_id: game.id, days },
+      { game_id: game.id, days, entry_journey: entryJourney },
     );
     if (rpcError) {
       setSessions(sessions);
@@ -188,6 +306,7 @@ export function GameLogActions({
           entry_visibility: payload.visibility,
           entry_marks_start: payload.marksStart,
           entry_marks_finish: payload.marksFinish,
+          entry_journey: entryJourney,
         });
     if (rpcError) {
       setPending(false);
@@ -213,13 +332,13 @@ export function GameLogActions({
     router.refresh();
   }
 
-  async function submitList(formData: FormData) {
-    if (pending) return;
+  async function submitList() {
+    if (pending || !listChoice) return;
     setPending(true);
     setError(null);
     setSuccess(null);
     const { error: rpcError } = await createClient().rpc("add_game_to_list", {
-      target_list: formData.get("listId"),
+      target_list: listChoice,
       game_id: game.id,
       game_slug: game.slug,
     });
@@ -248,9 +367,13 @@ export function GameLogActions({
     setError(null);
     setSuccess(null);
     setDayEditor(null);
+    setNaming(null);
+    setNamingTitle("");
     setMode(nextMode);
     setOpen(true);
   }
+
+  const namingOpen = naming !== null || selectedJourney === null;
 
   return (
     <>
@@ -300,6 +423,7 @@ export function GameLogActions({
               <ReviewStudioForm
                 lang={lang}
                 platforms={platforms}
+                journeyOptions={journeyList}
                 draftKey={`uloggd:review-draft:${game.id}`}
                 submitLabel={pt ? "Publicar avaliação" : "Publish review"}
                 busyLabel={pt ? "Publicando…" : "Publishing…"}
@@ -309,35 +433,173 @@ export function GameLogActions({
             )}
             {mode === "diary" && !dayEditor && (
               <div className="social-editor-form journey-editor">
-                <JourneyCalendar
-                  lang={lang}
-                  maxDate={today}
-                  sessions={sessions}
-                  busy={pending}
-                  onDayOpen={openDay}
-                  onBulkAdd={bulkAdd}
-                  onBulkRemove={bulkRemove}
-                />
-                <div className="journey-open-day">
-                  <label>
-                    <span>{pt ? "Abrir um dia" : "Open a day"}</span>
-                    <input
-                      type="date"
-                      max={today}
-                      value={openDayValue}
-                      onChange={(event) => setOpenDayValue(event.target.value)}
-                    />
-                  </label>
+                <div className="journey-picker">
+                  {journeyList.map((journey) => (
+                    <button
+                      key={journey.id}
+                      type="button"
+                      data-active={selectedJourney === journey.id || undefined}
+                      onClick={() => {
+                        setSelectedJourney(journey.id);
+                        setNaming(null);
+                        setJourneyArmed(false);
+                      }}
+                    >
+                      <Map size={12} /> {journey.title}
+                    </button>
+                  ))}
+                  {hasLoose && (
+                    <button
+                      type="button"
+                      data-active={selectedJourney === "loose" || undefined}
+                      onClick={() => {
+                        setSelectedJourney("loose");
+                        setNaming(null);
+                        setJourneyArmed(false);
+                      }}
+                    >
+                      {pt ? "Sessões avulsas" : "Loose sessions"}
+                    </button>
+                  )}
                   <button
                     type="button"
-                    disabled={!openDayValue || pending}
-                    onClick={() =>
-                      openDay(openDayValue, sessionFor(openDayValue))
-                    }
+                    data-new
+                    onClick={() => {
+                      setNaming("create");
+                      setNamingTitle("");
+                    }}
                   >
-                    {pt ? "Abrir" : "Open"}
+                    <Plus size={12} /> {pt ? "Nova jornada" : "New journey"}
                   </button>
                 </div>
+                {activeJourney && naming === null && (
+                  <div className="journey-manage">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNaming("rename");
+                        setNamingTitle(activeJourney.title);
+                      }}
+                    >
+                      <Pencil size={12} /> {pt ? "Renomear" : "Rename"}
+                    </button>
+                    <button
+                      type="button"
+                      data-armed={journeyArmed || undefined}
+                      onClick={deleteJourney}
+                      disabled={pending}
+                    >
+                      <Trash2 size={12} />{" "}
+                      {journeyArmed
+                        ? pt
+                          ? "Excluir jornada e sessões?"
+                          : "Delete journey and sessions?"
+                        : pt
+                          ? "Excluir"
+                          : "Delete"}
+                    </button>
+                  </div>
+                )}
+                {namingOpen && (
+                  <div className="journey-naming">
+                    <span>
+                      {naming === "rename"
+                        ? pt
+                          ? "Renomear jornada"
+                          : "Rename journey"
+                        : pt
+                          ? "Dê um nome à sua jornada"
+                          : "Name your journey"}
+                    </span>
+                    <div>
+                      <input
+                        value={namingTitle}
+                        maxLength={80}
+                        placeholder={
+                          pt
+                            ? "ex: Primeira campanha, Replay 2026…"
+                            : "e.g. First playthrough, 2026 replay…"
+                        }
+                        onChange={(event) => setNamingTitle(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            void submitJourneyName();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        disabled={!namingTitle.trim() || pending}
+                        onClick={() => void submitJourneyName()}
+                      >
+                        {pending ? (
+                          <LoaderCircle className="spin" size={13} aria-hidden />
+                        ) : (
+                          <Check size={13} />
+                        )}
+                        {naming === "rename"
+                          ? pt
+                            ? "Salvar"
+                            : "Save"
+                          : pt
+                            ? "Criar"
+                            : "Create"}
+                      </button>
+                      {naming !== null && selectedJourney !== null && (
+                        <button
+                          type="button"
+                          data-quiet
+                          onClick={() => setNaming(null)}
+                        >
+                          {pt ? "Cancelar" : "Cancel"}
+                        </button>
+                      )}
+                    </div>
+                    {selectedJourney === null && (
+                      <p>
+                        {pt
+                          ? "Cada jornada é uma passagem pelo jogo — você pode criar quantas quiser e registrar as sessões de cada uma."
+                          : "Each journey is one playthrough — create as many as you want and log each one's sessions."}
+                      </p>
+                    )}
+                  </div>
+                )}
+                {selectedJourney !== null && (
+                  <>
+                    <JourneyCalendar
+                      lang={lang}
+                      maxDate={today}
+                      sessions={currentSessions}
+                      busy={pending}
+                      onDayOpen={openDay}
+                      onBulkAdd={bulkAdd}
+                      onBulkRemove={bulkRemove}
+                    />
+                    <div className="journey-open-day">
+                      <label>
+                        <span>{pt ? "Abrir um dia" : "Open a day"}</span>
+                        <input
+                          type="date"
+                          max={today}
+                          value={openDayValue}
+                          onChange={(event) =>
+                            setOpenDayValue(event.target.value)
+                          }
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        disabled={!openDayValue || pending}
+                        onClick={() =>
+                          openDay(openDayValue, sessionFor(openDayValue))
+                        }
+                      >
+                        {pt ? "Abrir" : "Open"}
+                      </button>
+                    </div>
+                  </>
+                )}
                 {error && (
                   <p className="social-form-error" role="alert">
                     {error}
@@ -355,6 +617,10 @@ export function GameLogActions({
                 key={dayEditor.day + (dayEditor.session?.id ?? "new")}
                 day={dayEditor.day}
                 session={dayEditor.session}
+                journeyTitle={
+                  activeJourney?.title ??
+                  (pt ? "Sessões avulsas" : "Loose sessions")
+                }
                 lang={lang}
                 pending={pending}
                 onBack={() => setDayEditor(null)}
@@ -367,13 +633,42 @@ export function GameLogActions({
                 {lists.length ? (
                   <label>
                     <span>{pt ? "Lista" : "List"}</span>
-                    <select name="listId" required>
-                      {lists.map((list) => (
-                        <option value={list.id} key={list.id}>
-                          {list.name}
-                        </option>
-                      ))}
-                    </select>
+                    <Select.Root value={listChoice} onValueChange={setListChoice}>
+                      <Select.Trigger className="editor-select-trigger">
+                        <Select.Value
+                          placeholder={
+                            pt ? "Selecione uma lista" : "Select a list"
+                          }
+                        />
+                        <Select.Icon>
+                          <ChevronDown size={14} />
+                        </Select.Icon>
+                      </Select.Trigger>
+                      <Select.Portal>
+                        <Select.Content
+                          className="editor-select-menu"
+                          position="popper"
+                          sideOffset={6}
+                          collisionPadding={12}
+                        >
+                          <Select.Viewport>
+                            {lists.map((list) => (
+                              <Select.Item
+                                className="editor-select-option"
+                                value={list.id}
+                                key={list.id}
+                              >
+                                <ListPlus size={14} />
+                                <Select.ItemText>{list.name}</Select.ItemText>
+                                <Select.ItemIndicator>
+                                  <Check size={13} />
+                                </Select.ItemIndicator>
+                              </Select.Item>
+                            ))}
+                          </Select.Viewport>
+                        </Select.Content>
+                      </Select.Portal>
+                    </Select.Root>
                   </label>
                 ) : (
                   <p className="social-empty-inline">
@@ -400,7 +695,7 @@ export function GameLogActions({
                     type="submit"
                     aria-busy={pending}
                     data-loading={pending || undefined}
-                    disabled={pending || !lists.length}
+                    disabled={pending || !listChoice}
                   >
                     {pending && (
                       <LoaderCircle className="spin" size={15} aria-hidden />
@@ -426,6 +721,7 @@ export function GameLogActions({
 function JourneyDayEditor({
   day,
   session,
+  journeyTitle,
   lang,
   pending,
   onBack,
@@ -434,6 +730,7 @@ function JourneyDayEditor({
 }: {
   day: string;
   session: JourneySession | null;
+  journeyTitle: string;
   lang: "pt-BR" | "en";
   pending: boolean;
   onBack: () => void;
@@ -493,15 +790,7 @@ function JourneyDayEditor({
           <ArrowLeft size={15} />
         </button>
         <div>
-          <span>
-            {session
-              ? pt
-                ? "EDITAR SESSÃO"
-                : "EDIT SESSION"
-              : pt
-                ? "NOVA SESSÃO"
-                : "NEW SESSION"}
-          </span>
+          <span>{journeyTitle.toUpperCase()}</span>
           <strong>{rangeLabel}</strong>
         </div>
       </div>

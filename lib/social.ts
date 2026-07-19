@@ -22,6 +22,12 @@ type Row = {
 function profileOf(value: Row["profiles"]): ProfileJoin | null {
   return Array.isArray(value) ? (value[0] ?? null) : value;
 }
+function journeyTitleOf(value: unknown): string | null {
+  const joined = Array.isArray(value) ? value[0] : value;
+  if (joined && typeof joined === "object" && "title" in joined)
+    return String((joined as { title: unknown }).title ?? "") || null;
+  return null;
+}
 
 export async function getActivity(
   supabase: SupabaseClient,
@@ -36,14 +42,14 @@ export async function getActivity(
   let reviewsQuery = supabase
     .from("reviews")
     .select(
-      "id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
+      "id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
   let diaryQuery = supabase
     .from("diary_entries")
     .select(
-      "id,profile_id,igdb_id,game_slug,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,created_at,updated_at,profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified)",
+      "id,profile_id,igdb_id,game_slug,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -155,6 +161,8 @@ export async function getActivity(
           minutes: review ? undefined : (row.minutes as number | null),
           marksStart: review ? undefined : Boolean(row.marks_start),
           marksFinish: review ? undefined : Boolean(row.marks_finish),
+          journeyId: String(row.journey_id ?? "") || null,
+          journeyTitle: journeyTitleOf(row.journeys) || null,
           spoilers: Boolean(row.contains_spoilers),
           visibility: row.visibility as SocialEntry["visibility"],
           createdAt: row.created_at,

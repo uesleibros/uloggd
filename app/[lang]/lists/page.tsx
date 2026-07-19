@@ -2,6 +2,7 @@ import { Gamepad2, Globe2, Layers3, List } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { CreateListForm } from "@/components/social/create-list-form";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
+import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
@@ -15,13 +16,21 @@ export default async function ListsPage({
   const supabase = await getSupabase();
   const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login?next=/${lang}/lists`);
-  const { data: lists } = await supabase
-    .from("game_lists")
-    .select(
-      "id,name,description,visibility,updated_at,game_list_items(igdb_id,position)",
-    )
-    .eq("profile_id", user.id)
-    .order("updated_at", { ascending: false });
+  const [{ data: lists }, { data: profile }] = await Promise.all([
+    supabase
+      .from("game_lists")
+      .select(
+        "id,name,description,visibility,updated_at,game_list_items(igdb_id,position)",
+      )
+      .eq("profile_id", user.id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("profiles")
+      .select("username,display_name,avatar_url,banner_url")
+      .eq("id", user.id)
+      .maybeSingle(),
+  ]);
+  if (!profile?.username) redirect(`/${lang}/onboarding/username`);
   const pt = lang === "pt-BR";
   const itemIds = (lists ?? []).flatMap((list) =>
     list.game_list_items.map((item) => item.igdb_id),
@@ -57,41 +66,40 @@ export default async function ListsPage({
 
   return (
     <main className="social-page lists-page">
-      <header className="lists-hero">
-        <div className="lists-hero-copy">
-          <span>
+      <WorkspaceHero
+        profile={profile}
+        eyebrow={
+          <>
             <List size={14} />{" "}
             {pt ? "ORGANIZE DO SEU JEITO" : "ORGANIZE YOUR WAY"}
-          </span>
-          <h1>{pt ? "Listas" : "Lists"}</h1>
-          <p>
-            {pt
-              ? "Monte seleções por tema, ranking ou qualquer ideia que conecte seus jogos."
-              : "Build selections by theme, ranking, or any idea that connects your games."}
-          </p>
-          <CreateListForm lang={lang} />
-        </div>
-        <dl className="lists-summary">
-          <div>
-            <dt>
-              <Layers3 size={14} /> {pt ? "Listas" : "Lists"}
-            </dt>
-            <dd>{totalLists}</dd>
-          </div>
-          <div>
-            <dt>
-              <Gamepad2 size={14} /> {pt ? "Jogos" : "Games"}
-            </dt>
-            <dd>{itemIds.length}</dd>
-          </div>
-          <div>
-            <dt>
-              <Globe2 size={14} /> {pt ? "Públicas" : "Public"}
-            </dt>
-            <dd>{publicLists}</dd>
-          </div>
-        </dl>
-      </header>
+          </>
+        }
+        title={pt ? "Listas" : "Lists"}
+        description={
+          pt
+            ? "Monte seleções por tema, ranking ou qualquer ideia que conecte seus jogos."
+            : "Build selections by theme, ranking, or any idea that connects your games."
+        }
+        stats={[
+          {
+            icon: <Layers3 size={14} />,
+            label: pt ? "Listas" : "Lists",
+            value: totalLists,
+          },
+          {
+            icon: <Gamepad2 size={14} />,
+            label: pt ? "Jogos" : "Games",
+            value: itemIds.length,
+          },
+          {
+            icon: <Globe2 size={14} />,
+            label: pt ? "Públicas" : "Public",
+            value: publicLists,
+          },
+        ]}
+      >
+        <CreateListForm lang={lang} />
+      </WorkspaceHero>
       {lists?.length ? (
         <section className="lists-collection">
           <header>

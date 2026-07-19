@@ -22,7 +22,10 @@ export type JourneySession = {
   marksFinish: boolean;
   spoilers: boolean;
   visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+  journeyId: string | null;
 };
+
+export type JourneyOption = { id: string; title: string };
 
 function pad(value: number) {
   return String(value).padStart(2, "0");
@@ -30,6 +33,12 @@ function pad(value: number) {
 
 function dayKey(year: number, month: number, day: number) {
   return `${year}-${pad(month + 1)}-${pad(day)}`;
+}
+
+function shiftDay(key: string, delta: number) {
+  const date = new Date(`${key}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + delta);
+  return date.toISOString().slice(0, 10);
 }
 
 function monthOf(value: string | null): { year: number; month: number } {
@@ -91,7 +100,8 @@ export function JourneyCalendar({
   const [view, setView] = useState(() => monthOf(null));
   const [drag, setDrag] = useState<{
     mode: "add" | "remove";
-    days: Set<string>;
+    anchor: string;
+    hover: string;
   } | null>(null);
   const pendingRef = useRef<{ day: string; mode: "add" | "remove" } | null>(
     null,
@@ -130,18 +140,28 @@ export function JourneyCalendar({
     return day && day <= maxDate ? day : null;
   }
 
+  function daysBetween(a: string, b: string) {
+    const [from, to] = a <= b ? [a, b] : [b, a];
+    const days: string[] = [];
+    let cursor = from;
+    while (cursor <= to && days.length < 366) {
+      days.push(cursor);
+      cursor = shiftDay(cursor, 1);
+    }
+    return days;
+  }
+
+  const dragDays = drag ? new Set(daysBetween(drag.anchor, drag.hover)) : null;
+
   function extendTo(day: string) {
     const pending = pendingRef.current;
     if (drag) {
-      if (!drag.days.has(day)) {
-        const days = new Set(drag.days);
-        days.add(day);
-        setDrag({ mode: drag.mode, days });
-      }
+      if (day !== drag.hover)
+        setDrag({ mode: drag.mode, anchor: drag.anchor, hover: day });
       return;
     }
     if (pending && day !== pending.day) {
-      setDrag({ mode: pending.mode, days: new Set([pending.day, day]) });
+      setDrag({ mode: pending.mode, anchor: pending.day, hover: day });
       pendingRef.current = null;
     }
   }
@@ -154,7 +174,7 @@ export function JourneyCalendar({
       return;
     }
     if (drag) {
-      const days = [...drag.days];
+      const days = daysBetween(drag.anchor, drag.hover);
       if (drag.mode === "add") onBulkAdd(days);
       else onBulkRemove(days);
       setDrag(null);
@@ -284,7 +304,11 @@ export function JourneyCalendar({
             weekday < 6 &&
             index + 1 < daysInMonth &&
             Boolean(sessionFor(dayKey(view.year, view.month, index + 2)));
-          const dragged = drag?.days.has(key);
+          const dragged = Boolean(dragDays?.has(key));
+          const dragConnLeft =
+            dragged && weekday > 0 && dragDays?.has(shiftDay(key, -1));
+          const dragConnRight =
+            dragged && weekday < 6 && dragDays?.has(shiftDay(key, 1));
           return (
             <span
               key={key}
@@ -296,6 +320,8 @@ export function JourneyCalendar({
               data-conn-right={(session && nextLogged) || undefined}
               data-adding={(dragged && drag?.mode === "add") || undefined}
               data-removing={(dragged && drag?.mode === "remove") || undefined}
+              data-sel-left={dragConnLeft || undefined}
+              data-sel-right={dragConnRight || undefined}
               data-today={key === maxDate || undefined}
             >
               {(session?.marksStart || session?.marksFinish) && (
@@ -340,11 +366,11 @@ export function JourneyCalendar({
       >
         {drag?.mode === "remove"
           ? pt
-            ? `Removendo ${drag.days.size} ${drag.days.size === 1 ? "dia" : "dias"}`
-            : `Removing ${drag.days.size} ${drag.days.size === 1 ? "day" : "days"}`
+            ? `Removendo ${dragDays?.size ?? 0} ${(dragDays?.size ?? 0) === 1 ? "dia" : "dias"}`
+            : `Removing ${dragDays?.size ?? 0} ${(dragDays?.size ?? 0) === 1 ? "day" : "days"}`
           : pt
-            ? `Adicionando ${drag?.days.size ?? 0} ${(drag?.days.size ?? 0) === 1 ? "dia" : "dias"}`
-            : `Adding ${drag?.days.size ?? 0} ${(drag?.days.size ?? 0) === 1 ? "day" : "days"}`}
+            ? `Adicionando ${dragDays?.size ?? 0} ${(dragDays?.size ?? 0) === 1 ? "dia" : "dias"}`
+            : `Adding ${dragDays?.size ?? 0} ${(dragDays?.size ?? 0) === 1 ? "day" : "days"}`}
       </div>
     </div>
   );

@@ -4717,35 +4717,6 @@ html[data-sidebar-ready] .account-button > svg {
 }
 
 /* Professional review writing and reading surfaces. */
-.reviews-overview {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  margin: -8px 0 30px;
-}
-.reviews-overview > div {
-  padding: 14px;
-  border: 1px solid var(--shell-line);
-  border-radius: 9px;
-  background: var(--console-panel);
-}
-.reviews-overview dt {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--screen-muted);
-  font-size: 11px;
-}
-.reviews-overview dt svg {
-  color: var(--brand-blurple-bright);
-}
-.reviews-overview dd {
-  margin: 7px 0 0;
-  color: var(--screen-white);
-  font-size: 19px;
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
-}
 .activity-entry[data-kind="review"] {
   position: relative;
   padding: 18px;
@@ -5493,10 +5464,6 @@ html[data-sidebar-ready] .account-button > svg {
   color: #ffc1bc !important;
 }
 @media (max-width: 620px) {
-  .reviews-overview {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-bottom: 22px;
-  }
   .activity-entry[data-kind="review"] {
     grid-template-columns: 52px minmax(0, 1fr);
     margin-inline: 0;
@@ -8323,6 +8290,184 @@ a,
   font-style: italic;
 }
 
+/* Named journeys: playthrough picker + naming panel inside the log modal. */
+.journey-picker {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.journey-picker button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 999px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 600;
+  transition:
+    background-color 130ms ease-out,
+    border-color 130ms ease-out,
+    color 130ms ease-out;
+}
+.journey-picker button:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.journey-picker button[data-active] {
+  border-color: var(--state-playing-border);
+  background: var(--state-playing-soft-bg);
+  color: var(--state-playing-text);
+}
+.journey-picker button[data-new] {
+  border-style: dashed;
+  color: var(--screen-muted);
+}
+.journey-picker button[data-new]:hover {
+  border-color: var(--state-playing-border);
+  color: var(--state-playing-text);
+}
+.journey-manage {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: -3px;
+}
+.journey-manage button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: none;
+  color: var(--screen-muted);
+  font-size: 11px;
+  font-weight: 580;
+  transition:
+    background-color 130ms ease-out,
+    border-color 130ms ease-out,
+    color 130ms ease-out;
+}
+.journey-manage button:hover:not(:disabled) {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.journey-manage button[data-armed] {
+  border-color: rgb(231 154 154 / 40%);
+  background: rgb(231 122 122 / 12%);
+  color: var(--danger-text);
+}
+.journey-naming {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 9px;
+  padding: 13px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-inset);
+  animation: catalog-filter-content-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.journey-naming > span {
+  color: var(--screen-white);
+  font-size: 12px;
+  font-weight: 620;
+}
+.journey-naming > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.journey-naming input {
+  flex: 1 1 180px;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-white);
+  font-size: 12px;
+}
+.journey-naming input:focus-visible {
+  outline: 2px solid var(--state-playing-border);
+  outline-offset: 1px;
+}
+.journey-naming > div > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 15px;
+  border: 1px solid var(--state-playing-border);
+  border-radius: 8px;
+  background: var(--state-playing-soft-bg);
+  color: var(--state-playing-text);
+  font-size: 11px;
+  font-weight: 620;
+  transition:
+    background-color 130ms ease-out,
+    color 130ms ease-out,
+    opacity 130ms ease-out;
+}
+.journey-naming > div > button:hover:not(:disabled) {
+  background: var(--state-playing-bg);
+}
+.journey-naming > div > button:disabled {
+  opacity: 0.45;
+}
+.journey-naming > div > button[data-quiet] {
+  border-color: transparent;
+  background: none;
+  color: var(--screen-muted);
+}
+.journey-naming > div > button[data-quiet]:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.journey-naming > p {
+  margin: 0;
+  color: var(--screen-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+/* Journey chips on activity rows and the review page */
+.activity-meta .activity-journey-chip {
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--state-playing-border);
+  border-radius: 6px;
+  background: var(--state-playing-soft-bg);
+  color: var(--state-playing-text);
+  font-weight: 600;
+}
+.review-page-journey {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--state-playing-border);
+  border-radius: 7px;
+  background: var(--state-playing-soft-bg);
+  color: var(--state-playing-text);
+  font-size: 11px;
+  font-weight: 600;
+  transition:
+    background-color 130ms ease-out,
+    color 130ms ease-out;
+}
+.review-page-journey:hover {
+  background: var(--state-playing-bg);
+  color: var(--screen-white);
+}
+
 /* Journey calendar: drag-across-days range picker inside the log modal. */
 .journey-calendar {
   grid-column: 1 / -1;
@@ -8471,13 +8616,34 @@ a,
   background: var(--brand-blurple-wash);
   box-shadow: inset 0 0 0 1px rgb(88 101 242 / 45%);
   color: var(--tonal-brand-text);
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 .journey-calendar-grid > span[data-removing] {
   background: rgb(231 154 154 / 14%);
   box-shadow: inset 0 0 0 1px rgb(231 154 154 / 45%);
   color: #e79a9a;
-  transform: scale(1.05);
+  transform: scale(1.04);
+}
+/* Painted stretch reads as one connected bar while dragging. */
+.journey-calendar-grid > span[data-sel-left] {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  transform: none;
+}
+.journey-calendar-grid > span[data-sel-right] {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  transform: none;
+}
+.journey-calendar-grid > span[data-adding][data-sel-left] {
+  box-shadow:
+    inset 0 0 0 1px rgb(88 101 242 / 45%),
+    -3px 0 0 0 var(--brand-blurple-wash);
+}
+.journey-calendar-grid > span[data-removing][data-sel-left] {
+  box-shadow:
+    inset 0 0 0 1px rgb(231 154 154 / 45%),
+    -3px 0 0 0 rgb(231 154 154 / 14%);
 }
 .journey-day-marks {
   position: absolute;
@@ -8831,6 +8997,43 @@ button.content-like:hover:not(:disabled) {
 }
 .activity-review-title a {
   color: inherit;
+}
+
+/* Back link shared by detail pages (review, logs) */
+.page-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  max-width: 100%;
+  margin-bottom: 16px;
+  padding: 0 13px;
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 999px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition:
+    background-color 130ms ease-out,
+    border-color 130ms ease-out,
+    color 130ms ease-out,
+    transform 130ms ease-out;
+}
+.page-back-link svg {
+  flex-shrink: 0;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.page-back-link:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.page-back-link:hover svg {
+  transform: translateX(-2px);
 }
 
 /* Dedicated review page */
@@ -10756,48 +10959,78 @@ details.review-page-content p {
   gap: 28px;
 }
 
-.lists-hero {
+/* Workspace hero: /lists and /reviews follow the library banner pattern,
+   as a rounded card since these pages keep their normal padding. */
+.lists-page .workspace-hero {
+  margin-bottom: 0;
+}
+
+.workspace-hero {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 32px;
   min-height: 246px;
   overflow: hidden;
-  padding: 34px;
+  margin-bottom: 34px;
   border: 1px solid var(--shell-line);
   border-radius: 14px;
-  background:
-    radial-gradient(
-      circle at 82% 12%,
-      var(--brand-blurple-wash),
-      transparent 38%
-    ),
-    linear-gradient(135deg, var(--console-panel), var(--console-inset));
+  background: var(--console-panel);
 }
 
-.lists-hero::after {
+.workspace-hero > img {
+  object-fit: cover;
+  object-position: center 34%;
+  opacity: 0.34;
+  filter: saturate(0.62);
+}
+
+.workspace-hero-scrim {
   position: absolute;
-  right: -56px;
-  bottom: -96px;
-  width: 250px;
-  height: 250px;
-  border: 1px solid rgb(132 141 255 / 0.12);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 34px rgb(132 141 255 / 0.035),
-    0 0 0 70px rgb(132 141 255 / 0.025);
-  content: "";
-  pointer-events: none;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(15 14 17 / 96%),
+      rgb(15 14 17 / 62%) 55%,
+      rgb(15 14 17 / 24%)
+    ),
+    linear-gradient(0deg, var(--console-canvas), transparent 72%);
 }
 
-.lists-hero-copy {
+.workspace-hero-content {
   position: relative;
   z-index: 1;
-  max-width: 610px;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 16px;
+  min-height: 246px;
+  padding: 64px 30px 28px;
 }
 
-.lists-hero-copy > span {
+.workspace-hero-avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--console-raised);
+  color: var(--screen-white);
+  font-size: 20px;
+  font-weight: 680;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
+}
+
+.workspace-hero-avatar img {
+  object-fit: cover;
+}
+
+.workspace-hero-copy {
+  min-width: 0;
+}
+
+.workspace-hero-copy > span {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -10807,74 +11040,81 @@ details.review-page-content p {
   letter-spacing: 0.09em;
 }
 
-.lists-hero-copy h1 {
-  margin-top: 9px;
+.workspace-hero-copy h1 {
+  margin: 8px 0 0;
   color: var(--screen-white);
-  font-size: clamp(32px, 4vw, 44px);
+  font-size: clamp(30px, 4vw, 42px);
   font-weight: 660;
   letter-spacing: -0.05em;
   line-height: 1;
+  text-wrap: balance;
 }
 
-.lists-hero-copy > p {
-  max-width: 520px;
-  margin-top: 12px;
+.workspace-hero-copy p {
+  max-width: 570px;
+  margin: 10px 0 0;
   color: var(--screen-dim);
   font-size: 12px;
   line-height: 1.65;
+  text-wrap: pretty;
 }
 
-.lists-hero-copy .create-list-trigger {
+.workspace-hero-copy .create-list-trigger {
   min-height: 44px;
-  margin-top: 22px;
+  margin-top: 20px;
   padding-inline: 16px;
   border-color: var(--brand-blurple);
   background: var(--brand-blurple);
   color: white;
 }
 
-.lists-hero-copy .create-list-trigger:hover {
+.workspace-hero-copy .create-list-trigger:hover {
   background: var(--brand-blurple-bright);
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 10px 26px rgb(88 101 242 / 0.2);
 }
 
-.lists-hero-copy .create-list-trigger:active {
+.workspace-hero-copy .create-list-trigger:active {
   transform: scale(0.97);
 }
 
-.lists-summary {
-  position: relative;
-  z-index: 1;
+.workspace-hero-stats {
   display: grid;
-  grid-template-columns: repeat(3, 92px);
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(88px, auto);
+  margin: 0;
   overflow: hidden;
   border: 1px solid var(--shell-line-strong);
   border-radius: 11px;
-  background: color-mix(in srgb, var(--console-raised) 82%, transparent);
+  background: rgb(12 11 14 / 72%);
   backdrop-filter: blur(12px);
 }
 
-.lists-summary > div {
+.workspace-hero-stats > div {
   padding: 13px;
   border-left: 1px solid var(--shell-line);
 }
 
-.lists-summary > div:first-child {
+.workspace-hero-stats > div:first-child {
   border-left: 0;
 }
 
-.lists-summary dt {
+.workspace-hero-stats dt {
   display: flex;
   align-items: center;
   gap: 5px;
   color: var(--screen-muted);
   font-size: 10px;
+  white-space: nowrap;
 }
 
-.lists-summary dd {
-  margin-top: 7px;
+.workspace-hero-stats dt svg {
+  color: var(--brand-blurple-bright);
+}
+
+.workspace-hero-stats dd {
+  margin: 7px 0 0;
   color: var(--screen-white);
   font-size: 19px;
   font-weight: 650;
@@ -11211,15 +11451,39 @@ details.review-page-content p {
 }
 
 @media (max-width: 760px) {
-  .lists-hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
-    padding: 26px 22px 22px;
+  .workspace-hero-content {
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 14px;
+    padding: 48px 22px 22px;
   }
 
-  .lists-summary {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .workspace-hero-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 17px;
+  }
+
+  .workspace-hero-stats {
+    grid-column: 1 / -1;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
+  }
+
+  .workspace-hero-stats > div {
+    border-left: 0;
+  }
+
+  .workspace-hero-stats > div:nth-child(even) {
+    border-left: 1px solid var(--shell-line);
+  }
+
+  .workspace-hero-stats > div:nth-child(n + 3) {
+    border-top: 1px solid var(--shell-line);
+  }
+
+  .workspace-hero-stats > div:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 }
 
@@ -11228,22 +11492,25 @@ details.review-page-content p {
     gap: 22px;
   }
 
-  .lists-hero {
-    min-height: 0;
-    margin-inline: -2px;
-    padding: 24px 18px 18px;
+  .workspace-hero {
+    margin-bottom: 22px;
     border-radius: 12px;
   }
 
-  .lists-hero-copy h1 {
-    font-size: 32px;
+  .workspace-hero-content {
+    min-height: 0;
+    padding: 40px 18px 18px;
   }
 
-  .lists-hero-copy .create-list-trigger {
+  .workspace-hero-copy h1 {
+    font-size: 30px;
+  }
+
+  .workspace-hero-copy .create-list-trigger {
     width: 100%;
   }
 
-  .lists-summary > div {
+  .workspace-hero-stats > div {
     padding: 10px;
   }
 
@@ -13117,7 +13384,6 @@ details.review-page-content p {
 
 :root[data-theme="light"] .game-surface,
 :root[data-theme="light"] .game-body-layout .game-section,
-:root[data-theme="light"] .reviews-overview > div,
 :root[data-theme="light"] .activity-entry[data-kind="review"],
 :root[data-theme="light"] .settings-account-card,
 :root[data-theme="light"] .settings-security-card,

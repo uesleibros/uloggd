@@ -40,6 +40,7 @@ export function EditReviewDialog({
     startedOn: entry.startedOn ?? "",
     finishedOn: entry.finishedOn ?? "",
     platform: entry.platform ?? "",
+    journeyId: entry.journeyId ?? null,
     aspects: (entry.aspects ?? []).map((aspect, index) => ({
       id: `${entry.id}-${index}`,
       label: aspect.label,
@@ -93,6 +94,16 @@ export function EditReviewDialog({
           <ReviewStudioForm
             lang={lang}
             platforms={entry.platform ? [entry.platform] : []}
+            journeyOptions={
+              entry.journeyId
+                ? [
+                    {
+                      id: entry.journeyId,
+                      title: entry.journeyTitle ?? (pt ? "Jornada" : "Journey"),
+                    },
+                  ]
+                : []
+            }
             initial={initial}
             submitLabel={pt ? "Salvar alterações" : "Save changes"}
             busyLabel={pt ? "Salvando…" : "Saving…"}

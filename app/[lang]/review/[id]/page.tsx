@@ -7,6 +7,7 @@ import {
   Check,
   EyeOff,
   Gamepad2,
+  Map,
   RotateCcw,
   Star,
   Trophy,
@@ -33,7 +34,7 @@ type Aspect = {
 };
 
 const reviewSelect =
-  "id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)";
+  "id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)";
 
 function formatRating(rating: number, mode: RatingMode, lang: "pt-BR" | "en") {
   if (mode === "score_100") return `${rating}/100`;
@@ -113,6 +114,10 @@ export default async function ReviewPage({ params }: Props) {
     | { like_count: number; liked_by_viewer: boolean }
     | undefined;
 
+  const journeyJoin = Array.isArray(review.journeys)
+    ? review.journeys[0]
+    : review.journeys;
+  const journeyTitle = journeyJoin?.title ?? null;
   const ratingMode = (review.rating_mode ?? "stars_5") as RatingMode;
   const aspects = (review.aspect_ratings ?? []) as Aspect[];
   const date = new Intl.DateTimeFormat(lang, {
@@ -145,6 +150,8 @@ export default async function ReviewPage({ params }: Props) {
     startedOn: review.started_on,
     finishedOn: review.finished_on,
     content: review.content,
+    journeyId: review.journey_id,
+    journeyTitle,
     spoilers: Boolean(review.contains_spoilers),
     visibility: review.visibility,
     createdAt: review.created_at,
@@ -244,6 +251,14 @@ export default async function ReviewPage({ params }: Props) {
                 <span>
                   <Gamepad2 size={13} /> {review.platform}
                 </span>
+              )}
+              {journeyTitle && (
+                <Link
+                  className="review-page-journey"
+                  href={`/${lang}/game/${review.game_slug}/logs`}
+                >
+                  <Map size={13} /> {journeyTitle}
+                </Link>
               )}
               {(review.started_on || review.finished_on) && (
                 <span>

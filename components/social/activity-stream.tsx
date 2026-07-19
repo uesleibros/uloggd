@@ -6,6 +6,7 @@ import {
   Clock3,
   EyeOff,
   Flag,
+  Map,
   Play,
   Star,
   Trophy,
@@ -50,6 +51,8 @@ export type SocialEntry = {
   minutes?: number | null;
   marksStart?: boolean;
   marksFinish?: boolean;
+  journeyId?: string | null;
+  journeyTitle?: string | null;
   spoilers: boolean;
   visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
   createdAt: string;
@@ -197,7 +200,10 @@ export function ActivityStream({
               </h3>
             )}
             {entry.kind === "review" &&
-              (entry.mastered || entry.replay || entry.platform) && (
+              (entry.mastered ||
+                entry.replay ||
+                entry.platform ||
+                entry.journeyTitle) && (
                 <div className="activity-meta activity-review-meta">
                   {entry.mastered && (
                     <span>
@@ -206,6 +212,11 @@ export function ActivityStream({
                   )}
                   {entry.replay && <span>{pt ? "Rejogada" : "Replay"}</span>}
                   {entry.platform && <span>{entry.platform}</span>}
+                  {entry.journeyTitle && (
+                    <span className="activity-journey-chip">
+                      <Map size={13} /> {entry.journeyTitle}
+                    </span>
+                  )}
                 </div>
               )}
             {entry.kind === "diary" && (
@@ -236,6 +247,11 @@ export function ActivityStream({
                   >
                     <Flag size={12} fill="currentColor" />{" "}
                     {pt ? "Terminou" : "Finished"}
+                  </span>
+                )}
+                {entry.journeyTitle && (
+                  <span className="activity-journey-chip">
+                    <Map size={13} /> {entry.journeyTitle}
                   </span>
                 )}
               </div>
