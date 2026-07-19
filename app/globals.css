@@ -153,7 +153,10 @@
 .featured-game,
 .game-stage,
 .library-hero,
-.media-lightbox {
+.media-lightbox,
+.workspace-hero,
+.social-editor-dialog,
+.create-list-dialog {
   --console-black: #0b0a0d;
   --console-canvas: #0f0e11;
   --console-panel: #17151b;
@@ -166,6 +169,13 @@
   --shell-line: rgb(255 255 255 / 7%);
   --shell-line-strong: rgb(255 255 255 / 11%);
   --skeleton-fill: rgb(255 255 255 / 7%);
+  --overlay-panel: #151318;
+  --overlay-panel-sticky: rgb(21 19 24 / 96%);
+  --overlay-shadow: rgb(0 0 0 / 42%);
+  --tonal-brand-text: #cfd2ff;
+  --quiet-hover: rgb(255 255 255 / 3%);
+  --achievement-gold: #d3b55b;
+  --safe-green: #73c69a;
   --state-playing-border: rgb(111 169 255 / 48%);
   --state-playing-bg: rgb(63 119 207 / 42%);
   --state-playing-text: #dceaff;
@@ -181,6 +191,7 @@
   --state-completed-border: rgb(115 198 154 / 52%);
   --state-completed-bg: rgb(56 151 104 / 76%);
   --state-completed-text: #e1fff0;
+  color-scheme: dark;
   color: var(--screen-white);
 }
 
@@ -5453,7 +5464,7 @@ html[data-sidebar-ready] .account-button > svg {
     padding: 13px;
   }
   .review-writing-field textarea {
-    min-height: 220px;
+    min-height: 168px;
   }
   .social-editor-dialog.review-studio-dialog {
     top: auto;
@@ -5462,8 +5473,8 @@ html[data-sidebar-ready] .account-button > svg {
     left: 0;
     width: 100%;
     max-width: 100%;
-    height: calc(100dvh - max(8px, env(safe-area-inset-top)));
-    max-height: calc(100dvh - max(8px, env(safe-area-inset-top)));
+    height: min(88dvh, 760px);
+    max-height: calc(100dvh - max(24px, env(safe-area-inset-top)));
     margin: 0;
     border-radius: 14px 14px 0 0;
     transform: none;
@@ -13423,10 +13434,19 @@ details.review-page-content p {
   box-shadow: 0 12px 30px rgb(40 44 54 / 12%);
 }
 
-/* Banner heroes invert their scrim in light theme: the copy is dark, so
-   the wash over the banner must be light for it to stay readable. */
-:root[data-theme="light"] .library-hero-scrim,
-:root[data-theme="light"] .workspace-hero-scrim {
+:root[data-theme="light"] .list-cover-strip {
+  box-shadow: inset 0 0 0 1px rgb(24 27 35 / 7%);
+}
+
+:root[data-theme="light"] .list-cover-strip > span {
+  box-shadow:
+    inset 0 0 0 1px rgb(24 27 35 / 10%),
+    7px 0 18px rgb(40 44 54 / 16%);
+}
+
+/* The library banner follows the page theme; journal/list workspace heroes
+   stay cinematic and keep the dark overlay tokens declared above. */
+:root[data-theme="light"] .library-hero-scrim {
   background:
     linear-gradient(
       90deg,
@@ -13437,8 +13457,7 @@ details.review-page-content p {
     linear-gradient(0deg, var(--console-canvas), transparent 72%);
 }
 
-:root[data-theme="light"] .library-hero-stats,
-:root[data-theme="light"] .workspace-hero-stats {
+:root[data-theme="light"] .library-hero-stats {
   background: rgb(255 255 255 / 78%);
 }
 

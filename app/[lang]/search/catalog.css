@@ -205,6 +205,21 @@
   animation: modal-veil-out 130ms ease-out both;
 }
 .catalog-filter-dialog {
+  --console-black: #0b0a0d;
+  --console-canvas: #0f0e11;
+  --console-panel: #17151b;
+  --console-raised: #1c1a20;
+  --console-inset: #0c0b0e;
+  --console-hover: #222027;
+  --screen-white: #f4f2f6;
+  --screen-dim: #aaa5af;
+  --screen-muted: #716c77;
+  --shell-line: rgb(255 255 255 / 7%);
+  --shell-line-strong: rgb(255 255 255 / 11%);
+  --overlay-shadow: rgb(0 0 0 / 42%);
+  --tonal-brand-text: #cfd2ff;
+  --quiet-hover: rgb(255 255 255 / 3%);
+  color-scheme: dark;
   position: fixed;
   z-index: 121;
   top: 50%;
@@ -1213,7 +1228,7 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    max-height: min(86dvh, 720px);
+    max-height: min(78dvh, 640px);
     border-radius: 15px 15px 0 0;
     transform: none;
   }
