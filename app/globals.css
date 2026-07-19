@@ -6781,6 +6781,14 @@ html[data-sidebar-ready] .account-button > svg {
   font-size: 11px;
   cursor: pointer;
 }
+.profile-action-cluster .quiet-icon-action {
+  min-height: 38px;
+  padding-inline: 12px;
+  border-color: var(--shell-line-strong);
+  border-radius: 8px;
+  font-weight: 580;
+  white-space: nowrap;
+}
 .quiet-icon-action:hover,
 .profile-social-links a:hover,
 .game-share-action:hover {
@@ -6898,11 +6906,7 @@ html[data-sidebar-ready] .account-button > svg {
     padding: 24px 14px 48px;
   }
   .account-settings-tabs {
-    position: sticky;
-    z-index: 8;
-    top: 0;
     margin-inline: -2px;
-    background: var(--console-canvas);
   }
   .appearance-settings > header {
     padding: 18px 16px 16px;
@@ -7451,6 +7455,7 @@ html[data-sidebar-ready] .account-button > svg {
   margin-top: 14px;
   padding: 4px 4px 10px;
   overflow-x: auto;
+  overflow-y: hidden;
   border-bottom: 1px solid var(--shell-line);
   scrollbar-width: none;
 }
@@ -7487,7 +7492,7 @@ html[data-sidebar-ready] .account-button > svg {
 .game-page-nav button[aria-selected="true"]::after {
   position: absolute;
   right: 10px;
-  bottom: -11px;
+  bottom: -10px;
   left: 10px;
   height: 2px;
   border-radius: 2px;

@@ -520,6 +520,9 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin-top: 10px;
   }
+  .profile-action-cluster .profile-secondary-actions .quiet-icon-action {
+    min-height: 40px;
+  }
 }
 .profile-social-fields {
   display: grid;
