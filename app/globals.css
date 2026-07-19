@@ -152,6 +152,8 @@
 /* Artwork stages remain cinematic in every preference; the surrounding UI themes. */
 .featured-game,
 .game-stage,
+.library-hero,
+.workspace-hero,
 .media-lightbox {
   --console-black: #0b0a0d;
   --console-canvas: #0f0e11;
@@ -13488,36 +13490,6 @@ details.review-page-content p {
     7px 0 18px rgb(40 44 54 / 16%);
 }
 
-/* Library, review, and list workspaces use a soft paper scrim in light mode
-   so their artwork remains visible behind dark, readable copy. */
-:root[data-theme="light"] .library-hero-scrim,
-:root[data-theme="light"] .workspace-hero-scrim {
-  background:
-    linear-gradient(
-      90deg,
-      rgb(245 246 248 / 96%),
-      rgb(245 246 248 / 62%) 55%,
-      rgb(245 246 248 / 24%)
-    ),
-    linear-gradient(0deg, var(--console-canvas), transparent 72%);
-}
-
-:root[data-theme="light"] .library-hero-stats,
-:root[data-theme="light"] .workspace-hero-stats {
-  background: rgb(255 255 255 / 78%);
-}
-
-:root[data-theme="light"] .library-hero,
-:root[data-theme="light"] .workspace-hero {
-  border-color: rgb(24 27 35 / 10%);
-  background: var(--console-panel);
-}
-
-:root[data-theme="light"] .library-hero-stats,
-:root[data-theme="light"] .workspace-hero-stats {
-  border-color: rgb(24 27 35 / 10%);
-}
-
 :root[data-theme="light"] .catalog-active-filters button,
 :root[data-theme="light"] .catalog-context-chips button,
 :root[data-theme="light"] .catalog-results-empty a,
@@ -13610,9 +13582,15 @@ details.review-page-content p {
     margin-top: -64px;
   }
 
+  .social-page.workspace-layout-page {
+    margin-top: -64px;
+  }
+
   .library-hero,
   .library-hero-content,
-  .library-loading-hero {
+  .library-loading-hero,
+  .workspace-layout-page .workspace-hero,
+  .workspace-layout-page .workspace-hero-content {
     min-height: 348px;
   }
 }
