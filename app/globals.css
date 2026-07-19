@@ -243,8 +243,15 @@ a {
   text-decoration: none;
 }
 button,
-input {
+input,
+textarea {
   font: inherit;
+}
+textarea {
+  field-sizing: content;
+  max-height: min(40dvh, 320px);
+  overflow-y: auto;
+  resize: none;
 }
 button {
   color: inherit;
@@ -5214,7 +5221,7 @@ html[data-sidebar-ready] .account-button > svg {
   font-variant-numeric: tabular-nums;
 }
 .review-writing-field textarea {
-  min-height: 190px;
+  min-height: 112px;
 }
 .review-studio-dialog {
   width: min(780px, calc(100vw - 32px));
@@ -5638,7 +5645,6 @@ html[data-sidebar-ready] .account-button > svg {
   min-height: 64px;
   padding: 8px 9px;
   font-size: 12px;
-  resize: none;
 }
 
 .review-details-section {
@@ -5868,7 +5874,7 @@ html[data-sidebar-ready] .account-button > svg {
     padding: 13px;
   }
   .review-writing-field textarea {
-    min-height: 168px;
+    min-height: 96px;
   }
   .social-editor-dialog.review-studio-dialog {
     top: auto;
@@ -6876,7 +6882,6 @@ html[data-sidebar-ready] .account-button > svg {
   outline: 0;
   background: var(--console-inset);
   color: var(--screen-white);
-  resize: vertical;
 }
 .report-dialog form > button {
   min-height: 38px;
@@ -10199,7 +10204,6 @@ details.review-page-content p {
 }
 .social-editor-form textarea,
 .create-list-form textarea {
-  resize: vertical;
   line-height: 1.55;
 }
 .social-editor-form input:focus,

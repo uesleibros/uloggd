@@ -68,6 +68,10 @@ after the loading/skeleton consistency pass.
 - Protected profile comments include follower-first defaults, database rate
   limits, length and control-character validation, owner/author deletion,
   reporting, notification preferences, RLS, and MFA mutation enforcement.
+- Profile conversations support bounded reply trees, inline replies, author
+  editing with an edited state, and soft deletion that preserves the thread.
+- Textareas use content-driven sizing across review, diary, profile, list, and
+  report composers, growing until a viewport-safe scroll limit.
 
 ## Next: polish and correctness
 

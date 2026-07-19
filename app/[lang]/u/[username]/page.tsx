@@ -280,14 +280,10 @@ export default async function ProfilePage({ params }: Props) {
       : Promise.resolve({
           data: [{ viewer_blocked: false, blocked_by_target: false }],
         }),
-    supabase
-      .from("profile_comments")
-      .select(
-        "id,author_id,body,created_at,author:profiles!profile_comments_author_id_fkey(username,display_name,avatar_url)",
-      )
-      .eq("profile_id", profile.id)
-      .order("created_at", { ascending: false })
-      .limit(30),
+    supabase.rpc("get_profile_comment_threads", {
+      target_profile: profile.id,
+      root_limit: 30,
+    }),
   ]);
   const blockState = Array.isArray(blockStateResult.data)
     ? blockStateResult.data[0]
@@ -295,10 +291,24 @@ export default async function ProfilePage({ params }: Props) {
   const viewerBlocked = Boolean(blockState?.viewer_blocked);
   const blockedByTarget = Boolean(blockState?.blocked_by_target);
   const interactionBlocked = viewerBlocked || blockedByTarget;
-  const comments = (commentsResult.data ?? []).flatMap((comment) => {
-    const author = Array.isArray(comment.author)
-      ? comment.author[0]
-      : comment.author;
+  const commentRows = (commentsResult.data ?? []) as Omit<
+    ProfileComment,
+    "author"
+  >[];
+  const commentAuthorIds = [
+    ...new Set(commentRows.map((comment) => comment.author_id)),
+  ];
+  const { data: commentAuthors } = commentAuthorIds.length
+    ? await supabase
+        .from("profiles")
+        .select("id,username,display_name,avatar_url")
+        .in("id", commentAuthorIds)
+    : { data: [] };
+  const commentAuthorById = new Map(
+    (commentAuthors ?? []).map((author) => [author.id, author]),
+  );
+  const comments = commentRows.flatMap((comment) => {
+    const author = commentAuthorById.get(comment.author_id);
     return author?.username ? [{ ...comment, author } as ProfileComment] : [];
   });
   const pt = lang === "pt-BR";

@@ -10,6 +10,7 @@ import { CookieConsent } from "@/components/cookie-consent";
 import { SmartHeader } from "@/components/smart-header";
 import { ThemeManager } from "@/components/theme-manager";
 import { TwemojiManager } from "@/components/twemoji-manager";
+import { TextareaAutosizeManager } from "@/components/textarea-autosize-manager";
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { themeBootstrapScript } from "@/lib/theme";
 import { getAuthUser, getNavigationAccount } from "@/lib/supabase/auth";
@@ -115,6 +116,7 @@ export default async function LocaleLayout({
       <body>
         <ThemeManager />
         <TwemojiManager />
+        <TextareaAutosizeManager />
         <div className="platform-shell">
           <Suspense
             fallback={

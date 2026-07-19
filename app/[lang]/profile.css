@@ -238,7 +238,6 @@
   min-height: 116px;
   padding: 10px 11px;
   line-height: 1.55;
-  resize: vertical;
 }
 .profile-details-form input:focus,
 .profile-details-form textarea:focus {
@@ -1122,9 +1121,8 @@
   font: 12px/1.55 var(--font-inter);
 }
 .profile-comment-composer textarea {
-  min-height: 82px;
+  min-height: 52px;
   padding: 11px 12px;
-  resize: vertical;
 }
 .profile-comment-composer textarea:focus,
 .profile-comment-report select:focus {
@@ -1171,14 +1169,40 @@
 .profile-comment-list {
   display: grid;
 }
-.profile-comment-list > article {
+.profile-comment-thread > article {
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr);
   gap: 11px;
   padding: 16px 18px;
 }
-.profile-comment-list > article + article {
+.profile-comment-list > .profile-comment-thread + .profile-comment-thread {
   border-top: 1px solid var(--shell-line);
+}
+.profile-comment-thread {
+  position: relative;
+  min-width: 0;
+}
+.profile-comment-replies {
+  position: relative;
+  margin-left: 36px;
+  border-left: 1px solid var(--shell-line-strong);
+}
+.profile-comment-replies .profile-comment-thread > article {
+  padding-top: 13px;
+  padding-bottom: 13px;
+}
+.profile-comment-replies .profile-comment-thread::before {
+  position: absolute;
+  top: 31px;
+  left: 0;
+  width: 13px;
+  height: 12px;
+  border-bottom: 1px solid var(--shell-line-strong);
+  border-bottom-left-radius: 8px;
+  content: "";
+}
+.profile-comment-thread[data-depth="3"] .profile-comment-replies {
+  margin-left: 18px;
 }
 .profile-comment-avatar {
   display: grid;
@@ -1206,6 +1230,17 @@
   justify-content: space-between;
   gap: 10px;
 }
+.profile-comment-list article header > span {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+}
+.profile-comment-list article header i {
+  color: var(--screen-muted);
+  font-size: 9px;
+  font-style: normal;
+}
 .profile-comment-list article header a {
   overflow: hidden;
   color: var(--screen-white);
@@ -1227,12 +1262,17 @@
   line-height: 1.55;
   white-space: pre-wrap;
 }
-.profile-comment-list article footer {
+.profile-comment-list article p[data-deleted] {
+  color: var(--screen-muted);
+  font-style: italic;
+}
+.profile-comment-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 7px;
 }
-.profile-comment-list article footer button {
+.profile-comment-actions button {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -1240,8 +1280,58 @@
   color: var(--screen-muted);
   font-size: 10px;
 }
-.profile-comment-list article footer button:hover {
+.profile-comment-actions button:hover {
   color: var(--screen-white);
+}
+.profile-comment-inline-form {
+  display: grid;
+  gap: 7px;
+  margin-top: 9px;
+}
+.profile-comment-inline-form > label {
+  color: var(--brand-blurple-bright);
+  font-size: 10px;
+  font-weight: 600;
+}
+.profile-comment-inline-form textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 9px 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font: 12px/1.5 var(--font-inter);
+}
+.profile-comment-inline-form textarea:focus {
+  border-color: var(--brand-blurple);
+  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+}
+.profile-comment-inline-form > footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 0;
+}
+.profile-comment-inline-form > footer small {
+  margin-right: auto;
+  color: var(--screen-muted);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+.profile-comment-inline-form > footer button {
+  min-height: 30px;
+  padding: 0 9px;
+  border-radius: 7px;
+  color: var(--screen-dim);
+  font-size: 10px;
+  font-weight: 600;
+}
+.profile-comment-inline-form > footer button[type="submit"] {
+  background: var(--brand-blurple);
+  color: white;
 }
 .profile-comments-empty {
   display: flex;
@@ -1498,8 +1588,11 @@
   }
   .profile-comments > header,
   .profile-comment-composer,
-  .profile-comment-list > article {
+  .profile-comment-thread > article {
     padding-inline: 14px;
+  }
+  .profile-comment-replies {
+    margin-left: 24px;
   }
   .profile-stats {
     display: grid;
