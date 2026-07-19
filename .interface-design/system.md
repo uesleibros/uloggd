@@ -130,6 +130,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - The review commit bar is a dedicated bottom surface, never inherited through negative generic-editor offsets. Desktop keeps quiet success copy beside Cancel and Publish; mobile splits the two 44px actions proportionally. Publishing lives entirely inside the stable-width submit button, swapping its label for a spinner and “Publicando…”, disabling every close path, and preventing duplicate submissions.
 - New review text persists as a local per-IGDB draft until a successful save. Spoiler and visibility choices remain stable while switching editor tabs; visibility uses the shared Radix Select language rather than a native browser select.
 - Destructive review removal uses an inline two-step confirmation in the sticky footer, never a blocking browser confirm. The review history starts with review count, average rating, session count, and spoiler count; review entries use an inset editorial card distinct from diary rows.
+- Review/session streams use distinct bordered journal cards with a 16px desktop / 12px mobile gap; entries never share a collapsed divider. A review linked to a named journey shows one “View journey” action that opens a read-only Radix modal with its visible sessions, dates, duration, notes, and start/finish milestones.
 
 ## Navigation Patterns
 
@@ -200,6 +201,12 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Avatar and banner uploads always pass through a Radix crop modal. Avatar crops at 1:1 to a maximum 640px; banner crops at 3:1 to a maximum 1800px; both export compressed WebP before server upload.
 - Image-provider credentials remain server-only. Upload controls expose loading, invalid-file, provider-failure, remove, and empty states.
 - Primary save controls use blurple only at the commit point, with a 160ms lift on hover, 0.97 press feedback, visible focus ring, and a clearly muted disabled state.
+- Settings includes a query-addressable Preferences tab. Custom-cover scope is account-level: “Only mine” keeps official artwork on other authors’ content, while “Everyone’s” resolves the author’s custom cover on visible libraries, lists, reviews, and sessions.
+
+### Social connections
+
+- Connection lists provide a 44px search field for display name or username while preserving the Followers/Following tab in the URL.
+- Follow commits use “Following…” as the pending label. Unfollowing a mutual connection created within the last seven days requires a Radix warning modal; confirming atomically removes both directions. Older mutual follows remove only the viewer’s outgoing relationship.
 
 ### Age protection
 

@@ -95,8 +95,8 @@ export async function LibraryScreen({
               <Gamepad2 size={16} />
               <span>
                 {pt
-                  ? "Você está vendo uma coleção pública. As notas e capas representam as escolhas deste usuário."
-                  : "You are viewing a public collection. Ratings and covers reflect this user's choices."}
+                  ? "Você está vendo uma coleção pública. As notas são deste usuário e as capas seguem suas preferências."
+                  : "You are viewing a public collection. Ratings belong to this user and covers follow your preferences."}
               </span>
             </div>
           )}

@@ -5132,10 +5132,6 @@ html[data-sidebar-ready] .account-button > svg {
 /* Professional review writing and reading surfaces. */
 .activity-entry[data-kind="review"] {
   position: relative;
-  padding: 18px;
-  border: 1px solid var(--shell-line);
-  border-radius: 11px;
-  background: var(--console-panel);
 }
 .activity-entry[data-kind="review"] + .activity-entry {
   border-top: 1px solid var(--shell-line);
@@ -8670,14 +8666,17 @@ a,
   font-size: 11px;
 }
 .activity-stream {
-  border-top: 1px solid var(--shell-line);
+  display: grid;
+  gap: 16px;
 }
 .activity-entry {
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);
   gap: 16px;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--shell-line);
+  padding: 18px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-panel);
 }
 .activity-cover {
   position: relative;
@@ -12870,6 +12869,10 @@ html
   font-size: 10px;
 }
 .library-privacy-control > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 32px;
   padding: 0 9px;
   border: 1px solid var(--shell-line-strong);
@@ -12878,6 +12881,9 @@ html
   color: var(--screen-dim);
   font-size: 11px;
   cursor: pointer;
+}
+.library-privacy-control > button svg {
+  flex: none;
 }
 .library-privacy-control > p {
   position: absolute;
@@ -14061,6 +14067,372 @@ html
   button[aria-pressed="true"] {
   border-color: rgb(143 116 35 / 42%);
   background: rgb(211 181 91 / 17%);
+}
+
+/* Content preferences */
+.content-preferences {
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 12px;
+  background: var(--console-panel);
+}
+.content-preferences > header {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+  padding: 20px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.content-preferences > header > span {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
+.content-preferences header small {
+  color: var(--brand-blurple-bright);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+}
+.content-preferences h2 {
+  margin: 4px 0 0;
+  color: var(--screen-white);
+  font-size: 18px;
+  font-weight: 630;
+  letter-spacing: -0.03em;
+}
+.content-preferences header p {
+  margin: 6px 0 0;
+  color: var(--screen-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.content-preference-options {
+  display: grid;
+  gap: 8px;
+  padding: 16px 20px 20px;
+}
+.content-preference-options > button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 16px;
+  min-height: 72px;
+  padding: 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  text-align: left;
+  cursor: pointer;
+}
+.content-preference-options > button:hover:not(:disabled) {
+  border-color: var(--shell-line-strong);
+  background: var(--console-hover);
+}
+.content-preference-options > button[data-selected] {
+  border-color: rgb(88 101 242 / 38%);
+  background: var(--brand-blurple-wash);
+}
+.content-preference-options strong,
+.content-preference-options small {
+  display: block;
+}
+.content-preference-options strong {
+  color: var(--screen-white);
+  font-size: 12px;
+  font-weight: 620;
+}
+.content-preference-options small {
+  margin-top: 5px;
+  color: var(--screen-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.content-preference-options i {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 50%;
+  color: white;
+}
+.content-preference-options > button[data-selected] i {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple);
+}
+.content-preferences > p[role="alert"] {
+  margin: -8px 20px 18px;
+  color: var(--danger-text);
+  font-size: 10px;
+}
+
+/* Read-only journey detail and recent mutual-unfollow confirmation. */
+.journey-details-overlay,
+.recent-unfollow-overlay {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  background: rgb(4 3 8 / 72%);
+  backdrop-filter: blur(6px);
+}
+.journey-details-overlay[data-state="open"],
+.recent-unfollow-overlay[data-state="open"] {
+  animation: modal-veil-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.journey-details-overlay[data-state="closed"],
+.recent-unfollow-overlay[data-state="closed"] {
+  animation: modal-veil-out 140ms cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+.journey-details-dialog,
+.recent-unfollow-dialog {
+  position: fixed;
+  z-index: 121;
+  top: 50%;
+  left: 50%;
+  width: min(540px, calc(100vw - 28px));
+  max-height: min(760px, calc(100dvh - 28px));
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 14px;
+  outline: 0;
+  background: var(--console-panel);
+  color: var(--screen-white);
+  box-shadow: 0 28px 80px rgb(0 0 0 / 52%);
+  transform: translate(-50%, -50%);
+}
+.journey-details-dialog[data-state="open"],
+.recent-unfollow-dialog[data-state="open"] {
+  animation: social-modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.journey-details-dialog[data-state="closed"],
+.recent-unfollow-dialog[data-state="closed"] {
+  animation: social-modal-center-out 150ms cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+.journey-details-dialog > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.journey-details-dialog header span {
+  color: var(--brand-blurple-bright);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+}
+.journey-details-dialog h2 {
+  margin: 5px 0 0;
+  font-size: 19px;
+  letter-spacing: -0.03em;
+}
+.journey-details-dialog header p {
+  margin: 4px 0 0;
+  color: var(--screen-muted);
+  font-size: 11px;
+}
+.journey-details-dialog header button,
+.recent-unfollow-dialog > button:first-child {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.journey-details-summary {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.journey-details-summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 9px;
+  border-radius: 7px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.journey-details-summary strong {
+  color: var(--screen-white);
+  font-variant-numeric: tabular-nums;
+}
+.journey-details-scroll {
+  display: grid;
+  gap: 8px;
+  max-height: min(520px, calc(100dvh - 190px));
+  overflow-y: auto;
+  padding: 14px 20px 20px;
+}
+.journey-details-scroll article {
+  padding: 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-raised);
+}
+.journey-details-scroll article > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.journey-details-scroll article > div:first-child > span {
+  color: var(--screen-dim);
+  font-variant-numeric: tabular-nums;
+}
+.journey-details-scroll article p {
+  margin: 8px 0 0;
+  color: var(--screen-dim);
+  font-size: 11px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.journey-details-milestones {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.journey-details-milestones span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--brand-blurple-bright);
+  font-size: 9px;
+  font-weight: 600;
+}
+.journey-details-empty {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  color: var(--screen-muted);
+  text-align: center;
+}
+.activity-journey-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid rgb(88 101 242 / 24%);
+  border-radius: 7px;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+  font-size: 10px;
+  font-weight: 600;
+}
+.activity-journey-button:hover {
+  border-color: rgb(88 101 242 / 40%);
+}
+.recent-unfollow-dialog {
+  width: min(430px, calc(100vw - 28px));
+  overflow-y: auto;
+  padding: 24px;
+  text-align: center;
+}
+.recent-unfollow-dialog > button:first-child {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+.recent-unfollow-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 14px;
+  border-radius: 10px;
+  background: rgb(211 181 91 / 12%);
+  color: var(--achievement-gold);
+}
+.recent-unfollow-dialog h2 {
+  margin: 0;
+  font-size: 19px;
+  letter-spacing: -0.03em;
+}
+.recent-unfollow-dialog p {
+  margin: 8px auto 0;
+  max-width: 340px;
+  color: var(--screen-dim);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.recent-unfollow-dialog footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 20px;
+}
+.recent-unfollow-dialog footer button {
+  min-height: 40px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 600;
+}
+.recent-unfollow-dialog footer button:last-child {
+  border-color: rgb(184 70 70 / 38%);
+  background: rgb(184 70 70 / 14%);
+  color: #efb0b0;
+}
+@media (max-width: 620px) {
+  .content-preferences > header,
+  .content-preference-options {
+    padding-inline: 16px;
+  }
+  .activity-stream {
+    gap: 12px;
+  }
+  .activity-entry {
+    grid-template-columns: 60px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px;
+  }
+  .activity-cover {
+    width: 60px;
+  }
+  .journey-details-dialog,
+  .recent-unfollow-dialog {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 88dvh;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 14px 14px 0 0;
+    transform: none;
+  }
+  .journey-details-dialog[data-state="open"],
+  .recent-unfollow-dialog[data-state="open"] {
+    animation-name: social-modal-sheet-in;
+  }
+  .journey-details-dialog[data-state="closed"],
+  .recent-unfollow-dialog[data-state="closed"] {
+    animation-name: social-modal-sheet-out;
+  }
+  .recent-unfollow-dialog {
+    padding: 24px 18px max(18px, env(safe-area-inset-bottom));
+  }
 }
 
 :root[data-theme="light"] .search-message-error,

@@ -47,9 +47,13 @@ function formatRating(rating: number, mode: RatingMode, lang: "pt-BR" | "en") {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
   if (!hasLocale(lang) || !/^[0-9a-f-]{36}$/i.test(id)) return {};
-  const { data: review } = await (await getSupabase())
+  const { data: review } = await (
+    await getSupabase()
+  )
     .from("reviews")
-    .select("title,content,game_slug,profiles!reviews_profile_id_fkey(username)")
+    .select(
+      "title,content,game_slug,profiles!reviews_profile_id_fkey(username)",
+    )
     .eq("id", id)
     .maybeSingle();
   if (!review) return {};
@@ -91,7 +95,12 @@ export default async function ReviewPage({ params }: Props) {
   const pt = lang === "pt-BR";
   const isOwner = user?.id === review.profile_id;
 
-  const [games, { data: likeRows }, { data: customCover }] = await Promise.all([
+  const [
+    games,
+    { data: likeRows },
+    { data: customCovers },
+    { data: viewerPreference },
+  ] = await Promise.all([
     getGamesByIds([review.igdb_id]),
     supabase.rpc("get_content_likes", {
       target_type: "review",
@@ -100,19 +109,31 @@ export default async function ReviewPage({ params }: Props) {
     user
       ? supabase
           .from("user_games")
-          .select("custom_cover_url")
-          .eq("profile_id", user.id)
+          .select("profile_id,custom_cover_url")
+          .in("profile_id", [...new Set([user.id, review.profile_id])])
           .eq("igdb_id", review.igdb_id)
+      : Promise.resolve({ data: [] }),
+    user
+      ? supabase
+          .from("profiles")
+          .select("custom_cover_scope")
+          .eq("id", user.id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
   const game = games[0] ?? null;
+  const coverOwner =
+    viewerPreference?.custom_cover_scope === "EVERYONE"
+      ? review.profile_id
+      : user?.id;
+  const customCover = customCovers?.find(
+    (cover) => cover.profile_id === coverOwner,
+  );
   const coverUrl = game
     ? resolveGameCover(game.coverUrl, customCover?.custom_cover_url)
     : null;
   const likeState = likeRows?.[0] as
-    | { like_count: number; liked_by_viewer: boolean }
-    | undefined;
+    { like_count: number; liked_by_viewer: boolean } | undefined;
 
   const journeyJoin = Array.isArray(review.journeys)
     ? review.journeys[0]
@@ -160,9 +181,14 @@ export default async function ReviewPage({ params }: Props) {
 
   return (
     <main className="social-page review-page">
-      <Link className="page-back-link" href={`/${lang}/game/${review.game_slug}`}>
+      <Link
+        className="page-back-link"
+        href={`/${lang}/game/${review.game_slug}`}
+      >
         <ArrowLeft size={14} />{" "}
-        {pt ? `Voltar para ${game?.name ?? "o jogo"}` : `Back to ${game?.name ?? "the game"}`}
+        {pt
+          ? `Voltar para ${game?.name ?? "o jogo"}`
+          : `Back to ${game?.name ?? "the game"}`}
       </Link>
 
       <article className="review-page-card">
@@ -201,7 +227,9 @@ export default async function ReviewPage({ params }: Props) {
                 )}
               </Link>
               <Link href={`/${lang}/u/${profile.username}`}>
-                <strong>{profile.display_name || `@${profile.username}`}</strong>
+                <strong>
+                  {profile.display_name || `@${profile.username}`}
+                </strong>
               </Link>
               {profile.verified && <VerifiedBadge lang={lang} />}
               <time dateTime={review.created_at}>

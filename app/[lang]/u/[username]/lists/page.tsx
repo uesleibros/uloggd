@@ -6,6 +6,7 @@ import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getGamesByIds } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
 import "../../../profile.css";
 
@@ -22,11 +23,14 @@ export default async function ProfileListsPage({ params }: Props) {
   const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
   const supabase = await createClient();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id,username,display_name")
-    .ilike("username", username)
-    .maybeSingle();
+  const [{ data: profile }, user] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id,username,display_name")
+      .ilike("username", username)
+      .maybeSingle(),
+    getAuthUser(),
+  ]);
   if (!profile?.username) notFound();
 
   const { data: lists } = await supabase
@@ -40,7 +44,12 @@ export default async function ProfileListsPage({ params }: Props) {
   const itemIds = (lists ?? []).flatMap((list) =>
     list.game_list_items.map((item) => item.igdb_id),
   );
-  const [games, { data: savedCovers }, { data: likeRows }] = await Promise.all([
+  const [
+    games,
+    { data: savedCovers },
+    { data: likeRows },
+    { data: viewerPreference },
+  ] = await Promise.all([
     getGamesByIds(itemIds),
     itemIds.length
       ? supabase
@@ -55,10 +64,23 @@ export default async function ProfileListsPage({ params }: Props) {
           target_ids: lists.map((list) => list.id),
         })
       : Promise.resolve({ data: [] }),
+    user
+      ? supabase
+          .from("profiles")
+          .select("custom_cover_scope")
+          .eq("id", user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
+  const showCreatorCovers =
+    user?.id === profile.id ||
+    viewerPreference?.custom_cover_scope === "EVERYONE";
   const gamesById = new Map(games.map((game) => [game.id, game]));
   const customById = new Map(
-    (savedCovers ?? []).map((item) => [item.igdb_id, item.custom_cover_url]),
+    (savedCovers ?? []).map((item) => [
+      item.igdb_id,
+      showCreatorCovers ? item.custom_cover_url : null,
+    ]),
   );
   const likesById = new Map(
     ((likeRows ?? []) as { content_id: string; like_count: number }[]).map(

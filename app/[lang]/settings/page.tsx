@@ -15,7 +15,7 @@ export default async function SettingsPage({
     supabase
       .from("profiles")
       .select(
-        "username,display_name,pronouns,bio,thought,avatar_url,banner_url,birth_date,youtube_username,instagram_username,twitter_username",
+        "username,display_name,pronouns,bio,thought,avatar_url,banner_url,birth_date,youtube_username,instagram_username,twitter_username,custom_cover_scope",
       )
       .eq("id", user.id)
       .single(),

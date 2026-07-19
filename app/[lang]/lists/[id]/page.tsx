@@ -6,6 +6,7 @@ import { ListAddGame } from "@/components/social/list-add-game";
 import { ListItemsGrid } from "@/components/social/list-items-grid";
 import { ListOwnerControls } from "@/components/social/list-owner-controls";
 import { getGamesByIds } from "@/lib/igdb";
+import { resolveGameCover } from "@/lib/game-cover";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 
@@ -59,17 +60,55 @@ export default async function ListPage({ params }: Props) {
   const items = [...(list.game_list_items ?? [])].sort(
     (a, b) => a.position - b.position,
   );
-  const [games, { data: likeRows }] = await Promise.all([
+  const [
+    games,
+    { data: likeRows },
+    { data: candidateCovers },
+    { data: viewerPreference },
+  ] = await Promise.all([
     getGamesByIds(items.map((item) => item.igdb_id)),
     supabase.rpc("get_content_likes", {
       target_type: "list",
       target_ids: [list.id],
     }),
+    user && items.length
+      ? supabase
+          .from("user_games")
+          .select("profile_id,igdb_id,custom_cover_url")
+          .in("profile_id", [...new Set([user.id, list.profile_id])])
+          .in(
+            "igdb_id",
+            items.map((item) => item.igdb_id),
+          )
+      : Promise.resolve({ data: [] }),
+    user
+      ? supabase
+          .from("profiles")
+          .select("custom_cover_scope")
+          .eq("id", user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
   const likeState = likeRows?.[0] as
-    | { like_count: number; liked_by_viewer: boolean }
-    | undefined;
-  const byId = new Map(games.map((game) => [game.id, game]));
+    { like_count: number; liked_by_viewer: boolean } | undefined;
+  const coverOwner =
+    viewerPreference?.custom_cover_scope === "EVERYONE"
+      ? list.profile_id
+      : user?.id;
+  const customById = new Map(
+    (candidateCovers ?? [])
+      .filter((cover) => cover.profile_id === coverOwner)
+      .map((cover) => [cover.igdb_id, cover.custom_cover_url]),
+  );
+  const byId = new Map(
+    games.map((game) => [
+      game.id,
+      {
+        ...game,
+        coverUrl: resolveGameCover(game.coverUrl, customById.get(game.id)),
+      },
+    ]),
+  );
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const pt = lang === "pt-BR";
   const isOwner = user?.id === list.profile_id;

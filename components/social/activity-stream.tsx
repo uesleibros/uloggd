@@ -16,6 +16,10 @@ import type { Game } from "@/lib/igdb";
 import { ActivityEntryActions } from "./activity-entry-actions";
 import { LikeButton } from "./like-button";
 import { VerifiedBadge } from "../verified-badge";
+import {
+  JourneyDetailsDialog,
+  type JourneyDetailSession,
+} from "./journey-details-dialog";
 
 export type SocialEntry = {
   id: string;
@@ -53,6 +57,7 @@ export type SocialEntry = {
   marksFinish?: boolean;
   journeyId?: string | null;
   journeyTitle?: string | null;
+  journeySessions?: JourneyDetailSession[];
   spoilers: boolean;
   visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
   createdAt: string;
@@ -213,9 +218,12 @@ export function ActivityStream({
                   {entry.replay && <span>{pt ? "Rejogada" : "Replay"}</span>}
                   {entry.platform && <span>{entry.platform}</span>}
                   {entry.journeyTitle && (
-                    <span className="activity-journey-chip">
-                      <Map size={13} /> {entry.journeyTitle}
-                    </span>
+                    <JourneyDetailsDialog
+                      title={entry.journeyTitle}
+                      gameName={entry.game?.name ?? entry.gameSlug}
+                      sessions={entry.journeySessions ?? []}
+                      lang={lang}
+                    />
                   )}
                 </div>
               )}
@@ -235,7 +243,10 @@ export function ActivityStream({
                   </span>
                 ) : null}
                 {entry.marksStart && (
-                  <span className="journey-milestone-badge" data-milestone="start">
+                  <span
+                    className="journey-milestone-badge"
+                    data-milestone="start"
+                  >
                     <Play size={12} fill="currentColor" />{" "}
                     {pt ? "Começou" : "Started"}
                   </span>

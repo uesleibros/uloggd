@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   CalendarDays,
   CircleUserRound,
+  SlidersHorizontal,
   ShieldCheck,
   SwatchBook,
   UserRound,
@@ -14,9 +15,12 @@ import { PasskeySettings } from "./passkey-settings";
 import { TwoFactorSettings } from "./two-factor-settings";
 import { DeleteAccount } from "./delete-account";
 import { AppearanceSettings } from "./appearance-settings";
+import { ContentPreferences } from "./content-preferences";
 
-type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"];
-type Tab = "general" | "profile" | "appearance" | "security";
+type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
+  custom_cover_scope: "OWN" | "EVERYONE";
+};
+type Tab = "general" | "profile" | "preferences" | "appearance" | "security";
 
 export function AccountSettings({
   profile,
@@ -35,6 +39,7 @@ export function AccountSettings({
   const tab: Tab =
     requestedTab === "general" ||
     requestedTab === "profile" ||
+    requestedTab === "preferences" ||
     requestedTab === "appearance" ||
     requestedTab === "security"
       ? requestedTab
@@ -58,6 +63,11 @@ export function AccountSettings({
       id: "profile" as const,
       label: pt ? "Perfil" : "Profile",
       icon: UserRound,
+    },
+    {
+      id: "preferences" as const,
+      label: pt ? "Preferências" : "Preferences",
+      icon: SlidersHorizontal,
     },
     {
       id: "appearance" as const,
@@ -195,6 +205,12 @@ export function AccountSettings({
         )}
         {tab === "profile" && (
           <ProfileSettingsPanel initial={profile} lang={lang} />
+        )}
+        {tab === "preferences" && (
+          <ContentPreferences
+            initialScope={profile.custom_cover_scope}
+            lang={lang}
+          />
         )}
         {tab === "appearance" && <AppearanceSettings lang={lang} />}
         {tab === "security" && (

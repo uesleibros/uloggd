@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, UserRound, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Search, UserRound, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { VerifiedMark } from "@/components/verified-badge";
@@ -10,7 +10,7 @@ import "../../../profile.css";
 
 type Props = {
   params: Promise<{ lang: string; username: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; q?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -37,8 +37,9 @@ export default async function ProfileConnectionsPage({
     .maybeSingle();
   if (!profile?.username) notFound();
 
-  const activeTab =
-    (await searchParams).tab === "following" ? "following" : "followers";
+  const requested = await searchParams;
+  const query = requested.q?.trim() ?? "";
+  const activeTab = requested.tab === "following" ? "following" : "followers";
   const [followersResult, followingResult] = await Promise.all([
     supabase
       .from("follows")
@@ -53,12 +54,19 @@ export default async function ProfileConnectionsPage({
     activeTab === "followers"
       ? (followersResult.data ?? []).map((item) => item.follower_id)
       : (followingResult.data ?? []).map((item) => item.following_id);
-  const { data: people } = ids.length
+  const { data: fetchedPeople } = ids.length
     ? await supabase
         .from("profiles")
         .select("id,username,display_name,bio,avatar_url,verified")
         .in("id", ids)
     : { data: [] };
+  const normalizedQuery = query.toLocaleLowerCase(lang);
+  const people = (fetchedPeople ?? []).filter(
+    (person) =>
+      !normalizedQuery ||
+      person.username.toLocaleLowerCase(lang).includes(normalizedQuery) ||
+      person.display_name?.toLocaleLowerCase(lang).includes(normalizedQuery),
+  );
   const pt = lang === "pt-BR";
   const name = profile.display_name || `@${profile.username}`;
 
@@ -86,21 +94,35 @@ export default async function ProfileConnectionsPage({
         aria-label={pt ? "Filtrar conexões" : "Filter connections"}
       >
         <Link
-          href={`/${lang}/u/${profile.username}/connections?tab=followers`}
+          href={`/${lang}/u/${profile.username}/connections?tab=followers${query ? `&q=${encodeURIComponent(query)}` : ""}`}
           aria-current={activeTab === "followers" ? "page" : undefined}
         >
           {pt ? "Seguidores" : "Followers"}{" "}
           <span>{followersResult.data?.length ?? 0}</span>
         </Link>
         <Link
-          href={`/${lang}/u/${profile.username}/connections?tab=following`}
+          href={`/${lang}/u/${profile.username}/connections?tab=following${query ? `&q=${encodeURIComponent(query)}` : ""}`}
           aria-current={activeTab === "following" ? "page" : undefined}
         >
           {pt ? "Seguindo" : "Following"}{" "}
           <span>{followingResult.data?.length ?? 0}</span>
         </Link>
       </nav>
-      {people?.length ? (
+      <form className="profile-connections-search">
+        <Search size={16} />
+        <input
+          type="search"
+          name="q"
+          defaultValue={query}
+          placeholder={
+            pt ? "Buscar por nome ou @usuário" : "Search name or @user"
+          }
+          aria-label={pt ? "Buscar conexões" : "Search connections"}
+        />
+        <input type="hidden" name="tab" value={activeTab} />
+        <button type="submit">{pt ? "Buscar" : "Search"}</button>
+      </form>
+      {people.length ? (
         <div className="profile-connections-grid">
           {people.map((person) => (
             <article key={person.id} className="profile-connection-card">
@@ -137,7 +159,15 @@ export default async function ProfileConnectionsPage({
       ) : (
         <div className="social-empty profile-subpage-empty">
           <UserRound size={24} />
-          <h2>{pt ? "Ninguém por aqui ainda" : "No one here yet"}</h2>
+          <h2>
+            {query
+              ? pt
+                ? "Nenhuma conexão encontrada"
+                : "No connections found"
+              : pt
+                ? "Ninguém por aqui ainda"
+                : "No one here yet"}
+          </h2>
           <p>
             {pt
               ? "Esta parte da rede ainda está vazia."

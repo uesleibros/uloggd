@@ -19,8 +19,8 @@ export default async function SettingsLayout({
         <h1>{lang === "pt-BR" ? "Configurações" : "Settings"}</h1>
         <p>
           {lang === "pt-BR"
-            ? "Ajuste sua conta, identidade, aparência e segurança no uloggd."
-            : "Control your account, identity, appearance, and security across uloggd."}
+            ? "Ajuste sua conta, identidade, preferências, aparência e segurança no uloggd."
+            : "Control your account, identity, preferences, appearance, and security across uloggd."}
         </p>
       </header>
       <div className="settings-main">{children}</div>

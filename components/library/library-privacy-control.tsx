@@ -56,7 +56,7 @@ export function LibraryPrivacyControl({
       </div>
       <button type="button" onClick={toggle} disabled={pending}>
         {pending && <LoaderCircle className="spin" size={14} />}
-        {pt ? "Alterar" : "Change"}
+        <span>{pt ? "Alterar" : "Change"}</span>
       </button>
       {error && <p>{pt ? "Não foi possível alterar." : "Could not update."}</p>}
     </div>

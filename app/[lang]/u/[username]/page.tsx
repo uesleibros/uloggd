@@ -91,6 +91,8 @@ export default async function ProfilePage({ params }: Props) {
     followerCount,
     followingCount,
     followState,
+    mutualRecentResult,
+    viewerPreference,
     entries,
   ] = await Promise.all([
     supabase
@@ -136,9 +138,27 @@ export default async function ProfilePage({ params }: Props) {
           .eq("following_id", profile.id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    user && user.id !== profile.id
+      ? supabase.rpc("is_recent_mutual_follow", {
+          target_profile: profile.id,
+        })
+      : Promise.resolve({ data: false }),
+    user
+      ? supabase
+          .from("profiles")
+          .select("custom_cover_scope")
+          .eq("id", user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
     getActivity(supabase, { profileId: profile.id, limit: 20 }),
   ]);
-  const library = libraryResult.data ?? [];
+  const showCreatorCovers =
+    user?.id === profile.id ||
+    viewerPreference.data?.custom_cover_scope === "EVERYONE";
+  const library = (libraryResult.data ?? []).map((record) => ({
+    ...record,
+    custom_cover_url: showCreatorCovers ? record.custom_cover_url : null,
+  }));
   const lists = listsResult.data ?? [];
   const listGameIds = lists.flatMap((list) =>
     list.game_list_items.map((item) => item.igdb_id),
@@ -155,7 +175,10 @@ export default async function ProfilePage({ params }: Props) {
   ]);
   const byId = new Map(games.map((game) => [game.id, game]));
   const listCoversById = new Map(
-    (listCoverRows ?? []).map((item) => [item.igdb_id, item.custom_cover_url]),
+    (listCoverRows ?? []).map((item) => [
+      item.igdb_id,
+      showCreatorCovers ? item.custom_cover_url : null,
+    ]),
   );
   const pt = lang === "pt-BR";
   const joined = new Intl.DateTimeFormat(lang, {
@@ -282,6 +305,8 @@ export default async function ProfilePage({ params }: Props) {
                 viewerId={user?.id ?? null}
                 profileId={profile.id}
                 initial={Boolean(followState.data)}
+                mutualRecent={Boolean(mutualRecentResult.data)}
+                profileName={profile.display_name || `@${profile.username}`}
                 lang={lang}
               />
             )}

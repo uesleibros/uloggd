@@ -46,16 +46,30 @@ export default async function PublicLibraryPage({ params }: Props) {
         </p>
       </main>
     );
-  const { data: records } = await supabase
-    .from("user_games")
-    .select(
-      "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url,updated_at",
-    )
-    .eq("profile_id", profile.id);
+  const [{ data: records }, { data: viewerPreference }] = await Promise.all([
+    supabase
+      .from("user_games")
+      .select(
+        "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url,updated_at",
+      )
+      .eq("profile_id", profile.id),
+    user
+      ? supabase
+          .from("profiles")
+          .select("custom_cover_scope")
+          .eq("id", user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+  const showCreatorCovers =
+    owner || viewerPreference?.custom_cover_scope === "EVERYONE";
   return (
     <LibraryScreen
       profile={profile}
-      records={records ?? []}
+      records={(records ?? []).map((record) => ({
+        ...record,
+        custom_cover_url: showCreatorCovers ? record.custom_cover_url : null,
+      }))}
       owner={owner}
       lang={lang}
     />

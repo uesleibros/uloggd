@@ -101,3 +101,15 @@ test("keeps profile identity, metadata, and actions in their responsive contract
     testInfo.project.name.startsWith("mobile") ? 40 : 38,
   );
 });
+
+test("keeps connection search available across follower tabs", async ({
+  page,
+}) => {
+  await page.goto("/pt-BR/u/UesleiDev/connections?tab=followers");
+  const search = page.getByRole("searchbox", { name: "Buscar conexões" });
+  await expect(search).toBeVisible();
+  await search.fill("Ueslei");
+  await page.getByRole("button", { name: "Buscar", exact: true }).click();
+  await expect(page).toHaveURL(/tab=followers/);
+  await expect(page).toHaveURL(/q=Ueslei/);
+});

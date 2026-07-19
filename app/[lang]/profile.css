@@ -1124,6 +1124,43 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
+.profile-connections-search {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  max-width: 620px;
+  min-height: 44px;
+  margin: 0 0 18px;
+  padding: 0 6px 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.profile-connections-search input[type="search"] {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--screen-white);
+  font-size: 12px;
+}
+.profile-connections-search button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 600;
+}
+.profile-connections-search:focus-within {
+  border-color: var(--brand-blurple);
+  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+}
 .profile-connection-card {
   min-width: 0;
 }
