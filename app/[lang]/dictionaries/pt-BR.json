@@ -49,6 +49,7 @@
     "newFollower": "começou a seguir você",
     "reviewLike": "curtiu sua avaliação de",
     "listLike": "curtiu sua lista",
+    "profileComment": "comentou no seu perfil:",
     "unknownUser": "Alguém",
     "unread": "Não lida",
     "preferencesTitle": "O que você quer receber",
@@ -56,6 +57,7 @@
     "follows": "Novos seguidores",
     "reviewLikes": "Curtidas em avaliações",
     "listLikes": "Curtidas em listas",
+    "comments": "Comentários no perfil",
     "saving": "Salvando…"
   },
   "search": {

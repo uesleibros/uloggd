@@ -49,6 +49,7 @@
     "newFollower": "started following you",
     "reviewLike": "liked your review of",
     "listLike": "liked your list",
+    "profileComment": "commented on your profile:",
     "unknownUser": "Someone",
     "unread": "Unread",
     "preferencesTitle": "What you want to receive",
@@ -56,6 +57,7 @@
     "follows": "New followers",
     "reviewLikes": "Review likes",
     "listLikes": "List likes",
+    "comments": "Profile comments",
     "saving": "Saving…"
   },
   "search": {

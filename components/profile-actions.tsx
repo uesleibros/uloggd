@@ -1,8 +1,9 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { Flag, LoaderCircle, X } from "lucide-react";
+import { Ban, Flag, LoaderCircle, ShieldOff, X } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ShareButton } from "./share-button";
@@ -20,11 +21,15 @@ export function ProfileActions({
   viewerId,
   username,
   lang,
+  viewerBlocked = false,
+  blockedByTarget = false,
 }: {
   profileId: string;
   viewerId: string | null;
   username: string;
   lang: "pt-BR" | "en";
+  viewerBlocked?: boolean;
+  blockedByTarget?: boolean;
 }) {
   const pt = lang === "pt-BR";
   const [reason, setReason] =
@@ -33,6 +38,9 @@ export function ProfileActions({
   const [pending, setPending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [blockOpen, setBlockOpen] = useState(false);
+  const [blockPending, setBlockPending] = useState(false);
+  const router = useRouter();
   const labels: Record<(typeof reasons)[number], string> = {
     IMPERSONATION: pt ? "Falsa identidade" : "Impersonation",
     HARASSMENT: pt ? "Assédio" : "Harassment",
@@ -64,6 +72,25 @@ export function ProfileActions({
     else setSent(true);
     setPending(false);
   }
+  async function updateBlock() {
+    if (!viewerId || blockPending) return;
+    setBlockPending(true);
+    const { error: actionError } = await createClient().rpc(
+      viewerBlocked ? "unblock_profile" : "block_profile",
+      { target_profile: profileId },
+    );
+    if (actionError)
+      setError(
+        pt
+          ? "Não foi possível atualizar o bloqueio."
+          : "Could not update the block.",
+      );
+    else {
+      setBlockOpen(false);
+      router.refresh();
+    }
+    setBlockPending(false);
+  }
   return (
     <div className="profile-secondary-actions">
       <ShareButton
@@ -75,6 +102,8 @@ export function ProfileActions({
         lang={lang}
       />
       {viewerId !== profileId &&
+        !viewerBlocked &&
+        !blockedByTarget &&
         (viewerId ? (
           <Dialog.Root>
             <Dialog.Trigger asChild>
@@ -151,6 +180,79 @@ export function ProfileActions({
             <span>{pt ? "Denunciar" : "Report"}</span>
           </Link>
         ))}
+      {viewerId && viewerId !== profileId && !blockedByTarget && (
+        <Dialog.Root open={blockOpen} onOpenChange={setBlockOpen}>
+          <Dialog.Trigger asChild>
+            <button className="quiet-icon-action" type="button">
+              {viewerBlocked ? <ShieldOff size={15} /> : <Ban size={15} />}
+              <span>
+                {viewerBlocked
+                  ? pt
+                    ? "Desbloquear"
+                    : "Unblock"
+                  : pt
+                    ? "Bloquear"
+                    : "Block"}
+              </span>
+            </button>
+          </Dialog.Trigger>
+          <Dialog.Portal>
+            <Dialog.Overlay className="recent-unfollow-overlay" />
+            <Dialog.Content className="recent-unfollow-dialog block-profile-dialog">
+              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+                <X size={17} />
+              </Dialog.Close>
+              <span className="recent-unfollow-mark" aria-hidden>
+                <Ban size={20} />
+              </span>
+              <Dialog.Title>
+                {viewerBlocked
+                  ? pt
+                    ? `Desbloquear @${username}?`
+                    : `Unblock @${username}?`
+                  : pt
+                    ? `Bloquear @${username}?`
+                    : `Block @${username}?`}
+              </Dialog.Title>
+              <Dialog.Description>
+                {viewerBlocked
+                  ? pt
+                    ? "Essa pessoa poderá encontrar e interagir com você novamente. Seguir não será restaurado automaticamente."
+                    : "This person will be able to find and interact with you again. Follows will not be restored automatically."
+                  : pt
+                    ? "Vocês deixarão de se seguir. A pessoa não poderá seguir, comentar ou interagir com você, e não será avisada."
+                    : "You will unfollow each other. They will not be able to follow, comment, or interact with you, and will not be notified."}
+              </Dialog.Description>
+              <footer>
+                <Dialog.Close disabled={blockPending}>
+                  {pt ? "Cancelar" : "Cancel"}
+                </Dialog.Close>
+                <button
+                  type="button"
+                  disabled={blockPending}
+                  onClick={() => void updateBlock()}
+                >
+                  {blockPending && (
+                    <LoaderCircle className="spin" size={15} aria-hidden />
+                  )}
+                  {viewerBlocked
+                    ? pt
+                      ? "Desbloquear"
+                      : "Unblock"
+                    : pt
+                      ? "Bloquear"
+                      : "Block"}
+                </button>
+              </footer>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+      )}
+      {error && (
+        <span className="profile-action-error" role="alert">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

@@ -256,6 +256,123 @@
   color: #e2aaaa;
   font-size: 11px;
 }
+.settings-privacy-stack {
+  display: grid;
+  gap: 12px;
+}
+.settings-privacy-card {
+  overflow: hidden;
+}
+.privacy-scope-options {
+  display: grid;
+  gap: 7px;
+  margin-top: 18px;
+}
+.privacy-scope-options button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 580;
+  text-align: left;
+  transition:
+    border-color 150ms ease-out,
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+.privacy-scope-options button:hover:not(:disabled) {
+  border-color: var(--shell-line-strong);
+  color: var(--screen-white);
+}
+.privacy-scope-options button[aria-checked="true"] {
+  border-color: rgb(88 101 242 / 42%);
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
+}
+.privacy-scope-options i {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 3px var(--console-inset);
+}
+.privacy-scope-options button[aria-checked="true"] i {
+  border-color: var(--brand-blurple-bright);
+  background: var(--brand-blurple-bright);
+}
+.privacy-blocked-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+}
+.privacy-blocked-list article {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 60px;
+  padding: 8px 9px;
+  border-radius: 9px;
+  background: var(--console-inset);
+}
+.privacy-blocked-list article > span {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--console-raised);
+  color: var(--screen-white);
+  font-size: 12px;
+  font-weight: 650;
+}
+.privacy-blocked-list strong,
+.privacy-blocked-list small {
+  display: block;
+}
+.privacy-blocked-list strong {
+  color: var(--screen-white);
+  font-size: 11px;
+}
+.privacy-blocked-list small {
+  margin-top: 3px;
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.privacy-blocked-list button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 7px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 600;
+}
+.privacy-blocked-list button:hover:not(:disabled) {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.privacy-blocked-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  font-size: 11px;
+}
 @media (max-width: 620px) {
   .settings-general-grid {
     grid-template-columns: 1fr;

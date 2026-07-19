@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  Ban,
   BookOpen,
   CalendarDays,
   Gamepad2,
@@ -20,6 +21,10 @@ import { FollowButton } from "@/components/social/follow-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { ProfileActions } from "@/components/profile-actions";
+import {
+  ProfileComments,
+  type ProfileComment,
+} from "@/components/social/profile-comments";
 import { getGamesByIds } from "@/lib/igdb";
 import { getListPreviews } from "@/lib/lists";
 import { getActivity } from "@/lib/social";
@@ -211,7 +216,7 @@ export default async function ProfilePage({ params }: Props) {
     supabase
       .from("profiles")
       .select(
-        "id,username,display_name,pronouns,bio,thought,avatar_url,banner_url,created_at,verified,youtube_username,instagram_username,twitter_username",
+        "id,username,display_name,pronouns,bio,thought,avatar_url,banner_url,created_at,verified,youtube_username,instagram_username,twitter_username,profile_comment_scope",
       )
       .ilike("username", username)
       .maybeSingle(),
@@ -227,6 +232,8 @@ export default async function ProfilePage({ params }: Props) {
     followingCount,
     followState,
     mutualRecentResult,
+    blockStateResult,
+    commentsResult,
   ] = await Promise.all([
     supabase
       .from("user_games")
@@ -266,7 +273,34 @@ export default async function ProfilePage({ params }: Props) {
           target_profile: profile.id,
         })
       : Promise.resolve({ data: false }),
+    user && user.id !== profile.id
+      ? supabase.rpc("get_profile_block_state", {
+          target_profile: profile.id,
+        })
+      : Promise.resolve({
+          data: [{ viewer_blocked: false, blocked_by_target: false }],
+        }),
+    supabase
+      .from("profile_comments")
+      .select(
+        "id,author_id,body,created_at,author:profiles!profile_comments_author_id_fkey(username,display_name,avatar_url)",
+      )
+      .eq("profile_id", profile.id)
+      .order("created_at", { ascending: false })
+      .limit(30),
   ]);
+  const blockState = Array.isArray(blockStateResult.data)
+    ? blockStateResult.data[0]
+    : blockStateResult.data;
+  const viewerBlocked = Boolean(blockState?.viewer_blocked);
+  const blockedByTarget = Boolean(blockState?.blocked_by_target);
+  const interactionBlocked = viewerBlocked || blockedByTarget;
+  const comments = (commentsResult.data ?? []).flatMap((comment) => {
+    const author = Array.isArray(comment.author)
+      ? comment.author[0]
+      : comment.author;
+    return author?.username ? [{ ...comment, author } as ProfileComment] : [];
+  });
   const pt = lang === "pt-BR";
   const joined = new Intl.DateTimeFormat(lang, {
     month: "long",
@@ -379,6 +413,8 @@ export default async function ProfilePage({ params }: Props) {
               viewerId={user?.id ?? null}
               username={profile.username}
               lang={lang}
+              viewerBlocked={viewerBlocked}
+              blockedByTarget={blockedByTarget}
             />
             {user?.id === profile.id ? (
               <Link
@@ -387,7 +423,7 @@ export default async function ProfilePage({ params }: Props) {
               >
                 <Settings size={15} /> {pt ? "Editar perfil" : "Edit profile"}
               </Link>
-            ) : (
+            ) : !interactionBlocked ? (
               <FollowButton
                 viewerId={user?.id ?? null}
                 profileId={profile.id}
@@ -396,7 +432,7 @@ export default async function ProfilePage({ params }: Props) {
                 profileName={profile.display_name || `@${profile.username}`}
                 lang={lang}
               />
-            )}
+            ) : null}
           </div>
         </div>
       </header>
@@ -449,111 +485,145 @@ export default async function ProfilePage({ params }: Props) {
           <strong>{new Date().getUTCFullYear()}</strong>
         </Link>
       </nav>
-      {(libraryCount.count ?? 0) > 0 && (
-        <Suspense
-          fallback={
-            <section
-              className="profile-shelf"
-              aria-busy="true"
-              aria-label="Loading"
+      {interactionBlocked ? (
+        <section className="profile-blocked-notice">
+          <Ban size={22} />
+          <div>
+            <h2>{pt ? "Interação indisponível" : "Interaction unavailable"}</h2>
+            <p>
+              {viewerBlocked
+                ? pt
+                  ? "Você bloqueou esta conta. Desbloqueie para voltar a ver e interagir com o conteúdo."
+                  : "You blocked this account. Unblock it to see and interact with its content again."
+                : pt
+                  ? "Não é possível visualizar ou interagir com o conteúdo desta conta."
+                  : "You cannot view or interact with this account's content."}
+            </p>
+          </div>
+        </section>
+      ) : (
+        <>
+          <ProfileComments
+            profileId={profile.id}
+            viewerId={user?.id ?? null}
+            comments={comments}
+            commentsClosed={profile.profile_comment_scope === "NOBODY"}
+            canComment={Boolean(
+              user &&
+              profile.profile_comment_scope !== "NOBODY" &&
+              (user.id === profile.id ||
+                profile.profile_comment_scope === "EVERYONE" ||
+                followState.data),
+            )}
+            lang={lang}
+          />
+          {(libraryCount.count ?? 0) > 0 && (
+            <Suspense
+              fallback={
+                <section
+                  className="profile-shelf"
+                  aria-busy="true"
+                  aria-label="Loading"
+                >
+                  <div className="social-section-title">
+                    <div>
+                      <h2>{pt ? "Jogos recentes" : "Recent games"}</h2>
+                      <p>
+                        {pt
+                          ? "Últimas mudanças na biblioteca"
+                          : "Latest library changes"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="cover-shelf">
+                    {Array.from({ length: 5 }, (_, index) => (
+                      <span
+                        className="skeleton-block shelf-cover-skeleton"
+                        key={index}
+                      />
+                    ))}
+                  </div>
+                </section>
+              }
             >
+              <ProfileRecentGames
+                profileId={profile.id}
+                viewerId={user?.id ?? null}
+                lang={lang}
+              />
+            </Suspense>
+          )}
+          <section className="profile-content-grid">
+            <div>
               <div className="social-section-title">
                 <div>
-                  <h2>{pt ? "Jogos recentes" : "Recent games"}</h2>
+                  <h2>{pt ? "Atividade" : "Activity"}</h2>
                   <p>
                     {pt
-                      ? "Últimas mudanças na biblioteca"
-                      : "Latest library changes"}
+                      ? "Avaliações e sessões públicas"
+                      : "Public reviews and sessions"}
                   </p>
                 </div>
               </div>
-              <div className="cover-shelf">
-                {Array.from({ length: 5 }, (_, index) => (
-                  <span
-                    className="skeleton-block shelf-cover-skeleton"
-                    key={index}
-                  />
-                ))}
-              </div>
-            </section>
-          }
-        >
-          <ProfileRecentGames
-            profileId={profile.id}
-            viewerId={user?.id ?? null}
-            lang={lang}
-          />
-        </Suspense>
-      )}
-      <section className="profile-content-grid">
-        <div>
-          <div className="social-section-title">
-            <div>
-              <h2>{pt ? "Atividade" : "Activity"}</h2>
-              <p>
-                {pt
-                  ? "Avaliações e sessões públicas"
-                  : "Public reviews and sessions"}
-              </p>
-            </div>
-          </div>
-          <Suspense
-            fallback={
-              <div
-                className="skeleton-stream"
-                aria-busy="true"
-                aria-label="Loading"
+              <Suspense
+                fallback={
+                  <div
+                    className="skeleton-stream"
+                    aria-busy="true"
+                    aria-label="Loading"
+                  >
+                    {Array.from({ length: 3 }, (_, index) => (
+                      <div className="skeleton-entry" key={index}>
+                        <span className="skeleton-block" />
+                        <div>
+                          <span className="skeleton-block" />
+                          <span className="skeleton-block" />
+                          <span className="skeleton-block" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                }
               >
-                {Array.from({ length: 3 }, (_, index) => (
-                  <div className="skeleton-entry" key={index}>
+                <ProfileActivity
+                  profileId={profile.id}
+                  viewerId={user?.id ?? null}
+                  lang={lang}
+                />
+              </Suspense>
+            </div>
+            <aside className="profile-lists">
+              <div className="social-section-title">
+                <h2>{pt ? "Listas" : "Lists"}</h2>
+                <Link href={`/${lang}/u/${profile.username}/lists`}>
+                  {pt ? "Ver todas" : "View all"}
+                </Link>
+              </div>
+              <Suspense
+                fallback={
+                  <div
+                    className="lists-loading-card"
+                    aria-busy="true"
+                    aria-label="Loading"
+                  >
                     <span className="skeleton-block" />
                     <div>
                       <span className="skeleton-block" />
                       <span className="skeleton-block" />
-                      <span className="skeleton-block" />
                     </div>
                   </div>
-                ))}
-              </div>
-            }
-          >
-            <ProfileActivity
-              profileId={profile.id}
-              viewerId={user?.id ?? null}
-              lang={lang}
-            />
-          </Suspense>
-        </div>
-        <aside className="profile-lists">
-          <div className="social-section-title">
-            <h2>{pt ? "Listas" : "Lists"}</h2>
-            <Link href={`/${lang}/u/${profile.username}/lists`}>
-              {pt ? "Ver todas" : "View all"}
-            </Link>
-          </div>
-          <Suspense
-            fallback={
-              <div
-                className="lists-loading-card"
-                aria-busy="true"
-                aria-label="Loading"
+                }
               >
-                <span className="skeleton-block" />
-                <div>
-                  <span className="skeleton-block" />
-                  <span className="skeleton-block" />
-                </div>
-              </div>
-            }
-          >
-            <ProfileListsAside
-              profileId={profile.id}
-              viewerId={user?.id ?? null}
-              lang={lang}
-            />
-          </Suspense>
-        </aside>
-      </section>
+                <ProfileListsAside
+                  profileId={profile.id}
+                  viewerId={user?.id ?? null}
+                  lang={lang}
+                />
+              </Suspense>
+            </aside>
+          </section>
+        </>
+      )}
     </main>
   );
 }

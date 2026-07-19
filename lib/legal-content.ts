@@ -103,12 +103,12 @@ const pt: Record<LegalDocument, LegalContent> = {
     title: "Política de Privacidade",
     intro:
       "Esta política explica quais dados o uloggd usa, para quê e quais escolhas você tem.",
-    updated: "Última atualização: 15 de julho de 2026",
+    updated: "Última atualização: 19 de julho de 2026",
     sections: [
       {
         title: "1. Dados tratados",
         paragraphs: [
-          "Tratamos dados técnicos essenciais, como endereço IP, tipo de navegador e registros de segurança, além de e-mail, username, perfil, biblioteca, avaliações, listas e preferências quando você usa esses recursos.",
+          "Tratamos dados técnicos essenciais, como endereço IP, tipo de navegador e registros de segurança, além de e-mail, username, perfil, biblioteca, avaliações, listas, comentários, bloqueios, denúncias e preferências quando você usa esses recursos.",
           "No cadastro, coletamos sua data de nascimento para aplicar proteção etária conforme a Classificação Indicativa brasileira. Ela não aparece no perfil e, como medida de integridade, não pode ser alterada depois da confirmação. A data informada pelo usuário é uma autodeclaração e poderá ser complementada por métodos de aferição adequados ao risco.",
           "Supabase fornece autenticação e banco de dados; Resend entrega e-mails transacionais configurados no Supabase; Cloudflare Turnstile previne abuso; e o ImgChest hospeda avatares e banners enviados voluntariamente. Google, Discord ou Twitch tratam dados quando você escolhe o respectivo login. Dados de catálogo vêm da IGDB.",
           "Quando você escolhe carregar uma demo incorporada, o player do spawnd.gg é conectado e pode tratar endereço IP, dados técnicos, cookies e informações da sessão de jogo conforme os termos e a política do próprio spawnd. O player permanece bloqueado até essa ação explícita.",
@@ -303,12 +303,12 @@ const en: Record<LegalDocument, LegalContent> = {
     title: "Privacy Policy",
     intro:
       "This policy explains which data uloggd uses, why it is used, and the choices available to you.",
-    updated: "Last updated: July 15, 2026",
+    updated: "Last updated: July 19, 2026",
     sections: [
       {
         title: "1. Data we process",
         paragraphs: [
-          "We process essential technical data such as IP address, browser type, and security logs, as well as email, username, profile, game library, reviews, lists, and preferences when you use those features.",
+          "We process essential technical data such as IP address, browser type, and security logs, as well as email, username, profile, game library, reviews, lists, comments, blocks, reports, and preferences when you use those features.",
           "During registration, we collect your birth date to apply age protection based on Brazil's age-rating system. It is not shown on your profile and, as an integrity measure, cannot be changed after confirmation. The date entered by the user is self-declared and may be supplemented by risk-appropriate age-assurance methods.",
           "Supabase provides authentication and database services; Resend delivers transactional email configured through Supabase; Cloudflare Turnstile prevents abuse; and ImgChest hosts avatars and banners you voluntarily upload. Google, Discord, or Twitch process data when you choose that sign-in provider. Catalog data comes from IGDB.",
           "When you choose to load an embedded demo, the spawnd.gg player connects and may process your IP address, technical data, cookies, and play-session information under spawnd's own terms and privacy policy. The player remains blocked until that explicit action.",

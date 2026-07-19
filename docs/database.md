@@ -11,7 +11,7 @@ uloggd uses Supabase for PostgreSQL, Auth, Storage, Realtime, and row-level secu
 
 ## Data ownership
 
-IGDB remains the game catalog source. uloggd stores only `igdb_id`, `game_slug`, and user-generated data such as library status, reviews, lists, follows, blocks, and reports.
+IGDB remains the game catalog source. uloggd stores only `igdb_id`, `game_slug`, and user-generated data such as library status, reviews, lists, follows, profile comments, blocks, and reports.
 
 Supabase Auth owns identities in `auth.users`. `public.profiles.id` references `auth.users.id` with cascade deletion. A database trigger creates the public profile after signup.
 

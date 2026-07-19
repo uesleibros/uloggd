@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   SwatchBook,
   UserRound,
+  LockKeyhole,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ProfileSettingsPanel } from "./profile-settings-panel";
@@ -16,18 +17,28 @@ import { TwoFactorSettings } from "./two-factor-settings";
 import { DeleteAccount } from "./delete-account";
 import { AppearanceSettings } from "./appearance-settings";
 import { ContentPreferences } from "./content-preferences";
+import { PrivacySettings } from "./privacy-settings";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   custom_cover_scope: "OWN" | "EVERYONE";
+  profile_comment_scope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
 };
-type Tab = "general" | "profile" | "preferences" | "appearance" | "security";
+type BlockedProfile = {
+  id: string;
+  username: string;
+  display_name: string | null;
+};
+type Tab =
+  "general" | "profile" | "preferences" | "privacy" | "appearance" | "security";
 
 export function AccountSettings({
   profile,
+  blockedProfiles,
   infractions,
   lang,
 }: {
   profile: Profile;
+  blockedProfiles: BlockedProfile[];
   infractions: number;
   lang: "pt-BR" | "en";
 }) {
@@ -40,6 +51,7 @@ export function AccountSettings({
     requestedTab === "general" ||
     requestedTab === "profile" ||
     requestedTab === "preferences" ||
+    requestedTab === "privacy" ||
     requestedTab === "appearance" ||
     requestedTab === "security"
       ? requestedTab
@@ -68,6 +80,11 @@ export function AccountSettings({
       id: "preferences" as const,
       label: pt ? "Preferências" : "Preferences",
       icon: SlidersHorizontal,
+    },
+    {
+      id: "privacy" as const,
+      label: pt ? "Privacidade" : "Privacy",
+      icon: LockKeyhole,
     },
     {
       id: "appearance" as const,
@@ -209,6 +226,13 @@ export function AccountSettings({
         {tab === "preferences" && (
           <ContentPreferences
             initialScope={profile.custom_cover_scope}
+            lang={lang}
+          />
+        )}
+        {tab === "privacy" && (
+          <PrivacySettings
+            initialScope={profile.profile_comment_scope}
+            initialBlocked={blockedProfiles}
             lang={lang}
           />
         )}

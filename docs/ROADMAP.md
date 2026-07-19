@@ -59,6 +59,16 @@ after the loading/skeleton consistency pass.
 - Dynamic Open Graph and X cards for each wrapped page, with games, sessions,
   logged hours, and reviews rendered into the shared image.
 
+## Done in the profile safety pass (July 2026)
+
+- Enforceable account blocking removes follows in both directions and prevents
+  new follows, comments, notifications, and blocked social content reads.
+- A Privacy settings tab controls who may comment and lists blocked accounts
+  with an unblock action.
+- Protected profile comments include follower-first defaults, database rate
+  limits, length and control-character validation, owner/author deletion,
+  reporting, notification preferences, RLS, and MFA mutation enforcement.
+
 ## Next: polish and correctness
 
 1. **Search keyboard navigation across sections.** Arrow keys only walk game

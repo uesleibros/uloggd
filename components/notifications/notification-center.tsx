@@ -10,6 +10,7 @@ import {
   CheckCheck,
   Heart,
   LoaderCircle,
+  MessageCircle,
   Settings2,
   UserPlus,
   X,
@@ -20,7 +21,8 @@ import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { createClient } from "@/lib/supabase/client";
 
 type Labels = Dictionary["notifications"];
-type NotificationKind = "follow" | "review_like" | "list_like";
+type NotificationKind =
+  "follow" | "review_like" | "list_like" | "profile_comment";
 type NotificationRow = {
   id: string;
   actor_id: string;
@@ -39,12 +41,14 @@ type Preferences = {
   follows_enabled: boolean;
   review_likes_enabled: boolean;
   list_likes_enabled: boolean;
+  comments_enabled: boolean;
 };
 
 const defaultPreferences: Preferences = {
   follows_enabled: true,
   review_likes_enabled: true,
   list_likes_enabled: true,
+  comments_enabled: true,
 };
 
 export function NotificationCenter({
@@ -78,7 +82,9 @@ export function NotificationCenter({
         .limit(40),
       supabase
         .from("notification_preferences")
-        .select("follows_enabled,review_likes_enabled,list_likes_enabled")
+        .select(
+          "follows_enabled,review_likes_enabled,list_likes_enabled,comments_enabled",
+        )
         .eq("profile_id", viewerId)
         .maybeSingle(),
     ]);
@@ -219,6 +225,7 @@ export function NotificationCenter({
                   ["follows_enabled", labels.follows],
                   ["review_likes_enabled", labels.reviewLikes],
                   ["list_likes_enabled", labels.listLikes],
+                  ["comments_enabled", labels.comments],
                 ] as const
               ).map(([key, label]) => (
                 <label className="notification-preference" key={key}>
@@ -280,14 +287,19 @@ export function NotificationCenter({
                       actor?.username ||
                       labels.unknownUser;
                     const href =
-                      item.kind === "follow"
+                      item.kind === "follow" || item.kind === "profile_comment"
                         ? actor?.username
                           ? `/${lang}/u/${actor.username}`
                           : `/${lang}`
                         : item.kind === "review_like"
                           ? `/${lang}/review/${item.target_id}`
                           : `/${lang}/lists/${item.target_id}`;
-                    const Icon = item.kind === "follow" ? UserPlus : Heart;
+                    const Icon =
+                      item.kind === "follow"
+                        ? UserPlus
+                        : item.kind === "profile_comment"
+                          ? MessageCircle
+                          : Heart;
                     return (
                       <Dialog.Close asChild key={item.id}>
                         <Link
@@ -313,7 +325,9 @@ export function NotificationCenter({
                                 ? labels.newFollower
                                 : item.kind === "review_like"
                                   ? labels.reviewLike
-                                  : labels.listLike}
+                                  : item.kind === "profile_comment"
+                                    ? labels.profileComment
+                                    : labels.listLike}
                               {item.target_title && (
                                 <>
                                   {" "}
