@@ -70,19 +70,50 @@ export function AccountSettings({
       icon: ShieldCheck,
     },
   ];
+
+  function moveTab(event: React.KeyboardEvent<HTMLElement>) {
+    if (
+      event.key !== "ArrowLeft" &&
+      event.key !== "ArrowRight" &&
+      event.key !== "Home" &&
+      event.key !== "End"
+    )
+      return;
+    event.preventDefault();
+    const currentIndex = tabs.findIndex(({ id }) => id === tab);
+    const nextIndex =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? tabs.length - 1
+          : (currentIndex +
+              (event.key === "ArrowRight" ? 1 : -1) +
+              tabs.length) %
+            tabs.length;
+    const nextTab = tabs[nextIndex].id;
+    selectTab(nextTab);
+    window.requestAnimationFrame(() =>
+      document.getElementById(`settings-tab-${nextTab}`)?.focus(),
+    );
+  }
+
   return (
     <main className="account-settings-page">
       <nav
         className="game-page-nav account-settings-tabs"
         role="tablist"
         aria-label={pt ? "Seções das configurações" : "Settings sections"}
+        onKeyDown={moveTab}
       >
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             type="button"
             role="tab"
+            id={`settings-tab-${id}`}
+            aria-controls="settings-active-panel"
             aria-selected={tab === id}
+            tabIndex={tab === id ? 0 : -1}
             onClick={() => selectTab(id)}
           >
             <Icon size={15} />
@@ -90,7 +121,13 @@ export function AccountSettings({
           </button>
         ))}
       </nav>
-      <div className="account-settings-panel" role="tabpanel">
+      <div
+        className="account-settings-panel"
+        id="settings-active-panel"
+        role="tabpanel"
+        aria-labelledby={`settings-tab-${tab}`}
+        tabIndex={0}
+      >
         {tab === "general" && (
           <div className="settings-general-grid">
             <section className="settings-account-card">

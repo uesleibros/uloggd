@@ -10246,6 +10246,10 @@ details.review-page-content p {
     transform: none;
     animation-name: social-modal-sheet-in;
   }
+  .social-editor-dialog .social-editor-form > footer {
+    bottom: 0;
+    margin: 4px -20px 0;
+  }
   .social-editor-dialog[data-state="closed"] {
     animation-name: social-modal-sheet-out;
   }

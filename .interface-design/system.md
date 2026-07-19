@@ -433,13 +433,13 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 
 ### Public profiles and lists
 
-- Profiles use a 4:1 banner, overlapping 112px avatar, compact statistic line, active shelf, activity stream, and lists rail; mobile uses a 3:1 banner and 82px avatar.
+- Profiles use a 5:1 banner (3:1 mobile), overlapping 112px avatar (82px mobile), compact statistic line, active shelf, activity stream, and lists rail. Desktop keeps handle, pronouns, and join date in one metadata row while social, share/report, and edit/follow controls form one right-aligned action cluster; mobile returns that cluster to normal flow.
 - A profile thought is a single-line, 100-character status rendered as a compact speech bubble anchored above the avatar. It may overlap the banner, but never the identity or profile actions; mobile constrains it to the viewport.
 - Mobile profile actions retain their text label, use a consistent 44px touch target and at least 108px of width; the profile identity truncates before an action can leave the viewport.
 - Report dialogs fade their backdrop and enter with a centered scale/offset on desktop or an upward sheet on mobile. Closing always plays the inverse motion before Radix unmounts the surface.
 - Verified badges are interactive identity signals. Their modal explains what was confirmed, that moderation assigns the badge after review, and that verification is not an endorsement of published content.
 - Workspace headers state each page concept once; eyebrow copy adds context instead of repeating the title. Lists use real collection/game/public counts, a responsive two-column card grid, and a motion-enabled Radix creation dialog with a custom visibility select.
-- Personal workspaces (/lists and /reviews) open with the shared workspace hero, following the library banner pattern as a rounded card: the owner's banner dimmed to 34% and desaturated behind a left-weighted scrim, a 64px avatar, blurple eyebrow, large tight-tracked title, and a frosted stats block anchored bottom-right. On mobile the stats block drops below the copy as a two-column grid.
+- Personal workspaces (`/library`, `/lists`, and `/reviews`) use one full-bleed hero contract: the owner's banner dimmed to 34% and desaturated behind a dark left-weighted scrim, a 64px avatar, large tight-tracked title, and a frosted stats block anchored bottom-right. Reviews and lists use a 96px mobile top safe zone because their two-row stats and optional creation action are taller than the library copy. Their loading states must use the same `workspace-layout-page` and `workspace-page-body` wrappers.
 - Detail pages (review, logs) return via `.page-back-link`: a pill-shaped quiet control whose arrow nudges left on hover, never a bare text link.
 - Verified identity uses the locally stored official blue verification mark across profiles, activity, and signed-in navigation identity.
 - Optional TOTP security covers enrollment, QR/manual secret setup, verification, multiple authenticators, protected removal, login challenge, SSR redirects, and database mutation enforcement for accounts whose next assurance level is AAL2.
@@ -465,6 +465,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 
 - Review and Journal share one Radix modal with persistent tabs, game identity in the header, a scrollable form body, and a sticky action footer. Switching tabs never dismisses the surface.
 - Desktop uses a centered surface up to 640px; mobile becomes a bottom sheet with safe-area padding. Both keep their mode mounted through the closing animation so the backdrop and surface exit together.
+- Every modal inherits semantic theme tokens from the document; light mode uses a white/paper panel, dark modes use console panels, and artwork-only lightboxes are the sole invariant-dark exception. Mobile sheets keep their footer at `bottom: 0`, never use a negative bottom margin, and must fit entirely within `100dvh` including safe-area padding.
 - Diary entries are repeatable sessions, not a single game-level field. “View logs” opens a private per-game timeline with total entries and playtime; every session can be edited or removed independently.
 
 - Never fabricate user activity, online counts, progress, or authenticated identity.
@@ -483,3 +484,4 @@ Before shipping a new screen:
 4. Token test: no arbitrary hex colors outside this system without a documented semantic need.
 5. State test: verify hover, active, focus, loading, empty, error, and mobile behavior.
 6. Run desktop and mobile visual checks, lint, TypeScript, and production build.
+7. Keep Playwright geometry contracts for mobile sheets, theme inheritance, profile action containment, and horizontal overflow. Screenshot baselines remain a CI/Linux responsibility because the Android development host cannot launch Playwright browsers.
