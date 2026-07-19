@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export type ProfileComment = {
@@ -32,6 +32,43 @@ export type ProfileComment = {
 };
 
 type CommentNode = ProfileComment & { replies: CommentNode[] };
+
+function formatCommentTime(date: string, lang: "pt-BR" | "en") {
+  const seconds = Math.max(
+    1,
+    Math.floor((Date.now() - new Date(date).getTime()) / 1000),
+  );
+  const formatter = new Intl.RelativeTimeFormat(lang, { numeric: "auto" });
+  if (seconds < 60) return formatter.format(-seconds, "second");
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return formatter.format(-minutes, "minute");
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return formatter.format(-hours, "hour");
+  const days = Math.floor(hours / 24);
+  if (days < 30) return formatter.format(-days, "day");
+  return new Intl.DateTimeFormat(lang, { dateStyle: "medium" }).format(
+    new Date(date),
+  );
+}
+
+function PendingComment({ lang }: { lang: "pt-BR" | "en" }) {
+  return (
+    <article
+      className="profile-comment-pending"
+      aria-label={
+        lang === "pt-BR" ? "Publicando comentário" : "Posting comment"
+      }
+      aria-busy="true"
+    >
+      <span className="skeleton-block" />
+      <div>
+        <i className="skeleton-block" />
+        <i className="skeleton-block" />
+        <i className="skeleton-block" />
+      </div>
+    </article>
+  );
+}
 
 function buildCommentTree(comments: ProfileComment[]) {
   const nodes = new Map<string, CommentNode>(
@@ -80,10 +117,35 @@ export function ProfileComments({
   const [editing, setEditing] = useState<string | null>(null);
   const [editBody, setEditBody] = useState("");
   const [pending, setPending] = useState<string | null>(null);
+  const [awaitingCommentId, setAwaitingCommentId] = useState<string | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [reporting, setReporting] = useState<ProfileComment | null>(null);
   const [reportReason, setReportReason] = useState("HARASSMENT");
   const [reportDetails, setReportDetails] = useState("");
+
+  useEffect(() => {
+    if (
+      awaitingCommentId &&
+      comments.some((comment) => comment.id === awaitingCommentId)
+    ) {
+      const frame = window.requestAnimationFrame(() => {
+        setAwaitingCommentId(null);
+        setPending(null);
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
+  }, [awaitingCommentId, comments]);
+
+  useEffect(() => {
+    if (!awaitingCommentId) return;
+    const fallback = window.setTimeout(() => {
+      setAwaitingCommentId(null);
+      setPending(null);
+    }, 6000);
+    return () => window.clearTimeout(fallback);
+  }, [awaitingCommentId]);
 
   function actionError(message: string) {
     return message.includes("rate")
@@ -109,7 +171,7 @@ export function ProfileComments({
     const pendingKey = parentId ? `reply-${parentId}` : "create";
     setPending(pendingKey);
     setError(null);
-    const { error: createError } = await createClient().rpc(
+    const { data: created, error: createError } = await createClient().rpc(
       "create_profile_comment",
       {
         target_profile: profileId,
@@ -117,15 +179,19 @@ export function ProfileComments({
         parent_comment: parentId,
       },
     );
-    if (createError) setError(actionError(createError.message));
-    else {
+    if (createError) {
+      setError(actionError(createError.message));
+      setPending(null);
+    } else {
       if (parentId) {
         setReplyTo(null);
         setReplyBody("");
       } else setBody("");
+      const createdComment = Array.isArray(created) ? created[0] : created;
+      if (createdComment?.id) setAwaitingCommentId(createdComment.id);
       router.refresh();
+      if (!createdComment?.id) setPending(null);
     }
-    setPending(null);
   }
 
   async function updateComment(event: React.FormEvent, commentId: string) {
@@ -237,12 +303,11 @@ export function ProfileComments({
                   {name}
                 </Link>
                 <span>
-                  {edited && <i>{pt ? "editado" : "edited"}</i>}
+                  <b aria-hidden>·</b>
                   <time dateTime={comment.created_at}>
-                    {new Intl.DateTimeFormat(lang, {
-                      dateStyle: "medium",
-                    }).format(new Date(comment.created_at))}
+                    {formatCommentTime(comment.created_at, lang)}
                   </time>
+                  {edited && <i>{pt ? "editado" : "edited"}</i>}
                 </span>
               </header>
             )}
@@ -367,6 +432,14 @@ export function ProfileComments({
         {comment.replies.length > 0 && (
           <div className="profile-comment-replies">
             {comment.replies.map((reply) => renderComment(reply, depth + 1))}
+            {pending === `reply-${comment.id}` && (
+              <PendingComment lang={lang} />
+            )}
+          </div>
+        )}
+        {comment.replies.length === 0 && pending === `reply-${comment.id}` && (
+          <div className="profile-comment-replies">
+            <PendingComment lang={lang} />
           </div>
         )}
       </div>
@@ -449,6 +522,7 @@ export function ProfileComments({
       )}
 
       <div className="profile-comment-list">
+        {pending === "create" && <PendingComment lang={lang} />}
         {tree.map((comment) => renderComment(comment))}
         {!tree.length && (
           <div className="profile-comments-empty">
