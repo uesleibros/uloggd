@@ -118,7 +118,7 @@ export function PlatformNavigation({
             <div className="sidebar-bottom">
               {isAuthenticated ? (
                 <ActiveLink
-                  href={`/${lang}/settings/profile`}
+                  href={`/${lang}/settings?tab=general`}
                   aria-label={d.nav.settings}
                   title={d.nav.settings}
                 >

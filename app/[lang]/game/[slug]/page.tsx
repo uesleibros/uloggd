@@ -109,7 +109,7 @@ export default async function GamePage({ params }: Props) {
   const relatedIds = game.related.flatMap((group) =>
     group.games.map((related) => related.id),
   );
-  const [ageProfileResult, savedResult, listsResult, logResult] =
+  const [ageProfileResult, savedResult, listsResult, logResult, journeyResult] =
     await Promise.all([
       user && supabase
         ? supabase
@@ -137,11 +137,21 @@ export default async function GamePage({ params }: Props) {
       user && supabase
         ? supabase
             .from("diary_entries")
-            .select("played_on,ended_on")
+            .select(
+              "id,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,journey_id",
+            )
             .eq("profile_id", user.id)
             .eq("igdb_id", game.id)
             .order("played_on", { ascending: false })
-            .limit(200)
+            .limit(366)
+        : Promise.resolve({ data: [] }),
+      user && supabase
+        ? supabase
+            .from("journeys")
+            .select("id,title")
+            .eq("profile_id", user.id)
+            .eq("igdb_id", game.id)
+            .order("created_at", { ascending: true })
         : Promise.resolve({ data: [] }),
     ]);
   const ageProfile = ageProfileResult.data;
@@ -166,11 +176,34 @@ export default async function GamePage({ params }: Props) {
   const savedGames = savedResult.data;
   const userLists = listsResult.data;
   const ownJourneys = (logResult.data ?? []).map(
-    (entry: { played_on: string; ended_on: string | null }) => ({
+    (entry: {
+      id: string;
+      played_on: string;
+      ended_on: string | null;
+      minutes: number | null;
+      note: string | null;
+      marks_start: boolean;
+      marks_finish: boolean;
+      contains_spoilers: boolean;
+      visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+      journey_id: string | null;
+    }) => ({
+      id: entry.id,
       start: entry.played_on,
       end: entry.ended_on,
+      minutes: entry.minutes,
+      note: entry.note,
+      marksStart: entry.marks_start,
+      marksFinish: entry.marks_finish,
+      spoilers: entry.contains_spoilers,
+      visibility: entry.visibility,
+      journeyId: entry.journey_id,
     }),
   );
+  const ownJourneyOptions = (journeyResult.data ?? []) as Array<{
+    id: string;
+    title: string;
+  }>;
   const ownLogCount = ownJourneys.length;
   const savedById = new Map(
     (savedGames ?? []).map((saved) => [saved.igdb_id, saved]),
@@ -280,6 +313,7 @@ export default async function GamePage({ params }: Props) {
                 lists={userLists ?? []}
                 logCount={ownLogCount}
                 journeys={ownJourneys}
+                journeyOptions={ownJourneyOptions}
               />
             )}
           </div>

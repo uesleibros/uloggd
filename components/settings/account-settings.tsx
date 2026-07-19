@@ -8,7 +8,7 @@ import {
   SwatchBook,
   UserRound,
 } from "lucide-react";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ProfileSettingsPanel } from "./profile-settings-panel";
 import { PasskeySettings } from "./passkey-settings";
 import { TwoFactorSettings } from "./two-factor-settings";
@@ -28,7 +28,26 @@ export function AccountSettings({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
-  const [tab, setTab] = useState<Tab>("general");
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const tab: Tab =
+    requestedTab === "general" ||
+    requestedTab === "profile" ||
+    requestedTab === "appearance" ||
+    requestedTab === "security"
+      ? requestedTab
+      : "general";
+
+  function selectTab(nextTab: Tab) {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("tab", nextTab);
+    const query = nextParams.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  }
   const tabs = [
     {
       id: "general" as const,
@@ -64,7 +83,7 @@ export function AccountSettings({
             type="button"
             role="tab"
             aria-selected={tab === id}
-            onClick={() => setTab(id)}
+            onClick={() => selectTab(id)}
           >
             <Icon size={15} />
             {label}

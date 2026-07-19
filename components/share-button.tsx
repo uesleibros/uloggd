@@ -52,7 +52,7 @@ export function ShareButton({
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="social-editor-overlay" />
+        <Dialog.Overlay className="drawer-backdrop" />
         <Dialog.Content className="share-dialog">
           <header>
             <div>

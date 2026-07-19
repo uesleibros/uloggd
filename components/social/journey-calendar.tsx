@@ -1,9 +1,31 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  FastForward,
+  Flag,
+  Play,
+  Rewind,
+} from "lucide-react";
 import { useRef, useState } from "react";
 
-export type JourneyInterval = { start: string; end: string | null };
+export type JourneySession = {
+  id: string;
+  start: string;
+  end: string | null;
+  minutes: number | null;
+  note: string | null;
+  marksStart: boolean;
+  marksFinish: boolean;
+  spoilers: boolean;
+  visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+  journeyId: string | null;
+};
+
+export type JourneyOption = { id: string; title: string };
 
 function pad(value: number) {
   return String(value).padStart(2, "0");
@@ -30,33 +52,58 @@ function monthOf(value: string | null): { year: number; month: number } {
   return { year: now.getFullYear(), month: now.getMonth() };
 }
 
+function intensity(session: JourneySession | undefined) {
+  if (!session) return 0;
+  const total = session.minutes ?? 0;
+  if (total <= 30) return 1;
+  if (total <= 60) return 2;
+  if (total <= 120) return 3;
+  if (total <= 240) return 4;
+  return 5;
+}
+
+export function formatSessionTime(minutes: number | null) {
+  if (!minutes) return null;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours > 0 && rest > 0) return `${hours}:${pad(rest)}`;
+  if (hours > 0) return `${hours}h`;
+  return `${rest}m`;
+}
+
 /**
- * Month grid with drag-across-days range selection. A click selects a single
- * day; pressing and dragging selects the whole range. Existing journey
- * entries render as continuous "played" bands across their days, so the
- * calendar reads as the game's play history while a new range is picked.
- * The calendar is a pointer affordance only (aria-hidden): the paired date
- * inputs rendered by the parent form remain the keyboard and screen-reader
- * path.
+ * The journal calendar IS the session editor, mirroring the legacy uloggd
+ * journal: every logged day shows its played time with a heat intensity,
+ * contiguous days fuse into bars, tapping a day opens that day's session,
+ * and dragging paints (or erases, when starting on a logged day) whole
+ * stretches at once. The grid is pointer-only (aria-hidden): the parent
+ * form provides the accessible date-input path.
  */
 export function JourneyCalendar({
   lang,
-  start,
-  end,
   maxDate,
-  played = [],
-  onChange,
+  sessions,
+  busy = false,
+  onDayOpen,
+  onBulkAdd,
+  onBulkRemove,
 }: {
   lang: "pt-BR" | "en";
-  start: string;
-  end: string;
   maxDate: string;
-  played?: JourneyInterval[];
-  onChange: (range: { start: string; end: string }) => void;
+  sessions: JourneySession[];
+  busy?: boolean;
+  onDayOpen: (day: string, session: JourneySession | null) => void;
+  onBulkAdd: (days: string[]) => void;
+  onBulkRemove: (days: string[]) => void;
 }) {
   const pt = lang === "pt-BR";
-  const [view, setView] = useState(() => monthOf(start || null));
-  const [drag, setDrag] = useState<{ anchor: string; hover: string } | null>(
+  const [view, setView] = useState(() => monthOf(null));
+  const [drag, setDrag] = useState<{
+    mode: "add" | "remove";
+    anchor: string;
+    hover: string;
+  } | null>(null);
+  const pendingRef = useRef<{ day: string; mode: "add" | "remove" } | null>(
     null,
   );
   const gridRef = useRef<HTMLDivElement>(null);
@@ -78,30 +125,11 @@ export function JourneyCalendar({
   const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
   const leadingBlanks = new Date(view.year, view.month, 1).getDay();
 
-  const rangeStart = drag
-    ? drag.anchor <= drag.hover
-      ? drag.anchor
-      : drag.hover
-    : start;
-  const rangeEnd = drag
-    ? drag.anchor <= drag.hover
-      ? drag.hover
-      : drag.anchor
-    : end || start;
-
-  function covered(key: string) {
-    return played.some(
-      (interval) => key >= interval.start && key <= (interval.end ?? interval.start),
+  function sessionFor(key: string) {
+    return sessions.find(
+      (session) =>
+        key >= session.start && key <= (session.end ?? session.start),
     );
-  }
-
-  function bandFor(key: string, weekday: number) {
-    if (!covered(key)) return null;
-    return {
-      capStart: !covered(shiftDay(key, -1)) || weekday === 0,
-      capEnd: !covered(shiftDay(key, 1)) || weekday === 6,
-      label: played.some((interval) => interval.start === key),
-    };
   }
 
   function dayFromPoint(clientX: number, clientY: number) {
@@ -112,10 +140,45 @@ export function JourneyCalendar({
     return day && day <= maxDate ? day : null;
   }
 
-  function commit(anchor: string, hover: string) {
-    const from = anchor <= hover ? anchor : hover;
-    const to = anchor <= hover ? hover : anchor;
-    onChange({ start: from, end: to === from ? "" : to });
+  function daysBetween(a: string, b: string) {
+    const [from, to] = a <= b ? [a, b] : [b, a];
+    const days: string[] = [];
+    let cursor = from;
+    while (cursor <= to && days.length < 366) {
+      days.push(cursor);
+      cursor = shiftDay(cursor, 1);
+    }
+    return days;
+  }
+
+  const dragDays = drag ? new Set(daysBetween(drag.anchor, drag.hover)) : null;
+
+  function extendTo(day: string) {
+    const pending = pendingRef.current;
+    if (drag) {
+      if (day !== drag.hover)
+        setDrag({ mode: drag.mode, anchor: drag.anchor, hover: day });
+      return;
+    }
+    if (pending && day !== pending.day) {
+      setDrag({ mode: pending.mode, anchor: pending.day, hover: day });
+      pendingRef.current = null;
+    }
+  }
+
+  function finish() {
+    const pending = pendingRef.current;
+    pendingRef.current = null;
+    if (pending && !drag) {
+      onDayOpen(pending.day, sessionFor(pending.day) ?? null);
+      return;
+    }
+    if (drag) {
+      const days = daysBetween(drag.anchor, drag.hover);
+      if (drag.mode === "add") onBulkAdd(days);
+      else onBulkRemove(days);
+      setDrag(null);
+    }
   }
 
   function shiftMonth(offset: number) {
@@ -125,13 +188,53 @@ export function JourneyCalendar({
     });
   }
 
-  function selectToday() {
-    setView(monthOf(maxDate));
-    onChange({ start: maxDate, end: "" });
-  }
+  const sortedStarts = [...sessions].sort((a, b) =>
+    a.start.localeCompare(b.start),
+  );
+  const jumpTargets = {
+    start:
+      sortedStarts.find((session) => session.marksStart)?.start ??
+      sortedStarts[0]?.start ??
+      null,
+    latest: sortedStarts.at(-1)?.start ?? null,
+    finish:
+      [...sortedStarts].reverse().find((session) => session.marksFinish)
+        ?.start ?? null,
+  };
+  const jumps: Array<{
+    key: string;
+    label: string;
+    icon: typeof Rewind;
+    target: string | null;
+  }> = [
+    {
+      key: "start",
+      label: pt ? "Início" : "Start",
+      icon: Rewind,
+      target: jumpTargets.start,
+    },
+    {
+      key: "today",
+      label: pt ? "Hoje" : "Today",
+      icon: CalendarDays,
+      target: maxDate,
+    },
+    {
+      key: "latest",
+      label: pt ? "Último" : "Latest",
+      icon: Clock3,
+      target: jumpTargets.latest,
+    },
+    {
+      key: "finish",
+      label: pt ? "Fim" : "Finish",
+      icon: FastForward,
+      target: jumpTargets.finish,
+    },
+  ];
 
   return (
-    <div className="journey-calendar">
+    <div className="journey-calendar" data-busy={busy || undefined}>
       <header>
         <button
           type="button"
@@ -141,16 +244,7 @@ export function JourneyCalendar({
         >
           <ChevronLeft size={15} />
         </button>
-        <div>
-          <strong>{monthTitle}</strong>
-          <button
-            type="button"
-            className="journey-calendar-today"
-            onClick={selectToday}
-          >
-            {pt ? "Hoje" : "Today"}
-          </button>
-        </div>
+        <strong>{monthTitle}</strong>
         <button
           type="button"
           data-motion="none"
@@ -164,26 +258,28 @@ export function JourneyCalendar({
         ref={gridRef}
         className="journey-calendar-grid"
         aria-hidden="true"
-        data-dragging={drag ? "" : undefined}
+        data-dragging={drag ? drag.mode : undefined}
         onPointerDown={(event) => {
+          if (busy) return;
           const day = dayFromPoint(event.clientX, event.clientY);
           if (!day) return;
           event.preventDefault();
           gridRef.current?.setPointerCapture(event.pointerId);
-          setDrag({ anchor: day, hover: day });
+          pendingRef.current = {
+            day,
+            mode: sessionFor(day) ? "remove" : "add",
+          };
         }}
         onPointerMove={(event) => {
-          if (!drag) return;
+          if (!pendingRef.current && !drag) return;
           const day = dayFromPoint(event.clientX, event.clientY);
-          if (day && day !== drag.hover)
-            setDrag({ anchor: drag.anchor, hover: day });
+          if (day) extendTo(day);
         }}
-        onPointerUp={() => {
-          if (!drag) return;
-          commit(drag.anchor, drag.hover);
+        onPointerUp={finish}
+        onPointerCancel={() => {
+          pendingRef.current = null;
           setDrag(null);
         }}
-        onPointerCancel={() => setDrag(null)}
       >
         {weekdays.map((weekday, index) => (
           <span className="journey-calendar-weekday" key={index}>
@@ -197,39 +293,85 @@ export function JourneyCalendar({
           const key = dayKey(view.year, view.month, index + 1);
           const weekday = (leadingBlanks + index) % 7;
           const disabled = key > maxDate;
-          const selected =
-            Boolean(rangeStart) && key >= rangeStart && key <= rangeEnd;
-          const band = bandFor(key, weekday);
+          const session = sessionFor(key);
+          const level = intensity(session);
+          const time = session ? formatSessionTime(session.minutes) : null;
+          const prevLogged =
+            weekday > 0 &&
+            index > 0 &&
+            Boolean(sessionFor(dayKey(view.year, view.month, index)));
+          const nextLogged =
+            weekday < 6 &&
+            index + 1 < daysInMonth &&
+            Boolean(sessionFor(dayKey(view.year, view.month, index + 2)));
+          const dragged = Boolean(dragDays?.has(key));
+          const dragConnLeft =
+            dragged && weekday > 0 && dragDays?.has(shiftDay(key, -1));
+          const dragConnRight =
+            dragged && weekday < 6 && dragDays?.has(shiftDay(key, 1));
           return (
             <span
               key={key}
               data-day={disabled ? undefined : key}
               data-disabled={disabled || undefined}
-              data-selected={selected || undefined}
-              data-edge={
-                (selected && (key === rangeStart || key === rangeEnd)) ||
-                undefined
-              }
+              data-logged={Boolean(session) || undefined}
+              data-level={session ? level : undefined}
+              data-conn-left={(session && prevLogged) || undefined}
+              data-conn-right={(session && nextLogged) || undefined}
+              data-adding={(dragged && drag?.mode === "add") || undefined}
+              data-removing={(dragged && drag?.mode === "remove") || undefined}
+              data-sel-left={dragConnLeft || undefined}
+              data-sel-right={dragConnRight || undefined}
               data-today={key === maxDate || undefined}
             >
-              {index + 1}
-              {band && (
-                <i
-                  data-cap-start={band.capStart || undefined}
-                  data-cap-end={band.capEnd || undefined}
-                >
-                  {band.label ? (pt ? "Jogado" : "Played") : ""}
+              {(session?.marksStart || session?.marksFinish) && (
+                <i className="journey-day-marks">
+                  {session.marksStart && (
+                    <Play size={9} fill="currentColor" data-mark="start" />
+                  )}
+                  {session.marksFinish && (
+                    <Flag size={9} fill="currentColor" data-mark="finish" />
+                  )}
                 </i>
               )}
+              <b>{index + 1}</b>
+              {time && <small>{time}</small>}
             </span>
           );
         })}
       </div>
+      <div className="journey-calendar-jumps">
+        <span>{pt ? "Ir para" : "Jump to"}</span>
+        {jumps.map(({ key, label, icon: Icon, target }) => (
+          <button
+            key={key}
+            type="button"
+            disabled={!target}
+            onClick={() => target && setView(monthOf(target))}
+          >
+            <Icon size={12} /> {label}
+          </button>
+        ))}
+      </div>
       <p className="journey-calendar-hint">
         {pt
-          ? "Toque em um dia ou arraste para marcar um intervalo."
-          : "Tap a day or drag to mark a range."}
+          ? "Toque em um dia para editar a sessão. Arraste para adicionar vários dias — ou remover, começando por um dia jogado."
+          : "Tap a day to edit its session. Drag to add several days — or remove, starting from a played day."}
       </p>
+      <div
+        className="journey-drag-pill"
+        data-visible={drag ? "" : undefined}
+        data-mode={drag?.mode}
+        aria-hidden="true"
+      >
+        {drag?.mode === "remove"
+          ? pt
+            ? `Removendo ${dragDays?.size ?? 0} ${(dragDays?.size ?? 0) === 1 ? "dia" : "dias"}`
+            : `Removing ${dragDays?.size ?? 0} ${(dragDays?.size ?? 0) === 1 ? "day" : "days"}`
+          : pt
+            ? `Adicionando ${dragDays?.size ?? 0} ${(dragDays?.size ?? 0) === 1 ? "dia" : "dias"}`
+            : `Adding ${dragDays?.size ?? 0} ${(dragDays?.size ?? 0) === 1 ? "day" : "days"}`}
+      </div>
     </div>
   );
 }

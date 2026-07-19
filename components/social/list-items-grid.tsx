@@ -108,6 +108,7 @@ export function ListItemsGrid({
             data-dragged={isDragged || undefined}
             data-drop-before={showBefore || undefined}
             data-drop-after={showAfter || undefined}
+            style={{ "--item-index": index % 12 } as React.CSSProperties}
           >
             <span>{String(index + 1).padStart(2, "0")}</span>
             {isOwner && (

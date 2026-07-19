@@ -165,7 +165,10 @@ export default async function ProfilePage({ params }: Props) {
   }).format(new Date(profile.created_at));
   return (
     <main className="profile-page">
-      <div className="profile-banner">
+      <div
+        className="profile-banner"
+        data-empty={!profile.banner_url || undefined}
+      >
         {profile.banner_url && (
           <Image
             src={profile.banner_url}
@@ -205,15 +208,72 @@ export default async function ProfilePage({ params }: Props) {
                 <h1>{profile.display_name || `@${profile.username}`}</h1>
                 {profile.verified && <VerifiedBadge lang={lang} />}
               </div>
-              <p className="profile-handle">
-                @{profile.username}
-                {profile.pronouns ? ` · ${profile.pronouns}` : ""}
-              </p>
+              <div className="profile-meta-row">
+                <p className="profile-handle">
+                  @{profile.username}
+                  {profile.pronouns ? ` · ${profile.pronouns}` : ""}
+                </p>
+                <p className="profile-joined">
+                  <CalendarDays size={13} />{" "}
+                  {pt ? "No uloggd desde" : "On uloggd since"} {joined}
+                </p>
+              </div>
             </div>
+          </div>
+          {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+          <div className="profile-action-cluster">
+            {(profile.youtube_username ||
+              profile.instagram_username ||
+              profile.twitter_username) && (
+              <nav
+                className="profile-social-links"
+                aria-label={pt ? "Redes sociais" : "Social networks"}
+              >
+                {profile.youtube_username && (
+                  <a
+                    data-network="youtube"
+                    href={`https://youtube.com/@${profile.youtube_username}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`YouTube · @${profile.youtube_username}`}
+                  >
+                    <FaYoutube size={19} />
+                  </a>
+                )}
+                {profile.instagram_username && (
+                  <a
+                    data-network="instagram"
+                    href={`https://instagram.com/${profile.instagram_username}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Instagram · @${profile.instagram_username}`}
+                  >
+                    <FaInstagram size={19} />
+                  </a>
+                )}
+                {profile.twitter_username && (
+                  <a
+                    data-network="twitter"
+                    href={`https://x.com/${profile.twitter_username}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Twitter / X · @${profile.twitter_username}`}
+                  >
+                    <FaXTwitter size={18} />
+                  </a>
+                )}
+              </nav>
+            )}
+            <ProfileActions
+              profileId={profile.id}
+              viewerId={user?.id ?? null}
+              username={profile.username}
+              lang={lang}
+            />
             {user?.id === profile.id ? (
               <Link
                 className="profile-edit-link"
-                href={`/${lang}/settings/profile`}
+                href={`/${lang}/settings?tab=profile`}
               >
                 <Settings size={15} /> {pt ? "Editar perfil" : "Edit profile"}
               </Link>
@@ -226,59 +286,6 @@ export default async function ProfilePage({ params }: Props) {
               />
             )}
           </div>
-          {profile.bio && <p className="profile-bio">{profile.bio}</p>}
-          <p className="profile-joined">
-            <CalendarDays size={13} />{" "}
-            {pt ? "No uloggd desde" : "On uloggd since"} {joined}
-          </p>
-          {(profile.youtube_username ||
-            profile.instagram_username ||
-            profile.twitter_username) && (
-            <nav
-              className="profile-social-links"
-              aria-label={pt ? "Redes sociais" : "Social networks"}
-            >
-              {profile.youtube_username && (
-                <a
-                  data-network="youtube"
-                  href={`https://youtube.com/@${profile.youtube_username}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={`YouTube · @${profile.youtube_username}`}
-                >
-                  <FaYoutube size={19} />
-                </a>
-              )}
-              {profile.instagram_username && (
-                <a
-                  data-network="instagram"
-                  href={`https://instagram.com/${profile.instagram_username}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={`Instagram · @${profile.instagram_username}`}
-                >
-                  <FaInstagram size={19} />
-                </a>
-              )}
-              {profile.twitter_username && (
-                <a
-                  data-network="twitter"
-                  href={`https://x.com/${profile.twitter_username}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={`Twitter / X · @${profile.twitter_username}`}
-                >
-                  <FaXTwitter size={18} />
-                </a>
-              )}
-            </nav>
-          )}
-          <ProfileActions
-            profileId={profile.id}
-            viewerId={user?.id ?? null}
-            username={profile.username}
-            lang={lang}
-          />
         </div>
       </header>
       <nav
