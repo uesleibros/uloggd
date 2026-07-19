@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import {
   ChevronRight,
   Clock3,
+  Layers3,
   LoaderCircle,
   Search,
   SlidersHorizontal,
@@ -19,12 +20,26 @@ import type { Dictionary } from "@/app/[lang]/dictionaries";
 import type { GameSearchResult } from "@/lib/igdb";
 import { SpawndLogo } from "./spawnd-logo";
 
-const searchCache = new Map<string, GameSearchResult[]>();
+type SearchUser = {
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  verified: boolean;
+};
+type SearchList = { id: string; name: string; owner: string | null };
+type SearchPayload = {
+  results: GameSearchResult[];
+  users: SearchUser[];
+  lists: SearchList[];
+};
+
+const emptyPayload: SearchPayload = { results: [], users: [], lists: [] };
+const searchCache = new Map<string, SearchPayload>();
 const RECENT_SEARCHES_KEY = "uloggd:recent-games";
 
 function useGameSearch(cacheScope: string) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<GameSearchResult[]>([]);
+  const [payload, setPayload] = useState<SearchPayload>(emptyPayload);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">(
     "idle",
   );
@@ -50,7 +65,7 @@ function useGameSearch(cacheScope: string) {
       const cached = searchCache.get(cacheKey);
       if (cached) {
         if (currentQueryRef.current !== normalized) return;
-        setResults(cached);
+        setPayload(cached);
         setStatus("ready");
         return;
       }
@@ -63,20 +78,22 @@ function useGameSearch(cacheScope: string) {
           },
         );
         if (!response.ok) throw new Error("Search request failed");
-        const data = (await response.json()) as {
-          results?: GameSearchResult[];
+        const data = (await response.json()) as Partial<SearchPayload>;
+        const next: SearchPayload = {
+          results: Array.isArray(data.results) ? data.results : [],
+          users: Array.isArray(data.users) ? data.users : [],
+          lists: Array.isArray(data.lists) ? data.lists : [],
         };
-        const nextResults = Array.isArray(data.results) ? data.results : [];
-        searchCache.set(cacheKey, nextResults);
+        searchCache.set(cacheKey, next);
         if (currentQueryRef.current !== normalized) return;
-        setResults(nextResults);
+        setPayload(next);
         setStatus("ready");
       } catch (error) {
         if (
           (error as Error).name !== "AbortError" &&
           currentQueryRef.current === normalized
         ) {
-          setResults([]);
+          setPayload(emptyPayload);
           setStatus("error");
         }
       }
@@ -94,18 +111,27 @@ function useGameSearch(cacheScope: string) {
       const cached = searchCache.get(`${cacheScope}:${normalized}`);
       currentQueryRef.current = normalized;
       setQuery(value);
-      setResults(cached ?? []);
+      setPayload(cached ?? emptyPayload);
       setStatus(normalized.length < 2 ? "idle" : cached ? "ready" : "loading");
     },
     [cacheScope],
   );
 
-  return { query, setQuery: updateQuery, results, status };
+  return {
+    query,
+    setQuery: updateQuery,
+    results: payload.results,
+    users: payload.users,
+    lists: payload.lists,
+    status,
+  };
 }
 
 function ResultList({
   dictionary: d,
   results,
+  users,
+  lists,
   status,
   query,
   activeIndex,
@@ -113,11 +139,14 @@ function ResultList({
   listId,
   lang,
   onSelect,
+  onNavigate,
   recent,
   onClearRecent,
 }: {
   dictionary: Dictionary;
   results: GameSearchResult[];
+  users: SearchUser[];
+  lists: SearchList[];
   status: "idle" | "loading" | "ready" | "error";
   query: string;
   activeIndex: number;
@@ -125,6 +154,7 @@ function ResultList({
   listId: string;
   lang: "pt-BR" | "en";
   onSelect?: (game: GameSearchResult) => void;
+  onNavigate?: () => void;
   recent: GameSearchResult[];
   onClearRecent: () => void;
 }) {
@@ -206,15 +236,23 @@ function ResultList({
     ) : (
       <div className="search-message">{d.search.start}</div>
     );
-  if (status === "ready" && results.length === 0)
+  if (
+    status === "ready" &&
+    results.length === 0 &&
+    users.length === 0 &&
+    lists.length === 0
+  )
     return <div className="search-message">{d.search.empty}</div>;
 
+  const pt = lang === "pt-BR";
   return (
     <div className="search-results">
-      <div className="search-results-label">
-        <span>{d.search.results}</span>
-        <span>{results.length}</span>
-      </div>
+      {results.length > 0 && (
+        <div className="search-results-label">
+          <span>{d.search.results}</span>
+          <span>{results.length}</span>
+        </div>
+      )}
       <div role="listbox" id={listId} aria-label={d.search.results}>
         {results.map((game, index) => (
           <Link
@@ -262,6 +300,77 @@ function ResultList({
           </Link>
         ))}
       </div>
+      {users.length > 0 && (
+        <>
+          <div className="search-results-label">
+            <span>{pt ? "Usuários" : "Users"}</span>
+          </div>
+          <div role="list">
+            {users.map((person) => (
+              <Link
+                key={person.username}
+                href={`/${lang}/u/${person.username}`}
+                className="search-result"
+                onClick={onNavigate}
+              >
+                <span className="search-result-cover search-result-avatar">
+                  {person.avatar_url ? (
+                    <Image
+                      src={person.avatar_url}
+                      alt=""
+                      fill
+                      sizes="44px"
+                      unoptimized
+                    />
+                  ) : (
+                    person.username.slice(0, 1).toUpperCase()
+                  )}
+                </span>
+                <span className="search-result-copy">
+                  <strong>
+                    {person.display_name || `@${person.username}`}
+                  </strong>
+                  <small>
+                    @{person.username}
+                    {person.verified && (pt ? " · Verificado" : " · Verified")}
+                  </small>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
+      {lists.length > 0 && (
+        <>
+          <div className="search-results-label">
+            <span>{pt ? "Listas" : "Lists"}</span>
+          </div>
+          <div role="list">
+            {lists.map((list) => (
+              <Link
+                key={list.id}
+                href={`/${lang}/lists/${list.id}`}
+                className="search-result"
+                onClick={onNavigate}
+              >
+                <span className="search-result-cover search-result-list-mark">
+                  <Layers3 size={18} />
+                </span>
+                <span className="search-result-copy">
+                  <strong>{list.name}</strong>
+                  <small>
+                    {list.owner
+                      ? `@${list.owner} · ${pt ? "Lista" : "List"}`
+                      : pt
+                        ? "Lista"
+                        : "List"}
+                  </small>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -280,7 +389,8 @@ function SearchSurface({
   cacheScope: string;
 }) {
   const router = useRouter();
-  const { query, setQuery, results, status } = useGameSearch(cacheScope);
+  const { query, setQuery, results, users, lists, status } =
+    useGameSearch(cacheScope);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [expanded, setExpanded] = useState(mobile);
   const [recent, setRecent] = useState<GameSearchResult[]>([]);
@@ -473,6 +583,8 @@ function SearchSurface({
           <ResultList
             dictionary={d}
             results={results}
+            users={users}
+            lists={lists}
             status={status}
             query={query}
             activeIndex={activeIndex}
@@ -483,6 +595,10 @@ function SearchSurface({
             onClearRecent={clearRecent}
             onSelect={(game) => {
               remember(game);
+              setExpanded(false);
+              onSelect?.();
+            }}
+            onNavigate={() => {
               setExpanded(false);
               onSelect?.();
             }}

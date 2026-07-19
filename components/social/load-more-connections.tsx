@@ -3,40 +3,49 @@
 import { LoaderCircle, Plus } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getConnectionsPage, type ConnectionTab } from "@/lib/connections";
 import { ConnectionCard, type ConnectionPerson } from "./connection-card";
 
 export function LoadMoreConnections({
-  ids,
+  profileId,
+  tab,
   lang,
   pageSize = 24,
+  initialCursor,
+  hasMore,
 }: {
-  ids: string[];
+  profileId: string;
+  tab: ConnectionTab;
   lang: "pt-BR" | "en";
   pageSize?: number;
+  initialCursor: string | null;
+  hasMore: boolean;
 }) {
   const pt = lang === "pt-BR";
   const [extra, setExtra] = useState<ConnectionPerson[]>([]);
-  const [loaded, setLoaded] = useState(0);
+  const [cursor, setCursor] = useState(initialCursor);
+  const [done, setDone] = useState(!hasMore || !initialCursor);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
-  const done = loaded >= ids.length;
 
   async function loadMore() {
-    if (pending || done) return;
+    if (pending || done || !cursor) return;
     setPending(true);
     setError(false);
-    const chunk = ids.slice(loaded, loaded + pageSize);
-    const { data, error: actionError } = await createClient()
-      .from("profiles")
-      .select("id,username,display_name,bio,avatar_url,verified")
-      .in("id", chunk);
-    if (actionError) setError(true);
-    else {
-      setExtra((current) => [
-        ...current,
-        ...((data ?? []) as ConnectionPerson[]),
-      ]);
-      setLoaded((current) => current + chunk.length);
+    try {
+      const rows = await getConnectionsPage(createClient(), {
+        profileId,
+        tab,
+        before: cursor,
+        limit: pageSize,
+      });
+      if (rows.length < pageSize) setDone(true);
+      if (rows.length) {
+        setCursor(rows[rows.length - 1].created_at);
+        setExtra((current) => [...current, ...rows.map((row) => row.person)]);
+      }
+    } catch {
+      setError(true);
     }
     setPending(false);
   }

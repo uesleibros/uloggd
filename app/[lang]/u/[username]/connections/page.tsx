@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConnectionCard } from "@/components/social/connection-card";
 import { LoadMoreConnections } from "@/components/social/load-more-connections";
+import { getConnectionsPage } from "@/lib/connections";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../../dictionaries";
 import "../../../profile.css";
@@ -42,37 +43,27 @@ export default async function ProfileConnectionsPage({
   const requested = await searchParams;
   const query = requested.q?.trim() ?? "";
   const activeTab = requested.tab === "following" ? "following" : "followers";
-  const [followersResult, followingResult] = await Promise.all([
+  // Tab counts are head counts and the page itself is keyset-paginated on
+  // follows(created_at); searches filter server-side and are capped at 60.
+  const [followersResult, followingResult, rows] = await Promise.all([
     supabase
       .from("follows")
-      .select("follower_id")
+      .select("follower_id", { count: "exact", head: true })
       .eq("following_id", profile.id),
     supabase
       .from("follows")
-      .select("following_id")
+      .select("following_id", { count: "exact", head: true })
       .eq("follower_id", profile.id),
+    getConnectionsPage(supabase, {
+      profileId: profile.id,
+      tab: activeTab,
+      query: query || undefined,
+      limit: query ? 60 : PAGE_SIZE,
+    }),
   ]);
-  const ids =
-    activeTab === "followers"
-      ? (followersResult.data ?? []).map((item) => item.follower_id)
-      : (followingResult.data ?? []).map((item) => item.following_id);
-  const normalizedQuery = query.toLocaleLowerCase(lang);
-  // Searches scan the whole network; without one, only the first page is
-  // hydrated and the rest loads on demand.
-  const visibleIds = normalizedQuery ? ids : ids.slice(0, PAGE_SIZE);
-  const remainingIds = normalizedQuery ? [] : ids.slice(PAGE_SIZE);
-  const { data: fetchedPeople } = visibleIds.length
-    ? await supabase
-        .from("profiles")
-        .select("id,username,display_name,bio,avatar_url,verified")
-        .in("id", visibleIds)
-    : { data: [] };
-  const people = (fetchedPeople ?? []).filter(
-    (person) =>
-      !normalizedQuery ||
-      person.username.toLocaleLowerCase(lang).includes(normalizedQuery) ||
-      person.display_name?.toLocaleLowerCase(lang).includes(normalizedQuery),
-  );
+  const people = rows.map((row) => row.person);
+  const initialCursor = rows.length ? rows[rows.length - 1].created_at : null;
+  const hasMore = !query && rows.length === PAGE_SIZE;
   const pt = lang === "pt-BR";
   const name = profile.display_name || `@${profile.username}`;
 
@@ -104,14 +95,14 @@ export default async function ProfileConnectionsPage({
           aria-current={activeTab === "followers" ? "page" : undefined}
         >
           {pt ? "Seguidores" : "Followers"}{" "}
-          <span>{followersResult.data?.length ?? 0}</span>
+          <span>{followersResult.count ?? 0}</span>
         </Link>
         <Link
           href={`/${lang}/u/${profile.username}/connections?tab=following${query ? `&q=${encodeURIComponent(query)}` : ""}`}
           aria-current={activeTab === "following" ? "page" : undefined}
         >
           {pt ? "Seguindo" : "Following"}{" "}
-          <span>{followingResult.data?.length ?? 0}</span>
+          <span>{followingResult.count ?? 0}</span>
         </Link>
       </nav>
       <form className="profile-connections-search">
@@ -135,13 +126,14 @@ export default async function ProfileConnectionsPage({
               <ConnectionCard key={person.id} person={person} lang={lang} />
             ))}
           </div>
-          {remainingIds.length > 0 && (
-            <LoadMoreConnections
-              ids={remainingIds}
-              lang={lang}
-              pageSize={PAGE_SIZE}
-            />
-          )}
+          <LoadMoreConnections
+            profileId={profile.id}
+            tab={activeTab}
+            lang={lang}
+            pageSize={PAGE_SIZE}
+            initialCursor={initialCursor}
+            hasMore={hasMore}
+          />
         </>
       ) : (
         <div className="social-empty profile-subpage-empty">

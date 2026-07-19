@@ -39,14 +39,23 @@ after the loading/skeleton consistency pass.
 - Game logs page paginated: header totals come from a lightweight scan of all
   sessions and the hydrated stream loads 30 at a time.
 
+## Done in the network/search pass (July 2026)
+
+- Connections page no longer loads every follow id: tab counts are head
+  counts, pages are keyset-paginated on `follows(created_at)` with the person
+  embedded in one query, and searches filter server-side (capped at 60).
+- Quick search surfaces users and public lists alongside games.
+- Client error boundaries report to `/api/telemetry` so production failures
+  reach the server logs.
+
 ## Next: polish and correctness
 
-1. **Profile subpage counts.** The connections page still loads every follow
-   id to render tab counts; move to head counts plus keyset pagination on the
-   follows table itself.
-2. **Search users and lists.** Global search only returns games today.
-3. **Error telemetry.** `error.tsx` logs to the console only; add a reporting
-   endpoint so production errors are visible.
+1. **Search keyboard navigation across sections.** Arrow keys only walk game
+   results; extend the combobox index to the users and lists sections.
+2. **Followers-you-know.** Connections could highlight mutuals first using the
+   viewer's own follow graph.
+3. **Error telemetry storage.** `/api/telemetry` only logs; consider a
+   Supabase table with retention if log scraping proves insufficient.
 
 ## Later: features
 

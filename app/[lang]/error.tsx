@@ -17,6 +17,17 @@ export default function Error({
   const pt = lang === "pt-BR";
   useEffect(() => {
     console.error(error);
+    void fetch("/api/telemetry", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: String(error.message ?? error).slice(0, 500),
+        digest: error.digest,
+        stack: error.stack?.slice(0, 4000),
+        path: window.location.pathname,
+      }),
+      keepalive: true,
+    }).catch(() => undefined);
   }, [error]);
   return (
     <main className="not-found-page">

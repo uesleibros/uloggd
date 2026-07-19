@@ -1407,6 +1407,24 @@ html[data-sidebar-ready] .account-button > svg {
 .search-result-cover img {
   object-fit: cover;
 }
+.search-result-avatar,
+.search-result-list-mark {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  align-self: center;
+  color: var(--screen-muted);
+  font-size: 15px;
+  font-weight: 700;
+}
+.search-result-avatar {
+  border-radius: 50%;
+}
+.search-result-list-mark {
+  border-radius: 8px;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
 .search-result-copy {
   min-width: 0;
 }

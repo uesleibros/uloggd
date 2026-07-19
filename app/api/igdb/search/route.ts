@@ -48,8 +48,44 @@ export async function GET(request: NextRequest) {
         lang: "en",
       }).available,
     }));
+    // Beyond the game catalog, quick search also surfaces people and public
+    // lists; id refreshes (recently viewed) skip this.
+    const sanitized = query.replace(/[%_,()]/g, "").trim();
+    const [{ data: users }, { data: lists }] =
+      ids.length === 0 && sanitized.length >= 2
+        ? await Promise.all([
+            supabase
+              .from("profiles")
+              .select("username,display_name,avatar_url,verified")
+              .or(
+                `username.ilike.%${sanitized}%,display_name.ilike.%${sanitized}%`,
+              )
+              .not("username", "is", null)
+              .limit(4),
+            supabase
+              .from("game_lists")
+              .select(
+                "id,name,visibility,owner:profiles!game_lists_profile_id_fkey(username)",
+              )
+              .eq("visibility", "PUBLIC")
+              .ilike("name", `%${sanitized}%`)
+              .order("updated_at", { ascending: false })
+              .limit(4),
+          ])
+        : [{ data: [] }, { data: [] }];
     return Response.json(
-      { results: personalizedResults },
+      {
+        results: personalizedResults,
+        users: users ?? [],
+        lists: (lists ?? []).map((list) => {
+          const owner = Array.isArray(list.owner) ? list.owner[0] : list.owner;
+          return {
+            id: list.id,
+            name: list.name,
+            owner: owner?.username ?? null,
+          };
+        }),
+      },
       {
         headers: {
           "Cache-Control": user
