@@ -5,6 +5,7 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpToLine,
+  LoaderCircle,
   StickyNote,
   X,
 } from "lucide-react";
@@ -29,13 +30,15 @@ export function ListItemTools({
 }) {
   const pt = lang === "pt-BR";
   const router = useRouter();
-  const [pending, setPending] = useState(false);
+  const [pending, setPending] = useState<"up" | "down" | "top" | "note" | null>(
+    null,
+  );
   const [noteOpen, setNoteOpen] = useState(false);
   const [error, setError] = useState(false);
 
   async function move(direction: "up" | "down" | "top") {
     if (pending) return;
-    setPending(true);
+    setPending(direction);
     setError(false);
     const { error: actionError } = await createClient().rpc("move_list_item", {
       target_list: listId,
@@ -44,12 +47,12 @@ export function ListItemTools({
     });
     if (actionError) setError(true);
     else router.refresh();
-    setPending(false);
+    setPending(null);
   }
 
   async function saveNote(formData: FormData) {
     if (pending) return;
-    setPending(true);
+    setPending("note");
     setError(false);
     const { error: actionError } = await createClient().rpc(
       "set_list_item_note",
@@ -64,7 +67,7 @@ export function ListItemTools({
       setNoteOpen(false);
       router.refresh();
     }
-    setPending(false);
+    setPending(null);
   }
 
   return (
@@ -72,27 +75,39 @@ export function ListItemTools({
       <button
         type="button"
         onClick={() => move("top")}
-        disabled={pending || first}
+        disabled={Boolean(pending) || first}
         aria-label={pt ? "Mover para o topo" : "Move to top"}
         title={pt ? "Topo" : "Top"}
       >
-        <ArrowUpToLine size={13} />
+        {pending === "top" ? (
+          <LoaderCircle className="spin" size={13} aria-hidden />
+        ) : (
+          <ArrowUpToLine size={13} />
+        )}
       </button>
       <button
         type="button"
         onClick={() => move("up")}
-        disabled={pending || first}
+        disabled={Boolean(pending) || first}
         aria-label={pt ? "Mover para cima" : "Move up"}
       >
-        <ArrowUp size={13} />
+        {pending === "up" ? (
+          <LoaderCircle className="spin" size={13} aria-hidden />
+        ) : (
+          <ArrowUp size={13} />
+        )}
       </button>
       <button
         type="button"
         onClick={() => move("down")}
-        disabled={pending || last}
+        disabled={Boolean(pending) || last}
         aria-label={pt ? "Mover para baixo" : "Move down"}
       >
-        <ArrowDown size={13} />
+        {pending === "down" ? (
+          <LoaderCircle className="spin" size={13} aria-hidden />
+        ) : (
+          <ArrowDown size={13} />
+        )}
       </button>
       <button
         type="button"
@@ -114,7 +129,9 @@ export function ListItemTools({
               <div>
                 <span>{pt ? "NOTA DO ITEM" : "ITEM NOTE"}</span>
                 <Dialog.Title>
-                  {pt ? "Por que este jogo está aqui?" : "Why is this game here?"}
+                  {pt
+                    ? "Por que este jogo está aqui?"
+                    : "Why is this game here?"}
                 </Dialog.Title>
               </div>
               <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
@@ -147,8 +164,11 @@ export function ListItemTools({
                 <Dialog.Close type="button">
                   {pt ? "Cancelar" : "Cancel"}
                 </Dialog.Close>
-                <button type="submit" disabled={pending}>
-                  {pending
+                <button type="submit" disabled={Boolean(pending)}>
+                  {pending === "note" && (
+                    <LoaderCircle className="spin" size={15} aria-hidden />
+                  )}
+                  {pending === "note"
                     ? pt
                       ? "Salvando…"
                       : "Saving…"

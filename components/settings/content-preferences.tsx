@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Images } from "lucide-react";
+import { Check, Images, LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -89,7 +89,13 @@ export function ContentPreferences({
               <strong>{option.title}</strong>
               <small>{option.description}</small>
             </span>
-            <i aria-hidden>{scope === option.id && <Check size={14} />}</i>
+            <i aria-hidden>
+              {pending && scope === option.id ? (
+                <LoaderCircle className="spin" size={14} />
+              ) : (
+                scope === option.id && <Check size={14} />
+              )}
+            </i>
           </button>
         ))}
       </div>

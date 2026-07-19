@@ -1,7 +1,13 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { AlertTriangle, UserCheck, UserPlus, X } from "lucide-react";
+import {
+  AlertTriangle,
+  LoaderCircle,
+  UserCheck,
+  UserPlus,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -75,7 +81,13 @@ export function FollowButton({
         onClick={toggle}
         disabled={Boolean(pending)}
       >
-        {following ? <UserCheck size={15} /> : <UserPlus size={15} />}
+        {pending ? (
+          <LoaderCircle className="spin" size={15} aria-hidden />
+        ) : following ? (
+          <UserCheck size={15} />
+        ) : (
+          <UserPlus size={15} />
+        )}
         {pending
           ? pending === "follow"
             ? pt
@@ -122,6 +134,9 @@ export function FollowButton({
                 disabled={Boolean(pending)}
                 onClick={() => void unfollow()}
               >
+                {pending === "unfollow" && (
+                  <LoaderCircle className="spin" size={15} aria-hidden />
+                )}
                 {pending === "unfollow"
                   ? pt
                     ? "Deixando de seguir…"

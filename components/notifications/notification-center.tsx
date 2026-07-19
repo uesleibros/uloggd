@@ -9,6 +9,7 @@ import {
   BellOff,
   CheckCheck,
   Heart,
+  LoaderCircle,
   Settings2,
   UserPlus,
   X,
@@ -231,7 +232,10 @@ export function NotificationCenter({
                 </label>
               ))}
               {saving && (
-                <span className="notification-saving">{labels.saving}</span>
+                <span className="notification-saving">
+                  <LoaderCircle className="spin" size={13} aria-hidden />{" "}
+                  {labels.saving}
+                </span>
               )}
             </div>
           ) : (

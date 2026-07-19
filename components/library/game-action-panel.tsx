@@ -1,7 +1,16 @@
 "use client";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { Check, ChevronDown, Clock3, Gift, Heart, Play, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Clock3,
+  Gift,
+  Heart,
+  LoaderCircle,
+  Play,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "./star-rating";
@@ -134,9 +143,13 @@ export function GameActionPanel({
             type="button"
             disabled={Boolean(pending)}
           >
-            <span
-              className={`quick-status-dot status-${state?.status?.toLowerCase()}`}
-            />
+            {pending === "status" ? (
+              <LoaderCircle className="spin" size={14} aria-hidden />
+            ) : (
+              <span
+                className={`quick-status-dot status-${state?.status?.toLowerCase()}`}
+              />
+            )}
             {state && state.status !== "BACKLOG"
               ? labels[state.status]
               : pt
@@ -190,14 +203,18 @@ export function GameActionPanel({
           disabled={Boolean(pending)}
           onClick={() => update(key, !state?.[key])}
         >
-          <Icon
-            size={14}
-            fill={
-              key === "playing" || (key === "liked" && state?.liked)
-                ? "currentColor"
-                : "none"
-            }
-          />
+          {pending === key ? (
+            <LoaderCircle className="spin" size={14} aria-hidden />
+          ) : (
+            <Icon
+              size={14}
+              fill={
+                key === "playing" || (key === "liked" && state?.liked)
+                  ? "currentColor"
+                  : "none"
+              }
+            />
+          )}
           {label}
         </button>
       ))}

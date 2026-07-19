@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { Pencil, Trash2, X } from "lucide-react";
+import { LoaderCircle, Pencil, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -92,14 +92,22 @@ export function ListOwnerControls({
           data-armed={armed || undefined}
           aria-live="polite"
         >
-          <Trash2 size={14} />{" "}
-          {armed
+          {pending ? (
+            <LoaderCircle className="spin" size={14} aria-hidden />
+          ) : (
+            <Trash2 size={14} />
+          )}{" "}
+          {pending
             ? pt
-              ? "Confirmar exclusão?"
-              : "Confirm deletion?"
-            : pt
-              ? "Excluir"
-              : "Delete"}
+              ? "Excluindo…"
+              : "Deleting…"
+            : armed
+              ? pt
+                ? "Confirmar exclusão?"
+                : "Confirm deletion?"
+              : pt
+                ? "Excluir"
+                : "Delete"}
         </button>
       </div>
       <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -157,6 +165,9 @@ export function ListOwnerControls({
                   {pt ? "Cancelar" : "Cancel"}
                 </Dialog.Close>
                 <button type="submit" disabled={pending}>
+                  {pending && (
+                    <LoaderCircle className="spin" size={15} aria-hidden />
+                  )}
                   {pending
                     ? pt
                       ? "Salvando…"
@@ -203,7 +214,11 @@ export function RemoveListItem({
   return (
     <div className="list-item-owner-action">
       <button type="button" onClick={remove} disabled={pending}>
-        <X size={13} />{" "}
+        {pending ? (
+          <LoaderCircle className="spin" size={13} aria-hidden />
+        ) : (
+          <X size={13} />
+        )}{" "}
         {pending
           ? pt
             ? "Removendo…"

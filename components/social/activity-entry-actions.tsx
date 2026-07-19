@@ -1,9 +1,9 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { Flag, Pencil, Play, Trash2, X } from "lucide-react";
+import { Flag, LoaderCircle, Pencil, Play, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { SocialEntry } from "./activity-stream";
 import { EditReviewDialog } from "./edit-review-dialog";
@@ -23,6 +23,13 @@ export function ActivityEntryActions({
   const [editing, setEditing] = useState(false);
   const [pending, setPending] = useState(false);
   const [armed, setArmed] = useState(false);
+  const disarmTimer = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (disarmTimer.current) window.clearTimeout(disarmTimer.current);
+    },
+    [],
+  );
   const [error, setError] = useState<string | null>(null);
   const [journeyStart, setJourneyStart] = useState(entry.playedOn ?? today);
   const [journeyEnd, setJourneyEnd] = useState(entry.endedOn ?? "");
@@ -40,9 +47,11 @@ export function ActivityEntryActions({
     if (pending) return;
     if (!armed) {
       setArmed(true);
-      window.setTimeout(() => setArmed(false), 4000);
+      if (disarmTimer.current) window.clearTimeout(disarmTimer.current);
+      disarmTimer.current = window.setTimeout(() => setArmed(false), 4000);
       return;
     }
+    if (disarmTimer.current) window.clearTimeout(disarmTimer.current);
     setArmed(false);
     setPending(true);
     setError(null);
@@ -100,7 +109,11 @@ export function ActivityEntryActions({
           disabled={pending}
           data-armed={armed || undefined}
         >
-          <Trash2 size={14} />{" "}
+          {pending ? (
+            <LoaderCircle className="spin" size={14} aria-hidden />
+          ) : (
+            <Trash2 size={14} />
+          )}{" "}
           {pending
             ? pt
               ? "Removendo…"
@@ -276,6 +289,9 @@ export function ActivityEntryActions({
                     {pt ? "Cancelar" : "Cancel"}
                   </Dialog.Close>
                   <button type="submit" disabled={pending}>
+                    {pending && (
+                      <LoaderCircle className="spin" size={15} aria-hidden />
+                    )}
                     {pending
                       ? pt
                         ? "Salvando…"

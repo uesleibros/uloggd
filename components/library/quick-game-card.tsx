@@ -8,6 +8,7 @@ import {
   Clock3,
   Gift,
   Heart,
+  LoaderCircle,
   MoreHorizontal,
   Play,
   Star,
@@ -254,7 +255,11 @@ export function QuickGameCard({
               disabled={Boolean(pending)}
               onClick={() => update("status", played ? "BACKLOG" : "COMPLETED")}
             >
-              <Check size={16} />
+              {pending === "status" ? (
+                <LoaderCircle className="spin" size={16} aria-hidden />
+              ) : (
+                <Check size={16} />
+              )}
             </button>
             <button
               type="button"
@@ -266,7 +271,11 @@ export function QuickGameCard({
               disabled={Boolean(pending)}
               onClick={() => update("backlog", !state?.backlog)}
             >
-              <Clock3 size={15} />
+              {pending === "backlog" ? (
+                <LoaderCircle className="spin" size={15} aria-hidden />
+              ) : (
+                <Clock3 size={15} />
+              )}
             </button>
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild>
@@ -276,7 +285,11 @@ export function QuickGameCard({
                   aria-label={pt ? "Mais ações" : "More actions"}
                   disabled={Boolean(pending)}
                 >
-                  <MoreHorizontal size={16} />
+                  {pending && pending !== "status" && pending !== "backlog" ? (
+                    <LoaderCircle className="spin" size={16} aria-hidden />
+                  ) : (
+                    <MoreHorizontal size={16} />
+                  )}
                 </button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
