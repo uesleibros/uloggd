@@ -113,10 +113,10 @@
   border: 1px solid rgb(239 83 92 / 0.24);
   border-radius: 9px;
   background: rgb(239 83 92 / 0.08);
-  color: #ff747c;
+  color: var(--danger-text);
 }
 .settings-danger-copy small {
-  color: #ff747c;
+  color: var(--danger-text);
   font-size: 10px;
   font-weight: 680;
   letter-spacing: 0.08em;
@@ -140,7 +140,7 @@
   border: 1px solid rgb(239 83 92 / 0.35);
   border-radius: 8px;
   background: transparent;
-  color: #ff7f86;
+  color: var(--danger-text);
   font-size: 11px;
   font-weight: 650;
   transition:
@@ -152,7 +152,7 @@
 .settings-delete-trigger:hover {
   border-color: rgb(255 116 124 / 0.68);
   background: rgb(239 83 92 / 0.1);
-  color: #ff9ba0;
+  color: var(--danger-text);
   transform: translateY(-1px);
 }
 .settings-delete-trigger:active {
@@ -222,7 +222,7 @@
   border: 0;
   border-radius: 7px;
   background: transparent;
-  color: #e2aaaa;
+  color: var(--danger-text);
   cursor: pointer;
 }
 .settings-passkey-list button:hover {
@@ -253,7 +253,7 @@
   cursor: pointer;
 }
 .settings-security-error {
-  color: #e2aaaa;
+  color: var(--danger-text);
   font-size: 11px;
 }
 .settings-privacy-stack {
@@ -467,7 +467,7 @@
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: #e2aaaa;
+  color: var(--danger-text);
   transition:
     transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
     background-color 140ms ease-out;

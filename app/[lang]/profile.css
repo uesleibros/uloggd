@@ -361,7 +361,7 @@
 .profile-crop-error {
   margin: 0;
   padding: 10px 20px 0;
-  color: #e2aaaa;
+  color: var(--danger-text);
   font-size: 11px;
 }
 .profile-crop-modal > footer {
@@ -746,7 +746,7 @@
 .profile-follow-control span {
   display: block;
   margin-top: 4px;
-  color: #e79a9a;
+  color: var(--danger-text);
   font-size: 11px;
   text-align: right;
 }

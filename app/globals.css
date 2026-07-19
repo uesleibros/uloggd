@@ -1496,7 +1496,7 @@ html[data-sidebar-ready] .account-button > svg {
   text-align: center;
 }
 .search-message-error {
-  color: #e2aaaa;
+  color: var(--danger-text);
 }
 .search-modal-backdrop {
   position: fixed;
@@ -2078,7 +2078,7 @@ html[data-sidebar-ready] .account-button > svg {
   font-size: 11px;
 }
 .quick-menu [role="menuitem"].quick-menu-remove {
-  color: #e2aaaa;
+  color: var(--danger-text);
 }
 .quick-menu [role="menuitem"].quick-menu-remove:hover,
 .quick-menu [role="menuitem"].quick-menu-remove:focus {
@@ -2117,7 +2117,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 5px 6px;
   border-radius: 4px;
   background: rgb(7 6 9 / 90%);
-  color: #ffaaa4;
+  color: var(--danger-text);
   font-size: 10px;
   text-align: center;
 }
@@ -3991,7 +3991,7 @@ html[data-sidebar-ready] .account-button > svg {
   min-width: 0;
 }
 .profile-image-actions button:has(svg.lucide-trash-2):hover {
-  color: #e2aaaa;
+  color: var(--danger-text);
 }
 @keyframes modal-veil-in {
   from {
@@ -4298,7 +4298,7 @@ html[data-sidebar-ready] .account-button > svg {
   text-wrap: pretty;
 }
 .auth-field-error {
-  color: #e2aaaa;
+  color: var(--danger-text);
 }
 .auth-field-hint {
   color: var(--screen-muted);
@@ -4438,7 +4438,7 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--safe-green);
 }
 .field-error {
-  color: #e2aaaa;
+  color: var(--danger-text);
   font-size: 11px;
 }
 .provider-grid button {
@@ -4476,7 +4476,7 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid rgb(210 105 105 / 25%);
   border-radius: 7px;
   background: rgb(210 105 105 / 8%);
-  color: #e2aaaa;
+  color: var(--danger-text);
   font-size: 11px;
   line-height: 1.45;
 }
@@ -5499,7 +5499,7 @@ html[data-sidebar-ready] .account-button > svg {
 .review-recommend-control button:last-child[aria-pressed="true"] {
   border-color: rgb(239 83 92 / 0.36);
   background: rgb(239 83 92 / 0.1);
-  color: #ff8b91;
+  color: var(--danger-text);
 }
 .review-title-field > span {
   display: flex;
@@ -5639,7 +5639,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .review-aspect-list header button:hover {
   background: rgb(239 83 92 / 0.08);
-  color: #ff8b91;
+  color: var(--danger-text);
 }
 .review-aspect-list textarea {
   min-height: 64px;
@@ -5742,11 +5742,11 @@ html[data-sidebar-ready] .account-button > svg {
   background: rgb(239 83 92 / 0.12);
 }
 .review-spoiler-toggle input:checked + span::after {
-  background: #ff747c;
+  background: var(--danger-text);
   transform: translateX(16px);
 }
 .review-spoiler-toggle input:focus-visible + span {
-  outline: 2px solid #ff747c;
+  outline: 2px solid var(--danger-text);
   outline-offset: 2px;
 }
 .review-spoiler-toggle p {
@@ -6597,7 +6597,7 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid rgb(239 83 92 / 0.28);
   border-radius: 11px;
   background: rgb(239 83 92 / 0.09);
-  color: #ff747c;
+  color: var(--danger-text);
 }
 .account-delete-dialog h2 {
   color: var(--screen-white);
@@ -6615,7 +6615,7 @@ html[data-sidebar-ready] .account-button > svg {
 .account-delete-summary {
   margin-top: 18px;
   padding: 13px 14px;
-  border-left: 2px solid #ff747c;
+  border-left: 2px solid var(--danger-text);
   background: rgb(239 83 92 / 0.055);
 }
 .account-delete-summary strong {
@@ -6709,7 +6709,7 @@ html[data-sidebar-ready] .account-button > svg {
   transform: translateY(-1px) rotate(-45deg) scale(1);
 }
 .account-delete-understood input:focus-visible + span {
-  outline: 2px solid #ff747c;
+  outline: 2px solid var(--danger-text);
   outline-offset: 2px;
 }
 .account-delete-understood p {
@@ -6718,7 +6718,7 @@ html[data-sidebar-ready] .account-button > svg {
   line-height: 1.55;
 }
 .account-delete-error {
-  color: #ff8f95;
+  color: var(--danger-text);
   font-size: 11px;
   line-height: 1.5;
 }
@@ -12619,7 +12619,7 @@ html
 }
 .anonymous-age-form > p {
   margin: 0;
-  color: #e2aaaa;
+  color: var(--danger-text);
   font-size: 11px;
   line-height: 1.45;
 }
@@ -13086,7 +13086,7 @@ html
   top: 100%;
   left: 24px;
   margin: 3px 0 0;
-  color: #e2aaaa;
+  color: var(--danger-text);
   font-size: 10px;
 }
 .library-workspace {
@@ -14586,7 +14586,7 @@ html
 .recent-unfollow-dialog footer button:last-child {
   border-color: rgb(184 70 70 / 38%);
   background: rgb(184 70 70 / 14%);
-  color: #efb0b0;
+  color: var(--danger-text);
 }
 @media (max-width: 620px) {
   .content-preferences > header,

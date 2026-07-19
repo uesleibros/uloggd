@@ -169,7 +169,7 @@
 
 .mfa-setup-dialog form > p[role="alert"],
 .mfa-remove-dialog [role="alert"] {
-  color: #e2aaaa;
+  color: var(--danger-text);
   font-size: 9px;
 }
 
@@ -224,7 +224,7 @@
   margin-bottom: 14px;
   border-radius: 12px;
   background: rgb(210 105 105 / 0.1);
-  color: #e2aaaa;
+  color: var(--danger-text);
 }
 
 .mfa-remove-dialog h2 {
@@ -247,7 +247,7 @@
 
 .mfa-remove-dialog form button {
   background: rgb(184 70 70 / 0.16);
-  color: #efb0b0;
+  color: var(--danger-text);
 }
 
 .mfa-dialog-overlay[data-state="open"] {
@@ -406,7 +406,7 @@
 }
 
 .mfa-challenge-card form > p {
-  color: #e2aaaa;
+  color: var(--danger-text);
   font-size: 9px;
 }
 
