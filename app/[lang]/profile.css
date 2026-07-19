@@ -1306,6 +1306,19 @@
   background: var(--quiet-hover);
   color: var(--screen-white);
 }
+.profile-comment-actions .profile-comment-like-action[data-liked] {
+  color: var(--accent);
+}
+.profile-comment-like-static {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding-inline: 8px;
+  color: var(--screen-muted);
+  font-size: 11px;
+  font-weight: 580;
+}
 .profile-comment-actions button[data-armed] {
   background: rgb(210 105 105 / 12%);
   color: var(--danger-text);

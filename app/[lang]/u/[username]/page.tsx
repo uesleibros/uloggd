@@ -293,8 +293,32 @@ export default async function ProfilePage({ params }: Props) {
   const interactionBlocked = viewerBlocked || blockedByTarget;
   const commentRows = (commentsResult.data ?? []) as Omit<
     ProfileComment,
-    "author"
+    "author" | "like_count" | "liked_by_viewer"
   >[];
+  const { data: commentLikes } = commentRows.length
+    ? await supabase.rpc("get_content_likes", {
+        target_type: "profile_comment",
+        target_ids: commentRows.map((comment) => comment.id),
+      })
+    : { data: [] };
+  const commentLikesById = new Map<
+    string,
+    { like_count: number; liked_by_viewer: boolean }
+  >(
+    (
+      (commentLikes ?? []) as {
+        content_id: string;
+        like_count: number;
+        liked_by_viewer: boolean;
+      }[]
+    ).map((like) => [
+      like.content_id,
+      {
+        like_count: Number(like.like_count),
+        liked_by_viewer: Boolean(like.liked_by_viewer),
+      },
+    ]),
+  );
   const commentAuthorIds = [
     ...new Set(commentRows.map((comment) => comment.author_id)),
   ];
@@ -309,7 +333,13 @@ export default async function ProfilePage({ params }: Props) {
   );
   const comments = commentRows.flatMap((comment) => {
     const author = commentAuthorById.get(comment.author_id);
-    return author?.username ? [{ ...comment, author } as ProfileComment] : [];
+    const like = commentLikesById.get(comment.id) ?? {
+      like_count: 0,
+      liked_by_viewer: false,
+    };
+    return author?.username
+      ? [{ ...comment, ...like, author } as ProfileComment]
+      : [];
   });
   const pt = lang === "pt-BR";
   const joined = new Intl.DateTimeFormat(lang, {

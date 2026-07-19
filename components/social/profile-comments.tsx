@@ -8,6 +8,7 @@ import {
   MessageCircle,
   Pencil,
   Send,
+  Heart,
   Trash2,
   X,
 } from "lucide-react";
@@ -24,6 +25,8 @@ export type ProfileComment = {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  like_count: number;
+  liked_by_viewer: boolean;
   author: {
     username: string;
     display_name: string | null;
@@ -125,6 +128,18 @@ export function ProfileComments({
   const [reporting, setReporting] = useState<ProfileComment | null>(null);
   const [reportReason, setReportReason] = useState("HARASSMENT");
   const [reportDetails, setReportDetails] = useState("");
+  const [likes, setLikes] = useState(() =>
+    Object.fromEntries(
+      comments.map((comment) => [
+        comment.id,
+        {
+          count: comment.like_count,
+          liked: comment.liked_by_viewer,
+          pending: false,
+        },
+      ]),
+    ),
+  );
 
   useEffect(() => {
     if (
@@ -277,6 +292,43 @@ export function ProfileComments({
     setEditing(comment.id);
   }
 
+  async function toggleLike(comment: ProfileComment) {
+    if (!viewerId || viewerId === comment.author_id) return;
+    const current = likes[comment.id] ?? {
+      count: comment.like_count,
+      liked: comment.liked_by_viewer,
+      pending: false,
+    };
+    if (current.pending) return;
+    const optimistic = {
+      liked: !current.liked,
+      count: Math.max(0, current.count + (current.liked ? -1 : 1)),
+      pending: true,
+    };
+    setLikes((value) => ({ ...value, [comment.id]: optimistic }));
+    const { data, error: likeError } = await createClient().rpc(
+      "toggle_content_like",
+      { target_type: "profile_comment", target_id: comment.id },
+    );
+    if (likeError) {
+      setLikes((value) => ({
+        ...value,
+        [comment.id]: { ...current, pending: false },
+      }));
+      setError(actionError(likeError.message));
+      return;
+    }
+    const result = Array.isArray(data) ? data[0] : data;
+    setLikes((value) => ({
+      ...value,
+      [comment.id]: {
+        liked: Boolean(result?.liked),
+        count: Number(result?.like_count ?? optimistic.count),
+        pending: false,
+      },
+    }));
+  }
+
   function renderComment(comment: CommentNode, depth = 0): React.ReactNode {
     const name = comment.author.display_name || `@${comment.author.username}`;
     const canDelete = viewerId === comment.author_id || viewerId === profileId;
@@ -287,6 +339,11 @@ export function ProfileComments({
       new Date(comment.updated_at).getTime() -
         new Date(comment.created_at).getTime() >
         1000;
+    const commentLike = likes[comment.id] ?? {
+      count: comment.like_count,
+      liked: comment.liked_by_viewer,
+      pending: false,
+    };
 
     return (
       <div
@@ -365,6 +422,41 @@ export function ProfileComments({
 
             {!editing && (
               <footer className="profile-comment-actions">
+                {!deleted &&
+                  (viewerId && viewerId !== comment.author_id ? (
+                    <button
+                      className="profile-comment-like-action"
+                      type="button"
+                      aria-pressed={commentLike.liked}
+                      data-liked={commentLike.liked || undefined}
+                      disabled={commentLike.pending}
+                      onClick={() => void toggleLike(comment)}
+                      aria-label={
+                        commentLike.liked
+                          ? pt
+                            ? "Remover curtida"
+                            : "Remove like"
+                          : pt
+                            ? "Curtir comentário"
+                            : "Like comment"
+                      }
+                    >
+                      <Heart
+                        size={13}
+                        fill={commentLike.liked ? "currentColor" : "none"}
+                      />
+                      {commentLike.count > 0 && (
+                        <span>{commentLike.count.toLocaleString(lang)}</span>
+                      )}
+                    </button>
+                  ) : (
+                    commentLike.count > 0 && (
+                      <span className="profile-comment-like-static">
+                        <Heart size={13} />
+                        {commentLike.count.toLocaleString(lang)}
+                      </span>
+                    )
+                  ))}
                 {canComment && !deleted && (
                   <button
                     className="profile-comment-reply-action"

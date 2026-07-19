@@ -22,7 +22,11 @@ import { createClient } from "@/lib/supabase/client";
 
 type Labels = Dictionary["notifications"];
 type NotificationKind =
-  "follow" | "review_like" | "list_like" | "profile_comment";
+  | "follow"
+  | "review_like"
+  | "list_like"
+  | "profile_comment"
+  | "profile_comment_like";
 type NotificationRow = {
   id: string;
   actor_id: string;
@@ -287,7 +291,9 @@ export function NotificationCenter({
                       actor?.username ||
                       labels.unknownUser;
                     const href =
-                      item.kind === "follow" || item.kind === "profile_comment"
+                      item.kind === "follow" ||
+                      item.kind === "profile_comment" ||
+                      item.kind === "profile_comment_like"
                         ? actor?.username
                           ? `/${lang}/u/${actor.username}`
                           : `/${lang}`
@@ -327,7 +333,9 @@ export function NotificationCenter({
                                   ? labels.reviewLike
                                   : item.kind === "profile_comment"
                                     ? labels.profileComment
-                                    : labels.listLike}
+                                    : item.kind === "profile_comment_like"
+                                      ? labels.profileCommentLike
+                                      : labels.listLike}
                               {item.target_title && (
                                 <>
                                   {" "}
