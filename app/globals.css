@@ -1234,12 +1234,12 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 6px;
   outline: 0;
   background: transparent;
-  color: #e2aaaa;
+  color: var(--danger-text);
   font-size: 11px;
   cursor: pointer;
 }
 .account-menu-signout[data-highlighted] {
-  background: rgb(210 105 105 / 8%);
+  background: color-mix(in srgb, var(--danger-text) 10%, transparent);
 }
 
 /* Feed */
