@@ -13,6 +13,7 @@ import {
   LogIn,
   Menu,
   Settings,
+  ShieldCheck,
   Star,
   UserRound,
   X,
@@ -124,17 +125,34 @@ export function MobileSidebar({
             </nav>
             <div className="drawer-secondary">
               {isAuthenticated ? (
-                <Dialog.Close asChild>
-                  <Link
-                    href={`/${lang}/settings?tab=general`}
-                    data-active={
-                      pathname.startsWith(`/${lang}/settings`) || undefined
-                    }
-                  >
-                    <Settings size={21} />
-                    {labels.settings}
-                  </Link>
-                </Dialog.Close>
+                <>
+                  {(account?.role === "ADMIN" ||
+                    account?.role === "MODERATOR") && (
+                    <Dialog.Close asChild>
+                      <Link
+                        href={`/${lang}/moderation`}
+                        data-active={
+                          pathname.startsWith(`/${lang}/moderation`) ||
+                          undefined
+                        }
+                      >
+                        <ShieldCheck size={21} />
+                        {lang === "pt-BR" ? "Moderação" : "Moderation"}
+                      </Link>
+                    </Dialog.Close>
+                  )}
+                  <Dialog.Close asChild>
+                    <Link
+                      href={`/${lang}/settings?tab=general`}
+                      data-active={
+                        pathname.startsWith(`/${lang}/settings`) || undefined
+                      }
+                    >
+                      <Settings size={21} />
+                      {labels.settings}
+                    </Link>
+                  </Dialog.Close>
+                </>
               ) : (
                 <span
                   className="drawer-disabled"

@@ -103,6 +103,12 @@ export function e2eGameBySlug(slug: string): GameDetail | null {
     videos: [],
     events: [],
     publishers: [],
+    searchFilters: {
+      genres: [],
+      platforms: [],
+      themes: [],
+      modes: [],
+    },
     websites: [],
     languages: [],
     related: [],

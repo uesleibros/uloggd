@@ -33,14 +33,13 @@ export default async function ModerationPage({
     : "OPEN";
   const search = typeof query.q === "string" ? query.q.trim().slice(0, 32) : "";
 
-  let reportQuery = supabase
+  const reportQuery = supabase
     .from("reports")
     .select(
       "id,reporter_id,target_profile_id,content_type,content_id,reason,details,status,created_at,moderator_note,reviewed_at",
     )
     .order("created_at", { ascending: false })
-    .limit(50);
-  if (status !== "ALL") reportQuery = reportQuery.eq("status", status);
+    .limit(100);
 
   let accountQuery = supabase
     .from("profiles")

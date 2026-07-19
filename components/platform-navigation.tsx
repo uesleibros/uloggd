@@ -7,6 +7,7 @@ import {
   LockKeyhole,
   Search,
   Settings,
+  ShieldCheck,
   Star,
   UserRound,
 } from "lucide-react";
@@ -124,14 +125,29 @@ export function PlatformNavigation({
             </nav>
             <div className="sidebar-bottom">
               {isAuthenticated ? (
-                <ActiveLink
-                  href={`/${lang}/settings?tab=general`}
-                  aria-label={d.nav.settings}
-                  title={d.nav.settings}
-                >
-                  <Settings size={20} />
-                  <span>{d.nav.settings}</span>
-                </ActiveLink>
+                <>
+                  {(account?.role === "ADMIN" ||
+                    account?.role === "MODERATOR") && (
+                    <ActiveLink
+                      href={`/${lang}/moderation`}
+                      aria-label={lang === "pt-BR" ? "Moderação" : "Moderation"}
+                      title={lang === "pt-BR" ? "Moderação" : "Moderation"}
+                    >
+                      <ShieldCheck size={20} />
+                      <span>
+                        {lang === "pt-BR" ? "Moderação" : "Moderation"}
+                      </span>
+                    </ActiveLink>
+                  )}
+                  <ActiveLink
+                    href={`/${lang}/settings?tab=general`}
+                    aria-label={d.nav.settings}
+                    title={d.nav.settings}
+                  >
+                    <Settings size={20} />
+                    <span>{d.nav.settings}</span>
+                  </ActiveLink>
+                </>
               ) : (
                 <span
                   className="nav-disabled"

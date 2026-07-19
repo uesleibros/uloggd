@@ -2903,6 +2903,18 @@ html[data-sidebar-ready] .account-button > svg {
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
+.game-details dd a {
+  color: var(--screen-dim);
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-underline-offset: 3px;
+  transition:
+    color 160ms ease,
+    text-decoration-color 160ms ease;
+}
+.game-details dd a:hover {
+  color: var(--brand-blurple-bright);
+  text-decoration-color: currentColor;
+}
 .game-primary-sections {
   width: 100%;
   min-width: 0;
@@ -5245,7 +5257,7 @@ html[data-sidebar-ready] .account-button > svg {
   flex-direction: column;
   gap: 0;
   width: 100%;
-  height: 100%;
+  height: auto;
   min-width: 0;
   overflow-x: hidden;
   overflow-y: hidden;
@@ -5912,7 +5924,7 @@ html[data-sidebar-ready] .account-button > svg {
     > footer.review-action-bar {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
     gap: 8px;
-    padding: 10px 12px max(10px, env(safe-area-inset-bottom));
+    padding: 10px 12px calc(16px + env(safe-area-inset-bottom));
   }
   .review-action-status {
     grid-column: 1 / -1;

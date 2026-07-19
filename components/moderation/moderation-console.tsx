@@ -1,10 +1,12 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import * as Select from "@radix-ui/react-select";
 import {
   BadgeCheck,
   Ban,
   Check,
+  ChevronDown,
   Clock3,
   ExternalLink,
   Flag,
@@ -16,7 +18,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -85,7 +87,14 @@ export function ModerationConsole({
 }) {
   const pt = lang === "pt-BR";
   const pathname = usePathname();
-  const router = useRouter();
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
+  const [reportRows, setReportRows] = useState(reports);
+  const [search, setSearch] = useState(initialSearch);
+  const [accountRows, setAccountRows] = useState(accounts);
+  const [knownProfiles, setKnownProfiles] = useState(profiles);
+  const [moderationStateRows, setModerationStateRows] =
+    useState(moderationStates);
+  const [searching, setSearching] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [targetAction, setTargetAction] = useState<{
@@ -97,27 +106,66 @@ export function ModerationConsole({
   const [error, setError] = useState<string | null>(null);
   const [renderedAt] = useState(() => Date.now());
   const profileById = useMemo(
-    () => new Map(profiles.map((profile) => [profile.id, profile])),
-    [profiles],
+    () => new Map(knownProfiles.map((profile) => [profile.id, profile])),
+    [knownProfiles],
   );
   const commentById = useMemo(
     () => new Map(comments.map((comment) => [comment.id, comment])),
     [comments],
   );
   const stateByProfile = useMemo(
-    () => new Map(moderationStates.map((state) => [state.profile_id, state])),
-    [moderationStates],
+    () =>
+      new Map(moderationStateRows.map((state) => [state.profile_id, state])),
+    [moderationStateRows],
   );
 
   function profileName(profile: Profile | undefined) {
     return profile?.display_name || `@${profile?.username ?? "usuário"}`;
   }
 
+  const visibleReports =
+    statusFilter === "ALL"
+      ? reportRows
+      : reportRows.filter((report) => report.status === statusFilter);
+
   function setStatus(status: string) {
+    setStatusFilter(status);
     const params = new URLSearchParams();
     params.set("status", status);
-    if (initialSearch) params.set("q", initialSearch);
-    router.replace(`${pathname}?${params.toString()}`);
+    if (search.trim()) params.set("q", search.trim());
+    window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+  }
+
+  async function searchAccounts(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const query = search.trim().slice(0, 32);
+    if (query.length < 2 || searching) return;
+    setSearching(true);
+    setError(null);
+    const safeSearch = query.replace(/[%_,()]/g, "");
+    const { data, error: searchError } = await createClient()
+      .from("profiles")
+      .select("id,username,display_name,avatar_url,role,verified,created_at")
+      .or(`username.ilike.%${safeSearch}%,display_name.ilike.%${safeSearch}%`)
+      .limit(20);
+    if (searchError) {
+      setError(
+        pt ? "Não foi possível buscar usuários." : "Could not search users.",
+      );
+    } else {
+      const rows = (data ?? []) as Profile[];
+      setAccountRows(rows);
+      setKnownProfiles((current) => {
+        const merged = new Map(current.map((profile) => [profile.id, profile]));
+        rows.forEach((profile) => merged.set(profile.id, profile));
+        return [...merged.values()];
+      });
+      const params = new URLSearchParams();
+      params.set("status", statusFilter);
+      params.set("q", query);
+      window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+    }
+    setSearching(false);
   }
 
   async function updateReport(reportId: string, status: string) {
@@ -135,7 +183,19 @@ export function ModerationConsole({
           ? "Não foi possível atualizar a denúncia."
           : "Could not update the report.",
       );
-    else router.refresh();
+    else
+      setReportRows((current) =>
+        current.map((report) =>
+          report.id === reportId
+            ? {
+                ...report,
+                status,
+                moderator_note:
+                  notes[reportId]?.trim() || report.moderator_note,
+              }
+            : report,
+        ),
+      );
     setPending(null);
   }
 
@@ -169,7 +229,58 @@ export function ModerationConsole({
     else {
       setTargetAction(null);
       setReason("");
-      router.refresh();
+      setAccountRows((current) =>
+        current.map((profile) =>
+          profile.id === targetAction.profile.id
+            ? {
+                ...profile,
+                verified:
+                  targetAction.action === "VERIFY"
+                    ? true
+                    : targetAction.action === "UNVERIFY"
+                      ? false
+                      : profile.verified,
+              }
+            : profile,
+        ),
+      );
+      setKnownProfiles((current) =>
+        current.map((profile) =>
+          profile.id === targetAction.profile.id
+            ? {
+                ...profile,
+                verified:
+                  targetAction.action === "VERIFY"
+                    ? true
+                    : targetAction.action === "UNVERIFY"
+                      ? false
+                      : profile.verified,
+              }
+            : profile,
+        ),
+      );
+      if (targetAction.action === "BAN") {
+        const days = duration === "permanent" ? null : Number(duration);
+        setModerationStateRows((current) => [
+          ...current.filter(
+            (state) => state.profile_id !== targetAction.profile.id,
+          ),
+          {
+            profile_id: targetAction.profile.id,
+            banned_at: new Date().toISOString(),
+            banned_until: days
+              ? new Date(Date.now() + days * 86_400_000).toISOString()
+              : null,
+            reason: reason.trim(),
+          },
+        ]);
+      } else if (targetAction.action === "UNBAN") {
+        setModerationStateRows((current) =>
+          current.filter(
+            (state) => state.profile_id !== targetAction.profile.id,
+          ),
+        );
+      }
     }
     setPending(null);
   }
@@ -203,7 +314,7 @@ export function ModerationConsole({
           <div>
             <h2>{pt ? "Fila de denúncias" : "Report queue"}</h2>
             <p>
-              {reports.length}{" "}
+              {visibleReports.length}{" "}
               {pt ? "registro(s) neste filtro" : "record(s) in this filter"}
             </p>
           </div>
@@ -213,7 +324,7 @@ export function ModerationConsole({
                 <button
                   type="button"
                   key={status}
-                  aria-pressed={initialStatus === status}
+                  aria-pressed={statusFilter === status}
                   onClick={() => setStatus(status)}
                 >
                   {status}
@@ -223,13 +334,13 @@ export function ModerationConsole({
           </nav>
         </header>
         <div className="moderation-report-list">
-          {reports.length === 0 && (
+          {visibleReports.length === 0 && (
             <div className="moderation-empty">
               <Check size={22} />
               {pt ? "Nenhuma denúncia neste estado." : "No reports here."}
             </div>
           )}
-          {reports.map((report) => {
+          {visibleReports.map((report) => {
             const target = report.target_profile_id
               ? profileById.get(report.target_profile_id)
               : undefined;
@@ -337,26 +448,32 @@ export function ModerationConsole({
                 : "Search by handle or display name."}
             </p>
           </div>
-          <form className="moderation-search">
+          <form
+            className="moderation-search"
+            onSubmit={(event) => void searchAccounts(event)}
+          >
             <Search size={15} />
             <input
               name="q"
-              defaultValue={initialSearch}
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
               minLength={2}
               maxLength={32}
               placeholder={pt ? "Buscar usuário" : "Search user"}
             />
-            <input type="hidden" name="status" value={initialStatus} />
-            <button>{pt ? "Buscar" : "Search"}</button>
+            <button disabled={searching || search.trim().length < 2}>
+              {searching && <LoaderCircle className="spin" size={13} />}
+              {pt ? "Buscar" : "Search"}
+            </button>
           </form>
         </header>
         <div className="moderation-user-grid">
-          {initialSearch.length >= 2 && accounts.length === 0 && (
+          {search.trim().length >= 2 && accountRows.length === 0 && (
             <div className="moderation-empty">
               {pt ? "Nenhum usuário encontrado." : "No users found."}
             </div>
           )}
-          {accounts.map((profile) => {
+          {accountRows.map((profile) => {
             const state = stateByProfile.get(profile.id);
             const banned = Boolean(
               state &&
@@ -515,19 +632,43 @@ export function ModerationConsole({
             {targetAction?.action === "BAN" && (
               <label>
                 {pt ? "Duração" : "Duration"}
-                <select
-                  value={duration}
-                  onChange={(event) => setDuration(event.target.value)}
-                >
-                  <option value="1">{pt ? "1 dia" : "1 day"}</option>
-                  <option value="7">{pt ? "7 dias" : "7 days"}</option>
-                  <option value="30">{pt ? "30 dias" : "30 days"}</option>
-                  {actorRole === "ADMIN" && (
-                    <option value="permanent">
-                      {pt ? "Permanente" : "Permanent"}
-                    </option>
-                  )}
-                </select>
+                <Select.Root value={duration} onValueChange={setDuration}>
+                  <Select.Trigger className="moderation-select-trigger">
+                    <Select.Value />
+                    <Select.Icon>
+                      <ChevronDown size={14} />
+                    </Select.Icon>
+                  </Select.Trigger>
+                  <Select.Portal>
+                    <Select.Content
+                      className="moderation-select-content"
+                      position="popper"
+                      sideOffset={6}
+                    >
+                      <Select.Viewport>
+                        {[
+                          ["1", pt ? "1 dia" : "1 day"],
+                          ["7", pt ? "7 dias" : "7 days"],
+                          ["30", pt ? "30 dias" : "30 days"],
+                          ...(actorRole === "ADMIN"
+                            ? [["permanent", pt ? "Permanente" : "Permanent"]]
+                            : []),
+                        ].map(([value, label]) => (
+                          <Select.Item
+                            className="moderation-select-item"
+                            value={value}
+                            key={value}
+                          >
+                            <Select.ItemText>{label}</Select.ItemText>
+                            <Select.ItemIndicator>
+                              <Check size={13} />
+                            </Select.ItemIndicator>
+                          </Select.Item>
+                        ))}
+                      </Select.Viewport>
+                    </Select.Content>
+                  </Select.Portal>
+                </Select.Root>
               </label>
             )}
             <label>

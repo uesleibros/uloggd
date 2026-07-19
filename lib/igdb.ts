@@ -19,8 +19,8 @@ type IgdbGameResponse = {
   cover?: IgdbImage;
   artworks?: IgdbImage[];
   screenshots?: IgdbImage[];
-  genres?: { name: string }[];
-  platforms?: { name: string }[];
+  genres?: { id: number; name: string }[];
+  platforms?: { id: number; name: string }[];
   alternative_names?: { name: string }[];
   game_type?: number | { id: number; type: string };
   hypes?: number;
@@ -36,8 +36,8 @@ type IgdbGameResponse = {
     company?: { name: string };
   }[];
   videos?: { video_id: string; name?: string }[];
-  themes?: { name: string }[];
-  game_modes?: { name: string }[];
+  themes?: { id: number; name: string }[];
+  game_modes?: { id: number; name: string }[];
   age_ratings?: {
     organization?: { name: string };
     rating_category?: { rating: string };
@@ -568,6 +568,12 @@ export type GenreCollection = {
 };
 
 export type GameDetail = Game & {
+  searchFilters: {
+    genres: { id: number; name: string }[];
+    platforms: { id: number; name: string }[];
+    themes: { id: number; name: string }[];
+    modes: { id: number; name: string }[];
+  };
   ageRatings: {
     organization: string;
     region: string;
@@ -623,9 +629,9 @@ export const getGameBySlug = cache(async function getGameBySlug(
   const games = await queryGamesRaw(
     `
     fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
-      cover.image_id,artworks.image_id,screenshots.image_id,genres.name,
-      platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
-      videos.video_id,videos.name,themes.name,game_modes.name,websites.url,
+      cover.image_id,artworks.image_id,screenshots.image_id,genres.id,genres.name,
+      platforms.id,platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
+      videos.video_id,videos.name,themes.id,themes.name,game_modes.id,game_modes.name,websites.url,
       age_ratings.organization.name,age_ratings.rating_category.rating,
       language_supports.language.name,language_supports.language.native_name,language_supports.language_support_type.name,
       similar_games.name,similar_games.slug,similar_games.first_release_date,similar_games.total_rating,similar_games.total_rating_count,similar_games.cover.image_id,similar_games.genres.name,
@@ -753,6 +759,12 @@ export const getGameBySlug = cache(async function getGameBySlug(
 
   return {
     ...normalize(raw),
+    searchFilters: {
+      genres: raw.genres ?? [],
+      platforms: raw.platforms ?? [],
+      themes: raw.themes ?? [],
+      modes: raw.game_modes ?? [],
+    },
     ageRatings: (raw.age_ratings ?? [])
       .filter(
         (
