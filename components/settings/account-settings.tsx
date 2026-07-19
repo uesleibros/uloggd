@@ -18,10 +18,12 @@ import { DeleteAccount } from "./delete-account";
 import { AppearanceSettings } from "./appearance-settings";
 import { ContentPreferences } from "./content-preferences";
 import { PrivacySettings } from "./privacy-settings";
+import { UsernameSettings } from "./username-settings";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   custom_cover_scope: "OWN" | "EVERYONE";
   profile_comment_scope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  username_changed_at: string | null;
 };
 type BlockedProfile = {
   id: string;
@@ -157,20 +159,11 @@ export function AccountSettings({
       >
         {tab === "general" && (
           <div className="settings-general-grid">
-            <section className="settings-account-card">
-              <span>
-                <CircleUserRound size={20} />
-              </span>
-              <div>
-                <small>{pt ? "NOME DE USUÁRIO" : "USERNAME"}</small>
-                <strong>@{profile.username}</strong>
-                <p>
-                  {pt
-                    ? "Seu identificador único e permanente no uloggd."
-                    : "Your unique, permanent identifier on uloggd."}
-                </p>
-              </div>
-            </section>
+            <UsernameSettings
+              initialUsername={profile.username}
+              changedAt={profile.username_changed_at}
+              lang={lang}
+            />
             <section className="settings-account-card">
               <span>
                 <CalendarDays size={20} />

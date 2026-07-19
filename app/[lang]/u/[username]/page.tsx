@@ -11,7 +11,7 @@ import {
   Sparkles,
   Star,
 } from "lucide-react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { QuickGameCard } from "@/components/library/quick-game-card";
@@ -170,11 +170,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, username } = await params;
   if (!hasLocale(lang)) return {};
   const supabase = await getSupabase();
-  const { data: profile } = await supabase
+  let { data: profile } = await supabase
     .from("profiles")
     .select("username,display_name,bio,avatar_url,banner_url")
     .ilike("username", username)
     .maybeSingle();
+  if (!profile?.username) {
+    const { data: alias } = await supabase.rpc("resolve_username_alias", {
+      candidate: username,
+    });
+    if (alias) {
+      const result = await supabase
+        .from("profiles")
+        .select("username,display_name,bio,avatar_url,banner_url")
+        .ilike("username", alias)
+        .maybeSingle();
+      profile = result.data;
+    }
+  }
   if (!profile?.username)
     return {
       title: lang === "pt-BR" ? "Perfil não encontrado" : "Profile not found",
@@ -221,7 +234,13 @@ export default async function ProfilePage({ params }: Props) {
       .maybeSingle(),
     getAuthUser(),
   ]);
-  if (!profile?.username) notFound();
+  if (!profile?.username) {
+    const { data: alias } = await supabase.rpc("resolve_username_alias", {
+      candidate: username,
+    });
+    if (alias) redirect(`/${lang}/u/${alias}`);
+    notFound();
+  }
   const [
     libraryCount,
     listsCount,

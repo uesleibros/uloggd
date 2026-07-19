@@ -86,6 +86,253 @@
   font-size: 11px;
   line-height: 1.5;
 }
+.settings-username-card {
+  position: relative;
+  padding-right: 92px;
+}
+.settings-username-trigger {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 7px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 10px;
+  font-weight: 620;
+  transition:
+    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 140ms ease-out,
+    background-color 140ms ease-out,
+    color 140ms ease-out;
+}
+.settings-username-trigger:hover:not(:disabled) {
+  border-color: rgb(88 101 242 / 42%);
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
+  transform: translateY(-1px);
+}
+.settings-username-trigger:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.settings-username-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+.username-change-overlay {
+  position: fixed;
+  z-index: 150;
+  inset: 0;
+  background: rgb(4 3 8 / 72%);
+  backdrop-filter: blur(7px);
+}
+.username-change-overlay[data-state="open"] {
+  animation: modal-veil-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.username-change-overlay[data-state="closed"] {
+  animation: modal-veil-out 140ms cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+.username-change-dialog {
+  position: fixed;
+  z-index: 151;
+  top: 50%;
+  left: 50%;
+  width: min(500px, calc(100vw - 28px));
+  max-height: min(760px, calc(100dvh - 32px));
+  overflow: hidden auto;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 13px;
+  outline: 0;
+  background: var(--console-panel);
+  box-shadow: 0 28px 80px var(--overlay-shadow);
+  transform: translate(-50%, -50%);
+}
+.username-change-dialog[data-state="open"] {
+  animation: modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.username-change-dialog[data-state="closed"] {
+  animation: modal-center-out 150ms cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+.username-change-dialog > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.username-change-dialog > header span {
+  color: var(--brand-blurple-bright);
+  font-size: 9px;
+  font-weight: 680;
+  letter-spacing: 0.09em;
+}
+.username-change-dialog h2 {
+  margin-top: 5px;
+  color: var(--screen-white);
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+.username-change-dialog > header button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: var(--screen-muted);
+}
+.username-change-dialog > header button:hover {
+  background: var(--quiet-hover);
+  color: var(--screen-white);
+}
+.username-change-dialog form {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+.username-change-dialog form > p:first-child {
+  color: var(--screen-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.username-change-dialog form > label {
+  display: grid;
+  gap: 7px;
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 600;
+}
+.username-change-input {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.username-change-input:focus-within {
+  border-color: rgb(88 101 242 / 58%);
+  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+}
+.username-change-input input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--screen-white);
+  font: 520 12px var(--font-inter);
+}
+.username-change-input > svg:last-child {
+  color: var(--safe-green);
+}
+.username-change-hint {
+  margin-top: -8px;
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.username-change-hint[data-valid] {
+  color: var(--safe-green);
+}
+.username-change-rules {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-inset);
+}
+.username-change-rules p {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  color: var(--screen-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+.username-change-rules svg {
+  margin-top: 1px;
+  color: var(--screen-dim);
+}
+.username-change-rules strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--screen-dim);
+  font-size: 10px;
+}
+.username-change-error {
+  color: var(--danger-text);
+  font-size: 10px;
+}
+.username-change-dialog footer {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 8px;
+}
+.username-change-dialog footer button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 620;
+}
+.username-change-dialog footer button:last-child {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple);
+  color: white;
+}
+.username-change-dialog footer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+@media (max-width: 620px) {
+  .settings-username-card {
+    padding-right: 18px;
+  }
+  .settings-username-trigger {
+    position: static;
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-top: 3px;
+  }
+  .username-change-dialog {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: min(86dvh, 720px);
+    border-radius: 15px 15px 0 0;
+    transform: none;
+  }
+  .username-change-dialog[data-state="open"] {
+    animation-name: modal-sheet-in;
+  }
+  .username-change-dialog[data-state="closed"] {
+    animation-name: modal-sheet-out;
+  }
+  .username-change-dialog form {
+    padding-bottom: max(18px, env(safe-area-inset-bottom));
+  }
+}
 .settings-danger-zone {
   grid-column: 1 / -1;
   display: flex;
