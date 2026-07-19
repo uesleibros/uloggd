@@ -212,7 +212,8 @@
   display: flex;
   flex-direction: column;
   width: min(540px, calc(100vw - 28px));
-  max-height: min(760px, calc(100dvh - 48px));
+  height: min(760px, calc(100dvh - 48px));
+  max-height: calc(100dvh - 48px);
   overflow: hidden;
   border: 1px solid var(--shell-line-strong);
   border-radius: 14px;
@@ -282,7 +283,7 @@
   color: var(--screen-white);
 }
 .catalog-filter-dialog-body {
-  flex: 0 1 auto;
+  flex: 1 1 0;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1213,7 +1214,8 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    max-height: min(78dvh, 640px);
+    height: min(78dvh, 640px);
+    max-height: 78dvh;
     border-radius: 15px 15px 0 0;
     transform: none;
   }
