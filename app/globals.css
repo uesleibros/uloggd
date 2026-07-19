@@ -10991,8 +10991,31 @@ details.review-page-content p {
   gap: 28px;
 }
 
-/* Workspace hero: /lists and /reviews follow the library banner pattern,
-   as a rounded card since these pages keep their normal padding. */
+.social-page.workspace-layout-page {
+  display: block;
+  margin-top: -76px;
+  padding: 0 0 72px;
+}
+
+.workspace-layout-page .workspace-hero {
+  min-height: 344px;
+  margin: 0;
+  border-inline: 0;
+  border-radius: 0;
+}
+
+.workspace-layout-page .workspace-hero-content {
+  min-height: 344px;
+  padding: 120px 36px 34px;
+}
+
+.workspace-page-body {
+  min-width: 0;
+  padding: 24px 36px 0;
+}
+
+/* Workspace hero shared by /lists and /reviews; full-bleed layout overrides
+   below keep it dimensionally aligned with /library. */
 .lists-page .workspace-hero {
   margin-bottom: 0;
 }
@@ -11527,6 +11550,28 @@ details.review-page-content p {
   .workspace-hero {
     margin-bottom: 22px;
     border-radius: 12px;
+  }
+
+  .social-page.workspace-layout-page {
+    padding-bottom: 48px;
+  }
+
+  .workspace-layout-page .workspace-hero,
+  .workspace-layout-page .workspace-hero-content {
+    min-height: 284px;
+  }
+
+  .workspace-layout-page .workspace-hero {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .workspace-layout-page .workspace-hero-content {
+    padding: 28px 16px 22px;
+  }
+
+  .workspace-page-body {
+    padding: 16px 14px 0;
   }
 
   .workspace-hero-content {

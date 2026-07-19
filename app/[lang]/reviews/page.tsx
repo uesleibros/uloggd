@@ -50,7 +50,7 @@ export default async function ReviewsPage({
     : null;
   const pt = lang === "pt-BR";
   return (
-    <main className="social-page">
+    <main className="social-page workspace-layout-page reviews-page">
       <WorkspaceHero
         profile={profile}
         eyebrow={
@@ -90,29 +90,35 @@ export default async function ReviewsPage({
           },
         ]}
       />
-      <nav
-        className="social-filter-tabs"
-        aria-label={pt ? "Filtrar registros" : "Filter entries"}
-      >
-        {[
-          ["all", pt ? "Tudo" : "All"],
-          ["review", pt ? "Avaliações" : "Reviews"],
-          ["diary", pt ? "Sessões" : "Sessions"],
-        ].map(([value, label]) => (
-          <Link
-            key={value}
-            href={
-              value === "all"
-                ? `/${lang}/reviews`
-                : `/${lang}/reviews?type=${value}`
-            }
-            aria-current={activeType === value ? "page" : undefined}
-          >
-            {label}
-          </Link>
-        ))}
-      </nav>
-      <ActivityStream entries={visibleEntries} lang={lang} viewerId={user.id} />
+      <div className="workspace-page-body">
+        <nav
+          className="social-filter-tabs"
+          aria-label={pt ? "Filtrar registros" : "Filter entries"}
+        >
+          {[
+            ["all", pt ? "Tudo" : "All"],
+            ["review", pt ? "Avaliações" : "Reviews"],
+            ["diary", pt ? "Sessões" : "Sessions"],
+          ].map(([value, label]) => (
+            <Link
+              key={value}
+              href={
+                value === "all"
+                  ? `/${lang}/reviews`
+                  : `/${lang}/reviews?type=${value}`
+              }
+              aria-current={activeType === value ? "page" : undefined}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+        <ActivityStream
+          entries={visibleEntries}
+          lang={lang}
+          viewerId={user.id}
+        />
+      </div>
     </main>
   );
 }

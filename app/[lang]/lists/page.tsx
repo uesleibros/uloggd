@@ -65,7 +65,7 @@ export default async function ListsPage({
     lists?.filter((list) => list.visibility === "PUBLIC").length ?? 0;
 
   return (
-    <main className="social-page lists-page">
+    <main className="social-page lists-page workspace-layout-page">
       <WorkspaceHero
         profile={profile}
         eyebrow={
@@ -100,69 +100,71 @@ export default async function ListsPage({
       >
         <CreateListForm lang={lang} />
       </WorkspaceHero>
-      {lists?.length ? (
-        <section className="lists-collection">
-          <header>
-            <div>
-              <h2>{pt ? "Todas as listas" : "All lists"}</h2>
-              <p>
-                {pt
-                  ? "Atualizadas recentemente primeiro"
-                  : "Recently updated first"}
-              </p>
+      <div className="workspace-page-body">
+        {lists?.length ? (
+          <section className="lists-collection">
+            <header>
+              <div>
+                <h2>{pt ? "Todas as listas" : "All lists"}</h2>
+                <p>
+                  {pt
+                    ? "Atualizadas recentemente primeiro"
+                    : "Recently updated first"}
+                </p>
+              </div>
+              <span>{totalLists}</span>
+            </header>
+            <div className="lists-grid">
+              {lists.map((list) => {
+                const items = [...list.game_list_items].sort(
+                  (a, b) => a.position - b.position,
+                );
+                const covers = items.slice(0, 5).flatMap((item) => {
+                  const game = gamesById.get(item.igdb_id);
+                  return game
+                    ? [
+                        {
+                          url: resolveGameCover(
+                            game.coverUrl,
+                            customById.get(game.id),
+                          ),
+                          name: game.name,
+                        },
+                      ]
+                    : [];
+                });
+                return (
+                  <ListPreviewCard
+                    key={list.id}
+                    list={{
+                      id: list.id,
+                      name: list.name,
+                      description: list.description,
+                      visibility: list.visibility,
+                      count: items.length,
+                    }}
+                    covers={covers}
+                    lang={lang}
+                    likes={likesById.get(list.id) ?? 0}
+                  />
+                );
+              })}
             </div>
-            <span>{totalLists}</span>
-          </header>
-          <div className="lists-grid">
-            {lists.map((list) => {
-              const items = [...list.game_list_items].sort(
-                (a, b) => a.position - b.position,
-              );
-              const covers = items.slice(0, 5).flatMap((item) => {
-                const game = gamesById.get(item.igdb_id);
-                return game
-                  ? [
-                      {
-                        url: resolveGameCover(
-                          game.coverUrl,
-                          customById.get(game.id),
-                        ),
-                        name: game.name,
-                      },
-                    ]
-                  : [];
-              });
-              return (
-                <ListPreviewCard
-                  key={list.id}
-                  list={{
-                    id: list.id,
-                    name: list.name,
-                    description: list.description,
-                    visibility: list.visibility,
-                    count: items.length,
-                  }}
-                  covers={covers}
-                  lang={lang}
-                  likes={likesById.get(list.id) ?? 0}
-                />
-              );
-            })}
+          </section>
+        ) : (
+          <div className="social-empty lists-empty">
+            <span>
+              <Layers3 size={22} />
+            </span>
+            <h2>{pt ? "Nenhuma lista ainda" : "No lists yet"}</h2>
+            <p>
+              {pt
+                ? "Crie sua primeira coleção e adicione jogos pelas páginas deles."
+                : "Create your first collection and add games from their pages."}
+            </p>
           </div>
-        </section>
-      ) : (
-        <div className="social-empty lists-empty">
-          <span>
-            <Layers3 size={22} />
-          </span>
-          <h2>{pt ? "Nenhuma lista ainda" : "No lists yet"}</h2>
-          <p>
-            {pt
-              ? "Crie sua primeira coleção e adicione jogos pelas páginas deles."
-              : "Create your first collection and add games from their pages."}
-          </p>
-        </div>
-      )}
+        )}
+      </div>
     </main>
   );
 }
