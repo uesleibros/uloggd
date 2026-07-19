@@ -1171,6 +1171,7 @@
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr);
   gap: 11px;
+  max-width: 100%;
   padding: 16px 0;
 }
 .profile-comment-list > .profile-comment-thread + .profile-comment-thread {
@@ -1182,6 +1183,7 @@
 }
 .profile-comment-replies {
   position: relative;
+  min-width: 0;
   margin-left: 36px;
   border-left: 1px solid var(--shell-line-strong);
 }
@@ -1199,8 +1201,20 @@
   border-bottom-left-radius: 8px;
   content: "";
 }
-.profile-comment-thread[data-depth="3"] .profile-comment-replies {
-  margin-left: 18px;
+.profile-comment-thread[data-depth="1"] > .profile-comment-replies {
+  margin-left: 20px;
+}
+.profile-comment-thread[data-depth="2"] > .profile-comment-replies,
+.profile-comment-thread[data-depth="3"] > .profile-comment-replies {
+  margin-left: 0;
+}
+.profile-comment-thread > article[data-deleted] {
+  grid-template-columns: minmax(0, 1fr);
+  padding-block: 9px;
+}
+.profile-comment-thread > article[data-deleted] p {
+  margin: 0;
+  font-size: 11px;
 }
 .profile-comment-avatar {
   display: grid;
@@ -1604,6 +1618,20 @@
   }
   .profile-comment-replies {
     margin-left: 24px;
+  }
+  .profile-comment-thread[data-depth="1"] > .profile-comment-replies {
+    margin-left: 14px;
+  }
+  .profile-comment-thread[data-depth="2"] > .profile-comment-replies,
+  .profile-comment-thread[data-depth="3"] > .profile-comment-replies {
+    margin-left: 0;
+  }
+  .profile-comment-list article header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .profile-comment-list article header > span {
+    flex-basis: 100%;
   }
   .profile-stats {
     display: grid;

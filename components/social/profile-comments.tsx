@@ -47,7 +47,13 @@ function buildCommentTree(comments: ProfileComment[]) {
   roots.sort((a, b) => b.created_at.localeCompare(a.created_at));
   for (const node of nodes.values())
     node.replies.sort((a, b) => a.created_at.localeCompare(b.created_at));
-  return roots;
+  function prune(items: CommentNode[]): CommentNode[] {
+    return items.flatMap((item) => {
+      const next = { ...item, replies: prune(item.replies) };
+      return next.deleted_at && next.replies.length === 0 ? [] : [next];
+    });
+  }
+  return prune(roots);
 }
 
 export function ProfileComments({
@@ -210,30 +216,36 @@ export function ProfileComments({
         key={comment.id}
       >
         <article data-deleted={deleted || undefined}>
-          <Link
-            className="profile-comment-avatar"
-            href={`/${lang}/u/${comment.author.username}`}
-            aria-label={name}
-          >
-            {comment.author.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={comment.author.avatar_url} alt="" />
-            ) : (
-              name.slice(0, 1).toUpperCase()
-            )}
-          </Link>
+          {!deleted && (
+            <Link
+              className="profile-comment-avatar"
+              href={`/${lang}/u/${comment.author.username}`}
+              aria-label={name}
+            >
+              {comment.author.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={comment.author.avatar_url} alt="" />
+              ) : (
+                name.slice(0, 1).toUpperCase()
+              )}
+            </Link>
+          )}
           <div>
-            <header>
-              <Link href={`/${lang}/u/${comment.author.username}`}>{name}</Link>
-              <span>
-                {edited && <i>{pt ? "editado" : "edited"}</i>}
-                <time dateTime={comment.created_at}>
-                  {new Intl.DateTimeFormat(lang, {
-                    dateStyle: "medium",
-                  }).format(new Date(comment.created_at))}
-                </time>
-              </span>
-            </header>
+            {!deleted && (
+              <header>
+                <Link href={`/${lang}/u/${comment.author.username}`}>
+                  {name}
+                </Link>
+                <span>
+                  {edited && <i>{pt ? "editado" : "edited"}</i>}
+                  <time dateTime={comment.created_at}>
+                    {new Intl.DateTimeFormat(lang, {
+                      dateStyle: "medium",
+                    }).format(new Date(comment.created_at))}
+                  </time>
+                </span>
+              </header>
+            )}
 
             {editing === comment.id ? (
               <form
@@ -438,7 +450,7 @@ export function ProfileComments({
 
       <div className="profile-comment-list">
         {tree.map((comment) => renderComment(comment))}
-        {!comments.length && (
+        {!tree.length && (
           <div className="profile-comments-empty">
             <MessageCircle size={20} />
             <span>{pt ? "Ainda não há comentários." : "No comments yet."}</span>
