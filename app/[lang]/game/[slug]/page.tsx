@@ -288,7 +288,7 @@ export default async function GamePage({ params }: Props) {
                   ? `Veja ${game.name} no uloggd`
                   : `See ${game.name} on uloggd`
               }
-              label={lang === "pt-BR" ? "Compartilhar jogo" : "Share game"}
+              label={lang === "pt-BR" ? "Compartilhar" : "Share"}
               copiedLabel={lang === "pt-BR" ? "Link copiado" : "Link copied"}
               lang={lang}
             />

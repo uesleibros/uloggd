@@ -46,7 +46,13 @@ export function ShareButton({
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>
-        <button className={className} type="button" aria-label={label}>
+        <button
+          className={["share-action-button", className]
+            .filter(Boolean)
+            .join(" ")}
+          type="button"
+          aria-label={label}
+        >
           <Share2 size={15} />
           <span>{label}</span>
         </button>

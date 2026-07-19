@@ -74,6 +74,9 @@ test("keeps profile identity, metadata, and actions in their responsive contract
     const actions = document.querySelector(
       ".profile-action-cluster",
     ) as HTMLElement;
+    const share = document.querySelector(
+      ".profile-action-cluster .share-action-button",
+    ) as HTMLElement;
     const identityBox = identity.getBoundingClientRect();
     const actionsBox = actions.getBoundingClientRect();
     return {
@@ -82,6 +85,7 @@ test("keeps profile identity, metadata, and actions in their responsive contract
       actionsLeft: actionsBox.left,
       actionsRight: actionsBox.right,
       actionPosition: getComputedStyle(actions).position,
+      shareHeight: share.getBoundingClientRect().height,
       documentWidth: document.documentElement.scrollWidth,
       viewportWidth: window.innerWidth,
     };
@@ -92,5 +96,8 @@ test("keeps profile identity, metadata, and actions in their responsive contract
   expect(layout.actionsRight).toBeLessThanOrEqual(layout.identityRight + 1);
   expect(layout.actionPosition).toBe(
     testInfo.project.name.startsWith("mobile") ? "static" : "absolute",
+  );
+  expect(layout.shareHeight).toBe(
+    testInfo.project.name.startsWith("mobile") ? 40 : 38,
   );
 });

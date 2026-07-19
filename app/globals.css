@@ -9689,6 +9689,39 @@ details.review-page-content p {
   background: var(--quiet-hover);
   color: var(--screen-white);
 }
+.share-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font: 580 11px var(--font-inter);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 160ms ease-out,
+    background-color 160ms ease-out,
+    color 160ms ease-out;
+}
+.share-action-button:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.share-action-button:active {
+  transform: scale(0.97);
+}
+@media (max-width: 620px) {
+  .share-action-button {
+    min-height: 40px;
+  }
+}
 .review-page-footer .activity-entry-actions {
   margin: 0 0 0 auto;
 }
