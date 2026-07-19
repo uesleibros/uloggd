@@ -450,10 +450,20 @@ export function ProfileComments({
                       )}
                     </button>
                   ) : (
-                    commentLike.count > 0 && (
-                      <span className="profile-comment-like-static">
+                    (viewerId === comment.author_id ||
+                      commentLike.count > 0) && (
+                      <span
+                        className="profile-comment-like-static"
+                        aria-label={
+                          pt
+                            ? `${commentLike.count} curtidas`
+                            : `${commentLike.count} likes`
+                        }
+                      >
                         <Heart size={13} />
-                        {commentLike.count.toLocaleString(lang)}
+                        {commentLike.count > 0 && (
+                          <span>{commentLike.count.toLocaleString(lang)}</span>
+                        )}
                       </span>
                     )
                   ))}
