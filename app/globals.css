@@ -5456,14 +5456,17 @@ html[data-sidebar-ready] .account-button > svg {
     min-height: 220px;
   }
   .social-editor-dialog.review-studio-dialog {
+    top: auto;
     right: 0;
+    bottom: 0;
     left: 0;
     width: 100%;
     max-width: 100%;
-    height: calc(100dvh - 8px);
-    max-height: calc(100dvh - 8px);
+    height: calc(100dvh - max(8px, env(safe-area-inset-top)));
+    max-height: calc(100dvh - max(8px, env(safe-area-inset-top)));
     margin: 0;
     border-radius: 14px 14px 0 0;
+    transform: none;
   }
   .review-studio-dialog > header {
     padding: 14px 16px;
@@ -5480,7 +5483,7 @@ html[data-sidebar-ready] .account-button > svg {
     > footer.review-action-bar {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
     gap: 8px;
-    padding: 10px 12px max(16px, env(safe-area-inset-bottom));
+    padding: 10px 12px max(10px, env(safe-area-inset-bottom));
   }
   .review-action-status {
     grid-column: 1 / -1;
@@ -5511,7 +5514,9 @@ html[data-sidebar-ready] .account-button > svg {
   }
   .review-editor-section {
     gap: 16px;
+    min-height: 0;
     padding: 16px;
+    padding-bottom: 24px;
   }
   .review-score-stage {
     grid-template-columns: 1fr;
@@ -13377,7 +13382,7 @@ details.review-page-content p {
   border-color: var(--shell-line-strong);
   box-shadow:
     0 10px 28px rgb(40 44 54 / 12%),
-    inset 0 1px 0 rgb(255 255 255 / 72%);
+    inset 0 -1px 0 rgb(24 27 35 / 5%);
 }
 
 :root[data-theme="light"] .account-menu,

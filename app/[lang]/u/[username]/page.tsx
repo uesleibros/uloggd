@@ -165,7 +165,10 @@ export default async function ProfilePage({ params }: Props) {
   }).format(new Date(profile.created_at));
   return (
     <main className="profile-page">
-      <div className="profile-banner">
+      <div
+        className="profile-banner"
+        data-empty={!profile.banner_url || undefined}
+      >
         {profile.banner_url && (
           <Image
             src={profile.banner_url}

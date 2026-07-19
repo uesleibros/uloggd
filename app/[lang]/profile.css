@@ -650,11 +650,30 @@
 .profile-banner {
   position: relative;
   width: 100%;
-  height: clamp(144px, 15vw, 200px);
+  aspect-ratio: 5 / 1;
+  min-height: 168px;
+  max-height: 248px;
   overflow: hidden;
   border-radius: 12px;
-  background: var(--console-panel);
+  background:
+    radial-gradient(
+      circle at 72% 18%,
+      rgb(88 101 242 / 18%),
+      transparent 36%
+    ),
+    linear-gradient(135deg, var(--console-raised), var(--console-panel));
   box-shadow: inset 0 0 0 1px var(--shell-line);
+}
+.profile-banner[data-empty]::after {
+  position: absolute;
+  right: clamp(24px, 5vw, 72px);
+  bottom: clamp(-50px, -3vw, -24px);
+  color: rgb(244 242 246 / 4%);
+  content: "U";
+  font-size: clamp(180px, 22vw, 320px);
+  font-weight: 760;
+  letter-spacing: -0.09em;
+  line-height: 0.8;
 }
 .profile-banner img {
   object-fit: cover;
@@ -663,15 +682,15 @@
   display: flex;
   align-items: flex-start;
   gap: 20px;
-  margin-top: -56px;
-  padding: 0 24px;
+  margin-top: -58px;
+  padding: 0 28px;
   position: relative;
   z-index: 1;
 }
 .profile-identity {
   flex: 1;
   min-width: 0;
-  padding-top: 64px;
+  padding-top: 68px;
 }
 .profile-title-row {
   display: flex;
@@ -800,7 +819,7 @@
 .profile-stats {
   display: flex;
   gap: 28px;
-  margin: 28px 24px 36px;
+  margin: 30px 28px 40px;
   padding: 16px 0;
   border-block: 1px solid var(--shell-line);
 }
@@ -827,7 +846,7 @@
 }
 @media (max-width: 620px) {
   .profile-banner {
-    height: auto;
+    min-height: 0;
     aspect-ratio: 3 / 1;
     border-radius: 9px;
   }
@@ -836,8 +855,8 @@
     grid-template-columns: 82px minmax(0, 1fr);
     align-items: start;
     gap: 13px;
-    margin-top: -30px;
-    padding: 0 10px;
+    margin-top: -34px;
+    padding: 0 8px;
   }
   .profile-identity {
     display: contents;
@@ -845,7 +864,7 @@
   }
   .profile-title-row {
     grid-column: 2;
-    margin-top: 34px;
+    margin-top: 38px;
     gap: 10px;
   }
   .profile-edit-link,
@@ -895,7 +914,8 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    margin: 22px 10px 32px;
+    margin: 24px 8px 34px;
+    padding-block: 12px;
   }
   .profile-stats dt {
     display: block;
