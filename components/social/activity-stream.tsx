@@ -293,14 +293,6 @@ export function ActivityStream({
                   ))}
                 </dl>
               )}
-            {entry.kind === "review" && (
-              <Link
-                className="activity-read-more"
-                href={`/${lang}/review/${entry.id}`}
-              >
-                {pt ? "Ver avaliação completa" : "View full review"}
-              </Link>
-            )}
             <div className="activity-entry-footer">
               <LikeButton
                 contentType={entry.kind}
@@ -310,6 +302,14 @@ export function ActivityStream({
                 canLike={Boolean(viewerId) && viewerId !== entry.profileId}
                 lang={lang}
               />
+              {entry.kind === "review" && (
+                <Link
+                  className="activity-read-more"
+                  href={`/${lang}/review/${entry.id}`}
+                >
+                  {pt ? "Ver avaliação completa" : "View full review"}
+                </Link>
+              )}
               {viewerId === entry.profileId && (
                 <ActivityEntryActions entry={entry} lang={lang} />
               )}

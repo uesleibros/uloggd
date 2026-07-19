@@ -8678,6 +8678,9 @@ a,
   border-radius: 11px;
   background: var(--console-panel);
 }
+.activity-entry[data-kind="review"] {
+  column-gap: 20px;
+}
 .activity-cover {
   position: relative;
   width: 72px;
@@ -9389,6 +9392,7 @@ a,
   display: none;
 }
 .activity-entry-footer .activity-entry-actions {
+  margin-left: auto;
   margin-top: 0;
 }
 .content-like {
@@ -9440,14 +9444,32 @@ button.content-like:hover:not(:disabled) {
 .activity-read-more {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  margin-top: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
   color: var(--screen-muted);
   font-size: 11px;
   font-weight: 600;
 }
 .activity-read-more:hover {
+  border-color: var(--screen-dim);
+  background: var(--console-hover);
   color: var(--screen-white);
+}
+.activity-entry[data-kind="review"] .activity-entry-footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--shell-line);
+}
+
+img.twemoji {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin: 0 0.05em;
+  vertical-align: -0.12em;
+  object-fit: contain;
 }
 .activity-review-title a {
   color: inherit;
@@ -14404,6 +14426,9 @@ html
     grid-template-columns: 60px minmax(0, 1fr);
     gap: 12px;
     padding: 14px;
+  }
+  .activity-entry[data-kind="review"] {
+    column-gap: 16px;
   }
   .activity-cover {
     width: 60px;
