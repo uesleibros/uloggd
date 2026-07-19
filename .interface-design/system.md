@@ -410,7 +410,10 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Avoid animation on repeated keyboard-driven actions.
 - Respect `prefers-reduced-motion` by removing movement while preserving immediate state changes.
 - Dropdowns enter in 140–160ms from their trigger origin. Centered modals use a 200ms opacity plus subtle 0.985 scale/vertical offset; mobile sheets enter upward by 12px. Overlays fade in over 160ms. Never animate layout dimensions.
-- Radix menus and dialogs must also animate their `data-state="closed"` state for 110–150ms; conditional parents remain mounted until that exit finishes so overlays never disappear abruptly.
+- Radix menus and dialogs must also animate their `data-state="closed"` state for 110–150ms; conditional parents remain mounted until that exit finishes so overlays never disappear abruptly. This includes Radix Select menus (`menu-out`), and every dialog overlay uses `drawer-backdrop` or an equivalent veil with enter and exit animations — no overlay class may exist only in JSX.
+- Skeletons use the `--skeleton-fill` token (translucent, theme-aware) and must mirror the current layout of the page they cover: when a page's hero or structure changes, its `loading.tsx` changes in the same commit.
+- Destructive actions never use `window.confirm`: the universal pattern is the inline two-step armed button (first tap arms with a warning label and danger tint, second tap executes, auto-disarms after 4s).
+- Danger text always uses `var(--danger-text)`; badges rendered over cover art or banners (index markers, drag handles, media counters) hardcode light ink (#f2f3f7 / #b9bcc5) because their backdrop stays dark in every theme, while anything on tokened surfaces must use tokened text.
 
 ## Content Principles
 

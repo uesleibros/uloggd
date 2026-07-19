@@ -22,6 +22,7 @@ export function ActivityEntryActions({
   const today = new Date().toISOString().slice(0, 10);
   const [editing, setEditing] = useState(false);
   const [pending, setPending] = useState(false);
+  const [armed, setArmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [journeyStart, setJourneyStart] = useState(entry.playedOn ?? today);
   const [journeyEnd, setJourneyEnd] = useState(entry.endedOn ?? "");
@@ -36,11 +37,13 @@ export function ActivityEntryActions({
     totalMinutes % 60 ? String(totalMinutes % 60) : "",
   );
   async function remove() {
-    if (
-      pending ||
-      !window.confirm(pt ? "Remover este registro?" : "Remove this entry?")
-    )
+    if (pending) return;
+    if (!armed) {
+      setArmed(true);
+      window.setTimeout(() => setArmed(false), 4000);
       return;
+    }
+    setArmed(false);
     setPending(true);
     setError(null);
     const { data, error: actionError } = await createClient().rpc(
@@ -91,15 +94,24 @@ export function ActivityEntryActions({
         <button type="button" onClick={() => setEditing(true)}>
           <Pencil size={14} /> {pt ? "Editar" : "Edit"}
         </button>
-        <button type="button" onClick={remove} disabled={pending}>
+        <button
+          type="button"
+          onClick={remove}
+          disabled={pending}
+          data-armed={armed || undefined}
+        >
           <Trash2 size={14} />{" "}
           {pending
             ? pt
               ? "Removendo…"
               : "Removing…"
-            : pt
-              ? "Remover"
-              : "Remove"}
+            : armed
+              ? pt
+                ? "Remover mesmo?"
+                : "Really remove?"
+              : pt
+                ? "Remover"
+                : "Remove"}
         </button>
         {error && <span role="alert">{error}</span>}
       </div>

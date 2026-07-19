@@ -1268,7 +1268,7 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   background: rgb(28 26 32 / 82%);
-  color: var(--screen-white);
+  color: #f2f3f7;
   font-size: 11px;
   font-weight: 620;
   backdrop-filter: blur(10px);
@@ -1657,7 +1657,7 @@ html[data-sidebar-ready] .account-button > svg {
 .quick-menu [role="menuitem"].quick-menu-remove:hover,
 .quick-menu [role="menuitem"].quick-menu-remove:focus {
   background: rgb(210 105 105 / 9%);
-  color: #ffc1bc;
+  color: var(--danger-text);
 }
 .quick-menu [role="separator"] {
   height: 1px;
@@ -2602,7 +2602,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 5px 8px;
   border-radius: 5px;
   background: rgb(15 14 17 / 82%);
-  color: var(--screen-dim);
+  color: #b9bcc5;
   font: 550 11px var(--font-inter);
   transform: translateX(-50%);
 }
@@ -5420,6 +5420,9 @@ html[data-sidebar-ready] .account-button > svg {
   transform-origin: var(--radix-select-content-transform-origin);
   animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
+.editor-select-menu[data-state="closed"] {
+  animation: menu-out 110ms cubic-bezier(0.77, 0, 0.175, 1);
+}
 .editor-select-option {
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr) 18px;
@@ -5439,29 +5442,6 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .editor-select-option[data-state="checked"] {
   color: var(--tonal-brand-text);
-}
-.review-delete-confirm {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-right: auto;
-  padding: 4px;
-  border: 1px solid rgb(210 105 105 / 22%);
-  border-radius: 8px;
-  background: rgb(210 105 105 / 7%);
-}
-.review-delete-confirm span {
-  padding: 0 5px;
-  color: #e2aaaa;
-  font-size: 11px;
-}
-.review-delete-confirm button {
-  min-height: 30px !important;
-  padding-inline: 8px !important;
-}
-.review-delete-confirm button:last-child {
-  background: rgb(210 105 105 / 18%) !important;
-  color: #ffc1bc !important;
 }
 @media (max-width: 620px) {
   .activity-entry[data-kind="review"] {
@@ -5679,44 +5659,33 @@ html[data-sidebar-ready] .account-button > svg {
   }
 }
 
-.lists-loading-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 276px;
-  align-items: end;
-  gap: 32px;
-  min-height: 246px;
-  padding: 34px;
-  border: 1px solid var(--shell-line);
-  border-radius: 14px;
-  background: var(--console-panel);
+/* Mirrors WorkspaceHero: avatar square, eyebrow + title + description
+   copy, and the frosted stats block anchored bottom-right. */
+.workspace-hero-skeleton .workspace-hero-content > span:first-child {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
 }
-
-.lists-loading-hero > div {
+.workspace-hero-skeleton .workspace-hero-content > div {
   display: grid;
   gap: 10px;
   max-width: 500px;
 }
-
-.lists-loading-hero > div > span:nth-child(1) {
+.workspace-hero-skeleton .workspace-hero-content > div > span:nth-child(1) {
   width: 128px;
-  height: 10px;
+  height: 11px;
 }
-.lists-loading-hero > div > span:nth-child(2) {
+.workspace-hero-skeleton .workspace-hero-content > div > span:nth-child(2) {
   width: 210px;
-  height: 42px;
+  height: 38px;
 }
-.lists-loading-hero > div > span:nth-child(3) {
+.workspace-hero-skeleton .workspace-hero-content > div > span:nth-child(3) {
   width: min(100%, 440px);
-  height: 14px;
+  height: 13px;
 }
-.lists-loading-hero > div > span:nth-child(4) {
-  width: 112px;
-  height: 44px;
-  margin-top: 10px;
-}
-.lists-loading-hero > span {
+.workspace-hero-skeleton .workspace-hero-content > span:last-child {
   width: 276px;
-  height: 74px;
+  height: 68px;
   border-radius: 11px;
 }
 .lists-loading-heading {
@@ -5759,19 +5728,13 @@ html[data-sidebar-ready] .account-button > svg {
 }
 
 @media (max-width: 760px) {
-  .lists-loading-hero {
-    grid-template-columns: minmax(0, 1fr);
-    padding: 26px 22px 22px;
+  .workspace-hero-skeleton .workspace-hero-content > span:first-child {
+    width: 52px;
+    height: 52px;
   }
-  .lists-loading-hero > span {
+  .workspace-hero-skeleton .workspace-hero-content > span:last-child {
+    grid-column: 1 / -1;
     width: 100%;
-  }
-}
-
-@media (max-width: 620px) {
-  .lists-loading-hero {
-    min-height: 0;
-    padding: 24px 18px 18px;
   }
 }
 
@@ -5787,6 +5750,26 @@ html[data-sidebar-ready] .account-button > svg {
   background: var(--console-raised);
   box-shadow: 0 24px 70px rgb(0 0 0 / 52%);
   transform: translate(-50%, -50%);
+  animation: social-modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.share-dialog[data-state="closed"] {
+  pointer-events: none;
+  animation: social-modal-center-out 150ms cubic-bezier(0.77, 0, 0.175, 1);
+}
+@media (max-width: 620px) {
+  .share-dialog {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding-bottom: max(18px, env(safe-area-inset-bottom));
+    border-radius: 14px 14px 0 0;
+    transform: none;
+    animation-name: social-modal-sheet-in;
+  }
+  .share-dialog[data-state="closed"] {
+    animation-name: social-modal-sheet-out;
+  }
 }
 .share-dialog > header {
   display: flex;
@@ -6716,6 +6699,10 @@ html[data-sidebar-ready] .account-button > svg {
   animation: quick-menu-in 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+.library-sort-menu[data-state="closed"] {
+  animation: menu-out 110ms cubic-bezier(0.77, 0, 0.175, 1);
+}
+
 .library-sort-option {
   display: flex;
   align-items: center;
@@ -6923,7 +6910,7 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid rgb(244 128 44 / 28%);
   border-radius: 8px;
   background: rgb(16 14 16 / 82%);
-  color: var(--screen-white);
+  color: #f2f3f7;
   font-size: 11px;
   font-weight: 620;
   cursor: pointer;
@@ -7431,6 +7418,51 @@ html[data-sidebar-ready] .account-button > svg {
 
 .spawnd-player-consent button:active {
   transform: scale(0.98);
+}
+
+.spawnd-player-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--console-inset);
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.spawnd-player-spinner {
+  color: var(--brand-blurple-bright);
+  animation: auth-spin 900ms linear infinite;
+}
+
+.spawnd-player-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.spawnd-player-error-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 620;
+}
+
+.spawnd-player-error-actions a:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
 }
 
 .spawnd-panel {
@@ -7941,7 +7973,7 @@ a,
 .skeleton-block {
   display: block;
   border-radius: 7px;
-  background: var(--console-raised);
+  background: var(--skeleton-fill);
   animation: skeleton-pulse 1.4s ease-in-out infinite alternate;
 }
 .skeleton-title {
@@ -8621,7 +8653,7 @@ a,
 .journey-calendar-grid > span[data-removing] {
   background: rgb(231 154 154 / 14%);
   box-shadow: inset 0 0 0 1px rgb(231 154 154 / 45%);
-  color: #e79a9a;
+  color: var(--danger-text);
   transform: scale(1.04);
 }
 /* Painted stretch reads as one connected bar while dragging. */
@@ -8724,7 +8756,7 @@ a,
 }
 .journey-drag-pill[data-mode="remove"] {
   border-color: rgb(231 154 154 / 40%);
-  color: #e79a9a;
+  color: var(--danger-text);
 }
 /* Accessible fallback + day editor */
 .journey-open-day {
@@ -8837,7 +8869,7 @@ a,
 }
 .journey-day-actions .journey-day-remove {
   margin-right: auto;
-  color: #e79a9a;
+  color: var(--danger-text);
 }
 .journey-day-actions .journey-day-remove:hover:not(:disabled) {
   border-color: rgb(231 154 154 / 34%);
@@ -9316,10 +9348,14 @@ details.review-page-content p {
   color: var(--screen-white);
 }
 .activity-entry-actions button:nth-of-type(2):hover {
-  color: #e79a9a;
+  color: var(--danger-text);
+}
+.activity-entry-actions button[data-armed] {
+  background: rgb(210 105 105 / 12%);
+  color: var(--danger-text);
 }
 .activity-entry-actions span[role="alert"] {
-  color: #e79a9a;
+  color: var(--danger-text);
   font-size: 11px;
 }
 .spoiler-content {
@@ -9621,14 +9657,14 @@ details.review-page-content p {
 }
 .social-editor-form footer .social-delete-button {
   margin-right: auto;
-  color: #e79a9a;
+  color: var(--danger-text);
 }
 .social-editor-form footer .social-delete-button:hover {
   background: rgb(190 70 70 / 10%);
 }
 .social-form-error,
 .create-list-form [role="alert"] {
-  color: #e79a9a;
+  color: var(--danger-text);
   font-size: 11px;
 }
 .social-form-success {
@@ -9798,7 +9834,7 @@ details.review-page-content p {
 }
 .list-owner-actions button:last-child:hover,
 .list-item-owner-action button:hover {
-  color: #e79a9a;
+  color: var(--danger-text);
   border-color: rgb(231 154 154 / 24%);
 }
 .list-item-owner-action {
@@ -9806,7 +9842,7 @@ details.review-page-content p {
 }
 .list-item-owner-action span {
   margin-left: 7px;
-  color: #e79a9a;
+  color: var(--danger-text);
   font-size: 11px;
 }
 .ranked-list-item {
@@ -9862,7 +9898,7 @@ details.review-page-content p {
   padding: 4px 6px;
   border-radius: 5px;
   background: rgb(11 10 13 / 88%);
-  color: var(--screen-white);
+  color: #f2f3f7;
   font: 600 11px var(--font-inter);
 }
 .ranked-list-item > p {
@@ -9873,7 +9909,7 @@ details.review-page-content p {
 .list-owner-actions button[data-armed] {
   border-color: rgb(231 154 154 / 42%);
   background: rgb(231 154 154 / 12%);
-  color: #e79a9a;
+  color: var(--danger-text);
 }
 /* Drag reordering on list detail */
 .list-item-drag-handle {
@@ -9888,12 +9924,12 @@ details.review-page-content p {
   border: 0;
   border-radius: 7px;
   background: rgb(11 10 13 / 85%);
-  color: var(--screen-dim);
+  color: #b9bcc5;
   cursor: grab;
   touch-action: none;
 }
 .list-item-drag-handle:hover {
-  color: var(--screen-white);
+  color: #ffffff;
 }
 .list-items-grid[data-reordering] {
   cursor: grabbing;
@@ -9959,7 +9995,7 @@ details.review-page-content p {
   color: var(--brand-blurple-bright);
 }
 .list-item-tools > span {
-  color: #e79a9a;
+  color: var(--danger-text);
   font-size: 11px;
 }
 .list-add-game-trigger {
@@ -10574,22 +10610,6 @@ details.review-page-content p {
 }
 
 /* Streamed home shell mirrors the editorial feed instead of showing a blank route. */
-.home-loading-heading {
-  display: grid;
-  gap: 8px;
-  padding: 32px 36px 20px;
-}
-
-.home-loading-heading span:first-child {
-  width: 92px;
-  height: 9px;
-}
-
-.home-loading-heading span:last-child {
-  width: min(350px, 72%);
-  height: 28px;
-}
-
 .home-loading-feature {
   display: flex;
   align-items: end;
@@ -12022,10 +12042,6 @@ details.review-page-content p {
 }
 
 @media (max-width: 620px) {
-  .home-loading-heading {
-    padding: 24px 18px 16px;
-  }
-
   .home-loading-feature {
     min-height: 390px;
     margin: 0 0 28px;
@@ -12725,7 +12741,7 @@ details.review-page-content p {
   border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 6px;
   background: rgb(10 9 12 / 82%);
-  color: var(--screen-white);
+  color: #f2f3f7;
   font-size: 9px;
   font-weight: 650;
   backdrop-filter: blur(8px);
@@ -13400,6 +13416,25 @@ details.review-page-content p {
 :root[data-theme="light"] .lists-page .list-preview-card:hover,
 :root[data-theme="light"] .profile-connection-card > a:hover {
   box-shadow: 0 12px 30px rgb(40 44 54 / 12%);
+}
+
+/* Banner heroes invert their scrim in light theme: the copy is dark, so
+   the wash over the banner must be light for it to stay readable. */
+:root[data-theme="light"] .library-hero-scrim,
+:root[data-theme="light"] .workspace-hero-scrim {
+  background:
+    linear-gradient(
+      90deg,
+      rgb(245 246 248 / 96%),
+      rgb(245 246 248 / 62%) 55%,
+      rgb(245 246 248 / 24%)
+    ),
+    linear-gradient(0deg, var(--console-canvas), transparent 72%);
+}
+
+:root[data-theme="light"] .library-hero-stats,
+:root[data-theme="light"] .workspace-hero-stats {
+  background: rgb(255 255 255 / 78%);
 }
 
 :root[data-theme="light"] .catalog-active-filters button,

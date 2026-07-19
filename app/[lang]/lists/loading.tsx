@@ -1,15 +1,9 @@
+import { WorkspaceHeroSkeleton } from "@/components/social/workspace-hero-skeleton";
+
 export default function Loading() {
   return (
     <main className="social-page lists-page lists-loading" aria-busy="true">
-      <div className="lists-loading-hero">
-        <div>
-          <span className="skeleton-block" />
-          <span className="skeleton-block" />
-          <span className="skeleton-block" />
-          <span className="skeleton-block" />
-        </div>
-        <span className="skeleton-block" />
-      </div>
+      <WorkspaceHeroSkeleton />
       <div className="lists-loading-heading">
         <span className="skeleton-block" />
         <span className="skeleton-block" />
