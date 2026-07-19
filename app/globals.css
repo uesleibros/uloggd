@@ -8405,6 +8405,29 @@ a,
   height: 13px;
   margin-top: 4px;
 }
+.account-slot-skeleton {
+  cursor: default;
+}
+.account-slot-skeleton > span {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+.account-slot-skeleton > div {
+  display: grid;
+  gap: 7px;
+}
+.account-slot-skeleton > div > span:first-child {
+  width: 70%;
+  height: 12px;
+}
+.account-slot-skeleton > div > span:last-child {
+  width: 45%;
+  height: 10px;
+}
+html[data-sidebar-collapsed] .account-slot-skeleton > div {
+  display: none;
+}
 .skeleton-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -8713,6 +8736,44 @@ a,
 .activity-stream {
   display: grid;
   gap: 16px;
+}
+.activity-stream + .activity-stream {
+  margin-top: 16px;
+}
+.load-more-row {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  margin-top: 18px;
+}
+.load-more-row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 22px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-panel);
+  color: var(--screen-white);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease-out,
+    background-color 150ms ease-out;
+}
+.load-more-row button:hover:not(:disabled) {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+}
+.load-more-row button:disabled {
+  opacity: 0.72;
+  cursor: default;
+}
+.load-more-row span[role="alert"] {
+  color: var(--danger-text);
+  font-size: 11px;
 }
 .activity-entry {
   display: grid;
@@ -9950,6 +10011,19 @@ details.review-page-content p {
   border-radius: 12px;
   text-align: center;
 }
+.social-empty > span[aria-hidden],
+.library-empty > span[aria-hidden],
+.library-filter-empty > span[aria-hidden],
+.catalog-results-empty > span[aria-hidden] {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 14px;
+  border-radius: 11px;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
 .social-empty h2 {
   color: var(--screen-white);
   font-size: 16px;
@@ -10223,6 +10297,12 @@ details.review-page-content p {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px 16px;
+}
+.lists-grid + .lists-grid {
+  margin-top: 24px;
+}
+.profile-connections-grid + .profile-connections-grid {
+  margin-top: 10px;
 }
 .list-preview-card {
   display: block;

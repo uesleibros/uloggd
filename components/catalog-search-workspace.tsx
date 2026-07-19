@@ -4,7 +4,14 @@ import * as Dialog from "@radix-ui/react-dialog";
 import * as Select from "@radix-ui/react-select";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Check, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Search,
+  SearchX,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type {
   CatalogGame,
@@ -827,256 +834,263 @@ export function CatalogSearchWorkspace({
         </Dialog.Portal>
 
         <div className="catalog-search-workspace">
-        <section className="catalog-results-panel" aria-busy={pending}>
-          <header className="catalog-results-heading">
-            <div className="catalog-results-heading-copy">
-              <span>{pt ? "RESULTADOS" : "RESULTS"}</span>
-              <h2>
-                {filters.query
-                  ? pt
-                    ? `Jogos para “${filters.query}”`
-                    : `Games for “${filters.query}”`
-                  : pt
-                    ? "Explore o catálogo"
-                    : "Explore the catalog"}
-              </h2>
-              <p>
-                {pt
-                  ? `${total.toLocaleString("pt-BR")} encontrados · ${games.length} nesta página`
-                  : `${total.toLocaleString("en-US")} found · ${games.length} on this page`}
-              </p>
-            </div>
-            <div className="catalog-results-tools">
-              <Dialog.Trigger asChild>
-                <button type="button" className="catalog-filter-trigger">
-                  <SlidersHorizontal size={15} />
-                  <span>{pt ? "Filtros avançados" : "Advanced filters"}</span>
-                  {appliedCount > 0 && <b>{appliedCount}</b>}
-                </button>
-              </Dialog.Trigger>
-              <CatalogSelect
-                value={filters.sort}
-                onChange={(value) =>
-                  navigate({ sort: value === "popular" ? null : value })
-                }
-                options={sortOptions}
-                label={pt ? "Ordenar resultados" : "Sort results"}
-              />
-            </div>
-          </header>
-
-          {games.length ? (
-            <div className="catalog-results-grid" key={filters.page}>
-              {games.map((game, index) => (
-                <div
-                  className="catalog-result-entry"
-                  key={game.id}
-                  style={{ "--result-index": index % 8 } as React.CSSProperties}
-                >
-                  <QuickGameCard
-                    game={game}
-                    initial={saved[game.id] ?? null}
-                    lang={lang}
-                    enabled={enabled}
-                    spawndAvailable={game.spawndAvailable}
-                    meta={[
-                      game.releaseYear,
-                      game.platforms[0],
-                      game.rating ? `${game.rating}/100` : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="catalog-results-empty">
-              <h2>
-                {pt
-                  ? "Nenhum jogo nesse cruzamento"
-                  : "No games in this combination"}
-              </h2>
-              <p>
-                {pt
-                  ? "Remova um filtro ou amplie o período para reencontrar o catálogo."
-                  : "Remove a filter or widen the period to bring the catalog back."}
-              </p>
-              <Link href={pathname}>
-                {pt ? "Limpar filtros" : "Clear filters"}
-              </Link>
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <nav
-              className="catalog-pagination"
-              aria-label={pt ? "Paginação" : "Pagination"}
-            >
-              <div className="catalog-pagination-summary">
-                <strong>
-                  {pt ? `Página ${filters.page}` : `Page ${filters.page}`}
-                </strong>
-                <span>{pt ? `de ${totalPages}` : `of ${totalPages}`}</span>
+          <section className="catalog-results-panel" aria-busy={pending}>
+            <header className="catalog-results-heading">
+              <div className="catalog-results-heading-copy">
+                <span>{pt ? "RESULTADOS" : "RESULTS"}</span>
+                <h2>
+                  {filters.query
+                    ? pt
+                      ? `Jogos para “${filters.query}”`
+                      : `Games for “${filters.query}”`
+                    : pt
+                      ? "Explore o catálogo"
+                      : "Explore the catalog"}
+                </h2>
+                <p>
+                  {pt
+                    ? `${total.toLocaleString("pt-BR")} encontrados · ${games.length} nesta página`
+                    : `${total.toLocaleString("en-US")} found · ${games.length} on this page`}
+                </p>
               </div>
-              <div className="catalog-pagination-pages">
-                <button
-                  type="button"
-                  disabled={filters.page === 1 || pending}
-                  onClick={() => navigate({ page: null }, true)}
-                >
-                  {pt ? "Primeira" : "First"}
-                </button>
-                {paginationItems(filters.page, totalPages).map((item) =>
-                  typeof item === "number" ? (
-                    <button
-                      type="button"
-                      key={item}
-                      aria-current={item === filters.page ? "page" : undefined}
-                      disabled={pending}
-                      onClick={() =>
-                        navigate({ page: item === 1 ? null : item }, true)
-                      }
-                    >
-                      {item}
-                    </button>
-                  ) : (
-                    <span key={item} aria-hidden>
-                      …
-                    </span>
-                  ),
-                )}
-                <button
-                  type="button"
-                  disabled={filters.page === totalPages || pending}
-                  onClick={() => navigate({ page: totalPages }, true)}
-                >
-                  {pt ? "Última" : "Last"}
-                </button>
-              </div>
-              <form
-                className="catalog-pagination-jump"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  const value = new FormData(event.currentTarget).get("page");
-                  const page = Math.max(
-                    1,
-                    Math.min(totalPages, Number(value) || 1),
-                  );
-                  navigate({ page: page === 1 ? null : page }, true);
-                }}
-              >
-                <label htmlFor="catalog-jump-page">
-                  {pt ? "Ir para" : "Go to"}
-                </label>
-                <input
-                  id="catalog-jump-page"
-                  type="number"
-                  name="page"
-                  min="1"
-                  max={totalPages}
-                  defaultValue={filters.page}
-                  key={filters.page}
+              <div className="catalog-results-tools">
+                <Dialog.Trigger asChild>
+                  <button type="button" className="catalog-filter-trigger">
+                    <SlidersHorizontal size={15} />
+                    <span>{pt ? "Filtros avançados" : "Advanced filters"}</span>
+                    {appliedCount > 0 && <b>{appliedCount}</b>}
+                  </button>
+                </Dialog.Trigger>
+                <CatalogSelect
+                  value={filters.sort}
+                  onChange={(value) =>
+                    navigate({ sort: value === "popular" ? null : value })
+                  }
+                  options={sortOptions}
+                  label={pt ? "Ordenar resultados" : "Sort results"}
                 />
-                <button type="submit" disabled={pending}>
-                  {pt ? "Ir" : "Go"}
-                </button>
-              </form>
-            </nav>
-          )}
-        </section>
-
-        <aside
-          className="catalog-context-rail"
-          aria-label={pt ? "Resumo da busca" : "Search summary"}
-          key={`${filters.page}-${filters.sort}-${appliedCount}`}
-        >
-          <section className="catalog-context-total">
-            <span>{pt ? "CATÁLOGO ENCONTRADO" : "CATALOG FOUND"}</span>
-            <strong>{total.toLocaleString(lang)}</strong>
-            <small>
-              {pt ? "jogos correspondem à busca" : "games match this search"}
-            </small>
-          </section>
-
-          <section className="catalog-context-card">
-            <header>
-              <strong>{pt ? "Sua busca" : "Your search"}</strong>
-              {appliedCount > 0 && <span>{appliedCount}</span>}
-            </header>
-            <dl>
-              <div>
-                <dt>{pt ? "Ordenação" : "Sorting"}</dt>
-                <dd>{activeSort}</dd>
               </div>
-              {scopeRows.map((row) => (
-                <div key={row.label}>
-                  <dt>{row.label}</dt>
-                  <dd>{row.value}</dd>
-                </div>
-              ))}
-            </dl>
-            {selectedChips.length > 0 ? (
-              <div className="catalog-context-chips">
-                {selectedChips.map((chip) => (
-                  <button
-                    type="button"
-                    key={`${chip.key}-${chip.id}`}
-                    onClick={() =>
-                      updateArray(
-                        chip.key,
-                        filters[chip.key].filter((id) => id !== chip.id),
-                      )
+            </header>
+
+            {games.length ? (
+              <div className="catalog-results-grid" key={filters.page}>
+                {games.map((game, index) => (
+                  <div
+                    className="catalog-result-entry"
+                    key={game.id}
+                    style={
+                      { "--result-index": index % 8 } as React.CSSProperties
                     }
                   >
-                    <span>{chip.label}</span>
-                    <X size={12} />
-                  </button>
+                    <QuickGameCard
+                      game={game}
+                      initial={saved[game.id] ?? null}
+                      lang={lang}
+                      enabled={enabled}
+                      spawndAvailable={game.spawndAvailable}
+                      meta={[
+                        game.releaseYear,
+                        game.platforms[0],
+                        game.rating ? `${game.rating}/100` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    />
+                  </div>
                 ))}
               </div>
             ) : (
-              <p>
-                {pt
-                  ? "Nenhum filtro de categoria aplicado."
-                  : "No category filters applied."}
-              </p>
+              <div className="catalog-results-empty">
+                <span aria-hidden>
+                  <SearchX size={22} />
+                </span>
+                <h2>
+                  {pt
+                    ? "Nenhum jogo nesse cruzamento"
+                    : "No games in this combination"}
+                </h2>
+                <p>
+                  {pt
+                    ? "Remova um filtro ou amplie o período para reencontrar o catálogo."
+                    : "Remove a filter or widen the period to bring the catalog back."}
+                </p>
+                <Link href={pathname}>
+                  {pt ? "Limpar filtros" : "Clear filters"}
+                </Link>
+              </div>
             )}
-            {appliedCount > 0 && (
-              <Link href={pathname}>
-                {pt ? "Limpar filtros" : "Clear filters"}
-              </Link>
+
+            {totalPages > 1 && (
+              <nav
+                className="catalog-pagination"
+                aria-label={pt ? "Paginação" : "Pagination"}
+              >
+                <div className="catalog-pagination-summary">
+                  <strong>
+                    {pt ? `Página ${filters.page}` : `Page ${filters.page}`}
+                  </strong>
+                  <span>{pt ? `de ${totalPages}` : `of ${totalPages}`}</span>
+                </div>
+                <div className="catalog-pagination-pages">
+                  <button
+                    type="button"
+                    disabled={filters.page === 1 || pending}
+                    onClick={() => navigate({ page: null }, true)}
+                  >
+                    {pt ? "Primeira" : "First"}
+                  </button>
+                  {paginationItems(filters.page, totalPages).map((item) =>
+                    typeof item === "number" ? (
+                      <button
+                        type="button"
+                        key={item}
+                        aria-current={
+                          item === filters.page ? "page" : undefined
+                        }
+                        disabled={pending}
+                        onClick={() =>
+                          navigate({ page: item === 1 ? null : item }, true)
+                        }
+                      >
+                        {item}
+                      </button>
+                    ) : (
+                      <span key={item} aria-hidden>
+                        …
+                      </span>
+                    ),
+                  )}
+                  <button
+                    type="button"
+                    disabled={filters.page === totalPages || pending}
+                    onClick={() => navigate({ page: totalPages }, true)}
+                  >
+                    {pt ? "Última" : "Last"}
+                  </button>
+                </div>
+                <form
+                  className="catalog-pagination-jump"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    const value = new FormData(event.currentTarget).get("page");
+                    const page = Math.max(
+                      1,
+                      Math.min(totalPages, Number(value) || 1),
+                    );
+                    navigate({ page: page === 1 ? null : page }, true);
+                  }}
+                >
+                  <label htmlFor="catalog-jump-page">
+                    {pt ? "Ir para" : "Go to"}
+                  </label>
+                  <input
+                    id="catalog-jump-page"
+                    type="number"
+                    name="page"
+                    min="1"
+                    max={totalPages}
+                    defaultValue={filters.page}
+                    key={filters.page}
+                  />
+                  <button type="submit" disabled={pending}>
+                    {pt ? "Ir" : "Go"}
+                  </button>
+                </form>
+              </nav>
             )}
           </section>
 
-          {totalPages > 1 && (
-            <section className="catalog-context-card catalog-context-navigation">
-              <div>
-                <strong>
-                  {pt ? `Página ${filters.page}` : `Page ${filters.page}`}
-                </strong>
-                <span>{pt ? `de ${totalPages}` : `of ${totalPages}`}</span>
-              </div>
-              <div>
-                <button
-                  type="button"
-                  disabled={filters.page === 1 || pending}
-                  onClick={() =>
-                    navigate({ page: filters.page - 1 || null }, true)
-                  }
-                >
-                  {pt ? "Anterior" : "Previous"}
-                </button>
-                <button
-                  type="button"
-                  disabled={filters.page === totalPages || pending}
-                  onClick={() => navigate({ page: filters.page + 1 }, true)}
-                >
-                  {pt ? "Próxima" : "Next"}
-                </button>
-              </div>
+          <aside
+            className="catalog-context-rail"
+            aria-label={pt ? "Resumo da busca" : "Search summary"}
+            key={`${filters.page}-${filters.sort}-${appliedCount}`}
+          >
+            <section className="catalog-context-total">
+              <span>{pt ? "CATÁLOGO ENCONTRADO" : "CATALOG FOUND"}</span>
+              <strong>{total.toLocaleString(lang)}</strong>
+              <small>
+                {pt ? "jogos correspondem à busca" : "games match this search"}
+              </small>
             </section>
-          )}
-        </aside>
+
+            <section className="catalog-context-card">
+              <header>
+                <strong>{pt ? "Sua busca" : "Your search"}</strong>
+                {appliedCount > 0 && <span>{appliedCount}</span>}
+              </header>
+              <dl>
+                <div>
+                  <dt>{pt ? "Ordenação" : "Sorting"}</dt>
+                  <dd>{activeSort}</dd>
+                </div>
+                {scopeRows.map((row) => (
+                  <div key={row.label}>
+                    <dt>{row.label}</dt>
+                    <dd>{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+              {selectedChips.length > 0 ? (
+                <div className="catalog-context-chips">
+                  {selectedChips.map((chip) => (
+                    <button
+                      type="button"
+                      key={`${chip.key}-${chip.id}`}
+                      onClick={() =>
+                        updateArray(
+                          chip.key,
+                          filters[chip.key].filter((id) => id !== chip.id),
+                        )
+                      }
+                    >
+                      <span>{chip.label}</span>
+                      <X size={12} />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p>
+                  {pt
+                    ? "Nenhum filtro de categoria aplicado."
+                    : "No category filters applied."}
+                </p>
+              )}
+              {appliedCount > 0 && (
+                <Link href={pathname}>
+                  {pt ? "Limpar filtros" : "Clear filters"}
+                </Link>
+              )}
+            </section>
+
+            {totalPages > 1 && (
+              <section className="catalog-context-card catalog-context-navigation">
+                <div>
+                  <strong>
+                    {pt ? `Página ${filters.page}` : `Page ${filters.page}`}
+                  </strong>
+                  <span>{pt ? `de ${totalPages}` : `of ${totalPages}`}</span>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    disabled={filters.page === 1 || pending}
+                    onClick={() =>
+                      navigate({ page: filters.page - 1 || null }, true)
+                    }
+                  >
+                    {pt ? "Anterior" : "Previous"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={filters.page === totalPages || pending}
+                    onClick={() => navigate({ page: filters.page + 1 }, true)}
+                  >
+                    {pt ? "Próxima" : "Next"}
+                  </button>
+                </div>
+              </section>
+            )}
+          </aside>
         </div>
       </Dialog.Root>
     </main>

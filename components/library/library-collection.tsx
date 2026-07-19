@@ -7,6 +7,7 @@ import {
   ChevronDown,
   Check,
   LayoutGrid,
+  LibraryBig,
   List,
   Search,
   X,
@@ -165,6 +166,9 @@ export function LibraryCollection({
   if (!activeRecords.length)
     return (
       <section className="library-empty" aria-live="polite">
+        <span aria-hidden>
+          <LibraryBig size={22} />
+        </span>
         <h2>
           {owner
             ? pt
@@ -337,6 +341,9 @@ export function LibraryCollection({
       </div>
       {!pageRecords.length ? (
         <div className="library-filter-empty">
+          <span aria-hidden>
+            <Search size={22} />
+          </span>
           <h2>{pt ? "Nenhum jogo encontrado" : "No games found"}</h2>
           <p>
             {pt

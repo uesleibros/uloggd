@@ -36,6 +36,7 @@ export async function getActivity(
     gameId?: number;
     limit?: number;
     viewerId?: string | null;
+    before?: string;
   } = {},
 ) {
   const limit = options.limit ?? 30;
@@ -60,6 +61,10 @@ export async function getActivity(
   if (options.gameId) {
     reviewsQuery = reviewsQuery.eq("igdb_id", options.gameId);
     diaryQuery = diaryQuery.eq("igdb_id", options.gameId);
+  }
+  if (options.before) {
+    reviewsQuery = reviewsQuery.lt("created_at", options.before);
+    diaryQuery = diaryQuery.lt("created_at", options.before);
   }
   const [{ data: reviews }, { data: diary }] = await Promise.all([
     reviewsQuery,

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Layers3 } from "lucide-react";
 import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { ListAddGame } from "@/components/social/list-add-game";
@@ -170,6 +171,9 @@ export default async function ListPage({ params }: Props) {
         />
       ) : (
         <div className="social-empty">
+          <span aria-hidden>
+            <Layers3 size={22} />
+          </span>
           <h2>{pt ? "Lista vazia" : "Empty list"}</h2>
           <p>
             {pt

@@ -16,24 +16,29 @@ after the loading/skeleton consistency pass.
 - An `error.tsx` boundary for the `[lang]` tree matching the 404 design, with a
   retry action.
 
+## Done in the streaming/pagination pass (July 2026)
+
+- Auth reads moved out of the `[lang]` layout's critical path: the sidebar and
+  header tools resolve behind `<Suspense>` with a pending navigation fallback,
+  so the shell and route skeletons stream immediately on hard loads.
+- Cursor pagination with a "load more" control on the reviews feed, profile
+  activity (`/api/activity`), and both list surfaces (`/api/lists`), plus
+  chunked loading for connections.
+- List hydration now fetches only the five cover games each card shows,
+  instead of every item of every list.
+- Every list-like empty state uses the designed icon-square pattern.
+
 ## Next: polish and correctness
 
-1. **Instant navigation.** The `[lang]` layout awaits `getAuthUser()` and
-   `getNavigationAccount()` (cookie-based), so route skeletons only appear
-   after auth resolves on hard loads. Evaluate Cache Components or moving auth
-   reads behind a `<Suspense>` boundary in the layout so the shell streams
-   first.
-2. **Per-section Suspense on heavy pages.** The game page and profile page load
+1. **Per-section Suspense on heavy pages.** The game page and profile page load
    several independent data blocks; stream each section instead of blocking on
    the slowest one.
-3. **Pagination.** Reviews, lists, activity, and connections currently render
-   a single page of results. Add cursor pagination with loading rows that
-   reuse the skeleton entries.
-4. **Empty states.** Audit every list-like page for a designed empty state
-   (icon, one-line explanation, primary action) instead of bare text.
-5. **Optimistic updates.** Follow and library actions wait for the round trip.
+2. **Optimistic updates.** Follow and library actions wait for the round trip.
    Where the RPC is idempotent, flip the UI optimistically and reconcile, as
    the like button already does.
+3. **Game logs pagination.** The per-game logs page still loads up to 100
+   sessions because its header totals are computed from the loaded entries;
+   move totals to aggregate queries, then reuse `LoadMoreActivity`.
 
 ## Later: features
 

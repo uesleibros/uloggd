@@ -36,12 +36,14 @@ export function PlatformNavigation({
   account,
   searchCacheScope,
   viewerId,
+  pending = false,
 }: {
   lang: Locale;
   dictionary: Dictionary;
   account: NavigationAccount | null;
   searchCacheScope: string;
   viewerId: string | null;
+  pending?: boolean;
 }) {
   const isAuthenticated = Boolean(account);
   const nav = [
@@ -72,11 +74,13 @@ export function PlatformNavigation({
                       className="nav-disabled"
                       key={label}
                       aria-disabled="true"
-                      title={d.actions.requiresSignIn}
+                      title={pending ? label : d.actions.requiresSignIn}
                     >
                       <NavIcon size={20} />
                       <span>{label}</span>
-                      <LockKeyhole className="nav-lock" size={12} />
+                      {!pending && (
+                        <LockKeyhole className="nav-lock" size={12} />
+                      )}
                     </span>
                   );
                 }
@@ -132,16 +136,24 @@ export function PlatformNavigation({
                 <span
                   className="nav-disabled"
                   aria-disabled="true"
-                  title={d.actions.requiresSignIn}
+                  title={pending ? d.nav.settings : d.actions.requiresSignIn}
                 >
                   <Settings size={20} />
                   <span>{d.nav.settings}</span>
-                  <LockKeyhole className="nav-lock" size={12} />
+                  {!pending && <LockKeyhole className="nav-lock" size={12} />}
                 </span>
               )}
             </div>
           </div>
-          {account ? (
+          {pending ? (
+            <div className="account-button account-slot-skeleton" aria-hidden>
+              <span className="skeleton-block" />
+              <div>
+                <span className="skeleton-block" />
+                <span className="skeleton-block" />
+              </div>
+            </div>
+          ) : account ? (
             <AccountMenu account={account} lang={lang} />
           ) : (
             <Link className="account-button" href={`/${lang}/login`}>

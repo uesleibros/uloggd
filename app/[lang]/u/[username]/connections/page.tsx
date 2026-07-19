@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import { ArrowLeft, ArrowRight, Search, UserRound, Users } from "lucide-react";
+import { ArrowLeft, Search, UserRound, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { VerifiedMark } from "@/components/verified-badge";
+import { ConnectionCard } from "@/components/social/connection-card";
+import { LoadMoreConnections } from "@/components/social/load-more-connections";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../../dictionaries";
 import "../../../profile.css";
+
+const PAGE_SIZE = 24;
 
 type Props = {
   params: Promise<{ lang: string; username: string }>;
@@ -54,13 +56,17 @@ export default async function ProfileConnectionsPage({
     activeTab === "followers"
       ? (followersResult.data ?? []).map((item) => item.follower_id)
       : (followingResult.data ?? []).map((item) => item.following_id);
-  const { data: fetchedPeople } = ids.length
+  const normalizedQuery = query.toLocaleLowerCase(lang);
+  // Searches scan the whole network; without one, only the first page is
+  // hydrated and the rest loads on demand.
+  const visibleIds = normalizedQuery ? ids : ids.slice(0, PAGE_SIZE);
+  const remainingIds = normalizedQuery ? [] : ids.slice(PAGE_SIZE);
+  const { data: fetchedPeople } = visibleIds.length
     ? await supabase
         .from("profiles")
         .select("id,username,display_name,bio,avatar_url,verified")
-        .in("id", ids)
+        .in("id", visibleIds)
     : { data: [] };
-  const normalizedQuery = query.toLocaleLowerCase(lang);
   const people = (fetchedPeople ?? []).filter(
     (person) =>
       !normalizedQuery ||
@@ -123,42 +129,25 @@ export default async function ProfileConnectionsPage({
         <button type="submit">{pt ? "Buscar" : "Search"}</button>
       </form>
       {people.length ? (
-        <div className="profile-connections-grid">
-          {people.map((person) => (
-            <article key={person.id} className="profile-connection-card">
-              <Link
-                href={`/${lang}/u/${person.username}`}
-                aria-label={`@${person.username}`}
-              >
-                <span className="profile-connection-avatar">
-                  {person.avatar_url ? (
-                    <Image
-                      src={person.avatar_url}
-                      alt=""
-                      fill
-                      sizes="52px"
-                      unoptimized
-                    />
-                  ) : (
-                    person.username.slice(0, 1).toUpperCase()
-                  )}
-                </span>
-                <span className="profile-connection-copy">
-                  <strong>
-                    <span>{person.display_name || `@${person.username}`}</span>
-                    {person.verified && <VerifiedMark size={16} />}
-                  </strong>
-                  <small>@{person.username}</small>
-                  {person.bio && <p>{person.bio}</p>}
-                </span>
-                <ArrowRight className="profile-connection-arrow" size={16} />
-              </Link>
-            </article>
-          ))}
-        </div>
+        <>
+          <div className="profile-connections-grid">
+            {people.map((person) => (
+              <ConnectionCard key={person.id} person={person} lang={lang} />
+            ))}
+          </div>
+          {remainingIds.length > 0 && (
+            <LoadMoreConnections
+              ids={remainingIds}
+              lang={lang}
+              pageSize={PAGE_SIZE}
+            />
+          )}
+        </>
       ) : (
         <div className="social-empty profile-subpage-empty">
-          <UserRound size={24} />
+          <span aria-hidden>
+            <UserRound size={22} />
+          </span>
           <h2>
             {query
               ? pt

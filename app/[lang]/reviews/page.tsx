@@ -2,6 +2,7 @@ import { BookOpen, CalendarDays, EyeOff, Star } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ActivityStream } from "@/components/social/activity-stream";
+import { LoadMoreActivity } from "@/components/social/load-more-activity";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
@@ -117,6 +118,16 @@ export default async function ReviewsPage({
           entries={visibleEntries}
           lang={lang}
           viewerId={user.id}
+        />
+        <LoadMoreActivity
+          lang={lang}
+          viewerId={user.id}
+          profileId={user.id}
+          kind={activeType === "all" ? undefined : activeType}
+          initialCursor={
+            entries.length ? entries[entries.length - 1].createdAt : null
+          }
+          hasMore={entries.length === 60}
         />
       </div>
     </main>

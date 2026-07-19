@@ -3,6 +3,7 @@ import { ArrowLeft, BookOpen, CalendarDays, Star } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityStream } from "@/components/social/activity-stream";
+import { LoadMoreActivity } from "@/components/social/load-more-activity";
 import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
@@ -41,7 +42,7 @@ export default async function ProfileActivityPage({
   if (!profile?.username) notFound();
 
   const [entries, reviewCount, diaryCount] = await Promise.all([
-    getActivity(supabase, { profileId: profile.id, limit: 100 }),
+    getActivity(supabase, { profileId: profile.id, limit: 40 }),
     supabase
       .from("reviews")
       .select("id", { count: "exact", head: true })
@@ -120,6 +121,17 @@ export default async function ProfileActivityPage({
         entries={visibleEntries}
         lang={lang}
         viewerId={viewer?.id}
+      />
+      <LoadMoreActivity
+        lang={lang}
+        viewerId={viewer?.id}
+        profileId={profile.id}
+        kind={activeType === "all" ? undefined : activeType}
+        pageSize={40}
+        initialCursor={
+          entries.length ? entries[entries.length - 1].createdAt : null
+        }
+        hasMore={entries.length === 40}
       />
     </main>
   );

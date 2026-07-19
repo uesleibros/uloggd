@@ -7,6 +7,7 @@ import {
   EyeOff,
   Flag,
   Map,
+  NotebookPen,
   Play,
   Star,
   Trophy,
@@ -85,6 +86,9 @@ export function ActivityStream({
   if (!entries.length)
     return (
       <div className="social-empty">
+        <span aria-hidden>
+          <NotebookPen size={22} />
+        </span>
         <h2>{pt ? "Nada registrado ainda" : "Nothing logged yet"}</h2>
         <p>
           {pt
