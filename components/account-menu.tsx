@@ -3,7 +3,8 @@
 /* eslint-disable @next/next/no-img-element */
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { ChevronDown, LoaderCircle, LogOut } from "lucide-react";
+import { ChevronDown, LoaderCircle, LogOut, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { VerifiedMark } from "./verified-badge";
 
@@ -13,6 +14,7 @@ export type NavigationAccount = {
   displayName: string | null;
   avatarUrl: string | null;
   verified: boolean;
+  role: "USER" | "MODERATOR" | "ADMIN";
 };
 
 export function AccountMenu({
@@ -73,6 +75,20 @@ export function AccountMenu({
             <small>{account.email}</small>
           </div>
           <DropdownMenu.Separator />
+          {(account.role === "MODERATOR" || account.role === "ADMIN") && (
+            <>
+              <DropdownMenu.Item asChild>
+                <Link
+                  className="account-menu-moderation"
+                  href={`/${lang}/moderation`}
+                >
+                  <ShieldCheck size={16} />
+                  {lang === "pt-BR" ? "Moderação" : "Moderation"}
+                </Link>
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator />
+            </>
+          )}
           <DropdownMenu.Item
             className="account-menu-signout"
             disabled={signingOut}

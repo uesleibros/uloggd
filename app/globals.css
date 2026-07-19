@@ -1223,7 +1223,8 @@ html[data-sidebar-ready] .account-button > svg {
   margin: 4px;
   background: var(--shell-line);
 }
-.account-menu-signout {
+.account-menu-signout,
+.account-menu-moderation {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1237,6 +1238,13 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--danger-text);
   font-size: 11px;
   cursor: pointer;
+}
+.account-menu-moderation {
+  color: var(--screen-dim);
+}
+.account-menu-moderation[data-highlighted] {
+  background: var(--quiet-hover);
+  color: var(--screen-white);
 }
 .account-menu-signout[data-highlighted] {
   background: color-mix(in srgb, var(--danger-text) 10%, transparent);

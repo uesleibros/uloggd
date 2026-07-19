@@ -27,7 +27,7 @@ export const getNavigationAccount = cache(async () => {
   const supabase = await getSupabase();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username,display_name,avatar_url,verified")
+    .select("username,display_name,avatar_url,verified,role")
     .eq("id", user.id)
     .maybeSingle();
   return {
@@ -36,5 +36,6 @@ export const getNavigationAccount = cache(async () => {
     displayName: profile?.display_name ?? null,
     avatarUrl: profile?.avatar_url ?? null,
     verified: profile?.verified ?? false,
+    role: profile?.role ?? "USER",
   };
 });
