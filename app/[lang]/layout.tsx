@@ -8,6 +8,7 @@ import { LocaleSwitcher } from "@/components/locale-switcher";
 import { CookieConsent } from "@/components/cookie-consent";
 import { SmartHeader } from "@/components/smart-header";
 import { ThemeManager } from "@/components/theme-manager";
+import { NotificationCenter } from "@/components/notifications/notification-center";
 import { themeBootstrapScript } from "@/lib/theme";
 import { getAuthUser, getNavigationAccount } from "@/lib/supabase/auth";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
@@ -62,6 +63,7 @@ export default async function LocaleLayout({
             dictionary={dictionary}
             searchCacheScope={user?.id ?? "anonymous"}
             account={account}
+            viewerId={user?.id ?? null}
           />
           <div className="platform-content">
             <SmartHeader className="content-header">
@@ -70,7 +72,16 @@ export default async function LocaleLayout({
                 lang={lang}
                 cacheScope={user?.id ?? "anonymous"}
               />
-              <LocaleSwitcher locale={lang} />
+              <div className="content-header-actions">
+                {user && (
+                  <NotificationCenter
+                    viewerId={user.id}
+                    lang={lang}
+                    labels={dictionary.notifications}
+                  />
+                )}
+                <LocaleSwitcher locale={lang} />
+              </div>
             </SmartHeader>
             {children}
             <PlatformFooter lang={lang} dictionary={dictionary} />

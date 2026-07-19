@@ -19,6 +19,7 @@ import { MobileSidebar } from "./mobile-sidebar";
 import { MobileGameSearch } from "./game-search";
 import { SidebarCollapseButton } from "./sidebar-collapse-button";
 import { SmartHeader } from "./smart-header";
+import { NotificationCenter } from "./notifications/notification-center";
 
 const iconMap = {
   home: HomeIcon,
@@ -34,11 +35,13 @@ export function PlatformNavigation({
   dictionary: d,
   account,
   searchCacheScope,
+  viewerId,
 }: {
   lang: Locale;
   dictionary: Dictionary;
   account: NavigationAccount | null;
   searchCacheScope: string;
+  viewerId: string | null;
 }) {
   const isAuthenticated = Boolean(account);
   const nav = [
@@ -176,6 +179,13 @@ export function PlatformNavigation({
           }}
         />
         <div className="mobile-header-actions">
+          {viewerId && (
+            <NotificationCenter
+              viewerId={viewerId}
+              lang={lang}
+              labels={d.notifications}
+            />
+          )}
           <LocaleSwitcher locale={lang} />
           <MobileGameSearch
             dictionary={d}
