@@ -1306,6 +1306,10 @@
   background: var(--quiet-hover);
   color: var(--screen-white);
 }
+.profile-comment-actions button[data-armed] {
+  background: rgb(210 105 105 / 12%);
+  color: var(--danger-text);
+}
 .profile-comment-actions .profile-comment-reply-action {
   min-height: 32px;
   padding-inline: 8px;

@@ -8670,6 +8670,11 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   width: 100%;
   padding: 32px 36px 64px;
 }
+.profile-page {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
 .game-community-section {
   margin-bottom: 36px;
 }
@@ -11010,6 +11015,11 @@ details.review-page-content p {
   }
   .cover-shelf {
     margin-right: -14px;
+  }
+  .profile-page .cover-shelf {
+    width: 100%;
+    max-width: 100%;
+    margin-right: 0;
   }
   .shelf-game:last-child {
     margin-right: 14px;

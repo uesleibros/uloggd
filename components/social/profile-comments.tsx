@@ -116,6 +116,7 @@ export function ProfileComments({
   const [replyBody, setReplyBody] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
   const [editBody, setEditBody] = useState("");
+  const [armedDelete, setArmedDelete] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [awaitingCommentId, setAwaitingCommentId] = useState<string | null>(
     null,
@@ -214,6 +215,18 @@ export function ProfileComments({
 
   async function remove(comment: ProfileComment) {
     if (pending) return;
+    if (armedDelete !== comment.id) {
+      setArmedDelete(comment.id);
+      window.setTimeout(
+        () =>
+          setArmedDelete((current) =>
+            current === comment.id ? null : current,
+          ),
+        4000,
+      );
+      return;
+    }
+    setArmedDelete(null);
     setPending(`delete-${comment.id}`);
     setError(null);
     const { data, error: deleteError } = await createClient().rpc(
@@ -370,6 +383,7 @@ export function ProfileComments({
                   <button
                     type="button"
                     disabled={Boolean(pending)}
+                    data-armed={armedDelete === comment.id || undefined}
                     onClick={() => void remove(comment)}
                   >
                     {pending === `delete-${comment.id}` ? (
@@ -377,7 +391,17 @@ export function ProfileComments({
                     ) : (
                       <Trash2 size={13} />
                     )}
-                    {pt ? "Excluir" : "Delete"}
+                    {pending === `delete-${comment.id}`
+                      ? pt
+                        ? "Excluindo…"
+                        : "Deleting…"
+                      : armedDelete === comment.id
+                        ? pt
+                          ? "Excluir mesmo?"
+                          : "Really delete?"
+                        : pt
+                          ? "Excluir"
+                          : "Delete"}
                   </button>
                 )}
                 {viewerId && viewerId !== comment.author_id && !deleted && (
