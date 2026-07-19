@@ -34,32 +34,35 @@ export function FollowButton({
   const [error, setError] = useState(false);
   const [warningOpen, setWarningOpen] = useState(false);
   if (!viewerId || viewerId === profileId) return null;
+  // Optimistic: the button flips immediately and reverts if the write fails.
   async function follow() {
     if (pending) return;
     setPending("follow");
     setError(false);
+    setFollowing(true);
     const supabase = createClient();
     const result = await supabase
       .from("follows")
       .insert({ follower_id: viewerId!, following_id: profileId });
-    if (result.error) setError(true);
-    else {
-      setFollowing(true);
-      router.refresh();
-    }
+    if (result.error) {
+      setFollowing(false);
+      setError(true);
+    } else router.refresh();
     setPending(null);
   }
   async function unfollow() {
     if (pending) return;
     setPending("unfollow");
     setError(false);
+    setFollowing(false);
     const { error: actionError } = await createClient().rpc(
       "unfollow_profile",
       { target_profile: profileId },
     );
-    if (actionError) setError(true);
-    else {
-      setFollowing(false);
+    if (actionError) {
+      setFollowing(true);
+      setError(true);
+    } else {
       setWarningOpen(false);
       router.refresh();
     }
@@ -88,21 +91,7 @@ export function FollowButton({
         ) : (
           <UserPlus size={15} />
         )}
-        {pending
-          ? pending === "follow"
-            ? pt
-              ? "Seguindo…"
-              : "Following…"
-            : pt
-              ? "Deixando de seguir…"
-              : "Unfollowing…"
-          : following
-            ? pt
-              ? "Seguindo"
-              : "Following"
-            : pt
-              ? "Seguir"
-              : "Follow"}
+        {following ? (pt ? "Seguindo" : "Following") : pt ? "Seguir" : "Follow"}
       </button>
       {error && (
         <span role="alert">{pt ? "Tente novamente." : "Try again."}</span>

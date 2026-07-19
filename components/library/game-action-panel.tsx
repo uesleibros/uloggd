@@ -60,11 +60,34 @@ export function GameActionPanel({
         WISHLIST: "Wishlist",
       };
 
+  // Optimistic: flip the UI immediately, reconcile with the canonical state
+  // from the RPC, and revert on error.
+  function predict(override: Partial<NonNullable<State>>): NonNullable<State> {
+    return {
+      status: "BACKLOG",
+      playing: false,
+      backlog: false,
+      wishlist: false,
+      liked: false,
+      quick_rating: null,
+      ...(state ?? {}),
+      ...override,
+    };
+  }
+
   async function update(
     action: "status" | "playing" | "backlog" | "wishlist" | "liked",
     value: boolean | Status,
   ) {
     if (!enabled || pending) return;
+    const previous = state;
+    setState(
+      predict(
+        action === "status"
+          ? { status: value as Status }
+          : { [action]: value as boolean },
+      ),
+    );
     setPending(action);
     setError(null);
     const { data, error: actionError } = await createClient().rpc(
@@ -77,31 +100,35 @@ export function GameActionPanel({
         game_status: action === "status" ? value : null,
       },
     );
-    if (actionError)
+    if (actionError) {
+      setState(previous);
       setError(
         pt
           ? "Não foi possível atualizar sua biblioteca."
           : "Could not update your library.",
       );
-    else setState(data as State);
+    } else setState(data as State);
     setPending(null);
   }
 
   async function rate(value: number | null) {
     if (!enabled || pending) return;
+    const previous = state;
+    setState(predict({ quick_rating: value }));
     setPending("rating");
     setError(null);
     const { data, error: actionError } = await createClient().rpc(
       "set_game_rating",
       { game_id: game.id, game_slug: game.slug, rating: value },
     );
-    if (actionError)
+    if (actionError) {
+      setState(previous);
       setError(
         pt
           ? "Não foi possível salvar sua avaliação. Tente novamente."
           : "Could not save your rating. Please try again.",
       );
-    else setState(data as State);
+    } else setState(data as State);
     setPending(null);
   }
 

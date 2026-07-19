@@ -11,6 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ActivityStream } from "@/components/social/activity-stream";
@@ -19,13 +20,146 @@ import { VerifiedBadge } from "@/components/verified-badge";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { ProfileActions } from "@/components/profile-actions";
 import { getGamesByIds } from "@/lib/igdb";
-import { resolveGameCover } from "@/lib/game-cover";
+import { getListPreviews } from "@/lib/lists";
 import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import "../../profile.css";
 
 type Props = PageProps<"/[lang]/u/[username]">;
+
+// Each section below fans out into its own Supabase/IGDB lookups, so they
+// stream independently instead of blocking the profile header.
+async function ProfileRecentGames({
+  profileId,
+  viewerId,
+  lang,
+}: {
+  profileId: string;
+  viewerId: string | null;
+  lang: "pt-BR" | "en";
+}) {
+  const supabase = await getSupabase();
+  const [{ data: records }, { data: viewerPreference }] = await Promise.all([
+    supabase
+      .from("user_games")
+      .select(
+        "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url,updated_at",
+      )
+      .eq("profile_id", profileId)
+      .order("updated_at", { ascending: false })
+      .limit(5),
+    viewerId && viewerId !== profileId
+      ? supabase
+          .from("profiles")
+          .select("custom_cover_scope")
+          .eq("id", viewerId)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+  if (!records?.length) return null;
+  const showCreatorCovers =
+    viewerId === profileId ||
+    viewerPreference?.custom_cover_scope === "EVERYONE";
+  const games = await getGamesByIds(records.map((record) => record.igdb_id));
+  const byId = new Map(games.map((game) => [game.id, game]));
+  const pt = lang === "pt-BR";
+  return (
+    <section className="profile-shelf">
+      <div className="social-section-title">
+        <div>
+          <h2>{pt ? "Jogos recentes" : "Recent games"}</h2>
+          <p>
+            {pt ? "Últimas mudanças na biblioteca" : "Latest library changes"}
+          </p>
+        </div>
+      </div>
+      <div className="cover-shelf">
+        {records.map((record) => {
+          const game = byId.get(record.igdb_id);
+          return game ? (
+            <QuickGameCard
+              key={game.id}
+              game={game}
+              initial={{
+                ...record,
+                custom_cover_url: showCreatorCovers
+                  ? record.custom_cover_url
+                  : null,
+              }}
+              lang={lang}
+              enabled={viewerId === profileId}
+            />
+          ) : null;
+        })}
+      </div>
+    </section>
+  );
+}
+
+async function ProfileActivity({
+  profileId,
+  viewerId,
+  lang,
+}: {
+  profileId: string;
+  viewerId: string | null;
+  lang: "pt-BR" | "en";
+}) {
+  const supabase = await getSupabase();
+  const entries = await getActivity(supabase, {
+    profileId,
+    limit: 20,
+    viewerId,
+  });
+  return (
+    <ActivityStream
+      entries={entries}
+      lang={lang}
+      viewerId={viewerId ?? undefined}
+    />
+  );
+}
+
+async function ProfileListsAside({
+  profileId,
+  viewerId,
+  lang,
+}: {
+  profileId: string;
+  viewerId: string | null;
+  lang: "pt-BR" | "en";
+}) {
+  const supabase = await getSupabase();
+  const lists = await getListPreviews(supabase, {
+    ownerId: profileId,
+    viewerId,
+    publicOnly: true,
+    limit: 4,
+  });
+  const pt = lang === "pt-BR";
+  if (!lists.length)
+    return (
+      <p className="profile-lists-empty">
+        {pt ? "Nenhuma lista pública." : "No public lists."}
+      </p>
+    );
+  return lists.map((list) => (
+    <ListPreviewCard
+      key={list.id}
+      list={{
+        id: list.id,
+        name: list.name,
+        description: list.description,
+        visibility: list.visibility,
+        count: list.count,
+      }}
+      covers={list.covers}
+      lang={lang}
+      likes={list.likes}
+    />
+  ));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, username } = await params;
@@ -84,36 +218,24 @@ export default async function ProfilePage({ params }: Props) {
   ]);
   if (!profile?.username) notFound();
   const [
-    libraryResult,
-    listsResult,
+    libraryCount,
+    listsCount,
     reviewCount,
     diaryCount,
     followerCount,
     followingCount,
     followState,
     mutualRecentResult,
-    viewerPreference,
-    entries,
   ] = await Promise.all([
     supabase
       .from("user_games")
-      .select(
-        "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url,updated_at",
-        { count: "exact" },
-      )
-      .eq("profile_id", profile.id)
-      .order("updated_at", { ascending: false })
-      .limit(10),
+      .select("igdb_id", { count: "exact", head: true })
+      .eq("profile_id", profile.id),
     supabase
       .from("game_lists")
-      .select(
-        "id,name,description,visibility,game_list_items(igdb_id,position)",
-        { count: "exact" },
-      )
+      .select("id", { count: "exact", head: true })
       .eq("profile_id", profile.id)
-      .eq("visibility", "PUBLIC")
-      .order("updated_at", { ascending: false })
-      .limit(4),
+      .eq("visibility", "PUBLIC"),
     supabase
       .from("reviews")
       .select("id", { count: "exact", head: true })
@@ -143,43 +265,7 @@ export default async function ProfilePage({ params }: Props) {
           target_profile: profile.id,
         })
       : Promise.resolve({ data: false }),
-    user
-      ? supabase
-          .from("profiles")
-          .select("custom_cover_scope")
-          .eq("id", user.id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-    getActivity(supabase, { profileId: profile.id, limit: 20 }),
   ]);
-  const showCreatorCovers =
-    user?.id === profile.id ||
-    viewerPreference.data?.custom_cover_scope === "EVERYONE";
-  const library = (libraryResult.data ?? []).map((record) => ({
-    ...record,
-    custom_cover_url: showCreatorCovers ? record.custom_cover_url : null,
-  }));
-  const lists = listsResult.data ?? [];
-  const listGameIds = lists.flatMap((list) =>
-    list.game_list_items.map((item) => item.igdb_id),
-  );
-  const [games, { data: listCoverRows }] = await Promise.all([
-    getGamesByIds([...library.map((item) => item.igdb_id), ...listGameIds]),
-    listGameIds.length
-      ? supabase
-          .from("user_games")
-          .select("igdb_id,custom_cover_url")
-          .eq("profile_id", profile.id)
-          .in("igdb_id", listGameIds)
-      : Promise.resolve({ data: [] }),
-  ]);
-  const byId = new Map(games.map((game) => [game.id, game]));
-  const listCoversById = new Map(
-    (listCoverRows ?? []).map((item) => [
-      item.igdb_id,
-      showCreatorCovers ? item.custom_cover_url : null,
-    ]),
-  );
   const pt = lang === "pt-BR";
   const joined = new Intl.DateTimeFormat(lang, {
     month: "long",
@@ -321,7 +407,7 @@ export default async function ProfilePage({ params }: Props) {
           <span className="profile-stat-label">
             <Gamepad2 size={14} /> {pt ? "Jogos" : "Games"}
           </span>
-          <strong>{libraryResult.count ?? 0}</strong>
+          <strong>{libraryCount.count ?? 0}</strong>
         </Link>
         <Link href={`/${lang}/u/${profile.username}/activity?type=review`}>
           <span className="profile-stat-label">
@@ -339,7 +425,7 @@ export default async function ProfilePage({ params }: Props) {
           <span className="profile-stat-label">
             <List size={14} /> {pt ? "Listas" : "Lists"}
           </span>
-          <strong>{listsResult.count ?? 0}</strong>
+          <strong>{listsCount.count ?? 0}</strong>
         </Link>
         <Link href={`/${lang}/u/${profile.username}/connections?tab=followers`}>
           <span className="profile-stat-label">
@@ -354,33 +440,41 @@ export default async function ProfilePage({ params }: Props) {
           <strong>{followingCount.count ?? 0}</strong>
         </Link>
       </nav>
-      {library.length > 0 && (
-        <section className="profile-shelf">
-          <div className="social-section-title">
-            <div>
-              <h2>{pt ? "Jogos recentes" : "Recent games"}</h2>
-              <p>
-                {pt
-                  ? "Últimas mudanças na biblioteca"
-                  : "Latest library changes"}
-              </p>
-            </div>
-          </div>
-          <div className="cover-shelf">
-            {library.slice(0, 5).map((record) => {
-              const game = byId.get(record.igdb_id);
-              return game ? (
-                <QuickGameCard
-                  key={game.id}
-                  game={game}
-                  initial={record}
-                  lang={lang}
-                  enabled={user?.id === profile.id}
-                />
-              ) : null;
-            })}
-          </div>
-        </section>
+      {(libraryCount.count ?? 0) > 0 && (
+        <Suspense
+          fallback={
+            <section
+              className="profile-shelf"
+              aria-busy="true"
+              aria-label="Loading"
+            >
+              <div className="social-section-title">
+                <div>
+                  <h2>{pt ? "Jogos recentes" : "Recent games"}</h2>
+                  <p>
+                    {pt
+                      ? "Últimas mudanças na biblioteca"
+                      : "Latest library changes"}
+                  </p>
+                </div>
+              </div>
+              <div className="cover-shelf">
+                {Array.from({ length: 5 }, (_, index) => (
+                  <span
+                    className="skeleton-block shelf-cover-skeleton"
+                    key={index}
+                  />
+                ))}
+              </div>
+            </section>
+          }
+        >
+          <ProfileRecentGames
+            profileId={profile.id}
+            viewerId={user?.id ?? null}
+            lang={lang}
+          />
+        </Suspense>
       )}
       <section className="profile-content-grid">
         <div>
@@ -394,7 +488,32 @@ export default async function ProfilePage({ params }: Props) {
               </p>
             </div>
           </div>
-          <ActivityStream entries={entries} lang={lang} viewerId={user?.id} />
+          <Suspense
+            fallback={
+              <div
+                className="skeleton-stream"
+                aria-busy="true"
+                aria-label="Loading"
+              >
+                {Array.from({ length: 3 }, (_, index) => (
+                  <div className="skeleton-entry" key={index}>
+                    <span className="skeleton-block" />
+                    <div>
+                      <span className="skeleton-block" />
+                      <span className="skeleton-block" />
+                      <span className="skeleton-block" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            }
+          >
+            <ProfileActivity
+              profileId={profile.id}
+              viewerId={user?.id ?? null}
+              lang={lang}
+            />
+          </Suspense>
         </div>
         <aside className="profile-lists">
           <div className="social-section-title">
@@ -403,45 +522,27 @@ export default async function ProfilePage({ params }: Props) {
               {pt ? "Ver todas" : "View all"}
             </Link>
           </div>
-          {lists.length ? (
-            lists.map((list) => {
-              const items = [...list.game_list_items].sort(
-                (a, b) => a.position - b.position,
-              );
-              const covers = items.slice(0, 5).flatMap((item) => {
-                const game = byId.get(item.igdb_id);
-                return game
-                  ? [
-                      {
-                        url: resolveGameCover(
-                          game.coverUrl,
-                          listCoversById.get(game.id),
-                        ),
-                        name: game.name,
-                      },
-                    ]
-                  : [];
-              });
-              return (
-                <ListPreviewCard
-                  key={list.id}
-                  list={{
-                    id: list.id,
-                    name: list.name,
-                    description: list.description,
-                    visibility: list.visibility,
-                    count: items.length,
-                  }}
-                  covers={covers}
-                  lang={lang}
-                />
-              );
-            })
-          ) : (
-            <p className="profile-lists-empty">
-              {pt ? "Nenhuma lista pública." : "No public lists."}
-            </p>
-          )}
+          <Suspense
+            fallback={
+              <div
+                className="lists-loading-card"
+                aria-busy="true"
+                aria-label="Loading"
+              >
+                <span className="skeleton-block" />
+                <div>
+                  <span className="skeleton-block" />
+                  <span className="skeleton-block" />
+                </div>
+              </div>
+            }
+          >
+            <ProfileListsAside
+              profileId={profile.id}
+              viewerId={user?.id ?? null}
+              lang={lang}
+            />
+          </Suspense>
         </aside>
       </section>
     </main>

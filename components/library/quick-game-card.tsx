@@ -102,11 +102,35 @@ export function QuickGameCard({
         WISHLIST: "Wishlist",
       };
 
+  // Optimistic: flip the card immediately, reconcile with the canonical
+  // state from the RPC (broadcast only that), and revert on error.
+  function predict(override: Partial<NonNullable<State>>): NonNullable<State> {
+    return {
+      status: "BACKLOG",
+      playing: false,
+      backlog: false,
+      wishlist: false,
+      liked: false,
+      quick_rating: null,
+      custom_cover_url: null,
+      ...(state ?? {}),
+      ...override,
+    };
+  }
+
   async function update(
     action: "status" | "playing" | "backlog" | "wishlist" | "liked",
     value: boolean | Status,
   ) {
     if (pending) return;
+    const previous = state;
+    setState(
+      predict(
+        action === "status"
+          ? { status: value as Status }
+          : { [action]: value as boolean },
+      ),
+    );
     setPending(action);
     setError(null);
     const { data, error: actionError } = await createClient().rpc(
@@ -120,8 +144,8 @@ export function QuickGameCard({
       },
     );
     if (actionError) {
-      const message = pt ? "Não foi possível atualizar." : "Could not update.";
-      setError(message);
+      setState(previous);
+      setError(pt ? "Não foi possível atualizar." : "Could not update.");
     } else {
       const next = data as NonNullable<State>;
       setState(next);
@@ -133,6 +157,8 @@ export function QuickGameCard({
 
   async function rate(value: number | null) {
     if (pending) return;
+    const previous = state;
+    setState(predict({ quick_rating: value }));
     setPending("rating");
     setError(null);
     const { data, error: actionError } = await createClient().rpc(
@@ -140,10 +166,12 @@ export function QuickGameCard({
       { game_id: game.id, game_slug: game.slug, rating: value },
     );
     if (actionError) {
-      const message = pt
-        ? "Não foi possível salvar sua nota."
-        : "Could not save your rating.";
-      setError(message);
+      setState(previous);
+      setError(
+        pt
+          ? "Não foi possível salvar sua nota."
+          : "Could not save your rating.",
+      );
     } else {
       const next = data as NonNullable<State>;
       setState(next);

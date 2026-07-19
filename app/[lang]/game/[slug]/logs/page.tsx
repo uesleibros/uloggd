@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, CalendarDays } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { ActivityStream } from "@/components/social/activity-stream";
+import { LoadMoreActivity } from "@/components/social/load-more-activity";
 import { getGameBySlug } from "@/lib/igdb";
 import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
@@ -31,24 +32,32 @@ export default async function GameLogsPage({ params }: Props) {
   if (!game) notFound();
   const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login?next=/${lang}/game/${slug}/logs`);
-  const entries = (
-    await getActivity(supabase, {
+  // Header totals come from a lightweight scan of every session; the
+  // hydrated stream below is paginated.
+  const [{ data: sessions }, entries] = await Promise.all([
+    supabase
+      .from("diary_entries")
+      .select("played_on,ended_on,minutes")
+      .eq("profile_id", user.id)
+      .eq("igdb_id", game.id),
+    getActivity(supabase, {
       profileId: user.id,
       gameId: game.id,
-      limit: 100,
-    })
-  ).filter((entry) => entry.kind === "diary");
+      limit: 30,
+    }),
+  ]);
+  const stream = entries.filter((entry) => entry.kind === "diary");
   const pt = lang === "pt-BR";
-  const totalMinutes = entries.reduce(
+  const totalMinutes = (sessions ?? []).reduce(
     (total, entry) => total + (entry.minutes ?? 0),
     0,
   );
-  const totalDays = entries.reduce((total, entry) => {
-    if (!entry.playedOn) return total;
-    if (!entry.endedOn) return total + 1;
+  const totalDays = (sessions ?? []).reduce((total, entry) => {
+    if (!entry.played_on) return total;
+    if (!entry.ended_on) return total + 1;
     const span =
       Math.round(
-        (Date.parse(entry.endedOn) - Date.parse(entry.playedOn)) / 86400000,
+        (Date.parse(entry.ended_on) - Date.parse(entry.played_on)) / 86400000,
       ) + 1;
     return total + Math.max(1, span);
   }, 0);
@@ -63,7 +72,7 @@ export default async function GameLogsPage({ params }: Props) {
         </span>
         <h1>{game.name}</h1>
         <p>
-          {entries.length} {pt ? "registros" : "logs"}
+          {(sessions ?? []).length} {pt ? "registros" : "logs"}
           {totalDays > 0
             ? ` · ${totalDays} ${pt ? (totalDays === 1 ? "dia" : "dias") : totalDays === 1 ? "day" : "days"}`
             : ""}
@@ -72,7 +81,18 @@ export default async function GameLogsPage({ params }: Props) {
             : ""}
         </p>
       </header>
-      <ActivityStream entries={entries} lang={lang} viewerId={user.id} />
+      <ActivityStream entries={stream} lang={lang} viewerId={user.id} />
+      <LoadMoreActivity
+        lang={lang}
+        viewerId={user.id}
+        profileId={user.id}
+        gameId={game.id}
+        kind="diary"
+        initialCursor={
+          entries.length ? entries[entries.length - 1].createdAt : null
+        }
+        hasMore={entries.length === 30}
+      />
     </main>
   );
 }

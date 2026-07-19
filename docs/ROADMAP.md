@@ -28,17 +28,25 @@ after the loading/skeleton consistency pass.
   instead of every item of every list.
 - Every list-like empty state uses the designed icon-square pattern.
 
+## Done in the perceived-speed pass (July 2026)
+
+- Profile page split into streamed sections: header and stats render from
+  quick head counts while the shelf, activity, and lists asides resolve
+  behind their own `<Suspense>` with silhouette skeletons.
+- Optimistic updates on follow and library actions (status, playing, backlog,
+  wishlist, liked, rating): the UI flips immediately, reconciles with the
+  RPC's canonical state, and reverts on error.
+- Game logs page paginated: header totals come from a lightweight scan of all
+  sessions and the hydrated stream loads 30 at a time.
+
 ## Next: polish and correctness
 
-1. **Per-section Suspense on heavy pages.** The game page and profile page load
-   several independent data blocks; stream each section instead of blocking on
-   the slowest one.
-2. **Optimistic updates.** Follow and library actions wait for the round trip.
-   Where the RPC is idempotent, flip the UI optimistically and reconcile, as
-   the like button already does.
-3. **Game logs pagination.** The per-game logs page still loads up to 100
-   sessions because its header totals are computed from the loaded entries;
-   move totals to aggregate queries, then reuse `LoadMoreActivity`.
+1. **Profile subpage counts.** The connections page still loads every follow
+   id to render tab counts; move to head counts plus keyset pagination on the
+   follows table itself.
+2. **Search users and lists.** Global search only returns games today.
+3. **Error telemetry.** `error.tsx` logs to the console only; add a reporting
+   endpoint so production errors are visible.
 
 ## Later: features
 

@@ -8444,6 +8444,10 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   aspect-ratio: 3 / 4;
   border-radius: 10px;
 }
+.shelf-cover-skeleton {
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+}
 .skeleton-review-card {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
