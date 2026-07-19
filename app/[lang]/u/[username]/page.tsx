@@ -7,6 +7,7 @@ import {
   Gamepad2,
   List,
   Settings,
+  Sparkles,
   Star,
   Users,
 } from "lucide-react";
@@ -438,6 +439,14 @@ export default async function ProfilePage({ params }: Props) {
             <Users size={14} /> {pt ? "Seguindo" : "Following"}
           </span>
           <strong>{followingCount.count ?? 0}</strong>
+        </Link>
+        <Link
+          href={`/${lang}/u/${profile.username}/year/${new Date().getUTCFullYear()}`}
+        >
+          <span className="profile-stat-label">
+            <Sparkles size={14} /> {pt ? "Retrospectiva" : "Wrapped"}
+          </span>
+          <strong>{new Date().getUTCFullYear()}</strong>
         </Link>
       </nav>
       {(libraryCount.count ?? 0) > 0 && (

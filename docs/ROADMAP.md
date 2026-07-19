@@ -48,6 +48,15 @@ after the loading/skeleton consistency pass.
 - Client error boundaries report to `/api/telemetry` so production failures
   reach the server logs.
 
+## Done in the wrapped pass (July 2026)
+
+- "Year in games" page at `/u/[username]/year/[year]`: hero for time logged,
+  stat tiles (games, finished, sessions, reviews, average, busiest month), a
+  sessions-by-month column chart with hover tooltips and an sr-only data
+  table, game of the year by played time, top genres, share button, and
+  year-to-year navigation. Aggregates respect RLS visibility. Entry tile on
+  the profile stats nav.
+
 ## Next: polish and correctness
 
 1. **Search keyboard navigation across sections.** Arrow keys only walk game
@@ -56,6 +65,8 @@ after the loading/skeleton consistency pass.
    viewer's own follow graph.
 3. **Error telemetry storage.** `/api/telemetry` only logs; consider a
    Supabase table with retention if log scraping proves insufficient.
+4. **Wrapped share cards.** The year page shares a link today; a generated
+   Open Graph image with the headline numbers would travel much better.
 
 ## Later: features
 
