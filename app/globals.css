@@ -152,11 +152,7 @@
 /* Artwork stages remain cinematic in every preference; the surrounding UI themes. */
 .featured-game,
 .game-stage,
-.library-hero,
-.media-lightbox,
-.workspace-hero,
-.social-editor-dialog,
-.create-list-dialog {
+.media-lightbox {
   --console-black: #0b0a0d;
   --console-canvas: #0f0e11;
   --console-panel: #17151b;
@@ -13401,6 +13397,7 @@ details.review-page-content p {
 :root[data-theme="light"] .cover-modal,
 :root[data-theme="light"] .profile-crop-modal,
 :root[data-theme="light"] .social-editor-dialog,
+:root[data-theme="light"] .catalog-filter-dialog,
 :root[data-theme="light"] .create-list-dialog,
 :root[data-theme="light"] .create-list-select-content,
 :root[data-theme="light"] .report-dialog,
@@ -13444,9 +13441,10 @@ details.review-page-content p {
     7px 0 18px rgb(40 44 54 / 16%);
 }
 
-/* The library banner follows the page theme; journal/list workspace heroes
-   stay cinematic and keep the dark overlay tokens declared above. */
-:root[data-theme="light"] .library-hero-scrim {
+/* Library, review, and list workspaces use a soft paper scrim in light mode
+   so their artwork remains visible behind dark, readable copy. */
+:root[data-theme="light"] .library-hero-scrim,
+:root[data-theme="light"] .workspace-hero-scrim {
   background:
     linear-gradient(
       90deg,
@@ -13457,8 +13455,24 @@ details.review-page-content p {
     linear-gradient(0deg, var(--console-canvas), transparent 72%);
 }
 
-:root[data-theme="light"] .library-hero-stats {
+:root[data-theme="light"] .library-hero-stats,
+:root[data-theme="light"] .workspace-hero-stats {
   background: rgb(255 255 255 / 78%);
+}
+
+:root[data-theme="light"] .library-hero,
+:root[data-theme="light"] .workspace-hero {
+  border-color: rgb(24 27 35 / 10%);
+  background: var(--console-panel);
+  box-shadow:
+    0 0 0 1px rgb(24 27 35 / 2%),
+    0 10px 30px rgb(40 44 54 / 8%);
+}
+
+:root[data-theme="light"] .library-hero-stats,
+:root[data-theme="light"] .workspace-hero-stats {
+  border-color: rgb(24 27 35 / 10%);
+  box-shadow: 0 8px 24px rgb(40 44 54 / 8%);
 }
 
 :root[data-theme="light"] .catalog-active-filters button,
