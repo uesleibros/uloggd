@@ -370,9 +370,8 @@ export default async function GamePage({ params }: Props) {
                     <dt>{lang === "pt-BR" ? "Gêneros" : "Genres"}</dt>
                     <dd>
                       {game.searchFilters.genres.length
-                        ? game.searchFilters.genres.map((item, index) => (
+                        ? game.searchFilters.genres.map((item) => (
                             <span key={item.id}>
-                              {index > 0 && " · "}
                               <Link
                                 href={`/${lang}/search?genres=${item.id}`}
                               >
@@ -387,9 +386,8 @@ export default async function GamePage({ params }: Props) {
                     <dt>{lang === "pt-BR" ? "Plataformas" : "Platforms"}</dt>
                     <dd>
                       {game.searchFilters.platforms.length
-                        ? game.searchFilters.platforms.map((item, index) => (
+                        ? game.searchFilters.platforms.map((item) => (
                             <span key={item.id}>
-                              {index > 0 && " · "}
                               <Link
                                 href={`/${lang}/search?platforms=${item.id}`}
                               >
@@ -422,9 +420,8 @@ export default async function GamePage({ params }: Props) {
                     <div>
                       <dt>{lang === "pt-BR" ? "Temas" : "Themes"}</dt>
                       <dd>
-                        {game.searchFilters.themes.map((item, index) => (
+                        {game.searchFilters.themes.map((item) => (
                           <span key={item.id}>
-                            {index > 0 && " · "}
                             <Link href={`/${lang}/search?themes=${item.id}`}>
                               {item.name}
                             </Link>
@@ -437,9 +434,8 @@ export default async function GamePage({ params }: Props) {
                     <div>
                       <dt>{lang === "pt-BR" ? "Modos" : "Modes"}</dt>
                       <dd>
-                        {game.searchFilters.modes.map((item, index) => (
+                        {game.searchFilters.modes.map((item) => (
                           <span key={item.id}>
-                            {index > 0 && " · "}
                             <Link href={`/${lang}/search?modes=${item.id}`}>
                               {item.name}
                             </Link>

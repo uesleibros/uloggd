@@ -2897,6 +2897,10 @@ html[data-sidebar-ready] .account-button > svg {
   font-size: 11px;
 }
 .game-details dd {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   margin: 0;
   color: var(--screen-dim);
   font-size: 11px;
@@ -2907,7 +2911,6 @@ html[data-sidebar-ready] .account-button > svg {
   display: inline-flex;
   align-items: center;
   min-height: 28px;
-  margin: -5px 1px;
   padding: 0 7px;
   border: 1px solid var(--shell-line);
   border-radius: 6px;
