@@ -507,7 +507,9 @@
   gap: 2px;
   max-height: 230px;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   scrollbar-width: thin;
+  touch-action: pan-y;
 }
 .catalog-filter-options > label {
   display: grid;
