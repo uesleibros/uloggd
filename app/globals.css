@@ -10160,6 +10160,9 @@ details.review-page-content p {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
+.social-editor-dialog.review-studio-dialog .social-editor-form {
+  overflow: hidden;
+}
 .game-editor-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;

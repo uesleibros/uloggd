@@ -185,7 +185,13 @@ export function ReviewStudioForm({
   }
 
   return (
-    <form action={submit} className="social-editor-form">
+    <form
+      className="social-editor-form"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void submit();
+      }}
+    >
       <nav
         className="review-section-tabs"
         role="tablist"
@@ -439,9 +445,7 @@ export function ReviewStudioForm({
               />
               <span aria-hidden="true" />
               <p>
-                <strong>
-                  {pt ? "Contém spoilers" : "Contains spoilers"}
-                </strong>
+                <strong>{pt ? "Contém spoilers" : "Contains spoilers"}</strong>
                 <small>
                   {pt
                     ? "O texto ficará protegido até o leitor revelar."
@@ -835,7 +839,8 @@ function AspectEditor({
               data-custom
               onClick={() => add(pt ? "Novo aspecto" : "Custom aspect", true)}
             >
-              <Plus size={13} /> {pt ? "Aspecto personalizado" : "Custom aspect"}
+              <Plus size={13} />{" "}
+              {pt ? "Aspecto personalizado" : "Custom aspect"}
               <small>{customCount}/5</small>
             </button>
           )}
