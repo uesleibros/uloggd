@@ -657,10 +657,10 @@ html[data-sidebar-collapsed] {
     transform-origin: center bottom;
   }
   .notification-dialog[data-state="open"] {
-    animation: notification-sheet-in 260ms cubic-bezier(0.23, 1, 0.32, 1);
+    animation-name: social-modal-sheet-in;
   }
   .notification-dialog[data-state="closed"] {
-    animation: notification-sheet-out 180ms cubic-bezier(0.77, 0, 0.175, 1);
+    animation-name: social-modal-sheet-out;
   }
   .notification-header {
     padding: 16px;
@@ -696,18 +696,6 @@ html[data-sidebar-collapsed] {
   to {
     opacity: 0;
     transform: translateY(-4px) scale(0.985);
-  }
-}
-@keyframes notification-sheet-in {
-  from {
-    opacity: 0;
-    transform: translateY(24px) scale(0.99);
-  }
-}
-@keyframes notification-sheet-out {
-  to {
-    opacity: 0;
-    transform: translateY(16px) scale(0.995);
   }
 }
 .smart-header {
