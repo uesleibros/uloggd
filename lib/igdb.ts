@@ -408,6 +408,24 @@ export function getCatalogSearchOptions() {
   return catalogOptions();
 }
 
+export async function getCatalogPublisherOptions(ids: number[]) {
+  const safeIds = [...new Set(ids)]
+    .filter((id) => Number.isSafeInteger(id) && id > 0)
+    .slice(0, 24);
+  if (!safeIds.length) return [];
+  if (process.env.ULOGGD_E2E === "1") {
+    const { e2eCatalogOptions } = await import("@/lib/igdb-e2e");
+    return e2eCatalogOptions.publishers.filter((option) =>
+      safeIds.includes(option.id),
+    );
+  }
+  return queryIgdbRaw<CatalogOption>(
+    "companies",
+    `fields id,name; where id = (${safeIds.join(",")}); limit 24;`,
+    24 * CACHE_HOURS,
+  );
+}
+
 export async function searchCatalogGames(filters: CatalogSearchFilters) {
   if (process.env.ULOGGD_E2E === "1") {
     const { searchE2eCatalog } = await import("@/lib/igdb-e2e");
