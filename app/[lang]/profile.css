@@ -1037,11 +1037,9 @@
   font-variant-numeric: tabular-nums;
 }
 .profile-comments {
-  margin: -18px 28px 38px;
-  overflow: hidden;
-  border: 1px solid var(--shell-line);
-  border-radius: 12px;
-  background: var(--console-panel);
+  margin: 56px 28px 0;
+  padding-top: 28px;
+  border-top: 1px solid var(--shell-line);
 }
 .profile-blocked-notice {
   display: flex;
@@ -1072,7 +1070,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px;
+  padding: 0 0 18px;
   border-bottom: 1px solid var(--shell-line);
 }
 .profile-comments > header h2 {
@@ -1102,7 +1100,7 @@
 .profile-comment-composer {
   display: grid;
   gap: 8px;
-  padding: 16px 18px;
+  padding: 16px 0;
   border-bottom: 1px solid var(--shell-line);
 }
 .profile-comment-composer label {
@@ -1158,7 +1156,7 @@
 .profile-comments-notice,
 .profile-comments-error {
   margin: 0;
-  padding: 13px 18px;
+  padding: 13px 0;
   border-bottom: 1px solid var(--shell-line);
   color: var(--screen-muted);
   font-size: 11px;
@@ -1173,7 +1171,7 @@
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr);
   gap: 11px;
-  padding: 16px 18px;
+  padding: 16px 0;
 }
 .profile-comment-list > .profile-comment-thread + .profile-comment-thread {
   border-top: 1px solid var(--shell-line);
@@ -1276,11 +1274,28 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  min-height: 28px;
+  min-height: 34px;
+  padding: 0 7px;
+  border-radius: 7px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 11px;
+  font-weight: 580;
 }
 .profile-comment-actions button:hover {
+  background: var(--quiet-hover);
+  color: var(--screen-white);
+}
+.profile-comment-actions .profile-comment-reply-action {
+  min-height: 36px;
+  padding-inline: 11px;
+  border: 1px solid var(--shell-line-strong);
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-weight: 620;
+}
+.profile-comment-actions .profile-comment-reply-action:hover {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
   color: var(--screen-white);
 }
 .profile-comment-inline-form {
@@ -1581,15 +1596,11 @@
 }
 @media (max-width: 620px) {
   .profile-comments {
-    margin: -12px 4px 32px;
+    margin: 44px 4px 0;
+    padding-top: 24px;
   }
   .profile-blocked-notice {
     margin: -12px 4px 32px;
-  }
-  .profile-comments > header,
-  .profile-comment-composer,
-  .profile-comment-thread > article {
-    padding-inline: 14px;
   }
   .profile-comment-replies {
     margin-left: 24px;

@@ -513,20 +513,6 @@ export default async function ProfilePage({ params }: Props) {
         </section>
       ) : (
         <>
-          <ProfileComments
-            profileId={profile.id}
-            viewerId={user?.id ?? null}
-            comments={comments}
-            commentsClosed={profile.profile_comment_scope === "NOBODY"}
-            canComment={Boolean(
-              user &&
-              profile.profile_comment_scope !== "NOBODY" &&
-              (user.id === profile.id ||
-                profile.profile_comment_scope === "EVERYONE" ||
-                followState.data),
-            )}
-            lang={lang}
-          />
           {(libraryCount.count ?? 0) > 0 && (
             <Suspense
               fallback={
@@ -632,6 +618,20 @@ export default async function ProfilePage({ params }: Props) {
               </Suspense>
             </aside>
           </section>
+          <ProfileComments
+            profileId={profile.id}
+            viewerId={user?.id ?? null}
+            comments={comments}
+            commentsClosed={profile.profile_comment_scope === "NOBODY"}
+            canComment={Boolean(
+              user &&
+              profile.profile_comment_scope !== "NOBODY" &&
+              (user.id === profile.id ||
+                profile.profile_comment_scope === "EVERYONE" ||
+                followState.data),
+            )}
+            lang={lang}
+          />
         </>
       )}
     </main>

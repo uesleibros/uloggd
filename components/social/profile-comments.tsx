@@ -276,7 +276,11 @@ export function ProfileComments({
             {!editing && (
               <footer className="profile-comment-actions">
                 {canComment && !deleted && (
-                  <button type="button" onClick={() => startReply(comment)}>
+                  <button
+                    className="profile-comment-reply-action"
+                    type="button"
+                    onClick={() => startReply(comment)}
+                  >
                     <CornerDownRight size={13} /> {pt ? "Responder" : "Reply"}
                   </button>
                 )}
