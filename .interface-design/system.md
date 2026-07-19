@@ -262,6 +262,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - The owner can switch the library between Public and Private. Public `user_games` reads are enforced by RLS against `profiles.library_visibility`; quick actions and removal never render for visitors.
 - Large libraries load IGDB details in batches of 100 rather than silently truncating the collection. Loading mirrors the hero, tools, rail, and cover grid.
 - Library filters reuse the game-page tab anatomy exactly: 38px horizontal triggers, quiet hover fill, active underline, compact count badge, and touch scrolling on narrow screens. The former desktop-only vertical rail is retired so owner and public views keep one navigation language at every breakpoint.
+- “Backlog” is the explicit quick-action flag, never the internal default status value. Games with no Playing, Backlog, Wishlist, or explicit play status remain in the library under “Unclassified”; favorites and ratings are secondary metadata and do not classify a game.
 - Shared horizontal tab rails reserve 4px above their triggers so hover lift and focus treatment are never clipped by the scrolling container.
 - Shared game/settings tab rails permit horizontal overflow only. Their 2px active marker ends inside the reserved 10px lower gutter, so the rail never gains a nested vertical scroll area. Settings tabs remain in document flow rather than becoming sticky.
 - The library banner artwork begins at the top of the content canvas behind the floating header on desktop and mobile; its content keeps equivalent internal clearance so identity and statistics never sit beneath navigation.
@@ -419,7 +420,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Drawer exit: 160ms using `cubic-bezier(0.77, 0, 0.175, 1)`.
 - Avoid animation on repeated keyboard-driven actions.
 - Respect `prefers-reduced-motion` by removing movement while preserving immediate state changes.
-- Dropdowns enter in 140–160ms from their trigger origin. Centered modals use a 200ms opacity plus subtle 0.985 scale/vertical offset; mobile sheets enter upward by 12px. Overlays fade in over 160ms. Never animate layout dimensions.
+- Dropdowns enter in 140–160ms from their trigger origin. Every modal shares the review studio’s fade timing: content enters in 220ms and exits in 150ms; overlays enter in 180ms and exit in 140ms. Centered, anchored, and mobile-sheet surfaces may preserve their spatial transform, but opacity timing and easing remain identical. Never animate layout dimensions.
 - Radix menus and dialogs must also animate their `data-state="closed"` state for 110–150ms; conditional parents remain mounted until that exit finishes so overlays never disappear abruptly. This includes Radix Select menus (`menu-out`), and every dialog overlay uses `drawer-backdrop` or an equivalent veil with enter and exit animations — no overlay class may exist only in JSX.
 - Skeletons use the `--skeleton-fill` token (translucent, theme-aware) and must mirror the current layout of the page they cover: when a page's hero or structure changes, its `loading.tsx` changes in the same commit.
 - Destructive actions never use `window.confirm`: the universal pattern is the inline two-step armed button (first tap arms with a warning label and danger tint, second tap executes, auto-disarms after 4s).

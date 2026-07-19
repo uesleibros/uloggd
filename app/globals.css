@@ -11036,6 +11036,98 @@ details.review-page-content p {
   }
 }
 
+/*
+ * Dialog motion contract: every product modal keeps its own spatial movement
+ * (center, sheet or anchored surface), while fade timing remains identical.
+ */
+html
+  :is(
+    .drawer-backdrop,
+    .search-modal-backdrop,
+    .cover-modal-backdrop,
+    .media-lightbox-backdrop,
+    .cookie-modal-backdrop,
+    .profile-crop-backdrop,
+    .account-delete-overlay,
+    .create-list-overlay,
+    .verified-dialog-overlay,
+    .report-dialog-overlay,
+    .notification-backdrop,
+    .catalog-filter-overlay,
+    .mfa-dialog-overlay
+  )[data-state="open"] {
+  animation-duration: 180ms;
+  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  animation-fill-mode: both;
+}
+
+html
+  :is(
+    .drawer-backdrop,
+    .search-modal-backdrop,
+    .cover-modal-backdrop,
+    .media-lightbox-backdrop,
+    .cookie-modal-backdrop,
+    .profile-crop-backdrop,
+    .account-delete-overlay,
+    .create-list-overlay,
+    .verified-dialog-overlay,
+    .report-dialog-overlay,
+    .notification-backdrop,
+    .catalog-filter-overlay,
+    .mfa-dialog-overlay
+  )[data-state="closed"] {
+  animation-duration: 140ms;
+  animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+  animation-fill-mode: both;
+}
+
+html
+  :is(
+    .mobile-search-modal,
+    .cover-modal,
+    .media-lightbox,
+    .cookie-modal,
+    .profile-crop-modal,
+    .account-delete-dialog,
+    .create-list-dialog,
+    .verified-dialog,
+    .share-dialog,
+    .report-dialog,
+    .social-editor-dialog,
+    .notification-dialog,
+    .catalog-filter-dialog,
+    .mfa-setup-dialog,
+    .mfa-remove-dialog
+  )[data-state="open"] {
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  animation-fill-mode: both;
+}
+
+html
+  :is(
+    .mobile-search-modal,
+    .cover-modal,
+    .media-lightbox,
+    .cookie-modal,
+    .profile-crop-modal,
+    .account-delete-dialog,
+    .create-list-dialog,
+    .verified-dialog,
+    .share-dialog,
+    .report-dialog,
+    .social-editor-dialog,
+    .notification-dialog,
+    .catalog-filter-dialog,
+    .mfa-setup-dialog,
+    .mfa-remove-dialog
+  )[data-state="closed"] {
+  animation-duration: 150ms;
+  animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+  animation-fill-mode: both;
+}
+
 /* Streamed home shell mirrors the editorial feed instead of showing a blank route. */
 .home-loading-feature {
   display: flex;

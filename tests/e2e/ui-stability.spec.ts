@@ -29,6 +29,9 @@ test("keeps the advanced-filter sheet themed and inside the mobile viewport", as
     const footer = document.querySelector(
       ".catalog-filter-dialog-actions",
     ) as HTMLElement;
+    const overlay = document.querySelector(
+      ".catalog-filter-overlay",
+    ) as HTMLElement;
     const dialogBox = dialog.getBoundingClientRect();
     const footerBox = footer.getBoundingClientRect();
     const styles = getComputedStyle(dialog);
@@ -39,6 +42,8 @@ test("keeps the advanced-filter sheet themed and inside the mobile viewport", as
       viewportHeight: window.innerHeight,
       background: styles.backgroundColor,
       foreground: styles.color,
+      dialogAnimationDuration: styles.animationDuration,
+      overlayAnimationDuration: getComputedStyle(overlay).animationDuration,
     };
   });
 
@@ -51,6 +56,8 @@ test("keeps the advanced-filter sheet themed and inside the mobile viewport", as
   );
   expect(geometry.background).toBe("rgb(255, 255, 255)");
   expect(geometry.foreground).toBe("rgb(23, 25, 30)");
+  expect(geometry.dialogAnimationDuration).toBe("0.22s");
+  expect(geometry.overlayAnimationDuration).toBe("0.18s");
 });
 
 test("keeps profile identity, metadata, and actions in their responsive contract", async ({

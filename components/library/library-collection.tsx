@@ -31,6 +31,7 @@ export type LibraryRecord = {
 
 const filters = [
   "ALL",
+  "UNCLASSIFIED",
   "PLAYING",
   "BACKLOG",
   "WISHLIST",
@@ -187,6 +188,7 @@ export function LibraryCollection({
 
   const labels: Record<Filter, string> = {
     ALL: pt ? "Todos" : "All",
+    UNCLASSIFIED: pt ? "Não classificados" : "Unclassified",
     PLAYING: pt ? "Jogando" : "Playing",
     BACKLOG: "Backlog",
     WISHLIST: pt ? "Desejos" : "Wishlist",
@@ -421,10 +423,16 @@ export function LibraryCollection({
 
 function matchesFilter(record: LibraryRecord, filter: Filter) {
   if (filter === "ALL") return true;
+  if (filter === "UNCLASSIFIED")
+    return (
+      record.status === "BACKLOG" &&
+      !record.playing &&
+      !record.backlog &&
+      !record.wishlist
+    );
   if (filter === "PLAYING")
     return record.playing || record.status === "PLAYING";
-  if (filter === "BACKLOG")
-    return record.backlog || record.status === "BACKLOG";
+  if (filter === "BACKLOG") return record.backlog;
   if (filter === "WISHLIST")
     return record.wishlist || record.status === "WISHLIST";
   if (filter === "LIKED") return record.liked;
