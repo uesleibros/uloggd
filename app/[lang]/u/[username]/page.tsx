@@ -216,7 +216,7 @@ export default async function ProfilePage({ params }: Props) {
             {user?.id === profile.id ? (
               <Link
                 className="profile-edit-link"
-                href={`/${lang}/settings/profile?tab=profile`}
+                href={`/${lang}/settings?tab=profile`}
               >
                 <Settings size={15} /> {pt ? "Editar perfil" : "Edit profile"}
               </Link>

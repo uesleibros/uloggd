@@ -126,7 +126,7 @@ export function MobileSidebar({
               {isAuthenticated ? (
                 <Dialog.Close asChild>
                   <Link
-                    href={`/${lang}/settings/profile`}
+                    href={`/${lang}/settings?tab=general`}
                     data-active={
                       pathname.startsWith(`/${lang}/settings`) || undefined
                     }

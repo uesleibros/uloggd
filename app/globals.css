@@ -13400,6 +13400,8 @@ details.review-page-content p {
 :root[data-theme="light"] .catalog-filter-dialog,
 :root[data-theme="light"] .create-list-dialog,
 :root[data-theme="light"] .create-list-select-content,
+:root[data-theme="light"] .mobile-search-modal,
+:root[data-theme="light"] .share-dialog,
 :root[data-theme="light"] .report-dialog,
 :root[data-theme="light"] .verified-dialog,
 :root[data-theme="light"] .account-delete-dialog,
@@ -13464,15 +13466,11 @@ details.review-page-content p {
 :root[data-theme="light"] .workspace-hero {
   border-color: rgb(24 27 35 / 10%);
   background: var(--console-panel);
-  box-shadow:
-    0 0 0 1px rgb(24 27 35 / 2%),
-    0 10px 30px rgb(40 44 54 / 8%);
 }
 
 :root[data-theme="light"] .library-hero-stats,
 :root[data-theme="light"] .workspace-hero-stats {
   border-color: rgb(24 27 35 / 10%);
-  box-shadow: 0 8px 24px rgb(40 44 54 / 8%);
 }
 
 :root[data-theme="light"] .catalog-active-filters button,

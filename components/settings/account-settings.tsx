@@ -33,6 +33,7 @@ export function AccountSettings({
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab");
   const tab: Tab =
+    requestedTab === "general" ||
     requestedTab === "profile" ||
     requestedTab === "appearance" ||
     requestedTab === "security"
@@ -41,8 +42,7 @@ export function AccountSettings({
 
   function selectTab(nextTab: Tab) {
     const nextParams = new URLSearchParams(searchParams.toString());
-    if (nextTab === "general") nextParams.delete("tab");
-    else nextParams.set("tab", nextTab);
+    nextParams.set("tab", nextTab);
     const query = nextParams.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, {
       scroll: false,
