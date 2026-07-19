@@ -6766,11 +6766,12 @@ html[data-sidebar-ready] .account-button > svg {
   cursor: pointer;
 }
 .profile-action-cluster .quiet-icon-action {
-  min-height: 38px;
+  min-height: 42px;
   padding-inline: 12px;
   border-color: var(--shell-line-strong);
   border-radius: 8px;
-  font-weight: 580;
+  color: var(--screen-dim);
+  font-weight: 600;
   white-space: nowrap;
 }
 .quiet-icon-action:hover,
@@ -9392,7 +9393,7 @@ a,
   border: 1px solid var(--shell-line);
   border-radius: 8px;
   background: transparent;
-  color: var(--screen-muted);
+  color: var(--screen-dim);
   font-size: 11px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -9436,7 +9437,7 @@ button.content-like:hover:not(:disabled) {
   padding: 0 10px;
   border: 1px solid var(--shell-line);
   border-radius: 8px;
-  color: var(--screen-muted);
+  color: var(--screen-dim);
   font-size: 11px;
   font-weight: 600;
 }
@@ -9731,6 +9732,19 @@ details.review-page-content p {
     min-height: 40px;
   }
 }
+.share-action-button.content-share-action {
+  min-height: 32px;
+  padding-inline: 10px;
+  border-color: var(--shell-line);
+  background: transparent;
+  color: var(--screen-dim);
+  font-weight: 600;
+}
+.share-action-button.content-share-action:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--quiet-hover);
+  color: var(--screen-white);
+}
 .review-page-footer .activity-entry-actions {
   margin: 0 0 0 auto;
 }
@@ -9800,7 +9814,7 @@ details.review-page-content p {
   min-height: 32px;
   padding: 0 8px;
   border-radius: 7px;
-  color: var(--screen-muted);
+  color: var(--screen-dim);
   font-size: 11px;
   font-weight: 550;
   transition:
@@ -10288,7 +10302,7 @@ details.review-page-content p {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 36px;
+  min-height: 38px;
   padding: 0 10px;
   border: 1px solid var(--shell-line);
   border-radius: 8px;

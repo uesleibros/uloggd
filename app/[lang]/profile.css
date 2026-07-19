@@ -729,7 +729,7 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: 38px;
+  min-height: 42px;
   padding: 0 12px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
@@ -977,7 +977,7 @@
   .profile-follow-control button {
     flex: 0 0 auto;
     min-width: 108px;
-    min-height: 44px;
+    min-height: 42px;
     padding-inline: 13px;
     border-radius: 9px;
     font-size: 11px;
