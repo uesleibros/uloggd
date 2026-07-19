@@ -1351,14 +1351,23 @@
   font-variant-numeric: tabular-nums;
 }
 .profile-comment-inline-form > footer button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 30px;
   padding: 0 9px;
   border-radius: 7px;
   color: var(--screen-dim);
   font-size: 10px;
   font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
 }
 .profile-comment-inline-form > footer button[type="submit"] {
+  min-height: 38px;
+  padding-inline: 12px;
   background: var(--brand-blurple);
   color: white;
 }
