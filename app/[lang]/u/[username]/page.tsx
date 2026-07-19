@@ -10,7 +10,6 @@ import {
   Settings,
   Sparkles,
   Star,
-  Users,
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -405,6 +404,23 @@ export default async function ProfilePage({ params }: Props) {
             </div>
           </div>
           {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+          <div
+            className="profile-connections-summary"
+            aria-label={pt ? "Conexões" : "Connections"}
+          >
+            <Link
+              href={`/${lang}/u/${profile.username}/connections?tab=following`}
+            >
+              <strong>{followingCount.count ?? 0}</strong>
+              <span>{pt ? "Seguindo" : "Following"}</span>
+            </Link>
+            <Link
+              href={`/${lang}/u/${profile.username}/connections?tab=followers`}
+            >
+              <strong>{followerCount.count ?? 0}</strong>
+              <span>{pt ? "Seguidores" : "Followers"}</span>
+            </Link>
+          </div>
           <div className="profile-action-cluster">
             {(profile.youtube_username ||
               profile.instagram_username ||
@@ -503,18 +519,6 @@ export default async function ProfilePage({ params }: Props) {
             <List size={14} /> {pt ? "Listas" : "Lists"}
           </span>
           <strong>{listsCount.count ?? 0}</strong>
-        </Link>
-        <Link href={`/${lang}/u/${profile.username}/connections?tab=followers`}>
-          <span className="profile-stat-label">
-            <Users size={14} /> {pt ? "Seguidores" : "Followers"}
-          </span>
-          <strong>{followerCount.count ?? 0}</strong>
-        </Link>
-        <Link href={`/${lang}/u/${profile.username}/connections?tab=following`}>
-          <span className="profile-stat-label">
-            <Users size={14} /> {pt ? "Seguindo" : "Following"}
-          </span>
-          <strong>{followingCount.count ?? 0}</strong>
         </Link>
         <Link
           href={`/${lang}/u/${profile.username}/year/${new Date().getUTCFullYear()}`}
