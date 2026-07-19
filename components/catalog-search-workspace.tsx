@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Check,
   ChevronDown,
+  LoaderCircle,
   Search,
   SearchX,
   SlidersHorizontal,
@@ -98,6 +99,7 @@ function OptionGroup({
   selected,
   onChange,
   searchable = false,
+  remoteSearch = false,
   initiallyOpen = false,
   lang,
 }: {
@@ -107,12 +109,43 @@ function OptionGroup({
   selected: number[];
   onChange: (param: DraftArrayKey, values: number[]) => void;
   searchable?: boolean;
+  remoteSearch?: boolean;
   initiallyOpen?: boolean;
   lang: "pt-BR" | "en";
 }) {
   const [query, setQuery] = useState("");
+  const [remoteOptions, setRemoteOptions] = useState<CatalogOption[]>([]);
+  const [remotePending, setRemotePending] = useState(false);
+  useEffect(() => {
+    const normalized = query.trim();
+    if (!remoteSearch || normalized.length < 2) return;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      setRemotePending(true);
+      try {
+        const response = await fetch(
+          `/api/igdb/publishers?q=${encodeURIComponent(normalized)}`,
+          { signal: controller.signal },
+        );
+        const payload = (await response.json()) as {
+          results?: CatalogOption[];
+        };
+        if (response.ok) setRemoteOptions(payload.results ?? []);
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError"))
+          setRemoteOptions([]);
+      } finally {
+        if (!controller.signal.aborted) setRemotePending(false);
+      }
+    }, 280);
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [query, remoteSearch]);
   const visible = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
+    if (remoteSearch && normalized.length >= 2) return remoteOptions;
     return normalized
       ? options.filter((option) =>
           [option.name, option.abbreviation, option.group]
@@ -120,7 +153,7 @@ function OptionGroup({
             .some((value) => value!.toLocaleLowerCase().includes(normalized)),
         )
       : options;
-  }, [options, query]);
+  }, [options, query, remoteOptions, remoteSearch]);
   return (
     <details className="catalog-filter-group" open={initiallyOpen}>
       <summary>
@@ -181,9 +214,16 @@ function OptionGroup({
           })}
           {visible.length === 0 && (
             <p>
-              {lang === "pt-BR"
-                ? "Nenhuma opção encontrada."
-                : "No options found."}
+              {remotePending ? (
+                <>
+                  <LoaderCircle className="spin" size={13} />
+                  {lang === "pt-BR" ? "Buscando…" : "Searching…"}
+                </>
+              ) : lang === "pt-BR" ? (
+                "Nenhuma opção encontrada."
+              ) : (
+                "No options found."
+              )}
             </p>
           )}
         </div>
@@ -741,6 +781,7 @@ export function CatalogSearchWorkspace({
                 selected={draft.publishers}
                 onChange={updateDraftArray}
                 searchable
+                remoteSearch
                 lang={lang}
               />
               <OptionGroup

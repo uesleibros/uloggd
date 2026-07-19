@@ -576,6 +576,9 @@
   white-space: nowrap;
 }
 .catalog-filter-options > p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 8px;
   color: var(--screen-muted);
   font-size: 11px;

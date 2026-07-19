@@ -426,6 +426,22 @@ export async function getCatalogPublisherOptions(ids: number[]) {
   );
 }
 
+export async function searchCatalogPublishers(query: string) {
+  const normalized = query.trim().replace(/\s+/g, " ").slice(0, 60);
+  if (normalized.length < 2) return [];
+  if (process.env.ULOGGD_E2E === "1") {
+    const { e2eCatalogOptions } = await import("@/lib/igdb-e2e");
+    return e2eCatalogOptions.publishers.filter((option) =>
+      option.name.toLocaleLowerCase().includes(normalized.toLocaleLowerCase()),
+    );
+  }
+  return queryIgdbRaw<CatalogOption>(
+    "companies",
+    `search "${escapeIgdb(normalized)}"; fields id,name; where published != null; limit 30;`,
+    6 * CACHE_HOURS,
+  );
+}
+
 export async function searchCatalogGames(filters: CatalogSearchFilters) {
   if (process.env.ULOGGD_E2E === "1") {
     const { searchE2eCatalog } = await import("@/lib/igdb-e2e");
