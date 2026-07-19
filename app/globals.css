@@ -325,11 +325,19 @@ html[data-sidebar-collapsed] {
   background: var(--console-panel);
   color: var(--screen-dim);
   cursor: pointer;
+  transition:
+    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 160ms ease-out,
+    background-color 160ms ease-out,
+    color 160ms ease-out;
 }
 .notification-trigger:hover {
   border-color: var(--shell-line-strong);
   background: var(--console-hover);
   color: var(--screen-white);
+}
+.notification-trigger:active {
+  transform: scale(0.97);
 }
 .notification-badge {
   position: absolute;
@@ -352,12 +360,13 @@ html[data-sidebar-collapsed] {
   inset: 0;
   background: rgb(0 0 0 / 58%);
   backdrop-filter: blur(3px);
+  will-change: opacity;
 }
 .notification-backdrop[data-state="open"] {
-  animation: modal-veil-in 160ms ease-out;
+  animation: notification-veil-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .notification-backdrop[data-state="closed"] {
-  animation: modal-veil-out 130ms ease-out;
+  animation: notification-veil-out 150ms cubic-bezier(0.77, 0, 0.175, 1);
 }
 .notification-dialog {
   position: fixed;
@@ -376,12 +385,14 @@ html[data-sidebar-collapsed] {
   background: var(--console-panel);
   color: var(--screen-white);
   box-shadow: 0 24px 64px rgb(0 0 0 / 44%);
+  transform-origin: calc(100% - 28px) top;
+  will-change: transform, opacity;
 }
 .notification-dialog[data-state="open"] {
-  animation: modal-surface-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: notification-popover-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .notification-dialog[data-state="closed"] {
-  animation: modal-surface-out 140ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: notification-popover-out 160ms cubic-bezier(0.77, 0, 0.175, 1);
 }
 .notification-header {
   display: flex;
@@ -643,12 +654,13 @@ html[data-sidebar-collapsed] {
     border-left: 0;
     border-radius: 14px 14px 0 0;
     padding-bottom: env(safe-area-inset-bottom);
+    transform-origin: center bottom;
   }
   .notification-dialog[data-state="open"] {
-    animation-name: modal-sheet-in;
+    animation: notification-sheet-in 260ms cubic-bezier(0.23, 1, 0.32, 1);
   }
   .notification-dialog[data-state="closed"] {
-    animation-name: modal-sheet-out;
+    animation: notification-sheet-out 180ms cubic-bezier(0.77, 0, 0.175, 1);
   }
   .notification-header {
     padding: 16px;
@@ -662,6 +674,40 @@ html[data-sidebar-collapsed] {
   .notification-item {
     min-height: 80px;
     padding-inline: 14px;
+  }
+}
+@keyframes notification-veil-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes notification-veil-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes notification-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.975);
+  }
+}
+@keyframes notification-popover-out {
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.985);
+  }
+}
+@keyframes notification-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.99);
+  }
+}
+@keyframes notification-sheet-out {
+  to {
+    opacity: 0;
+    transform: translateY(16px) scale(0.995);
   }
 }
 .smart-header {

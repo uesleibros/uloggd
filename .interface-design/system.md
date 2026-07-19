@@ -187,6 +187,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 - Authenticated headers expose one 40px bell control with a compact unread badge. Blurple is reserved for unread state and the avatar event marker; read rows remain neutral.
 - The inbox is a focused 420px desktop surface aligned beneath the header. On mobile it becomes a bottom sheet capped at 84dvh, with safe-area padding and exactly one internal scroll region so actions never fall below the viewport.
+- Inbox motion is origin-aware: desktop enters from the bell edge in 220ms and exits in 160ms; mobile rises from the safe-area edge in 260ms and exits in 180ms. The veil fades independently, all movement uses only transform/opacity, and the global reduced-motion rule removes displacement.
 - Activity rows use avatar, event marker, concise sentence, relative time, and a separate unread dot. They navigate directly to the actor, review, or list and mark themselves read optimistically.
 - Loading mirrors row geometry; empty and error states occupy the same stable body area. Preferences remain inside the inbox instead of creating another settings destination.
 - Social notifications are private by RLS, exclude self-actions, disappear when the originating follow or like is removed, and respect per-kind delivery preferences.
