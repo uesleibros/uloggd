@@ -405,7 +405,17 @@ export default async function GamePage({ params }: Props) {
                       <dt>
                         {lang === "pt-BR" ? "Publicação" : "Published by"}
                       </dt>
-                      <dd>{game.publishers.join(" · ")}</dd>
+                      <dd>
+                        {game.searchFilters.publishers.map((item) => (
+                          <Link
+                            className="game-detail-filter-link"
+                            href={`/${lang}/search?publishers=${item.id}`}
+                            key={item.id}
+                          >
+                            {item.name}
+                          </Link>
+                        ))}
+                      </dd>
                     </div>
                   )}
                   {game.themes.length > 0 && (

@@ -33,7 +33,13 @@ type SavedState = {
 } | null;
 
 type DraftArrayKey =
-  "genres" | "platforms" | "themes" | "modes" | "types" | "perspectives";
+  | "genres"
+  | "platforms"
+  | "themes"
+  | "modes"
+  | "types"
+  | "perspectives"
+  | "publishers";
 
 type FilterDraft = Pick<
   CatalogSearchFilters,
@@ -55,6 +61,7 @@ function draftFromFilters(filters: CatalogSearchFilters): FilterDraft {
     modes: filters.modes,
     types: filters.types,
     perspectives: filters.perspectives,
+    publishers: filters.publishers,
     releaseStatus: filters.releaseStatus,
     ratedOnly: filters.ratedOnly,
     anticipatedOnly: filters.anticipatedOnly,
@@ -73,6 +80,7 @@ function emptyDraft(): FilterDraft {
     modes: [],
     types: [],
     perspectives: [],
+    publishers: [],
     releaseStatus: "all",
     ratedOnly: false,
     anticipatedOnly: false,
@@ -312,6 +320,9 @@ export function CatalogSearchWorkspace({
       perspectives: draft.perspectives.length
         ? draft.perspectives.join(",")
         : null,
+      publishers: draft.publishers.length
+        ? draft.publishers.join(",")
+        : null,
       release: draft.releaseStatus === "all" ? null : draft.releaseStatus,
       rated: draft.ratedOnly ? 1 : null,
       anticipated: draft.anticipatedOnly ? 1 : null,
@@ -326,7 +337,13 @@ export function CatalogSearchWorkspace({
     const groups: [
       keyof Pick<
         CatalogSearchFilters,
-        "genres" | "platforms" | "themes" | "modes" | "types" | "perspectives"
+        | "genres"
+        | "platforms"
+        | "themes"
+        | "modes"
+        | "types"
+        | "perspectives"
+        | "publishers"
       >,
       CatalogOption[],
     ][] = [
@@ -336,6 +353,7 @@ export function CatalogSearchWorkspace({
       ["modes", options.modes],
       ["types", options.types],
       ["perspectives", options.perspectives],
+      ["publishers", options.publishers],
     ];
     return groups.flatMap(([key, list]) =>
       filters[key].map((id) => ({
@@ -364,6 +382,7 @@ export function CatalogSearchWorkspace({
     draft.modes.length +
     draft.types.length +
     draft.perspectives.length +
+    draft.publishers.length +
     Number(draft.releaseStatus !== "all") +
     Number(draft.ratedOnly) +
     Number(draft.anticipatedOnly) +
@@ -713,6 +732,15 @@ export function CatalogSearchWorkspace({
                 options={options.modes}
                 selected={draft.modes}
                 onChange={updateDraftArray}
+                lang={lang}
+              />
+              <OptionGroup
+                title={pt ? "Publicação" : "Publisher"}
+                param="publishers"
+                options={options.publishers}
+                selected={draft.publishers}
+                onChange={updateDraftArray}
+                searchable
                 lang={lang}
               />
               <OptionGroup

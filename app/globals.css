@@ -2904,16 +2904,33 @@ html[data-sidebar-ready] .account-button > svg {
   overflow-wrap: anywhere;
 }
 .game-details dd a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  margin: -5px 1px;
+  padding: 0 7px;
+  border: 1px solid var(--shell-line);
+  border-radius: 6px;
+  background: var(--console-inset);
   color: var(--screen-dim);
-  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
-  text-underline-offset: 3px;
+  text-decoration: none;
   transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
     color 160ms ease,
-    text-decoration-color 160ms ease;
+    transform 120ms ease;
 }
 .game-details dd a:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--brand-blurple-bright) 42%,
+    var(--shell-line)
+  );
+  background: var(--brand-blurple-wash);
   color: var(--brand-blurple-bright);
-  text-decoration-color: currentColor;
+}
+.game-details dd a:active {
+  transform: scale(0.97);
 }
 .game-primary-sections {
   width: 100%;

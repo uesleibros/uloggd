@@ -34,6 +34,7 @@ export const e2eCatalogOptions: CatalogSearchOptions = {
     { id: 2, name: "Third person" },
     { id: 4, name: "Side view" },
   ],
+  publishers: [{ id: 1, name: "E2E Publisher" }],
 };
 
 const allGames: CatalogGame[] = Array.from({ length: 61 }, (_, index) => {
@@ -108,6 +109,7 @@ export function e2eGameBySlug(slug: string): GameDetail | null {
       platforms: [],
       themes: [],
       modes: [],
+      publishers: [],
     },
     websites: [],
     languages: [],

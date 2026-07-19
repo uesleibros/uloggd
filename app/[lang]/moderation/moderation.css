@@ -241,12 +241,22 @@
   font-size: 11px;
 }
 .moderation-search button {
-  min-height: 30px;
-  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 76px;
+  min-height: 34px;
+  padding: 0 12px;
   border-radius: 6px;
   background: var(--brand-blurple);
   color: white;
   font-size: 10px;
+  font-weight: 620;
+  white-space: nowrap;
+}
+.moderation-search button .spin {
+  flex: none;
 }
 .moderation-user-grid {
   display: grid;

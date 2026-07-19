@@ -33,7 +33,7 @@ type IgdbGameResponse = {
   involved_companies?: {
     developer?: boolean;
     publisher?: boolean;
-    company?: { name: string };
+    company?: { id: number; name: string };
   }[];
   videos?: { video_id: string; name?: string }[];
   themes?: { id: number; name: string }[];
@@ -118,6 +118,7 @@ export type CatalogSearchFilters = {
   modes: number[];
   types: number[];
   perspectives: number[];
+  publishers: number[];
   releaseStatus: "all" | "released" | "upcoming";
   ratedOnly: boolean;
   anticipatedOnly: boolean;
@@ -143,6 +144,7 @@ export type CatalogSearchOptions = {
   modes: CatalogOption[];
   types: CatalogOption[];
   perspectives: CatalogOption[];
+  publishers: CatalogOption[];
 };
 
 let tokenCache: { value: string; expiresAt: number } | null = null;
@@ -340,7 +342,7 @@ const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
     platform_family?: { name?: string };
     platform_type?: { name?: string };
   };
-  const [genres, platforms, themes, modes, rawTypes, perspectives] =
+  const [genres, platforms, themes, modes, rawTypes, perspectives, companies] =
     await Promise.all([
       queryIgdbRaw<Named>(
         "genres",
@@ -372,6 +374,11 @@ const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
         "fields id,name; sort name asc; limit 500;",
         24 * CACHE_HOURS,
       ),
+      queryIgdbRaw<Named>(
+        "companies",
+        "fields id,name; where published != null; sort name asc; limit 500;",
+        24 * CACHE_HOURS,
+      ),
     ]);
   const named = (items: Named[]): CatalogOption[] =>
     items.map(({ id, name }) => ({ id, name }));
@@ -389,6 +396,7 @@ const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
     modes: named(modes),
     types: rawTypes.map(({ id, type }) => ({ id, name: type })),
     perspectives: named(perspectives),
+    publishers: named(companies),
   };
 });
 
@@ -421,6 +429,7 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
   addIds("themes", filters.themes);
   addIds("game_modes", filters.modes);
   addIds("player_perspectives", filters.perspectives);
+  addIds("involved_companies.company", filters.publishers);
   const types = ids(filters.types);
   clauses.push(
     types.length ? `game_type = (${types.join(",")})` : "game_type = (0,8,9)",
@@ -573,6 +582,7 @@ export type GameDetail = Game & {
     platforms: { id: number; name: string }[];
     themes: { id: number; name: string }[];
     modes: { id: number; name: string }[];
+    publishers: { id: number; name: string }[];
   };
   ageRatings: {
     organization: string;
@@ -630,7 +640,7 @@ export const getGameBySlug = cache(async function getGameBySlug(
     `
     fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
       cover.image_id,artworks.image_id,screenshots.image_id,genres.id,genres.name,
-      platforms.id,platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
+      platforms.id,platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.id,involved_companies.company.name,
       videos.video_id,videos.name,themes.id,themes.name,game_modes.id,game_modes.name,websites.url,
       age_ratings.organization.name,age_ratings.rating_category.rating,
       language_supports.language.name,language_supports.language.native_name,language_supports.language_support_type.name,
@@ -764,6 +774,10 @@ export const getGameBySlug = cache(async function getGameBySlug(
       platforms: raw.platforms ?? [],
       themes: raw.themes ?? [],
       modes: raw.game_modes ?? [],
+      publishers:
+        raw.involved_companies
+          ?.filter((item) => item.publisher && item.company)
+          .map((item) => item.company!) ?? [],
     },
     ageRatings: (raw.age_ratings ?? [])
       .filter(
