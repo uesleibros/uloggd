@@ -686,6 +686,7 @@ export async function getGamesByIds(ids: number[]): Promise<Game[]> {
 
 // Markdown game cards reference games by slug; same memo strategy as ids.
 const slugMemo = new Map<string, { game: Game | null; expires: number }>();
+const SLUG_BATCH = 30;
 
 export async function getGamesBySlugs(slugs: string[]): Promise<Game[]> {
   const safeSlugs = [...new Set(slugs.map((slug) => slug.trim().toLowerCase()))]
@@ -702,16 +703,29 @@ export async function getGamesBySlugs(slugs: string[]): Promise<Game[]> {
     } else missing.push(slug);
   }
   if (!missing.length) return found;
-  const fetched = await queryGames(
-    `
+  // Split into batches instead of one oversized query: a long drawer can ask
+  // for dozens of slugs at once, and a single truncated request used to drop
+  // whatever fell past the limit.
+  const batches: string[][] = [];
+  for (let index = 0; index < missing.length; index += SLUG_BATCH) {
+    batches.push(missing.slice(index, index + SLUG_BATCH));
+  }
+  const fetched = (
+    await Promise.all(
+      batches.map((batch) =>
+        queryGames(
+          `
     fields name,slug,summary,total_rating,total_rating_count,first_release_date,
       cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,
       involved_companies.developer,involved_companies.company.name;
-    where slug = (${missing.map((slug) => `"${slug}"`).join(",")});
-    limit ${missing.length};
+    where slug = (${batch.map((slug) => `"${slug}"`).join(",")});
+    limit ${batch.length};
   `,
-    12 * CACHE_HOURS,
-  );
+          12 * CACHE_HOURS,
+        ),
+      ),
+    )
+  ).flat();
   const fetchedSlugs = new Set(fetched.map((game) => game.slug));
   const expires = now + GAME_MEMO_TTL;
   for (const game of fetched) slugMemo.set(game.slug, { game, expires });

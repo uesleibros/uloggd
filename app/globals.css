@@ -15584,6 +15584,9 @@ adapted to the current uloggd surface system. */
   display: block;
   width: 100%;
   margin-block: 12px;
+  /* The loop needs clipping, so the tile lift gets room via padding instead
+     of escaping the box. */
+  padding-block: 6px;
   overflow: hidden;
   mask-image: linear-gradient(
     90deg,
@@ -16064,4 +16067,113 @@ adapted to the current uloggd surface system. */
   box-shadow:
     inset 0 0 0 1px rgb(24 27 35 / 10%),
     6px 0 16px rgb(40 44 54 / 16%);
+}
+
+.md-gc-tile-missing .md-gc-tile-cover {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 4;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.md-gc-tile-missing strong {
+  color: var(--screen-muted);
+  font-weight: 550;
+}
+
+/* Route skeletons for surfaces that previously navigated to a blank frame. */
+.home-loading-featured > .skeleton-block {
+  display: block;
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  border-radius: 16px;
+}
+.home-loading-rail {
+  margin-top: 34px;
+}
+.home-loading-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.home-loading-heading > span:first-child {
+  width: 190px;
+  height: 20px;
+}
+.home-loading-heading > span:last-child {
+  width: 74px;
+  height: 14px;
+}
+.home-loading-covers {
+  display: flex;
+  gap: 14px;
+  overflow: hidden;
+}
+.home-loading-covers > span {
+  flex: none;
+  width: 132px;
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+}
+.moderation-loading-hero > .skeleton-block {
+  width: 52px;
+  height: 52px;
+  border-radius: 13px;
+}
+.moderation-loading-hero > div {
+  display: grid;
+  gap: 9px;
+}
+.moderation-loading-hero > div > span:first-child {
+  width: 210px;
+  height: 20px;
+}
+.moderation-loading-hero > div > span:last-child {
+  width: 320px;
+  height: 13px;
+}
+.moderation-loading-heading {
+  display: grid;
+  gap: 8px;
+}
+.moderation-loading-heading > span:first-child {
+  width: 170px;
+  height: 18px;
+}
+.moderation-loading-heading > span:last-child {
+  width: 120px;
+  height: 12px;
+}
+.moderation-loading-rows {
+  display: grid;
+  gap: 10px;
+}
+.moderation-loading-rows > span {
+  height: 128px;
+  border-radius: 12px;
+}
+.form-loading-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  width: min(420px, 100%);
+  margin: 60px auto;
+  padding: 26px;
+  border: 1px solid var(--shell-line);
+  border-radius: 14px;
+  background: var(--console-panel);
+}
+.form-loading-card > span:first-child {
+  width: 62%;
+  height: 22px;
+}
+.form-loading-card > span:not(:first-child) {
+  height: 42px;
+  border-radius: 9px;
+}
+@media (max-width: 620px) {
+  .home-loading-covers > span {
+    width: 104px;
+  }
 }

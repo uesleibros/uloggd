@@ -65,6 +65,9 @@ function processContent(content: string) {
   });
   // Single newlines become <br> via remark-breaks; markdown would otherwise
   // swallow the blank lines beyond the first, so keep them as explicit spacers.
+  // Lines holding only spaces count as blank — editors leave those behind
+  // constantly and the author still meant them as vertical space.
+  result = result.replace(/^[^\S\n]+$/gm, "");
   result = result.replace(
     /\n{3,}/g,
     (run) => `\n\n${"<br />\n\n".repeat(run.length - 2)}`,
@@ -389,7 +392,17 @@ function MdGameTile({
 }) {
   const { game, ready } = useMarkdownGame(slug);
   if (!ready) return <GameCardSkeleton variant="tile" />;
-  if (!game) return null;
+  // An unknown slug keeps its place instead of vanishing, so a typo is
+  // visible in the grid rather than silently shortening it.
+  if (!game)
+    return (
+      <span className="md-gc-tile md-gc-tile-missing">
+        <span className="md-gc-tile-cover">
+          <Gamepad2 size={18} aria-hidden />
+        </span>
+        <strong>{slugLabel(slug)}</strong>
+      </span>
+    );
   return (
     <Link className="md-gc-tile" href={`/${lang}/game/${game.slug}`}>
       <span className="md-gc-tile-cover">
