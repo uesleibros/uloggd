@@ -1451,6 +1451,9 @@ html[data-sidebar-ready] .account-button > svg {
   white-space: nowrap;
 }
 .search-result-copy strong {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 12px;
   font-weight: 640;
 }

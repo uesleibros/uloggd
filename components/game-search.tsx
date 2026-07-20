@@ -19,6 +19,7 @@ import type { KeyboardEvent } from "react";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 import type { GameSearchResult } from "@/lib/igdb";
 import { SpawndLogo } from "./spawnd-logo";
+import { VerifiedMark } from "./verified-badge";
 
 type SearchUser = {
   username: string;
@@ -329,11 +330,9 @@ function ResultList({
                 <span className="search-result-copy">
                   <strong>
                     {person.display_name || `@${person.username}`}
+                    {person.verified && <VerifiedMark size={15} />}
                   </strong>
-                  <small>
-                    @{person.username}
-                    {person.verified && (pt ? " · Verificado" : " · Verified")}
-                  </small>
+                  <small>@{person.username}</small>
                 </span>
               </Link>
             ))}

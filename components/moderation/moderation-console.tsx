@@ -3,7 +3,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Select from "@radix-ui/react-select";
 import {
-  BadgeCheck,
   Ban,
   Check,
   ChevronDown,
@@ -14,13 +13,13 @@ import {
   Search,
   ShieldCheck,
   ShieldOff,
-  UserRoundCheck,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { VerifiedMark } from "@/components/verified-badge";
 
 type Role = "USER" | "MODERATOR" | "ADMIN";
 type Profile = {
@@ -127,6 +126,17 @@ export function ModerationConsole({
     statusFilter === "ALL"
       ? reportRows
       : reportRows.filter((report) => report.status === statusFilter);
+  const statusTabs = [
+    { id: "OPEN", label: pt ? "Abertas" : "Open", icon: Flag },
+    {
+      id: "REVIEWING",
+      label: pt ? "Em análise" : "Reviewing",
+      icon: Clock3,
+    },
+    { id: "RESOLVED", label: pt ? "Resolvidas" : "Resolved", icon: Check },
+    { id: "DISMISSED", label: pt ? "Descartadas" : "Dismissed", icon: X },
+    { id: "ALL", label: pt ? "Todas" : "All", icon: ShieldCheck },
+  ];
 
   function setStatus(status: string) {
     setStatusFilter(status);
@@ -318,19 +328,46 @@ export function ModerationConsole({
               {pt ? "registro(s) neste filtro" : "record(s) in this filter"}
             </p>
           </div>
-          <nav aria-label={pt ? "Filtrar denúncias" : "Filter reports"}>
-            {["OPEN", "REVIEWING", "RESOLVED", "DISMISSED", "ALL"].map(
-              (status) => (
+          <nav
+            className="game-page-nav moderation-status-tabs"
+            role="tablist"
+            aria-label={pt ? "Filtrar denúncias" : "Filter reports"}
+          >
+            {statusTabs.map(({ id, label, icon: Icon }, index) => (
                 <button
                   type="button"
-                  key={status}
-                  aria-pressed={statusFilter === status}
-                  onClick={() => setStatus(status)}
+                  role="tab"
+                  key={id}
+                  aria-selected={statusFilter === id}
+                  tabIndex={statusFilter === id ? 0 : -1}
+                  onClick={() => setStatus(id)}
+                  onKeyDown={(event) => {
+                    if (
+                      !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
+                        event.key,
+                      )
+                    )
+                      return;
+                    event.preventDefault();
+                    const nextIndex =
+                      event.key === "Home"
+                        ? 0
+                        : event.key === "End"
+                          ? statusTabs.length - 1
+                          : (index +
+                              (event.key === "ArrowRight" ? 1 : -1) +
+                              statusTabs.length) %
+                            statusTabs.length;
+                    setStatus(statusTabs[nextIndex].id);
+                    event.currentTarget.parentElement
+                      ?.querySelectorAll<HTMLButtonElement>("[role='tab']")
+                      [nextIndex]?.focus();
+                  }}
                 >
-                  {status}
+                  <Icon size={15} />
+                  {label}
                 </button>
-              ),
-            )}
+              ))}
           </nav>
         </header>
         <div className="moderation-report-list">
@@ -499,7 +536,7 @@ export function ModerationConsole({
                   <p>
                     <strong>
                       {profileName(profile)}
-                      {profile.verified && <BadgeCheck size={14} />}
+                      {profile.verified && <VerifiedMark size={15} />}
                     </strong>
                     <span>@{profile.username}</span>
                     <small>
@@ -527,7 +564,7 @@ export function ModerationConsole({
                         {profile.verified ? (
                           <ShieldOff size={13} />
                         ) : (
-                          <UserRoundCheck size={13} />
+                          <VerifiedMark size={13} />
                         )}
                         {profile.verified
                           ? pt
@@ -616,7 +653,7 @@ export function ModerationConsole({
               targetAction?.action === "UNBAN" ? (
                 <Ban size={20} />
               ) : (
-                <BadgeCheck size={20} />
+                <VerifiedMark size={20} />
               )}
             </span>
             <Dialog.Title>
