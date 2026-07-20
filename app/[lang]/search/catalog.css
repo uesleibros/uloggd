@@ -46,7 +46,7 @@
   width: min(100%, 820px);
   min-height: 56px;
   margin-top: 24px;
-  padding: 6px 7px 6px 16px;
+  padding: 8px 9px 8px 16px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 11px;
   background: var(--console-inset);
@@ -72,8 +72,8 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: 42px;
-  padding: 0 15px;
+  min-height: 40px;
+  padding: 0 17px;
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 12px;
@@ -1188,7 +1188,8 @@
   .catalog-search-main-form {
     grid-template-columns: 20px minmax(0, 1fr) auto;
     min-height: 52px;
-    padding-left: 12px;
+    gap: 8px;
+    padding: 8px 8px 8px 12px;
   }
   .catalog-search-main-form button[type="submit"] {
     grid-column: 1 / -1;

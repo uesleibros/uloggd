@@ -1279,6 +1279,9 @@
 .profile-comment-list article > div {
   min-width: 0;
 }
+.profile-comment-list article[id] {
+  scroll-margin-top: 88px;
+}
 .profile-comment-list article header {
   display: flex;
   align-items: baseline;
@@ -1375,6 +1378,48 @@
 .profile-comment-actions .profile-comment-reply-action:hover {
   background: var(--quiet-hover);
   color: var(--screen-white);
+}
+.profile-comment-actions .profile-comment-more {
+  min-width: 32px;
+  padding: 0;
+  justify-content: center;
+}
+.profile-comment-action-menu {
+  z-index: 1000;
+  min-width: 190px;
+  padding: 5px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--overlay-panel);
+  box-shadow: 0 14px 38px var(--overlay-shadow);
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+  animation: profile-comment-menu-in 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.profile-comment-action-menu [role="menuitem"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 9px;
+  border-radius: 6px;
+  outline: 0;
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 580;
+  cursor: pointer;
+}
+.profile-comment-action-menu [role="menuitem"][data-highlighted] {
+  background: var(--quiet-hover);
+  color: var(--screen-white);
+}
+.profile-comment-action-menu [role="menuitem"][data-danger] {
+  color: var(--danger-text);
+}
+@keyframes profile-comment-menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
 }
 .profile-comment-pending {
   display: grid;

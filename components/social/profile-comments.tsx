@@ -1,15 +1,20 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
+  Check,
   CornerDownRight,
   Flag,
+  Link2,
   LoaderCircle,
   MessageCircle,
+  MoreHorizontal,
   Pencil,
   Send,
   Heart,
   Trash2,
+  UserRoundX,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -129,6 +134,8 @@ export function ProfileComments({
   const [reportReason, setReportReason] = useState("HARASSMENT");
   const [reportDetails, setReportDetails] = useState("");
   const [removedReplyNotice, setRemovedReplyNotice] = useState(false);
+  const [copiedComment, setCopiedComment] = useState<string | null>(null);
+  const [blocking, setBlocking] = useState<ProfileComment | null>(null);
   const [likes, setLikes] = useState(() =>
     Object.fromEntries(
       comments.map((comment) => [
@@ -290,6 +297,44 @@ export function ProfileComments({
     setPending(null);
   }
 
+  async function copyCommentLink(commentId: string) {
+    try {
+      const url = new URL(window.location.href);
+      url.hash = `comment-${commentId}`;
+      await navigator.clipboard.writeText(url.toString());
+      setCopiedComment(commentId);
+      window.setTimeout(
+        () =>
+          setCopiedComment((current) =>
+            current === commentId ? null : current,
+          ),
+        1800,
+      );
+    } catch {
+      setError(
+        pt ? "Não foi possível copiar o link." : "Could not copy the link.",
+      );
+    }
+  }
+
+  async function blockCommentAuthor() {
+    if (!blocking || pending) return;
+    setPending(`block-${blocking.author_id}`);
+    setError(null);
+    const { error: blockError } = await createClient().rpc("block_profile", {
+      target_profile: blocking.author_id,
+    });
+    if (blockError) {
+      setError(
+        pt ? "Não foi possível bloquear este usuário." : "Could not block this user.",
+      );
+    } else {
+      setBlocking(null);
+      router.refresh();
+    }
+    setPending(null);
+  }
+
   function startReply(comment: ProfileComment) {
     setEditing(null);
     setReplyBody("");
@@ -361,7 +406,10 @@ export function ProfileComments({
         data-depth={Math.min(depth, 3)}
         key={comment.id}
       >
-        <article data-deleted={deleted || undefined}>
+        <article
+          id={`comment-${comment.id}`}
+          data-deleted={deleted || undefined}
+        >
           {!deleted && (
             <Link
               className="profile-comment-avatar"
@@ -516,10 +564,63 @@ export function ProfileComments({
                           : "Delete"}
                   </button>
                 )}
-                {viewerId && viewerId !== comment.author_id && !deleted && (
-                  <button type="button" onClick={() => setReporting(comment)}>
-                    <Flag size={13} /> {pt ? "Denunciar" : "Report"}
-                  </button>
+                {!deleted && (
+                  <DropdownMenu.Root>
+                    <DropdownMenu.Trigger asChild>
+                      <button
+                        className="profile-comment-more"
+                        type="button"
+                        aria-label={
+                          pt
+                            ? "Mais ações do comentário"
+                            : "More comment actions"
+                        }
+                      >
+                        <MoreHorizontal size={15} />
+                      </button>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Portal>
+                      <DropdownMenu.Content
+                        className="profile-comment-action-menu"
+                        sideOffset={6}
+                        align="end"
+                      >
+                        <DropdownMenu.Item
+                          onSelect={() => void copyCommentLink(comment.id)}
+                        >
+                          {copiedComment === comment.id ? (
+                            <Check size={14} />
+                          ) : (
+                            <Link2 size={14} />
+                          )}
+                          {copiedComment === comment.id
+                            ? pt
+                              ? "Link copiado"
+                              : "Link copied"
+                            : pt
+                              ? "Copiar link"
+                              : "Copy link"}
+                        </DropdownMenu.Item>
+                        {viewerId && viewerId !== comment.author_id && (
+                          <>
+                            <DropdownMenu.Item
+                              onSelect={() => setReporting(comment)}
+                            >
+                              <Flag size={14} />
+                              {pt ? "Denunciar comentário" : "Report comment"}
+                            </DropdownMenu.Item>
+                            <DropdownMenu.Item
+                              data-danger
+                              onSelect={() => setBlocking(comment)}
+                            >
+                              <UserRoundX size={14} />
+                              {pt ? "Bloquear usuário" : "Block user"}
+                            </DropdownMenu.Item>
+                          </>
+                        )}
+                      </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                  </DropdownMenu.Root>
                 )}
               </footer>
             )}
@@ -757,6 +858,60 @@ export function ProfileComments({
                   : "The comment was removed while you were writing. Removed content cannot receive new replies."}
               </p>
               <Dialog.Close>{pt ? "Entendi" : "Got it"}</Dialog.Close>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      <Dialog.Root
+        open={Boolean(blocking)}
+        onOpenChange={(open) => !open && !pending && setBlocking(null)}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="report-dialog-overlay" />
+          <Dialog.Content className="report-dialog profile-comment-report">
+            <header>
+              <div>
+                <span>{pt ? "SEGURANÇA" : "SAFETY"}</span>
+                <Dialog.Title>
+                  {pt
+                    ? `Bloquear @${blocking?.author.username ?? ""}?`
+                    : `Block @${blocking?.author.username ?? ""}?`}
+                </Dialog.Title>
+              </div>
+              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+                <X size={17} />
+              </Dialog.Close>
+            </header>
+            <div className="profile-comment-removed-notice">
+              <UserRoundX size={20} />
+              <p>
+                {pt
+                  ? "Vocês deixarão de se seguir e não poderão ver o conteúdo nem interagir um com o outro."
+                  : "You will unfollow each other and will no longer see or interact with each other's content."}
+              </p>
+              <footer>
+                <Dialog.Close disabled={Boolean(pending)}>
+                  {pt ? "Cancelar" : "Cancel"}
+                </Dialog.Close>
+                <button
+                  type="button"
+                  data-danger
+                  disabled={Boolean(pending)}
+                  onClick={() => void blockCommentAuthor()}
+                >
+                  {pending?.startsWith("block-") && (
+                    <LoaderCircle className="spin" size={14} />
+                  )}
+                  {pending?.startsWith("block-")
+                    ? pt
+                      ? "Bloqueando…"
+                      : "Blocking…"
+                    : pt
+                      ? "Bloquear"
+                      : "Block"}
+                </button>
+              </footer>
             </div>
           </Dialog.Content>
         </Dialog.Portal>
