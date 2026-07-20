@@ -684,6 +684,48 @@ export async function getGamesByIds(ids: number[]): Promise<Game[]> {
   return [...found, ...fetched];
 }
 
+// Markdown game cards reference games by slug; same memo strategy as ids.
+const slugMemo = new Map<string, { game: Game | null; expires: number }>();
+
+export async function getGamesBySlugs(slugs: string[]): Promise<Game[]> {
+  const safeSlugs = [...new Set(slugs.map((slug) => slug.trim().toLowerCase()))]
+    .filter((slug) => /^[a-z0-9-]{1,80}$/.test(slug))
+    .sort();
+  if (!safeSlugs.length) return [];
+  const now = Date.now();
+  const found: Game[] = [];
+  const missing: string[] = [];
+  for (const slug of safeSlugs) {
+    const memo = slugMemo.get(slug);
+    if (memo && memo.expires > now) {
+      if (memo.game) found.push(memo.game);
+    } else missing.push(slug);
+  }
+  if (!missing.length) return found;
+  const fetched = await queryGames(
+    `
+    fields name,slug,summary,total_rating,total_rating_count,first_release_date,
+      cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,
+      involved_companies.developer,involved_companies.company.name;
+    where slug = (${missing.map((slug) => `"${slug}"`).join(",")});
+    limit ${missing.length};
+  `,
+    12 * CACHE_HOURS,
+  );
+  const fetchedSlugs = new Set(fetched.map((game) => game.slug));
+  const expires = now + GAME_MEMO_TTL;
+  for (const game of fetched) slugMemo.set(game.slug, { game, expires });
+  for (const slug of missing) {
+    if (!fetchedSlugs.has(slug)) slugMemo.set(slug, { game: null, expires });
+  }
+  while (slugMemo.size > GAME_MEMO_MAX) {
+    const oldest = slugMemo.keys().next().value;
+    if (oldest === undefined) break;
+    slugMemo.delete(oldest);
+  }
+  return [...found, ...fetched];
+}
+
 export type DiscoveryGames = {
   anticipated: Game[];
   upcoming: Game[];

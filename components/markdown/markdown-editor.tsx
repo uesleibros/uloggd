@@ -165,10 +165,14 @@ const editorTheme = EditorView.theme({
       "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
     lineHeight: "1.65",
   },
-  ".cm-content": { padding: "15px 12px", caretColor: "var(--brand-blurple-bright)" },
+  ".cm-content": {
+    padding: "15px 12px",
+    caretColor: "var(--brand-blurple-bright)",
+  },
   ".cm-cursor": { borderLeftColor: "var(--brand-blurple-bright)" },
   ".cm-selectionBackground": {
-    backgroundColor: "color-mix(in srgb, var(--brand-blurple) 24%, transparent) !important",
+    backgroundColor:
+      "color-mix(in srgb, var(--brand-blurple) 24%, transparent) !important",
   },
   ".cm-activeLine": { backgroundColor: "transparent" },
   ".cm-gutters": {
@@ -331,7 +335,9 @@ const helpItems = [
   ["||texto||", "Spoiler"],
   ["@usuario", "Menção"],
   ["!game(slug)", "Card de jogo"],
+  ["!game:mini(slug)", "Card compacto"],
   ["!game:grid(slug-1, slug-2)", "Grade de jogos"],
+  ["!game:grid-auto(slug-1, slug-2)", "Carrossel de jogos"],
   ["<center>…</center>", "Conteúdo centralizado"],
   ["<desktop>…</desktop>", "Somente desktop"],
   ["<mobile>…</mobile>", "Somente mobile"],
@@ -459,7 +465,9 @@ export function MarkdownEditor({
     if (!view) return;
     const current = view.state.doc.toString();
     if (current !== value)
-      view.dispatch({ changes: { from: 0, to: current.length, insert: value } });
+      view.dispatch({
+        changes: { from: 0, to: current.length, insert: value },
+      });
   }, [value]);
 
   const insertText = useCallback(
@@ -505,11 +513,12 @@ export function MarkdownEditor({
       const view = viewRef.current;
       if (!view) return;
       const { from } = view.state.selection.main;
-      const prefix = from > 0 && view.state.sliceDoc(from - 1, from) !== "\n"
-        ? "\n\n"
-        : from === 0
-          ? ""
-          : "\n";
+      const prefix =
+        from > 0 && view.state.sliceDoc(from - 1, from) !== "\n"
+          ? "\n\n"
+          : from === 0
+            ? ""
+            : "\n";
       const insertion = `${prefix}${block}\n`;
       if (view.state.doc.length + insertion.length > maxLength) return;
       view.dispatch({
@@ -531,27 +540,39 @@ export function MarkdownEditor({
         strikethrough: () => insertText("~~", "~~", text),
         link: () => insertText("[", "](https://)", text),
         image: () =>
-          insertText("![", "](https://url-da-imagem.com)", pt ? "descrição" : "description"),
+          insertText(
+            "![",
+            "](https://url-da-imagem.com)",
+            pt ? "descrição" : "description",
+          ),
         imagesize: () =>
-          insertBlock('<img src="https://url-da-imagem.com" alt="descrição" width="400" />'),
+          insertBlock(
+            '<img src="https://url-da-imagem.com" alt="descrição" width="400" />',
+          ),
         youtube: () => insertBlock("https://www.youtube.com/watch?v=VIDEO_ID"),
         code: () => insertText("`", "`", pt ? "código" : "code"),
-        codeblock: () => insertBlock(`\`\`\`\n${pt ? "código aqui" : "code here"}\n\`\`\``),
+        codeblock: () =>
+          insertBlock(`\`\`\`\n${pt ? "código aqui" : "code here"}\n\`\`\``),
         ul: () => insertLine("- "),
         ol: () => insertLine("1. "),
         checklist: () => insertLine("- [ ] "),
         quote: () => insertLine("> "),
         spoiler: () => insertText("||", "||", "spoiler"),
         spoilerimage: () =>
-          insertBlock('<spoilerimg src="https://url-da-imagem.com" alt="descrição" width="400" />'),
+          insertBlock(
+            '<spoilerimg src="https://url-da-imagem.com" alt="descrição" width="400" />',
+          ),
         hr: () => insertBlock("---"),
-        alert: () => insertBlock(`:::info\n${pt ? "Texto do alerta" : "Alert text"}\n:::`),
+        alert: () =>
+          insertBlock(`:::info\n${pt ? "Texto do alerta" : "Alert text"}\n:::`),
         center: () => insertBlock(`<center>\n\n${text}\n\n</center>`),
         desktop: () => insertBlock(`<desktop>\n\n${text}\n\n</desktop>`),
         mobile: () => insertBlock(`<mobile>\n\n${text}\n\n</mobile>`),
         mention: () => insertText("@", "", "username"),
         table: () =>
-          insertBlock("| Coluna 1 | Coluna 2 |\n| --- | --- |\n| dado | dado |"),
+          insertBlock(
+            "| Coluna 1 | Coluna 2 |\n| --- | --- |\n| dado | dado |",
+          ),
       };
       actions[tool]();
     },
@@ -576,7 +597,10 @@ export function MarkdownEditor({
       if (!draggingRef.current || !splitRef.current) return;
       const rect = splitRef.current.getBoundingClientRect();
       setSplit(
-        Math.min(80, Math.max(20, ((event.clientX - rect.left) / rect.width) * 100)),
+        Math.min(
+          80,
+          Math.max(20, ((event.clientX - rect.left) / rect.width) * 100),
+        ),
       );
     };
     const end = () => {
@@ -601,7 +625,9 @@ export function MarkdownEditor({
     [maxLength, value],
   );
   const filteredHelp = helpItems.filter(([syntax, label]) =>
-    `${syntax} ${label}`.toLocaleLowerCase().includes(helpSearch.toLocaleLowerCase()),
+    `${syntax} ${label}`
+      .toLocaleLowerCase()
+      .includes(helpSearch.toLocaleLowerCase()),
   );
   const showEditor = activeTab !== "preview";
   const showPreview = activeTab !== "write";
@@ -642,10 +668,17 @@ export function MarkdownEditor({
         </button>
       </div>
       <div className="md-editor-progress">
-        <span data-warning={stats.percent > 90 || undefined} style={{ width: `${stats.percent}%` }} />
+        <span
+          data-warning={stats.percent > 90 || undefined}
+          style={{ width: `${stats.percent}%` }}
+        />
       </div>
       {showEditor && (
-        <div className="md-editor-toolbar" role="toolbar" aria-label={pt ? "Formatação" : "Formatting"}>
+        <div
+          className="md-editor-toolbar"
+          role="toolbar"
+          aria-label={pt ? "Formatação" : "Formatting"}
+        >
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button type="button" aria-label={pt ? "Título" : "Heading"}>
@@ -656,7 +689,10 @@ export function MarkdownEditor({
             <DropdownMenu.Portal>
               <DropdownMenu.Content className="md-heading-menu" sideOffset={5}>
                 {[1, 2, 3, 4, 5, 6].map((level) => (
-                  <DropdownMenu.Item key={level} onSelect={() => insertLine(`${"#".repeat(level)} `)}>
+                  <DropdownMenu.Item
+                    key={level}
+                    onSelect={() => insertLine(`${"#".repeat(level)} `)}
+                  >
                     <strong>H{level}</strong>
                     <span>{"#".repeat(level)} Título</span>
                   </DropdownMenu.Item>
@@ -707,7 +743,9 @@ export function MarkdownEditor({
         <div
           className="md-editor-preview"
           hidden={!showPreview}
-          style={{ width: activeTab === "sidebyside" ? `${100 - split}%` : "100%" }}
+          style={{
+            width: activeTab === "sidebyside" ? `${100 - split}%` : "100%",
+          }}
         >
           {value.trim() ? (
             <MarkdownContent content={value} lang={lang} />
@@ -722,7 +760,10 @@ export function MarkdownEditor({
         <span>
           <Info size={13} />
           <b>Markdown</b>
-          <i>{stats.words} {pt ? "palavras" : "words"} · {stats.lines} {pt ? "linhas" : "lines"}</i>
+          <i>
+            {stats.words} {pt ? "palavras" : "words"} · {stats.lines}{" "}
+            {pt ? "linhas" : "lines"}
+          </i>
         </span>
         <button type="button" onClick={() => setHelpOpen(true)}>
           <CircleHelp size={15} />
@@ -754,7 +795,9 @@ export function MarkdownEditor({
             <header>
               <div>
                 <Info size={18} />
-                <Dialog.Title>{pt ? "Guia de Markdown" : "Markdown guide"}</Dialog.Title>
+                <Dialog.Title>
+                  {pt ? "Guia de Markdown" : "Markdown guide"}
+                </Dialog.Title>
               </div>
               <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
                 <X size={17} />

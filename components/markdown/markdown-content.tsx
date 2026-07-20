@@ -13,8 +13,11 @@ import {
   Lightbulb,
   NotebookPen,
   OctagonAlert,
+  Star,
 } from "lucide-react";
 import {
+  createContext,
+  useContext,
   useEffect,
   useMemo,
   useState,
@@ -60,6 +63,12 @@ function processContent(content: string) {
     shielded.push(match);
     return `\u0000${shielded.length - 1}\u0000`;
   });
+  // Single newlines become <br> via remark-breaks; markdown would otherwise
+  // swallow the blank lines beyond the first, so keep them as explicit spacers.
+  result = result.replace(
+    /\n{3,}/g,
+    (run) => `\n\n${"<br />\n\n".repeat(run.length - 2)}`,
+  );
   for (const { pattern, replace } of CONTENT_TRANSFORMS) {
     result = result.replace(pattern, replace);
   }
@@ -177,66 +186,206 @@ type MarkdownGame = {
   name: string;
   slug: string;
   coverUrl: string;
+  heroUrl: string | null;
+  summary: string;
   releaseYear: number | null;
-  genres?: string[];
+  genres: string[];
+  platforms: string[];
+  developers: string[];
 };
 
-function MarkdownGameCard({
-  slug,
-  lang,
-  mini = false,
-}: {
-  slug: string;
-  lang: "pt-BR" | "en";
-  mini?: boolean;
-}) {
-  const [game, setGame] = useState<MarkdownGame | null | undefined>(undefined);
-  useEffect(() => {
-    const controller = new AbortController();
-    void fetch(`/api/igdb/search?q=${encodeURIComponent(slug)}`, {
-      signal: controller.signal,
-    })
-      .then((response) => response.json())
-      .then((payload: { results?: MarkdownGame[] }) => {
-        const result =
-          payload.results?.find((item) => item.slug === slug) ??
-          payload.results?.[0] ??
-          null;
-        setGame(result);
-      })
-      .catch((error: unknown) => {
-        if (!(error instanceof DOMException && error.name === "AbortError"))
-          setGame(null);
-      });
-    return () => controller.abort();
-  }, [slug]);
+const EMPTY_GAMES: Map<string, MarkdownGame | null> = new Map();
 
-  if (game === undefined)
-    return <span className="md-game-card md-game-card-loading" aria-hidden />;
-  if (!game)
-    return (
-      <span className="md-game-card md-game-card-error">
-        <Gamepad2 size={15} />
-        {slugLabel(slug)}
-      </span>
-    );
+// All game slugs in the document resolve through one batched request, like
+// the legacy GamesBatchProvider.
+const MarkdownGamesContext = createContext<{
+  bySlug: Map<string, MarkdownGame | null>;
+  ready: boolean;
+}>({ bySlug: new Map(), ready: true });
+
+const GAME_SYNTAX = /!game(?::mini|:grid-auto|:grid)?\(([^)\n]+)\)/g;
+
+function cleanSlug(raw: string) {
+  return raw.trim().replace(/\+$/, "").toLowerCase();
+}
+
+function collectGameSlugs(content: string) {
+  const slugs = new Set<string>();
+  for (const match of content.matchAll(GAME_SYNTAX)) {
+    for (const part of match[1].split(",")) {
+      const slug = cleanSlug(part);
+      if (/^[a-z0-9-]{1,80}$/.test(slug)) slugs.add(slug);
+    }
+  }
+  return [...slugs].sort();
+}
+
+function useMarkdownGame(slug: string) {
+  const { bySlug, ready } = useContext(MarkdownGamesContext);
+  return { game: bySlug.get(slug) ?? null, ready };
+}
+
+function GameCardSkeleton({ variant }: { variant: "card" | "mini" | "tile" }) {
   return (
-    <Link
-      className="md-game-card"
-      data-mini={mini || undefined}
-      href={`/${lang}/game/${game.slug}`}
-    >
+    <span className={`md-gc-skeleton md-gc-skeleton-${variant}`} aria-hidden />
+  );
+}
+
+function GameCardError({ slug }: { slug: string }) {
+  return (
+    <span className="md-gc-error">
+      <Gamepad2 size={14} aria-hidden />
+      {slugLabel(slug)}
+    </span>
+  );
+}
+
+function MdGameCard({ slug, lang }: { slug: string; lang: "pt-BR" | "en" }) {
+  const { game, ready } = useMarkdownGame(slug);
+  if (!ready) return <GameCardSkeleton variant="card" />;
+  if (!game) return <GameCardError slug={slug} />;
+  const meta = [
+    game.developers[0],
+    game.genres.slice(0, 2).join(" · ") || null,
+  ].filter(Boolean) as string[];
+  return (
+    <span className="md-gc">
+      {game.heroUrl && (
+        <span
+          className="md-gc-backdrop"
+          style={{ backgroundImage: `url(${game.heroUrl})` }}
+          aria-hidden
+        />
+      )}
+      <Link className="md-gc-cover" href={`/${lang}/game/${game.slug}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={game.coverUrl} alt="" loading="lazy" />
+      </Link>
+      <span className="md-gc-copy">
+        <span className="md-gc-title">
+          <Link href={`/${lang}/game/${game.slug}`}>{game.name}</Link>
+          {game.releaseYear && <b>{game.releaseYear}</b>}
+        </span>
+        {meta.length > 0 && <small>{meta.join(" • ")}</small>}
+        {game.summary && <span className="md-gc-summary">{game.summary}</span>}
+        {game.platforms.length > 0 && (
+          <small className="md-gc-platforms">
+            {game.platforms.slice(0, 4).join(" · ")}
+          </small>
+        )}
+      </span>
+    </span>
+  );
+}
+
+function MdGameMini({ slug, lang }: { slug: string; lang: "pt-BR" | "en" }) {
+  const { game, ready } = useMarkdownGame(slug);
+  if (!ready) return <GameCardSkeleton variant="mini" />;
+  if (!game) return <GameCardError slug={slug} />;
+  return (
+    <Link className="md-gc-mini" href={`/${lang}/game/${game.slug}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={game.coverUrl} alt="" loading="lazy" />
       <span>
         <strong>{game.name}</strong>
         <small>
-          {[game.releaseYear, (game.genres ?? []).slice(0, 2).join(" · ")]
-            .filter(Boolean)
-            .join(" · ")}
+          {[game.releaseYear, game.genres[0]].filter(Boolean).join(" • ")}
         </small>
       </span>
     </Link>
+  );
+}
+
+function MdGameTile({
+  slug,
+  favorite,
+  lang,
+}: {
+  slug: string;
+  favorite: boolean;
+  lang: "pt-BR" | "en";
+}) {
+  const { game, ready } = useMarkdownGame(slug);
+  if (!ready) return <GameCardSkeleton variant="tile" />;
+  if (!game) return null;
+  return (
+    <Link className="md-gc-tile" href={`/${lang}/game/${game.slug}`}>
+      <span className="md-gc-tile-cover">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={game.coverUrl} alt="" loading="lazy" />
+        {favorite && (
+          <b className="md-gc-favorite" aria-hidden>
+            <Star size={11} />
+          </b>
+        )}
+      </span>
+      <strong>{game.name}</strong>
+      {game.releaseYear && <small>{game.releaseYear}</small>}
+    </Link>
+  );
+}
+
+function MdGameRow({
+  slugs,
+  auto,
+  lang,
+}: {
+  slugs: string;
+  auto: boolean;
+  lang: "pt-BR" | "en";
+}) {
+  const items = slugs
+    .split(",")
+    .map((raw) => ({
+      slug: cleanSlug(raw),
+      favorite: raw.trim().endsWith("+"),
+    }))
+    .filter((item) => /^[a-z0-9-]{1,80}$/.test(item.slug))
+    .slice(0, 24);
+  if (!items.length) return null;
+  if (!auto) {
+    return (
+      <span className="md-gc-row">
+        {items.map((item, index) => (
+          <MdGameTile
+            key={`${item.slug}-${index}`}
+            slug={item.slug}
+            favorite={item.favorite}
+            lang={lang}
+          />
+        ))}
+      </span>
+    );
+  }
+  // The carousel loops a duplicated track, like the legacy grid-auto; the
+  // duplicate is aria-hidden so content is only announced once.
+  const looped: typeof items = [];
+  while (looped.length < Math.max(8, items.length)) looped.push(...items);
+  return (
+    <span className="md-gc-carousel">
+      <span className="md-gc-carousel-track">
+        <span className="md-gc-row md-gc-row-loop">
+          {looped.map((item, index) => (
+            <MdGameTile
+              key={`a-${item.slug}-${index}`}
+              slug={item.slug}
+              favorite={item.favorite}
+              lang={lang}
+            />
+          ))}
+        </span>
+        <span className="md-gc-row md-gc-row-loop" aria-hidden>
+          {looped.map((item, index) => (
+            <MdGameTile
+              key={`b-${item.slug}-${index}`}
+              slug={item.slug}
+              favorite={item.favorite}
+              lang={lang}
+            />
+          ))}
+        </span>
+      </span>
+    </span>
   );
 }
 
@@ -248,6 +397,42 @@ export function MarkdownContent({
   lang: "pt-BR" | "en";
 }) {
   const processed = useMemo(() => processContent(content), [content]);
+  const slugs = useMemo(() => collectGameSlugs(content), [content]);
+  const slugKey = slugs.join(",");
+  // Keyed by the slug list so a content change resets to loading without an
+  // extra render pass.
+  const [resolved, setResolved] = useState<{
+    key: string;
+    bySlug: Map<string, MarkdownGame | null>;
+  }>({ key: "", bySlug: EMPTY_GAMES });
+  const games = useMemo(() => {
+    if (!slugKey) return { bySlug: EMPTY_GAMES, ready: true };
+    if (resolved.key === slugKey)
+      return { bySlug: resolved.bySlug, ready: true };
+    return { bySlug: EMPTY_GAMES, ready: false };
+  }, [slugKey, resolved]);
+
+  useEffect(() => {
+    if (!slugKey) return;
+    let active = true;
+    fetch(`/api/igdb/games?slugs=${encodeURIComponent(slugKey)}`)
+      .then((response) => (response.ok ? response.json() : { results: [] }))
+      .then((payload: { results?: MarkdownGame[] }) => {
+        if (!active) return;
+        const bySlug = new Map<string, MarkdownGame | null>(
+          slugKey.split(",").map((slug) => [slug, null]),
+        );
+        for (const game of payload.results ?? []) bySlug.set(game.slug, game);
+        setResolved({ key: slugKey, bySlug });
+      })
+      .catch(() => {
+        if (active) setResolved({ key: slugKey, bySlug: EMPTY_GAMES });
+      });
+    return () => {
+      active = false;
+    };
+  }, [slugKey]);
+
   const components = useMemo(() => {
     const custom = {
       a: ({ href, children }: { href?: string; children?: ReactNode }) => (
@@ -286,32 +471,22 @@ export function MarkdownContent({
           <img src={props.src} alt={props.alt ?? ""} loading="lazy" />
         </Spoiler>
       ),
-      "game-card": ({
-        slug,
-        variant,
-      }: {
-        slug?: string;
-        variant?: string;
-      }) => {
-        const safe = String(slug ?? "").trim();
-        if (!/^[a-z0-9-]+$/i.test(safe)) return null;
-        return <MarkdownGameCard slug={safe} lang={lang} mini={variant === "mini"} />;
-      },
-      "game-grid": ({ slugs }: { slugs?: string }) => {
-        const list = String(slugs ?? "")
-          .split(",")
-          .map((slug) => slug.trim())
-          .filter((slug) => /^[a-z0-9-]+$/i.test(slug))
-          .slice(0, 12);
-        if (!list.length) return null;
-        return (
-          <span className="md-game-grid">
-            {list.map((slug) => (
-              <MarkdownGameCard slug={slug} lang={lang} key={slug} />
-            ))}
-          </span>
+      "game-card": ({ slug, variant }: { slug?: string; variant?: string }) => {
+        const safe = cleanSlug(String(slug ?? ""));
+        if (!/^[a-z0-9-]{1,80}$/.test(safe)) return null;
+        return variant === "mini" ? (
+          <MdGameMini slug={safe} lang={lang} />
+        ) : (
+          <MdGameCard slug={safe} lang={lang} />
         );
       },
+      "game-grid": ({ slugs, auto }: { slugs?: string; auto?: string }) => (
+        <MdGameRow
+          slugs={String(slugs ?? "")}
+          auto={auto === "true"}
+          lang={lang}
+        />
+      ),
       "alert-box": ({
         type,
         children,
@@ -336,14 +511,16 @@ export function MarkdownContent({
 
   if (!processed.trim()) return null;
   return (
-    <div className="markdown-body">
-      <ReactMarkdown
-        remarkPlugins={remarkPlugins}
-        rehypePlugins={rehypePlugins}
-        components={components}
-      >
-        {processed}
-      </ReactMarkdown>
-    </div>
+    <MarkdownGamesContext.Provider value={games}>
+      <div className="markdown-body">
+        <ReactMarkdown
+          remarkPlugins={remarkPlugins}
+          rehypePlugins={rehypePlugins}
+          components={components}
+        >
+          {processed}
+        </ReactMarkdown>
+      </div>
+    </MarkdownGamesContext.Provider>
   );
 }
