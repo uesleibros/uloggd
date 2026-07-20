@@ -12,6 +12,7 @@ import {
   LoaderCircle,
   MessageCircle,
   Settings2,
+  ShieldAlert,
   UserPlus,
   X,
 } from "lucide-react";
@@ -26,7 +27,8 @@ type NotificationKind =
   | "review_like"
   | "list_like"
   | "profile_comment"
-  | "profile_comment_like";
+  | "profile_comment_like"
+  | "moderation_comment_removed";
 type NotificationRow = {
   id: string;
   actor_id: string;
@@ -74,6 +76,7 @@ export function NotificationCenter({
     "loading",
   );
   const [saving, setSaving] = useState(false);
+  const [detail, setDetail] = useState<NotificationRow | null>(null);
 
   const load = useCallback(async () => {
     setStatus("loading");
@@ -301,12 +304,85 @@ export function NotificationCenter({
                           ? `/${lang}/review/${item.target_id}`
                           : `/${lang}/lists/${item.target_id}`;
                     const Icon =
-                      item.kind === "follow"
+                      item.kind === "moderation_comment_removed"
+                        ? ShieldAlert
+                        : item.kind === "follow"
                         ? UserPlus
                         : item.kind === "profile_comment"
                           ? MessageCircle
                           : Heart;
-                    return (
+                    const content = (
+                      <>
+                        <span className="notification-avatar">
+                          {actor?.avatar_url ? (
+                            <img src={actor.avatar_url} alt="" />
+                          ) : (
+                            name.slice(0, 1).toUpperCase()
+                          )}
+                          <span>
+                            <Icon size={12} />
+                          </span>
+                        </span>
+                        <span className="notification-copy">
+                          <span>
+                            {item.kind === "moderation_comment_removed" ? (
+                              <>
+                                <strong>
+                                  {lang === "pt-BR"
+                                    ? "Moderação"
+                                    : "Moderation"}
+                                </strong>{" "}
+                                {lang === "pt-BR"
+                                  ? "removeu um comentário seu"
+                                  : "removed one of your comments"}
+                              </>
+                            ) : (
+                              <>
+                                <strong>{name}</strong>{" "}
+                                {item.kind === "follow"
+                                  ? labels.newFollower
+                                  : item.kind === "review_like"
+                                    ? labels.reviewLike
+                                    : item.kind === "profile_comment"
+                                      ? labels.profileComment
+                                      : item.kind === "profile_comment_like"
+                                        ? labels.profileCommentLike
+                                        : labels.listLike}
+                                {item.target_title && (
+                                  <>
+                                    {" "}
+                                    <b>{item.target_title}</b>
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </span>
+                          <time dateTime={item.created_at}>
+                            {formatRelativeTime(item.created_at, lang)}
+                          </time>
+                        </span>
+                        {!item.read_at && (
+                          <span
+                            className="notification-unread"
+                            aria-label={labels.unread}
+                          />
+                        )}
+                      </>
+                    );
+                    return item.kind === "moderation_comment_removed" ? (
+                      <button
+                        type="button"
+                        key={item.id}
+                        className="notification-item"
+                        data-unread={!item.read_at || undefined}
+                        onClick={() => {
+                          void markRead(item);
+                          setDetail(item);
+                        }}
+                      >
+                        {content}
+                      </button>
+                    ) : (
                       <Dialog.Close asChild key={item.id}>
                         <Link
                           href={href}
@@ -314,45 +390,7 @@ export function NotificationCenter({
                           data-unread={!item.read_at || undefined}
                           onClick={() => void markRead(item)}
                         >
-                          <span className="notification-avatar">
-                            {actor?.avatar_url ? (
-                              <img src={actor.avatar_url} alt="" />
-                            ) : (
-                              name.slice(0, 1).toUpperCase()
-                            )}
-                            <span>
-                              <Icon size={12} />
-                            </span>
-                          </span>
-                          <span className="notification-copy">
-                            <span>
-                              <strong>{name}</strong>{" "}
-                              {item.kind === "follow"
-                                ? labels.newFollower
-                                : item.kind === "review_like"
-                                  ? labels.reviewLike
-                                  : item.kind === "profile_comment"
-                                    ? labels.profileComment
-                                    : item.kind === "profile_comment_like"
-                                      ? labels.profileCommentLike
-                                      : labels.listLike}
-                              {item.target_title && (
-                                <>
-                                  {" "}
-                                  <b>{item.target_title}</b>
-                                </>
-                              )}
-                            </span>
-                            <time dateTime={item.created_at}>
-                              {formatRelativeTime(item.created_at, lang)}
-                            </time>
-                          </span>
-                          {!item.read_at && (
-                            <span
-                              className="notification-unread"
-                              aria-label={labels.unread}
-                            />
-                          )}
+                          {content}
                         </Link>
                       </Dialog.Close>
                     );
@@ -362,6 +400,41 @@ export function NotificationCenter({
           )}
         </Dialog.Content>
       </Dialog.Portal>
+      <Dialog.Root open={Boolean(detail)} onOpenChange={(open) => !open && setDetail(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="notification-detail-backdrop" />
+          <Dialog.Content className="notification-detail-dialog">
+            <Dialog.Close aria-label={labels.back}>
+              <X size={18} />
+            </Dialog.Close>
+            <span aria-hidden>
+              <ShieldAlert size={22} />
+            </span>
+            <Dialog.Title>
+              {lang === "pt-BR"
+                ? "Comentário removido pela moderação"
+                : "Comment removed by moderation"}
+            </Dialog.Title>
+            <Dialog.Description>
+              {lang === "pt-BR"
+                ? "O conteúdo deixou de aparecer publicamente e não pode mais receber respostas."
+                : "The content is no longer public and cannot receive new replies."}
+            </Dialog.Description>
+            <div>
+              <small>{lang === "pt-BR" ? "JUSTIFICATIVA" : "REASON"}</small>
+              <p>
+                {detail?.target_title ||
+                  (lang === "pt-BR"
+                    ? "Removido por violar as regras da comunidade."
+                    : "Removed for violating the community rules.")}
+              </p>
+            </div>
+            <Dialog.Close className="notification-detail-confirm">
+              {lang === "pt-BR" ? "Entendi" : "Got it"}
+            </Dialog.Close>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </Dialog.Root>
   );
 }

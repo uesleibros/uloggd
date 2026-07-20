@@ -487,6 +487,15 @@ html[data-sidebar-collapsed] {
   border-bottom: 1px solid var(--shell-line);
   color: var(--screen-dim);
 }
+.notification-scroll button.notification-item {
+  width: 100%;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+}
 .notification-item:hover {
   background: var(--console-hover);
 }
@@ -647,6 +656,124 @@ html[data-sidebar-collapsed] {
 }
 .notification-skeleton i:last-child {
   width: 34%;
+}
+.notification-detail-backdrop {
+  position: fixed;
+  z-index: 9998;
+  inset: 0;
+  background: var(--overlay-scrim);
+  backdrop-filter: blur(5px);
+}
+.notification-detail-backdrop[data-state="open"] {
+  animation: notification-veil-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.notification-detail-backdrop[data-state="closed"] {
+  animation: notification-veil-out 150ms cubic-bezier(0.77, 0, 0.175, 1);
+}
+.notification-detail-dialog {
+  position: fixed;
+  z-index: 9999;
+  top: 50%;
+  left: 50%;
+  width: min(420px, calc(100vw - 28px));
+  padding: 22px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 14px;
+  outline: 0;
+  background: var(--overlay-panel);
+  box-shadow: 0 24px 70px var(--overlay-shadow);
+  transform: translate(-50%, -50%);
+}
+.notification-detail-dialog[data-state="open"] {
+  animation: verified-dialog-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.notification-detail-dialog[data-state="closed"] {
+  animation: verified-dialog-out 160ms cubic-bezier(0.77, 0, 0.175, 1);
+}
+.notification-detail-dialog > button:first-child {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  color: var(--screen-muted);
+}
+.notification-detail-dialog > span {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--danger-text) 10%, transparent);
+  color: var(--danger-text);
+}
+.notification-detail-dialog h2 {
+  padding-right: 34px;
+  color: var(--screen-white);
+  font-size: 18px;
+}
+.notification-detail-dialog > p {
+  margin-top: 7px;
+  color: var(--screen-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.notification-detail-dialog > div {
+  margin-top: 18px;
+  padding: 13px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-inset);
+}
+.notification-detail-dialog small {
+  color: var(--screen-muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.notification-detail-dialog > div p {
+  margin-top: 6px;
+  color: var(--screen-dim);
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.notification-detail-confirm {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 16px;
+  border-radius: 8px;
+  background: var(--brand-blurple);
+  color: white;
+  font-size: 11px;
+  font-weight: 650;
+}
+.profile-comment-removed-notice {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 18px;
+}
+.profile-comment-removed-notice > svg {
+  color: var(--danger-text);
+}
+.profile-comment-removed-notice p {
+  color: var(--screen-dim);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.profile-comment-removed-notice button {
+  min-height: 38px;
+  padding: 0 15px;
+  border-radius: 8px;
+  background: var(--brand-blurple);
+  color: white;
+  font-size: 11px;
+  font-weight: 650;
 }
 @media (max-width: 760px) {
   .notification-dialog {

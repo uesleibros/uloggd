@@ -13,6 +13,7 @@ import {
   Search,
   ShieldCheck,
   ShieldOff,
+  Trash2,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -101,6 +102,12 @@ export function ModerationConsole({
     action: ProfileAction;
   } | null>(null);
   const [reason, setReason] = useState("");
+  const [commentRemoval, setCommentRemoval] = useState<{
+    reportId: string;
+    commentId: string;
+  } | null>(null);
+  const [commentRemovalReason, setCommentRemovalReason] = useState("");
+  const [commentRows, setCommentRows] = useState(comments);
   const [duration, setDuration] = useState("7");
   const [error, setError] = useState<string | null>(null);
   const [renderedAt] = useState(() => Date.now());
@@ -109,8 +116,8 @@ export function ModerationConsole({
     [knownProfiles],
   );
   const commentById = useMemo(
-    () => new Map(comments.map((comment) => [comment.id, comment])),
-    [comments],
+    () => new Map(commentRows.map((comment) => [comment.id, comment])),
+    [commentRows],
   );
   const stateByProfile = useMemo(
     () =>
@@ -295,6 +302,49 @@ export function ModerationConsole({
     setPending(null);
   }
 
+  async function removeReportedComment() {
+    if (!commentRemoval || pending) return;
+    setPending(`comment-${commentRemoval.commentId}`);
+    setError(null);
+    const { data, error: removalError } = await createClient().rpc(
+      "moderate_profile_comment",
+      {
+        target_comment: commentRemoval.commentId,
+        reason: commentRemovalReason.trim() || null,
+        target_report: commentRemoval.reportId,
+      },
+    );
+    if (removalError || data !== true) {
+      setError(
+        pt
+          ? "Não foi possível remover o comentário."
+          : "Could not remove the comment.",
+      );
+    } else {
+      setCommentRows((current) =>
+        current.map((comment) =>
+          comment.id === commentRemoval.commentId
+            ? { ...comment, body: "", deleted_at: new Date().toISOString() }
+            : comment,
+        ),
+      );
+      setReportRows((current) =>
+        current.map((report) =>
+          report.id === commentRemoval.reportId
+            ? {
+                ...report,
+                status: "RESOLVED",
+                moderator_note: commentRemovalReason.trim() || null,
+              }
+            : report,
+        ),
+      );
+      setCommentRemoval(null);
+      setCommentRemovalReason("");
+    }
+    setPending(null);
+  }
+
   return (
     <main className="moderation-page">
       <header className="moderation-hero">
@@ -439,6 +489,24 @@ export function ModerationConsole({
                   }
                 />
                 <footer>
+                  {report.content_type === "PROFILE_COMMENT" &&
+                    comment &&
+                    !comment.deleted_at && (
+                      <button
+                        type="button"
+                        data-danger
+                        disabled={Boolean(pending)}
+                        onClick={() =>
+                          setCommentRemoval({
+                            reportId: report.id,
+                            commentId: comment.id,
+                          })
+                        }
+                      >
+                        <Trash2 size={13} />
+                        {pt ? "Remover comentário" : "Remove comment"}
+                      </button>
+                    )}
                   {report.status !== "REVIEWING" && (
                     <button
                       type="button"
@@ -741,6 +809,71 @@ export function ModerationConsole({
                   : pt
                     ? "Confirmar ação"
                     : "Confirm action"}
+              </button>
+            </footer>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      <Dialog.Root
+        open={Boolean(commentRemoval)}
+        onOpenChange={(open) => {
+          if (!open && !pending) {
+            setCommentRemoval(null);
+            setCommentRemovalReason("");
+          }
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="moderation-dialog-overlay" />
+          <Dialog.Content className="moderation-dialog">
+            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <X size={17} />
+            </Dialog.Close>
+            <span>
+              <Trash2 size={20} />
+            </span>
+            <Dialog.Title>
+              {pt ? "Remover comentário" : "Remove comment"}
+            </Dialog.Title>
+            <Dialog.Description>
+              {pt
+                ? "O autor será notificado e esta decisão ficará registrada na auditoria."
+                : "The author will be notified and this decision will remain in the audit log."}
+            </Dialog.Description>
+            <label>
+              {pt ? "Justificativa (opcional)" : "Reason (optional)"}
+              <textarea
+                value={commentRemovalReason}
+                maxLength={1000}
+                onChange={(event) =>
+                  setCommentRemovalReason(event.target.value)
+                }
+                placeholder={
+                  pt
+                    ? "Explique por que o conteúdo foi removido…"
+                    : "Explain why the content was removed…"
+                }
+              />
+            </label>
+            <footer>
+              <Dialog.Close disabled={Boolean(pending)}>
+                {pt ? "Cancelar" : "Cancel"}
+              </Dialog.Close>
+              <button
+                type="button"
+                data-danger
+                disabled={Boolean(pending)}
+                onClick={() => void removeReportedComment()}
+              >
+                {pending && <LoaderCircle className="spin" size={14} />}
+                {pending
+                  ? pt
+                    ? "Removendo…"
+                    : "Removing…"
+                  : pt
+                    ? "Remover"
+                    : "Remove"}
               </button>
             </footer>
           </Dialog.Content>

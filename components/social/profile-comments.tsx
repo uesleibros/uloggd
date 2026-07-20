@@ -128,6 +128,7 @@ export function ProfileComments({
   const [reporting, setReporting] = useState<ProfileComment | null>(null);
   const [reportReason, setReportReason] = useState("HARASSMENT");
   const [reportDetails, setReportDetails] = useState("");
+  const [removedReplyNotice, setRemovedReplyNotice] = useState(false);
   const [likes, setLikes] = useState(() =>
     Object.fromEntries(
       comments.map((comment) => [
@@ -196,7 +197,16 @@ export function ProfileComments({
       },
     );
     if (createError) {
-      setError(actionError(createError.message));
+      if (
+        parentId &&
+        (createError.message.includes("parent comment removed") ||
+          createError.message.includes("parent comment not found"))
+      ) {
+        setReplyTo(null);
+        setReplyBody("");
+        setRemovedReplyNotice(true);
+        router.refresh();
+      } else setError(actionError(createError.message));
       setPending(null);
     } else {
       if (parentId) {
@@ -715,6 +725,39 @@ export function ProfileComments({
                 {pt ? "Enviar denúncia" : "Submit report"}
               </button>
             </form>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      <Dialog.Root
+        open={removedReplyNotice}
+        onOpenChange={setRemovedReplyNotice}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="report-dialog-overlay" />
+          <Dialog.Content className="report-dialog profile-comment-report">
+            <header>
+              <div>
+                <span>{pt ? "CONVERSA ATUALIZADA" : "THREAD UPDATED"}</span>
+                <Dialog.Title>
+                  {pt
+                    ? "Não é mais possível responder"
+                    : "This comment can no longer receive replies"}
+                </Dialog.Title>
+              </div>
+              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+                <X size={17} />
+              </Dialog.Close>
+            </header>
+            <div className="profile-comment-removed-notice">
+              <Trash2 size={20} />
+              <p>
+                {pt
+                  ? "O comentário foi removido enquanto você escrevia. Conteúdos removidos não podem receber novas respostas."
+                  : "The comment was removed while you were writing. Removed content cannot receive new replies."}
+              </p>
+              <Dialog.Close>{pt ? "Entendi" : "Got it"}</Dialog.Close>
+            </div>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
