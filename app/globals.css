@@ -14954,11 +14954,17 @@ html
 /* Markdown content + editor */
 .markdown-body {
   display: grid;
+  /* An explicit track stops wide children (tables, pre, carousels) from
+     stretching the grid past its container on narrow screens. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   color: var(--screen-dim);
   font-size: 13px;
   line-height: 1.65;
   overflow-wrap: anywhere;
+}
+.markdown-body > * {
+  min-width: 0;
 }
 .markdown-body h1,
 .markdown-body h2,
@@ -15034,10 +15040,64 @@ html
   height: auto;
   border-radius: 9px;
 }
+.md-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
 .markdown-body table {
   width: 100%;
+  min-width: 320px;
   border-collapse: collapse;
   font-size: 12px;
+}
+.markdown-body td,
+.markdown-body th {
+  overflow-wrap: normal;
+}
+.md-video {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-inset);
+}
+.md-video iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.md-details {
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-inset);
+}
+.md-summary {
+  padding: 9px 12px;
+  color: var(--screen-white);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+.md-summary:hover {
+  background: var(--console-hover);
+}
+.md-details[open] .md-summary {
+  border-bottom: 1px solid var(--shell-line);
+}
+.md-details > *:not(.md-summary) {
+  margin: 0;
+  padding: 10px 12px;
+}
+.markdown-body li:has(input[type="checkbox"]:checked) {
+  color: var(--screen-muted);
+  text-decoration: line-through;
 }
 .markdown-body th,
 .markdown-body td {
@@ -15050,7 +15110,19 @@ html
   color: var(--screen-white);
 }
 .md-center {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  justify-items: center;
+  max-width: 100%;
   text-align: center;
+}
+.md-center > * {
+  max-width: 100%;
+}
+.md-center .md-gc-row,
+.md-center .md-gc-title {
+  justify-content: center;
 }
 .md-mention {
   display: inline-flex;

@@ -2165,9 +2165,24 @@ a.year-top-game:hover .year-top-copy strong {
   margin-bottom: 40px;
 }
 .profile-drawer-body {
+  min-width: 0;
   margin-top: 20px;
   padding: 20px 22px;
+  overflow: hidden;
   border: 1px solid var(--shell-line);
   border-radius: 12px;
   background: var(--console-panel);
+}
+@media (max-width: 620px) {
+  .profile-drawer-setting > header,
+  .profile-drawer-setting > .profile-form-footer {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+  .profile-drawer-setting .md-editor {
+    margin: 0 14px;
+  }
+  .profile-drawer-body {
+    padding: 15px 14px;
+  }
 }

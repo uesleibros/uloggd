@@ -175,6 +175,84 @@ const alertVariants: Record<
   neutral: { icon: Info, tone: "neutral" },
 };
 
+type HastElement = {
+  type?: string;
+  tagName?: string;
+  value?: string;
+  properties?: Record<string, unknown>;
+  children?: HastElement[];
+};
+
+// Tags that keep a paragraph a paragraph; anything else forces a block wrapper.
+const INLINE_TAGS = new Set([
+  "a",
+  "abbr",
+  "b",
+  "bdo",
+  "br",
+  "cite",
+  "code",
+  "del",
+  "em",
+  "i",
+  "img",
+  "ins",
+  "kbd",
+  "mark",
+  "mention",
+  "q",
+  "s",
+  "small",
+  "span",
+  "spoiler",
+  "strong",
+  "sub",
+  "sup",
+  "u",
+]);
+
+const YOUTUBE_URL =
+  /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/;
+
+function youtubeId(href?: string) {
+  if (!href) return null;
+  return href.trim().match(YOUTUBE_URL)?.[1] ?? null;
+}
+
+function YouTubeEmbed({ videoId }: { videoId: string }) {
+  return (
+    <span className="md-video">
+      <iframe
+        src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+        title="YouTube"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    </span>
+  );
+}
+
+type MdImageProps = {
+  src?: string;
+  alt?: string;
+  width?: string | number;
+  height?: string | number;
+};
+
+// The editor can emit <img width="400">; honour it without letting an image
+// escape its container on narrow screens.
+function sizeStyle({ width, height }: MdImageProps) {
+  const style: { width?: string; height?: string } = {};
+  if (width) {
+    style.width = `min(${Number(width) || 0}px, 100%)`;
+    style.height = "auto";
+  } else if (height) {
+    style.height = `${Number(height) || 0}px`;
+    style.width = "auto";
+  }
+  return Object.keys(style).length ? style : undefined;
+}
+
 function slugLabel(slug: string) {
   return slug
     .trim()
@@ -435,14 +513,52 @@ export function MarkdownContent({
 
   const components = useMemo(() => {
     const custom = {
-      a: ({ href, children }: { href?: string; children?: ReactNode }) => (
-        <a href={href} target="_blank" rel="noreferrer noopener nofollow">
-          {children}
-        </a>
-      ),
-      img: (props: { src?: string; alt?: string }) => (
+      // A paragraph holding block-level content (game cards, embeds) becomes a
+      // div so the layout is not constrained by inline flow.
+      p: ({ children, node }: { children?: ReactNode; node?: HastElement }) => {
+        const only = node?.children?.length === 1 ? node.children[0] : null;
+        const href =
+          only?.type === "element" && only.tagName === "a"
+            ? String(only.properties?.href ?? "")
+            : only?.type === "text"
+              ? only.value
+              : "";
+        const videoId = youtubeId(href);
+        if (videoId) return <YouTubeEmbed videoId={videoId} />;
+        const hasBlock = node?.children?.some(
+          (child) =>
+            child.type === "element" && !INLINE_TAGS.has(child.tagName ?? ""),
+        );
+        return hasBlock ? <div>{children}</div> : <p>{children}</p>;
+      },
+      a: ({ href, children }: { href?: string; children?: ReactNode }) => {
+        const videoId = youtubeId(href);
+        if (videoId) return <YouTubeEmbed videoId={videoId} />;
+        return (
+          <a href={href} target="_blank" rel="noreferrer noopener nofollow">
+            {children}
+          </a>
+        );
+      },
+      img: (props: MdImageProps) => (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={props.src} alt={props.alt ?? ""} loading="lazy" />
+        <img
+          src={props.src}
+          alt={props.alt ?? ""}
+          loading="lazy"
+          style={sizeStyle(props)}
+        />
+      ),
+      table: ({ children }: { children?: ReactNode }) => (
+        <div className="md-table-wrap">
+          <table>{children}</table>
+        </div>
+      ),
+      details: ({ children }: { children?: ReactNode }) => (
+        <details className="md-details">{children}</details>
+      ),
+      summary: ({ children }: { children?: ReactNode }) => (
+        <summary className="md-summary">{children}</summary>
       ),
       mention: ({ children }: { children?: ReactNode }) => {
         const username = String(children ?? "").trim();
@@ -465,10 +581,15 @@ export function MarkdownContent({
       mobile: ({ children }: { children?: ReactNode }) => (
         <div className="md-mobile-only">{children}</div>
       ),
-      spoilerimg: (props: { src?: string; alt?: string }) => (
+      spoilerimg: (props: MdImageProps) => (
         <Spoiler>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={props.src} alt={props.alt ?? ""} loading="lazy" />
+          <img
+            src={props.src}
+            alt={props.alt ?? ""}
+            loading="lazy"
+            style={sizeStyle(props)}
+          />
         </Spoiler>
       ),
       "game-card": ({ slug, variant }: { slug?: string; variant?: string }) => {
