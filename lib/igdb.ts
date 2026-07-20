@@ -435,11 +435,21 @@ export async function searchCatalogPublishers(query: string) {
       option.name.toLocaleLowerCase().includes(normalized.toLocaleLowerCase()),
     );
   }
-  return queryIgdbRaw<CatalogOption>(
+  const results = await queryIgdbRaw<CatalogOption>(
     "companies",
-    `search "${escapeIgdb(normalized)}"; fields id,name; where published != null; limit 30;`,
+    `fields id,name; where name ~ *"${escapeIgdb(normalized)}"*; limit 100;`,
     6 * CACHE_HOURS,
   );
+  const needle = normalized.toLocaleLowerCase();
+  return results
+    .toSorted((a, b) => {
+      const aName = a.name.toLocaleLowerCase();
+      const bName = b.name.toLocaleLowerCase();
+      const aRank = aName === needle ? 0 : aName.startsWith(needle) ? 1 : 2;
+      const bRank = bName === needle ? 0 : bName.startsWith(needle) ? 1 : 2;
+      return aRank - bRank || a.name.localeCompare(b.name);
+    })
+    .slice(0, 30);
 }
 
 export async function searchCatalogGames(filters: CatalogSearchFilters) {
