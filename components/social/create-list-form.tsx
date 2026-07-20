@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import * as Select from "@radix-ui/react-select";
+import * as Select from "@/components/ui/select";
 import {
   Check,
   ChevronDown,

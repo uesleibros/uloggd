@@ -1,6 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import * as Select from "@/components/ui/select";
 import {
   Ban,
   Check,
@@ -800,33 +801,55 @@ export function ModerationConsole({
                 : "This decision will be permanently recorded in the audit log."}
             </Dialog.Description>
             {targetAction?.action === "BAN" && (
-              // A native select instead of a popup one: inside a modal dialog
-              // the Radix menu is portalled outside the dialog's focus trap and
-              // only ever selects on `click` for touch input, which is why it
-              // would stay open on a phone. The OS picker has none of that.
-              <label className="moderation-field">
-                <span>{pt ? "Duração" : "Duration"}</span>
-                <span className="moderation-select-shell">
-                  <select
-                    value={duration}
-                    onChange={(event) => setDuration(event.target.value)}
-                  >
-                    {[
-                      ["1", pt ? "1 dia" : "1 day"],
-                      ["7", pt ? "7 dias" : "7 days"],
-                      ["30", pt ? "30 dias" : "30 days"],
-                      ...(actorRole === "ADMIN"
-                        ? [["permanent", pt ? "Permanente" : "Permanent"]]
-                        : []),
-                    ].map(([value, label]) => (
-                      <option value={value} key={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} aria-hidden />
+              // A <label> here would forward its click to the trigger and
+              // re-toggle the select, so the caption is a plain span instead.
+              <div className="moderation-field">
+                <span id="moderation-duration-label">
+                  {pt ? "Duração" : "Duration"}
                 </span>
-              </label>
+                <Select.Root value={duration} onValueChange={setDuration}>
+                  <Select.Trigger
+                    id="moderation-duration-trigger"
+                    className="moderation-select-trigger"
+                    aria-labelledby="moderation-duration-label moderation-duration-trigger"
+                  >
+                    <Select.Value />
+                    <Select.Icon>
+                      <ChevronDown size={14} />
+                    </Select.Icon>
+                  </Select.Trigger>
+                  <Select.Portal>
+                    <Select.Content
+                      className="moderation-select-content"
+                      position="popper"
+                      sideOffset={6}
+                      collisionPadding={12}
+                    >
+                      <Select.Viewport>
+                        {[
+                          ["1", pt ? "1 dia" : "1 day"],
+                          ["7", pt ? "7 dias" : "7 days"],
+                          ["30", pt ? "30 dias" : "30 days"],
+                          ...(actorRole === "ADMIN"
+                            ? [["permanent", pt ? "Permanente" : "Permanent"]]
+                            : []),
+                        ].map(([value, label]) => (
+                          <Select.Item
+                            className="moderation-select-item"
+                            value={value}
+                            key={value}
+                          >
+                            <Select.ItemText>{label}</Select.ItemText>
+                            <Select.ItemIndicator>
+                              <Check size={13} />
+                            </Select.ItemIndicator>
+                          </Select.Item>
+                        ))}
+                      </Select.Viewport>
+                    </Select.Content>
+                  </Select.Portal>
+                </Select.Root>
+              </div>
             )}
             <label>
               {pt ? "Motivo / nota interna" : "Reason / internal note"}

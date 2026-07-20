@@ -169,7 +169,9 @@ export function ListAddGame({
                         </span>
                         <span className="list-add-game-copy">
                           <strong>{game.name}</strong>
-                          {game.releaseYear && <small>{game.releaseYear}</small>}
+                          {game.releaseYear && (
+                            <small>{game.releaseYear}</small>
+                          )}
                         </span>
                         <button
                           type="button"

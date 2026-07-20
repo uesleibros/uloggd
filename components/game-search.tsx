@@ -216,7 +216,7 @@ function ResultList({
                 {game.spawndAvailable && (
                   <span
                     className="search-result-spawnd"
-                    title={
+                    aria-label={
                       lang === "pt-BR"
                         ? "Jogável no spawnd"
                         : "Playable on spawnd"
@@ -282,7 +282,7 @@ function ResultList({
               {game.spawndAvailable && (
                 <span
                   className="search-result-spawnd"
-                  title={
+                  aria-label={
                     lang === "pt-BR"
                       ? "Jogável no spawnd"
                       : "Playable on spawnd"

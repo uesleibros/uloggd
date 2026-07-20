@@ -56,8 +56,7 @@ export function ListItemsGrid({
   }
 
   async function drop(fromIndex: number, insertIndex: number) {
-    const finalIndex =
-      insertIndex > fromIndex ? insertIndex - 1 : insertIndex;
+    const finalIndex = insertIndex > fromIndex ? insertIndex - 1 : insertIndex;
     if (finalIndex === fromIndex) return;
     const next = [...localItems];
     const [moved] = next.splice(fromIndex, 1);
@@ -98,8 +97,7 @@ export function ListItemsGrid({
         if (!game) return null;
         const isDragged = drag?.index === index;
         const showBefore = drag && !isDragged && drag.insertIndex === index;
-        const showAfter =
-          drag && !isDragged && drag.insertIndex === index + 1;
+        const showAfter = drag && !isDragged && drag.insertIndex === index + 1;
         return (
           <div
             className="ranked-list-item"
@@ -157,7 +155,11 @@ export function ListItemsGrid({
           </div>
         );
       })}
-      {pending && <span className="sr-only">{pt ? "Salvando ordem" : "Saving order"}</span>}
+      {pending && (
+        <span className="sr-only">
+          {pt ? "Salvando ordem" : "Saving order"}
+        </span>
+      )}
     </div>
   );
 }

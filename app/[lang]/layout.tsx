@@ -8,6 +8,7 @@ import { PlatformFooter } from "@/components/platform-footer";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { CookieConsent } from "@/components/cookie-consent";
 import { SmartHeader } from "@/components/smart-header";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeManager } from "@/components/theme-manager";
 import { TwemojiManager } from "@/components/twemoji-manager";
 import { TextareaAutosizeManager } from "@/components/textarea-autosize-manager";
@@ -117,45 +118,47 @@ export default async function LocaleLayout({
         <ThemeManager />
         <TwemojiManager />
         <TextareaAutosizeManager />
-        <div className="platform-shell">
-          <Suspense
-            fallback={
-              <PlatformNavigation
-                lang={lang}
-                dictionary={dictionary}
-                searchCacheScope="anonymous"
-                account={null}
-                viewerId={null}
-                pending
-              />
-            }
-          >
-            <AuthedNavigation lang={lang} dictionary={dictionary} />
-          </Suspense>
-          <div className="platform-content">
-            <SmartHeader className="content-header">
-              <Suspense
-                fallback={
-                  <>
-                    <DesktopGameSearch
-                      dictionary={dictionary}
-                      lang={lang}
-                      cacheScope="anonymous"
-                    />
-                    <div className="content-header-actions">
-                      <LocaleSwitcher locale={lang} />
-                    </div>
-                  </>
-                }
-              >
-                <AuthedHeaderTools lang={lang} dictionary={dictionary} />
-              </Suspense>
-            </SmartHeader>
-            {children}
-            <PlatformFooter lang={lang} dictionary={dictionary} />
+        <TooltipProvider>
+          <div className="platform-shell">
+            <Suspense
+              fallback={
+                <PlatformNavigation
+                  lang={lang}
+                  dictionary={dictionary}
+                  searchCacheScope="anonymous"
+                  account={null}
+                  viewerId={null}
+                  pending
+                />
+              }
+            >
+              <AuthedNavigation lang={lang} dictionary={dictionary} />
+            </Suspense>
+            <div className="platform-content">
+              <SmartHeader className="content-header">
+                <Suspense
+                  fallback={
+                    <>
+                      <DesktopGameSearch
+                        dictionary={dictionary}
+                        lang={lang}
+                        cacheScope="anonymous"
+                      />
+                      <div className="content-header-actions">
+                        <LocaleSwitcher locale={lang} />
+                      </div>
+                    </>
+                  }
+                >
+                  <AuthedHeaderTools lang={lang} dictionary={dictionary} />
+                </Suspense>
+              </SmartHeader>
+              {children}
+              <PlatformFooter lang={lang} dictionary={dictionary} />
+            </div>
+            <CookieConsent lang={lang} />
           </div>
-          <CookieConsent lang={lang} />
-        </div>
+        </TooltipProvider>
       </body>
     </html>
   );

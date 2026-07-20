@@ -307,10 +307,10 @@ export function NotificationCenter({
                       item.kind === "moderation_comment_removed"
                         ? ShieldAlert
                         : item.kind === "follow"
-                        ? UserPlus
-                        : item.kind === "profile_comment"
-                          ? MessageCircle
-                          : Heart;
+                          ? UserPlus
+                          : item.kind === "profile_comment"
+                            ? MessageCircle
+                            : Heart;
                     const content = (
                       <>
                         <span className="notification-avatar">
@@ -400,7 +400,10 @@ export function NotificationCenter({
           )}
         </Dialog.Content>
       </Dialog.Portal>
-      <Dialog.Root open={Boolean(detail)} onOpenChange={(open) => !open && setDetail(null)}>
+      <Dialog.Root
+        open={Boolean(detail)}
+        onOpenChange={(open) => !open && setDetail(null)}
+      >
         <Dialog.Portal>
           <Dialog.Overlay className="notification-detail-backdrop" />
           <Dialog.Content className="notification-detail-dialog">

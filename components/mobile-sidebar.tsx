@@ -99,7 +99,7 @@ export function MobileSidebar({
                     className="drawer-disabled"
                     key={label}
                     aria-disabled="true"
-                    title={labels.requiresSignIn}
+                    aria-label={labels.requiresSignIn}
                   >
                     <Icon size={21} />
                     <span>{label}</span>
@@ -157,7 +157,7 @@ export function MobileSidebar({
                 <span
                   className="drawer-disabled"
                   aria-disabled="true"
-                  title={labels.requiresSignIn}
+                  aria-label={labels.requiresSignIn}
                 >
                   <Settings size={21} />
                   <span>{labels.settings}</span>

@@ -372,9 +372,7 @@ export default async function GamePage({ params }: Props) {
                       {game.searchFilters.genres.length
                         ? game.searchFilters.genres.map((item) => (
                             <span key={item.id}>
-                              <Link
-                                href={`/${lang}/search?genres=${item.id}`}
-                              >
+                              <Link href={`/${lang}/search?genres=${item.id}`}>
                                 {item.name}
                               </Link>
                             </span>

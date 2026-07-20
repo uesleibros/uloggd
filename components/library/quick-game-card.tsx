@@ -18,6 +18,7 @@ import {
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { resolveGameCover } from "@/lib/game-cover";
+import { Tooltip } from "@/components/ui/tooltip";
 import { StarRating } from "./star-rating";
 import { SpawndLogo } from "../spawnd-logo";
 
@@ -232,7 +233,7 @@ export function QuickGameCard({
         {spawndAvailable && (
           <span
             className="quick-spawnd-badge"
-            title={pt ? "Jogável no spawnd" : "Playable on spawnd"}
+            aria-label={pt ? "Jogável no spawnd" : "Playable on spawnd"}
           >
             <SpawndLogo compact />
             {pt ? "Jogável" : "Playable"}
@@ -246,19 +247,28 @@ export function QuickGameCard({
               aria-label={pt ? "Listas salvas" : "Saved lists"}
             >
               {state.wishlist && (
-                <span data-action="wishlist" title={labels.WISHLIST}>
-                  <Gift size={11} />
-                </span>
+                <Tooltip label={labels.WISHLIST}>
+                  <span data-action="wishlist" aria-label={labels.WISHLIST}>
+                    <Gift size={11} />
+                  </span>
+                </Tooltip>
               )}
               {state.backlog && (
-                <span data-action="backlog" title="Backlog">
-                  <Clock3 size={11} />
-                </span>
+                <Tooltip label="Backlog">
+                  <span data-action="backlog" aria-label="Backlog">
+                    <Clock3 size={11} />
+                  </span>
+                </Tooltip>
               )}
               {state.liked && (
-                <span data-action="liked" title={pt ? "Favorito" : "Favorite"}>
-                  <Heart size={11} fill="currentColor" />
-                </span>
+                <Tooltip label={pt ? "Favorito" : "Favorite"}>
+                  <span
+                    data-action="liked"
+                    aria-label={pt ? "Favorito" : "Favorite"}
+                  >
+                    <Heart size={11} fill="currentColor" />
+                  </span>
+                </Tooltip>
               )}
             </div>
           )}
@@ -273,38 +283,42 @@ export function QuickGameCard({
         </div>
         {enabled && (
           <div className="quick-action-bar">
-            <button
-              type="button"
-              data-action="completed"
-              data-active={played || undefined}
-              aria-pressed={played}
-              aria-label={labels.COMPLETED}
-              title={labels.COMPLETED}
-              disabled={Boolean(pending)}
-              onClick={() => update("status", played ? "BACKLOG" : "COMPLETED")}
-            >
-              {pending === "status" ? (
-                <LoaderCircle className="spin" size={16} aria-hidden />
-              ) : (
-                <Check size={16} />
-              )}
-            </button>
-            <button
-              type="button"
-              data-action="backlog"
-              data-active={state?.backlog || undefined}
-              aria-pressed={state?.backlog ?? false}
-              aria-label="Backlog"
-              title="Backlog"
-              disabled={Boolean(pending)}
-              onClick={() => update("backlog", !state?.backlog)}
-            >
-              {pending === "backlog" ? (
-                <LoaderCircle className="spin" size={15} aria-hidden />
-              ) : (
-                <Clock3 size={15} />
-              )}
-            </button>
+            <Tooltip label={labels.COMPLETED}>
+              <button
+                type="button"
+                data-action="completed"
+                data-active={played || undefined}
+                aria-pressed={played}
+                aria-label={labels.COMPLETED}
+                disabled={Boolean(pending)}
+                onClick={() =>
+                  update("status", played ? "BACKLOG" : "COMPLETED")
+                }
+              >
+                {pending === "status" ? (
+                  <LoaderCircle className="spin" size={16} aria-hidden />
+                ) : (
+                  <Check size={16} />
+                )}
+              </button>
+            </Tooltip>
+            <Tooltip label="Backlog">
+              <button
+                type="button"
+                data-action="backlog"
+                data-active={state?.backlog || undefined}
+                aria-pressed={state?.backlog ?? false}
+                aria-label="Backlog"
+                disabled={Boolean(pending)}
+                onClick={() => update("backlog", !state?.backlog)}
+              >
+                {pending === "backlog" ? (
+                  <LoaderCircle className="spin" size={15} aria-hidden />
+                ) : (
+                  <Clock3 size={15} />
+                )}
+              </button>
+            </Tooltip>
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild>
                 <button

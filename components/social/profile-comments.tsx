@@ -326,7 +326,9 @@ export function ProfileComments({
     });
     if (blockError) {
       setError(
-        pt ? "Não foi possível bloquear este usuário." : "Could not block this user.",
+        pt
+          ? "Não foi possível bloquear este usuário."
+          : "Could not block this user.",
       );
     } else {
       setBlocking(null);

@@ -1,6 +1,6 @@
 "use client";
 
-import * as Select from "@radix-ui/react-select";
+import * as Select from "@/components/ui/select";
 import {
   ChevronLeft,
   ChevronRight,

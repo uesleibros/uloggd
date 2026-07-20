@@ -18,10 +18,7 @@ import { ShareButton } from "@/components/share-button";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/server";
-import {
-  MIN_WRAPPED_YEAR,
-  parseWrappedYear,
-} from "@/lib/year-wrapped";
+import { MIN_WRAPPED_YEAR, parseWrappedYear } from "@/lib/year-wrapped";
 import { hasLocale } from "../../../../dictionaries";
 import "../../../../profile.css";
 

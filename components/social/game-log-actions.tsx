@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import * as Select from "@radix-ui/react-select";
+import * as Select from "@/components/ui/select";
 import {
   ArrowLeft,
   BookOpen,
@@ -253,7 +253,9 @@ export function GameLogActions({
     const daySet = new Set(days);
     const hit = (session: JourneySession) => {
       if (
-        selectedJourney === "loose" ? session.journeyId : session.journeyId !== entryJourney
+        selectedJourney === "loose"
+          ? session.journeyId
+          : session.journeyId !== entryJourney
       )
         return false;
       for (const day of daySet) {
@@ -320,10 +322,9 @@ export function GameLogActions({
   async function removeDay() {
     if (!dayEditor?.session) return;
     setPending(true);
-    const { error: rpcError } = await createClient().rpc(
-      "delete_diary_entry",
-      { entry_id: dayEditor.session.id },
-    );
+    const { error: rpcError } = await createClient().rpc("delete_diary_entry", {
+      entry_id: dayEditor.session.id,
+    });
     if (rpcError) {
       setPending(false);
       return;
@@ -382,8 +383,7 @@ export function GameLogActions({
           <BookOpen size={15} /> {labels.review}
         </button>
         <button type="button" onClick={() => openMode("diary")}>
-          <CalendarPlus size={15} />{" "}
-          {pt ? "Registrar jornada" : "Log journey"}
+          <CalendarPlus size={15} /> {pt ? "Registrar jornada" : "Log journey"}
         </button>
         {logCount > 0 && (
           <Link href={`/${lang}/game/${game.slug}/logs`}>
@@ -427,7 +427,9 @@ export function GameLogActions({
                 draftKey={`uloggd:review-draft:${game.id}`}
                 submitLabel={pt ? "Publicar avaliação" : "Publish review"}
                 busyLabel={pt ? "Publicando…" : "Publishing…"}
-                successLabel={pt ? "Salvo na sua jornada." : "Saved to your journey."}
+                successLabel={
+                  pt ? "Salvo na sua jornada." : "Saved to your journey."
+                }
                 onPerform={performReview}
               />
             )}
@@ -534,7 +536,11 @@ export function GameLogActions({
                         onClick={() => void submitJourneyName()}
                       >
                         {pending ? (
-                          <LoaderCircle className="spin" size={13} aria-hidden />
+                          <LoaderCircle
+                            className="spin"
+                            size={13}
+                            aria-hidden
+                          />
                         ) : (
                           <Check size={13} />
                         )}
@@ -633,7 +639,10 @@ export function GameLogActions({
                 {lists.length ? (
                   <label>
                     <span>{pt ? "Lista" : "List"}</span>
-                    <Select.Root value={listChoice} onValueChange={setListChoice}>
+                    <Select.Root
+                      value={listChoice}
+                      onValueChange={setListChoice}
+                    >
                       <Select.Trigger className="editor-select-trigger">
                         <Select.Value
                           placeholder={
@@ -745,9 +754,7 @@ function JourneyDayEditor({
   const [minutes, setMinutes] = useState(total % 60 ? String(total % 60) : "");
   const [note, setNote] = useState(session?.note ?? "");
   const [marksStart, setMarksStart] = useState(Boolean(session?.marksStart));
-  const [marksFinish, setMarksFinish] = useState(
-    Boolean(session?.marksFinish),
-  );
+  const [marksFinish, setMarksFinish] = useState(Boolean(session?.marksFinish));
   const [spoilers, setSpoilers] = useState(Boolean(session?.spoilers));
   const [visibility, setVisibility] = useState<Visibility>(
     session?.visibility ?? "PUBLIC",
@@ -803,7 +810,9 @@ function JourneyDayEditor({
         >
           <Play size={15} />
           <span>
-            <strong>{pt ? "Comecei o jogo aqui" : "Started the game here"}</strong>
+            <strong>
+              {pt ? "Comecei o jogo aqui" : "Started the game here"}
+            </strong>
             <small>
               {pt ? "Marca o início da jornada" : "Marks the journey start"}
             </small>
@@ -890,7 +899,9 @@ function JourneyDayEditor({
       </div>
       {failed && (
         <p className="social-form-error" role="alert">
-          {pt ? "Não foi possível salvar a sessão." : "Could not save the session."}
+          {pt
+            ? "Não foi possível salvar a sessão."
+            : "Could not save the session."}
         </p>
       )}
       <footer className="journey-day-actions">

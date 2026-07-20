@@ -80,9 +80,7 @@ export function EditReviewDialog({
           <header>
             <div>
               <span>{pt ? "Editar avaliação" : "Edit review"}</span>
-              <Dialog.Title>
-                {entry.game?.name ?? entry.gameSlug}
-              </Dialog.Title>
+              <Dialog.Title>{entry.game?.name ?? entry.gameSlug}</Dialog.Title>
             </div>
             <Dialog.Close
               aria-label={pt ? "Fechar" : "Close"}

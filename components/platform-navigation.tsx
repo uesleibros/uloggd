@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Tooltip } from "@/components/ui/tooltip";
 import {
   HomeIcon,
   LibraryBig,
@@ -71,18 +72,19 @@ export function PlatformNavigation({
                 const NavIcon = iconMap[icon];
                 if (requiresAuth && !isAuthenticated) {
                   return (
-                    <span
-                      className="nav-disabled"
+                    <Tooltip
                       key={label}
-                      aria-disabled="true"
-                      title={pending ? label : d.actions.requiresSignIn}
+                      side="right"
+                      label={pending ? label : d.actions.requiresSignIn}
                     >
-                      <NavIcon size={20} />
-                      <span>{label}</span>
-                      {!pending && (
-                        <LockKeyhole className="nav-lock" size={12} />
-                      )}
-                    </span>
+                      <span className="nav-disabled" aria-disabled="true">
+                        <NavIcon size={20} />
+                        <span>{label}</span>
+                        {!pending && (
+                          <LockKeyhole className="nav-lock" size={12} />
+                        )}
+                      </span>
+                    </Tooltip>
                   );
                 }
                 if (index !== 0) {
@@ -99,27 +101,21 @@ export function PlatformNavigation({
                               ? `/${lang}/u/${account.username}`
                               : `/${lang}/onboarding/username`;
                   return (
-                    <ActiveLink
-                      key={label}
-                      href={href}
-                      aria-label={label}
-                      title={label}
-                    >
-                      <NavIcon size={20} />
-                      <span>{label}</span>
-                    </ActiveLink>
+                    <Tooltip key={label} label={label} side="right">
+                      <ActiveLink href={href} aria-label={label}>
+                        <NavIcon size={20} />
+                        <span>{label}</span>
+                      </ActiveLink>
+                    </Tooltip>
                   );
                 }
                 return (
-                  <ActiveLink
-                    key={label}
-                    href={`/${lang}`}
-                    aria-label={label}
-                    title={label}
-                  >
-                    <NavIcon size={20} />
-                    <span>{label}</span>
-                  </ActiveLink>
+                  <Tooltip key={label} label={label} side="right">
+                    <ActiveLink href={`/${lang}`} aria-label={label}>
+                      <NavIcon size={20} />
+                      <span>{label}</span>
+                    </ActiveLink>
+                  </Tooltip>
                 );
               })}
             </nav>
@@ -128,36 +124,44 @@ export function PlatformNavigation({
                 <>
                   {(account?.role === "ADMIN" ||
                     account?.role === "MODERATOR") && (
-                    <ActiveLink
-                      href={`/${lang}/moderation`}
-                      aria-label={lang === "pt-BR" ? "Moderação" : "Moderation"}
-                      title={lang === "pt-BR" ? "Moderação" : "Moderation"}
+                    <Tooltip
+                      side="right"
+                      label={lang === "pt-BR" ? "Moderação" : "Moderation"}
                     >
-                      <ShieldCheck size={20} />
-                      <span>
-                        {lang === "pt-BR" ? "Moderação" : "Moderation"}
-                      </span>
-                    </ActiveLink>
+                      <ActiveLink
+                        href={`/${lang}/moderation`}
+                        aria-label={
+                          lang === "pt-BR" ? "Moderação" : "Moderation"
+                        }
+                      >
+                        <ShieldCheck size={20} />
+                        <span>
+                          {lang === "pt-BR" ? "Moderação" : "Moderation"}
+                        </span>
+                      </ActiveLink>
+                    </Tooltip>
                   )}
-                  <ActiveLink
-                    href={`/${lang}/settings?tab=general`}
-                    aria-label={d.nav.settings}
-                    title={d.nav.settings}
-                  >
-                    <Settings size={20} />
-                    <span>{d.nav.settings}</span>
-                  </ActiveLink>
+                  <Tooltip side="right" label={d.nav.settings}>
+                    <ActiveLink
+                      href={`/${lang}/settings?tab=general`}
+                      aria-label={d.nav.settings}
+                    >
+                      <Settings size={20} />
+                      <span>{d.nav.settings}</span>
+                    </ActiveLink>
+                  </Tooltip>
                 </>
               ) : (
-                <span
-                  className="nav-disabled"
-                  aria-disabled="true"
-                  title={pending ? d.nav.settings : d.actions.requiresSignIn}
+                <Tooltip
+                  side="right"
+                  label={pending ? d.nav.settings : d.actions.requiresSignIn}
                 >
-                  <Settings size={20} />
-                  <span>{d.nav.settings}</span>
-                  {!pending && <LockKeyhole className="nav-lock" size={12} />}
-                </span>
+                  <span className="nav-disabled" aria-disabled="true">
+                    <Settings size={20} />
+                    <span>{d.nav.settings}</span>
+                    {!pending && <LockKeyhole className="nav-lock" size={12} />}
+                  </span>
+                </Tooltip>
               )}
             </div>
           </div>

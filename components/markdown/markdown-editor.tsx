@@ -80,6 +80,7 @@ import {
   useState,
   type ComponentType,
 } from "react";
+import { Tooltip } from "@/components/ui/tooltip";
 import { MarkdownContent } from "./markdown-content";
 
 type Tab = "write" | "preview" | "sidebyside";
@@ -929,15 +930,15 @@ export function MarkdownEditor({
           {toolGroups.map((group, groupIndex) => (
             <div key={groupIndex}>
               {group.map(([tool, Icon]) => (
-                <button
-                  key={tool}
-                  type="button"
-                  title={labels[tool]}
-                  aria-label={labels[tool]}
-                  onClick={() => runTool(tool)}
-                >
-                  <Icon size={16} />
-                </button>
+                <Tooltip key={tool} label={labels[tool]}>
+                  <button
+                    type="button"
+                    aria-label={labels[tool]}
+                    onClick={() => runTool(tool)}
+                  >
+                    <Icon size={16} />
+                  </button>
+                </Tooltip>
               ))}
             </div>
           ))}

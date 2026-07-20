@@ -29,7 +29,9 @@ const IGNORED_SELECTOR = [
 ].join(",");
 
 function canParse(element: HTMLElement) {
-  return !element.matches(IGNORED_SELECTOR) && !element.closest(IGNORED_SELECTOR);
+  return (
+    !element.matches(IGNORED_SELECTOR) && !element.closest(IGNORED_SELECTOR)
+  );
 }
 
 export function TwemojiManager() {

@@ -425,38 +425,51 @@
   font-size: 10px;
   font-weight: 600;
 }
-.moderation-select-shell {
-  position: relative;
-  display: block;
-}
-.moderation-select-shell > svg {
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  color: var(--screen-muted);
-  pointer-events: none;
-  transform: translateY(-50%);
-}
-.moderation-select-shell select {
+.moderation-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   min-height: 42px;
-  padding: 0 32px 0 10px;
+  padding: 0 10px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
-  outline: 0;
   background: var(--console-inset);
   color: var(--screen-white);
   font: 500 11px var(--font-inter);
-  appearance: none;
-  cursor: pointer;
 }
-.moderation-select-shell select:focus-visible {
+.moderation-select-trigger:focus-visible {
   border-color: var(--brand-blurple);
 }
-/* The OS picker paints these itself; keep them readable on both themes. */
-.moderation-select-shell option {
-  background: var(--console-panel);
-  color: var(--screen-white);
+.moderation-select-content {
+  z-index: 1000;
+  min-width: var(--radix-select-trigger-width);
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--overlay-panel);
+  box-shadow: 0 14px 38px var(--overlay-shadow);
+  transform-origin: var(--radix-select-content-transform-origin);
+  animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.moderation-select-content[data-state="closed"] {
+  animation: menu-out 110ms cubic-bezier(0.77, 0, 0.175, 1);
+}
+.moderation-select-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 10px;
+  outline: 0;
+  color: var(--screen-dim);
+  font-size: 11px;
+  cursor: pointer;
+}
+.moderation-select-item[data-highlighted],
+.moderation-select-item[data-state="checked"] {
+  background: var(--brand-blurple-wash);
+  color: var(--tonal-brand-text);
 }
 .moderation-dialog textarea {
   min-height: 92px;

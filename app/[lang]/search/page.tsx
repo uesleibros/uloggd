@@ -79,12 +79,14 @@ export default async function SearchPage({
       : "popular",
     page: boundedNumber(query.page, 1, 100) ?? 1,
   };
-  const [baseOptions, selectedPublishers, result, supabase] = await Promise.all([
-    getCatalogSearchOptions(),
-    getCatalogPublisherOptions(filters.publishers),
-    searchCatalogGames(filters),
-    process.env.ULOGGD_E2E === "1" ? null : getSupabase(),
-  ]);
+  const [baseOptions, selectedPublishers, result, supabase] = await Promise.all(
+    [
+      getCatalogSearchOptions(),
+      getCatalogPublisherOptions(filters.publishers),
+      searchCatalogGames(filters),
+      process.env.ULOGGD_E2E === "1" ? null : getSupabase(),
+    ],
+  );
   const publisherOptions = new Map(
     [...baseOptions.publishers, ...selectedPublishers].map((option) => [
       option.id,

@@ -2,6 +2,7 @@
 
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Tooltip } from "@/components/ui/tooltip";
 
 const STORAGE_KEY = "uloggd_sidebar_collapsed";
 
@@ -50,15 +51,16 @@ export function SidebarCollapseButton({ lang }: { lang: "pt-BR" | "en" }) {
       : "Collapse sidebar";
 
   return (
-    <button
-      className="sidebar-collapse-button"
-      type="button"
-      onClick={toggle}
-      aria-label={label}
-      title={label}
-      aria-pressed={collapsed}
-    >
-      {collapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
-    </button>
+    <Tooltip label={label} side="right">
+      <button
+        className="sidebar-collapse-button"
+        type="button"
+        onClick={toggle}
+        aria-label={label}
+        aria-pressed={collapsed}
+      >
+        {collapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
+      </button>
+    </Tooltip>
   );
 }

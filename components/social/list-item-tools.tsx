@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Tooltip } from "@/components/ui/tooltip";
 
 export function ListItemTools({
   listId,
@@ -72,19 +73,20 @@ export function ListItemTools({
 
   return (
     <div className="list-item-tools">
-      <button
-        type="button"
-        onClick={() => move("top")}
-        disabled={Boolean(pending) || first}
-        aria-label={pt ? "Mover para o topo" : "Move to top"}
-        title={pt ? "Topo" : "Top"}
-      >
-        {pending === "top" ? (
-          <LoaderCircle className="spin" size={13} aria-hidden />
-        ) : (
-          <ArrowUpToLine size={13} />
-        )}
-      </button>
+      <Tooltip label={pt ? "Mover para o topo" : "Move to top"}>
+        <button
+          type="button"
+          onClick={() => move("top")}
+          disabled={Boolean(pending) || first}
+          aria-label={pt ? "Mover para o topo" : "Move to top"}
+        >
+          {pending === "top" ? (
+            <LoaderCircle className="spin" size={13} aria-hidden />
+          ) : (
+            <ArrowUpToLine size={13} />
+          )}
+        </button>
+      </Tooltip>
       <button
         type="button"
         onClick={() => move("up")}

@@ -16131,3 +16131,31 @@ html
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Hover/focus hints replacing the native title attribute. */
+.app-tooltip {
+  z-index: 10050;
+  max-width: 260px;
+  padding: 6px 9px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 7px;
+  background: var(--overlay-panel);
+  box-shadow: 0 10px 28px var(--overlay-shadow);
+  color: var(--screen-white);
+  font-size: 11px;
+  font-weight: 550;
+  line-height: 1.45;
+  transform-origin: var(--radix-tooltip-content-transform-origin);
+  animation: quick-menu-in 130ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.app-tooltip[data-state="closed"] {
+  animation: menu-out 90ms cubic-bezier(0.77, 0, 0.175, 1);
+}
+.app-tooltip-arrow {
+  fill: var(--overlay-panel);
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-tooltip {
+    animation: none;
+  }
+}
