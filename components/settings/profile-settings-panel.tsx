@@ -20,6 +20,7 @@ export type Profile = {
   display_name: string | null;
   pronouns: string | null;
   bio: string | null;
+  drawer: string | null;
   thought: string | null;
   avatar_url: string | null;
   banner_url: string | null;
@@ -40,7 +41,9 @@ export function ProfileSettingsPanel({
   const router = useRouter();
   const [profile, setProfile] = useState(initial);
   const [thought, setThought] = useState(initial.thought ?? "");
-  const [bio, setBio] = useState(initial.bio ?? "");
+  const [drawer, setDrawer] = useState(initial.drawer ?? "");
+  const [drawerMessage, setDrawerMessage] = useState<string | null>(null);
+  const [drawerError, setDrawerError] = useState<string | null>(null);
   const [crop, setCrop] = useState<{
     source: string;
     kind: "avatar" | "banner";
@@ -109,7 +112,7 @@ export function ProfileSettingsPanel({
     const values = new FormData(event.currentTarget);
     const displayName = String(values.get("displayName") ?? "").trim();
     const pronouns = String(values.get("pronouns") ?? "").trim();
-    const nextBio = bio.trim();
+    const bio = String(values.get("bio") ?? "").trim();
     const currentThought = String(values.get("thought") ?? "").trim();
     const youtube = String(values.get("youtube") ?? "").trim();
     const instagram = String(values.get("instagram") ?? "").trim();
@@ -117,7 +120,7 @@ export function ProfileSettingsPanel({
     if (
       displayName.length > 80 ||
       pronouns.length > 30 ||
-      nextBio.length > 2000 ||
+      bio.length > 500 ||
       currentThought.length > 100 ||
       /[\r\n]/.test(currentThought)
     ) {
@@ -136,7 +139,7 @@ export function ProfileSettingsPanel({
       {
         new_display_name: displayName,
         new_pronouns: pronouns,
-        new_bio: nextBio,
+        new_bio: bio,
         new_thought: currentThought,
         new_youtube_username: youtube,
         new_instagram_username: instagram,
@@ -154,13 +157,41 @@ export function ProfileSettingsPanel({
         ...current,
         display_name: displayName || null,
         pronouns: pronouns || null,
-        bio: nextBio || null,
+        bio: bio || null,
         thought: currentThought || null,
         youtube_username: youtube.replace(/^@/, "") || null,
         instagram_username: instagram.replace(/^@/, "") || null,
         twitter_username: twitter.replace(/^@/, "") || null,
       }));
       setMessage(pt ? "Perfil atualizado." : "Profile updated.");
+      router.refresh();
+    }
+    setPending(null);
+  }
+
+  async function saveDrawer() {
+    if (pending) return;
+    const next = drawer.trim();
+    if (next.length > 10000) {
+      setDrawerError(
+        pt ? "O drawer passou do limite." : "The drawer is over the limit.",
+      );
+      return;
+    }
+    setPending("drawer");
+    setDrawerError(null);
+    setDrawerMessage(null);
+    const { data, error: actionError } = await createClient().rpc(
+      "update_profile_drawer",
+      { new_drawer: next },
+    );
+    if (actionError || !data)
+      setDrawerError(
+        pt ? "Não foi possível salvar o drawer." : "Could not save the drawer.",
+      );
+    else {
+      setProfile((current) => ({ ...current, drawer: next || null }));
+      setDrawerMessage(pt ? "Drawer atualizado." : "Drawer updated.");
       router.refresh();
     }
     setPending(null);
@@ -246,25 +277,20 @@ export function ProfileSettingsPanel({
               : "Appears in a bubble above your avatar."}
           </small>
         </label>
-        <div className="profile-bio-field">
-          <span className="profile-field-label">
-            <span>Bio</span>
-            <small>{bio.length}/2000</small>
-          </span>
-          <MarkdownEditor
-            value={bio}
-            onChange={setBio}
+        <label>
+          {pt ? "Bio" : "Bio"}
+          <textarea
             name="bio"
-            maxLength={2000}
-            rows={7}
-            lang={lang}
+            defaultValue={profile.bio ?? ""}
+            maxLength={500}
+            rows={5}
             placeholder={
               pt
-                ? "Conte um pouco sobre você e os jogos que gosta. Markdown é suportado."
-                : "Share a little about yourself and the games you enjoy. Markdown is supported."
+                ? "Conte um pouco sobre você e os jogos que gosta."
+                : "Share a little about yourself and the games you enjoy."
             }
           />
-        </div>
+        </label>
         <fieldset className="profile-social-fields">
           <legend>{pt ? "Redes sociais" : "Social networks"}</legend>
           <p>
@@ -439,6 +465,56 @@ export function ProfileSettingsPanel({
           </div>
         )}
       </div>
+      <section className="profile-drawer-setting">
+        <header>
+          <div>
+            <h2>Drawer</h2>
+            <p>
+              {pt
+                ? "Um espaço livre em Markdown no seu perfil: destaque jogos, listas, spoilers e o que mais quiser."
+                : "A free-form Markdown space on your profile: showcase games, lists, spoilers, and anything else."}
+            </p>
+          </div>
+        </header>
+        <MarkdownEditor
+          value={drawer}
+          onChange={setDrawer}
+          maxLength={10000}
+          rows={10}
+          lang={lang}
+          placeholder={
+            pt
+              ? "## Bem-vindo ao meu perfil\n\nUse a barra de ferramentas ou escreva Markdown direto."
+              : "## Welcome to my profile\n\nUse the toolbar or write Markdown directly."
+          }
+        />
+        <footer className="profile-form-footer">
+          {drawerMessage && <span>{drawerMessage}</span>}
+          {drawerError && (
+            <span className="social-form-error" role="alert">
+              {drawerError}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => void saveDrawer()}
+            disabled={pending === "drawer"}
+          >
+            {pending === "drawer" ? (
+              <LoaderCircle className="spin" size={15} />
+            ) : (
+              <Save size={15} />
+            )}
+            {pending === "drawer"
+              ? pt
+                ? "Salvando…"
+                : "Saving…"
+              : pt
+                ? "Salvar drawer"
+                : "Save drawer"}
+          </button>
+        </footer>
+      </section>
       {crop && (
         <ImageCropDialog
           source={crop.source}

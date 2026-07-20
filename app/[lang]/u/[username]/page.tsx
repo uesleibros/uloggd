@@ -21,7 +21,6 @@ import { VerifiedBadge } from "@/components/verified-badge";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { ProfileActions } from "@/components/profile-actions";
 import { MarkdownContent } from "@/components/markdown/markdown-content";
-import { stripMarkdown } from "@/lib/markdown-text";
 import {
   ProfileComments,
   type ProfileComment,
@@ -196,7 +195,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   const name = profile.display_name || `@${profile.username}`;
   const description =
-    (profile.bio ? stripMarkdown(profile.bio).slice(0, 180) : "") ||
+    profile.bio?.slice(0, 180) ||
     (lang === "pt-BR"
       ? `Veja a biblioteca, avaliações e jornada de @${profile.username} no uloggd.`
       : `See @${profile.username}'s library, reviews, and gaming journey on uloggd.`);
@@ -230,7 +229,7 @@ export default async function ProfilePage({ params }: Props) {
     supabase
       .from("profiles")
       .select(
-        "id,username,display_name,pronouns,bio,thought,avatar_url,banner_url,created_at,verified,youtube_username,instagram_username,twitter_username,profile_comment_scope",
+        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,youtube_username,instagram_username,twitter_username,profile_comment_scope",
       )
       .ilike("username", username)
       .maybeSingle(),
@@ -440,11 +439,7 @@ export default async function ProfilePage({ params }: Props) {
               </div>
             </div>
           </div>
-          {profile.bio && (
-            <div className="profile-bio">
-              <MarkdownContent content={profile.bio} lang={lang} />
-            </div>
-          )}
+          {profile.bio && <p className="profile-bio">{profile.bio}</p>}
           <div
             className="profile-connections-summary"
             aria-label={pt ? "Conexões" : "Connections"}
@@ -588,6 +583,23 @@ export default async function ProfilePage({ params }: Props) {
         </section>
       ) : (
         <>
+          {profile.drawer && (
+            <section className="profile-drawer">
+              <div className="social-section-title">
+                <div>
+                  <h2>Drawer</h2>
+                  <p>
+                    {pt
+                      ? `Um cantinho de ${profile.display_name || `@${profile.username}`}`
+                      : `A corner curated by ${profile.display_name || `@${profile.username}`}`}
+                  </p>
+                </div>
+              </div>
+              <div className="profile-drawer-body">
+                <MarkdownContent content={profile.drawer} lang={lang} />
+              </div>
+            </section>
+          )}
           {(libraryCount.count ?? 0) > 0 && (
             <Suspense
               fallback={

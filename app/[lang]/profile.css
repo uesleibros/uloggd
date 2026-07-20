@@ -2129,3 +2129,45 @@ a.year-top-game:hover .year-top-copy strong {
     height: 120px;
   }
 }
+.profile-drawer-setting {
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-panel);
+}
+@media (min-width: 1180px) {
+  .profile-drawer-setting {
+    grid-column: 1 / -1;
+  }
+}
+.profile-drawer-setting > header {
+  padding: 20px 20px 16px;
+}
+.profile-drawer-setting h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.profile-drawer-setting header p {
+  margin: 5px 0 0;
+  color: var(--screen-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.profile-drawer-setting .md-editor {
+  margin: 0 20px;
+  border-radius: 8px;
+}
+.profile-drawer-setting > .profile-form-footer {
+  padding: 14px 20px 18px;
+}
+.profile-drawer {
+  margin-bottom: 40px;
+}
+.profile-drawer-body {
+  margin-top: 20px;
+  padding: 20px 22px;
+  border: 1px solid var(--shell-line);
+  border-radius: 12px;
+  background: var(--console-panel);
+}
