@@ -476,15 +476,6 @@
 .profile-social-fields label > svg {
   flex: none;
 }
-.profile-social-links a:first-child svg {
-  color: #ff4d55;
-}
-.profile-social-links a:nth-child(2) svg {
-  color: #ef7aaa;
-}
-.profile-social-links a:nth-child(3) svg {
-  color: var(--screen-white);
-}
 @media (max-width: 620px) {
   .profile-header {
     display: block;
@@ -653,7 +644,7 @@
   outline-offset: 2px;
 }
 .profile-social-links a svg {
-  color: white !important;
+  color: white;
 }
 @media (max-width: 620px) {
   .profile-social-links a {

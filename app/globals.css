@@ -6989,7 +6989,6 @@ and content bars. */
   font-size: 11px;
   font-weight: 700;
 }
-.profile-social-links a,
 .game-share-action {
   display: inline-flex;
   align-items: center;
@@ -7003,7 +7002,6 @@ and content bars. */
   font-size: 11px;
   cursor: pointer;
 }
-.profile-social-links a:hover,
 .game-share-action:hover {
   background: var(--console-hover);
   color: var(--screen-white);
@@ -14938,116 +14936,16 @@ compact and detached on mobile. */
 .md-alert[data-tone="neutral"] {
   --md-alert-tone: var(--screen-muted);
 }
-.md-editor {
-  overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 8px;
-  background: var(--console-inset);
-}
-.md-editor-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--shell-line);
-  background: var(--console-panel);
-}
-.md-editor-tools {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-}
-.md-editor-tools[data-disabled] {
-  opacity: 0.45;
-  pointer-events: none;
-}
-.md-editor-tools button {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--screen-muted);
-  cursor: pointer;
-}
-.md-editor-tools button:hover {
-  background: var(--console-hover);
-  color: var(--screen-white);
-}
-.md-editor-tabs {
-  display: flex;
-  flex: none;
-  gap: 3px;
-  padding: 3px;
-  border: 1px solid var(--shell-line);
-  border-radius: 7px;
-  background: var(--console-inset);
-}
-.md-editor-tabs button {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 24px;
-  padding: 0 9px;
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  color: var(--screen-muted);
-  font-size: 11px;
-  font-weight: 560;
-  cursor: pointer;
-}
-.md-editor-tabs button[data-active] {
-  background: var(--console-hover);
-  color: var(--screen-white);
-}
-.md-editor textarea {
-  width: 100%;
-  min-height: 148px;
-  padding: 10px 11px;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: var(--screen-white);
-  font: 400 12px/1.6 var(--font-inter);
-  resize: vertical;
-}
-.md-editor-preview {
-  min-height: 148px;
-  max-height: 420px;
-  padding: 12px;
-  overflow-y: auto;
-}
-.md-editor-empty {
-  color: var(--screen-muted);
-  font-size: 12px;
-}
-.md-editor-status {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 6px 10px;
-  border-top: 1px solid var(--shell-line);
-  color: var(--screen-muted);
-  font-size: 10px;
-}
-.md-editor-status small:first-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* Legacy Markdown workspace,
 adapted to the current uloggd surface system. */
 .md-editor {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
   border-radius: 11px;
+  background: var(--console-inset);
 }
 .md-editor-tabs {
   display: flex;
@@ -15253,6 +15151,10 @@ adapted to the current uloggd surface system. */
 .md-editor .cm-uloggd-alert {
   color: var(--brand-blurple-bright);
   font-weight: 650;
+}
+.md-editor-empty {
+  color: var(--screen-muted);
+  font-size: 12px;
 }
 .md-editor .md-editor-preview {
   min-width: 0;
@@ -16066,40 +15968,6 @@ adapted to the current uloggd surface system. */
 }
 
 /* Route skeletons for surfaces that previously navigated to a blank frame. */
-.home-loading-featured > .skeleton-block {
-  display: block;
-  width: 100%;
-  aspect-ratio: 21 / 9;
-  border-radius: 16px;
-}
-.home-loading-rail {
-  margin-top: 34px;
-}
-.home-loading-heading {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-.home-loading-heading > span:first-child {
-  width: 190px;
-  height: 20px;
-}
-.home-loading-heading > span:last-child {
-  width: 74px;
-  height: 14px;
-}
-.home-loading-covers {
-  display: flex;
-  gap: 14px;
-  overflow: hidden;
-}
-.home-loading-covers > span {
-  flex: none;
-  width: 132px;
-  aspect-ratio: 3 / 4;
-  border-radius: 10px;
-}
 .moderation-loading-hero > .skeleton-block {
   width: 52px;
   height: 52px;
@@ -16155,9 +16023,4 @@ adapted to the current uloggd surface system. */
 .form-loading-card > span:not(:first-child) {
   height: 42px;
   border-radius: 9px;
-}
-@media (max-width: 620px) {
-  .home-loading-covers > span {
-    width: 104px;
-  }
 }
