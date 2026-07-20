@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { VerifiedMark } from "../verified-badge";
+import { stripMarkdown } from "@/lib/markdown-text";
 
 export type ConnectionPerson = {
   id: string;
@@ -44,7 +45,7 @@ export function ConnectionCard({
             {person.verified && <VerifiedMark size={16} />}
           </strong>
           <small>@{person.username}</small>
-          {person.bio && <p>{person.bio}</p>}
+          {person.bio && <p>{stripMarkdown(person.bio)}</p>}
         </span>
         <ArrowRight className="profile-connection-arrow" size={16} />
       </Link>

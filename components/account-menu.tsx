@@ -3,7 +3,13 @@
 /* eslint-disable @next/next/no-img-element */
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { ChevronDown, LoaderCircle, LogOut, ShieldCheck } from "lucide-react";
+import {
+  ChevronDown,
+  LoaderCircle,
+  LogOut,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { VerifiedMark } from "./verified-badge";
@@ -75,6 +81,20 @@ export function AccountMenu({
             <small>{account.email}</small>
           </div>
           <DropdownMenu.Separator />
+          {account.username && (
+            <>
+              <DropdownMenu.Item asChild>
+                <Link
+                  className="account-menu-profile"
+                  href={`/${lang}/u/${account.username}`}
+                >
+                  <UserRound size={16} />
+                  {lang === "pt-BR" ? "Ver perfil" : "View profile"}
+                </Link>
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator />
+            </>
+          )}
           {(account.role === "MODERATOR" || account.role === "ADMIN") && (
             <>
               <DropdownMenu.Item asChild>

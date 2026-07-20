@@ -2,8 +2,21 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
-const maxBytes = 3 * 1024 * 1024;
+const allowedTypes = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+]);
+const extensionByType: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/avif": "avif",
+};
+const maxBytes = 8 * 1024 * 1024;
 
 function isKind(
   value: FormDataEntryValue | null,
@@ -26,6 +39,16 @@ async function hasValidSignature(file: File) {
     return (
       String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
       String.fromCharCode(...bytes.slice(8, 12)) === "WEBP"
+    );
+  }
+  if (file.type === "image/gif") {
+    const header = String.fromCharCode(...bytes.slice(0, 6));
+    return header === "GIF87a" || header === "GIF89a";
+  }
+  if (file.type === "image/avif") {
+    return (
+      String.fromCharCode(...bytes.slice(4, 8)) === "ftyp" &&
+      ["avif", "avis"].includes(String.fromCharCode(...bytes.slice(8, 12)))
     );
   }
   return false;
@@ -58,7 +81,11 @@ export async function POST(request: Request) {
   }
 
   const upload = new FormData();
-  upload.append("images[]", image, `${kind}-${user.id}.webp`);
+  upload.append(
+    "images[]",
+    image,
+    `${kind}-${user.id}.${extensionByType[image.type] ?? "webp"}`,
+  );
   upload.append("privacy", "hidden");
 
   let response: Response;

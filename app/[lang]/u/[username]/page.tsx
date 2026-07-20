@@ -20,6 +20,8 @@ import { FollowButton } from "@/components/social/follow-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { ProfileActions } from "@/components/profile-actions";
+import { MarkdownContent } from "@/components/markdown/markdown-content";
+import { stripMarkdown } from "@/lib/markdown-text";
 import {
   ProfileComments,
   type ProfileComment,
@@ -194,7 +196,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   const name = profile.display_name || `@${profile.username}`;
   const description =
-    profile.bio?.slice(0, 180) ||
+    (profile.bio ? stripMarkdown(profile.bio).slice(0, 180) : "") ||
     (lang === "pt-BR"
       ? `Veja a biblioteca, avaliações e jornada de @${profile.username} no uloggd.`
       : `See @${profile.username}'s library, reviews, and gaming journey on uloggd.`);
@@ -387,6 +389,22 @@ export default async function ProfilePage({ params }: Props) {
           {profile.thought && (
             <div className="profile-thought-bubble">
               <p>{profile.thought}</p>
+              <svg
+                className="profile-thought-tail"
+                width="16"
+                height="14"
+                viewBox="0 0 16 14"
+                aria-hidden
+              >
+                <path
+                  className="profile-thought-tail-fill"
+                  d="M0.5 0 L15 0 L0.5 13 Z"
+                />
+                <path
+                  className="profile-thought-tail-line"
+                  d="M15 0.5 L0.5 13 L0.5 0"
+                />
+              </svg>
             </div>
           )}
           <div className="profile-avatar">
@@ -422,7 +440,11 @@ export default async function ProfilePage({ params }: Props) {
               </div>
             </div>
           </div>
-          {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+          {profile.bio && (
+            <div className="profile-bio">
+              <MarkdownContent content={profile.bio} lang={lang} />
+            </div>
+          )}
           <div
             className="profile-connections-summary"
             aria-label={pt ? "Conexões" : "Connections"}

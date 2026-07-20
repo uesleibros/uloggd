@@ -106,16 +106,18 @@ export default async function ProfileConnectionsPage({
         </Link>
       </nav>
       <form className="profile-connections-search">
-        <Search size={16} />
-        <input
-          type="search"
-          name="q"
-          defaultValue={query}
-          placeholder={
-            pt ? "Buscar por nome ou @usuário" : "Search name or @user"
-          }
-          aria-label={pt ? "Buscar conexões" : "Search connections"}
-        />
+        <label className="search-field-hit">
+          <Search size={16} />
+          <input
+            type="search"
+            name="q"
+            defaultValue={query}
+            placeholder={
+              pt ? "Buscar por nome ou @usuário" : "Search name or @user"
+            }
+            aria-label={pt ? "Buscar conexões" : "Search connections"}
+          />
+        </label>
         <input type="hidden" name="tab" value={activeTab} />
         <button type="submit">{pt ? "Buscar" : "Search"}</button>
       </form>

@@ -210,37 +210,76 @@ function normalize(game: IgdbGameResponse): Game {
   };
 }
 
+// IGDB allows 4 requests per second per client id. A sliding-window throttle
+// keeps bursts inside that budget so cache-miss fan-outs don't trip 429s.
+const requestTimes: number[] = [];
+async function throttleIgdb() {
+  for (;;) {
+    const now = Date.now();
+    while (requestTimes.length && now - requestTimes[0] >= 1000)
+      requestTimes.shift();
+    if (requestTimes.length < 4) {
+      requestTimes.push(now);
+      return;
+    }
+    const wait = requestTimes[0] + 1000 - now + 10;
+    await new Promise((resolve) => setTimeout(resolve, wait));
+  }
+}
+
+async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
+  const clientId = process.env.TWITCH_CLIENT_ID;
+  if (!clientId) throw new Error("Missing Twitch client ID");
+  const token = await getAccessToken();
+  for (let attempt = 0; ; attempt += 1) {
+    await throttleIgdb();
+    const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Client-ID": clientId,
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "text/plain",
+      },
+      body,
+      cache: "no-store",
+    });
+    if (response.status === 429 && attempt < 3) {
+      const retryAfter = Number(response.headers.get("Retry-After"));
+      const delay =
+        (Number.isFinite(retryAfter) && retryAfter > 0
+          ? retryAfter * 1000
+          : 400 * (attempt + 1)) +
+        Math.random() * 200;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      continue;
+    }
+    if (!response.ok) {
+      const detail = (await response.text()).slice(0, 600);
+      throw new Error(`IGDB request failed (${response.status}): ${detail}`);
+    }
+    return (await response.json()) as T[];
+  }
+}
+
+// Concurrent identical queries share one upstream request.
+const inflightQueries = new Map<string, Promise<unknown>>();
+
 async function queryIgdbRaw<T>(
   endpoint: string,
   body: string,
   revalidate = CACHE_HOURS,
 ): Promise<T[]> {
   const run = unstable_cache(
-    async () => {
-      const clientId = process.env.TWITCH_CLIENT_ID;
-      if (!clientId) throw new Error("Missing Twitch client ID");
-      const token = await getAccessToken();
-      const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
-        method: "POST",
-        headers: {
-          "Client-ID": clientId,
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "text/plain",
-        },
-        body,
-        cache: "no-store",
-      });
-      if (!response.ok) {
-        const detail = (await response.text()).slice(0, 600);
-        throw new Error(`IGDB request failed (${response.status}): ${detail}`);
-      }
-      return (await response.json()) as T[];
-    },
+    () => igdbFetch<T>(endpoint, body),
     ["igdb", endpoint, body],
     { revalidate },
   );
-
-  return run();
+  const key = `${endpoint}\n${body}`;
+  const existing = inflightQueries.get(key);
+  if (existing) return existing as Promise<T[]>;
+  const promise = run().finally(() => inflightQueries.delete(key));
+  inflightQueries.set(key, promise);
+  return promise;
 }
 
 async function queryGamesRaw(body: string, revalidate?: number) {
@@ -503,6 +542,14 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
     clauses.push(
       `total_rating_count >= ${Math.max(0, filters.ratingCountMin)}`,
     );
+  // Accuracy guards, mirroring how IGDB curates its own listings: a
+  // highest-rated sort without a vote floor surfaces one-vote 100s, and an
+  // anticipated sort without hype surfaces arbitrary unreleased rows.
+  if (filters.sort === "rating" && filters.ratingCountMin === null)
+    clauses.push("total_rating_count >= 10");
+  if (filters.sort === "hype" && !filters.anticipatedOnly)
+    clauses.push("hypes > 0");
+  if (filters.sort === "popular") clauses.push("total_rating_count > 0");
   const words = filters.query
     .trim()
     .replace(/\s+/g, " ")
@@ -579,6 +626,13 @@ export async function getPopularGames(): Promise<Game[]> {
   );
 }
 
+// Pages hydrate heavily overlapping id sets (covers, lists, activity), so a
+// per-id memo keeps repeat lookups off IGDB entirely. Misses are negative
+// cached briefly so unknown ids don't refetch on every render.
+const GAME_MEMO_TTL = 30 * 60 * 1000;
+const GAME_MEMO_MAX = 4000;
+const gameMemo = new Map<number, { game: Game | null; expires: number }>();
+
 export async function getGamesByIds(ids: number[]): Promise<Game[]> {
   if (process.env.ULOGGD_E2E === "1") {
     const { e2eGamesByIds } = await import("@/lib/igdb-e2e");
@@ -588,11 +642,21 @@ export async function getGamesByIds(ids: number[]): Promise<Game[]> {
     .filter((id) => Number.isInteger(id) && id > 0)
     .sort((a, b) => a - b);
   if (!safeIds.length) return [];
+  const now = Date.now();
+  const found: Game[] = [];
+  const missing: number[] = [];
+  for (const id of safeIds) {
+    const memo = gameMemo.get(id);
+    if (memo && memo.expires > now) {
+      if (memo.game) found.push(memo.game);
+    } else missing.push(id);
+  }
+  if (!missing.length) return found;
   const batches = Array.from(
-    { length: Math.ceil(safeIds.length / 100) },
-    (_, index) => safeIds.slice(index * 100, index * 100 + 100),
+    { length: Math.ceil(missing.length / 100) },
+    (_, index) => missing.slice(index * 100, index * 100 + 100),
   );
-  return (
+  const fetched = (
     await Promise.all(
       batches.map((batch) =>
         queryGames(
@@ -606,6 +670,18 @@ export async function getGamesByIds(ids: number[]): Promise<Game[]> {
       ),
     )
   ).flat();
+  const fetchedIds = new Set(fetched.map((game) => game.id));
+  const expires = now + GAME_MEMO_TTL;
+  for (const game of fetched) gameMemo.set(game.id, { game, expires });
+  for (const id of missing) {
+    if (!fetchedIds.has(id)) gameMemo.set(id, { game: null, expires });
+  }
+  while (gameMemo.size > GAME_MEMO_MAX) {
+    const oldest = gameMemo.keys().next().value;
+    if (oldest === undefined) break;
+    gameMemo.delete(oldest);
+  }
+  return [...found, ...fetched];
 }
 
 export type DiscoveryGames = {

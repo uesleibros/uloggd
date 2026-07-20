@@ -225,15 +225,17 @@ export function LibraryCollection({
       </nav>
       <div className="library-toolbar">
         <form onSubmit={submitSearch} className="library-search">
-          <Search size={16} />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={
-              pt ? "Buscar por título ou gênero" : "Search title or genre"
-            }
-            aria-label={pt ? "Buscar na biblioteca" : "Search library"}
-          />
+          <label className="search-field-hit">
+            <Search size={16} />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={
+                pt ? "Buscar por título ou gênero" : "Search title or genre"
+              }
+              aria-label={pt ? "Buscar na biblioteca" : "Search library"}
+            />
+          </label>
           {query && (
             <button
               type="button"

@@ -360,9 +360,7 @@ export function CatalogSearchWorkspace({
       perspectives: draft.perspectives.length
         ? draft.perspectives.join(",")
         : null,
-      publishers: draft.publishers.length
-        ? draft.publishers.join(",")
-        : null,
+      publishers: draft.publishers.length ? draft.publishers.join(",") : null,
       release: draft.releaseStatus === "all" ? null : draft.releaseStatus,
       rated: draft.ratedOnly ? 1 : null,
       anticipated: draft.anticipatedOnly ? 1 : null,
@@ -560,26 +558,30 @@ export function CatalogSearchWorkspace({
             navigate({ q: query.trim() || null });
           }}
         >
-          <Search size={20} />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={
-              pt
-                ? "Nome do jogo, edição ou expansão…"
-                : "Game, edition, or expansion name…"
-            }
-            aria-label={pt ? "Buscar jogos" : "Search games"}
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              aria-label={pt ? "Limpar" : "Clear"}
-            >
-              <X size={17} />
-            </button>
-          )}
+          <label className="catalog-search-main-field">
+            <Search size={20} />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={
+                pt
+                  ? "Nome do jogo, edição ou expansão…"
+                  : "Game, edition, or expansion name…"
+              }
+              aria-label={pt ? "Buscar jogos" : "Search games"}
+            />
+          </label>
+          <button
+            type="button"
+            className="catalog-search-clear"
+            data-hidden={!query || undefined}
+            tabIndex={query ? undefined : -1}
+            aria-hidden={!query || undefined}
+            onClick={() => setQuery("")}
+            aria-label={pt ? "Limpar" : "Clear"}
+          >
+            <X size={17} />
+          </button>
           <button type="submit">{pt ? "Buscar" : "Search"}</button>
         </form>
         <div className="catalog-search-signals">

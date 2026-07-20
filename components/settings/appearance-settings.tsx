@@ -111,6 +111,16 @@ export function AppearanceSettings({ lang }: { lang: "pt-BR" | "en" }) {
                 <i />
                 <i />
               </b>
+              {theme.id === "auto" && (
+                <span className="theme-preview-split">
+                  <i />
+                  <b>
+                    <i />
+                    <i />
+                    <i />
+                  </b>
+                </span>
+              )}
             </span>
             <span className="theme-option-copy">
               <strong>{theme.label[lang]}</strong>

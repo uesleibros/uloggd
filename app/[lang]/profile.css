@@ -3,6 +3,23 @@
   display: grid;
   gap: 20px;
 }
+.profile-settings-side {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  min-width: 0;
+}
+/* On wide screens the identity form sits beside the image cards instead of
+   leaving the right half of the page empty. */
+@media (min-width: 1180px) {
+  .settings-main:has(.profile-settings-content) {
+    max-width: 1240px;
+  }
+  .profile-settings-content {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
 .profile-image-setting,
 .profile-details-form {
   overflow: hidden;
@@ -350,13 +367,15 @@
   place-items: center;
   min-height: 0;
   padding: 20px;
-  overflow: auto;
+  overflow: hidden;
   background: var(--console-inset);
 }
+/* The image caps itself to the space the modal chrome leaves, so the stage
+   never grows a scrollbar. */
 .profile-crop-stage img {
   display: block;
   max-width: 100%;
-  max-height: 56dvh;
+  max-height: min(56dvh, calc(88dvh - 210px));
 }
 .profile-crop-error {
   margin: 0;
@@ -784,28 +803,39 @@
   z-index: 2;
   width: max-content;
   max-width: min(280px, calc(100vw - 64px));
+  --thought-line: color-mix(
+    in srgb,
+    var(--screen-white) 16%,
+    var(--console-raised)
+  );
   padding: 11px 14px;
-  border: 1px solid color-mix(in srgb, var(--screen-white) 16%, transparent);
+  border: 1px solid var(--thought-line);
   border-radius: 13px 13px 13px 4px;
-  background: color-mix(in srgb, var(--console-raised) 92%, transparent);
+  background: var(--console-raised);
   box-shadow: 0 14px 34px rgb(0 0 0 / 0.3);
-  backdrop-filter: blur(14px);
   color: var(--screen-white);
   transform-origin: left bottom;
   animation:
     profile-thought-in 320ms cubic-bezier(0.23, 1, 0.32, 1) both,
     profile-thought-float 4.8s cubic-bezier(0.45, 0, 0.55, 1) 700ms infinite;
 }
-.profile-thought-bubble::after {
-  content: "";
+/* The tail is an SVG so its fill and outline match the bubble exactly:
+   the fill hides the bubble's bottom border underneath, and only the two
+   exposed edges carry the stroke. */
+.profile-thought-tail {
   position: absolute;
-  right: auto;
-  bottom: -8px;
-  left: -1px;
-  width: 16px;
-  height: 13px;
-  background: inherit;
-  clip-path: polygon(0 0, 100% 0, 0 100%);
+  bottom: -13px;
+  left: 6px;
+  display: block;
+}
+.profile-thought-tail-fill {
+  fill: var(--console-raised);
+  stroke: none;
+}
+.profile-thought-tail-line {
+  fill: none;
+  stroke: var(--thought-line);
+  stroke-width: 1;
 }
 .profile-thought-bubble p {
   overflow-wrap: anywhere;
@@ -1628,7 +1658,7 @@
 }
 .profile-connections-search {
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 9px;
   max-width: 620px;

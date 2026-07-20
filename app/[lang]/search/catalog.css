@@ -40,7 +40,7 @@
 }
 .catalog-search-main-form {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 10px;
   width: min(100%, 820px);
@@ -52,10 +52,26 @@
   background: var(--console-inset);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%);
 }
-.catalog-search-main-form > svg {
+/* Clicking anywhere over the field, including its padding, focuses the
+   input; the clear slot keeps its width so the submit button never moves. */
+.catalog-search-main-field {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  gap: 10px;
+  min-width: 0;
+  cursor: text;
+}
+.catalog-search-main-field > svg {
+  flex: none;
   color: var(--screen-muted);
 }
+.catalog-search-clear[data-hidden] {
+  visibility: hidden;
+}
 .catalog-search-main-form input {
+  align-self: stretch;
+  flex: 1;
   width: 100%;
   min-width: 0;
   border: 0;
@@ -1186,7 +1202,7 @@
     font-size: 28px;
   }
   .catalog-search-main-form {
-    grid-template-columns: 20px minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     min-height: 52px;
     gap: 8px;
     padding: 8px 8px 8px 12px;
