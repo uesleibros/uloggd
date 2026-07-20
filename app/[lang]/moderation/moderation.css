@@ -394,7 +394,8 @@
   font-size: 11px;
   line-height: 1.5;
 }
-.moderation-dialog label {
+.moderation-dialog label,
+.moderation-dialog .moderation-field {
   display: grid;
   gap: 6px;
   margin-top: 14px;

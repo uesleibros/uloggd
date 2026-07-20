@@ -384,40 +384,40 @@ export function ModerationConsole({
             aria-label={pt ? "Filtrar denúncias" : "Filter reports"}
           >
             {statusTabs.map(({ id, label, icon: Icon }, index) => (
-                <button
-                  type="button"
-                  role="tab"
-                  key={id}
-                  aria-selected={statusFilter === id}
-                  tabIndex={statusFilter === id ? 0 : -1}
-                  onClick={() => setStatus(id)}
-                  onKeyDown={(event) => {
-                    if (
-                      !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
-                        event.key,
-                      )
+              <button
+                type="button"
+                role="tab"
+                key={id}
+                aria-selected={statusFilter === id}
+                tabIndex={statusFilter === id ? 0 : -1}
+                onClick={() => setStatus(id)}
+                onKeyDown={(event) => {
+                  if (
+                    !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
+                      event.key,
                     )
-                      return;
-                    event.preventDefault();
-                    const nextIndex =
-                      event.key === "Home"
-                        ? 0
-                        : event.key === "End"
-                          ? statusTabs.length - 1
-                          : (index +
-                              (event.key === "ArrowRight" ? 1 : -1) +
-                              statusTabs.length) %
-                            statusTabs.length;
-                    setStatus(statusTabs[nextIndex].id);
-                    event.currentTarget.parentElement
-                      ?.querySelectorAll<HTMLButtonElement>("[role='tab']")
-                      [nextIndex]?.focus();
-                  }}
-                >
-                  <Icon size={15} />
-                  {label}
-                </button>
-              ))}
+                  )
+                    return;
+                  event.preventDefault();
+                  const nextIndex =
+                    event.key === "Home"
+                      ? 0
+                      : event.key === "End"
+                        ? statusTabs.length - 1
+                        : (index +
+                            (event.key === "ArrowRight" ? 1 : -1) +
+                            statusTabs.length) %
+                          statusTabs.length;
+                  setStatus(statusTabs[nextIndex].id);
+                  event.currentTarget.parentElement
+                    ?.querySelectorAll<HTMLButtonElement>("[role='tab']")
+                    [nextIndex]?.focus();
+                }}
+              >
+                <Icon size={15} />
+                {label}
+              </button>
+            ))}
           </nav>
         </header>
         <div className="moderation-report-list">
@@ -735,8 +735,10 @@ export function ModerationConsole({
                 : "This decision will be permanently recorded in the audit log."}
             </Dialog.Description>
             {targetAction?.action === "BAN" && (
-              <label>
-                {pt ? "Duração" : "Duration"}
+              // A label here would forward clicks to the trigger and re-toggle
+              // the select, so it could never close.
+              <div className="moderation-field">
+                <span>{pt ? "Duração" : "Duration"}</span>
                 <Select.Root value={duration} onValueChange={setDuration}>
                   <Select.Trigger className="moderation-select-trigger">
                     <Select.Value />
@@ -774,7 +776,7 @@ export function ModerationConsole({
                     </Select.Content>
                   </Select.Portal>
                 </Select.Root>
-              </label>
+              </div>
             )}
             <label>
               {pt ? "Motivo / nota interna" : "Reason / internal note"}

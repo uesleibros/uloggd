@@ -13363,7 +13363,16 @@ html
   padding: 0 8px 0 12px;
 }
 /* Wraps an icon + input so the entire field, padding included, focuses the
-   input on click. */
+   input on click. Neutralize the legacy toolbar label chrome so the field
+   doesn't grow a second border inside its container. */
+.library-toolbar label.search-field-hit {
+  max-width: none;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
 .search-field-hit {
   display: flex;
   align-items: center;
