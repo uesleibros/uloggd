@@ -6489,11 +6489,6 @@ and the frosted stats block anchored bottom-right. */
 }
 
 @media (max-width: 620px) {
-  .profile-secondary-actions .quiet-icon-action {
-    justify-content: center;
-    min-height: 42px;
-    font-size: 11px;
-  }
   .share-dialog {
     top: auto;
     bottom: 0;
@@ -6994,7 +6989,6 @@ and content bars. */
   font-size: 11px;
   font-weight: 700;
 }
-.quiet-icon-action,
 .profile-social-links a,
 .game-share-action {
   display: inline-flex;
@@ -7009,16 +7003,6 @@ and content bars. */
   font-size: 11px;
   cursor: pointer;
 }
-.profile-action-cluster .quiet-icon-action {
-  min-height: 42px;
-  padding-inline: 12px;
-  border-color: var(--shell-line-strong);
-  border-radius: 8px;
-  color: var(--screen-dim);
-  font-weight: 600;
-  white-space: nowrap;
-}
-.quiet-icon-action:hover,
 .profile-social-links a:hover,
 .game-share-action:hover {
   background: var(--console-hover);

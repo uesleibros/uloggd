@@ -13,6 +13,8 @@ export function ShareButton({
   copiedLabel,
   className,
   lang,
+  open,
+  onOpenChange,
 }: {
   title: string;
   text: string;
@@ -20,6 +22,10 @@ export function ShareButton({
   copiedLabel: string;
   className?: string;
   lang: "pt-BR" | "en";
+  /** Controlled mode: the dialog is opened by something else (a menu item),
+   *  so this component renders no trigger of its own. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const pt = lang === "pt-BR";
   const [copied, setCopied] = useState(false);
@@ -43,20 +49,23 @@ export function ShareButton({
       return;
     }
   }
+  const controlled = open !== undefined;
   return (
-    <Dialog.Root>
-      <Dialog.Trigger asChild>
-        <button
-          className={["share-action-button", className]
-            .filter(Boolean)
-            .join(" ")}
-          type="button"
-          aria-label={label}
-        >
-          <Share2 size={15} />
-          <span>{label}</span>
-        </button>
-      </Dialog.Trigger>
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      {!controlled && (
+        <Dialog.Trigger asChild>
+          <button
+            className={["share-action-button", className]
+              .filter(Boolean)
+              .join(" ")}
+            type="button"
+            aria-label={label}
+          >
+            <Share2 size={15} />
+            <span>{label}</span>
+          </button>
+        </Dialog.Trigger>
+      )}
       <Dialog.Portal>
         <Dialog.Overlay className="drawer-backdrop" />
         <Dialog.Content className="share-dialog">
