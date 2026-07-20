@@ -2186,3 +2186,58 @@ a.year-top-game:hover .year-top-copy strong {
     padding: 15px 14px;
   }
 }
+
+/* Stand-in for a suspended account's profile. */
+.profile-suspended {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  max-width: 520px;
+  margin: 60px auto;
+  padding: 34px 26px;
+  border: 1px solid var(--shell-line);
+  border-radius: 14px;
+  background: var(--console-panel);
+  text-align: center;
+}
+.profile-suspended > span {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.profile-suspended h1 {
+  margin: 0;
+  color: var(--screen-white);
+  font-size: 18px;
+  font-weight: 640;
+}
+.profile-suspended p {
+  margin: 0;
+  color: var(--screen-dim);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.profile-suspended small {
+  color: var(--screen-muted);
+  font-size: 11px;
+}
+.profile-suspended a {
+  min-height: 38px;
+  margin-top: 4px;
+  padding: 10px 16px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 11.5px;
+  font-weight: 620;
+  text-decoration: none;
+}
+.profile-suspended a:hover {
+  border-color: var(--brand-blurple);
+  color: var(--screen-white);
+}

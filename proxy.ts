@@ -77,6 +77,21 @@ export async function proxy(request: NextRequest) {
   const reset = pathname.startsWith(`/${lang}/auth/reset-password`);
   const signout = pathname.startsWith(`/${lang}/auth/signout`);
   const mfaChallenge = pathname.startsWith(`/${lang}/auth/mfa`);
+  const suspendedScreen = pathname === `/${lang}/suspended`;
+
+  // A suspended account is locked out of the whole site, so this runs before
+  // onboarding and MFA. Signing out stays reachable, otherwise they would have
+  // no way to leave the account. Reads their own row, allowed by RLS.
+  if (!signout && !callback) {
+    const { data: suspension } = await supabase.rpc("profile_suspension", {
+      target: user.id,
+    });
+    const suspended = Boolean(suspension?.length);
+    if (suspended && !suspendedScreen)
+      return NextResponse.redirect(new URL(`/${lang}/suspended`, request.url));
+    if (!suspended && suspendedScreen)
+      return NextResponse.redirect(new URL(`/${lang}`, request.url));
+  }
   // Onboarding never becomes incomplete again once finished, so a cookie
   // scoped to the user id lets us skip the profiles query on every request.
   let onboardingIncomplete =

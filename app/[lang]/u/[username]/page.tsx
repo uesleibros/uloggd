@@ -173,7 +173,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await getSupabase();
   let { data: profile } = await supabase
     .from("profiles")
-    .select("username,display_name,bio,avatar_url,banner_url")
+    .select("id,username,display_name,bio,avatar_url,banner_url")
     .ilike("username", username)
     .maybeSingle();
   if (!profile?.username) {
@@ -183,7 +183,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (alias) {
       const result = await supabase
         .from("profiles")
-        .select("username,display_name,bio,avatar_url,banner_url")
+        .select("id,username,display_name,bio,avatar_url,banner_url")
         .ilike("username", alias)
         .maybeSingle();
       profile = result.data;
@@ -192,6 +192,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!profile?.username)
     return {
       title: lang === "pt-BR" ? "Perfil não encontrado" : "Profile not found",
+    };
+  // Nothing about a suspended account should reach link previews or search.
+  const { data: suspension } = await supabase.rpc("profile_suspension", {
+    target: profile.id,
+  });
+  if (suspension?.length)
+    return {
+      title: lang === "pt-BR" ? "Conta suspensa" : "Account suspended",
+      robots: { index: false, follow: false },
     };
   const name = profile.display_name || `@${profile.username}`;
   const description =
@@ -221,6 +230,42 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+function SuspendedProfile({
+  lang,
+  username,
+  until,
+}: {
+  lang: "pt-BR" | "en";
+  username: string;
+  until: string | null;
+}) {
+  const pt = lang === "pt-BR";
+  return (
+    <main className="profile-page">
+      <section className="profile-suspended">
+        <span aria-hidden>
+          <Ban size={24} />
+        </span>
+        <h1>{pt ? "Conta suspensa" : "Account suspended"}</h1>
+        <p>
+          {pt
+            ? `O perfil de @${username} está indisponível porque a conta foi suspensa por violar as diretrizes do uloggd.`
+            : `@${username}'s profile is unavailable because the account was suspended for breaking the uloggd guidelines.`}
+        </p>
+        {until && (
+          <small>
+            {pt ? "Suspensão até " : "Suspended until "}
+            {new Intl.DateTimeFormat(lang, { dateStyle: "long" }).format(
+              new Date(until),
+            )}
+          </small>
+        )}
+        <Link href={`/${lang}`}>{pt ? "Voltar ao início" : "Back home"}</Link>
+      </section>
+    </main>
+  );
+}
+
 export default async function ProfilePage({ params }: Props) {
   const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
@@ -241,6 +286,20 @@ export default async function ProfilePage({ params }: Props) {
     });
     if (alias) redirect(`/${lang}/u/${alias}`);
     notFound();
+  }
+  // A suspended profile reads as unavailable to everyone, so none of the
+  // counts, shelves or comments below are even queried.
+  const { data: suspension } = await supabase.rpc("profile_suspension", {
+    target: profile.id,
+  });
+  if (suspension?.length) {
+    return (
+      <SuspendedProfile
+        lang={lang}
+        username={profile.username}
+        until={suspension[0].banned_until}
+      />
+    );
   }
   const [
     libraryCount,
