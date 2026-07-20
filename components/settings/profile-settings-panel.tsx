@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
+import { uiText } from "@/lib/ui-text";
 
 const ImageCropDialog = dynamic(
   () => import("./image-crop-dialog").then((mod) => mod.ImageCropDialog),
@@ -38,6 +39,7 @@ export function ProfileSettingsPanel({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const [profile, setProfile] = useState(initial);
   const [thought, setThought] = useState(initial.thought ?? "");
@@ -386,7 +388,7 @@ export function ProfileSettingsPanel({
                     disabled={Boolean(pending)}
                   >
                     <Trash2 size={14} />
-                    {pt ? "Remover" : "Remove"}
+                    {t.remove}
                   </button>
                 )}
               </div>
@@ -506,9 +508,7 @@ export function ProfileSettingsPanel({
               <Save size={15} />
             )}
             {pending === "drawer"
-              ? pt
-                ? "Salvando…"
-                : "Saving…"
+              ? t.saving
               : pt
                 ? "Salvar drawer"
                 : "Save drawer"}

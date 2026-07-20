@@ -5,6 +5,7 @@ import { getGamesByIds } from "@/lib/igdb";
 import { LibraryCollection, type LibraryRecord } from "./library-collection";
 import { LibraryLiveStats } from "./library-live-stats";
 import { LibraryPrivacyControl } from "./library-privacy-control";
+import { uiText } from "@/lib/ui-text";
 
 type Profile = {
   username: string;
@@ -26,6 +27,7 @@ export async function LibraryScreen({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const games = await getGamesByIds(records.map((record) => record.igdb_id));
   const name = profile.display_name || `@${profile.username}`;
   return (
@@ -82,7 +84,7 @@ export async function LibraryScreen({
           {!owner && (
             <Link href={`/${lang}/u/${profile.username}`}>
               <ArrowLeft size={15} />
-              {pt ? "Voltar ao perfil" : "Back to profile"}
+              {t.backToProfile}
             </Link>
           )}
           {owner ? (

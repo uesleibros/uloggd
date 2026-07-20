@@ -22,6 +22,7 @@ import {
 import { useState } from "react";
 import { StarRating } from "@/components/library/star-rating";
 import type { JourneyOption } from "@/components/social/journey-calendar";
+import { uiText } from "@/lib/ui-text";
 
 export type ReviewRatingMode =
   "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
@@ -96,6 +97,7 @@ export function ReviewStudioForm({
   onPerform: (fields: ReviewRpcFields) => Promise<boolean>;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [reviewSection, setReviewSection] = useState<ReviewSection>("review");
   const [rating, setRating] = useState<number | null>(initial?.rating ?? null);
   const [ratingMode, setRatingMode] = useState<ReviewRatingMode>(
@@ -243,7 +245,7 @@ export function ReviewStudioForm({
               </div>
               {rating !== null && ratingMode !== "recommend" && (
                 <button type="button" onClick={() => setRating(null)}>
-                  <RotateCcw size={13} /> {pt ? "Limpar" : "Clear"}
+                  <RotateCcw size={13} /> {t.clear}
                 </button>
               )}
             </header>
@@ -430,7 +432,7 @@ export function ReviewStudioForm({
           </div>
           <div className="review-publishing-options">
             <label>
-              <span>{pt ? "Visibilidade" : "Visibility"}</span>
+              <span>{t.visibility}</span>
               <EditorVisibilitySelect
                 value={visibility}
                 onChange={setVisibility}
@@ -472,7 +474,7 @@ export function ReviewStudioForm({
           {success || ""}
         </span>
         <Dialog.Close type="button" disabled={pending}>
-          {pt ? "Cancelar" : "Cancel"}
+          {t.cancel}
         </Dialog.Close>
         <button
           type="submit"

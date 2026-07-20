@@ -2,6 +2,7 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { CalendarDays, Clock3, Flag, Map, Play, X } from "lucide-react";
+import { uiText } from "@/lib/ui-text";
 
 export type JourneyDetailSession = {
   id: string;
@@ -25,6 +26,7 @@ export function JourneyDetailsDialog({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const date = new Intl.DateTimeFormat(lang, {
     day: "numeric",
     month: "short",
@@ -53,7 +55,7 @@ export function JourneyDetailsDialog({
               <Dialog.Title>{title}</Dialog.Title>
               <Dialog.Description>{gameName}</Dialog.Description>
             </div>
-            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+            <Dialog.Close aria-label={t.close}>
               <X size={18} />
             </Dialog.Close>
           </header>

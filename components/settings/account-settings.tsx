@@ -19,6 +19,7 @@ import { AppearanceSettings } from "./appearance-settings";
 import { ContentPreferences } from "./content-preferences";
 import { PrivacySettings } from "./privacy-settings";
 import { UsernameSettings } from "./username-settings";
+import { uiText } from "@/lib/ui-text";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   custom_cover_scope: "OWN" | "EVERYONE";
@@ -45,6 +46,7 @@ export function AccountSettings({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -85,7 +87,7 @@ export function AccountSettings({
     },
     {
       id: "privacy" as const,
-      label: pt ? "Privacidade" : "Privacy",
+      label: t.privacy,
       icon: LockKeyhole,
     },
     {

@@ -23,6 +23,7 @@ import { resolveGameCover } from "@/lib/game-cover";
 import { getGamesByIds } from "@/lib/igdb";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
+import { uiText } from "@/lib/ui-text";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
 type RatingMode = NonNullable<SocialEntry["ratingMode"]>;
@@ -93,6 +94,7 @@ export default async function ReviewPage({ params }: Props) {
     : review.profiles;
   if (!profile?.username) notFound();
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const isOwner = user?.id === review.profile_id;
 
   const [
@@ -364,8 +366,8 @@ export default async function ReviewPage({ params }: Props) {
                 ? `Avaliação de ${game?.name ?? review.game_slug} por @${profile.username}`
                 : `${game?.name ?? review.game_slug} review by @${profile.username}`
             }
-            label={pt ? "Compartilhar" : "Share"}
-            copiedLabel={pt ? "Link copiado" : "Link copied"}
+            label={t.share}
+            copiedLabel={t.linkCopied}
             lang={lang}
           />
           {isOwner && <ActivityEntryActions entry={entry} lang={lang} />}

@@ -82,6 +82,7 @@ import {
 } from "react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { MarkdownContent } from "./markdown-content";
+import { uiText } from "@/lib/ui-text";
 
 type Tab = "write" | "preview" | "sidebyside";
 type Tool =
@@ -569,6 +570,7 @@ export function MarkdownEditor({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [tab, setTab] = useState<Tab>("write");
   const [fullscreen, setFullscreen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -597,7 +599,7 @@ export function MarkdownEditor({
     youtube: "YouTube",
     code: pt ? "Código em linha" : "Inline code",
     codeblock: pt ? "Bloco de código" : "Code block",
-    ul: pt ? "Lista" : "List",
+    ul: t.list,
     ol: pt ? "Lista numerada" : "Numbered list",
     checklist: "Checklist",
     quote: pt ? "Citação" : "Quote",
@@ -1026,7 +1028,7 @@ export function MarkdownEditor({
                   {pt ? "Guia de Markdown" : "Markdown guide"}
                 </Dialog.Title>
               </div>
-              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <Dialog.Close aria-label={t.close}>
                 <X size={17} />
               </Dialog.Close>
             </header>

@@ -8,6 +8,7 @@ import { getConnectionsPage } from "@/lib/connections";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../../dictionaries";
 import "../../../profile.css";
+import { uiText } from "@/lib/ui-text";
 
 const PAGE_SIZE = 24;
 
@@ -65,6 +66,7 @@ export default async function ProfileConnectionsPage({
   const initialCursor = rows.length ? rows[rows.length - 1].created_at : null;
   const hasMore = !query && rows.length === PAGE_SIZE;
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
 
   return (
@@ -73,7 +75,7 @@ export default async function ProfileConnectionsPage({
         className="profile-subpage-back"
         href={`/${lang}/u/${profile.username}`}
       >
-        <ArrowLeft size={15} /> {pt ? "Voltar ao perfil" : "Back to profile"}
+        <ArrowLeft size={15} /> {t.backToProfile}
       </Link>
       <header className="profile-subpage-header">
         <span>
@@ -94,8 +96,7 @@ export default async function ProfileConnectionsPage({
           href={`/${lang}/u/${profile.username}/connections?tab=followers${query ? `&q=${encodeURIComponent(query)}` : ""}`}
           aria-current={activeTab === "followers" ? "page" : undefined}
         >
-          {pt ? "Seguidores" : "Followers"}{" "}
-          <span>{followersResult.count ?? 0}</span>
+          {t.followers} <span>{followersResult.count ?? 0}</span>
         </Link>
         <Link
           href={`/${lang}/u/${profile.username}/connections?tab=following${query ? `&q=${encodeURIComponent(query)}` : ""}`}
@@ -119,7 +120,7 @@ export default async function ProfileConnectionsPage({
           />
         </label>
         <input type="hidden" name="tab" value={activeTab} />
-        <button type="submit">{pt ? "Buscar" : "Search"}</button>
+        <button type="submit">{t.search}</button>
       </form>
       {people.length ? (
         <>

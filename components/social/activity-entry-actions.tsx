@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { SocialEntry } from "./activity-stream";
 import { EditReviewDialog } from "./edit-review-dialog";
 import { EditorVisibilitySelect } from "./review-studio-form";
+import { uiText } from "@/lib/ui-text";
 
 export function ActivityEntryActions({
   entry,
@@ -18,6 +19,7 @@ export function ActivityEntryActions({
 }) {
   const { id, kind } = entry;
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const today = new Date().toISOString().slice(0, 10);
   const [editing, setEditing] = useState(false);
@@ -115,16 +117,12 @@ export function ActivityEntryActions({
             <Trash2 size={14} />
           )}{" "}
           {pending
-            ? pt
-              ? "Removendo…"
-              : "Removing…"
+            ? t.removing
             : armed
               ? pt
                 ? "Remover mesmo?"
                 : "Really remove?"
-              : pt
-                ? "Remover"
-                : "Remove"}
+              : t.remove}
         </button>
         {error && <span role="alert">{error}</span>}
       </div>
@@ -151,7 +149,7 @@ export function ActivityEntryActions({
                     {pt ? "Editar jornada" : "Edit journey"}
                   </Dialog.Title>
                 </div>
-                <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+                <Dialog.Close aria-label={t.close}>
                   <X size={19} />
                 </Dialog.Close>
               </header>
@@ -263,7 +261,7 @@ export function ActivityEntryActions({
                 </label>
                 <div className="social-form-row social-form-options">
                   <label>
-                    <span>{pt ? "Visibilidade" : "Visibility"}</span>
+                    <span>{t.visibility}</span>
                     <EditorVisibilitySelect
                       value={visibility}
                       onChange={setVisibility}
@@ -285,20 +283,12 @@ export function ActivityEntryActions({
                   </p>
                 )}
                 <footer>
-                  <Dialog.Close type="button">
-                    {pt ? "Cancelar" : "Cancel"}
-                  </Dialog.Close>
+                  <Dialog.Close type="button">{t.cancel}</Dialog.Close>
                   <button type="submit" disabled={pending}>
                     {pending && (
                       <LoaderCircle className="spin" size={15} aria-hidden />
                     )}
-                    {pending
-                      ? pt
-                        ? "Salvando…"
-                        : "Saving…"
-                      : pt
-                        ? "Salvar"
-                        : "Save"}
+                    {pending ? t.saving : t.save}
                   </button>
                 </footer>
               </form>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { LibraryRecord } from "./library-collection";
+import { uiText } from "@/lib/ui-text";
 
 export function LibraryLiveStats({
   records,
@@ -12,6 +13,7 @@ export function LibraryLiveStats({
 }) {
   const [liveRecords, setLiveRecords] = useState(records);
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
 
   useEffect(() => {
     function sync(event: Event) {
@@ -51,11 +53,11 @@ export function LibraryLiveStats({
   return (
     <dl className="library-hero-stats" aria-live="polite">
       <div>
-        <dt>{pt ? "Jogos" : "Games"}</dt>
+        <dt>{t.games}</dt>
         <dd>{stats.games}</dd>
       </div>
       <div>
-        <dt>{pt ? "Jogando" : "Playing"}</dt>
+        <dt>{t.playing}</dt>
         <dd>{stats.playing}</dd>
       </div>
       <div>

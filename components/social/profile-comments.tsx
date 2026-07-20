@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { uiText } from "@/lib/ui-text";
 
 export type ProfileComment = {
   id: string;
@@ -117,6 +118,7 @@ export function ProfileComments({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const tree = useMemo(() => buildCommentTree(comments), [comments]);
   const [body, setBody] = useState("");
@@ -457,7 +459,7 @@ export function ProfileComments({
                 <footer>
                   <small>{editBody.length}/500</small>
                   <button type="button" onClick={() => setEditing(null)}>
-                    {pt ? "Cancelar" : "Cancel"}
+                    {t.cancel}
                   </button>
                   <button
                     type="submit"
@@ -466,7 +468,7 @@ export function ProfileComments({
                     {pending === `edit-${comment.id}` && (
                       <LoaderCircle className="spin" size={13} aria-hidden />
                     )}
-                    {pt ? "Salvar" : "Save"}
+                    {t.save}
                   </button>
                 </footer>
               </form>
@@ -596,9 +598,7 @@ export function ProfileComments({
                             <Link2 size={14} />
                           )}
                           {copiedComment === comment.id
-                            ? pt
-                              ? "Link copiado"
-                              : "Link copied"
+                            ? t.linkCopied
                             : pt
                               ? "Copiar link"
                               : "Copy link"}
@@ -650,7 +650,7 @@ export function ProfileComments({
                 <footer>
                   <small>{replyBody.length}/500</small>
                   <button type="button" onClick={() => setReplyTo(null)}>
-                    {pt ? "Cancelar" : "Cancel"}
+                    {t.cancel}
                   </button>
                   <button
                     type="submit"
@@ -785,7 +785,7 @@ export function ProfileComments({
                   {pt ? "Denunciar comentário" : "Report comment"}
                 </Dialog.Title>
               </div>
-              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <Dialog.Close aria-label={t.close}>
                 <X size={17} />
               </Dialog.Close>
             </header>
@@ -806,9 +806,7 @@ export function ProfileComments({
                   <option value="CHILD_SAFETY">
                     {pt ? "Segurança infantil" : "Child safety"}
                   </option>
-                  <option value="PRIVACY">
-                    {pt ? "Privacidade" : "Privacy"}
-                  </option>
+                  <option value="PRIVACY">{t.privacy}</option>
                   <option value="OTHER">{pt ? "Outro" : "Other"}</option>
                 </select>
               </label>
@@ -848,7 +846,7 @@ export function ProfileComments({
                     : "This comment can no longer receive replies"}
                 </Dialog.Title>
               </div>
-              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <Dialog.Close aria-label={t.close}>
                 <X size={17} />
               </Dialog.Close>
             </header>
@@ -881,7 +879,7 @@ export function ProfileComments({
                     : `Block @${blocking?.author.username ?? ""}?`}
                 </Dialog.Title>
               </div>
-              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <Dialog.Close aria-label={t.close}>
                 <X size={17} />
               </Dialog.Close>
             </header>
@@ -894,7 +892,7 @@ export function ProfileComments({
               </p>
               <footer>
                 <Dialog.Close disabled={Boolean(pending)}>
-                  {pt ? "Cancelar" : "Cancel"}
+                  {t.cancel}
                 </Dialog.Close>
                 <button
                   type="button"

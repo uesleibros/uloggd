@@ -16,6 +16,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Game } from "@/lib/igdb";
 import { QuickGameCard } from "./quick-game-card";
+import { uiText } from "@/lib/ui-text";
 
 export type LibraryRecord = {
   igdb_id: number;
@@ -56,6 +57,7 @@ export function LibraryCollection({
   owner: boolean;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -193,7 +195,7 @@ export function LibraryCollection({
   const labels: Record<Filter, string> = {
     ALL: pt ? "Todos" : "All",
     UNCLASSIFIED: pt ? "Não classificados" : "Unclassified",
-    PLAYING: pt ? "Jogando" : "Playing",
+    PLAYING: t.playing,
     BACKLOG: "Backlog",
     WISHLIST: pt ? "Desejos" : "Wishlist",
     COMPLETED: pt ? "Concluídos" : "Completed",
@@ -327,13 +329,7 @@ export function LibraryCollection({
       <div className="library-results-meta">
         <span>
           {visibleRecords.length.toLocaleString(lang)}{" "}
-          {visibleRecords.length === 1
-            ? pt
-              ? "jogo"
-              : "game"
-            : pt
-              ? "jogos"
-              : "games"}
+          {visibleRecords.length === 1 ? (pt ? "jogo" : "game") : t.gamesLower}
         </span>
         {totalPages > 1 && (
           <span>

@@ -21,6 +21,7 @@ import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
+import { uiText } from "@/lib/ui-text";
 
 type Role = "USER" | "MODERATOR" | "ADMIN";
 type Profile = {
@@ -86,6 +87,7 @@ export function ModerationConsole({
   actions: Action[];
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const pathname = usePathname();
   const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [reportRows, setReportRows] = useState(reports);
@@ -630,7 +632,7 @@ export function ModerationConsole({
             </button>
             <button disabled={searching || search.trim().length < 2}>
               {searching && <LoaderCircle className="spin" size={13} />}
-              {pt ? "Buscar" : "Search"}
+              {t.search}
             </button>
           </form>
         </header>
@@ -779,7 +781,7 @@ export function ModerationConsole({
         <Dialog.Portal>
           <Dialog.Overlay className="moderation-dialog-overlay" />
           <Dialog.Content className="moderation-dialog">
-            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+            <Dialog.Close aria-label={t.close}>
               <X size={17} />
             </Dialog.Close>
             <span>
@@ -876,7 +878,7 @@ export function ModerationConsole({
             )}
             <footer>
               <Dialog.Close disabled={Boolean(pending)}>
-                {pt ? "Cancelar" : "Cancel"}
+                {t.cancel}
               </Dialog.Close>
               <button
                 type="button"
@@ -911,7 +913,7 @@ export function ModerationConsole({
         <Dialog.Portal>
           <Dialog.Overlay className="moderation-dialog-overlay" />
           <Dialog.Content className="moderation-dialog">
-            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+            <Dialog.Close aria-label={t.close}>
               <X size={17} />
             </Dialog.Close>
             <span>
@@ -947,7 +949,7 @@ export function ModerationConsole({
             )}
             <footer>
               <Dialog.Close disabled={Boolean(pending)}>
-                {pt ? "Cancelar" : "Cancel"}
+                {t.cancel}
               </Dialog.Close>
               <button
                 type="button"
@@ -956,13 +958,7 @@ export function ModerationConsole({
                 onClick={() => void removeReportedComment()}
               >
                 {commentPending && <LoaderCircle className="spin" size={14} />}
-                {commentPending
-                  ? pt
-                    ? "Removendo…"
-                    : "Removing…"
-                  : pt
-                    ? "Remover"
-                    : "Remove"}
+                {commentPending ? t.removing : t.remove}
               </button>
             </footer>
           </Dialog.Content>

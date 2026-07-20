@@ -8,6 +8,7 @@ import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
 import "../../../profile.css";
+import { uiText } from "@/lib/ui-text";
 
 type Props = {
   params: Promise<{ lang: string; username: string }>;
@@ -62,6 +63,7 @@ export default async function ProfileActivityPage({
       ? entries
       : entries.filter((entry) => entry.kind === activeType);
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
 
   return (
@@ -70,7 +72,7 @@ export default async function ProfileActivityPage({
         className="profile-subpage-back"
         href={`/${lang}/u/${profile.username}`}
       >
-        <ArrowLeft size={15} /> {pt ? "Voltar ao perfil" : "Back to profile"}
+        <ArrowLeft size={15} /> {t.backToProfile}
       </Link>
       <header className="profile-subpage-header">
         <span>
@@ -101,8 +103,8 @@ export default async function ProfileActivityPage({
       >
         {[
           ["all", pt ? "Tudo" : "All"],
-          ["review", pt ? "Avaliações" : "Reviews"],
-          ["diary", pt ? "Sessões" : "Sessions"],
+          ["review", t.reviews],
+          ["diary", t.sessions],
         ].map(([value, label]) => (
           <Link
             key={value}

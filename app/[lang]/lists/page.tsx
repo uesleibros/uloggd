@@ -7,6 +7,7 @@ import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { getListPreviews } from "@/lib/lists";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../dictionaries";
+import { uiText } from "@/lib/ui-text";
 
 const PAGE_SIZE = 24;
 
@@ -49,6 +50,7 @@ export default async function ListsPage({
     ]);
   if (!profile?.username) redirect(`/${lang}/onboarding/username`);
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const totalLists = listsCount.count ?? lists.length;
 
   return (
@@ -61,7 +63,7 @@ export default async function ListsPage({
             {pt ? "ORGANIZE DO SEU JEITO" : "ORGANIZE YOUR WAY"}
           </>
         }
-        title={pt ? "Listas" : "Lists"}
+        title={t.lists}
         description={
           pt
             ? "Monte seleções por tema, ranking ou qualquer ideia que conecte seus jogos."
@@ -70,12 +72,12 @@ export default async function ListsPage({
         stats={[
           {
             icon: <Layers3 size={14} />,
-            label: pt ? "Listas" : "Lists",
+            label: t.lists,
             value: totalLists,
           },
           {
             icon: <Gamepad2 size={14} />,
-            label: pt ? "Jogos" : "Games",
+            label: t.games,
             value: gamesCount.count ?? 0,
           },
           {

@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "./star-rating";
+import { uiText } from "@/lib/ui-text";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -39,6 +40,7 @@ export function GameActionPanel({
   enabled: boolean;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [state, setState] = useState(initial);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -142,14 +144,14 @@ export function GameActionPanel({
     );
 
   const actions = [
-    { key: "playing" as const, label: pt ? "Jogando" : "Playing", icon: Play },
+    { key: "playing" as const, label: t.playing, icon: Play },
     { key: "backlog" as const, label: "Backlog", icon: Clock3 },
     {
       key: "wishlist" as const,
       label: pt ? "Lista de desejos" : "Wishlist",
       icon: Gift,
     },
-    { key: "liked" as const, label: pt ? "Curtir" : "Like", icon: Heart },
+    { key: "liked" as const, label: t.like, icon: Heart },
   ];
 
   return (

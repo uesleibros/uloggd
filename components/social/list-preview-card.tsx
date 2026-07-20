@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Globe2, Heart, Lock, Users } from "lucide-react";
+import { uiText } from "@/lib/ui-text";
 
 /**
  * The single way a list is previewed anywhere on the platform: a fanned stack
@@ -26,15 +27,14 @@ export function ListPreviewCard({
   likes?: number;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const visibility =
     list.visibility === "PRIVATE"
       ? pt
         ? "Privada"
         : "Private"
       : list.visibility === "FOLLOWERS"
-        ? pt
-          ? "Seguidores"
-          : "Followers"
+        ? t.followers
         : pt
           ? "Pública"
           : "Public";
@@ -65,7 +65,7 @@ export function ListPreviewCard({
           {visibility}
         </span>
         <span>
-          {list.count} {pt ? "jogos" : "games"}
+          {list.count} {t.gamesLower}
         </span>
         {likes > 0 && (
           <span>

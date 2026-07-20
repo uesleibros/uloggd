@@ -6,6 +6,7 @@ import { LoaderCircle, Plus, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { uiText } from "@/lib/ui-text";
 
 type SearchResult = {
   id: number;
@@ -25,6 +26,7 @@ export function ListAddGame({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -117,7 +119,7 @@ export function ListAddGame({
                 {pt ? "Adicionar jogos à lista" : "Add games to the list"}
               </Dialog.Title>
             </div>
-            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+            <Dialog.Close aria-label={t.close}>
               <X size={19} />
             </Dialog.Close>
           </header>
@@ -137,7 +139,7 @@ export function ListAddGame({
                 <button
                   type="button"
                   onClick={() => handleQueryChange("")}
-                  aria-label={pt ? "Limpar" : "Clear"}
+                  aria-label={t.clear}
                 >
                   <X size={14} />
                 </button>

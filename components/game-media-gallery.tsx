@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Images, X } from "lucide-react";
 import { useState } from "react";
+import { uiText } from "@/lib/ui-text";
 
 export function GameMediaGallery({
   items,
@@ -14,6 +15,7 @@ export function GameMediaGallery({
 }) {
   const [active, setActive] = useState<number | null>(null);
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   if (!items.length) return null;
   const visible = items.slice(0, 7);
 
@@ -61,7 +63,7 @@ export function GameMediaGallery({
             <Dialog.Title className="sr-only">
               {pt ? "Galeria do jogo" : "Game gallery"}
             </Dialog.Title>
-            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+            <Dialog.Close aria-label={t.close}>
               <X size={20} />
             </Dialog.Close>
             {active !== null && (

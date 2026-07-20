@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Tooltip } from "@/components/ui/tooltip";
+import { uiText } from "@/lib/ui-text";
 
 export function ListItemTools({
   listId,
@@ -30,6 +31,7 @@ export function ListItemTools({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const [pending, setPending] = useState<"up" | "down" | "top" | "note" | null>(
     null,
@@ -136,7 +138,7 @@ export function ListItemTools({
                     : "Why is this game here?"}
                 </Dialog.Title>
               </div>
-              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <Dialog.Close aria-label={t.close}>
                 <X size={19} />
               </Dialog.Close>
             </header>
@@ -163,20 +165,12 @@ export function ListItemTools({
                 </p>
               )}
               <footer>
-                <Dialog.Close type="button">
-                  {pt ? "Cancelar" : "Cancel"}
-                </Dialog.Close>
+                <Dialog.Close type="button">{t.cancel}</Dialog.Close>
                 <button type="submit" disabled={Boolean(pending)}>
                   {pending === "note" && (
                     <LoaderCircle className="spin" size={15} aria-hidden />
                   )}
-                  {pending === "note"
-                    ? pt
-                      ? "Salvando…"
-                      : "Saving…"
-                    : pt
-                      ? "Salvar"
-                      : "Save"}
+                  {pending === "note" ? t.saving : t.save}
                 </button>
               </footer>
             </form>

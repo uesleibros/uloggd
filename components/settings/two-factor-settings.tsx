@@ -17,6 +17,7 @@ import {
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import "../auth/mfa.css";
+import { uiText } from "@/lib/ui-text";
 
 type TotpFactor = {
   id: string;
@@ -33,6 +34,7 @@ type Enrollment = {
 
 export function TwoFactorSettings({ lang }: { lang: "pt-BR" | "en" }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [factors, setFactors] = useState<TotpFactor[]>([]);
   const [pending, setPending] = useState<string | null>("load");
   const [error, setError] = useState<string | null>(null);
@@ -357,7 +359,7 @@ export function TwoFactorSettings({ lang }: { lang: "pt-BR" | "en" }) {
                     : "Scan the QR code and confirm with the six-digit code."}
                 </Dialog.Description>
               </div>
-              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <Dialog.Close aria-label={t.close}>
                 <X size={18} />
               </Dialog.Close>
             </header>
@@ -412,9 +414,7 @@ export function TwoFactorSettings({ lang }: { lang: "pt-BR" | "en" }) {
                 </label>
                 {error && <p role="alert">{error}</p>}
                 <footer>
-                  <Dialog.Close type="button">
-                    {pt ? "Cancelar" : "Cancel"}
-                  </Dialog.Close>
+                  <Dialog.Close type="button">{t.cancel}</Dialog.Close>
                   <button
                     type="submit"
                     disabled={pending === "verify" || code.length !== 6}
@@ -438,7 +438,7 @@ export function TwoFactorSettings({ lang }: { lang: "pt-BR" | "en" }) {
         <Dialog.Portal>
           <Dialog.Overlay className="mfa-dialog-overlay" />
           <Dialog.Content className="mfa-remove-dialog">
-            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+            <Dialog.Close aria-label={t.close}>
               <X size={18} />
             </Dialog.Close>
             <span>

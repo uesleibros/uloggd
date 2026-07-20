@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { uiText } from "@/lib/ui-text";
 
 export function FollowButton({
   viewerId,
@@ -28,6 +29,7 @@ export function FollowButton({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const [following, setFollowing] = useState(initial);
   const [pending, setPending] = useState<"follow" | "unfollow" | null>(null);
@@ -100,7 +102,7 @@ export function FollowButton({
         <Dialog.Portal>
           <Dialog.Overlay className="recent-unfollow-overlay" />
           <Dialog.Content className="recent-unfollow-dialog">
-            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+            <Dialog.Close aria-label={t.close}>
               <X size={17} />
             </Dialog.Close>
             <span className="recent-unfollow-mark" aria-hidden>

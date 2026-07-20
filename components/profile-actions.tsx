@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ShareButton } from "./share-button";
+import { uiText } from "@/lib/ui-text";
 
 const reasons = [
   "IMPERSONATION",
@@ -41,6 +42,7 @@ export function ProfileActions({
   blockedByTarget?: boolean;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [reason, setReason] =
     useState<(typeof reasons)[number]>("IMPERSONATION");
   const [details, setDetails] = useState("");
@@ -62,7 +64,7 @@ export function ProfileActions({
     HARASSMENT: pt ? "Assédio" : "Harassment",
     HATE_SPEECH: pt ? "Discurso de ódio" : "Hate speech",
     SPAM: "Spam",
-    PRIVACY: pt ? "Privacidade" : "Privacy",
+    PRIVACY: t.privacy,
     OTHER: pt ? "Outro" : "Other",
   };
 
@@ -137,7 +139,7 @@ export function ProfileActions({
           >
             <DropdownMenu.Item onSelect={() => setShareOpen(true)}>
               <Share2 size={15} />
-              {pt ? "Compartilhar" : "Share"}
+              {t.share}
             </DropdownMenu.Item>
             {canReport && (
               <DropdownMenu.Item onSelect={openReport}>
@@ -172,8 +174,8 @@ export function ProfileActions({
         onOpenChange={setShareOpen}
         title={`@${username} · uloggd`}
         text={pt ? "Veja este perfil no uloggd" : "See this profile on uloggd"}
-        label={pt ? "Compartilhar" : "Share"}
-        copiedLabel={pt ? "Link copiado" : "Link copied"}
+        label={t.share}
+        copiedLabel={t.linkCopied}
         lang={lang}
       />
 
@@ -188,7 +190,7 @@ export function ProfileActions({
                   {pt ? `Denunciar @${username}` : `Report @${username}`}
                 </Dialog.Title>
               </div>
-              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <Dialog.Close aria-label={t.close}>
                 <X size={17} />
               </Dialog.Close>
             </header>
@@ -242,7 +244,7 @@ export function ProfileActions({
         <Dialog.Portal>
           <Dialog.Overlay className="recent-unfollow-overlay" />
           <Dialog.Content className="recent-unfollow-dialog block-profile-dialog">
-            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+            <Dialog.Close aria-label={t.close}>
               <X size={17} />
             </Dialog.Close>
             <span className="recent-unfollow-mark" aria-hidden>
@@ -267,9 +269,7 @@ export function ProfileActions({
                   : "You will unfollow each other. They will not be able to follow, comment, or interact with you, and will not be notified."}
             </Dialog.Description>
             <footer>
-              <Dialog.Close disabled={blockPending}>
-                {pt ? "Cancelar" : "Cancel"}
-              </Dialog.Close>
+              <Dialog.Close disabled={blockPending}>{t.cancel}</Dialog.Close>
               <button
                 type="button"
                 disabled={blockPending}

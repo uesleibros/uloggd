@@ -3,6 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { Check, Copy, Send, Share2, X } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
+import { uiText } from "@/lib/ui-text";
 
 const subscribe = () => () => undefined;
 
@@ -28,6 +29,7 @@ export function ShareButton({
   onOpenChange?: (open: boolean) => void;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [copied, setCopied] = useState(false);
   const canShare = useSyncExternalStore(
     subscribe,
@@ -75,7 +77,7 @@ export function ShareButton({
               <Dialog.Title>{title}</Dialog.Title>
               <Dialog.Description>{text}</Dialog.Description>
             </div>
-            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+            <Dialog.Close aria-label={t.close}>
               <X size={17} />
             </Dialog.Close>
           </header>

@@ -21,6 +21,7 @@ import { resolveGameCover } from "@/lib/game-cover";
 import { Tooltip } from "@/components/ui/tooltip";
 import { StarRating } from "./star-rating";
 import { SpawndLogo } from "../spawnd-logo";
+import { uiText } from "@/lib/ui-text";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -68,6 +69,7 @@ export function QuickGameCard({
   spawndAvailable?: boolean;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [state, setState] = useState<State>(initial);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -404,7 +406,7 @@ export function QuickGameCard({
                     }
                   >
                     <Play size={13} fill="currentColor" />
-                    {pt ? "Jogando" : "Playing"}
+                    {t.playing}
                     <DropdownMenu.ItemIndicator>
                       <Check size={13} />
                     </DropdownMenu.ItemIndicator>
@@ -433,7 +435,7 @@ export function QuickGameCard({
                       size={13}
                       fill={state?.liked ? "currentColor" : "none"}
                     />
-                    {pt ? "Curtir" : "Like"}
+                    {t.like}
                     <DropdownMenu.ItemIndicator>
                       <Check size={13} />
                     </DropdownMenu.ItemIndicator>

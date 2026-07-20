@@ -10,6 +10,7 @@ import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
+import { uiText } from "@/lib/ui-text";
 
 type Props = PageProps<"/[lang]/lists/[id]">;
 
@@ -112,6 +113,7 @@ export default async function ListPage({ params }: Props) {
   );
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const isOwner = user?.id === list.profile_id;
   return (
     <main className="social-page">
@@ -122,7 +124,7 @@ export default async function ListPage({ params }: Props) {
         <h1>{list.name}</h1>
         {list.description && <p>{list.description}</p>}
         <small>
-          {items.length} {pt ? "jogos" : "games"}
+          {items.length} {t.gamesLower}
         </small>
         <div className="list-detail-social">
           <LikeButton
@@ -141,8 +143,8 @@ export default async function ListPage({ params }: Props) {
                 ? `Lista de jogos por @${owner?.username} no uloggd`
                 : `Game list by @${owner?.username} on uloggd`
             }
-            label={pt ? "Compartilhar" : "Share"}
-            copiedLabel={pt ? "Link copiado" : "Link copied"}
+            label={t.share}
+            copiedLabel={t.linkCopied}
             lang={lang}
           />
         </div>

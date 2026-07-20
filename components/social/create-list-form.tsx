@@ -15,9 +15,11 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { uiText } from "@/lib/ui-text";
 
 export function CreateListForm({ lang }: { lang: "pt-BR" | "en" }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -55,7 +57,7 @@ export function CreateListForm({ lang }: { lang: "pt-BR" | "en" }) {
     },
     {
       value: "FOLLOWERS",
-      label: pt ? "Seguidores" : "Followers",
+      label: t.followers,
       description: pt ? "Visível para seguidores" : "Visible to followers",
       icon: Users,
     },
@@ -87,7 +89,7 @@ export function CreateListForm({ lang }: { lang: "pt-BR" | "en" }) {
                   : "Give your selection a theme. You can add and organize games later."}
               </Dialog.Description>
             </div>
-            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+            <Dialog.Close aria-label={t.close}>
               <X size={18} />
             </Dialog.Close>
           </header>
@@ -119,7 +121,7 @@ export function CreateListForm({ lang }: { lang: "pt-BR" | "en" }) {
               />
             </label>
             <label>
-              <span>{pt ? "Visibilidade" : "Visibility"}</span>
+              <span>{t.visibility}</span>
               <Select.Root
                 name="visibility"
                 value={visibilityValue}
@@ -168,9 +170,7 @@ export function CreateListForm({ lang }: { lang: "pt-BR" | "en" }) {
             </label>
             {error && <p role="alert">{error}</p>}
             <footer>
-              <Dialog.Close type="button">
-                {pt ? "Cancelar" : "Cancel"}
-              </Dialog.Close>
+              <Dialog.Close type="button">{t.cancel}</Dialog.Close>
               <button type="submit" disabled={pending}>
                 {pending && <LoaderCircle className="spin" size={15} />}
                 {pending

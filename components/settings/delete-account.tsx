@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { AlertTriangle, LoaderCircle, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { uiText } from "@/lib/ui-text";
 
 export function DeleteAccount({
   username,
@@ -13,6 +14,7 @@ export function DeleteAccount({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const expected = `@${username}`;
   const [open, setOpen] = useState(false);
   const [confirmation, setConfirmation] = useState("");
@@ -106,7 +108,7 @@ export function DeleteAccount({
           <Dialog.Content className="account-delete-dialog">
             <Dialog.Close
               className="account-delete-close"
-              aria-label={pt ? "Fechar" : "Close"}
+              aria-label={t.close}
               disabled={pending}
             >
               <X size={18} />

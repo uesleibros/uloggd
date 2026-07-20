@@ -5,6 +5,7 @@ import "react-image-crop/dist/ReactCrop.css";
 import { Check, LoaderCircle, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useEffect } from "react";
+import { uiText } from "@/lib/ui-text";
 import ReactCrop, {
   centerCrop,
   convertToPixelCrop,
@@ -64,6 +65,7 @@ export function ImageCropDialog({
   onSaved: (url: string) => void;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const aspect = kind === "avatar" ? 1 : 3;
   const imageRef = useRef<HTMLImageElement>(null);
   const closeTimer = useRef<number | null>(null);
@@ -158,7 +160,7 @@ export function ImageCropDialog({
                   : "Move and resize the area that will be displayed."}
               </Dialog.Description>
             </div>
-            <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+            <Dialog.Close aria-label={t.close}>
               <X size={18} />
             </Dialog.Close>
           </header>
@@ -182,7 +184,7 @@ export function ImageCropDialog({
           )}
           <footer>
             <button type="button" onClick={close} disabled={pending}>
-              {pt ? "Cancelar" : "Cancel"}
+              {t.cancel}
             </button>
             <button
               type="button"

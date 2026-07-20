@@ -20,6 +20,7 @@ import type { Dictionary } from "@/app/[lang]/dictionaries";
 import type { GameSearchResult } from "@/lib/igdb";
 import { SpawndLogo } from "./spawnd-logo";
 import { VerifiedMark } from "./verified-badge";
+import { uiText } from "@/lib/ui-text";
 
 type SearchUser = {
   username: string;
@@ -246,6 +247,7 @@ function ResultList({
     return <div className="search-message">{d.search.empty}</div>;
 
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   return (
     <div className="search-results">
       {results.length > 0 && (
@@ -342,7 +344,7 @@ function ResultList({
       {lists.length > 0 && (
         <>
           <div className="search-results-label">
-            <span>{pt ? "Listas" : "Lists"}</span>
+            <span>{t.lists}</span>
           </div>
           <div role="list">
             {lists.map((list) => (
@@ -358,11 +360,7 @@ function ResultList({
                 <span className="search-result-copy">
                   <strong>{list.name}</strong>
                   <small>
-                    {list.owner
-                      ? `@${list.owner} · ${pt ? "Lista" : "List"}`
-                      : pt
-                        ? "Lista"
-                        : "List"}
+                    {list.owner ? `@${list.owner} · ${t.list}` : t.list}
                   </small>
                 </span>
               </Link>

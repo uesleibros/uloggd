@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { SocialEntry } from "./activity-stream";
+import { uiText } from "@/lib/ui-text";
 import {
   ReviewStudioForm,
   type ReviewFormInitial,
@@ -24,6 +25,7 @@ export function EditReviewDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const [pending, setPending] = useState(false);
 
@@ -82,10 +84,7 @@ export function EditReviewDialog({
               <span>{pt ? "Editar avaliação" : "Edit review"}</span>
               <Dialog.Title>{entry.game?.name ?? entry.gameSlug}</Dialog.Title>
             </div>
-            <Dialog.Close
-              aria-label={pt ? "Fechar" : "Close"}
-              disabled={pending}
-            >
+            <Dialog.Close aria-label={t.close} disabled={pending}>
               <X size={19} />
             </Dialog.Close>
           </header>
@@ -104,7 +103,7 @@ export function EditReviewDialog({
             }
             initial={initial}
             submitLabel={pt ? "Salvar alterações" : "Save changes"}
-            busyLabel={pt ? "Salvando…" : "Saving…"}
+            busyLabel={t.saving}
             successLabel={pt ? "Avaliação atualizada." : "Review updated."}
             onPerform={perform}
           />

@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Check, Cookie, LockKeyhole, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { uiText } from "@/lib/ui-text";
 
 const STORAGE_KEY = "uloggd_cookie_preferences_v1";
 const SETTINGS_EVENT = "uloggd:open-cookie-settings";
@@ -14,6 +15,7 @@ export function openCookieSettings() {
 
 export function CookieConsent({ lang }: { lang: "pt-BR" | "en" }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [ready, setReady] = useState(false);
   const [acknowledged, setAcknowledged] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -137,7 +139,7 @@ export function CookieConsent({ lang }: { lang: "pt-BR" | "en" }) {
                     : "See what uloggd uses today and control future optional categories."}
                 </Dialog.Description>
               </div>
-              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <Dialog.Close aria-label={t.close}>
                 <X size={18} />
               </Dialog.Close>
             </header>

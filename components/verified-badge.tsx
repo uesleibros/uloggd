@@ -3,6 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { X } from "lucide-react";
+import { uiText } from "@/lib/ui-text";
 
 export function VerifiedMark({ size = 18 }: { size?: number }) {
   return (
@@ -19,6 +20,7 @@ export function VerifiedMark({ size = 18 }: { size?: number }) {
 
 export function VerifiedBadge({ lang }: { lang: "pt-BR" | "en" }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
 
   return (
     <Dialog.Root>
@@ -38,10 +40,7 @@ export function VerifiedBadge({ lang }: { lang: "pt-BR" | "en" }) {
       <Dialog.Portal>
         <Dialog.Overlay className="verified-dialog-overlay" />
         <Dialog.Content className="verified-dialog">
-          <Dialog.Close
-            className="verified-dialog-close"
-            aria-label={pt ? "Fechar" : "Close"}
-          >
+          <Dialog.Close className="verified-dialog-close" aria-label={t.close}>
             <X size={18} />
           </Dialog.Close>
 

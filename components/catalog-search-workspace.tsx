@@ -21,6 +21,7 @@ import type {
   CatalogSearchOptions,
 } from "@/lib/igdb";
 import { QuickGameCard } from "./library/quick-game-card";
+import { uiText } from "@/lib/ui-text";
 
 type SavedState = {
   status:
@@ -311,6 +312,7 @@ export function CatalogSearchWorkspace({
   enabled: boolean;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const pathname = usePathname();
   const pageRef = useRef<HTMLElement>(null);
@@ -578,11 +580,11 @@ export function CatalogSearchWorkspace({
             tabIndex={query ? undefined : -1}
             aria-hidden={!query || undefined}
             onClick={() => setQuery("")}
-            aria-label={pt ? "Limpar" : "Clear"}
+            aria-label={t.clear}
           >
             <X size={17} />
           </button>
-          <button type="submit">{pt ? "Buscar" : "Search"}</button>
+          <button type="submit">{t.search}</button>
         </form>
         <div className="catalog-search-signals">
           <span>
@@ -651,12 +653,12 @@ export function CatalogSearchWorkspace({
                     className="catalog-filter-clear"
                     onClick={() => setDraft(emptyDraft())}
                   >
-                    {pt ? "Limpar" : "Clear"}
+                    {t.clear}
                   </button>
                 )}
                 <Dialog.Close
                   className="catalog-filter-dialog-close"
-                  aria-label={pt ? "Fechar" : "Close"}
+                  aria-label={t.close}
                 >
                   <X size={17} />
                 </Dialog.Close>

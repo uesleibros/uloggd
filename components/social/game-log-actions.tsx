@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { uiText } from "@/lib/ui-text";
 import {
   JourneyCalendar,
   type JourneyOption,
@@ -64,6 +65,7 @@ export function GameLogActions({
   journeyOptions?: JourneyOption[];
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const [mode, setMode] = useState<Mode | null>(null);
   const [open, setOpen] = useState(false);
@@ -412,10 +414,7 @@ export function GameLogActions({
                 <Dialog.Title>{game.name}</Dialog.Title>
               </div>
               {game.releaseYear && <time>{game.releaseYear}</time>}
-              <Dialog.Close
-                aria-label={pt ? "Fechar" : "Close"}
-                disabled={pending}
-              >
+              <Dialog.Close aria-label={t.close} disabled={pending}>
                 <X size={19} />
               </Dialog.Close>
             </header>
@@ -544,13 +543,7 @@ export function GameLogActions({
                         ) : (
                           <Check size={13} />
                         )}
-                        {naming === "rename"
-                          ? pt
-                            ? "Salvar"
-                            : "Save"
-                          : pt
-                            ? "Criar"
-                            : "Create"}
+                        {naming === "rename" ? t.save : pt ? "Criar" : "Create"}
                       </button>
                       {naming !== null && selectedJourney !== null && (
                         <button
@@ -558,7 +551,7 @@ export function GameLogActions({
                           data-quiet
                           onClick={() => setNaming(null)}
                         >
-                          {pt ? "Cancelar" : "Cancel"}
+                          {t.cancel}
                         </button>
                       )}
                     </div>
@@ -638,7 +631,7 @@ export function GameLogActions({
               <form action={submitList} className="social-editor-form">
                 {lists.length ? (
                   <label>
-                    <span>{pt ? "Lista" : "List"}</span>
+                    <span>{t.list}</span>
                     <Select.Root
                       value={listChoice}
                       onValueChange={setListChoice}
@@ -698,7 +691,7 @@ export function GameLogActions({
                 )}
                 <footer>
                   <Dialog.Close type="button" disabled={pending}>
-                    {pt ? "Cancelar" : "Cancel"}
+                    {t.cancel}
                   </Dialog.Close>
                   <button
                     type="submit"
@@ -709,13 +702,7 @@ export function GameLogActions({
                     {pending && (
                       <LoaderCircle className="spin" size={15} aria-hidden />
                     )}
-                    {pending
-                      ? pt
-                        ? "Salvando…"
-                        : "Saving…"
-                      : pt
-                        ? "Salvar"
-                        : "Save"}
+                    {pending ? t.saving : t.save}
                   </button>
                 </footer>
               </form>

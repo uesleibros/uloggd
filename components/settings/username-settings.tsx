@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { usernameSchema } from "@/lib/auth-validation";
 import { createClient } from "@/lib/supabase/client";
+import { uiText } from "@/lib/ui-text";
 
 const reserved = new Set([
   "admin",
@@ -39,6 +40,7 @@ export function UsernameSettings({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [username, setUsername] = useState(initialUsername);
@@ -199,7 +201,7 @@ export function UsernameSettings({
                   {pt ? "Alterar nome de usuário" : "Change username"}
                 </Dialog.Title>
               </div>
-              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <Dialog.Close aria-label={t.close}>
                 <X size={17} />
               </Dialog.Close>
             </header>
@@ -267,7 +269,7 @@ export function UsernameSettings({
               {error && <p className="username-change-error">{error}</p>}
               <footer>
                 <Dialog.Close type="button" disabled={pending}>
-                  {pt ? "Cancelar" : "Cancel"}
+                  {t.cancel}
                 </Dialog.Close>
                 <button
                   type="submit"

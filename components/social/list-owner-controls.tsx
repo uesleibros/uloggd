@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { EditorVisibilitySelect } from "./review-studio-form";
+import { uiText } from "@/lib/ui-text";
 
 export function ListOwnerControls({
   list,
@@ -20,6 +21,7 @@ export function ListOwnerControls({
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -124,7 +126,7 @@ export function ListOwnerControls({
                   {pt ? "Editar detalhes" : "Edit details"}
                 </Dialog.Title>
               </div>
-              <Dialog.Close aria-label={pt ? "Fechar" : "Close"}>
+              <Dialog.Close aria-label={t.close}>
                 <X size={19} />
               </Dialog.Close>
             </header>
@@ -148,7 +150,7 @@ export function ListOwnerControls({
                 />
               </label>
               <label>
-                <span>{pt ? "Visibilidade" : "Visibility"}</span>
+                <span>{t.visibility}</span>
                 <EditorVisibilitySelect
                   value={visibility}
                   onChange={setVisibility}
@@ -161,20 +163,12 @@ export function ListOwnerControls({
                 </p>
               )}
               <footer>
-                <Dialog.Close type="button">
-                  {pt ? "Cancelar" : "Cancel"}
-                </Dialog.Close>
+                <Dialog.Close type="button">{t.cancel}</Dialog.Close>
                 <button type="submit" disabled={pending}>
                   {pending && (
                     <LoaderCircle className="spin" size={15} aria-hidden />
                   )}
-                  {pending
-                    ? pt
-                      ? "Salvando…"
-                      : "Saving…"
-                    : pt
-                      ? "Salvar"
-                      : "Save"}
+                  {pending ? t.saving : t.save}
                 </button>
               </footer>
             </form>

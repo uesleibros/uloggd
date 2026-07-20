@@ -7,6 +7,7 @@ import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../dictionaries";
+import { uiText } from "@/lib/ui-text";
 
 export default async function ReviewsPage({
   params,
@@ -50,6 +51,7 @@ export default async function ReviewsPage({
       20
     : null;
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   return (
     <main className="social-page workspace-layout-page reviews-page">
       <WorkspaceHero
@@ -68,7 +70,7 @@ export default async function ReviewsPage({
         stats={[
           {
             icon: <BookOpen size={14} />,
-            label: pt ? "Avaliações" : "Reviews",
+            label: t.reviews,
             value: reviews.length,
           },
           {
@@ -81,7 +83,7 @@ export default async function ReviewsPage({
           },
           {
             icon: <CalendarDays size={14} />,
-            label: pt ? "Sessões" : "Sessions",
+            label: t.sessions,
             value: sessions.length,
           },
           {
@@ -98,8 +100,8 @@ export default async function ReviewsPage({
         >
           {[
             ["all", pt ? "Tudo" : "All"],
-            ["review", pt ? "Avaliações" : "Reviews"],
-            ["diary", pt ? "Sessões" : "Sessions"],
+            ["review", t.reviews],
+            ["diary", t.sessions],
           ].map(([value, label]) => (
             <Link
               key={value}

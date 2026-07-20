@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/client";
+import { uiText } from "@/lib/ui-text";
 
 type Cover = {
   url: string;
@@ -26,6 +27,7 @@ export function CoverSelector({
   enabled: boolean;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const fallback = covers[0]?.url ?? game.coverUrl;
   const initial = resolveGameCover(fallback, savedCover);
@@ -113,11 +115,7 @@ export function CoverSelector({
                     : "Choose how this game appears across your library."}
                 </Dialog.Description>
               </div>
-              <button
-                type="button"
-                onClick={close}
-                aria-label={pt ? "Fechar" : "Close"}
-              >
+              <button type="button" onClick={close} aria-label={t.close}>
                 <X size={19} />
               </button>
             </header>
@@ -144,7 +142,7 @@ export function CoverSelector({
             {error && <p role="alert">{error}</p>}
             <footer>
               <button type="button" onClick={close} disabled={pending}>
-                {pt ? "Cancelar" : "Cancel"}
+                {t.cancel}
               </button>
               <button
                 type="button"
