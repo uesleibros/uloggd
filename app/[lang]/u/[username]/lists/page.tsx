@@ -65,7 +65,7 @@ export default async function ProfileListsPage({ params }: Props) {
       </header>
       {lists.length ? (
         <>
-          <div className="lists-grid profile-lists-grid">
+          <div className="lists-row">
             {lists.map((list) => (
               <ListPreviewCard
                 key={list.id}
@@ -85,7 +85,7 @@ export default async function ProfileListsPage({ params }: Props) {
           <LoadMoreLists
             lang={lang}
             ownerId={profile.id}
-            gridClassName="lists-grid profile-lists-grid"
+            gridClassName="lists-row"
             pageSize={PAGE_SIZE}
             initialCursor={
               lists.length ? lists[lists.length - 1].updatedAt : null

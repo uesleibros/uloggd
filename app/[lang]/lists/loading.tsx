@@ -12,7 +12,7 @@ export default function Loading() {
           <span className="skeleton-block" />
           <span className="skeleton-block" />
         </div>
-        <div className="lists-grid">
+        <div className="lists-row">
           {Array.from({ length: 4 }, (_, index) => (
             <div className="lists-loading-card" key={index}>
               <span className="skeleton-block" />

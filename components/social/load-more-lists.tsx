@@ -8,7 +8,7 @@ import { ListPreviewCard } from "./list-preview-card";
 export function LoadMoreLists({
   lang,
   ownerId,
-  gridClassName = "lists-grid",
+  gridClassName = "lists-row",
   pageSize = 24,
   initialCursor,
   hasMore,

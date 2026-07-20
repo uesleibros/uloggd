@@ -1,7 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Globe2, Heart, Lock, Users } from "lucide-react";
+import { Globe2, Heart, Lock, Users } from "lucide-react";
 
+/**
+ * The single way a list is previewed anywhere on the platform: a fanned stack
+ * of covers over the page background, with the name and meta underneath.
+ * Sizing is percentage-based so the same markup works in the lists index, the
+ * profile subpage and the narrow profile aside without per-page overrides.
+ */
 export function ListPreviewCard({
   list,
   covers,
@@ -38,39 +44,39 @@ export function ListPreviewCard({
       : list.visibility === "FOLLOWERS"
         ? Users
         : Globe2;
+  const shown = covers.slice(0, 5);
   return (
-    <Link className="list-preview-card" href={`/${lang}/lists/${list.id}`}>
-      <div className="list-cover-strip" data-count={covers.length}>
-        {covers.slice(0, 5).map((cover, index) => (
-          <span key={`${cover.url}-${index}`}>
-            <Image src={cover.url} alt={cover.name} fill sizes="160px" />
-          </span>
-        ))}
-        {Array.from({ length: Math.max(0, 5 - covers.length) }, (_, index) => (
-          <span className="list-cover-placeholder" key={`empty-${index}`} />
-        ))}
-      </div>
-      <div className="list-preview-copy">
-        <div className="list-preview-meta">
+    <Link className="list-preview" href={`/${lang}/lists/${list.id}`}>
+      <span className="list-preview-stack" aria-hidden>
+        {shown.length ? (
+          shown.map((cover, index) => (
+            <span key={`${cover.url}-${index}`}>
+              <Image src={cover.url} alt="" fill sizes="120px" />
+            </span>
+          ))
+        ) : (
+          <span className="list-preview-blank" />
+        )}
+      </span>
+      <span className="list-preview-name">{list.name}</span>
+      <span className="list-preview-facts">
+        <span>
+          <VisibilityIcon size={11} />
+          {visibility}
+        </span>
+        <span>
+          {list.count} {pt ? "jogos" : "games"}
+        </span>
+        {likes > 0 && (
           <span>
-            <VisibilityIcon size={12} /> {visibility}
+            <Heart size={11} />
+            {likes.toLocaleString(lang)}
           </span>
-          <small>
-            {list.count} {pt ? "jogos" : "games"}
-            {likes > 0 && (
-              <>
-                {" · "}
-                <Heart size={10} /> {likes.toLocaleString(lang)}
-              </>
-            )}
-          </small>
-        </div>
-        <div className="list-preview-title">
-          <h2>{list.name}</h2>
-          <ArrowUpRight size={17} />
-        </div>
-        {list.description && <p>{list.description}</p>}
-      </div>
+        )}
+      </span>
+      {list.description && (
+        <span className="list-preview-note">{list.description}</span>
+      )}
     </Link>
   );
 }

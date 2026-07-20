@@ -101,7 +101,7 @@ export default async function ListsPage({
               </div>
               <span>{totalLists}</span>
             </header>
-            <div className="lists-grid">
+            <div className="lists-row">
               {lists.map((list) => (
                 <ListPreviewCard
                   key={list.id}

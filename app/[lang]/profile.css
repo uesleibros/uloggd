@@ -1640,9 +1640,6 @@
   color: var(--screen-white);
   font-size: 12px;
 }
-.profile-lists-grid {
-  gap: 18px;
-}
 .profile-subpage-empty {
   display: grid;
   justify-items: center;
@@ -1833,8 +1830,7 @@
     display: block;
   }
 
-  .profile-connections-grid,
-  .profile-lists-grid {
+  .profile-connections-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 
