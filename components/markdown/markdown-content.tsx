@@ -14,7 +14,13 @@ import {
   NotebookPen,
   OctagonAlert,
 } from "lucide-react";
-import { useMemo, useState, type ComponentType, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import remarkDirective from "remark-directive";
@@ -31,11 +37,11 @@ const CONTENT_TRANSFORMS: Array<{
 }> = [
   {
     pattern: /!game:mini\(([^)\n]+)\)/g,
-    replace: '<game-card slug="$1"></game-card>',
+    replace: '<game-card slug="$1" variant="mini"></game-card>',
   },
   {
     pattern: /!game:grid-auto\(([^)\n]+)\)/g,
-    replace: '<game-grid slugs="$1"></game-grid>',
+    replace: '<game-grid slugs="$1" auto="true"></game-grid>',
   },
   {
     pattern: /!game:grid\(([^)\n]+)\)/g,
@@ -90,6 +96,9 @@ const sanitizeSchema = {
     "spoiler",
     "mention",
     "center",
+    "desktop",
+    "mobile",
+    "spoilerimg",
     "game-card",
     "game-grid",
     "alert-box",
@@ -100,11 +109,14 @@ const sanitizeSchema = {
     ...defaultSchema.attributes,
     img: ["src", "alt", "width", "height", "loading"],
     "alert-box": ["type"],
-    "game-card": ["slug"],
-    "game-grid": ["slugs"],
+    "game-card": ["slug", "variant"],
+    "game-grid": ["slugs", "auto"],
+    spoilerimg: ["src", "alt", "width", "height"],
     mention: [],
     spoiler: [],
     center: [],
+    desktop: [],
+    mobile: [],
   },
   protocols: {
     ...defaultSchema.protocols,
@@ -161,6 +173,73 @@ function slugLabel(slug: string) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+type MarkdownGame = {
+  name: string;
+  slug: string;
+  coverUrl: string;
+  releaseYear: number | null;
+  genres: string[];
+};
+
+function MarkdownGameCard({
+  slug,
+  lang,
+  mini = false,
+}: {
+  slug: string;
+  lang: "pt-BR" | "en";
+  mini?: boolean;
+}) {
+  const [game, setGame] = useState<MarkdownGame | null | undefined>(undefined);
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch(`/api/igdb/search?q=${encodeURIComponent(slug)}`, {
+      signal: controller.signal,
+    })
+      .then((response) => response.json())
+      .then((payload: { results?: MarkdownGame[] }) => {
+        const result =
+          payload.results?.find((item) => item.slug === slug) ??
+          payload.results?.[0] ??
+          null;
+        setGame(result);
+      })
+      .catch((error: unknown) => {
+        if (!(error instanceof DOMException && error.name === "AbortError"))
+          setGame(null);
+      });
+    return () => controller.abort();
+  }, [slug]);
+
+  if (game === undefined)
+    return <span className="md-game-card md-game-card-loading" aria-hidden />;
+  if (!game)
+    return (
+      <span className="md-game-card md-game-card-error">
+        <Gamepad2 size={15} />
+        {slugLabel(slug)}
+      </span>
+    );
+  return (
+    <Link
+      className="md-game-card"
+      data-mini={mini || undefined}
+      href={`/${lang}/game/${game.slug}`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={game.coverUrl} alt="" loading="lazy" />
+      <span>
+        <strong>{game.name}</strong>
+        <small>
+          {[game.releaseYear, game.genres.slice(0, 2).join(" · ")]
+            .filter(Boolean)
+            .join(" · ")}
+        </small>
+      </span>
+    </Link>
+  );
+}
+
 export function MarkdownContent({
   content,
   lang,
@@ -195,15 +274,28 @@ export function MarkdownContent({
       center: ({ children }: { children?: ReactNode }) => (
         <div className="md-center">{children}</div>
       ),
-      "game-card": ({ slug }: { slug?: string }) => {
+      desktop: ({ children }: { children?: ReactNode }) => (
+        <div className="md-desktop-only">{children}</div>
+      ),
+      mobile: ({ children }: { children?: ReactNode }) => (
+        <div className="md-mobile-only">{children}</div>
+      ),
+      spoilerimg: (props: { src?: string; alt?: string }) => (
+        <Spoiler>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={props.src} alt={props.alt ?? ""} loading="lazy" />
+        </Spoiler>
+      ),
+      "game-card": ({
+        slug,
+        variant,
+      }: {
+        slug?: string;
+        variant?: string;
+      }) => {
         const safe = String(slug ?? "").trim();
         if (!/^[a-z0-9-]+$/i.test(safe)) return null;
-        return (
-          <Link className="md-game-chip" href={`/${lang}/game/${safe}`}>
-            <Gamepad2 size={13} aria-hidden />
-            {slugLabel(safe)}
-          </Link>
-        );
+        return <MarkdownGameCard slug={safe} lang={lang} mini={variant === "mini"} />;
       },
       "game-grid": ({ slugs }: { slugs?: string }) => {
         const list = String(slugs ?? "")
@@ -215,14 +307,7 @@ export function MarkdownContent({
         return (
           <span className="md-game-grid">
             {list.map((slug) => (
-              <Link
-                className="md-game-chip"
-                href={`/${lang}/game/${slug}`}
-                key={slug}
-              >
-                <Gamepad2 size={13} aria-hidden />
-                {slugLabel(slug)}
-              </Link>
+              <MarkdownGameCard slug={slug} lang={lang} key={slug} />
             ))}
           </span>
         );

@@ -5056,6 +5056,17 @@ html[data-sidebar-ready] .account-button > svg {
     font-size: 27px;
   }
 }
+.md-mobile-only {
+  display: none;
+}
+@media (max-width: 767px) {
+  .md-desktop-only {
+    display: none;
+  }
+  .md-mobile-only {
+    display: block;
+  }
+}
 
 /* Semantic saved states shared by game actions and quick actions. */
 .game-action-panel > button[data-active] {
@@ -15227,4 +15238,520 @@ html
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Legacy Markdown workspace, adapted to the current uloggd surface system. */
+.md-editor {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: 11px;
+}
+.md-editor-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: none;
+  min-height: 46px;
+  padding: 0 10px 0 4px;
+  border: 0;
+  border-bottom: 1px solid var(--shell-line);
+  border-radius: 0;
+  background: var(--console-panel);
+}
+.md-editor-tabs > div {
+  display: flex;
+  align-self: stretch;
+}
+.md-editor-tabs button {
+  position: relative;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 580;
+}
+.md-editor-tabs button:hover,
+.md-editor-tabs button[aria-selected="true"] {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.md-editor-tabs button[aria-selected="true"]::after {
+  position: absolute;
+  right: 9px;
+  bottom: -5px;
+  left: 9px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--brand-blurple-bright);
+  content: "";
+}
+.md-editor-tabs > span {
+  margin-left: auto;
+  color: var(--screen-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.md-editor-tabs > span[data-warning] {
+  color: var(--danger-text);
+}
+.md-editor-progress {
+  flex: none;
+  height: 2px;
+  background: var(--console-inset);
+}
+.md-editor-progress span {
+  display: block;
+  height: 100%;
+  background: color-mix(in srgb, var(--brand-blurple-bright) 46%, transparent);
+  transition: width 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.md-editor-progress span[data-warning] {
+  background: var(--danger-text);
+}
+.md-editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  padding: 5px 7px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--shell-line);
+  background: var(--console-raised);
+  scrollbar-width: none;
+}
+.md-editor-toolbar::-webkit-scrollbar {
+  display: none;
+}
+.md-editor-toolbar > div {
+  display: flex;
+  gap: 2px;
+  padding-left: 4px;
+  border-left: 1px solid var(--shell-line);
+}
+.md-editor-toolbar > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.md-editor-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex: none;
+  width: 31px;
+  height: 31px;
+  border-radius: 6px;
+  color: var(--screen-muted);
+  transition:
+    color 140ms ease,
+    background-color 140ms ease,
+    transform 120ms ease;
+}
+.md-editor-toolbar button:hover,
+.md-editor-toolbar button[data-state="open"] {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.md-editor-toolbar button:active {
+  transform: scale(0.96);
+}
+.md-heading-menu {
+  z-index: 10010;
+  min-width: 165px;
+  padding: 5px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--overlay-panel);
+  box-shadow: 0 16px 42px var(--overlay-shadow);
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+  animation: profile-comment-menu-in 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.md-heading-menu [role="menuitem"] {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  min-height: 34px;
+  padding: 0 8px;
+  border-radius: 6px;
+  outline: 0;
+  color: var(--screen-dim);
+  cursor: pointer;
+}
+.md-heading-menu [role="menuitem"][data-highlighted] {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.md-heading-menu strong {
+  min-width: 22px;
+  font-size: 12px;
+}
+.md-heading-menu span {
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.md-editor-stage {
+  display: flex;
+  flex: 1;
+  min-height: 250px;
+  overflow: hidden;
+}
+.md-editor-write {
+  min-width: 0;
+  height: 100%;
+  min-height: 250px;
+}
+.md-editor-write > div,
+.md-editor-write .cm-editor {
+  height: 100%;
+}
+.md-editor .cm-tooltip-autocomplete {
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--overlay-panel);
+  box-shadow: 0 14px 38px var(--overlay-shadow);
+}
+.md-editor .cm-tooltip-autocomplete > ul {
+  max-height: 210px;
+  font-family: var(--font-inter);
+}
+.md-editor .cm-tooltip-autocomplete > ul > li {
+  min-height: 36px;
+  padding: 7px 10px;
+  color: var(--screen-dim);
+}
+.md-editor .cm-tooltip-autocomplete > ul > li[aria-selected] {
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
+}
+.md-editor .cm-completionDetail {
+  margin-left: 10px;
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.md-editor .md-editor-preview {
+  min-width: 0;
+  min-height: 250px;
+  max-height: none;
+  padding: 16px;
+  background: var(--console-panel);
+}
+.md-editor-split {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 3px;
+  padding: 0;
+  border: 0;
+  background: var(--shell-line-strong);
+  color: transparent;
+  cursor: col-resize;
+  touch-action: none;
+}
+.md-editor-split::before {
+  position: absolute;
+  width: 17px;
+  height: 100%;
+  content: "";
+}
+.md-editor-split:hover {
+  background: var(--brand-blurple-bright);
+  color: var(--screen-white);
+}
+.md-editor-split svg {
+  position: absolute;
+  padding-block: 3px;
+  border-radius: 5px;
+  background: var(--brand-blurple);
+}
+.md-editor .md-editor-status {
+  flex: none;
+  min-height: 38px;
+  background: var(--console-raised);
+}
+.md-editor-status span,
+.md-editor-status button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.md-editor-status span i {
+  font-style: normal;
+}
+.md-editor-status button {
+  min-height: 28px;
+  padding: 0 7px;
+  border-radius: 6px;
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.md-editor-status button:hover {
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
+.md-editor-fullscreen {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  padding: 16px;
+}
+.md-editor-fullscreen > button {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--overlay-scrim);
+  backdrop-filter: blur(7px);
+}
+.md-editor[data-fullscreen] {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
+  background: var(--overlay-panel);
+  box-shadow: 0 28px 90px var(--overlay-shadow);
+  animation: md-editor-fullscreen-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.md-game-card {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 320px);
+  min-height: 76px;
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-raised);
+  color: var(--screen-white);
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    transform 120ms ease;
+}
+.md-game-card:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--console-hover);
+}
+.md-game-card:active {
+  transform: scale(0.985);
+}
+.md-game-card > img {
+  width: 54px;
+  height: 76px;
+  margin: 0;
+  border-radius: 0;
+  object-fit: cover;
+}
+.md-game-card > span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding-right: 10px;
+}
+.md-game-card strong {
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.md-game-card small {
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.md-game-card[data-mini] {
+  grid-template-columns: 38px minmax(0, 1fr);
+  min-height: 52px;
+}
+.md-game-card[data-mini] > img {
+  width: 38px;
+  height: 52px;
+}
+.md-game-card-loading {
+  min-height: 76px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--screen-white) 5%, transparent),
+      transparent
+    ),
+    var(--console-inset);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s linear infinite;
+}
+.md-game-card-error {
+  display: inline-flex;
+  grid-template-columns: none;
+  min-height: 42px;
+  padding: 0 11px;
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.md-game-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  margin-block: 12px;
+}
+.md-game-grid .md-game-card {
+  width: 100%;
+}
+@media (max-width: 620px) {
+  .md-game-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.md-editor[data-fullscreen] .md-editor-stage,
+.md-editor[data-fullscreen] .md-editor-write {
+  min-height: 0;
+}
+.md-help-overlay {
+  position: fixed;
+  z-index: 10020;
+  inset: 0;
+  background: var(--overlay-scrim);
+  backdrop-filter: blur(6px);
+}
+.md-help-overlay[data-state="open"] {
+  animation: notification-veil-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.md-help-dialog {
+  position: fixed;
+  z-index: 10021;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  width: min(700px, calc(100vw - 28px));
+  max-height: min(760px, calc(100dvh - 32px));
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 14px;
+  outline: 0;
+  background: var(--overlay-panel);
+  box-shadow: 0 26px 80px var(--overlay-shadow);
+  transform: translate(-50%, -50%);
+}
+.md-help-dialog[data-state="open"] {
+  animation: verified-dialog-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.md-help-dialog > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.md-help-dialog > header div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--brand-blurple-bright);
+}
+.md-help-dialog h2 {
+  color: var(--screen-white);
+  font-size: 15px;
+}
+.md-help-dialog > header button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  color: var(--screen-muted);
+}
+.md-help-dialog > label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  margin: 12px 14px 0;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.md-help-dialog input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--screen-white);
+  font-size: 11px;
+}
+.md-help-dialog > div:last-child {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 14px;
+  overflow-y: auto;
+}
+.md-help-dialog article {
+  padding: 11px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-inset);
+}
+.md-help-dialog code {
+  color: var(--brand-blurple-bright);
+  font: 600 11px ui-monospace, monospace;
+}
+.md-help-dialog article p {
+  margin-top: 6px;
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+@keyframes md-editor-fullscreen-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+}
+@media (max-width: 620px) {
+  .md-editor-tabs > span,
+  .md-editor-status span i {
+    display: none;
+  }
+  .md-editor-tabs button {
+    padding-inline: 8px;
+  }
+  .md-editor-fullscreen {
+    padding: 0;
+  }
+  .md-editor[data-fullscreen] {
+    border: 0;
+    border-radius: 0;
+  }
+  .md-help-dialog {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: calc(100dvh - 24px);
+    border-radius: 15px 15px 0 0;
+    transform: none;
+  }
+  .md-help-dialog[data-state="open"] {
+    animation-name: social-modal-sheet-in;
+  }
+  .md-help-dialog > div:last-child {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
