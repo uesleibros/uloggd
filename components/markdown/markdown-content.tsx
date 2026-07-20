@@ -178,7 +178,7 @@ type MarkdownGame = {
   slug: string;
   coverUrl: string;
   releaseYear: number | null;
-  genres: string[];
+  genres?: string[];
 };
 
 function MarkdownGameCard({
@@ -231,7 +231,7 @@ function MarkdownGameCard({
       <span>
         <strong>{game.name}</strong>
         <small>
-          {[game.releaseYear, game.genres.slice(0, 2).join(" · ")]
+          {[game.releaseYear, (game.genres ?? []).slice(0, 2).join(" · ")]
             .filter(Boolean)
             .join(" · ")}
         </small>

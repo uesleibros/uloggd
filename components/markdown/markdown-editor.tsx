@@ -12,16 +12,19 @@ import { languages } from "@codemirror/language-data";
 import {
   bracketMatching,
   defaultHighlightStyle,
+  HighlightStyle,
   indentUnit,
   syntaxHighlighting,
 } from "@codemirror/language";
-import { EditorState } from "@codemirror/state";
+import { EditorState, type Range } from "@codemirror/state";
 import {
   drawSelection,
+  Decoration,
   EditorView,
   keymap,
   lineNumbers,
   placeholder as codeMirrorPlaceholder,
+  ViewPlugin,
 } from "@codemirror/view";
 import {
   defaultKeymap,
@@ -29,6 +32,7 @@ import {
   historyKeymap,
   indentWithTab,
 } from "@codemirror/commands";
+import { tags } from "@lezer/highlight";
 import {
   AlignCenter,
   AlertCircle,
@@ -181,6 +185,105 @@ const editorTheme = EditorView.theme({
   ".cm-placeholder": { color: "var(--screen-muted)" },
 });
 
+const markdownHighlightStyle = HighlightStyle.define([
+  {
+    tag: [
+      tags.heading1,
+      tags.heading2,
+      tags.heading3,
+      tags.heading4,
+      tags.heading5,
+    ],
+    color: "var(--screen-white)",
+    fontWeight: "700",
+  },
+  {
+    tag: tags.heading6,
+    color: "var(--screen-dim)",
+    fontWeight: "650",
+  },
+  {
+    tag: tags.strong,
+    color: "var(--screen-white)",
+    fontWeight: "700",
+  },
+  {
+    tag: tags.emphasis,
+    color: "var(--screen-dim)",
+    fontStyle: "italic",
+  },
+  {
+    tag: tags.strikethrough,
+    color: "var(--screen-muted)",
+    textDecoration: "line-through",
+  },
+  { tag: [tags.link, tags.url], color: "var(--safe-blue)" },
+  {
+    tag: tags.monospace,
+    color: "var(--tonal-brand-text)",
+    backgroundColor: "var(--brand-blurple-wash)",
+  },
+  { tag: tags.list, color: "var(--brand-blurple-bright)" },
+  { tag: tags.quote, color: "var(--screen-muted)", fontStyle: "italic" },
+  { tag: tags.meta, color: "var(--safe-blue)" },
+  { tag: tags.contentSeparator, color: "var(--shell-line-strong)" },
+  { tag: tags.tagName, color: "var(--safe-green)" },
+  { tag: tags.attributeName, color: "var(--brand-blurple-bright)" },
+  { tag: [tags.attributeValue, tags.string], color: "var(--safe-blue)" },
+  { tag: tags.comment, color: "var(--screen-muted)", fontStyle: "italic" },
+]);
+
+const specialSyntax = ViewPlugin.fromClass(
+  class {
+    decorations;
+    constructor(view: EditorView) {
+      this.decorations = this.build(view);
+    }
+    update(update: import("@codemirror/view").ViewUpdate) {
+      if (update.docChanged || update.viewportChanged)
+        this.decorations = this.build(update.view);
+    }
+    build(view: EditorView) {
+      const ranges: Array<Range<Decoration>> = [];
+      const doc = view.state.doc.toString();
+      const patterns = [
+        {
+          regex: /@[a-zA-Z0-9_]{2,32}/g,
+          className: "cm-uloggd-mention",
+        },
+        {
+          regex: /\|\|.+?\|\|/g,
+          className: "cm-uloggd-spoiler",
+        },
+        {
+          regex: /!game(?::(?:mini|grid|grid-auto))?\([^\n)]+\)/g,
+          className: "cm-uloggd-game",
+        },
+        {
+          regex: /^:::(?:\w+)?$/gm,
+          className: "cm-uloggd-alert",
+        },
+      ];
+      for (const { regex, className } of patterns) {
+        for (const match of doc.matchAll(regex)) {
+          const from = match.index;
+          ranges.push(
+            Decoration.mark({ class: className }).range(
+              from,
+              from + match[0].length,
+            ),
+          );
+        }
+      }
+      return Decoration.set(
+        ranges.sort((a, b) => a.from - b.from),
+        true,
+      );
+    }
+  },
+  { decorations: (plugin) => plugin.decorations },
+);
+
 async function mentionCompletion(
   context: CompletionContext,
 ): Promise<CompletionResult | null> {
@@ -319,7 +422,9 @@ export function MarkdownEditor({
       doc: valueRef.current,
       extensions: [
         editorTheme,
+        syntaxHighlighting(markdownHighlightStyle),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        specialSyntax,
         markdown({ base: markdownLanguage, codeLanguages: languages }),
         history(),
         indentUnit.of("  "),

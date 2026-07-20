@@ -19,6 +19,8 @@
   --brand-blurple-wash: rgb(88 101 242 / 13%);
   --achievement-gold: #d3b55b;
   --safe-green: #73c69a;
+  --safe-blue: #74a8e8;
+  --warning-text: #d6aa58;
   --header-glass-start: rgb(29 27 34 / 82%);
   --header-glass-end: rgb(18 17 21 / 72%);
   --header-glass-base: rgb(15 14 17 / 72%);
@@ -75,6 +77,8 @@
   --brand-blurple-wash: rgb(88 101 242 / 11%);
   --achievement-gold: #8f7423;
   --safe-green: #347f57;
+  --safe-blue: #286ba8;
+  --warning-text: #8a6418;
   --header-glass-start: rgb(255 255 255 / 88%);
   --header-glass-end: rgb(240 242 246 / 82%);
   --header-glass-base: rgb(247 248 250 / 82%);
@@ -15432,6 +15436,25 @@ html
   margin-left: 10px;
   color: var(--screen-muted);
   font-size: 10px;
+}
+.md-editor .cm-uloggd-mention {
+  border-radius: 4px;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+  font-weight: 620;
+}
+.md-editor .cm-uloggd-spoiler {
+  border-radius: 3px;
+  background: var(--console-hover);
+  color: var(--screen-muted);
+}
+.md-editor .cm-uloggd-game {
+  color: var(--warning-text);
+  font-weight: 680;
+}
+.md-editor .cm-uloggd-alert {
+  color: var(--brand-blurple-bright);
+  font-weight: 650;
 }
 .md-editor .md-editor-preview {
   min-width: 0;
