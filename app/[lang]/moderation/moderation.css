@@ -153,8 +153,7 @@
   font-size: 10px;
 }
 .moderation-report-card textarea,
-.moderation-dialog textarea,
-.moderation-dialog select {
+.moderation-dialog textarea {
   width: 100%;
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
@@ -206,15 +205,19 @@
 }
 .moderation-search {
   display: grid;
-  grid-template-columns: auto minmax(140px, 240px) auto;
+  grid-template-columns: minmax(140px, 240px) auto auto;
   align-items: center;
-  gap: 7px;
+  gap: 4px;
   min-height: 38px;
   padding: 3px 3px 3px 10px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted);
+}
+/* Shares .search-field-hit from globals; only the height is local. */
+.moderation-search label.search-field-hit {
+  min-height: 32px;
 }
 .moderation-search input {
   min-width: 0;
@@ -224,7 +227,26 @@
   color: var(--screen-white);
   font-size: 11px;
 }
-.moderation-search button {
+/* Reserves its slot when hidden so the submit button never shifts. */
+.moderation-search-clear {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--screen-muted);
+}
+.moderation-search-clear:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.moderation-search-clear[data-hidden] {
+  visibility: hidden;
+  pointer-events: none;
+}
+.moderation-search button:not(.moderation-search-clear) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -445,6 +467,22 @@
   min-height: 92px;
   padding: 9px 10px;
 }
+.moderation-dialog > p.moderation-dialog-hint {
+  margin-top: 8px;
+  color: var(--screen-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.moderation-dialog > p.moderation-dialog-error {
+  margin-top: 10px;
+  padding: 9px 11px;
+  border: 1px solid color-mix(in srgb, var(--danger-text) 34%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--danger-text) 10%, transparent);
+  color: var(--danger-text);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
 .moderation-dialog footer {
   display: grid;
   grid-template-columns: 1fr 1.2fr;
@@ -493,7 +531,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
   .moderation-search {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
   }
   .moderation-report-card footer button {
     flex: 1;

@@ -129,6 +129,24 @@ export function ModerationConsole({
     return profile?.display_name || `@${profile?.username ?? "usuário"}`;
   }
 
+  // Every dialog opens from a clean slate: a duration left over from the
+  // previous ban would silently become the default for the next one.
+  function openProfileAction(profile: Profile, action: ProfileAction) {
+    setError(null);
+    setReason("");
+    if (action === "BAN") setDuration("7");
+    setTargetAction({ profile, action });
+  }
+
+  const dialogOpen = Boolean(targetAction) || Boolean(commentRemoval);
+  const needsReason =
+    targetAction?.action === "BAN" || targetAction?.action === "UNBAN";
+  const profilePending =
+    targetAction !== null && pending === `profile-${targetAction.profile.id}`;
+  const commentPending =
+    commentRemoval !== null &&
+    pending === `comment-${commentRemoval.commentId}`;
+
   const visibleReports =
     statusFilter === "ALL"
       ? reportRows
@@ -177,6 +195,20 @@ export function ModerationConsole({
         rows.forEach((profile) => merged.set(profile.id, profile));
         return [...merged.values()];
       });
+      // Without this the ban state of a freshly searched account is unknown,
+      // so a banned user would still show the "Ban" button.
+      if (rows.length) {
+        const ids = rows.map((profile) => profile.id);
+        const { data: states } = await createClient()
+          .from("profile_moderation_state")
+          .select("profile_id,banned_at,banned_until,reason")
+          .in("profile_id", ids);
+        const idSet = new Set(ids);
+        setModerationStateRows((current) => [
+          ...current.filter((state) => !idSet.has(state.profile_id)),
+          ...((states ?? []) as ModerationState[]),
+        ]);
+      }
       const params = new URLSearchParams();
       params.set("status", statusFilter);
       params.set("q", query);
@@ -363,7 +395,7 @@ export function ModerationConsole({
         <strong>{actorRole}</strong>
       </header>
 
-      {error && (
+      {error && !dialogOpen && (
         <p className="moderation-error" role="alert">
           {error}
         </p>
@@ -478,6 +510,9 @@ export function ModerationConsole({
                 <textarea
                   value={notes[report.id] ?? report.moderator_note ?? ""}
                   maxLength={1000}
+                  aria-label={
+                    pt ? "Nota interna da decisão" : "Internal decision note"
+                  }
                   placeholder={
                     pt ? "Nota interna da decisão…" : "Internal decision note…"
                   }
@@ -496,12 +531,14 @@ export function ModerationConsole({
                         type="button"
                         data-danger
                         disabled={Boolean(pending)}
-                        onClick={() =>
+                        onClick={() => {
+                          setError(null);
+                          setCommentRemovalReason("");
                           setCommentRemoval({
                             reportId: report.id,
                             commentId: comment.id,
-                          })
-                        }
+                          });
+                        }}
                       >
                         <Trash2 size={13} />
                         {pt ? "Remover comentário" : "Remove comment"}
@@ -513,7 +550,11 @@ export function ModerationConsole({
                       disabled={Boolean(pending)}
                       onClick={() => void updateReport(report.id, "REVIEWING")}
                     >
-                      <Clock3 size={13} />{" "}
+                      {pending === `report-${report.id}-REVIEWING` ? (
+                        <LoaderCircle className="spin" size={13} />
+                      ) : (
+                        <Clock3 size={13} />
+                      )}
                       {pt ? "Assumir análise" : "Start review"}
                     </button>
                   )}
@@ -522,7 +563,12 @@ export function ModerationConsole({
                     disabled={Boolean(pending)}
                     onClick={() => void updateReport(report.id, "DISMISSED")}
                   >
-                    <X size={13} /> {pt ? "Descartar" : "Dismiss"}
+                    {pending === `report-${report.id}-DISMISSED` ? (
+                      <LoaderCircle className="spin" size={13} />
+                    ) : (
+                      <X size={13} />
+                    )}
+                    {pt ? "Descartar" : "Dismiss"}
                   </button>
                   <button
                     type="button"
@@ -557,15 +603,31 @@ export function ModerationConsole({
             className="moderation-search"
             onSubmit={(event) => void searchAccounts(event)}
           >
-            <Search size={15} />
-            <input
-              name="q"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              minLength={2}
-              maxLength={32}
-              placeholder={pt ? "Buscar usuário" : "Search user"}
-            />
+            <label className="search-field-hit">
+              <Search size={15} />
+              <input
+                name="q"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                minLength={2}
+                maxLength={32}
+                aria-label={pt ? "Buscar usuário" : "Search user"}
+                placeholder={pt ? "Buscar usuário" : "Search user"}
+              />
+            </label>
+            <button
+              type="button"
+              className="moderation-search-clear"
+              data-hidden={!search ? true : undefined}
+              aria-label={pt ? "Limpar busca" : "Clear search"}
+              onClick={() => {
+                setSearch("");
+                setAccountRows(accounts);
+                setError(null);
+              }}
+            >
+              <X size={14} />
+            </button>
             <button disabled={searching || search.trim().length < 2}>
               {searching && <LoaderCircle className="spin" size={13} />}
               {pt ? "Buscar" : "Search"}
@@ -622,11 +684,12 @@ export function ModerationConsole({
                     <>
                       <button
                         type="button"
+                        disabled={Boolean(pending)}
                         onClick={() =>
-                          setTargetAction({
+                          openProfileAction(
                             profile,
-                            action: profile.verified ? "UNVERIFY" : "VERIFY",
-                          })
+                            profile.verified ? "UNVERIFY" : "VERIFY",
+                          )
                         }
                       >
                         {profile.verified ? (
@@ -645,11 +708,9 @@ export function ModerationConsole({
                       <button
                         type="button"
                         data-danger
+                        disabled={Boolean(pending)}
                         onClick={() =>
-                          setTargetAction({
-                            profile,
-                            action: banned ? "UNBAN" : "BAN",
-                          })
+                          openProfileAction(profile, banned ? "UNBAN" : "BAN")
                         }
                       >
                         <Ban size={13} />
@@ -681,6 +742,11 @@ export function ModerationConsole({
             </p>
           </div>
         </header>
+        {actions.length === 0 && (
+          <div className="moderation-empty">
+            {pt ? "Nenhuma decisão registrada." : "No decisions recorded yet."}
+          </div>
+        )}
         <ol>
           {actions.map((action) => (
             <li key={action.id}>
@@ -738,9 +804,15 @@ export function ModerationConsole({
               // A label here would forward clicks to the trigger and re-toggle
               // the select, so it could never close.
               <div className="moderation-field">
-                <span>{pt ? "Duração" : "Duration"}</span>
+                <span id="moderation-duration-label">
+                  {pt ? "Duração" : "Duration"}
+                </span>
                 <Select.Root value={duration} onValueChange={setDuration}>
-                  <Select.Trigger className="moderation-select-trigger">
+                  <Select.Trigger
+                    id="moderation-duration-trigger"
+                    className="moderation-select-trigger"
+                    aria-labelledby="moderation-duration-label moderation-duration-trigger"
+                  >
                     <Select.Value />
                     <Select.Icon>
                       <ChevronDown size={14} />
@@ -789,6 +861,18 @@ export function ModerationConsole({
                 }
               />
             </label>
+            {needsReason && reason.trim().length < 3 && (
+              <p className="moderation-dialog-hint">
+                {pt
+                  ? "O motivo é obrigatório e precisa de pelo menos 3 caracteres."
+                  : "A reason is required and must be at least 3 characters."}
+              </p>
+            )}
+            {error && (
+              <p className="moderation-dialog-error" role="alert">
+                {error}
+              </p>
+            )}
             <footer>
               <Dialog.Close disabled={Boolean(pending)}>
                 {pt ? "Cancelar" : "Cancel"}
@@ -796,15 +880,12 @@ export function ModerationConsole({
               <button
                 type="button"
                 disabled={
-                  Boolean(pending) ||
-                  ((targetAction?.action === "BAN" ||
-                    targetAction?.action === "UNBAN") &&
-                    reason.trim().length < 3)
+                  Boolean(pending) || (needsReason && reason.trim().length < 3)
                 }
                 onClick={() => void performProfileAction()}
               >
-                {pending && <LoaderCircle className="spin" size={14} />}
-                {pending
+                {profilePending && <LoaderCircle className="spin" size={14} />}
+                {profilePending
                   ? pt
                     ? "Aplicando…"
                     : "Applying…"
@@ -858,6 +939,11 @@ export function ModerationConsole({
                 }
               />
             </label>
+            {error && (
+              <p className="moderation-dialog-error" role="alert">
+                {error}
+              </p>
+            )}
             <footer>
               <Dialog.Close disabled={Boolean(pending)}>
                 {pt ? "Cancelar" : "Cancel"}
@@ -868,8 +954,8 @@ export function ModerationConsole({
                 disabled={Boolean(pending)}
                 onClick={() => void removeReportedComment()}
               >
-                {pending && <LoaderCircle className="spin" size={14} />}
-                {pending
+                {commentPending && <LoaderCircle className="spin" size={14} />}
+                {commentPending
                   ? pt
                     ? "Removendo…"
                     : "Removing…"
