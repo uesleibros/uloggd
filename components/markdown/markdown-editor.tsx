@@ -53,8 +53,10 @@ import {
   ImagePlus,
   Info,
   Italic,
+  Languages,
   Link2,
   List,
+  ListCollapse,
   ListOrdered,
   Maximize2,
   Minimize2,
@@ -103,7 +105,9 @@ type Tool =
   | "desktop"
   | "mobile"
   | "mention"
-  | "table";
+  | "table"
+  | "details"
+  | "lang";
 
 const toolGroups: Array<Array<[Tool, ComponentType<{ size?: number }>]>> = [
   [
@@ -135,6 +139,8 @@ const toolGroups: Array<Array<[Tool, ComponentType<{ size?: number }>]>> = [
     ["center", AlignCenter],
     ["desktop", Monitor],
     ["mobile", Smartphone],
+    ["details", ListCollapse],
+    ["lang", Languages],
     ["mention", AtSign],
     ["table", Table],
   ],
@@ -322,26 +328,228 @@ async function mentionCompletion(
   }
 }
 
-const helpItems = [
-  ["**texto**", "Negrito"],
-  ["*texto*", "Itálico"],
-  ["~~texto~~", "Riscado"],
-  ["# até ######", "Títulos"],
-  ["[texto](url)", "Link"],
-  ["![alt](url)", "Imagem"],
-  ["- [ ] item", "Checklist"],
-  ["```código```", "Bloco de código"],
-  [":::info", "Destaque / alerta"],
-  ["||texto||", "Spoiler"],
-  ["@usuario", "Menção"],
-  ["!game(slug)", "Card de jogo"],
-  ["!game:mini(slug)", "Card compacto"],
-  ["!game:grid(slug-1, slug-2)", "Grade de jogos"],
-  ["!game:grid-auto(slug-1, slug-2)", "Carrossel de jogos"],
-  ["<center>…</center>", "Conteúdo centralizado"],
-  ["<desktop>…</desktop>", "Somente desktop"],
-  ["<mobile>…</mobile>", "Somente mobile"],
-] as const;
+type HelpItem = {
+  syntax: string;
+  pt: string;
+  en: string;
+  // Rendered live in the guide. Falls back to the syntax; "" disables it.
+  demo?: string;
+};
+
+const helpSections: Array<{ pt: string; en: string; items: HelpItem[] }> = [
+  {
+    pt: "Texto",
+    en: "Text",
+    items: [
+      { syntax: "**negrito**", pt: "Negrito", en: "Bold" },
+      { syntax: "*itálico*", pt: "Itálico", en: "Italic" },
+      { syntax: "~~riscado~~", pt: "Riscado", en: "Strikethrough" },
+      {
+        syntax: "# Título",
+        pt: "Títulos, de # até ######",
+        en: "Headings, from # to ######",
+        demo: "# Título\n## Subtítulo",
+      },
+      {
+        syntax: "[texto](https://url)",
+        pt: "Link",
+        en: "Link",
+        demo: "[uloggd](https://uloggd.com)",
+      },
+      {
+        syntax: "> citação",
+        pt: "Citação",
+        en: "Blockquote",
+        demo: "> Um dos melhores jogos que já joguei.",
+      },
+      {
+        syntax: "`código`",
+        pt: "Código em linha",
+        en: "Inline code",
+        demo: "Use `npm run dev` para começar.",
+      },
+      {
+        syntax: "```\ncódigo\n```",
+        pt: "Bloco de código",
+        en: "Code block",
+        demo: "```\nconst a = 1;\n```",
+      },
+      {
+        syntax: "---",
+        pt: "Linha separadora",
+        en: "Divider",
+      },
+      {
+        syntax: "linha 1\nlinha 2",
+        pt: "Uma quebra de linha simples já vale — não precisa de linha em branco. Linhas em branco extras também são mantidas.",
+        en: "A single line break is enough — no blank line needed. Extra blank lines are kept too.",
+        demo: "linha 1\nlinha 2",
+      },
+    ],
+  },
+  {
+    pt: "Listas e tabelas",
+    en: "Lists and tables",
+    items: [
+      {
+        syntax: "- item",
+        pt: "Lista",
+        en: "List",
+        demo: "- primeiro\n- segundo",
+      },
+      {
+        syntax: "1. item",
+        pt: "Lista numerada",
+        en: "Numbered list",
+        demo: "1. primeiro\n2. segundo",
+      },
+      {
+        syntax: "- [ ] tarefa",
+        pt: "Checklist — itens marcados ficam riscados",
+        en: "Checklist — checked items are struck through",
+        demo: "- [x] zerado\n- [ ] platinado",
+      },
+      {
+        syntax: "| a | b |\n| --- | --- |\n| 1 | 2 |",
+        pt: "Tabela — rola na horizontal quando não cabe",
+        en: "Table — scrolls horizontally when it does not fit",
+        demo: "| Jogo | Nota |\n| --- | --- |\n| Celeste | 10 |",
+      },
+    ],
+  },
+  {
+    pt: "Jogos",
+    en: "Games",
+    items: [
+      {
+        syntax: "!game(slug)",
+        pt: "Card completo, com capa, sinopse e plataformas",
+        en: "Full card, with cover, summary and platforms",
+        demo: "!game(celeste)",
+      },
+      {
+        syntax: "!game:mini(slug)",
+        pt: "Card compacto, que flui junto com o texto",
+        en: "Compact card that flows inline with the text",
+        demo: "Terminei !game:mini(celeste) ontem.",
+      },
+      {
+        syntax: "!game:grid(slug-1, slug-2)",
+        pt: "Grade de capas. Um + depois do slug marca o jogo como favorito",
+        en: "Grid of covers. A + after the slug marks the game as a favourite",
+        demo: "!game:grid(celeste, hollow-knight+, hades)",
+      },
+      {
+        syntax: "!game:grid-auto(slug-1, slug-2)",
+        pt: "Carrossel em loop, que pausa quando o mouse passa por cima",
+        en: "Looping carousel that pauses on hover",
+        demo: "!game:grid-auto(celeste, hollow-knight, hades, braid)",
+      },
+      {
+        syntax: "@usuario",
+        pt: "Menção a um perfil",
+        en: "Mention a profile",
+        demo: "",
+      },
+    ],
+  },
+  {
+    pt: "Mídia",
+    en: "Media",
+    items: [
+      {
+        syntax: "![descrição](https://url)",
+        pt: "Imagem",
+        en: "Image",
+        demo: "",
+      },
+      {
+        syntax: '<img src="https://url" width="400" />',
+        pt: "Imagem com largura definida — nunca passa da largura disponível",
+        en: "Image with a set width — never exceeds the available width",
+        demo: "",
+      },
+      {
+        syntax: "https://youtube.com/watch?v=ID",
+        pt: "Colar o link do YouTube já vira player",
+        en: "Pasting a YouTube link turns it into a player",
+        demo: "",
+      },
+      {
+        syntax: '<spoilerimg src="https://url" />',
+        pt: "Imagem borrada até clicarem nela",
+        en: "Image blurred until clicked",
+        demo: "",
+      },
+      {
+        syntax: "||texto escondido||",
+        pt: "Spoiler de texto",
+        en: "Text spoiler",
+        demo: "O final é ||surpreendente||.",
+      },
+    ],
+  },
+  {
+    pt: "Destaques",
+    en: "Callouts",
+    items: [
+      {
+        syntax: ":::info\ntexto\n:::",
+        pt: "Caixa de destaque",
+        en: "Callout box",
+        demo: ":::info\nUm aviso rápido.\n:::",
+      },
+      {
+        syntax: ":::warning / :::danger / :::tip",
+        pt: "Tipos disponíveis: info, note, tip, success, important, warning, danger, bug, question, example",
+        en: "Available types: info, note, tip, success, important, warning, danger, bug, question, example",
+        demo: ":::warning\nCuidado com spoilers.\n:::",
+      },
+    ],
+  },
+  {
+    pt: "Layout",
+    en: "Layout",
+    items: [
+      {
+        syntax: "<center>\n\ntexto\n\n</center>",
+        pt: "Centraliza texto, imagens, tabelas e cards",
+        en: "Centres text, images, tables and cards",
+        demo: "<center>\n\n**No meio**\n\n</center>",
+      },
+      {
+        syntax: "<details>\n<summary>Título</summary>\n\ntexto\n\n</details>",
+        pt: "Seção recolhível",
+        en: "Collapsible section",
+        demo: "<details>\n<summary>Minha lista completa</summary>\n\nConteúdo escondido.\n\n</details>",
+      },
+      {
+        syntax: "<pt>\n\ntexto\n\n</pt>",
+        pt: "Só aparece para quem está lendo em português",
+        en: "Only shows for readers using Portuguese",
+        demo: "<pt>\n\nVocê está lendo em português.\n\n</pt>\n<en>\n\nYou are reading in English.\n\n</en>",
+      },
+      {
+        syntax: "<en>\n\ntext\n\n</en>",
+        pt: "Só aparece para quem está lendo em inglês. Junto com <pt>, dá para manter as duas versões no mesmo perfil",
+        en: "Only shows for readers using English. Together with <pt>, one profile can carry both versions",
+        demo: "",
+      },
+      {
+        syntax: "<desktop>\n\ntexto\n\n</desktop>",
+        pt: "Só aparece em telas grandes",
+        en: "Only shows on large screens",
+        demo: "",
+      },
+      {
+        syntax: "<mobile>\n\ntexto\n\n</mobile>",
+        pt: "Só aparece em telas pequenas",
+        en: "Only shows on small screens",
+        demo: "",
+      },
+    ],
+  },
+];
 
 export function MarkdownEditor({
   value,
@@ -401,6 +609,8 @@ export function MarkdownEditor({
     mobile: pt ? "Somente mobile" : "Mobile only",
     mention: pt ? "Mencionar" : "Mention",
     table: pt ? "Tabela" : "Table",
+    details: pt ? "Seção recolhível" : "Collapsible section",
+    lang: pt ? "Texto por idioma" : "Text per language",
   };
 
   useEffect(() => {
@@ -573,6 +783,14 @@ export function MarkdownEditor({
           insertBlock(
             "| Coluna 1 | Coluna 2 |\n| --- | --- |\n| dado | dado |",
           ),
+        details: () =>
+          insertBlock(
+            `<details>\n<summary>${pt ? "Título da seção" : "Section title"}</summary>\n\n${text}\n\n</details>`,
+          ),
+        lang: () =>
+          insertBlock(
+            `<pt>\n\nTexto em português\n\n</pt>\n\n<en>\n\nEnglish text\n\n</en>`,
+          ),
       };
       actions[tool]();
     },
@@ -624,11 +842,19 @@ export function MarkdownEditor({
     }),
     [maxLength, value],
   );
-  const filteredHelp = helpItems.filter(([syntax, label]) =>
-    `${syntax} ${label}`
-      .toLocaleLowerCase()
-      .includes(helpSearch.toLocaleLowerCase()),
-  );
+  const helpQuery = helpSearch.trim().toLocaleLowerCase();
+  const filteredHelp = helpSections
+    .map((section) => ({
+      ...section,
+      items: helpQuery
+        ? section.items.filter((item) =>
+            `${item.syntax} ${item.pt} ${item.en}`
+              .toLocaleLowerCase()
+              .includes(helpQuery),
+          )
+        : section.items,
+    }))
+    .filter((section) => section.items.length > 0);
   const showEditor = activeTab !== "preview";
   const showPreview = activeTab !== "write";
 
@@ -811,13 +1037,44 @@ export function MarkdownEditor({
                 placeholder={pt ? "Buscar recurso…" : "Search features…"}
               />
             </label>
-            <div>
-              {filteredHelp.map(([syntax, description]) => (
-                <article key={syntax}>
-                  <code>{syntax}</code>
-                  <p>{description}</p>
-                </article>
+            <div className="md-help-body">
+              {filteredHelp.map((section) => (
+                <section key={section.en}>
+                  <h3>{pt ? section.pt : section.en}</h3>
+                  {section.items.map((item) => {
+                    const demo = item.demo ?? item.syntax;
+                    return (
+                      <article key={item.syntax}>
+                        <p>{pt ? item.pt : item.en}</p>
+                        <div className="md-help-example">
+                          <pre>
+                            <code>{item.syntax}</code>
+                          </pre>
+                          {demo && (
+                            <div className="md-help-render">
+                              <MarkdownContent content={demo} lang={lang} />
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setHelpOpen(false);
+                            insertBlock(item.syntax);
+                          }}
+                        >
+                          {pt ? "Inserir" : "Insert"}
+                        </button>
+                      </article>
+                    );
+                  })}
+                </section>
               ))}
+              {!filteredHelp.length && (
+                <p className="md-help-empty">
+                  {pt ? "Nenhum recurso encontrado." : "No features found."}
+                </p>
+              )}
             </div>
           </Dialog.Content>
         </Dialog.Portal>

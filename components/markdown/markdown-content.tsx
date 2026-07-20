@@ -108,6 +108,8 @@ const sanitizeSchema = {
     "desktop",
     "mobile",
     "spoilerimg",
+    "pt",
+    "en",
     "game-card",
     "game-grid",
     "alert-box",
@@ -126,6 +128,8 @@ const sanitizeSchema = {
     center: [],
     desktop: [],
     mobile: [],
+    pt: [],
+    en: [],
   },
   protocols: {
     ...defaultSchema.protocols,
@@ -581,6 +585,12 @@ export function MarkdownContent({
       mobile: ({ children }: { children?: ReactNode }) => (
         <div className="md-mobile-only">{children}</div>
       ),
+      // Language blocks render only for the reader's current locale, so one
+      // drawer can carry both versions of the text.
+      pt: ({ children }: { children?: ReactNode }) =>
+        lang === "pt-BR" ? <span className="md-lang">{children}</span> : null,
+      en: ({ children }: { children?: ReactNode }) =>
+        lang === "en" ? <span className="md-lang">{children}</span> : null,
       spoilerimg: (props: MdImageProps) => (
         <Spoiler>
           {/* eslint-disable-next-line @next/next/no-img-element */}
