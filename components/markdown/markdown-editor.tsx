@@ -982,9 +982,7 @@ export function MarkdownEditor({
                   className="md-insert-trigger"
                   aria-label={pt ? "Inserir" : "Insert"}
                 >
-                  <Plus size={15} />
-                  <span>{pt ? "Inserir" : "Insert"}</span>
-                  <ChevronDown size={11} />
+                  <Plus size={16} />
                 </button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
@@ -1056,15 +1054,18 @@ export function MarkdownEditor({
       <footer className="md-editor-status">
         <span>
           <Info size={13} />
-          <b>Markdown</b>
+          <b>MD</b>
           <i>
             {stats.words} {pt ? "palavras" : "words"} · {stats.lines}{" "}
             {pt ? "linhas" : "lines"}
           </i>
         </span>
-        <button type="button" onClick={() => setHelpOpen(true)}>
+        <button
+          type="button"
+          aria-label={pt ? "Ajuda" : "Help"}
+          onClick={() => setHelpOpen(true)}
+        >
           <CircleHelp size={15} />
-          {pt ? "Ajuda" : "Help"}
         </button>
       </footer>
     </div>
