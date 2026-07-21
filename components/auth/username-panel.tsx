@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Check, LoaderCircle, LogOut, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { usernameSchema } from "@/lib/auth-validation";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 const reserved = new Set([
   "admin",
@@ -29,7 +29,6 @@ const reserved = new Set([
 ]);
 export function UsernamePanel({ lang }: { lang: UiLang }) {
   const router = useRouter();
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [value, setValue] = useState("");
   const [available, setAvailable] = useState<boolean | null>(null);
@@ -41,25 +40,37 @@ export function UsernamePanel({ lang }: { lang: UiLang }) {
   const hint = useMemo(
     () =>
       !normalized
-        ? pt
-          ? "3–32 caracteres: letras minúsculas, números e _."
-          : "3–32 characters: lowercase letters, numbers and _."
+        ? tri(
+            lang,
+            "3–32 caracteres: letras minúsculas, números e _.",
+            "3–32 characters: lowercase letters, numbers and _.",
+            "3–32 caracteres: letras minúsculas, números y _.",
+          )
         : reserved.has(normalized)
-          ? pt
-            ? "Esse nome é reservado."
-            : "This name is reserved."
+          ? tri(
+              lang,
+              "Esse nome é reservado.",
+              "This name is reserved.",
+              "Ese nombre está reservado.",
+            )
           : !valid
             ? t.invalidFormat
             : available === false
-              ? pt
-                ? "Esse username já está em uso."
-                : "That username is taken."
+              ? tri(
+                  lang,
+                  "Esse username já está em uso.",
+                  "That username is taken.",
+                  "Ese nombre de usuario ya está en uso.",
+                )
               : available === true
-                ? pt
-                  ? "Username disponível."
-                  : "Username available."
+                ? tri(
+                    lang,
+                    "Username disponível.",
+                    "Username available.",
+                    "Nombre de usuario disponible.",
+                  )
                 : t.validFormat,
-    [normalized, valid, available, pt, t.invalidFormat, t.validFormat],
+    [normalized, valid, available, lang, t.invalidFormat, t.validFormat],
   );
   async function check(candidate: string) {
     const clean = candidate.trim().toLowerCase();
@@ -75,9 +86,12 @@ export function UsernamePanel({ lang }: { lang: UiLang }) {
     if (checkError) {
       setAvailable(null);
       setError(
-        pt
-          ? "Não foi possível verificar a disponibilidade agora. Tente novamente."
-          : "Could not check availability right now. Try again.",
+        tri(
+          lang,
+          "Não foi possível verificar a disponibilidade agora. Tente novamente.",
+          "Could not check availability right now. Try again.",
+          "No se pudo verificar la disponibilidad ahora. Inténtalo de nuevo.",
+        ),
       );
       return;
     }
@@ -99,16 +113,25 @@ export function UsernamePanel({ lang }: { lang: UiLang }) {
         rpcError.code === "PGRST202" || rpcError.code === "42883";
       setError(
         occupied
-          ? pt
-            ? "Esse username acabou de ser escolhido. Tente outro."
-            : "That username was just claimed. Try another."
+          ? tri(
+              lang,
+              "Esse username acabou de ser escolhido. Tente outro.",
+              "That username was just claimed. Try another.",
+              "Ese nombre de usuario acaba de ser tomado. Prueba otro.",
+            )
           : unavailableRpc
-            ? pt
-              ? "A escolha de username ainda não está disponível. A configuração do banco precisa ser aplicada."
-              : "Username selection is not available yet. The database configuration must be applied."
-            : pt
-              ? "Não foi possível salvar o username. Tente novamente."
-              : "Could not save the username. Try again.",
+            ? tri(
+                lang,
+                "A escolha de username ainda não está disponível. A configuração do banco precisa ser aplicada.",
+                "Username selection is not available yet. The database configuration must be applied.",
+                "La elección de nombre de usuario todavía no está disponible. Falta aplicar la configuración de la base de datos.",
+              )
+            : tri(
+                lang,
+                "Não foi possível salvar o username. Tente novamente.",
+                "Could not save the username. Try again.",
+                "No se pudo guardar el nombre de usuario. Inténtalo de nuevo.",
+              ),
       );
       setAvailable(occupied ? false : null);
       setPending(false);
@@ -121,23 +144,33 @@ export function UsernamePanel({ lang }: { lang: UiLang }) {
     <section className="login-panel username-panel">
       <div
         className="onboarding-progress"
-        aria-label={pt ? "Etapa 1 de 2" : "Step 1 of 2"}
+        aria-label={tri(lang, "Etapa 1 de 2", "Step 1 of 2", "Paso 1 de 2")}
       >
         <span data-current>1</span>
         <i />
         <span>2</span>
       </div>
       <div className="login-panel-heading">
-        <h1>{pt ? "Escolha seu username" : "Choose your username"}</h1>
+        <h1>
+          {tri(
+            lang,
+            "Escolha seu username",
+            "Choose your username",
+            "Elige tu nombre de usuario",
+          )}
+        </h1>
         <p>
-          {pt
-            ? "Este será seu endereço público no uloggd. Você poderá definir um nome de exibição depois."
-            : "This will be your public uloggd address. You can add a display name later."}
+          {tri(
+            lang,
+            "Este será seu endereço público no uloggd. Você poderá definir um nome de exibição depois.",
+            "This will be your public uloggd address. You can add a display name later.",
+            "Esta será tu dirección pública en uloggd. Podrás definir un nombre visible después.",
+          )}
         </p>
       </div>
       <form className="auth-form" onSubmit={submit}>
         <label>
-          {pt ? "Username" : "Username"}
+          {tri(lang, "Username", "Username", "Nombre de usuario")}
           <span className="username-input">
             <span>@</span>
             <input
@@ -169,7 +202,7 @@ export function UsernamePanel({ lang }: { lang: UiLang }) {
           disabled={!valid || available === false || pending}
         >
           {pending && <LoaderCircle className="spin" size={18} />}{" "}
-          {pt ? "Continuar" : "Continue"}
+          {tri(lang, "Continuar", "Continue", "Continuar")}
         </button>
       </form>
       {error && (

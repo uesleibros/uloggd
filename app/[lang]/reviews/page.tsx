@@ -7,7 +7,7 @@ import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../dictionaries";
-import { uiText } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 export default async function ReviewsPage({
   params,
@@ -50,7 +50,6 @@ export default async function ReviewsPage({
       ratedReviews.length /
       20
     : null;
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   return (
     <main className="social-page workspace-layout-page reviews-page">
@@ -58,15 +57,22 @@ export default async function ReviewsPage({
         profile={profile}
         eyebrow={
           <>
-            <BookOpen size={14} /> {pt ? "SEU HISTÓRICO" : "YOUR HISTORY"}
+            <BookOpen size={14} />{" "}
+            {tri(lang, "SEU HISTÓRICO", "YOUR HISTORY", "TU HISTORIAL")}
           </>
         }
-        title={pt ? "Diário e avaliações" : "Diary & reviews"}
-        description={
-          pt
-            ? "Todas as sessões e opiniões que formam sua jornada."
-            : "Every session and opinion that shapes your journey."
-        }
+        title={tri(
+          lang,
+          "Diário e avaliações",
+          "Diary & reviews",
+          "Diario y reseñas",
+        )}
+        description={tri(
+          lang,
+          "Todas as sessões e opiniões que formam sua jornada.",
+          "Every session and opinion that shapes your journey.",
+          "Todas las sesiones y opiniones que forman tu recorrido.",
+        )}
         stats={[
           {
             icon: <BookOpen size={14} />,
@@ -75,7 +81,7 @@ export default async function ReviewsPage({
           },
           {
             icon: <Star size={14} />,
-            label: pt ? "Nota média" : "Average",
+            label: tri(lang, "Nota média", "Average", "Nota media"),
             value:
               average === null
                 ? "—"
@@ -88,7 +94,7 @@ export default async function ReviewsPage({
           },
           {
             icon: <EyeOff size={14} />,
-            label: pt ? "Spoilers" : "Spoilers",
+            label: tri(lang, "Spoilers", "Spoilers", "Spoilers"),
             value: reviews.filter((entry) => entry.spoilers).length,
           },
         ]}
@@ -96,10 +102,15 @@ export default async function ReviewsPage({
       <div className="workspace-page-body">
         <nav
           className="social-filter-tabs"
-          aria-label={pt ? "Filtrar registros" : "Filter entries"}
+          aria-label={tri(
+            lang,
+            "Filtrar registros",
+            "Filter entries",
+            "Filtrar registros",
+          )}
         >
           {[
-            ["all", pt ? "Tudo" : "All"],
+            ["all", tri(lang, "Tudo", "All", "Todo")],
             ["review", t.reviews],
             ["diary", t.sessions],
           ].map(([value, label]) => (

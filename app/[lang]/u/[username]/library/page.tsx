@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { LibraryScreen } from "@/components/library/library-screen";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
+import { tri } from "@/lib/ui-text";
 
 type Props = { params: Promise<{ lang: string; username: string }> };
 
@@ -11,10 +12,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, username } = await params;
   if (!hasLocale(lang)) return {};
   return {
-    title:
-      lang === "pt-BR"
-        ? `Biblioteca de @${username}`
-        : `@${username}'s library`,
+    title: tri(
+      lang,
+      `Biblioteca de @${username}`,
+      `@${username}'s library`,
+      `Biblioteca de @${username}`,
+    ),
   };
 }
 
@@ -38,11 +41,21 @@ export default async function PublicLibraryPage({ params }: Props) {
     return (
       <main className="library-private">
         <LibraryBig size={30} />
-        <h1>{lang === "pt-BR" ? "Biblioteca privada" : "Private library"}</h1>
+        <h1>
+          {tri(
+            lang,
+            "Biblioteca privada",
+            "Private library",
+            "Biblioteca privada",
+          )}
+        </h1>
         <p>
-          {lang === "pt-BR"
-            ? "Este usuário escolheu manter a coleção somente para si."
-            : "This user chose to keep their collection private."}
+          {tri(
+            lang,
+            "Este usuário escolheu manter a coleção somente para si.",
+            "This user chose to keep their collection private.",
+            "Esta persona eligió mantener su colección solo para sí misma.",
+          )}
         </p>
       </main>
     );

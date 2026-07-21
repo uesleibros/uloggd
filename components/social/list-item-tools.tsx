@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Tooltip } from "@/components/ui/tooltip";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function ListItemTools({
   listId,
@@ -30,7 +30,6 @@ export function ListItemTools({
   last: boolean;
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();
   const [pending, setPending] = useState<"up" | "down" | "top" | "note" | null>(
@@ -75,12 +74,24 @@ export function ListItemTools({
 
   return (
     <div className="list-item-tools">
-      <Tooltip label={pt ? "Mover para o topo" : "Move to top"}>
+      <Tooltip
+        label={tri(
+          lang,
+          "Mover para o topo",
+          "Move to top",
+          "Mover arriba del todo",
+        )}
+      >
         <button
           type="button"
           onClick={() => move("top")}
           disabled={Boolean(pending) || first}
-          aria-label={pt ? "Mover para o topo" : "Move to top"}
+          aria-label={tri(
+            lang,
+            "Mover para o topo",
+            "Move to top",
+            "Mover arriba del todo",
+          )}
         >
           {pending === "top" ? (
             <LoaderCircle className="spin" size={13} aria-hidden />
@@ -93,7 +104,7 @@ export function ListItemTools({
         type="button"
         onClick={() => move("up")}
         disabled={Boolean(pending) || first}
-        aria-label={pt ? "Mover para cima" : "Move up"}
+        aria-label={tri(lang, "Mover para cima", "Move up", "Mover arriba")}
       >
         {pending === "up" ? (
           <LoaderCircle className="spin" size={13} aria-hidden />
@@ -105,7 +116,7 @@ export function ListItemTools({
         type="button"
         onClick={() => move("down")}
         disabled={Boolean(pending) || last}
-        aria-label={pt ? "Mover para baixo" : "Move down"}
+        aria-label={tri(lang, "Mover para baixo", "Move down", "Mover abajo")}
       >
         {pending === "down" ? (
           <LoaderCircle className="spin" size={13} aria-hidden />
@@ -117,11 +128,13 @@ export function ListItemTools({
         type="button"
         data-has-note={Boolean(note) || undefined}
         onClick={() => setNoteOpen(true)}
-        aria-label={pt ? "Editar nota" : "Edit note"}
+        aria-label={tri(lang, "Editar nota", "Edit note", "Editar nota")}
       >
         <StickyNote size={13} />
       </button>
-      {error && <span role="alert">{pt ? "Falhou" : "Failed"}</span>}
+      {error && (
+        <span role="alert">{tri(lang, "Falhou", "Failed", "Falló")}</span>
+      )}
       <Dialog.Root open={noteOpen} onOpenChange={setNoteOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="drawer-backdrop" />
@@ -131,11 +144,16 @@ export function ListItemTools({
           >
             <header>
               <div>
-                <span>{pt ? "NOTA DO ITEM" : "ITEM NOTE"}</span>
+                <span>
+                  {tri(lang, "NOTA DO ITEM", "ITEM NOTE", "NOTA DEL ELEMENTO")}
+                </span>
                 <Dialog.Title>
-                  {pt
-                    ? "Por que este jogo está aqui?"
-                    : "Why is this game here?"}
+                  {tri(
+                    lang,
+                    "Por que este jogo está aqui?",
+                    "Why is this game here?",
+                    "¿Por qué está este juego aquí?",
+                  )}
                 </Dialog.Title>
               </div>
               <Dialog.Close aria-label={t.close}>
@@ -144,24 +162,35 @@ export function ListItemTools({
             </header>
             <form action={saveNote} className="social-editor-form">
               <label>
-                <span>{pt ? "Nota (opcional)" : "Note (optional)"}</span>
+                <span>
+                  {tri(
+                    lang,
+                    "Nota (opcional)",
+                    "Note (optional)",
+                    "Nota (opcional)",
+                  )}
+                </span>
                 <textarea
                   name="note"
                   maxLength={300}
                   rows={4}
                   defaultValue={note ?? ""}
-                  placeholder={
-                    pt
-                      ? "Um comentário curto exibido junto ao jogo na lista."
-                      : "A short comment shown with the game on the list."
-                  }
+                  placeholder={tri(
+                    lang,
+                    "Um comentário curto exibido junto ao jogo na lista.",
+                    "A short comment shown with the game on the list.",
+                    "Un comentario corto que se muestra junto al juego en la lista.",
+                  )}
                 />
               </label>
               {error && (
                 <p className="social-form-error" role="alert">
-                  {pt
-                    ? "Não foi possível salvar a nota."
-                    : "Could not save the note."}
+                  {tri(
+                    lang,
+                    "Não foi possível salvar a nota.",
+                    "Could not save the note.",
+                    "No se pudo guardar la nota.",
+                  )}
                 </p>
               )}
               <footer>

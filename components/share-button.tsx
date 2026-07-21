@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { Check, Copy, Send, Share2, X } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 const subscribe = () => () => undefined;
 
@@ -28,7 +28,6 @@ export function ShareButton({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [copied, setCopied] = useState(false);
   const canShare = useSyncExternalStore(
@@ -89,21 +88,41 @@ export function ShareButton({
             >
               <span>{copied ? <Check size={19} /> : <Copy size={19} />}</span>
               <strong>{copied ? copiedLabel : t.copyLink}</strong>
-              <small>{pt ? "URL desta página" : "This page URL"}</small>
+              <small>
+                {tri(
+                  lang,
+                  "URL desta página",
+                  "This page URL",
+                  "URL de esta página",
+                )}
+              </small>
             </button>
             <button type="button" onClick={send} disabled={!canShare}>
               <span>
                 <Send size={19} />
               </span>
-              <strong>{pt ? "Enviar para alguém" : "Send to someone"}</strong>
+              <strong>
+                {tri(
+                  lang,
+                  "Enviar para alguém",
+                  "Send to someone",
+                  "Enviar a alguien",
+                )}
+              </strong>
               <small>
                 {canShare
-                  ? pt
-                    ? "Abrir opções do dispositivo"
-                    : "Open device sharing options"
-                  : pt
-                    ? "Indisponível neste navegador"
-                    : "Unavailable in this browser"}
+                  ? tri(
+                      lang,
+                      "Abrir opções do dispositivo",
+                      "Open device sharing options",
+                      "Abrir opciones del dispositivo",
+                    )
+                  : tri(
+                      lang,
+                      "Indisponível neste navegador",
+                      "Unavailable in this browser",
+                      "No disponible en este navegador",
+                    )}
               </small>
             </button>
           </div>

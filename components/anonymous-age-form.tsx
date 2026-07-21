@@ -4,7 +4,7 @@ import { CalendarDays, LoaderCircle, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { birthDateLimits } from "@/lib/age-access";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export function AnonymousAgeForm({
   minimumAge,
@@ -34,9 +34,12 @@ export function AnonymousAgeForm({
     } | null;
     if (!response.ok)
       setError(
-        pt
-          ? "Confira a data e tente novamente."
-          : "Check the date and try again.",
+        tri(
+          lang,
+          "Confira a data e tente novamente.",
+          "Check the date and try again.",
+          "Revisa la fecha e inténtalo de nuevo.",
+        ),
       );
     else if (!result?.eligible)
       setError(
@@ -50,7 +53,12 @@ export function AnonymousAgeForm({
   return (
     <form className="anonymous-age-form" onSubmit={submit}>
       <label>
-        {pt ? "Informe sua data de nascimento" : "Enter your birth date"}
+        {tri(
+          lang,
+          "Informe sua data de nascimento",
+          "Enter your birth date",
+          "Escribe tu fecha de nacimiento",
+        )}
         <span>
           <CalendarDays size={16} />
           <input
@@ -73,13 +81,16 @@ export function AnonymousAgeForm({
         ) : (
           <ShieldCheck size={16} />
         )}
-        {pt ? "Verificar idade" : "Verify age"}
+        {tri(lang, "Verificar idade", "Verify age", "Verificar edad")}
       </button>
       {error && <p role="alert">{error}</p>}
       <small>
-        {pt
-          ? "A data não é armazenada. Guardamos somente uma declaração de idade protegida por 30 dias neste navegador."
-          : "The date is not stored. We keep only a protected age assertion for 30 days in this browser."}
+        {tri(
+          lang,
+          "A data não é armazenada. Guardamos somente uma declaração de idade protegida por 30 dias neste navegador.",
+          "The date is not stored. We keep only a protected age assertion for 30 days in this browser.",
+          "La fecha no se almacena. Solo guardamos una declaración de edad protegida durante 30 días en este navegador.",
+        )}
       </small>
     </form>
   );

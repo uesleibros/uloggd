@@ -3,7 +3,7 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronDown, Globe2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 const languages = [
   { locale: "pt-BR", short: "PT", label: "Português" },
@@ -26,7 +26,12 @@ export function LocaleSwitcher({ locale }: { locale: UiLang }) {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger
         className="locale-switcher-trigger"
-        aria-label={locale === "pt-BR" ? "Mudar idioma" : "Change language"}
+        aria-label={tri(
+          locale,
+          "Mudar idioma",
+          "Change language",
+          "Cambiar idioma",
+        )}
       >
         <Globe2 size={17} />
         <span>{current.label}</span>
@@ -41,7 +46,7 @@ export function LocaleSwitcher({ locale }: { locale: UiLang }) {
           collisionPadding={12}
         >
           <DropdownMenu.Label className="locale-menu-label">
-            {locale === "pt-BR" ? "Idioma" : "Language"}
+            {tri(locale, "Idioma", "Language", "Idioma")}
           </DropdownMenu.Label>
           {languages.map((language) => (
             <DropdownMenu.Item
@@ -54,7 +59,12 @@ export function LocaleSwitcher({ locale }: { locale: UiLang }) {
               {language.locale === locale && (
                 <Check
                   size={15}
-                  aria-label={locale === "pt-BR" ? "Selecionado" : "Selected"}
+                  aria-label={tri(
+                    locale,
+                    "Selecionado",
+                    "Selected",
+                    "Seleccionado",
+                  )}
                 />
               )}
             </DropdownMenu.Item>

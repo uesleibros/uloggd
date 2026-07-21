@@ -21,7 +21,7 @@ import { resolveGameCover } from "@/lib/game-cover";
 import { Tooltip } from "@/components/ui/tooltip";
 import { StarRating } from "./star-rating";
 import { SpawndLogo } from "../spawnd-logo";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -148,7 +148,14 @@ export function QuickGameCard({
     );
     if (actionError) {
       setState(previous);
-      setError(pt ? "Não foi possível atualizar." : "Could not update.");
+      setError(
+        tri(
+          lang,
+          "Não foi possível atualizar.",
+          "Could not update.",
+          "No se pudo actualizar.",
+        ),
+      );
     } else {
       const next = data as NonNullable<State>;
       setState(next);
@@ -171,9 +178,12 @@ export function QuickGameCard({
     if (actionError) {
       setState(previous);
       setError(
-        pt
-          ? "Não foi possível salvar sua nota."
-          : "Could not save your rating.",
+        tri(
+          lang,
+          "Não foi possível salvar sua nota.",
+          "Could not save your rating.",
+          "No se pudo guardar tu nota.",
+        ),
       );
     } else {
       const next = data as NonNullable<State>;
@@ -194,9 +204,12 @@ export function QuickGameCard({
     );
     if (actionError || data !== true) {
       setError(
-        pt
-          ? "Não foi possível remover este jogo."
-          : "Could not remove this game.",
+        tri(
+          lang,
+          "Não foi possível remover este jogo.",
+          "Could not remove this game.",
+          "No se pudo quitar este juego.",
+        ),
       );
       setPending(null);
       return;
@@ -235,10 +248,15 @@ export function QuickGameCard({
         {spawndAvailable && (
           <span
             className="quick-spawnd-badge"
-            aria-label={pt ? "Jogável no spawnd" : "Playable on spawnd"}
+            aria-label={tri(
+              lang,
+              "Jogável no spawnd",
+              "Playable on spawnd",
+              "Jugable en spawnd",
+            )}
           >
             <SpawndLogo compact />
-            {pt ? "Jogável" : "Playable"}
+            {tri(lang, "Jogável", "Playable", "Jugable")}
           </span>
         )}
         {enabled &&
@@ -246,7 +264,12 @@ export function QuickGameCard({
           (state.wishlist || state.backlog || state.liked) && (
             <div
               className="quick-card-flags"
-              aria-label={pt ? "Listas salvas" : "Saved lists"}
+              aria-label={tri(
+                lang,
+                "Listas salvas",
+                "Saved lists",
+                "Listas guardadas",
+              )}
             >
               {state.wishlist && (
                 <Tooltip label={labels.WISHLIST}>
@@ -385,7 +408,9 @@ export function QuickGameCard({
                   </DropdownMenu.Sub>
                   <DropdownMenu.Separator />
                   <div className="quick-rating-menu">
-                    <span>{pt ? "Sua nota" : "Your rating"}</span>
+                    <span>
+                      {tri(lang, "Sua nota", "Your rating", "Tu nota")}
+                    </span>
                     <StarRating
                       value={state?.quick_rating ?? null}
                       onChange={rate}
@@ -446,7 +471,12 @@ export function QuickGameCard({
                         onSelect={remove}
                       >
                         <Trash2 size={13} />
-                        {pt ? "Remover da biblioteca" : "Remove from library"}
+                        {tri(
+                          lang,
+                          "Remover da biblioteca",
+                          "Remove from library",
+                          "Quitar de la biblioteca",
+                        )}
                       </DropdownMenu.Item>
                     </>
                   )}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { CookieSettingsButton } from "./cookie-settings-button";
+import { tri } from "@/lib/ui-text";
 
 export function PlatformFooter({
   lang,
@@ -25,11 +26,18 @@ export function PlatformFooter({
           </a>
         </span>
       </div>
-      <nav aria-label={lang === "pt-BR" ? "Links do rodapé" : "Footer links"}>
+      <nav
+        aria-label={tri(
+          lang,
+          "Links do rodapé",
+          "Footer links",
+          "Enlaces del pie de página",
+        )}
+      >
         <Link href={`/${lang}/legal/terms`}>{d.legal.terms}</Link>
         <Link href={`/${lang}/legal/privacy`}>{d.legal.privacy}</Link>
         <Link href={`/${lang}/legal/cookies`}>
-          {lang === "pt-BR" ? "Cookies" : "Cookies"}
+          {tri(lang, "Cookies", "Cookies", "Cookies")}
         </Link>
         <CookieSettingsButton lang={lang} />
         <Link href={`/${lang}/legal/child-safety`}>{d.legal.safety}</Link>

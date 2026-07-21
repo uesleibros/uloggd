@@ -419,6 +419,17 @@ export function isLegalDocument(value: string): value is LegalDocument {
   );
 }
 
+/**
+ * These are binding documents, so they only exist in the languages they were
+ * actually written in. A locale without its own version reads the English
+ * text, and the page says so instead of pretending it was translated.
+ */
+export const legalLocales = ["pt-BR", "en"];
+
+export function legalContentLocale(lang: string) {
+  return lang === "pt-BR" ? "pt-BR" : "en";
+}
+
 export function getLegalContent(lang: string, document: LegalDocument) {
-  return (lang === "en" ? en : pt)[document];
+  return (legalContentLocale(lang) === "en" ? en : pt)[document];
 }

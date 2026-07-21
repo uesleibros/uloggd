@@ -22,7 +22,7 @@ import {
 import { useState } from "react";
 import { StarRating } from "@/components/library/star-rating";
 import type { JourneyOption } from "@/components/social/journey-calendar";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export type ReviewRatingMode =
   "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
@@ -96,7 +96,6 @@ export function ReviewStudioForm({
   successLabel: string;
   onPerform: (fields: ReviewRpcFields) => Promise<boolean>;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [reviewSection, setReviewSection] = useState<ReviewSection>("review");
   const [rating, setRating] = useState<number | null>(initial?.rating ?? null);
@@ -140,9 +139,12 @@ export function ReviewStudioForm({
     if (pending) return;
     if (startedOn && finishedOn && finishedOn < startedOn) {
       setError(
-        pt
-          ? "A data de término não pode vir antes do início."
-          : "The finish date cannot be before the start date.",
+        tri(
+          lang,
+          "A data de término não pode vir antes do início.",
+          "The finish date cannot be before the start date.",
+          "La fecha de fin no puede ser anterior a la de inicio.",
+        ),
       );
       setReviewSection("details");
       return;
@@ -178,9 +180,12 @@ export function ReviewStudioForm({
       if (draftKey) localStorage.removeItem(draftKey);
     } else {
       setError(
-        pt
-          ? "Não foi possível salvar. Confira os campos e tente novamente."
-          : "Could not save. Check the fields and try again.",
+        tri(
+          lang,
+          "Não foi possível salvar. Confira os campos e tente novamente.",
+          "Could not save. Check the fields and try again.",
+          "No se pudo guardar. Revisa los campos e inténtalo de nuevo.",
+        ),
       );
     }
     setPending(false);
@@ -197,13 +202,22 @@ export function ReviewStudioForm({
       <nav
         className="review-section-tabs"
         role="tablist"
-        aria-label={pt ? "Partes da avaliação" : "Review sections"}
+        aria-label={tri(
+          lang,
+          "Partes da avaliação",
+          "Review sections",
+          "Partes de la reseña",
+        )}
       >
         {(
           [
-            ["review", BookOpen, pt ? "Avaliação" : "Review"],
-            ["aspects", CircleGauge, pt ? "Aspectos" : "Aspects"],
-            ["details", Gamepad2, pt ? "Detalhes" : "Details"],
+            ["review", BookOpen, tri(lang, "Avaliação", "Review", "Reseña")],
+            [
+              "aspects",
+              CircleGauge,
+              tri(lang, "Aspectos", "Aspects", "Aspectos"),
+            ],
+            ["details", Gamepad2, tri(lang, "Detalhes", "Details", "Detalles")],
           ] as const
         ).map(([section, Icon, label]) => (
           <button
@@ -236,11 +250,16 @@ export function ReviewStudioForm({
           <section className="review-score-stage">
             <header>
               <div>
-                <small>{pt ? "SEU JULGAMENTO" : "YOUR VERDICT"}</small>
+                <small>
+                  {tri(lang, "SEU JULGAMENTO", "YOUR VERDICT", "TU VALORACIÓN")}
+                </small>
                 <h3>
-                  {pt
-                    ? "Como você quer avaliar?"
-                    : "How do you want to rate it?"}
+                  {tri(
+                    lang,
+                    "Como você quer avaliar?",
+                    "How do you want to rate it?",
+                    "¿Cómo quieres valorarlo?",
+                  )}
                 </h3>
               </div>
               {rating !== null && ratingMode !== "recommend" && (
@@ -256,7 +275,7 @@ export function ReviewStudioForm({
                 setRating(null);
                 setRecommended(null);
               }}
-              pt={pt}
+              lang={lang}
             />
             <RatingInput
               mode={ratingMode}
@@ -275,50 +294,61 @@ export function ReviewStudioForm({
               <strong>
                 {ratingMode === "recommend"
                   ? recommended === null
-                    ? pt
-                      ? "Escolha uma opção"
-                      : "Choose an option"
+                    ? tri(
+                        lang,
+                        "Escolha uma opção",
+                        "Choose an option",
+                        "Elige una opción",
+                      )
                     : recommended
                       ? t.recommended
                       : t.notRecommended
                   : rating === null
-                    ? pt
-                      ? "Sem nota"
-                      : "Not rated"
+                    ? tri(lang, "Sem nota", "Not rated", "Sin nota")
                     : formatRatingForMode(rating, ratingMode, lang)}
               </strong>
               <span>
                 {ratingMode === "recommend"
-                  ? pt
-                    ? "Uma recomendação direta para outros jogadores."
-                    : "A direct recommendation for other players."
+                  ? tri(
+                      lang,
+                      "Uma recomendação direta para outros jogadores.",
+                      "A direct recommendation for other players.",
+                      "Una recomendación directa para otros jugadores.",
+                    )
                   : rating === null
-                    ? pt
-                      ? "Sua avaliação começa vazia e a nota é opcional."
-                      : "Your review starts empty and rating is optional."
-                    : ratingLabel(rating, pt)}
+                    ? tri(
+                        lang,
+                        "Sua avaliação começa vazia e a nota é opcional.",
+                        "Your review starts empty and rating is optional.",
+                        "Tu reseña empieza vacía y la nota es opcional.",
+                      )
+                    : ratingLabel(rating, lang)}
               </span>
             </div>
           </section>
 
           <label className="review-title-field">
             <span>
-              {pt ? "Título" : "Title"} <small>{title.length}/80</small>
+              {tri(lang, "Título", "Title", "Encabezado")}{" "}
+              <small>{title.length}/80</small>
             </span>
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               maxLength={80}
-              placeholder={
-                pt
-                  ? "Dê um título à sua experiência (opcional)"
-                  : "Give your experience a title (optional)"
-              }
+              placeholder={tri(
+                lang,
+                "Dê um título à sua experiência (opcional)",
+                "Give your experience a title (optional)",
+                "Ponle un título a tu experiencia (opcional)",
+              )}
             />
           </label>
           <label className="review-writing-field">
             <span>
-              <b>{pt ? "Sua avaliação" : "Your review"}</b>
+              <b>
+                {tri(lang, "Sua avaliação", "Your review", "Tu valoración")}
+              </b>
               <small>{content.length.toLocaleString(lang)} / 5.000</small>
             </span>
             <textarea
@@ -331,11 +361,12 @@ export function ReviewStudioForm({
                 if (draftKey)
                   localStorage.setItem(draftKey, event.target.value);
               }}
-              placeholder={
-                pt
-                  ? "O que funcionou? O que não funcionou? O que ficou com você?"
-                  : "What worked? What didn't? What stayed with you?"
-              }
+              placeholder={tri(
+                lang,
+                "O que funcionou? O que não funcionou? O que ficou com você?",
+                "What worked? What didn't? What stayed with you?",
+                "¿Qué funcionó? ¿Qué no? ¿Qué se te quedó?",
+              )}
             />
           </label>
         </div>
@@ -361,11 +392,14 @@ export function ReviewStudioForm({
             >
               <Trophy size={18} />
               <span>
-                <strong>{pt ? "Dominei" : "Mastered"}</strong>
+                <strong>{tri(lang, "Dominei", "Mastered", "Dominé")}</strong>
                 <small>
-                  {pt
-                    ? "Completei tudo que importava para mim"
-                    : "Completed everything that mattered to me"}
+                  {tri(
+                    lang,
+                    "Completei tudo que importava para mim",
+                    "Completed everything that mattered to me",
+                    "Completé todo lo que me importaba",
+                  )}
                 </small>
               </span>
             </button>
@@ -378,36 +412,53 @@ export function ReviewStudioForm({
               <span>
                 <strong>{t.replay}</strong>
                 <small>
-                  {pt
-                    ? "Esta não foi minha primeira jornada"
-                    : "This was not my first journey"}
+                  {tri(
+                    lang,
+                    "Esta não foi minha primeira jornada",
+                    "This was not my first journey",
+                    "Este no fue mi primer recorrido",
+                  )}
                 </small>
               </span>
             </button>
           </div>
           <label>
-            <span>{pt ? "Plataforma jogada" : "Platform played"}</span>
+            <span>
+              {tri(
+                lang,
+                "Plataforma jogada",
+                "Platform played",
+                "Plataforma jugada",
+              )}
+            </span>
             <PlatformSelect
               value={platform}
               onChange={setPlatform}
               platforms={platforms}
-              pt={pt}
+              lang={lang}
             />
           </label>
           {journeyOptions.length > 0 && (
             <label>
-              <span>{pt ? "Jornada ligada" : "Linked journey"}</span>
+              <span>
+                {tri(
+                  lang,
+                  "Jornada ligada",
+                  "Linked journey",
+                  "Recorrido vinculado",
+                )}
+              </span>
               <JourneySelect
                 value={journeyId}
                 onChange={setJourneyId}
                 options={journeyOptions}
-                pt={pt}
+                lang={lang}
               />
             </label>
           )}
           <div className="social-form-row review-date-fields">
             <label>
-              <span>{pt ? "Comecei em" : "Started on"}</span>
+              <span>{tri(lang, "Comecei em", "Started on", "Empecé el")}</span>
               <input
                 type="date"
                 value={startedOn}
@@ -416,7 +467,9 @@ export function ReviewStudioForm({
               />
             </label>
             <label>
-              <span>{pt ? "Terminei em" : "Finished on"}</span>
+              <span>
+                {tri(lang, "Terminei em", "Finished on", "Terminé el")}
+              </span>
               <input
                 type="date"
                 value={finishedOn}
@@ -445,9 +498,12 @@ export function ReviewStudioForm({
               <p>
                 <strong>{t.containsSpoilers}</strong>
                 <small>
-                  {pt
-                    ? "O texto ficará protegido até o leitor revelar."
-                    : "The text stays hidden until the reader reveals it."}
+                  {tri(
+                    lang,
+                    "O texto ficará protegido até o leitor revelar.",
+                    "The text stays hidden until the reader reveals it.",
+                    "El texto queda oculto hasta que el lector lo revele.",
+                  )}
                 </small>
               </p>
             </label>
@@ -486,31 +542,66 @@ export function ReviewStudioForm({
   );
 }
 
-function ratingLabel(rating: number, pt: boolean) {
-  if (rating >= 90) return pt ? "Excepcional" : "Exceptional";
-  if (rating >= 80) return pt ? "Ótimo" : "Great";
-  if (rating >= 70) return pt ? "Muito bom" : "Very good";
-  if (rating >= 60) return pt ? "Bom" : "Good";
-  if (rating >= 40) return pt ? "Regular" : "Mixed";
-  return pt ? "Não funcionou para mim" : "Not for me";
+function ratingLabel(rating: number, lang: UiLang) {
+  if (rating >= 90)
+    return tri(lang, "Excepcional", "Exceptional", "Excepcional");
+  if (rating >= 80) return tri(lang, "Ótimo", "Great", "Genial");
+  if (rating >= 70) return tri(lang, "Muito bom", "Very good", "Muy bueno");
+  if (rating >= 60) return tri(lang, "Bom", "Good", "Bueno");
+  if (rating >= 40) return tri(lang, "Regular", "Mixed", "Regular");
+  return tri(
+    lang,
+    "Não funcionou para mim",
+    "Not for me",
+    "No funcionó para mí",
+  );
 }
 
-const ratingModes: Array<{ value: ReviewRatingMode; pt: string; en: string }> =
-  [
-    { value: "stars_5", pt: "Estrelas · 0,5 a 5", en: "Stars · 0.5 to 5" },
-    { value: "level_5", pt: "Níveis · 1 a 5", en: "Levels · 1 to 5" },
-    { value: "score_10", pt: "Pontos · 0 a 10", en: "Score · 0 to 10" },
-    {
-      value: "score_100",
-      pt: "Precisão · 0 a 100",
-      en: "Precision · 0 to 100",
-    },
-    {
-      value: "recommend",
-      pt: "Recomendo / não recomendo",
-      en: "Recommend / don't recommend",
-    },
-  ];
+const ratingModes: Array<{
+  value: ReviewRatingMode;
+  label: (lang: UiLang) => string;
+}> = [
+  {
+    value: "stars_5",
+    label: (lang) =>
+      tri(
+        lang,
+        "Estrelas · 0,5 a 5",
+        "Stars · 0.5 to 5",
+        "Estrellas · 0,5 a 5",
+      ),
+  },
+  {
+    value: "level_5",
+    label: (lang) =>
+      tri(lang, "Níveis · 1 a 5", "Levels · 1 to 5", "Niveles · 1 a 5"),
+  },
+  {
+    value: "score_10",
+    label: (lang) =>
+      tri(lang, "Pontos · 0 a 10", "Score · 0 to 10", "Puntos · 0 a 10"),
+  },
+  {
+    value: "score_100",
+    label: (lang) =>
+      tri(
+        lang,
+        "Precisão · 0 a 100",
+        "Precision · 0 to 100",
+        "Precisión · 0 a 100",
+      ),
+  },
+  {
+    value: "recommend",
+    label: (lang) =>
+      tri(
+        lang,
+        "Recomendo / não recomendo",
+        "Recommend / don't recommend",
+        "Lo recomiendo / no lo recomiendo",
+      ),
+  },
+];
 
 function formatRatingForMode(
   rating: number,
@@ -528,11 +619,11 @@ function formatRatingForMode(
 function RatingModeSelect({
   value,
   onChange,
-  pt,
+  lang,
 }: {
   value: ReviewRatingMode;
   onChange: (value: ReviewRatingMode) => void;
-  pt: boolean;
+  lang: UiLang;
 }) {
   return (
     <Select.Root
@@ -541,7 +632,12 @@ function RatingModeSelect({
     >
       <Select.Trigger
         className="review-mode-trigger"
-        aria-label={pt ? "Forma de avaliar" : "Rating method"}
+        aria-label={tri(
+          lang,
+          "Forma de avaliar",
+          "Rating method",
+          "Forma de valorar",
+        )}
       >
         <Select.Value />
         <Select.Icon>
@@ -563,7 +659,7 @@ function RatingModeSelect({
                 key={mode.value}
               >
                 <CircleGauge size={14} />
-                <Select.ItemText>{pt ? mode.pt : mode.en}</Select.ItemText>
+                <Select.ItemText>{mode.label(lang)}</Select.ItemText>
                 <Select.ItemIndicator>
                   <Check size={13} />
                 </Select.ItemIndicator>
@@ -580,19 +676,24 @@ function PlatformSelect({
   value,
   onChange,
   platforms,
-  pt,
+  lang,
 }: {
   value: string;
   onChange: (value: string) => void;
   platforms: string[];
-  pt: boolean;
+  lang: UiLang;
 }) {
   const options = Array.from(new Set(platforms.filter(Boolean)));
   return (
     <Select.Root value={value || undefined} onValueChange={onChange}>
       <Select.Trigger className="editor-select-trigger review-platform-trigger">
         <Select.Value
-          placeholder={pt ? "Selecione uma plataforma" : "Select a platform"}
+          placeholder={tri(
+            lang,
+            "Selecione uma plataforma",
+            "Select a platform",
+            "Selecciona una plataforma",
+          )}
         />
         <Select.Icon>
           <ChevronDown size={14} />
@@ -630,12 +731,12 @@ function JourneySelect({
   value,
   onChange,
   options,
-  pt,
+  lang,
 }: {
   value: string | null;
   onChange: (value: string | null) => void;
   options: JourneyOption[];
-  pt: boolean;
+  lang: UiLang;
 }) {
   return (
     <Select.Root
@@ -658,7 +759,9 @@ function JourneySelect({
           <Select.Viewport>
             <Select.Item className="editor-select-option" value="none">
               <X size={14} />
-              <Select.ItemText>{pt ? "Nenhuma" : "None"}</Select.ItemText>
+              <Select.ItemText>
+                {tri(lang, "Nenhuma", "None", "Ninguna")}
+              </Select.ItemText>
               <Select.ItemIndicator>
                 <Check size={13} />
               </Select.ItemIndicator>
@@ -698,7 +801,6 @@ function RatingInput({
   onRecommend: (value: boolean) => void;
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   if (mode === "stars_5")
     return <StarRating value={value} onChange={onChange} lang={lang} />;
   if (mode === "recommend") {
@@ -712,7 +814,8 @@ function RatingInput({
             onChange(100);
           }}
         >
-          <Heart size={17} /> {pt ? "Recomendo" : "Recommend"}
+          <Heart size={17} />{" "}
+          {tri(lang, "Recomendo", "Recommend", "Lo recomiendo")}
         </button>
         <button
           type="button"
@@ -722,7 +825,8 @@ function RatingInput({
             onChange(0);
           }}
         >
-          <X size={17} /> {pt ? "Não recomendo" : "Don't recommend"}
+          <X size={17} />{" "}
+          {tri(lang, "Não recomendo", "Don't recommend", "No lo recomiendo")}
         </button>
       </div>
     );
@@ -750,7 +854,7 @@ function RatingInput({
         step={step}
         value={value ?? (mode === "level_5" ? 20 : 0)}
         onChange={(event) => onChange(Number(event.target.value))}
-        aria-label={pt ? "Nota" : "Rating"}
+        aria-label={tri(lang, "Nota", "Rating", "Nota")}
       />
       <div>
         <span>{mode === "level_5" ? "1" : "0"}</span>
@@ -789,7 +893,6 @@ function AspectEditor({
   onChange: (aspects: ReviewAspect[]) => void;
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const available = aspectPresets[lang].filter(
     (label) => !aspects.some((aspect) => aspect.label === label),
   );
@@ -818,16 +921,29 @@ function AspectEditor({
     >
       <header>
         <div>
-          <small>{pt ? "LEITURA EM CAMADAS" : "LAYERED VERDICT"}</small>
+          <small>
+            {tri(
+              lang,
+              "LEITURA EM CAMADAS",
+              "LAYERED VERDICT",
+              "LECTURA POR CAPAS",
+            )}
+          </small>
           <h3>
-            {pt
-              ? "O que definiu sua experiência?"
-              : "What defined your experience?"}
+            {tri(
+              lang,
+              "O que definiu sua experiência?",
+              "What defined your experience?",
+              "¿Qué definió tu experiencia?",
+            )}
           </h3>
           <p>
-            {pt
-              ? "Avalie só o que importa. Os aspectos não alteram sua nota geral."
-              : "Rate only what matters. Aspects do not change your overall score."}
+            {tri(
+              lang,
+              "Avalie só o que importa. Os aspectos não alteram sua nota geral.",
+              "Rate only what matters. Aspects do not change your overall score.",
+              "Valora solo lo que importa. Los aspectos no cambian tu nota general.",
+            )}
           </p>
         </div>
         <span>{aspects.length}/8</span>
@@ -843,10 +959,25 @@ function AspectEditor({
             <button
               type="button"
               data-custom
-              onClick={() => add(pt ? "Novo aspecto" : "Custom aspect", true)}
+              onClick={() =>
+                add(
+                  tri(
+                    lang,
+                    "Novo aspecto",
+                    "Custom aspect",
+                    "Aspecto personalizado",
+                  ),
+                  true,
+                )
+              }
             >
               <Plus size={13} />{" "}
-              {pt ? "Aspecto personalizado" : "Custom aspect"}
+              {tri(
+                lang,
+                "Aspecto personalizado",
+                "Custom aspect",
+                "Aspecto personalizado",
+              )}
               <small>{customCount}/5</small>
             </button>
           )}
@@ -856,12 +987,20 @@ function AspectEditor({
         <div className="review-aspects-empty">
           <CircleGauge size={21} />
           <strong>
-            {pt ? "Nenhum aspecto adicionado" : "No aspects added"}
+            {tri(
+              lang,
+              "Nenhum aspecto adicionado",
+              "No aspects added",
+              "Ningún aspecto añadido",
+            )}
           </strong>
           <p>
-            {pt
-              ? "Escolha uma categoria acima para detalhar seu julgamento."
-              : "Choose a category above to detail your verdict."}
+            {tri(
+              lang,
+              "Escolha uma categoria acima para detalhar seu julgamento.",
+              "Choose a category above to detail your verdict.",
+              "Elige una categoría arriba para detallar tu valoración.",
+            )}
           </p>
         </div>
       ) : (
@@ -876,7 +1015,12 @@ function AspectEditor({
                       label: event.target.value.slice(0, 32),
                     })
                   }
-                  aria-label={pt ? "Nome do aspecto" : "Aspect name"}
+                  aria-label={tri(
+                    lang,
+                    "Nome do aspecto",
+                    "Aspect name",
+                    "Nombre del aspecto",
+                  )}
                 />
                 <output>{aspect.rating}</output>
                 <button
@@ -884,9 +1028,12 @@ function AspectEditor({
                   onClick={() =>
                     onChange(aspects.filter((item) => item.id !== aspect.id))
                   }
-                  aria-label={
-                    pt ? `Remover ${aspect.label}` : `Remove ${aspect.label}`
-                  }
+                  aria-label={tri(
+                    lang,
+                    `Remover ${aspect.label}`,
+                    `Remove ${aspect.label}`,
+                    `Quitar ${aspect.label}`,
+                  )}
                 >
                   <X size={15} />
                 </button>
@@ -900,9 +1047,12 @@ function AspectEditor({
                 onChange={(event) =>
                   update(aspect.id, { rating: Number(event.target.value) })
                 }
-                aria-label={
-                  pt ? `Nota de ${aspect.label}` : `${aspect.label} rating`
-                }
+                aria-label={tri(
+                  lang,
+                  `Nota de ${aspect.label}`,
+                  `${aspect.label} rating`,
+                  `Nota de ${aspect.label}`,
+                )}
               />
               <textarea
                 value={aspect.note}
@@ -911,11 +1061,12 @@ function AspectEditor({
                 onChange={(event) =>
                   update(aspect.id, { note: event.target.value })
                 }
-                placeholder={
-                  pt
-                    ? "Uma observação curta sobre este aspecto (opcional)"
-                    : "A short note about this aspect (optional)"
-                }
+                placeholder={tri(
+                  lang,
+                  "Uma observação curta sobre este aspecto (opcional)",
+                  "A short note about this aspect (optional)",
+                  "Una nota corta sobre este aspecto (opcional)",
+                )}
               />
             </article>
           ))}
@@ -934,10 +1085,13 @@ export function EditorVisibilitySelect({
   onChange?: (value: ReviewVisibility) => void;
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const options = [
-    { value: "PUBLIC" as const, label: pt ? "Público" : "Public", icon: Eye },
+    {
+      value: "PUBLIC" as const,
+      label: tri(lang, "Público", "Public", "Público"),
+      icon: Eye,
+    },
     {
       value: "FOLLOWERS" as const,
       label: t.followers,
@@ -945,7 +1099,7 @@ export function EditorVisibilitySelect({
     },
     {
       value: "PRIVATE" as const,
-      label: pt ? "Privado" : "Private",
+      label: tri(lang, "Privado", "Private", "Privado"),
       icon: Lock,
     },
   ];

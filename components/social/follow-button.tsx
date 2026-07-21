@@ -12,7 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function FollowButton({
   viewerId,
@@ -131,7 +131,12 @@ export function FollowButton({
               <AlertTriangle size={20} />
             </span>
             <Dialog.Title>
-              {pt ? "Desfazer conexão recente?" : "Undo recent connection?"}
+              {tri(
+                lang,
+                "Desfazer conexão recente?",
+                "Undo recent connection?",
+                "¿Deshacer conexión reciente?",
+              )}
             </Dialog.Title>
             <Dialog.Description>
               {pt
@@ -140,7 +145,12 @@ export function FollowButton({
             </Dialog.Description>
             <footer>
               <Dialog.Close disabled={Boolean(pending)}>
-                {pt ? "Manter conexão" : "Keep connection"}
+                {tri(
+                  lang,
+                  "Manter conexão",
+                  "Keep connection",
+                  "Mantener conexión",
+                )}
               </Dialog.Close>
               <button
                 type="button"
@@ -151,12 +161,18 @@ export function FollowButton({
                   <LoaderCircle className="spin" size={15} aria-hidden />
                 )}
                 {pending === "unfollow"
-                  ? pt
-                    ? "Deixando de seguir…"
-                    : "Unfollowing…"
-                  : pt
-                    ? "Deixar de seguir"
-                    : "Unfollow"}
+                  ? tri(
+                      lang,
+                      "Deixando de seguir…",
+                      "Unfollowing…",
+                      "Dejando de seguir…",
+                    )
+                  : tri(
+                      lang,
+                      "Deixar de seguir",
+                      "Unfollow",
+                      "Dejar de seguir",
+                    )}
               </button>
             </footer>
           </Dialog.Content>

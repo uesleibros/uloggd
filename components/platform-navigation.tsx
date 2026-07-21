@@ -23,6 +23,7 @@ import { SidebarCollapseButton } from "./sidebar-collapse-button";
 import { SmartHeader } from "./smart-header";
 import { NotificationCenter } from "./notifications/notification-center";
 import { NavMoreMenu } from "./nav-more-menu";
+import { tri } from "@/lib/ui-text";
 
 const iconMap = {
   home: HomeIcon,
@@ -101,7 +102,7 @@ export function PlatformNavigation({
       ? [
           {
             key: "moderation",
-            label: lang === "pt-BR" ? "Moderação" : "Moderation",
+            label: tri(lang, "Moderação", "Moderation", "Moderación"),
             href: `/${lang}/moderation`,
           },
         ]

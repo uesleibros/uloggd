@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ShareButton } from "./share-button";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 const reasons = [
   "IMPERSONATION",
@@ -60,12 +60,22 @@ export function ProfileActions({
   const canBlock = Boolean(viewerId) && !isSelf && !blockedByTarget;
 
   const labels: Record<(typeof reasons)[number], string> = {
-    IMPERSONATION: pt ? "Falsa identidade" : "Impersonation",
-    HARASSMENT: pt ? "Assédio" : "Harassment",
-    HATE_SPEECH: pt ? "Discurso de ódio" : "Hate speech",
+    IMPERSONATION: tri(
+      lang,
+      "Falsa identidade",
+      "Impersonation",
+      "Suplantación de identidad",
+    ),
+    HARASSMENT: tri(lang, "Assédio", "Harassment", "Acoso"),
+    HATE_SPEECH: tri(
+      lang,
+      "Discurso de ódio",
+      "Hate speech",
+      "Discurso de odio",
+    ),
     SPAM: "Spam",
     PRIVACY: t.privacy,
-    OTHER: pt ? "Outro" : "Other",
+    OTHER: tri(lang, "Outro", "Other", "Otro"),
   };
 
   async function submit(event: React.FormEvent) {
@@ -84,9 +94,12 @@ export function ProfileActions({
       });
     if (actionError)
       setError(
-        pt
-          ? "Não foi possível enviar a denúncia."
-          : "Could not submit the report.",
+        tri(
+          lang,
+          "Não foi possível enviar a denúncia.",
+          "Could not submit the report.",
+          "No se pudo enviar la denuncia.",
+        ),
       );
     else setSent(true);
     setPending(false);
@@ -101,9 +114,12 @@ export function ProfileActions({
     );
     if (actionError)
       setError(
-        pt
-          ? "Não foi possível atualizar o bloqueio."
-          : "Could not update the block.",
+        tri(
+          lang,
+          "Não foi possível atualizar o bloqueio.",
+          "Could not update the block.",
+          "No se pudo actualizar el bloqueo.",
+        ),
       );
     else {
       setBlockOpen(false);
@@ -167,7 +183,12 @@ export function ProfileActions({
         open={shareOpen}
         onOpenChange={setShareOpen}
         title={`@${username} · uloggd`}
-        text={pt ? "Veja este perfil no uloggd" : "See this profile on uloggd"}
+        text={tri(
+          lang,
+          "Veja este perfil no uloggd",
+          "See this profile on uloggd",
+          "Mira este perfil en uloggd",
+        )}
         label={t.share}
         copiedLabel={t.linkCopied}
         lang={lang}
@@ -181,7 +202,12 @@ export function ProfileActions({
               <div>
                 <span>{t.safety}</span>
                 <Dialog.Title>
-                  {pt ? `Denunciar @${username}` : `Report @${username}`}
+                  {tri(
+                    lang,
+                    `Denunciar @${username}`,
+                    `Report @${username}`,
+                    `Denunciar a @${username}`,
+                  )}
                 </Dialog.Title>
               </div>
               <Dialog.Close aria-label={t.close}>
@@ -191,17 +217,27 @@ export function ProfileActions({
             {sent ? (
               <div className="report-success">
                 <Flag size={22} />
-                <strong>{pt ? "Denúncia enviada" : "Report sent"}</strong>
+                <strong>
+                  {tri(
+                    lang,
+                    "Denúncia enviada",
+                    "Report sent",
+                    "Denuncia enviada",
+                  )}
+                </strong>
                 <p>
-                  {pt
-                    ? "A moderação analisará as informações."
-                    : "Moderation will review the information."}
+                  {tri(
+                    lang,
+                    "A moderação analisará as informações.",
+                    "Moderation will review the information.",
+                    "La moderación revisará la información.",
+                  )}
                 </p>
               </div>
             ) : (
               <form onSubmit={submit}>
                 <fieldset>
-                  <legend>{pt ? "Motivo" : "Reason"}</legend>
+                  <legend>{tri(lang, "Motivo", "Reason", "Motivo")}</legend>
                   {reasons.map((item) => (
                     <label key={item}>
                       <input
@@ -215,7 +251,12 @@ export function ProfileActions({
                   ))}
                 </fieldset>
                 <label>
-                  {pt ? "Detalhes (opcional)" : "Details (optional)"}
+                  {tri(
+                    lang,
+                    "Detalhes (opcional)",
+                    "Details (optional)",
+                    "Detalles (opcional)",
+                  )}
                   <textarea
                     value={details}
                     onChange={(event) => setDetails(event.target.value)}
@@ -226,7 +267,12 @@ export function ProfileActions({
                 {error && <p role="alert">{error}</p>}
                 <button type="submit" disabled={pending}>
                   {pending && <LoaderCircle className="spin" size={15} />}
-                  {pt ? "Enviar denúncia" : "Submit report"}
+                  {tri(
+                    lang,
+                    "Enviar denúncia",
+                    "Submit report",
+                    "Enviar denuncia",
+                  )}
                 </button>
               </form>
             )}
@@ -255,12 +301,18 @@ export function ProfileActions({
             </Dialog.Title>
             <Dialog.Description>
               {viewerBlocked
-                ? pt
-                  ? "Essa pessoa poderá encontrar e interagir com você novamente. Seguir não será restaurado automaticamente."
-                  : "This person will be able to find and interact with you again. Follows will not be restored automatically."
-                : pt
-                  ? "Vocês deixarão de se seguir. A pessoa não poderá seguir, comentar ou interagir com você, e não será avisada."
-                  : "You will unfollow each other. They will not be able to follow, comment, or interact with you, and will not be notified."}
+                ? tri(
+                    lang,
+                    "Essa pessoa poderá encontrar e interagir com você novamente. Seguir não será restaurado automaticamente.",
+                    "This person will be able to find and interact with you again. Follows will not be restored automatically.",
+                    "Esta persona podrá encontrarte e interactuar contigo otra vez. El seguimiento no se restaura automáticamente.",
+                  )
+                : tri(
+                    lang,
+                    "Vocês deixarão de se seguir. A pessoa não poderá seguir, comentar ou interagir com você, e não será avisada.",
+                    "You will unfollow each other. They will not be able to follow, comment, or interact with you, and will not be notified.",
+                    "Dejaréis de seguiros. Esa persona no podrá seguirte, comentar ni interactuar contigo, y no será avisada.",
+                  )}
             </Dialog.Description>
             <footer>
               <Dialog.Close disabled={blockPending}>{t.cancel}</Dialog.Close>

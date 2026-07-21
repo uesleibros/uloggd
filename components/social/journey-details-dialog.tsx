@@ -2,7 +2,7 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { CalendarDays, Clock3, Flag, Map, Play, X } from "lucide-react";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export type JourneyDetailSession = {
   id: string;
@@ -25,7 +25,6 @@ export function JourneyDetailsDialog({
   sessions: JourneyDetailSession[];
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const date = new Intl.DateTimeFormat(lang, {
     day: "numeric",
@@ -43,7 +42,7 @@ export function JourneyDetailsDialog({
       <Dialog.Trigger asChild>
         <button className="activity-journey-button" type="button">
           <Map size={13} />
-          {pt ? "Ver jornada" : "View journey"}
+          {tri(lang, "Ver jornada", "View journey", "Ver recorrido")}
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
@@ -51,7 +50,14 @@ export function JourneyDetailsDialog({
         <Dialog.Content className="journey-details-dialog">
           <header>
             <div>
-              <span>{pt ? "JORNADA LIGADA" : "LINKED JOURNEY"}</span>
+              <span>
+                {tri(
+                  lang,
+                  "JORNADA LIGADA",
+                  "LINKED JOURNEY",
+                  "RECORRIDO VINCULADO",
+                )}
+              </span>
               <Dialog.Title>{title}</Dialog.Title>
               <Dialog.Description>{gameName}</Dialog.Description>
             </div>
@@ -64,12 +70,8 @@ export function JourneyDetailsDialog({
               <CalendarDays size={14} />
               <strong>{sessions.length}</strong>{" "}
               {sessions.length === 1
-                ? pt
-                  ? "sessão"
-                  : "session"
-                : pt
-                  ? "sessões"
-                  : "sessions"}
+                ? tri(lang, "sessão", "session", "sesión")
+                : tri(lang, "sessões", "sessions", "sesiones")}
             </span>
             {totalMinutes > 0 && (
               <span>
@@ -99,13 +101,13 @@ export function JourneyDetailsDialog({
                       {session.marksStart && (
                         <span>
                           <Play size={11} fill="currentColor" />
-                          {pt ? "Início" : "Start"}
+                          {tri(lang, "Início", "Start", "Inicio")}
                         </span>
                       )}
                       {session.marksFinish && (
                         <span>
                           <Flag size={11} fill="currentColor" />
-                          {pt ? "Fim" : "Finish"}
+                          {tri(lang, "Fim", "Finish", "Fin")}
                         </span>
                       )}
                     </div>
@@ -117,9 +119,12 @@ export function JourneyDetailsDialog({
               <div className="journey-details-empty">
                 <Map size={22} />
                 <p>
-                  {pt
-                    ? "Esta jornada ainda não tem sessões visíveis."
-                    : "This journey has no visible sessions yet."}
+                  {tri(
+                    lang,
+                    "Esta jornada ainda não tem sessões visíveis.",
+                    "This journey has no visible sessions yet.",
+                    "Este recorrido todavía no tiene sesiones visibles.",
+                  )}
                 </p>
               </div>
             )}

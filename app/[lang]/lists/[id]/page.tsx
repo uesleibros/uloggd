@@ -11,7 +11,7 @@ import { resolveGameCover } from "@/lib/game-cover";
 import { ContentComments } from "@/components/social/content-comments";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
-import { uiText } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 type Props = PageProps<"/[lang]/lists/[id]">;
 
@@ -29,9 +29,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const description =
     list.description ||
-    (lang === "pt-BR"
-      ? `Uma lista de jogos criada por @${owner?.username} no uloggd.`
-      : `A game list by @${owner?.username} on uloggd.`);
+    tri(
+      lang,
+      `Uma lista de jogos criada por @${owner?.username} no uloggd.`,
+      `A game list by @${owner?.username} on uloggd.`,
+      `Una lista de juegos creada por @${owner?.username} en uloggd.`,
+    );
   return {
     title: list.name,
     description,
@@ -120,7 +123,7 @@ export default async function ListPage({ params }: Props) {
     <main className="social-page">
       <header className="list-detail-header">
         <span>
-          {pt ? "LISTA DE" : "LIST BY"} @{owner?.username}
+          {tri(lang, "LISTA DE", "LIST BY", "LISTA DE")} @{owner?.username}
         </span>
         <h1>{list.name}</h1>
         {list.description && <p>{list.description}</p>}
@@ -177,11 +180,14 @@ export default async function ListPage({ params }: Props) {
           <span aria-hidden>
             <Layers3 size={22} />
           </span>
-          <h2>{pt ? "Lista vazia" : "Empty list"}</h2>
+          <h2>{tri(lang, "Lista vazia", "Empty list", "Lista vacía")}</h2>
           <p>
-            {pt
-              ? "Os jogos adicionados aparecerão aqui."
-              : "Added games will appear here."}
+            {tri(
+              lang,
+              "Os jogos adicionados aparecerão aqui.",
+              "Added games will appear here.",
+              "Los juegos añadidos aparecerán aquí.",
+            )}
           </p>
         </div>
       )}

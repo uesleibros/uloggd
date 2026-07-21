@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export function ShelfCarousel({
   children,
@@ -48,7 +48,7 @@ export function ShelfCarousel({
           type="button"
           onClick={() => move(-1)}
           disabled={edges.start}
-          aria-label={`${label}: ${lang === "pt-BR" ? "anterior" : "previous"}`}
+          aria-label={`${label}: ${tri(lang, "anterior", "previous", "anterior")}`}
         >
           <ChevronLeft size={17} />
         </button>
@@ -56,7 +56,7 @@ export function ShelfCarousel({
           type="button"
           onClick={() => move(1)}
           disabled={edges.end}
-          aria-label={`${label}: ${lang === "pt-BR" ? "próximo" : "next"}`}
+          aria-label={`${label}: ${tri(lang, "próximo", "next", "siguiente")}`}
         >
           <ChevronRight size={17} />
         </button>

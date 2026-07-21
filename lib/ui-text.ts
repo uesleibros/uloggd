@@ -155,3 +155,12 @@ export function uiText(lang: UiLang): Record<UiKey, string> {
   cache.set(lang, result);
   return result;
 }
+
+/**
+ * Screen-specific copy: text that belongs to one place and would only get
+ * harder to read if moved into the shared vocabulary above. Inline like the
+ * ternary it replaces, but with all three languages.
+ */
+export function tri(lang: UiLang, pt: string, en: string, es: string) {
+  return lang === "pt-BR" ? pt : lang === "en" ? en : es;
+}

@@ -36,7 +36,7 @@ import { getSpawndGame } from "@/lib/spawnd";
 import { SpawndLogo } from "@/components/spawnd-logo";
 import { hasLocale } from "../../dictionaries";
 import { ShareButton } from "@/components/share-button";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 type Props = PageProps<"/[lang]/game/[slug]">;
 
@@ -69,9 +69,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!game) return {};
   const description =
     game.summary.slice(0, 180) ||
-    (lang === "pt-BR"
-      ? `Informações, mídia e sua jornada em ${game.name}.`
-      : `Information, media, and your journey through ${game.name}.`);
+    tri(
+      lang,
+      `Informações, mídia e sua jornada em ${game.name}.`,
+      `Information, media, and your journey through ${game.name}.`,
+      `Información, medios y tu recorrido en ${game.name}.`,
+    );
   const image = game.heroUrl ?? game.coverUrl;
   return {
     title: game.name,
@@ -81,7 +84,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "website",
       siteName: "uloggd",
-      locale: lang === "pt-BR" ? "pt_BR" : "en_US",
+      locale: tri(lang, "pt_BR", "en_US", "es_ES"),
       images: [{ url: image, alt: game.name }],
     },
     twitter: {
@@ -225,9 +228,12 @@ export default async function GamePage({ params }: Props) {
         year: "numeric",
         timeZone: "UTC",
       }).format(new Date(game.releaseTimestamp * 1000))
-    : lang === "pt-BR"
-      ? "Data a confirmar"
-      : "Date to be confirmed";
+    : tri(
+        lang,
+        "Data a confirmar",
+        "Date to be confirmed",
+        "Fecha por confirmar",
+      );
   const duration = (seconds: number | null) => {
     if (!seconds) return "—";
     const hours = Math.floor(seconds / 3600);
@@ -242,7 +248,9 @@ export default async function GamePage({ params }: Props) {
     const preferred =
       lang === "pt-BR"
         ? ["ClassInd", "Classificação Indicativa", "ESRB", "PEGI"]
-        : ["ESRB", "PEGI", "ClassInd"];
+        : lang === "es"
+          ? ["PEGI", "ESRB", "ClassInd"]
+          : ["ESRB", "PEGI", "ClassInd"];
     const rank = (name: string) => {
       const index = preferred.findIndex((item) =>
         name.toLowerCase().includes(item.toLowerCase()),
@@ -284,13 +292,19 @@ export default async function GamePage({ params }: Props) {
             <ShareButton
               className="game-share-action"
               title={`${game.name} · uloggd`}
-              text={
-                lang === "pt-BR"
-                  ? `Veja ${game.name} no uloggd`
-                  : `See ${game.name} on uloggd`
-              }
-              label={lang === "pt-BR" ? "Compartilhar" : "Share"}
-              copiedLabel={lang === "pt-BR" ? "Link copiado" : "Link copied"}
+              text={tri(
+                lang,
+                `Veja ${game.name} no uloggd`,
+                `See ${game.name} on uloggd`,
+                `Mira ${game.name} en uloggd`,
+              )}
+              label={tri(lang, "Compartilhar", "Share", "Compartir")}
+              copiedLabel={tri(
+                lang,
+                "Link copiado",
+                "Link copied",
+                "Enlace copiado",
+              )}
               lang={lang}
             />
             <GameActionPanel
@@ -302,7 +316,9 @@ export default async function GamePage({ params }: Props) {
             {spawnd.available && (
               <GameTabTrigger className="game-spawnd-cta" tab="spawnd">
                 <SpawndLogo compact />
-                <span>{lang === "pt-BR" ? "Jogar agora" : "Play now"}</span>
+                <span>
+                  {tri(lang, "Jogar agora", "Play now", "Jugar ahora")}
+                </span>
                 <Play size={14} fill="currentColor" aria-hidden />
               </GameTabTrigger>
             )}
@@ -321,7 +337,12 @@ export default async function GamePage({ params }: Props) {
           <aside className="game-stage-rail">
             <div className="game-score-line">
               <span>
-                {lang === "pt-BR" ? "NOTA DO CATÁLOGO" : "CATALOG SCORE"}
+                {tri(
+                  lang,
+                  "NOTA DO CATÁLOGO",
+                  "CATALOG SCORE",
+                  "NOTA DEL CATÁLOGO",
+                )}
               </span>
               <div>
                 <Star size={17} fill="currentColor" />
@@ -330,7 +351,7 @@ export default async function GamePage({ params }: Props) {
               </div>
               <p>
                 {game.ratingCount.toLocaleString(lang)}{" "}
-                {lang === "pt-BR" ? "avaliações" : "ratings"}
+                {tri(lang, "avaliações", "ratings", "valoraciones")}
               </p>
             </div>
           </aside>
@@ -343,32 +364,44 @@ export default async function GamePage({ params }: Props) {
             <div className="game-wide-content">
               <section className="game-summary game-surface">
                 <header className="game-panel-heading">
-                  <span>{lang === "pt-BR" ? "VISÃO GERAL" : "OVERVIEW"}</span>
+                  <span>
+                    {tri(lang, "VISÃO GERAL", "OVERVIEW", "VISIÓN GENERAL")}
+                  </span>
                   <h2>
-                    {lang === "pt-BR" ? "Sobre o jogo" : "About the game"}
+                    {tri(
+                      lang,
+                      "Sobre o jogo",
+                      "About the game",
+                      "Sobre el juego",
+                    )}
                   </h2>
                 </header>
                 <p>
                   {game.summary ||
-                    (lang === "pt-BR"
-                      ? "Mais informações em breve."
-                      : "More information coming soon.")}
+                    tri(
+                      lang,
+                      "Mais informações em breve.",
+                      "More information coming soon.",
+                      "Más información próximamente.",
+                    )}
                 </p>
               </section>
               <section className="game-details-panel game-surface">
                 <header className="game-panel-heading">
                   <span>
-                    {lang === "pt-BR" ? "INFORMAÇÕES" : "INFORMATION"}
+                    {tri(lang, "INFORMAÇÕES", "INFORMATION", "INFORMACIÓN")}
                   </span>
-                  <h2>{lang === "pt-BR" ? "Detalhes" : "Details"}</h2>
+                  <h2>{tri(lang, "Detalhes", "Details", "Detalles")}</h2>
                 </header>
                 <dl className="game-details">
                   <div>
-                    <dt>{lang === "pt-BR" ? "Lançamento" : "Released"}</dt>
+                    <dt>
+                      {tri(lang, "Lançamento", "Released", "Lanzamiento")}
+                    </dt>
                     <dd>{releaseDate}</dd>
                   </div>
                   <div>
-                    <dt>{lang === "pt-BR" ? "Gêneros" : "Genres"}</dt>
+                    <dt>{tri(lang, "Gêneros", "Genres", "Géneros")}</dt>
                     <dd>
                       {game.searchFilters.genres.length
                         ? game.searchFilters.genres.map((item) => (
@@ -382,7 +415,9 @@ export default async function GamePage({ params }: Props) {
                     </dd>
                   </div>
                   <div>
-                    <dt>{lang === "pt-BR" ? "Plataformas" : "Platforms"}</dt>
+                    <dt>
+                      {tri(lang, "Plataformas", "Platforms", "Plataformas")}
+                    </dt>
                     <dd>
                       {game.searchFilters.platforms.length
                         ? game.searchFilters.platforms.map((item) => (
@@ -400,7 +435,7 @@ export default async function GamePage({ params }: Props) {
                   {game.publishers.length > 0 && (
                     <div>
                       <dt>
-                        {lang === "pt-BR" ? "Publicação" : "Published by"}
+                        {tri(lang, "Publicação", "Published by", "Publicación")}
                       </dt>
                       <dd>
                         {game.searchFilters.publishers.map((item) => (
@@ -417,7 +452,7 @@ export default async function GamePage({ params }: Props) {
                   )}
                   {game.themes.length > 0 && (
                     <div>
-                      <dt>{lang === "pt-BR" ? "Temas" : "Themes"}</dt>
+                      <dt>{tri(lang, "Temas", "Themes", "Temas")}</dt>
                       <dd>
                         {game.searchFilters.themes.map((item) => (
                           <span key={item.id}>
@@ -431,7 +466,7 @@ export default async function GamePage({ params }: Props) {
                   )}
                   {game.modes.length > 0 && (
                     <div>
-                      <dt>{lang === "pt-BR" ? "Modos" : "Modes"}</dt>
+                      <dt>{tri(lang, "Modos", "Modes", "Modos")}</dt>
                       <dd>
                         {game.searchFilters.modes.map((item) => (
                           <span key={item.id}>
@@ -449,12 +484,15 @@ export default async function GamePage({ params }: Props) {
                 <section className="game-languages-panel game-surface">
                   <header className="game-panel-heading">
                     <span>
-                      {lang === "pt-BR" ? "LOCALIZAÇÃO" : "LOCALIZATION"}
+                      {tri(lang, "LOCALIZAÇÃO", "LOCALIZATION", "LOCALIZACIÓN")}
                     </span>
                     <h2>
-                      {lang === "pt-BR"
-                        ? "Idiomas suportados"
-                        : "Supported languages"}
+                      {tri(
+                        lang,
+                        "Idiomas suportados",
+                        "Supported languages",
+                        "Idiomas compatibles",
+                      )}
                     </h2>
                   </header>
                   <div className="game-language-table-wrap">
@@ -462,14 +500,14 @@ export default async function GamePage({ params }: Props) {
                       <thead>
                         <tr>
                           <th scope="col">
-                            {lang === "pt-BR" ? "Idioma" : "Language"}
+                            {tri(lang, "Idioma", "Language", "Idioma")}
                           </th>
                           <th scope="col">Interface</th>
                           <th scope="col">
-                            {lang === "pt-BR" ? "Áudio" : "Audio"}
+                            {tri(lang, "Áudio", "Audio", "Audio")}
                           </th>
                           <th scope="col">
-                            {lang === "pt-BR" ? "Legendas" : "Subtitles"}
+                            {tri(lang, "Legendas", "Subtitles", "Subtítulos")}
                           </th>
                         </tr>
                       </thead>
@@ -498,12 +536,18 @@ export default async function GamePage({ params }: Props) {
                                     </span>
                                     <span className="sr-only">
                                       {supported
-                                        ? lang === "pt-BR"
-                                          ? "Disponível"
-                                          : "Available"
-                                        : lang === "pt-BR"
-                                          ? "Indisponível"
-                                          : "Unavailable"}
+                                        ? tri(
+                                            lang,
+                                            "Disponível",
+                                            "Available",
+                                            "Disponible",
+                                          )
+                                        : tri(
+                                            lang,
+                                            "Indisponível",
+                                            "Unavailable",
+                                            "No disponible",
+                                          )}
                                     </span>
                                   </td>
                                 );
@@ -524,10 +568,20 @@ export default async function GamePage({ params }: Props) {
                     <ShieldCheck size={16} aria-hidden />
                     <div>
                       <span>
-                        {lang === "pt-BR" ? "CLASSIFICAÇÃO" : "AGE RATING"}
+                        {tri(
+                          lang,
+                          "CLASSIFICAÇÃO",
+                          "AGE RATING",
+                          "CLASIFICACIÓN",
+                        )}
                       </span>
                       <h2>
-                        {lang === "pt-BR" ? "Faixa etária" : "Content rating"}
+                        {tri(
+                          lang,
+                          "Faixa etária",
+                          "Content rating",
+                          "Clasificación por edad",
+                        )}
                       </h2>
                     </div>
                   </header>
@@ -556,9 +610,12 @@ export default async function GamePage({ params }: Props) {
                     ))}
                   </div>
                   <p>
-                    {lang === "pt-BR"
-                      ? "Classificações informadas pela IGDB."
-                      : "Ratings provided by IGDB."}
+                    {tri(
+                      lang,
+                      "Classificações informadas pela IGDB.",
+                      "Ratings provided by IGDB.",
+                      "Clasificaciones proporcionadas por IGDB.",
+                    )}
                   </p>
                 </section>
               )}
@@ -566,9 +623,14 @@ export default async function GamePage({ params }: Props) {
                 <header>
                   <Clock3 size={16} />
                   <div>
-                    <span>{lang === "pt-BR" ? "DURAÇÃO" : "PLAYTIME"}</span>
+                    <span>{tri(lang, "DURAÇÃO", "PLAYTIME", "DURACIÓN")}</span>
                     <h2>
-                      {lang === "pt-BR" ? "Tempo para zerar" : "Time to beat"}
+                      {tri(
+                        lang,
+                        "Tempo para zerar",
+                        "Time to beat",
+                        "Tiempo para completarlo",
+                      )}
                     </h2>
                   </div>
                 </header>
@@ -576,14 +638,14 @@ export default async function GamePage({ params }: Props) {
                   <div>
                     <dt>
                       <Gauge size={13} />
-                      {lang === "pt-BR" ? "Campanha" : "Main story"}
+                      {tri(lang, "Campanha", "Main story", "Campaña")}
                     </dt>
                     <dd>{duration(game.timeToBeat?.hastily ?? null)}</dd>
                   </div>
                   <div>
                     <dt>
                       <Play size={13} />
-                      {lang === "pt-BR" ? "Com extras" : "With extras"}
+                      {tri(lang, "Com extras", "With extras", "Con extras")}
                     </dt>
                     <dd>{duration(game.timeToBeat?.normally ?? null)}</dd>
                   </div>
@@ -598,24 +660,35 @@ export default async function GamePage({ params }: Props) {
                 {game.timeToBeat && game.timeToBeat.count > 0 ? (
                   <p>
                     {game.timeToBeat.count.toLocaleString(lang)}{" "}
-                    {lang === "pt-BR"
-                      ? "registros no IGDB"
-                      : "IGDB submissions"}
+                    {tri(
+                      lang,
+                      "registros no IGDB",
+                      "IGDB submissions",
+                      "registros en IGDB",
+                    )}
                   </p>
                 ) : (
                   <p>
-                    {lang === "pt-BR"
-                      ? "Duração ainda não disponível na IGDB."
-                      : "Playtime is not available on IGDB yet."}
+                    {tri(
+                      lang,
+                      "Duração ainda não disponível na IGDB.",
+                      "Playtime is not available on IGDB yet.",
+                      "La duración todavía no está disponible en IGDB.",
+                    )}
                   </p>
                 )}
               </section>
               {similarGames.length > 0 && (
                 <section className="game-similar-rail game-surface">
                   <header>
-                    <span>{lang === "pt-BR" ? "DESCUBRA" : "DISCOVER"}</span>
+                    <span>{tri(lang, "DESCUBRA", "DISCOVER", "DESCUBRE")}</span>
                     <h2>
-                      {lang === "pt-BR" ? "Jogos similares" : "Similar games"}
+                      {tri(
+                        lang,
+                        "Jogos similares",
+                        "Similar games",
+                        "Juegos similares",
+                      )}
                     </h2>
                   </header>
                   <div>
@@ -706,11 +779,14 @@ export default async function GamePage({ params }: Props) {
           <section className="game-community-section game-surface">
             <div className="social-section-title">
               <div>
-                <h2>{lang === "pt-BR" ? "Comunidade" : "Community"}</h2>
+                <h2>{tri(lang, "Comunidade", "Community", "Comunidad")}</h2>
                 <p>
-                  {lang === "pt-BR"
-                    ? "Avaliações e sessões recentes"
-                    : "Recent reviews and sessions"}
+                  {tri(
+                    lang,
+                    "Avaliações e sessões recentes",
+                    "Recent reviews and sessions",
+                    "Reseñas y sesiones recientes",
+                  )}
                 </p>
               </div>
             </div>

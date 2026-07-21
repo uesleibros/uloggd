@@ -114,6 +114,7 @@ const sanitizeSchema = {
     "spoilerimg",
     "pt",
     "en",
+    "es",
     "game-card",
     "game-grid",
     "alert-box",
@@ -134,6 +135,7 @@ const sanitizeSchema = {
     mobile: [],
     pt: [],
     en: [],
+    es: [],
   },
   protocols: {
     ...defaultSchema.protocols,
@@ -605,6 +607,8 @@ export function MarkdownContent({
         lang === "pt-BR" ? <span className="md-lang">{children}</span> : null,
       en: ({ children }: { children?: ReactNode }) =>
         lang === "en" ? <span className="md-lang">{children}</span> : null,
+      es: ({ children }: { children?: ReactNode }) =>
+        lang === "es" ? <span className="md-lang">{children}</span> : null,
       spoilerimg: (props: MdImageProps) => (
         <Spoiler>
           {/* eslint-disable-next-line @next/next/no-img-element */}

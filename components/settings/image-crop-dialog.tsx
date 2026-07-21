@@ -5,7 +5,7 @@ import "react-image-crop/dist/ReactCrop.css";
 import { Check, LoaderCircle, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useEffect } from "react";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import ReactCrop, {
   centerCrop,
   convertToPixelCrop,
@@ -64,7 +64,6 @@ export function ImageCropDialog({
   onClose: () => void;
   onSaved: (url: string) => void;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const aspect = kind === "avatar" ? 1 : 3;
   const imageRef = useRef<HTMLImageElement>(null);
@@ -129,9 +128,12 @@ export function ImageCropDialog({
       close();
     } catch {
       setError(
-        pt
-          ? "Não foi possível processar e enviar a imagem."
-          : "Could not process and upload the image.",
+        tri(
+          lang,
+          "Não foi possível processar e enviar a imagem.",
+          "Could not process and upload the image.",
+          "No se pudo procesar y subir la imagen.",
+        ),
       );
     } finally {
       setPending(false);
@@ -147,17 +149,26 @@ export function ImageCropDialog({
             <div>
               <Dialog.Title>
                 {kind === "avatar"
-                  ? pt
-                    ? "Ajustar avatar"
-                    : "Crop avatar"
-                  : pt
-                    ? "Ajustar banner"
-                    : "Crop banner"}
+                  ? tri(
+                      lang,
+                      "Ajustar avatar",
+                      "Crop avatar",
+                      "Recortar avatar",
+                    )
+                  : tri(
+                      lang,
+                      "Ajustar banner",
+                      "Crop banner",
+                      "Recortar banner",
+                    )}
               </Dialog.Title>
               <Dialog.Description>
-                {pt
-                  ? "Arraste e redimensione a área que será exibida."
-                  : "Move and resize the area that will be displayed."}
+                {tri(
+                  lang,
+                  "Arraste e redimensione a área que será exibida.",
+                  "Move and resize the area that will be displayed.",
+                  "Mueve y redimensiona el área que se mostrará.",
+                )}
               </Dialog.Description>
             </div>
             <Dialog.Close aria-label={t.close}>
@@ -196,7 +207,7 @@ export function ImageCropDialog({
               ) : (
                 <Check size={15} />
               )}
-              {pt ? "Salvar imagem" : "Save image"}
+              {tri(lang, "Salvar imagem", "Save image", "Guardar imagen")}
             </button>
           </footer>
         </Dialog.Content>

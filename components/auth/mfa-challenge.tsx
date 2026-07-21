@@ -6,12 +6,11 @@ import { useEffect, useState } from "react";
 import { safeInternalNext } from "@/lib/auth-validation";
 import { createClient } from "@/lib/supabase/client";
 import "./mfa.css";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Factor = { id: string; friendly_name?: string; status: string };
 
 export function MfaChallenge({ lang }: { lang: UiLang }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const searchParams = useSearchParams();
   const [factors, setFactors] = useState<Factor[]>([]);
@@ -30,9 +29,12 @@ export function MfaChallenge({ lang }: { lang: UiLang }) {
         );
         if (actionError || verified.length === 0) {
           setError(
-            pt
-              ? "Nenhum autenticador ativo foi encontrado."
-              : "No active authenticator was found.",
+            tri(
+              lang,
+              "Nenhum autenticador ativo foi encontrado.",
+              "No active authenticator was found.",
+              "No se encontró ningún autenticador activo.",
+            ),
           );
         } else {
           setFactors(verified);
@@ -40,7 +42,7 @@ export function MfaChallenge({ lang }: { lang: UiLang }) {
         }
         setPending(false);
       });
-  }, [pt]);
+  }, [lang]);
 
   async function verify(event: React.FormEvent) {
     event.preventDefault();
@@ -54,9 +56,12 @@ export function MfaChallenge({ lang }: { lang: UiLang }) {
       });
     if (actionError) {
       setError(
-        pt
-          ? "Código inválido ou expirado. Abra o aplicativo e tente novamente."
-          : "Invalid or expired code. Open your app and try again.",
+        tri(
+          lang,
+          "Código inválido ou expirado. Abra o aplicativo e tente novamente.",
+          "Invalid or expired code. Open your app and try again.",
+          "Código inválido o caducado. Abre la aplicación e inténtalo de nuevo.",
+        ),
       );
       setCode("");
       setPending(false);
@@ -76,18 +81,33 @@ export function MfaChallenge({ lang }: { lang: UiLang }) {
       <div className="mfa-challenge-mark">
         <ShieldCheck size={28} />
       </div>
-      <span>{pt ? "SEGUNDA ETAPA" : "SECOND STEP"}</span>
-      <h1>{pt ? "Confirme que é você" : "Confirm it's you"}</h1>
+      <span>{tri(lang, "SEGUNDA ETAPA", "SECOND STEP", "SEGUNDO PASO")}</span>
+      <h1>
+        {tri(
+          lang,
+          "Confirme que é você",
+          "Confirm it's you",
+          "Confirma que eres tú",
+        )}
+      </h1>
       <p>
-        {pt
-          ? "Digite o código temporário do seu aplicativo autenticador para concluir o acesso."
-          : "Enter the temporary code from your authenticator app to complete sign-in."}
+        {tri(
+          lang,
+          "Digite o código temporário do seu aplicativo autenticador para concluir o acesso.",
+          "Enter the temporary code from your authenticator app to complete sign-in.",
+          "Escribe el código temporal de tu aplicación de autenticación para completar el acceso.",
+        )}
       </p>
       {factors.length > 1 && (
         <div
           className="mfa-factor-picker"
           role="radiogroup"
-          aria-label={pt ? "Autenticador" : "Authenticator"}
+          aria-label={tri(
+            lang,
+            "Autenticador",
+            "Authenticator",
+            "Autenticador",
+          )}
         >
           {factors.map((factor) => (
             <button
@@ -105,7 +125,12 @@ export function MfaChallenge({ lang }: { lang: UiLang }) {
       )}
       <form onSubmit={verify}>
         <label>
-          {pt ? "Código de seis dígitos" : "Six-digit code"}
+          {tri(
+            lang,
+            "Código de seis dígitos",
+            "Six-digit code",
+            "Código de seis dígitos",
+          )}
           <input
             value={code}
             onChange={(event) =>
@@ -124,7 +149,12 @@ export function MfaChallenge({ lang }: { lang: UiLang }) {
           disabled={pending || code.length !== 6 || !selected}
         >
           {pending && <LoaderCircle className="spin" size={16} />}
-          {pt ? "Verificar e continuar" : "Verify and continue"}
+          {tri(
+            lang,
+            "Verificar e continuar",
+            "Verify and continue",
+            "Verificar y continuar",
+          )}
         </button>
       </form>
       <button
@@ -134,7 +164,12 @@ export function MfaChallenge({ lang }: { lang: UiLang }) {
         disabled={pending}
       >
         <LogOut size={14} />{" "}
-        {pt ? "Entrar com outra conta" : "Use another account"}
+        {tri(
+          lang,
+          "Entrar com outra conta",
+          "Use another account",
+          "Usar otra cuenta",
+        )}
       </button>
     </section>
   );

@@ -10,7 +10,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
   buildCommentTree,
   CommentAvatar,
@@ -49,7 +49,6 @@ export function ContentComments({
   viewerId: string | null;
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [rows, setRows] = useState<ContentComment[] | null>(null);
   const [body, setBody] = useState("");
@@ -110,12 +109,18 @@ export function ContentComments({
     if (createError) {
       setError(
         createError.message.includes("depth")
-          ? pt
-            ? "Esta conversa atingiu o limite de respostas."
-            : "This conversation reached its reply limit."
-          : pt
-            ? "Não foi possível comentar."
-            : "Could not comment.",
+          ? tri(
+              lang,
+              "Esta conversa atingiu o limite de respostas.",
+              "This conversation reached its reply limit.",
+              "Esta conversación alcanzó el límite de respuestas.",
+            )
+          : tri(
+              lang,
+              "Não foi possível comentar.",
+              "Could not comment.",
+              "No se pudo comentar.",
+            ),
       );
     } else {
       if (parentId) {
@@ -221,9 +226,12 @@ export function ContentComments({
             )}
             <p data-deleted={deleted || undefined}>
               {deleted
-                ? pt
-                  ? "Comentário removido"
-                  : "Comment deleted"
+                ? tri(
+                    lang,
+                    "Comentário removido",
+                    "Comment deleted",
+                    "Comentario eliminado",
+                  )
                 : comment.body}
             </p>
             {!deleted && (
@@ -281,7 +289,12 @@ export function ContentComments({
               maxLength={500}
               rows={2}
               onChange={(event) => setReplyBody(event.target.value)}
-              placeholder={pt ? `Responder a ${name}…` : `Reply to ${name}…`}
+              placeholder={tri(
+                lang,
+                `Responder a ${name}…`,
+                `Reply to ${name}…`,
+                `Responder a ${name}…`,
+              )}
             />
             <footer>
               <small>{replyBody.length}/500</small>
@@ -328,12 +341,18 @@ export function ContentComments({
           </h2>
           <p>
             {contentType === "list"
-              ? pt
-                ? "Converse sobre esta lista. Respostas ficam na mesma conversa."
-                : "Talk about this list. Replies stay in the same conversation."
-              : pt
-                ? "Converse sobre esta avaliação. Respostas ficam na mesma conversa."
-                : "Talk about this review. Replies stay in the same conversation."}
+              ? tri(
+                  lang,
+                  "Converse sobre esta lista. Respostas ficam na mesma conversa.",
+                  "Talk about this list. Replies stay in the same conversation.",
+                  "Habla sobre esta lista. Las respuestas quedan en la misma conversación.",
+                )
+              : tri(
+                  lang,
+                  "Converse sobre esta avaliação. Respostas ficam na mesma conversa.",
+                  "Talk about this review. Replies stay in the same conversation.",
+                  "Habla sobre esta reseña. Las respuestas quedan en la misma conversación.",
+                )}
           </p>
         </div>
         <span>{total}</span>
@@ -348,18 +367,24 @@ export function ContentComments({
           }}
         >
           <label htmlFor="content-comment-body">
-            {pt ? "Inicie uma conversa" : "Start a conversation"}
+            {tri(
+              lang,
+              "Inicie uma conversa",
+              "Start a conversation",
+              "Inicia una conversación",
+            )}
           </label>
           <textarea
             id="content-comment-body"
             value={body}
             maxLength={500}
             rows={2}
-            placeholder={
-              pt
-                ? "Adicione algo à conversa…"
-                : "Add something to the conversation…"
-            }
+            placeholder={tri(
+              lang,
+              "Adicione algo à conversa…",
+              "Add something to the conversation…",
+              "Añade algo a la conversación…",
+            )}
             onChange={(event) => setBody(event.target.value)}
           />
           <footer>
@@ -376,9 +401,12 @@ export function ContentComments({
         </form>
       ) : (
         <p className="profile-comments-notice">
-          {pt
-            ? "Entre na sua conta para comentar."
-            : "Sign in to leave a comment."}
+          {tri(
+            lang,
+            "Entre na sua conta para comentar.",
+            "Sign in to leave a comment.",
+            "Inicia sesión para comentar.",
+          )}
         </p>
       )}
 
@@ -401,7 +429,14 @@ export function ContentComments({
         {rows !== null && !tree.length && (
           <div className="profile-comments-empty">
             <MessageCircle size={20} />
-            <span>{pt ? "Ainda não há comentários." : "No comments yet."}</span>
+            <span>
+              {tri(
+                lang,
+                "Ainda não há comentários.",
+                "No comments yet.",
+                "Todavía no hay comentarios.",
+              )}
+            </span>
           </div>
         )}
       </div>

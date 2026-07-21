@@ -3,7 +3,7 @@
 import { Heart } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type ContentType = "review" | "diary" | "list" | "content_comment";
 
@@ -22,7 +22,6 @@ export function LikeButton({
   canLike: boolean;
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [currentCount, setCurrentCount] = useState(count);
   const [currentLiked, setCurrentLiked] = useState(liked);
@@ -71,7 +70,9 @@ export function LikeButton({
       disabled={pending}
       onClick={toggle}
       aria-label={
-        currentLiked ? (pt ? "Remover curtida" : "Remove like") : t.like
+        currentLiked
+          ? tri(lang, "Remover curtida", "Remove like", "Quitar me gusta")
+          : t.like
       }
     >
       <Heart size={14} fill={currentLiked ? "currentColor" : "none"} />

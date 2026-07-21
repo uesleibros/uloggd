@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/client";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Cover = {
   url: string;
@@ -49,7 +49,14 @@ export function CoverSelector({
 
   async function save() {
     if (!enabled) {
-      setError(pt ? "Entre para salvar uma capa." : "Sign in to save a cover.");
+      setError(
+        tri(
+          lang,
+          "Entre para salvar uma capa.",
+          "Sign in to save a cover.",
+          "Inicia sesión para guardar una portada.",
+        ),
+      );
       return;
     }
     if (!selected || pending) return;
@@ -61,7 +68,12 @@ export function CoverSelector({
     );
     if (saveError) {
       setError(
-        pt ? "Não foi possível salvar a capa." : "Could not save the cover.",
+        tri(
+          lang,
+          "Não foi possível salvar a capa.",
+          "Could not save the cover.",
+          "No se pudo guardar la portada.",
+        ),
       );
     } else {
       setSaved(selected);
@@ -93,7 +105,7 @@ export function CoverSelector({
           }}
         >
           <Images size={14} />
-          {pt ? "Alterar capa" : "Change cover"}
+          {tri(lang, "Alterar capa", "Change cover", "Cambiar portada")}
           <span>{covers.length}</span>
         </button>
       )}
@@ -107,12 +119,15 @@ export function CoverSelector({
             <header>
               <div>
                 <Dialog.Title>
-                  {pt ? "Escolher capa" : "Choose cover"}
+                  {tri(lang, "Escolher capa", "Choose cover", "Elegir portada")}
                 </Dialog.Title>
                 <Dialog.Description>
-                  {pt
-                    ? "Escolha como este jogo aparece na sua biblioteca."
-                    : "Choose how this game appears across your library."}
+                  {tri(
+                    lang,
+                    "Escolha como este jogo aparece na sua biblioteca.",
+                    "Choose how this game appears across your library.",
+                    "Elige cómo aparece este juego en tu biblioteca.",
+                  )}
                 </Dialog.Description>
               </div>
               <button type="button" onClick={close} aria-label={t.close}>
@@ -134,7 +149,7 @@ export function CoverSelector({
                   </span>
                   <strong>{labels[cover.source]}</strong>
                   {saved === cover.url && (
-                    <small>{pt ? "Em uso" : "In use"}</small>
+                    <small>{tri(lang, "Em uso", "In use", "En uso")}</small>
                   )}
                 </button>
               ))}
@@ -154,7 +169,7 @@ export function CoverSelector({
                 ) : (
                   <Check size={14} />
                 )}
-                {pt ? "Salvar capa" : "Save cover"}
+                {tri(lang, "Salvar capa", "Save cover", "Guardar portada")}
               </button>
             </footer>
           </Dialog.Content>

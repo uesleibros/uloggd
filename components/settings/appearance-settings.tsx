@@ -7,7 +7,7 @@ import {
   THEME_CHANGE_EVENT,
 } from "@/components/theme-manager";
 import { isThemePreference, type ThemePreference } from "@/lib/theme";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 const themes: Array<{
   id: ThemePreference;
@@ -81,20 +81,23 @@ export function AppearanceSettings({ lang }: { lang: UiLang }) {
   return (
     <section className="appearance-settings" aria-labelledby="appearance-title">
       <header>
-        <span>{lang === "pt-BR" ? "INTERFACE" : "INTERFACE"}</span>
+        <span>{tri(lang, "INTERFACE", "INTERFACE", "INTERFAZ")}</span>
         <h2 id="appearance-title">
-          {lang === "pt-BR" ? "Tema do uloggd" : "uloggd theme"}
+          {tri(lang, "Tema do uloggd", "uloggd theme", "Tema de uloggd")}
         </h2>
         <p>
-          {lang === "pt-BR"
-            ? "Escolha como as superfícies, textos e controles aparecem neste dispositivo. A alteração é aplicada na hora."
-            : "Choose how surfaces, text, and controls appear on this device. Changes apply immediately."}
+          {tri(
+            lang,
+            "Escolha como as superfícies, textos e controles aparecem neste dispositivo. A alteração é aplicada na hora.",
+            "Choose how surfaces, text, and controls appear on this device. Changes apply immediately.",
+            "Elige cómo se ven las superficies, los textos y los controles en este dispositivo. El cambio se aplica al instante.",
+          )}
         </p>
       </header>
 
       <fieldset className="theme-options">
         <legend className="sr-only">
-          {lang === "pt-BR" ? "Escolha um tema" : "Choose a theme"}
+          {tri(lang, "Escolha um tema", "Choose a theme", "Elige un tema")}
         </legend>
         {themes.map((theme) => (
           <label
@@ -140,9 +143,12 @@ export function AppearanceSettings({ lang }: { lang: UiLang }) {
       </fieldset>
 
       <p className="appearance-device-note">
-        {lang === "pt-BR"
-          ? "Esta preferência é salva somente neste navegador."
-          : "This preference is saved only in this browser."}
+        {tri(
+          lang,
+          "Esta preferência é salva somente neste navegador.",
+          "This preference is saved only in this browser.",
+          "Esta preferencia se guarda solo en este navegador.",
+        )}
       </p>
     </section>
   );

@@ -4,7 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { AlertTriangle, LoaderCircle, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function DeleteAccount({
   username,
@@ -46,9 +46,12 @@ export function DeleteAccount({
       if (!response.ok) {
         if (result.error === "mfa_required") {
           setError(
-            pt
-              ? "Confirme a verificação em duas etapas e tente novamente."
-              : "Complete two-factor authentication and try again.",
+            tri(
+              lang,
+              "Confirme a verificação em duas etapas e tente novamente.",
+              "Complete two-factor authentication and try again.",
+              "Completa la verificación en dos pasos e inténtalo de nuevo.",
+            ),
           );
         } else if (result.error === "confirmation_mismatch") {
           setError(
@@ -58,9 +61,12 @@ export function DeleteAccount({
           );
         } else {
           setError(
-            pt
-              ? "Não foi possível apagar sua conta agora. Tente novamente."
-              : "Your account could not be deleted right now. Try again.",
+            tri(
+              lang,
+              "Não foi possível apagar sua conta agora. Tente novamente.",
+              "Your account could not be deleted right now. Try again.",
+              "No se pudo eliminar tu cuenta ahora. Inténtalo de nuevo.",
+            ),
           );
         }
         setPending(false);
@@ -70,9 +76,12 @@ export function DeleteAccount({
       window.location.replace(`/${lang}`);
     } catch {
       setError(
-        pt
-          ? "A conexão falhou. Confira sua internet e tente novamente."
-          : "The connection failed. Check your internet and try again.",
+        tri(
+          lang,
+          "A conexão falhou. Confira sua internet e tente novamente.",
+          "The connection failed. Check your internet and try again.",
+          "La conexión falló. Revisa tu internet e inténtalo de nuevo.",
+        ),
       );
       setPending(false);
     }
@@ -85,12 +94,19 @@ export function DeleteAccount({
           <Trash2 size={20} />
         </span>
         <div>
-          <small>{pt ? "ZONA DE PERIGO" : "DANGER ZONE"}</small>
-          <h2>{pt ? "Apagar conta" : "Delete account"}</h2>
+          <small>
+            {tri(lang, "ZONA DE PERIGO", "DANGER ZONE", "ZONA DE PELIGRO")}
+          </small>
+          <h2>
+            {tri(lang, "Apagar conta", "Delete account", "Eliminar cuenta")}
+          </h2>
           <p>
-            {pt
-              ? "Remove permanentemente seu perfil e todo o histórico associado ao uloggd."
-              : "Permanently removes your profile and all history associated with uloggd."}
+            {tri(
+              lang,
+              "Remove permanentemente seu perfil e todo o histórico associado ao uloggd.",
+              "Permanently removes your profile and all history associated with uloggd.",
+              "Elimina permanentemente tu perfil y todo el historial asociado a uloggd.",
+            )}
           </p>
         </div>
       </div>
@@ -100,7 +116,12 @@ export function DeleteAccount({
       >
         <Dialog.Trigger asChild>
           <button className="settings-delete-trigger" type="button">
-            {pt ? "Apagar minha conta" : "Delete my account"}
+            {tri(
+              lang,
+              "Apagar minha conta",
+              "Delete my account",
+              "Eliminar mi cuenta",
+            )}
           </button>
         </Dialog.Trigger>
         <Dialog.Portal>
@@ -117,30 +138,47 @@ export function DeleteAccount({
               <AlertTriangle size={24} />
             </span>
             <Dialog.Title>
-              {pt ? "Apagar sua conta?" : "Delete your account?"}
+              {tri(
+                lang,
+                "Apagar sua conta?",
+                "Delete your account?",
+                "¿Eliminar tu cuenta?",
+              )}
             </Dialog.Title>
             <Dialog.Description>
-              {pt
-                ? "Esta ação é permanente. Não será possível recuperar sua conta depois da confirmação."
-                : "This action is permanent. Your account cannot be recovered after confirmation."}
+              {tri(
+                lang,
+                "Esta ação é permanente. Não será possível recuperar sua conta depois da confirmação.",
+                "This action is permanent. Your account cannot be recovered after confirmation.",
+                "Esta acción es permanente. No podrás recuperar tu cuenta tras confirmar.",
+              )}
             </Dialog.Description>
 
             <div className="account-delete-summary">
               <strong>
-                {pt ? "O que será apagado" : "What will be deleted"}
+                {tri(
+                  lang,
+                  "O que será apagado",
+                  "What will be deleted",
+                  "Qué se eliminará",
+                )}
               </strong>
               <p>
-                {pt
-                  ? "Perfil, biblioteca, avaliações, listas, conexões sociais e métodos de acesso."
-                  : "Profile, library, reviews, lists, social connections, and sign-in methods."}
+                {tri(
+                  lang,
+                  "Perfil, biblioteca, avaliações, listas, conexões sociais e métodos de acesso.",
+                  "Profile, library, reviews, lists, social connections, and sign-in methods.",
+                  "Perfil, biblioteca, reseñas, listas, conexiones sociales y métodos de acceso.",
+                )}
               </p>
             </div>
 
             <form onSubmit={removeAccount}>
               <label className="account-delete-confirmation">
                 <span>
-                  {pt ? "Digite" : "Enter"} <strong>{expected}</strong>{" "}
-                  {pt ? "para confirmar" : "to confirm"}
+                  {tri(lang, "Digite", "Enter", "Escribe")}{" "}
+                  <strong>{expected}</strong>{" "}
+                  {tri(lang, "para confirmar", "to confirm", "para confirmar")}
                 </span>
                 <input
                   value={confirmation}
@@ -161,9 +199,12 @@ export function DeleteAccount({
                 />
                 <span aria-hidden="true" />
                 <p>
-                  {pt
-                    ? "Entendo que todos os meus dados serão apagados permanentemente."
-                    : "I understand that all my data will be permanently deleted."}
+                  {tri(
+                    lang,
+                    "Entendo que todos os meus dados serão apagados permanentemente.",
+                    "I understand that all my data will be permanently deleted.",
+                    "Entiendo que todos mis datos se eliminarán permanentemente.",
+                  )}
                 </p>
               </label>
               {error && (
@@ -173,17 +214,23 @@ export function DeleteAccount({
               )}
               <div className="account-delete-actions">
                 <button type="button" onClick={reset} disabled={pending}>
-                  {pt ? "Manter minha conta" : "Keep my account"}
+                  {tri(
+                    lang,
+                    "Manter minha conta",
+                    "Keep my account",
+                    "Mantener mi cuenta",
+                  )}
                 </button>
                 <button type="submit" disabled={!ready}>
                   {pending && <LoaderCircle className="spin" size={16} />}
                   {pending
-                    ? pt
-                      ? "Apagando..."
-                      : "Deleting..."
-                    : pt
-                      ? "Apagar permanentemente"
-                      : "Delete permanently"}
+                    ? tri(lang, "Apagando...", "Deleting...", "Eliminando...")
+                    : tri(
+                        lang,
+                        "Apagar permanentemente",
+                        "Delete permanently",
+                        "Eliminar permanentemente",
+                      )}
                 </button>
               </div>
             </form>

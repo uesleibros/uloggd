@@ -3,7 +3,7 @@
 import { LoaderCircle, Plus, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ListPreview } from "@/lib/lists-types";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { ListPreviewCard } from "./list-preview-card";
 
 /**
@@ -117,15 +117,23 @@ export function ListsCollection({
     <section className="lists-collection">
       <header>
         <div>
-          <h2>{pt ? "Todas as listas" : "All lists"}</h2>
+          <h2>
+            {tri(lang, "Todas as listas", "All lists", "Todas las listas")}
+          </h2>
           <p>
             {searched
-              ? pt
-                ? "Resultados da busca"
-                : "Search results"
-              : pt
-                ? "Atualizadas recentemente primeiro"
-                : "Recently updated first"}
+              ? tri(
+                  lang,
+                  "Resultados da busca",
+                  "Search results",
+                  "Resultados de la búsqueda",
+                )
+              : tri(
+                  lang,
+                  "Atualizadas recentemente primeiro",
+                  "Recently updated first",
+                  "Actualizadas recientemente primero",
+                )}
           </p>
         </div>
         <form
@@ -143,8 +151,18 @@ export function ListsCollection({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               maxLength={60}
-              aria-label={pt ? "Buscar nas suas listas" : "Search your lists"}
-              placeholder={pt ? "Buscar lista" : "Search list"}
+              aria-label={tri(
+                lang,
+                "Buscar nas suas listas",
+                "Search your lists",
+                "Buscar en tus listas",
+              )}
+              placeholder={tri(
+                lang,
+                "Buscar lista",
+                "Search list",
+                "Buscar lista",
+              )}
             />
           </label>
           <button

@@ -4,7 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 /**
  * Warns before leaving a screen with unsaved edits.
@@ -27,7 +27,6 @@ export function UnsavedChangesGuard({
   lang: UiLang;
   message?: string;
 }) {
-  const pt = lang === "pt-BR";
   const router = useRouter();
   const [target, setTarget] = useState<string | null>(null);
 
@@ -87,16 +86,26 @@ export function UnsavedChangesGuard({
             <TriangleAlert size={20} />
           </span>
           <Dialog.Title>
-            {pt ? "Sair sem salvar?" : "Leave without saving?"}
+            {tri(
+              lang,
+              "Sair sem salvar?",
+              "Leave without saving?",
+              "¿Salir sin guardar?",
+            )}
           </Dialog.Title>
           <Dialog.Description>
             {message ??
-              (pt
-                ? "Você tem alterações que ainda não foram salvas. Se sair agora, elas serão perdidas."
-                : "You have changes that have not been saved. If you leave now, they will be lost.")}
+              tri(
+                lang,
+                "Você tem alterações que ainda não foram salvas. Se sair agora, elas serão perdidas.",
+                "You have changes that have not been saved. If you leave now, they will be lost.",
+                "Tienes cambios sin guardar. Si sales ahora, se perderán.",
+              )}
           </Dialog.Description>
           <footer>
-            <Dialog.Close>{pt ? "Continuar aqui" : "Stay here"}</Dialog.Close>
+            <Dialog.Close>
+              {tri(lang, "Continuar aqui", "Stay here", "Quedarme aquí")}
+            </Dialog.Close>
             <button
               type="button"
               data-danger
@@ -106,7 +115,12 @@ export function UnsavedChangesGuard({
                 if (next) router.push(next);
               }}
             >
-              {pt ? "Sair mesmo assim" : "Leave anyway"}
+              {tri(
+                lang,
+                "Sair mesmo assim",
+                "Leave anyway",
+                "Salir de todos modos",
+              )}
             </button>
           </footer>
         </Dialog.Content>

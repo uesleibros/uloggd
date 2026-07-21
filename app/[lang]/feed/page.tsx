@@ -12,8 +12,9 @@ import {
   getSuggestedProfiles,
 } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
-import { hasLocale } from "../dictionaries";
+import { hasLocale, resolveLocale } from "../dictionaries";
 import "./feed.css";
+import { tri } from "@/lib/ui-text";
 
 const PAGE_SIZE = 30;
 
@@ -21,7 +22,9 @@ export async function generateMetadata({
   params,
 }: PageProps<"/[lang]/feed">): Promise<Metadata> {
   const { lang } = await params;
-  return { title: lang === "pt-BR" ? "Seu feed" : "Your feed" };
+  return {
+    title: tri(resolveLocale(lang), "Seu feed", "Your feed", "Tu feed"),
+  };
 }
 
 export default async function FeedPage({ params }: PageProps<"/[lang]/feed">) {
@@ -51,18 +54,26 @@ export default async function FeedPage({ params }: PageProps<"/[lang]/feed">) {
         <div>
           <span className="feed-eyebrow">
             <Sparkles size={13} />
-            {pt ? "QUEM VOCÊ SEGUE" : "PEOPLE YOU FOLLOW"}
+            {tri(
+              lang,
+              "QUEM VOCÊ SEGUE",
+              "PEOPLE YOU FOLLOW",
+              "A QUIÉN SIGUES",
+            )}
           </span>
-          <h1>{pt ? "Seu feed" : "Your feed"}</h1>
+          <h1>{tri(lang, "Seu feed", "Your feed", "Tu feed")}</h1>
           <p>
-            {pt
-              ? "Avaliações e sessões de quem você acompanha, em ordem de chegada."
-              : "Reviews and sessions from the people you follow, newest first."}
+            {tri(
+              lang,
+              "Avaliações e sessões de quem você acompanha, em ordem de chegada.",
+              "Reviews and sessions from the people you follow, newest first.",
+              "Reseñas y sesiones de quienes sigues, por orden de llegada.",
+            )}
           </p>
         </div>
         <Link className="feed-explore-link" href={`/${lang}/search`}>
           <Compass size={15} />
-          {pt ? "Explorar jogos" : "Explore games"}
+          {tri(lang, "Explorar jogos", "Explore games", "Explorar juegos")}
         </Link>
       </header>
 
@@ -87,26 +98,40 @@ export default async function FeedPage({ params }: PageProps<"/[lang]/feed">) {
           </span>
           <h2>
             {following.length
-              ? pt
-                ? "Ainda sem novidades"
-                : "Nothing new yet"
-              : pt
-                ? "Seu feed começa aqui"
-                : "Your feed starts here"}
+              ? tri(
+                  lang,
+                  "Ainda sem novidades",
+                  "Nothing new yet",
+                  "Todavía sin novedades",
+                )
+              : tri(
+                  lang,
+                  "Seu feed começa aqui",
+                  "Your feed starts here",
+                  "Tu feed empieza aquí",
+                )}
           </h2>
           <p>
             {following.length
-              ? pt
-                ? "Quem você segue ainda não publicou nada. Assim que registrarem uma sessão ou avaliação, aparece aqui."
-                : "The people you follow have not posted yet. As soon as they log a session or a review, it shows up here."
-              : pt
-                ? "Siga algumas pessoas para ver o que elas estão jogando, avaliando e terminando."
-                : "Follow a few people to see what they are playing, rating and finishing."}
+              ? tri(
+                  lang,
+                  "Quem você segue ainda não publicou nada. Assim que registrarem uma sessão ou avaliação, aparece aqui.",
+                  "The people you follow have not posted yet. As soon as they log a session or a review, it shows up here.",
+                  "Quienes sigues todavía no han publicado nada. En cuanto registren una sesión o reseña, aparecerá aquí.",
+                )
+              : tri(
+                  lang,
+                  "Siga algumas pessoas para ver o que elas estão jogando, avaliando e terminando.",
+                  "Follow a few people to see what they are playing, rating and finishing.",
+                  "Sigue a algunas personas para ver qué están jugando, valorando y terminando.",
+                )}
           </p>
 
           {suggestions.length > 0 && (
             <div className="feed-suggestions">
-              <h3>{pt ? "Para começar" : "To get started"}</h3>
+              <h3>
+                {tri(lang, "Para começar", "To get started", "Para empezar")}
+              </h3>
               <ul>
                 {suggestions.map((person) => (
                   <li key={person.id}>

@@ -16,7 +16,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Game } from "@/lib/igdb";
 import { QuickGameCard } from "./quick-game-card";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export type LibraryRecord = {
   igdb_id: number;
@@ -56,7 +56,6 @@ export function LibraryCollection({
   lang: UiLang;
   owner: boolean;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();
   const pathname = usePathname();
@@ -173,33 +172,50 @@ export function LibraryCollection({
         </span>
         <h2>
           {owner
-            ? pt
-              ? "Sua biblioteca está vazia"
-              : "Your library is empty"
-            : pt
-              ? "Nenhum jogo nesta biblioteca"
-              : "No games in this library"}
+            ? tri(
+                lang,
+                "Sua biblioteca está vazia",
+                "Your library is empty",
+                "Tu biblioteca está vacía",
+              )
+            : tri(
+                lang,
+                "Nenhum jogo nesta biblioteca",
+                "No games in this library",
+                "Ningún juego en esta biblioteca",
+              )}
         </h2>
         <p>
           {owner
-            ? pt
-              ? "Adicione jogos pelo catálogo para montar sua primeira prateleira."
-              : "Add games from the catalog to build your first shelf."
-            : pt
-              ? "Esta coleção ainda não tem jogos públicos."
-              : "This collection has no public games yet."}
+            ? tri(
+                lang,
+                "Adicione jogos pelo catálogo para montar sua primeira prateleira.",
+                "Add games from the catalog to build your first shelf.",
+                "Añade juegos desde el catálogo para armar tu primer estante.",
+              )
+            : tri(
+                lang,
+                "Esta coleção ainda não tem jogos públicos.",
+                "This collection has no public games yet.",
+                "Esta colección todavía no tiene juegos públicos.",
+              )}
         </p>
       </section>
     );
 
   const labels: Record<Filter, string> = {
     ALL: t.all,
-    UNCLASSIFIED: pt ? "Não classificados" : "Unclassified",
+    UNCLASSIFIED: tri(
+      lang,
+      "Não classificados",
+      "Unclassified",
+      "Sin clasificar",
+    ),
     PLAYING: t.playing,
     BACKLOG: "Backlog",
-    WISHLIST: pt ? "Desejos" : "Wishlist",
-    COMPLETED: pt ? "Concluídos" : "Completed",
-    LIKED: pt ? "Favoritos" : "Favorites",
+    WISHLIST: tri(lang, "Desejos", "Wishlist", "Deseos"),
+    COMPLETED: tri(lang, "Concluídos", "Completed", "Completados"),
+    LIKED: tri(lang, "Favoritos", "Favorites", "Favoritos"),
     RATED: t.rated,
   };
   return (
@@ -207,7 +223,12 @@ export function LibraryCollection({
       <nav
         className="game-page-nav library-smart-shelves"
         role="tablist"
-        aria-label={pt ? "Filtros da biblioteca" : "Library filters"}
+        aria-label={tri(
+          lang,
+          "Filtros da biblioteca",
+          "Library filters",
+          "Filtros de la biblioteca",
+        )}
       >
         {filters.map((item) => (
           <button
@@ -232,10 +253,18 @@ export function LibraryCollection({
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={
-                pt ? "Buscar por título ou gênero" : "Search title or genre"
-              }
-              aria-label={pt ? "Buscar na biblioteca" : "Search library"}
+              placeholder={tri(
+                lang,
+                "Buscar por título ou gênero",
+                "Search title or genre",
+                "Buscar por título o género",
+              )}
+              aria-label={tri(
+                lang,
+                "Buscar na biblioteca",
+                "Search library",
+                "Buscar en la biblioteca",
+              )}
             />
           </label>
           {query && (
@@ -252,7 +281,7 @@ export function LibraryCollection({
           )}
         </form>
         <div className="library-sort">
-          <span>{pt ? "Ordenar" : "Sort"}</span>
+          <span>{tri(lang, "Ordenar", "Sort", "Ordenar")}</span>
           <Select.Root
             value={sort}
             onValueChange={(value) =>
@@ -263,7 +292,12 @@ export function LibraryCollection({
           >
             <Select.Trigger
               className="library-sort-trigger"
-              aria-label={pt ? "Ordenar biblioteca" : "Sort library"}
+              aria-label={tri(
+                lang,
+                "Ordenar biblioteca",
+                "Sort library",
+                "Ordenar biblioteca",
+              )}
             >
               <Select.Value />
               <Select.Icon>
@@ -281,12 +315,41 @@ export function LibraryCollection({
                   {[
                     [
                       "recent",
-                      pt ? "Atualizados recentemente" : "Recently updated",
+                      tri(
+                        lang,
+                        "Atualizados recentemente",
+                        "Recently updated",
+                        "Actualizados recientemente",
+                      ),
                     ],
-                    ["oldest", pt ? "Mais antigos primeiro" : "Oldest first"],
-                    ["rating", pt ? "Minha maior nota" : "My highest rating"],
+                    [
+                      "oldest",
+                      tri(
+                        lang,
+                        "Mais antigos primeiro",
+                        "Oldest first",
+                        "Más antiguos primero",
+                      ),
+                    ],
+                    [
+                      "rating",
+                      tri(
+                        lang,
+                        "Minha maior nota",
+                        "My highest rating",
+                        "Mi nota más alta",
+                      ),
+                    ],
                     ["title", "A–Z"],
-                    ["year", pt ? "Ano de lançamento" : "Release year"],
+                    [
+                      "year",
+                      tri(
+                        lang,
+                        "Ano de lançamento",
+                        "Release year",
+                        "Año de lanzamiento",
+                      ),
+                    ],
                   ].map(([value, label]) => (
                     <Select.Item
                       key={value}
@@ -306,13 +369,23 @@ export function LibraryCollection({
         </div>
         <div
           className="library-view-switch"
-          aria-label={pt ? "Modo de visualização" : "View mode"}
+          aria-label={tri(
+            lang,
+            "Modo de visualização",
+            "View mode",
+            "Modo de visualización",
+          )}
         >
           <button
             type="button"
             data-active={view === "grid" || undefined}
             onClick={() => update({ view: null })}
-            aria-label={pt ? "Visualizar em grade" : "Grid view"}
+            aria-label={tri(
+              lang,
+              "Visualizar em grade",
+              "Grid view",
+              "Vista de cuadrícula",
+            )}
           >
             <LayoutGrid size={17} />
           </button>
@@ -320,7 +393,12 @@ export function LibraryCollection({
             type="button"
             data-active={view === "list" || undefined}
             onClick={() => update({ view: "list" })}
-            aria-label={pt ? "Visualizar em lista" : "List view"}
+            aria-label={tri(
+              lang,
+              "Visualizar em lista",
+              "List view",
+              "Vista de lista",
+            )}
           >
             <List size={17} />
           </button>
@@ -329,11 +407,13 @@ export function LibraryCollection({
       <div className="library-results-meta">
         <span>
           {visibleRecords.length.toLocaleString(lang)}{" "}
-          {visibleRecords.length === 1 ? (pt ? "jogo" : "game") : t.gamesLower}
+          {visibleRecords.length === 1
+            ? tri(lang, "jogo", "game", "juego")
+            : t.gamesLower}
         </span>
         {totalPages > 1 && (
           <span>
-            {pt ? "Página" : "Page"} {currentPage} / {totalPages}
+            {tri(lang, "Página", "Page", "Página")} {currentPage} / {totalPages}
           </span>
         )}
       </div>
@@ -342,11 +422,21 @@ export function LibraryCollection({
           <span aria-hidden>
             <Search size={22} />
           </span>
-          <h2>{pt ? "Nenhum jogo encontrado" : "No games found"}</h2>
+          <h2>
+            {tri(
+              lang,
+              "Nenhum jogo encontrado",
+              "No games found",
+              "No se encontraron juegos",
+            )}
+          </h2>
           <p>
-            {pt
-              ? "Tente outra busca ou escolha uma prateleira diferente."
-              : "Try another search or choose a different shelf."}
+            {tri(
+              lang,
+              "Tente outra busca ou escolha uma prateleira diferente.",
+              "Try another search or choose a different shelf.",
+              "Prueba otra búsqueda o elige un estante diferente.",
+            )}
           </p>
           <button
             type="button"
@@ -383,7 +473,12 @@ export function LibraryCollection({
       {totalPages > 1 && (
         <nav
           className="library-pagination"
-          aria-label={pt ? "Paginação da biblioteca" : "Library pagination"}
+          aria-label={tri(
+            lang,
+            "Paginação da biblioteca",
+            "Library pagination",
+            "Paginación de la biblioteca",
+          )}
         >
           <button
             type="button"

@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { createClient } from "@/lib/supabase/client";
+import { tri } from "@/lib/ui-text";
 
 type Labels = Dictionary["notifications"];
 type NotificationKind =
@@ -328,13 +329,19 @@ export function NotificationCenter({
                             {item.kind === "moderation_comment_removed" ? (
                               <>
                                 <strong>
-                                  {lang === "pt-BR"
-                                    ? "Moderação"
-                                    : "Moderation"}
+                                  {tri(
+                                    lang,
+                                    "Moderação",
+                                    "Moderation",
+                                    "Moderación",
+                                  )}
                                 </strong>{" "}
-                                {lang === "pt-BR"
-                                  ? "removeu um comentário seu"
-                                  : "removed one of your comments"}
+                                {tri(
+                                  lang,
+                                  "removeu um comentário seu",
+                                  "removed one of your comments",
+                                  "eliminó un comentario tuyo",
+                                )}
                               </>
                             ) : (
                               <>
@@ -414,26 +421,35 @@ export function NotificationCenter({
               <ShieldAlert size={22} />
             </span>
             <Dialog.Title>
-              {lang === "pt-BR"
-                ? "Comentário removido pela moderação"
-                : "Comment removed by moderation"}
+              {tri(
+                lang,
+                "Comentário removido pela moderação",
+                "Comment removed by moderation",
+                "Comentario eliminado por moderación",
+              )}
             </Dialog.Title>
             <Dialog.Description>
-              {lang === "pt-BR"
-                ? "O conteúdo deixou de aparecer publicamente e não pode mais receber respostas."
-                : "The content is no longer public and cannot receive new replies."}
+              {tri(
+                lang,
+                "O conteúdo deixou de aparecer publicamente e não pode mais receber respostas.",
+                "The content is no longer public and cannot receive new replies.",
+                "El contenido ha dejado de aparecer públicamente y ya no puede recibir respuestas.",
+              )}
             </Dialog.Description>
             <div>
-              <small>{lang === "pt-BR" ? "JUSTIFICATIVA" : "REASON"}</small>
+              <small>{tri(lang, "JUSTIFICATIVA", "REASON", "MOTIVO")}</small>
               <p>
                 {detail?.target_title ||
-                  (lang === "pt-BR"
-                    ? "Removido por violar as regras da comunidade."
-                    : "Removed for violating the community rules.")}
+                  tri(
+                    lang,
+                    "Removido por violar as regras da comunidade.",
+                    "Removed for violating the community rules.",
+                    "Eliminado por infringir las reglas de la comunidad.",
+                  )}
               </p>
             </div>
             <Dialog.Close className="notification-detail-confirm">
-              {lang === "pt-BR" ? "Entendi" : "Got it"}
+              {tri(lang, "Entendi", "Got it", "Entendido")}
             </Dialog.Close>
           </Dialog.Content>
         </Dialog.Portal>

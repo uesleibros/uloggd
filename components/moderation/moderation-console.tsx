@@ -21,7 +21,7 @@ import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Role = "USER" | "MODERATOR" | "ADMIN";
 type Profile = {
@@ -86,7 +86,6 @@ export function ModerationConsole({
   moderationStates: ModerationState[];
   actions: Action[];
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const pathname = usePathname();
   const [statusFilter, setStatusFilter] = useState(initialStatus);
@@ -154,15 +153,23 @@ export function ModerationConsole({
       ? reportRows
       : reportRows.filter((report) => report.status === statusFilter);
   const statusTabs = [
-    { id: "OPEN", label: pt ? "Abertas" : "Open", icon: Flag },
+    { id: "OPEN", label: tri(lang, "Abertas", "Open", "Abiertas"), icon: Flag },
     {
       id: "REVIEWING",
-      label: pt ? "Em análise" : "Reviewing",
+      label: tri(lang, "Em análise", "Reviewing", "En revisión"),
       icon: Clock3,
     },
-    { id: "RESOLVED", label: pt ? "Resolvidas" : "Resolved", icon: Check },
-    { id: "DISMISSED", label: pt ? "Descartadas" : "Dismissed", icon: X },
-    { id: "ALL", label: pt ? "Todas" : "All", icon: ShieldCheck },
+    {
+      id: "RESOLVED",
+      label: tri(lang, "Resolvidas", "Resolved", "Resueltas"),
+      icon: Check,
+    },
+    {
+      id: "DISMISSED",
+      label: tri(lang, "Descartadas", "Dismissed", "Descartadas"),
+      icon: X,
+    },
+    { id: "ALL", label: tri(lang, "Todas", "All", "Todas"), icon: ShieldCheck },
   ];
 
   function setStatus(status: string) {
@@ -187,7 +194,12 @@ export function ModerationConsole({
       .limit(20);
     if (searchError) {
       setError(
-        pt ? "Não foi possível buscar usuários." : "Could not search users.",
+        tri(
+          lang,
+          "Não foi possível buscar usuários.",
+          "Could not search users.",
+          "No se pudieron buscar usuarios.",
+        ),
       );
     } else {
       const rows = (data ?? []) as Profile[];
@@ -230,9 +242,12 @@ export function ModerationConsole({
     });
     if (actionError)
       setError(
-        pt
-          ? "Não foi possível atualizar a denúncia."
-          : "Could not update the report.",
+        tri(
+          lang,
+          "Não foi possível atualizar a denúncia.",
+          "Could not update the report.",
+          "No se pudo actualizar la denuncia.",
+        ),
       );
     else
       setReportRows((current) =>
@@ -273,9 +288,12 @@ export function ModerationConsole({
     );
     if (actionError)
       setError(
-        pt
-          ? "A ação foi recusada. Verifique sua permissão e o motivo."
-          : "The action was refused. Check your permission and reason.",
+        tri(
+          lang,
+          "A ação foi recusada. Verifique sua permissão e o motivo.",
+          "The action was refused. Check your permission and reason.",
+          "La acción fue rechazada. Revisa tu permiso y el motivo.",
+        ),
       );
     else {
       setTargetAction(null);
@@ -350,9 +368,12 @@ export function ModerationConsole({
     );
     if (removalError || data !== true) {
       setError(
-        pt
-          ? "Não foi possível remover o comentário."
-          : "Could not remove the comment.",
+        tri(
+          lang,
+          "Não foi possível remover o comentário.",
+          "Could not remove the comment.",
+          "No se pudo quitar el comentario.",
+        ),
       );
     } else {
       setCommentRows((current) =>
@@ -386,12 +407,24 @@ export function ModerationConsole({
           <ShieldCheck size={18} />
         </span>
         <div>
-          <small>{pt ? "ÁREA INTERNA" : "INTERNAL AREA"}</small>
-          <h1>{pt ? "Central de moderação" : "Moderation center"}</h1>
+          <small>
+            {tri(lang, "ÁREA INTERNA", "INTERNAL AREA", "ÁREA INTERNA")}
+          </small>
+          <h1>
+            {tri(
+              lang,
+              "Central de moderação",
+              "Moderation center",
+              "Centro de moderación",
+            )}
+          </h1>
           <p>
-            {pt
-              ? "Analise denúncias, proteja a comunidade e mantenha toda decisão auditável."
-              : "Review reports, protect the community, and keep every decision auditable."}
+            {tri(
+              lang,
+              "Analise denúncias, proteja a comunidade e mantenha toda decisão auditável.",
+              "Review reports, protect the community, and keep every decision auditable.",
+              "Revisa denuncias, protege la comunidad y mantén cada decisión auditable.",
+            )}
           </p>
         </div>
         <strong>{actorRole}</strong>
@@ -406,16 +439,33 @@ export function ModerationConsole({
       <section className="moderation-section">
         <header>
           <div>
-            <h2>{pt ? "Fila de denúncias" : "Report queue"}</h2>
+            <h2>
+              {tri(
+                lang,
+                "Fila de denúncias",
+                "Report queue",
+                "Cola de denuncias",
+              )}
+            </h2>
             <p>
               {visibleReports.length}{" "}
-              {pt ? "registro(s) neste filtro" : "record(s) in this filter"}
+              {tri(
+                lang,
+                "registro(s) neste filtro",
+                "record(s) in this filter",
+                "registro(s) en este filtro",
+              )}
             </p>
           </div>
           <nav
             className="game-page-nav moderation-status-tabs"
             role="tablist"
-            aria-label={pt ? "Filtrar denúncias" : "Filter reports"}
+            aria-label={tri(
+              lang,
+              "Filtrar denúncias",
+              "Filter reports",
+              "Filtrar denuncias",
+            )}
           >
             {statusTabs.map(({ id, label, icon: Icon }, index) => (
               <button
@@ -458,7 +508,12 @@ export function ModerationConsole({
           {visibleReports.length === 0 && (
             <div className="moderation-empty">
               <Check size={22} />
-              {pt ? "Nenhuma denúncia neste estado." : "No reports here."}
+              {tri(
+                lang,
+                "Nenhuma denúncia neste estado.",
+                "No reports here.",
+                "Ninguna denuncia en este estado.",
+              )}
             </div>
           )}
           {visibleReports.map((report) => {
@@ -484,11 +539,11 @@ export function ModerationConsole({
                 </header>
                 <div className="moderation-report-people">
                   <span>
-                    {pt ? "Alvo" : "Target"}:{" "}
+                    {tri(lang, "Alvo", "Target", "Objetivo")}:{" "}
                     <strong>{profileName(target)}</strong>
                   </span>
                   <span>
-                    {pt ? "Enviado por" : "Reported by"}:{" "}
+                    {tri(lang, "Enviado por", "Reported by", "Enviado por")}:{" "}
                     <strong>{profileName(reporter)}</strong>
                   </span>
                   <b>{report.content_type || "PROFILE"}</b>
@@ -496,28 +551,37 @@ export function ModerationConsole({
                 {comment && (
                   <blockquote data-deleted={comment.deleted_at || undefined}>
                     {comment.deleted_at
-                      ? pt
-                        ? "Comentário removido"
-                        : "Deleted comment"
+                      ? tri(
+                          lang,
+                          "Comentário removido",
+                          "Deleted comment",
+                          "Comentario eliminado",
+                        )
                       : comment.body}
                   </blockquote>
                 )}
                 {report.details && <p>{report.details}</p>}
                 {report.target_profile_id && target?.username && (
                   <Link href={`/${lang}/u/${target.username}`} target="_blank">
-                    {pt ? "Abrir perfil" : "Open profile"}{" "}
+                    {tri(lang, "Abrir perfil", "Open profile", "Abrir perfil")}{" "}
                     <ExternalLink size={12} />
                   </Link>
                 )}
                 <textarea
                   value={notes[report.id] ?? report.moderator_note ?? ""}
                   maxLength={1000}
-                  aria-label={
-                    pt ? "Nota interna da decisão" : "Internal decision note"
-                  }
-                  placeholder={
-                    pt ? "Nota interna da decisão…" : "Internal decision note…"
-                  }
+                  aria-label={tri(
+                    lang,
+                    "Nota interna da decisão",
+                    "Internal decision note",
+                    "Nota interna de la decisión",
+                  )}
+                  placeholder={tri(
+                    lang,
+                    "Nota interna da decisão…",
+                    "Internal decision note…",
+                    "Nota interna de la decisión…",
+                  )}
                   onChange={(event) =>
                     setNotes((current) => ({
                       ...current,
@@ -557,7 +621,12 @@ export function ModerationConsole({
                       ) : (
                         <Clock3 size={13} />
                       )}
-                      {pt ? "Assumir análise" : "Start review"}
+                      {tri(
+                        lang,
+                        "Assumir análise",
+                        "Start review",
+                        "Tomar la revisión",
+                      )}
                     </button>
                   )}
                   <button
@@ -570,7 +639,7 @@ export function ModerationConsole({
                     ) : (
                       <X size={13} />
                     )}
-                    {pt ? "Descartar" : "Dismiss"}
+                    {tri(lang, "Descartar", "Dismiss", "Descartar")}
                   </button>
                   <button
                     type="button"
@@ -582,7 +651,7 @@ export function ModerationConsole({
                     ) : (
                       <Check size={13} />
                     )}
-                    {pt ? "Resolver" : "Resolve"}
+                    {tri(lang, "Resolver", "Resolve", "Resolver")}
                   </button>
                 </footer>
               </article>
@@ -594,11 +663,21 @@ export function ModerationConsole({
       <section className="moderation-section">
         <header>
           <div>
-            <h2>{pt ? "Gerenciar usuários" : "Manage users"}</h2>
+            <h2>
+              {tri(
+                lang,
+                "Gerenciar usuários",
+                "Manage users",
+                "Gestionar usuarios",
+              )}
+            </h2>
             <p>
-              {pt
-                ? "Busque pelo @ ou nome de exibição."
-                : "Search by handle or display name."}
+              {tri(
+                lang,
+                "Busque pelo @ ou nome de exibição.",
+                "Search by handle or display name.",
+                "Busca por @ o nombre visible.",
+              )}
             </p>
           </div>
           <form
@@ -613,8 +692,18 @@ export function ModerationConsole({
                 onChange={(event) => setSearch(event.target.value)}
                 minLength={2}
                 maxLength={32}
-                aria-label={pt ? "Buscar usuário" : "Search user"}
-                placeholder={pt ? "Buscar usuário" : "Search user"}
+                aria-label={tri(
+                  lang,
+                  "Buscar usuário",
+                  "Search user",
+                  "Buscar usuario",
+                )}
+                placeholder={tri(
+                  lang,
+                  "Buscar usuário",
+                  "Search user",
+                  "Buscar usuario",
+                )}
               />
             </label>
             <button
@@ -639,7 +728,12 @@ export function ModerationConsole({
         <div className="moderation-user-grid">
           {search.trim().length >= 2 && accountRows.length === 0 && (
             <div className="moderation-empty">
-              {pt ? "Nenhum usuário encontrado." : "No users found."}
+              {tri(
+                lang,
+                "Nenhum usuário encontrado.",
+                "No users found.",
+                "No se encontraron usuarios.",
+              )}
             </div>
           )}
           {accountRows.map((profile) => {
@@ -673,14 +767,16 @@ export function ModerationConsole({
                     <span>@{profile.username}</span>
                     <small>
                       {profile.role}
-                      {banned ? ` · ${pt ? "BANIDO" : "BANNED"}` : ""}
+                      {banned
+                        ? ` · ${tri(lang, "BANIDO", "BANNED", "BANEADO")}`
+                        : ""}
                     </small>
                   </p>
                 </div>
                 {state && <blockquote>{state.reason}</blockquote>}
                 <footer>
                   <Link href={`/${lang}/u/${profile.username}`}>
-                    {pt ? "Perfil" : "Profile"}
+                    {tri(lang, "Perfil", "Profile", "Perfil")}
                   </Link>
                   {!protectedTarget && (
                     <>
@@ -700,12 +796,13 @@ export function ModerationConsole({
                           <VerifiedMark size={13} />
                         )}
                         {profile.verified
-                          ? pt
-                            ? "Retirar selo"
-                            : "Unverify"
-                          : pt
-                            ? "Verificar"
-                            : "Verify"}
+                          ? tri(
+                              lang,
+                              "Retirar selo",
+                              "Unverify",
+                              "Quitar verificación",
+                            )
+                          : tri(lang, "Verificar", "Verify", "Verificar")}
                       </button>
                       <button
                         type="button"
@@ -717,12 +814,8 @@ export function ModerationConsole({
                       >
                         <Ban size={13} />
                         {banned
-                          ? pt
-                            ? "Desbanir"
-                            : "Unban"
-                          : pt
-                            ? "Banir"
-                            : "Ban"}
+                          ? tri(lang, "Desbanir", "Unban", "Desbanear")
+                          : tri(lang, "Banir", "Ban", "Banear")}
                       </button>
                     </>
                   )}
@@ -736,17 +829,32 @@ export function ModerationConsole({
       <section className="moderation-section moderation-audit">
         <header>
           <div>
-            <h2>{pt ? "Auditoria recente" : "Recent audit log"}</h2>
+            <h2>
+              {tri(
+                lang,
+                "Auditoria recente",
+                "Recent audit log",
+                "Auditoría reciente",
+              )}
+            </h2>
             <p>
-              {pt
-                ? "Registro imutável das decisões."
-                : "Immutable decisions log."}
+              {tri(
+                lang,
+                "Registro imutável das decisões.",
+                "Immutable decisions log.",
+                "Registro inmutable de las decisiones.",
+              )}
             </p>
           </div>
         </header>
         {actions.length === 0 && (
           <div className="moderation-empty">
-            {pt ? "Nenhuma decisão registrada." : "No decisions recorded yet."}
+            {tri(
+              lang,
+              "Nenhuma decisão registrada.",
+              "No decisions recorded yet.",
+              "Ninguna decisión registrada.",
+            )}
           </div>
         )}
         <ol>
@@ -798,16 +906,19 @@ export function ModerationConsole({
                 : ""}
             </Dialog.Title>
             <Dialog.Description>
-              {pt
-                ? "Esta decisão será registrada permanentemente na auditoria."
-                : "This decision will be permanently recorded in the audit log."}
+              {tri(
+                lang,
+                "Esta decisão será registrada permanentemente na auditoria.",
+                "This decision will be permanently recorded in the audit log.",
+                "Esta decisión quedará registrada permanentemente en la auditoría.",
+              )}
             </Dialog.Description>
             {targetAction?.action === "BAN" && (
               // A <label> here would forward its click to the trigger and
               // re-toggle the select, so the caption is a plain span instead.
               <div className="moderation-field">
                 <span id="moderation-duration-label">
-                  {pt ? "Duração" : "Duration"}
+                  {tri(lang, "Duração", "Duration", "Duración")}
                 </span>
                 <Select.Root value={duration} onValueChange={setDuration}>
                   <Select.Trigger
@@ -829,11 +940,21 @@ export function ModerationConsole({
                     >
                       <Select.Viewport>
                         {[
-                          ["1", pt ? "1 dia" : "1 day"],
-                          ["7", pt ? "7 dias" : "7 days"],
-                          ["30", pt ? "30 dias" : "30 days"],
+                          ["1", tri(lang, "1 dia", "1 day", "1 día")],
+                          ["7", tri(lang, "7 dias", "7 days", "7 días")],
+                          ["30", tri(lang, "30 dias", "30 days", "30 días")],
                           ...(actorRole === "ADMIN"
-                            ? [["permanent", pt ? "Permanente" : "Permanent"]]
+                            ? [
+                                [
+                                  "permanent",
+                                  tri(
+                                    lang,
+                                    "Permanente",
+                                    "Permanent",
+                                    "Permanente",
+                                  ),
+                                ],
+                              ]
                             : []),
                         ].map(([value, label]) => (
                           <Select.Item
@@ -854,21 +975,32 @@ export function ModerationConsole({
               </div>
             )}
             <label>
-              {pt ? "Motivo / nota interna" : "Reason / internal note"}
+              {tri(
+                lang,
+                "Motivo / nota interna",
+                "Reason / internal note",
+                "Motivo / nota interna",
+              )}
               <textarea
                 value={reason}
                 maxLength={1000}
                 onChange={(event) => setReason(event.target.value)}
-                placeholder={
-                  pt ? "Descreva a justificativa…" : "Describe the rationale…"
-                }
+                placeholder={tri(
+                  lang,
+                  "Descreva a justificativa…",
+                  "Describe the rationale…",
+                  "Describe la justificación…",
+                )}
               />
             </label>
             {needsReason && reason.trim().length < 3 && (
               <p className="moderation-dialog-hint">
-                {pt
-                  ? "O motivo é obrigatório e precisa de pelo menos 3 caracteres."
-                  : "A reason is required and must be at least 3 characters."}
+                {tri(
+                  lang,
+                  "O motivo é obrigatório e precisa de pelo menos 3 caracteres.",
+                  "A reason is required and must be at least 3 characters.",
+                  "El motivo es obligatorio y necesita al menos 3 caracteres.",
+                )}
               </p>
             )}
             {error && (
@@ -890,9 +1022,12 @@ export function ModerationConsole({
                 {profilePending && <LoaderCircle className="spin" size={14} />}
                 {profilePending
                   ? t.applying
-                  : pt
-                    ? "Confirmar ação"
-                    : "Confirm action"}
+                  : tri(
+                      lang,
+                      "Confirmar ação",
+                      "Confirm action",
+                      "Confirmar acción",
+                    )}
               </button>
             </footer>
           </Dialog.Content>
@@ -919,23 +1054,32 @@ export function ModerationConsole({
             </span>
             <Dialog.Title>{t.removeComment}</Dialog.Title>
             <Dialog.Description>
-              {pt
-                ? "O autor será notificado e esta decisão ficará registrada na auditoria."
-                : "The author will be notified and this decision will remain in the audit log."}
+              {tri(
+                lang,
+                "O autor será notificado e esta decisão ficará registrada na auditoria.",
+                "The author will be notified and this decision will remain in the audit log.",
+                "Se notificará al autor y esta decisión quedará en la auditoría.",
+              )}
             </Dialog.Description>
             <label>
-              {pt ? "Justificativa (opcional)" : "Reason (optional)"}
+              {tri(
+                lang,
+                "Justificativa (opcional)",
+                "Reason (optional)",
+                "Justificación (opcional)",
+              )}
               <textarea
                 value={commentRemovalReason}
                 maxLength={1000}
                 onChange={(event) =>
                   setCommentRemovalReason(event.target.value)
                 }
-                placeholder={
-                  pt
-                    ? "Explique por que o conteúdo foi removido…"
-                    : "Explain why the content was removed…"
-                }
+                placeholder={tri(
+                  lang,
+                  "Explique por que o conteúdo foi removido…",
+                  "Explain why the content was removed…",
+                  "Explica por qué se eliminó el contenido…",
+                )}
               />
             </label>
             {error && (

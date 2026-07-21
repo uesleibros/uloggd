@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Game, GameDetail } from "@/lib/igdb";
 import { QuickGameCard } from "./library/quick-game-card";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export type SavedState = {
   status:
@@ -29,20 +29,27 @@ export function RelatedGamesTabs({
 }) {
   const [active, setActive] = useState(groups[0]?.kind);
   if (!groups.length || !active) return null;
-  const labels =
-    lang === "pt-BR"
-      ? {
-          expansions: "DLCs e expansões",
-          editions: "Edições e ports",
-          remakes: "Remakes e remasters",
-          similar: "Relacionados",
-        }
-      : {
-          expansions: "DLCs and expansions",
-          editions: "Editions and ports",
-          remakes: "Remakes and remasters",
-          similar: "Related",
-        };
+  const labels = {
+    expansions: tri(
+      lang,
+      "DLCs e expansões",
+      "DLCs and expansions",
+      "DLC y expansiones",
+    ),
+    editions: tri(
+      lang,
+      "Edições e ports",
+      "Editions and ports",
+      "Ediciones y ports",
+    ),
+    remakes: tri(
+      lang,
+      "Remakes e remasters",
+      "Remakes and remasters",
+      "Remakes y remasters",
+    ),
+    similar: tri(lang, "Relacionados", "Related", "Relacionados"),
+  };
   const group = groups.find((item) => item.kind === active) ?? groups[0];
 
   return (
@@ -50,19 +57,27 @@ export function RelatedGamesTabs({
       <header className="game-section-heading">
         <div>
           <span>
-            {lang === "pt-BR" ? "MAIS DO JOGO" : "MORE FROM THE GAME"}
+            {tri(lang, "MAIS DO JOGO", "MORE FROM THE GAME", "MÁS DEL JUEGO")}
           </span>
-          <h2>{lang === "pt-BR" ? "Jogos relacionados" : "Related games"}</h2>
+          <h2>
+            {tri(
+              lang,
+              "Jogos relacionados",
+              "Related games",
+              "Juegos relacionados",
+            )}
+          </h2>
         </div>
       </header>
       <div
         className="related-tabs"
         role="tablist"
-        aria-label={
-          lang === "pt-BR"
-            ? "Tipos de jogos relacionados"
-            : "Related game types"
-        }
+        aria-label={tri(
+          lang,
+          "Tipos de jogos relacionados",
+          "Related game types",
+          "Tipos de juegos relacionados",
+        )}
       >
         {groups.map((item) => (
           <button

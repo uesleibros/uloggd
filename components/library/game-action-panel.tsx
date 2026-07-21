@@ -14,7 +14,7 @@ import {
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "./star-rating";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -105,9 +105,12 @@ export function GameActionPanel({
     if (actionError) {
       setState(previous);
       setError(
-        pt
-          ? "Não foi possível atualizar sua biblioteca."
-          : "Could not update your library.",
+        tri(
+          lang,
+          "Não foi possível atualizar sua biblioteca.",
+          "Could not update your library.",
+          "No se pudo actualizar tu biblioteca.",
+        ),
       );
     } else setState(data as State);
     setPending(null);
@@ -126,9 +129,12 @@ export function GameActionPanel({
     if (actionError) {
       setState(previous);
       setError(
-        pt
-          ? "Não foi possível salvar sua avaliação. Tente novamente."
-          : "Could not save your rating. Please try again.",
+        tri(
+          lang,
+          "Não foi possível salvar sua avaliação. Tente novamente.",
+          "Could not save your rating. Please try again.",
+          "No se pudo guardar tu valoración. Inténtalo de nuevo.",
+        ),
       );
     } else setState(data as State);
     setPending(null);
@@ -137,9 +143,12 @@ export function GameActionPanel({
   if (!enabled)
     return (
       <p className="game-actions-signed-out">
-        {pt
-          ? "Entre para acompanhar este jogo."
-          : "Sign in to track this game."}
+        {tri(
+          lang,
+          "Entre para acompanhar este jogo.",
+          "Sign in to track this game.",
+          "Inicia sesión para seguir este juego.",
+        )}
       </p>
     );
 
@@ -157,7 +166,7 @@ export function GameActionPanel({
   return (
     <div className="game-action-panel">
       <div className="game-user-rating">
-        <span>{pt ? "SUA NOTA" : "YOUR RATING"}</span>
+        <span>{tri(lang, "SUA NOTA", "YOUR RATING", "TU NOTA")}</span>
         <StarRating
           value={state?.quick_rating ?? null}
           onChange={rate}
@@ -181,9 +190,7 @@ export function GameActionPanel({
             )}
             {state && state.status !== "BACKLOG"
               ? labels[state.status]
-              : pt
-                ? "Definir status"
-                : "Set status"}
+              : tri(lang, "Definir status", "Set status", "Definir estado")}
             <ChevronDown size={14} />
           </button>
         </DropdownMenu.Trigger>

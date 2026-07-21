@@ -9,9 +9,14 @@ import {
   Cookie,
 } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getLegalContent, isLegalDocument } from "@/lib/legal-content";
+import {
+  getLegalContent,
+  isLegalDocument,
+  legalContentLocale,
+} from "@/lib/legal-content";
 import { getDictionary, hasLocale } from "../../dictionaries";
 import "../legal.css";
+import { tri } from "@/lib/ui-text";
 
 type Props = PageProps<"/[lang]/legal/[document]">;
 
@@ -25,13 +30,19 @@ export default async function LegalPage({ params }: Props) {
   const { lang, document } = await params;
   if (!hasLocale(lang) || !isLegalDocument(document)) notFound();
   const content = getLegalContent(lang, document);
+  const translated = legalContentLocale(lang) === lang;
   const d = await getDictionary(lang);
   const documents = [
     { slug: "terms", label: d.legal.terms, icon: FileText },
     { slug: "privacy", label: d.legal.privacy, icon: LockKeyhole },
     {
       slug: "cookies",
-      label: lang === "pt-BR" ? "Política de Cookies" : "Cookie Policy",
+      label: tri(
+        lang,
+        "Política de Cookies",
+        "Cookie Policy",
+        "Política de Cookies",
+      ),
       icon: Cookie,
     },
     { slug: "child-safety", label: d.legal.safety, icon: ShieldCheck },
@@ -65,6 +76,16 @@ export default async function LegalPage({ params }: Props) {
           <h1>{content.title}</h1>
           <p>{content.intro}</p>
           <small>{content.updated}</small>
+          {!translated && (
+            <p className="legal-untranslated" role="note">
+              {tri(
+                lang,
+                "Este documento ainda não tem versão neste idioma; o texto abaixo é o original em inglês, que é a versão que vale.",
+                "This document is not available in this language yet; the text below is the English original, which is the binding version.",
+                "Este documento todavía no tiene versión en este idioma; el texto de abajo es el original en inglés, que es la versión vinculante.",
+              )}
+            </p>
+          )}
         </div>
         <div className="legal-content">
           {content.sections.map((section) => (

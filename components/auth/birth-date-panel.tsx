@@ -11,10 +11,9 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ageOnDate, birthDateLimits } from "@/lib/age-access";
 import { createClient } from "@/lib/supabase/client";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export function BirthDatePanel({ lang }: { lang: UiLang }) {
-  const pt = lang === "pt-BR";
   const router = useRouter();
   const limits = useMemo(() => birthDateLimits(), []);
   const [value, setValue] = useState("");
@@ -35,12 +34,18 @@ export function BirthDatePanel({ lang }: { lang: UiLang }) {
     if (actionError) {
       setError(
         actionError.code === "PGRST202" || actionError.code === "42883"
-          ? pt
-            ? "A etapa de idade ainda não está disponível. A configuração do banco precisa ser aplicada."
-            : "The age step is not available yet. The database configuration must be applied."
-          : pt
-            ? "Não foi possível registrar sua data. Confira os dados e tente novamente."
-            : "Could not record your date. Check it and try again.",
+          ? tri(
+              lang,
+              "A etapa de idade ainda não está disponível. A configuração do banco precisa ser aplicada.",
+              "The age step is not available yet. The database configuration must be applied.",
+              "El paso de edad todavía no está disponible. Falta aplicar la configuración de la base de datos.",
+            )
+          : tri(
+              lang,
+              "Não foi possível registrar sua data. Confira os dados e tente novamente.",
+              "Could not record your date. Check it and try again.",
+              "No se pudo registrar tu fecha. Revísala e inténtalo de nuevo.",
+            ),
       );
       setPending(false);
       return;
@@ -53,7 +58,7 @@ export function BirthDatePanel({ lang }: { lang: UiLang }) {
     <section className="login-panel birth-date-panel">
       <div
         className="onboarding-progress"
-        aria-label={pt ? "Etapa 2 de 2" : "Step 2 of 2"}
+        aria-label={tri(lang, "Etapa 2 de 2", "Step 2 of 2", "Paso 2 de 2")}
       >
         <span>
           <Check size={12} aria-hidden />
@@ -65,16 +70,26 @@ export function BirthDatePanel({ lang }: { lang: UiLang }) {
         <span className="onboarding-icon">
           <ShieldCheck size={21} />
         </span>
-        <h1>{pt ? "Proteja sua experiência" : "Protect your experience"}</h1>
+        <h1>
+          {tri(
+            lang,
+            "Proteja sua experiência",
+            "Protect your experience",
+            "Protege tu experiencia",
+          )}
+        </h1>
         <p>
-          {pt
-            ? "Sua data de nascimento define quais jogos podem ser acessados conforme a Classificação Indicativa brasileira."
-            : "Your birth date determines which games you can access under Brazil’s age-rating system."}
+          {tri(
+            lang,
+            "Sua data de nascimento define quais jogos podem ser acessados conforme a Classificação Indicativa brasileira.",
+            "Your birth date determines which games you can access under Brazil’s age-rating system.",
+            "Tu fecha de nacimiento determina a qué juegos puedes acceder según la clasificación por edades brasileña.",
+          )}
         </p>
       </div>
       <form className="auth-form" onSubmit={submit}>
         <label>
-          {pt ? "Data de nascimento" : "Birth date"}
+          {tri(lang, "Data de nascimento", "Birth date", "Fecha de nacimiento")}
           <span className="birth-date-input">
             <CalendarDays size={17} aria-hidden />
             <input
@@ -99,17 +114,23 @@ export function BirthDatePanel({ lang }: { lang: UiLang }) {
             onChange={(event) => setConfirmed(event.target.checked)}
           />
           <span>
-            {pt
-              ? "Confirmo que a data está correta. Depois de salva, ela não poderá ser alterada."
-              : "I confirm this date is correct. Once saved, it cannot be changed."}
+            {tri(
+              lang,
+              "Confirmo que a data está correta. Depois de salva, ela não poderá ser alterada.",
+              "I confirm this date is correct. Once saved, it cannot be changed.",
+              "Confirmo que la fecha es correcta. Una vez guardada, no se podrá cambiar.",
+            )}
           </span>
         </label>
         <div className="birth-date-privacy">
           <LockKeyhole size={15} aria-hidden />
           <p>
-            {pt
-              ? "A data não aparece no seu perfil. Ela é usada para proteção etária e segurança da conta. O cadastro exige pelo menos 12 anos."
-              : "The date is never shown on your profile. It is used for age protection and account safety. You must be at least 12."}
+            {tri(
+              lang,
+              "A data não aparece no seu perfil. Ela é usada para proteção etária e segurança da conta. O cadastro exige pelo menos 12 anos.",
+              "The date is never shown on your profile. It is used for age protection and account safety. You must be at least 12.",
+              "La fecha no aparece en tu perfil. Se usa para la protección por edad y la seguridad de la cuenta. El registro exige al menos 12 años.",
+            )}
           </p>
         </div>
         <button
@@ -121,7 +142,12 @@ export function BirthDatePanel({ lang }: { lang: UiLang }) {
           ) : (
             <ShieldCheck size={17} />
           )}
-          {pt ? "Confirmar e entrar" : "Confirm and enter"}
+          {tri(
+            lang,
+            "Confirmar e entrar",
+            "Confirm and enter",
+            "Confirmar y entrar",
+          )}
         </button>
       </form>
       {error && (

@@ -3,16 +3,21 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Ban, LogOut, Mail } from "lucide-react";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
-import { hasLocale } from "../dictionaries";
+import { hasLocale, resolveLocale } from "../dictionaries";
 import "./suspended.css";
-import { uiText } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 type Props = { params: Promise<{ lang: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang } = await params;
   return {
-    title: lang === "pt-BR" ? "Conta suspensa" : "Account suspended",
+    title: tri(
+      resolveLocale(lang),
+      "Conta suspensa",
+      "Account suspended",
+      "Cuenta suspendida",
+    ),
     robots: { index: false, follow: false },
   };
 }
@@ -20,7 +25,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function SuspendedPage({ params }: Props) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login`);
@@ -52,34 +56,55 @@ export default async function SuspendedPage({ params }: Props) {
         <span className="suspension-mark" aria-hidden>
           <Ban size={26} />
         </span>
-        <small>{pt ? "CONTA SUSPENSA" : "ACCOUNT SUSPENDED"}</small>
+        <small>
+          {tri(
+            lang,
+            "CONTA SUSPENSA",
+            "ACCOUNT SUSPENDED",
+            "CUENTA SUSPENDIDA",
+          )}
+        </small>
         <h1>
           {permanent
-            ? pt
-              ? "Sua conta foi suspensa permanentemente"
-              : "Your account has been permanently suspended"
-            : pt
-              ? "Sua conta está suspensa temporariamente"
-              : "Your account is temporarily suspended"}
+            ? tri(
+                lang,
+                "Sua conta foi suspensa permanentemente",
+                "Your account has been permanently suspended",
+                "Tu cuenta ha sido suspendida permanentemente",
+              )
+            : tri(
+                lang,
+                "Sua conta está suspensa temporariamente",
+                "Your account is temporarily suspended",
+                "Tu cuenta está suspendida temporalmente",
+              )}
         </h1>
         <p>
-          {pt
-            ? "Enquanto a suspensão estiver ativa você não consegue navegar, publicar, avaliar ou interagir no uloggd, e seu perfil aparece como indisponível para outras pessoas."
-            : "While the suspension is active you cannot browse, post, rate or interact on uloggd, and your profile shows as unavailable to everyone else."}
+          {tri(
+            lang,
+            "Enquanto a suspensão estiver ativa você não consegue navegar, publicar, avaliar ou interagir no uloggd, e seu perfil aparece como indisponível para outras pessoas.",
+            "While the suspension is active you cannot browse, post, rate or interact on uloggd, and your profile shows as unavailable to everyone else.",
+            "Mientras la suspensión esté activa no puedes navegar, publicar, valorar ni interactuar en uloggd, y tu perfil aparece como no disponible para los demás.",
+          )}
         </p>
 
         <dl className="suspension-facts">
           <div>
-            <dt>{pt ? "Suspensa em" : "Suspended on"}</dt>
+            <dt>{tri(lang, "Suspensa em", "Suspended on", "Suspendida el")}</dt>
             <dd>{formatter.format(new Date(state.banned_at))}</dd>
           </div>
           <div>
-            <dt>{pt ? "Liberação" : "Reinstatement"}</dt>
+            <dt>
+              {tri(lang, "Liberação", "Reinstatement", "Reincorporación")}
+            </dt>
             <dd>
               {permanent
-                ? pt
-                  ? "Sem previsão"
-                  : "No scheduled date"
+                ? tri(
+                    lang,
+                    "Sem previsão",
+                    "No scheduled date",
+                    "Sin fecha prevista",
+                  )
                 : formatter.format(new Date(state.banned_until!))}
             </dd>
           </div>
@@ -87,21 +112,36 @@ export default async function SuspendedPage({ params }: Props) {
 
         {state.reason && (
           <blockquote className="suspension-reason">
-            <strong>{pt ? "Motivo informado" : "Stated reason"}</strong>
+            <strong>
+              {tri(
+                lang,
+                "Motivo informado",
+                "Stated reason",
+                "Motivo indicado",
+              )}
+            </strong>
             {state.reason}
           </blockquote>
         )}
 
         <p className="suspension-appeal">
-          {pt
-            ? "Se você acredita que houve um engano, responda a este e-mail com o seu @ para que a decisão seja revisada."
-            : "If you believe this is a mistake, reply to this address with your handle so the decision can be reviewed."}
+          {tri(
+            lang,
+            "Se você acredita que houve um engano, responda a este e-mail com o seu @ para que a decisão seja revisada.",
+            "If you believe this is a mistake, reply to this address with your handle so the decision can be reviewed.",
+            "Si crees que hubo un error, responde a este correo con tu @ para que la decisión sea revisada.",
+          )}
         </p>
 
         <div className="suspension-actions">
           <a href="mailto:suporte@uloggd.com">
             <Mail size={15} />
-            {pt ? "Contestar decisão" : "Appeal this decision"}
+            {tri(
+              lang,
+              "Contestar decisão",
+              "Appeal this decision",
+              "Apelar la decisión",
+            )}
           </a>
           <Link href={`/${lang}/auth/signout`} prefetch={false}>
             <LogOut size={15} />

@@ -17,7 +17,7 @@ import type { Game } from "@/lib/igdb";
 import { ActivityEntryActions } from "./activity-entry-actions";
 import { LikeButton } from "./like-button";
 import { VerifiedBadge } from "../verified-badge";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
   JourneyDetailsDialog,
   type JourneyDetailSession,
@@ -77,7 +77,6 @@ export function ActivityStream({
   lang: UiLang;
   viewerId?: string | null;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const date = new Intl.DateTimeFormat(lang, {
     day: "numeric",
@@ -91,11 +90,21 @@ export function ActivityStream({
         <span aria-hidden>
           <NotebookPen size={22} />
         </span>
-        <h2>{pt ? "Nada registrado ainda" : "Nothing logged yet"}</h2>
+        <h2>
+          {tri(
+            lang,
+            "Nada registrado ainda",
+            "Nothing logged yet",
+            "Nada registrado todavía",
+          )}
+        </h2>
         <p>
-          {pt
-            ? "Avaliações e sessões públicas aparecerão aqui."
-            : "Public reviews and sessions will appear here."}
+          {tri(
+            lang,
+            "Avaliações e sessões públicas aparecerão aqui.",
+            "Public reviews and sessions will appear here.",
+            "Las reseñas y sesiones públicas aparecerán aquí.",
+          )}
         </p>
       </div>
     );
@@ -155,23 +164,27 @@ export function ActivityStream({
                     1000 && (
                     <small className="activity-edited">
                       {" "}
-                      · {pt ? "editada" : "edited"}
+                      · {tri(lang, "editada", "edited", "editada")}
                     </small>
                   )}
               </time>
             </header>
             <p className="activity-verb">
               {entry.kind === "review"
-                ? pt
-                  ? "avaliou"
-                  : "reviewed"
+                ? tri(lang, "avaliou", "reviewed", "reseñó")
                 : entry.endedOn
-                  ? pt
-                    ? "registrou uma jornada em"
-                    : "logged a journey in"
-                  : pt
-                    ? "registrou uma sessão de"
-                    : "logged a session of"}{" "}
+                  ? tri(
+                      lang,
+                      "registrou uma jornada em",
+                      "logged a journey in",
+                      "registró un recorrido en",
+                    )
+                  : tri(
+                      lang,
+                      "registrou uma sessão de",
+                      "logged a session of",
+                      "registró una sesión de",
+                    )}{" "}
               <Link href={`/${lang}/game/${entry.gameSlug}`}>
                 {entry.game?.name ?? entry.gameSlug}
               </Link>
@@ -214,7 +227,8 @@ export function ActivityStream({
                 <div className="activity-meta activity-review-meta">
                   {entry.mastered && (
                     <span>
-                      <Trophy size={13} /> {pt ? "Dominado" : "Mastered"}
+                      <Trophy size={13} />{" "}
+                      {tri(lang, "Dominado", "Mastered", "Dominado")}
                     </span>
                   )}
                   {entry.replay && <span>{t.replay}</span>}
@@ -250,7 +264,7 @@ export function ActivityStream({
                     data-milestone="start"
                   >
                     <Play size={12} fill="currentColor" />{" "}
-                    {pt ? "Começou" : "Started"}
+                    {tri(lang, "Começou", "Started", "Empezó")}
                   </span>
                 )}
                 {entry.marksFinish && (
@@ -259,7 +273,7 @@ export function ActivityStream({
                     data-milestone="finish"
                   >
                     <Flag size={12} fill="currentColor" />{" "}
-                    {pt ? "Terminou" : "Finished"}
+                    {tri(lang, "Terminou", "Finished", "Terminó")}
                   </span>
                 )}
                 {entry.journeyTitle && (
@@ -274,9 +288,12 @@ export function ActivityStream({
                 <details className="spoiler-content">
                   <summary>
                     <EyeOff size={14} />{" "}
-                    {pt
-                      ? "Mostrar conteúdo com spoilers"
-                      : "Show spoiler content"}
+                    {tri(
+                      lang,
+                      "Mostrar conteúdo com spoilers",
+                      "Show spoiler content",
+                      "Mostrar contenido con spoilers",
+                    )}
                   </summary>
                   <p>{entry.content}</p>
                 </details>
@@ -309,7 +326,12 @@ export function ActivityStream({
                   className="activity-read-more"
                   href={`/${lang}/review/${entry.id}`}
                 >
-                  {pt ? "Ver avaliação completa" : "View full review"}
+                  {tri(
+                    lang,
+                    "Ver avaliação completa",
+                    "View full review",
+                    "Ver reseña completa",
+                  )}
                 </Link>
               )}
               {viewerId === entry.profileId && (

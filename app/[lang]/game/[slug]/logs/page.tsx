@@ -8,6 +8,7 @@ import { getGameBySlug } from "@/lib/igdb";
 import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
+import { tri } from "@/lib/ui-text";
 
 type Props = PageProps<"/[lang]/game/[slug]/logs">;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -16,8 +17,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const game = await getGameBySlug(slug);
   return game
     ? {
-        title:
-          lang === "pt-BR" ? `Registros de ${game.name}` : `${game.name} logs`,
+        title: tri(
+          lang,
+          `Registros de ${game.name}`,
+          `${game.name} logs`,
+          `Registros de ${game.name}`,
+        ),
         robots: { index: false, follow: false },
       }
     : {};
@@ -47,7 +52,6 @@ export default async function GameLogsPage({ params }: Props) {
     }),
   ]);
   const stream = entries.filter((entry) => entry.kind === "diary");
-  const pt = lang === "pt-BR";
   const totalMinutes = (sessions ?? []).reduce(
     (total, entry) => total + (entry.minutes ?? 0),
     0,
@@ -64,17 +68,20 @@ export default async function GameLogsPage({ params }: Props) {
   return (
     <main className="social-page game-logs-page">
       <Link className="page-back-link" href={`/${lang}/game/${slug}`}>
-        <ArrowLeft size={14} /> {pt ? "Voltar ao jogo" : "Back to game"}
+        <ArrowLeft size={14} />{" "}
+        {tri(lang, "Voltar ao jogo", "Back to game", "Volver al juego")}
       </Link>
       <header className="social-page-header">
         <span>
-          <CalendarDays size={14} /> {pt ? "SUA JORNADA" : "YOUR JOURNEY"}
+          <CalendarDays size={14} />{" "}
+          {tri(lang, "SUA JORNADA", "YOUR JOURNEY", "TU RECORRIDO")}
         </span>
         <h1>{game.name}</h1>
         <p>
-          {(sessions ?? []).length} {pt ? "registros" : "logs"}
+          {(sessions ?? []).length}{" "}
+          {tri(lang, "registros", "logs", "registros")}
           {totalDays > 0
-            ? ` · ${totalDays} ${pt ? (totalDays === 1 ? "dia" : "dias") : totalDays === 1 ? "day" : "days"}`
+            ? ` · ${totalDays} ${tri(lang, totalDays === 1 ? "dia" : "dias", totalDays === 1 ? "day" : "days", totalDays === 1 ? "día" : "días")}`
             : ""}
           {totalMinutes > 0
             ? ` · ${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`

@@ -17,7 +17,7 @@ import {
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import "../auth/mfa.css";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type TotpFactor = {
   id: string;
@@ -33,7 +33,6 @@ type Enrollment = {
 };
 
 export function TwoFactorSettings({ lang }: { lang: UiLang }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [factors, setFactors] = useState<TotpFactor[]>([]);
   const [pending, setPending] = useState<string | null>("load");
@@ -50,9 +49,12 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
       await createClient().auth.mfa.listFactors();
     if (actionError) {
       setError(
-        pt
-          ? "Não foi possível carregar a verificação em duas etapas."
-          : "Could not load two-factor authentication.",
+        tri(
+          lang,
+          "Não foi possível carregar a verificação em duas etapas.",
+          "Could not load two-factor authentication.",
+          "No se pudo cargar la verificación en dos pasos.",
+        ),
       );
     } else {
       setFactors(
@@ -73,9 +75,12 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
       .then(({ data, error: actionError }) => {
         if (actionError) {
           setError(
-            pt
-              ? "Não foi possível carregar a verificação em duas etapas."
-              : "Could not load two-factor authentication.",
+            tri(
+              lang,
+              "Não foi possível carregar a verificação em duas etapas.",
+              "Could not load two-factor authentication.",
+              "No se pudo cargar la verificación en dos pasos.",
+            ),
           );
         } else {
           setFactors(
@@ -89,7 +94,7 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
         }
         setPending(null);
       });
-  }, [pt]);
+  }, [lang]);
 
   async function beginEnrollment() {
     setPending("enroll");
@@ -107,14 +112,18 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
     const { data, error: actionError } = await supabase.auth.mfa.enroll({
       factorType: "totp",
       friendlyName:
-        name.trim() || (pt ? "Meu autenticador" : "My authenticator"),
+        name.trim() ||
+        tri(lang, "Meu autenticador", "My authenticator", "Mi autenticador"),
       issuer: "uloggd",
     });
     if (actionError || !data.totp) {
       setError(
-        pt
-          ? "Não foi possível iniciar a configuração. Tente novamente."
-          : "Could not start setup. Try again.",
+        tri(
+          lang,
+          "Não foi possível iniciar a configuração. Tente novamente.",
+          "Could not start setup. Try again.",
+          "No se pudo iniciar la configuración. Inténtalo de nuevo.",
+        ),
       );
     } else {
       setEnrollment({
@@ -148,9 +157,12 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
       });
     if (actionError) {
       setError(
-        pt
-          ? "Código inválido ou expirado. Confira o aplicativo e tente novamente."
-          : "Invalid or expired code. Check your app and try again.",
+        tri(
+          lang,
+          "Código inválido ou expirado. Confira o aplicativo e tente novamente.",
+          "Invalid or expired code. Check your app and try again.",
+          "Código inválido o caducado. Revisa la aplicación e inténtalo de nuevo.",
+        ),
       );
     } else {
       setEnrollment(null);
@@ -183,9 +195,12 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
       : await supabase.auth.mfa.unenroll({ factorId: removeFactor.id });
     if (verification.error || removal?.error) {
       setError(
-        pt
-          ? "Não foi possível remover. Confira o código atual."
-          : "Could not remove it. Check the current code.",
+        tri(
+          lang,
+          "Não foi possível remover. Confira o código atual.",
+          "Could not remove it. Check the current code.",
+          "No se pudo quitar. Revisa el código actual.",
+        ),
       );
     } else {
       setFactors((current) =>
@@ -207,22 +222,26 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
         <div>
           <div className="settings-security-title-row">
             <h2>
-              {pt ? "Verificação em duas etapas" : "Two-factor authentication"}
+              {tri(
+                lang,
+                "Verificação em duas etapas",
+                "Two-factor authentication",
+                "Verificación en dos pasos",
+              )}
             </h2>
             <small data-active={factors.length > 0 || undefined}>
               {factors.length > 0
-                ? pt
-                  ? "ATIVA"
-                  : "ACTIVE"
-                : pt
-                  ? "DESATIVADA"
-                  : "OFF"}
+                ? tri(lang, "ATIVA", "ACTIVE", "ACTIVA")
+                : tri(lang, "DESATIVADA", "OFF", "DESACTIVADA")}
             </small>
           </div>
           <p>
-            {pt
-              ? "Exija um código temporário do seu aplicativo autenticador sempre que entrar em um novo dispositivo."
-              : "Require a temporary code from your authenticator app whenever you sign in on a new device."}
+            {tri(
+              lang,
+              "Exija um código temporário do seu aplicativo autenticador sempre que entrar em um novo dispositivo.",
+              "Require a temporary code from your authenticator app whenever you sign in on a new device.",
+              "Exige un código temporal de tu aplicación de autenticación cada vez que entres en un dispositivo nuevo.",
+            )}
           </p>
         </div>
       </header>
@@ -241,7 +260,7 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
               <div>
                 <strong>{factor.friendly_name || t.authenticatorApp}</strong>
                 <small>
-                  {pt ? "Adicionado em" : "Added"}{" "}
+                  {tri(lang, "Adicionado em", "Added", "Añadido el")}{" "}
                   {new Intl.DateTimeFormat(lang, {
                     dateStyle: "medium",
                   }).format(new Date(factor.created_at))}
@@ -250,9 +269,12 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
               <button
                 type="button"
                 onClick={() => setRemoveFactor(factor)}
-                aria-label={
-                  pt ? "Remover autenticador" : "Remove authenticator"
-                }
+                aria-label={tri(
+                  lang,
+                  "Remover autenticador",
+                  "Remove authenticator",
+                  "Quitar autenticador",
+                )}
               >
                 {pending === factor.id ? (
                   <LoaderCircle className="spin" size={15} />
@@ -267,14 +289,20 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
               <ShieldCheck size={15} />
               <p>
                 <strong>
-                  {pt
-                    ? "Adicione um segundo autenticador"
-                    : "Add a second authenticator"}
+                  {tri(
+                    lang,
+                    "Adicione um segundo autenticador",
+                    "Add a second authenticator",
+                    "Añade un segundo autenticador",
+                  )}
                 </strong>
                 <span>
-                  {pt
-                    ? "O Supabase não gera códigos de recuperação. Um segundo dispositivo evita perder o acesso se o primeiro não estiver disponível."
-                    : "Supabase does not generate recovery codes. A second device helps preserve access if the first is unavailable."}
+                  {tri(
+                    lang,
+                    "O Supabase não gera códigos de recuperação. Um segundo dispositivo evita perder o acesso se o primeiro não estiver disponível.",
+                    "Supabase does not generate recovery codes. A second device helps preserve access if the first is unavailable.",
+                    "Supabase no genera códigos de recuperación. Un segundo dispositivo evita perder el acceso si el primero no está disponible.",
+                  )}
                 </span>
               </p>
             </div>
@@ -285,14 +313,20 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
           <KeyRound size={17} />
           <p>
             <strong>
-              {pt
-                ? "Sua conta usa apenas uma etapa"
-                : "Your account uses one step"}
+              {tri(
+                lang,
+                "Sua conta usa apenas uma etapa",
+                "Your account uses one step",
+                "Tu cuenta usa un solo paso",
+              )}
             </strong>
             <span>
-              {pt
-                ? "Adicione um autenticador para impedir acessos mesmo se sua senha for descoberta."
-                : "Add an authenticator to prevent access even if your password is compromised."}
+              {tri(
+                lang,
+                "Adicione um autenticador para impedir acessos mesmo se sua senha for descoberta.",
+                "Add an authenticator to prevent access even if your password is compromised.",
+                "Añade un autenticador para impedir accesos aunque descubran tu contraseña.",
+              )}
             </span>
           </p>
         </div>
@@ -315,10 +349,18 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
             value={name}
             onChange={(event) => setName(event.target.value)}
             maxLength={40}
-            placeholder={
-              pt ? "Nome do dispositivo (opcional)" : "Device name (optional)"
-            }
-            aria-label={pt ? "Nome do autenticador" : "Authenticator name"}
+            placeholder={tri(
+              lang,
+              "Nome do dispositivo (opcional)",
+              "Device name (optional)",
+              "Nombre del dispositivo (opcional)",
+            )}
+            aria-label={tri(
+              lang,
+              "Nome do autenticador",
+              "Authenticator name",
+              "Nombre del autenticador",
+            )}
           />
           <button
             type="button"
@@ -331,12 +373,18 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
               <Plus size={15} />
             )}
             {factors.length >= 10
-              ? pt
-                ? "Limite atingido"
-                : "Limit reached"
-              : pt
-                ? "Adicionar autenticador"
-                : "Add authenticator"}
+              ? tri(
+                  lang,
+                  "Limite atingido",
+                  "Limit reached",
+                  "Límite alcanzado",
+                )
+              : tri(
+                  lang,
+                  "Adicionar autenticador",
+                  "Add authenticator",
+                  "Añadir autenticador",
+                )}
           </button>
         </div>
         <Dialog.Portal>
@@ -344,16 +392,29 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
           <Dialog.Content className="mfa-setup-dialog">
             <header>
               <div>
-                <span>{pt ? "PROTEÇÃO DA CONTA" : "ACCOUNT PROTECTION"}</span>
+                <span>
+                  {tri(
+                    lang,
+                    "PROTEÇÃO DA CONTA",
+                    "ACCOUNT PROTECTION",
+                    "PROTECCIÓN DE LA CUENTA",
+                  )}
+                </span>
                 <Dialog.Title>
-                  {pt
-                    ? "Conecte seu autenticador"
-                    : "Connect your authenticator"}
+                  {tri(
+                    lang,
+                    "Conecte seu autenticador",
+                    "Connect your authenticator",
+                    "Conecta tu autenticador",
+                  )}
                 </Dialog.Title>
                 <Dialog.Description>
-                  {pt
-                    ? "Escaneie o QR code e confirme com o código de seis dígitos."
-                    : "Scan the QR code and confirm with the six-digit code."}
+                  {tri(
+                    lang,
+                    "Escaneie o QR code e confirme com o código de seis dígitos.",
+                    "Scan the QR code and confirm with the six-digit code.",
+                    "Escanea el código QR y confirma con el código de seis dígitos.",
+                  )}
                 </Dialog.Description>
               </div>
               <Dialog.Close aria-label={t.close}>
@@ -366,23 +427,32 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
                   <div className="mfa-qr-frame">
                     <img
                       src={enrollment.qr}
-                      alt={
-                        pt ? "QR code do autenticador" : "Authenticator QR code"
-                      }
+                      alt={tri(
+                        lang,
+                        "QR code do autenticador",
+                        "Authenticator QR code",
+                        "Código QR del autenticador",
+                      )}
                     />
                   </div>
                   <div className="mfa-setup-steps">
                     <p>
                       <span>1</span>
-                      {pt
-                        ? "Abra Google Authenticator, 1Password, Authy ou outro app TOTP."
-                        : "Open Google Authenticator, 1Password, Authy, or another TOTP app."}
+                      {tri(
+                        lang,
+                        "Abra Google Authenticator, 1Password, Authy ou outro app TOTP.",
+                        "Open Google Authenticator, 1Password, Authy, or another TOTP app.",
+                        "Abre Google Authenticator, 1Password, Authy u otra app TOTP.",
+                      )}
                     </p>
                     <p>
                       <span>2</span>
-                      {pt
-                        ? "Escaneie o QR code. Se não conseguir, copie a chave abaixo."
-                        : "Scan the QR code. If needed, copy the key below."}
+                      {tri(
+                        lang,
+                        "Escaneie o QR code. Se não conseguir, copie a chave abaixo.",
+                        "Scan the QR code. If needed, copy the key below.",
+                        "Escanea el código QR. Si no puedes, copia la clave de abajo.",
+                      )}
                     </p>
                     <button
                       type="button"
@@ -396,7 +466,12 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
                   </div>
                 </div>
                 <label>
-                  {pt ? "Código de confirmação" : "Confirmation code"}
+                  {tri(
+                    lang,
+                    "Código de confirmação",
+                    "Confirmation code",
+                    "Código de confirmación",
+                  )}
                   <input
                     value={code}
                     onChange={(event) =>
@@ -419,7 +494,12 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
                     {pending === "verify" && (
                       <LoaderCircle className="spin" size={15} />
                     )}
-                    {pt ? "Ativar proteção" : "Enable protection"}
+                    {tri(
+                      lang,
+                      "Ativar proteção",
+                      "Enable protection",
+                      "Activar protección",
+                    )}
                   </button>
                 </footer>
               </form>
@@ -442,12 +522,20 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
               <Trash2 size={22} />
             </span>
             <Dialog.Title>
-              {pt ? "Remover autenticador?" : "Remove authenticator?"}
+              {tri(
+                lang,
+                "Remover autenticador?",
+                "Remove authenticator?",
+                "¿Quitar autenticador?",
+              )}
             </Dialog.Title>
             <Dialog.Description>
-              {pt
-                ? "Confirme com um código atual. Você pode perder a proteção da conta se este for o único autenticador."
-                : "Confirm with a current code. Your account may lose protection if this is your only authenticator."}
+              {tri(
+                lang,
+                "Confirme com um código atual. Você pode perder a proteção da conta se este for o único autenticador.",
+                "Confirm with a current code. Your account may lose protection if this is your only authenticator.",
+                "Confirma con un código actual. Tu cuenta puede perder protección si este es tu único autenticador.",
+              )}
             </Dialog.Description>
             {error && <p role="alert">{error}</p>}
             <form onSubmit={confirmRemoval}>
@@ -462,14 +550,24 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
                 autoComplete="one-time-code"
                 pattern="[0-9]{6}"
                 placeholder="000000"
-                aria-label={pt ? "Código atual" : "Current code"}
+                aria-label={tri(
+                  lang,
+                  "Código atual",
+                  "Current code",
+                  "Código actual",
+                )}
                 autoFocus
               />
               <button
                 type="submit"
                 disabled={removeCode.length !== 6 || Boolean(pending)}
               >
-                {pt ? "Confirmar remoção" : "Confirm removal"}
+                {tri(
+                  lang,
+                  "Confirmar remoção",
+                  "Confirm removal",
+                  "Confirmar eliminación",
+                )}
               </button>
             </form>
           </Dialog.Content>

@@ -24,7 +24,7 @@ import { getGamesByIds } from "@/lib/igdb";
 import { ContentComments } from "@/components/social/content-comments";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
 type RatingMode = NonNullable<SocialEntry["ratingMode"]>;
@@ -204,7 +204,7 @@ export default async function ReviewPage({ params }: Props) {
           </Link>
           <div className="review-page-identity">
             <span className="review-page-eyebrow">
-              {pt ? "AVALIAÇÃO" : "REVIEW"}
+              {tri(lang, "AVALIAÇÃO", "REVIEW", "RESEÑA")}
             </span>
             <h1>
               {review.title ||
@@ -240,7 +240,7 @@ export default async function ReviewPage({ params }: Props) {
                 {edited && (
                   <small className="activity-edited">
                     {" "}
-                    · {pt ? "editada" : "edited"}
+                    · {tri(lang, "editada", "edited", "editada")}
                   </small>
                 )}
               </time>
@@ -266,7 +266,8 @@ export default async function ReviewPage({ params }: Props) {
               )}
               {review.mastered && (
                 <span>
-                  <Trophy size={13} /> {pt ? "Dominado" : "Mastered"}
+                  <Trophy size={13} />{" "}
+                  {tri(lang, "Dominado", "Mastered", "Dominado")}
                 </span>
               )}
               {review.replay && (
@@ -311,7 +312,12 @@ export default async function ReviewPage({ params }: Props) {
             <details className="spoiler-content review-page-content">
               <summary>
                 <EyeOff size={14} />{" "}
-                {pt ? "Mostrar conteúdo com spoilers" : "Show spoiler content"}
+                {tri(
+                  lang,
+                  "Mostrar conteúdo com spoilers",
+                  "Show spoiler content",
+                  "Mostrar contenido con spoilers",
+                )}
               </summary>
               <p>{review.content}</p>
             </details>
@@ -321,7 +327,14 @@ export default async function ReviewPage({ params }: Props) {
 
         {aspects.length > 0 && (
           <section className="review-page-aspects">
-            <h2>{pt ? "Aspectos avaliados" : "Rated aspects"}</h2>
+            <h2>
+              {tri(
+                lang,
+                "Aspectos avaliados",
+                "Rated aspects",
+                "Aspectos valorados",
+              )}
+            </h2>
             <div>
               {aspects.map((aspect) => (
                 <article key={aspect.label}>

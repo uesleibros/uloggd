@@ -6,9 +6,9 @@ import { ConnectionCard } from "@/components/social/connection-card";
 import { LoadMoreConnections } from "@/components/social/load-more-connections";
 import { getConnectionsPage } from "@/lib/connections";
 import { createClient } from "@/lib/supabase/server";
-import { hasLocale } from "../../../dictionaries";
+import { hasLocale, resolveLocale } from "../../../dictionaries";
 import "../../../profile.css";
-import { uiText } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 const PAGE_SIZE = 24;
 
@@ -18,12 +18,15 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { lang, username } = await params;
+  const { lang: rawLang, username } = await params;
+  const lang = resolveLocale(rawLang);
   return {
-    title:
-      lang === "pt-BR"
-        ? `Conexões de @${username}`
-        : `@${username}'s connections`,
+    title: tri(
+      lang,
+      `Conexões de @${username}`,
+      `@${username}'s connections`,
+      `Conexiones de @${username}`,
+    ),
   };
 }
 
@@ -65,7 +68,6 @@ export default async function ProfileConnectionsPage({
   const people = rows.map((row) => row.person);
   const initialCursor = rows.length ? rows[rows.length - 1].created_at : null;
   const hasMore = !query && rows.length === PAGE_SIZE;
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
 
@@ -76,18 +78,33 @@ export default async function ProfileConnectionsPage({
       </Link>
       <header className="profile-subpage-header">
         <span>
-          <Users size={14} /> {pt ? "REDE" : "NETWORK"}
+          <Users size={14} /> {tri(lang, "REDE", "NETWORK", "RED")}
         </span>
-        <h1>{pt ? `Conexões de ${name}` : `${name}'s connections`}</h1>
+        <h1>
+          {tri(
+            lang,
+            `Conexões de ${name}`,
+            `${name}'s connections`,
+            `Conexiones de ${name}`,
+          )}
+        </h1>
         <p>
-          {pt
-            ? "Pessoas que acompanham esta jornada e perfis seguidos por ela."
-            : "People following this journey and profiles it follows."}
+          {tri(
+            lang,
+            "Pessoas que acompanham esta jornada e perfis seguidos por ela.",
+            "People following this journey and profiles it follows.",
+            "Personas que siguen este recorrido y perfiles a los que sigue.",
+          )}
         </p>
       </header>
       <nav
         className="social-filter-tabs"
-        aria-label={pt ? "Filtrar conexões" : "Filter connections"}
+        aria-label={tri(
+          lang,
+          "Filtrar conexões",
+          "Filter connections",
+          "Filtrar conexiones",
+        )}
       >
         <Link
           href={`/${lang}/u/${profile.username}/connections?tab=followers${query ? `&q=${encodeURIComponent(query)}` : ""}`}
@@ -109,10 +126,18 @@ export default async function ProfileConnectionsPage({
             type="search"
             name="q"
             defaultValue={query}
-            placeholder={
-              pt ? "Buscar por nome ou @usuário" : "Search name or @user"
-            }
-            aria-label={pt ? "Buscar conexões" : "Search connections"}
+            placeholder={tri(
+              lang,
+              "Buscar por nome ou @usuário",
+              "Search name or @user",
+              "Buscar por nombre o @usuario",
+            )}
+            aria-label={tri(
+              lang,
+              "Buscar conexões",
+              "Search connections",
+              "Buscar conexiones",
+            )}
           />
         </label>
         <input type="hidden" name="tab" value={activeTab} />
@@ -141,17 +166,26 @@ export default async function ProfileConnectionsPage({
           </span>
           <h2>
             {query
-              ? pt
-                ? "Nenhuma conexão encontrada"
-                : "No connections found"
-              : pt
-                ? "Ninguém por aqui ainda"
-                : "No one here yet"}
+              ? tri(
+                  lang,
+                  "Nenhuma conexão encontrada",
+                  "No connections found",
+                  "No se encontraron conexiones",
+                )
+              : tri(
+                  lang,
+                  "Ninguém por aqui ainda",
+                  "No one here yet",
+                  "Todavía no hay nadie por aquí",
+                )}
           </h2>
           <p>
-            {pt
-              ? "Esta parte da rede ainda está vazia."
-              : "This part of the network is still empty."}
+            {tri(
+              lang,
+              "Esta parte da rede ainda está vazia.",
+              "This part of the network is still empty.",
+              "Esta parte de la red todavía está vacía.",
+            )}
           </p>
         </div>
       )}

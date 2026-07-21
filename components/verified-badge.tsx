@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { X } from "lucide-react";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function VerifiedMark({ size = 18 }: { size?: number }) {
   return (
@@ -19,7 +19,6 @@ export function VerifiedMark({ size = 18 }: { size?: number }) {
 }
 
 export function VerifiedBadge({ lang }: { lang: UiLang }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
 
   return (
@@ -28,11 +27,12 @@ export function VerifiedBadge({ lang }: { lang: UiLang }) {
         <button
           className="verified-badge"
           type="button"
-          aria-label={
-            pt
-              ? "Saiba mais sobre esta conta verificada"
-              : "Learn about this verified account"
-          }
+          aria-label={tri(
+            lang,
+            "Saiba mais sobre esta conta verificada",
+            "Learn about this verified account",
+            "Más sobre esta cuenta verificada",
+          )}
         >
           <VerifiedMark />
         </button>
@@ -48,43 +48,67 @@ export function VerifiedBadge({ lang }: { lang: UiLang }) {
             <VerifiedMark size={46} />
           </div>
           <Dialog.Title>
-            {pt ? "Esta conta é verificada" : "This account is verified"}
+            {tri(
+              lang,
+              "Esta conta é verificada",
+              "This account is verified",
+              "Esta cuenta está verificada",
+            )}
           </Dialog.Title>
           <Dialog.Description>
-            {pt
-              ? "O uloggd confirmou que esta conta representa a pessoa, marca ou organização indicada no perfil."
-              : "uloggd confirmed that this account represents the person, brand, or organization shown on the profile."}
+            {tri(
+              lang,
+              "O uloggd confirmou que esta conta representa a pessoa, marca ou organização indicada no perfil.",
+              "uloggd confirmed that this account represents the person, brand, or organization shown on the profile.",
+              "uloggd confirmó que esta cuenta representa a la persona, marca u organización indicada en el perfil.",
+            )}
           </Dialog.Description>
 
           <div className="verified-dialog-facts">
             <div>
               <p>
                 <strong>
-                  {pt ? "Identidade confirmada" : "Identity confirmed"}
+                  {tri(
+                    lang,
+                    "Identidade confirmada",
+                    "Identity confirmed",
+                    "Identidad confirmada",
+                  )}
                 </strong>
                 <span>
-                  {pt
-                    ? "A badge é atribuída pela moderação após análise."
-                    : "The badge is assigned by moderation after review."}
+                  {tri(
+                    lang,
+                    "A badge é atribuída pela moderação após análise.",
+                    "The badge is assigned by moderation after review.",
+                    "La insignia la asigna la moderación tras revisar.",
+                  )}
                 </span>
               </p>
             </div>
             <div>
               <p>
                 <strong>
-                  {pt ? "Sinal de autenticidade" : "Authenticity signal"}
+                  {tri(
+                    lang,
+                    "Sinal de autenticidade",
+                    "Authenticity signal",
+                    "Señal de autenticidad",
+                  )}
                 </strong>
                 <span>
-                  {pt
-                    ? "A verificação identifica a conta; ela não endossa o conteúdo publicado."
-                    : "Verification identifies the account; it does not endorse published content."}
+                  {tri(
+                    lang,
+                    "A verificação identifica a conta; ela não endossa o conteúdo publicado.",
+                    "Verification identifies the account; it does not endorse published content.",
+                    "La verificación identifica la cuenta; no respalda el contenido publicado.",
+                  )}
                 </span>
               </p>
             </div>
           </div>
 
           <Dialog.Close className="verified-dialog-confirm">
-            {pt ? "Entendi" : "Got it"}
+            {tri(lang, "Entendi", "Got it", "Entendido")}
           </Dialog.Close>
         </Dialog.Content>
       </Dialog.Portal>

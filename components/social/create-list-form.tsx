@@ -15,10 +15,9 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function CreateListForm({ lang }: { lang: UiLang }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -39,7 +38,12 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
     );
     if (actionError) {
       setError(
-        pt ? "Não foi possível criar a lista." : "Could not create the list.",
+        tri(
+          lang,
+          "Não foi possível criar a lista.",
+          "Could not create the list.",
+          "No se pudo crear la lista.",
+        ),
       );
     } else {
       setOpen(false);
@@ -51,20 +55,35 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
   const visibility = [
     {
       value: "PUBLIC",
-      label: pt ? "Pública" : "Public",
-      description: pt ? "Qualquer pessoa pode ver" : "Anyone can view it",
+      label: tri(lang, "Pública", "Public", "Pública"),
+      description: tri(
+        lang,
+        "Qualquer pessoa pode ver",
+        "Anyone can view it",
+        "Cualquiera puede verla",
+      ),
       icon: Globe2,
     },
     {
       value: "FOLLOWERS",
       label: t.followers,
-      description: pt ? "Visível para seguidores" : "Visible to followers",
+      description: tri(
+        lang,
+        "Visível para seguidores",
+        "Visible to followers",
+        "Visible para seguidores",
+      ),
       icon: Users,
     },
     {
       value: "PRIVATE",
-      label: pt ? "Privada" : "Private",
-      description: pt ? "Somente você pode ver" : "Only you can view it",
+      label: tri(lang, "Privada", "Private", "Privada"),
+      description: tri(
+        lang,
+        "Somente você pode ver",
+        "Only you can view it",
+        "Solo tú puedes verla",
+      ),
       icon: Lock,
     },
   ];
@@ -73,7 +92,8 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <button className="create-list-trigger" type="button">
-          <Plus size={16} /> {pt ? "Nova lista" : "New list"}
+          <Plus size={16} />{" "}
+          {tri(lang, "Nova lista", "New list", "Nueva lista")}
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
@@ -81,12 +101,19 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
         <Dialog.Content className="create-list-dialog">
           <header>
             <div>
-              <span>{pt ? "NOVA COLEÇÃO" : "NEW COLLECTION"}</span>
-              <Dialog.Title>{pt ? "Criar lista" : "Create list"}</Dialog.Title>
+              <span>
+                {tri(lang, "NOVA COLEÇÃO", "NEW COLLECTION", "NUEVA COLECCIÓN")}
+              </span>
+              <Dialog.Title>
+                {tri(lang, "Criar lista", "Create list", "Crear lista")}
+              </Dialog.Title>
               <Dialog.Description>
-                {pt
-                  ? "Dê um tema à sua seleção. Você adiciona e organiza os jogos depois."
-                  : "Give your selection a theme. You can add and organize games later."}
+                {tri(
+                  lang,
+                  "Dê um tema à sua seleção. Você adiciona e organiza os jogos depois.",
+                  "Give your selection a theme. You can add and organize games later.",
+                  "Dale un tema a tu selección. Añades y organizas los juegos después.",
+                )}
               </Dialog.Description>
             </div>
             <Dialog.Close aria-label={t.close}>
@@ -95,29 +122,35 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
           </header>
           <form action={submit} className="create-list-form">
             <label>
-              <span>{pt ? "Nome" : "Name"}</span>
+              <span>{tri(lang, "Nome", "Name", "Nombre")}</span>
               <input
                 name="name"
                 required
                 minLength={1}
                 maxLength={100}
                 autoFocus
-                placeholder={
-                  pt ? "Ex.: RPGs inesquecíveis" : "E.g. Unforgettable RPGs"
-                }
+                placeholder={tri(
+                  lang,
+                  "Ex.: RPGs inesquecíveis",
+                  "E.g. Unforgettable RPGs",
+                  "Ej.: RPGs inolvidables",
+                )}
               />
             </label>
             <label>
-              <span>{pt ? "Descrição" : "Description"}</span>
+              <span>
+                {tri(lang, "Descrição", "Description", "Descripción")}
+              </span>
               <textarea
                 name="description"
                 rows={3}
                 maxLength={500}
-                placeholder={
-                  pt
-                    ? "O que conecta os jogos desta lista?"
-                    : "What connects the games in this list?"
-                }
+                placeholder={tri(
+                  lang,
+                  "O que conecta os jogos desta lista?",
+                  "What connects the games in this list?",
+                  "¿Qué conecta los juegos de esta lista?",
+                )}
               />
             </label>
             <label>
@@ -174,12 +207,8 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
               <button type="submit" disabled={pending}>
                 {pending && <LoaderCircle className="spin" size={15} />}
                 {pending
-                  ? pt
-                    ? "Criando…"
-                    : "Creating…"
-                  : pt
-                    ? "Criar lista"
-                    : "Create list"}
+                  ? tri(lang, "Criando…", "Creating…", "Creando…")
+                  : tri(lang, "Criar lista", "Create list", "Crear lista")}
               </button>
             </footer>
           </form>

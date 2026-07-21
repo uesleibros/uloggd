@@ -2,7 +2,7 @@ import Image from "next/image";
 import { CalendarDays, ExternalLink, Play } from "lucide-react";
 import type { GameDetail } from "@/lib/igdb";
 import { RelatedGamesTabs, type SavedState } from "./related-games-tabs";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export function GameExtendedContent({
   game,
@@ -38,7 +38,7 @@ export function GameExtendedContent({
           <header className="game-section-heading">
             <div>
               <span>VIDEO</span>
-              <h2>{lang === "pt-BR" ? "Vídeos" : "Videos"}</h2>
+              <h2>{tri(lang, "Vídeos", "Videos", "Vídeos")}</h2>
             </div>
             <small>{game.videos.length}</small>
           </header>
@@ -67,9 +67,16 @@ export function GameExtendedContent({
         <section className="game-section">
           <header className="game-section-heading">
             <div>
-              <span>{lang === "pt-BR" ? "ATUALIZAÇÕES" : "UPDATES"}</span>
+              <span>
+                {tri(lang, "ATUALIZAÇÕES", "UPDATES", "ACTUALIZACIONES")}
+              </span>
               <h2>
-                {lang === "pt-BR" ? "Notícias e eventos" : "News and events"}
+                {tri(
+                  lang,
+                  "Notícias e eventos",
+                  "News and events",
+                  "Noticias y eventos",
+                )}
               </h2>
             </div>
             <small>{game.events.length}</small>

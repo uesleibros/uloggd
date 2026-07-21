@@ -6,7 +6,7 @@ import { ListsCollection } from "@/components/social/lists-collection";
 import { getListPreviews } from "@/lib/lists";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../dictionaries";
-import { uiText } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 const PAGE_SIZE = 24;
 
@@ -48,7 +48,6 @@ export default async function ListsPage({
         .eq("game_lists.profile_id", user.id),
     ]);
   if (!profile?.username) redirect(`/${lang}/onboarding/username`);
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const totalLists = listsCount.count ?? lists.length;
 
@@ -59,15 +58,21 @@ export default async function ListsPage({
         eyebrow={
           <>
             <List size={14} />{" "}
-            {pt ? "ORGANIZE DO SEU JEITO" : "ORGANIZE YOUR WAY"}
+            {tri(
+              lang,
+              "ORGANIZE DO SEU JEITO",
+              "ORGANIZE YOUR WAY",
+              "ORGANIZA A TU MANERA",
+            )}
           </>
         }
         title={t.lists}
-        description={
-          pt
-            ? "Monte seleções por tema, ranking ou qualquer ideia que conecte seus jogos."
-            : "Build selections by theme, ranking, or any idea that connects your games."
-        }
+        description={tri(
+          lang,
+          "Monte seleções por tema, ranking ou qualquer ideia que conecte seus jogos.",
+          "Build selections by theme, ranking, or any idea that connects your games.",
+          "Arma selecciones por tema, ranking o cualquier idea que conecte tus juegos.",
+        )}
         stats={[
           {
             icon: <Layers3 size={14} />,
@@ -81,7 +86,7 @@ export default async function ListsPage({
           },
           {
             icon: <Globe2 size={14} />,
-            label: pt ? "Públicas" : "Public",
+            label: tri(lang, "Públicas", "Public", "Públicas"),
             value: publicCount.count ?? 0,
           },
         ]}
@@ -103,11 +108,21 @@ export default async function ListsPage({
             <span>
               <Layers3 size={22} />
             </span>
-            <h2>{pt ? "Nenhuma lista ainda" : "No lists yet"}</h2>
+            <h2>
+              {tri(
+                lang,
+                "Nenhuma lista ainda",
+                "No lists yet",
+                "Todavía sin listas",
+              )}
+            </h2>
             <p>
-              {pt
-                ? "Crie sua primeira coleção e adicione jogos pelas páginas deles."
-                : "Create your first collection and add games from their pages."}
+              {tri(
+                lang,
+                "Crie sua primeira coleção e adicione jogos pelas páginas deles.",
+                "Create your first collection and add games from their pages.",
+                "Crea tu primera colección y añade juegos desde sus páginas.",
+              )}
             </p>
           </div>
         )}

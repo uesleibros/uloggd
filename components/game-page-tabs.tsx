@@ -11,7 +11,7 @@ import {
   Gamepad2,
 } from "lucide-react";
 import { SpawndLogo } from "./spawnd-logo";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 type TabId =
   "overview" | "media" | "updates" | "related" | "spawnd" | "community";
@@ -35,18 +35,17 @@ export function GamePageTabs({
 }) {
   const [active, setActive] = useState<TabId>("overview");
   const tabsRef = useRef<HTMLElement>(null);
-  const pt = lang === "pt-BR";
   const tabs = [
     {
       id: "overview" as const,
-      label: pt ? "Visão geral" : "Overview",
+      label: tri(lang, "Visão geral", "Overview", "Visión general"),
       icon: BookOpen,
       content: overview,
     },
     media
       ? {
           id: "media" as const,
-          label: pt ? "Mídia" : "Media",
+          label: tri(lang, "Mídia", "Media", "Multimedia"),
           icon: Images,
           content: media,
         }
@@ -54,7 +53,7 @@ export function GamePageTabs({
     updates
       ? {
           id: "updates" as const,
-          label: pt ? "Atualizações" : "Updates",
+          label: tri(lang, "Atualizações", "Updates", "Actualizaciones"),
           icon: Newspaper,
           content: updates,
         }
@@ -62,7 +61,7 @@ export function GamePageTabs({
     related
       ? {
           id: "related" as const,
-          label: pt ? "Relacionados" : "Related",
+          label: tri(lang, "Relacionados", "Related", "Relacionados"),
           icon: Layers3,
           content: related,
         }
@@ -75,7 +74,7 @@ export function GamePageTabs({
     },
     {
       id: "community" as const,
-      label: pt ? "Comunidade" : "Community",
+      label: tri(lang, "Comunidade", "Community", "Comunidad"),
       icon: MessageSquare,
       content: community,
     },
@@ -120,7 +119,12 @@ export function GamePageTabs({
       <div
         className="game-page-nav"
         role="tablist"
-        aria-label={pt ? "Conteúdo do jogo" : "Game content"}
+        aria-label={tri(
+          lang,
+          "Conteúdo do jogo",
+          "Game content",
+          "Contenido del juego",
+        )}
       >
         {tabs.map((tab, index) => {
           const Icon = tab.icon;

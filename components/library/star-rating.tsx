@@ -2,7 +2,7 @@
 
 import { Star } from "lucide-react";
 import { useState } from "react";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export function StarRating({
   value,
@@ -31,7 +31,7 @@ export function StarRating({
     <div
       className={`star-rating${compact ? " star-rating-compact" : ""}`}
       role="group"
-      aria-label={pt ? "Sua avaliação" : "Your rating"}
+      aria-label={tri(lang, "Sua avaliação", "Your rating", "Tu valoración")}
     >
       <div
         className="star-rating-stars"

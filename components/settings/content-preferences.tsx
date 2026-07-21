@@ -3,7 +3,7 @@
 import { Check, Images, LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 type CoverScope = "OWN" | "EVERYONE";
 
@@ -14,7 +14,6 @@ export function ContentPreferences({
   initialScope: CoverScope;
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const [scope, setScope] = useState(initialScope);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
@@ -39,17 +38,23 @@ export function ContentPreferences({
   const options = [
     {
       id: "OWN" as const,
-      title: pt ? "Somente as minhas" : "Only mine",
-      description: pt
-        ? "Use suas capas personalizadas e mantenha a capa oficial no conteúdo de outras pessoas."
-        : "Use your custom covers and keep official art on other people's content.",
+      title: tri(lang, "Somente as minhas", "Only mine", "Solo las mías"),
+      description: tri(
+        lang,
+        "Use suas capas personalizadas e mantenha a capa oficial no conteúdo de outras pessoas.",
+        "Use your custom covers and keep official art on other people's content.",
+        "Usa tus portadas personalizadas y mantén la oficial en el contenido de otras personas.",
+      ),
     },
     {
       id: "EVERYONE" as const,
-      title: pt ? "De todo mundo" : "Everyone's",
-      description: pt
-        ? "Veja as capas escolhidas pelo autor de cada biblioteca, lista, avaliação e sessão."
-        : "See the covers chosen by each library, list, review, and session author.",
+      title: tri(lang, "De todo mundo", "Everyone's", "De todo el mundo"),
+      description: tri(
+        lang,
+        "Veja as capas escolhidas pelo autor de cada biblioteca, lista, avaliação e sessão.",
+        "See the covers chosen by each library, list, review, and session author.",
+        "Mira las portadas elegidas por el autor de cada biblioteca, lista, reseña y sesión.",
+      ),
     },
   ];
 
@@ -60,21 +65,34 @@ export function ContentPreferences({
           <Images size={17} />
         </span>
         <div>
-          <small>{pt ? "CONTEÚDO" : "CONTENT"}</small>
+          <small>{tri(lang, "CONTEÚDO", "CONTENT", "CONTENIDO")}</small>
           <h2 id="covers-title">
-            {pt ? "Capas personalizadas" : "Custom covers"}
+            {tri(
+              lang,
+              "Capas personalizadas",
+              "Custom covers",
+              "Portadas personalizadas",
+            )}
           </h2>
           <p>
-            {pt
-              ? "Escolha quais seleções de capa aparecem enquanto você navega."
-              : "Choose whose cover selections appear while you browse."}
+            {tri(
+              lang,
+              "Escolha quais seleções de capa aparecem enquanto você navega.",
+              "Choose whose cover selections appear while you browse.",
+              "Elige qué selecciones de portada aparecen mientras navegas.",
+            )}
           </p>
         </div>
       </header>
       <div
         className="content-preference-options"
         role="radiogroup"
-        aria-label={pt ? "Capas exibidas" : "Displayed covers"}
+        aria-label={tri(
+          lang,
+          "Capas exibidas",
+          "Displayed covers",
+          "Portadas mostradas",
+        )}
       >
         {options.map((option) => (
           <button
@@ -102,9 +120,12 @@ export function ContentPreferences({
       </div>
       {error && (
         <p role="alert">
-          {pt
-            ? "Não foi possível salvar a preferência."
-            : "Could not save the preference."}
+          {tri(
+            lang,
+            "Não foi possível salvar a preferência.",
+            "Could not save the preference.",
+            "No se pudo guardar la preferencia.",
+          )}
         </p>
       )}
     </section>

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { usernameSchema } from "@/lib/auth-validation";
 import { createClient } from "@/lib/supabase/client";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 const reserved = new Set([
   "admin",
@@ -88,25 +88,53 @@ export function UsernameSettings({
 
   const hint = useMemo(() => {
     if (!normalized)
-      return pt
-        ? "3–32 caracteres: letras minúsculas, números e _."
-        : "3–32 characters: lowercase letters, numbers, and _.";
+      return tri(
+        lang,
+        "3–32 caracteres: letras minúsculas, números e _.",
+        "3–32 characters: lowercase letters, numbers, and _.",
+        "3–32 caracteres: letras minúsculas, números y _.",
+      );
     if (reserved.has(normalized))
-      return pt ? "Esse nome é reservado." : "That name is reserved.";
+      return tri(
+        lang,
+        "Esse nome é reservado.",
+        "That name is reserved.",
+        "Ese nombre está reservado.",
+      );
     if (normalized === username)
-      return pt ? "Esse já é o seu @ atual." : "That is already your handle.";
+      return tri(
+        lang,
+        "Esse já é o seu @ atual.",
+        "That is already your handle.",
+        "Ese ya es tu @ actual.",
+      );
     if (!valid) return t.invalidFormat;
     if (valid && available === null)
-      return pt ? "Verificando disponibilidade…" : "Checking availability…";
+      return tri(
+        lang,
+        "Verificando disponibilidade…",
+        "Checking availability…",
+        "Comprobando disponibilidad…",
+      );
     if (available === false)
-      return pt ? "Esse @ já está em uso." : "That handle is already taken.";
+      return tri(
+        lang,
+        "Esse @ já está em uso.",
+        "That handle is already taken.",
+        "Ese @ ya está en uso.",
+      );
     if (available === true)
-      return pt ? "Esse @ está disponível." : "That handle is available.";
+      return tri(
+        lang,
+        "Esse @ está disponível.",
+        "That handle is available.",
+        "Ese @ está disponible.",
+      );
     return t.validFormat;
   }, [
     available,
     normalized,
-    pt,
+    lang,
     username,
     valid,
     t.invalidFormat,
@@ -135,20 +163,32 @@ export function UsernameSettings({
       const message = actionError.message.toLowerCase();
       setError(
         message.includes("cooldown")
-          ? pt
-            ? "Você ainda está no período de espera para outra alteração."
-            : "You are still in the waiting period for another change."
+          ? tri(
+              lang,
+              "Você ainda está no período de espera para outra alteração.",
+              "You are still in the waiting period for another change.",
+              "Todavía estás en el periodo de espera para otro cambio.",
+            )
           : message.includes("unavailable") || actionError.code === "23505"
-            ? pt
-              ? "Esse @ não está disponível."
-              : "That handle is not available."
+            ? tri(
+                lang,
+                "Esse @ não está disponível.",
+                "That handle is not available.",
+                "Ese @ no está disponible.",
+              )
             : message.includes("second factor")
-              ? pt
-                ? "Confirme seu segundo fator antes de alterar o @."
-                : "Complete your second factor before changing your handle."
-              : pt
-                ? "Não foi possível alterar seu @."
-                : "Could not change your handle.",
+              ? tri(
+                  lang,
+                  "Confirme seu segundo fator antes de alterar o @.",
+                  "Complete your second factor before changing your handle.",
+                  "Completa tu segundo factor antes de cambiar tu @.",
+                )
+              : tri(
+                  lang,
+                  "Não foi possível alterar seu @.",
+                  "Could not change your handle.",
+                  "No se pudo cambiar tu @.",
+                ),
       );
       setPending(false);
       return;
@@ -167,16 +207,21 @@ export function UsernameSettings({
         <AtSign size={20} />
       </span>
       <div>
-        <small>{pt ? "NOME DE USUÁRIO" : "USERNAME"}</small>
+        <small>
+          {tri(lang, "NOME DE USUÁRIO", "USERNAME", "NOMBRE DE USUARIO")}
+        </small>
         <strong>@{username}</strong>
         <p>
           {coolingDown
             ? pt
               ? `Você poderá alterar novamente em ${nextChangeLabel}.`
               : `You can change it again on ${nextChangeLabel}.`
-            : pt
-              ? "Seu identificador único. Pode ser alterado a cada 30 dias."
-              : "Your unique identifier. It can be changed every 30 days."}
+            : tri(
+                lang,
+                "Seu identificador único. Pode ser alterado a cada 30 dias.",
+                "Your unique identifier. It can be changed every 30 days.",
+                "Tu identificador único. Se puede cambiar cada 30 días.",
+              )}
         </p>
       </div>
       <Dialog.Root open={open} onOpenChange={resetDialog}>
@@ -187,7 +232,9 @@ export function UsernameSettings({
             disabled={coolingDown}
           >
             {coolingDown ? <Clock3 size={14} /> : <Pencil size={14} />}
-            {coolingDown ? (pt ? "Em espera" : "Waiting") : t.change}
+            {coolingDown
+              ? tri(lang, "Em espera", "Waiting", "En espera")
+              : t.change}
           </button>
         </Dialog.Trigger>
         <Dialog.Portal>
@@ -198,9 +245,21 @@ export function UsernameSettings({
           >
             <header>
               <div>
-                <span>{pt ? "IDENTIDADE DA CONTA" : "ACCOUNT IDENTITY"}</span>
+                <span>
+                  {tri(
+                    lang,
+                    "IDENTIDADE DA CONTA",
+                    "ACCOUNT IDENTITY",
+                    "IDENTIDAD DE LA CUENTA",
+                  )}
+                </span>
                 <Dialog.Title>
-                  {pt ? "Alterar nome de usuário" : "Change username"}
+                  {tri(
+                    lang,
+                    "Alterar nome de usuário",
+                    "Change username",
+                    "Cambiar nombre de usuario",
+                  )}
                 </Dialog.Title>
               </div>
               <Dialog.Close aria-label={t.close}>
@@ -209,12 +268,15 @@ export function UsernameSettings({
             </header>
             <form onSubmit={submit}>
               <Dialog.Description id="username-change-description">
-                {pt
-                  ? "Seu perfil passará a usar o novo endereço. O @ anterior ficará reservado e redirecionando para você por 30 dias."
-                  : "Your profile will use the new address. Your previous handle will remain reserved and redirect to you for 30 days."}
+                {tri(
+                  lang,
+                  "Seu perfil passará a usar o novo endereço. O @ anterior ficará reservado e redirecionando para você por 30 dias.",
+                  "Your profile will use the new address. Your previous handle will remain reserved and redirect to you for 30 days.",
+                  "Tu perfil pasará a usar la nueva dirección. El @ anterior quedará reservado y redirigiendo a ti durante 30 días.",
+                )}
               </Dialog.Description>
               <label>
-                {pt ? "Novo @" : "New handle"}
+                {tri(lang, "Novo @", "New handle", "Nuevo @")}
                 <span className="username-change-input">
                   <AtSign size={15} />
                   <input
@@ -249,22 +311,38 @@ export function UsernameSettings({
                   <Clock3 size={15} />
                   <span>
                     <strong>
-                      {pt ? "Intervalo de 30 dias" : "30-day interval"}
+                      {tri(
+                        lang,
+                        "Intervalo de 30 dias",
+                        "30-day interval",
+                        "Intervalo de 30 días",
+                      )}
                     </strong>
-                    {pt
-                      ? "Depois da mudança, não será possível escolher outro @ antes do prazo."
-                      : "After changing it, you cannot choose another handle before the deadline."}
+                    {tri(
+                      lang,
+                      "Depois da mudança, não será possível escolher outro @ antes do prazo.",
+                      "After changing it, you cannot choose another handle before the deadline.",
+                      "Tras el cambio, no podrás elegir otro @ antes del plazo.",
+                    )}
                   </span>
                 </p>
                 <p>
                   <AtSign size={15} />
                   <span>
                     <strong>
-                      {pt ? "Proteção do @ anterior" : "Old handle protection"}
+                      {tri(
+                        lang,
+                        "Proteção do @ anterior",
+                        "Old handle protection",
+                        "Protección del @ anterior",
+                      )}
                     </strong>
-                    {pt
-                      ? "Ele não poderá ser usado por outra pessoa durante o período."
-                      : "Nobody else can claim it during that period."}
+                    {tri(
+                      lang,
+                      "Ele não poderá ser usado por outra pessoa durante o período.",
+                      "Nobody else can claim it during that period.",
+                      "Nadie más podrá usarlo durante ese periodo.",
+                    )}
                   </span>
                 </p>
               </div>
@@ -283,12 +361,13 @@ export function UsernameSettings({
                     <LoaderCircle className="spin" size={14} aria-hidden />
                   )}
                   {pending
-                    ? pt
-                      ? "Alterando…"
-                      : "Changing…"
-                    : pt
-                      ? "Confirmar alteração"
-                      : "Confirm change"}
+                    ? tri(lang, "Alterando…", "Changing…", "Cambiando…")
+                    : tri(
+                        lang,
+                        "Confirmar alteração",
+                        "Confirm change",
+                        "Confirmar cambio",
+                      )}
                 </button>
               </footer>
             </form>

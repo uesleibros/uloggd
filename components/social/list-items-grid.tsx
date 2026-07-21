@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { QuickGameCard } from "../library/quick-game-card";
 import { ListItemTools } from "./list-item-tools";
 import { RemoveListItem } from "./list-owner-controls";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export type ListGridItem = {
   id: string;
@@ -158,7 +158,7 @@ export function ListItemsGrid({
       })}
       {pending && (
         <span className="sr-only">
-          {pt ? "Salvando ordem" : "Saving order"}
+          {tri(lang, "Salvando ordem", "Saving order", "Guardando el orden")}
         </span>
       )}
     </div>

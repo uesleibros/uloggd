@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 type Passkey = {
   id: string;
@@ -19,7 +19,6 @@ type Passkey = {
 };
 
 export function PasskeySettings({ lang }: { lang: UiLang }) {
-  const pt = lang === "pt-BR";
   const [items, setItems] = useState<Passkey[]>([]);
   const [pending, setPending] = useState<string | null>("load");
   const [error, setError] = useState<string | null>(null);
@@ -29,9 +28,12 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
       await createClient().auth.passkey.list();
     if (actionError)
       setError(
-        pt
-          ? "Não foi possível carregar suas passkeys."
-          : "Could not load your passkeys.",
+        tri(
+          lang,
+          "Não foi possível carregar suas passkeys.",
+          "Could not load your passkeys.",
+          "No se pudieron cargar tus passkeys.",
+        ),
       );
     else setItems(data ?? []);
     setPending(null);
@@ -42,21 +44,27 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
       .then(({ data, error: actionError }) => {
         if (actionError)
           setError(
-            pt
-              ? "Não foi possível carregar suas passkeys."
-              : "Could not load your passkeys.",
+            tri(
+              lang,
+              "Não foi possível carregar suas passkeys.",
+              "Could not load your passkeys.",
+              "No se pudieron cargar tus passkeys.",
+            ),
           );
         else setItems(data ?? []);
         setPending(null);
       });
-  }, [pt]);
+  }, [lang]);
 
   async function register() {
     if (!("PublicKeyCredential" in window)) {
       setError(
-        pt
-          ? "Este dispositivo não oferece suporte a passkeys."
-          : "This device does not support passkeys.",
+        tri(
+          lang,
+          "Este dispositivo não oferece suporte a passkeys.",
+          "This device does not support passkeys.",
+          "Este dispositivo no admite passkeys.",
+        ),
       );
       return;
     }
@@ -66,12 +74,18 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
     if (actionError)
       setError(
         actionError.code === "passkey_disabled"
-          ? pt
-            ? "Passkeys ainda não estão habilitadas no projeto."
-            : "Passkeys are not enabled for this project yet."
-          : pt
-            ? "Cadastro cancelado ou não concluído."
-            : "Registration was cancelled or not completed.",
+          ? tri(
+              lang,
+              "Passkeys ainda não estão habilitadas no projeto.",
+              "Passkeys are not enabled for this project yet.",
+              "Las passkeys todavía no están habilitadas en el proyecto.",
+            )
+          : tri(
+              lang,
+              "Cadastro cancelado ou não concluído.",
+              "Registration was cancelled or not completed.",
+              "Registro cancelado o no completado.",
+            ),
       );
     else await load();
     setPending(null);
@@ -85,9 +99,12 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
     });
     if (actionError)
       setError(
-        pt
-          ? "Não foi possível remover esta passkey."
-          : "Could not remove this passkey.",
+        tri(
+          lang,
+          "Não foi possível remover esta passkey.",
+          "Could not remove this passkey.",
+          "No se pudo quitar esta passkey.",
+        ),
       );
     else setItems((current) => current.filter((item) => item.id !== id));
     setPending(null);
@@ -102,9 +119,12 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
         <div>
           <h2>Passkeys</h2>
           <p>
-            {pt
-              ? "Entre com biometria, PIN ou uma chave física. A chave privada nunca sai do seu dispositivo."
-              : "Sign in with biometrics, a PIN, or a hardware key. Your private key never leaves your device."}
+            {tri(
+              lang,
+              "Entre com biometria, PIN ou uma chave física. A chave privada nunca sai do seu dispositivo.",
+              "Sign in with biometrics, a PIN, or a hardware key. Your private key never leaves your device.",
+              "Entra con biometría, PIN o una llave física. La clave privada nunca sale de tu dispositivo.",
+            )}
           </p>
         </div>
       </header>
@@ -122,10 +142,15 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
               <div>
                 <strong>
                   {item.friendly_name ||
-                    (pt ? "Passkey sem nome" : "Unnamed passkey")}
+                    tri(
+                      lang,
+                      "Passkey sem nome",
+                      "Unnamed passkey",
+                      "Passkey sin nombre",
+                    )}
                 </strong>
                 <small>
-                  {pt ? "Criada em" : "Created"}{" "}
+                  {tri(lang, "Criada em", "Created", "Creada el")}{" "}
                   {new Intl.DateTimeFormat(lang, {
                     dateStyle: "medium",
                   }).format(new Date(item.created_at))}
@@ -135,7 +160,12 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
                 type="button"
                 onClick={() => remove(item.id)}
                 disabled={Boolean(pending)}
-                aria-label={pt ? "Remover passkey" : "Remove passkey"}
+                aria-label={tri(
+                  lang,
+                  "Remover passkey",
+                  "Remove passkey",
+                  "Quitar passkey",
+                )}
               >
                 {pending === item.id ? (
                   <LoaderCircle className="spin" size={15} />
@@ -148,9 +178,12 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
         </div>
       ) : (
         <p className="settings-passkey-empty">
-          {pt
-            ? "Nenhuma passkey cadastrada nesta conta."
-            : "No passkeys registered for this account."}
+          {tri(
+            lang,
+            "Nenhuma passkey cadastrada nesta conta.",
+            "No passkeys registered for this account.",
+            "Ninguna passkey registrada en esta cuenta.",
+          )}
         </p>
       )}
       {error && (
@@ -169,7 +202,12 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
         ) : (
           <Plus size={15} />
         )}
-        {pt ? "Cadastrar passkey" : "Register passkey"}
+        {tri(
+          lang,
+          "Cadastrar passkey",
+          "Register passkey",
+          "Registrar passkey",
+        )}
       </button>
     </section>
   );

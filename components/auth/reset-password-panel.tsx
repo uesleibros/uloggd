@@ -4,13 +4,12 @@ import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { passwordSchema } from "@/lib/auth-validation";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export function ResetPasswordPanel({ lang }: { lang: UiLang }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const pt = lang === "pt-BR";
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
@@ -21,9 +20,12 @@ export function ResetPasswordPanel({ lang }: { lang: UiLang }) {
       password !== data.get("confirm")
     ) {
       setError(
-        pt
-          ? "Use pelo menos 8 caracteres, uma letra e um número; as senhas devem coincidir."
-          : "Use at least 8 characters, a letter and a number; passwords must match.",
+        tri(
+          lang,
+          "Use pelo menos 8 caracteres, uma letra e um número; as senhas devem coincidir.",
+          "Use at least 8 characters, a letter and a number; passwords must match.",
+          "Usa al menos 8 caracteres, una letra y un número; las contraseñas deben coincidir.",
+        ),
       );
       return;
     }
@@ -34,9 +36,12 @@ export function ResetPasswordPanel({ lang }: { lang: UiLang }) {
     } = await supabase.auth.getUser();
     if (!user) {
       setError(
-        pt
-          ? "O link é inválido ou expirou. Solicite um novo."
-          : "This link is invalid or expired. Request a new one.",
+        tri(
+          lang,
+          "O link é inválido ou expirou. Solicite um novo.",
+          "This link is invalid or expired. Request a new one.",
+          "El enlace no es válido o caducó. Solicita uno nuevo.",
+        ),
       );
       setPending(false);
       return;
@@ -44,9 +49,12 @@ export function ResetPasswordPanel({ lang }: { lang: UiLang }) {
     const { error: authError } = await supabase.auth.updateUser({ password });
     if (authError) {
       setError(
-        pt
-          ? "Não foi possível atualizar a senha."
-          : "The password could not be updated.",
+        tri(
+          lang,
+          "Não foi possível atualizar a senha.",
+          "The password could not be updated.",
+          "No se pudo actualizar la contraseña.",
+        ),
       );
       setPending(false);
       return;
@@ -57,25 +65,45 @@ export function ResetPasswordPanel({ lang }: { lang: UiLang }) {
   return (
     <section className="login-panel">
       <div className="login-panel-heading">
-        <h1>{pt ? "Defina uma nova senha" : "Set a new password"}</h1>
+        <h1>
+          {tri(
+            lang,
+            "Defina uma nova senha",
+            "Set a new password",
+            "Define una nueva contraseña",
+          )}
+        </h1>
         <p>
-          {pt
-            ? "Escolha uma senha forte que você não usa em outros serviços."
-            : "Choose a strong password you do not use elsewhere."}
+          {tri(
+            lang,
+            "Escolha uma senha forte que você não usa em outros serviços.",
+            "Choose a strong password you do not use elsewhere.",
+            "Elige una contraseña fuerte que no uses en otros servicios.",
+          )}
         </p>
       </div>
       <form className="auth-form" onSubmit={submit}>
         <label>
-          {pt ? "Nova senha" : "New password"}
+          {tri(lang, "Nova senha", "New password", "Nueva contraseña")}
           <input name="password" type="password" autoComplete="new-password" />
         </label>
         <label>
-          {pt ? "Confirmar senha" : "Confirm password"}
+          {tri(
+            lang,
+            "Confirmar senha",
+            "Confirm password",
+            "Confirmar contraseña",
+          )}
           <input name="confirm" type="password" autoComplete="new-password" />
         </label>
         <button className="auth-primary" disabled={pending}>
           {pending && <LoaderCircle className="spin" size={18} />}{" "}
-          {pt ? "Atualizar senha" : "Update password"}
+          {tri(
+            lang,
+            "Atualizar senha",
+            "Update password",
+            "Actualizar contraseña",
+          )}
         </button>
       </form>
       {error && (

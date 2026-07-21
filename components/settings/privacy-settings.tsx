@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 import type { UiLang } from "@/lib/ui-text";
 
 type Scope = "EVERYONE" | "FOLLOWERS" | "NOBODY";
@@ -71,7 +71,6 @@ export function PrivacySettings({
   initialBlocked: BlockedProfile[];
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [scope, setScope] = useState(initialScope);
   const [contentScope, setContentScope] = useState(initialContentScope);
@@ -144,7 +143,14 @@ export function PrivacySettings({
       approve,
     });
     if (error)
-      setMessage(pt ? "Não foi possível responder." : "Could not respond.");
+      setMessage(
+        tri(
+          lang,
+          "Não foi possível responder.",
+          "Could not respond.",
+          "No se pudo responder.",
+        ),
+      );
     else setRequests((current) => current.filter((item) => item.id !== id));
     setPending(null);
   }
@@ -173,7 +179,14 @@ export function PrivacySettings({
       target_profile: profile.id,
     });
     if (error)
-      setMessage(pt ? "Não foi possível desbloquear." : "Could not unblock.");
+      setMessage(
+        tri(
+          lang,
+          "Não foi possível desbloquear.",
+          "Could not unblock.",
+          "No se pudo desbloquear.",
+        ),
+      );
     else
       setBlocked((current) => current.filter((item) => item.id !== profile.id));
     setPending(null);
@@ -187,11 +200,16 @@ export function PrivacySettings({
             <LockKeyhole size={20} />
           </span>
           <div>
-            <h2>{pt ? "Conta privada" : "Private account"}</h2>
+            <h2>
+              {tri(lang, "Conta privada", "Private account", "Cuenta privada")}
+            </h2>
             <p>
-              {pt
-                ? "Com a conta privada, quem quiser te seguir precisa da sua aprovação. Quem já segue continua seguindo."
-                : "With a private account, anyone who wants to follow you needs your approval. Current followers stay."}
+              {tri(
+                lang,
+                "Com a conta privada, quem quiser te seguir precisa da sua aprovação. Quem já segue continua seguindo.",
+                "With a private account, anyone who wants to follow you needs your approval. Current followers stay.",
+                "Con la cuenta privada, quien quiera seguirte necesita tu aprobación. Quien ya te sigue continúa.",
+              )}
             </p>
           </div>
         </header>
@@ -204,12 +222,18 @@ export function PrivacySettings({
           />
           <span>
             {isPrivate
-              ? pt
-                ? "Sua conta está privada"
-                : "Your account is private"
-              : pt
-                ? "Sua conta está pública"
-                : "Your account is public"}
+              ? tri(
+                  lang,
+                  "Sua conta está privada",
+                  "Your account is private",
+                  "Tu cuenta está privada",
+                )
+              : tri(
+                  lang,
+                  "Sua conta está pública",
+                  "Your account is public",
+                  "Tu cuenta está pública",
+                )}
           </span>
           {pending === "privacy" && (
             <LoaderCircle className="spin" size={14} aria-hidden />
@@ -219,11 +243,23 @@ export function PrivacySettings({
         {isPrivate && (
           <div className="privacy-requests">
             <h3>
-              {pt ? "Solicitações para seguir" : "Follow requests"}
+              {tri(
+                lang,
+                "Solicitações para seguir",
+                "Follow requests",
+                "Solicitudes para seguir",
+              )}
               <b>{requests.length}</b>
             </h3>
             {requests.length === 0 ? (
-              <p>{pt ? "Nenhuma solicitação." : "No requests."}</p>
+              <p>
+                {tri(
+                  lang,
+                  "Nenhuma solicitação.",
+                  "No requests.",
+                  "Ninguna solicitud.",
+                )}
+              </p>
             ) : (
               <ul>
                 {requests.map((person) => (
@@ -261,7 +297,7 @@ export function PrivacySettings({
                         ) : (
                           <Check size={13} />
                         )}
-                        {pt ? "Aceitar" : "Accept"}
+                        {tri(lang, "Aceitar", "Accept", "Aceptar")}
                       </button>
                       <button
                         type="button"
@@ -269,7 +305,7 @@ export function PrivacySettings({
                         disabled={Boolean(pending)}
                         onClick={() => void reviewRequest(person.id, false)}
                       >
-                        {pt ? "Recusar" : "Decline"}
+                        {tri(lang, "Recusar", "Decline", "Rechazar")}
                       </button>
                     </div>
                   </li>
@@ -286,11 +322,21 @@ export function PrivacySettings({
             <MessageCircle size={20} />
           </span>
           <div>
-            <h2>{pt ? "Comentários no perfil" : "Profile comments"}</h2>
+            <h2>
+              {tri(
+                lang,
+                "Comentários no perfil",
+                "Profile comments",
+                "Comentarios del perfil",
+              )}
+            </h2>
             <p>
-              {pt
-                ? "Escolha quem pode publicar comentários no seu perfil. Você sempre poderá excluir qualquer comentário recebido."
-                : "Choose who can post on your profile. You can always remove any comment you receive."}
+              {tri(
+                lang,
+                "Escolha quem pode publicar comentários no seu perfil. Você sempre poderá excluir qualquer comentário recebido.",
+                "Choose who can post on your profile. You can always remove any comment you receive.",
+                "Elige quién puede publicar comentarios en tu perfil. Siempre podrás eliminar cualquier comentario recibido.",
+              )}
             </p>
           </div>
         </header>
@@ -313,14 +359,20 @@ export function PrivacySettings({
           </span>
           <div>
             <h2>
-              {pt
-                ? "Comentários em listas e avaliações"
-                : "Comments on lists and reviews"}
+              {tri(
+                lang,
+                "Comentários em listas e avaliações",
+                "Comments on lists and reviews",
+                "Comentarios en listas y reseñas",
+              )}
             </h2>
             <p>
-              {pt
-                ? "Vale para tudo que você publica: listas e avaliações. Você sempre poderá remover qualquer comentário."
-                : "Applies to everything you publish: lists and reviews. You can always remove any comment."}
+              {tri(
+                lang,
+                "Vale para tudo que você publica: listas e avaliações. Você sempre poderá remover qualquer comentário.",
+                "Applies to everything you publish: lists and reviews. You can always remove any comment.",
+                "Vale para todo lo que publicas: listas y reseñas. Siempre podrás quitar cualquier comentario.",
+              )}
             </p>
           </div>
         </header>
@@ -343,12 +395,20 @@ export function PrivacySettings({
           </span>
           <div>
             <h2>
-              {pt ? "Quem pode ver seu perfil" : "Who can see your profile"}
+              {tri(
+                lang,
+                "Quem pode ver seu perfil",
+                "Who can see your profile",
+                "Quién puede ver tu perfil",
+              )}
             </h2>
             <p>
-              {pt
-                ? "Restringir esconde biblioteca, listas e atividade de quem não segue você. Seu @ continua encontrável."
-                : "Restricting hides your library, lists and activity from people who do not follow you. Your handle stays findable."}
+              {tri(
+                lang,
+                "Restringir esconde biblioteca, listas e atividade de quem não segue você. Seu @ continua encontrável.",
+                "Restricting hides your library, lists and activity from people who do not follow you. Your handle stays findable.",
+                "Restringir oculta la biblioteca, las listas y la actividad a quien no te sigue. Tu @ sigue siendo localizable.",
+              )}
             </p>
           </div>
         </header>
@@ -369,11 +429,21 @@ export function PrivacySettings({
             <UserX size={20} />
           </span>
           <div>
-            <h2>{pt ? "Contas bloqueadas" : "Blocked accounts"}</h2>
+            <h2>
+              {tri(
+                lang,
+                "Contas bloqueadas",
+                "Blocked accounts",
+                "Cuentas bloqueadas",
+              )}
+            </h2>
             <p>
-              {pt
-                ? "Contas bloqueadas não podem seguir, comentar ou interagir com você. As conexões existentes são removidas."
-                : "Blocked accounts cannot follow, comment, or interact with you. Existing connections are removed."}
+              {tri(
+                lang,
+                "Contas bloqueadas não podem seguir, comentar ou interagir com você. As conexões existentes são removidas.",
+                "Blocked accounts cannot follow, comment, or interact with you. Existing connections are removed.",
+                "Las cuentas bloqueadas no pueden seguirte, comentar ni interactuar contigo. Las conexiones existentes se eliminan.",
+              )}
             </p>
           </div>
         </header>
@@ -408,9 +478,12 @@ export function PrivacySettings({
         ) : (
           <div className="privacy-blocked-empty">
             <LockKeyhole size={18} />
-            {pt
-              ? "Você não bloqueou nenhuma conta."
-              : "You have not blocked any accounts."}
+            {tri(
+              lang,
+              "Você não bloqueou nenhuma conta.",
+              "You have not blocked any accounts.",
+              "No has bloqueado ninguna cuenta.",
+            )}
           </div>
         )}
         {message && (

@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { SocialEntry } from "./activity-stream";
 import { EditReviewDialog } from "./edit-review-dialog";
 import { EditorVisibilitySelect } from "./review-studio-form";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function ActivityEntryActions({
   entry,
@@ -18,7 +18,6 @@ export function ActivityEntryActions({
   lang: UiLang;
 }) {
   const { id, kind } = entry;
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();
   const today = new Date().toISOString().slice(0, 10);
@@ -89,9 +88,12 @@ export function ActivityEntryActions({
     );
     if (actionError)
       setError(
-        pt
-          ? "Não foi possível atualizar a sessão."
-          : "Could not update the session.",
+        tri(
+          lang,
+          "Não foi possível atualizar a sessão.",
+          "Could not update the session.",
+          "No se pudo actualizar la sesión.",
+        ),
       );
     else {
       setEditing(false);
@@ -119,9 +121,12 @@ export function ActivityEntryActions({
           {pending
             ? t.removing
             : armed
-              ? pt
-                ? "Remover mesmo?"
-                : "Really remove?"
+              ? tri(
+                  lang,
+                  "Remover mesmo?",
+                  "Really remove?",
+                  "¿Quitar de verdad?",
+                )
               : t.remove}
         </button>
         {error && <span role="alert">{error}</span>}
@@ -144,9 +149,14 @@ export function ActivityEntryActions({
             >
               <header>
                 <div>
-                  <span>{pt ? "JORNADA" : "JOURNEY"}</span>
+                  <span>{tri(lang, "JORNADA", "JOURNEY", "RECORRIDO")}</span>
                   <Dialog.Title>
-                    {pt ? "Editar jornada" : "Edit journey"}
+                    {tri(
+                      lang,
+                      "Editar jornada",
+                      "Edit journey",
+                      "Editar recorrido",
+                    )}
                   </Dialog.Title>
                 </div>
                 <Dialog.Close aria-label={t.close}>
@@ -170,7 +180,14 @@ export function ActivityEntryActions({
                     />
                   </label>
                   <label>
-                    <span>{pt ? "Até (opcional)" : "Until (optional)"}</span>
+                    <span>
+                      {tri(
+                        lang,
+                        "Até (opcional)",
+                        "Until (optional)",
+                        "Hasta (opcional)",
+                      )}
+                    </span>
                     <input
                       type="date"
                       min={journeyStart || undefined}
@@ -190,12 +207,20 @@ export function ActivityEntryActions({
                     <Play size={15} />
                     <span>
                       <strong>
-                        {pt ? "Comecei o jogo aqui" : "Started the game here"}
+                        {tri(
+                          lang,
+                          "Comecei o jogo aqui",
+                          "Started the game here",
+                          "Empecé el juego aquí",
+                        )}
                       </strong>
                       <small>
-                        {pt
-                          ? "Marca o início da jornada"
-                          : "Marks the journey start"}
+                        {tri(
+                          lang,
+                          "Marca o início da jornada",
+                          "Marks the journey start",
+                          "Marca el inicio del recorrido",
+                        )}
                       </small>
                     </span>
                   </button>
@@ -208,18 +233,28 @@ export function ActivityEntryActions({
                     <Flag size={15} />
                     <span>
                       <strong>
-                        {pt ? "Terminei o jogo aqui" : "Finished the game here"}
+                        {tri(
+                          lang,
+                          "Terminei o jogo aqui",
+                          "Finished the game here",
+                          "Terminé el juego aquí",
+                        )}
                       </strong>
                       <small>
-                        {pt
-                          ? "Marca o fim da jornada"
-                          : "Marks the journey end"}
+                        {tri(
+                          lang,
+                          "Marca o fim da jornada",
+                          "Marks the journey end",
+                          "Marca el fin del recorrido",
+                        )}
                       </small>
                     </span>
                   </button>
                 </div>
                 <div className="journey-time-fields">
-                  <span>{pt ? "Tempo jogado" : "Time played"}</span>
+                  <span>
+                    {tri(lang, "Tempo jogado", "Time played", "Tiempo jugado")}
+                  </span>
                   <div>
                     <label>
                       <input
@@ -231,7 +266,7 @@ export function ActivityEntryActions({
                         value={hoursValue}
                         onChange={(event) => setHoursValue(event.target.value)}
                       />
-                      <small>{pt ? "horas" : "hours"}</small>
+                      <small>{tri(lang, "horas", "hours", "horas")}</small>
                     </label>
                     <b>:</b>
                     <label>
@@ -246,12 +281,21 @@ export function ActivityEntryActions({
                           setMinutesValue(event.target.value)
                         }
                       />
-                      <small>{pt ? "minutos" : "minutes"}</small>
+                      <small>
+                        {tri(lang, "minutos", "minutes", "minutos")}
+                      </small>
                     </label>
                   </div>
                 </div>
                 <label>
-                  <span>{pt ? "O que rolou na jornada" : "What happened"}</span>
+                  <span>
+                    {tri(
+                      lang,
+                      "O que rolou na jornada",
+                      "What happened",
+                      "Qué pasó",
+                    )}
+                  </span>
                   <textarea
                     name="note"
                     maxLength={1000}

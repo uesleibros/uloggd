@@ -88,6 +88,16 @@
 .legal-title small {
   color: var(--screen-muted);
 }
+.legal-title p.legal-untranslated {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--shell-line);
+  border-left: 3px solid var(--brand-blurple);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-dim);
+  font-size: 14px;
+}
 .legal-content section {
   padding-top: 38px;
 }

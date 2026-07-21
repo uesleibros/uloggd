@@ -20,7 +20,7 @@ import type { Dictionary } from "@/app/[lang]/dictionaries";
 import type { GameSearchResult } from "@/lib/igdb";
 import { SpawndLogo } from "./spawnd-logo";
 import { VerifiedMark } from "./verified-badge";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type SearchUser = {
   username: string;
@@ -179,17 +179,27 @@ function ResultList({
       <div className="search-results search-recent-results">
         <div className="search-results-label">
           <span>
-            {lang === "pt-BR" ? "Vistos recentemente" : "Recently viewed"}
+            {tri(
+              lang,
+              "Vistos recentemente",
+              "Recently viewed",
+              "Vistos recientemente",
+            )}
           </span>
           <button type="button" onClick={onClearRecent}>
             <Trash2 size={12} />
-            {lang === "pt-BR" ? "Limpar" : "Clear"}
+            {tri(lang, "Limpar", "Clear", "Limpiar")}
           </button>
         </div>
         <div
           role="listbox"
           id={listId}
-          aria-label={lang === "pt-BR" ? "Jogos recentes" : "Recent games"}
+          aria-label={tri(
+            lang,
+            "Jogos recentes",
+            "Recent games",
+            "Juegos recientes",
+          )}
         >
           {recent.map((game, index) => (
             <Link
@@ -217,14 +227,15 @@ function ResultList({
                 {game.spawndAvailable && (
                   <span
                     className="search-result-spawnd"
-                    aria-label={
-                      lang === "pt-BR"
-                        ? "Jogável no spawnd"
-                        : "Playable on spawnd"
-                    }
+                    aria-label={tri(
+                      lang,
+                      "Jogável no spawnd",
+                      "Playable on spawnd",
+                      "Jugable en spawnd",
+                    )}
                   >
                     <SpawndLogo compact />
-                    <span>{lang === "pt-BR" ? "Jogável" : "Playable"}</span>
+                    <span>{tri(lang, "Jogável", "Playable", "Jugable")}</span>
                   </span>
                 )}
                 {!game.spawndAvailable && (
@@ -246,7 +257,6 @@ function ResultList({
   )
     return <div className="search-message">{d.search.empty}</div>;
 
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   return (
     <div className="search-results">
@@ -284,14 +294,15 @@ function ResultList({
               {game.spawndAvailable && (
                 <span
                   className="search-result-spawnd"
-                  aria-label={
-                    lang === "pt-BR"
-                      ? "Jogável no spawnd"
-                      : "Playable on spawnd"
-                  }
+                  aria-label={tri(
+                    lang,
+                    "Jogável no spawnd",
+                    "Playable on spawnd",
+                    "Jugable en spawnd",
+                  )}
                 >
                   <SpawndLogo compact />
-                  <span>{lang === "pt-BR" ? "Jogável" : "Playable"}</span>
+                  <span>{tri(lang, "Jogável", "Playable", "Jugable")}</span>
                 </span>
               )}
               {game.kind !== "game" && (
@@ -306,7 +317,7 @@ function ResultList({
       {users.length > 0 && (
         <>
           <div className="search-results-label">
-            <span>{pt ? "Usuários" : "Users"}</span>
+            <span>{tri(lang, "Usuários", "Users", "Usuarios")}</span>
           </div>
           <div role="list">
             {users.map((person) => (
@@ -610,9 +621,12 @@ function SearchSurface({
           >
             <SlidersHorizontal size={14} />
             <span>
-              {lang === "pt-BR"
-                ? "Abrir busca avançada"
-                : "Open advanced search"}
+              {tri(
+                lang,
+                "Abrir busca avançada",
+                "Open advanced search",
+                "Abrir búsqueda avanzada",
+              )}
             </span>
             <ChevronRight size={14} />
           </Link>

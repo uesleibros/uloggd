@@ -3,13 +3,12 @@
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Tooltip } from "@/components/ui/tooltip";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 const STORAGE_KEY = "uloggd_sidebar_collapsed";
 
 export function SidebarCollapseButton({ lang }: { lang: UiLang }) {
   const [collapsed, setCollapsed] = useState(false);
-  const pt = lang === "pt-BR";
 
   useEffect(() => {
     let readyFrame = 0;
@@ -44,12 +43,13 @@ export function SidebarCollapseButton({ lang }: { lang: UiLang }) {
   }
 
   const label = collapsed
-    ? pt
-      ? "Expandir sidebar"
-      : "Expand sidebar"
-    : pt
-      ? "Recolher sidebar"
-      : "Collapse sidebar";
+    ? tri(lang, "Expandir sidebar", "Expand sidebar", "Expandir barra lateral")
+    : tri(
+        lang,
+        "Recolher sidebar",
+        "Collapse sidebar",
+        "Contraer barra lateral",
+      );
 
   return (
     <Tooltip label={label} side="right">

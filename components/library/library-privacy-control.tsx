@@ -3,7 +3,7 @@
 import { Globe2, LoaderCircle, LockKeyhole } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function LibraryPrivacyControl({
   initial,
@@ -12,7 +12,6 @@ export function LibraryPrivacyControl({
   initial: "PUBLIC" | "PRIVATE";
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [visibility, setVisibility] = useState(initial);
   const [pending, setPending] = useState(false);
@@ -38,21 +37,33 @@ export function LibraryPrivacyControl({
         <span>
           <strong>
             {isPublic
-              ? pt
-                ? "Biblioteca pública"
-                : "Public library"
-              : pt
-                ? "Biblioteca privada"
-                : "Private library"}
+              ? tri(
+                  lang,
+                  "Biblioteca pública",
+                  "Public library",
+                  "Biblioteca pública",
+                )
+              : tri(
+                  lang,
+                  "Biblioteca privada",
+                  "Private library",
+                  "Biblioteca privada",
+                )}
           </strong>
           <small>
             {isPublic
-              ? pt
-                ? "Visível no seu perfil"
-                : "Visible from your profile"
-              : pt
-                ? "Somente você pode acessar"
-                : "Only you can access"}
+              ? tri(
+                  lang,
+                  "Visível no seu perfil",
+                  "Visible from your profile",
+                  "Visible desde tu perfil",
+                )
+              : tri(
+                  lang,
+                  "Somente você pode acessar",
+                  "Only you can access",
+                  "Solo tú puedes acceder",
+                )}
           </small>
         </span>
       </div>
@@ -60,7 +71,16 @@ export function LibraryPrivacyControl({
         {pending && <LoaderCircle className="spin" size={14} />}
         <span>{t.change}</span>
       </button>
-      {error && <p>{pt ? "Não foi possível alterar." : "Could not update."}</p>}
+      {error && (
+        <p>
+          {tri(
+            lang,
+            "Não foi possível alterar.",
+            "Could not update.",
+            "No se pudo cambiar.",
+          )}
+        </p>
+      )}
     </div>
   );
 }

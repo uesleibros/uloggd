@@ -1,5 +1,7 @@
 import { ImageResponse } from "next/og";
 import { getYearShareSummary, parseWrappedYear } from "@/lib/year-wrapped";
+import { resolveLocale } from "../../../../dictionaries";
+import { tri } from "@/lib/ui-text";
 
 export const alt = "Retrospectiva anual de jogos no uloggd";
 export const size = { width: 1200, height: 630 };
@@ -10,28 +12,30 @@ type Props = {
 };
 
 export default async function OpenGraphImage({ params }: Props) {
-  const { lang, username, year: rawYear } = await params;
+  const { lang: rawLang, username, year: rawYear } = await params;
+  // The route segment is just a string; anything unknown draws the card in
+  // the default locale rather than failing the image request.
+  const lang = resolveLocale(rawLang);
   const year = parseWrappedYear(rawYear);
   const summary = year ? await getYearShareSummary(username, year) : null;
-  const pt = lang === "pt-BR";
   const name = summary?.profile.display_name || `@${username}`;
   const hours = summary ? Math.floor(summary.minutes / 60) : 0;
   const stats = [
     {
       value: summary?.games ?? 0,
-      label: pt ? "JOGOS" : "GAMES",
+      label: tri(lang, "JOGOS", "GAMES", "JUEGOS"),
     },
     {
       value: summary?.sessions ?? 0,
-      label: pt ? "SESSÕES" : "SESSIONS",
+      label: tri(lang, "SESSÕES", "SESSIONS", "SESIONES"),
     },
     {
       value: `${hours}h`,
-      label: pt ? "REGISTRADAS" : "LOGGED",
+      label: tri(lang, "REGISTRADAS", "LOGGED", "REGISTRADAS"),
     },
     {
       value: summary?.reviews ?? 0,
-      label: pt ? "AVALIAÇÕES" : "REVIEWS",
+      label: tri(lang, "AVALIAÇÕES", "REVIEWS", "RESEÑAS"),
     },
   ];
 
@@ -107,7 +111,7 @@ export default async function OpenGraphImage({ params }: Props) {
             letterSpacing: 2,
           }}
         >
-          {pt ? "RETROSPECTIVA" : "YEAR IN GAMES"}
+          {tri(lang, "RETROSPECTIVA", "YEAR IN GAMES", "RETROSPECTIVA")}
         </span>
       </div>
 
@@ -123,7 +127,7 @@ export default async function OpenGraphImage({ params }: Props) {
             letterSpacing: -3,
           }}
         >
-          {year ?? rawYear} {pt ? "em jogos" : "in games"}
+          {year ?? rawYear} {tri(lang, "em jogos", "in games", "en juegos")}
         </span>
       </div>
 

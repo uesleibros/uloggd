@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
   JourneyCalendar,
   type JourneyOption,
@@ -64,7 +64,6 @@ export function GameLogActions({
   journeys?: JourneySession[];
   journeyOptions?: JourneyOption[];
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();
   const [mode, setMode] = useState<Mode | null>(null);
@@ -142,7 +141,14 @@ export function GameLogActions({
         journey_title: title,
       });
       if (rpcError) {
-        setError(pt ? "Não foi possível renomear." : "Could not rename.");
+        setError(
+          tri(
+            lang,
+            "Não foi possível renomear.",
+            "Could not rename.",
+            "No se pudo renombrar.",
+          ),
+        );
       } else {
         setJourneyList((current) =>
           current.map((journey) =>
@@ -162,7 +168,12 @@ export function GameLogActions({
     );
     if (rpcError || !data) {
       setError(
-        pt ? "Não foi possível criar a jornada." : "Could not create journey.",
+        tri(
+          lang,
+          "Não foi possível criar a jornada.",
+          "Could not create journey.",
+          "No se pudo crear el recorrido.",
+        ),
       );
     } else {
       const created = { id: data.id as string, title: data.title as string };
@@ -188,7 +199,14 @@ export function GameLogActions({
       target_journey: activeJourney.id,
     });
     if (rpcError) {
-      setError(pt ? "Não foi possível excluir." : "Could not delete.");
+      setError(
+        tri(
+          lang,
+          "Não foi possível excluir.",
+          "Could not delete.",
+          "No se pudo eliminar.",
+        ),
+      );
       setPending(false);
       return;
     }
@@ -347,12 +365,22 @@ export function GameLogActions({
     });
     if (rpcError) {
       setError(
-        pt
-          ? "Não foi possível salvar. Confira os campos e tente novamente."
-          : "Could not save. Check the fields and try again.",
+        tri(
+          lang,
+          "Não foi possível salvar. Confira os campos e tente novamente.",
+          "Could not save. Check the fields and try again.",
+          "No se pudo guardar. Revisa los campos e inténtalo de nuevo.",
+        ),
       );
     } else {
-      setSuccess(pt ? "Salvo na sua jornada." : "Saved to your journey.");
+      setSuccess(
+        tri(
+          lang,
+          "Salvo na sua jornada.",
+          "Saved to your journey.",
+          "Guardado en tu recorrido.",
+        ),
+      );
       router.refresh();
       window.setTimeout(() => {
         setOpen(false);
@@ -362,9 +390,9 @@ export function GameLogActions({
   }
 
   const labels = {
-    review: pt ? "Nova avaliação" : "New review",
-    diary: pt ? "Sua jornada" : "Your journey",
-    list: pt ? "Adicionar à lista" : "Add to list",
+    review: tri(lang, "Nova avaliação", "New review", "Nueva reseña"),
+    diary: tri(lang, "Sua jornada", "Your journey", "Tu recorrido"),
+    list: tri(lang, "Adicionar à lista", "Add to list", "Añadir a la lista"),
   };
   function openMode(nextMode: Mode) {
     setError(null);
@@ -385,11 +413,17 @@ export function GameLogActions({
           <BookOpen size={15} /> {labels.review}
         </button>
         <button type="button" onClick={() => openMode("diary")}>
-          <CalendarPlus size={15} /> {pt ? "Registrar jornada" : "Log journey"}
+          <CalendarPlus size={15} />{" "}
+          {tri(lang, "Registrar jornada", "Log journey", "Registrar recorrido")}
         </button>
         {logCount > 0 && (
           <Link href={`/${lang}/game/${game.slug}/logs`}>
-            {pt ? `Ver registros (${logCount})` : `View logs (${logCount})`}
+            {tri(
+              lang,
+              `Ver registros (${logCount})`,
+              `View logs (${logCount})`,
+              `Ver registros (${logCount})`,
+            )}
           </Link>
         )}
         <button type="button" onClick={() => openMode("list")}>
@@ -424,11 +458,24 @@ export function GameLogActions({
                 platforms={platforms}
                 journeyOptions={journeyList}
                 draftKey={`uloggd:review-draft:${game.id}`}
-                submitLabel={pt ? "Publicar avaliação" : "Publish review"}
-                busyLabel={pt ? "Publicando…" : "Publishing…"}
-                successLabel={
-                  pt ? "Salvo na sua jornada." : "Saved to your journey."
-                }
+                submitLabel={tri(
+                  lang,
+                  "Publicar avaliação",
+                  "Publish review",
+                  "Publicar reseña",
+                )}
+                busyLabel={tri(
+                  lang,
+                  "Publicando…",
+                  "Publishing…",
+                  "Publicando…",
+                )}
+                successLabel={tri(
+                  lang,
+                  "Salvo na sua jornada.",
+                  "Saved to your journey.",
+                  "Guardado en tu recorrido.",
+                )}
                 onPerform={performReview}
               />
             )}
@@ -459,7 +506,12 @@ export function GameLogActions({
                         setJourneyArmed(false);
                       }}
                     >
-                      {pt ? "Sessões avulsas" : "Loose sessions"}
+                      {tri(
+                        lang,
+                        "Sessões avulsas",
+                        "Loose sessions",
+                        "Sesiones sueltas",
+                      )}
                     </button>
                   )}
                   <button
@@ -470,7 +522,13 @@ export function GameLogActions({
                       setNamingTitle("");
                     }}
                   >
-                    <Plus size={12} /> {pt ? "Nova jornada" : "New journey"}
+                    <Plus size={12} />{" "}
+                    {tri(
+                      lang,
+                      "Nova jornada",
+                      "New journey",
+                      "Nuevo recorrido",
+                    )}
                   </button>
                 </div>
                 {activeJourney && naming === null && (
@@ -482,7 +540,8 @@ export function GameLogActions({
                         setNamingTitle(activeJourney.title);
                       }}
                     >
-                      <Pencil size={12} /> {pt ? "Renomear" : "Rename"}
+                      <Pencil size={12} />{" "}
+                      {tri(lang, "Renomear", "Rename", "Renombrar")}
                     </button>
                     <button
                       type="button"
@@ -492,9 +551,12 @@ export function GameLogActions({
                     >
                       <Trash2 size={12} />{" "}
                       {journeyArmed
-                        ? pt
-                          ? "Excluir jornada e sessões?"
-                          : "Delete journey and sessions?"
+                        ? tri(
+                            lang,
+                            "Excluir jornada e sessões?",
+                            "Delete journey and sessions?",
+                            "¿Eliminar recorrido y sesiones?",
+                          )
                         : t.delete}
                     </button>
                   </div>
@@ -503,22 +565,29 @@ export function GameLogActions({
                   <div className="journey-naming">
                     <span>
                       {naming === "rename"
-                        ? pt
-                          ? "Renomear jornada"
-                          : "Rename journey"
-                        : pt
-                          ? "Dê um nome à sua jornada"
-                          : "Name your journey"}
+                        ? tri(
+                            lang,
+                            "Renomear jornada",
+                            "Rename journey",
+                            "Renombrar recorrido",
+                          )
+                        : tri(
+                            lang,
+                            "Dê um nome à sua jornada",
+                            "Name your journey",
+                            "Ponle nombre a tu recorrido",
+                          )}
                     </span>
                     <div>
                       <input
                         value={namingTitle}
                         maxLength={80}
-                        placeholder={
-                          pt
-                            ? "ex: Primeira campanha, Replay 2026…"
-                            : "e.g. First playthrough, 2026 replay…"
-                        }
+                        placeholder={tri(
+                          lang,
+                          "ex: Primeira campanha, Replay 2026…",
+                          "e.g. First playthrough, 2026 replay…",
+                          "ej.: Primera campaña, Repetición 2026…",
+                        )}
                         onChange={(event) => setNamingTitle(event.target.value)}
                         onKeyDown={(event) => {
                           if (event.key === "Enter") {
@@ -541,7 +610,9 @@ export function GameLogActions({
                         ) : (
                           <Check size={13} />
                         )}
-                        {naming === "rename" ? t.save : pt ? "Criar" : "Create"}
+                        {naming === "rename"
+                          ? t.save
+                          : tri(lang, "Criar", "Create", "Crear")}
                       </button>
                       {naming !== null && selectedJourney !== null && (
                         <button
@@ -555,9 +626,12 @@ export function GameLogActions({
                     </div>
                     {selectedJourney === null && (
                       <p>
-                        {pt
-                          ? "Cada jornada é uma passagem pelo jogo — você pode criar quantas quiser e registrar as sessões de cada uma."
-                          : "Each journey is one playthrough — create as many as you want and log each one's sessions."}
+                        {tri(
+                          lang,
+                          "Cada jornada é uma passagem pelo jogo — você pode criar quantas quiser e registrar as sessões de cada uma.",
+                          "Each journey is one playthrough — create as many as you want and log each one's sessions.",
+                          "Cada recorrido es una partida completa: crea los que quieras y registra las sesiones de cada uno.",
+                        )}
                       </p>
                     )}
                   </div>
@@ -575,7 +649,14 @@ export function GameLogActions({
                     />
                     <div className="journey-open-day">
                       <label>
-                        <span>{pt ? "Abrir um dia" : "Open a day"}</span>
+                        <span>
+                          {tri(
+                            lang,
+                            "Abrir um dia",
+                            "Open a day",
+                            "Abrir un día",
+                          )}
+                        </span>
                         <input
                           type="date"
                           max={today}
@@ -604,7 +685,7 @@ export function GameLogActions({
                 )}
                 <footer>
                   <Dialog.Close type="button" disabled={pending}>
-                    {pt ? "Concluído" : "Done"}
+                    {tri(lang, "Concluído", "Done", "Hecho")}
                   </Dialog.Close>
                 </footer>
               </div>
@@ -616,7 +697,12 @@ export function GameLogActions({
                 session={dayEditor.session}
                 journeyTitle={
                   activeJourney?.title ??
-                  (pt ? "Sessões avulsas" : "Loose sessions")
+                  tri(
+                    lang,
+                    "Sessões avulsas",
+                    "Loose sessions",
+                    "Sesiones sueltas",
+                  )
                 }
                 lang={lang}
                 pending={pending}
@@ -636,9 +722,12 @@ export function GameLogActions({
                     >
                       <Select.Trigger className="editor-select-trigger">
                         <Select.Value
-                          placeholder={
-                            pt ? "Selecione uma lista" : "Select a list"
-                          }
+                          placeholder={tri(
+                            lang,
+                            "Selecione uma lista",
+                            "Select a list",
+                            "Selecciona una lista",
+                          )}
                         />
                         <Select.Icon>
                           <ChevronDown size={14} />
@@ -672,9 +761,12 @@ export function GameLogActions({
                   </label>
                 ) : (
                   <p className="social-empty-inline">
-                    {pt
-                      ? "Crie uma lista primeiro na página de listas."
-                      : "Create a list on the lists page first."}
+                    {tri(
+                      lang,
+                      "Crie uma lista primeiro na página de listas.",
+                      "Create a list on the lists page first.",
+                      "Crea antes una lista en la página de listas.",
+                    )}
                   </p>
                 )}
                 {error && (
@@ -731,7 +823,6 @@ function JourneyDayEditor({
   onSave: (payload: DayPayload) => Promise<boolean>;
   onRemove?: () => void;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const total = session?.minutes ?? 0;
   const [hours, setHours] = useState(
@@ -778,7 +869,12 @@ function JourneyDayEditor({
           data-motion="none"
           onClick={onBack}
           disabled={pending}
-          aria-label={pt ? "Voltar ao calendário" : "Back to calendar"}
+          aria-label={tri(
+            lang,
+            "Voltar ao calendário",
+            "Back to calendar",
+            "Volver al calendario",
+          )}
         >
           <ArrowLeft size={15} />
         </button>
@@ -797,10 +893,20 @@ function JourneyDayEditor({
           <Play size={15} />
           <span>
             <strong>
-              {pt ? "Comecei o jogo aqui" : "Started the game here"}
+              {tri(
+                lang,
+                "Comecei o jogo aqui",
+                "Started the game here",
+                "Empecé el juego aquí",
+              )}
             </strong>
             <small>
-              {pt ? "Marca o início da jornada" : "Marks the journey start"}
+              {tri(
+                lang,
+                "Marca o início da jornada",
+                "Marks the journey start",
+                "Marca el inicio del recorrido",
+              )}
             </small>
           </span>
         </button>
@@ -813,16 +919,26 @@ function JourneyDayEditor({
           <Flag size={15} />
           <span>
             <strong>
-              {pt ? "Terminei o jogo aqui" : "Finished the game here"}
+              {tri(
+                lang,
+                "Terminei o jogo aqui",
+                "Finished the game here",
+                "Terminé el juego aquí",
+              )}
             </strong>
             <small>
-              {pt ? "Marca o fim da jornada" : "Marks the journey end"}
+              {tri(
+                lang,
+                "Marca o fim da jornada",
+                "Marks the journey end",
+                "Marca el fin del recorrido",
+              )}
             </small>
           </span>
         </button>
       </div>
       <div className="journey-time-fields">
-        <span>{pt ? "Tempo jogado" : "Time played"}</span>
+        <span>{tri(lang, "Tempo jogado", "Time played", "Tiempo jugado")}</span>
         <div>
           <label>
             <input
@@ -834,7 +950,7 @@ function JourneyDayEditor({
               value={hours}
               onChange={(event) => setHours(event.target.value)}
             />
-            <small>{pt ? "horas" : "hours"}</small>
+            <small>{tri(lang, "horas", "hours", "horas")}</small>
           </label>
           <b>:</b>
           <label>
@@ -847,22 +963,25 @@ function JourneyDayEditor({
               value={minutes}
               onChange={(event) => setMinutes(event.target.value)}
             />
-            <small>{pt ? "minutos" : "minutes"}</small>
+            <small>{tri(lang, "minutos", "minutes", "minutos")}</small>
           </label>
         </div>
       </div>
       <label>
-        <span>{pt ? "O que rolou na sessão" : "What happened"}</span>
+        <span>
+          {tri(lang, "O que rolou na sessão", "What happened", "Qué pasó")}
+        </span>
         <textarea
           maxLength={1000}
           rows={4}
           value={note}
           onChange={(event) => setNote(event.target.value)}
-          placeholder={
-            pt
-              ? "Conte o que você fez nesse dia."
-              : "Tell what you did on this day."
-          }
+          placeholder={tri(
+            lang,
+            "Conte o que você fez nesse dia.",
+            "Tell what you did on this day.",
+            "Cuenta lo que hiciste ese día.",
+          )}
         />
       </label>
       <div className="social-form-row social-form-options">
@@ -885,9 +1004,12 @@ function JourneyDayEditor({
       </div>
       {failed && (
         <p className="social-form-error" role="alert">
-          {pt
-            ? "Não foi possível salvar a sessão."
-            : "Could not save the session."}
+          {tri(
+            lang,
+            "Não foi possível salvar a sessão.",
+            "Could not save the session.",
+            "No se pudo guardar la sesión.",
+          )}
         </p>
       )}
       <footer className="journey-day-actions">
@@ -911,7 +1033,9 @@ function JourneyDayEditor({
           disabled={pending}
         >
           {pending && <LoaderCircle className="spin" size={15} aria-hidden />}
-          {pending ? t.saving : pt ? "Salvar sessão" : "Save session"}
+          {pending
+            ? t.saving
+            : tri(lang, "Salvar sessão", "Save session", "Guardar sesión")}
         </button>
       </footer>
     </form>

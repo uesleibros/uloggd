@@ -13,7 +13,7 @@ import { resolveGameCover } from "@/lib/game-cover";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
 import { getDictionary, hasLocale } from "./dictionaries";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
@@ -89,7 +89,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
       games: discoveries.anticipated,
       meta: (game) =>
         game.hype
-          ? `${game.hype.toLocaleString(lang)} ${lang === "pt-BR" ? "interessados" : "following"}`
+          ? `${game.hype.toLocaleString(lang)} ${tri(lang, "interessados", "following", "interesados")}`
           : d.home.releaseDatePending,
     },
     {
@@ -173,9 +173,12 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             <div className="featured-scrim" />
             <div className="featured-copy">
               <span className="featured-kicker">
-                {lang === "pt-BR"
-                  ? "DESTAQUE DO CATÁLOGO"
-                  : "CATALOG SPOTLIGHT"}
+                {tri(
+                  lang,
+                  "DESTAQUE DO CATÁLOGO",
+                  "CATALOG SPOTLIGHT",
+                  "DESTACADO DEL CATÁLOGO",
+                )}
               </span>
               <h2>
                 <Link href={`/${lang}/game/${featured.slug}`}>
@@ -194,10 +197,15 @@ async function HomeContent({ lang }: { lang: UiLang }) {
               <div className="featured-actions">
                 <Link href={`/${lang}/game/${featured.slug}`}>
                   <Info size={17} />
-                  {lang === "pt-BR" ? "Ver jogo" : "View game"}
+                  {tri(lang, "Ver jogo", "View game", "Ver juego")}
                 </Link>
                 <a href="#popular-catalog">
-                  {lang === "pt-BR" ? "Explorar catálogo" : "Explore catalog"}
+                  {tri(
+                    lang,
+                    "Explorar catálogo",
+                    "Explore catalog",
+                    "Explorar catálogo",
+                  )}
                   <ArrowRight size={16} />
                 </a>
               </div>
@@ -233,17 +241,28 @@ async function HomeContent({ lang }: { lang: UiLang }) {
         <section className="genre-section">
           <div className="genre-section-heading">
             <span>
-              {lang === "pt-BR" ? "NAVEGUE POR GÊNERO" : "BROWSE BY GENRE"}
+              {tri(
+                lang,
+                "NAVEGUE POR GÊNERO",
+                "BROWSE BY GENRE",
+                "NAVEGA POR GÉNERO",
+              )}
             </span>
             <h2>
-              {lang === "pt-BR"
-                ? "Encontre seu próximo mundo"
-                : "Find your next world"}
+              {tri(
+                lang,
+                "Encontre seu próximo mundo",
+                "Find your next world",
+                "Encuentra tu próximo mundo",
+              )}
             </h2>
             <p>
-              {lang === "pt-BR"
-                ? "Coleções vivas do catálogo, organizadas pelo tipo de experiência."
-                : "Living catalog collections organized by the kind of experience."}
+              {tri(
+                lang,
+                "Coleções vivas do catálogo, organizadas pelo tipo de experiência.",
+                "Living catalog collections organized by the kind of experience.",
+                "Colecciones vivas del catálogo, organizadas por el tipo de experiencia.",
+              )}
             </p>
           </div>
           <div className="genre-collections">
@@ -253,9 +272,12 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                   <div>
                     <h3>{collection.name[lang]}</h3>
                     <p>
-                      {lang === "pt-BR"
-                        ? `${collection.games.length} escolhas populares`
-                        : `${collection.games.length} popular picks`}
+                      {tri(
+                        lang,
+                        `${collection.games.length} escolhas populares`,
+                        `${collection.games.length} popular picks`,
+                        `${collection.games.length} elecciones populares`,
+                      )}
                     </p>
                   </div>
                 </div>
@@ -362,33 +384,46 @@ async function HomeContent({ lang }: { lang: UiLang }) {
         <section className="rail-intro">
           {user ? (
             <>
-              <span>{lang === "pt-BR" ? "SUA JORNADA" : "YOUR JOURNEY"}</span>
+              <span>
+                {tri(lang, "SUA JORNADA", "YOUR JOURNEY", "TU RECORRIDO")}
+              </span>
               <h2>
-                {lang === "pt-BR"
-                  ? "Continue de onde parou"
-                  : "Pick up where you left off"}
+                {tri(
+                  lang,
+                  "Continue de onde parou",
+                  "Pick up where you left off",
+                  "Continúa donde lo dejaste",
+                )}
               </h2>
               <p>
-                {lang === "pt-BR"
-                  ? "Sua coleção e suas avaliações, reunidas em um só lugar."
-                  : "Your collection and ratings, together in one place."}
+                {tri(
+                  lang,
+                  "Sua coleção e suas avaliações, reunidas em um só lugar.",
+                  "Your collection and ratings, together in one place.",
+                  "Tu colección y tus valoraciones, reunidas en un solo lugar.",
+                )}
               </p>
               <dl className="rail-library-stats">
                 <div>
-                  <dt>{lang === "pt-BR" ? "Jogos" : "Games"}</dt>
+                  <dt>{tri(lang, "Jogos", "Games", "Juegos")}</dt>
                   <dd>{libraryCount}</dd>
                 </div>
                 <div>
-                  <dt>{lang === "pt-BR" ? "Jogando" : "Playing"}</dt>
+                  <dt>{tri(lang, "Jogando", "Playing", "Jugando")}</dt>
                   <dd>{playingCount}</dd>
                 </div>
                 <div>
-                  <dt>{lang === "pt-BR" ? "Avaliados" : "Rated"}</dt>
+                  <dt>{tri(lang, "Avaliados", "Rated", "Valorados")}</dt>
                   <dd>{ratedCount}</dd>
                 </div>
               </dl>
               <Link className="rail-primary-action" href={`/${lang}/library`}>
-                {lang === "pt-BR" ? "Abrir biblioteca" : "Open library"}
+                {tri(
+                  lang,
+                  "Abrir biblioteca",
+                  "Open library",
+                  "Abrir biblioteca",
+                )}
                 <ArrowUpRight size={15} />
               </Link>
             </>

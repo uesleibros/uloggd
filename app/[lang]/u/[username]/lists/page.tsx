@@ -7,18 +7,24 @@ import { LoadMoreLists } from "@/components/social/load-more-lists";
 import { getListPreviews } from "@/lib/lists";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/supabase/auth";
-import { hasLocale } from "../../../dictionaries";
+import { hasLocale, resolveLocale } from "../../../dictionaries";
 import "../../../profile.css";
-import { uiText } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 type Props = { params: Promise<{ lang: string; username: string }> };
 
 const PAGE_SIZE = 24;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { lang, username } = await params;
+  const { lang: rawLang, username } = await params;
+  const lang = resolveLocale(rawLang);
   return {
-    title: lang === "pt-BR" ? `Listas de @${username}` : `@${username}'s lists`,
+    title: tri(
+      lang,
+      `Listas de @${username}`,
+      `@${username}'s lists`,
+      `Listas de @${username}`,
+    ),
   };
 }
 
@@ -42,7 +48,6 @@ export default async function ProfileListsPage({ params }: Props) {
     publicOnly: true,
     limit: PAGE_SIZE,
   });
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
 
@@ -53,13 +58,29 @@ export default async function ProfileListsPage({ params }: Props) {
       </Link>
       <header className="profile-subpage-header">
         <span>
-          <List size={14} /> {pt ? "COLEÇÕES PÚBLICAS" : "PUBLIC COLLECTIONS"}
+          <List size={14} />{" "}
+          {tri(
+            lang,
+            "COLEÇÕES PÚBLICAS",
+            "PUBLIC COLLECTIONS",
+            "COLECCIONES PÚBLICAS",
+          )}
         </span>
-        <h1>{pt ? `Listas de ${name}` : `${name}'s lists`}</h1>
+        <h1>
+          {tri(
+            lang,
+            `Listas de ${name}`,
+            `${name}'s lists`,
+            `Listas de ${name}`,
+          )}
+        </h1>
         <p>
-          {pt
-            ? "Seleções organizadas por tema, ranking ou uma ideia em comum."
-            : "Selections organized by theme, ranking, or a shared idea."}
+          {tri(
+            lang,
+            "Seleções organizadas por tema, ranking ou uma ideia em comum.",
+            "Selections organized by theme, ranking, or a shared idea.",
+            "Selecciones organizadas por tema, ranking o una idea en común.",
+          )}
         </p>
       </header>
       {lists.length ? (
@@ -97,11 +118,21 @@ export default async function ProfileListsPage({ params }: Props) {
           <span aria-hidden>
             <Layers3 size={22} />
           </span>
-          <h2>{pt ? "Nenhuma lista visível" : "No visible lists"}</h2>
+          <h2>
+            {tri(
+              lang,
+              "Nenhuma lista visível",
+              "No visible lists",
+              "Ninguna lista visible",
+            )}
+          </h2>
           <p>
-            {pt
-              ? "Este usuário ainda não publicou nenhuma coleção."
-              : "This user has not published any collections yet."}
+            {tri(
+              lang,
+              "Este usuário ainda não publicou nenhuma coleção.",
+              "This user has not published any collections yet.",
+              "Este usuario todavía no ha publicado ninguna colección.",
+            )}
           </p>
         </div>
       )}

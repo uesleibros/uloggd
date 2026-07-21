@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { VerifiedMark } from "./verified-badge";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export type NavigationAccount = {
   email: string;
@@ -90,7 +90,7 @@ export function AccountMenu({
                   href={`/${lang}/u/${account.username}`}
                 >
                   <UserRound size={16} />
-                  {lang === "pt-BR" ? "Ver perfil" : "View profile"}
+                  {tri(lang, "Ver perfil", "View profile", "Ver perfil")}
                 </Link>
               </DropdownMenu.Item>
               <DropdownMenu.Separator />
@@ -104,7 +104,7 @@ export function AccountMenu({
                   href={`/${lang}/moderation`}
                 >
                   <ShieldCheck size={16} />
-                  {lang === "pt-BR" ? "Moderação" : "Moderation"}
+                  {tri(lang, "Moderação", "Moderation", "Moderación")}
                 </Link>
               </DropdownMenu.Item>
               <DropdownMenu.Separator />
@@ -124,12 +124,8 @@ export function AccountMenu({
               <LogOut size={16} />
             )}
             {signingOut
-              ? lang === "pt-BR"
-                ? "Saindo…"
-                : "Signing out…"
-              : lang === "pt-BR"
-                ? "Sair da conta"
-                : "Sign out"}
+              ? tri(lang, "Saindo…", "Signing out…", "Cerrando sesión…")
+              : tri(lang, "Sair da conta", "Sign out", "Cerrar sesión")}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>

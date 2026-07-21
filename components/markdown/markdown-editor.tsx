@@ -83,7 +83,7 @@ import {
 } from "react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { MarkdownContent } from "./markdown-content";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Tab = "write" | "preview" | "sidebyside";
 type Tool =
@@ -142,11 +142,13 @@ const toolGroups: Array<Array<[Tool, ComponentType<{ size?: number }>]>> = [
 const insertGroups: Array<{
   titlePt: string;
   titleEn: string;
+  titleEs: string;
   tools: Array<[Tool, ComponentType<{ size?: number }>]>;
 }> = [
   {
     titlePt: "Mídia",
     titleEn: "Media",
+    titleEs: "Medios",
     tools: [
       ["imagesize", ImagePlus],
       ["youtube", Video],
@@ -156,6 +158,7 @@ const insertGroups: Array<{
   {
     titlePt: "Blocos",
     titleEn: "Blocks",
+    titleEs: "Bloques",
     tools: [
       ["codeblock", FileCode2],
       ["table", Table],
@@ -167,6 +170,7 @@ const insertGroups: Array<{
   {
     titlePt: "uloggd",
     titleEn: "uloggd",
+    titleEs: "uloggd",
     tools: [
       ["mention", AtSign],
       ["spoiler", EyeOff],
@@ -364,57 +368,76 @@ type HelpItem = {
   syntax: string;
   pt: string;
   en: string;
+  es: string;
   // Rendered live in the guide. Falls back to the syntax; "" disables it.
   demo?: string;
 };
 
-const helpSections: Array<{ pt: string; en: string; items: HelpItem[] }> = [
+const helpSections: Array<{
+  pt: string;
+  en: string;
+  es: string;
+  items: HelpItem[];
+}> = [
   {
     pt: "Texto",
     en: "Text",
+    es: "Texto",
     items: [
-      { syntax: "**negrito**", pt: "Negrito", en: "Bold" },
-      { syntax: "*itálico*", pt: "Itálico", en: "Italic" },
-      { syntax: "~~riscado~~", pt: "Riscado", en: "Strikethrough" },
+      { syntax: "**negrito**", pt: "Negrito", en: "Bold", es: "Negrita" },
+      { syntax: "*itálico*", pt: "Itálico", en: "Italic", es: "Cursiva" },
+      {
+        syntax: "~~riscado~~",
+        pt: "Riscado",
+        en: "Strikethrough",
+        es: "Tachado",
+      },
       {
         syntax: "# Título",
         pt: "Títulos, de # até ######",
         en: "Headings, from # to ######",
+        es: "Encabezados, de # a ######",
         demo: "# Título\n## Subtítulo",
       },
       {
         syntax: "[texto](https://url)",
         pt: "Link",
         en: "Link",
+        es: "Enlace",
         demo: "[uloggd](https://uloggd.com)",
       },
       {
         syntax: "> citação",
         pt: "Citação",
         en: "Blockquote",
+        es: "Cita",
         demo: "> Um dos melhores jogos que já joguei.",
       },
       {
         syntax: "`código`",
         pt: "Código em linha",
         en: "Inline code",
+        es: "Código en línea",
         demo: "Use `npm run dev` para começar.",
       },
       {
         syntax: "```\ncódigo\n```",
         pt: "Bloco de código",
         en: "Code block",
+        es: "Bloque de código",
         demo: "```\nconst a = 1;\n```",
       },
       {
         syntax: "---",
         pt: "Linha separadora",
         en: "Divider",
+        es: "Línea separadora",
       },
       {
         syntax: "linha 1\nlinha 2",
         pt: "Uma quebra de linha simples já vale — não precisa de linha em branco. Linhas em branco extras também são mantidas.",
         en: "A single line break is enough — no blank line needed. Extra blank lines are kept too.",
+        es: "Basta un salto de línea simple — no hace falta una línea en blanco. Las líneas en blanco extra también se conservan.",
         demo: "linha 1\nlinha 2",
       },
     ],
@@ -422,29 +445,34 @@ const helpSections: Array<{ pt: string; en: string; items: HelpItem[] }> = [
   {
     pt: "Listas e tabelas",
     en: "Lists and tables",
+    es: "Listas y tablas",
     items: [
       {
         syntax: "- item",
         pt: "Lista",
         en: "List",
+        es: "Lista",
         demo: "- primeiro\n- segundo",
       },
       {
         syntax: "1. item",
         pt: "Lista numerada",
         en: "Numbered list",
+        es: "Lista numerada",
         demo: "1. primeiro\n2. segundo",
       },
       {
         syntax: "- [ ] tarefa",
         pt: "Checklist — itens marcados ficam riscados",
         en: "Checklist — checked items are struck through",
+        es: "Checklist — los ítems marcados aparecen tachados",
         demo: "- [x] zerado\n- [ ] platinado",
       },
       {
         syntax: "| a | b |\n| --- | --- |\n| 1 | 2 |",
         pt: "Tabela — rola na horizontal quando não cabe",
         en: "Table — scrolls horizontally when it does not fit",
+        es: "Tabla — se desplaza en horizontal cuando no cabe",
         demo: "| Jogo | Nota |\n| --- | --- |\n| Celeste | 10 |",
       },
     ],
@@ -452,35 +480,41 @@ const helpSections: Array<{ pt: string; en: string; items: HelpItem[] }> = [
   {
     pt: "Jogos",
     en: "Games",
+    es: "Juegos",
     items: [
       {
         syntax: "!game(slug)",
         pt: "Card completo, com capa, sinopse e plataformas",
         en: "Full card, with cover, summary and platforms",
+        es: "Tarjeta completa, con portada, sinopsis y plataformas",
         demo: "!game(celeste)",
       },
       {
         syntax: "!game:mini(slug)",
         pt: "Card compacto, que flui junto com o texto",
         en: "Compact card that flows inline with the text",
+        es: "Tarjeta compacta, que fluye junto al texto",
         demo: "Terminei !game:mini(celeste) ontem.",
       },
       {
         syntax: "!game:grid(slug-1, slug-2)",
         pt: "Grade de capas. Um + depois do slug marca o jogo como favorito",
         en: "Grid of covers. A + after the slug marks the game as a favourite",
+        es: "Cuadrícula de portadas. Un + después del slug marca el juego como favorito",
         demo: "!game:grid(celeste, hollow-knight+, hades)",
       },
       {
         syntax: "!game:grid-auto(slug-1, slug-2)",
         pt: "Carrossel em loop, que pausa quando o mouse passa por cima",
         en: "Looping carousel that pauses on hover",
+        es: "Carrusel en bucle, que se pausa al pasar el ratón",
         demo: "!game:grid-auto(celeste, hollow-knight, hades, braid)",
       },
       {
         syntax: "@usuario",
         pt: "Menção a um perfil",
         en: "Mention a profile",
+        es: "Mención a un perfil",
         demo: "",
       },
     ],
@@ -488,35 +522,41 @@ const helpSections: Array<{ pt: string; en: string; items: HelpItem[] }> = [
   {
     pt: "Mídia",
     en: "Media",
+    es: "Medios",
     items: [
       {
         syntax: "![descrição](https://url)",
         pt: "Imagem",
         en: "Image",
+        es: "Imagen",
         demo: "",
       },
       {
         syntax: '<img src="https://url" width="400" />',
         pt: "Imagem com largura definida — nunca passa da largura disponível",
         en: "Image with a set width — never exceeds the available width",
+        es: "Imagen con ancho definido — nunca supera el ancho disponible",
         demo: "",
       },
       {
         syntax: "https://youtube.com/watch?v=ID",
         pt: "Colar o link do YouTube já vira player",
         en: "Pasting a YouTube link turns it into a player",
+        es: "Pegar el enlace de YouTube lo convierte en reproductor",
         demo: "",
       },
       {
         syntax: '<spoilerimg src="https://url" />',
         pt: "Imagem borrada até clicarem nela",
         en: "Image blurred until clicked",
+        es: "Imagen difuminada hasta que la pulsen",
         demo: "",
       },
       {
         syntax: "||texto escondido||",
         pt: "Spoiler de texto",
         en: "Text spoiler",
+        es: "Spoiler de texto",
         demo: "O final é ||surpreendente||.",
       },
     ],
@@ -524,17 +564,20 @@ const helpSections: Array<{ pt: string; en: string; items: HelpItem[] }> = [
   {
     pt: "Destaques",
     en: "Callouts",
+    es: "Destacados",
     items: [
       {
         syntax: ":::info\ntexto\n:::",
         pt: "Caixa de destaque",
         en: "Callout box",
+        es: "Caja destacada",
         demo: ":::info\nUm aviso rápido.\n:::",
       },
       {
         syntax: ":::warning / :::danger / :::tip",
         pt: "Tipos disponíveis: info, note, tip, success, important, warning, danger, bug, question, example",
         en: "Available types: info, note, tip, success, important, warning, danger, bug, question, example",
+        es: "Tipos disponibles: info, note, tip, success, important, warning, danger, bug, question, example",
         demo: ":::warning\nCuidado com spoilers.\n:::",
       },
     ],
@@ -542,41 +585,55 @@ const helpSections: Array<{ pt: string; en: string; items: HelpItem[] }> = [
   {
     pt: "Layout",
     en: "Layout",
+    es: "Diseño",
     items: [
       {
         syntax: "<center>\n\ntexto\n\n</center>",
         pt: "Centraliza texto, imagens, tabelas e cards",
         en: "Centres text, images, tables and cards",
+        es: "Centra texto, imágenes, tablas y tarjetas",
         demo: "<center>\n\n**No meio**\n\n</center>",
       },
       {
         syntax: "<details>\n<summary>Título</summary>\n\ntexto\n\n</details>",
         pt: "Seção recolhível",
         en: "Collapsible section",
+        es: "Sección plegable",
         demo: "<details>\n<summary>Minha lista completa</summary>\n\nConteúdo escondido.\n\n</details>",
       },
       {
         syntax: "<pt>\n\ntexto\n\n</pt>",
         pt: "Só aparece para quem está lendo em português",
         en: "Only shows for readers using Portuguese",
+        es: "Solo aparece para quien lee en portugués",
         demo: "<pt>\n\nVocê está lendo em português.\n\n</pt>\n<en>\n\nYou are reading in English.\n\n</en>",
       },
       {
         syntax: "<en>\n\ntext\n\n</en>",
         pt: "Só aparece para quem está lendo em inglês. Junto com <pt>, dá para manter as duas versões no mesmo perfil",
         en: "Only shows for readers using English. Together with <pt>, one profile can carry both versions",
+        es: "Solo aparece para quien lee en inglés. Junto con <pt> y <es>, un mismo perfil puede llevar las tres versiones",
+        demo: "",
+      },
+      {
+        syntax: "<es>\n\ntexto\n\n</es>",
+        pt: "Só aparece para quem está lendo em espanhol",
+        en: "Only shows for readers using Spanish",
+        es: "Solo aparece para quien lee en español",
         demo: "",
       },
       {
         syntax: "<desktop>\n\ntexto\n\n</desktop>",
         pt: "Só aparece em telas grandes",
         en: "Only shows on large screens",
+        es: "Solo aparece en pantallas grandes",
         demo: "",
       },
       {
         syntax: "<mobile>\n\ntexto\n\n</mobile>",
         pt: "Só aparece em telas pequenas",
         en: "Only shows on small screens",
+        es: "Solo aparece en pantallas pequeñas",
         demo: "",
       },
     ],
@@ -599,7 +656,6 @@ export function MarkdownEditor({
   placeholder?: string;
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [tab, setTab] = useState<Tab>("write");
   const [fullscreen, setFullscreen] = useState(false);
@@ -620,30 +676,60 @@ export function MarkdownEditor({
   }, [onChange, value]);
 
   const labels: Record<Tool, string> = {
-    bold: pt ? "Negrito (Ctrl+B)" : "Bold (Ctrl+B)",
-    italic: pt ? "Itálico (Ctrl+I)" : "Italic (Ctrl+I)",
-    strikethrough: pt ? "Riscado (Ctrl+Shift+X)" : "Strikethrough",
+    bold: tri(lang, "Negrito (Ctrl+B)", "Bold (Ctrl+B)", "Negrita (Ctrl+B)"),
+    italic: tri(
+      lang,
+      "Itálico (Ctrl+I)",
+      "Italic (Ctrl+I)",
+      "Cursiva (Ctrl+I)",
+    ),
+    strikethrough: tri(
+      lang,
+      "Riscado (Ctrl+Shift+X)",
+      "Strikethrough",
+      "Tachado (Ctrl+Shift+X)",
+    ),
     link: "Link (Ctrl+K)",
-    image: pt ? "Imagem" : "Image",
-    imagesize: pt ? "Imagem com tamanho" : "Sized image",
+    image: tri(lang, "Imagem", "Image", "Imagen"),
+    imagesize: tri(
+      lang,
+      "Imagem com tamanho",
+      "Sized image",
+      "Imagen con tamaño",
+    ),
     youtube: "YouTube",
-    code: pt ? "Código em linha" : "Inline code",
-    codeblock: pt ? "Bloco de código" : "Code block",
+    code: tri(lang, "Código em linha", "Inline code", "Código en línea"),
+    codeblock: tri(lang, "Bloco de código", "Code block", "Bloque de código"),
     ul: t.list,
-    ol: pt ? "Lista numerada" : "Numbered list",
+    ol: tri(lang, "Lista numerada", "Numbered list", "Lista numerada"),
     checklist: "Checklist",
-    quote: pt ? "Citação" : "Quote",
+    quote: tri(lang, "Citação", "Quote", "Cita"),
     spoiler: "Spoiler",
-    spoilerimage: pt ? "Imagem com spoiler" : "Spoiler image",
-    hr: pt ? "Separador" : "Divider",
-    alert: pt ? "Destaque" : "Callout",
-    center: pt ? "Centralizar" : "Center",
-    desktop: pt ? "Somente desktop" : "Desktop only",
-    mobile: pt ? "Somente mobile" : "Mobile only",
-    mention: pt ? "Mencionar" : "Mention",
-    table: pt ? "Tabela" : "Table",
-    details: pt ? "Seção recolhível" : "Collapsible section",
-    lang: pt ? "Texto por idioma" : "Text per language",
+    spoilerimage: tri(
+      lang,
+      "Imagem com spoiler",
+      "Spoiler image",
+      "Imagen con spoiler",
+    ),
+    hr: tri(lang, "Separador", "Divider", "Separador"),
+    alert: tri(lang, "Destaque", "Callout", "Destacado"),
+    center: tri(lang, "Centralizar", "Center", "Centrar"),
+    desktop: tri(lang, "Somente desktop", "Desktop only", "Solo escritorio"),
+    mobile: tri(lang, "Somente mobile", "Mobile only", "Solo móvil"),
+    mention: tri(lang, "Mencionar", "Mention", "Mencionar"),
+    table: tri(lang, "Tabela", "Table", "Tabla"),
+    details: tri(
+      lang,
+      "Seção recolhível",
+      "Collapsible section",
+      "Sección plegable",
+    ),
+    lang: tri(
+      lang,
+      "Texto por idioma",
+      "Text per language",
+      "Texto por idioma",
+    ),
   };
 
   useEffect(() => {
@@ -776,7 +862,7 @@ export function MarkdownEditor({
 
   const runTool = useCallback(
     (tool: Tool) => {
-      const text = pt ? "texto" : "text";
+      const text = tri(lang, "texto", "text", "texto");
       const actions: Record<Tool, () => void> = {
         bold: () => insertText("**", "**", text),
         italic: () => insertText("*", "*", text),
@@ -786,16 +872,18 @@ export function MarkdownEditor({
           insertText(
             "![",
             "](https://url-da-imagem.com)",
-            pt ? "descrição" : "description",
+            tri(lang, "descrição", "description", "descripción"),
           ),
         imagesize: () =>
           insertBlock(
             '<img src="https://url-da-imagem.com" alt="descrição" width="400" />',
           ),
         youtube: () => insertBlock("https://www.youtube.com/watch?v=VIDEO_ID"),
-        code: () => insertText("`", "`", pt ? "código" : "code"),
+        code: () => insertText("`", "`", tri(lang, "código", "code", "código")),
         codeblock: () =>
-          insertBlock(`\`\`\`\n${pt ? "código aqui" : "code here"}\n\`\`\``),
+          insertBlock(
+            `\`\`\`\n${tri(lang, "código aqui", "code here", "código aquí")}\n\`\`\``,
+          ),
         ul: () => insertLine("- "),
         ol: () => insertLine("1. "),
         checklist: () => insertLine("- [ ] "),
@@ -807,7 +895,9 @@ export function MarkdownEditor({
           ),
         hr: () => insertBlock("---"),
         alert: () =>
-          insertBlock(`:::info\n${pt ? "Texto do alerta" : "Alert text"}\n:::`),
+          insertBlock(
+            `:::info\n${tri(lang, "Texto do alerta", "Alert text", "Texto del aviso")}\n:::`,
+          ),
         center: () => insertBlock(`<center>\n\n${text}\n\n</center>`),
         desktop: () => insertBlock(`<desktop>\n\n${text}\n\n</desktop>`),
         mobile: () => insertBlock(`<mobile>\n\n${text}\n\n</mobile>`),
@@ -818,16 +908,16 @@ export function MarkdownEditor({
           ),
         details: () =>
           insertBlock(
-            `<details>\n<summary>${pt ? "Título da seção" : "Section title"}</summary>\n\n${text}\n\n</details>`,
+            `<details>\n<summary>${tri(lang, "Título da seção", "Section title", "Título de la sección")}</summary>\n\n${text}\n\n</details>`,
           ),
         lang: () =>
           insertBlock(
-            `<pt>\n\nTexto em português\n\n</pt>\n\n<en>\n\nEnglish text\n\n</en>`,
+            `<pt>\n\nTexto em português\n\n</pt>\n\n<en>\n\nEnglish text\n\n</en>\n\n<es>\n\nTexto en español\n\n</es>`,
           ),
       };
       actions[tool]();
     },
-    [insertBlock, insertLine, insertText, pt],
+    [insertBlock, insertLine, insertText, lang],
   );
 
   useEffect(() => {
@@ -895,12 +985,30 @@ export function MarkdownEditor({
     <div className="md-editor" data-fullscreen={fullscreen || undefined}>
       {name && <input type="hidden" name={name} value={value} />}
       <div className="md-editor-tabs">
-        <div role="tablist" aria-label={pt ? "Modo do editor" : "Editor mode"}>
+        <div
+          role="tablist"
+          aria-label={tri(
+            lang,
+            "Modo do editor",
+            "Editor mode",
+            "Modo del editor",
+          )}
+        >
           {[
-            ["write", Pencil, pt ? "Escrever" : "Write"],
-            ["preview", Eye, pt ? "Visualizar" : "Preview"],
+            ["write", Pencil, tri(lang, "Escrever", "Write", "Escribir")],
+            [
+              "preview",
+              Eye,
+              tri(lang, "Visualizar", "Preview", "Previsualizar"),
+            ],
             ...(fullscreen && largeScreen
-              ? [["sidebyside", Columns2, pt ? "Lado a lado" : "Side by side"]]
+              ? [
+                  [
+                    "sidebyside",
+                    Columns2,
+                    tri(lang, "Lado a lado", "Side by side", "Lado a lado"),
+                  ],
+                ]
               : []),
           ].map(([id, Icon, label]) => (
             <button
@@ -936,11 +1044,14 @@ export function MarkdownEditor({
         <div
           className="md-editor-toolbar"
           role="toolbar"
-          aria-label={pt ? "Formatação" : "Formatting"}
+          aria-label={tri(lang, "Formatação", "Formatting", "Formato")}
         >
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <button type="button" aria-label={pt ? "Título" : "Heading"}>
+              <button
+                type="button"
+                aria-label={tri(lang, "Título", "Heading", "Encabezado")}
+              >
                 <Heading size={16} />
                 <ChevronDown size={11} />
               </button>
@@ -994,7 +1105,9 @@ export function MarkdownEditor({
                 >
                   {insertGroups.map((group) => (
                     <div key={group.titleEn}>
-                      <span>{pt ? group.titlePt : group.titleEn}</span>
+                      <span>
+                        {tri(lang, group.titlePt, group.titleEn, group.titleEs)}
+                      </span>
                       {group.tools.map(([tool, Icon]) => (
                         <DropdownMenu.Item
                           key={tool}
@@ -1024,7 +1137,12 @@ export function MarkdownEditor({
           <button
             type="button"
             className="md-editor-split"
-            aria-label={pt ? "Redimensionar painéis" : "Resize panels"}
+            aria-label={tri(
+              lang,
+              "Redimensionar painéis",
+              "Resize panels",
+              "Redimensionar paneles",
+            )}
             onPointerDown={(event) => {
               event.preventDefault();
               draggingRef.current = true;
@@ -1046,7 +1164,12 @@ export function MarkdownEditor({
             <MarkdownContent content={value} lang={lang} />
           ) : (
             <p className="md-editor-empty">
-              {pt ? "Nada para visualizar." : "Nothing to preview."}
+              {tri(
+                lang,
+                "Nada para visualizar.",
+                "Nothing to preview.",
+                "Nada que previsualizar.",
+              )}
             </p>
           )}
         </div>
@@ -1056,8 +1179,8 @@ export function MarkdownEditor({
           <Info size={13} />
           <b>MD</b>
           <i>
-            {stats.words} {pt ? "palavras" : "words"} · {stats.lines}{" "}
-            {pt ? "linhas" : "lines"}
+            {stats.words} {tri(lang, "palavras", "words", "palabras")} ·{" "}
+            {stats.lines} {tri(lang, "linhas", "lines", "líneas")}
           </i>
         </span>
         <button
@@ -1078,7 +1201,12 @@ export function MarkdownEditor({
             <div className="md-editor-fullscreen">
               <button
                 type="button"
-                aria-label={pt ? "Sair da tela cheia" : "Exit fullscreen"}
+                aria-label={tri(
+                  lang,
+                  "Sair da tela cheia",
+                  "Exit fullscreen",
+                  "Salir de pantalla completa",
+                )}
                 onClick={() => setFullscreen(false)}
               />
               {content}
@@ -1094,7 +1222,12 @@ export function MarkdownEditor({
               <div>
                 <Info size={18} />
                 <Dialog.Title>
-                  {pt ? "Guia de Markdown" : "Markdown guide"}
+                  {tri(
+                    lang,
+                    "Guia de Markdown",
+                    "Markdown guide",
+                    "Guía de Markdown",
+                  )}
                 </Dialog.Title>
               </div>
               <Dialog.Close aria-label={t.close}>
@@ -1106,18 +1239,23 @@ export function MarkdownEditor({
               <input
                 value={helpSearch}
                 onChange={(event) => setHelpSearch(event.target.value)}
-                placeholder={pt ? "Buscar recurso…" : "Search features…"}
+                placeholder={tri(
+                  lang,
+                  "Buscar recurso…",
+                  "Search features…",
+                  "Buscar función…",
+                )}
               />
             </label>
             <div className="md-help-body">
               {filteredHelp.map((section) => (
                 <section key={section.en}>
-                  <h3>{pt ? section.pt : section.en}</h3>
+                  <h3>{tri(lang, section.pt, section.en, section.es)}</h3>
                   {section.items.map((item) => {
                     const demo = item.demo ?? item.syntax;
                     return (
                       <article key={item.syntax}>
-                        <p>{pt ? item.pt : item.en}</p>
+                        <p>{tri(lang, item.pt, item.en, item.es)}</p>
                         <div className="md-help-example">
                           <pre>
                             <code>{item.syntax}</code>
@@ -1144,7 +1282,12 @@ export function MarkdownEditor({
               ))}
               {!filteredHelp.length && (
                 <p className="md-help-empty">
-                  {pt ? "Nenhum recurso encontrado." : "No features found."}
+                  {tri(
+                    lang,
+                    "Nenhum recurso encontrado.",
+                    "No features found.",
+                    "No se encontró ninguna función.",
+                  )}
                 </p>
               )}
             </div>

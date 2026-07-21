@@ -4,6 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import { LoginPanel } from "@/components/auth/login-panel";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getDictionary, hasLocale } from "../dictionaries";
+import { tri } from "@/lib/ui-text";
 
 export async function generateMetadata({
   params,
@@ -29,42 +30,53 @@ export default async function LoginPage({
       .maybeSingle();
     redirect(profile?.username ? `/${lang}` : `/${lang}/onboarding/username`);
   }
-  const highlights =
-    lang === "pt-BR"
-      ? ([
-          [
-            LibraryBig,
-            "Organize sua biblioteca",
-            "Acompanhe o que quer jogar, o que está jogando e o que já terminou.",
-          ],
-          [
-            ListChecks,
-            "Registre do seu jeito",
-            "Guarde avaliações, listas e pensamentos sobre os jogos que fazem parte da sua história.",
-          ],
-          [
-            RefreshCw,
-            "Continue em qualquer dispositivo",
-            "Sua biblioteca e preferências permanecem sincronizadas com sua conta.",
-          ],
-        ] as const)
-      : ([
-          [
-            LibraryBig,
-            "Organize your library",
-            "Track what you want to play, what you are playing, and what you have finished.",
-          ],
-          [
-            ListChecks,
-            "Log it your way",
-            "Keep reviews, lists, and thoughts about the games that are part of your story.",
-          ],
-          [
-            RefreshCw,
-            "Continue on any device",
-            "Your library and preferences stay synchronized with your account.",
-          ],
-        ] as const);
+  const highlights = [
+    [
+      LibraryBig,
+      tri(
+        lang,
+        "Organize sua biblioteca",
+        "Organize your library",
+        "Organiza tu biblioteca",
+      ),
+      tri(
+        lang,
+        "Acompanhe o que quer jogar, o que está jogando e o que já terminou.",
+        "Track what you want to play, what you are playing, and what you have finished.",
+        "Sigue lo que quieres jugar, lo que estás jugando y lo que ya terminaste.",
+      ),
+    ],
+    [
+      ListChecks,
+      tri(
+        lang,
+        "Registre do seu jeito",
+        "Log it your way",
+        "Registra a tu manera",
+      ),
+      tri(
+        lang,
+        "Guarde avaliações, listas e pensamentos sobre os jogos que fazem parte da sua história.",
+        "Keep reviews, lists, and thoughts about the games that are part of your story.",
+        "Guarda reseñas, listas y pensamientos sobre los juegos que forman parte de tu historia.",
+      ),
+    ],
+    [
+      RefreshCw,
+      tri(
+        lang,
+        "Continue em qualquer dispositivo",
+        "Continue on any device",
+        "Continúa en cualquier dispositivo",
+      ),
+      tri(
+        lang,
+        "Sua biblioteca e preferências permanecem sincronizadas com sua conta.",
+        "Your library and preferences stay synchronized with your account.",
+        "Tu biblioteca y tus preferencias permanecen sincronizadas con tu cuenta.",
+      ),
+    ],
+  ] as const;
   return (
     <main className="login-shell">
       <aside className="login-library" aria-label={d.auth.libraryLabel}>

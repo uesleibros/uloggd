@@ -31,7 +31,7 @@ import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import "../../profile.css";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Props = PageProps<"/[lang]/u/[username]">;
 
@@ -70,14 +70,20 @@ async function ProfileRecentGames({
     viewerPreference?.custom_cover_scope === "EVERYONE";
   const games = await getGamesByIds(records.map((record) => record.igdb_id));
   const byId = new Map(games.map((game) => [game.id, game]));
-  const pt = lang === "pt-BR";
   return (
     <section className="profile-shelf">
       <div className="social-section-title">
         <div>
-          <h2>{pt ? "Jogos recentes" : "Recent games"}</h2>
+          <h2>
+            {tri(lang, "Jogos recentes", "Recent games", "Juegos recientes")}
+          </h2>
           <p>
-            {pt ? "Últimas mudanças na biblioteca" : "Latest library changes"}
+            {tri(
+              lang,
+              "Últimas mudanças na biblioteca",
+              "Latest library changes",
+              "Últimos cambios en la biblioteca",
+            )}
           </p>
         </div>
       </div>
@@ -144,11 +150,15 @@ async function ProfileListsAside({
     publicOnly: true,
     limit: 4,
   });
-  const pt = lang === "pt-BR";
   if (!lists.length)
     return (
       <p className="profile-lists-empty">
-        {pt ? "Nenhuma lista pública." : "No public lists."}
+        {tri(
+          lang,
+          "Nenhuma lista pública.",
+          "No public lists.",
+          "Ninguna lista pública.",
+        )}
       </p>
     );
   return lists.map((list) => (
@@ -192,7 +202,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   if (!profile?.username)
     return {
-      title: lang === "pt-BR" ? "Perfil não encontrado" : "Profile not found",
+      title: tri(
+        lang,
+        "Perfil não encontrado",
+        "Profile not found",
+        "Perfil no encontrado",
+      ),
     };
   // Nothing about a suspended account should reach link previews or search.
   const { data: suspension } = await supabase.rpc("profile_suspension", {
@@ -200,15 +215,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
   if (suspension?.length)
     return {
-      title: lang === "pt-BR" ? "Conta suspensa" : "Account suspended",
+      title: tri(
+        lang,
+        "Conta suspensa",
+        "Account suspended",
+        "Cuenta suspendida",
+      ),
       robots: { index: false, follow: false },
     };
   const name = profile.display_name || `@${profile.username}`;
   const description =
     profile.bio?.slice(0, 180) ||
-    (lang === "pt-BR"
-      ? `Veja a biblioteca, avaliações e jornada de @${profile.username} no uloggd.`
-      : `See @${profile.username}'s library, reviews, and gaming journey on uloggd.`);
+    tri(
+      lang,
+      `Veja a biblioteca, avaliações e jornada de @${profile.username} no uloggd.`,
+      `See @${profile.username}'s library, reviews, and gaming journey on uloggd.`,
+      `Mira la biblioteca, las reseñas y el recorrido de @${profile.username} en uloggd.`,
+    );
   const image = profile.banner_url || profile.avatar_url || "/logo.jpg";
   return {
     title: name,
@@ -219,7 +242,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "profile",
       siteName: "uloggd",
-      locale: lang === "pt-BR" ? "pt_BR" : "en_US",
+      locale: tri(lang, "pt_BR", "en_US", "es_ES"),
       images: [{ url: image, alt: name }],
     },
     twitter: {
@@ -247,7 +270,14 @@ function SuspendedProfile({
         <span aria-hidden>
           <Ban size={24} />
         </span>
-        <h1>{pt ? "Conta suspensa" : "Account suspended"}</h1>
+        <h1>
+          {tri(
+            lang,
+            "Conta suspensa",
+            "Account suspended",
+            "Cuenta suspendida",
+          )}
+        </h1>
         <p>
           {pt
             ? `O perfil de @${username} está indisponível porque a conta foi suspensa por violar as diretrizes do uloggd.`
@@ -255,13 +285,20 @@ function SuspendedProfile({
         </p>
         {until && (
           <small>
-            {pt ? "Suspensão até " : "Suspended until "}
+            {tri(
+              lang,
+              "Suspensão até ",
+              "Suspended until ",
+              "Suspensión hasta ",
+            )}
             {new Intl.DateTimeFormat(lang, { dateStyle: "long" }).format(
               new Date(until),
             )}
           </small>
         )}
-        <Link href={`/${lang}`}>{pt ? "Voltar ao início" : "Back home"}</Link>
+        <Link href={`/${lang}`}>
+          {tri(lang, "Voltar ao início", "Back home", "Volver al inicio")}
+        </Link>
       </section>
     </main>
   );
@@ -495,7 +532,13 @@ export default async function ProfilePage({ params }: Props) {
                 </p>
                 <p className="profile-joined">
                   <CalendarDays size={13} />{" "}
-                  {pt ? "No uloggd desde" : "On uloggd since"} {joined}
+                  {tri(
+                    lang,
+                    "No uloggd desde",
+                    "On uloggd since",
+                    "En uloggd desde",
+                  )}{" "}
+                  {joined}
                 </p>
               </div>
             </div>
@@ -503,7 +546,7 @@ export default async function ProfilePage({ params }: Props) {
           {profile.bio && <p className="profile-bio">{profile.bio}</p>}
           <div
             className="profile-connections-summary"
-            aria-label={pt ? "Conexões" : "Connections"}
+            aria-label={tri(lang, "Conexões", "Connections", "Conexiones")}
           >
             <Link
               href={`/${lang}/u/${profile.username}/connections?tab=following`}
@@ -524,7 +567,12 @@ export default async function ProfilePage({ params }: Props) {
               profile.twitter_username) && (
               <nav
                 className="profile-social-links"
-                aria-label={pt ? "Redes sociais" : "Social networks"}
+                aria-label={tri(
+                  lang,
+                  "Redes sociais",
+                  "Social networks",
+                  "Redes sociales",
+                )}
               >
                 {profile.youtube_username && (
                   <a
@@ -574,7 +622,8 @@ export default async function ProfilePage({ params }: Props) {
                 className="profile-edit-link"
                 href={`/${lang}/settings?tab=profile`}
               >
-                <Settings size={15} /> {pt ? "Editar perfil" : "Edit profile"}
+                <Settings size={15} />{" "}
+                {tri(lang, "Editar perfil", "Edit profile", "Editar perfil")}
               </Link>
             ) : !interactionBlocked ? (
               <FollowButton
@@ -591,7 +640,12 @@ export default async function ProfilePage({ params }: Props) {
       </header>
       <nav
         className="profile-stats"
-        aria-label={pt ? "Explorar perfil" : "Explore profile"}
+        aria-label={tri(
+          lang,
+          "Explorar perfil",
+          "Explore profile",
+          "Explorar perfil",
+        )}
       >
         <Link href={`/${lang}/u/${profile.username}/library`}>
           <span className="profile-stat-label">
@@ -621,7 +675,8 @@ export default async function ProfilePage({ params }: Props) {
           href={`/${lang}/u/${profile.username}/year/${new Date().getUTCFullYear()}`}
         >
           <span className="profile-stat-label">
-            <Sparkles size={14} /> {pt ? "Retrospectiva" : "Wrapped"}
+            <Sparkles size={14} />{" "}
+            {tri(lang, "Retrospectiva", "Wrapped", "Retrospectiva")}
           </span>
           <strong>{new Date().getUTCFullYear()}</strong>
         </Link>
@@ -630,15 +685,28 @@ export default async function ProfilePage({ params }: Props) {
         <section className="profile-blocked-notice">
           <Ban size={22} />
           <div>
-            <h2>{pt ? "Interação indisponível" : "Interaction unavailable"}</h2>
+            <h2>
+              {tri(
+                lang,
+                "Interação indisponível",
+                "Interaction unavailable",
+                "Interacción no disponible",
+              )}
+            </h2>
             <p>
               {viewerBlocked
-                ? pt
-                  ? "Você bloqueou esta conta. Desbloqueie para voltar a ver e interagir com o conteúdo."
-                  : "You blocked this account. Unblock it to see and interact with its content again."
-                : pt
-                  ? "Não é possível visualizar ou interagir com o conteúdo desta conta."
-                  : "You cannot view or interact with this account's content."}
+                ? tri(
+                    lang,
+                    "Você bloqueou esta conta. Desbloqueie para voltar a ver e interagir com o conteúdo.",
+                    "You blocked this account. Unblock it to see and interact with its content again.",
+                    "Bloqueaste esta cuenta. Desbloquéala para volver a ver su contenido e interactuar.",
+                  )
+                : tri(
+                    lang,
+                    "Não é possível visualizar ou interagir com o conteúdo desta conta.",
+                    "You cannot view or interact with this account's content.",
+                    "No puedes ver ni interactuar con el contenido de esta cuenta.",
+                  )}
             </p>
           </div>
         </section>
@@ -671,11 +739,21 @@ export default async function ProfilePage({ params }: Props) {
                 >
                   <div className="social-section-title">
                     <div>
-                      <h2>{pt ? "Jogos recentes" : "Recent games"}</h2>
+                      <h2>
+                        {tri(
+                          lang,
+                          "Jogos recentes",
+                          "Recent games",
+                          "Juegos recientes",
+                        )}
+                      </h2>
                       <p>
-                        {pt
-                          ? "Últimas mudanças na biblioteca"
-                          : "Latest library changes"}
+                        {tri(
+                          lang,
+                          "Últimas mudanças na biblioteca",
+                          "Latest library changes",
+                          "Últimos cambios en la biblioteca",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -701,11 +779,14 @@ export default async function ProfilePage({ params }: Props) {
             <div>
               <div className="social-section-title">
                 <div>
-                  <h2>{pt ? "Atividade" : "Activity"}</h2>
+                  <h2>{tri(lang, "Atividade", "Activity", "Actividad")}</h2>
                   <p>
-                    {pt
-                      ? "Avaliações e sessões públicas"
-                      : "Public reviews and sessions"}
+                    {tri(
+                      lang,
+                      "Avaliações e sessões públicas",
+                      "Public reviews and sessions",
+                      "Reseñas y sesiones públicas",
+                    )}
                   </p>
                 </div>
               </div>
@@ -740,7 +821,7 @@ export default async function ProfilePage({ params }: Props) {
               <div className="social-section-title">
                 <h2>{t.lists}</h2>
                 <Link href={`/${lang}/u/${profile.username}/lists`}>
-                  {pt ? "Ver todas" : "View all"}
+                  {tri(lang, "Ver todas", "View all", "Ver todas")}
                 </Link>
               </div>
               <Suspense

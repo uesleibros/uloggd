@@ -1,5 +1,5 @@
 import spawndCatalogJson from "@/data/spawnd-games.json";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 const SPAWND_ORIGIN = "https://www.spawnd.gg";
 
@@ -51,7 +51,7 @@ const gamesByIgdbId =
   );
 
 function getLocale(lang: SupportedLanguage) {
-  return lang === "pt-BR" ? "pt" : "en";
+  return tri(lang, "pt", "en", "es");
 }
 
 export function getSpawndGame({ igdbId, lang }: GetSpawndGameParams) {

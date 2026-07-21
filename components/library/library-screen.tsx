@@ -5,7 +5,7 @@ import { getGamesByIds } from "@/lib/igdb";
 import { LibraryCollection, type LibraryRecord } from "./library-collection";
 import { LibraryLiveStats } from "./library-live-stats";
 import { LibraryPrivacyControl } from "./library-privacy-control";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Profile = {
   username: string;
@@ -62,15 +62,27 @@ export async function LibraryScreen({
             {!owner && (
               <span>
                 <LibraryBig size={14} />
-                {pt ? "BIBLIOTECA PÚBLICA" : "PUBLIC LIBRARY"}
+                {tri(
+                  lang,
+                  "BIBLIOTECA PÚBLICA",
+                  "PUBLIC LIBRARY",
+                  "BIBLIOTECA PÚBLICA",
+                )}
               </span>
             )}
-            <h1>{owner ? (pt ? "Sua biblioteca" : "Your library") : name}</h1>
+            <h1>
+              {owner
+                ? tri(lang, "Sua biblioteca", "Your library", "Tu biblioteca")
+                : name}
+            </h1>
             <p>
               {owner
-                ? pt
-                  ? "Organize sua jornada, encontre o próximo jogo e ajuste cada prateleira ao seu jeito."
-                  : "Organize your journey, find what to play next, and shape every shelf your way."
+                ? tri(
+                    lang,
+                    "Organize sua jornada, encontre o próximo jogo e ajuste cada prateleira ao seu jeito.",
+                    "Organize your journey, find what to play next, and shape every shelf your way.",
+                    "Organiza tu recorrido, encuentra el próximo juego y ajusta cada estante a tu manera.",
+                  )
                 : pt
                   ? `Explore os jogos que fazem parte da jornada de @${profile.username}.`
                   : `Explore the games in @${profile.username}'s journey.`}
@@ -96,18 +108,24 @@ export async function LibraryScreen({
             <div className="library-public-note">
               <Gamepad2 size={16} />
               <span>
-                {pt
-                  ? "Você está vendo uma coleção pública. As notas são deste usuário e as capas seguem suas preferências."
-                  : "You are viewing a public collection. Ratings belong to this user and covers follow your preferences."}
+                {tri(
+                  lang,
+                  "Você está vendo uma coleção pública. As notas são deste usuário e as capas seguem suas preferências.",
+                  "You are viewing a public collection. Ratings belong to this user and covers follow your preferences.",
+                  "Estás viendo una colección pública. Las notas son de este usuario y las portadas siguen tus preferencias.",
+                )}
               </span>
             </div>
           )}
           {records.some((record) => record.quick_rating !== null) && (
             <span className="library-rating-note">
               <Star size={13} fill="currentColor" />
-              {pt
-                ? "Notas pessoais em escala de 5 estrelas"
-                : "Personal ratings on a 5-star scale"}
+              {tri(
+                lang,
+                "Notas pessoais em escala de 5 estrelas",
+                "Personal ratings on a 5-star scale",
+                "Notas personales en escala de 5 estrellas",
+              )}
             </span>
           )}
         </div>

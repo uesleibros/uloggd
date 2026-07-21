@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { EditorVisibilitySelect } from "./review-studio-form";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function ListOwnerControls({
   list,
@@ -20,7 +20,6 @@ export function ListOwnerControls({
   };
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -49,9 +48,12 @@ export function ListOwnerControls({
     );
     if (actionError)
       setError(
-        pt
-          ? "Não foi possível atualizar a lista."
-          : "Could not update the list.",
+        tri(
+          lang,
+          "Não foi possível atualizar a lista.",
+          "Could not update the list.",
+          "No se pudo actualizar la lista.",
+        ),
       );
     else {
       setOpen(false);
@@ -76,7 +78,12 @@ export function ListOwnerControls({
     );
     if (actionError || data !== true) {
       setError(
-        pt ? "Não foi possível excluir a lista." : "Could not delete the list.",
+        tri(
+          lang,
+          "Não foi possível excluir a lista.",
+          "Could not delete the list.",
+          "No se pudo eliminar la lista.",
+        ),
       );
       setPending(false);
     } else router.push(`/${lang}/lists`);
@@ -100,13 +107,14 @@ export function ListOwnerControls({
             <Trash2 size={14} />
           )}{" "}
           {pending
-            ? pt
-              ? "Excluindo…"
-              : "Deleting…"
+            ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
             : armed
-              ? pt
-                ? "Confirmar exclusão?"
-                : "Confirm deletion?"
+              ? tri(
+                  lang,
+                  "Confirmar exclusão?",
+                  "Confirm deletion?",
+                  "¿Confirmar eliminación?",
+                )
               : t.delete}
         </button>
       </div>
@@ -119,9 +127,21 @@ export function ListOwnerControls({
           >
             <header>
               <div>
-                <span>{pt ? "GERENCIAR LISTA" : "MANAGE LIST"}</span>
+                <span>
+                  {tri(
+                    lang,
+                    "GERENCIAR LISTA",
+                    "MANAGE LIST",
+                    "GESTIONAR LISTA",
+                  )}
+                </span>
                 <Dialog.Title>
-                  {pt ? "Editar detalhes" : "Edit details"}
+                  {tri(
+                    lang,
+                    "Editar detalhes",
+                    "Edit details",
+                    "Editar detalles",
+                  )}
                 </Dialog.Title>
               </div>
               <Dialog.Close aria-label={t.close}>
@@ -130,7 +150,7 @@ export function ListOwnerControls({
             </header>
             <form action={update} className="social-editor-form">
               <label>
-                <span>{pt ? "Nome" : "Name"}</span>
+                <span>{tri(lang, "Nome", "Name", "Nombre")}</span>
                 <input
                   name="name"
                   defaultValue={list.name}
@@ -139,7 +159,9 @@ export function ListOwnerControls({
                 />
               </label>
               <label>
-                <span>{pt ? "Descrição" : "Description"}</span>
+                <span>
+                  {tri(lang, "Descrição", "Description", "Descripción")}
+                </span>
                 <textarea
                   name="description"
                   defaultValue={list.description ?? ""}
@@ -186,7 +208,6 @@ export function RemoveListItem({
   gameId: number;
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -214,7 +235,9 @@ export function RemoveListItem({
         )}{" "}
         {pending ? t.removing : t.remove}
       </button>
-      {error && <span role="alert">{pt ? "Falhou" : "Failed"}</span>}
+      {error && (
+        <span role="alert">{tri(lang, "Falhou", "Failed", "Falló")}</span>
+      )}
     </div>
   );
 }

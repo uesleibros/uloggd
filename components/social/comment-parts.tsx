@@ -3,7 +3,7 @@
 import { Heart } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 /**
  * The pieces every comment thread on the platform shares.
@@ -84,7 +84,7 @@ export function CommentHeader({
       <span>
         <b aria-hidden>·</b>
         <time dateTime={createdAt}>{formatCommentTime(createdAt, lang)}</time>
-        {edited && <i>{lang === "pt-BR" ? "editado" : "edited"}</i>}
+        {edited && <i>{tri(lang, "editado", "edited", "editado")}</i>}
       </span>
     </header>
   );
@@ -112,13 +112,17 @@ export function CommentLike({
   showEmpty?: boolean;
   onToggle: () => void;
 }) {
-  const pt = lang === "pt-BR";
   if (!canLike) {
     if (count <= 0 && !showEmpty) return null;
     return (
       <span
         className="profile-comment-like-static"
-        aria-label={pt ? `${count} curtidas` : `${count} likes`}
+        aria-label={tri(
+          lang,
+          `${count} curtidas`,
+          `${count} likes`,
+          `${count} me gusta`,
+        )}
       >
         <Heart size={13} />
         {count > 0 && <span>{count.toLocaleString(lang)}</span>}
@@ -135,12 +139,13 @@ export function CommentLike({
       onClick={onToggle}
       aria-label={
         liked
-          ? pt
-            ? "Remover curtida"
-            : "Remove like"
-          : pt
-            ? "Curtir comentário"
-            : "Like comment"
+          ? tri(lang, "Remover curtida", "Remove like", "Quitar me gusta")
+          : tri(
+              lang,
+              "Curtir comentário",
+              "Like comment",
+              "Me gusta el comentario",
+            )
       }
     >
       <Heart size={13} fill={liked ? "currentColor" : "none"} />
@@ -153,9 +158,12 @@ export function PendingComment({ lang }: { lang: UiLang }) {
   return (
     <article
       className="profile-comment-pending"
-      aria-label={
-        lang === "pt-BR" ? "Publicando comentário" : "Posting comment"
-      }
+      aria-label={tri(
+        lang,
+        "Publicando comentário",
+        "Posting comment",
+        "Publicando comentario",
+      )}
       aria-busy="true"
     >
       <span className="skeleton-block" />

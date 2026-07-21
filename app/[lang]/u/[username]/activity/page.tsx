@@ -8,7 +8,7 @@ import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
 import "../../../profile.css";
-import { uiText } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 type Props = {
   params: Promise<{ lang: string; username: string }>;
@@ -62,7 +62,6 @@ export default async function ProfileActivityPage({
     activeType === "all"
       ? entries
       : entries.filter((entry) => entry.kind === activeType);
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
 
@@ -73,33 +72,54 @@ export default async function ProfileActivityPage({
       </Link>
       <header className="profile-subpage-header">
         <span>
-          <BookOpen size={14} /> {pt ? "HISTÓRICO PÚBLICO" : "PUBLIC HISTORY"}
+          <BookOpen size={14} />{" "}
+          {tri(
+            lang,
+            "HISTÓRICO PÚBLICO",
+            "PUBLIC HISTORY",
+            "HISTORIAL PÚBLICO",
+          )}
         </span>
-        <h1>{pt ? `Atividade de ${name}` : `${name}'s activity`}</h1>
+        <h1>
+          {tri(
+            lang,
+            `Atividade de ${name}`,
+            `${name}'s activity`,
+            `Actividad de ${name}`,
+          )}
+        </h1>
         <p>
-          {pt
-            ? "Avaliações e sessões que fazem parte desta jornada."
-            : "Reviews and sessions that are part of this journey."}
+          {tri(
+            lang,
+            "Avaliações e sessões que fazem parte desta jornada.",
+            "Reviews and sessions that are part of this journey.",
+            "Reseñas y sesiones que forman parte de este recorrido.",
+          )}
         </p>
       </header>
       <div className="profile-subpage-summary">
         <span>
           <Star size={14} />
           <strong>{reviewCount.count ?? 0}</strong>
-          {pt ? "avaliações" : "reviews"}
+          {tri(lang, "avaliações", "reviews", "valoraciones")}
         </span>
         <span>
           <CalendarDays size={14} />
           <strong>{diaryCount.count ?? 0}</strong>
-          {pt ? "sessões" : "sessions"}
+          {tri(lang, "sessões", "sessions", "sesiones")}
         </span>
       </div>
       <nav
         className="social-filter-tabs"
-        aria-label={pt ? "Filtrar atividade" : "Filter activity"}
+        aria-label={tri(
+          lang,
+          "Filtrar atividade",
+          "Filter activity",
+          "Filtrar actividad",
+        )}
       >
         {[
-          ["all", pt ? "Tudo" : "All"],
+          ["all", tri(lang, "Tudo", "All", "Todo")],
           ["review", t.reviews],
           ["diary", t.sessions],
         ].map(([value, label]) => (

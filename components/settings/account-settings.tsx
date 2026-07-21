@@ -19,7 +19,7 @@ import { AppearanceSettings } from "./appearance-settings";
 import { ContentPreferences } from "./content-preferences";
 import { PrivacySettings, type FollowRequest } from "./privacy-settings";
 import { UsernameSettings } from "./username-settings";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   custom_cover_scope: "OWN" | "EVERYONE";
@@ -50,7 +50,6 @@ export function AccountSettings({
   infractions: number;
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const pathname = usePathname();
   const router = useRouter();
@@ -77,12 +76,12 @@ export function AccountSettings({
   const tabs = [
     {
       id: "general" as const,
-      label: pt ? "Geral" : "General",
+      label: tri(lang, "Geral", "General", "General"),
       icon: CircleUserRound,
     },
     {
       id: "profile" as const,
-      label: pt ? "Perfil" : "Profile",
+      label: tri(lang, "Perfil", "Profile", "Perfil"),
       icon: UserRound,
     },
     {
@@ -97,12 +96,12 @@ export function AccountSettings({
     },
     {
       id: "appearance" as const,
-      label: pt ? "Aparência" : "Appearance",
+      label: tri(lang, "Aparência", "Appearance", "Apariencia"),
       icon: SwatchBook,
     },
     {
       id: "security" as const,
-      label: pt ? "Segurança" : "Security",
+      label: tri(lang, "Segurança", "Security", "Seguridad"),
       icon: ShieldCheck,
     },
   ];
@@ -138,7 +137,12 @@ export function AccountSettings({
       <nav
         className="game-page-nav account-settings-tabs"
         role="tablist"
-        aria-label={pt ? "Seções das configurações" : "Settings sections"}
+        aria-label={tri(
+          lang,
+          "Seções das configurações",
+          "Settings sections",
+          "Secciones de los ajustes",
+        )}
         onKeyDown={moveTab}
       >
         {tabs.map(({ id, label, icon: Icon }) => (
@@ -176,7 +180,14 @@ export function AccountSettings({
                 <CalendarDays size={20} />
               </span>
               <div>
-                <small>{pt ? "DATA DE NASCIMENTO" : "BIRTH DATE"}</small>
+                <small>
+                  {tri(
+                    lang,
+                    "DATA DE NASCIMENTO",
+                    "BIRTH DATE",
+                    "FECHA DE NACIMIENTO",
+                  )}
+                </small>
                 <strong>
                   {new Intl.DateTimeFormat(lang, {
                     dateStyle: "long",
@@ -184,9 +195,12 @@ export function AccountSettings({
                   }).format(new Date(`${profile.birth_date}T00:00:00Z`))}
                 </strong>
                 <p>
-                  {pt
-                    ? "Informação privada e permanente."
-                    : "Private and permanent information."}
+                  {tri(
+                    lang,
+                    "Informação privada e permanente.",
+                    "Private and permanent information.",
+                    "Información privada y permanente.",
+                  )}
                 </p>
               </div>
             </section>
@@ -198,22 +212,33 @@ export function AccountSettings({
                 <AlertTriangle size={20} />
               </span>
               <div>
-                <small>{pt ? "INFRAÇÕES" : "INFRACTIONS"}</small>
+                <small>
+                  {tri(lang, "INFRAÇÕES", "INFRACTIONS", "INFRACCIONES")}
+                </small>
                 <strong>
                   {infractions === 0
-                    ? pt
-                      ? "Conta em situação regular"
-                      : "Account in good standing"
-                    : `${infractions} ${pt ? "registro(s)" : "record(s)"}`}
+                    ? tri(
+                        lang,
+                        "Conta em situação regular",
+                        "Account in good standing",
+                        "Cuenta en regla",
+                      )
+                    : `${infractions} ${tri(lang, "registro(s)", "record(s)", "registro(s)")}`}
                 </strong>
                 <p>
                   {infractions === 0
-                    ? pt
-                      ? "Nenhuma infração registrada na sua conta."
-                      : "No infractions recorded on your account."
-                    : pt
-                      ? "Consulte o suporte caso precise contestar uma decisão."
-                      : "Contact support if you need to appeal a decision."}
+                    ? tri(
+                        lang,
+                        "Nenhuma infração registrada na sua conta.",
+                        "No infractions recorded on your account.",
+                        "Ninguna infracción registrada en tu cuenta.",
+                      )
+                    : tri(
+                        lang,
+                        "Consulte o suporte caso precise contestar uma decisão.",
+                        "Contact support if you need to appeal a decision.",
+                        "Contacta con soporte si necesitas apelar una decisión.",
+                      )}
                 </p>
               </div>
             </section>

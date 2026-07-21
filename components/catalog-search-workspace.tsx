@@ -21,7 +21,7 @@ import type {
   CatalogSearchOptions,
 } from "@/lib/igdb";
 import { QuickGameCard } from "./library/quick-game-card";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type SavedState = {
   status:
@@ -171,9 +171,12 @@ function OptionGroup({
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={
-                lang === "pt-BR" ? "Filtrar opções" : "Filter options"
-              }
+              placeholder={tri(
+                lang,
+                "Filtrar opções",
+                "Filter options",
+                "Filtrar opciones",
+              )}
             />
           </label>
         )}
@@ -218,12 +221,15 @@ function OptionGroup({
               {remotePending ? (
                 <>
                   <LoaderCircle className="spin" size={13} />
-                  {lang === "pt-BR" ? "Buscando…" : "Searching…"}
+                  {tri(lang, "Buscando…", "Searching…", "Buscando…")}
                 </>
-              ) : lang === "pt-BR" ? (
-                "Nenhuma opção encontrada."
               ) : (
-                "No options found."
+                tri(
+                  lang,
+                  "Nenhuma opção encontrada.",
+                  "No options found.",
+                  "No se encontraron opciones.",
+                )
               )}
             </p>
           )}
@@ -433,12 +439,27 @@ export function CatalogSearchWorkspace({
   const draftDirty =
     JSON.stringify(draft) !== JSON.stringify(draftFromFilters(filters));
   const sortOptions = [
-    { value: "popular", label: pt ? "Mais populares" : "Most popular" },
-    { value: "rating", label: pt ? "Melhor avaliados" : "Highest rated" },
-    { value: "newest", label: pt ? "Mais recentes" : "Newest" },
-    { value: "oldest", label: pt ? "Mais antigos" : "Oldest" },
-    { value: "hype", label: pt ? "Mais aguardados" : "Most anticipated" },
-    { value: "name", label: pt ? "Nome A–Z" : "Name A–Z" },
+    {
+      value: "popular",
+      label: tri(lang, "Mais populares", "Most popular", "Más populares"),
+    },
+    {
+      value: "rating",
+      label: tri(lang, "Melhor avaliados", "Highest rated", "Mejor valorados"),
+    },
+    {
+      value: "newest",
+      label: tri(lang, "Mais recentes", "Newest", "Más recientes"),
+    },
+    {
+      value: "oldest",
+      label: tri(lang, "Mais antigos", "Oldest", "Más antiguos"),
+    },
+    {
+      value: "hype",
+      label: tri(lang, "Mais aguardados", "Most anticipated", "Solo esperados"),
+    },
+    { value: "name", label: tri(lang, "Nome A–Z", "Name A–Z", "Nombre A–Z") },
   ];
   const activeSort =
     sortOptions.find((option) => option.value === filters.sort)?.label ??
@@ -446,7 +467,7 @@ export function CatalogSearchWorkspace({
   const scopeRows = [
     filters.yearFrom !== null || filters.yearTo !== null
       ? {
-          label: pt ? "Lançamento" : "Release",
+          label: tri(lang, "Lançamento", "Release", "Estado de lanzamiento"),
           value: `${filters.yearFrom ?? "…"}–${filters.yearTo ?? "…"}`,
         }
       : null,
@@ -458,13 +479,18 @@ export function CatalogSearchWorkspace({
       : null,
     filters.ratingCountMin !== null
       ? {
-          label: pt ? "Avaliações" : "Ratings",
+          label: tri(lang, "Avaliações", "Ratings", "Valoraciones"),
           value: `${filters.ratingCountMin.toLocaleString(lang)}+`,
         }
       : null,
     filters.releaseStatus !== "all"
       ? {
-          label: pt ? "Lançamento" : "Release status",
+          label: tri(
+            lang,
+            "Lançamento",
+            "Release status",
+            "Estado de lanzamiento",
+          ),
           value: filters.releaseStatus === "released" ? t.released : t.upcoming,
         }
       : null,
@@ -476,8 +502,13 @@ export function CatalogSearchWorkspace({
       : null,
     filters.anticipatedOnly
       ? {
-          label: pt ? "Interesse" : "Interest",
-          value: pt ? "Mais aguardados" : "Anticipated only",
+          label: tri(lang, "Interesse", "Interest", "Interés"),
+          value: tri(
+            lang,
+            "Mais aguardados",
+            "Anticipated only",
+            "Solo esperados",
+          ),
         }
       : null,
   ].filter((row): row is { label: string; value: string } => Boolean(row));
@@ -502,7 +533,12 @@ export function CatalogSearchWorkspace({
   if (filters.anticipatedOnly)
     scalarChips.push({
       key: "anticipated",
-      label: pt ? "Somente aguardados" : "Anticipated only",
+      label: tri(
+        lang,
+        "Somente aguardados",
+        "Anticipated only",
+        "Solo esperados",
+      ),
       changes: { anticipated: null },
     });
   if (filters.yearFrom !== null || filters.yearTo !== null)
@@ -514,13 +550,13 @@ export function CatalogSearchWorkspace({
   if (filters.ratingMin !== null)
     scalarChips.push({
       key: "rating",
-      label: `${pt ? "Nota" : "Score"} ${filters.ratingMin}+`,
+      label: `${tri(lang, "Nota", "Score", "Nota")} ${filters.ratingMin}+`,
       changes: { rating: null },
     });
   if (filters.ratingCountMin !== null)
     scalarChips.push({
       key: "votes",
-      label: `${filters.ratingCountMin.toLocaleString(lang)}+ ${pt ? "avaliações" : "ratings"}`,
+      label: `${filters.ratingCountMin.toLocaleString(lang)}+ ${tri(lang, "avaliações", "ratings", "valoraciones")}`,
       changes: { votes: null },
     });
 
@@ -532,12 +568,20 @@ export function CatalogSearchWorkspace({
     >
       <header className="catalog-search-hero">
         <h1>
-          {pt ? "Encontre exatamente o que jogar" : "Find exactly what to play"}
+          {tri(
+            lang,
+            "Encontre exatamente o que jogar",
+            "Find exactly what to play",
+            "Encuentra exactamente qué jugar",
+          )}
         </h1>
         <p>
-          {pt
-            ? "Cruze plataformas, gêneros, temas, modos, época e recepção para encontrar o jogo certo."
-            : "Cross platforms, genres, themes, modes, era, and reception to find the right game."}
+          {tri(
+            lang,
+            "Cruze plataformas, gêneros, temas, modos, época e recepção para encontrar o jogo certo.",
+            "Cross platforms, genres, themes, modes, era, and reception to find the right game.",
+            "Cruza plataformas, géneros, temas, modos, época y recepción para encontrar el juego adecuado.",
+          )}
         </p>
         <form
           className="catalog-search-main-form"
@@ -551,12 +595,18 @@ export function CatalogSearchWorkspace({
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={
-                pt
-                  ? "Nome do jogo, edição ou expansão…"
-                  : "Game, edition, or expansion name…"
-              }
-              aria-label={pt ? "Buscar jogos" : "Search games"}
+              placeholder={tri(
+                lang,
+                "Nome do jogo, edição ou expansão…",
+                "Game, edition, or expansion name…",
+                "Nombre del juego, edición o expansión…",
+              )}
+              aria-label={tri(
+                lang,
+                "Buscar jogos",
+                "Search games",
+                "Buscar juegos",
+              )}
             />
           </label>
           <button
@@ -574,16 +624,33 @@ export function CatalogSearchWorkspace({
         </form>
         <div className="catalog-search-signals">
           <span>
-            {pt ? "Filtros persistem na URL" : "Filters persist in the URL"}
+            {tri(
+              lang,
+              "Filtros persistem na URL",
+              "Filters persist in the URL",
+              "Los filtros se guardan en la URL",
+            )}
           </span>
-          <span>{pt ? "24 jogos por página" : "24 games per page"}</span>
+          <span>
+            {tri(
+              lang,
+              "24 jogos por página",
+              "24 games per page",
+              "24 juegos por página",
+            )}
+          </span>
         </div>
       </header>
 
       {(selectedChips.length > 0 || scalarChips.length > 0) && (
         <div
           className="catalog-active-filters"
-          aria-label={pt ? "Filtros ativos" : "Active filters"}
+          aria-label={tri(
+            lang,
+            "Filtros ativos",
+            "Active filters",
+            "Filtros activos",
+          )}
         >
           {selectedChips.map((chip) => (
             <button
@@ -608,7 +675,9 @@ export function CatalogSearchWorkspace({
               {chip.label} <X size={12} />
             </button>
           ))}
-          <Link href={pathname}>{pt ? "Limpar tudo" : "Clear all"}</Link>
+          <Link href={pathname}>
+            {tri(lang, "Limpar tudo", "Clear all", "Limpiar todo")}
+          </Link>
         </div>
       )}
 
@@ -627,7 +696,14 @@ export function CatalogSearchWorkspace({
           >
             <header className="catalog-filter-dialog-head">
               <div>
-                <span>{pt ? "REFINE A BUSCA" : "REFINE SEARCH"}</span>
+                <span>
+                  {tri(
+                    lang,
+                    "REFINE A BUSCA",
+                    "REFINE SEARCH",
+                    "AFINA LA BÚSQUEDA",
+                  )}
+                </span>
                 <Dialog.Title>{t.advancedFilters}</Dialog.Title>
               </div>
               <div className="catalog-filter-dialog-head-actions">
@@ -651,13 +727,21 @@ export function CatalogSearchWorkspace({
             <div className="catalog-filter-dialog-body">
               <section className="catalog-choice-filter">
                 <header>
-                  {pt ? "Situação de lançamento" : "Release status"}
+                  {tri(
+                    lang,
+                    "Situação de lançamento",
+                    "Release status",
+                    "Estado de lanzamiento",
+                  )}
                 </header>
                 <div className="catalog-segmented-filter">
                   {[
                     ["all", t.all],
-                    ["released", pt ? "Lançados" : "Released"],
-                    ["upcoming", pt ? "Em breve" : "Upcoming"],
+                    ["released", tri(lang, "Lançados", "Released", "Lanzados")],
+                    [
+                      "upcoming",
+                      tri(lang, "Em breve", "Upcoming", "Muy pronto"),
+                    ],
                   ].map(([value, label]) => (
                     <label
                       key={value}
@@ -694,7 +778,14 @@ export function CatalogSearchWorkspace({
                     <span>
                       <i />
                     </span>
-                    <b>{pt ? "Somente jogos avaliados" : "Rated games only"}</b>
+                    <b>
+                      {tri(
+                        lang,
+                        "Somente jogos avaliados",
+                        "Rated games only",
+                        "Solo juegos valorados",
+                      )}
+                    </b>
                   </label>
                   <label>
                     <input
@@ -711,15 +802,23 @@ export function CatalogSearchWorkspace({
                       <i />
                     </span>
                     <b>
-                      {pt
-                        ? "Somente jogos aguardados"
-                        : "Anticipated games only"}
+                      {tri(
+                        lang,
+                        "Somente jogos aguardados",
+                        "Anticipated games only",
+                        "Solo juegos esperados",
+                      )}
                     </b>
                   </label>
                 </div>
               </section>
               <OptionGroup
-                title={pt ? "Plataformas e consoles" : "Platforms & consoles"}
+                title={tri(
+                  lang,
+                  "Plataformas e consoles",
+                  "Platforms & consoles",
+                  "Plataformas y consolas",
+                )}
                 param="platforms"
                 options={options.platforms}
                 selected={draft.platforms}
@@ -729,7 +828,7 @@ export function CatalogSearchWorkspace({
                 lang={lang}
               />
               <OptionGroup
-                title={pt ? "Gêneros" : "Genres"}
+                title={tri(lang, "Gêneros", "Genres", "Géneros")}
                 param="genres"
                 options={options.genres}
                 selected={draft.genres}
@@ -738,7 +837,12 @@ export function CatalogSearchWorkspace({
                 lang={lang}
               />
               <OptionGroup
-                title={pt ? "Perspectiva" : "Player perspective"}
+                title={tri(
+                  lang,
+                  "Perspectiva",
+                  "Player perspective",
+                  "Perspectiva",
+                )}
                 param="perspectives"
                 options={options.perspectives}
                 selected={draft.perspectives}
@@ -746,7 +850,7 @@ export function CatalogSearchWorkspace({
                 lang={lang}
               />
               <OptionGroup
-                title={pt ? "Temas" : "Themes"}
+                title={tri(lang, "Temas", "Themes", "Temas")}
                 param="themes"
                 options={options.themes}
                 selected={draft.themes}
@@ -755,7 +859,12 @@ export function CatalogSearchWorkspace({
                 lang={lang}
               />
               <OptionGroup
-                title={pt ? "Modos de jogo" : "Game modes"}
+                title={tri(
+                  lang,
+                  "Modos de jogo",
+                  "Game modes",
+                  "Modos de juego",
+                )}
                 param="modes"
                 options={options.modes}
                 selected={draft.modes}
@@ -763,7 +872,7 @@ export function CatalogSearchWorkspace({
                 lang={lang}
               />
               <OptionGroup
-                title={pt ? "Publicação" : "Publisher"}
+                title={tri(lang, "Publicação", "Publisher", "Distribuidora")}
                 param="publishers"
                 options={options.publishers}
                 selected={draft.publishers}
@@ -773,7 +882,12 @@ export function CatalogSearchWorkspace({
                 lang={lang}
               />
               <OptionGroup
-                title={pt ? "Tipo de conteúdo" : "Content type"}
+                title={tri(
+                  lang,
+                  "Tipo de conteúdo",
+                  "Content type",
+                  "Tipo de contenido",
+                )}
                 param="types"
                 options={options.types}
                 selected={draft.types}
@@ -805,7 +919,12 @@ export function CatalogSearchWorkspace({
                   />
                 </label>
                 <label>
-                  {pt ? "Mínimo de avaliações" : "Minimum ratings"}
+                  {tri(
+                    lang,
+                    "Mínimo de avaliações",
+                    "Minimum ratings",
+                    "Mínimo de valoraciones",
+                  )}
                   <input
                     type="number"
                     min="0"
@@ -824,7 +943,14 @@ export function CatalogSearchWorkspace({
               </section>
               <section className="catalog-range-filter">
                 <header>
-                  <span>{pt ? "Janela de lançamento" : "Release window"}</span>
+                  <span>
+                    {tri(
+                      lang,
+                      "Janela de lançamento",
+                      "Release window",
+                      "Ventana de lanzamiento",
+                    )}
+                  </span>
                 </header>
                 <div>
                   <label>
@@ -846,7 +972,7 @@ export function CatalogSearchWorkspace({
                     />
                   </label>
                   <label>
-                    {pt ? "Até" : "To"}
+                    {tri(lang, "Até", "To", "Hasta")}
                     <input
                       type="number"
                       min="1950"
@@ -869,9 +995,12 @@ export function CatalogSearchWorkspace({
             <footer className="catalog-filter-dialog-actions">
               <span>
                 {draftDirty
-                  ? pt
-                    ? "Alterações pendentes"
-                    : "Pending changes"
+                  ? tri(
+                      lang,
+                      "Alterações pendentes",
+                      "Pending changes",
+                      "Cambios pendientes",
+                    )
                   : pt
                     ? `${appliedCount} filtro(s) ativo(s)`
                     : `${appliedCount} active filter(s)`}
@@ -883,9 +1012,12 @@ export function CatalogSearchWorkspace({
               >
                 {pending
                   ? t.applying
-                  : pt
-                    ? "Aplicar filtros"
-                    : "Apply filters"}
+                  : tri(
+                      lang,
+                      "Aplicar filtros",
+                      "Apply filters",
+                      "Aplicar filtros",
+                    )}
               </button>
             </footer>
           </Dialog.Content>
@@ -895,15 +1027,18 @@ export function CatalogSearchWorkspace({
           <section className="catalog-results-panel" aria-busy={pending}>
             <header className="catalog-results-heading">
               <div className="catalog-results-heading-copy">
-                <span>{pt ? "RESULTADOS" : "RESULTS"}</span>
+                <span>{tri(lang, "RESULTADOS", "RESULTS", "RESULTADOS")}</span>
                 <h2>
                   {filters.query
                     ? pt
                       ? `Jogos para “${filters.query}”`
                       : `Games for “${filters.query}”`
-                    : pt
-                      ? "Explore o catálogo"
-                      : "Explore the catalog"}
+                    : tri(
+                        lang,
+                        "Explore o catálogo",
+                        "Explore the catalog",
+                        "Explora el catálogo",
+                      )}
                 </h2>
                 <p>
                   {pt
@@ -925,7 +1060,12 @@ export function CatalogSearchWorkspace({
                     navigate({ sort: value === "popular" ? null : value })
                   }
                   options={sortOptions}
-                  label={pt ? "Ordenar resultados" : "Sort results"}
+                  label={tri(
+                    lang,
+                    "Ordenar resultados",
+                    "Sort results",
+                    "Ordenar resultados",
+                  )}
                 />
               </div>
             </header>
@@ -963,14 +1103,20 @@ export function CatalogSearchWorkspace({
                   <SearchX size={22} />
                 </span>
                 <h2>
-                  {pt
-                    ? "Nenhum jogo nesse cruzamento"
-                    : "No games in this combination"}
+                  {tri(
+                    lang,
+                    "Nenhum jogo nesse cruzamento",
+                    "No games in this combination",
+                    "Ningún juego en esta combinación",
+                  )}
                 </h2>
                 <p>
-                  {pt
-                    ? "Remova um filtro ou amplie o período para reencontrar o catálogo."
-                    : "Remove a filter or widen the period to bring the catalog back."}
+                  {tri(
+                    lang,
+                    "Remova um filtro ou amplie o período para reencontrar o catálogo.",
+                    "Remove a filter or widen the period to bring the catalog back.",
+                    "Quita un filtro o amplía el periodo para recuperar el catálogo.",
+                  )}
                 </p>
                 <Link href={pathname}>{t.clearFilters}</Link>
               </div>
@@ -979,13 +1125,25 @@ export function CatalogSearchWorkspace({
             {totalPages > 1 && (
               <nav
                 className="catalog-pagination"
-                aria-label={pt ? "Paginação" : "Pagination"}
+                aria-label={tri(lang, "Paginação", "Pagination", "Paginación")}
               >
                 <div className="catalog-pagination-summary">
                   <strong>
-                    {pt ? `Página ${filters.page}` : `Page ${filters.page}`}
+                    {tri(
+                      lang,
+                      `Página ${filters.page}`,
+                      `Page ${filters.page}`,
+                      `Página ${filters.page}`,
+                    )}
                   </strong>
-                  <span>{pt ? `de ${totalPages}` : `of ${totalPages}`}</span>
+                  <span>
+                    {tri(
+                      lang,
+                      `de ${totalPages}`,
+                      `of ${totalPages}`,
+                      `de ${totalPages}`,
+                    )}
+                  </span>
                 </div>
                 <div className="catalog-pagination-pages">
                   <button
@@ -993,7 +1151,7 @@ export function CatalogSearchWorkspace({
                     disabled={filters.page === 1 || pending}
                     onClick={() => navigate({ page: null }, true)}
                   >
-                    {pt ? "Primeira" : "First"}
+                    {tri(lang, "Primeira", "First", "Primera")}
                   </button>
                   {paginationItems(filters.page, totalPages).map((item) =>
                     typeof item === "number" ? (
@@ -1021,7 +1179,7 @@ export function CatalogSearchWorkspace({
                     disabled={filters.page === totalPages || pending}
                     onClick={() => navigate({ page: totalPages }, true)}
                   >
-                    {pt ? "Última" : "Last"}
+                    {tri(lang, "Última", "Last", "Última")}
                   </button>
                 </div>
                 <form
@@ -1037,7 +1195,7 @@ export function CatalogSearchWorkspace({
                   }}
                 >
                   <label htmlFor="catalog-jump-page">
-                    {pt ? "Ir para" : "Go to"}
+                    {tri(lang, "Ir para", "Go to", "Ir a")}
                   </label>
                   <input
                     id="catalog-jump-page"
@@ -1049,7 +1207,7 @@ export function CatalogSearchWorkspace({
                     key={filters.page}
                   />
                   <button type="submit" disabled={pending}>
-                    {pt ? "Ir" : "Go"}
+                    {tri(lang, "Ir", "Go", "Ir")}
                   </button>
                 </form>
               </nav>
@@ -1058,25 +1216,44 @@ export function CatalogSearchWorkspace({
 
           <aside
             className="catalog-context-rail"
-            aria-label={pt ? "Resumo da busca" : "Search summary"}
+            aria-label={tri(
+              lang,
+              "Resumo da busca",
+              "Search summary",
+              "Resumen de la búsqueda",
+            )}
             key={`${filters.page}-${filters.sort}-${appliedCount}`}
           >
             <section className="catalog-context-total">
-              <span>{pt ? "CATÁLOGO ENCONTRADO" : "CATALOG FOUND"}</span>
+              <span>
+                {tri(
+                  lang,
+                  "CATÁLOGO ENCONTRADO",
+                  "CATALOG FOUND",
+                  "CATÁLOGO ENCONTRADO",
+                )}
+              </span>
               <strong>{total.toLocaleString(lang)}</strong>
               <small>
-                {pt ? "jogos correspondem à busca" : "games match this search"}
+                {tri(
+                  lang,
+                  "jogos correspondem à busca",
+                  "games match this search",
+                  "juegos coinciden con la búsqueda",
+                )}
               </small>
             </section>
 
             <section className="catalog-context-card">
               <header>
-                <strong>{pt ? "Sua busca" : "Your search"}</strong>
+                <strong>
+                  {tri(lang, "Sua busca", "Your search", "Tu búsqueda")}
+                </strong>
                 {appliedCount > 0 && <span>{appliedCount}</span>}
               </header>
               <dl>
                 <div>
-                  <dt>{pt ? "Ordenação" : "Sorting"}</dt>
+                  <dt>{tri(lang, "Ordenação", "Sorting", "Ordenación")}</dt>
                   <dd>{activeSort}</dd>
                 </div>
                 {scopeRows.map((row) => (
@@ -1106,9 +1283,12 @@ export function CatalogSearchWorkspace({
                 </div>
               ) : (
                 <p>
-                  {pt
-                    ? "Nenhum filtro de categoria aplicado."
-                    : "No category filters applied."}
+                  {tri(
+                    lang,
+                    "Nenhum filtro de categoria aplicado.",
+                    "No category filters applied.",
+                    "Ningún filtro de categoría aplicado.",
+                  )}
                 </p>
               )}
               {appliedCount > 0 && (
@@ -1120,9 +1300,21 @@ export function CatalogSearchWorkspace({
               <section className="catalog-context-card catalog-context-navigation">
                 <div>
                   <strong>
-                    {pt ? `Página ${filters.page}` : `Page ${filters.page}`}
+                    {tri(
+                      lang,
+                      `Página ${filters.page}`,
+                      `Page ${filters.page}`,
+                      `Página ${filters.page}`,
+                    )}
                   </strong>
-                  <span>{pt ? `de ${totalPages}` : `of ${totalPages}`}</span>
+                  <span>
+                    {tri(
+                      lang,
+                      `de ${totalPages}`,
+                      `of ${totalPages}`,
+                      `de ${totalPages}`,
+                    )}
+                  </span>
                 </div>
                 <div>
                   <button

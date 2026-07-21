@@ -4,7 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Images, X } from "lucide-react";
 import { useState } from "react";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function GameMediaGallery({
   items,
@@ -14,7 +14,6 @@ export function GameMediaGallery({
   lang: UiLang;
 }) {
   const [active, setActive] = useState<number | null>(null);
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   if (!items.length) return null;
   const visible = items.slice(0, 7);
@@ -23,8 +22,8 @@ export function GameMediaGallery({
     <section className="game-section game-gallery-section">
       <header className="game-section-heading">
         <div>
-          <span>{pt ? "IMAGENS" : "IMAGES"}</span>
-          <h2>{pt ? "Galeria" : "Gallery"}</h2>
+          <span>{tri(lang, "IMAGENS", "IMAGES", "IMÁGENES")}</span>
+          <h2>{tri(lang, "Galeria", "Gallery", "Galería")}</h2>
         </div>
         <small>{items.length}</small>
       </header>
@@ -34,7 +33,7 @@ export function GameMediaGallery({
             type="button"
             key={item.id}
             onClick={() => setActive(index)}
-            aria-label={`${pt ? "Abrir imagem" : "Open image"} ${index + 1}`}
+            aria-label={`${tri(lang, "Abrir imagem", "Open image", "Abrir imagen")} ${index + 1}`}
           >
             <Image
               src={item.url}
@@ -61,7 +60,12 @@ export function GameMediaGallery({
             aria-describedby={undefined}
           >
             <Dialog.Title className="sr-only">
-              {pt ? "Galeria do jogo" : "Game gallery"}
+              {tri(
+                lang,
+                "Galeria do jogo",
+                "Game gallery",
+                "Galería del juego",
+              )}
             </Dialog.Title>
             <Dialog.Close aria-label={t.close}>
               <X size={20} />
@@ -80,7 +84,12 @@ export function GameMediaGallery({
                 <button
                   className="media-lightbox-prev"
                   type="button"
-                  aria-label={pt ? "Imagem anterior" : "Previous image"}
+                  aria-label={tri(
+                    lang,
+                    "Imagem anterior",
+                    "Previous image",
+                    "Imagen anterior",
+                  )}
                   onClick={() =>
                     setActive((active - 1 + items.length) % items.length)
                   }
@@ -90,20 +99,30 @@ export function GameMediaGallery({
                 <button
                   className="media-lightbox-next"
                   type="button"
-                  aria-label={pt ? "Próxima imagem" : "Next image"}
+                  aria-label={tri(
+                    lang,
+                    "Próxima imagem",
+                    "Next image",
+                    "Imagen siguiente",
+                  )}
                   onClick={() => setActive((active + 1) % items.length)}
                 >
                   <ChevronRight size={24} />
                 </button>
                 <div
                   className="media-lightbox-pages"
-                  aria-label={pt ? "Escolher imagem" : "Choose image"}
+                  aria-label={tri(
+                    lang,
+                    "Escolher imagem",
+                    "Choose image",
+                    "Elegir imagen",
+                  )}
                 >
                   {items.map((item, index) => (
                     <button
                       key={item.id}
                       type="button"
-                      aria-label={`${pt ? "Ver imagem" : "View image"} ${index + 1}`}
+                      aria-label={`${tri(lang, "Ver imagem", "View image", "Ver imagen")} ${index + 1}`}
                       aria-current={active === index ? "true" : undefined}
                       onClick={() => setActive(index)}
                     >

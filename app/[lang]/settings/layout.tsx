@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { hasLocale } from "../dictionaries";
 import "./settings.css";
 import "../profile.css";
+import { tri } from "@/lib/ui-text";
 
 export default async function SettingsLayout({
   children,
@@ -16,11 +17,14 @@ export default async function SettingsLayout({
   return (
     <main className="settings-page">
       <header className="settings-page-header">
-        <h1>{lang === "pt-BR" ? "Configurações" : "Settings"}</h1>
+        <h1>{tri(lang, "Configurações", "Settings", "Ajustes")}</h1>
         <p>
-          {lang === "pt-BR"
-            ? "Ajuste sua conta, identidade, preferências, aparência e segurança no uloggd."
-            : "Control your account, identity, preferences, appearance, and security across uloggd."}
+          {tri(
+            lang,
+            "Ajuste sua conta, identidade, preferências, aparência e segurança no uloggd.",
+            "Control your account, identity, preferences, appearance, and security across uloggd.",
+            "Ajusta tu cuenta, identidad, preferencias, apariencia y seguridad en uloggd.",
+          )}
         </p>
       </header>
       <div className="settings-main">{children}</div>

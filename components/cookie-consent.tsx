@@ -4,7 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Check, Cookie, LockKeyhole, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 const STORAGE_KEY = "uloggd_cookie_preferences_v1";
 const SETTINGS_EVENT = "uloggd:open-cookie-settings";
@@ -14,7 +14,6 @@ export function openCookieSettings() {
 }
 
 export function CookieConsent({ lang }: { lang: UiLang }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [ready, setReady] = useState(false);
   const [acknowledged, setAcknowledged] = useState(true);
@@ -59,34 +58,46 @@ export function CookieConsent({ lang }: { lang: UiLang }) {
 
   const categories = [
     {
-      name: pt ? "Necessários" : "Necessary",
-      description: pt
-        ? "Autenticação do Supabase, segurança e prevenção de abuso pelo Turnstile."
-        : "Supabase authentication, security, and Turnstile abuse prevention.",
+      name: tri(lang, "Necessários", "Necessary", "Necesarias"),
+      description: tri(
+        lang,
+        "Autenticação do Supabase, segurança e prevenção de abuso pelo Turnstile.",
+        "Supabase authentication, security, and Turnstile abuse prevention.",
+        "Autenticación de Supabase, seguridad y prevención de abuso con Turnstile.",
+      ),
       enabled: true,
-      status: pt ? "Sempre ativos" : "Always active",
+      status: tri(lang, "Sempre ativos", "Always active", "Siempre activas"),
     },
     {
       name: t.preferences,
-      description: pt
-        ? "Reservado para futuras escolhas funcionais salvas no navegador."
-        : "Reserved for future functional choices saved in the browser.",
+      description: tri(
+        lang,
+        "Reservado para futuras escolhas funcionais salvas no navegador.",
+        "Reserved for future functional choices saved in the browser.",
+        "Reservado para futuras opciones funcionales guardadas en el navegador.",
+      ),
       enabled: false,
       status: t.notInUse,
     },
     {
       name: "Analytics",
-      description: pt
-        ? "Medição opcional de uso e desempenho. Nenhuma ferramenta está instalada."
-        : "Optional usage and performance measurement. No tool is installed.",
+      description: tri(
+        lang,
+        "Medição opcional de uso e desempenho. Nenhuma ferramenta está instalada.",
+        "Optional usage and performance measurement. No tool is installed.",
+        "Medición opcional de uso y rendimiento. No hay ninguna herramienta instalada.",
+      ),
       enabled: false,
       status: t.notInUse,
     },
     {
       name: "Marketing",
-      description: pt
-        ? "Publicidade ou rastreamento entre sites. Nenhuma ferramenta está instalada."
-        : "Advertising or cross-site tracking. No tool is installed.",
+      description: tri(
+        lang,
+        "Publicidade ou rastreamento entre sites. Nenhuma ferramenta está instalada.",
+        "Advertising or cross-site tracking. No tool is installed.",
+        "Publicidad o rastreo entre sitios. No hay ninguna herramienta instalada.",
+      ),
       enabled: false,
       status: t.notInUse,
     },
@@ -97,28 +108,53 @@ export function CookieConsent({ lang }: { lang: UiLang }) {
       {ready && !acknowledged && (
         <section
           className="cookie-banner"
-          aria-label={pt ? "Aviso de cookies" : "Cookie notice"}
+          aria-label={tri(
+            lang,
+            "Aviso de cookies",
+            "Cookie notice",
+            "Aviso de cookies",
+          )}
         >
           <div className="cookie-banner-icon" aria-hidden>
             <Cookie size={19} />
           </div>
           <div className="cookie-banner-copy">
-            <h2>{pt ? "Cookies necessários" : "Necessary cookies"}</h2>
+            <h2>
+              {tri(
+                lang,
+                "Cookies necessários",
+                "Necessary cookies",
+                "Cookies necesarias",
+              )}
+            </h2>
             <p>
-              {pt
-                ? "Usamos somente cookies essenciais para login e segurança. Analytics e marketing estão desativados."
-                : "We only use essential cookies for sign-in and security. Analytics and marketing are disabled."}{" "}
+              {tri(
+                lang,
+                "Usamos somente cookies essenciais para login e segurança. Analytics e marketing estão desativados.",
+                "We only use essential cookies for sign-in and security. Analytics and marketing are disabled.",
+                "Solo usamos cookies esenciales para el inicio de sesión y la seguridad. Analítica y marketing están desactivados.",
+              )}{" "}
               <Link href={`/${lang}/legal/cookies`}>
-                {pt ? "Política de Cookies" : "Cookie Policy"}
+                {tri(
+                  lang,
+                  "Política de Cookies",
+                  "Cookie Policy",
+                  "Política de Cookies",
+                )}
               </Link>
             </p>
           </div>
           <div className="cookie-banner-actions">
             <button type="button" onClick={() => setSettingsOpen(true)}>
-              {pt ? "Configurações" : "Settings"}
+              {tri(lang, "Configurações", "Settings", "Ajustes")}
             </button>
             <button type="button" onClick={saveNecessaryChoice}>
-              {pt ? "Continuar com necessários" : "Continue with necessary"}
+              {tri(
+                lang,
+                "Continuar com necessários",
+                "Continue with necessary",
+                "Continuar con los necesarios",
+              )}
             </button>
           </div>
         </section>
@@ -131,12 +167,20 @@ export function CookieConsent({ lang }: { lang: UiLang }) {
             <header>
               <div>
                 <Dialog.Title>
-                  {pt ? "Configurações de cookies" : "Cookie settings"}
+                  {tri(
+                    lang,
+                    "Configurações de cookies",
+                    "Cookie settings",
+                    "Ajustes de cookies",
+                  )}
                 </Dialog.Title>
                 <Dialog.Description>
-                  {pt
-                    ? "Veja o que o uloggd usa hoje e controle futuras categorias opcionais."
-                    : "See what uloggd uses today and control future optional categories."}
+                  {tri(
+                    lang,
+                    "Veja o que o uloggd usa hoje e controle futuras categorias opcionais.",
+                    "See what uloggd uses today and control future optional categories.",
+                    "Mira lo que uloggd usa hoy y controla futuras categorías opcionales.",
+                  )}
                 </Dialog.Description>
               </div>
               <Dialog.Close aria-label={t.close}>
@@ -168,12 +212,20 @@ export function CookieConsent({ lang }: { lang: UiLang }) {
             </div>
             <footer>
               <Link href={`/${lang}/legal/cookies`}>
-                {pt ? "Ler política completa" : "Read full policy"}
+                {tri(
+                  lang,
+                  "Ler política completa",
+                  "Read full policy",
+                  "Leer la política completa",
+                )}
               </Link>
               <button type="button" onClick={saveNecessaryChoice}>
-                {pt
-                  ? "Salvar configurações necessárias"
-                  : "Save necessary settings"}
+                {tri(
+                  lang,
+                  "Salvar configurações necessárias",
+                  "Save necessary settings",
+                  "Guardar ajustes necesarios",
+                )}
               </button>
             </footer>
           </Dialog.Content>

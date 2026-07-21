@@ -11,7 +11,7 @@ import {
   Rewind,
 } from "lucide-react";
 import { useRef, useState } from "react";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export type JourneySession = {
   id: string;
@@ -210,25 +210,25 @@ export function JourneyCalendar({
   }> = [
     {
       key: "start",
-      label: pt ? "Início" : "Start",
+      label: tri(lang, "Início", "Start", "Inicio"),
       icon: Rewind,
       target: jumpTargets.start,
     },
     {
       key: "today",
-      label: pt ? "Hoje" : "Today",
+      label: tri(lang, "Hoje", "Today", "Hoy"),
       icon: CalendarDays,
       target: maxDate,
     },
     {
       key: "latest",
-      label: pt ? "Último" : "Latest",
+      label: tri(lang, "Último", "Latest", "Último"),
       icon: Clock3,
       target: jumpTargets.latest,
     },
     {
       key: "finish",
-      label: pt ? "Fim" : "Finish",
+      label: tri(lang, "Fim", "Finish", "Fin"),
       icon: FastForward,
       target: jumpTargets.finish,
     },
@@ -241,7 +241,12 @@ export function JourneyCalendar({
           type="button"
           data-motion="none"
           onClick={() => shiftMonth(-1)}
-          aria-label={pt ? "Mês anterior" : "Previous month"}
+          aria-label={tri(
+            lang,
+            "Mês anterior",
+            "Previous month",
+            "Mes anterior",
+          )}
         >
           <ChevronLeft size={15} />
         </button>
@@ -250,7 +255,7 @@ export function JourneyCalendar({
           type="button"
           data-motion="none"
           onClick={() => shiftMonth(1)}
-          aria-label={pt ? "Próximo mês" : "Next month"}
+          aria-label={tri(lang, "Próximo mês", "Next month", "Mes siguiente")}
         >
           <ChevronRight size={15} />
         </button>
@@ -342,7 +347,7 @@ export function JourneyCalendar({
         })}
       </div>
       <div className="journey-calendar-jumps">
-        <span>{pt ? "Ir para" : "Jump to"}</span>
+        <span>{tri(lang, "Ir para", "Jump to", "Ir a")}</span>
         {jumps.map(({ key, label, icon: Icon, target }) => (
           <button
             key={key}
@@ -355,9 +360,12 @@ export function JourneyCalendar({
         ))}
       </div>
       <p className="journey-calendar-hint">
-        {pt
-          ? "Toque em um dia para editar a sessão. Arraste para adicionar vários dias — ou remover, começando por um dia jogado."
-          : "Tap a day to edit its session. Drag to add several days — or remove, starting from a played day."}
+        {tri(
+          lang,
+          "Toque em um dia para editar a sessão. Arraste para adicionar vários dias — ou remover, começando por um dia jogado.",
+          "Tap a day to edit its session. Drag to add several days — or remove, starting from a played day.",
+          "Toca un día para editar su sesión. Arrastra para añadir varios días, o para quitarlos empezando por un día jugado.",
+        )}
       </p>
       <div
         className="journey-drag-pill"

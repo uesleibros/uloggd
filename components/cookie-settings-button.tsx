@@ -1,12 +1,17 @@
 "use client";
 
 import { openCookieSettings } from "./cookie-consent";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export function CookieSettingsButton({ lang }: { lang: UiLang }) {
   return (
     <button type="button" onClick={openCookieSettings}>
-      {lang === "pt-BR" ? "Configurações de cookies" : "Cookie settings"}
+      {tri(
+        lang,
+        "Configurações de cookies",
+        "Cookie settings",
+        "Ajustes de cookies",
+      )}
     </button>
   );
 }

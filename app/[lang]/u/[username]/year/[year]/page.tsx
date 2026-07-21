@@ -19,16 +19,17 @@ import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/server";
 import { MIN_WRAPPED_YEAR, parseWrappedYear } from "@/lib/year-wrapped";
-import { hasLocale } from "../../../../dictionaries";
+import { hasLocale, resolveLocale } from "../../../../dictionaries";
 import "../../../../profile.css";
-import { uiText } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 type Props = {
   params: Promise<{ lang: string; username: string; year: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { lang, username, year } = await params;
+  const { lang: rawLang, username, year } = await params;
+  const lang = resolveLocale(rawLang);
   const pt = lang === "pt-BR";
   const title = pt
     ? `${year} em jogos de @${username}`
@@ -45,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "website",
       siteName: "uloggd",
-      locale: pt ? "pt_BR" : "en_US",
+      locale: tri(lang, "pt_BR", "en_US", "es_ES"),
     },
     twitter: {
       card: "summary_large_image",
@@ -167,15 +168,24 @@ export default async function YearWrappedPage({ params }: Props) {
       </Link>
       <header className="profile-subpage-header">
         <span>
-          <Sparkles size={14} /> {pt ? "RETROSPECTIVA" : "WRAPPED"}
+          <Sparkles size={14} />{" "}
+          {tri(lang, "RETROSPECTIVA", "WRAPPED", "RETROSPECTIVA")}
         </span>
         <h1>
-          {pt ? `${year} em jogos de ${name}` : `${name}'s ${year} in games`}
+          {tri(
+            lang,
+            `${year} em jogos de ${name}`,
+            `${name}'s ${year} in games`,
+            `${year} en juegos de ${name}`,
+          )}
         </h1>
         <p>
-          {pt
-            ? "O ano contado pelas sessões e avaliações registradas."
-            : "The year as told by logged sessions and reviews."}
+          {tri(
+            lang,
+            "O ano contado pelas sessões e avaliações registradas.",
+            "The year as told by logged sessions and reviews.",
+            "El año contado por las sesiones y reseñas registradas.",
+          )}
         </p>
       </header>
       <div className="year-toolbar">
@@ -183,7 +193,12 @@ export default async function YearWrappedPage({ params }: Props) {
           <Link
             className="year-step"
             href={`/${lang}/u/${profile.username}/year/${year - 1}`}
-            aria-label={pt ? "Ano anterior" : "Previous year"}
+            aria-label={tri(
+              lang,
+              "Ano anterior",
+              "Previous year",
+              "Año anterior",
+            )}
           >
             <ChevronLeft size={16} />
           </Link>
@@ -197,7 +212,7 @@ export default async function YearWrappedPage({ params }: Props) {
           <Link
             className="year-step"
             href={`/${lang}/u/${profile.username}/year/${year + 1}`}
-            aria-label={pt ? "Próximo ano" : "Next year"}
+            aria-label={tri(lang, "Próximo ano", "Next year", "Año siguiente")}
           >
             <ChevronRight size={16} />
           </Link>
@@ -207,9 +222,12 @@ export default async function YearWrappedPage({ params }: Props) {
           </span>
         )}
         <ShareButton
-          title={
-            pt ? `${year} em jogos de ${name}` : `${name}'s ${year} in games`
-          }
+          title={tri(
+            lang,
+            `${year} em jogos de ${name}`,
+            `${name}'s ${year} in games`,
+            `${year} en juegos de ${name}`,
+          )}
           text={
             pt
               ? `${sessions.length} sessões, ${playedIds.length} jogos e ${hours}h registradas no uloggd.`
@@ -226,12 +244,20 @@ export default async function YearWrappedPage({ params }: Props) {
             <Sparkles size={22} />
           </span>
           <h2>
-            {pt ? `Nada registrado em ${year}` : `Nothing logged in ${year}`}
+            {tri(
+              lang,
+              `Nada registrado em ${year}`,
+              `Nothing logged in ${year}`,
+              `Nada registrado en ${year}`,
+            )}
           </h2>
           <p>
-            {pt
-              ? "Sessões e avaliações visíveis para você aparecerão aqui."
-              : "Sessions and reviews visible to you will appear here."}
+            {tri(
+              lang,
+              "Sessões e avaliações visíveis para você aparecerão aqui.",
+              "Sessions and reviews visible to you will appear here.",
+              "Las sesiones y reseñas visibles para ti aparecerán aquí.",
+            )}
           </p>
         </div>
       ) : (
@@ -239,12 +265,18 @@ export default async function YearWrappedPage({ params }: Props) {
           <section className="year-hero-card">
             <small>
               {totalMinutes > 0
-                ? pt
-                  ? "TEMPO REGISTRADO"
-                  : "TIME LOGGED"
-                : pt
-                  ? "SESSÕES REGISTRADAS"
-                  : "SESSIONS LOGGED"}
+                ? tri(
+                    lang,
+                    "TEMPO REGISTRADO",
+                    "TIME LOGGED",
+                    "TIEMPO REGISTRADO",
+                  )
+                : tri(
+                    lang,
+                    "SESSÕES REGISTRADAS",
+                    "SESSIONS LOGGED",
+                    "SESIONES REGISTRADAS",
+                  )}
             </small>
             <strong>
               {totalMinutes > 0
@@ -260,13 +292,15 @@ export default async function YearWrappedPage({ params }: Props) {
           <div className="year-stat-grid">
             <div className="year-stat">
               <small>
-                <Gamepad2 size={13} /> {pt ? "Jogos jogados" : "Games played"}
+                <Gamepad2 size={13} />{" "}
+                {tri(lang, "Jogos jogados", "Games played", "Juegos jugados")}
               </small>
               <strong>{playedIds.length.toLocaleString(lang)}</strong>
             </div>
             <div className="year-stat">
               <small>
-                <Flag size={13} /> {pt ? "Finalizados" : "Finished"}
+                <Flag size={13} />{" "}
+                {tri(lang, "Finalizados", "Finished", "Terminados")}
               </small>
               <strong>{finishedIds.size.toLocaleString(lang)}</strong>
             </div>
@@ -284,7 +318,8 @@ export default async function YearWrappedPage({ params }: Props) {
             </div>
             <div className="year-stat">
               <small>
-                <Star size={13} /> {pt ? "Nota média" : "Average"}
+                <Star size={13} />{" "}
+                {tri(lang, "Nota média", "Average", "Nota media")}
               </small>
               <strong>
                 {average === null
@@ -294,17 +329,28 @@ export default async function YearWrappedPage({ params }: Props) {
             </div>
             <div className="year-stat">
               <small>
-                <Clock3 size={13} /> {pt ? "Mês mais ativo" : "Busiest month"}
+                <Clock3 size={13} />{" "}
+                {tri(lang, "Mês mais ativo", "Busiest month", "Mes más activo")}
               </small>
               <strong>{peakMonth === -1 ? "—" : monthLabels[peakMonth]}</strong>
             </div>
           </div>
           <section className="year-panel">
-            <h2>{pt ? "Sessões por mês" : "Sessions by month"}</h2>
+            <h2>
+              {tri(
+                lang,
+                "Sessões por mês",
+                "Sessions by month",
+                "Sesiones por mes",
+              )}
+            </h2>
             <p>
-              {pt
-                ? "Quando o ano realmente aconteceu."
-                : "When the year actually happened."}
+              {tri(
+                lang,
+                "Quando o ano realmente aconteceu.",
+                "When the year actually happened.",
+                "Cuándo ocurrió realmente el año.",
+              )}
             </p>
             <div className="year-month-chart">
               {monthCounts.map((count, index) => (
@@ -347,11 +393,21 @@ export default async function YearWrappedPage({ params }: Props) {
           <div className="year-columns">
             {topGame && (
               <section className="year-panel">
-                <h2>{pt ? "Jogo do ano" : "Game of the year"}</h2>
+                <h2>
+                  {tri(
+                    lang,
+                    "Jogo do ano",
+                    "Game of the year",
+                    "Juego del año",
+                  )}
+                </h2>
                 <p>
-                  {pt
-                    ? "Onde suas horas foram parar."
-                    : "Where your hours went."}
+                  {tri(
+                    lang,
+                    "Onde suas horas foram parar.",
+                    "Where your hours went.",
+                    "Dónde se fueron tus horas.",
+                  )}
                 </p>
                 <Link
                   className="year-top-game"
@@ -391,11 +447,21 @@ export default async function YearWrappedPage({ params }: Props) {
             )}
             {topGenres.length > 0 && (
               <section className="year-panel">
-                <h2>{pt ? "Gêneros do ano" : "Genres of the year"}</h2>
+                <h2>
+                  {tri(
+                    lang,
+                    "Gêneros do ano",
+                    "Genres of the year",
+                    "Géneros del año",
+                  )}
+                </h2>
                 <p>
-                  {pt
-                    ? "Contagem de jogos jogados por gênero."
-                    : "Games played per genre."}
+                  {tri(
+                    lang,
+                    "Contagem de jogos jogados por gênero.",
+                    "Games played per genre.",
+                    "Juegos jugados por género.",
+                  )}
                 </p>
                 <ol className="year-genres">
                   {topGenres.map(([genre, count]) => (

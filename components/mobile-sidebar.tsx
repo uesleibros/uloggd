@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { Brand } from "./brand";
 import { AccountMenu, type NavigationAccount } from "./account-menu";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 type MobileSidebarProps = {
   lang: UiLang;
@@ -141,7 +141,7 @@ export function MobileSidebar({
                         }
                       >
                         <ShieldCheck size={21} />
-                        {lang === "pt-BR" ? "Moderação" : "Moderation"}
+                        {tri(lang, "Moderação", "Moderation", "Moderación")}
                       </Link>
                     </Dialog.Close>
                   )}

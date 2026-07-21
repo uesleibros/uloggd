@@ -6,7 +6,7 @@ import { LoaderCircle, Plus, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type SearchResult = {
   id: number;
@@ -25,7 +25,6 @@ export function ListAddGame({
   existingIds: number[];
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -103,7 +102,8 @@ export function ListAddGame({
     >
       <Dialog.Trigger asChild>
         <button type="button" className="list-add-game-trigger">
-          <Plus size={15} /> {pt ? "Adicionar jogos" : "Add games"}
+          <Plus size={15} />{" "}
+          {tri(lang, "Adicionar jogos", "Add games", "Añadir juegos")}
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
@@ -114,9 +114,14 @@ export function ListAddGame({
         >
           <header>
             <div>
-              <span>{pt ? "CATÁLOGO" : "CATALOG"}</span>
+              <span>{tri(lang, "CATÁLOGO", "CATALOG", "CATÁLOGO")}</span>
               <Dialog.Title>
-                {pt ? "Adicionar jogos à lista" : "Add games to the list"}
+                {tri(
+                  lang,
+                  "Adicionar jogos à lista",
+                  "Add games to the list",
+                  "Añadir juegos a la lista",
+                )}
               </Dialog.Title>
             </div>
             <Dialog.Close aria-label={t.close}>
@@ -129,10 +134,18 @@ export function ListAddGame({
               <input
                 value={query}
                 onChange={(event) => handleQueryChange(event.target.value)}
-                placeholder={
-                  pt ? "Buscar jogo para adicionar…" : "Search a game to add…"
-                }
-                aria-label={pt ? "Buscar jogo" : "Search game"}
+                placeholder={tri(
+                  lang,
+                  "Buscar jogo para adicionar…",
+                  "Search a game to add…",
+                  "Busca un juego para añadir…",
+                )}
+                aria-label={tri(
+                  lang,
+                  "Buscar jogo",
+                  "Search game",
+                  "Buscar juego",
+                )}
                 autoFocus
               />
               {query && (
@@ -147,13 +160,18 @@ export function ListAddGame({
             </label>
             {error && (
               <p className="social-form-error" role="alert">
-                {pt ? "Não foi possível adicionar." : "Could not add."}
+                {tri(
+                  lang,
+                  "Não foi possível adicionar.",
+                  "Could not add.",
+                  "No se pudo añadir.",
+                )}
               </p>
             )}
             {query.trim().length >= 2 ? (
               <div className="list-add-game-results" aria-busy={searching}>
                 {searching && !results.length ? (
-                  <p>{pt ? "Buscando…" : "Searching…"}</p>
+                  <p>{tri(lang, "Buscando…", "Searching…", "Buscando…")}</p>
                 ) : results.length ? (
                   results.map((game) => {
                     const already = inList.has(game.id);
@@ -190,25 +208,31 @@ export function ListAddGame({
                             <Plus size={13} />
                           )}
                           {already
-                            ? pt
-                              ? "Na lista"
-                              : "In list"
-                            : pt
-                              ? "Adicionar"
-                              : "Add"}
+                            ? tri(lang, "Na lista", "In list", "En la lista")
+                            : tri(lang, "Adicionar", "Add", "Añadir")}
                         </button>
                       </div>
                     );
                   })
                 ) : (
-                  <p>{pt ? "Nenhum jogo encontrado." : "No games found."}</p>
+                  <p>
+                    {tri(
+                      lang,
+                      "Nenhum jogo encontrado.",
+                      "No games found.",
+                      "No se encontraron juegos.",
+                    )}
+                  </p>
                 )}
               </div>
             ) : (
               <p className="list-add-game-empty">
-                {pt
-                  ? "Digite ao menos duas letras para buscar no catálogo."
-                  : "Type at least two letters to search the catalog."}
+                {tri(
+                  lang,
+                  "Digite ao menos duas letras para buscar no catálogo.",
+                  "Type at least two letters to search the catalog.",
+                  "Escribe al menos dos letras para buscar en el catálogo.",
+                )}
               </p>
             )}
           </div>

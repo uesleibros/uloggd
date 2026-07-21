@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { emailSchema, safeInternalNext } from "@/lib/auth-validation";
 import { DiscordIcon, GoogleIcon, TwitchIcon } from "./provider-icons";
 import { AuthTurnstile } from "./turnstile";
+import { tri } from "@/lib/ui-text";
 
 const providers = [
   ["google", "Google", GoogleIcon],
@@ -48,92 +49,192 @@ export function LoginPanel({
   const [email, setEmail] = useState("");
   const [cooldown, setCooldown] = useState(false);
   const turnstile = useRef<TurnstileInstance>(null);
-  const copy =
-    lang === "pt-BR"
-      ? {
-          signin: "Entrar",
-          signup: "Criar conta",
-          forgot: "Esqueci a senha",
-          email: "E-mail",
-          password: "Senha",
-          confirm: "Confirmar senha",
-          submitSignin: "Entrar com e-mail",
-          submitSignup: "Criar minha conta",
-          submitForgot: "Enviar link de recuperação",
-          terms: "Aceito os Termos de Uso e a Política de Privacidade.",
-          invalid: "Confira os dados informados e tente novamente.",
-          emailRequired: "Informe seu e-mail.",
-          emailInvalid: "Digite um e-mail válido, como nome@exemplo.com.",
-          passwordRequired: "Informe sua senha.",
-          passwordShort: "A senha precisa ter pelo menos 8 caracteres.",
-          passwordLong: "A senha pode ter no máximo 72 caracteres.",
-          passwordLetter: "Inclua pelo menos uma letra.",
-          passwordNumber: "Inclua pelo menos um número.",
-          passwordRules:
-            "Use de 8 a 72 caracteres, com pelo menos uma letra e um número.",
-          confirmRequired: "Confirme sua senha.",
-          termsRequired:
-            "Você precisa aceitar os Termos de Uso e a Política de Privacidade.",
-          invalidCredentials: "E-mail ou senha incorretos.",
-          captchaFailed:
-            "A verificação de segurança expirou ou falhou. Faça-a novamente.",
-          signupDisabled:
-            "Novos cadastros estão temporariamente indisponíveis.",
-          network:
-            "Não foi possível conectar ao serviço. Verifique sua conexão e tente novamente.",
-          captcha: "Conclua a verificação de segurança.",
-          mismatch: "As senhas não coincidem.",
-          genericRecovery:
-            "Se existir uma conta para este e-mail, enviaremos um link de recuperação.",
-          checkTitle: "Confira seu e-mail",
-          checkBody:
-            "Se o cadastro puder ser concluído, você receberá um link de confirmação.",
-          resend: "Reenviar confirmação",
-          resent: "Se aplicável, uma nova confirmação foi enviada.",
-          unconfirmed: "Confirme seu e-mail antes de entrar.",
-          rate: "Muitas tentativas. Aguarde um pouco e tente novamente.",
-        }
-      : {
-          signin: "Sign in",
-          signup: "Create account",
-          forgot: "Forgot password",
-          email: "Email",
-          password: "Password",
-          confirm: "Confirm password",
-          submitSignin: "Sign in with email",
-          submitSignup: "Create my account",
-          submitForgot: "Send recovery link",
-          terms: "I accept the Terms of Use and Privacy Policy.",
-          invalid: "Check the information and try again.",
-          emailRequired: "Enter your email address.",
-          emailInvalid: "Enter a valid email, such as name@example.com.",
-          passwordRequired: "Enter your password.",
-          passwordShort: "Password must be at least 8 characters.",
-          passwordLong: "Password can have at most 72 characters.",
-          passwordLetter: "Include at least one letter.",
-          passwordNumber: "Include at least one number.",
-          passwordRules:
-            "Use 8–72 characters with at least one letter and one number.",
-          confirmRequired: "Confirm your password.",
-          termsRequired: "You must accept the Terms of Use and Privacy Policy.",
-          invalidCredentials: "Incorrect email or password.",
-          captchaFailed:
-            "The security check expired or failed. Complete it again.",
-          signupDisabled: "New registrations are temporarily unavailable.",
-          network:
-            "Could not connect to the service. Check your connection and try again.",
-          captcha: "Complete the security check.",
-          mismatch: "Passwords do not match.",
-          genericRecovery:
-            "If an account exists for this email, we will send a recovery link.",
-          checkTitle: "Check your email",
-          checkBody:
-            "If registration can be completed, you will receive a confirmation link.",
-          resend: "Resend confirmation",
-          resent: "If applicable, a new confirmation was sent.",
-          unconfirmed: "Confirm your email before signing in.",
-          rate: "Too many attempts. Wait a moment and try again.",
-        };
+  const copy = {
+    signin: tri(lang, "Entrar", "Sign in", "Entrar"),
+    signup: tri(lang, "Criar conta", "Create account", "Crear cuenta"),
+    forgot: tri(
+      lang,
+      "Esqueci a senha",
+      "Forgot password",
+      "Olvidé mi contraseña",
+    ),
+    email: tri(lang, "E-mail", "Email", "Correo electrónico"),
+    password: tri(lang, "Senha", "Password", "Contraseña"),
+    confirm: tri(
+      lang,
+      "Confirmar senha",
+      "Confirm password",
+      "Confirmar contraseña",
+    ),
+    submitSignin: tri(
+      lang,
+      "Entrar com e-mail",
+      "Sign in with email",
+      "Entrar con correo",
+    ),
+    submitSignup: tri(
+      lang,
+      "Criar minha conta",
+      "Create my account",
+      "Crear mi cuenta",
+    ),
+    submitForgot: tri(
+      lang,
+      "Enviar link de recuperação",
+      "Send recovery link",
+      "Enviar enlace de recuperación",
+    ),
+    terms: tri(
+      lang,
+      "Aceito os Termos de Uso e a Política de Privacidade.",
+      "I accept the Terms of Use and Privacy Policy.",
+      "Acepto los Términos de Uso y la Política de Privacidad.",
+    ),
+    invalid: tri(
+      lang,
+      "Confira os dados informados e tente novamente.",
+      "Check the information and try again.",
+      "Revisa los datos e inténtalo de nuevo.",
+    ),
+    emailRequired: tri(
+      lang,
+      "Informe seu e-mail.",
+      "Enter your email address.",
+      "Indica tu correo electrónico.",
+    ),
+    emailInvalid: tri(
+      lang,
+      "Digite um e-mail válido, como nome@exemplo.com.",
+      "Enter a valid email, such as name@example.com.",
+      "Escribe un correo válido, como nombre@ejemplo.com.",
+    ),
+    passwordRequired: tri(
+      lang,
+      "Informe sua senha.",
+      "Enter your password.",
+      "Indica tu contraseña.",
+    ),
+    passwordShort: tri(
+      lang,
+      "A senha precisa ter pelo menos 8 caracteres.",
+      "Password must be at least 8 characters.",
+      "La contraseña debe tener al menos 8 caracteres.",
+    ),
+    passwordLong: tri(
+      lang,
+      "A senha pode ter no máximo 72 caracteres.",
+      "Password can have at most 72 characters.",
+      "La contraseña puede tener como máximo 72 caracteres.",
+    ),
+    passwordLetter: tri(
+      lang,
+      "Inclua pelo menos uma letra.",
+      "Include at least one letter.",
+      "Incluye al menos una letra.",
+    ),
+    passwordNumber: tri(
+      lang,
+      "Inclua pelo menos um número.",
+      "Include at least one number.",
+      "Incluye al menos un número.",
+    ),
+    passwordRules: tri(
+      lang,
+      "Use de 8 a 72 caracteres, com pelo menos uma letra e um número.",
+      "Use 8–72 characters with at least one letter and one number.",
+      "Usa de 8 a 72 caracteres, con al menos una letra y un número.",
+    ),
+    confirmRequired: tri(
+      lang,
+      "Confirme sua senha.",
+      "Confirm your password.",
+      "Confirma tu contraseña.",
+    ),
+    termsRequired: tri(
+      lang,
+      "Você precisa aceitar os Termos de Uso e a Política de Privacidade.",
+      "You must accept the Terms of Use and Privacy Policy.",
+      "Debes aceptar los Términos de Uso y la Política de Privacidad.",
+    ),
+    invalidCredentials: tri(
+      lang,
+      "E-mail ou senha incorretos.",
+      "Incorrect email or password.",
+      "Correo o contraseña incorrectos.",
+    ),
+    captchaFailed: tri(
+      lang,
+      "A verificação de segurança expirou ou falhou. Faça-a novamente.",
+      "The security check expired or failed. Complete it again.",
+      "La verificación de seguridad expiró o falló. Vuelve a completarla.",
+    ),
+    signupDisabled: tri(
+      lang,
+      "Novos cadastros estão temporariamente indisponíveis.",
+      "New registrations are temporarily unavailable.",
+      "Los nuevos registros no están disponibles temporalmente.",
+    ),
+    network: tri(
+      lang,
+      "Não foi possível conectar ao serviço. Verifique sua conexão e tente novamente.",
+      "Could not connect to the service. Check your connection and try again.",
+      "No se pudo conectar al servicio. Revisa tu conexión e inténtalo de nuevo.",
+    ),
+    captcha: tri(
+      lang,
+      "Conclua a verificação de segurança.",
+      "Complete the security check.",
+      "Completa la verificación de seguridad.",
+    ),
+    mismatch: tri(
+      lang,
+      "As senhas não coincidem.",
+      "Passwords do not match.",
+      "Las contraseñas no coinciden.",
+    ),
+    genericRecovery: tri(
+      lang,
+      "Se existir uma conta para este e-mail, enviaremos um link de recuperação.",
+      "If an account exists for this email, we will send a recovery link.",
+      "Si existe una cuenta para este correo, enviaremos un enlace de recuperación.",
+    ),
+    checkTitle: tri(
+      lang,
+      "Confira seu e-mail",
+      "Check your email",
+      "Revisa tu correo",
+    ),
+    checkBody: tri(
+      lang,
+      "Se o cadastro puder ser concluído, você receberá um link de confirmação.",
+      "If registration can be completed, you will receive a confirmation link.",
+      "Si el registro se puede completar, recibirás un enlace de confirmación.",
+    ),
+    resend: tri(
+      lang,
+      "Reenviar confirmação",
+      "Resend confirmation",
+      "Reenviar confirmación",
+    ),
+    resent: tri(
+      lang,
+      "Se aplicável, uma nova confirmação foi enviada.",
+      "If applicable, a new confirmation was sent.",
+      "Si corresponde, se envió una nueva confirmación.",
+    ),
+    unconfirmed: tri(
+      lang,
+      "Confirme seu e-mail antes de entrar.",
+      "Confirm your email before signing in.",
+      "Confirma tu correo antes de entrar.",
+    ),
+    rate: tri(
+      lang,
+      "Muitas tentativas. Aguarde um pouco e tente novamente.",
+      "Too many attempts. Wait a moment and try again.",
+      "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+    ),
+  };
 
   function resetCaptcha() {
     setCaptchaToken(null);

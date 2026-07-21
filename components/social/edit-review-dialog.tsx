@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { SocialEntry } from "./activity-stream";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
   ReviewStudioForm,
   type ReviewFormInitial,
@@ -24,7 +24,6 @@ export function EditReviewDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -81,7 +80,9 @@ export function EditReviewDialog({
         >
           <header>
             <div>
-              <span>{pt ? "Editar avaliação" : "Edit review"}</span>
+              <span>
+                {tri(lang, "Editar avaliação", "Edit review", "Editar reseña")}
+              </span>
               <Dialog.Title>{entry.game?.name ?? entry.gameSlug}</Dialog.Title>
             </div>
             <Dialog.Close aria-label={t.close} disabled={pending}>
@@ -96,15 +97,27 @@ export function EditReviewDialog({
                 ? [
                     {
                       id: entry.journeyId,
-                      title: entry.journeyTitle ?? (pt ? "Jornada" : "Journey"),
+                      title:
+                        entry.journeyTitle ??
+                        tri(lang, "Jornada", "Journey", "Recorrido"),
                     },
                   ]
                 : []
             }
             initial={initial}
-            submitLabel={pt ? "Salvar alterações" : "Save changes"}
+            submitLabel={tri(
+              lang,
+              "Salvar alterações",
+              "Save changes",
+              "Guardar cambios",
+            )}
             busyLabel={t.saving}
-            successLabel={pt ? "Avaliação atualizada." : "Review updated."}
+            successLabel={tri(
+              lang,
+              "Avaliação atualizada.",
+              "Review updated.",
+              "Reseña actualizada.",
+            )}
             onPerform={perform}
           />
         </Dialog.Content>

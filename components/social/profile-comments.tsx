@@ -26,7 +26,7 @@ import {
   CommentLike,
   PendingComment,
 } from "./comment-parts";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export type ProfileComment = {
   id: string;
@@ -144,16 +144,25 @@ export function ProfileComments({
 
   function actionError(message: string) {
     return message.includes("rate")
-      ? pt
-        ? "Você comentou muitas vezes. Aguarde um pouco."
-        : "You are commenting too quickly. Please wait."
+      ? tri(
+          lang,
+          "Você comentou muitas vezes. Aguarde um pouco.",
+          "You are commenting too quickly. Please wait.",
+          "Estás comentando demasiado rápido. Espera un poco.",
+        )
       : message.includes("depth")
-        ? pt
-          ? "Essa conversa atingiu o limite de respostas."
-          : "This conversation reached its reply limit."
-        : pt
-          ? "Não foi possível concluir esta ação."
-          : "Could not complete this action.";
+        ? tri(
+            lang,
+            "Essa conversa atingiu o limite de respostas.",
+            "This conversation reached its reply limit.",
+            "Esta conversación alcanzó el límite de respuestas.",
+          )
+        : tri(
+            lang,
+            "Não foi possível concluir esta ação.",
+            "Could not complete this action.",
+            "No se pudo completar esta acción.",
+          );
   }
 
   async function createComment(
@@ -237,7 +246,14 @@ export function ProfileComments({
       { target_comment: comment.id },
     );
     if (deleteError || data !== true)
-      setError(pt ? "Não foi possível excluir." : "Could not delete.");
+      setError(
+        tri(
+          lang,
+          "Não foi possível excluir.",
+          "Could not delete.",
+          "No se pudo eliminar.",
+        ),
+      );
     else router.refresh();
     setPending(null);
   }
@@ -259,7 +275,12 @@ export function ProfileComments({
       });
     if (reportError)
       setError(
-        pt ? "Não foi possível enviar a denúncia." : "Could not send report.",
+        tri(
+          lang,
+          "Não foi possível enviar a denúncia.",
+          "Could not send report.",
+          "No se pudo enviar la denuncia.",
+        ),
       );
     else {
       setReporting(null);
@@ -283,7 +304,12 @@ export function ProfileComments({
       );
     } catch {
       setError(
-        pt ? "Não foi possível copiar o link." : "Could not copy the link.",
+        tri(
+          lang,
+          "Não foi possível copiar o link.",
+          "Could not copy the link.",
+          "No se pudo copiar el enlace.",
+        ),
       );
     }
   }
@@ -297,9 +323,12 @@ export function ProfileComments({
     });
     if (blockError) {
       setError(
-        pt
-          ? "Não foi possível bloquear este usuário."
-          : "Could not block this user.",
+        tri(
+          lang,
+          "Não foi possível bloquear este usuário.",
+          "Could not block this user.",
+          "No se pudo bloquear a este usuario.",
+        ),
       );
     } else {
       setBlocking(null);
@@ -436,9 +465,12 @@ export function ProfileComments({
             ) : (
               <p data-deleted={deleted || undefined}>
                 {deleted
-                  ? pt
-                    ? "Comentário removido"
-                    : "Comment deleted"
+                  ? tri(
+                      lang,
+                      "Comentário removido",
+                      "Comment deleted",
+                      "Comentario eliminado",
+                    )
                   : comment.body}
               </p>
             )}
@@ -485,13 +517,14 @@ export function ProfileComments({
                       <Trash2 size={13} />
                     )}
                     {pending === `delete-${comment.id}`
-                      ? pt
-                        ? "Excluindo…"
-                        : "Deleting…"
+                      ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
                       : armedDelete === comment.id
-                        ? pt
-                          ? "Excluir mesmo?"
-                          : "Really delete?"
+                        ? tri(
+                            lang,
+                            "Excluir mesmo?",
+                            "Really delete?",
+                            "¿Eliminar de verdad?",
+                          )
                         : t.delete}
                   </button>
                 )}
@@ -501,11 +534,12 @@ export function ProfileComments({
                       <button
                         className="profile-comment-more"
                         type="button"
-                        aria-label={
-                          pt
-                            ? "Mais ações do comentário"
-                            : "More comment actions"
-                        }
+                        aria-label={tri(
+                          lang,
+                          "Mais ações do comentário",
+                          "More comment actions",
+                          "Más acciones del comentario",
+                        )}
                       >
                         <MoreHorizontal size={15} />
                       </button>
@@ -534,14 +568,24 @@ export function ProfileComments({
                               onSelect={() => setReporting(comment)}
                             >
                               <Flag size={14} />
-                              {pt ? "Denunciar comentário" : "Report comment"}
+                              {tri(
+                                lang,
+                                "Denunciar comentário",
+                                "Report comment",
+                                "Denunciar comentario",
+                              )}
                             </DropdownMenu.Item>
                             <DropdownMenu.Item
                               data-danger
                               onSelect={() => setBlocking(comment)}
                             >
                               <UserRoundX size={14} />
-                              {pt ? "Bloquear usuário" : "Block user"}
+                              {tri(
+                                lang,
+                                "Bloquear usuário",
+                                "Block user",
+                                "Bloquear usuario",
+                              )}
                             </DropdownMenu.Item>
                           </>
                         )}
@@ -560,16 +604,24 @@ export function ProfileComments({
                 }
               >
                 <label>
-                  {pt ? `Respondendo a ${name}` : `Replying to ${name}`}
+                  {tri(
+                    lang,
+                    `Respondendo a ${name}`,
+                    `Replying to ${name}`,
+                    `Respondiendo a ${name}`,
+                  )}
                 </label>
                 <textarea
                   autoFocus
                   value={replyBody}
                   maxLength={500}
                   rows={2}
-                  placeholder={
-                    pt ? "Escreva sua resposta…" : "Write your reply…"
-                  }
+                  placeholder={tri(
+                    lang,
+                    "Escreva sua resposta…",
+                    "Write your reply…",
+                    "Escribe tu respuesta…",
+                  )}
                   onChange={(event) => setReplyBody(event.target.value)}
                 />
                 <footer>
@@ -621,9 +673,12 @@ export function ProfileComments({
             <MessageCircle size={16} /> {t.comments}
           </h2>
           <p>
-            {pt
-              ? "Converse com respeito. Respostas, edições e denúncias ficam na mesma conversa."
-              : "Keep it respectful. Replies, edits, and reports stay in the same conversation."}
+            {tri(
+              lang,
+              "Converse com respeito. Respostas, edições e denúncias ficam na mesma conversa.",
+              "Keep it respectful. Replies, edits, and reports stay in the same conversation.",
+              "Conversa con respeto. Respuestas, ediciones y denuncias quedan en la misma conversación.",
+            )}
           </p>
         </div>
         <span>{comments.filter((comment) => !comment.deleted_at).length}</span>
@@ -635,18 +690,24 @@ export function ProfileComments({
           onSubmit={(event) => void createComment(event, body, null)}
         >
           <label htmlFor="profile-comment-body">
-            {pt ? "Inicie uma conversa" : "Start a conversation"}
+            {tri(
+              lang,
+              "Inicie uma conversa",
+              "Start a conversation",
+              "Inicia una conversación",
+            )}
           </label>
           <textarea
             id="profile-comment-body"
             value={body}
             maxLength={500}
             rows={2}
-            placeholder={
-              pt
-                ? "Adicione algo à conversa…"
-                : "Add something to the conversation…"
-            }
+            placeholder={tri(
+              lang,
+              "Adicione algo à conversa…",
+              "Add something to the conversation…",
+              "Añade algo a la conversación…",
+            )}
             onChange={(event) => setBody(event.target.value)}
           />
           <footer>
@@ -666,16 +727,25 @@ export function ProfileComments({
       {!canComment && (
         <p className="profile-comments-notice">
           {commentsClosed
-            ? pt
-              ? "Os comentários estão desativados neste perfil."
-              : "Comments are disabled on this profile."
+            ? tri(
+                lang,
+                "Os comentários estão desativados neste perfil.",
+                "Comments are disabled on this profile.",
+                "Los comentarios están desactivados en este perfil.",
+              )
             : viewerId
-              ? pt
-                ? "Somente seguidores podem comentar neste perfil."
-                : "Only followers can comment on this profile."
-              : pt
-                ? "Entre na sua conta para comentar."
-                : "Sign in to leave a comment."}
+              ? tri(
+                  lang,
+                  "Somente seguidores podem comentar neste perfil.",
+                  "Only followers can comment on this profile.",
+                  "Solo los seguidores pueden comentar en este perfil.",
+                )
+              : tri(
+                  lang,
+                  "Entre na sua conta para comentar.",
+                  "Sign in to leave a comment.",
+                  "Inicia sesión para comentar.",
+                )}
         </p>
       )}
 
@@ -691,7 +761,14 @@ export function ProfileComments({
         {!tree.length && (
           <div className="profile-comments-empty">
             <MessageCircle size={20} />
-            <span>{pt ? "Ainda não há comentários." : "No comments yet."}</span>
+            <span>
+              {tri(
+                lang,
+                "Ainda não há comentários.",
+                "No comments yet.",
+                "Todavía no hay comentarios.",
+              )}
+            </span>
           </div>
         )}
       </div>
@@ -707,7 +784,12 @@ export function ProfileComments({
               <div>
                 <span>{t.safety}</span>
                 <Dialog.Title>
-                  {pt ? "Denunciar comentário" : "Report comment"}
+                  {tri(
+                    lang,
+                    "Denunciar comentário",
+                    "Report comment",
+                    "Denunciar comentario",
+                  )}
                 </Dialog.Title>
               </div>
               <Dialog.Close aria-label={t.close}>
@@ -716,27 +798,44 @@ export function ProfileComments({
             </header>
             <form onSubmit={report}>
               <label>
-                {pt ? "Motivo" : "Reason"}
+                {tri(lang, "Motivo", "Reason", "Motivo")}
                 <select
                   value={reportReason}
                   onChange={(event) => setReportReason(event.target.value)}
                 >
                   <option value="HARASSMENT">
-                    {pt ? "Assédio" : "Harassment"}
+                    {tri(lang, "Assédio", "Harassment", "Acoso")}
                   </option>
                   <option value="HATE_SPEECH">
-                    {pt ? "Discurso de ódio" : "Hate speech"}
+                    {tri(
+                      lang,
+                      "Discurso de ódio",
+                      "Hate speech",
+                      "Discurso de odio",
+                    )}
                   </option>
                   <option value="SPAM">Spam</option>
                   <option value="CHILD_SAFETY">
-                    {pt ? "Segurança infantil" : "Child safety"}
+                    {tri(
+                      lang,
+                      "Segurança infantil",
+                      "Child safety",
+                      "Seguridad infantil",
+                    )}
                   </option>
                   <option value="PRIVACY">{t.privacy}</option>
-                  <option value="OTHER">{pt ? "Outro" : "Other"}</option>
+                  <option value="OTHER">
+                    {tri(lang, "Outro", "Other", "Otro")}
+                  </option>
                 </select>
               </label>
               <label>
-                {pt ? "Detalhes (opcional)" : "Details (optional)"}
+                {tri(
+                  lang,
+                  "Detalhes (opcional)",
+                  "Details (optional)",
+                  "Detalles (opcional)",
+                )}
                 <textarea
                   rows={2}
                   maxLength={1000}
@@ -748,7 +847,12 @@ export function ProfileComments({
                 {pending?.startsWith("report-") && (
                   <LoaderCircle className="spin" size={14} aria-hidden />
                 )}
-                {pt ? "Enviar denúncia" : "Submit report"}
+                {tri(
+                  lang,
+                  "Enviar denúncia",
+                  "Submit report",
+                  "Enviar denuncia",
+                )}
               </button>
             </form>
           </Dialog.Content>
@@ -764,11 +868,21 @@ export function ProfileComments({
           <Dialog.Content className="report-dialog profile-comment-report">
             <header>
               <div>
-                <span>{pt ? "CONVERSA ATUALIZADA" : "THREAD UPDATED"}</span>
+                <span>
+                  {tri(
+                    lang,
+                    "CONVERSA ATUALIZADA",
+                    "THREAD UPDATED",
+                    "CONVERSACIÓN ACTUALIZADA",
+                  )}
+                </span>
                 <Dialog.Title>
-                  {pt
-                    ? "Não é mais possível responder"
-                    : "This comment can no longer receive replies"}
+                  {tri(
+                    lang,
+                    "Não é mais possível responder",
+                    "This comment can no longer receive replies",
+                    "Este comentario ya no admite respuestas",
+                  )}
                 </Dialog.Title>
               </div>
               <Dialog.Close aria-label={t.close}>
@@ -778,11 +892,16 @@ export function ProfileComments({
             <div className="profile-comment-removed-notice">
               <Trash2 size={20} />
               <p>
-                {pt
-                  ? "O comentário foi removido enquanto você escrevia. Conteúdos removidos não podem receber novas respostas."
-                  : "The comment was removed while you were writing. Removed content cannot receive new replies."}
+                {tri(
+                  lang,
+                  "O comentário foi removido enquanto você escrevia. Conteúdos removidos não podem receber novas respostas.",
+                  "The comment was removed while you were writing. Removed content cannot receive new replies.",
+                  "El comentario se eliminó mientras escribías. El contenido eliminado no admite nuevas respuestas.",
+                )}
               </p>
-              <Dialog.Close>{pt ? "Entendi" : "Got it"}</Dialog.Close>
+              <Dialog.Close>
+                {tri(lang, "Entendi", "Got it", "Entendido")}
+              </Dialog.Close>
             </div>
           </Dialog.Content>
         </Dialog.Portal>
@@ -811,9 +930,12 @@ export function ProfileComments({
             <div className="profile-comment-removed-notice">
               <UserRoundX size={20} />
               <p>
-                {pt
-                  ? "Vocês deixarão de se seguir e não poderão ver o conteúdo nem interagir um com o outro."
-                  : "You will unfollow each other and will no longer see or interact with each other's content."}
+                {tri(
+                  lang,
+                  "Vocês deixarão de se seguir e não poderão ver o conteúdo nem interagir um com o outro.",
+                  "You will unfollow each other and will no longer see or interact with each other's content.",
+                  "Dejaréis de seguiros y no podréis ver el contenido ni interactuar entre vosotros.",
+                )}
               </p>
               <footer>
                 <Dialog.Close disabled={Boolean(pending)}>
@@ -829,9 +951,7 @@ export function ProfileComments({
                     <LoaderCircle className="spin" size={14} />
                   )}
                   {pending?.startsWith("block-")
-                    ? pt
-                      ? "Bloqueando…"
-                      : "Blocking…"
+                    ? tri(lang, "Bloqueando…", "Blocking…", "Bloqueando…")
                     : t.block}
                 </button>
               </footer>

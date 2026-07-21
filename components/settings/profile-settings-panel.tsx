@@ -11,7 +11,7 @@ import { RotateCcw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
-import { uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 const ImageCropDialog = dynamic(
   () => import("./image-crop-dialog").then((mod) => mod.ImageCropDialog),
@@ -40,7 +40,6 @@ export function ProfileSettingsPanel({
   initial: Profile;
   lang: UiLang;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();
   const detailsRef = useRef<HTMLFormElement>(null);
@@ -68,9 +67,12 @@ export function ProfileSettingsPanel({
       file.size > 8 * 1024 * 1024
     ) {
       setError(
-        pt
-          ? "Escolha uma imagem JPG, PNG, WebP, GIF ou AVIF de até 8 MB."
-          : "Choose a JPG, PNG, WebP, GIF, or AVIF image up to 8 MB.",
+        tri(
+          lang,
+          "Escolha uma imagem JPG, PNG, WebP, GIF ou AVIF de até 8 MB.",
+          "Choose a JPG, PNG, WebP, GIF, or AVIF image up to 8 MB.",
+          "Elige una imagen JPG, PNG, WebP, GIF o AVIF de hasta 8 MB.",
+        ),
       );
       return;
     }
@@ -105,9 +107,12 @@ export function ProfileSettingsPanel({
       router.refresh();
     } catch {
       setError(
-        pt
-          ? "Não foi possível enviar a imagem."
-          : "Could not upload the image.",
+        tri(
+          lang,
+          "Não foi possível enviar a imagem.",
+          "Could not upload the image.",
+          "No se pudo subir la imagen.",
+        ),
       );
     }
     setPending(null);
@@ -132,9 +137,12 @@ export function ProfileSettingsPanel({
       /[\r\n]/.test(currentThought)
     ) {
       setError(
-        pt
-          ? "Revise os limites dos campos antes de salvar."
-          : "Review the field limits before saving.",
+        tri(
+          lang,
+          "Revise os limites dos campos antes de salvar.",
+          "Review the field limits before saving.",
+          "Revisa los límites de los campos antes de guardar.",
+        ),
       );
       return;
     }
@@ -155,9 +163,12 @@ export function ProfileSettingsPanel({
     );
     if (actionError || !data)
       setError(
-        pt
-          ? "Não foi possível salvar o perfil."
-          : "Could not save the profile.",
+        tri(
+          lang,
+          "Não foi possível salvar o perfil.",
+          "Could not save the profile.",
+          "No se pudo guardar el perfil.",
+        ),
       );
     else {
       setProfile((current) => ({
@@ -170,7 +181,14 @@ export function ProfileSettingsPanel({
         instagram_username: instagram.replace(/^@/, "") || null,
         twitter_username: twitter.replace(/^@/, "") || null,
       }));
-      setMessage(pt ? "Perfil atualizado." : "Profile updated.");
+      setMessage(
+        tri(
+          lang,
+          "Perfil atualizado.",
+          "Profile updated.",
+          "Perfil actualizado.",
+        ),
+      );
       setDetailsDirty(false);
       router.refresh();
     }
@@ -182,7 +200,12 @@ export function ProfileSettingsPanel({
     const next = drawer.trim();
     if (next.length > 10000) {
       setDrawerError(
-        pt ? "O drawer passou do limite." : "The drawer is over the limit.",
+        tri(
+          lang,
+          "O drawer passou do limite.",
+          "The drawer is over the limit.",
+          "El drawer supera el límite.",
+        ),
       );
       return;
     }
@@ -195,12 +218,24 @@ export function ProfileSettingsPanel({
     );
     if (actionError || !data)
       setDrawerError(
-        pt ? "Não foi possível salvar o drawer." : "Could not save the drawer.",
+        tri(
+          lang,
+          "Não foi possível salvar o drawer.",
+          "Could not save the drawer.",
+          "No se pudo guardar el drawer.",
+        ),
       );
     else {
       setProfile((current) => ({ ...current, drawer: next || null }));
       setSavedDrawer(next);
-      setDrawerMessage(pt ? "Drawer atualizado." : "Drawer updated.");
+      setDrawerMessage(
+        tri(
+          lang,
+          "Drawer atualizado.",
+          "Drawer updated.",
+          "Drawer actualizado.",
+        ),
+      );
       router.refresh();
     }
     setPending(null);
@@ -215,9 +250,12 @@ export function ProfileSettingsPanel({
     });
     if (!response.ok)
       setError(
-        pt
-          ? "Não foi possível remover a imagem."
-          : "Could not remove the image.",
+        tri(
+          lang,
+          "Não foi possível remover a imagem.",
+          "Could not remove the image.",
+          "No se pudo quitar la imagen.",
+        ),
       );
     else {
       setProfile((current) => ({
@@ -242,40 +280,61 @@ export function ProfileSettingsPanel({
         onInput={() => setDetailsDirty(true)}
       >
         <header>
-          <h2>{pt ? "Informações públicas" : "Public information"}</h2>
+          <h2>
+            {tri(
+              lang,
+              "Informações públicas",
+              "Public information",
+              "Información pública",
+            )}
+          </h2>
           <p>
-            {pt
-              ? "Nome de exibição, pronomes e bio aparecem no seu perfil. Todos são opcionais."
-              : "Display name, pronouns, and bio appear on your profile. All are optional."}
+            {tri(
+              lang,
+              "Nome de exibição, pronomes e bio aparecem no seu perfil. Todos são opcionais.",
+              "Display name, pronouns, and bio appear on your profile. All are optional.",
+              "El nombre visible, los pronombres y la bio aparecen en tu perfil. Todos son opcionales.",
+            )}
           </p>
         </header>
         <label>
-          {pt ? "Nome de exibição" : "Display name"}
+          {tri(lang, "Nome de exibição", "Display name", "Nombre visible")}
           <input
             name="displayName"
             defaultValue={profile.display_name ?? ""}
             maxLength={80}
-            placeholder={
-              pt ? "Como você quer ser chamado" : "How you want to be known"
-            }
+            placeholder={tri(
+              lang,
+              "Como você quer ser chamado",
+              "How you want to be known",
+              "Cómo quieres que te llamen",
+            )}
           />
         </label>
         <label>
-          {pt ? "Pronomes" : "Pronouns"}
+          {tri(lang, "Pronomes", "Pronouns", "Pronombres")}
           <input
             name="pronouns"
             defaultValue={profile.pronouns ?? ""}
             maxLength={30}
-            placeholder={
-              pt
-                ? "Ex.: ele/dele, ela/dela, elu/delu"
-                : "E.g. he/him, she/her, they/them"
-            }
+            placeholder={tri(
+              lang,
+              "Ex.: ele/dele, ela/dela, elu/delu",
+              "E.g. he/him, she/her, they/them",
+              "Ej.: él, ella, elle",
+            )}
           />
         </label>
         <label className="profile-thought-field">
           <span className="profile-field-label">
-            <span>{pt ? "Pensamento atual" : "Current thought"}</span>
+            <span>
+              {tri(
+                lang,
+                "Pensamento atual",
+                "Current thought",
+                "Pensamiento actual",
+              )}
+            </span>
             <small>{thought.length}/100</small>
           </span>
           <input
@@ -283,38 +342,48 @@ export function ProfileSettingsPanel({
             value={thought}
             onChange={(event) => setThought(event.target.value)}
             maxLength={100}
-            placeholder={
-              pt
-                ? "O que está passando pela sua cabeça?"
-                : "What's on your mind?"
-            }
+            placeholder={tri(
+              lang,
+              "O que está passando pela sua cabeça?",
+              "What's on your mind?",
+              "¿Qué estás pensando?",
+            )}
           />
           <small>
-            {pt
-              ? "Aparece em um balão sobre seu avatar."
-              : "Appears in a bubble above your avatar."}
+            {tri(
+              lang,
+              "Aparece em um balão sobre seu avatar.",
+              "Appears in a bubble above your avatar.",
+              "Aparece en un globo sobre tu avatar.",
+            )}
           </small>
         </label>
         <label>
-          {pt ? "Bio" : "Bio"}
+          {tri(lang, "Bio", "Bio", "Bio")}
           <textarea
             name="bio"
             defaultValue={profile.bio ?? ""}
             maxLength={500}
             rows={5}
-            placeholder={
-              pt
-                ? "Conte um pouco sobre você e os jogos que gosta."
-                : "Share a little about yourself and the games you enjoy."
-            }
+            placeholder={tri(
+              lang,
+              "Conte um pouco sobre você e os jogos que gosta.",
+              "Share a little about yourself and the games you enjoy.",
+              "Cuenta un poco sobre ti y los juegos que te gustan.",
+            )}
           />
         </label>
         <fieldset className="profile-social-fields">
-          <legend>{pt ? "Redes sociais" : "Social networks"}</legend>
+          <legend>
+            {tri(lang, "Redes sociais", "Social networks", "Redes sociales")}
+          </legend>
           <p>
-            {pt
-              ? "Informe apenas o nome de usuário. Os links são montados automaticamente."
-              : "Enter only the username. Links are built automatically."}
+            {tri(
+              lang,
+              "Informe apenas o nome de usuário. Os links são montados automaticamente.",
+              "Enter only the username. Links are built automatically.",
+              "Escribe solo el nombre de usuario. Los enlaces se construyen automáticamente.",
+            )}
           </p>
           <label>
             <FaYoutube size={15} /> YouTube
@@ -370,7 +439,7 @@ export function ProfileSettingsPanel({
                 <LoaderCircle className="spin" size={15} />
               )}
               {pending !== "details" && <Save size={14} />}
-              {pt ? "Salvar perfil" : "Save profile"}
+              {tri(lang, "Salvar perfil", "Save profile", "Guardar perfil")}
             </button>
           </div>
         </div>
@@ -380,11 +449,21 @@ export function ProfileSettingsPanel({
         <section className="profile-image-setting avatar-setting">
           <header>
             <div>
-              <h2>{pt ? "Avatar do perfil" : "Profile avatar"}</h2>
+              <h2>
+                {tri(
+                  lang,
+                  "Avatar do perfil",
+                  "Profile avatar",
+                  "Avatar del perfil",
+                )}
+              </h2>
               <p>
-                {pt
-                  ? "A imagem que identifica você em todo o uloggd."
-                  : "The image that identifies you across uloggd."}
+                {tri(
+                  lang,
+                  "A imagem que identifica você em todo o uloggd.",
+                  "The image that identifies you across uloggd.",
+                  "La imagen que te identifica en todo uloggd.",
+                )}
               </p>
             </div>
           </header>
@@ -410,12 +489,18 @@ export function ProfileSettingsPanel({
                 >
                   <Upload size={14} />
                   {profile.avatar_url
-                    ? pt
-                      ? "Trocar avatar"
-                      : "Change avatar"
-                    : pt
-                      ? "Enviar avatar"
-                      : "Upload avatar"}
+                    ? tri(
+                        lang,
+                        "Trocar avatar",
+                        "Change avatar",
+                        "Cambiar avatar",
+                      )
+                    : tri(
+                        lang,
+                        "Enviar avatar",
+                        "Upload avatar",
+                        "Subir avatar",
+                      )}
                 </button>
                 {profile.avatar_url && (
                   <button
@@ -431,20 +516,33 @@ export function ProfileSettingsPanel({
             </div>
           </div>
           <small>
-            {pt
-              ? "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF ou AVIF"
-              : "Recommended: 640×640px · Max 8 MB · JPG, PNG, WebP, GIF, or AVIF"}
+            {tri(
+              lang,
+              "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF ou AVIF",
+              "Recommended: 640×640px · Max 8 MB · JPG, PNG, WebP, GIF, or AVIF",
+              "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF o AVIF",
+            )}
           </small>
         </section>
 
         <section className="profile-image-setting banner-setting">
           <header>
             <div>
-              <h2>{pt ? "Banner do perfil" : "Profile banner"}</h2>
+              <h2>
+                {tri(
+                  lang,
+                  "Banner do perfil",
+                  "Profile banner",
+                  "Banner del perfil",
+                )}
+              </h2>
               <p>
-                {pt
-                  ? "Uma imagem panorâmica para o cabeçalho do seu perfil."
-                  : "A wide image for your profile header."}
+                {tri(
+                  lang,
+                  "Uma imagem panorâmica para o cabeçalho do seu perfil.",
+                  "A wide image for your profile header.",
+                  "Una imagen panorámica para la cabecera de tu perfil.",
+                )}
               </p>
             </div>
           </header>
@@ -459,12 +557,8 @@ export function ProfileSettingsPanel({
             <button type="button" onClick={() => bannerInput.current?.click()}>
               <Upload size={15} />
               {profile.banner_url
-                ? pt
-                  ? "Trocar banner"
-                  : "Change banner"
-                : pt
-                  ? "Enviar banner"
-                  : "Upload banner"}
+                ? tri(lang, "Trocar banner", "Change banner", "Cambiar banner")
+                : tri(lang, "Enviar banner", "Upload banner", "Subir banner")}
             </button>
             {profile.banner_url && (
               <button
@@ -473,13 +567,16 @@ export function ProfileSettingsPanel({
                 disabled={Boolean(pending)}
               >
                 <Trash2 size={14} />
-                {pt ? "Remover banner" : "Remove banner"}
+                {tri(lang, "Remover banner", "Remove banner", "Quitar banner")}
               </button>
             )}
             <small>
-              {pt
-                ? "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF ou AVIF"
-                : "Recommended: 1800×600px · Max 8 MB · JPG, PNG, WebP, GIF, or AVIF"}
+              {tri(
+                lang,
+                "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF ou AVIF",
+                "Recommended: 1800×600px · Max 8 MB · JPG, PNG, WebP, GIF, or AVIF",
+                "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF o AVIF",
+              )}
             </small>
           </div>
           <input
@@ -508,9 +605,12 @@ export function ProfileSettingsPanel({
           <div>
             <h2>Drawer</h2>
             <p>
-              {pt
-                ? "Um espaço livre em Markdown no seu perfil: destaque jogos, listas, spoilers e o que mais quiser."
-                : "A free-form Markdown space on your profile: showcase games, lists, spoilers, and anything else."}
+              {tri(
+                lang,
+                "Um espaço livre em Markdown no seu perfil: destaque jogos, listas, spoilers e o que mais quiser.",
+                "A free-form Markdown space on your profile: showcase games, lists, spoilers, and anything else.",
+                "Un espacio libre en Markdown en tu perfil: destaca juegos, listas, spoilers y lo que quieras.",
+              )}
             </p>
           </div>
         </header>
@@ -520,11 +620,12 @@ export function ProfileSettingsPanel({
           maxLength={10000}
           rows={10}
           lang={lang}
-          placeholder={
-            pt
-              ? "## Bem-vindo ao meu perfil\n\nUse a barra de ferramentas ou escreva Markdown direto."
-              : "## Welcome to my profile\n\nUse the toolbar or write Markdown directly."
-          }
+          placeholder={tri(
+            lang,
+            "## Bem-vindo ao meu perfil\n\nUse a barra de ferramentas ou escreva Markdown direto.",
+            "## Welcome to my profile\n\nUse the toolbar or write Markdown directly.",
+            "## Bienvenido a mi perfil\n\nUsa la barra de herramientas o escribe Markdown directamente.",
+          )}
         />
         <footer className="profile-form-footer">
           <span>
@@ -533,10 +634,11 @@ export function ProfileSettingsPanel({
                 {drawerError}
               </span>
             ) : drawer.trim() !== savedDrawer.trim() ? (
-              pt ? (
-                "Alterações não salvas"
-              ) : (
-                "Unsaved changes"
+              tri(
+                lang,
+                "Alterações não salvas",
+                "Unsaved changes",
+                "Cambios sin guardar",
               )
             ) : (
               drawerMessage
@@ -569,9 +671,7 @@ export function ProfileSettingsPanel({
               )}
               {pending === "drawer"
                 ? t.saving
-                : pt
-                  ? "Salvar drawer"
-                  : "Save drawer"}
+                : tri(lang, "Salvar drawer", "Save drawer", "Guardar drawer")}
             </button>
           </div>
         </footer>

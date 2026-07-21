@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, LockKeyhole, LogIn, ShieldCheck } from "lucide-react";
 import { AnonymousAgeForm } from "./anonymous-age-form";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 type Rating = {
   organization: string;
@@ -41,12 +41,20 @@ export function GameAgeGate({
         </div>
         <span className="age-gate-eyebrow">
           <LockKeyhole size={13} aria-hidden />
-          {pt ? "CONTEÚDO PROTEGIDO" : "PROTECTED CONTENT"}
+          {tri(
+            lang,
+            "CONTEÚDO PROTEGIDO",
+            "PROTECTED CONTENT",
+            "CONTENIDO PROTEGIDO",
+          )}
         </span>
         <h1 id="age-gate-title">
-          {pt
-            ? "Este jogo não está disponível para sua faixa etária"
-            : "This game is not available for your age group"}
+          {tri(
+            lang,
+            "Este jogo não está disponível para sua faixa etária",
+            "This game is not available for your age group",
+            "Este juego no está disponible para tu edad",
+          )}
         </h1>
         <p>
           {signedIn
@@ -66,18 +74,31 @@ export function GameAgeGate({
           {!signedIn && (
             <Link href={`/${lang}/login`}>
               <LogIn size={16} aria-hidden />
-              {pt ? "Entrar na sua conta" : "Sign in to your account"}
+              {tri(
+                lang,
+                "Entrar na sua conta",
+                "Sign in to your account",
+                "Inicia sesión en tu cuenta",
+              )}
             </Link>
           )}
           <Link href={`/${lang}`}>
             <ArrowLeft size={16} aria-hidden />
-            {pt ? "Voltar ao catálogo" : "Back to catalog"}
+            {tri(
+              lang,
+              "Voltar ao catálogo",
+              "Back to catalog",
+              "Volver al catálogo",
+            )}
           </Link>
         </div>
         <small>
-          {pt
-            ? "A proteção considera a Classificação Indicativa brasileira e a idade calculada na data de acesso."
-            : "Protection uses Brazil’s age rating and your age on the access date."}
+          {tri(
+            lang,
+            "A proteção considera a Classificação Indicativa brasileira e a idade calculada na data de acesso.",
+            "Protection uses Brazil’s age rating and your age on the access date.",
+            "La protección usa la clasificación por edades brasileña y tu edad en la fecha de acceso.",
+          )}
         </small>
       </section>
     </main>
