@@ -1,6 +1,13 @@
 "use client";
 
-import { LoaderCircle, LockKeyhole, MessageCircle, UserX } from "lucide-react";
+import {
+  Check,
+  LoaderCircle,
+  LockKeyhole,
+  MessageCircle,
+  UserX,
+} from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -10,21 +17,61 @@ type BlockedProfile = {
   username: string;
   display_name: string | null;
 };
+export type FollowRequest = BlockedProfile & { avatar_url: string | null };
 
 export function PrivacySettings({
   initialScope,
+  initialPrivate,
+  initialRequests,
   initialBlocked,
   lang,
 }: {
   initialScope: Scope;
+  initialPrivate: boolean;
+  initialRequests: FollowRequest[];
   initialBlocked: BlockedProfile[];
   lang: "pt-BR" | "en";
 }) {
   const pt = lang === "pt-BR";
   const [scope, setScope] = useState(initialScope);
+  const [isPrivate, setIsPrivate] = useState(initialPrivate);
+  const [requests, setRequests] = useState(initialRequests);
   const [blocked, setBlocked] = useState(initialBlocked);
   const [pending, setPending] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  async function updatePrivacy(next: boolean) {
+    if (pending) return;
+    const previous = isPrivate;
+    setIsPrivate(next);
+    setPending("privacy");
+    setMessage(null);
+    const { error } = await createClient().rpc("set_profile_privacy", {
+      private: next,
+    });
+    if (error) {
+      setIsPrivate(previous);
+      setMessage(pt ? "Não foi possível salvar." : "Could not save.");
+    } else if (!next) {
+      // Opening the account approves whatever was waiting, so the queue empties.
+      setRequests([]);
+    }
+    setPending(null);
+  }
+
+  async function reviewRequest(id: string, approve: boolean) {
+    if (pending) return;
+    setPending(`request-${id}`);
+    setMessage(null);
+    const { error } = await createClient().rpc("review_follow_request", {
+      requester: id,
+      approve,
+    });
+    if (error)
+      setMessage(pt ? "Não foi possível responder." : "Could not respond.");
+    else setRequests((current) => current.filter((item) => item.id !== id));
+    setPending(null);
+  }
 
   async function updateScope(next: Scope) {
     if (pending) return;
@@ -58,6 +105,105 @@ export function PrivacySettings({
 
   return (
     <div className="settings-privacy-stack">
+      <section className="settings-security-card settings-privacy-card">
+        <header>
+          <span>
+            <LockKeyhole size={20} />
+          </span>
+          <div>
+            <h2>{pt ? "Conta privada" : "Private account"}</h2>
+            <p>
+              {pt
+                ? "Com a conta privada, quem quiser te seguir precisa da sua aprovação. Quem já segue continua seguindo."
+                : "With a private account, anyone who wants to follow you needs your approval. Current followers stay."}
+            </p>
+          </div>
+        </header>
+        <label className="privacy-toggle">
+          <input
+            type="checkbox"
+            checked={isPrivate}
+            disabled={Boolean(pending)}
+            onChange={(event) => void updatePrivacy(event.target.checked)}
+          />
+          <span>
+            {isPrivate
+              ? pt
+                ? "Sua conta está privada"
+                : "Your account is private"
+              : pt
+                ? "Sua conta está pública"
+                : "Your account is public"}
+          </span>
+          {pending === "privacy" && (
+            <LoaderCircle className="spin" size={14} aria-hidden />
+          )}
+        </label>
+
+        {isPrivate && (
+          <div className="privacy-requests">
+            <h3>
+              {pt ? "Solicitações para seguir" : "Follow requests"}
+              <b>{requests.length}</b>
+            </h3>
+            {requests.length === 0 ? (
+              <p>{pt ? "Nenhuma solicitação." : "No requests."}</p>
+            ) : (
+              <ul>
+                {requests.map((person) => (
+                  <li key={person.id}>
+                    <Link href={`/${lang}/u/${person.username}`}>
+                      <span className="privacy-request-avatar">
+                        {person.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={person.avatar_url} alt="" />
+                        ) : (
+                          (person.display_name || person.username)
+                            .slice(0, 1)
+                            .toUpperCase()
+                        )}
+                      </span>
+                      <span>
+                        <strong>
+                          {person.display_name || person.username}
+                        </strong>
+                        <small>@{person.username}</small>
+                      </span>
+                    </Link>
+                    <div>
+                      <button
+                        type="button"
+                        disabled={Boolean(pending)}
+                        onClick={() => void reviewRequest(person.id, true)}
+                      >
+                        {pending === `request-${person.id}` ? (
+                          <LoaderCircle
+                            className="spin"
+                            size={13}
+                            aria-hidden
+                          />
+                        ) : (
+                          <Check size={13} />
+                        )}
+                        {pt ? "Aceitar" : "Accept"}
+                      </button>
+                      <button
+                        type="button"
+                        data-danger
+                        disabled={Boolean(pending)}
+                        onClick={() => void reviewRequest(person.id, false)}
+                      >
+                        {pt ? "Recusar" : "Decline"}
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </section>
+
       <section className="settings-security-card settings-privacy-card">
         <header>
           <span>

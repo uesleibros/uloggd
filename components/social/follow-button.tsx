@@ -3,6 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   AlertTriangle,
+  Clock3,
   LoaderCircle,
   UserCheck,
   UserPlus,
@@ -17,6 +18,7 @@ export function FollowButton({
   viewerId,
   profileId,
   initial,
+  initialRequested = false,
   mutualRecent = false,
   profileName,
   lang,
@@ -24,6 +26,8 @@ export function FollowButton({
   viewerId: string | null;
   profileId: string;
   initial: boolean;
+  /** A pending request on a private account. */
+  initialRequested?: boolean;
   mutualRecent?: boolean;
   profileName?: string;
   lang: "pt-BR" | "en";
@@ -32,24 +36,41 @@ export function FollowButton({
   const t = uiText(lang);
   const router = useRouter();
   const [following, setFollowing] = useState(initial);
+  const [requested, setRequested] = useState(initialRequested);
   const [pending, setPending] = useState<"follow" | "unfollow" | null>(null);
   const [error, setError] = useState(false);
   const [warningOpen, setWarningOpen] = useState(false);
   if (!viewerId || viewerId === profileId) return null;
   // Optimistic: the button flips immediately and reverts if the write fails.
+  // The database decides between following outright and queueing a request,
+  // because only it knows whether the account is private.
   async function follow() {
     if (pending) return;
     setPending("follow");
     setError(false);
-    setFollowing(true);
-    const supabase = createClient();
-    const result = await supabase
-      .from("follows")
-      .insert({ follower_id: viewerId!, following_id: profileId });
-    if (result.error) {
-      setFollowing(false);
-      setError(true);
-    } else router.refresh();
+    const { data, error: actionError } = await createClient().rpc(
+      "request_follow",
+      { target_profile: profileId },
+    );
+    if (actionError) setError(true);
+    else if (data === "requested") setRequested(true);
+    else {
+      setFollowing(true);
+      router.refresh();
+    }
+    setPending(null);
+  }
+
+  async function cancelRequest() {
+    if (pending) return;
+    setPending("follow");
+    setError(false);
+    const { error: actionError } = await createClient().rpc(
+      "cancel_follow_request",
+      { target_profile: profileId },
+    );
+    if (actionError) setError(true);
+    else setRequested(false);
     setPending(null);
   }
   async function unfollow() {
@@ -83,17 +104,30 @@ export function FollowButton({
       <button
         type="button"
         data-following={following || undefined}
-        onClick={toggle}
+        data-requested={(!following && requested) || undefined}
+        onClick={requested && !following ? cancelRequest : toggle}
         disabled={Boolean(pending)}
       >
         {pending ? (
           <LoaderCircle className="spin" size={15} aria-hidden />
         ) : following ? (
           <UserCheck size={15} />
+        ) : requested ? (
+          <Clock3 size={15} />
         ) : (
           <UserPlus size={15} />
         )}
-        {following ? (pt ? "Seguindo" : "Following") : pt ? "Seguir" : "Follow"}
+        {following
+          ? pt
+            ? "Seguindo"
+            : "Following"
+          : requested
+            ? pt
+              ? "Solicitado"
+              : "Requested"
+            : pt
+              ? "Seguir"
+              : "Follow"}
       </button>
       {error && (
         <span role="alert">{pt ? "Tente novamente." : "Try again."}</span>

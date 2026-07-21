@@ -17,13 +17,14 @@ import { TwoFactorSettings } from "./two-factor-settings";
 import { DeleteAccount } from "./delete-account";
 import { AppearanceSettings } from "./appearance-settings";
 import { ContentPreferences } from "./content-preferences";
-import { PrivacySettings } from "./privacy-settings";
+import { PrivacySettings, type FollowRequest } from "./privacy-settings";
 import { UsernameSettings } from "./username-settings";
 import { uiText } from "@/lib/ui-text";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   custom_cover_scope: "OWN" | "EVERYONE";
   profile_comment_scope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  is_private: boolean;
   username_changed_at: string | null;
 };
 type BlockedProfile = {
@@ -37,11 +38,13 @@ type Tab =
 export function AccountSettings({
   profile,
   blockedProfiles,
+  followRequests,
   infractions,
   lang,
 }: {
   profile: Profile;
   blockedProfiles: BlockedProfile[];
+  followRequests: FollowRequest[];
   infractions: number;
   lang: "pt-BR" | "en";
 }) {
@@ -227,6 +230,8 @@ export function AccountSettings({
         {tab === "privacy" && (
           <PrivacySettings
             initialScope={profile.profile_comment_scope}
+            initialPrivate={profile.is_private ?? false}
+            initialRequests={followRequests}
             initialBlocked={blockedProfiles}
             lang={lang}
           />

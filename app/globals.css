@@ -16307,3 +16307,10 @@ adapted to the current uloggd surface system. */
 .content-comments {
   margin-top: 36px;
 }
+
+/* Pending request reads as neither following nor unfollowed. */
+.profile-follow-control button[data-requested] {
+  border-color: var(--shell-line-strong);
+  background: var(--console-raised);
+  color: var(--screen-muted);
+}
