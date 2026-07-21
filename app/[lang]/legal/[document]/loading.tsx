@@ -1,3 +1,5 @@
+import "../legal.css";
+
 export default function Loading() {
   return (
     <main className="legal-page" aria-busy="true">

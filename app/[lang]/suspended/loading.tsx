@@ -1,3 +1,5 @@
+import "./suspended.css";
+
 export default function Loading() {
   return (
     <main className="suspension-screen" aria-busy="true">

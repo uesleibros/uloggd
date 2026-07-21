@@ -63,6 +63,7 @@ import {
   Minus,
   Monitor,
   Pencil,
+  Plus,
   Quote,
   Search,
   Smartphone,
@@ -111,6 +112,7 @@ type Tool =
   | "details"
   | "lang";
 
+/** Kept on the bar itself: what someone reaches for while actually writing. */
 const toolGroups: Array<Array<[Tool, ComponentType<{ size?: number }>]>> = [
   [
     ["bold", Bold],
@@ -120,12 +122,6 @@ const toolGroups: Array<Array<[Tool, ComponentType<{ size?: number }>]>> = [
   [
     ["link", Link2],
     ["image", Image],
-    ["imagesize", ImagePlus],
-    ["youtube", Video],
-  ],
-  [
-    ["code", Code],
-    ["codeblock", FileCode2],
   ],
   [
     ["ul", List],
@@ -134,18 +130,52 @@ const toolGroups: Array<Array<[Tool, ComponentType<{ size?: number }>]>> = [
   ],
   [
     ["quote", Quote],
-    ["spoiler", EyeOff],
-    ["spoilerimage", ImageOff],
-    ["hr", Minus],
-    ["alert", AlertCircle],
-    ["center", AlignCenter],
-    ["desktop", Monitor],
-    ["mobile", Smartphone],
-    ["details", ListCollapse],
-    ["lang", Languages],
-    ["mention", AtSign],
-    ["table", Table],
+    ["code", Code],
   ],
+];
+
+/**
+ * Everything else, behind one menu. All 24 tools used to sit in a single
+ * horizontally scrolling strip, so most of them were off-screen and the ones
+ * you could see were an undifferentiated wall of icons.
+ */
+const insertGroups: Array<{
+  titlePt: string;
+  titleEn: string;
+  tools: Array<[Tool, ComponentType<{ size?: number }>]>;
+}> = [
+  {
+    titlePt: "Mídia",
+    titleEn: "Media",
+    tools: [
+      ["imagesize", ImagePlus],
+      ["youtube", Video],
+      ["spoilerimage", ImageOff],
+    ],
+  },
+  {
+    titlePt: "Blocos",
+    titleEn: "Blocks",
+    tools: [
+      ["codeblock", FileCode2],
+      ["table", Table],
+      ["alert", AlertCircle],
+      ["details", ListCollapse],
+      ["hr", Minus],
+    ],
+  },
+  {
+    titlePt: "uloggd",
+    titleEn: "uloggd",
+    tools: [
+      ["mention", AtSign],
+      ["spoiler", EyeOff],
+      ["center", AlignCenter],
+      ["lang", Languages],
+      ["desktop", Monitor],
+      ["mobile", Smartphone],
+    ],
+  },
 ];
 
 const shortcuts: Record<string, Tool> = {
@@ -944,6 +974,44 @@ export function MarkdownEditor({
               ))}
             </div>
           ))}
+          <div className="md-editor-toolbar-end">
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <button
+                  type="button"
+                  className="md-insert-trigger"
+                  aria-label={pt ? "Inserir" : "Insert"}
+                >
+                  <Plus size={15} />
+                  <span>{pt ? "Inserir" : "Insert"}</span>
+                  <ChevronDown size={11} />
+                </button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content
+                  className="md-insert-menu"
+                  align="end"
+                  sideOffset={6}
+                  collisionPadding={12}
+                >
+                  {insertGroups.map((group) => (
+                    <div key={group.titleEn}>
+                      <span>{pt ? group.titlePt : group.titleEn}</span>
+                      {group.tools.map(([tool, Icon]) => (
+                        <DropdownMenu.Item
+                          key={tool}
+                          onSelect={() => runTool(tool)}
+                        >
+                          <Icon size={15} />
+                          {labels[tool]}
+                        </DropdownMenu.Item>
+                      ))}
+                    </div>
+                  ))}
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
+          </div>
         </div>
       )}
       <div className="md-editor-stage" ref={splitRef}>
