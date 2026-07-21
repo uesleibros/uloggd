@@ -42,7 +42,9 @@ test("applies a saved theme before the interface becomes interactive", async ({
     stage.remove();
     return value;
   });
-  expect(artworkForeground).toBe("rgb(244, 242, 246)");
+  // Page-level artwork stages inherit the selected theme. Only the fullscreen
+  // media viewer deliberately pins image controls to a dark palette.
+  expect(artworkForeground).toBe("rgb(23, 25, 30)");
 
   const lightStateColors = await page.evaluate(() => {
     const styles = getComputedStyle(document.documentElement);

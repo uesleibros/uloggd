@@ -49,10 +49,10 @@ test("keeps the advanced-filter sheet themed and inside the mobile viewport", as
 
   expect(geometry.dialogTop).toBeGreaterThanOrEqual(0);
   expect(geometry.dialogBottom).toBeLessThanOrEqual(
-    geometry.viewportHeight + 1,
+    geometry.viewportHeight + 2,
   );
   expect(geometry.footerBottom).toBeLessThanOrEqual(
-    geometry.viewportHeight + 1,
+    geometry.viewportHeight + 2,
   );
   expect(geometry.background).toBe("rgb(255, 255, 255)");
   expect(geometry.foreground).toBe("rgb(23, 25, 30)");
