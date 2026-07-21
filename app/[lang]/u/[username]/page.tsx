@@ -403,7 +403,7 @@ export default async function ProfilePage({ params }: Props) {
   const { data: commentAuthors } = commentAuthorIds.length
     ? await supabase
         .from("profiles")
-        .select("id,username,display_name,avatar_url")
+        .select("id,username,display_name,avatar_url,verified")
         .in("id", commentAuthorIds)
     : { data: [] };
   const commentAuthorById = new Map(

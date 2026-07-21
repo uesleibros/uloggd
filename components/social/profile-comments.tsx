@@ -19,6 +19,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { VerifiedMark } from "@/components/verified-badge";
 import {
   CommentAvatar,
   CommentHeader,
@@ -41,6 +42,7 @@ export type ProfileComment = {
     username: string;
     display_name: string | null;
     avatar_url: string | null;
+    verified: boolean;
   };
 };
 
@@ -397,6 +399,9 @@ export function ProfileComments({
                 name={name}
                 createdAt={comment.created_at}
                 edited={edited}
+                badge={
+                  comment.author.verified ? <VerifiedMark size={13} /> : null
+                }
               />
             )}
 

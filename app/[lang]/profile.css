@@ -2340,3 +2340,16 @@ a.year-top-game:hover .year-top-copy strong {
   border-color: var(--danger-text);
   color: var(--danger-text);
 }
+
+/* The verified mark is a block-level image, so the author link has to be a
+   flex row — otherwise the badge wraps onto the line below the name. */
+.profile-comment-list article header > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.profile-comment-list article header > a .verified-mark {
+  position: relative;
+  top: 0.5px;
+}
