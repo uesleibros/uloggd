@@ -21,6 +21,7 @@ import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getGamesByIds } from "@/lib/igdb";
+import { ContentComments } from "@/components/social/content-comments";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import { uiText } from "@/lib/ui-text";
@@ -373,6 +374,13 @@ export default async function ReviewPage({ params }: Props) {
           {isOwner && <ActivityEntryActions entry={entry} lang={lang} />}
         </footer>
       </article>
+      <ContentComments
+        contentType="review"
+        contentId={review.id}
+        ownerId={review.profile_id}
+        viewerId={user?.id ?? null}
+        lang={lang}
+      />
     </main>
   );
 }

@@ -8,6 +8,7 @@ import { ListItemsGrid } from "@/components/social/list-items-grid";
 import { ListOwnerControls } from "@/components/social/list-owner-controls";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
+import { ContentComments } from "@/components/social/content-comments";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import { uiText } from "@/lib/ui-text";
@@ -184,6 +185,13 @@ export default async function ListPage({ params }: Props) {
           </p>
         </div>
       )}
+      <ContentComments
+        contentType="list"
+        contentId={list.id}
+        ownerId={list.profile_id}
+        viewerId={user?.id ?? null}
+        lang={lang}
+      />
     </main>
   );
 }

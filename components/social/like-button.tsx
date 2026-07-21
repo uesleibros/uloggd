@@ -5,7 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { uiText } from "@/lib/ui-text";
 
-type ContentType = "review" | "diary" | "list";
+type ContentType = "review" | "diary" | "list" | "content_comment";
 
 export function LikeButton({
   contentType,
