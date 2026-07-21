@@ -16301,39 +16301,9 @@ adapted to the current uloggd surface system. */
 /* Comments on lists and reviews. The thread itself reuses the profile comment
    styles, so the two conversations look and behave the same; only the section
    chrome around it is new. */
+
+/* Same shell as the profile conversation; only the spacing below the page
+   content is specific to these two surfaces. */
 .content-comments {
-  margin-top: 40px;
-  padding-top: 28px;
-  border-top: 1px solid var(--shell-line);
-}
-.content-comments .profile-comment-list {
-  margin-top: 18px;
-}
-.content-comments-empty {
-  margin-top: 18px;
-  padding: 30px 20px;
-  border: 1px dashed var(--shell-line-strong);
-  border-radius: 12px;
-  color: var(--screen-muted);
-  font-size: 12px;
-  text-align: center;
-}
-.content-comments-signed-out {
-  margin: 16px 0 0;
-  padding: 16px;
-  border: 1px solid var(--shell-line);
-  border-radius: 10px;
-  background: var(--console-inset);
-  color: var(--screen-muted);
-  font-size: 12px;
-  text-align: center;
-}
-.content-comments-signed-out a {
-  color: var(--brand-blurple-bright);
-  font-weight: 600;
-}
-.content-comments-error {
-  margin: 12px 0 0;
-  color: var(--danger-text);
-  font-size: 11.5px;
+  margin-top: 36px;
 }

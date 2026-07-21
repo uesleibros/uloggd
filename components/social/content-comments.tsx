@@ -1,7 +1,12 @@
 "use client";
 
-import { CornerDownRight, LoaderCircle, Trash2 } from "lucide-react";
-import Link from "next/link";
+import {
+  CornerDownRight,
+  LoaderCircle,
+  MessageCircle,
+  Send,
+  Trash2,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
@@ -314,88 +319,94 @@ export function ContentComments({
   const total = rows?.filter((row) => !row.deleted_at).length ?? 0;
 
   return (
-    <section className="content-comments">
-      <div className="social-section-title">
+    <section
+      className="profile-comments content-comments"
+      aria-labelledby="content-comments-title"
+    >
+      <header>
         <div>
-          <h2>{pt ? "Comentários" : "Comments"}</h2>
+          <h2 id="content-comments-title">
+            <MessageCircle size={16} /> {pt ? "Comentários" : "Comments"}
+          </h2>
           <p>
-            {rows === null
+            {contentType === "list"
               ? pt
-                ? "Carregando…"
-                : "Loading…"
-              : total === 0
-                ? pt
-                  ? "Ninguém comentou ainda"
-                  : "No comments yet"
-                : `${total} ${
-                    total === 1
-                      ? pt
-                        ? "comentário"
-                        : "comment"
-                      : pt
-                        ? "comentários"
-                        : "comments"
-                  }`}
+                ? "Converse sobre esta lista. Respostas ficam na mesma conversa."
+                : "Talk about this list. Replies stay in the same conversation."
+              : pt
+                ? "Converse sobre esta avaliação. Respostas ficam na mesma conversa."
+                : "Talk about this review. Replies stay in the same conversation."}
           </p>
         </div>
-      </div>
+        <span>{total}</span>
+      </header>
 
       {viewerId ? (
         <form
-          className="profile-comment-form"
+          className="profile-comment-composer"
           onSubmit={(event) => {
             event.preventDefault();
             void submit(body, null);
           }}
         >
+          <label htmlFor="content-comment-body">
+            {pt ? "Inicie uma conversa" : "Start a conversation"}
+          </label>
           <textarea
+            id="content-comment-body"
             value={body}
-            onChange={(event) => setBody(event.target.value)}
             maxLength={500}
-            rows={3}
-            placeholder={pt ? "Escreva um comentário…" : "Write a comment…"}
+            rows={2}
+            placeholder={
+              pt
+                ? "Adicione algo à conversa…"
+                : "Add something to the conversation…"
+            }
+            onChange={(event) => setBody(event.target.value)}
           />
           <footer>
             <small>{body.length}/500</small>
             <button type="submit" disabled={!body.trim() || Boolean(pending)}>
-              {pending === "create" && (
+              {pending === "create" ? (
                 <LoaderCircle className="spin" size={14} aria-hidden />
+              ) : (
+                <Send size={14} />
               )}
               {pt ? "Comentar" : "Comment"}
             </button>
           </footer>
         </form>
       ) : (
-        <p className="content-comments-signed-out">
-          <Link href={`/${lang}/login`}>
-            {pt ? "Entre para comentar." : "Sign in to comment."}
-          </Link>
+        <p className="profile-comments-notice">
+          {pt
+            ? "Entre na sua conta para comentar."
+            : "Sign in to leave a comment."}
         </p>
       )}
 
       {error && (
-        <p className="content-comments-error" role="alert">
+        <p className="profile-comments-error" role="alert">
           {error}
         </p>
       )}
 
-      {rows === null ? (
-        <div className="profile-comment-list">
-          <PendingComment lang={lang} />
-          <PendingComment lang={lang} />
-        </div>
-      ) : tree.length ? (
-        <div className="profile-comment-list">
-          {tree.map((comment) => renderComment(comment))}
-          {pending === "create" && <PendingComment lang={lang} />}
-        </div>
-      ) : (
-        <div className="content-comments-empty">
-          {pt
-            ? "Seja a primeira pessoa a comentar."
-            : "Be the first to comment."}
-        </div>
-      )}
+      <div className="profile-comment-list">
+        {pending === "create" && <PendingComment lang={lang} />}
+        {rows === null ? (
+          <>
+            <PendingComment lang={lang} />
+            <PendingComment lang={lang} />
+          </>
+        ) : (
+          tree.map((comment) => renderComment(comment))
+        )}
+        {rows !== null && !tree.length && (
+          <div className="profile-comments-empty">
+            <MessageCircle size={20} />
+            <span>{pt ? "Ainda não há comentários." : "No comments yet."}</span>
+          </div>
+        )}
+      </div>
     </section>
   );
 }
