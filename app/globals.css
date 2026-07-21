@@ -15001,6 +15001,10 @@ adapted to the current uloggd surface system. */
 }
 .md-editor-tabs button {
   position: relative;
+  /* Without display:flex the gap does nothing and the icon wraps onto its own
+     line above the label. */
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
   gap: 6px;
   min-width: 34px;
@@ -15008,6 +15012,9 @@ adapted to the current uloggd surface system. */
   color: var(--screen-muted);
   font-size: 11.5px;
   font-weight: 560;
+}
+.md-editor-tabs button > svg {
+  flex: none;
 }
 .md-editor-tabs button:hover {
   color: var(--screen-dim);

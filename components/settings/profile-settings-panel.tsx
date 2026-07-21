@@ -6,6 +6,8 @@ import { ImageIcon, LoaderCircle, Save, Trash2, Upload } from "lucide-react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { UnsavedChangesGuard } from "@/components/ui/unsaved-changes";
+import { RotateCcw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
@@ -41,9 +43,12 @@ export function ProfileSettingsPanel({
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();
+  const detailsRef = useRef<HTMLFormElement>(null);
+  const [detailsDirty, setDetailsDirty] = useState(false);
   const [profile, setProfile] = useState(initial);
   const [thought, setThought] = useState(initial.thought ?? "");
   const [drawer, setDrawer] = useState(initial.drawer ?? "");
+  const [savedDrawer, setSavedDrawer] = useState(initial.drawer ?? "");
   const [drawerMessage, setDrawerMessage] = useState<string | null>(null);
   const [drawerError, setDrawerError] = useState<string | null>(null);
   const [crop, setCrop] = useState<{
@@ -166,6 +171,7 @@ export function ProfileSettingsPanel({
         twitter_username: twitter.replace(/^@/, "") || null,
       }));
       setMessage(pt ? "Perfil atualizado." : "Profile updated.");
+      setDetailsDirty(false);
       router.refresh();
     }
     setPending(null);
@@ -193,6 +199,7 @@ export function ProfileSettingsPanel({
       );
     else {
       setProfile((current) => ({ ...current, drawer: next || null }));
+      setSavedDrawer(next);
       setDrawerMessage(pt ? "Drawer atualizado." : "Drawer updated.");
       router.refresh();
     }
@@ -224,7 +231,16 @@ export function ProfileSettingsPanel({
 
   return (
     <div className="profile-settings-content">
-      <form className="profile-details-form" onSubmit={saveDetails}>
+      <UnsavedChangesGuard
+        lang={lang}
+        dirty={detailsDirty || drawer.trim() !== savedDrawer.trim()}
+      />
+      <form
+        className="profile-details-form"
+        ref={detailsRef}
+        onSubmit={saveDetails}
+        onInput={() => setDetailsDirty(true)}
+      >
         <header>
           <h2>{pt ? "Informações públicas" : "Public information"}</h2>
           <p>
@@ -329,14 +345,40 @@ export function ProfileSettingsPanel({
           </label>
         </fieldset>
         <div className="profile-form-footer">
-          <span>{message}</span>
-          <button type="submit" disabled={Boolean(pending)}>
-            {pending === "details" && (
-              <LoaderCircle className="spin" size={15} />
+          <span>
+            {detailsDirty
+              ? pt
+                ? "Alterações não salvas"
+                : "Unsaved changes"
+              : message}
+          </span>
+          <div className="profile-form-actions">
+            {detailsDirty && (
+              <button
+                type="button"
+                className="settings-revert"
+                onClick={() => {
+                  // Native reset restores every field to the value the server
+                  // rendered, which is exactly "how it was".
+                  detailsRef.current?.reset();
+                  setThought(profile.thought ?? "");
+                  setDetailsDirty(false);
+                  setMessage(null);
+                  setError(null);
+                }}
+              >
+                <RotateCcw size={14} />
+                {pt ? "Reverter" : "Revert"}
+              </button>
             )}
-            {pending !== "details" && <Save size={14} />}
-            {pt ? "Salvar perfil" : "Save profile"}
-          </button>
+            <button type="submit" disabled={Boolean(pending)}>
+              {pending === "details" && (
+                <LoaderCircle className="spin" size={15} />
+              )}
+              {pending !== "details" && <Save size={14} />}
+              {pt ? "Salvar perfil" : "Save profile"}
+            </button>
+          </div>
         </div>
       </form>
 
@@ -491,28 +533,53 @@ export function ProfileSettingsPanel({
           }
         />
         <footer className="profile-form-footer">
-          {drawerMessage && <span>{drawerMessage}</span>}
-          {drawerError && (
-            <span className="social-form-error" role="alert">
-              {drawerError}
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={() => void saveDrawer()}
-            disabled={pending === "drawer"}
-          >
-            {pending === "drawer" ? (
-              <LoaderCircle className="spin" size={15} />
+          <span>
+            {drawerError ? (
+              <span className="social-form-error" role="alert">
+                {drawerError}
+              </span>
+            ) : drawer.trim() !== savedDrawer.trim() ? (
+              pt ? (
+                "Alterações não salvas"
+              ) : (
+                "Unsaved changes"
+              )
             ) : (
-              <Save size={15} />
+              drawerMessage
             )}
-            {pending === "drawer"
-              ? t.saving
-              : pt
-                ? "Salvar drawer"
-                : "Save drawer"}
-          </button>
+          </span>
+          <div className="profile-form-actions">
+            {drawer.trim() !== savedDrawer.trim() && (
+              <button
+                type="button"
+                className="settings-revert"
+                onClick={() => {
+                  setDrawer(savedDrawer);
+                  setDrawerMessage(null);
+                  setDrawerError(null);
+                }}
+              >
+                <RotateCcw size={14} />
+                {pt ? "Reverter" : "Revert"}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => void saveDrawer()}
+              disabled={pending === "drawer"}
+            >
+              {pending === "drawer" ? (
+                <LoaderCircle className="spin" size={15} />
+              ) : (
+                <Save size={15} />
+              )}
+              {pending === "drawer"
+                ? t.saving
+                : pt
+                  ? "Salvar drawer"
+                  : "Save drawer"}
+            </button>
+          </div>
         </footer>
       </section>
       {crop && (
