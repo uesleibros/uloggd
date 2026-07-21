@@ -1238,31 +1238,54 @@
   position: relative;
   min-width: 0;
 }
+/* Thread lines.
+   The rail used to be a border-left on the container, so it ran past the last
+   reply into empty space, and the elbow was a fixed 31px from the top with a
+   width pinned to one padding value — both of which broke as soon as a level
+   used a different indent or a reply had no avatar.
+   Now each reply draws its own elbow, and the rail only continues while there
+   is a next sibling to reach. Every measure comes from these two variables, so
+   the geometry cannot drift apart again. */
 .profile-comment-replies {
+  --thread-indent: 17px;
+  --thread-elbow: 29px;
   position: relative;
   min-width: 0;
-  margin-left: 16px;
-  padding-left: 16px;
-  border-left: 1px solid var(--shell-line-strong);
+  margin-left: 15px;
+  padding-left: var(--thread-indent);
 }
 .profile-comment-replies .profile-comment-thread > article {
   padding-top: 13px;
   padding-bottom: 13px;
 }
-.profile-comment-replies .profile-comment-thread::before {
+/* Elbow: down from the parent, curve, then across to this reply. */
+.profile-comment-replies > .profile-comment-thread::before {
   position: absolute;
-  top: 31px;
-  left: -16px;
-  width: 16px;
-  height: 12px;
+  top: 0;
+  left: calc(var(--thread-indent) * -1);
+  width: var(--thread-indent);
+  height: var(--thread-elbow);
   border-bottom: 1px solid var(--shell-line-strong);
-  border-bottom-left-radius: 8px;
+  border-bottom-left-radius: 9px;
+  border-left: 1px solid var(--shell-line-strong);
   content: "";
 }
-.profile-comment-thread[data-depth="1"] > .profile-comment-replies {
-  margin-left: 8px;
-  padding-left: 14px;
+/* Rail continuing to the next reply. Absent on the last one, which is what
+   stops the line from dangling below the thread. */
+.profile-comment-replies > .profile-comment-thread:not(:last-child)::after {
+  position: absolute;
+  top: var(--thread-elbow);
+  bottom: 0;
+  left: calc(var(--thread-indent) * -1);
+  border-left: 1px solid var(--shell-line-strong);
+  content: "";
 }
+/* A removed comment has no avatar and less padding, so its elbow sits higher. */
+.profile-comment-replies
+  > .profile-comment-thread:has(> article[data-deleted]) {
+  --thread-elbow: 20px;
+}
+.profile-comment-thread[data-depth="1"] > .profile-comment-replies,
 .profile-comment-thread[data-depth="2"] > .profile-comment-replies,
 .profile-comment-thread[data-depth="3"] > .profile-comment-replies {
   margin-left: 0;

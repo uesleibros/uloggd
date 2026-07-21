@@ -67,12 +67,12 @@ export function ListPreviewCard({
         <span>
           {list.count} {t.gamesLower}
         </span>
-        {likes > 0 && (
-          <span>
-            <Heart size={11} />
-            {likes.toLocaleString(lang)}
-          </span>
-        )}
+        {/* Always shown, even at zero: hiding it made the count look like it
+            did not exist rather than like nobody had liked the list yet. */}
+        <span className="list-preview-likes" data-empty={!likes || undefined}>
+          <Heart size={11} fill={likes > 0 ? "currentColor" : "none"} />
+          {likes.toLocaleString(lang)}
+        </span>
       </span>
       {list.description && (
         <span className="list-preview-note">{list.description}</span>

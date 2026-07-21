@@ -16192,3 +16192,9 @@ adapted to the current uloggd surface system. */
     animation: none;
   }
 }
+.list-preview-likes {
+  color: var(--danger-text);
+}
+.list-preview-likes[data-empty] {
+  color: var(--screen-muted);
+}
