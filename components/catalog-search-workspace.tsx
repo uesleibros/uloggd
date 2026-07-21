@@ -307,6 +307,7 @@ export function CatalogSearchWorkspace({
   totalPages,
   saved,
   enabled,
+  createMode = null,
 }: {
   lang: UiLang;
   filters: CatalogSearchFilters;
@@ -316,6 +317,7 @@ export function CatalogSearchWorkspace({
   totalPages: number;
   saved: Record<number, SavedState>;
   enabled: boolean;
+  createMode?: "review" | null;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
@@ -568,20 +570,34 @@ export function CatalogSearchWorkspace({
     >
       <header className="catalog-search-hero">
         <h1>
-          {tri(
-            lang,
-            "Encontre exatamente o que jogar",
-            "Find exactly what to play",
-            "Encuentra exactamente qué jugar",
-          )}
+          {createMode === "review"
+            ? tri(
+                lang,
+                "Qual jogo você quer avaliar?",
+                "Which game do you want to review?",
+                "¿Qué juego quieres reseñar?",
+              )
+            : tri(
+                lang,
+                "Encontre exatamente o que jogar",
+                "Find exactly what to play",
+                "Encuentra exactamente qué jugar",
+              )}
         </h1>
         <p>
-          {tri(
-            lang,
-            "Cruze plataformas, gêneros, temas, modos, época e recepção para encontrar o jogo certo.",
-            "Cross platforms, genres, themes, modes, era, and reception to find the right game.",
-            "Cruza plataformas, géneros, temas, modos, época y recepción para encontrar el juego adecuado.",
-          )}
+          {createMode === "review"
+            ? tri(
+                lang,
+                "Selecione uma capa para abrir o estúdio de avaliação.",
+                "Select a cover to open the review studio.",
+                "Selecciona una portada para abrir el estudio de reseñas.",
+              )
+            : tri(
+                lang,
+                "Cruze plataformas, gêneros, temas, modos, época e recepção para encontrar o jogo certo.",
+                "Cross platforms, genres, themes, modes, era, and reception to find the right game.",
+                "Cruza plataformas, géneros, temas, modos, época y recepción para encontrar el juego adecuado.",
+              )}
         </p>
         <form
           className="catalog-search-main-form"
@@ -1086,6 +1102,7 @@ export function CatalogSearchWorkspace({
                       lang={lang}
                       enabled={enabled}
                       spawndAvailable={game.spawndAvailable}
+                      hrefSuffix={createMode === "review" ? "?review=1" : ""}
                       meta={[
                         game.releaseYear,
                         game.platforms[0],

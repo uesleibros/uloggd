@@ -1184,6 +1184,169 @@ html[data-sidebar-ready] .account-button > svg {
   margin-top: 20px;
 }
 
+/* One persistent entry point for new journal content. */
+.quick-create-sidebar {
+  margin-top: 16px;
+}
+.quick-create-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--brand-blurple) 35%, transparent);
+  border-radius: 9px;
+  background: var(--brand-blurple-wash);
+  color: var(--tonal-brand-text);
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    border-color 150ms ease-out,
+    color 150ms ease-out,
+    transform 110ms ease-out;
+}
+.quick-create-trigger:hover,
+.quick-create-trigger[data-state="open"] {
+  border-color: var(--brand-blurple);
+  background: color-mix(
+    in srgb,
+    var(--brand-blurple-wash) 76%,
+    var(--brand-blurple) 24%
+  );
+  color: var(--screen-white);
+}
+.quick-create-trigger:active {
+  transform: scale(0.97);
+}
+.quick-create-trigger:disabled {
+  border-color: var(--shell-line);
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+.quick-create-trigger > svg:last-child:not(:first-child) {
+  margin-left: auto;
+}
+.quick-create-mobile {
+  display: none;
+}
+.quick-create-menu {
+  z-index: 80;
+  width: min(320px, calc(100vw - 24px));
+  padding: 8px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--console-raised);
+  color: var(--screen-white);
+  box-shadow: 0 18px 48px var(--shadow-raised);
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+  animation: quick-create-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.quick-create-menu > [role="menuitem"] {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px;
+  border-radius: 8px;
+  outline: none;
+  color: var(--screen-white);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 140ms ease-out,
+    transform 100ms ease-out;
+}
+.quick-create-menu > [role="menuitem"]:first-of-type {
+  grid-template-columns: 40px minmax(0, 1fr);
+}
+.quick-create-menu > [role="menuitem"]:focus,
+.quick-create-menu > [role="menuitem"][data-highlighted] {
+  background: var(--console-hover);
+}
+.quick-create-menu > [role="menuitem"]:active:not([data-disabled]) {
+  transform: scale(0.985);
+}
+.quick-create-menu > [role="menuitem"][data-disabled] {
+  margin-top: 2px;
+  color: var(--screen-muted);
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+.quick-create-menu > [role="menuitem"] > span:nth-child(2) {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.quick-create-menu strong {
+  font-size: 12px;
+  font-weight: 650;
+}
+.quick-create-menu small {
+  color: var(--screen-muted);
+  font-size: 10px;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+.quick-create-menu > [role="menuitem"]:first-of-type small {
+  color: var(--screen-dim);
+}
+.quick-create-menu-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.quick-create-menu > [role="menuitem"]:first-of-type .quick-create-menu-icon {
+  border-color: color-mix(in srgb, var(--brand-blurple) 28%, transparent);
+  background: var(--brand-blurple-wash);
+  color: var(--tonal-brand-text);
+}
+.quick-create-soon {
+  padding: 3px 6px;
+  border: 1px solid var(--shell-line);
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.quick-create-arrow {
+  fill: var(--console-raised);
+}
+@keyframes quick-create-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+}
+html[data-sidebar-collapsed] .quick-create-sidebar {
+  display: flex;
+  justify-content: center;
+}
+html[data-sidebar-collapsed] .quick-create-sidebar .quick-create-trigger {
+  width: 48px;
+  padding: 0;
+}
+html[data-sidebar-collapsed] .quick-create-sidebar .quick-create-trigger span,
+html[data-sidebar-collapsed]
+  .quick-create-sidebar
+  .quick-create-trigger
+  > svg:last-child:not(:first-child) {
+  display: none;
+}
+
 .locale-switcher-trigger {
   display: flex;
   align-items: center;
@@ -4793,6 +4956,20 @@ html[data-sidebar-ready] .account-button > svg {
     width: 48px;
     padding: 0;
   }
+  .quick-create-sidebar {
+    display: flex;
+    justify-content: center;
+  }
+  .quick-create-sidebar .quick-create-trigger {
+    width: 48px;
+    padding: 0;
+  }
+  .quick-create-sidebar .quick-create-trigger span,
+  .quick-create-sidebar
+    .quick-create-trigger
+    > svg:last-child:not(:first-child) {
+    display: none;
+  }
   .nav-disabled .nav-lock {
     display: none;
   }
@@ -4918,6 +5095,42 @@ html[data-sidebar-ready] .account-button > svg {
   }
   .sidebar {
     display: none;
+  }
+  .quick-create-mobile {
+    position: fixed;
+    z-index: 29;
+    right: 16px;
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    display: block;
+  }
+  .quick-create-mobile .quick-create-trigger {
+    width: 56px;
+    min-height: 56px;
+    padding: 0;
+    border-color: var(--brand-blurple);
+    border-radius: 50%;
+    background: var(--brand-blurple);
+    color: white;
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 9%) inset,
+      0 10px 28px rgb(0 0 0 / 28%);
+  }
+  .quick-create-mobile .quick-create-trigger:hover,
+  .quick-create-mobile .quick-create-trigger[data-state="open"] {
+    border-color: var(--brand-blurple-bright);
+    background: var(--brand-blurple-bright);
+  }
+  .quick-create-mobile .quick-create-trigger[data-state="open"] svg {
+    transform: rotate(45deg);
+  }
+  .quick-create-mobile .quick-create-trigger svg {
+    transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .quick-create-mobile .quick-create-trigger:disabled {
+    border-color: var(--shell-line-strong);
+    background: var(--console-raised);
+    color: var(--screen-muted);
+    box-shadow: none;
   }
   .mobile-header {
     position: sticky;

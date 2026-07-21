@@ -96,8 +96,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function GamePage({ params }: Props) {
-  const { lang, slug } = await params;
+export default async function GamePage({ params, searchParams }: Props) {
+  const [{ lang, slug }, query] = await Promise.all([params, searchParams]);
   if (!hasLocale(lang)) notFound();
   const [game, user] = await Promise.all([getGameBySlug(slug), getAuthUser()]);
   if (!game) notFound();
@@ -331,6 +331,7 @@ export default async function GamePage({ params }: Props) {
                 logCount={ownLogCount}
                 journeys={ownJourneys}
                 journeyOptions={ownJourneyOptions}
+                initialMode={query.review === "1" ? "review" : null}
               />
             )}
           </div>

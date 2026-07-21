@@ -47,6 +47,7 @@ export default async function SearchPage({
   const [{ lang }, query] = await Promise.all([params, searchParams]);
   if (!hasLocale(lang)) notFound();
   const sort = first(query.sort);
+  const createMode = first(query.create) === "review" ? "review" : null;
   const allowedSorts = new Set<CatalogSearchFilters["sort"]>([
     "popular",
     "rating",
@@ -111,6 +112,7 @@ export default async function SearchPage({
         totalPages={result.totalPages}
         saved={{}}
         enabled={false}
+        createMode={createMode}
       />
     );
   }
@@ -147,6 +149,7 @@ export default async function SearchPage({
       totalPages={result.totalPages}
       saved={saved}
       enabled={Boolean(user)}
+      createMode={createMode}
     />
   );
 }

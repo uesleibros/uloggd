@@ -49,6 +49,7 @@ export function QuickGameCard({
   onRemove,
   onStateChange,
   spawndAvailable = false,
+  hrefSuffix = "",
 }: {
   game: {
     id: number;
@@ -57,6 +58,8 @@ export function QuickGameCard({
     coverUrl: string;
     releaseYear: number | null;
     genres: string[];
+    publishers?: string[];
+    developers?: string[];
   };
   initial: State;
   lang: UiLang;
@@ -67,6 +70,7 @@ export function QuickGameCard({
   onRemove?: () => void;
   onStateChange?: (state: NonNullable<State>) => void;
   spawndAvailable?: boolean;
+  hrefSuffix?: string;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
@@ -239,7 +243,7 @@ export function QuickGameCard({
         <img src={image} alt={`${t.coverOf} ${game.name}`} />
         <Link
           className="quick-game-link"
-          href={`/${lang}/game/${game.slug}`}
+          href={`/${lang}/game/${game.slug}${hrefSuffix}`}
           aria-label={`${t.open} ${game.name}`}
         />
         {rank && (
@@ -497,7 +501,7 @@ export function QuickGameCard({
           {meta ??
             [
               game.releaseYear,
-              game.publishers[0] ?? game.developers[0] ?? game.genres[0],
+              game.publishers?.[0] ?? game.developers?.[0] ?? game.genres[0],
             ]
               .filter(Boolean)
               .join(" · ")}

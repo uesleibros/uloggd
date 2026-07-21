@@ -23,6 +23,7 @@ import { SidebarCollapseButton } from "./sidebar-collapse-button";
 import { SmartHeader } from "./smart-header";
 import { NotificationCenter } from "./notifications/notification-center";
 import { NavMoreMenu } from "./nav-more-menu";
+import { QuickCreateAction } from "./quick-create-action";
 import { tri } from "@/lib/ui-text";
 
 const iconMap = {
@@ -159,6 +160,11 @@ export function PlatformNavigation({
               })}
               <NavMoreMenu items={moreItems} label={d.nav.more} />
             </nav>
+            <QuickCreateAction
+              lang={lang}
+              enabled={isAuthenticated && !pending}
+              requiresSignIn={d.actions.requiresSignIn}
+            />
             {/* Settings and moderation moved into the "More" menu above; a
                 signed-out visitor still gets the locked hint here. */}
             {!isAuthenticated && (
@@ -238,6 +244,12 @@ export function PlatformNavigation({
           />
         </div>
       </SmartHeader>
+      <QuickCreateAction
+        lang={lang}
+        enabled={isAuthenticated && !pending}
+        mobile
+        requiresSignIn={d.actions.requiresSignIn}
+      />
     </>
   );
 }

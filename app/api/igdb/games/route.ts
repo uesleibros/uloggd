@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: claimsData } = await supabase.auth.getClaims();
-    const viewerId = claimsData.claims?.sub ?? null;
+    const viewerId = claimsData?.claims?.sub ?? null;
     const requestedOwner = request.nextUrl.searchParams.get("coverOwner");
     const coverOwner =
       requestedOwner &&

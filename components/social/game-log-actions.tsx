@@ -55,6 +55,7 @@ export function GameLogActions({
   logCount,
   journeys = [],
   journeyOptions = [],
+  initialMode = null,
 }: {
   game: { id: number; slug: string; name: string; releaseYear: number | null };
   platforms: string[];
@@ -63,11 +64,12 @@ export function GameLogActions({
   logCount: number;
   journeys?: JourneySession[];
   journeyOptions?: JourneyOption[];
+  initialMode?: Mode | null;
 }) {
   const t = uiText(lang);
   const router = useRouter();
-  const [mode, setMode] = useState<Mode | null>(null);
-  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<Mode | null>(initialMode);
+  const [open, setOpen] = useState(Boolean(initialMode));
   const [pending, setPending] = useState(false);
   const today = new Date().toISOString().slice(0, 10);
   const [sessions, setSessions] = useState(journeys);
