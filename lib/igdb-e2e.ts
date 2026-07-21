@@ -55,6 +55,7 @@ const allGames: CatalogGame[] = Array.from({ length: 61 }, (_, index) => {
     genres: [adventure ? "Adventure" : "RPG"],
     platforms: [adventure ? "Nintendo Switch" : "PC (Microsoft Windows)"],
     developers: ["uloggd E2E"],
+    publishers: ["E2E Publisher"],
     themes: [adventure ? "Fantasy" : "Action"],
     modes: [number % 3 ? "Single player" : "Multiplayer"],
     typeName: "Main Game",

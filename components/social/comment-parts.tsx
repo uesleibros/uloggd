@@ -167,7 +167,11 @@ export function CommentArticle({
   actions?: ReactNode;
 }) {
   return (
-    <article id={`comment-${id}`} data-deleted={deleted || undefined}>
+    <article
+      id={`comment-${id}`}
+      data-deleted={deleted || undefined}
+      tabIndex={-1}
+    >
       {!deleted && (
         <CommentAvatar
           lang={lang}

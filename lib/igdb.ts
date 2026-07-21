@@ -101,6 +101,7 @@ export type Game = {
   genres: string[];
   platforms: string[];
   developers: string[];
+  publishers: string[];
 };
 
 export type CatalogOption = {
@@ -207,6 +208,10 @@ function normalize(game: IgdbGameResponse): Game {
     developers:
       game.involved_companies
         ?.filter((item) => item.developer && item.company?.name)
+        .map((item) => item.company!.name) ?? [],
+    publishers:
+      game.involved_companies
+        ?.filter((item) => item.publisher && item.company?.name)
         .map((item) => item.company!.name) ?? [],
   };
 }
@@ -618,7 +623,7 @@ export async function getPopularGames(): Promise<Game[]> {
   }
   return queryGames(
     `
-    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
+    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.company.name;
     where cover != null & total_rating_count > 500 & game_type = (0,8,9);
     sort total_rating_count desc;
     limit 16;
@@ -662,7 +667,7 @@ export async function getGamesByIds(ids: number[]): Promise<Game[]> {
       batches.map((batch) =>
         queryGames(
           `
-          fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
+          fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.company.name;
           where id = (${batch.join(",")});
           limit ${batch.length};
         `,
@@ -718,7 +723,7 @@ export async function getGamesBySlugs(slugs: string[]): Promise<Game[]> {
           `
     fields name,slug,summary,total_rating,total_rating_count,first_release_date,
       cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,
-      involved_companies.developer,involved_companies.company.name;
+      involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
     where slug = (${batch.map((slug) => `"${slug}"`).join(",")});
     limit ${batch.length};
   `,
@@ -1024,7 +1029,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
   const inFourMonths = now + 60 * 60 * 24 * 120;
   const twoYearsAgo = now - 60 * 60 * 24 * 365 * 2;
   const fields =
-    "name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name";
+    "name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.company.name";
 
   const [anticipated, upcoming, hiddenGems] = await Promise.all([
     queryGames(
@@ -1081,7 +1086,7 @@ export async function getGenreCollections(): Promise<GenreCollection[]> {
     genres.map((genre) =>
       queryGames(
         `
-        fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name;
+        fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.company.name;
         where cover != null & genres = (${genre.id}) & total_rating_count >= 40 & game_type = 0;
         sort total_rating_count desc;
         limit 40;

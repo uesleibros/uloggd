@@ -495,7 +495,12 @@ export function QuickGameCard({
       <p className="quick-card-meta">
         <span>
           {meta ??
-            [game.releaseYear, game.genres[0]].filter(Boolean).join(" · ")}
+            [
+              game.releaseYear,
+              game.publishers[0] ?? game.developers[0] ?? game.genres[0],
+            ]
+              .filter(Boolean)
+              .join(" · ")}
         </span>
         {state?.quick_rating ? (
           <strong>

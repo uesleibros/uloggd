@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { createClient } from "@/lib/supabase/client";
@@ -50,6 +51,7 @@ type Preferences = {
   list_likes_enabled: boolean;
   comments_enabled: boolean;
 };
+type CommentTarget = { ownerUsername: string; isReply: boolean };
 
 const defaultPreferences: Preferences = {
   follows_enabled: true,
@@ -71,9 +73,9 @@ export function NotificationCenter({
   const [view, setView] = useState<"inbox" | "preferences">("inbox");
   const [items, setItems] = useState<NotificationRow[]>([]);
   const [actors, setActors] = useState<Record<string, Actor>>({});
-  const [commentOwners, setCommentOwners] = useState<Record<string, string>>(
-    {},
-  );
+  const [commentTargets, setCommentTargets] = useState<
+    Record<string, CommentTarget>
+  >({});
   const [preferences, setPreferences] =
     useState<Preferences>(defaultPreferences);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
@@ -81,6 +83,7 @@ export function NotificationCenter({
   );
   const [saving, setSaving] = useState(false);
   const [detail, setDetail] = useState<NotificationRow | null>(null);
+  const router = useRouter();
 
   const load = useCallback(async () => {
     setStatus("loading");
@@ -116,13 +119,13 @@ export function NotificationCenter({
     const { data: comments } = commentIds.length
       ? await supabase
           .from("profile_comments")
-          .select("id,profile_id")
+          .select("id,profile_id,parent_id")
           .in("id", commentIds)
       : { data: [] };
     const ownerIds = (comments ?? []).map((comment) => comment.profile_id);
     const profileIds = [...new Set([...actorIds, ...ownerIds])];
     let nextActors: Record<string, Actor> = {};
-    let nextCommentOwners: Record<string, string> = {};
+    let nextCommentTargets: Record<string, CommentTarget> = {};
     if (profileIds.length) {
       const { data: profiles } = await supabase
         .from("profiles")
@@ -143,16 +146,26 @@ export function NotificationCenter({
       const usernames = new Map(
         (profiles ?? []).map((profile) => [profile.id, profile.username]),
       );
-      nextCommentOwners = Object.fromEntries(
+      nextCommentTargets = Object.fromEntries(
         (comments ?? []).flatMap((comment) => {
           const username = usernames.get(comment.profile_id);
-          return username ? [[comment.id, username]] : [];
+          return username
+            ? [
+                [
+                  comment.id,
+                  {
+                    ownerUsername: username,
+                    isReply: Boolean(comment.parent_id),
+                  },
+                ],
+              ]
+            : [];
         }),
       );
     }
     setItems(rows);
     setActors(nextActors);
-    setCommentOwners(nextCommentOwners);
+    setCommentTargets(nextCommentTargets);
     if (preferenceData) setPreferences(preferenceData as Preferences);
     setStatus("ready");
   }, [viewerId]);
@@ -207,6 +220,26 @@ export function NotificationCenter({
       .upsert({ profile_id: viewerId, ...next });
     if (error) setPreferences(previous);
     setSaving(false);
+  }
+
+  function openComment(targetId: string, href: string) {
+    setOpen(false);
+    const destination = new URL(href, window.location.origin);
+    const alreadyOnProfile = destination.pathname === window.location.pathname;
+    router.push(href, { scroll: false });
+    if (alreadyOnProfile) router.refresh();
+    let attempts = 0;
+    const reveal = () => {
+      const target = document.getElementById(`comment-${targetId}`);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        target.focus({ preventScroll: true });
+        return;
+      }
+      attempts += 1;
+      if (attempts < 40) window.setTimeout(reveal, 50);
+    };
+    window.setTimeout(reveal, 0);
   }
 
   return (
@@ -329,16 +362,16 @@ export function NotificationCenter({
                     const isCommentNotification =
                       item.kind === "profile_comment" ||
                       item.kind === "profile_comment_like";
-                    const commentOwner = item.target_id
-                      ? commentOwners[item.target_id]
+                    const commentTarget = item.target_id
+                      ? commentTargets[item.target_id]
                       : null;
                     const href =
                       item.kind === "follow"
                         ? actor?.username
                           ? `/${lang}/u/${actor.username}`
                           : `/${lang}`
-                        : isCommentNotification && commentOwner
-                          ? `/${lang}/u/${commentOwner}#comment-${item.target_id}`
+                        : isCommentNotification && commentTarget
+                          ? `/${lang}/u/${commentTarget.ownerUsername}#comment-${item.target_id}`
                           : isCommentNotification
                             ? `/${lang}`
                             : item.kind === "review_like"
@@ -391,7 +424,9 @@ export function NotificationCenter({
                                   : item.kind === "review_like"
                                     ? labels.reviewLike
                                     : item.kind === "profile_comment"
-                                      ? labels.profileComment
+                                      ? commentTarget?.isReply
+                                        ? labels.profileReply
+                                        : labels.profileComment
                                       : item.kind === "profile_comment_like"
                                         ? labels.profileCommentLike
                                         : labels.listLike}
@@ -425,6 +460,19 @@ export function NotificationCenter({
                         onClick={() => {
                           void markRead(item);
                           setDetail(item);
+                        }}
+                      >
+                        {content}
+                      </button>
+                    ) : isCommentNotification && item.target_id ? (
+                      <button
+                        type="button"
+                        key={item.id}
+                        className="notification-item"
+                        data-unread={!item.read_at || undefined}
+                        onClick={() => {
+                          void markRead(item);
+                          openComment(item.target_id!, href);
                         }}
                       >
                         {content}

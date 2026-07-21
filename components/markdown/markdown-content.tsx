@@ -287,6 +287,7 @@ type MarkdownGame = {
   genres: string[];
   platforms: string[];
   developers: string[];
+  publishers: string[];
 };
 
 const EMPTY_GAMES: Map<string, MarkdownGame | null> = new Map();
@@ -340,8 +341,8 @@ function MdGameCard({ slug, lang }: { slug: string; lang: UiLang }) {
   if (!ready) return <GameCardSkeleton variant="card" />;
   if (!game) return <GameCardError slug={slug} />;
   const meta = [
-    game.developers[0],
-    game.genres.slice(0, 2).join(" · ") || null,
+    game.publishers[0] ?? game.developers[0],
+    game.releaseYear,
   ].filter(Boolean) as string[];
   return (
     <span className="md-gc">
@@ -384,7 +385,9 @@ function MdGameMini({ slug, lang }: { slug: string; lang: UiLang }) {
       <span>
         <strong>{game.name}</strong>
         <small>
-          {[game.releaseYear, game.genres[0]].filter(Boolean).join(" • ")}
+          {[game.releaseYear, game.publishers[0] ?? game.developers[0]]
+            .filter(Boolean)
+            .join(" • ")}
         </small>
       </span>
     </Link>
