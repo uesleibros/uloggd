@@ -29,7 +29,7 @@ const themes: Array<{
     description: {
       "pt-BR": "Superfícies claras com contraste confortável.",
       en: "Light surfaces with comfortable contrast.",
-      es: "Light surfaces with comfortable contrast.",
+      es: "Superficies claras con contraste cómodo.",
     },
   },
   {
@@ -38,7 +38,7 @@ const themes: Array<{
     description: {
       "pt-BR": "Um meio-termo suave, inspirado no Ash.",
       en: "A softer middle ground inspired by Ash.",
-      es: "A softer middle ground inspired by Ash.",
+      es: "Un término medio suave, inspirado en Ash.",
     },
   },
   {
@@ -47,7 +47,7 @@ const themes: Array<{
     description: {
       "pt-BR": "A experiência clássica do uloggd.",
       en: "The classic uloggd experience.",
-      es: "The classic uloggd experience.",
+      es: "La experiencia clásica de uloggd.",
     },
   },
   {
@@ -56,7 +56,7 @@ const themes: Array<{
     description: {
       "pt-BR": "Pretos profundos para ambientes com pouca luz.",
       en: "Deep blacks for low-light environments.",
-      es: "Deep blacks for low-light environments.",
+      es: "Negros profundos para entornos con poca luz.",
     },
   },
 ];

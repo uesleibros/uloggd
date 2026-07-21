@@ -43,6 +43,7 @@ import {
   CircleHelp,
   Code,
   Columns2,
+  Contrast,
   Eye,
   EyeOff,
   FileCode2,
@@ -110,7 +111,8 @@ type Tool =
   | "mention"
   | "table"
   | "details"
-  | "lang";
+  | "lang"
+  | "theme";
 
 /** Kept on the bar itself: what someone reaches for while actually writing. */
 const toolGroups: Array<Array<[Tool, ComponentType<{ size?: number }>]>> = [
@@ -176,6 +178,7 @@ const insertGroups: Array<{
       ["spoiler", EyeOff],
       ["center", AlignCenter],
       ["lang", Languages],
+      ["theme", Contrast],
       ["desktop", Monitor],
       ["mobile", Smartphone],
     ],
@@ -623,6 +626,20 @@ const helpSections: Array<{
         demo: "",
       },
       {
+        syntax: "<dark>\n\ntexto\n\n</dark>",
+        pt: "Só aparece para quem está lendo em um tema escuro",
+        en: "Only shows for readers using a dark theme",
+        es: "Solo aparece para quien lee con un tema oscuro",
+        demo: "<dark>\n\nVocê está no tema escuro.\n\n</dark>\n<light>\n\nVocê está no tema claro.\n\n</light>",
+      },
+      {
+        syntax: "<light>\n\ntexto\n\n</light>",
+        pt: "Só aparece no tema claro. Dos quatro temas, só o Claro conta como claro: Cinza, Escuro e Ônix entram como escuros",
+        en: "Only shows on the light theme. Of the four themes only Light counts as light: Gray, Dark and Onyx all count as dark",
+        es: "Solo aparece en el tema claro. De los cuatro temas solo Claro cuenta como claro: Gris, Oscuro y Ónix cuentan como oscuros",
+        demo: "",
+      },
+      {
         syntax: "<desktop>\n\ntexto\n\n</desktop>",
         pt: "Só aparece em telas grandes",
         en: "Only shows on large screens",
@@ -714,6 +731,7 @@ export function MarkdownEditor({
     hr: tri(lang, "Separador", "Divider", "Separador"),
     alert: tri(lang, "Destaque", "Callout", "Destacado"),
     center: tri(lang, "Centralizar", "Center", "Centrar"),
+    theme: tri(lang, "Texto por tema", "Text per theme", "Texto por tema"),
     desktop: tri(lang, "Somente desktop", "Desktop only", "Solo escritorio"),
     mobile: tri(lang, "Somente mobile", "Mobile only", "Solo móvil"),
     mention: tri(lang, "Mencionar", "Mention", "Mencionar"),
@@ -899,6 +917,10 @@ export function MarkdownEditor({
             `:::info\n${tri(lang, "Texto do alerta", "Alert text", "Texto del aviso")}\n:::`,
           ),
         center: () => insertBlock(`<center>\n\n${text}\n\n</center>`),
+        theme: () =>
+          insertBlock(
+            `<dark>\n\n${tri(lang, "Aparece no tema escuro", "Shows on the dark theme", "Aparece en el tema oscuro")}\n\n</dark>\n\n<light>\n\n${tri(lang, "Aparece no tema claro", "Shows on the light theme", "Aparece en el tema claro")}\n\n</light>`,
+          ),
         desktop: () => insertBlock(`<desktop>\n\n${text}\n\n</desktop>`),
         mobile: () => insertBlock(`<mobile>\n\n${text}\n\n</mobile>`),
         mention: () => insertText("@", "", "username"),
@@ -1006,6 +1028,7 @@ export function MarkdownEditor({
                   [
                     "sidebyside",
                     Columns2,
+                    Contrast,
                     tri(lang, "Lado a lado", "Side by side", "Lado a lado"),
                   ],
                 ]

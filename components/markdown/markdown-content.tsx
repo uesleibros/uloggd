@@ -111,6 +111,8 @@ const sanitizeSchema = {
     "center",
     "desktop",
     "mobile",
+    "dark",
+    "light",
     "spoilerimg",
     "pt",
     "en",
@@ -133,6 +135,8 @@ const sanitizeSchema = {
     center: [],
     desktop: [],
     mobile: [],
+    dark: [],
+    light: [],
     pt: [],
     en: [],
     es: [],
@@ -600,6 +604,15 @@ export function MarkdownContent({
       ),
       mobile: ({ children }: { children?: ReactNode }) => (
         <div className="md-mobile-only">{children}</div>
+      ),
+      // Theme blocks are resolved in CSS, not here: the theme lives on the
+      // client and this renders on the server, so picking one at render time
+      // would bake whichever theme the server guessed into the HTML.
+      dark: ({ children }: { children?: ReactNode }) => (
+        <div className="md-dark-only">{children}</div>
+      ),
+      light: ({ children }: { children?: ReactNode }) => (
+        <div className="md-light-only">{children}</div>
       ),
       // Language blocks render only for the reader's current locale, so one
       // drawer can carry both versions of the text.

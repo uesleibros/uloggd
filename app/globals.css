@@ -5103,6 +5103,21 @@ html[data-sidebar-ready] .account-button > svg {
   }
 }
 
+/*
+ * Theme blocks. Of the four themes only "light" is light, so gray, dark and
+ * onyx all read as dark here. The dark side is the default so that a reader
+ * whose theme has not been applied yet still sees content instead of a gap.
+ */
+.md-light-only {
+  display: none;
+}
+:root[data-theme="light"] .md-dark-only {
+  display: none;
+}
+:root[data-theme="light"] .md-light-only {
+  display: block;
+}
+
 /* Semantic saved states shared by game actions and quick actions. */
 .game-action-panel > button[data-active] {
   color: var(--screen-white);
