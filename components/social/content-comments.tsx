@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
+  commentErrorMessage,
   buildCommentTree,
   CommentAvatar,
   CommentHeader,
@@ -107,21 +108,7 @@ export function ContentComments({
       },
     );
     if (createError) {
-      setError(
-        createError.message.includes("depth")
-          ? tri(
-              lang,
-              "Esta conversa atingiu o limite de respostas.",
-              "This conversation reached its reply limit.",
-              "Esta conversación alcanzó el límite de respuestas.",
-            )
-          : tri(
-              lang,
-              "Não foi possível comentar.",
-              "Could not comment.",
-              "No se pudo comentar.",
-            ),
-      );
+      setError(commentErrorMessage(createError.message, lang));
     } else {
       if (parentId) {
         setReplyTo(null);

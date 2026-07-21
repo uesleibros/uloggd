@@ -15,6 +15,55 @@ import { tri, type UiLang } from "@/lib/ui-text";
  * when the second one was written from scratch.
  */
 
+/**
+ * Every one of these rules has a reason the person can act on, so saying only
+ * "could not complete this action" turns a closed setting into what looks like
+ * a broken button.
+ */
+export function commentErrorMessage(message: string, lang: UiLang) {
+  if (message.includes("comments unavailable"))
+    return tri(
+      lang,
+      "Quem publicou limitou quem pode comentar aqui.",
+      "The author limited who can comment here.",
+      "Quien lo publicó limitó quién puede comentar aquí.",
+    );
+  if (message.includes("interaction unavailable"))
+    return tri(
+      lang,
+      "Vocês não podem interagir por causa de um bloqueio.",
+      "You cannot interact because of a block.",
+      "No pueden interactuar debido a un bloqueo.",
+    );
+  if (message.includes("rate") || message.includes("daily"))
+    return tri(
+      lang,
+      "Você comentou muitas vezes. Aguarde um pouco.",
+      "You are commenting too quickly. Please wait.",
+      "Estás comentando demasiado rápido. Espera un poco.",
+    );
+  if (message.includes("depth"))
+    return tri(
+      lang,
+      "Esta conversa atingiu o limite de respostas.",
+      "This conversation reached its reply limit.",
+      "Esta conversación alcanzó el límite de respuestas.",
+    );
+  if (message.includes("invalid comment"))
+    return tri(
+      lang,
+      "Este comentário tem caracteres não aceitos ou passa de 500.",
+      "This comment has unsupported characters or exceeds 500.",
+      "Este comentario tiene caracteres no admitidos o supera los 500.",
+    );
+  return tri(
+    lang,
+    "Não foi possível concluir esta ação.",
+    "Could not complete this action.",
+    "No se pudo completar esta acción.",
+  );
+}
+
 export function formatCommentTime(date: string, lang: UiLang) {
   const seconds = Math.max(
     1,

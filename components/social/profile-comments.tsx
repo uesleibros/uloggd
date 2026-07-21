@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
 import {
+  commentErrorMessage,
   CommentAvatar,
   CommentHeader,
   CommentLike,
@@ -142,29 +143,6 @@ export function ProfileComments({
     return () => window.clearTimeout(fallback);
   }, [awaitingCommentId]);
 
-  function actionError(message: string) {
-    return message.includes("rate")
-      ? tri(
-          lang,
-          "Você comentou muitas vezes. Aguarde um pouco.",
-          "You are commenting too quickly. Please wait.",
-          "Estás comentando demasiado rápido. Espera un poco.",
-        )
-      : message.includes("depth")
-        ? tri(
-            lang,
-            "Essa conversa atingiu o limite de respostas.",
-            "This conversation reached its reply limit.",
-            "Esta conversación alcanzó el límite de respuestas.",
-          )
-        : tri(
-            lang,
-            "Não foi possível concluir esta ação.",
-            "Could not complete this action.",
-            "No se pudo completar esta acción.",
-          );
-  }
-
   async function createComment(
     event: React.FormEvent,
     content: string,
@@ -193,7 +171,7 @@ export function ProfileComments({
         setReplyBody("");
         setRemovedReplyNotice(true);
         router.refresh();
-      } else setError(actionError(createError.message));
+      } else setError(commentErrorMessage(createError.message, lang));
       setPending(null);
     } else {
       if (parentId) {
@@ -216,7 +194,7 @@ export function ProfileComments({
       "update_profile_comment",
       { target_comment: commentId, comment_body: editBody },
     );
-    if (updateError) setError(actionError(updateError.message));
+    if (updateError) setError(commentErrorMessage(updateError.message, lang));
     else {
       setEditing(null);
       setEditBody("");
@@ -372,7 +350,7 @@ export function ProfileComments({
         ...value,
         [comment.id]: { ...current, pending: false },
       }));
-      setError(actionError(likeError.message));
+      setError(commentErrorMessage(likeError.message, lang));
       return;
     }
     const result = Array.isArray(data) ? data[0] : data;
