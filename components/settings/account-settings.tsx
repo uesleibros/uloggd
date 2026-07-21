@@ -24,6 +24,8 @@ import { uiText, type UiLang } from "@/lib/ui-text";
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   custom_cover_scope: "OWN" | "EVERYONE";
   profile_comment_scope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  content_comment_scope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  profile_visibility: "EVERYONE" | "FOLLOWERS";
   is_private: boolean;
   username_changed_at: string | null;
 };
@@ -230,6 +232,8 @@ export function AccountSettings({
         {tab === "privacy" && (
           <PrivacySettings
             initialScope={profile.profile_comment_scope}
+            initialContentScope={profile.content_comment_scope}
+            initialVisibility={profile.profile_visibility}
             initialPrivate={profile.is_private ?? false}
             initialRequests={followRequests}
             initialBlocked={blockedProfiles}

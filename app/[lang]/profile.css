@@ -1582,23 +1582,6 @@
   max-width: 1120px;
   margin-inline: auto;
 }
-.profile-subpage-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 40px;
-  margin-bottom: 18px;
-  color: var(--screen-muted);
-  font-size: 11px;
-  font-weight: 560;
-  transition:
-    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
-    color 140ms ease-out;
-}
-.profile-subpage-back:hover {
-  color: var(--screen-white);
-  transform: translateX(-2px);
-}
 .profile-subpage-header {
   max-width: 720px;
   margin-bottom: 24px;
@@ -1860,7 +1843,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .profile-stats > a,
-  .profile-subpage-back,
   .profile-connection-card > a,
   .profile-connection-arrow {
     transition-duration: 0.01ms;

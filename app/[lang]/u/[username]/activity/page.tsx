@@ -68,10 +68,7 @@ export default async function ProfileActivityPage({
 
   return (
     <main className="social-page profile-subpage">
-      <Link
-        className="profile-subpage-back"
-        href={`/${lang}/u/${profile.username}`}
-      >
+      <Link className="page-back-link" href={`/${lang}/u/${profile.username}`}>
         <ArrowLeft size={15} /> {t.backToProfile}
       </Link>
       <header className="profile-subpage-header">

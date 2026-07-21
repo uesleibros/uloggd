@@ -2,6 +2,7 @@
 
 import {
   Check,
+  Eye,
   LoaderCircle,
   LockKeyhole,
   MessageCircle,
@@ -10,9 +11,11 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { uiText } from "@/lib/ui-text";
 import type { UiLang } from "@/lib/ui-text";
 
 type Scope = "EVERYONE" | "FOLLOWERS" | "NOBODY";
+type Visibility = "EVERYONE" | "FOLLOWERS";
 type BlockedProfile = {
   id: string;
   username: string;
@@ -22,24 +25,65 @@ export type FollowRequest = BlockedProfile & { avatar_url: string | null };
 
 export function PrivacySettings({
   initialScope,
+  initialContentScope,
+  initialVisibility,
   initialPrivate,
   initialRequests,
   initialBlocked,
   lang,
 }: {
   initialScope: Scope;
+  initialContentScope: Scope;
+  initialVisibility: Visibility;
   initialPrivate: boolean;
   initialRequests: FollowRequest[];
   initialBlocked: BlockedProfile[];
   lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [scope, setScope] = useState(initialScope);
+  const [contentScope, setContentScope] = useState(initialContentScope);
+  const [visibility, setVisibility] = useState(initialVisibility);
   const [isPrivate, setIsPrivate] = useState(initialPrivate);
   const [requests, setRequests] = useState(initialRequests);
   const [blocked, setBlocked] = useState(initialBlocked);
   const [pending, setPending] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  async function updateContentScope(next: Scope) {
+    if (pending) return;
+    const previous = contentScope;
+    setContentScope(next);
+    setPending("contentScope");
+    setMessage(null);
+    const { error } = await createClient().rpc("set_privacy_scopes", {
+      comment_scope: next,
+      visibility: null,
+    });
+    if (error) {
+      setContentScope(previous);
+      setMessage(t.couldNotSave);
+    }
+    setPending(null);
+  }
+
+  async function updateVisibility(next: Visibility) {
+    if (pending) return;
+    const previous = visibility;
+    setVisibility(next);
+    setPending("visibility");
+    setMessage(null);
+    const { error } = await createClient().rpc("set_privacy_scopes", {
+      comment_scope: null,
+      visibility: next,
+    });
+    if (error) {
+      setVisibility(previous);
+      setMessage(t.couldNotSave);
+    }
+    setPending(null);
+  }
 
   async function updatePrivacy(next: boolean) {
     if (pending) return;
@@ -102,6 +146,34 @@ export function PrivacySettings({
     else
       setBlocked((current) => current.filter((item) => item.id !== profile.id));
     setPending(null);
+  }
+
+  function ScopePicker<T extends string>({
+    value,
+    options,
+    onPick,
+  }: {
+    value: T;
+    options: Array<[T, string]>;
+    onPick: (next: T) => void;
+  }) {
+    return (
+      <div className="privacy-scope-options" role="radiogroup">
+        {options.map(([option, label]) => (
+          <button
+            key={option}
+            type="button"
+            role="radio"
+            aria-checked={value === option}
+            disabled={Boolean(pending)}
+            onClick={() => onPick(option)}
+          >
+            <span>{label}</span>
+            <i aria-hidden />
+          </button>
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -219,33 +291,70 @@ export function PrivacySettings({
             </p>
           </div>
         </header>
-        <div className="privacy-scope-options" role="radiogroup">
-          {(
-            [
-              [
-                "FOLLOWERS",
-                pt ? "Pessoas que seguem você" : "People who follow you",
-              ],
-              [
-                "EVERYONE",
-                pt ? "Todas as pessoas com conta" : "Everyone with an account",
-              ],
-              ["NOBODY", pt ? "Ninguém" : "Nobody"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={scope === value}
-              disabled={Boolean(pending)}
-              onClick={() => void updateScope(value)}
-            >
-              <span>{label}</span>
-              <i aria-hidden />
-            </button>
-          ))}
-        </div>
+        <ScopePicker
+          value={scope}
+          onPick={(next) => void updateScope(next)}
+          options={[
+            ["FOLLOWERS", t.onlyFollowers],
+            ["EVERYONE", t.everyone],
+            ["NOBODY", t.nobody],
+          ]}
+        />
+      </section>
+
+      <section className="settings-security-card settings-privacy-card">
+        <header>
+          <span>
+            <MessageCircle size={20} />
+          </span>
+          <div>
+            <h2>
+              {pt
+                ? "Comentários em listas e avaliações"
+                : "Comments on lists and reviews"}
+            </h2>
+            <p>
+              {pt
+                ? "Vale para tudo que você publica: listas e avaliações. Você sempre poderá remover qualquer comentário."
+                : "Applies to everything you publish: lists and reviews. You can always remove any comment."}
+            </p>
+          </div>
+        </header>
+        <ScopePicker
+          value={contentScope}
+          onPick={(next) => void updateContentScope(next)}
+          options={[
+            ["EVERYONE", t.everyone],
+            ["FOLLOWERS", t.onlyFollowers],
+            ["NOBODY", t.nobody],
+          ]}
+        />
+      </section>
+
+      <section className="settings-security-card settings-privacy-card">
+        <header>
+          <span>
+            <Eye size={20} />
+          </span>
+          <div>
+            <h2>
+              {pt ? "Quem pode ver seu perfil" : "Who can see your profile"}
+            </h2>
+            <p>
+              {pt
+                ? "Restringir esconde biblioteca, listas e atividade de quem não segue você. Seu @ continua encontrável."
+                : "Restricting hides your library, lists and activity from people who do not follow you. Your handle stays findable."}
+            </p>
+          </div>
+        </header>
+        <ScopePicker
+          value={visibility}
+          onPick={(next) => void updateVisibility(next)}
+          options={[
+            ["EVERYONE", t.everyone],
+            ["FOLLOWERS", t.onlyFollowers],
+          ]}
+        />
       </section>
 
       <section className="settings-security-card settings-privacy-card">

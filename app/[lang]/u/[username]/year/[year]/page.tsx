@@ -160,10 +160,7 @@ export default async function YearWrappedPage({ params }: Props) {
 
   return (
     <main className="social-page profile-subpage year-wrapped">
-      <Link
-        className="profile-subpage-back"
-        href={`/${lang}/u/${profile.username}`}
-      >
+      <Link className="page-back-link" href={`/${lang}/u/${profile.username}`}>
         <ArrowLeft size={15} /> {pt ? "Voltar ao perfil" : "Back to profile"}
       </Link>
       <header className="profile-subpage-header">
