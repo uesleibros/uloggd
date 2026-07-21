@@ -1,9 +1,14 @@
 "use client";
 
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
+  Check,
   CornerDownRight,
+  Link2,
   LoaderCircle,
   MessageCircle,
+  MoreHorizontal,
+  Pencil,
   Send,
   Trash2,
 } from "lucide-react";
@@ -14,8 +19,8 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
   commentErrorMessage,
   buildCommentTree,
-  CommentAvatar,
-  CommentHeader,
+  CommentArticle,
+  CommentInlineForm,
   CommentLike,
   PendingComment,
 } from "./comment-parts";
@@ -27,6 +32,7 @@ export type ContentComment = {
   body: string;
   deleted_at: string | null;
   created_at: string;
+  updated_at: string;
   username: string;
   display_name: string | null;
   avatar_url: string | null;
@@ -55,6 +61,10 @@ export function ContentComments({
   const [body, setBody] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyBody, setReplyBody] = useState("");
+  const [editing, setEditing] = useState<string | null>(null);
+  const [editBody, setEditBody] = useState("");
+  const [armedDelete, setArmedDelete] = useState<string | null>(null);
+  const [copiedComment, setCopiedComment] = useState<string | null>(null);
   const [likes, setLikes] = useState<
     Record<string, { count: number; liked: boolean; pending: boolean }>
   >({});
@@ -119,8 +129,34 @@ export function ContentComments({
     setPending(null);
   }
 
+  async function update(id: string) {
+    if (!editBody.trim() || pending) return;
+    setPending(`edit-${id}`);
+    setError(null);
+    const { error: updateError } = await createClient().rpc(
+      "update_content_comment",
+      { target_comment: id, comment_body: editBody },
+    );
+    if (updateError) setError(commentErrorMessage(updateError.message, lang));
+    else {
+      setEditing(null);
+      setEditBody("");
+      await reload();
+    }
+    setPending(null);
+  }
+
   async function remove(id: string) {
     if (pending) return;
+    if (armedDelete !== id) {
+      setArmedDelete(id);
+      window.setTimeout(
+        () => setArmedDelete((current) => (current === id ? null : current)),
+        4000,
+      );
+      return;
+    }
+    setArmedDelete(null);
     setPending(`delete-${id}`);
     setError(null);
     const { error: deleteError } = await createClient().rpc(
@@ -130,6 +166,28 @@ export function ContentComments({
     if (deleteError) setError(t.couldNotRemove);
     else await reload();
     setPending(null);
+  }
+
+  async function copyCommentLink(id: string) {
+    try {
+      const url = new URL(window.location.href);
+      url.hash = `comment-${id}`;
+      await navigator.clipboard.writeText(url.toString());
+      setCopiedComment(id);
+      window.setTimeout(
+        () => setCopiedComment((current) => (current === id ? null : current)),
+        1800,
+      );
+    } catch {
+      setError(
+        tri(
+          lang,
+          "Não foi possível copiar o link.",
+          "Could not copy the link.",
+          "No se pudo copiar el enlace.",
+        ),
+      );
+    }
   }
 
   async function toggleLike(comment: Node) {
@@ -177,6 +235,11 @@ export function ContentComments({
     const deleted = Boolean(comment.deleted_at);
     const isAuthor = viewerId === comment.author_id;
     const canDelete = !deleted && (isAuthor || viewerId === ownerId);
+    const edited =
+      !deleted &&
+      new Date(comment.updated_at).getTime() -
+        new Date(comment.created_at).getTime() >
+        1000;
     const like = likes[comment.id] ?? {
       count: comment.like_count,
       liked: comment.liked_by_viewer,
@@ -189,39 +252,37 @@ export function ContentComments({
         data-depth={Math.min(depth, 3)}
         key={comment.id}
       >
-        <article
-          id={`comment-${comment.id}`}
-          data-deleted={deleted || undefined}
-        >
-          {!deleted && (
-            <CommentAvatar
-              lang={lang}
-              username={comment.username}
-              name={name}
-              avatarUrl={comment.avatar_url}
-            />
-          )}
-          <div>
-            {!deleted && (
-              <CommentHeader
+        <CommentArticle
+          id={comment.id}
+          deleted={deleted}
+          lang={lang}
+          username={comment.username}
+          name={name}
+          avatarUrl={comment.avatar_url}
+          createdAt={comment.created_at}
+          edited={edited}
+          badge={comment.verified ? <VerifiedMark size={13} /> : null}
+          body={comment.body}
+          editor={
+            editing === comment.id ? (
+              <CommentInlineForm
+                value={editBody}
                 lang={lang}
-                username={comment.username}
-                name={name}
-                createdAt={comment.created_at}
-                badge={comment.verified ? <VerifiedMark size={13} /> : null}
+                pending={Boolean(pending)}
+                submitLabel={t.save}
+                submitIcon={
+                  pending === `edit-${comment.id}` ? (
+                    <LoaderCircle className="spin" size={13} aria-hidden />
+                  ) : null
+                }
+                onChange={setEditBody}
+                onCancel={() => setEditing(null)}
+                onSubmit={() => void update(comment.id)}
               />
-            )}
-            <p data-deleted={deleted || undefined}>
-              {deleted
-                ? tri(
-                    lang,
-                    "Comentário removido",
-                    "Comment deleted",
-                    "Comentario eliminado",
-                  )
-                : comment.body}
-            </p>
-            {!deleted && (
+            ) : null
+          }
+          actions={
+            !deleted && editing !== comment.id ? (
               <footer className="profile-comment-actions">
                 <CommentLike
                   lang={lang}
@@ -243,10 +304,23 @@ export function ContentComments({
                     {t.reply}
                   </button>
                 )}
+                {isAuthor && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReplyTo(null);
+                      setEditBody(comment.body);
+                      setEditing(comment.id);
+                    }}
+                  >
+                    <Pencil size={13} /> {t.edit}
+                  </button>
+                )}
                 {canDelete && (
                   <button
                     type="button"
-                    data-danger
+                    disabled={Boolean(pending)}
+                    data-armed={armedDelete === comment.id || undefined}
                     onClick={() => void remove(comment.id)}
                   >
                     {pending === `delete-${comment.id}` ? (
@@ -254,51 +328,88 @@ export function ContentComments({
                     ) : (
                       <Trash2 size={13} />
                     )}
-                    {t.remove}
+                    {pending === `delete-${comment.id}`
+                      ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
+                      : armedDelete === comment.id
+                        ? tri(
+                            lang,
+                            "Excluir mesmo?",
+                            "Really delete?",
+                            "¿Eliminar de verdad?",
+                          )
+                        : t.delete}
                   </button>
                 )}
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger asChild>
+                    <button
+                      className="profile-comment-more"
+                      type="button"
+                      aria-label={tri(
+                        lang,
+                        "Mais ações do comentário",
+                        "More comment actions",
+                        "Más acciones del comentario",
+                      )}
+                    >
+                      <MoreHorizontal size={15} />
+                    </button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.Content
+                      className="profile-comment-action-menu"
+                      sideOffset={6}
+                      align="end"
+                    >
+                      <DropdownMenu.Item
+                        onSelect={() => void copyCommentLink(comment.id)}
+                      >
+                        {copiedComment === comment.id ? (
+                          <Check size={14} />
+                        ) : (
+                          <Link2 size={14} />
+                        )}
+                        {copiedComment === comment.id
+                          ? t.linkCopied
+                          : t.copyLink}
+                      </DropdownMenu.Item>
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Root>
               </footer>
-            )}
-          </div>
-        </article>
+            ) : null
+          }
+        />
 
         {replyTo === comment.id && (
-          <form
-            className="profile-comment-inline-form profile-reply-form"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void submit(replyBody, comment.id);
-            }}
-          >
-            <textarea
-              autoFocus
-              value={replyBody}
-              maxLength={500}
-              rows={2}
-              onChange={(event) => setReplyBody(event.target.value)}
-              placeholder={tri(
-                lang,
-                `Responder a ${name}…`,
-                `Reply to ${name}…`,
-                `Responder a ${name}…`,
-              )}
-            />
-            <footer>
-              <small>{replyBody.length}/500</small>
-              <button type="button" onClick={() => setReplyTo(null)}>
-                {t.cancel}
-              </button>
-              <button
-                type="submit"
-                disabled={!replyBody.trim() || Boolean(pending)}
-              >
-                {pending === `reply-${comment.id}` && (
-                  <LoaderCircle className="spin" size={13} aria-hidden />
-                )}
-                {t.reply}
-              </button>
-            </footer>
-          </form>
+          <CommentInlineForm
+            label={tri(
+              lang,
+              `Respondendo a ${name}`,
+              `Replying to ${name}`,
+              `Respondiendo a ${name}`,
+            )}
+            value={replyBody}
+            lang={lang}
+            pending={Boolean(pending)}
+            submitLabel={t.reply}
+            submitIcon={
+              pending === `reply-${comment.id}` ? (
+                <LoaderCircle className="spin" size={13} aria-hidden />
+              ) : (
+                <Send size={13} />
+              )
+            }
+            placeholder={tri(
+              lang,
+              "Escreva sua resposta…",
+              "Write your reply…",
+              "Escribe tu respuesta…",
+            )}
+            onChange={setReplyBody}
+            onCancel={() => setReplyTo(null)}
+            onSubmit={() => void submit(replyBody, comment.id)}
+          />
         )}
 
         {(comment.replies.length > 0 || pending === `reply-${comment.id}`) && (

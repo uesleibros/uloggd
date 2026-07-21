@@ -3,7 +3,7 @@
 import { Heart } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /**
  * The pieces every comment thread on the platform shares.
@@ -139,6 +139,127 @@ export function CommentHeader({
   );
 }
 
+export function CommentArticle({
+  id,
+  deleted,
+  lang,
+  username,
+  name,
+  avatarUrl,
+  createdAt,
+  edited = false,
+  badge,
+  body,
+  editor,
+  actions,
+}: {
+  id: string;
+  deleted: boolean;
+  lang: UiLang;
+  username: string;
+  name: string;
+  avatarUrl: string | null;
+  createdAt: string;
+  edited?: boolean;
+  badge?: ReactNode;
+  body: string;
+  editor?: ReactNode;
+  actions?: ReactNode;
+}) {
+  return (
+    <article id={`comment-${id}`} data-deleted={deleted || undefined}>
+      {!deleted && (
+        <CommentAvatar
+          lang={lang}
+          username={username}
+          name={name}
+          avatarUrl={avatarUrl}
+        />
+      )}
+      <div>
+        {!deleted && (
+          <CommentHeader
+            lang={lang}
+            username={username}
+            name={name}
+            createdAt={createdAt}
+            edited={edited}
+            badge={badge}
+          />
+        )}
+        {editor ?? (
+          <p data-deleted={deleted || undefined}>
+            {deleted
+              ? tri(
+                  lang,
+                  "Comentário removido",
+                  "Comment deleted",
+                  "Comentario eliminado",
+                )
+              : body}
+          </p>
+        )}
+        {!editor && actions}
+      </div>
+    </article>
+  );
+}
+
+export function CommentInlineForm({
+  label,
+  value,
+  lang,
+  pending,
+  submitLabel,
+  submitIcon,
+  placeholder,
+  onChange,
+  onCancel,
+  onSubmit,
+}: {
+  label?: string;
+  value: string;
+  lang: UiLang;
+  pending: boolean;
+  submitLabel: string;
+  submitIcon?: ReactNode;
+  placeholder?: string;
+  onChange: (value: string) => void;
+  onCancel: () => void;
+  onSubmit: () => void;
+}) {
+  const t = uiText(lang);
+  return (
+    <form
+      className="profile-comment-inline-form profile-reply-form"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+    >
+      {label && <label>{label}</label>}
+      <textarea
+        autoFocus
+        value={value}
+        maxLength={500}
+        rows={2}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <footer>
+        <small>{value.length}/500</small>
+        <button type="button" onClick={onCancel}>
+          {t.cancel}
+        </button>
+        <button type="submit" disabled={!value.trim() || pending}>
+          {submitIcon}
+          {submitLabel}
+        </button>
+      </footer>
+    </form>
+  );
+}
+
 /**
  * Interactive for anyone who may like, a plain count otherwise — including for
  * the author, who cannot like their own comment but should still see the total.
@@ -225,9 +346,14 @@ export function PendingComment({ lang }: { lang: UiLang }) {
   );
 }
 
-/** Flat rows become a tree, keeping arrival order within each level. */
+/** Flat rows become the same newest-thread/chronological-reply tree everywhere. */
 export function buildCommentTree<
-  T extends { id: string; parent_id: string | null },
+  T extends {
+    id: string;
+    parent_id: string | null;
+    created_at: string;
+    deleted_at: string | null;
+  },
 >(rows: T[]): Array<T & { replies: Array<T & { replies: unknown[] }> }> {
   type Node = T & { replies: Node[] };
   const nodes = new Map<string, Node>(
@@ -240,5 +366,14 @@ export function buildCommentTree<
     if (parent) parent.replies.push(node);
     else roots.push(node);
   }
-  return roots;
+  roots.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  for (const node of nodes.values())
+    node.replies.sort((a, b) => a.created_at.localeCompare(b.created_at));
+  function prune(items: Node[]): Node[] {
+    return items.flatMap((item) => {
+      const next = { ...item, replies: prune(item.replies) } as Node;
+      return next.deleted_at && next.replies.length === 0 ? [] : [next];
+    });
+  }
+  return prune(roots);
 }

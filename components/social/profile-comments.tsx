@@ -22,8 +22,9 @@ import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
 import {
   commentErrorMessage,
-  CommentAvatar,
-  CommentHeader,
+  buildCommentTree,
+  CommentArticle,
+  CommentInlineForm,
   CommentLike,
   PendingComment,
 } from "./comment-parts";
@@ -49,29 +50,6 @@ export type ProfileComment = {
 
 type CommentNode = ProfileComment & { replies: CommentNode[] };
 
-function buildCommentTree(comments: ProfileComment[]) {
-  const nodes = new Map<string, CommentNode>(
-    comments.map((comment) => [comment.id, { ...comment, replies: [] }]),
-  );
-  const roots: CommentNode[] = [];
-  for (const comment of comments) {
-    const node = nodes.get(comment.id)!;
-    const parent = comment.parent_id ? nodes.get(comment.parent_id) : null;
-    if (parent) parent.replies.push(node);
-    else roots.push(node);
-  }
-  roots.sort((a, b) => b.created_at.localeCompare(a.created_at));
-  for (const node of nodes.values())
-    node.replies.sort((a, b) => a.created_at.localeCompare(b.created_at));
-  function prune(items: CommentNode[]): CommentNode[] {
-    return items.flatMap((item) => {
-      const next = { ...item, replies: prune(item.replies) };
-      return next.deleted_at && next.replies.length === 0 ? [] : [next];
-    });
-  }
-  return prune(roots);
-}
-
 export function ProfileComments({
   profileId,
   viewerId,
@@ -90,7 +68,10 @@ export function ProfileComments({
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();
-  const tree = useMemo(() => buildCommentTree(comments), [comments]);
+  const tree = useMemo(
+    () => buildCommentTree(comments) as CommentNode[],
+    [comments],
+  );
   const [body, setBody] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyBody, setReplyBody] = useState("");
@@ -143,12 +124,7 @@ export function ProfileComments({
     return () => window.clearTimeout(fallback);
   }, [awaitingCommentId]);
 
-  async function createComment(
-    event: React.FormEvent,
-    content: string,
-    parentId: string | null,
-  ) {
-    event.preventDefault();
+  async function createComment(content: string, parentId: string | null) {
     if (!content.trim() || pending) return;
     const pendingKey = parentId ? `reply-${parentId}` : "create";
     setPending(pendingKey);
@@ -185,8 +161,7 @@ export function ProfileComments({
     }
   }
 
-  async function updateComment(event: React.FormEvent, commentId: string) {
-    event.preventDefault();
+  async function updateComment(commentId: string) {
     if (!editBody.trim() || pending) return;
     setPending(`edit-${commentId}`);
     setError(null);
@@ -386,74 +361,37 @@ export function ProfileComments({
         data-depth={Math.min(depth, 3)}
         key={comment.id}
       >
-        <article
-          id={`comment-${comment.id}`}
-          data-deleted={deleted || undefined}
-        >
-          {!deleted && (
-            <CommentAvatar
-              lang={lang}
-              username={comment.author.username}
-              name={name}
-              avatarUrl={comment.author.avatar_url}
-            />
-          )}
-          <div>
-            {!deleted && (
-              <CommentHeader
+        <CommentArticle
+          id={comment.id}
+          deleted={deleted}
+          lang={lang}
+          username={comment.author.username}
+          name={name}
+          avatarUrl={comment.author.avatar_url}
+          createdAt={comment.created_at}
+          edited={edited}
+          badge={comment.author.verified ? <VerifiedMark size={13} /> : null}
+          body={comment.body}
+          editor={
+            editing === comment.id ? (
+              <CommentInlineForm
+                value={editBody}
                 lang={lang}
-                username={comment.author.username}
-                name={name}
-                createdAt={comment.created_at}
-                edited={edited}
-                badge={
-                  comment.author.verified ? <VerifiedMark size={13} /> : null
+                pending={Boolean(pending)}
+                submitLabel={t.save}
+                submitIcon={
+                  pending === `edit-${comment.id}` ? (
+                    <LoaderCircle className="spin" size={13} aria-hidden />
+                  ) : null
                 }
+                onChange={setEditBody}
+                onCancel={() => setEditing(null)}
+                onSubmit={() => void updateComment(comment.id)}
               />
-            )}
-
-            {editing === comment.id ? (
-              <form
-                className="profile-comment-inline-form"
-                onSubmit={(event) => void updateComment(event, comment.id)}
-              >
-                <textarea
-                  autoFocus
-                  value={editBody}
-                  maxLength={500}
-                  rows={2}
-                  onChange={(event) => setEditBody(event.target.value)}
-                />
-                <footer>
-                  <small>{editBody.length}/500</small>
-                  <button type="button" onClick={() => setEditing(null)}>
-                    {t.cancel}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={!editBody.trim() || Boolean(pending)}
-                  >
-                    {pending === `edit-${comment.id}` && (
-                      <LoaderCircle className="spin" size={13} aria-hidden />
-                    )}
-                    {t.save}
-                  </button>
-                </footer>
-              </form>
-            ) : (
-              <p data-deleted={deleted || undefined}>
-                {deleted
-                  ? tri(
-                      lang,
-                      "Comentário removido",
-                      "Comment deleted",
-                      "Comentario eliminado",
-                    )
-                  : comment.body}
-              </p>
-            )}
-
-            {!editing && (
+            ) : null
+          }
+          actions={
+            !editing ? (
               <footer className="profile-comment-actions">
                 {!deleted && (
                   <CommentLike
@@ -572,57 +510,39 @@ export function ProfileComments({
                   </DropdownMenu.Root>
                 )}
               </footer>
+            ) : null
+          }
+        />
+        {replyTo === comment.id && (
+          <CommentInlineForm
+            label={tri(
+              lang,
+              `Respondendo a ${name}`,
+              `Replying to ${name}`,
+              `Respondiendo a ${name}`,
             )}
-
-            {replyTo === comment.id && (
-              <form
-                className="profile-comment-inline-form profile-reply-form"
-                onSubmit={(event) =>
-                  void createComment(event, replyBody, comment.id)
-                }
-              >
-                <label>
-                  {tri(
-                    lang,
-                    `Respondendo a ${name}`,
-                    `Replying to ${name}`,
-                    `Respondiendo a ${name}`,
-                  )}
-                </label>
-                <textarea
-                  autoFocus
-                  value={replyBody}
-                  maxLength={500}
-                  rows={2}
-                  placeholder={tri(
-                    lang,
-                    "Escreva sua resposta…",
-                    "Write your reply…",
-                    "Escribe tu respuesta…",
-                  )}
-                  onChange={(event) => setReplyBody(event.target.value)}
-                />
-                <footer>
-                  <small>{replyBody.length}/500</small>
-                  <button type="button" onClick={() => setReplyTo(null)}>
-                    {t.cancel}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={!replyBody.trim() || Boolean(pending)}
-                  >
-                    {pending === `reply-${comment.id}` ? (
-                      <LoaderCircle className="spin" size={13} aria-hidden />
-                    ) : (
-                      <Send size={13} />
-                    )}
-                    {t.reply}
-                  </button>
-                </footer>
-              </form>
+            value={replyBody}
+            lang={lang}
+            pending={Boolean(pending)}
+            submitLabel={t.reply}
+            submitIcon={
+              pending === `reply-${comment.id}` ? (
+                <LoaderCircle className="spin" size={13} aria-hidden />
+              ) : (
+                <Send size={13} />
+              )
+            }
+            placeholder={tri(
+              lang,
+              "Escreva sua resposta…",
+              "Write your reply…",
+              "Escribe tu respuesta…",
             )}
-          </div>
-        </article>
+            onChange={setReplyBody}
+            onCancel={() => setReplyTo(null)}
+            onSubmit={() => void createComment(replyBody, comment.id)}
+          />
+        )}
         {comment.replies.length > 0 && (
           <div className="profile-comment-replies">
             {comment.replies.map((reply) => renderComment(reply, depth + 1))}
@@ -665,7 +585,10 @@ export function ProfileComments({
       {canComment && (
         <form
           className="profile-comment-composer"
-          onSubmit={(event) => void createComment(event, body, null)}
+          onSubmit={(event) => {
+            event.preventDefault();
+            void createComment(body, null);
+          }}
         >
           <label htmlFor="profile-comment-body">
             {tri(
