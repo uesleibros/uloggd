@@ -33,12 +33,17 @@ export async function getActivity(
   supabase: SupabaseClient,
   options: {
     profileId?: string;
+    /** Several authors at once, for the following feed. */
+    profileIds?: string[];
     gameId?: number;
     limit?: number;
     viewerId?: string | null;
     before?: string;
   } = {},
 ) {
+  // An empty author list means "nobody I follow", which is not the same as
+  // "no filter" — without this the feed would show the whole platform.
+  if (options.profileIds && !options.profileIds.length) return [];
   const limit = options.limit ?? 30;
   let reviewsQuery = supabase
     .from("reviews")
@@ -57,6 +62,10 @@ export async function getActivity(
   if (options.profileId) {
     reviewsQuery = reviewsQuery.eq("profile_id", options.profileId);
     diaryQuery = diaryQuery.eq("profile_id", options.profileId);
+  }
+  if (options.profileIds) {
+    reviewsQuery = reviewsQuery.in("profile_id", options.profileIds);
+    diaryQuery = diaryQuery.in("profile_id", options.profileIds);
   }
   if (options.gameId) {
     reviewsQuery = reviewsQuery.eq("igdb_id", options.gameId);
@@ -232,5 +241,78 @@ export async function getActivity(
       ];
     })
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, limit);
+}
+
+/** Ids the viewer follows. The feed needs them; RLS handles the rest. */
+export async function getFollowingIds(
+  supabase: SupabaseClient,
+  viewerId: string,
+): Promise<string[]> {
+  const { data } = await supabase
+    .from("follows")
+    .select("following_id")
+    .eq("follower_id", viewerId)
+    .limit(1000);
+  return (data ?? []).map((row) => String(row.following_id));
+}
+
+export type SuggestedProfile = {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  verified: boolean;
+  reviewCount: number;
+};
+
+/**
+ * People worth following, for a feed that would otherwise be empty. Ranked by
+ * how much they have written, since an account with reviews is what makes a
+ * feed worth having. Excludes the viewer and anyone already followed; blocks
+ * and suspensions are filtered by the database.
+ */
+export async function getSuggestedProfiles(
+  supabase: SupabaseClient,
+  viewerId: string,
+  options: { exclude?: string[]; limit?: number } = {},
+): Promise<SuggestedProfile[]> {
+  const limit = options.limit ?? 8;
+  const skip = new Set([viewerId, ...(options.exclude ?? [])]);
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id,username,display_name,avatar_url,verified")
+    .not("username", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(60);
+
+  const candidates = (profiles ?? []).filter((row) => !skip.has(row.id));
+  if (!candidates.length) return [];
+
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("profile_id")
+    .in(
+      "profile_id",
+      candidates.map((row) => row.id),
+    )
+    .limit(1000);
+
+  const counts = new Map<string, number>();
+  for (const row of reviews ?? []) {
+    const id = String(row.profile_id);
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+
+  return candidates
+    .map((row) => ({
+      id: row.id,
+      username: String(row.username),
+      displayName: row.display_name,
+      avatarUrl: row.avatar_url,
+      verified: Boolean(row.verified),
+      reviewCount: counts.get(row.id) ?? 0,
+    }))
+    .sort((a, b) => b.reviewCount - a.reviewCount)
     .slice(0, limit);
 }

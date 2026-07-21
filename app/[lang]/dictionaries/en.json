@@ -5,7 +5,8 @@
     "reviews": "Reviews",
     "lists": "Lists",
     "profile": "Profile",
-    "settings": "Settings"
+    "settings": "Settings",
+    "feed": "Feed"
   },
   "actions": {
     "addGame": "Add game",

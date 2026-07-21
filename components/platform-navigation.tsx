@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Tooltip } from "@/components/ui/tooltip";
 import {
   HomeIcon,
+  Rss,
   LibraryBig,
   ListTree,
   LogIn,
@@ -25,6 +26,7 @@ import { NotificationCenter } from "./notifications/notification-center";
 
 const iconMap = {
   home: HomeIcon,
+  feed: Rss,
   library: LibraryBig,
   star: Star,
   user: UserRound,
@@ -50,6 +52,7 @@ export function PlatformNavigation({
   const isAuthenticated = Boolean(account);
   const nav = [
     ["home", d.nav.home, false],
+    ["feed", d.nav.feed, true],
     ["search", d.platform.search, false],
     ["library", d.nav.library, true],
     ["star", d.nav.reviews, true],
@@ -89,17 +92,19 @@ export function PlatformNavigation({
                 }
                 if (index !== 0) {
                   const href =
-                    icon === "search"
-                      ? `/${lang}/search`
-                      : icon === "library"
-                        ? `/${lang}/library`
-                        : icon === "star"
-                          ? `/${lang}/reviews`
-                          : icon === "list"
-                            ? `/${lang}/lists`
-                            : account?.username
-                              ? `/${lang}/u/${account.username}`
-                              : `/${lang}/onboarding/username`;
+                    icon === "feed"
+                      ? `/${lang}/feed`
+                      : icon === "search"
+                        ? `/${lang}/search`
+                        : icon === "library"
+                          ? `/${lang}/library`
+                          : icon === "star"
+                            ? `/${lang}/reviews`
+                            : icon === "list"
+                              ? `/${lang}/lists`
+                              : account?.username
+                                ? `/${lang}/u/${account.username}`
+                                : `/${lang}/onboarding/username`;
                   return (
                     <Tooltip key={label} label={label} side="right">
                       <ActiveLink href={href} aria-label={label}>
@@ -200,6 +205,7 @@ export function PlatformNavigation({
             menu: d.actions.menu,
             close: d.actions.close,
             home: d.nav.home,
+            feed: d.nav.feed,
             library: d.nav.library,
             reviews: d.nav.reviews,
             lists: d.nav.lists,

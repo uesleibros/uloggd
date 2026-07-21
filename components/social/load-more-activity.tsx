@@ -9,6 +9,7 @@ export function LoadMoreActivity({
   viewerId,
   profileId,
   gameId,
+  feed,
   kind,
   pageSize = 30,
   initialCursor,
@@ -18,6 +19,7 @@ export function LoadMoreActivity({
   viewerId?: string | null;
   profileId?: string;
   gameId?: number;
+  feed?: "following";
   kind?: "review" | "diary";
   pageSize?: number;
   initialCursor: string | null;
@@ -40,6 +42,7 @@ export function LoadMoreActivity({
     });
     if (profileId) search.set("profile", profileId);
     if (gameId) search.set("game", String(gameId));
+    if (feed) search.set("feed", feed);
     try {
       const response = await fetch(`/api/activity?${search}`);
       if (!response.ok) throw new Error(String(response.status));

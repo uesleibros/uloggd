@@ -5,7 +5,8 @@
     "reviews": "Avaliações",
     "lists": "Listas",
     "profile": "Perfil",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "feed": "Feed"
   },
   "actions": {
     "addGame": "Adicionar jogo",
