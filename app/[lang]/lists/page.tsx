@@ -1,9 +1,8 @@
 import { Gamepad2, Globe2, Layers3, List } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { CreateListForm } from "@/components/social/create-list-form";
-import { ListPreviewCard } from "@/components/social/list-preview-card";
-import { LoadMoreLists } from "@/components/social/load-more-lists";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
+import { ListsCollection } from "@/components/social/lists-collection";
 import { getListPreviews } from "@/lib/lists";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../dictionaries";
@@ -91,45 +90,14 @@ export default async function ListsPage({
       </WorkspaceHero>
       <div className="workspace-page-body">
         {lists.length ? (
-          <section className="lists-collection">
-            <header>
-              <div>
-                <h2>{pt ? "Todas as listas" : "All lists"}</h2>
-                <p>
-                  {pt
-                    ? "Atualizadas recentemente primeiro"
-                    : "Recently updated first"}
-                </p>
-              </div>
-              <span>{totalLists}</span>
-            </header>
-            <div className="lists-row">
-              {lists.map((list) => (
-                <ListPreviewCard
-                  key={list.id}
-                  list={{
-                    id: list.id,
-                    name: list.name,
-                    description: list.description,
-                    visibility: list.visibility,
-                    count: list.count,
-                  }}
-                  covers={list.covers}
-                  lang={lang}
-                  likes={list.likes}
-                />
-              ))}
-            </div>
-            <LoadMoreLists
-              lang={lang}
-              ownerId={user.id}
-              pageSize={PAGE_SIZE}
-              initialCursor={
-                lists.length ? lists[lists.length - 1].updatedAt : null
-              }
-              hasMore={lists.length === PAGE_SIZE}
-            />
-          </section>
+          <ListsCollection
+            lang={lang}
+            ownerId={user.id}
+            initial={lists}
+            total={totalLists}
+            pageSize={PAGE_SIZE}
+            hasMore={lists.length === PAGE_SIZE}
+          />
         ) : (
           <div className="social-empty lists-empty">
             <span>

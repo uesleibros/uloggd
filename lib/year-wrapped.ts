@@ -39,10 +39,7 @@ export async function getYearShareSummary(username: string, year: number) {
     profile,
     sessions: rows.length,
     games: new Set(rows.map((session) => session.igdb_id)).size,
-    minutes: rows.reduce(
-      (total, session) => total + (session.minutes ?? 0),
-      0,
-    ),
+    minutes: rows.reduce((total, session) => total + (session.minutes ?? 0), 0),
     reviews: reviewCount ?? 0,
   };
 }

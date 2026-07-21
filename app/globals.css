@@ -208,6 +208,14 @@ html {
   background: var(--console-black);
   -webkit-font-smoothing: antialiased;
   scrollbar-gutter: stable;
+  /* Anchor jumps and programmatic scrolls glide; route changes opt out with
+     behavior: "instant" so a new page never scrolls up while you watch. */
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 body {
   width: 100%;
@@ -16023,4 +16031,77 @@ adapted to the current uloggd surface system. */
 .form-loading-card > span:not(:first-child) {
   height: 42px;
   border-radius: 9px;
+}
+
+/* Search inside the lists collection, matching the header search behaviour. */
+.lists-collection > header {
+  flex-wrap: wrap;
+}
+.lists-search {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1 1 190px;
+  max-width: 300px;
+  min-height: 36px;
+  margin-left: auto;
+  padding: 0 4px 0 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  transition: border-color 150ms ease-out;
+}
+.lists-search:focus-within {
+  border-color: var(--brand-blurple);
+}
+.lists-search input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--screen-white);
+  font-size: 11.5px;
+}
+/* Keeps its slot when hidden so the counter beside it never shifts. */
+.lists-search-clear {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--screen-muted);
+}
+.lists-search-clear:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.lists-search-clear[data-hidden] {
+  visibility: hidden;
+  pointer-events: none;
+}
+.lists-search .spin {
+  color: var(--brand-blurple-bright);
+}
+/* While a search is in flight the current results dim instead of disappearing,
+   so the grid does not collapse and reflow on every keystroke. */
+.lists-row[aria-busy="true"] {
+  opacity: 0.55;
+  transition: opacity 140ms ease-out;
+}
+.lists-search-empty {
+  margin: 22px 0;
+  color: var(--screen-muted);
+  font-size: 12px;
+  text-align: center;
+}
+@media (max-width: 620px) {
+  .lists-search {
+    max-width: none;
+    order: 3;
+    flex-basis: 100%;
+    margin-left: 0;
+  }
 }

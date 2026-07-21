@@ -5,7 +5,8 @@ import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 
 const querySchema = z.object({
   profile: z.uuid(),
-  before: z.iso.datetime({ offset: true }),
+  before: z.iso.datetime({ offset: true }).optional(),
+  q: z.string().trim().max(60).optional(),
   limit: z.coerce.number().int().min(1).max(48).default(24),
 });
 
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
   );
   if (!parsed.success)
     return Response.json({ error: "invalid" }, { status: 400 });
-  const { profile, before, limit } = parsed.data;
+  const { profile, before, limit, q } = parsed.data;
   const [supabase, viewer] = await Promise.all([getSupabase(), getAuthUser()]);
   const lists = await getListPreviews(supabase, {
     ownerId: profile,
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
     publicOnly: viewer?.id !== profile,
     before,
     limit,
+    query: q || undefined,
   });
   return Response.json({ lists });
 }

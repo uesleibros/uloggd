@@ -16,6 +16,7 @@ export async function getListPreviews(
     publicOnly?: boolean;
     before?: string;
     limit?: number;
+    query?: string;
   },
 ): Promise<ListPreview[]> {
   const limit = options.limit ?? 24;
@@ -29,6 +30,12 @@ export async function getListPreviews(
     .limit(limit);
   if (options.publicOnly) query = query.eq("visibility", "PUBLIC");
   if (options.before) query = query.lt("updated_at", options.before);
+  if (options.query) {
+    // Escape the LIKE wildcards so a name containing % or _ still matches
+    // literally instead of turning into a pattern.
+    const safe = options.query.replace(/[%_\\]/g, (char) => `\\${char}`);
+    query = query.ilike("name", `%${safe}%`);
+  }
   const { data: lists } = await query;
   if (!lists?.length) return [];
 
