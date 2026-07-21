@@ -727,7 +727,11 @@ export default async function ProfilePage({ params }: Props) {
                 </div>
               </div>
               <div className="profile-drawer-body">
-                <MarkdownContent content={profile.drawer} lang={lang} />
+                <MarkdownContent
+                  content={profile.drawer}
+                  lang={lang}
+                  coverOwnerId={profile.id}
+                />
               </div>
             </section>
           )}

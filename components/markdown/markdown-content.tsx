@@ -594,13 +594,16 @@ function MdGameCarousel({
 export function MarkdownContent({
   content,
   lang,
+  coverOwnerId,
 }: {
   content: string;
   lang: UiLang;
+  coverOwnerId?: string;
 }) {
   const processed = useMemo(() => processContent(content), [content]);
   const slugs = useMemo(() => collectGameSlugs(content), [content]);
   const slugKey = slugs.join(",");
+  const requestKey = `${coverOwnerId ?? "viewer"}:${slugKey}`;
   // Keyed by the slug list so a content change resets to loading without an
   // extra render pass.
   const [resolved, setResolved] = useState<{
@@ -609,15 +612,17 @@ export function MarkdownContent({
   }>({ key: "", bySlug: EMPTY_GAMES });
   const games = useMemo(() => {
     if (!slugKey) return { bySlug: EMPTY_GAMES, ready: true };
-    if (resolved.key === slugKey)
+    if (resolved.key === requestKey)
       return { bySlug: resolved.bySlug, ready: true };
     return { bySlug: EMPTY_GAMES, ready: false };
-  }, [slugKey, resolved]);
+  }, [requestKey, resolved, slugKey]);
 
   useEffect(() => {
     if (!slugKey) return;
     let active = true;
-    fetch(`/api/igdb/games?slugs=${encodeURIComponent(slugKey)}`)
+    const params = new URLSearchParams({ slugs: slugKey });
+    if (coverOwnerId) params.set("coverOwner", coverOwnerId);
+    fetch(`/api/igdb/games?${params.toString()}`)
       .then((response) => (response.ok ? response.json() : { results: [] }))
       .then((payload: { results?: MarkdownGame[] }) => {
         if (!active) return;
@@ -625,15 +630,15 @@ export function MarkdownContent({
           slugKey.split(",").map((slug) => [slug, null]),
         );
         for (const game of payload.results ?? []) bySlug.set(game.slug, game);
-        setResolved({ key: slugKey, bySlug });
+        setResolved({ key: requestKey, bySlug });
       })
       .catch(() => {
-        if (active) setResolved({ key: slugKey, bySlug: EMPTY_GAMES });
+        if (active) setResolved({ key: requestKey, bySlug: EMPTY_GAMES });
       });
     return () => {
       active = false;
     };
-  }, [slugKey]);
+  }, [coverOwnerId, requestKey, slugKey]);
 
   const components = useMemo(() => {
     const custom = {
