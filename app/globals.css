@@ -164,11 +164,10 @@
   --header-glass-base: rgb(8 8 10 / 84%);
 }
 
-/* Artwork stages remain cinematic in every preference; the surrounding UI themes. */
-.featured-game,
-.game-stage,
-.library-hero,
-.workspace-hero,
+/* A fullscreen image viewer stays dark whatever the theme, the way any photo
+   viewer does — the artwork is the content there. The page-level artwork
+   stages used to be pinned dark alongside it, which left the whole game page
+   dark for someone reading in the light theme. */
 .media-lightbox {
   --console-black: #0b0a0d;
   --console-canvas: #0f0e11;
@@ -1839,7 +1838,7 @@ html[data-sidebar-ready] .account-button > svg {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  color: #c6c1ca;
+  color: var(--screen-dim);
   font-size: 11px;
 }
 .featured-meta > span {
@@ -1850,7 +1849,7 @@ html[data-sidebar-ready] .account-button > svg {
 .featured-meta > span + span::before {
   content: "·";
   margin-right: 4px;
-  color: #5e5963;
+  color: var(--screen-muted);
 }
 .featured-meta svg {
   color: var(--achievement-gold);
@@ -1860,7 +1859,7 @@ html[data-sidebar-ready] .account-button > svg {
   max-width: 520px;
   margin: 16px 0 0;
   overflow: hidden;
-  color: #aaa4ae;
+  color: var(--screen-muted);
   font-size: 13px;
   line-height: 1.6;
   text-wrap: pretty;
@@ -1881,8 +1880,8 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 0 15px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
-  background: rgb(28 26 32 / 82%);
-  color: #f2f3f7;
+  background: color-mix(in srgb, var(--console-panel) 88%, transparent);
+  color: var(--screen-white);
   font-size: 11px;
   font-weight: 620;
   backdrop-filter: blur(10px);
@@ -1891,7 +1890,7 @@ html[data-sidebar-ready] .account-button > svg {
     transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .featured-actions a:first-child {
-  border-color: rgb(255 255 255 / 80%);
+  border-color: var(--screen-white);
   background: var(--screen-white);
   color: var(--console-black);
 }
@@ -1899,7 +1898,7 @@ html[data-sidebar-ready] .account-button > svg {
   background: var(--console-hover);
 }
 .featured-actions a:first-child:hover {
-  background: #dedbe2;
+  background: var(--screen-dim);
 }
 .featured-actions a:active {
   transform: scale(0.97);
@@ -7508,14 +7507,14 @@ catalog modules second. */
   background:
     linear-gradient(
       90deg,
-      rgb(8 8 10 / 94%) 0%,
-      rgb(8 8 10 / 78%) 48%,
-      rgb(8 8 10 / 84%) 100%
+      color-mix(in srgb, var(--console-canvas) 94%, transparent) 0%,
+      color-mix(in srgb, var(--console-canvas) 78%, transparent) 48%,
+      color-mix(in srgb, var(--console-canvas) 84%, transparent) 100%
     ),
     linear-gradient(
       0deg,
       var(--console-panel) 0%,
-      rgb(12 11 14 / 68%) 36%,
+      color-mix(in srgb, var(--console-canvas) 68%, transparent) 36%,
       transparent 78%
     );
 }
@@ -7595,7 +7594,7 @@ catalog modules second. */
 
 .game-stage .game-action-panel > button,
 .game-stage .game-status-button {
-  background: rgb(12 12 15 / 76%);
+  background: color-mix(in srgb, var(--console-panel) 86%, transparent);
   backdrop-filter: blur(10px);
 }
 
@@ -7644,9 +7643,9 @@ catalog modules second. */
 
 .game-stage-rail .game-score-line,
 .game-stage-rail .game-time-panel {
-  border: 1px solid rgb(255 255 255 / 8%);
+  border: 1px solid var(--shell-line);
   border-radius: 11px;
-  background: rgb(12 12 15 / 74%);
+  background: color-mix(in srgb, var(--console-panel) 84%, transparent);
   backdrop-filter: blur(12px);
 }
 
@@ -8501,10 +8500,14 @@ a,
       linear-gradient(
         0deg,
         var(--console-panel) 12%,
-        rgb(11 11 13 / 42%) 76%,
-        rgb(11 11 13 / 18%)
+        color-mix(in srgb, var(--console-canvas) 42%, transparent) 76%,
+        color-mix(in srgb, var(--console-canvas) 18%, transparent)
       ),
-      linear-gradient(90deg, rgb(11 11 13 / 52%), transparent);
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--console-canvas) 52%, transparent),
+        transparent
+      );
   }
 
   .game-stage-inner {
@@ -11896,7 +11899,7 @@ html
   color: var(--screen-white);
   font-size: 20px;
   font-weight: 680;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
+  box-shadow: inset 0 0 0 1px var(--shell-line);
 }
 
 .workspace-hero-avatar img {
@@ -11964,7 +11967,7 @@ html
   overflow: hidden;
   border: 1px solid var(--shell-line-strong);
   border-radius: 11px;
-  background: rgb(12 11 14 / 72%);
+  background: color-mix(in srgb, var(--console-panel) 82%, transparent);
   backdrop-filter: blur(12px);
 }
 
@@ -12946,7 +12949,7 @@ and route recovery. */
   color: var(--screen-white);
   font-size: 20px;
   font-weight: 680;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
+  box-shadow: inset 0 0 0 1px var(--shell-line);
 }
 .library-owner-avatar img {
   object-fit: cover;
@@ -12986,7 +12989,7 @@ and route recovery. */
   overflow: hidden;
   border: 1px solid var(--shell-line-strong);
   border-radius: 10px;
-  background: rgb(12 11 14 / 72%);
+  background: color-mix(in srgb, var(--console-panel) 82%, transparent);
   backdrop-filter: blur(12px);
 }
 .library-hero-stats > div {
