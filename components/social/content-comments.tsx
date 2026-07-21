@@ -1,12 +1,18 @@
 "use client";
 
-import { LoaderCircle, MessageSquare, Reply, Trash2 } from "lucide-react";
+import { CornerDownRight, LoaderCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
-import { LikeButton } from "./like-button";
 import { uiText } from "@/lib/ui-text";
+import {
+  buildCommentTree,
+  CommentAvatar,
+  CommentHeader,
+  CommentLike,
+  PendingComment,
+} from "./comment-parts";
 
 export type ContentComment = {
   id: string;
@@ -24,20 +30,6 @@ export type ContentComment = {
 };
 
 type Node = ContentComment & { replies: Node[] };
-
-/** Flat rows from the RPC become a tree, preserving arrival order per level. */
-function toTree(rows: ContentComment[]): Node[] {
-  const nodes = new Map<string, Node>();
-  for (const row of rows) nodes.set(row.id, { ...row, replies: [] });
-  const roots: Node[] = [];
-  for (const row of rows) {
-    const node = nodes.get(row.id)!;
-    const parent = row.parent_id ? nodes.get(row.parent_id) : null;
-    if (parent) parent.replies.push(node);
-    else roots.push(node);
-  }
-  return roots;
-}
 
 export function ContentComments({
   contentType,
@@ -58,6 +50,9 @@ export function ContentComments({
   const [body, setBody] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyBody, setReplyBody] = useState("");
+  const [likes, setLikes] = useState<
+    Record<string, { count: number; liked: boolean; pending: boolean }>
+  >({});
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,11 +65,10 @@ export function ContentComments({
     return (data ?? []) as ContentComment[];
   }, [contentType, contentId]);
 
-  // Reloads after writing, so a reply that the database rejected never shows
-  // up locally as if it had been saved.
-  const load = useCallback(async () => {
+  const reload = useCallback(async () => {
     try {
       setRows(await fetchRows());
+      setLikes({});
     } catch {
       setError(pt ? "Não foi possível carregar." : "Could not load.");
     }
@@ -124,7 +118,7 @@ export function ContentComments({
         setReplyTo(null);
         setReplyBody("");
       } else setBody("");
-      await load();
+      await reload();
     }
     setPending(null);
   }
@@ -139,111 +133,155 @@ export function ContentComments({
     );
     if (deleteError)
       setError(pt ? "Não foi possível remover." : "Could not remove.");
-    else await load();
+    else await reload();
     setPending(null);
+  }
+
+  async function toggleLike(comment: Node) {
+    const current = likes[comment.id] ?? {
+      count: comment.like_count,
+      liked: comment.liked_by_viewer,
+      pending: false,
+    };
+    if (current.pending || !viewerId) return;
+    const next = !current.liked;
+    // Optimistic, reverted below if the write fails.
+    setLikes((state) => ({
+      ...state,
+      [comment.id]: {
+        count: current.count + (next ? 1 : -1),
+        liked: next,
+        pending: true,
+      },
+    }));
+    const client = createClient();
+    const { error: likeError } = next
+      ? await client
+          .from("content_likes")
+          .insert({ content_type: "content_comment", content_id: comment.id })
+      : await client
+          .from("content_likes")
+          .delete()
+          .eq("content_type", "content_comment")
+          .eq("content_id", comment.id)
+          .eq("profile_id", viewerId);
+    setLikes((state) => ({
+      ...state,
+      [comment.id]: likeError
+        ? { ...current, pending: false }
+        : {
+            count: current.count + (next ? 1 : -1),
+            liked: next,
+            pending: false,
+          },
+    }));
   }
 
   function renderComment(comment: Node, depth = 0): React.ReactNode {
     const name = comment.display_name || `@${comment.username}`;
     const deleted = Boolean(comment.deleted_at);
-    const canDelete =
-      !deleted && (viewerId === comment.author_id || viewerId === ownerId);
+    const isAuthor = viewerId === comment.author_id;
+    const canDelete = !deleted && (isAuthor || viewerId === ownerId);
+    const like = likes[comment.id] ?? {
+      count: comment.like_count,
+      liked: comment.liked_by_viewer,
+      pending: false,
+    };
+
     return (
       <div
         className="profile-comment-thread"
         data-depth={Math.min(depth, 3)}
         key={comment.id}
       >
-        <article data-deleted={deleted || undefined}>
+        <article
+          id={`comment-${comment.id}`}
+          data-deleted={deleted || undefined}
+        >
           {!deleted && (
-            <Link
-              className="profile-comment-avatar"
-              href={`/${lang}/u/${comment.username}`}
-              aria-label={name}
-            >
-              {comment.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={comment.avatar_url} alt="" />
-              ) : (
-                name.slice(0, 1).toUpperCase()
-              )}
-            </Link>
+            <CommentAvatar
+              lang={lang}
+              username={comment.username}
+              name={name}
+              avatarUrl={comment.avatar_url}
+            />
           )}
           <div>
-            {deleted ? (
-              <p>{pt ? "Comentário removido" : "Comment removed"}</p>
-            ) : (
-              <>
-                <header>
-                  <Link href={`/${lang}/u/${comment.username}`}>
-                    {name}
-                    {comment.verified && <VerifiedMark size={13} />}
-                  </Link>
-                  <time dateTime={comment.created_at}>
-                    {new Intl.DateTimeFormat(lang, {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    }).format(new Date(comment.created_at))}
-                  </time>
-                </header>
-                <p>{comment.body}</p>
-                <footer>
-                  <LikeButton
-                    lang={lang}
-                    contentType="content_comment"
-                    contentId={comment.id}
-                    count={comment.like_count}
-                    liked={comment.liked_by_viewer}
-                    canLike={Boolean(viewerId)}
-                  />
-                  {viewerId && depth < 2 && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setReplyTo(replyTo === comment.id ? null : comment.id)
-                      }
-                    >
-                      <Reply size={13} />
-                      {pt ? "Responder" : "Reply"}
-                    </button>
-                  )}
-                  {canDelete && (
-                    <button
-                      type="button"
-                      data-danger
-                      onClick={() => void remove(comment.id)}
-                    >
-                      {pending === `delete-${comment.id}` ? (
-                        <LoaderCircle className="spin" size={13} />
-                      ) : (
-                        <Trash2 size={13} />
-                      )}
-                      {t.remove}
-                    </button>
-                  )}
-                </footer>
-              </>
+            {!deleted && (
+              <CommentHeader
+                lang={lang}
+                username={comment.username}
+                name={name}
+                createdAt={comment.created_at}
+                badge={comment.verified ? <VerifiedMark size={13} /> : null}
+              />
+            )}
+            <p data-deleted={deleted || undefined}>
+              {deleted
+                ? pt
+                  ? "Comentário removido"
+                  : "Comment deleted"
+                : comment.body}
+            </p>
+            {!deleted && (
+              <footer className="profile-comment-actions">
+                <CommentLike
+                  lang={lang}
+                  count={like.count}
+                  liked={like.liked}
+                  canLike={Boolean(viewerId) && !isAuthor}
+                  pending={like.pending}
+                  onToggle={() => void toggleLike(comment)}
+                />
+                {viewerId && depth < 2 && (
+                  <button
+                    className="profile-comment-reply-action"
+                    type="button"
+                    onClick={() =>
+                      setReplyTo(replyTo === comment.id ? null : comment.id)
+                    }
+                  >
+                    <CornerDownRight size={13} />
+                    {pt ? "Responder" : "Reply"}
+                  </button>
+                )}
+                {canDelete && (
+                  <button
+                    type="button"
+                    data-danger
+                    onClick={() => void remove(comment.id)}
+                  >
+                    {pending === `delete-${comment.id}` ? (
+                      <LoaderCircle className="spin" size={13} aria-hidden />
+                    ) : (
+                      <Trash2 size={13} />
+                    )}
+                    {t.remove}
+                  </button>
+                )}
+              </footer>
             )}
           </div>
         </article>
 
         {replyTo === comment.id && (
           <form
-            className="profile-comment-inline-form"
+            className="profile-comment-inline-form profile-reply-form"
             onSubmit={(event) => {
               event.preventDefault();
               void submit(replyBody, comment.id);
             }}
           >
             <textarea
+              autoFocus
               value={replyBody}
-              onChange={(event) => setReplyBody(event.target.value)}
               maxLength={500}
               rows={2}
-              autoFocus
+              onChange={(event) => setReplyBody(event.target.value)}
               placeholder={pt ? `Responder a ${name}…` : `Reply to ${name}…`}
             />
-            <div>
+            <footer>
+              <small>{replyBody.length}/500</small>
               <button type="button" onClick={() => setReplyTo(null)}>
                 {t.cancel}
               </button>
@@ -252,24 +290,27 @@ export function ContentComments({
                 disabled={!replyBody.trim() || Boolean(pending)}
               >
                 {pending === `reply-${comment.id}` && (
-                  <LoaderCircle className="spin" size={13} />
+                  <LoaderCircle className="spin" size={13} aria-hidden />
                 )}
                 {pt ? "Responder" : "Reply"}
               </button>
-            </div>
+            </footer>
           </form>
         )}
 
-        {comment.replies.length > 0 && (
+        {(comment.replies.length > 0 || pending === `reply-${comment.id}`) && (
           <div className="profile-comment-replies">
             {comment.replies.map((reply) => renderComment(reply, depth + 1))}
+            {pending === `reply-${comment.id}` && (
+              <PendingComment lang={lang} />
+            )}
           </div>
         )}
       </div>
     );
   }
 
-  const tree = rows ? toTree(rows) : [];
+  const tree = rows ? (buildCommentTree(rows) as Node[]) : [];
   const total = rows?.filter((row) => !row.deleted_at).length ?? 0;
 
   return (
@@ -314,15 +355,15 @@ export function ContentComments({
             rows={3}
             placeholder={pt ? "Escreva um comentário…" : "Write a comment…"}
           />
-          <div>
-            <span>{body.length}/500</span>
+          <footer>
+            <small>{body.length}/500</small>
             <button type="submit" disabled={!body.trim() || Boolean(pending)}>
               {pending === "create" && (
-                <LoaderCircle className="spin" size={14} />
+                <LoaderCircle className="spin" size={14} aria-hidden />
               )}
               {pt ? "Comentar" : "Comment"}
             </button>
-          </div>
+          </footer>
         </form>
       ) : (
         <p className="content-comments-signed-out">
@@ -339,18 +380,17 @@ export function ContentComments({
       )}
 
       {rows === null ? (
-        <div className="content-comments-loading" aria-busy="true">
-          {Array.from({ length: 2 }, (_, index) => (
-            <span className="skeleton-block" key={index} />
-          ))}
+        <div className="profile-comment-list">
+          <PendingComment lang={lang} />
+          <PendingComment lang={lang} />
         </div>
       ) : tree.length ? (
         <div className="profile-comment-list">
           {tree.map((comment) => renderComment(comment))}
+          {pending === "create" && <PendingComment lang={lang} />}
         </div>
       ) : (
         <div className="content-comments-empty">
-          <MessageSquare size={20} aria-hidden />
           {pt
             ? "Seja a primeira pessoa a comentar."
             : "Be the first to comment."}

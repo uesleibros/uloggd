@@ -12,15 +12,19 @@ import {
   MoreHorizontal,
   Pencil,
   Send,
-  Heart,
   Trash2,
   UserRoundX,
   X,
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import {
+  CommentAvatar,
+  CommentHeader,
+  CommentLike,
+  PendingComment,
+} from "./comment-parts";
 import { uiText } from "@/lib/ui-text";
 
 export type ProfileComment = {
@@ -41,43 +45,6 @@ export type ProfileComment = {
 };
 
 type CommentNode = ProfileComment & { replies: CommentNode[] };
-
-function formatCommentTime(date: string, lang: "pt-BR" | "en") {
-  const seconds = Math.max(
-    1,
-    Math.floor((Date.now() - new Date(date).getTime()) / 1000),
-  );
-  const formatter = new Intl.RelativeTimeFormat(lang, { numeric: "auto" });
-  if (seconds < 60) return formatter.format(-seconds, "second");
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return formatter.format(-minutes, "minute");
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return formatter.format(-hours, "hour");
-  const days = Math.floor(hours / 24);
-  if (days < 30) return formatter.format(-days, "day");
-  return new Intl.DateTimeFormat(lang, { dateStyle: "medium" }).format(
-    new Date(date),
-  );
-}
-
-function PendingComment({ lang }: { lang: "pt-BR" | "en" }) {
-  return (
-    <article
-      className="profile-comment-pending"
-      aria-label={
-        lang === "pt-BR" ? "Publicando comentário" : "Posting comment"
-      }
-      aria-busy="true"
-    >
-      <span className="skeleton-block" />
-      <div>
-        <i className="skeleton-block" />
-        <i className="skeleton-block" />
-        <i className="skeleton-block" />
-      </div>
-    </article>
-  );
-}
 
 function buildCommentTree(comments: ProfileComment[]) {
   const nodes = new Map<string, CommentNode>(
@@ -415,33 +382,22 @@ export function ProfileComments({
           data-deleted={deleted || undefined}
         >
           {!deleted && (
-            <Link
-              className="profile-comment-avatar"
-              href={`/${lang}/u/${comment.author.username}`}
-              aria-label={name}
-            >
-              {comment.author.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={comment.author.avatar_url} alt="" />
-              ) : (
-                name.slice(0, 1).toUpperCase()
-              )}
-            </Link>
+            <CommentAvatar
+              lang={lang}
+              username={comment.author.username}
+              name={name}
+              avatarUrl={comment.author.avatar_url}
+            />
           )}
           <div>
             {!deleted && (
-              <header>
-                <Link href={`/${lang}/u/${comment.author.username}`}>
-                  {name}
-                </Link>
-                <span>
-                  <b aria-hidden>·</b>
-                  <time dateTime={comment.created_at}>
-                    {formatCommentTime(comment.created_at, lang)}
-                  </time>
-                  {edited && <i>{pt ? "editado" : "edited"}</i>}
-                </span>
-              </header>
+              <CommentHeader
+                lang={lang}
+                username={comment.author.username}
+                name={name}
+                createdAt={comment.created_at}
+                edited={edited}
+              />
             )}
 
             {editing === comment.id ? (
@@ -484,51 +440,19 @@ export function ProfileComments({
 
             {!editing && (
               <footer className="profile-comment-actions">
-                {!deleted &&
-                  (viewerId && viewerId !== comment.author_id ? (
-                    <button
-                      className="profile-comment-like-action"
-                      type="button"
-                      aria-pressed={commentLike.liked}
-                      data-liked={commentLike.liked || undefined}
-                      disabled={commentLike.pending}
-                      onClick={() => void toggleLike(comment)}
-                      aria-label={
-                        commentLike.liked
-                          ? pt
-                            ? "Remover curtida"
-                            : "Remove like"
-                          : pt
-                            ? "Curtir comentário"
-                            : "Like comment"
-                      }
-                    >
-                      <Heart
-                        size={13}
-                        fill={commentLike.liked ? "currentColor" : "none"}
-                      />
-                      {commentLike.count > 0 && (
-                        <span>{commentLike.count.toLocaleString(lang)}</span>
-                      )}
-                    </button>
-                  ) : (
-                    (viewerId === comment.author_id ||
-                      commentLike.count > 0) && (
-                      <span
-                        className="profile-comment-like-static"
-                        aria-label={
-                          pt
-                            ? `${commentLike.count} curtidas`
-                            : `${commentLike.count} likes`
-                        }
-                      >
-                        <Heart size={13} />
-                        {commentLike.count > 0 && (
-                          <span>{commentLike.count.toLocaleString(lang)}</span>
-                        )}
-                      </span>
-                    )
-                  ))}
+                {!deleted && (
+                  <CommentLike
+                    lang={lang}
+                    count={commentLike.count}
+                    liked={commentLike.liked}
+                    canLike={
+                      Boolean(viewerId) && viewerId !== comment.author_id
+                    }
+                    pending={commentLike.pending}
+                    showEmpty={viewerId === comment.author_id}
+                    onToggle={() => void toggleLike(comment)}
+                  />
+                )}
                 {canComment && !deleted && (
                   <button
                     className="profile-comment-reply-action"
