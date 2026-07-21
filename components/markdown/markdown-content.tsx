@@ -20,7 +20,10 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ComponentType,
   type ReactNode,
 } from "react";
@@ -463,29 +466,126 @@ function MdGameRow({
   // duplicate is aria-hidden so content is only announced once.
   const looped: typeof items = [];
   while (looped.length < Math.max(8, items.length)) looped.push(...items);
+  return <MdGameCarousel items={looped} lang={lang} />;
+}
+
+function MdGameCarousel({
+  items,
+  lang,
+}: {
+  items: Array<{ slug: string; favorite: boolean }>;
+  lang: UiLang;
+}) {
+  const viewport = useRef<HTMLSpanElement>(null);
+  const drag = useRef({ pointerId: -1, x: 0, scrollLeft: 0, moved: false });
+  const paused = useRef(false);
+
+  useEffect(() => {
+    const node = viewport.current;
+    if (!node) return;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const placeInMiddleCopy = () => {
+      const loopWidth = node.scrollWidth / 3;
+      if (loopWidth > 0 && node.scrollLeft === 0) node.scrollLeft = loopWidth;
+    };
+    placeInMiddleCopy();
+    const resizeObserver = new ResizeObserver(placeInMiddleCopy);
+    resizeObserver.observe(node);
+    if (reducedMotion) return () => resizeObserver.disconnect();
+    let frame = 0;
+    let previous = performance.now();
+    const tick = (now: number) => {
+      const elapsed = Math.min(now - previous, 40);
+      previous = now;
+      if (!paused.current) node.scrollLeft += elapsed * 0.025;
+      const loopWidth = node.scrollWidth / 3;
+      if (loopWidth > 0 && node.scrollLeft >= loopWidth * 2)
+        node.scrollLeft -= loopWidth;
+      else if (loopWidth > 0 && node.scrollLeft <= 0)
+        node.scrollLeft += loopWidth;
+      frame = window.requestAnimationFrame(tick);
+    };
+    frame = window.requestAnimationFrame(tick);
+    return () => {
+      resizeObserver.disconnect();
+      window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  function onPointerDown(event: ReactPointerEvent<HTMLSpanElement>) {
+    if (!event.isPrimary || event.button !== 0) return;
+    const node = viewport.current;
+    if (!node) return;
+    paused.current = true;
+    drag.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      scrollLeft: node.scrollLeft,
+      moved: false,
+    };
+    node.setPointerCapture(event.pointerId);
+  }
+
+  function onPointerMove(event: ReactPointerEvent<HTMLSpanElement>) {
+    const node = viewport.current;
+    if (!node || drag.current.pointerId !== event.pointerId) return;
+    const distance = event.clientX - drag.current.x;
+    if (Math.abs(distance) > 4) drag.current.moved = true;
+    if (drag.current.moved) {
+      event.preventDefault();
+      node.scrollLeft = drag.current.scrollLeft - distance;
+    }
+  }
+
+  function finishDrag(event: ReactPointerEvent<HTMLSpanElement>) {
+    if (drag.current.pointerId !== event.pointerId) return;
+    drag.current.pointerId = -1;
+    paused.current = false;
+  }
+
+  function preventDraggedClick(event: ReactMouseEvent<HTMLSpanElement>) {
+    if (!drag.current.moved) return;
+    event.preventDefault();
+    event.stopPropagation();
+    drag.current.moved = false;
+  }
+
   return (
-    <span className="md-gc-carousel">
-      <span className="md-gc-carousel-track">
-        <span className="md-gc-row md-gc-row-loop">
-          {looped.map((item, index) => (
-            <MdGameTile
-              key={`a-${item.slug}-${index}`}
-              slug={item.slug}
-              favorite={item.favorite}
-              lang={lang}
-            />
-          ))}
-        </span>
-        <span className="md-gc-row md-gc-row-loop" aria-hidden>
-          {looped.map((item, index) => (
-            <MdGameTile
-              key={`b-${item.slug}-${index}`}
-              slug={item.slug}
-              favorite={item.favorite}
-              lang={lang}
-            />
-          ))}
-        </span>
+    <span
+      className="md-gc-carousel"
+      onPointerEnter={() => (paused.current = true)}
+      onPointerLeave={(event) => {
+        if (drag.current.pointerId < 0) paused.current = false;
+        else finishDrag(event);
+      }}
+    >
+      <span
+        ref={viewport}
+        className="md-gc-carousel-track"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={finishDrag}
+        onPointerCancel={finishDrag}
+        onClickCapture={preventDraggedClick}
+      >
+        {["a", "b", "c"].map((copy) => (
+          <span
+            className="md-gc-row md-gc-row-loop"
+            aria-hidden={copy !== "b" || undefined}
+            key={copy}
+          >
+            {items.map((item, index) => (
+              <MdGameTile
+                key={`${copy}-${item.slug}-${index}`}
+                slug={item.slug}
+                favorite={item.favorite}
+                lang={lang}
+              />
+            ))}
+          </span>
+        ))}
       </span>
     </span>
   );

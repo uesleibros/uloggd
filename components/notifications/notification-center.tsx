@@ -71,6 +71,9 @@ export function NotificationCenter({
   const [view, setView] = useState<"inbox" | "preferences">("inbox");
   const [items, setItems] = useState<NotificationRow[]>([]);
   const [actors, setActors] = useState<Record<string, Actor>>({});
+  const [commentOwners, setCommentOwners] = useState<Record<string, string>>(
+    {},
+  );
   const [preferences, setPreferences] =
     useState<Preferences>(defaultPreferences);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
@@ -102,25 +105,54 @@ export function NotificationCenter({
     }
     const rows = (data ?? []) as NotificationRow[];
     const actorIds = [...new Set(rows.map((item) => item.actor_id))];
+    const commentIds = rows
+      .filter(
+        (item) =>
+          (item.kind === "profile_comment" ||
+            item.kind === "profile_comment_like") &&
+          item.target_id,
+      )
+      .map((item) => item.target_id as string);
+    const { data: comments } = commentIds.length
+      ? await supabase
+          .from("profile_comments")
+          .select("id,profile_id")
+          .in("id", commentIds)
+      : { data: [] };
+    const ownerIds = (comments ?? []).map((comment) => comment.profile_id);
+    const profileIds = [...new Set([...actorIds, ...ownerIds])];
     let nextActors: Record<string, Actor> = {};
-    if (actorIds.length) {
+    let nextCommentOwners: Record<string, string> = {};
+    if (profileIds.length) {
       const { data: profiles } = await supabase
         .from("profiles")
         .select("id,username,display_name,avatar_url")
-        .in("id", actorIds);
+        .in("id", profileIds);
       nextActors = Object.fromEntries(
-        (profiles ?? []).map((profile) => [
-          profile.id,
-          {
-            username: profile.username,
-            display_name: profile.display_name,
-            avatar_url: profile.avatar_url,
-          },
-        ]),
+        (profiles ?? [])
+          .filter((profile) => actorIds.includes(profile.id))
+          .map((profile) => [
+            profile.id,
+            {
+              username: profile.username,
+              display_name: profile.display_name,
+              avatar_url: profile.avatar_url,
+            },
+          ]),
+      );
+      const usernames = new Map(
+        (profiles ?? []).map((profile) => [profile.id, profile.username]),
+      );
+      nextCommentOwners = Object.fromEntries(
+        (comments ?? []).flatMap((comment) => {
+          const username = usernames.get(comment.profile_id);
+          return username ? [[comment.id, username]] : [];
+        }),
       );
     }
     setItems(rows);
     setActors(nextActors);
+    setCommentOwners(nextCommentOwners);
     if (preferenceData) setPreferences(preferenceData as Preferences);
     setStatus("ready");
   }, [viewerId]);
@@ -294,16 +326,24 @@ export function NotificationCenter({
                       actor?.display_name ||
                       actor?.username ||
                       labels.unknownUser;
-                    const href =
-                      item.kind === "follow" ||
+                    const isCommentNotification =
                       item.kind === "profile_comment" ||
-                      item.kind === "profile_comment_like"
+                      item.kind === "profile_comment_like";
+                    const commentOwner = item.target_id
+                      ? commentOwners[item.target_id]
+                      : null;
+                    const href =
+                      item.kind === "follow"
                         ? actor?.username
                           ? `/${lang}/u/${actor.username}`
                           : `/${lang}`
-                        : item.kind === "review_like"
-                          ? `/${lang}/review/${item.target_id}`
-                          : `/${lang}/lists/${item.target_id}`;
+                        : isCommentNotification && commentOwner
+                          ? `/${lang}/u/${commentOwner}#comment-${item.target_id}`
+                          : isCommentNotification
+                            ? `/${lang}`
+                            : item.kind === "review_like"
+                              ? `/${lang}/review/${item.target_id}`
+                              : `/${lang}/lists/${item.target_id}`;
                     const Icon =
                       item.kind === "moderation_comment_removed"
                         ? ShieldAlert

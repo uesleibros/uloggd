@@ -2,7 +2,7 @@
 
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { forwardRef } from "react";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export const AuthTurnstile = forwardRef<
   TurnstileInstance,
@@ -10,7 +10,16 @@ export const AuthTurnstile = forwardRef<
 >(function AuthTurnstile({ onToken, language }, ref) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   if (!siteKey) {
-    return <p className="field-error">Turnstile is not configured.</p>;
+    return (
+      <p className="field-error">
+        {tri(
+          language,
+          "O Turnstile não está configurado.",
+          "Turnstile is not configured.",
+          "Turnstile no está configurado.",
+        )}
+      </p>
+    );
   }
   return (
     <div className="turnstile-wrap">

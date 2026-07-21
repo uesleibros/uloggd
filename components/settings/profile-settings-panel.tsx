@@ -603,7 +603,7 @@ export function ProfileSettingsPanel({
       <section className="profile-drawer-setting">
         <header>
           <div>
-            <h2>Drawer</h2>
+            <h2>{tri(lang, "Vitrine", "Showcase", "Vitrina")}</h2>
             <p>
               {tri(
                 lang,
@@ -671,7 +671,12 @@ export function ProfileSettingsPanel({
               )}
               {pending === "drawer"
                 ? t.saving
-                : tri(lang, "Salvar drawer", "Save drawer", "Guardar drawer")}
+                : tri(
+                    lang,
+                    "Salvar vitrine",
+                    "Save showcase",
+                    "Guardar vitrina",
+                  )}
             </button>
           </div>
         </footer>

@@ -1357,8 +1357,11 @@
   font-size: 10px;
 }
 .profile-comment-list article p {
+  min-width: 0;
+  max-width: 100%;
   margin-top: 7px;
   overflow-wrap: anywhere;
+  word-break: break-word;
   color: var(--screen-dim);
   font-size: 13px;
   line-height: 1.6;

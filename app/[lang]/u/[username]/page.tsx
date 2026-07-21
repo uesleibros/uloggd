@@ -457,7 +457,6 @@ export default async function ProfilePage({ params }: Props) {
       ? [{ ...comment, ...like, author } as ProfileComment]
       : [];
   });
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const joined = new Intl.DateTimeFormat(lang, {
     month: "long",
@@ -716,11 +715,14 @@ export default async function ProfilePage({ params }: Props) {
             <section className="profile-drawer">
               <div className="social-section-title">
                 <div>
-                  <h2>Drawer</h2>
+                  <h2>{tri(lang, "Vitrine", "Showcase", "Vitrina")}</h2>
                   <p>
-                    {pt
-                      ? `Um cantinho de ${profile.display_name || `@${profile.username}`}`
-                      : `A corner curated by ${profile.display_name || `@${profile.username}`}`}
+                    {tri(
+                      lang,
+                      `Um cantinho de ${profile.display_name || `@${profile.username}`}`,
+                      `A corner curated by ${profile.display_name || `@${profile.username}`}`,
+                      `Un rincón de ${profile.display_name || `@${profile.username}`}`,
+                    )}
                   </p>
                 </div>
               </div>
@@ -735,7 +737,7 @@ export default async function ProfilePage({ params }: Props) {
                 <section
                   className="profile-shelf"
                   aria-busy="true"
-                  aria-label="Loading"
+                  aria-label={t.loading}
                 >
                   <div className="social-section-title">
                     <div>
@@ -795,7 +797,7 @@ export default async function ProfilePage({ params }: Props) {
                   <div
                     className="skeleton-stream"
                     aria-busy="true"
-                    aria-label="Loading"
+                    aria-label={t.loading}
                   >
                     {Array.from({ length: 3 }, (_, index) => (
                       <div className="skeleton-entry" key={index}>
@@ -829,7 +831,7 @@ export default async function ProfilePage({ params }: Props) {
                   <div
                     className="lists-loading-card"
                     aria-busy="true"
-                    aria-label="Loading"
+                    aria-label={t.loading}
                   >
                     <span className="skeleton-block" />
                     <div>

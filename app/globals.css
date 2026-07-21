@@ -15569,29 +15569,26 @@ adapted to the current uloggd surface system. */
 }
 .md-gc-carousel-track {
   display: flex;
-  width: max-content;
-  animation: md-gc-scroll 42s linear infinite;
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
 }
-.md-gc-carousel:hover .md-gc-carousel-track {
-  animation-play-state: paused;
+.md-gc-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+.md-gc-carousel-track:active {
+  cursor: grabbing;
 }
 .md-gc-row-loop {
+  flex: none;
   flex-wrap: nowrap;
   margin-block: 0;
   padding-right: 12px;
 }
-@keyframes md-gc-scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
 @media (prefers-reduced-motion: reduce) {
-  .md-gc-carousel-track {
-    animation: none;
-  }
   .md-gc-carousel {
     overflow-x: auto;
   }
