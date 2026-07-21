@@ -1,9 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 import { ArrowRight, ArrowUpRight, Info, Star } from "lucide-react";
-import { HomeSkeleton } from "@/components/home-skeleton";
 import {
   getDiscoveryGames,
   getGenreCollections,
@@ -20,11 +18,9 @@ import type { UiLang } from "@/lib/ui-text";
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  return (
-    <Suspense fallback={<HomeSkeleton />}>
-      <HomeContent lang={lang} />
-    </Suspense>
-  );
+  // loading.tsx já é o limite de Suspense desta rota e usa o mesmo skeleton;
+  // um segundo aqui só duplicava o mesmo estado de carregamento.
+  return <HomeContent lang={lang} />;
 }
 
 async function HomeContent({ lang }: { lang: UiLang }) {

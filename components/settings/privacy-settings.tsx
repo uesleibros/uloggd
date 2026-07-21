@@ -23,6 +23,37 @@ type BlockedProfile = {
 };
 export type FollowRequest = BlockedProfile & { avatar_url: string | null };
 
+/** One picker for all three scopes, so they cannot drift apart. */
+function ScopePicker<T extends string>({
+  value,
+  options,
+  disabled,
+  onPick,
+}: {
+  value: T;
+  options: Array<[T, string]>;
+  disabled: boolean;
+  onPick: (next: T) => void;
+}) {
+  return (
+    <div className="privacy-scope-options" role="radiogroup">
+      {options.map(([option, label]) => (
+        <button
+          key={option}
+          type="button"
+          role="radio"
+          aria-checked={value === option}
+          disabled={disabled}
+          onClick={() => onPick(option)}
+        >
+          <span>{label}</span>
+          <i aria-hidden />
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function PrivacySettings({
   initialScope,
   initialContentScope,
@@ -148,34 +179,6 @@ export function PrivacySettings({
     setPending(null);
   }
 
-  function ScopePicker<T extends string>({
-    value,
-    options,
-    onPick,
-  }: {
-    value: T;
-    options: Array<[T, string]>;
-    onPick: (next: T) => void;
-  }) {
-    return (
-      <div className="privacy-scope-options" role="radiogroup">
-        {options.map(([option, label]) => (
-          <button
-            key={option}
-            type="button"
-            role="radio"
-            aria-checked={value === option}
-            disabled={Boolean(pending)}
-            onClick={() => onPick(option)}
-          >
-            <span>{label}</span>
-            <i aria-hidden />
-          </button>
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div className="settings-privacy-stack">
       <section className="settings-security-card settings-privacy-card">
@@ -292,6 +295,7 @@ export function PrivacySettings({
           </div>
         </header>
         <ScopePicker
+          disabled={Boolean(pending)}
           value={scope}
           onPick={(next) => void updateScope(next)}
           options={[
@@ -321,6 +325,7 @@ export function PrivacySettings({
           </div>
         </header>
         <ScopePicker
+          disabled={Boolean(pending)}
           value={contentScope}
           onPick={(next) => void updateContentScope(next)}
           options={[
@@ -348,6 +353,7 @@ export function PrivacySettings({
           </div>
         </header>
         <ScopePicker
+          disabled={Boolean(pending)}
           value={visibility}
           onPick={(next) => void updateVisibility(next)}
           options={[
