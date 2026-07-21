@@ -464,12 +464,12 @@ export function ProfileComments({
                     type="button"
                     onClick={() => startReply(comment)}
                   >
-                    <CornerDownRight size={13} /> {pt ? "Responder" : "Reply"}
+                    <CornerDownRight size={13} /> {t.reply}
                   </button>
                 )}
                 {isAuthor && !deleted && (
                   <button type="button" onClick={() => startEdit(comment)}>
-                    <Pencil size={13} /> {pt ? "Editar" : "Edit"}
+                    <Pencil size={13} /> {t.edit}
                   </button>
                 )}
                 {canDelete && !deleted && (
@@ -492,9 +492,7 @@ export function ProfileComments({
                         ? pt
                           ? "Excluir mesmo?"
                           : "Really delete?"
-                        : pt
-                          ? "Excluir"
-                          : "Delete"}
+                        : t.delete}
                   </button>
                 )}
                 {!deleted && (
@@ -528,9 +526,7 @@ export function ProfileComments({
                           )}
                           {copiedComment === comment.id
                             ? t.linkCopied
-                            : pt
-                              ? "Copiar link"
-                              : "Copy link"}
+                            : t.copyLink}
                         </DropdownMenu.Item>
                         {viewerId && viewerId !== comment.author_id && (
                           <>
@@ -590,7 +586,7 @@ export function ProfileComments({
                     ) : (
                       <Send size={13} />
                     )}
-                    {pt ? "Responder" : "Reply"}
+                    {t.reply}
                   </button>
                 </footer>
               </form>
@@ -622,7 +618,7 @@ export function ProfileComments({
       <header>
         <div>
           <h2 id="profile-comments-title">
-            <MessageCircle size={16} /> {pt ? "Comentários" : "Comments"}
+            <MessageCircle size={16} /> {t.comments}
           </h2>
           <p>
             {pt
@@ -661,7 +657,7 @@ export function ProfileComments({
               ) : (
                 <Send size={14} />
               )}
-              {pt ? "Comentar" : "Comment"}
+              {t.comment}
             </button>
           </footer>
         </form>
@@ -709,7 +705,7 @@ export function ProfileComments({
           <Dialog.Content className="report-dialog profile-comment-report">
             <header>
               <div>
-                <span>{pt ? "SEGURANÇA" : "SAFETY"}</span>
+                <span>{t.safety}</span>
                 <Dialog.Title>
                   {pt ? "Denunciar comentário" : "Report comment"}
                 </Dialog.Title>
@@ -801,7 +797,7 @@ export function ProfileComments({
           <Dialog.Content className="report-dialog profile-comment-report">
             <header>
               <div>
-                <span>{pt ? "SEGURANÇA" : "SAFETY"}</span>
+                <span>{t.safety}</span>
                 <Dialog.Title>
                   {pt
                     ? `Bloquear @${blocking?.author.username ?? ""}?`
@@ -836,9 +832,7 @@ export function ProfileComments({
                     ? pt
                       ? "Bloqueando…"
                       : "Blocking…"
-                    : pt
-                      ? "Bloquear"
-                      : "Block"}
+                    : t.block}
                 </button>
               </footer>
             </div>

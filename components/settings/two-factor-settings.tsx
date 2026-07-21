@@ -239,10 +239,7 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
                 <Smartphone size={17} />
               </span>
               <div>
-                <strong>
-                  {factor.friendly_name ||
-                    (pt ? "Aplicativo autenticador" : "Authenticator app")}
-                </strong>
+                <strong>{factor.friendly_name || t.authenticatorApp}</strong>
                 <small>
                   {pt ? "Adicionado em" : "Added"}{" "}
                   {new Intl.DateTimeFormat(lang, {

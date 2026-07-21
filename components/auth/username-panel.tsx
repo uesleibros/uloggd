@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Check, LoaderCircle, LogOut, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { usernameSchema } from "@/lib/auth-validation";
-import type { UiLang } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 const reserved = new Set([
   "admin",
@@ -30,6 +30,7 @@ const reserved = new Set([
 export function UsernamePanel({ lang }: { lang: UiLang }) {
   const router = useRouter();
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [value, setValue] = useState("");
   const [available, setAvailable] = useState<boolean | null>(null);
   const [pending, setPending] = useState(false);
@@ -48,9 +49,7 @@ export function UsernamePanel({ lang }: { lang: UiLang }) {
             ? "Esse nome é reservado."
             : "This name is reserved."
           : !valid
-            ? pt
-              ? "Formato inválido."
-              : "Invalid format."
+            ? t.invalidFormat
             : available === false
               ? pt
                 ? "Esse username já está em uso."
@@ -59,10 +58,8 @@ export function UsernamePanel({ lang }: { lang: UiLang }) {
                 ? pt
                   ? "Username disponível."
                   : "Username available."
-                : pt
-                  ? "Formato válido."
-                  : "Valid format.",
-    [normalized, valid, available, pt],
+                : t.validFormat,
+    [normalized, valid, available, pt, t.invalidFormat, t.validFormat],
   );
   async function check(candidate: string) {
     const clean = candidate.trim().toLowerCase();
@@ -183,7 +180,7 @@ export function UsernamePanel({ lang }: { lang: UiLang }) {
       <form action={`/${lang}/auth/signout`} method="post">
         <button className="auth-text-button" type="submit">
           <LogOut size={15} />
-          {pt ? "Sair da conta" : "Sign out"}
+          {t.signOut}
         </button>
       </form>
     </section>

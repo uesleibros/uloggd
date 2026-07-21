@@ -17,7 +17,7 @@ import type { Game } from "@/lib/igdb";
 import { ActivityEntryActions } from "./activity-entry-actions";
 import { LikeButton } from "./like-button";
 import { VerifiedBadge } from "../verified-badge";
-import type { UiLang } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 import {
   JourneyDetailsDialog,
   type JourneyDetailSession,
@@ -78,6 +78,7 @@ export function ActivityStream({
   viewerId?: string | null;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const date = new Intl.DateTimeFormat(lang, {
     day: "numeric",
     month: "short",
@@ -195,12 +196,8 @@ export function ActivityStream({
                 )}{" "}
                 {entry.ratingMode === "recommend"
                   ? entry.recommended
-                    ? pt
-                      ? "Recomendo"
-                      : "Recommended"
-                    : pt
-                      ? "Não recomendo"
-                      : "Not recommended"
+                    ? t.recommended
+                    : t.notRecommended
                   : formatActivityRating(entry.rating, entry.ratingMode, lang)}
               </div>
             )}
@@ -220,7 +217,7 @@ export function ActivityStream({
                       <Trophy size={13} /> {pt ? "Dominado" : "Mastered"}
                     </span>
                   )}
-                  {entry.replay && <span>{pt ? "Rejogada" : "Replay"}</span>}
+                  {entry.replay && <span>{t.replay}</span>}
                   {entry.platform && <span>{entry.platform}</span>}
                   {entry.journeyTitle && (
                     <JourneyDetailsDialog

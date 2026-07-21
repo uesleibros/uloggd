@@ -259,12 +259,8 @@ export default async function ReviewPage({ params }: Props) {
                   )}
                   {ratingMode === "recommend"
                     ? review.recommended
-                      ? pt
-                        ? "Recomendo"
-                        : "Recommended"
-                      : pt
-                        ? "Não recomendo"
-                        : "Not recommended"
+                      ? t.recommended
+                      : t.notRecommended
                     : formatRating(review.rating, ratingMode, lang)}
                 </span>
               )}
@@ -275,7 +271,7 @@ export default async function ReviewPage({ params }: Props) {
               )}
               {review.replay && (
                 <span>
-                  <RotateCcw size={13} /> {pt ? "Rejogada" : "Replay"}
+                  <RotateCcw size={13} /> {t.replay}
                 </span>
               )}
               {review.platform && (

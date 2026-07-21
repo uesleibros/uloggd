@@ -148,7 +148,7 @@ export function GameActionPanel({
     { key: "backlog" as const, label: "Backlog", icon: Clock3 },
     {
       key: "wishlist" as const,
-      label: pt ? "Lista de desejos" : "Wishlist",
+      label: t.wishlist,
       icon: Gift,
     },
     { key: "liked" as const, label: t.like, icon: Heart },
@@ -214,7 +214,7 @@ export function GameActionPanel({
                   onSelect={() => update("status", "BACKLOG")}
                 >
                   <X size={13} />
-                  {pt ? "Limpar status" : "Clear status"}
+                  {t.clearStatus}
                 </DropdownMenu.Item>
               </>
             )}

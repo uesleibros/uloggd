@@ -223,11 +223,11 @@ export function QuickGameCard({
       <div className="quick-cover">
         {/* Custom cover selection belongs to the game page; cards only display it. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={image} alt={`${pt ? "Capa de" : "Cover of"} ${game.name}`} />
+        <img src={image} alt={`${t.coverOf} ${game.name}`} />
         <Link
           className="quick-game-link"
           href={`/${lang}/game/${game.slug}`}
-          aria-label={`${pt ? "Abrir" : "Open"} ${game.name}`}
+          aria-label={`${t.open} ${game.name}`}
         />
         {rank && (
           <span className="quick-rank">{String(rank).padStart(2, "0")}</span>
@@ -263,11 +263,8 @@ export function QuickGameCard({
                 </Tooltip>
               )}
               {state.liked && (
-                <Tooltip label={pt ? "Favorito" : "Favorite"}>
-                  <span
-                    data-action="liked"
-                    aria-label={pt ? "Favorito" : "Favorite"}
-                  >
+                <Tooltip label={t.favorite}>
+                  <span data-action="liked" aria-label={t.favorite}>
                     <Heart size={11} fill="currentColor" />
                   </span>
                 </Tooltip>
@@ -326,7 +323,7 @@ export function QuickGameCard({
                 <button
                   className="quick-more-trigger"
                   type="button"
-                  aria-label={pt ? "Mais ações" : "More actions"}
+                  aria-label={t.moreActions}
                   disabled={Boolean(pending)}
                 >
                   {pending && pending !== "status" && pending !== "backlog" ? (
@@ -379,7 +376,7 @@ export function QuickGameCard({
                               onSelect={() => update("status", "BACKLOG")}
                             >
                               <X size={13} />
-                              {pt ? "Limpar status" : "Clear status"}
+                              {t.clearStatus}
                             </DropdownMenu.Item>
                           </>
                         )}
@@ -419,7 +416,7 @@ export function QuickGameCard({
                     }
                   >
                     <Gift size={13} />
-                    {pt ? "Lista de desejos" : "Wishlist"}
+                    {t.wishlist}
                     <DropdownMenu.ItemIndicator>
                       <Check size={13} />
                     </DropdownMenu.ItemIndicator>

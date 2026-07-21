@@ -21,6 +21,7 @@ import { createClient } from "@/lib/supabase/server";
 import { MIN_WRAPPED_YEAR, parseWrappedYear } from "@/lib/year-wrapped";
 import { hasLocale } from "../../../../dictionaries";
 import "../../../../profile.css";
+import { uiText } from "@/lib/ui-text";
 
 type Props = {
   params: Promise<{ lang: string; username: string; year: string }>;
@@ -86,6 +87,7 @@ export default async function YearWrappedPage({ params }: Props) {
   const sessions = sessionRows ?? [];
   const reviews = reviewRows ?? [];
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
   const currentYear = new Date().getUTCFullYear();
 
@@ -161,7 +163,7 @@ export default async function YearWrappedPage({ params }: Props) {
   return (
     <main className="social-page profile-subpage year-wrapped">
       <Link className="page-back-link" href={`/${lang}/u/${profile.username}`}>
-        <ArrowLeft size={15} /> {pt ? "Voltar ao perfil" : "Back to profile"}
+        <ArrowLeft size={15} /> {t.backToProfile}
       </Link>
       <header className="profile-subpage-header">
         <span>
@@ -213,8 +215,8 @@ export default async function YearWrappedPage({ params }: Props) {
               ? `${sessions.length} sessões, ${playedIds.length} jogos e ${hours}h registradas no uloggd.`
               : `${sessions.length} sessions, ${playedIds.length} games, and ${hours}h logged on uloggd.`
           }
-          label={pt ? "Compartilhar" : "Share"}
-          copiedLabel={pt ? "Link copiado" : "Link copied"}
+          label={t.share}
+          copiedLabel={t.linkCopied}
           lang={lang}
         />
       </div>
@@ -270,13 +272,13 @@ export default async function YearWrappedPage({ params }: Props) {
             </div>
             <div className="year-stat">
               <small>
-                <CalendarDays size={13} /> {pt ? "Sessões" : "Sessions"}
+                <CalendarDays size={13} /> {t.sessions}
               </small>
               <strong>{sessions.length.toLocaleString(lang)}</strong>
             </div>
             <div className="year-stat">
               <small>
-                <BookOpen size={13} /> {pt ? "Avaliações" : "Reviews"}
+                <BookOpen size={13} /> {t.reviews}
               </small>
               <strong>{reviews.length.toLocaleString(lang)}</strong>
             </div>

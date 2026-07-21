@@ -99,8 +99,7 @@ export default async function ProfileConnectionsPage({
           href={`/${lang}/u/${profile.username}/connections?tab=following${query ? `&q=${encodeURIComponent(query)}` : ""}`}
           aria-current={activeTab === "following" ? "page" : undefined}
         >
-          {pt ? "Seguindo" : "Following"}{" "}
-          <span>{followingResult.count ?? 0}</span>
+          {t.following} <span>{followingResult.count ?? 0}</span>
         </Link>
       </nav>
       <form className="profile-connections-search">

@@ -345,13 +345,7 @@ export function ProfileSettingsPanel({
           </label>
         </fieldset>
         <div className="profile-form-footer">
-          <span>
-            {detailsDirty
-              ? pt
-                ? "Alterações não salvas"
-                : "Unsaved changes"
-              : message}
-          </span>
+          <span>{detailsDirty ? t.unsavedChanges : message}</span>
           <div className="profile-form-actions">
             {detailsDirty && (
               <button
@@ -368,7 +362,7 @@ export function ProfileSettingsPanel({
                 }}
               >
                 <RotateCcw size={14} />
-                {pt ? "Reverter" : "Revert"}
+                {t.revert}
               </button>
             )}
             <button type="submit" disabled={Boolean(pending)}>
@@ -560,7 +554,7 @@ export function ProfileSettingsPanel({
                 }}
               >
                 <RotateCcw size={14} />
-                {pt ? "Reverter" : "Revert"}
+                {t.revert}
               </button>
             )}
             <button

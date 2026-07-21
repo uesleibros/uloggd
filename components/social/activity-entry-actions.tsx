@@ -62,7 +62,7 @@ export function ActivityEntryActions({
       kind === "review" ? { review_id: id } : { entry_id: id },
     );
     if (actionError || data !== true) {
-      setError(pt ? "Não foi possível remover." : "Could not remove.");
+      setError(t.couldNotRemove);
       setPending(false);
       return;
     }
@@ -103,7 +103,7 @@ export function ActivityEntryActions({
     <>
       <div className="activity-entry-actions">
         <button type="button" onClick={() => setEditing(true)}>
-          <Pencil size={14} /> {pt ? "Editar" : "Edit"}
+          <Pencil size={14} /> {t.edit}
         </button>
         <button
           type="button"
@@ -156,7 +156,7 @@ export function ActivityEntryActions({
               <form action={update} className="social-editor-form">
                 <div className="social-form-row journey-date-fields">
                   <label>
-                    <span>{pt ? "De" : "From"}</span>
+                    <span>{t.from}</span>
                     <input
                       type="date"
                       max={journeyEnd || today}
@@ -265,7 +265,7 @@ export function ActivityEntryActions({
                     <EditorVisibilitySelect
                       value={visibility}
                       onChange={setVisibility}
-                      pt={pt}
+                      lang={lang}
                     />
                   </label>
                   <label className="social-check">
@@ -274,7 +274,7 @@ export function ActivityEntryActions({
                       name="spoilers"
                       defaultChecked={entry.spoilers}
                     />
-                    <span>{pt ? "Contém spoilers" : "Contains spoilers"}</span>
+                    <span>{t.containsSpoilers}</span>
                   </label>
                 </div>
                 {error && (

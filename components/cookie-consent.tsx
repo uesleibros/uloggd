@@ -67,12 +67,12 @@ export function CookieConsent({ lang }: { lang: UiLang }) {
       status: pt ? "Sempre ativos" : "Always active",
     },
     {
-      name: pt ? "Preferências" : "Preferences",
+      name: t.preferences,
       description: pt
         ? "Reservado para futuras escolhas funcionais salvas no navegador."
         : "Reserved for future functional choices saved in the browser.",
       enabled: false,
-      status: pt ? "Não utilizados" : "Not in use",
+      status: t.notInUse,
     },
     {
       name: "Analytics",
@@ -80,7 +80,7 @@ export function CookieConsent({ lang }: { lang: UiLang }) {
         ? "Medição opcional de uso e desempenho. Nenhuma ferramenta está instalada."
         : "Optional usage and performance measurement. No tool is installed.",
       enabled: false,
-      status: pt ? "Não utilizados" : "Not in use",
+      status: t.notInUse,
     },
     {
       name: "Marketing",
@@ -88,7 +88,7 @@ export function CookieConsent({ lang }: { lang: UiLang }) {
         ? "Publicidade ou rastreamento entre sites. Nenhuma ferramenta está instalada."
         : "Advertising or cross-site tracking. No tool is installed.",
       enabled: false,
-      status: pt ? "Não utilizados" : "Not in use",
+      status: t.notInUse,
     },
   ];
 

@@ -69,21 +69,89 @@ const strings = {
     "Cambios sin guardar",
   ],
   revert: ["Reverter", "Revert", "Revertir"],
+  couldNotRemove: [
+    "Não foi possível remover.",
+    "Could not remove.",
+    "No se pudo quitar.",
+  ],
+  clearFilters: ["Limpar filtros", "Clear filters", "Limpiar filtros"],
+  notInUse: ["Não utilizados", "Not in use", "Sin usar"],
+  block: ["Bloquear", "Block", "Bloquear"],
+  unblock: ["Desbloquear", "Unblock", "Desbloquear"],
+  safety: ["SEGURANÇA", "SAFETY", "SEGURIDAD"],
+  containsSpoilers: [
+    "Contém spoilers",
+    "Contains spoilers",
+    "Contiene spoilers",
+  ],
+  recommended: ["Recomendo", "Recommended", "Lo recomiendo"],
+  notRecommended: ["Não recomendo", "Not recommended", "No lo recomiendo"],
+  replay: ["Rejogada", "Replay", "Repetición"],
+  authenticatorApp: [
+    "Aplicativo autenticador",
+    "Authenticator app",
+    "Aplicación de autenticación",
+  ],
+  invalidFormat: ["Formato inválido.", "Invalid format.", "Formato inválido."],
+  validFormat: ["Formato válido.", "Valid format.", "Formato válido."],
+  signOut: ["Sair da conta", "Sign out", "Cerrar sesión"],
+  minimumScore: ["Nota mínima", "Minimum score", "Nota mínima"],
+  released: ["Já lançados", "Released", "Ya lanzados"],
+  upcoming: ["Próximos lançamentos", "Upcoming", "Próximos lanzamientos"],
+  reception: ["Recepção", "Reception", "Recepción"],
+  ratedOnly: ["Somente avaliados", "Rated only", "Solo valorados"],
+  advancedFilters: [
+    "Filtros avançados",
+    "Advanced filters",
+    "Filtros avanzados",
+  ],
+  all: ["Todos", "All", "Todos"],
+  from: ["De", "From", "Desde"],
+  applying: ["Aplicando…", "Applying…", "Aplicando…"],
+  previous: ["Anterior", "Previous", "Anterior"],
+  next: ["Próxima", "Next", "Siguiente"],
+  preferences: ["Preferências", "Preferences", "Preferencias"],
+  coverOf: ["Capa de", "Cover of", "Portada de"],
+  wishlist: ["Lista de desejos", "Wishlist", "Lista de deseos"],
+  clearStatus: ["Limpar status", "Clear status", "Limpiar estado"],
+  rated: ["Avaliados", "Rated", "Valorados"],
+  clearSearch: ["Limpar busca", "Clear search", "Limpiar búsqueda"],
+  change: ["Alterar", "Change", "Cambiar"],
+  open: ["Abrir", "Open", "Abrir"],
+  favorite: ["Favorito", "Favorite", "Favorito"],
+  moreActions: ["Mais ações", "More actions", "Más acciones"],
+  insert: ["Inserir", "Insert", "Insertar"],
+  removeComment: ["Remover comentário", "Remove comment", "Quitar comentario"],
+  report: ["Denunciar", "Report", "Denunciar"],
+  help: ["Ajuda", "Help", "Ayuda"],
+  confirm: ["Confirmar", "Confirm", "Confirmar"],
+  apply: ["Aplicar", "Apply", "Aplicar"],
+  optional: ["opcional", "optional", "opcional"],
+  seeProfile: ["Ver perfil", "View profile", "Ver perfil"],
 } as const satisfies Record<string, readonly [string, string, string]>;
 
 export type UiKey = keyof typeof strings;
 
 const order: Record<UiLang, 0 | 1 | 2> = { "pt-BR": 0, en: 1, es: 2 };
 
+// One frozen object per locale. Returning a fresh object each call made the
+// result unstable, so anything listing it in a dependency array would re-run
+// on every render.
+const cache = new Map<UiLang, Record<UiKey, string>>();
+
 /**
  * `const t = uiText(lang)` then `t.close`. Returning a plain object keeps call
  * sites as short as the ternary they replace.
  */
 export function uiText(lang: UiLang): Record<UiKey, string> {
+  const cached = cache.get(lang);
+  if (cached) return cached;
   const index = order[lang] ?? 0;
   const result = {} as Record<UiKey, string>;
   for (const key of Object.keys(strings) as UiKey[]) {
     result[key] = strings[key][index];
   }
+  Object.freeze(result);
+  cache.set(lang, result);
   return result;
 }

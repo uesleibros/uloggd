@@ -4,7 +4,7 @@ import { LoaderCircle, Plus } from "lucide-react";
 import { useState } from "react";
 import type { ListPreview } from "@/lib/lists-types";
 import { ListPreviewCard } from "./list-preview-card";
-import type { UiLang } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export function LoadMoreLists({
   lang,
@@ -21,7 +21,7 @@ export function LoadMoreLists({
   initialCursor: string | null;
   hasMore: boolean;
 }) {
-  const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [extra, setExtra] = useState<ListPreview[]>([]);
   const [cursor, setCursor] = useState(initialCursor);
   const [done, setDone] = useState(!hasMore || !initialCursor);
@@ -82,19 +82,9 @@ export function LoadMoreLists({
             ) : (
               <Plus size={15} aria-hidden />
             )}
-            {pending
-              ? pt
-                ? "Carregando…"
-                : "Loading…"
-              : pt
-                ? "Carregar mais"
-                : "Load more"}
+            {pending ? t.loading : t.loadMore}
           </button>
-          {error && (
-            <span role="alert">
-              {pt ? "Não foi possível carregar." : "Could not load."}
-            </span>
-          )}
+          {error && <span role="alert">{t.couldNotLoad}</span>}
         </div>
       )}
     </>

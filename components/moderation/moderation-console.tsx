@@ -543,7 +543,7 @@ export function ModerationConsole({
                         }}
                       >
                         <Trash2 size={13} />
-                        {pt ? "Remover comentário" : "Remove comment"}
+                        {t.removeComment}
                       </button>
                     )}
                   {report.status !== "REVIEWING" && (
@@ -621,7 +621,7 @@ export function ModerationConsole({
               type="button"
               className="moderation-search-clear"
               data-hidden={!search ? true : undefined}
-              aria-label={pt ? "Limpar busca" : "Clear search"}
+              aria-label={t.clearSearch}
               onClick={() => {
                 setSearch("");
                 setAccountRows(accounts);
@@ -889,9 +889,7 @@ export function ModerationConsole({
               >
                 {profilePending && <LoaderCircle className="spin" size={14} />}
                 {profilePending
-                  ? pt
-                    ? "Aplicando…"
-                    : "Applying…"
+                  ? t.applying
                   : pt
                     ? "Confirmar ação"
                     : "Confirm action"}
@@ -919,9 +917,7 @@ export function ModerationConsole({
             <span>
               <Trash2 size={20} />
             </span>
-            <Dialog.Title>
-              {pt ? "Remover comentário" : "Remove comment"}
-            </Dialog.Title>
+            <Dialog.Title>{t.removeComment}</Dialog.Title>
             <Dialog.Description>
               {pt
                 ? "O autor será notificado e esta decisão ficará registrada na auditoria."

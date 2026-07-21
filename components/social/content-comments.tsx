@@ -75,9 +75,9 @@ export function ContentComments({
       setRows(await fetchRows());
       setLikes({});
     } catch {
-      setError(pt ? "Não foi possível carregar." : "Could not load.");
+      setError(t.couldNotLoad);
     }
-  }, [fetchRows, pt]);
+  }, [fetchRows, t.couldNotLoad]);
 
   useEffect(() => {
     let active = true;
@@ -86,13 +86,12 @@ export function ContentComments({
         if (active) setRows(data);
       })
       .catch(() => {
-        if (active)
-          setError(pt ? "Não foi possível carregar." : "Could not load.");
+        if (active) setError(t.couldNotLoad);
       });
     return () => {
       active = false;
     };
-  }, [fetchRows, pt]);
+  }, [fetchRows, t.couldNotLoad]);
 
   async function submit(text: string, parentId: string | null) {
     const clean = text.trim();
@@ -136,8 +135,7 @@ export function ContentComments({
       "delete_content_comment",
       { target_comment: id },
     );
-    if (deleteError)
-      setError(pt ? "Não foi possível remover." : "Could not remove.");
+    if (deleteError) setError(t.couldNotRemove);
     else await reload();
     setPending(null);
   }
@@ -247,7 +245,7 @@ export function ContentComments({
                     }
                   >
                     <CornerDownRight size={13} />
-                    {pt ? "Responder" : "Reply"}
+                    {t.reply}
                   </button>
                 )}
                 {canDelete && (
@@ -297,7 +295,7 @@ export function ContentComments({
                 {pending === `reply-${comment.id}` && (
                   <LoaderCircle className="spin" size={13} aria-hidden />
                 )}
-                {pt ? "Responder" : "Reply"}
+                {t.reply}
               </button>
             </footer>
           </form>
@@ -326,7 +324,7 @@ export function ContentComments({
       <header>
         <div>
           <h2 id="content-comments-title">
-            <MessageCircle size={16} /> {pt ? "Comentários" : "Comments"}
+            <MessageCircle size={16} /> {t.comments}
           </h2>
           <p>
             {contentType === "list"
@@ -372,7 +370,7 @@ export function ContentComments({
               ) : (
                 <Send size={14} />
               )}
-              {pt ? "Comentar" : "Comment"}
+              {t.comment}
             </button>
           </footer>
         </form>

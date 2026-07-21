@@ -5,6 +5,7 @@ import { Ban, LogOut, Mail } from "lucide-react";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../dictionaries";
 import "./suspended.css";
+import { uiText } from "@/lib/ui-text";
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -20,6 +21,7 @@ export default async function SuspendedPage({ params }: Props) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login`);
 
@@ -103,7 +105,7 @@ export default async function SuspendedPage({ params }: Props) {
           </a>
           <Link href={`/${lang}/auth/signout`} prefetch={false}>
             <LogOut size={15} />
-            {pt ? "Sair da conta" : "Sign out"}
+            {t.signOut}
           </Link>
         </div>
       </div>

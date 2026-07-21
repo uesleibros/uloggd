@@ -3,7 +3,7 @@
 import { Globe2, LoaderCircle, LockKeyhole } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { UiLang } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export function LibraryPrivacyControl({
   initial,
@@ -13,6 +13,7 @@ export function LibraryPrivacyControl({
   lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [visibility, setVisibility] = useState(initial);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
@@ -57,7 +58,7 @@ export function LibraryPrivacyControl({
       </div>
       <button type="button" onClick={toggle} disabled={pending}>
         {pending && <LoaderCircle className="spin" size={14} />}
-        <span>{pt ? "Alterar" : "Change"}</span>
+        <span>{t.change}</span>
       </button>
       {error && <p>{pt ? "Não foi possível alterar." : "Could not update."}</p>}
     </div>

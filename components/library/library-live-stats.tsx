@@ -12,7 +12,6 @@ export function LibraryLiveStats({
   lang: UiLang;
 }) {
   const [liveRecords, setLiveRecords] = useState(records);
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
 
   useEffect(() => {
@@ -61,7 +60,7 @@ export function LibraryLiveStats({
         <dd>{stats.playing}</dd>
       </div>
       <div>
-        <dt>{pt ? "Avaliados" : "Rated"}</dt>
+        <dt>{t.rated}</dt>
         <dd>{stats.rated}</dd>
       </div>
     </dl>

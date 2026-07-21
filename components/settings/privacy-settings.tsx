@@ -127,7 +127,7 @@ export function PrivacySettings({
     });
     if (error) {
       setIsPrivate(previous);
-      setMessage(pt ? "Não foi possível salvar." : "Could not save.");
+      setMessage(t.couldNotSave);
     } else if (!next) {
       // Opening the account approves whatever was waiting, so the queue empties.
       setRequests([]);
@@ -160,7 +160,7 @@ export function PrivacySettings({
     });
     if (error) {
       setScope(previous);
-      setMessage(pt ? "Não foi possível salvar." : "Could not save.");
+      setMessage(t.couldNotSave);
     }
     setPending(null);
   }
@@ -400,7 +400,7 @@ export function PrivacySettings({
                   {pending === profile.id && (
                     <LoaderCircle className="spin" size={14} aria-hidden />
                   )}
-                  {pt ? "Desbloquear" : "Unblock"}
+                  {t.unblock}
                 </button>
               </article>
             ))}

@@ -88,9 +88,7 @@ export function ShareButton({
               data-success={copied || undefined}
             >
               <span>{copied ? <Check size={19} /> : <Copy size={19} />}</span>
-              <strong>
-                {copied ? copiedLabel : pt ? "Copiar link" : "Copy link"}
-              </strong>
+              <strong>{copied ? copiedLabel : t.copyLink}</strong>
               <small>{pt ? "URL desta página" : "This page URL"}</small>
             </button>
             <button type="button" onClick={send} disabled={!canShare}>

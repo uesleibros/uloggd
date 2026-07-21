@@ -452,7 +452,7 @@ export function CatalogSearchWorkspace({
       : null,
     filters.ratingMin !== null
       ? {
-          label: pt ? "Nota mínima" : "Minimum score",
+          label: t.minimumScore,
           value: `${filters.ratingMin}/100`,
         }
       : null,
@@ -465,20 +465,13 @@ export function CatalogSearchWorkspace({
     filters.releaseStatus !== "all"
       ? {
           label: pt ? "Lançamento" : "Release status",
-          value:
-            filters.releaseStatus === "released"
-              ? pt
-                ? "Já lançados"
-                : "Released"
-              : pt
-                ? "Próximos lançamentos"
-                : "Upcoming",
+          value: filters.releaseStatus === "released" ? t.released : t.upcoming,
         }
       : null,
     filters.ratedOnly
       ? {
-          label: pt ? "Recepção" : "Reception",
-          value: pt ? "Somente avaliados" : "Rated only",
+          label: t.reception,
+          value: t.ratedOnly,
         }
       : null,
     filters.anticipatedOnly
@@ -496,21 +489,14 @@ export function CatalogSearchWorkspace({
   if (filters.releaseStatus !== "all") {
     scalarChips.push({
       key: "release",
-      label:
-        filters.releaseStatus === "released"
-          ? pt
-            ? "Já lançados"
-            : "Released"
-          : pt
-            ? "Próximos lançamentos"
-            : "Upcoming",
+      label: filters.releaseStatus === "released" ? t.released : t.upcoming,
       changes: { release: null },
     });
   }
   if (filters.ratedOnly)
     scalarChips.push({
       key: "rated",
-      label: pt ? "Somente avaliados" : "Rated only",
+      label: t.ratedOnly,
       changes: { rated: null },
     });
   if (filters.anticipatedOnly)
@@ -642,9 +628,7 @@ export function CatalogSearchWorkspace({
             <header className="catalog-filter-dialog-head">
               <div>
                 <span>{pt ? "REFINE A BUSCA" : "REFINE SEARCH"}</span>
-                <Dialog.Title>
-                  {pt ? "Filtros avançados" : "Advanced filters"}
-                </Dialog.Title>
+                <Dialog.Title>{t.advancedFilters}</Dialog.Title>
               </div>
               <div className="catalog-filter-dialog-head-actions">
                 {draftCount > 0 && (
@@ -671,7 +655,7 @@ export function CatalogSearchWorkspace({
                 </header>
                 <div className="catalog-segmented-filter">
                   {[
-                    ["all", pt ? "Todos" : "All"],
+                    ["all", t.all],
                     ["released", pt ? "Lançados" : "Released"],
                     ["upcoming", pt ? "Em breve" : "Upcoming"],
                   ].map(([value, label]) => (
@@ -800,10 +784,10 @@ export function CatalogSearchWorkspace({
 
               <section className="catalog-range-filter">
                 <header>
-                  <span>{pt ? "Recepção" : "Reception"}</span>
+                  <span>{t.reception}</span>
                 </header>
                 <label>
-                  {pt ? "Nota mínima" : "Minimum score"}
+                  {t.minimumScore}
                   <input
                     type="number"
                     min="0"
@@ -844,7 +828,7 @@ export function CatalogSearchWorkspace({
                 </header>
                 <div>
                   <label>
-                    {pt ? "De" : "From"}
+                    {t.from}
                     <input
                       type="number"
                       min="1950"
@@ -898,9 +882,7 @@ export function CatalogSearchWorkspace({
                 onClick={applyFilters}
               >
                 {pending
-                  ? pt
-                    ? "Aplicando…"
-                    : "Applying…"
+                  ? t.applying
                   : pt
                     ? "Aplicar filtros"
                     : "Apply filters"}
@@ -933,7 +915,7 @@ export function CatalogSearchWorkspace({
                 <Dialog.Trigger asChild>
                   <button type="button" className="catalog-filter-trigger">
                     <SlidersHorizontal size={15} />
-                    <span>{pt ? "Filtros avançados" : "Advanced filters"}</span>
+                    <span>{t.advancedFilters}</span>
                     {appliedCount > 0 && <b>{appliedCount}</b>}
                   </button>
                 </Dialog.Trigger>
@@ -990,9 +972,7 @@ export function CatalogSearchWorkspace({
                     ? "Remova um filtro ou amplie o período para reencontrar o catálogo."
                     : "Remove a filter or widen the period to bring the catalog back."}
                 </p>
-                <Link href={pathname}>
-                  {pt ? "Limpar filtros" : "Clear filters"}
-                </Link>
+                <Link href={pathname}>{t.clearFilters}</Link>
               </div>
             )}
 
@@ -1132,9 +1112,7 @@ export function CatalogSearchWorkspace({
                 </p>
               )}
               {appliedCount > 0 && (
-                <Link href={pathname}>
-                  {pt ? "Limpar filtros" : "Clear filters"}
-                </Link>
+                <Link href={pathname}>{t.clearFilters}</Link>
               )}
             </section>
 
@@ -1154,14 +1132,14 @@ export function CatalogSearchWorkspace({
                       navigate({ page: filters.page - 1 || null }, true)
                     }
                   >
-                    {pt ? "Anterior" : "Previous"}
+                    {t.previous}
                   </button>
                   <button
                     type="button"
                     disabled={filters.page === totalPages || pending}
                     onClick={() => navigate({ page: filters.page + 1 }, true)}
                   >
-                    {pt ? "Próxima" : "Next"}
+                    {t.next}
                   </button>
                 </div>
               </section>

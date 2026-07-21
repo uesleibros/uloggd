@@ -244,7 +244,7 @@ export function GameLogActions({
     if (rpcError) {
       setSessions(sessions);
       setPending(false);
-      setError(pt ? "Não foi possível salvar." : "Could not save.");
+      setError(t.couldNotSave);
     } else {
       router.refresh();
     }
@@ -277,7 +277,7 @@ export function GameLogActions({
     if (rpcError) {
       setSessions(sessions);
       setPending(false);
-      setError(pt ? "Não foi possível remover." : "Could not remove.");
+      setError(t.couldNotRemove);
     } else {
       router.refresh();
     }
@@ -495,9 +495,7 @@ export function GameLogActions({
                         ? pt
                           ? "Excluir jornada e sessões?"
                           : "Delete journey and sessions?"
-                        : pt
-                          ? "Excluir"
-                          : "Delete"}
+                        : t.delete}
                     </button>
                   </div>
                 )}
@@ -594,7 +592,7 @@ export function GameLogActions({
                           openDay(openDayValue, sessionFor(openDayValue))
                         }
                       >
-                        {pt ? "Abrir" : "Open"}
+                        {t.open}
                       </button>
                     </div>
                   </>
@@ -734,6 +732,7 @@ function JourneyDayEditor({
   onRemove?: () => void;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const total = session?.minutes ?? 0;
   const [hours, setHours] = useState(
     total >= 60 ? String(Math.floor(total / 60)) : "",
@@ -868,11 +867,11 @@ function JourneyDayEditor({
       </label>
       <div className="social-form-row social-form-options">
         <label>
-          <span>{pt ? "Visibilidade" : "Visibility"}</span>
+          <span>{t.visibility}</span>
           <EditorVisibilitySelect
             value={visibility}
             onChange={setVisibility}
-            pt={pt}
+            lang={lang}
           />
         </label>
         <label className="social-check">
@@ -881,7 +880,7 @@ function JourneyDayEditor({
             checked={spoilers}
             onChange={(event) => setSpoilers(event.target.checked)}
           />
-          <span>{pt ? "Contém spoilers" : "Contains spoilers"}</span>
+          <span>{t.containsSpoilers}</span>
         </label>
       </div>
       {failed && (
@@ -899,11 +898,11 @@ function JourneyDayEditor({
             onClick={onRemove}
             disabled={pending}
           >
-            <Trash2 size={14} /> {pt ? "Remover" : "Remove"}
+            <Trash2 size={14} /> {t.remove}
           </button>
         )}
         <button type="button" onClick={onBack} disabled={pending}>
-          {pt ? "Voltar" : "Back"}
+          {t.back}
         </button>
         <button
           type="submit"
@@ -912,13 +911,7 @@ function JourneyDayEditor({
           disabled={pending}
         >
           {pending && <LoaderCircle className="spin" size={15} aria-hidden />}
-          {pending
-            ? pt
-              ? "Salvando…"
-              : "Saving…"
-            : pt
-              ? "Salvar sessão"
-              : "Save session"}
+          {pending ? t.saving : pt ? "Salvar sessão" : "Save session"}
         </button>
       </footer>
     </form>

@@ -31,7 +31,7 @@ import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import "../../profile.css";
-import type { UiLang } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type Props = PageProps<"/[lang]/u/[username]">;
 
@@ -421,6 +421,7 @@ export default async function ProfilePage({ params }: Props) {
       : [];
   });
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const joined = new Intl.DateTimeFormat(lang, {
     month: "long",
     year: "numeric",
@@ -508,13 +509,13 @@ export default async function ProfilePage({ params }: Props) {
               href={`/${lang}/u/${profile.username}/connections?tab=following`}
             >
               <strong>{followingCount.count ?? 0}</strong>
-              <span>{pt ? "Seguindo" : "Following"}</span>
+              <span>{t.following}</span>
             </Link>
             <Link
               href={`/${lang}/u/${profile.username}/connections?tab=followers`}
             >
               <strong>{followerCount.count ?? 0}</strong>
-              <span>{pt ? "Seguidores" : "Followers"}</span>
+              <span>{t.followers}</span>
             </Link>
           </div>
           <div className="profile-action-cluster">
@@ -594,25 +595,25 @@ export default async function ProfilePage({ params }: Props) {
       >
         <Link href={`/${lang}/u/${profile.username}/library`}>
           <span className="profile-stat-label">
-            <Gamepad2 size={14} /> {pt ? "Jogos" : "Games"}
+            <Gamepad2 size={14} /> {t.games}
           </span>
           <strong>{libraryCount.count ?? 0}</strong>
         </Link>
         <Link href={`/${lang}/u/${profile.username}/activity?type=review`}>
           <span className="profile-stat-label">
-            <Star size={14} /> {pt ? "Avaliações" : "Reviews"}
+            <Star size={14} /> {t.reviews}
           </span>
           <strong>{reviewCount.count ?? 0}</strong>
         </Link>
         <Link href={`/${lang}/u/${profile.username}/activity?type=diary`}>
           <span className="profile-stat-label">
-            <BookOpen size={14} /> {pt ? "Sessões" : "Sessions"}
+            <BookOpen size={14} /> {t.sessions}
           </span>
           <strong>{diaryCount.count ?? 0}</strong>
         </Link>
         <Link href={`/${lang}/u/${profile.username}/lists`}>
           <span className="profile-stat-label">
-            <List size={14} /> {pt ? "Listas" : "Lists"}
+            <List size={14} /> {t.lists}
           </span>
           <strong>{listsCount.count ?? 0}</strong>
         </Link>
@@ -737,7 +738,7 @@ export default async function ProfilePage({ params }: Props) {
             </div>
             <aside className="profile-lists">
               <div className="social-section-title">
-                <h2>{pt ? "Listas" : "Lists"}</h2>
+                <h2>{t.lists}</h2>
                 <Link href={`/${lang}/u/${profile.username}/lists`}>
                   {pt ? "Ver todas" : "View all"}
                 </Link>

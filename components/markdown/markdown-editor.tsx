@@ -980,7 +980,7 @@ export function MarkdownEditor({
                 <button
                   type="button"
                   className="md-insert-trigger"
-                  aria-label={pt ? "Inserir" : "Insert"}
+                  aria-label={t.insert}
                 >
                   <Plus size={16} />
                 </button>
@@ -1062,7 +1062,7 @@ export function MarkdownEditor({
         </span>
         <button
           type="button"
-          aria-label={pt ? "Ajuda" : "Help"}
+          aria-label={t.help}
           onClick={() => setHelpOpen(true)}
         >
           <CircleHelp size={15} />
@@ -1135,7 +1135,7 @@ export function MarkdownEditor({
                             insertBlock(item.syntax);
                           }}
                         >
-                          {pt ? "Inserir" : "Insert"}
+                          {t.insert}
                         </button>
                       </article>
                     );

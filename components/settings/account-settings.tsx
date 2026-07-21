@@ -87,7 +87,7 @@ export function AccountSettings({
     },
     {
       id: "preferences" as const,
-      label: pt ? "Preferências" : "Preferences",
+      label: t.preferences,
       icon: SlidersHorizontal,
     },
     {

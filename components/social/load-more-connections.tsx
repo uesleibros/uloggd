@@ -5,7 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getConnectionsPage, type ConnectionTab } from "@/lib/connections";
 import { ConnectionCard, type ConnectionPerson } from "./connection-card";
-import type { UiLang } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export function LoadMoreConnections({
   profileId,
@@ -22,7 +22,7 @@ export function LoadMoreConnections({
   initialCursor: string | null;
   hasMore: boolean;
 }) {
-  const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const [extra, setExtra] = useState<ConnectionPerson[]>([]);
   const [cursor, setCursor] = useState(initialCursor);
   const [done, setDone] = useState(!hasMore || !initialCursor);
@@ -69,19 +69,9 @@ export function LoadMoreConnections({
             ) : (
               <Plus size={15} aria-hidden />
             )}
-            {pending
-              ? pt
-                ? "Carregando…"
-                : "Loading…"
-              : pt
-                ? "Carregar mais"
-                : "Load more"}
+            {pending ? t.loading : t.loadMore}
           </button>
-          {error && (
-            <span role="alert">
-              {pt ? "Não foi possível carregar." : "Could not load."}
-            </span>
-          )}
+          {error && <span role="alert">{t.couldNotLoad}</span>}
         </div>
       )}
     </>

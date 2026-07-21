@@ -81,7 +81,7 @@ export function CoverSelector({
       <div className="game-cover-primary">
         {/* All options are trusted IGDB image URLs returned by the server. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={saved} alt={`${pt ? "Capa de" : "Cover of"} ${game.name}`} />
+        <img src={saved} alt={`${t.coverOf} ${game.name}`} />
       </div>
       {covers.length > 1 && (
         <button

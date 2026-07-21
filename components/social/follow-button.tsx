@@ -117,21 +117,9 @@ export function FollowButton({
         ) : (
           <UserPlus size={15} />
         )}
-        {following
-          ? pt
-            ? "Seguindo"
-            : "Following"
-          : requested
-            ? pt
-              ? "Solicitado"
-              : "Requested"
-            : pt
-              ? "Seguir"
-              : "Follow"}
+        {following ? t.following : requested ? t.requested : t.follow}
       </button>
-      {error && (
-        <span role="alert">{pt ? "Tente novamente." : "Try again."}</span>
-      )}
+      {error && <span role="alert">{t.tryAgain}</span>}
       <Dialog.Root open={warningOpen} onOpenChange={setWarningOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="recent-unfollow-overlay" />

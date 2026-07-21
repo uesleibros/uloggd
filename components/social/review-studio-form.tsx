@@ -279,12 +279,8 @@ export function ReviewStudioForm({
                       ? "Escolha uma opção"
                       : "Choose an option"
                     : recommended
-                      ? pt
-                        ? "Recomendo"
-                        : "Recommended"
-                      : pt
-                        ? "Não recomendo"
-                        : "Not recommended"
+                      ? t.recommended
+                      : t.notRecommended
                   : rating === null
                     ? pt
                       ? "Sem nota"
@@ -380,7 +376,7 @@ export function ReviewStudioForm({
             >
               <RotateCcw size={18} />
               <span>
-                <strong>{pt ? "Rejogada" : "Replay"}</strong>
+                <strong>{t.replay}</strong>
                 <small>
                   {pt
                     ? "Esta não foi minha primeira jornada"
@@ -436,7 +432,7 @@ export function ReviewStudioForm({
               <EditorVisibilitySelect
                 value={visibility}
                 onChange={setVisibility}
-                pt={pt}
+                lang={lang}
               />
             </label>
             <label className="review-spoiler-toggle">
@@ -447,7 +443,7 @@ export function ReviewStudioForm({
               />
               <span aria-hidden="true" />
               <p>
-                <strong>{pt ? "Contém spoilers" : "Contains spoilers"}</strong>
+                <strong>{t.containsSpoilers}</strong>
                 <small>
                   {pt
                     ? "O texto ficará protegido até o leitor revelar."
@@ -932,17 +928,19 @@ function AspectEditor({
 export function EditorVisibilitySelect({
   value,
   onChange,
-  pt,
+  lang,
 }: {
   value: ReviewVisibility;
   onChange?: (value: ReviewVisibility) => void;
-  pt: boolean;
+  lang: UiLang;
 }) {
+  const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const options = [
     { value: "PUBLIC" as const, label: pt ? "Público" : "Public", icon: Eye },
     {
       value: "FOLLOWERS" as const,
-      label: pt ? "Seguidores" : "Followers",
+      label: t.followers,
       icon: Users,
     },
     {

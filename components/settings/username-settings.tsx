@@ -95,15 +95,23 @@ export function UsernameSettings({
       return pt ? "Esse nome é reservado." : "That name is reserved.";
     if (normalized === username)
       return pt ? "Esse já é o seu @ atual." : "That is already your handle.";
-    if (!valid) return pt ? "Formato inválido." : "Invalid format.";
+    if (!valid) return t.invalidFormat;
     if (valid && available === null)
       return pt ? "Verificando disponibilidade…" : "Checking availability…";
     if (available === false)
       return pt ? "Esse @ já está em uso." : "That handle is already taken.";
     if (available === true)
       return pt ? "Esse @ está disponível." : "That handle is available.";
-    return pt ? "Formato válido." : "Valid format.";
-  }, [available, normalized, pt, username, valid]);
+    return t.validFormat;
+  }, [
+    available,
+    normalized,
+    pt,
+    username,
+    valid,
+    t.invalidFormat,
+    t.validFormat,
+  ]);
 
   function resetDialog(nextOpen: boolean) {
     setOpen(nextOpen);
@@ -179,13 +187,7 @@ export function UsernameSettings({
             disabled={coolingDown}
           >
             {coolingDown ? <Clock3 size={14} /> : <Pencil size={14} />}
-            {coolingDown
-              ? pt
-                ? "Em espera"
-                : "Waiting"
-              : pt
-                ? "Alterar"
-                : "Change"}
+            {coolingDown ? (pt ? "Em espera" : "Waiting") : t.change}
           </button>
         </Dialog.Trigger>
         <Dialog.Portal>

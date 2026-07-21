@@ -193,14 +193,14 @@ export function LibraryCollection({
     );
 
   const labels: Record<Filter, string> = {
-    ALL: pt ? "Todos" : "All",
+    ALL: t.all,
     UNCLASSIFIED: pt ? "Não classificados" : "Unclassified",
     PLAYING: t.playing,
     BACKLOG: "Backlog",
     WISHLIST: pt ? "Desejos" : "Wishlist",
     COMPLETED: pt ? "Concluídos" : "Completed",
     LIKED: pt ? "Favoritos" : "Favorites",
-    RATED: pt ? "Avaliados" : "Rated",
+    RATED: t.rated,
   };
   return (
     <div className="library-workspace">
@@ -241,7 +241,7 @@ export function LibraryCollection({
           {query && (
             <button
               type="button"
-              aria-label={pt ? "Limpar busca" : "Clear search"}
+              aria-label={t.clearSearch}
               onClick={() => {
                 setQuery("");
                 update({ q: null });
@@ -355,7 +355,7 @@ export function LibraryCollection({
               update({ q: null, filter: null });
             }}
           >
-            {pt ? "Limpar filtros" : "Clear filters"}
+            {t.clearFilters}
           </button>
         </div>
       ) : (
@@ -391,7 +391,7 @@ export function LibraryCollection({
             onClick={() => update({ page: String(currentPage - 1) })}
           >
             <ChevronLeft size={16} />
-            {pt ? "Anterior" : "Previous"}
+            {t.previous}
           </button>
           <div>
             {paginationItems(currentPage, totalPages).map((item, index) =>
@@ -417,7 +417,7 @@ export function LibraryCollection({
             disabled={currentPage === totalPages}
             onClick={() => update({ page: String(currentPage + 1) })}
           >
-            {pt ? "Próxima" : "Next"}
+            {t.next}
             <ChevronRight size={16} />
           </button>
         </nav>

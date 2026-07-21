@@ -85,7 +85,7 @@ export function ListOwnerControls({
     <>
       <div className="list-owner-actions">
         <button type="button" onClick={() => setOpen(true)}>
-          <Pencil size={14} /> {pt ? "Editar" : "Edit"}
+          <Pencil size={14} /> {t.edit}
         </button>
         <button
           type="button"
@@ -107,9 +107,7 @@ export function ListOwnerControls({
               ? pt
                 ? "Confirmar exclusão?"
                 : "Confirm deletion?"
-              : pt
-                ? "Excluir"
-                : "Delete"}
+              : t.delete}
         </button>
       </div>
       <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -154,7 +152,7 @@ export function ListOwnerControls({
                 <EditorVisibilitySelect
                   value={visibility}
                   onChange={setVisibility}
-                  pt={pt}
+                  lang={lang}
                 />
               </label>
               {error && (
@@ -189,6 +187,7 @@ export function RemoveListItem({
   lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
+  const t = uiText(lang);
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
@@ -213,13 +212,7 @@ export function RemoveListItem({
         ) : (
           <X size={13} />
         )}{" "}
-        {pending
-          ? pt
-            ? "Removendo…"
-            : "Removing…"
-          : pt
-            ? "Remover"
-            : "Remove"}
+        {pending ? t.removing : t.remove}
       </button>
       {error && <span role="alert">{pt ? "Falhou" : "Failed"}</span>}
     </div>

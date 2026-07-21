@@ -196,20 +196,14 @@ export function ListsCollection({
             ) : (
               <Plus size={15} aria-hidden />
             )}
-            {loadingMore
-              ? pt
-                ? "Carregando…"
-                : "Loading…"
-              : pt
-                ? "Carregar mais"
-                : "Load more"}
+            {loadingMore ? t.loading : t.loadMore}
           </button>
         </div>
       )}
 
       {error && (
         <p className="lists-search-empty" role="alert">
-          {pt ? "Não foi possível carregar." : "Could not load."}
+          {t.couldNotLoad}
         </p>
       )}
     </section>

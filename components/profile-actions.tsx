@@ -125,7 +125,7 @@ export function ProfileActions({
           <button
             className="profile-more-trigger"
             type="button"
-            aria-label={pt ? "Mais ações" : "More actions"}
+            aria-label={t.moreActions}
           >
             <MoreHorizontal size={17} />
           </button>
@@ -144,7 +144,7 @@ export function ProfileActions({
             {canReport && (
               <DropdownMenu.Item onSelect={openReport}>
                 <Flag size={15} />
-                {pt ? "Denunciar" : "Report"}
+                {t.report}
               </DropdownMenu.Item>
             )}
             {canBlock && (
@@ -155,13 +155,7 @@ export function ProfileActions({
                   onSelect={() => setBlockOpen(true)}
                 >
                   {viewerBlocked ? <ShieldOff size={15} /> : <Ban size={15} />}
-                  {viewerBlocked
-                    ? pt
-                      ? "Desbloquear"
-                      : "Unblock"
-                    : pt
-                      ? "Bloquear"
-                      : "Block"}
+                  {viewerBlocked ? t.unblock : t.block}
                 </DropdownMenu.Item>
               </>
             )}
@@ -185,7 +179,7 @@ export function ProfileActions({
           <Dialog.Content className="report-dialog">
             <header>
               <div>
-                <span>{pt ? "SEGURANÇA" : "SAFETY"}</span>
+                <span>{t.safety}</span>
                 <Dialog.Title>
                   {pt ? `Denunciar @${username}` : `Report @${username}`}
                 </Dialog.Title>
@@ -278,13 +272,7 @@ export function ProfileActions({
                 {blockPending && (
                   <LoaderCircle className="spin" size={15} aria-hidden />
                 )}
-                {viewerBlocked
-                  ? pt
-                    ? "Desbloquear"
-                    : "Unblock"
-                  : pt
-                    ? "Bloquear"
-                    : "Block"}
+                {viewerBlocked ? t.unblock : t.block}
               </button>
             </footer>
           </Dialog.Content>
