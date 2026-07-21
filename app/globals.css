@@ -15555,9 +15555,6 @@ adapted to the current uloggd surface system. */
   display: block;
   width: 100%;
   margin-block: 12px;
-  /* The loop needs clipping, so the tile lift gets room via padding instead
-     of escaping the box. */
-  padding-block: 6px;
   overflow: hidden;
   mask-image: linear-gradient(
     90deg,
@@ -15570,7 +15567,11 @@ adapted to the current uloggd surface system. */
 .md-gc-carousel-track {
   display: flex;
   width: 100%;
+  /* Horizontal scrolling creates its own vertical clipping context. Keep the
+     hover lift inside that viewport instead of padding only the outer mask. */
+  padding-block: 6px;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
   cursor: grab;
   touch-action: pan-y;
