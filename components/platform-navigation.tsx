@@ -9,7 +9,6 @@ import {
   LockKeyhole,
   Search,
   Settings,
-  ShieldCheck,
   Star,
   UserRound,
 } from "lucide-react";
@@ -23,6 +22,7 @@ import { MobileGameSearch } from "./game-search";
 import { SidebarCollapseButton } from "./sidebar-collapse-button";
 import { SmartHeader } from "./smart-header";
 import { NotificationCenter } from "./notifications/notification-center";
+import { NavMoreMenu } from "./nav-more-menu";
 
 const iconMap = {
   home: HomeIcon,
@@ -50,15 +50,72 @@ export function PlatformNavigation({
   pending?: boolean;
 }) {
   const isAuthenticated = Boolean(account);
+  const profileHref = account?.username
+    ? `/${lang}/u/${account.username}`
+    : `/${lang}/onboarding/username`;
+  // Five primary destinations; everything else lives behind "More", so the
+  // rail stays short no matter how many secondary pages exist.
   const nav = [
-    ["home", d.nav.home, false],
-    ["feed", d.nav.feed, true],
-    ["search", d.platform.search, false],
-    ["library", d.nav.library, true],
-    ["star", d.nav.reviews, true],
-    ["list", d.nav.lists, true],
-    ["user", d.nav.profile, true],
+    {
+      key: "home",
+      icon: "home",
+      label: d.nav.home,
+      href: `/${lang}`,
+      requiresAuth: false,
+    },
+    {
+      key: "feed",
+      icon: "feed",
+      label: d.nav.feed,
+      href: `/${lang}/feed`,
+      requiresAuth: true,
+    },
+    {
+      key: "search",
+      icon: "search",
+      label: d.platform.search,
+      href: `/${lang}/search`,
+      requiresAuth: false,
+    },
+    {
+      key: "library",
+      icon: "library",
+      label: d.nav.library,
+      href: `/${lang}/library`,
+      requiresAuth: true,
+    },
+    {
+      key: "user",
+      icon: "user",
+      label: d.nav.profile,
+      href: profileHref,
+      requiresAuth: true,
+    },
   ] as const;
+  // Kept visible signed-out too: hiding these would mean a visitor never
+  // learns the features exist. The proxy sends them through login first.
+  const moreItems = [
+    { key: "star", label: d.nav.reviews, href: `/${lang}/reviews` },
+    { key: "list", label: d.nav.lists, href: `/${lang}/lists` },
+    ...(account?.role === "ADMIN" || account?.role === "MODERATOR"
+      ? [
+          {
+            key: "moderation",
+            label: lang === "pt-BR" ? "Moderação" : "Moderation",
+            href: `/${lang}/moderation`,
+          },
+        ]
+      : []),
+    ...(isAuthenticated
+      ? [
+          {
+            key: "settings",
+            label: d.nav.settings,
+            href: `/${lang}/settings?tab=general`,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <>
@@ -71,18 +128,18 @@ export function PlatformNavigation({
           <div className="sidebar-scroll">
             <nav className="main-nav" aria-label={d.platform.navigation}>
               <span className="nav-label">{d.platform.navigation}</span>
-              {nav.map(([icon, label, requiresAuth], index) => {
-                const NavIcon = iconMap[icon];
-                if (requiresAuth && !isAuthenticated) {
+              {nav.map((item) => {
+                const NavIcon = iconMap[item.icon];
+                if (item.requiresAuth && !isAuthenticated) {
                   return (
                     <Tooltip
-                      key={label}
+                      key={item.key}
                       side="right"
-                      label={pending ? label : d.actions.requiresSignIn}
+                      label={pending ? item.label : d.actions.requiresSignIn}
                     >
                       <span className="nav-disabled" aria-disabled="true">
                         <NavIcon size={20} />
-                        <span>{label}</span>
+                        <span>{item.label}</span>
                         {!pending && (
                           <LockKeyhole className="nav-lock" size={12} />
                         )}
@@ -90,73 +147,21 @@ export function PlatformNavigation({
                     </Tooltip>
                   );
                 }
-                if (index !== 0) {
-                  const href =
-                    icon === "feed"
-                      ? `/${lang}/feed`
-                      : icon === "search"
-                        ? `/${lang}/search`
-                        : icon === "library"
-                          ? `/${lang}/library`
-                          : icon === "star"
-                            ? `/${lang}/reviews`
-                            : icon === "list"
-                              ? `/${lang}/lists`
-                              : account?.username
-                                ? `/${lang}/u/${account.username}`
-                                : `/${lang}/onboarding/username`;
-                  return (
-                    <Tooltip key={label} label={label} side="right">
-                      <ActiveLink href={href} aria-label={label}>
-                        <NavIcon size={20} />
-                        <span>{label}</span>
-                      </ActiveLink>
-                    </Tooltip>
-                  );
-                }
                 return (
-                  <Tooltip key={label} label={label} side="right">
-                    <ActiveLink href={`/${lang}`} aria-label={label}>
+                  <Tooltip key={item.key} label={item.label} side="right">
+                    <ActiveLink href={item.href} aria-label={item.label}>
                       <NavIcon size={20} />
-                      <span>{label}</span>
+                      <span>{item.label}</span>
                     </ActiveLink>
                   </Tooltip>
                 );
               })}
+              <NavMoreMenu items={moreItems} label={d.nav.more} />
             </nav>
-            <div className="sidebar-bottom">
-              {isAuthenticated ? (
-                <>
-                  {(account?.role === "ADMIN" ||
-                    account?.role === "MODERATOR") && (
-                    <Tooltip
-                      side="right"
-                      label={lang === "pt-BR" ? "Moderação" : "Moderation"}
-                    >
-                      <ActiveLink
-                        href={`/${lang}/moderation`}
-                        aria-label={
-                          lang === "pt-BR" ? "Moderação" : "Moderation"
-                        }
-                      >
-                        <ShieldCheck size={20} />
-                        <span>
-                          {lang === "pt-BR" ? "Moderação" : "Moderation"}
-                        </span>
-                      </ActiveLink>
-                    </Tooltip>
-                  )}
-                  <Tooltip side="right" label={d.nav.settings}>
-                    <ActiveLink
-                      href={`/${lang}/settings?tab=general`}
-                      aria-label={d.nav.settings}
-                    >
-                      <Settings size={20} />
-                      <span>{d.nav.settings}</span>
-                    </ActiveLink>
-                  </Tooltip>
-                </>
-              ) : (
+            {/* Settings and moderation moved into the "More" menu above; a
+                signed-out visitor still gets the locked hint here. */}
+            {!isAuthenticated && (
+              <div className="sidebar-bottom">
                 <Tooltip
                   side="right"
                   label={pending ? d.nav.settings : d.actions.requiresSignIn}
@@ -167,8 +172,8 @@ export function PlatformNavigation({
                     {!pending && <LockKeyhole className="nav-lock" size={12} />}
                   </span>
                 </Tooltip>
-              )}
-            </div>
+              </div>
+            )}
           </div>
           {pending ? (
             <div className="account-button account-slot-skeleton" aria-hidden>

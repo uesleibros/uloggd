@@ -965,6 +965,7 @@ html[data-sidebar-collapsed] .sidebar-brand .brand span,
 html[data-sidebar-collapsed] .product-stage,
 html[data-sidebar-collapsed] .nav-label,
 html[data-sidebar-collapsed] .main-nav a > span,
+html[data-sidebar-collapsed] .main-nav > .nav-more-trigger > span,
 html[data-sidebar-collapsed] .main-nav > .nav-disabled > span,
 html[data-sidebar-collapsed] .sidebar-bottom > a span,
 html[data-sidebar-collapsed] .sidebar-bottom > .nav-disabled > span,
@@ -1083,6 +1084,7 @@ html[data-sidebar-ready] .account-button > svg {
 .product-stage,
 .nav-label,
 .main-nav a > span,
+.main-nav > .nav-more-trigger > span,
 .main-nav > .nav-disabled > span,
 .sidebar-bottom > a span,
 .sidebar-bottom > .nav-disabled > span,
@@ -1120,6 +1122,7 @@ html[data-sidebar-ready] .account-button > svg {
   text-transform: uppercase;
 }
 .main-nav a,
+.main-nav > .nav-more-trigger,
 .sidebar-bottom > a,
 .main-nav > .nav-disabled,
 .sidebar-bottom > .nav-disabled {
@@ -1148,6 +1151,8 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--screen-muted);
 }
 .main-nav a:hover,
+.main-nav > .nav-more-trigger:hover,
+.main-nav > .nav-more-trigger[data-state="open"],
 .sidebar-bottom > a:hover {
   color: var(--screen-white);
   background: var(--console-hover);
@@ -16103,5 +16108,65 @@ adapted to the current uloggd surface system. */
     order: 3;
     flex-basis: 100%;
     margin-left: 0;
+  }
+}
+
+/* "More" nav entry: inherits the nav item look above; only the bits a <button>
+   does not get for free are set here. */
+.nav-more-trigger {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.nav-more-trigger[data-active] {
+  color: var(--screen-white);
+  font-weight: 650;
+}
+.nav-more-trigger[data-active] svg {
+  color: var(--screen-white);
+  stroke-width: 2.5;
+}
+.nav-more-menu {
+  z-index: 10010;
+  min-width: 210px;
+  padding: 5px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 11px;
+  background: var(--overlay-panel);
+  box-shadow: 0 18px 46px var(--overlay-shadow);
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+  animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.nav-more-menu [role="menuitem"] {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 8px;
+  outline: 0;
+  color: var(--screen-dim);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+.nav-more-menu [role="menuitem"][data-highlighted] {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.nav-more-menu [role="menuitem"][data-active] {
+  color: var(--screen-white);
+  font-weight: 640;
+}
+.nav-more-menu [role="menuitem"][data-active] svg {
+  color: var(--brand-blurple-bright);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-more-menu {
+    animation: none;
   }
 }
