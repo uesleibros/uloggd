@@ -329,7 +329,7 @@
   border-radius: 12px;
   outline: 0;
   background: var(--console-panel);
-  box-shadow: 0 24px 70px rgb(0 0 0 / 52%);
+  box-shadow: 0 24px 70px var(--shadow-modal);
   transform: translate(-50%, -50%);
   animation: modal-center-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -634,7 +634,7 @@
   transform: translateY(-2px);
   box-shadow:
     inset 0 0 0 1px rgb(255 255 255 / 22%),
-    0 7px 18px rgb(0 0 0 / 24%);
+    0 7px 18px var(--shadow-soft);
 }
 .profile-social-links a:active {
   transform: scale(0.95);
@@ -798,7 +798,7 @@
   border: 1px solid var(--thought-line);
   border-radius: 13px 13px 13px 4px;
   background: var(--console-raised);
-  box-shadow: 0 14px 34px rgb(0 0 0 / 0.3);
+  box-shadow: 0 14px 34px var(--shadow-raised);
   color: var(--screen-white);
   transform-origin: left bottom;
   animation:
@@ -1698,7 +1698,7 @@
 .profile-connection-card > a:hover {
   border-color: var(--shell-line-strong);
   background: var(--console-raised);
-  box-shadow: 0 12px 30px rgb(0 0 0 / 0.18);
+  box-shadow: 0 12px 30px var(--shadow-soft);
   transform: translateY(-2px);
 }
 .profile-connection-card > a:active {
@@ -1809,7 +1809,7 @@
     padding: 9px 8px;
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / 4%),
-      0 1px 2px rgb(0 0 0 / 10%);
+      0 1px 2px var(--shadow-soft);
   }
 
   .profile-stat-label svg {

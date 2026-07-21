@@ -28,6 +28,13 @@
   --overlay-panel: #151318;
   --overlay-panel-sticky: rgb(21 19 24 / 96%);
   --overlay-shadow: rgb(0 0 0 / 42%);
+  /* Elevation scale. Every shadow should come from here: a literal black
+     stays black in the light theme, which is what made light mode look
+     bruised around cards and dialogs. */
+  --shadow-soft: rgb(0 0 0 / 22%);
+  --shadow-raised: rgb(0 0 0 / 38%);
+  --shadow-modal: rgb(0 0 0 / 52%);
+  --overlay-scrim: rgb(0 0 0 / 58%);
   --tonal-brand-text: #cfd2ff;
   --quiet-hover: rgb(255 255 255 / 3%);
   --header-control: rgb(9 8 11 / 32%);
@@ -86,6 +93,10 @@
   --overlay-panel: #ffffff;
   --overlay-panel-sticky: rgb(255 255 255 / 96%);
   --overlay-shadow: rgb(40 44 54 / 16%);
+  --shadow-soft: rgb(40 44 54 / 8%);
+  --shadow-raised: rgb(40 44 54 / 14%);
+  --shadow-modal: rgb(40 44 54 / 22%);
+  --overlay-scrim: rgb(24 27 35 / 38%);
   --tonal-brand-text: #3f4cc8;
   --quiet-hover: rgb(24 27 35 / 4%);
   --header-control: rgb(255 255 255 / 62%);
@@ -377,7 +388,7 @@ html[data-sidebar-collapsed] {
   position: fixed;
   z-index: 70;
   inset: 0;
-  background: rgb(0 0 0 / 58%);
+  background: var(--overlay-scrim);
   backdrop-filter: blur(3px);
   will-change: opacity;
 }
@@ -403,7 +414,7 @@ html[data-sidebar-collapsed] {
   outline: 0;
   background: var(--console-panel);
   color: var(--screen-white);
-  box-shadow: 0 24px 64px rgb(0 0 0 / 44%);
+  box-shadow: 0 24px 64px var(--shadow-raised);
   transform-origin: calc(100% - 28px) top;
   will-change: transform, opacity;
 }
@@ -905,7 +916,7 @@ html[data-sidebar-collapsed] {
   padding: 0;
   border-right: 1px solid var(--shell-line-strong);
   background: var(--console-panel);
-  box-shadow: 12px 0 32px rgb(0 0 0 / 18%);
+  box-shadow: 12px 0 32px var(--shadow-soft);
   grid-column: 1;
   grid-row: 1;
   overflow: visible;
@@ -924,7 +935,7 @@ html[data-sidebar-collapsed] {
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-muted);
-  box-shadow: 0 6px 18px rgb(0 0 0 / 28%);
+  box-shadow: 0 6px 18px var(--shadow-raised);
   cursor: pointer;
   transition:
     background-color 130ms ease-out,
@@ -1217,7 +1228,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 9px;
   outline: 0;
   background: var(--console-raised);
-  box-shadow: 0 16px 38px rgb(0 0 0 / 44%);
+  box-shadow: 0 16px 38px var(--shadow-raised);
   animation: locale-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .locale-menu-label {
@@ -1350,7 +1361,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 9px;
   outline: 0;
   background: var(--console-raised);
-  box-shadow: 0 16px 38px rgb(0 0 0 / 44%);
+  box-shadow: 0 16px 38px var(--shadow-raised);
   animation: locale-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .account-menu-identity {
@@ -1785,11 +1796,15 @@ html[data-sidebar-ready] .account-button > svg {
   background:
     linear-gradient(
       90deg,
-      rgb(11 10 13 / 98%) 0%,
-      rgb(11 10 13 / 84%) 38%,
-      rgb(11 10 13 / 14%) 76%
+      color-mix(in srgb, var(--console-canvas) 98%, transparent) 0%,
+      color-mix(in srgb, var(--console-canvas) 84%, transparent) 38%,
+      color-mix(in srgb, var(--console-canvas) 14%, transparent) 76%
     ),
-    linear-gradient(0deg, rgb(10 9 12 / 94%), transparent 64%);
+    linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--console-canvas) 94%, transparent),
+      transparent 64%
+    );
 }
 .featured-copy {
   position: relative;
@@ -2479,7 +2494,7 @@ html[data-sidebar-ready] .account-button > svg {
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgb(15 14 17 / 8%),
+    color-mix(in srgb, var(--console-canvas) 8%, transparent),
     var(--console-canvas)
   );
 }
@@ -2558,7 +2573,7 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid var(--shell-line-strong);
   border-radius: 12px;
   background: var(--console-panel);
-  box-shadow: 0 24px 70px rgb(0 0 0 / 48%);
+  box-shadow: 0 24px 70px var(--shadow-modal);
   transform: translate(-50%, -50%);
   animation: modal-center-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -3207,7 +3222,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 0;
   border: 1px solid var(--shell-line-strong);
   border-radius: 7px;
-  background: rgb(15 14 17 / 82%);
+  background: var(--image-control);
   cursor: pointer;
 }
 .media-lightbox > button:first-of-type {
@@ -3232,7 +3247,7 @@ html[data-sidebar-ready] .account-button > svg {
   left: 50%;
   padding: 5px 8px;
   border-radius: 5px;
-  background: rgb(15 14 17 / 82%);
+  background: var(--image-control);
   color: #b9bcc5;
   font: 550 11px var(--font-inter);
   transform: translateX(-50%);
@@ -3249,7 +3264,7 @@ html[data-sidebar-ready] .account-button > svg {
   overflow-x: auto;
   border: 1px solid var(--shell-line);
   border-radius: 8px;
-  background: rgb(15 14 17 / 88%);
+  background: var(--image-control-strong);
   scrollbar-width: thin;
   scrollbar-color: var(--shell-line-strong) transparent;
   backdrop-filter: blur(10px);
@@ -3870,7 +3885,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 12px;
   outline: 0;
   background: var(--console-panel);
-  box-shadow: 0 24px 70px rgb(0 0 0 / 52%);
+  box-shadow: 0 24px 70px var(--shadow-modal);
   transform: translate(-50%, -50%);
   animation: modal-center-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -4023,7 +4038,7 @@ html[data-sidebar-ready] .account-button > svg {
   position: fixed;
   z-index: 60;
   inset: 0;
-  background: rgb(0 0 0 / 68%);
+  background: var(--overlay-scrim);
   backdrop-filter: blur(3px);
 }
 .drawer-backdrop[data-state="open"] {
@@ -4042,7 +4057,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-right: 1px solid var(--shell-line-strong);
   outline: 0;
   background: var(--console-panel);
-  box-shadow: 24px 0 60px rgb(0 0 0 / 55%);
+  box-shadow: 24px 0 60px var(--shadow-modal);
   display: flex;
   flex-direction: column;
   max-height: 100dvh;
@@ -4277,7 +4292,11 @@ html[data-sidebar-ready] .account-button > svg {
   overflow: hidden;
   border-right: 1px solid var(--shell-line);
   background:
-    linear-gradient(180deg, rgb(15 14 17 / 6%), var(--console-canvas) 88%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--console-canvas) 6%, transparent),
+      var(--console-canvas) 88%
+    ),
     radial-gradient(circle at 48% 70%, rgb(88 101 242 / 10%), transparent 40%);
 }
 .login-library::before {
@@ -5285,7 +5304,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 6px;
   background: rgb(10 8 14 / 84%);
   color: #c7bfff;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 28%);
+  box-shadow: 0 4px 12px var(--shadow-raised);
   backdrop-filter: blur(8px);
 }
 
@@ -6054,7 +6073,7 @@ never the tracking violet. */
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   background: var(--console-raised);
-  box-shadow: 0 16px 42px rgb(0 0 0 / 42%);
+  box-shadow: 0 16px 42px var(--shadow-raised);
   transform-origin: var(--radix-select-content-transform-origin);
   animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -6389,7 +6408,7 @@ and the frosted stats block anchored bottom-right. */
   border: 1px solid var(--shell-line-strong);
   border-radius: 12px;
   background: var(--console-raised);
-  box-shadow: 0 24px 70px rgb(0 0 0 / 52%);
+  box-shadow: 0 24px 70px var(--shadow-modal);
   transform: translate(-50%, -50%);
   animation: social-modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -6783,7 +6802,7 @@ and content bars. */
   border: 1px solid var(--shell-line-strong);
   border-radius: 15px;
   background: var(--console-raised);
-  box-shadow: 0 28px 90px rgb(0 0 0 / 0.58);
+  box-shadow: 0 28px 90px var(--shadow-modal);
   transform: translate(-50%, -50%);
 }
 .account-delete-dialog[data-state="open"] {
@@ -7034,7 +7053,7 @@ and content bars. */
   border: 1px solid var(--shell-line-strong);
   border-radius: 12px;
   background: var(--console-raised);
-  box-shadow: 0 24px 70px rgb(0 0 0 / 52%);
+  box-shadow: 0 24px 70px var(--shadow-modal);
   transform: translate(-50%, -50%);
 }
 .report-dialog > header {
@@ -7180,7 +7199,7 @@ and content bars. */
 }
 .share-dialog-actions > button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgb(0 0 0 / 20%);
+  box-shadow: 0 8px 22px var(--shadow-soft);
 }
 .share-dialog-actions > button:active:not(:disabled) {
   transform: scale(0.97);
@@ -7336,7 +7355,7 @@ and content bars. */
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   background: var(--console-raised);
-  box-shadow: 0 16px 38px rgb(0 0 0 / 42%);
+  box-shadow: 0 16px 38px var(--shadow-raised);
   transform-origin: var(--radix-select-content-transform-origin);
 }
 
@@ -7521,7 +7540,7 @@ catalog modules second. */
   width: 100%;
   max-width: 650px;
   padding: 0 0 2px;
-  text-shadow: 0 1px 16px rgb(0 0 0 / 52%);
+  text-shadow: 0 1px 16px var(--shadow-modal);
 }
 
 .game-stage .game-page-content h1 {
@@ -10317,7 +10336,7 @@ details.review-page-content p {
   border: 1px solid var(--shell-line-strong);
   border-radius: 14px;
   background: var(--console-panel);
-  box-shadow: 0 24px 80px rgb(0 0 0 / 45%);
+  box-shadow: 0 24px 80px var(--shadow-raised);
   animation: social-modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .social-editor-dialog[data-state="closed"] {
@@ -10628,7 +10647,7 @@ details.review-page-content p {
   left: 8px;
   padding: 4px 6px;
   border-radius: 5px;
-  background: rgb(11 10 13 / 88%);
+  background: var(--image-control-strong);
   color: #f2f3f7;
   font: 600 11px var(--font-inter);
 }
@@ -10654,7 +10673,7 @@ details.review-page-content p {
   height: 30px;
   border: 0;
   border-radius: 7px;
-  background: rgb(11 10 13 / 85%);
+  background: var(--image-control);
   color: #b9bcc5;
   cursor: grab;
   touch-action: none;
@@ -11606,7 +11625,7 @@ html
   border: 1px solid var(--shell-line-strong);
   border-radius: 16px;
   background: var(--console-raised);
-  box-shadow: 0 28px 80px rgb(0 0 0 / 0.52);
+  box-shadow: 0 28px 80px var(--shadow-modal);
   text-align: center;
   transform: translate(-50%, -50%);
 }
@@ -11846,9 +11865,9 @@ html
   background:
     linear-gradient(
       90deg,
-      rgb(15 14 17 / 96%),
-      rgb(15 14 17 / 62%) 55%,
-      rgb(15 14 17 / 24%)
+      color-mix(in srgb, var(--console-canvas) 96%, transparent),
+      color-mix(in srgb, var(--console-canvas) 62%, transparent) 55%,
+      color-mix(in srgb, var(--console-canvas) 24%, transparent)
     ),
     linear-gradient(0deg, var(--console-canvas), transparent 72%);
 }
@@ -12053,7 +12072,7 @@ html
   border: 1px solid var(--shell-line-strong);
   border-radius: 14px;
   background: var(--console-panel);
-  box-shadow: 0 28px 80px rgb(0 0 0 / 0.52);
+  box-shadow: 0 28px 80px var(--shadow-modal);
   transform: translate(-50%, -50%);
 }
 
@@ -12129,7 +12148,7 @@ html
   border: 1px solid var(--shell-line-strong);
   border-radius: 9px;
   background: var(--console-raised);
-  box-shadow: 0 16px 42px rgb(0 0 0 / 0.38);
+  box-shadow: 0 16px 42px var(--shadow-raised);
 }
 
 .create-list-select-item {
@@ -12898,9 +12917,9 @@ and route recovery. */
   background:
     linear-gradient(
       90deg,
-      rgb(15 14 17 / 96%),
-      rgb(15 14 17 / 62%) 55%,
-      rgb(15 14 17 / 24%)
+      color-mix(in srgb, var(--console-canvas) 96%, transparent),
+      color-mix(in srgb, var(--console-canvas) 62%, transparent) 55%,
+      color-mix(in srgb, var(--console-canvas) 24%, transparent)
     ),
     linear-gradient(0deg, var(--console-canvas), transparent 72%);
 }
@@ -13553,7 +13572,7 @@ shareable IGDB search workspace. */
   padding: 0 6px;
   border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 6px;
-  background: rgb(10 9 12 / 82%);
+  background: var(--image-control);
   color: #f2f3f7;
   font-size: 9px;
   font-weight: 650;
@@ -14033,7 +14052,7 @@ compact and detached on mobile. */
     linear-gradient(110deg, var(--header-glass-start), var(--header-glass-end)),
     var(--header-glass-base);
   box-shadow:
-    0 10px 30px rgb(0 0 0 / 0.22),
+    0 10px 30px var(--shadow-soft),
     inset 0 1px 0 rgb(255 255 255 / 0.045);
   backdrop-filter: blur(22px) saturate(1.28);
 }
@@ -14081,7 +14100,7 @@ compact and detached on mobile. */
       ),
       var(--header-glass-base);
     box-shadow:
-      0 10px 28px rgb(0 0 0 / 0.28),
+      0 10px 28px var(--shadow-raised),
       inset 0 1px 0 rgb(255 255 255 / 0.05);
     backdrop-filter: blur(24px) saturate(1.35);
   }
@@ -14403,7 +14422,7 @@ compact and detached on mobile. */
   outline: 0;
   background: var(--console-panel);
   color: var(--screen-white);
-  box-shadow: 0 28px 80px rgb(0 0 0 / 52%);
+  box-shadow: 0 28px 80px var(--shadow-modal);
   transform: translate(-50%, -50%);
 }
 .journey-details-dialog[data-state="open"],
@@ -15310,7 +15329,7 @@ adapted to the current uloggd surface system. */
   align-self: start;
   overflow: hidden;
   border-radius: 8px;
-  box-shadow: 0 6px 18px var(--overlay-shadow, rgb(0 0 0 / 35%));
+  box-shadow: 0 6px 18px var(--overlay-shadow, var(--shadow-raised));
 }
 .md-gc-cover img {
   display: block;
@@ -15866,7 +15885,7 @@ adapted to the current uloggd surface system. */
   background: var(--console-inset);
   box-shadow:
     inset 0 0 0 1px rgb(255 255 255 / 10%),
-    6px 0 16px rgb(0 0 0 / 42%);
+    6px 0 16px var(--shadow-raised);
   transition: transform 260ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .list-preview-stack > span + span {
