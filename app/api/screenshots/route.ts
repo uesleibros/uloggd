@@ -1,0 +1,130 @@
+import { createClient } from "@/lib/supabase/server";
+
+export const runtime = "nodejs";
+
+const acceptedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const maxInputBytes = 12 * 1024 * 1024;
+const maxDescription = 2200;
+
+function sameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  if (!origin) return true;
+  const expected = process.env.NEXT_PUBLIC_SITE_URL;
+  return origin === new URL(expected || request.url).origin;
+}
+
+export async function POST(request: Request) {
+  if (!sameOrigin(request))
+    return Response.json({ error: "invalid_origin" }, { status: 403 });
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return Response.json({ error: "unauthorized" }, { status: 401 });
+
+  const input = await request.formData();
+  const image = input.get("image");
+  const gameId = Number(input.get("gameId"));
+  const gameSlug = String(input.get("gameSlug") ?? "").trim();
+  const description = String(input.get("description") ?? "").trim();
+  const visibility = String(input.get("visibility") ?? "PUBLIC");
+  const spoilers = input.get("spoilers") === "true";
+
+  if (
+    !(image instanceof File) ||
+    !acceptedTypes.has(image.type) ||
+    image.size <= 0 ||
+    image.size > maxInputBytes ||
+    !Number.isSafeInteger(gameId) ||
+    gameId <= 0 ||
+    !/^[a-z0-9-]{1,80}$/.test(gameSlug) ||
+    description.length > maxDescription ||
+    !["PUBLIC", "FOLLOWERS", "PRIVATE"].includes(visibility)
+  ) {
+    return Response.json({ error: "invalid_input" }, { status: 400 });
+  }
+
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const { count } = await supabase
+    .from("screenshots")
+    .select("id", { count: "exact", head: true })
+    .eq("profile_id", user.id)
+    .gte("created_at", oneHourAgo);
+  if ((count ?? 0) >= 20)
+    return Response.json({ error: "rate_limited" }, { status: 429 });
+
+  let processed: Buffer;
+  let width: number;
+  let height: number;
+  try {
+    // Keep the native image processor out of route discovery/build workers;
+    // it is loaded only for an authenticated upload request.
+    const { default: sharp } = await import("sharp");
+    const source = sharp(await image.arrayBuffer(), {
+      failOn: "warning",
+      limitInputPixels: 40_000_000,
+      sequentialRead: true,
+    });
+    const metadata = await source.metadata();
+    if (
+      !metadata.width ||
+      !metadata.height ||
+      metadata.width < 160 ||
+      metadata.height < 160 ||
+      !["jpeg", "png", "webp"].includes(metadata.format ?? "")
+    ) {
+      return Response.json({ error: "invalid_image" }, { status: 400 });
+    }
+    const output = await source
+      .rotate()
+      .resize({
+        width: 2560,
+        height: 2560,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .webp({ quality: 86, effort: 5 })
+      .toBuffer({ resolveWithObject: true });
+    processed = output.data;
+    width = output.info.width;
+    height = output.info.height;
+  } catch {
+    return Response.json({ error: "invalid_image" }, { status: 400 });
+  }
+
+  const id = crypto.randomUUID();
+  const storagePath = `${user.id}/${id}.webp`;
+  const { error: uploadError } = await supabase.storage
+    .from("screenshots")
+    .upload(storagePath, processed, {
+      contentType: "image/webp",
+      cacheControl: "31536000",
+      upsert: false,
+    });
+  if (uploadError)
+    return Response.json({ error: "upload_failed" }, { status: 502 });
+
+  const { data: screenshot, error: insertError } = await supabase
+    .from("screenshots")
+    .insert({
+      id,
+      profile_id: user.id,
+      igdb_id: gameId,
+      game_slug: gameSlug,
+      storage_path: storagePath,
+      description: description || null,
+      contains_spoilers: spoilers,
+      visibility,
+      width,
+      height,
+    })
+    .select("public_id")
+    .single();
+
+  if (insertError || !screenshot) {
+    await supabase.storage.from("screenshots").remove([storagePath]);
+    return Response.json({ error: "publish_failed" }, { status: 500 });
+  }
+  return Response.json({ id: screenshot.public_id }, { status: 201 });
+}

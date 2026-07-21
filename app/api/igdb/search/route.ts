@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
             supabase
               .from("game_lists")
               .select(
-                "id,name,visibility,owner:profiles!game_lists_profile_id_fkey(username)",
+                "id,public_id,name,visibility,owner:profiles!game_lists_profile_id_fkey(username)",
               )
               .eq("visibility", "PUBLIC")
               .ilike("name", `%${sanitized}%`)
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
         lists: (lists ?? []).map((list) => {
           const owner = Array.isArray(list.owner) ? list.owner[0] : list.owner;
           return {
-            id: list.id,
+            id: list.public_id,
             name: list.name,
             owner: owner?.username ?? null,
           };

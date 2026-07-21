@@ -23,7 +23,7 @@ export async function getListPreviews(
   let query = supabase
     .from("game_lists")
     .select(
-      "id,name,description,visibility,updated_at,game_list_items(igdb_id,position)",
+      "id,public_id,name,description,visibility,updated_at,game_list_items(igdb_id,position)",
     )
     .eq("profile_id", options.ownerId)
     .order("updated_at", { ascending: false })
@@ -88,6 +88,7 @@ export async function getListPreviews(
     const items = itemsByList[index];
     return {
       id: list.id,
+      publicId: list.public_id,
       name: list.name,
       description: list.description,
       visibility: list.visibility as ListPreview["visibility"],
@@ -98,6 +99,7 @@ export async function getListPreviews(
           ? [
               {
                 url: resolveGameCover(game.coverUrl, customById.get(game.id)),
+                fallbackUrl: game.coverUrl,
                 name: game.name,
               },
             ]

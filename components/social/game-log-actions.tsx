@@ -13,6 +13,7 @@ import {
   LoaderCircle,
   Map,
   Pencil,
+  ScanLine,
   Play,
   Plus,
   Trash2,
@@ -33,8 +34,9 @@ import {
   ReviewStudioForm,
   type ReviewRpcFields,
 } from "./review-studio-form";
+import { ScreenshotStudioForm } from "./screenshot-studio-form";
 
-type Mode = "review" | "diary" | "list";
+type Mode = "review" | "diary" | "list" | "screenshot";
 type ListOption = { id: string; name: string };
 type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
 type SelectedJourney = string | "loose" | null;
@@ -395,6 +397,7 @@ export function GameLogActions({
     review: tri(lang, "Nova avaliação", "New review", "Nueva reseña"),
     diary: tri(lang, "Sua jornada", "Your journey", "Tu recorrido"),
     list: tri(lang, "Adicionar à lista", "Add to list", "Añadir a la lista"),
+    screenshot: tri(lang, "Nova captura", "New screenshot", "Nueva captura"),
   };
   function openMode(nextMode: Mode) {
     setError(null);
@@ -417,6 +420,9 @@ export function GameLogActions({
         <button type="button" onClick={() => openMode("diary")}>
           <CalendarPlus size={15} />{" "}
           {tri(lang, "Registrar jornada", "Log journey", "Registrar recorrido")}
+        </button>
+        <button type="button" onClick={() => openMode("screenshot")}>
+          <ScanLine size={15} /> {labels.screenshot}
         </button>
         {logCount > 0 && (
           <Link href={`/${lang}/game/${game.slug}/logs`}>
@@ -479,6 +485,13 @@ export function GameLogActions({
                   "Guardado en tu recorrido.",
                 )}
                 onPerform={performReview}
+              />
+            )}
+            {mode === "screenshot" && (
+              <ScreenshotStudioForm
+                game={game}
+                lang={lang}
+                onCancel={() => setOpen(false)}
               />
             )}
             {mode === "diary" && !dayEditor && (

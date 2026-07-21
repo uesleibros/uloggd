@@ -36,7 +36,14 @@ type Aspect = {
 };
 
 const reviewSelect =
-  "id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)";
+  "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)";
+
+function reviewKey(id: string) {
+  if (/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
+    return ["public_id", id] as const;
+  if (/^[0-9a-f-]{36}$/i.test(id)) return ["id", id] as const;
+  return null;
+}
 
 function formatRating(rating: number, mode: RatingMode, lang: UiLang) {
   if (mode === "score_100") return `${rating}/100`;
@@ -48,7 +55,8 @@ function formatRating(rating: number, mode: RatingMode, lang: UiLang) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
-  if (!hasLocale(lang) || !/^[0-9a-f-]{36}$/i.test(id)) return {};
+  const key = reviewKey(id);
+  if (!hasLocale(lang) || !key) return {};
   const { data: review } = await (
     await getSupabase()
   )
@@ -56,7 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .select(
       "title,content,game_slug,profiles!reviews_profile_id_fkey(username)",
     )
-    .eq("id", id)
+    .eq(key[0], key[1])
     .maybeSingle();
   if (!review) return {};
   const owner = Array.isArray(review.profiles)
@@ -83,10 +91,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ReviewPage({ params }: Props) {
   const { lang, id } = await params;
-  if (!hasLocale(lang) || !/^[0-9a-f-]{36}$/i.test(id)) notFound();
+  const key = reviewKey(id);
+  if (!hasLocale(lang) || !key) notFound();
   const supabase = await getSupabase();
   const [{ data: review }, user] = await Promise.all([
-    supabase.from("reviews").select(reviewSelect).eq("id", id).maybeSingle(),
+    supabase
+      .from("reviews")
+      .select(reviewSelect)
+      .eq(key[0], key[1])
+      .maybeSingle(),
     getAuthUser(),
   ]);
   if (!review) notFound();
@@ -157,6 +170,7 @@ export default async function ReviewPage({ params }: Props) {
 
   const entry: SocialEntry = {
     id: review.id,
+    publicId: review.public_id,
     kind: "review",
     profileId: review.profile_id,
     profile,

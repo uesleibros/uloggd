@@ -25,7 +25,8 @@ import {
 
 export type SocialEntry = {
   id: string;
-  kind: "review" | "diary";
+  publicId?: string;
+  kind: "review" | "diary" | "screenshot";
   profileId: string;
   profile: {
     username: string;
@@ -52,6 +53,9 @@ export type SocialEntry = {
   startedOn?: string | null;
   finishedOn?: string | null;
   content?: string | null;
+  imageUrl?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   playedOn?: string;
   endedOn?: string | null;
   minutes?: number | null;
@@ -172,23 +176,56 @@ export function ActivityStream({
             <p className="activity-verb">
               {entry.kind === "review"
                 ? tri(lang, "avaliou", "reviewed", "reseñó")
-                : entry.endedOn
+                : entry.kind === "screenshot"
                   ? tri(
                       lang,
-                      "registrou uma jornada em",
-                      "logged a journey in",
-                      "registró un recorrido en",
+                      "compartilhou uma captura de",
+                      "shared a screenshot from",
+                      "compartió una captura de",
                     )
-                  : tri(
-                      lang,
-                      "registrou uma sessão de",
-                      "logged a session of",
-                      "registró una sesión de",
-                    )}{" "}
+                  : entry.endedOn
+                    ? tri(
+                        lang,
+                        "registrou uma jornada em",
+                        "logged a journey in",
+                        "registró un recorrido en",
+                      )
+                    : tri(
+                        lang,
+                        "registrou uma sessão de",
+                        "logged a session of",
+                        "registró una sesión de",
+                      )}{" "}
               <Link href={`/${lang}/game/${entry.gameSlug}`}>
                 {entry.game?.name ?? entry.gameSlug}
               </Link>
             </p>
+            {entry.kind === "screenshot" && entry.imageUrl && (
+              <Link
+                className="activity-screenshot"
+                href={`/${lang}/shot/${entry.publicId ?? entry.id}`}
+              >
+                <Image
+                  src={entry.imageUrl}
+                  alt=""
+                  width={entry.imageWidth ?? 1280}
+                  height={entry.imageHeight ?? 720}
+                  sizes="(max-width: 760px) 100vw, 640px"
+                  unoptimized
+                />
+                {entry.spoilers && (
+                  <span>
+                    <EyeOff size={18} />
+                    {tri(
+                      lang,
+                      "Revelar captura",
+                      "Reveal screenshot",
+                      "Revelar captura",
+                    )}
+                  </span>
+                )}
+              </Link>
+            )}
             {entry.kind === "review" && typeof entry.rating === "number" && (
               <div
                 className="activity-rating"
@@ -216,7 +253,9 @@ export function ActivityStream({
             )}
             {entry.kind === "review" && entry.title && (
               <h3 className="activity-review-title">
-                <Link href={`/${lang}/review/${entry.id}`}>{entry.title}</Link>
+                <Link href={`/${lang}/review/${entry.publicId ?? entry.id}`}>
+                  {entry.title}
+                </Link>
               </h3>
             )}
             {entry.kind === "review" &&
@@ -284,6 +323,7 @@ export function ActivityStream({
               </div>
             )}
             {entry.content &&
+              entry.kind !== "screenshot" &&
               (entry.spoilers ? (
                 <details className="spoiler-content">
                   <summary>
@@ -324,7 +364,7 @@ export function ActivityStream({
               {entry.kind === "review" && (
                 <Link
                   className="activity-read-more"
-                  href={`/${lang}/review/${entry.id}`}
+                  href={`/${lang}/review/${entry.publicId ?? entry.id}`}
                 >
                   {tri(
                     lang,
@@ -334,7 +374,15 @@ export function ActivityStream({
                   )}
                 </Link>
               )}
-              {viewerId === entry.profileId && (
+              {entry.kind === "screenshot" && (
+                <Link
+                  className="activity-read-more"
+                  href={`/${lang}/shot/${entry.publicId ?? entry.id}`}
+                >
+                  {tri(lang, "Ver captura", "View screenshot", "Ver captura")}
+                </Link>
+              )}
+              {viewerId === entry.profileId && entry.kind !== "screenshot" && (
                 <ActivityEntryActions entry={entry} lang={lang} />
               )}
             </div>

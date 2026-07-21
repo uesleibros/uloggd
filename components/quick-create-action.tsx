@@ -70,26 +70,30 @@ export function QuickCreateAction({
                 </span>
               </Link>
             </DropdownMenu.Item>
-            <DropdownMenu.Item disabled className="quick-create-unavailable">
-              <span className="quick-create-menu-icon" aria-hidden>
-                <ScanLine size={18} />
-              </span>
-              <span>
-                <strong>
-                  {tri(
-                    lang,
-                    "Captura de tela",
-                    "Screenshot",
-                    "Captura de pantalla",
-                  )}
-                </strong>
-                <small>
-                  {tri(lang, "Em breve", "Coming soon", "Próximamente")}
-                </small>
-              </span>
-              <span className="quick-create-soon">
-                {tri(lang, "Indisponível", "Unavailable", "No disponible")}
-              </span>
+            <DropdownMenu.Item asChild>
+              <Link href={`/${lang}/search?create=screenshot`}>
+                <span className="quick-create-menu-icon" aria-hidden>
+                  <ScanLine size={18} />
+                </span>
+                <span>
+                  <strong>
+                    {tri(
+                      lang,
+                      "Captura de tela",
+                      "Screenshot",
+                      "Captura de pantalla",
+                    )}
+                  </strong>
+                  <small>
+                    {tri(
+                      lang,
+                      "Publique um momento do seu jogo",
+                      "Share a moment from your game",
+                      "Comparte un momento de tu juego",
+                    )}
+                  </small>
+                </span>
+              </Link>
             </DropdownMenu.Item>
             <DropdownMenu.Arrow className="quick-create-arrow" />
           </DropdownMenu.Content>

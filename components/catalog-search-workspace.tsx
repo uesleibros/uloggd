@@ -317,7 +317,7 @@ export function CatalogSearchWorkspace({
   totalPages: number;
   saved: Record<number, SavedState>;
   enabled: boolean;
-  createMode?: "review" | null;
+  createMode?: "review" | "screenshot" | null;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
@@ -570,12 +570,18 @@ export function CatalogSearchWorkspace({
     >
       <header className="catalog-search-hero">
         <h1>
-          {createMode === "review"
+          {createMode
             ? tri(
                 lang,
-                "Qual jogo você quer avaliar?",
-                "Which game do you want to review?",
-                "¿Qué juego quieres reseñar?",
+                createMode === "review"
+                  ? "Qual jogo você quer avaliar?"
+                  : "De qual jogo é a captura?",
+                createMode === "review"
+                  ? "Which game do you want to review?"
+                  : "Which game is the screenshot from?",
+                createMode === "review"
+                  ? "¿Qué juego quieres reseñar?"
+                  : "¿De qué juego es la captura?",
               )
             : tri(
                 lang,
@@ -585,12 +591,18 @@ export function CatalogSearchWorkspace({
               )}
         </h1>
         <p>
-          {createMode === "review"
+          {createMode
             ? tri(
                 lang,
-                "Selecione uma capa para abrir o estúdio de avaliação.",
-                "Select a cover to open the review studio.",
-                "Selecciona una portada para abrir el estudio de reseñas.",
+                createMode === "review"
+                  ? "Selecione uma capa para abrir o estúdio de avaliação."
+                  : "Selecione uma capa para preparar a publicação.",
+                createMode === "review"
+                  ? "Select a cover to open the review studio."
+                  : "Select a cover to prepare the post.",
+                createMode === "review"
+                  ? "Selecciona una portada para abrir el estudio de reseñas."
+                  : "Selecciona una portada para preparar la publicación.",
               )
             : tri(
                 lang,
@@ -1102,7 +1114,13 @@ export function CatalogSearchWorkspace({
                       lang={lang}
                       enabled={enabled}
                       spawndAvailable={game.spawndAvailable}
-                      hrefSuffix={createMode === "review" ? "?review=1" : ""}
+                      hrefSuffix={
+                        createMode === "review"
+                          ? "?review=1"
+                          : createMode === "screenshot"
+                            ? "?screenshot=1"
+                            : ""
+                      }
                       meta={[
                         game.releaseYear,
                         game.platforms[0],

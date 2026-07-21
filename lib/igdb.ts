@@ -662,20 +662,19 @@ export async function getGamesByIds(ids: number[]): Promise<Game[]> {
     { length: Math.ceil(missing.length / 100) },
     (_, index) => missing.slice(index * 100, index * 100 + 100),
   );
-  const fetched = (
-    await Promise.all(
-      batches.map((batch) =>
-        queryGames(
-          `
+  const fetched: Game[] = [];
+  for (const batch of batches) {
+    fetched.push(
+      ...(await queryGames(
+        `
           fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.company.name;
           where id = (${batch.join(",")});
           limit ${batch.length};
         `,
-          12 * CACHE_HOURS,
-        ),
-      ),
-    )
-  ).flat();
+        12 * CACHE_HOURS,
+      )),
+    );
+  }
   const fetchedIds = new Set(fetched.map((game) => game.id));
   const expires = now + GAME_MEMO_TTL;
   for (const game of fetched) gameMemo.set(game.id, { game, expires });
@@ -716,22 +715,21 @@ export async function getGamesBySlugs(slugs: string[]): Promise<Game[]> {
   for (let index = 0; index < missing.length; index += SLUG_BATCH) {
     batches.push(missing.slice(index, index + SLUG_BATCH));
   }
-  const fetched = (
-    await Promise.all(
-      batches.map((batch) =>
-        queryGames(
-          `
+  const fetched: Game[] = [];
+  for (const batch of batches) {
+    fetched.push(
+      ...(await queryGames(
+        `
     fields name,slug,summary,total_rating,total_rating_count,first_release_date,
       cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,
       involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
     where slug = (${batch.map((slug) => `"${slug}"`).join(",")});
     limit ${batch.length};
   `,
-          12 * CACHE_HOURS,
-        ),
-      ),
-    )
-  ).flat();
+        12 * CACHE_HOURS,
+      )),
+    );
+  }
   const fetchedSlugs = new Set(fetched.map((game) => game.slug));
   const expires = now + GAME_MEMO_TTL;
   for (const game of fetched) slugMemo.set(game.slug, { game, expires });

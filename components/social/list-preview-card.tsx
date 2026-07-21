@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Globe2, Heart, Lock, Users } from "lucide-react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { SafeImage } from "@/components/safe-image";
 
 /**
  * The single way a list is previewed anywhere on the platform: a fanned stack
@@ -17,12 +17,13 @@ export function ListPreviewCard({
 }: {
   list: {
     id: string;
+    publicId?: string;
     name: string;
     description: string | null;
     visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
     count: number;
   };
-  covers: { url: string; name: string }[];
+  covers: { url: string; fallbackUrl?: string; name: string }[];
   lang: UiLang;
   likes?: number;
 }) {
@@ -41,12 +42,21 @@ export function ListPreviewCard({
         : Globe2;
   const shown = covers.slice(0, 5);
   return (
-    <Link className="list-preview" href={`/${lang}/lists/${list.id}`}>
+    <Link
+      className="list-preview"
+      href={`/${lang}/lists/${list.publicId ?? list.id}`}
+    >
       <span className="list-preview-stack" aria-hidden>
         {shown.length ? (
           shown.map((cover, index) => (
             <span key={`${cover.url}-${index}`}>
-              <Image src={cover.url} alt="" fill sizes="120px" />
+              <SafeImage
+                src={cover.url}
+                fallbackSrc={cover.fallbackUrl}
+                alt=""
+                fill
+                sizes="120px"
+              />
             </span>
           ))
         ) : (

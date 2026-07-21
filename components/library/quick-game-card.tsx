@@ -240,7 +240,14 @@ export function QuickGameCard({
       <div className="quick-cover">
         {/* Custom cover selection belongs to the game page; cards only display it. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={image} alt={`${t.coverOf} ${game.name}`} />
+        <img
+          src={image}
+          alt={`${t.coverOf} ${game.name}`}
+          onError={(event) => {
+            if (event.currentTarget.src !== game.coverUrl)
+              event.currentTarget.src = game.coverUrl;
+          }}
+        />
         <Link
           className="quick-game-link"
           href={`/${lang}/game/${game.slug}${hrefSuffix}`}

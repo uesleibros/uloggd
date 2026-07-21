@@ -50,7 +50,7 @@ export function ContentComments({
   viewerId,
   lang,
 }: {
-  contentType: "list" | "review";
+  contentType: "list" | "review" | "screenshot";
   contentId: string;
   ownerId: string;
   viewerId: string | null;

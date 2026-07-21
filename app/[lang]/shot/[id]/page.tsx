@@ -1,0 +1,214 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { EyeOff, Gamepad2 } from "lucide-react";
+import { notFound } from "next/navigation";
+import { ContentComments } from "@/components/social/content-comments";
+import { LikeButton } from "@/components/social/like-button";
+import { ShareButton } from "@/components/share-button";
+import { VerifiedBadge } from "@/components/verified-badge";
+import { getGamesByIds } from "@/lib/igdb";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { tri } from "@/lib/ui-text";
+import { hasLocale } from "../../dictionaries";
+
+type Props = { params: Promise<{ lang: string; id: string }> };
+
+const screenshotSelect =
+  "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,width,height,created_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified)";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang, id } = await params;
+  if (!hasLocale(lang) || !/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
+    return {};
+  const { data } = await (
+    await getSupabase()
+  )
+    .from("screenshots")
+    .select(
+      "description,game_slug,profiles!screenshots_profile_id_fkey(username)",
+    )
+    .eq("public_id", id)
+    .maybeSingle();
+  if (!data) return {};
+  const profile = Array.isArray(data.profiles)
+    ? data.profiles[0]
+    : data.profiles;
+  const title = tri(
+    lang,
+    `Captura de @${profile?.username}`,
+    `Screenshot by @${profile?.username}`,
+    `Captura de @${profile?.username}`,
+  );
+  return { title, description: data.description?.slice(0, 160) || undefined };
+}
+
+export default async function ScreenshotPage({ params }: Props) {
+  const { lang, id } = await params;
+  if (!hasLocale(lang) || !/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
+    notFound();
+  const supabase = await getSupabase();
+  const [{ data: shot }, user] = await Promise.all([
+    supabase
+      .from("screenshots")
+      .select(screenshotSelect)
+      .eq("public_id", id)
+      .maybeSingle(),
+    getAuthUser(),
+  ]);
+  if (!shot) notFound();
+  const profile = Array.isArray(shot.profiles)
+    ? shot.profiles[0]
+    : shot.profiles;
+  if (!profile?.username) notFound();
+  const [{ data: signed }, games, { data: likes }] = await Promise.all([
+    supabase.storage
+      .from("screenshots")
+      .createSignedUrl(shot.storage_path, 3600),
+    getGamesByIds([shot.igdb_id]),
+    supabase.rpc("get_content_likes", {
+      target_type: "screenshot",
+      target_ids: [shot.id],
+    }),
+  ]);
+  if (!signed?.signedUrl) notFound();
+  const game = games[0] ?? null;
+  const like = likes?.[0] as
+    { like_count: number; liked_by_viewer: boolean } | undefined;
+  const date = new Intl.DateTimeFormat(lang, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(shot.created_at));
+
+  const media = (
+    <Image
+      src={signed.signedUrl}
+      alt={
+        shot.description ||
+        tri(
+          lang,
+          `Captura de ${game?.name ?? shot.game_slug}`,
+          `Screenshot from ${game?.name ?? shot.game_slug}`,
+          `Captura de ${game?.name ?? shot.game_slug}`,
+        )
+      }
+      width={shot.width}
+      height={shot.height}
+      sizes="(max-width: 760px) 100vw, 760px"
+      unoptimized
+      priority
+    />
+  );
+
+  return (
+    <main className="screenshot-page">
+      <article className="screenshot-post">
+        {shot.contains_spoilers ? (
+          <details className="screenshot-spoiler-gate">
+            <summary>
+              <EyeOff size={20} />
+              <strong>
+                {tri(
+                  lang,
+                  "Captura com spoilers",
+                  "Spoiler screenshot",
+                  "Captura con spoilers",
+                )}
+              </strong>
+              <span>
+                {tri(
+                  lang,
+                  "Toque para revelar",
+                  "Tap to reveal",
+                  "Toca para revelar",
+                )}
+              </span>
+            </summary>
+            {media}
+            {shot.description && (
+              <p className="screenshot-spoiler-description">
+                {shot.description}
+              </p>
+            )}
+          </details>
+        ) : (
+          media
+        )}
+        <div className="screenshot-post-body">
+          <header>
+            <Link
+              href={`/${lang}/u/${profile.username}`}
+              className="screenshot-author"
+            >
+              <span>
+                {profile.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt=""
+                    fill
+                    sizes="36px"
+                    unoptimized
+                  />
+                ) : (
+                  profile.username[0].toUpperCase()
+                )}
+              </span>
+              <span>
+                <strong>
+                  {profile.display_name || `@${profile.username}`}
+                </strong>
+                <small>@{profile.username}</small>
+              </span>
+            </Link>
+            {profile.verified && <VerifiedBadge lang={lang} />}
+            <time dateTime={shot.created_at}>{date}</time>
+          </header>
+          <Link
+            className="screenshot-game"
+            href={`/${lang}/game/${shot.game_slug}`}
+          >
+            <Gamepad2 size={14} /> {game?.name ?? shot.game_slug}
+          </Link>
+          {shot.description && !shot.contains_spoilers && (
+            <p>{shot.description}</p>
+          )}
+          <footer>
+            <LikeButton
+              contentType="screenshot"
+              contentId={shot.id}
+              count={Number(like?.like_count ?? 0)}
+              liked={Boolean(like?.liked_by_viewer)}
+              canLike={Boolean(user) && user?.id !== shot.profile_id}
+              lang={lang}
+            />
+            <ShareButton
+              title={game?.name ?? shot.game_slug}
+              text={tri(
+                lang,
+                `Captura de ${game?.name ?? shot.game_slug} no uloggd`,
+                `${game?.name ?? shot.game_slug} screenshot on uloggd`,
+                `Captura de ${game?.name ?? shot.game_slug} en uloggd`,
+              )}
+              label={tri(lang, "Compartilhar", "Share", "Compartir")}
+              copiedLabel={tri(
+                lang,
+                "Link copiado",
+                "Link copied",
+                "Enlace copiado",
+              )}
+              lang={lang}
+            />
+          </footer>
+        </div>
+      </article>
+      <ContentComments
+        contentType="screenshot"
+        contentId={shot.id}
+        ownerId={shot.profile_id}
+        viewerId={user?.id ?? null}
+        lang={lang}
+      />
+    </main>
+  );
+}

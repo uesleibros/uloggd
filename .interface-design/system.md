@@ -236,6 +236,13 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - 19px leading icon, 13px/650 label, optional keyboard hint.
 - Active feedback uses `scale(0.98)`.
 
+### Quick create
+
+- Creation has one persistent `+` entry point: a 56px circular floating action above the mobile safe area and a 44px tonal action inside the desktop/compact sidebar.
+- The origin-aware Radix menu is the stable extensibility point for new journal formats. Available actions lead with icon, title, and one-line intent; planned formats remain visible but disabled with an explicit availability label.
+- Starting content that needs a game first enters catalog selection mode, preserves filters while browsing, and opens the selected creation studio automatically on the game route.
+- Signed-out creation controls stay visible but muted and locked, matching protected navigation instead of fabricating an authenticated workflow.
+
 ### Editorial featured game
 
 - Home uses a full-width, 440px cinematic IGDB artwork stage inspired by streaming catalog openers; it does not place a separate cover over the art.

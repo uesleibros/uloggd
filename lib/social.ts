@@ -13,6 +13,7 @@ type ProfileJoin = {
 };
 type Row = {
   id: string;
+  public_id?: string;
   profile_id: string;
   igdb_id: number;
   game_slug: string;
@@ -48,7 +49,7 @@ export async function getActivity(
   let reviewsQuery = supabase
     .from("reviews")
     .select(
-      "id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
+      "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -59,28 +60,40 @@ export async function getActivity(
     )
     .order("created_at", { ascending: false })
     .limit(limit);
+  let screenshotsQuery = supabase
+    .from("screenshots")
+    .select(
+      "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,width,height,created_at,updated_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified)",
+    )
+    .order("created_at", { ascending: false })
+    .limit(limit);
   if (options.profileId) {
     reviewsQuery = reviewsQuery.eq("profile_id", options.profileId);
     diaryQuery = diaryQuery.eq("profile_id", options.profileId);
+    screenshotsQuery = screenshotsQuery.eq("profile_id", options.profileId);
   }
   if (options.profileIds) {
     reviewsQuery = reviewsQuery.in("profile_id", options.profileIds);
     diaryQuery = diaryQuery.in("profile_id", options.profileIds);
+    screenshotsQuery = screenshotsQuery.in("profile_id", options.profileIds);
   }
   if (options.gameId) {
     reviewsQuery = reviewsQuery.eq("igdb_id", options.gameId);
     diaryQuery = diaryQuery.eq("igdb_id", options.gameId);
+    screenshotsQuery = screenshotsQuery.eq("igdb_id", options.gameId);
   }
   if (options.before) {
     reviewsQuery = reviewsQuery.lt("created_at", options.before);
     diaryQuery = diaryQuery.lt("created_at", options.before);
+    screenshotsQuery = screenshotsQuery.lt("created_at", options.before);
   }
-  const [{ data: reviews }, { data: diary }] = await Promise.all([
-    reviewsQuery,
-    diaryQuery,
-  ]);
-  const rows = [...(reviews ?? []), ...(diary ?? [])] as unknown as (Row &
-    Record<string, unknown>)[];
+  const [{ data: reviews }, { data: diary }, { data: screenshots }] =
+    await Promise.all([reviewsQuery, diaryQuery, screenshotsQuery]);
+  const rows = [
+    ...(reviews ?? []),
+    ...(diary ?? []),
+    ...(screenshots ?? []),
+  ] as unknown as (Row & Record<string, unknown>)[];
   const reviewJourneyIds = [
     ...new Set(
       (reviews ?? [])
@@ -150,22 +163,43 @@ export async function getActivity(
   const baseGamesById = new Map(games.map((game) => [game.id, game]));
   const reviewIds = (reviews ?? []).map((row) => row.id);
   const diaryIds = (diary ?? []).map((row) => row.id);
-  const [reviewLikes, diaryLikes] = await Promise.all([
-    reviewIds.length
-      ? supabase.rpc("get_content_likes", {
-          target_type: "review",
-          target_ids: reviewIds,
-        })
-      : { data: [] },
-    diaryIds.length
-      ? supabase.rpc("get_content_likes", {
-          target_type: "diary",
-          target_ids: diaryIds,
-        })
-      : { data: [] },
-  ]);
+  const screenshotIds = (screenshots ?? []).map((row) => row.id);
+  const [reviewLikes, diaryLikes, screenshotLikes, signedScreenshots] =
+    await Promise.all([
+      reviewIds.length
+        ? supabase.rpc("get_content_likes", {
+            target_type: "review",
+            target_ids: reviewIds,
+          })
+        : { data: [] },
+      diaryIds.length
+        ? supabase.rpc("get_content_likes", {
+            target_type: "diary",
+            target_ids: diaryIds,
+          })
+        : { data: [] },
+      screenshotIds.length
+        ? supabase.rpc("get_content_likes", {
+            target_type: "screenshot",
+            target_ids: screenshotIds,
+          })
+        : { data: [] },
+      screenshots?.length
+        ? supabase.storage.from("screenshots").createSignedUrls(
+            screenshots.map((item) => item.storage_path),
+            3600,
+          )
+        : { data: [] },
+    ]);
+  const screenshotUrlByPath = new Map(
+    (signedScreenshots.data ?? []).map((item) => [item.path, item.signedUrl]),
+  );
   const likesById = new Map(
-    [...(reviewLikes.data ?? []), ...(diaryLikes.data ?? [])].map(
+    [
+      ...(reviewLikes.data ?? []),
+      ...(diaryLikes.data ?? []),
+      ...(screenshotLikes.data ?? []),
+    ].map(
       (row: {
         content_id: string;
         like_count: number;
@@ -177,11 +211,13 @@ export async function getActivity(
     .flatMap((row): SocialEntry[] => {
       const profile = profileOf(row.profiles);
       if (!profile?.username) return [];
-      const review = "rating" in row;
+      const screenshot = "storage_path" in row;
+      const review = !screenshot && "rating" in row;
       return [
         {
           id: row.id,
-          kind: review ? "review" : "diary",
+          publicId: row.public_id,
+          kind: screenshot ? "screenshot" : review ? "review" : "diary",
           profileId: row.profile_id,
           profile,
           igdbId: row.igdb_id,
@@ -220,12 +256,30 @@ export async function getActivity(
           finishedOn: review
             ? String(row.finished_on ?? "") || null
             : undefined,
-          content: String((review ? row.content : row.note) ?? "") || null,
-          playedOn: review ? undefined : String(row.played_on),
-          endedOn: review ? undefined : String(row.ended_on ?? "") || null,
-          minutes: review ? undefined : (row.minutes as number | null),
-          marksStart: review ? undefined : Boolean(row.marks_start),
-          marksFinish: review ? undefined : Boolean(row.marks_finish),
+          content:
+            String(
+              (screenshot
+                ? row.description
+                : review
+                  ? row.content
+                  : row.note) ?? "",
+            ) || null,
+          imageUrl: screenshot
+            ? (screenshotUrlByPath.get(String(row.storage_path)) ?? undefined)
+            : undefined,
+          imageWidth: screenshot ? Number(row.width) : undefined,
+          imageHeight: screenshot ? Number(row.height) : undefined,
+          playedOn: review || screenshot ? undefined : String(row.played_on),
+          endedOn:
+            review || screenshot
+              ? undefined
+              : String(row.ended_on ?? "") || null,
+          minutes:
+            review || screenshot ? undefined : (row.minutes as number | null),
+          marksStart:
+            review || screenshot ? undefined : Boolean(row.marks_start),
+          marksFinish:
+            review || screenshot ? undefined : Boolean(row.marks_finish),
           journeyId: String(row.journey_id ?? "") || null,
           journeyTitle: journeyTitleOf(row.journeys) || null,
           journeySessions: review

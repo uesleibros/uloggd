@@ -47,7 +47,11 @@ export default async function SearchPage({
   const [{ lang }, query] = await Promise.all([params, searchParams]);
   if (!hasLocale(lang)) notFound();
   const sort = first(query.sort);
-  const createMode = first(query.create) === "review" ? "review" : null;
+  const requestedCreate = first(query.create);
+  const createMode =
+    requestedCreate === "review" || requestedCreate === "screenshot"
+      ? requestedCreate
+      : null;
   const allowedSorts = new Set<CatalogSearchFilters["sort"]>([
     "popular",
     "rating",

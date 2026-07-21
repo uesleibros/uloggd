@@ -15,15 +15,23 @@ import { tri, uiText } from "@/lib/ui-text";
 
 type Props = PageProps<"/[lang]/lists/[id]">;
 
+function listKey(id: string) {
+  if (/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
+    return ["public_id", id] as const;
+  if (/^[0-9a-f-]{36}$/i.test(id)) return ["id", id] as const;
+  return null;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
-  if (!hasLocale(lang) || !/^[0-9a-f-]{36}$/i.test(id)) return {};
+  const key = listKey(id);
+  if (!hasLocale(lang) || !key) return {};
   const { data: list } = await (
     await getSupabase()
   )
     .from("game_lists")
     .select("name,description,profiles!game_lists_profile_id_fkey(username)")
-    .eq("id", id)
+    .eq(key[0], key[1])
     .maybeSingle();
   if (!list) return {};
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
@@ -50,15 +58,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ListPage({ params }: Props) {
   const { lang, id } = await params;
-  if (!hasLocale(lang) || !/^[0-9a-f-]{36}$/i.test(id)) notFound();
+  const key = listKey(id);
+  if (!hasLocale(lang) || !key) notFound();
   const supabase = await getSupabase();
   const [{ data: list }, user] = await Promise.all([
     supabase
       .from("game_lists")
       .select(
-        "id,profile_id,name,description,visibility,profiles!game_lists_profile_id_fkey(username,display_name),game_list_items(id,igdb_id,game_slug,position,note)",
+        "id,public_id,profile_id,name,description,visibility,profiles!game_lists_profile_id_fkey(username,display_name),game_list_items(id,igdb_id,game_slug,position,note)",
       )
-      .eq("id", id)
+      .eq(key[0], key[1])
       .maybeSingle(),
     getAuthUser(),
   ]);

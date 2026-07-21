@@ -331,7 +331,13 @@ export default async function GamePage({ params, searchParams }: Props) {
                 logCount={ownLogCount}
                 journeys={ownJourneys}
                 journeyOptions={ownJourneyOptions}
-                initialMode={query.review === "1" ? "review" : null}
+                initialMode={
+                  query.review === "1"
+                    ? "review"
+                    : query.screenshot === "1"
+                      ? "screenshot"
+                      : null
+                }
               />
             )}
           </div>

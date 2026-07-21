@@ -83,6 +83,39 @@ test("keeps catalog credit in the global footer only", async ({ page }) => {
   );
 });
 
+test("routes creation modes through game selection", async ({ page }) => {
+  await openSearch(page, "/pt-BR/search?create=screenshot");
+  await expect(
+    page.getByRole("heading", { name: "De qual jogo é a captura?" }),
+  ).toBeVisible();
+  await expect(page.locator(".quick-game-link").first()).toHaveAttribute(
+    "href",
+    /\/pt-BR\/game\/e2e-game-\d+\?screenshot=1$/,
+  );
+
+  await openSearch(page, "/pt-BR/search?create=review");
+  await expect(
+    page.getByRole("heading", { name: "Qual jogo você quer avaliar?" }),
+  ).toBeVisible();
+  await expect(page.locator(".quick-game-link").first()).toHaveAttribute(
+    "href",
+    /\/pt-BR\/game\/e2e-game-\d+\?review=1$/,
+  );
+});
+
+test("keeps protected quick creation visible while signed out", async ({
+  page,
+}, testInfo) => {
+  await openSearch(page);
+  const trigger = page.locator(
+    testInfo.project.name.startsWith("mobile")
+      ? ".quick-create-mobile .quick-create-trigger"
+      : ".quick-create-sidebar .quick-create-trigger",
+  );
+  await expect(trigger).toBeVisible();
+  await expect(trigger).toBeDisabled();
+});
+
 test("opens the filters dialog and applies a complete draft once", async ({
   page,
 }, testInfo) => {
