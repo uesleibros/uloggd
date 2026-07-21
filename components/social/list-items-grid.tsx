@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { QuickGameCard } from "../library/quick-game-card";
 import { ListItemTools } from "./list-item-tools";
 import { RemoveListItem } from "./list-owner-controls";
+import type { UiLang } from "@/lib/ui-text";
 
 export type ListGridItem = {
   id: string;
@@ -26,7 +27,7 @@ export function ListItemsGrid({
   items: ListGridItem[];
   games: Record<number, Game>;
   isOwner: boolean;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const router = useRouter();

@@ -26,7 +26,7 @@ import {
   CommentLike,
   PendingComment,
 } from "./comment-parts";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export type ProfileComment = {
   id: string;
@@ -84,7 +84,7 @@ export function ProfileComments({
   comments: ProfileComment[];
   canComment: boolean;
   commentsClosed: boolean;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);

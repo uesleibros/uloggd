@@ -1,8 +1,9 @@
 import spawndCatalogJson from "@/data/spawnd-games.json";
+import type { UiLang } from "@/lib/ui-text";
 
 const SPAWND_ORIGIN = "https://www.spawnd.gg";
 
-type SupportedLanguage = "pt-BR" | "en";
+type SupportedLanguage = UiLang;
 
 type SpawndCatalogGame = {
   spawnd_id: number;

@@ -10,7 +10,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 import {
   buildCommentTree,
   CommentAvatar,
@@ -47,7 +47,7 @@ export function ContentComments({
   contentId: string;
   ownerId: string;
   viewerId: string | null;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);

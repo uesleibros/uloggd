@@ -3,7 +3,7 @@
 import { LoaderCircle, Plus, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ListPreview } from "@/lib/lists-types";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 import { ListPreviewCard } from "./list-preview-card";
 
 /**
@@ -20,7 +20,7 @@ export function ListsCollection({
   pageSize,
   hasMore,
 }: {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   ownerId: string;
   initial: ListPreview[];
   total: number;

@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { X } from "lucide-react";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export function VerifiedMark({ size = 18 }: { size?: number }) {
   return (
@@ -18,7 +18,7 @@ export function VerifiedMark({ size = 18 }: { size?: number }) {
   );
 }
 
-export function VerifiedBadge({ lang }: { lang: "pt-BR" | "en" }) {
+export function VerifiedBadge({ lang }: { lang: UiLang }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
 

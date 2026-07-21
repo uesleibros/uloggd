@@ -5,7 +5,7 @@ import "react-image-crop/dist/ReactCrop.css";
 import { Check, LoaderCircle, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useEffect } from "react";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 import ReactCrop, {
   centerCrop,
   convertToPixelCrop,
@@ -60,7 +60,7 @@ export function ImageCropDialog({
 }: {
   source: string;
   kind: "avatar" | "banner";
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   onClose: () => void;
   onSaved: (url: string) => void;
 }) {

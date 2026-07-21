@@ -31,6 +31,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { visit } from "unist-util-visit";
+import type { UiLang } from "@/lib/ui-text";
 
 // Ported from the legacy uloggd markdown editor: shortcut syntax becomes
 // custom elements that survive sanitization and render as rich components.
@@ -325,7 +326,7 @@ function GameCardError({ slug }: { slug: string }) {
   );
 }
 
-function MdGameCard({ slug, lang }: { slug: string; lang: "pt-BR" | "en" }) {
+function MdGameCard({ slug, lang }: { slug: string; lang: UiLang }) {
   const { game, ready } = useMarkdownGame(slug);
   if (!ready) return <GameCardSkeleton variant="card" />;
   if (!game) return <GameCardError slug={slug} />;
@@ -363,7 +364,7 @@ function MdGameCard({ slug, lang }: { slug: string; lang: "pt-BR" | "en" }) {
   );
 }
 
-function MdGameMini({ slug, lang }: { slug: string; lang: "pt-BR" | "en" }) {
+function MdGameMini({ slug, lang }: { slug: string; lang: UiLang }) {
   const { game, ready } = useMarkdownGame(slug);
   if (!ready) return <GameCardSkeleton variant="mini" />;
   if (!game) return <GameCardError slug={slug} />;
@@ -388,7 +389,7 @@ function MdGameTile({
 }: {
   slug: string;
   favorite: boolean;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const { game, ready } = useMarkdownGame(slug);
   if (!ready) return <GameCardSkeleton variant="tile" />;
@@ -427,7 +428,7 @@ function MdGameRow({
 }: {
   slugs: string;
   auto: boolean;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const items = slugs
     .split(",")
@@ -489,7 +490,7 @@ export function MarkdownContent({
   lang,
 }: {
   content: string;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const processed = useMemo(() => processContent(content), [content]);
   const slugs = useMemo(() => collectGameSlugs(content), [content]);

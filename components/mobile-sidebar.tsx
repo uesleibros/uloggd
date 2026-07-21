@@ -21,9 +21,10 @@ import {
 } from "lucide-react";
 import { Brand } from "./brand";
 import { AccountMenu, type NavigationAccount } from "./account-menu";
+import type { UiLang } from "@/lib/ui-text";
 
 type MobileSidebarProps = {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   isAuthenticated: boolean;
   account: NavigationAccount | null;
   labels: {

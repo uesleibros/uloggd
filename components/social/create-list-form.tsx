@@ -15,9 +15,9 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
-export function CreateListForm({ lang }: { lang: "pt-BR" | "en" }) {
+export function CreateListForm({ lang }: { lang: UiLang }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const router = useRouter();

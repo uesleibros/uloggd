@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Check, LoaderCircle, LogOut, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { usernameSchema } from "@/lib/auth-validation";
+import type { UiLang } from "@/lib/ui-text";
 
 const reserved = new Set([
   "admin",
@@ -26,7 +27,7 @@ const reserved = new Set([
   "uloggd",
   "www",
 ]);
-export function UsernamePanel({ lang }: { lang: "en" | "pt-BR" }) {
+export function UsernamePanel({ lang }: { lang: UiLang }) {
   const router = useRouter();
   const pt = lang === "pt-BR";
   const [value, setValue] = useState("");

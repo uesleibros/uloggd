@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { SocialEntry } from "./activity-stream";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 import {
   ReviewStudioForm,
   type ReviewFormInitial,
@@ -20,7 +20,7 @@ export function EditReviewDialog({
   onOpenChange,
 }: {
   entry: SocialEntry;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {

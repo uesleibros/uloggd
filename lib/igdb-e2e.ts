@@ -78,12 +78,12 @@ export function e2eGenreCollections(): GenreCollection[] {
   return [
     {
       id: 12,
-      name: { "pt-BR": "RPG", en: "RPG" },
+      name: { "pt-BR": "RPG", en: "RPG", es: "RPG" },
       games: allGames.filter((game) => game.genres.includes("RPG")),
     },
     {
       id: 31,
-      name: { "pt-BR": "Aventura", en: "Adventure" },
+      name: { "pt-BR": "Aventura", en: "Adventure", es: "Aventura" },
       games: allGames.filter((game) => game.genres.includes("Adventure")),
     },
   ];

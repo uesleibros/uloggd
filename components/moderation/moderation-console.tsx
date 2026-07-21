@@ -21,7 +21,7 @@ import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type Role = "USER" | "MODERATOR" | "ADMIN";
 type Profile = {
@@ -75,7 +75,7 @@ export function ModerationConsole({
   moderationStates,
   actions,
 }: {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   actorRole: "MODERATOR" | "ADMIN";
   initialStatus: string;
   initialSearch: string;

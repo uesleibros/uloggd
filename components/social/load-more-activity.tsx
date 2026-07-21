@@ -3,6 +3,7 @@
 import { LoaderCircle, Plus } from "lucide-react";
 import { useState } from "react";
 import { ActivityStream, type SocialEntry } from "./activity-stream";
+import type { UiLang } from "@/lib/ui-text";
 
 export function LoadMoreActivity({
   lang,
@@ -15,7 +16,7 @@ export function LoadMoreActivity({
   initialCursor,
   hasMore,
 }: {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   viewerId?: string | null;
   profileId?: string;
   gameId?: number;

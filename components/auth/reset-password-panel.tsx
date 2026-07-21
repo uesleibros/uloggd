@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { passwordSchema } from "@/lib/auth-validation";
+import type { UiLang } from "@/lib/ui-text";
 
-export function ResetPasswordPanel({ lang }: { lang: "en" | "pt-BR" }) {
+export function ResetPasswordPanel({ lang }: { lang: UiLang }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);

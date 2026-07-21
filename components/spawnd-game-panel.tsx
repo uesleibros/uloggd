@@ -10,9 +10,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { SpawndLogo } from "./spawnd-logo";
+import type { UiLang } from "@/lib/ui-text";
 
 type SpawndGamePanelProps = {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   gameName: string;
   available: boolean;
   gameUrl: string | null;

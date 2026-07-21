@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Game, GameDetail } from "@/lib/igdb";
 import { QuickGameCard } from "./library/quick-game-card";
+import type { UiLang } from "@/lib/ui-text";
 
 export type SavedState = {
   status:
@@ -23,7 +24,7 @@ export function RelatedGamesTabs({
 }: {
   groups: GameDetail["related"];
   saved: Record<number, SavedState>;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   enabled: boolean;
 }) {
   const [active, setActive] = useState(groups[0]?.kind);

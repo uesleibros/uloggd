@@ -17,7 +17,7 @@ import {
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import "../auth/mfa.css";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type TotpFactor = {
   id: string;
@@ -32,7 +32,7 @@ type Enrollment = {
   secret: string;
 };
 
-export function TwoFactorSettings({ lang }: { lang: "pt-BR" | "en" }) {
+export function TwoFactorSettings({ lang }: { lang: UiLang }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [factors, setFactors] = useState<TotpFactor[]>([]);

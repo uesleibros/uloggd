@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/client";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type Cover = {
   url: string;
@@ -23,7 +23,7 @@ export function CoverSelector({
   game: { id: number; slug: string; coverUrl: string; name: string };
   covers: Cover[];
   savedCover: string | null;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   enabled: boolean;
 }) {
   const pt = lang === "pt-BR";

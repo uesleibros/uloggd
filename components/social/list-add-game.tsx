@@ -6,7 +6,7 @@ import { LoaderCircle, Plus, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type SearchResult = {
   id: number;
@@ -23,7 +23,7 @@ export function ListAddGame({
 }: {
   listId: string;
   existingIds: number[];
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);

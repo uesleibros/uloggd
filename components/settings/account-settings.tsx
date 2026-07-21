@@ -19,7 +19,7 @@ import { AppearanceSettings } from "./appearance-settings";
 import { ContentPreferences } from "./content-preferences";
 import { PrivacySettings, type FollowRequest } from "./privacy-settings";
 import { UsernameSettings } from "./username-settings";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   custom_cover_scope: "OWN" | "EVERYONE";
@@ -46,7 +46,7 @@ export function AccountSettings({
   blockedProfiles: BlockedProfile[];
   followRequests: FollowRequest[];
   infractions: number;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);

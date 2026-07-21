@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { UiLang } from "@/lib/ui-text";
 
 type Scope = "EVERYONE" | "FOLLOWERS" | "NOBODY";
 type BlockedProfile = {
@@ -30,7 +31,7 @@ export function PrivacySettings({
   initialPrivate: boolean;
   initialRequests: FollowRequest[];
   initialBlocked: BlockedProfile[];
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const [scope, setScope] = useState(initialScope);

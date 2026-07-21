@@ -3,10 +3,11 @@
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Tooltip } from "@/components/ui/tooltip";
+import type { UiLang } from "@/lib/ui-text";
 
 const STORAGE_KEY = "uloggd_sidebar_collapsed";
 
-export function SidebarCollapseButton({ lang }: { lang: "pt-BR" | "en" }) {
+export function SidebarCollapseButton({ lang }: { lang: UiLang }) {
   const [collapsed, setCollapsed] = useState(false);
   const pt = lang === "pt-BR";
 

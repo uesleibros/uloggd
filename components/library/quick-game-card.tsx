@@ -21,7 +21,7 @@ import { resolveGameCover } from "@/lib/game-cover";
 import { Tooltip } from "@/components/ui/tooltip";
 import { StarRating } from "./star-rating";
 import { SpawndLogo } from "../spawnd-logo";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -59,7 +59,7 @@ export function QuickGameCard({
     genres: string[];
   };
   initial: State;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   rank?: number;
   enabled?: boolean;
   meta?: string;

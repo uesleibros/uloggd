@@ -11,8 +11,9 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ageOnDate, birthDateLimits } from "@/lib/age-access";
 import { createClient } from "@/lib/supabase/client";
+import type { UiLang } from "@/lib/ui-text";
 
-export function BirthDatePanel({ lang }: { lang: "pt-BR" | "en" }) {
+export function BirthDatePanel({ lang }: { lang: UiLang }) {
   const pt = lang === "pt-BR";
   const router = useRouter();
   const limits = useMemo(() => birthDateLimits(), []);

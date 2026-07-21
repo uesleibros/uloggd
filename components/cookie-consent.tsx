@@ -4,7 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Check, Cookie, LockKeyhole, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 const STORAGE_KEY = "uloggd_cookie_preferences_v1";
 const SETTINGS_EVENT = "uloggd:open-cookie-settings";
@@ -13,7 +13,7 @@ export function openCookieSettings() {
   window.dispatchEvent(new Event(SETTINGS_EVENT));
 }
 
-export function CookieConsent({ lang }: { lang: "pt-BR" | "en" }) {
+export function CookieConsent({ lang }: { lang: UiLang }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [ready, setReady] = useState(false);

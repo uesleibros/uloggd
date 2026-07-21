@@ -36,6 +36,7 @@ import { getSpawndGame } from "@/lib/spawnd";
 import { SpawndLogo } from "@/components/spawnd-logo";
 import { hasLocale } from "../../dictionaries";
 import { ShareButton } from "@/components/share-button";
+import type { UiLang } from "@/lib/ui-text";
 
 type Props = PageProps<"/[lang]/game/[slug]">;
 
@@ -47,7 +48,7 @@ async function GameCommunityStream({
   viewerId,
 }: {
   gameId: number;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   viewerId?: string;
 }) {
   if (process.env.ULOGGD_E2E === "1")

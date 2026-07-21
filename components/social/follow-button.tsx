@@ -12,7 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export function FollowButton({
   viewerId,
@@ -30,7 +30,7 @@ export function FollowButton({
   initialRequested?: boolean;
   mutualRecent?: boolean;
   profileName?: string;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);

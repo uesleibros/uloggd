@@ -21,7 +21,7 @@ import type {
   CatalogSearchOptions,
 } from "@/lib/igdb";
 import { QuickGameCard } from "./library/quick-game-card";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type SavedState = {
   status:
@@ -112,7 +112,7 @@ function OptionGroup({
   searchable?: boolean;
   remoteSearch?: boolean;
   initiallyOpen?: boolean;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const [query, setQuery] = useState("");
   const [remoteOptions, setRemoteOptions] = useState<CatalogOption[]>([]);
@@ -302,7 +302,7 @@ export function CatalogSearchWorkspace({
   saved,
   enabled,
 }: {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   filters: CatalogSearchFilters;
   options: CatalogSearchOptions;
   games: CatalogGame[];

@@ -17,6 +17,7 @@ import type { Game } from "@/lib/igdb";
 import { ActivityEntryActions } from "./activity-entry-actions";
 import { LikeButton } from "./like-button";
 import { VerifiedBadge } from "../verified-badge";
+import type { UiLang } from "@/lib/ui-text";
 import {
   JourneyDetailsDialog,
   type JourneyDetailSession,
@@ -73,7 +74,7 @@ export function ActivityStream({
   viewerId,
 }: {
   entries: SocialEntry[];
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   viewerId?: string | null;
 }) {
   const pt = lang === "pt-BR";
@@ -328,7 +329,7 @@ export function ActivityStream({
 function formatActivityRating(
   rating: number,
   mode: SocialEntry["ratingMode"],
-  lang: "pt-BR" | "en",
+  lang: UiLang,
 ) {
   if (mode === "score_100") return `${rating}/100`;
   if (mode === "score_10")

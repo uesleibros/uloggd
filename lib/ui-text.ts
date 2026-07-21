@@ -10,41 +10,77 @@
  * one screen still belongs in that screen — centralising it would just move the
  * problem somewhere harder to read.
  */
-export type UiLang = "pt-BR" | "en";
+export type UiLang = "pt-BR" | "en" | "es";
 
+/** Order is [pt-BR, en, es] everywhere below. */
 const strings = {
-  close: ["Fechar", "Close"],
-  cancel: ["Cancelar", "Cancel"],
-  save: ["Salvar", "Save"],
-  saving: ["Salvando…", "Saving…"],
-  remove: ["Remover", "Remove"],
-  removing: ["Removendo…", "Removing…"],
-  clear: ["Limpar", "Clear"],
-  search: ["Buscar", "Search"],
-  share: ["Compartilhar", "Share"],
-  linkCopied: ["Link copiado", "Link copied"],
-  visibility: ["Visibilidade", "Visibility"],
-  backToProfile: ["Voltar ao perfil", "Back to profile"],
-  followers: ["Seguidores", "Followers"],
-  playing: ["Jogando", "Playing"],
-  reviews: ["Avaliações", "Reviews"],
-  sessions: ["Sessões", "Sessions"],
-  lists: ["Listas", "Lists"],
-  list: ["Lista", "List"],
-  like: ["Curtir", "Like"],
-  games: ["Jogos", "Games"],
-  gamesLower: ["jogos", "games"],
-  privacy: ["Privacidade", "Privacy"],
-} as const satisfies Record<string, readonly [string, string]>;
+  close: ["Fechar", "Close", "Cerrar"],
+  cancel: ["Cancelar", "Cancel", "Cancelar"],
+  save: ["Salvar", "Save", "Guardar"],
+  saving: ["Salvando…", "Saving…", "Guardando…"],
+  saved: ["Salvo", "Saved", "Guardado"],
+  remove: ["Remover", "Remove", "Quitar"],
+  removing: ["Removendo…", "Removing…", "Quitando…"],
+  delete: ["Excluir", "Delete", "Eliminar"],
+  edit: ["Editar", "Edit", "Editar"],
+  clear: ["Limpar", "Clear", "Limpiar"],
+  search: ["Buscar", "Search", "Buscar"],
+  share: ["Compartilhar", "Share", "Compartir"],
+  linkCopied: ["Link copiado", "Link copied", "Enlace copiado"],
+  copyLink: ["Copiar link", "Copy link", "Copiar enlace"],
+  visibility: ["Visibilidade", "Visibility", "Visibilidad"],
+  backToProfile: ["Voltar ao perfil", "Back to profile", "Volver al perfil"],
+  back: ["Voltar", "Back", "Volver"],
+  followers: ["Seguidores", "Followers", "Seguidores"],
+  following: ["Seguindo", "Following", "Siguiendo"],
+  follow: ["Seguir", "Follow", "Seguir"],
+  requested: ["Solicitado", "Requested", "Solicitado"],
+  playing: ["Jogando", "Playing", "Jugando"],
+  reviews: ["Avaliações", "Reviews", "Reseñas"],
+  sessions: ["Sessões", "Sessions", "Sesiones"],
+  lists: ["Listas", "Lists", "Listas"],
+  list: ["Lista", "List", "Lista"],
+  like: ["Curtir", "Like", "Me gusta"],
+  reply: ["Responder", "Reply", "Responder"],
+  comment: ["Comentar", "Comment", "Comentar"],
+  comments: ["Comentários", "Comments", "Comentarios"],
+  games: ["Jogos", "Games", "Juegos"],
+  gamesLower: ["jogos", "games", "juegos"],
+  privacy: ["Privacidade", "Privacy", "Privacidad"],
+  loading: ["Carregando…", "Loading…", "Cargando…"],
+  loadMore: ["Carregar mais", "Load more", "Cargar más"],
+  tryAgain: ["Tente novamente.", "Try again.", "Inténtalo de nuevo."],
+  couldNotLoad: [
+    "Não foi possível carregar.",
+    "Could not load.",
+    "No se pudo cargar.",
+  ],
+  couldNotSave: [
+    "Não foi possível salvar.",
+    "Could not save.",
+    "No se pudo guardar.",
+  ],
+  everyone: ["Todas as pessoas", "Everyone", "Todo el mundo"],
+  onlyFollowers: ["Somente seguidores", "Followers only", "Solo seguidores"],
+  nobody: ["Ninguém", "Nobody", "Nadie"],
+  unsavedChanges: [
+    "Alterações não salvas",
+    "Unsaved changes",
+    "Cambios sin guardar",
+  ],
+  revert: ["Reverter", "Revert", "Revertir"],
+} as const satisfies Record<string, readonly [string, string, string]>;
 
 export type UiKey = keyof typeof strings;
+
+const order: Record<UiLang, 0 | 1 | 2> = { "pt-BR": 0, en: 1, es: 2 };
 
 /**
  * `const t = uiText(lang)` then `t.close`. Returning a plain object keeps call
  * sites as short as the ternary they replace.
  */
 export function uiText(lang: UiLang): Record<UiKey, string> {
-  const index = lang === "pt-BR" ? 0 : 1;
+  const index = order[lang] ?? 0;
   const result = {} as Record<UiKey, string>;
   for (const key of Object.keys(strings) as UiKey[]) {
     result[key] = strings[key][index];

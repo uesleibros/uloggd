@@ -3,6 +3,7 @@
 import { Heart } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import type { UiLang } from "@/lib/ui-text";
 
 /**
  * The pieces every comment thread on the platform shares.
@@ -14,7 +15,7 @@ import type { ReactNode } from "react";
  * when the second one was written from scratch.
  */
 
-export function formatCommentTime(date: string, lang: "pt-BR" | "en") {
+export function formatCommentTime(date: string, lang: UiLang) {
   const seconds = Math.max(
     1,
     Math.floor((Date.now() - new Date(date).getTime()) / 1000),
@@ -38,7 +39,7 @@ export function CommentAvatar({
   name,
   avatarUrl,
 }: {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   username: string;
   name: string;
   avatarUrl: string | null;
@@ -67,7 +68,7 @@ export function CommentHeader({
   edited = false,
   badge,
 }: {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   username: string;
   name: string;
   createdAt: string;
@@ -102,7 +103,7 @@ export function CommentLike({
   showEmpty = false,
   onToggle,
 }: {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   count: number;
   liked: boolean;
   canLike: boolean;
@@ -148,7 +149,7 @@ export function CommentLike({
   );
 }
 
-export function PendingComment({ lang }: { lang: "pt-BR" | "en" }) {
+export function PendingComment({ lang }: { lang: UiLang }) {
   return (
     <article
       className="profile-comment-pending"

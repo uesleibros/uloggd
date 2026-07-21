@@ -14,7 +14,7 @@ import {
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "./star-rating";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -36,7 +36,7 @@ export function GameActionPanel({
 }: {
   game: { id: number; slug: string };
   initial: State;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   enabled: boolean;
 }) {
   const pt = lang === "pt-BR";

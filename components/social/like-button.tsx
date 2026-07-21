@@ -3,7 +3,7 @@
 import { Heart } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type ContentType = "review" | "diary" | "list" | "content_comment";
 
@@ -20,7 +20,7 @@ export function LikeButton({
   count: number;
   liked: boolean;
   canLike: boolean;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);

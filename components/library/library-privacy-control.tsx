@@ -3,13 +3,14 @@
 import { Globe2, LoaderCircle, LockKeyhole } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { UiLang } from "@/lib/ui-text";
 
 export function LibraryPrivacyControl({
   initial,
   lang,
 }: {
   initial: "PUBLIC" | "PRIVATE";
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const [visibility, setVisibility] = useState(initial);

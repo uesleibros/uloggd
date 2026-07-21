@@ -16,7 +16,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Game } from "@/lib/igdb";
 import { QuickGameCard } from "./quick-game-card";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export type LibraryRecord = {
   igdb_id: number;
@@ -53,7 +53,7 @@ export function LibraryCollection({
 }: {
   games: Game[];
   records: LibraryRecord[];
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   owner: boolean;
 }) {
   const pt = lang === "pt-BR";

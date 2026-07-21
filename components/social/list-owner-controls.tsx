@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { EditorVisibilitySelect } from "./review-studio-form";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export function ListOwnerControls({
   list,
@@ -18,7 +18,7 @@ export function ListOwnerControls({
     description: string | null;
     visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
   };
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
@@ -186,7 +186,7 @@ export function RemoveListItem({
 }: {
   listId: string;
   gameId: number;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const router = useRouter();

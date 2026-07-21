@@ -24,7 +24,7 @@ import { getGamesByIds } from "@/lib/igdb";
 import { ContentComments } from "@/components/social/content-comments";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
 type RatingMode = NonNullable<SocialEntry["ratingMode"]>;
@@ -38,7 +38,7 @@ type Aspect = {
 const reviewSelect =
   "id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)";
 
-function formatRating(rating: number, mode: RatingMode, lang: "pt-BR" | "en") {
+function formatRating(rating: number, mode: RatingMode, lang: UiLang) {
   if (mode === "score_100") return `${rating}/100`;
   if (mode === "score_10")
     return `${(rating / 10).toLocaleString(lang, { maximumFractionDigits: 1 })}/10`;

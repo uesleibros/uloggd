@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, LockKeyhole, LogIn, ShieldCheck } from "lucide-react";
 import { AnonymousAgeForm } from "./anonymous-age-form";
+import type { UiLang } from "@/lib/ui-text";
 
 type Rating = {
   organization: string;
@@ -18,7 +19,7 @@ export function GameAgeGate({
 }: {
   gameName: string;
   rating: Rating;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   signedIn: boolean;
 }) {
   const pt = lang === "pt-BR";

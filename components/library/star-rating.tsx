@@ -2,6 +2,7 @@
 
 import { Star } from "lucide-react";
 import { useState } from "react";
+import type { UiLang } from "@/lib/ui-text";
 
 export function StarRating({
   value,
@@ -14,7 +15,7 @@ export function StarRating({
   onChange: (value: number | null) => void;
   disabled?: boolean;
   compact?: boolean;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const selected = value ? value / 10 : 0;
   const [preview, setPreview] = useState<number | null>(null);

@@ -2,6 +2,7 @@ import Image from "next/image";
 import { CalendarDays, ExternalLink, Play } from "lucide-react";
 import type { GameDetail } from "@/lib/igdb";
 import { RelatedGamesTabs, type SavedState } from "./related-games-tabs";
+import type { UiLang } from "@/lib/ui-text";
 
 export function GameExtendedContent({
   game,
@@ -15,7 +16,7 @@ export function GameExtendedContent({
   game: GameDetail;
   groups: GameDetail["related"];
   saved: Record<number, SavedState>;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   enabled: boolean;
   sections?: ("videos" | "updates" | "links")[];
   showRelated?: boolean;

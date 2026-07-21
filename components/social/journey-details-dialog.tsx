@@ -2,7 +2,7 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { CalendarDays, Clock3, Flag, Map, Play, X } from "lucide-react";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export type JourneyDetailSession = {
   id: string;
@@ -23,7 +23,7 @@ export function JourneyDetailsDialog({
   title: string;
   gameName: string;
   sessions: JourneyDetailSession[];
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);

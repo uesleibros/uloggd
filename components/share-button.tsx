@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { Check, Copy, Send, Share2, X } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 const subscribe = () => () => undefined;
 
@@ -22,7 +22,7 @@ export function ShareButton({
   label: string;
   copiedLabel: string;
   className?: string;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   /** Controlled mode: the dialog is opened by something else (a menu item),
    *  so this component renders no trigger of its own. */
   open?: boolean;

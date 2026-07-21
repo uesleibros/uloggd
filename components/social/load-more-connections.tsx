@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getConnectionsPage, type ConnectionTab } from "@/lib/connections";
 import { ConnectionCard, type ConnectionPerson } from "./connection-card";
+import type { UiLang } from "@/lib/ui-text";
 
 export function LoadMoreConnections({
   profileId,
@@ -16,7 +17,7 @@ export function LoadMoreConnections({
 }: {
   profileId: string;
   tab: ConnectionTab;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   pageSize?: number;
   initialCursor: string | null;
   hasMore: boolean;

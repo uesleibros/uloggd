@@ -8,14 +8,14 @@ import { createClient } from "@/lib/supabase/client";
 import type { SocialEntry } from "./activity-stream";
 import { EditReviewDialog } from "./edit-review-dialog";
 import { EditorVisibilitySelect } from "./review-studio-form";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export function ActivityEntryActions({
   entry,
   lang,
 }: {
   entry: SocialEntry;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const { id, kind } = entry;
   const pt = lang === "pt-BR";

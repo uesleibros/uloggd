@@ -2,14 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { LibraryRecord } from "./library-collection";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export function LibraryLiveStats({
   records,
   lang,
 }: {
   records: LibraryRecord[];
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const [liveRecords, setLiveRecords] = useState(records);
   const pt = lang === "pt-BR";

@@ -3,18 +3,20 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronDown, Globe2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import type { UiLang } from "@/lib/ui-text";
 
 const languages = [
   { locale: "pt-BR", short: "PT", label: "Português" },
   { locale: "en", short: "EN", label: "English" },
+  { locale: "es", short: "ES", label: "Español" },
 ] as const;
 
-export function LocaleSwitcher({ locale }: { locale: "pt-BR" | "en" }) {
+export function LocaleSwitcher({ locale }: { locale: UiLang }) {
   const pathname = usePathname();
   const router = useRouter();
   const current = languages.find((language) => language.locale === locale)!;
 
-  function hrefFor(nextLocale: "pt-BR" | "en") {
+  function hrefFor(nextLocale: UiLang) {
     const segments = pathname.split("/");
     segments[1] = nextLocale;
     return segments.join("/") || `/${nextLocale}`;

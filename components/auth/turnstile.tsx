@@ -2,10 +2,11 @@
 
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { forwardRef } from "react";
+import type { UiLang } from "@/lib/ui-text";
 
 export const AuthTurnstile = forwardRef<
   TurnstileInstance,
-  { onToken: (token: string | null) => void; language: "en" | "pt-BR" }
+  { onToken: (token: string | null) => void; language: UiLang }
 >(function AuthTurnstile({ onToken, language }, ref) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   if (!siteKey) {

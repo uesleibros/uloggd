@@ -11,7 +11,7 @@ import { RotateCcw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 const ImageCropDialog = dynamic(
   () => import("./image-crop-dialog").then((mod) => mod.ImageCropDialog),
@@ -38,7 +38,7 @@ export function ProfileSettingsPanel({
   lang,
 }: {
   initial: Profile;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);

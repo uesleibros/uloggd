@@ -21,7 +21,14 @@ export async function proxy(request: NextRequest) {
   );
   if (!lang) {
     const preferred = request.headers.get("accept-language")?.toLowerCase();
-    request.nextUrl.pathname = `/${preferred?.startsWith("en") ? "en" : defaultLocale}${pathname}`;
+    // Only the language subtag matters here: pt-PT and pt-BR both land on
+    // Portuguese, es-419 and es-ES both on Spanish.
+    const detected = preferred?.startsWith("en")
+      ? "en"
+      : preferred?.startsWith("es")
+        ? "es"
+        : defaultLocale;
+    request.nextUrl.pathname = `/${detected}${pathname}`;
     return NextResponse.redirect(request.nextUrl);
   }
   let response = NextResponse.next({ request });
@@ -34,7 +41,9 @@ export async function proxy(request: NextRequest) {
     .some(({ name }) => name.startsWith("sb-"));
   if (!hasAuthCookies) {
     const privateListsIndex = pathname === `/${lang}/lists`;
-    const privateGameLogs = /^\/(pt-BR|en)\/game\/[^/]+\/logs$/.test(pathname);
+    const privateGameLogs = new RegExp(`^/${lang}/game/[^/]+/logs$`).test(
+      pathname,
+    );
     if (!publicSegments.has(segment) || privateListsIndex || privateGameLogs) {
       const url = new URL(`/${lang}/login`, request.url);
       url.searchParams.set("next", pathname);
@@ -64,7 +73,9 @@ export async function proxy(request: NextRequest) {
   const user = claimsData?.claims.sub ? { id: claimsData.claims.sub } : null;
   if (!user) {
     const privateListsIndex = pathname === `/${lang}/lists`;
-    const privateGameLogs = /^\/(pt-BR|en)\/game\/[^/]+\/logs$/.test(pathname);
+    const privateGameLogs = new RegExp(`^/${lang}/game/[^/]+/logs$`).test(
+      pathname,
+    );
     if (!publicSegments.has(segment) || privateListsIndex || privateGameLogs) {
       const url = new URL(`/${lang}/login`, request.url);
       url.searchParams.set("next", pathname);

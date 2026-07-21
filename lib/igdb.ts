@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { resolveAgeRating } from "@/lib/age-ratings";
+import type { UiLang } from "@/lib/ui-text";
 
 const CACHE_MINUTES = 60;
 const CACHE_HOURS = 60 * CACHE_MINUTES;
@@ -748,7 +749,7 @@ export type DiscoveryGames = {
 
 export type GenreCollection = {
   id: number;
-  name: { "pt-BR": string; en: string };
+  name: Record<UiLang, string>;
   games: Game[];
 };
 
@@ -1064,11 +1065,17 @@ export async function getGenreCollections(): Promise<GenreCollection[]> {
     return e2eGenreCollections();
   }
   const genres = [
-    { id: 12, name: { "pt-BR": "RPG", en: "RPG" } },
-    { id: 5, name: { "pt-BR": "Tiro", en: "Shooter" } },
-    { id: 31, name: { "pt-BR": "Aventura", en: "Adventure" } },
-    { id: 15, name: { "pt-BR": "Estratégia", en: "Strategy" } },
-    { id: 32, name: { "pt-BR": "Independentes", en: "Indie" } },
+    { id: 12, name: { "pt-BR": "RPG", en: "RPG", es: "RPG" } },
+    { id: 5, name: { "pt-BR": "Tiro", en: "Shooter", es: "Disparos" } },
+    { id: 31, name: { "pt-BR": "Aventura", en: "Adventure", es: "Aventura" } },
+    {
+      id: 15,
+      name: { "pt-BR": "Estratégia", en: "Strategy", es: "Estrategia" },
+    },
+    {
+      id: 32,
+      name: { "pt-BR": "Independentes", en: "Indie", es: "Indies" },
+    },
   ] as const;
   const games = await Promise.all(
     genres.map((genre) =>

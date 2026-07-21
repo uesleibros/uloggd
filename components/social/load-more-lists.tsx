@@ -4,6 +4,7 @@ import { LoaderCircle, Plus } from "lucide-react";
 import { useState } from "react";
 import type { ListPreview } from "@/lib/lists-types";
 import { ListPreviewCard } from "./list-preview-card";
+import type { UiLang } from "@/lib/ui-text";
 
 export function LoadMoreLists({
   lang,
@@ -13,7 +14,7 @@ export function LoadMoreLists({
   initialCursor,
   hasMore,
 }: {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   ownerId: string;
   gridClassName?: string;
   pageSize?: number;

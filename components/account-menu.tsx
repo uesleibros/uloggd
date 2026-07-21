@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { VerifiedMark } from "./verified-badge";
+import type { UiLang } from "@/lib/ui-text";
 
 export type NavigationAccount = {
   email: string;
@@ -28,7 +29,7 @@ export function AccountMenu({
   lang,
 }: {
   account: NavigationAccount;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const [signingOut, setSigningOut] = useState(false);
   const handle = account.username ? `@${account.username}` : account.email;

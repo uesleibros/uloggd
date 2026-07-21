@@ -20,7 +20,7 @@ import type { Dictionary } from "@/app/[lang]/dictionaries";
 import type { GameSearchResult } from "@/lib/igdb";
 import { SpawndLogo } from "./spawnd-logo";
 import { VerifiedMark } from "./verified-badge";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type SearchUser = {
   username: string;
@@ -154,7 +154,7 @@ function ResultList({
   activeIndex: number;
   onActiveIndex: (index: number) => void;
   listId: string;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   onSelect?: (game: GameSearchResult) => void;
   onNavigate?: () => void;
   recent: GameSearchResult[];
@@ -381,7 +381,7 @@ function SearchSurface({
 }: {
   dictionary: Dictionary;
   mobile?: boolean;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   onSelect?: () => void;
   cacheScope: string;
 }) {
@@ -628,7 +628,7 @@ export function DesktopGameSearch({
   cacheScope,
 }: {
   dictionary: Dictionary;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   cacheScope: string;
 }) {
   return (
@@ -646,7 +646,7 @@ export function MobileGameSearch({
   cacheScope,
 }: {
   dictionary: Dictionary;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   cacheScope: string;
 }) {
   const [open, setOpen] = useState(false);

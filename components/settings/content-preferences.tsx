@@ -3,6 +3,7 @@
 import { Check, Images, LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { UiLang } from "@/lib/ui-text";
 
 type CoverScope = "OWN" | "EVERYONE";
 
@@ -11,7 +12,7 @@ export function ContentPreferences({
   lang,
 }: {
   initialScope: CoverScope;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const [scope, setScope] = useState(initialScope);

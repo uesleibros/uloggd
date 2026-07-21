@@ -31,6 +31,7 @@ import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import "../../profile.css";
+import type { UiLang } from "@/lib/ui-text";
 
 type Props = PageProps<"/[lang]/u/[username]">;
 
@@ -43,7 +44,7 @@ async function ProfileRecentGames({
 }: {
   profileId: string;
   viewerId: string | null;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const supabase = await getSupabase();
   const [{ data: records }, { data: viewerPreference }] = await Promise.all([
@@ -110,7 +111,7 @@ async function ProfileActivity({
 }: {
   profileId: string;
   viewerId: string | null;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const supabase = await getSupabase();
   const entries = await getActivity(supabase, {
@@ -134,7 +135,7 @@ async function ProfileListsAside({
 }: {
   profileId: string;
   viewerId: string | null;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const supabase = await getSupabase();
   const lists = await getListPreviews(supabase, {
@@ -235,7 +236,7 @@ function SuspendedProfile({
   username,
   until,
 }: {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   username: string;
   until: string | null;
 }) {

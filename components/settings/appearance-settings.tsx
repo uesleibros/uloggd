@@ -7,55 +7,61 @@ import {
   THEME_CHANGE_EVENT,
 } from "@/components/theme-manager";
 import { isThemePreference, type ThemePreference } from "@/lib/theme";
+import type { UiLang } from "@/lib/ui-text";
 
 const themes: Array<{
   id: ThemePreference;
-  label: { "pt-BR": string; en: string };
-  description: { "pt-BR": string; en: string };
+  label: Record<UiLang, string>;
+  description: Record<UiLang, string>;
 }> = [
   {
     id: "auto",
-    label: { "pt-BR": "Automático", en: "Automatic" },
+    label: { "pt-BR": "Automático", en: "Automatic", es: "Automático" },
     description: {
       "pt-BR": "Acompanha a aparência do seu dispositivo.",
       en: "Follows your device appearance.",
+      es: "Sigue la apariencia de tu dispositivo.",
     },
   },
   {
     id: "light",
-    label: { "pt-BR": "Claro", en: "Light" },
+    label: { "pt-BR": "Claro", en: "Light", es: "Claro" },
     description: {
       "pt-BR": "Superfícies claras com contraste confortável.",
       en: "Light surfaces with comfortable contrast.",
+      es: "Light surfaces with comfortable contrast.",
     },
   },
   {
     id: "gray",
-    label: { "pt-BR": "Cinza", en: "Gray" },
+    label: { "pt-BR": "Cinza", en: "Gray", es: "Gris" },
     description: {
       "pt-BR": "Um meio-termo suave, inspirado no Ash.",
       en: "A softer middle ground inspired by Ash.",
+      es: "A softer middle ground inspired by Ash.",
     },
   },
   {
     id: "dark",
-    label: { "pt-BR": "Escuro", en: "Dark" },
+    label: { "pt-BR": "Escuro", en: "Dark", es: "Oscuro" },
     description: {
       "pt-BR": "A experiência clássica do uloggd.",
       en: "The classic uloggd experience.",
+      es: "The classic uloggd experience.",
     },
   },
   {
     id: "onyx",
-    label: { "pt-BR": "Ônix", en: "Onyx" },
+    label: { "pt-BR": "Ônix", en: "Onyx", es: "Ónix" },
     description: {
       "pt-BR": "Pretos profundos para ambientes com pouca luz.",
       en: "Deep blacks for low-light environments.",
+      es: "Deep blacks for low-light environments.",
     },
   },
 ];
 
-export function AppearanceSettings({ lang }: { lang: "pt-BR" | "en" }) {
+export function AppearanceSettings({ lang }: { lang: UiLang }) {
   const selected = useSyncExternalStore(
     (notify) => {
       window.addEventListener(THEME_CHANGE_EVENT, notify);

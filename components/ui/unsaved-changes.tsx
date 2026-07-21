@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import type { UiLang } from "@/lib/ui-text";
 
 /**
  * Warns before leaving a screen with unsaved edits.
@@ -23,7 +24,7 @@ export function UnsavedChangesGuard({
   message,
 }: {
   dirty: boolean;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   message?: string;
 }) {
   const pt = lang === "pt-BR";

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Globe2, Heart, Lock, Users } from "lucide-react";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 /**
  * The single way a list is previewed anywhere on the platform: a fanned stack
@@ -23,7 +23,7 @@ export function ListPreviewCard({
     count: number;
   };
   covers: { url: string; name: string }[];
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   likes?: number;
 }) {
   const pt = lang === "pt-BR";

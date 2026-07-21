@@ -11,6 +11,7 @@ import {
   Rewind,
 } from "lucide-react";
 import { useRef, useState } from "react";
+import type { UiLang } from "@/lib/ui-text";
 
 export type JourneySession = {
   id: string;
@@ -88,7 +89,7 @@ export function JourneyCalendar({
   onBulkAdd,
   onBulkRemove,
 }: {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   maxDate: string;
   sessions: JourneySession[];
   busy?: boolean;

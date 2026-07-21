@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 import { safeInternalNext } from "@/lib/auth-validation";
 import { createClient } from "@/lib/supabase/client";
 import "./mfa.css";
+import type { UiLang } from "@/lib/ui-text";
 
 type Factor = { id: string; friendly_name?: string; status: string };
 
-export function MfaChallenge({ lang }: { lang: "pt-BR" | "en" }) {
+export function MfaChallenge({ lang }: { lang: UiLang }) {
   const pt = lang === "pt-BR";
   const searchParams = useSearchParams();
   const [factors, setFactors] = useState<Factor[]>([]);

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { usernameSchema } from "@/lib/auth-validation";
 import { createClient } from "@/lib/supabase/client";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 const reserved = new Set([
   "admin",
@@ -37,7 +37,7 @@ export function UsernameSettings({
 }: {
   initialUsername: string;
   changedAt: string | null;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);

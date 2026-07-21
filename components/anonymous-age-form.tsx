@@ -4,13 +4,14 @@ import { CalendarDays, LoaderCircle, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { birthDateLimits } from "@/lib/age-access";
+import type { UiLang } from "@/lib/ui-text";
 
 export function AnonymousAgeForm({
   minimumAge,
   lang,
 }: {
   minimumAge: number;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const router = useRouter();

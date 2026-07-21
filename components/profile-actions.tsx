@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ShareButton } from "./share-button";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 const reasons = [
   "IMPERSONATION",
@@ -37,7 +37,7 @@ export function ProfileActions({
   profileId: string;
   viewerId: string | null;
   username: string;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   viewerBlocked?: boolean;
   blockedByTarget?: boolean;
 }) {

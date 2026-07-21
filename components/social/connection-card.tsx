@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { VerifiedMark } from "../verified-badge";
+import type { UiLang } from "@/lib/ui-text";
 
 export type ConnectionPerson = {
   id: string;
@@ -17,7 +18,7 @@ export function ConnectionCard({
   lang,
 }: {
   person: ConnectionPerson;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   return (
     <article className="profile-connection-card">

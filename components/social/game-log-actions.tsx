@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 import {
   JourneyCalendar,
   type JourneyOption,
@@ -58,7 +58,7 @@ export function GameLogActions({
 }: {
   game: { id: number; slug: string; name: string; releaseYear: number | null };
   platforms: string[];
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   lists: ListOption[];
   logCount: number;
   journeys?: JourneySession[];
@@ -727,7 +727,7 @@ function JourneyDayEditor({
   day: string;
   session: JourneySession | null;
   journeyTitle: string;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   pending: boolean;
   onBack: () => void;
   onSave: (payload: DayPayload) => Promise<boolean>;

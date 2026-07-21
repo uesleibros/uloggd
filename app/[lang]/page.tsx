@@ -15,6 +15,7 @@ import { resolveGameCover } from "@/lib/game-cover";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
 import { getDictionary, hasLocale } from "./dictionaries";
+import type { UiLang } from "@/lib/ui-text";
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
@@ -26,7 +27,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   );
 }
 
-async function HomeContent({ lang }: { lang: "pt-BR" | "en" }) {
+async function HomeContent({ lang }: { lang: UiLang }) {
   const [d, games, discoveries, genreCollections, user] = await Promise.all([
     getDictionary(lang),
     getPopularGames(),

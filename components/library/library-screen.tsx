@@ -5,7 +5,7 @@ import { getGamesByIds } from "@/lib/igdb";
 import { LibraryCollection, type LibraryRecord } from "./library-collection";
 import { LibraryLiveStats } from "./library-live-stats";
 import { LibraryPrivacyControl } from "./library-privacy-control";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type Profile = {
   username: string;
@@ -24,7 +24,7 @@ export async function LibraryScreen({
   profile: Profile;
   records: LibraryRecord[];
   owner: boolean;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);

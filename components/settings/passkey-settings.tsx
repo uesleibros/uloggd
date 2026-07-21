@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { UiLang } from "@/lib/ui-text";
 
 type Passkey = {
   id: string;
@@ -17,7 +18,7 @@ type Passkey = {
   last_used_at?: string;
 };
 
-export function PasskeySettings({ lang }: { lang: "pt-BR" | "en" }) {
+export function PasskeySettings({ lang }: { lang: UiLang }) {
   const pt = lang === "pt-BR";
   const [items, setItems] = useState<Passkey[]>([]);
   const [pending, setPending] = useState<string | null>("load");

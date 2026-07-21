@@ -4,14 +4,14 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Images, X } from "lucide-react";
 import { useState } from "react";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export function GameMediaGallery({
   items,
   lang,
 }: {
   items: { id: string; url: string; kind: "screenshot" | "artwork" }[];
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const [active, setActive] = useState<number | null>(null);
   const pt = lang === "pt-BR";

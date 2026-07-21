@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { UiLang } from "@/lib/ui-text";
 
 export function ShelfCarousel({
   children,
@@ -11,7 +12,7 @@ export function ShelfCarousel({
 }: {
   children: React.ReactNode;
   label: string;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   className?: string;
 }) {
   const track = useRef<HTMLDivElement>(null);

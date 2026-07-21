@@ -22,7 +22,7 @@ import {
 import { useState } from "react";
 import { StarRating } from "@/components/library/star-rating";
 import type { JourneyOption } from "@/components/social/journey-calendar";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 export type ReviewRatingMode =
   "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
@@ -86,7 +86,7 @@ export function ReviewStudioForm({
   successLabel,
   onPerform,
 }: {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   platforms: string[];
   journeyOptions?: JourneyOption[];
   initial?: ReviewFormInitial;
@@ -519,7 +519,7 @@ const ratingModes: Array<{ value: ReviewRatingMode; pt: string; en: string }> =
 function formatRatingForMode(
   rating: number,
   mode: ReviewRatingMode,
-  lang: "pt-BR" | "en",
+  lang: UiLang,
 ) {
   if (mode === "stars_5")
     return `${(rating / 20).toLocaleString(lang, { maximumFractionDigits: 1 })} / 5`;
@@ -700,7 +700,7 @@ function RatingInput({
   recommended: boolean | null;
   onChange: (value: number | null) => void;
   onRecommend: (value: boolean) => void;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   if (mode === "stars_5")
@@ -764,7 +764,7 @@ function RatingInput({
   );
 }
 
-const aspectPresets = {
+const aspectPresets: Record<UiLang, string[]> = {
   "pt-BR": [
     "Gameplay",
     "Narrativa",
@@ -774,6 +774,14 @@ const aspectPresets = {
     "Conteúdo",
   ],
   en: ["Gameplay", "Narrative", "Visuals", "Audio", "Performance", "Content"],
+  es: [
+    "Jugabilidad",
+    "Narrativa",
+    "Visuales",
+    "Audio",
+    "Rendimiento",
+    "Contenido",
+  ],
 };
 
 function AspectEditor({
@@ -783,7 +791,7 @@ function AspectEditor({
 }: {
   aspects: ReviewAspect[];
   onChange: (aspects: ReviewAspect[]) => void;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const available = aspectPresets[lang].filter(

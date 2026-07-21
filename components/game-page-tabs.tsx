@@ -11,6 +11,7 @@ import {
   Gamepad2,
 } from "lucide-react";
 import { SpawndLogo } from "./spawnd-logo";
+import type { UiLang } from "@/lib/ui-text";
 
 type TabId =
   "overview" | "media" | "updates" | "related" | "spawnd" | "community";
@@ -24,7 +25,7 @@ export function GamePageTabs({
   spawnd,
   community,
 }: {
-  lang: "pt-BR" | "en";
+  lang: UiLang;
   overview: ReactNode;
   media?: ReactNode;
   updates?: ReactNode;

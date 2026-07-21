@@ -83,7 +83,7 @@ import {
 } from "react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { MarkdownContent } from "./markdown-content";
-import { uiText } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 type Tab = "write" | "preview" | "sidebyside";
 type Tool =
@@ -597,7 +597,7 @@ export function MarkdownEditor({
   maxLength?: number;
   rows?: number;
   placeholder?: string;
-  lang: "pt-BR" | "en";
+  lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
