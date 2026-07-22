@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { EyeOff, Gamepad2 } from "lucide-react";
+import { ArrowLeft, EyeOff, Gamepad2 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ContentComments } from "@/components/social/content-comments";
 import { LikeButton } from "@/components/social/like-button";
@@ -18,7 +18,7 @@ import { hasLocale } from "../../dictionaries";
 type Props = { params: Promise<{ lang: string; id: string }> };
 
 const screenshotSelect =
-  "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
+  "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
@@ -29,11 +29,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   )
     .from("screenshots")
     .select(
-      "description,game_slug,profiles!screenshots_profile_id_fkey(username)",
+      "description,game_slug,contains_spoilers,deleted_at,profiles!screenshots_profile_id_fkey(username)",
     )
     .eq("public_id", id)
     .maybeSingle();
-  if (!data) return {};
+  if (!data || data.deleted_at) return {};
   const profile = Array.isArray(data.profiles)
     ? data.profiles[0]
     : data.profiles;
@@ -43,7 +43,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     `Screenshot by @${profile?.username}`,
     `Captura de @${profile?.username}`,
   );
-  return { title, description: data.description?.slice(0, 160) || undefined };
+  // The description of a spoiler shot stays behind the gate; putting it in the
+  // meta tag would spill it into search results and link previews.
+  return {
+    title,
+    description: data.contains_spoilers
+      ? undefined
+      : data.description?.slice(0, 160) || undefined,
+  };
 }
 
 export default async function ScreenshotPage({ params }: Props) {
@@ -59,7 +66,9 @@ export default async function ScreenshotPage({ params }: Props) {
       .maybeSingle(),
     getAuthUser(),
   ]);
-  if (!shot) notFound();
+  // Moderators keep read access so the console can show an actioned report, but
+  // the public page is not where a removed screenshot should surface.
+  if (!shot || shot.deleted_at) notFound();
   const profile = Array.isArray(shot.profiles)
     ? shot.profiles[0]
     : shot.profiles;
@@ -91,7 +100,9 @@ export default async function ScreenshotPage({ params }: Props) {
     <Image
       src={signed.signedUrl}
       alt={
-        shot.description ||
+        // Behind a spoiler gate the description is the spoiler, so a screen
+        // reader must get the neutral caption instead.
+        (!shot.contains_spoilers && shot.description) ||
         tri(
           lang,
           `Captura de ${game?.name ?? shot.game_slug}`,
@@ -108,7 +119,16 @@ export default async function ScreenshotPage({ params }: Props) {
   );
 
   return (
-    <main className="screenshot-page">
+    <main className="social-page screenshot-page">
+      <Link className="page-back-link" href={`/${lang}/game/${shot.game_slug}`}>
+        <ArrowLeft size={14} />{" "}
+        {tri(
+          lang,
+          `Voltar para ${game?.name ?? "o jogo"}`,
+          `Back to ${game?.name ?? "the game"}`,
+          `Volver a ${game?.name ?? "el juego"}`,
+        )}
+      </Link>
       <article className="screenshot-post">
         {shot.contains_spoilers ? (
           <details className="screenshot-spoiler-gate">

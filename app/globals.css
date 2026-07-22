@@ -16730,10 +16730,13 @@ adapted to the current uloggd surface system. */
   cursor: not-allowed;
   opacity: 0.52;
 }
-.screenshot-page {
-  width: min(100%, 820px);
-  margin: 0 auto;
-  padding: 32px 20px 56px;
+/* Width and padding come from .social-page so this page sits in the same
+   left-aligned content column as review, entry, and list detail. The media
+   itself still gets a reading-width cap, because a screenshot stretched across
+   an ultrawide column dwarfs every other card on the site. */
+.screenshot-page > .screenshot-post,
+.screenshot-page > .content-comments {
+  max-width: 820px;
 }
 .screenshot-gallery-page {
   width: min(100%, 1180px);
@@ -17100,9 +17103,6 @@ adapted to the current uloggd surface system. */
   .screenshot-studio > footer button {
     flex: 1;
   }
-  .screenshot-page {
-    padding: 12px 0 40px;
-  }
   .profile-page.social-skeleton .skeleton-banner {
     height: 360px;
     aspect-ratio: auto;
@@ -17123,15 +17123,8 @@ adapted to the current uloggd surface system. */
     align-self: center;
     padding-top: 0;
   }
-  .screenshot-post {
-    border-inline: 0;
-    border-radius: 0;
-  }
   .screenshot-post-body {
     padding: 14px;
-  }
-  .screenshot-page > .content-comments {
-    padding-inline: 14px;
   }
 }
 
