@@ -1,27 +1,17 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import * as Select from "@/components/ui/select";
 import {
-  Check,
-  ChevronDown,
-  Globe2,
   Layers3,
   ListOrdered,
   LoaderCircle,
-  Lock,
   Plus,
-  Users,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-import {
-  CommunityScopeSelect,
-  type CommunityScope,
-} from "./community-scope-select";
 
 export function CreateListForm({ lang }: { lang: UiLang }) {
   const t = uiText(lang);
@@ -29,30 +19,18 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [visibilityValue, setVisibilityValue] = useState("PUBLIC");
   const [mode, setMode] = useState<"COLLECTION" | "RANKED">("COLLECTION");
-  const [commentsScope, setCommentsScope] =
-    useState<CommunityScope>("EVERYONE");
 
   async function submit(formData: FormData) {
     setPending(true);
     setError(null);
     const client = createClient();
-    const { data, error: actionError } = await client.rpc("create_game_list", {
+    const { error: actionError } = await client.rpc("create_game_list", {
       list_name: formData.get("name"),
       list_description: formData.get("description"),
-      list_visibility: formData.get("visibility"),
       list_ranked: mode === "RANKED",
     });
-    const row = Array.isArray(data) ? data[0] : data;
-    const { error: scopeError } =
-      !actionError && row?.id
-        ? await client
-            .from("game_lists")
-            .update({ comments_scope: commentsScope })
-            .eq("id", row.id)
-        : { error: actionError };
-    if (actionError || scopeError) {
+    if (actionError) {
       setError(
         tri(
           lang,
@@ -67,42 +45,6 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
     }
     setPending(false);
   }
-
-  const visibility = [
-    {
-      value: "PUBLIC",
-      label: tri(lang, "Pública", "Public", "Pública"),
-      description: tri(
-        lang,
-        "Qualquer pessoa pode ver",
-        "Anyone can view it",
-        "Cualquiera puede verla",
-      ),
-      icon: Globe2,
-    },
-    {
-      value: "FOLLOWERS",
-      label: t.followers,
-      description: tri(
-        lang,
-        "Visível para seguidores",
-        "Visible to followers",
-        "Visible para seguidores",
-      ),
-      icon: Users,
-    },
-    {
-      value: "PRIVATE",
-      label: tri(lang, "Privada", "Private", "Privada"),
-      description: tri(
-        lang,
-        "Somente você pode ver",
-        "Only you can view it",
-        "Solo tú puedes verla",
-      ),
-      icon: Lock,
-    },
-  ];
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -222,62 +164,14 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
                 </span>
               </label>
             </fieldset>
-            <label>
-              <span>{t.visibility}</span>
-              <Select.Root
-                name="visibility"
-                value={visibilityValue}
-                onValueChange={setVisibilityValue}
-              >
-                <Select.Trigger className="create-list-select">
-                  <Select.Value>
-                    {
-                      visibility.find((item) => item.value === visibilityValue)
-                        ?.label
-                    }
-                  </Select.Value>
-                  <Select.Icon>
-                    <ChevronDown size={15} />
-                  </Select.Icon>
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Content
-                    className="create-list-select-content"
-                    position="popper"
-                    sideOffset={6}
-                  >
-                    <Select.Viewport>
-                      {visibility.map(
-                        ({ value, label, description, icon: Icon }) => (
-                          <Select.Item
-                            className="create-list-select-item"
-                            value={value}
-                            key={value}
-                          >
-                            <Icon size={16} />
-                            <span className="create-list-select-copy">
-                              <Select.ItemText>{label}</Select.ItemText>
-                              <small>{description}</small>
-                            </span>
-                            <Select.ItemIndicator>
-                              <Check size={14} />
-                            </Select.ItemIndicator>
-                          </Select.Item>
-                        ),
-                      )}
-                    </Select.Viewport>
-                  </Select.Content>
-                </Select.Portal>
-              </Select.Root>
-            </label>
-            <label>
-              <span>{tri(lang, "Comentários", "Comments", "Comentarios")}</span>
-              <CommunityScopeSelect
-                value={commentsScope}
-                onChange={setCommentsScope}
-                lang={lang}
-              />
-            </label>
+            <p className="create-list-hint">
+              {tri(
+                lang,
+                "Visibilidade e comentários ficam nas configurações da lista após criar.",
+                "Visibility and comments live in the list settings after you create it.",
+                "La visibilidad y los comentarios están en la configuración de la lista tras crearla.",
+              )}
+            </p>
             {error && <p role="alert">{error}</p>}
             <footer>
               <Dialog.Close type="button">{t.cancel}</Dialog.Close>
