@@ -65,7 +65,7 @@ export default async function ListPage({ params }: Props) {
     supabase
       .from("game_lists")
       .select(
-        "id,public_id,profile_id,name,description,visibility,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name),game_list_items(id,igdb_id,game_slug,position,note)",
+        "id,public_id,profile_id,name,description,visibility,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name,content_comment_scope),game_list_items(id,igdb_id,game_slug,position,note)",
       )
       .eq(key[0], key[1])
       .maybeSingle(),
@@ -218,8 +218,11 @@ export default async function ListPage({ params }: Props) {
         canComment={
           Boolean(user) &&
           (isOwner ||
-            list.comments_scope === "EVERYONE" ||
-            (list.comments_scope === "FOLLOWERS" && Boolean(follow)))
+            ((owner?.content_comment_scope === "EVERYONE" ||
+              (owner?.content_comment_scope === "FOLLOWERS" &&
+                Boolean(follow))) &&
+              (list.comments_scope === "EVERYONE" ||
+                (list.comments_scope === "FOLLOWERS" && Boolean(follow)))))
         }
         commentsScope={
           list.comments_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"

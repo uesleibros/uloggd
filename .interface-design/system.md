@@ -493,11 +493,11 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Every modal inherits semantic theme tokens from the document; light mode uses a white/paper panel, dark modes use console panels, and artwork-only lightboxes are the sole invariant-dark exception. Mobile sheets keep their footer at `bottom: 0`, never use a negative bottom margin, and must fit entirely within `100dvh` including safe-area padding.
 - Diary entries are repeatable sessions, not a single game-level field. “View logs” opens a private per-game timeline with total entries and playtime; every session can be edited or removed independently.
 - Reviews, lists, screenshots, and diary sessions share one community-post contract: compact public URL, like, comments, and share.
-- Post editors expose visibility and a separate comment audience (`EVERYONE`, `FOLLOWERS`, `NOBODY`); the stricter post/profile policy wins.
+- Comment audience is account-wide and belongs only in Settings → Privacy (`EVERYONE`, `FOLLOWERS`, `NOBODY`); creation editors expose post visibility and spoiler state, never a duplicate comment-privacy control.
 - Community composers reuse `CommunityTextArea` so focus, counter, spacing, and action treatment stay identical.
 - Profile screenshots use a dedicated dense gallery; game metadata and signed media URLs are fetched in batches.
 - The profile overview uses a horizontally scrollable row of circular, labeled collection portals (Library, Reviews, Sessions, Lists, Screenshots, Wrapped), with counts as quiet corner badges rather than metric cards.
-- Uploaded profile banners become a full-width atmospheric backdrop behind the identity header, using edge and bottom gradients for readability; they are not framed as a standalone card.
+- Uploaded profile banners become a full-width atmospheric backdrop behind a lower-anchored identity header, using edge and bottom gradients for readability; avatars have no framing ring and the identity/actions finish before collection portals begin.
 - Auto game showcases use a normalized three-copy loop. Native image/link dragging is disabled, pointer dragging stays inside the middle loop, hover pauses temporarily, and release always resumes motion.
 
 - Never fabricate user activity, online counts, progress, or authenticated identity.

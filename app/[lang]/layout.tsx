@@ -24,6 +24,7 @@ import {
   type Locale,
 } from "./dictionaries";
 import "../globals.css";
+import "./profile.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 

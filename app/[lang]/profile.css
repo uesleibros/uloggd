@@ -657,9 +657,7 @@
 .profile-banner {
   position: relative;
   width: 100%;
-  aspect-ratio: 5 / 1;
-  min-height: 168px;
-  max-height: 248px;
+  height: clamp(320px, 34vw, 430px);
   overflow: hidden;
   border-radius: 12px;
   background:
@@ -713,7 +711,7 @@
   display: flex;
   align-items: flex-start;
   gap: 20px;
-  margin-top: -58px;
+  margin-top: -128px;
   padding: 0 28px;
   position: relative;
   z-index: 1;
@@ -803,7 +801,7 @@
   width: 112px;
   height: 112px;
   overflow: hidden;
-  border: 5px solid var(--console-canvas);
+  border: 0;
   border-radius: 50%;
   background: var(--console-raised);
   color: var(--screen-white);
@@ -956,16 +954,15 @@
     width: 104px;
   }
   .profile-banner {
-    min-height: 0;
-    aspect-ratio: 3 / 1;
-    border-radius: 9px;
+    height: 360px;
+    border-radius: 0;
   }
   .profile-header {
     display: grid;
     grid-template-columns: 82px minmax(0, 1fr);
     align-items: start;
     gap: 13px;
-    margin-top: -34px;
+    margin-top: -132px;
     padding: 0 8px;
   }
   .profile-identity {
@@ -988,7 +985,7 @@
   }
   .profile-title-row {
     grid-column: 2;
-    margin-top: 38px;
+    margin-top: 104px;
     gap: 10px;
   }
   .profile-edit-link,

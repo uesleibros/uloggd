@@ -37,7 +37,7 @@ type Aspect = {
 };
 
 const reviewSelect =
-  "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)";
+  "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
 
 function reviewKey(id: string) {
   if (/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
@@ -424,8 +424,11 @@ export default async function ReviewPage({ params }: Props) {
         canComment={
           Boolean(user) &&
           (isOwner ||
-            review.comments_scope === "EVERYONE" ||
-            (review.comments_scope === "FOLLOWERS" && Boolean(follow)))
+            ((profile.content_comment_scope === "EVERYONE" ||
+              (profile.content_comment_scope === "FOLLOWERS" &&
+                Boolean(follow))) &&
+              (review.comments_scope === "EVERYONE" ||
+                (review.comments_scope === "FOLLOWERS" && Boolean(follow)))))
         }
         commentsScope={
           review.comments_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"

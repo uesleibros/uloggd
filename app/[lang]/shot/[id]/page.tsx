@@ -17,7 +17,7 @@ import { hasLocale } from "../../dictionaries";
 type Props = { params: Promise<{ lang: string; id: string }> };
 
 const screenshotSelect =
-  "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified)";
+  "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
@@ -185,7 +185,6 @@ export default async function ScreenshotPage({ params }: Props) {
                 description: shot.description ?? "",
                 spoilers: shot.contains_spoilers,
                 visibility: shot.visibility,
-                commentsScope: shot.comments_scope,
               }}
             />
           </header>
@@ -237,8 +236,11 @@ export default async function ScreenshotPage({ params }: Props) {
         canComment={
           Boolean(user) &&
           (user?.id === shot.profile_id ||
-            shot.comments_scope === "EVERYONE" ||
-            (shot.comments_scope === "FOLLOWERS" && Boolean(follow)))
+            ((profile.content_comment_scope === "EVERYONE" ||
+              (profile.content_comment_scope === "FOLLOWERS" &&
+                Boolean(follow))) &&
+              (shot.comments_scope === "EVERYONE" ||
+                (shot.comments_scope === "FOLLOWERS" && Boolean(follow)))))
         }
         commentsScope={
           shot.comments_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"

@@ -17,7 +17,6 @@ import { tri, type UiLang } from "@/lib/ui-text";
 import { CommunityTextArea } from "./comment-parts";
 
 type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-type CommentsScope = "EVERYONE" | "FOLLOWERS" | "NOBODY";
 
 const maxSourceBytes = 12 * 1024 * 1024;
 const maxTransportBytes = 4 * 1024 * 1024;
@@ -71,7 +70,6 @@ export function ScreenshotStudioForm({
   const [image, setImage] = useState<File | null>(null);
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("PUBLIC");
-  const [commentsScope, setCommentsScope] = useState<CommentsScope>("EVERYONE");
   const [spoilers, setSpoilers] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +96,6 @@ export function ScreenshotStudioForm({
     body.set("gameSlug", game.slug);
     body.set("description", description);
     body.set("visibility", visibility);
-    body.set("commentsScope", commentsScope);
     body.set("spoilers", String(spoilers));
     try {
       body.set("image", await prepareScreenshot(image));
@@ -279,70 +276,6 @@ export function ScreenshotStudioForm({
               "Contiene spoilers",
             )}
           </span>
-        </label>
-        <label>
-          <span>
-            {tri(
-              lang,
-              "Quem pode comentar",
-              "Who can comment",
-              "Quién puede comentar",
-            )}
-          </span>
-          <Select.Root
-            value={commentsScope}
-            onValueChange={(value) => setCommentsScope(value as CommentsScope)}
-          >
-            <Select.Trigger className="editor-select-trigger">
-              <Select.Value />
-              <Select.Icon>
-                <ChevronDown size={14} />
-              </Select.Icon>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Content
-                className="editor-select-menu"
-                position="popper"
-                sideOffset={6}
-                collisionPadding={12}
-              >
-                <Select.Viewport>
-                  {(["EVERYONE", "FOLLOWERS", "NOBODY"] as const).map(
-                    (value) => (
-                      <Select.Item
-                        className="editor-select-option"
-                        value={value}
-                        key={value}
-                      >
-                        {value === "EVERYONE" ? (
-                          <Globe2 size={14} />
-                        ) : value === "FOLLOWERS" ? (
-                          <Users size={14} />
-                        ) : (
-                          <LockKeyhole size={14} />
-                        )}
-                        <Select.ItemText>
-                          {value === "EVERYONE"
-                            ? tri(lang, "Todos", "Everyone", "Todos")
-                            : value === "FOLLOWERS"
-                              ? tri(
-                                  lang,
-                                  "Seguidores",
-                                  "Followers",
-                                  "Seguidores",
-                                )
-                              : tri(lang, "Ninguém", "Nobody", "Nadie")}
-                        </Select.ItemText>
-                        <Select.ItemIndicator>
-                          <Check size={13} />
-                        </Select.ItemIndicator>
-                      </Select.Item>
-                    ),
-                  )}
-                </Select.Viewport>
-              </Select.Content>
-            </Select.Portal>
-          </Select.Root>
         </label>
       </div>
       {error && (

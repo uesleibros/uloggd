@@ -54,6 +54,10 @@
     "profileComment": "commented on your profile:",
     "profileReply": "replied to your comment:",
     "profileCommentLike": "liked your comment:",
+    "screenshotLike": "liked your screenshot from",
+    "screenshotComment": "commented on your screenshot:",
+    "screenshotReply": "replied to your screenshot comment:",
+    "screenshotCommentLike": "liked your screenshot comment:",
     "unknownUser": "Someone",
     "unread": "Unread",
     "preferencesTitle": "What you want to receive",
@@ -62,6 +66,7 @@
     "reviewLikes": "Review likes",
     "listLikes": "List likes",
     "comments": "Profile comments",
+    "screenshots": "Screenshot activity",
     "saving": "Saving…"
   },
   "search": {

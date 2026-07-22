@@ -14,10 +14,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-import {
-  CommunityScopeSelect,
-  type CommunityScope,
-} from "./community-scope-select";
 import { CommunityTextArea } from "./comment-parts";
 import {
   EditorVisibilitySelect,
@@ -37,7 +33,6 @@ export function ScreenshotActions({
     description: string;
     spoilers: boolean;
     visibility: ReviewVisibility;
-    commentsScope: CommunityScope;
   };
   viewerId: string | null;
   lang: UiLang;
@@ -50,7 +45,6 @@ export function ScreenshotActions({
   const [description, setDescription] = useState(shot.description);
   const [spoilers, setSpoilers] = useState(shot.spoilers);
   const [visibility, setVisibility] = useState(shot.visibility);
-  const [commentsScope, setCommentsScope] = useState(shot.commentsScope);
   const [pending, setPending] = useState(false);
   const [armed, setArmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +58,6 @@ export function ScreenshotActions({
         description: description.trim() || null,
         contains_spoilers: spoilers,
         visibility,
-        comments_scope: commentsScope,
       })
       .eq("id", shot.id);
     if (updateError) setError(t.couldNotSave);
@@ -144,7 +137,13 @@ export function ScreenshotActions({
                 <DropdownMenu.Item onSelect={() => setEditing(true)}>
                   <Pencil size={14} /> {t.edit}
                 </DropdownMenu.Item>
-                <DropdownMenu.Item data-danger onSelect={() => void remove()}>
+                <DropdownMenu.Item
+                  data-danger
+                  onSelect={(event) => {
+                    if (!armed) event.preventDefault();
+                    void remove();
+                  }}
+                >
                   <Trash2 size={14} />{" "}
                   {armed
                     ? tri(
@@ -210,16 +209,6 @@ export function ScreenshotActions({
                 <EditorVisibilitySelect
                   value={visibility}
                   onChange={setVisibility}
-                  lang={lang}
-                />
-              </label>
-              <label>
-                <span>
-                  {tri(lang, "Comentários", "Comments", "Comentarios")}
-                </span>
-                <CommunityScopeSelect
-                  value={commentsScope}
-                  onChange={setCommentsScope}
                   lang={lang}
                 />
               </label>

@@ -54,6 +54,10 @@
     "profileComment": "comentó en tu perfil:",
     "profileReply": "respondió a tu comentario:",
     "profileCommentLike": "le dio me gusta a tu comentario:",
+    "screenshotLike": "le dio me gusta a tu captura de",
+    "screenshotComment": "comentó en tu captura:",
+    "screenshotReply": "respondió a tu comentario en la captura:",
+    "screenshotCommentLike": "le dio me gusta a tu comentario en la captura:",
     "unknownUser": "Alguien",
     "unread": "Sin leer",
     "preferencesTitle": "Lo que quieres recibir",
@@ -62,6 +66,7 @@
     "reviewLikes": "Me gusta en reseñas",
     "listLikes": "Me gusta en listas",
     "comments": "Comentarios del perfil",
+    "screenshots": "Actividad en capturas",
     "saving": "Guardando…"
   },
   "search": {

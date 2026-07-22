@@ -361,17 +361,17 @@ export function PrivacySettings({
             <h2>
               {tri(
                 lang,
-                "Comentários em listas e avaliações",
-                "Comments on lists and reviews",
-                "Comentarios en listas y reseñas",
+                "Comentários nas suas publicações",
+                "Comments on your posts",
+                "Comentarios en tus publicaciones",
               )}
             </h2>
             <p>
               {tri(
                 lang,
-                "Vale para tudo que você publica: listas e avaliações. Você sempre poderá remover qualquer comentário.",
-                "Applies to everything you publish: lists and reviews. You can always remove any comment.",
-                "Vale para todo lo que publicas: listas y reseñas. Siempre podrás quitar cualquier comentario.",
+                "Vale para avaliações, listas, capturas e sessões. Você sempre poderá remover qualquer comentário.",
+                "Applies to reviews, lists, screenshots, and sessions. You can always remove any comment.",
+                "Vale para reseñas, listas, capturas y sesiones. Siempre podrás quitar cualquier comentario.",
               )}
             </p>
           </div>

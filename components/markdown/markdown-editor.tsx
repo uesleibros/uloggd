@@ -148,13 +148,30 @@ const insertGroups: Array<{
   tools: Array<[Tool, ComponentType<{ size?: number }>]>;
 }> = [
   {
+    titlePt: "Texto",
+    titleEn: "Text",
+    titleEs: "Texto",
+    tools: [
+      ["bold", Bold],
+      ["italic", Italic],
+      ["strikethrough", Strikethrough],
+      ["link", Link2],
+      ["quote", Quote],
+      ["ul", List],
+      ["ol", ListOrdered],
+      ["checklist", CheckSquare],
+    ],
+  },
+  {
     titlePt: "Mídia",
     titleEn: "Media",
     titleEs: "Medios",
     tools: [
+      ["image", Image],
       ["imagesize", ImagePlus],
       ["youtube", Video],
       ["spoilerimage", ImageOff],
+      ["spoiler", EyeOff],
     ],
   },
   {
@@ -162,6 +179,7 @@ const insertGroups: Array<{
     titleEn: "Blocks",
     titleEs: "Bloques",
     tools: [
+      ["code", Code],
       ["codeblock", FileCode2],
       ["table", Table],
       ["alert", AlertCircle],
@@ -175,7 +193,6 @@ const insertGroups: Array<{
     titleEs: "uloggd",
     tools: [
       ["mention", AtSign],
-      ["spoiler", EyeOff],
       ["center", AlignCenter],
       ["lang", Languages],
       ["theme", Contrast],

@@ -20,7 +20,7 @@ export default async function DiaryEntryPage({ params }: Props) {
     supabase
       .from("diary_entries")
       .select(
-        "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,minutes,note,contains_spoilers,visibility,comments_scope,created_at,profiles!diary_entries_profile_id_fkey(username,display_name)",
+        "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,minutes,note,contains_spoilers,visibility,comments_scope,created_at,profiles!diary_entries_profile_id_fkey(username,display_name,content_comment_scope)",
       )
       .eq("public_id", id)
       .maybeSingle(),
@@ -57,8 +57,10 @@ export default async function DiaryEntryPage({ params }: Props) {
   const canComment =
     Boolean(user) &&
     (user?.id === entry.profile_id ||
-      entry.comments_scope === "EVERYONE" ||
-      (entry.comments_scope === "FOLLOWERS" && Boolean(follow)));
+      ((profile.content_comment_scope === "EVERYONE" ||
+        (profile.content_comment_scope === "FOLLOWERS" && Boolean(follow))) &&
+        (entry.comments_scope === "EVERYONE" ||
+          (entry.comments_scope === "FOLLOWERS" && Boolean(follow)))));
   return (
     <main className="social-page diary-entry-page">
       <article className="diary-entry-post">
