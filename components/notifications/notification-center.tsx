@@ -340,6 +340,10 @@ export function NotificationCenter({
       if (target) {
         target.scrollIntoView({ behavior: "smooth", block: "center" });
         target.focus({ preventScroll: true });
+        target.dataset.highlight = "true";
+        window.setTimeout(() => {
+          delete target.dataset.highlight;
+        }, 2400);
         return;
       }
       attempts += 1;
@@ -478,24 +482,28 @@ export function NotificationCenter({
                     const isScreenshotComment =
                       item.kind === "screenshot_comment" ||
                       item.kind === "screenshot_comment_like";
+                    const actorProfile = actor?.username
+                      ? `/${lang}/u/${actor.username}`
+                      : `/${lang}`;
                     const href =
                       item.kind === "follow"
-                        ? actor?.username
-                          ? `/${lang}/u/${actor.username}`
-                          : `/${lang}`
+                        ? actorProfile
                         : isCommentNotification && commentTarget
                           ? `/${lang}/u/${commentTarget.ownerUsername}#comment-${commentTarget.publicId}`
                           : isCommentNotification
-                            ? `/${lang}`
+                            ? actorProfile
                             : isScreenshotComment
                               ? screenshotCommentTarget
                                 ? `/${lang}/shot/${screenshotCommentTarget.shotPublicId}#comment-${screenshotCommentTarget.commentPublicId}`
-                                : `/${lang}`
-                              : item.kind === "review_like"
-                                ? `/${lang}/review/${item.target_id ? (contentTargets[item.target_id] ?? item.target_id) : ""}`
-                                : item.kind === "screenshot_like"
-                                  ? `/${lang}/shot/${item.target_id ? (contentTargets[item.target_id] ?? item.target_id) : ""}`
-                                  : `/${lang}/lists/${item.target_id ? (contentTargets[item.target_id] ?? item.target_id) : ""}`;
+                                : actorProfile
+                              : item.kind === "review_like" && item.target_id
+                                ? `/${lang}/review/${contentTargets[item.target_id] ?? item.target_id}`
+                                : item.kind === "screenshot_like" &&
+                                    item.target_id
+                                  ? `/${lang}/shot/${contentTargets[item.target_id] ?? item.target_id}`
+                                  : item.kind === "list_like" && item.target_id
+                                    ? `/${lang}/lists/${contentTargets[item.target_id] ?? item.target_id}`
+                                    : actorProfile;
                     const Icon =
                       item.kind === "moderation_comment_removed"
                         ? ShieldAlert

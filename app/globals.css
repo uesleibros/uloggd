@@ -17404,3 +17404,26 @@ adapted to the current uloggd surface system. */
 .list-items-grid[data-mode="collection"] .ranked-list-item {
   padding-top: 0;
 }
+
+/* Notification deep-links scroll to a comment and flag data-highlight so the
+   reader can spot which one triggered the notification. */
+@keyframes comment-notification-highlight {
+  0% {
+    background: color-mix(in oklab, var(--brand-blurple) 32%, transparent);
+    box-shadow: 0 0 0 2px
+      color-mix(in oklab, var(--brand-blurple) 55%, transparent);
+  }
+  70% {
+    background: color-mix(in oklab, var(--brand-blurple) 18%, transparent);
+    box-shadow: 0 0 0 2px
+      color-mix(in oklab, var(--brand-blurple) 30%, transparent);
+  }
+  100% {
+    background: transparent;
+    box-shadow: 0 0 0 2px transparent;
+  }
+}
+article[id^="comment-"][data-highlight] {
+  border-radius: 12px;
+  animation: comment-notification-highlight 2400ms ease-out;
+}
