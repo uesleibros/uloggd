@@ -85,6 +85,12 @@ export function ActivityStream({
   viewerId?: string | null;
 }) {
   const t = uiText(lang);
+  const playedDate = new Intl.DateTimeFormat(lang, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
   if (!entries.length)
     return (
       <div className="social-empty">
@@ -284,8 +290,10 @@ export function ActivityStream({
                   <CalendarDays size={13} />{" "}
                   {entry.playedOn
                     ? entry.endedOn
-                      ? `${date.format(new Date(`${entry.playedOn}T00:00:00Z`))} – ${date.format(new Date(`${entry.endedOn}T00:00:00Z`))}`
-                      : date.format(new Date(`${entry.playedOn}T00:00:00Z`))
+                      ? `${playedDate.format(new Date(`${entry.playedOn}T00:00:00Z`))} – ${playedDate.format(new Date(`${entry.endedOn}T00:00:00Z`))}`
+                      : playedDate.format(
+                          new Date(`${entry.playedOn}T00:00:00Z`),
+                        )
                     : "—"}
                 </span>
                 {entry.minutes ? (
