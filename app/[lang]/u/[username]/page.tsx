@@ -168,9 +168,11 @@ async function ProfileListsAside({
       key={list.id}
       list={{
         id: list.id,
+        publicId: list.publicId,
         name: list.name,
         description: list.description,
         visibility: list.visibility,
+        ranked: list.ranked,
         count: list.count,
       }}
       covers={list.covers}

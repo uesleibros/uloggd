@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { LoaderCircle, Pencil, Trash2, X } from "lucide-react";
+import { Layers3, ListOrdered, LoaderCircle, Pencil, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +21,7 @@ export function ListOwnerControls({
     name: string;
     description: string | null;
     visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+    ranked: boolean;
     comments_scope: CommunityScope;
   };
   lang: UiLang;
@@ -32,6 +33,9 @@ export function ListOwnerControls({
   const [armed, setArmed] = useState(false);
   const disarmTimer = useRef<number | null>(null);
   const [visibility, setVisibility] = useState(list.visibility);
+  const [mode, setMode] = useState<"COLLECTION" | "RANKED">(
+    list.ranked ? "RANKED" : "COLLECTION",
+  );
   const [commentsScope, setCommentsScope] = useState(list.comments_scope);
   const [error, setError] = useState<string | null>(null);
   useEffect(
@@ -50,6 +54,7 @@ export function ListOwnerControls({
         list_name: formData.get("name"),
         list_description: formData.get("description"),
         list_visibility: visibility,
+        list_ranked: mode === "RANKED",
       },
     );
     const { error: scopeError } = !actionError
@@ -181,6 +186,59 @@ export function ListOwnerControls({
                   rows={5}
                 />
               </label>
+              <fieldset className="create-list-mode">
+                <legend>{tri(lang, "Formato", "Format", "Formato")}</legend>
+                <label data-selected={mode === "COLLECTION" || undefined}>
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="COLLECTION"
+                    checked={mode === "COLLECTION"}
+                    onChange={() => setMode("COLLECTION")}
+                  />
+                  <span>
+                    <Layers3 size={17} aria-hidden />
+                  </span>
+                  <span>
+                    <strong>
+                      {tri(lang, "Coleção", "Collection", "Colección")}
+                    </strong>
+                    <small>
+                      {tri(
+                        lang,
+                        "Jogos reunidos por tema, sem ordem obrigatória.",
+                        "Games grouped by theme, no required order.",
+                        "Juegos reunidos por tema, sin orden obligatorio.",
+                      )}
+                    </small>
+                  </span>
+                </label>
+                <label data-selected={mode === "RANKED" || undefined}>
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="RANKED"
+                    checked={mode === "RANKED"}
+                    onChange={() => setMode("RANKED")}
+                  />
+                  <span>
+                    <ListOrdered size={17} aria-hidden />
+                  </span>
+                  <span>
+                    <strong>
+                      {tri(lang, "Ranking", "Ranking", "Ranking")}
+                    </strong>
+                    <small>
+                      {tri(
+                        lang,
+                        "Ordem importa: 1º, 2º, 3º… você define a posição.",
+                        "Order matters: 1st, 2nd, 3rd… you set the position.",
+                        "El orden importa: 1º, 2º, 3º… tú defines la posición.",
+                      )}
+                    </small>
+                  </span>
+                </label>
+              </fieldset>
               <label>
                 <span>{t.visibility}</span>
                 <EditorVisibilitySelect

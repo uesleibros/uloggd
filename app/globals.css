@@ -10823,8 +10823,16 @@ details.review-page-content p {
   margin-bottom: 32px;
 }
 .list-detail-header small {
-  display: block;
+  color: var(--screen-muted);
+  font-size: 11px;
+}
+.list-detail-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   margin-top: 14px;
+}
+.list-detail-meta small {
   color: var(--screen-muted);
   font-size: 11px;
 }
@@ -17125,4 +17133,268 @@ adapted to the current uloggd surface system. */
   .screenshot-page > .content-comments {
     padding-inline: 14px;
   }
+}
+
+/* ── Ranked/Collection format picker (create + edit dialogs) ───────────── */
+.create-list-mode {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 550;
+}
+.create-list-mode legend {
+  padding: 0;
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 550;
+}
+.create-list-mode > label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 10px;
+  background: var(--console-inset);
+  cursor: pointer;
+  transition:
+    border-color 150ms ease-out,
+    background-color 150ms ease-out;
+}
+.create-list-mode > label:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--console-hover);
+}
+.create-list-mode > label > input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.create-list-mode > label > span:first-of-type {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-muted);
+}
+.create-list-mode > label > span:last-of-type {
+  display: grid;
+  gap: 3px;
+}
+.create-list-mode > label strong {
+  color: var(--screen-white);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.create-list-mode > label small {
+  color: var(--screen-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.create-list-mode > label[data-selected] {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+}
+.create-list-mode > label[data-selected] > span:first-of-type {
+  background: var(--brand-blurple);
+  color: white;
+}
+
+/* ── Lists workspace: toolbar, filters, mode chip ────────────────────── */
+.lists-collection {
+  display: grid;
+  gap: 22px;
+}
+.lists-toolbar {
+  display: grid;
+  gap: 14px;
+}
+.lists-toolbar-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.lists-toolbar-heading h2 {
+  color: var(--screen-white);
+  font-size: 17px;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+}
+.lists-toolbar-heading p {
+  color: var(--screen-muted);
+  font-size: 11.5px;
+  font-weight: 550;
+}
+.lists-mode-tabs {
+  margin-top: 0;
+}
+.lists-toolbar-controls {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.lists-toolbar-controls .lists-search {
+  position: relative;
+  flex: 1 1 220px;
+  min-width: 200px;
+}
+.lists-toolbar-controls .lists-search .search-field-hit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.lists-toolbar-controls .lists-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--screen-white);
+  font: 400 13px var(--font-inter);
+}
+.lists-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--screen-muted);
+  transform: translateY(-50%);
+  transition: opacity 120ms ease-out;
+}
+.lists-search-clear:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.lists-search-clear[data-hidden] {
+  opacity: 0;
+  pointer-events: none;
+}
+.lists-toolbar-select {
+  display: grid;
+  gap: 5px;
+  min-width: 160px;
+  color: var(--screen-dim);
+  font-size: 10.5px;
+  font-weight: 550;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.lists-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font: 550 12.5px var(--font-inter);
+}
+.lists-select-trigger:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--console-hover);
+}
+.lists-select-content {
+  z-index: 10014;
+  min-width: var(--radix-select-trigger-width, 180px);
+  padding: 6px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 10px;
+  background: var(--overlay-panel);
+  box-shadow: 0 18px 46px var(--overlay-shadow);
+  animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.lists-select-item {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 7px;
+  color: var(--screen-dim);
+  font-size: 12.5px;
+  font-weight: 550;
+  outline: none;
+  cursor: pointer;
+}
+.lists-select-item[data-highlighted],
+.lists-select-item:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.lists-clear-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--screen-muted);
+  font-size: 11.5px;
+  font-weight: 550;
+}
+.lists-clear-filters:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.lists-search-empty {
+  padding: 22px 18px;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+
+/* ── List preview mode chip (Ranking / Collection) ─────────────────── */
+.list-preview-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 999px;
+  background: var(--console-raised);
+  color: var(--screen-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.list-preview-mode[data-ranked] {
+  border-color: color-mix(in oklab, var(--brand-blurple) 45%, transparent);
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
+
+/* Un-ranked collections don't paint the numbered rank badge, so remove the
+   space that badge would have reserved. */
+.list-items-grid[data-mode="collection"] .ranked-list-item {
+  padding-top: 0;
 }

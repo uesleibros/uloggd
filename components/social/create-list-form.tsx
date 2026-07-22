@@ -6,6 +6,8 @@ import {
   Check,
   ChevronDown,
   Globe2,
+  Layers3,
+  ListOrdered,
   LoaderCircle,
   Lock,
   Plus,
@@ -28,6 +30,7 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [visibilityValue, setVisibilityValue] = useState("PUBLIC");
+  const [mode, setMode] = useState<"COLLECTION" | "RANKED">("COLLECTION");
   const [commentsScope, setCommentsScope] =
     useState<CommunityScope>("EVERYONE");
 
@@ -39,6 +42,7 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
       list_name: formData.get("name"),
       list_description: formData.get("description"),
       list_visibility: formData.get("visibility"),
+      list_ranked: mode === "RANKED",
     });
     const row = Array.isArray(data) ? data[0] : data;
     const { error: scopeError } =
@@ -165,6 +169,59 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
                 )}
               />
             </label>
+            <fieldset className="create-list-mode">
+              <legend>{tri(lang, "Formato", "Format", "Formato")}</legend>
+              <label data-selected={mode === "COLLECTION" || undefined}>
+                <input
+                  type="radio"
+                  name="mode"
+                  value="COLLECTION"
+                  checked={mode === "COLLECTION"}
+                  onChange={() => setMode("COLLECTION")}
+                />
+                <span>
+                  <Layers3 size={17} aria-hidden />
+                </span>
+                <span>
+                  <strong>
+                    {tri(lang, "Coleção", "Collection", "Colección")}
+                  </strong>
+                  <small>
+                    {tri(
+                      lang,
+                      "Jogos reunidos por tema, sem ordem obrigatória.",
+                      "Games grouped by theme, no required order.",
+                      "Juegos reunidos por tema, sin orden obligatorio.",
+                    )}
+                  </small>
+                </span>
+              </label>
+              <label data-selected={mode === "RANKED" || undefined}>
+                <input
+                  type="radio"
+                  name="mode"
+                  value="RANKED"
+                  checked={mode === "RANKED"}
+                  onChange={() => setMode("RANKED")}
+                />
+                <span>
+                  <ListOrdered size={17} aria-hidden />
+                </span>
+                <span>
+                  <strong>
+                    {tri(lang, "Ranking", "Ranking", "Ranking")}
+                  </strong>
+                  <small>
+                    {tri(
+                      lang,
+                      "Ordem importa: 1º, 2º, 3º… você define a posição.",
+                      "Order matters: 1st, 2nd, 3rd… you set the position.",
+                      "El orden importa: 1º, 2º, 3º… tú defines la posición.",
+                    )}
+                  </small>
+                </span>
+              </label>
+            </fieldset>
             <label>
               <span>{t.visibility}</span>
               <Select.Root

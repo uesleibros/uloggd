@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Globe2, Heart, Lock, Users } from "lucide-react";
+import { Globe2, Heart, Layers3, ListOrdered, Lock, Users } from "lucide-react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { SafeImage } from "@/components/safe-image";
 
@@ -8,6 +8,10 @@ import { SafeImage } from "@/components/safe-image";
  * of covers over the page background, with the name and meta underneath.
  * Sizing is percentage-based so the same markup works in the lists index, the
  * profile subpage and the narrow profile aside without per-page overrides.
+ *
+ * `ranked` decides whether the card wears the Ranking chip (with an order
+ * icon) or the Collection chip (with a layers icon), so the reader knows what
+ * to expect inside before opening the list.
  */
 export function ListPreviewCard({
   list,
@@ -21,6 +25,7 @@ export function ListPreviewCard({
     name: string;
     description: string | null;
     visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+    ranked?: boolean;
     count: number;
   };
   covers: { url: string; fallbackUrl?: string; name: string }[];
@@ -40,11 +45,13 @@ export function ListPreviewCard({
       : list.visibility === "FOLLOWERS"
         ? Users
         : Globe2;
+  const ranked = Boolean(list.ranked);
   const shown = covers.slice(0, 5);
   return (
     <Link
       className="list-preview"
       href={`/${lang}/lists/${list.publicId ?? list.id}`}
+      data-mode={ranked ? "ranked" : "collection"}
     >
       <span className="list-preview-stack" aria-hidden>
         {shown.length ? (
@@ -62,6 +69,12 @@ export function ListPreviewCard({
         ) : (
           <span className="list-preview-blank" />
         )}
+      </span>
+      <span className="list-preview-mode" data-ranked={ranked || undefined}>
+        {ranked ? <ListOrdered size={11} /> : <Layers3 size={11} />}
+        {ranked
+          ? tri(lang, "Ranking", "Ranking", "Ranking")
+          : tri(lang, "Coleção", "Collection", "Colección")}
       </span>
       <span className="list-preview-name">{list.name}</span>
       <span className="list-preview-facts">

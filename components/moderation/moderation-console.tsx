@@ -4,24 +4,31 @@ import * as Dialog from "@radix-ui/react-dialog";
 import * as Select from "@/components/ui/select";
 import {
   Ban,
+  Camera,
   Check,
   ChevronDown,
   Clock3,
   ExternalLink,
   Flag,
   LoaderCircle,
+  MessageSquareOff,
   Search,
   ShieldCheck,
   ShieldOff,
   Trash2,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
 import { RelativeTime } from "@/components/relative-time";
+import {
+  MODERATION_BAN_DURATIONS,
+  type ModerationStatus,
+} from "@/lib/moderation";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Role = "USER" | "MODERATOR" | "ADMIN";
@@ -62,7 +69,22 @@ type Action = {
   created_at: string;
   metadata: unknown;
 };
+type Screenshot = {
+  id: string;
+  publicId: string;
+  description: string | null;
+  igdbId: number;
+  gameSlug: string;
+  width: number;
+  height: number;
+  containsSpoilers: boolean;
+  deletedAt: string | null;
+  imageUrl: string | null;
+};
 type ProfileAction = "BAN" | "UNBAN" | "VERIFY" | "UNVERIFY";
+type Removal =
+  | { kind: "COMMENT"; reportId: string; commentId: string }
+  | { kind: "SCREENSHOT"; reportId: string; screenshotId: string };
 
 export function ModerationConsole({
   lang,
@@ -70,26 +92,30 @@ export function ModerationConsole({
   initialStatus,
   initialSearch,
   reports,
+  statusCounts,
   accounts,
   profiles,
   comments,
+  screenshots,
   moderationStates,
   actions,
 }: {
   lang: UiLang;
   actorRole: "MODERATOR" | "ADMIN";
-  initialStatus: string;
+  initialStatus: ModerationStatus;
   initialSearch: string;
   reports: Report[];
+  statusCounts: Record<ModerationStatus, number>;
   accounts: Profile[];
   profiles: Profile[];
   comments: { id: string; body: string; deleted_at: string | null }[];
+  screenshots: Screenshot[];
   moderationStates: ModerationState[];
   actions: Action[];
 }) {
   const t = uiText(lang);
   const pathname = usePathname();
-  const [statusFilter, setStatusFilter] = useState(initialStatus);
+  const router = useRouter();
   const [reportRows, setReportRows] = useState(reports);
   const [search, setSearch] = useState(initialSearch);
   const [accountRows, setAccountRows] = useState(accounts);
@@ -104,12 +130,10 @@ export function ModerationConsole({
     action: ProfileAction;
   } | null>(null);
   const [reason, setReason] = useState("");
-  const [commentRemoval, setCommentRemoval] = useState<{
-    reportId: string;
-    commentId: string;
-  } | null>(null);
-  const [commentRemovalReason, setCommentRemovalReason] = useState("");
+  const [removal, setRemoval] = useState<Removal | null>(null);
+  const [removalReason, setRemovalReason] = useState("");
   const [commentRows, setCommentRows] = useState(comments);
+  const [screenshotRows, setScreenshotRows] = useState(screenshots);
   const [duration, setDuration] = useState("7");
   const [error, setError] = useState<string | null>(null);
   const [renderedAt] = useState(() => Date.now());
@@ -121,6 +145,10 @@ export function ModerationConsole({
     () => new Map(commentRows.map((comment) => [comment.id, comment])),
     [commentRows],
   );
+  const screenshotById = useMemo(
+    () => new Map(screenshotRows.map((shot) => [shot.id, shot])),
+    [screenshotRows],
+  );
   const stateByProfile = useMemo(
     () =>
       new Map(moderationStateRows.map((state) => [state.profile_id, state])),
@@ -131,8 +159,6 @@ export function ModerationConsole({
     return profile?.display_name || `@${profile?.username ?? "usuário"}`;
   }
 
-  // Every dialog opens from a clean slate: a duration left over from the
-  // previous ban would silently become the default for the next one.
   function openProfileAction(profile: Profile, action: ProfileAction) {
     setError(null);
     setReason("");
@@ -140,20 +166,28 @@ export function ModerationConsole({
     setTargetAction({ profile, action });
   }
 
-  const dialogOpen = Boolean(targetAction) || Boolean(commentRemoval);
+  function openRemoval(next: Removal) {
+    setError(null);
+    setRemovalReason("");
+    setRemoval(next);
+  }
+
+  const dialogOpen = Boolean(targetAction) || Boolean(removal);
   const needsReason =
     targetAction?.action === "BAN" || targetAction?.action === "UNBAN";
   const profilePending =
     targetAction !== null && pending === `profile-${targetAction.profile.id}`;
-  const commentPending =
-    commentRemoval !== null &&
-    pending === `comment-${commentRemoval.commentId}`;
+  const removalPending =
+    removal !== null &&
+    (pending === `comment-${removal.kind === "COMMENT" ? removal.commentId : ""}` ||
+      pending ===
+        `screenshot-${removal.kind === "SCREENSHOT" ? removal.screenshotId : ""}`);
 
-  const visibleReports =
-    statusFilter === "ALL"
-      ? reportRows
-      : reportRows.filter((report) => report.status === statusFilter);
-  const statusTabs = [
+  const statusTabs: {
+    id: ModerationStatus;
+    label: string;
+    icon: typeof Flag;
+  }[] = [
     { id: "OPEN", label: tri(lang, "Abertas", "Open", "Abiertas"), icon: Flag },
     {
       id: "REVIEWING",
@@ -173,12 +207,11 @@ export function ModerationConsole({
     { id: "ALL", label: tri(lang, "Todas", "All", "Todas"), icon: ShieldCheck },
   ];
 
-  function setStatus(status: string) {
-    setStatusFilter(status);
+  function setStatus(next: ModerationStatus) {
     const params = new URLSearchParams();
-    params.set("status", status);
+    params.set("status", next);
     if (search.trim()) params.set("q", search.trim());
-    window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   async function searchAccounts(event: React.FormEvent<HTMLFormElement>) {
@@ -210,8 +243,6 @@ export function ModerationConsole({
         rows.forEach((profile) => merged.set(profile.id, profile));
         return [...merged.values()];
       });
-      // Without this the ban state of a freshly searched account is unknown,
-      // so a banned user would still show the "Ban" button.
       if (rows.length) {
         const ids = rows.map((profile) => profile.id);
         const { data: states } = await createClient()
@@ -225,7 +256,7 @@ export function ModerationConsole({
         ]);
       }
       const params = new URLSearchParams();
-      params.set("status", statusFilter);
+      params.set("status", initialStatus);
       params.set("q", query);
       window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
     }
@@ -355,48 +386,99 @@ export function ModerationConsole({
     setPending(null);
   }
 
-  async function removeReportedComment() {
-    if (!commentRemoval || pending) return;
-    setPending(`comment-${commentRemoval.commentId}`);
-    setError(null);
-    const { data, error: removalError } = await createClient().rpc(
-      "moderate_profile_comment",
-      {
-        target_comment: commentRemoval.commentId,
-        reason: commentRemovalReason.trim() || null,
-        target_report: commentRemoval.reportId,
-      },
-    );
-    if (removalError || data !== true) {
-      setError(
-        tri(
-          lang,
-          "Não foi possível remover o comentário.",
-          "Could not remove the comment.",
-          "No se pudo quitar el comentario.",
-        ),
+  async function performRemoval() {
+    if (!removal || pending) return;
+    const client = createClient();
+    const clean = removalReason.trim() || null;
+    if (removal.kind === "COMMENT") {
+      setPending(`comment-${removal.commentId}`);
+      setError(null);
+      const { data, error: removalError } = await client.rpc(
+        "moderate_profile_comment",
+        {
+          target_comment: removal.commentId,
+          reason: clean,
+          target_report: removal.reportId,
+        },
       );
+      if (removalError || data !== true) {
+        setError(
+          tri(
+            lang,
+            "Não foi possível remover o comentário.",
+            "Could not remove the comment.",
+            "No se pudo quitar el comentario.",
+          ),
+        );
+      } else {
+        setCommentRows((current) =>
+          current.map((comment) =>
+            comment.id === removal.commentId
+              ? { ...comment, body: "", deleted_at: new Date().toISOString() }
+              : comment,
+          ),
+        );
+        setReportRows((current) =>
+          current.map((report) =>
+            report.id === removal.reportId
+              ? {
+                  ...report,
+                  status: "RESOLVED",
+                  moderator_note: clean ?? report.moderator_note,
+                }
+              : report,
+          ),
+        );
+        setRemoval(null);
+        setRemovalReason("");
+      }
     } else {
-      setCommentRows((current) =>
-        current.map((comment) =>
-          comment.id === commentRemoval.commentId
-            ? { ...comment, body: "", deleted_at: new Date().toISOString() }
-            : comment,
-        ),
+      setPending(`screenshot-${removal.screenshotId}`);
+      setError(null);
+      const { data, error: removalError } = await client.rpc(
+        "moderate_screenshot",
+        {
+          target_screenshot: removal.screenshotId,
+          reason: clean,
+          target_report: removal.reportId,
+        },
       );
-      setReportRows((current) =>
-        current.map((report) =>
-          report.id === commentRemoval.reportId
-            ? {
-                ...report,
-                status: "RESOLVED",
-                moderator_note: commentRemovalReason.trim() || null,
-              }
-            : report,
-        ),
-      );
-      setCommentRemoval(null);
-      setCommentRemovalReason("");
+      if (removalError || data !== true) {
+        setError(
+          tri(
+            lang,
+            "Não foi possível remover o screenshot.",
+            "Could not remove the screenshot.",
+            "No se pudo quitar la captura.",
+          ),
+        );
+      } else {
+        setScreenshotRows((current) =>
+          current.map((shot) =>
+            shot.id === removal.screenshotId
+              ? {
+                  ...shot,
+                  description: null,
+                  deletedAt: new Date().toISOString(),
+                  imageUrl: null,
+                }
+              : shot,
+          ),
+        );
+        setReportRows((current) =>
+          current.map((report) =>
+            report.id === removal.reportId
+              ? {
+                  ...report,
+                  status: "RESOLVED",
+                  moderator_note: clean ?? report.moderator_note,
+                }
+              : report,
+          ),
+        );
+        setRemoval(null);
+        setRemovalReason("");
+      }
     }
     setPending(null);
   }
@@ -449,7 +531,7 @@ export function ModerationConsole({
               )}
             </h2>
             <p>
-              {visibleReports.length}{" "}
+              {reportRows.length}{" "}
               {tri(
                 lang,
                 "registro(s) neste filtro",
@@ -468,45 +550,48 @@ export function ModerationConsole({
               "Filtrar denuncias",
             )}
           >
-            {statusTabs.map(({ id, label, icon: Icon }, index) => (
-              <button
-                type="button"
-                role="tab"
-                key={id}
-                aria-selected={statusFilter === id}
-                tabIndex={statusFilter === id ? 0 : -1}
-                onClick={() => setStatus(id)}
-                onKeyDown={(event) => {
-                  if (
-                    !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
-                      event.key,
+            {statusTabs.map(({ id, label, icon: Icon }, index) => {
+              const count = statusCounts[id];
+              return (
+                <button
+                  type="button"
+                  role="tab"
+                  key={id}
+                  aria-selected={initialStatus === id}
+                  tabIndex={initialStatus === id ? 0 : -1}
+                  onClick={() => setStatus(id)}
+                  onKeyDown={(event) => {
+                    if (
+                      !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
+                        event.key,
+                      )
                     )
-                  )
-                    return;
-                  event.preventDefault();
-                  const nextIndex =
-                    event.key === "Home"
-                      ? 0
-                      : event.key === "End"
-                        ? statusTabs.length - 1
-                        : (index +
-                            (event.key === "ArrowRight" ? 1 : -1) +
-                            statusTabs.length) %
-                          statusTabs.length;
-                  setStatus(statusTabs[nextIndex].id);
-                  event.currentTarget.parentElement
-                    ?.querySelectorAll<HTMLButtonElement>("[role='tab']")
-                    [nextIndex]?.focus();
-                }}
-              >
-                <Icon size={15} />
-                {label}
-              </button>
-            ))}
+                      return;
+                    event.preventDefault();
+                    const nextIndex =
+                      event.key === "Home"
+                        ? 0
+                        : event.key === "End"
+                          ? statusTabs.length - 1
+                          : (index +
+                              (event.key === "ArrowRight" ? 1 : -1) +
+                              statusTabs.length) %
+                            statusTabs.length;
+                    setStatus(statusTabs[nextIndex].id);
+                  }}
+                >
+                  <Icon size={15} />
+                  {label}
+                  {typeof count === "number" && count > 0 && (
+                    <b className="moderation-tab-count">{count}</b>
+                  )}
+                </button>
+              );
+            })}
           </nav>
         </header>
         <div className="moderation-report-list">
-          {visibleReports.length === 0 && (
+          {reportRows.length === 0 && (
             <div className="moderation-empty">
               <Check size={22} />
               {tri(
@@ -517,13 +602,16 @@ export function ModerationConsole({
               )}
             </div>
           )}
-          {visibleReports.map((report) => {
+          {reportRows.map((report) => {
             const target = report.target_profile_id
               ? profileById.get(report.target_profile_id)
               : undefined;
             const reporter = profileById.get(report.reporter_id);
             const comment = report.content_id
               ? commentById.get(report.content_id)
+              : undefined;
+            const shot = report.content_id
+              ? screenshotById.get(report.content_id)
               : undefined;
             return (
               <article className="moderation-report-card" key={report.id}>
@@ -555,6 +643,57 @@ export function ModerationConsole({
                         )
                       : comment.body}
                   </blockquote>
+                )}
+                {shot && (
+                  <div
+                    className="moderation-report-screenshot"
+                    data-deleted={shot.deletedAt || undefined}
+                  >
+                    {shot.deletedAt ? (
+                      <p>
+                        <Camera size={14} />
+                        {tri(
+                          lang,
+                          "Screenshot removido",
+                          "Screenshot removed",
+                          "Captura eliminada",
+                        )}
+                      </p>
+                    ) : shot.imageUrl ? (
+                      <Image
+                        src={shot.imageUrl}
+                        alt=""
+                        width={Math.min(shot.width, 480)}
+                        height={Math.round(
+                          (shot.height / shot.width) * Math.min(shot.width, 480),
+                        )}
+                        unoptimized
+                      />
+                    ) : (
+                      <p>
+                        <Camera size={14} />
+                        {tri(
+                          lang,
+                          "Prévia indisponível",
+                          "Preview unavailable",
+                          "Vista previa no disponible",
+                        )}
+                      </p>
+                    )}
+                    {shot.description && !shot.deletedAt && (
+                      <blockquote>{shot.description}</blockquote>
+                    )}
+                    {shot.containsSpoilers && !shot.deletedAt && (
+                      <small className="moderation-report-flag">
+                        {tri(
+                          lang,
+                          "Contém spoilers",
+                          "Contains spoilers",
+                          "Contiene spoilers",
+                        )}
+                      </small>
+                    )}
+                  </div>
                 )}
                 {report.details && <p>{report.details}</p>}
                 {report.target_profile_id && target?.username && (
@@ -593,17 +732,40 @@ export function ModerationConsole({
                         type="button"
                         data-danger
                         disabled={Boolean(pending)}
-                        onClick={() => {
-                          setError(null);
-                          setCommentRemovalReason("");
-                          setCommentRemoval({
+                        onClick={() =>
+                          openRemoval({
+                            kind: "COMMENT",
                             reportId: report.id,
                             commentId: comment.id,
-                          });
-                        }}
+                          })
+                        }
+                      >
+                        <MessageSquareOff size={13} />
+                        {t.removeComment}
+                      </button>
+                    )}
+                  {report.content_type === "SCREENSHOT" &&
+                    shot &&
+                    !shot.deletedAt && (
+                      <button
+                        type="button"
+                        data-danger
+                        disabled={Boolean(pending)}
+                        onClick={() =>
+                          openRemoval({
+                            kind: "SCREENSHOT",
+                            reportId: report.id,
+                            screenshotId: shot.id,
+                          })
+                        }
                       >
                         <Trash2 size={13} />
-                        {t.removeComment}
+                        {tri(
+                          lang,
+                          "Remover screenshot",
+                          "Remove screenshot",
+                          "Quitar captura",
+                        )}
                       </button>
                     )}
                   {report.status !== "REVIEWING" && (
@@ -736,8 +898,8 @@ export function ModerationConsole({
             const state = stateByProfile.get(profile.id);
             const banned = Boolean(
               state &&
-              (!state.banned_until ||
-                new Date(state.banned_until).getTime() > renderedAt),
+                (!state.banned_until ||
+                  new Date(state.banned_until).getTime() > renderedAt),
             );
             const protectedTarget =
               profile.role === "ADMIN" ||
@@ -907,8 +1069,6 @@ export function ModerationConsole({
               )}
             </Dialog.Description>
             {targetAction?.action === "BAN" && (
-              // A <label> here would forward its click to the trigger and
-              // re-toggle the select, so the caption is a plain span instead.
               <div className="moderation-field">
                 <span id="moderation-duration-label">
                   {tri(lang, "Duração", "Duration", "Duración")}
@@ -933,11 +1093,17 @@ export function ModerationConsole({
                     >
                       <Select.Viewport>
                         {[
-                          ["1", tri(lang, "1 dia", "1 day", "1 día")],
-                          ["7", tri(lang, "7 dias", "7 days", "7 días")],
-                          ["30", tri(lang, "30 dias", "30 days", "30 días")],
+                          ...MODERATION_BAN_DURATIONS.map(({ value, days }) => [
+                            value,
+                            tri(
+                              lang,
+                              `${days} ${days === 1 ? "dia" : "dias"}`,
+                              `${days} ${days === 1 ? "day" : "days"}`,
+                              `${days} ${days === 1 ? "día" : "días"}`,
+                            ),
+                          ] as const),
                           ...(actorRole === "ADMIN"
-                            ? [
+                            ? ([
                                 [
                                   "permanent",
                                   tri(
@@ -946,8 +1112,8 @@ export function ModerationConsole({
                                     "Permanent",
                                     "Permanente",
                                   ),
-                                ],
-                              ]
+                                ] as const,
+                              ] as const)
                             : []),
                         ].map(([value, label]) => (
                           <Select.Item
@@ -1028,11 +1194,11 @@ export function ModerationConsole({
       </Dialog.Root>
 
       <Dialog.Root
-        open={Boolean(commentRemoval)}
+        open={Boolean(removal)}
         onOpenChange={(open) => {
           if (!open && !pending) {
-            setCommentRemoval(null);
-            setCommentRemovalReason("");
+            setRemoval(null);
+            setRemovalReason("");
           }
         }}
       >
@@ -1043,9 +1209,22 @@ export function ModerationConsole({
               <X size={17} />
             </Dialog.Close>
             <span>
-              <Trash2 size={20} />
+              {removal?.kind === "SCREENSHOT" ? (
+                <Camera size={20} />
+              ) : (
+                <MessageSquareOff size={20} />
+              )}
             </span>
-            <Dialog.Title>{t.removeComment}</Dialog.Title>
+            <Dialog.Title>
+              {removal?.kind === "SCREENSHOT"
+                ? tri(
+                    lang,
+                    "Remover screenshot",
+                    "Remove screenshot",
+                    "Quitar captura",
+                  )
+                : t.removeComment}
+            </Dialog.Title>
             <Dialog.Description>
               {tri(
                 lang,
@@ -1062,11 +1241,9 @@ export function ModerationConsole({
                 "Justificación (opcional)",
               )}
               <textarea
-                value={commentRemovalReason}
+                value={removalReason}
                 maxLength={1000}
-                onChange={(event) =>
-                  setCommentRemovalReason(event.target.value)
-                }
+                onChange={(event) => setRemovalReason(event.target.value)}
                 placeholder={tri(
                   lang,
                   "Explique por que o conteúdo foi removido…",
@@ -1088,10 +1265,10 @@ export function ModerationConsole({
                 type="button"
                 data-danger
                 disabled={Boolean(pending)}
-                onClick={() => void removeReportedComment()}
+                onClick={() => void performRemoval()}
               >
-                {commentPending && <LoaderCircle className="spin" size={14} />}
-                {commentPending ? t.removing : t.remove}
+                {removalPending && <LoaderCircle className="spin" size={14} />}
+                {removalPending ? t.removing : t.remove}
               </button>
             </footer>
           </Dialog.Content>

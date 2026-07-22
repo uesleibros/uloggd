@@ -16,17 +16,25 @@ export type ListGridItem = {
   note: string | null;
 };
 
+/**
+ * `ranked` decides the item chrome: numbered rank badge + drag surface for
+ * rankings, plain grid for unordered collections. Owners can still reorder
+ * a collection through the up/down tools if they want to, but drag on the
+ * card is reserved for lists where position is the point.
+ */
 export function ListItemsGrid({
   listId,
   items,
   games,
   isOwner,
+  ranked,
   lang,
 }: {
   listId: string;
   items: ListGridItem[];
   games: Record<number, Game>;
   isOwner: boolean;
+  ranked: boolean;
   lang: UiLang;
 }) {
   const pt = lang === "pt-BR";
@@ -74,10 +82,12 @@ export function ListItemsGrid({
     setPending(false);
   }
 
+  const dragEnabled = isOwner && ranked;
   return (
     <div
       ref={gridRef}
       className="library-grid list-items-grid"
+      data-mode={ranked ? "ranked" : "collection"}
       data-reordering={drag ? "" : undefined}
       onPointerMove={(event) => {
         if (!drag) return;
@@ -109,8 +119,8 @@ export function ListItemsGrid({
             data-drop-after={showAfter || undefined}
             style={{ "--item-index": index % 12 } as React.CSSProperties}
           >
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            {isOwner && (
+            {ranked && <span>{String(index + 1).padStart(2, "0")}</span>}
+            {dragEnabled && (
               <button
                 type="button"
                 className="list-item-drag-handle"

@@ -1,193 +1,429 @@
 "use client";
 
-import { LoaderCircle, Plus, Search, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import type { ListPreview } from "@/lib/lists-types";
+import * as Select from "@/components/ui/select";
+import {
+  ChevronDown,
+  Filter,
+  Layers3,
+  ListOrdered,
+  LoaderCircle,
+  Plus,
+  Search,
+  X,
+} from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type {
+  ListPreview,
+  ListSort,
+  ListVisibility,
+} from "@/lib/lists-types";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { ListPreviewCard } from "./list-preview-card";
 
+type Mode = "ALL" | "RANKED" | "COLLECTION";
+type Visibility = ListVisibility | "ALL";
+
+type Filters = {
+  visibility: Visibility;
+  mode: Mode;
+  sort: ListSort;
+  q: string;
+};
+
+const DEFAULTS: Filters = {
+  visibility: "ALL",
+  mode: "ALL",
+  sort: "recent",
+  q: "",
+};
+
+function isDefault(filters: Filters) {
+  return (
+    filters.visibility === DEFAULTS.visibility &&
+    filters.mode === DEFAULTS.mode &&
+    filters.sort === DEFAULTS.sort &&
+    !filters.q
+  );
+}
+
+function paramsFor(filters: Filters) {
+  const url = new URLSearchParams();
+  if (filters.visibility !== DEFAULTS.visibility)
+    url.set("visibility", filters.visibility);
+  if (filters.mode !== DEFAULTS.mode) url.set("mode", filters.mode);
+  if (filters.sort !== DEFAULTS.sort) url.set("sort", filters.sort);
+  if (filters.q) url.set("q", filters.q);
+  return url;
+}
+
 /**
- * Owns search and pagination together, because they share the same cursor:
- * typing restarts the list from the server rather than filtering only what
- * happens to be loaded. Mirrors the header search — debounce, abort on
- * keystroke, spinner while in flight.
+ * Owner-only list workspace: filters, sort, search, and paginated grid.
+ * Filters are URL-owned so the view is shareable and survives refresh; the
+ * server rendered the first page with the same params on load.
  */
 export function ListsCollection({
   lang,
   ownerId,
   initial,
   total,
+  grandTotal,
   pageSize,
-  hasMore,
+  filters: initialFilters,
 }: {
   lang: UiLang;
   ownerId: string;
   initial: ListPreview[];
   total: number;
+  grandTotal: number;
   pageSize: number;
-  hasMore: boolean;
+  filters: Filters;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
-  const [query, setQuery] = useState("");
-  // Everything the client has fetched is kept under the query it belongs to,
-  // so clearing the box falls straight back to the server-rendered list and a
-  // stale "no more results" from a search cannot leak into the full list.
-  const [fetched, setFetched] = useState<{
-    key: string;
-    rows: ListPreview[];
-    exhausted: boolean;
-  } | null>(null);
-  const [searching, setSearching] = useState(false);
+  const pathname = usePathname();
+  const [filters, setFilters] = useState<Filters>(initialFilters);
+  const [query, setQuery] = useState(initialFilters.q);
+  const [rows, setRows] = useState<ListPreview[]>(initial);
+  const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
-  const activeQuery = useRef("");
+  const activeKey = useRef(JSON.stringify(initialFilters));
+  const filtered = total;
+  const done = rows.length >= filtered;
+  const filtersActive = !isDefault(filters);
 
-  const normalized = query.trim();
-  const searched = Boolean(normalized);
-  const mine = fetched?.key === normalized ? fetched : null;
-  const lists = mine ? mine.rows : searched ? [] : initial;
-  const done = mine ? mine.exhausted : searched ? true : !hasMore;
-
+  // Debounces free-text search but commits the other filters immediately.
   useEffect(() => {
-    const term = query.trim();
-    activeQuery.current = term;
-    if (!term) return;
+    setQuery(initialFilters.q);
+  }, [initialFilters.q]);
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      if (query !== filters.q) setFilters((prev) => ({ ...prev, q: query }));
+    }, 280);
+    return () => window.clearTimeout(handle);
+  }, [query, filters.q]);
+
+  // Whenever filters change, refetch the first page and reset the URL.
+  useEffect(() => {
+    const key = JSON.stringify(filters);
+    if (key === activeKey.current) return;
+    activeKey.current = key;
+    const params = paramsFor(filters);
+    const nextUrl = params.toString()
+      ? `${pathname}?${params.toString()}`
+      : pathname;
+    window.history.replaceState(null, "", nextUrl);
     const controller = new AbortController();
-    const timeout = window.setTimeout(async () => {
-      setSearching(true);
-      setError(false);
-      try {
-        const params = new URLSearchParams({
-          profile: ownerId,
-          q: term,
-          limit: String(pageSize),
-        });
-        const response = await fetch(`/api/lists?${params}`, {
-          signal: controller.signal,
-        });
+    setLoading(true);
+    setError(false);
+    const requestParams = new URLSearchParams(params);
+    requestParams.set("profile", ownerId);
+    requestParams.set("limit", String(pageSize));
+    fetch(`/api/lists?${requestParams.toString()}`, {
+      signal: controller.signal,
+    })
+      .then(async (response) => {
         if (!response.ok) throw new Error(String(response.status));
-        const { lists: rows } = (await response.json()) as {
+        const { lists: next } = (await response.json()) as {
           lists: ListPreview[];
         };
-        if (activeQuery.current !== term) return;
-        setFetched({ key: term, rows, exhausted: rows.length < pageSize });
-      } catch (caught) {
+        if (activeKey.current !== key) return;
+        setRows(next);
+      })
+      .catch((caught) => {
         if ((caught as Error).name === "AbortError") return;
         setError(true);
-      } finally {
-        if (activeQuery.current === term) setSearching(false);
-      }
-    }, 280);
-    return () => {
-      controller.abort();
-      window.clearTimeout(timeout);
-    };
-  }, [query, ownerId, pageSize]);
+      })
+      .finally(() => {
+        if (activeKey.current === key) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [filters, ownerId, pageSize, pathname]);
 
   async function loadMore() {
-    const cursor = lists[lists.length - 1]?.updatedAt;
-    if (loadingMore || done || !cursor) return;
+    if (loadingMore || done) return;
     setLoadingMore(true);
     setError(false);
     try {
-      const params = new URLSearchParams({
-        profile: ownerId,
-        before: cursor,
-        limit: String(pageSize),
-      });
-      if (normalized) params.set("q", normalized);
-      const response = await fetch(`/api/lists?${params}`);
+      const params = paramsFor(filters);
+      params.set("profile", ownerId);
+      params.set("limit", String(pageSize));
+      params.set("offset", String(rows.length));
+      const response = await fetch(`/api/lists?${params.toString()}`);
       if (!response.ok) throw new Error(String(response.status));
       const { lists: next } = (await response.json()) as {
         lists: ListPreview[];
       };
-      setFetched({
-        key: normalized,
-        rows: next.length ? [...lists, ...next] : lists,
-        exhausted: next.length < pageSize,
-      });
+      setRows((prev) => (next.length ? [...prev, ...next] : prev));
     } catch {
       setError(true);
     }
     setLoadingMore(false);
   }
 
+  const visibilityOptions = useMemo(
+    () => [
+      { value: "ALL" as const, label: t.all },
+      {
+        value: "PUBLIC" as const,
+        label: tri(lang, "Públicas", "Public", "Públicas"),
+      },
+      { value: "FOLLOWERS" as const, label: t.followers },
+      {
+        value: "PRIVATE" as const,
+        label: tri(lang, "Privadas", "Private", "Privadas"),
+      },
+    ],
+    [lang, t.all, t.followers],
+  );
+  const sortOptions = useMemo(
+    () => [
+      {
+        value: "recent" as const,
+        label: tri(
+          lang,
+          "Atualizadas recentes",
+          "Recently updated",
+          "Actualizadas recientes",
+        ),
+      },
+      {
+        value: "oldest" as const,
+        label: tri(lang, "Mais antigas", "Oldest first", "Más antiguas"),
+      },
+      {
+        value: "name" as const,
+        label: tri(lang, "Nome (A→Z)", "Name (A→Z)", "Nombre (A→Z)"),
+      },
+      {
+        value: "size" as const,
+        label: tri(lang, "Mais jogos", "Most games", "Más juegos"),
+      },
+      {
+        value: "likes" as const,
+        label: tri(lang, "Mais curtidas", "Most liked", "Más gustadas"),
+      },
+    ],
+    [lang],
+  );
+  const modeTabs: { value: Mode; label: string }[] = [
+    { value: "ALL", label: t.all },
+    {
+      value: "RANKED",
+      label: tri(lang, "Rankings", "Rankings", "Rankings"),
+    },
+    {
+      value: "COLLECTION",
+      label: tri(lang, "Coleções", "Collections", "Colecciones"),
+    },
+  ];
+
   return (
     <section className="lists-collection">
-      <header>
-        <div>
+      <header className="lists-toolbar">
+        <div className="lists-toolbar-heading">
           <h2>
-            {tri(lang, "Todas as listas", "All lists", "Todas las listas")}
+            {tri(lang, "Suas listas", "Your lists", "Tus listas")}
           </h2>
           <p>
-            {searched
+            {filtersActive
               ? tri(
                   lang,
-                  "Resultados da busca",
-                  "Search results",
-                  "Resultados de la búsqueda",
+                  `${filtered} de ${grandTotal}`,
+                  `${filtered} of ${grandTotal}`,
+                  `${filtered} de ${grandTotal}`,
                 )
               : tri(
                   lang,
-                  "Atualizadas recentemente primeiro",
-                  "Recently updated first",
-                  "Actualizadas recientemente primero",
+                  `${grandTotal} no total`,
+                  `${grandTotal} total`,
+                  `${grandTotal} en total`,
                 )}
           </p>
         </div>
-        <form
-          className="lists-search"
-          role="search"
-          onSubmit={(event) => event.preventDefault()}
+        <nav
+          className="lists-mode-tabs game-page-nav"
+          role="tablist"
+          aria-label={tri(lang, "Modo da lista", "List mode", "Modo de la lista")}
         >
-          <label className="search-field-hit">
-            {searching ? (
-              <LoaderCircle className="spin" size={15} aria-hidden />
-            ) : (
-              <Search size={15} aria-hidden />
-            )}
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              maxLength={60}
-              aria-label={tri(
-                lang,
-                "Buscar nas suas listas",
-                "Search your lists",
-                "Buscar en tus listas",
+          {modeTabs.map((tab) => (
+            <button
+              type="button"
+              role="tab"
+              key={tab.value}
+              aria-selected={filters.mode === tab.value}
+              tabIndex={filters.mode === tab.value ? 0 : -1}
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, mode: tab.value }))
+              }
+            >
+              {tab.value === "RANKED" ? (
+                <ListOrdered size={14} />
+              ) : tab.value === "COLLECTION" ? (
+                <Layers3 size={14} />
+              ) : (
+                <Filter size={14} />
               )}
-              placeholder={tri(
-                lang,
-                "Buscar lista",
-                "Search list",
-                "Buscar lista",
-              )}
-            />
-          </label>
-          <button
-            type="button"
-            className="lists-search-clear"
-            data-hidden={!query ? true : undefined}
-            aria-label={t.clear}
-            onClick={() => setQuery("")}
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+        <div className="lists-toolbar-controls">
+          <form
+            className="lists-search"
+            role="search"
+            onSubmit={(event) => event.preventDefault()}
           >
-            <X size={14} />
-          </button>
-        </form>
-        <span>{searched ? lists.length : total}</span>
+            <label className="search-field-hit">
+              {loading ? (
+                <LoaderCircle className="spin" size={15} aria-hidden />
+              ) : (
+                <Search size={15} aria-hidden />
+              )}
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                maxLength={60}
+                aria-label={tri(
+                  lang,
+                  "Buscar nas suas listas",
+                  "Search your lists",
+                  "Buscar en tus listas",
+                )}
+                placeholder={tri(
+                  lang,
+                  "Buscar lista",
+                  "Search list",
+                  "Buscar lista",
+                )}
+              />
+            </label>
+            <button
+              type="button"
+              className="lists-search-clear"
+              data-hidden={!query ? true : undefined}
+              aria-label={t.clearSearch}
+              onClick={() => {
+                setQuery("");
+                setFilters((prev) => ({ ...prev, q: "" }));
+              }}
+            >
+              <X size={14} />
+            </button>
+          </form>
+          <label className="lists-toolbar-select">
+            <span>{t.visibility}</span>
+            <Select.Root
+              value={filters.visibility}
+              onValueChange={(value) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  visibility: value as Visibility,
+                }))
+              }
+            >
+              <Select.Trigger className="lists-select-trigger">
+                <Select.Value>
+                  {
+                    visibilityOptions.find((o) => o.value === filters.visibility)
+                      ?.label
+                  }
+                </Select.Value>
+                <Select.Icon>
+                  <ChevronDown size={14} />
+                </Select.Icon>
+              </Select.Trigger>
+              <Select.Portal>
+                <Select.Content
+                  className="lists-select-content"
+                  position="popper"
+                  sideOffset={6}
+                  collisionPadding={12}
+                >
+                  <Select.Viewport>
+                    {visibilityOptions.map((opt) => (
+                      <Select.Item
+                        key={opt.value}
+                        value={opt.value}
+                        className="lists-select-item"
+                      >
+                        <Select.ItemText>{opt.label}</Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.Viewport>
+                </Select.Content>
+              </Select.Portal>
+            </Select.Root>
+          </label>
+          <label className="lists-toolbar-select">
+            <span>{tri(lang, "Ordenar", "Sort", "Ordenar")}</span>
+            <Select.Root
+              value={filters.sort}
+              onValueChange={(value) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  sort: value as ListSort,
+                }))
+              }
+            >
+              <Select.Trigger className="lists-select-trigger">
+                <Select.Value>
+                  {sortOptions.find((o) => o.value === filters.sort)?.label}
+                </Select.Value>
+                <Select.Icon>
+                  <ChevronDown size={14} />
+                </Select.Icon>
+              </Select.Trigger>
+              <Select.Portal>
+                <Select.Content
+                  className="lists-select-content"
+                  position="popper"
+                  sideOffset={6}
+                  collisionPadding={12}
+                >
+                  <Select.Viewport>
+                    {sortOptions.map((opt) => (
+                      <Select.Item
+                        key={opt.value}
+                        value={opt.value}
+                        className="lists-select-item"
+                      >
+                        <Select.ItemText>{opt.label}</Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.Viewport>
+                </Select.Content>
+              </Select.Portal>
+            </Select.Root>
+          </label>
+          {filtersActive && (
+            <button
+              type="button"
+              className="lists-clear-filters"
+              onClick={() => {
+                setQuery("");
+                setFilters(DEFAULTS);
+              }}
+            >
+              <X size={13} />
+              {t.clearFilters}
+            </button>
+          )}
+        </div>
       </header>
 
-      {lists.length > 0 && (
-        <div className="lists-row" aria-busy={searching || undefined}>
-          {lists.map((list) => (
+      {rows.length > 0 && (
+        <div className="lists-row" aria-busy={loading || undefined}>
+          {rows.map((list) => (
             <ListPreviewCard
               key={list.id}
               list={{
                 id: list.id,
+                publicId: list.publicId,
                 name: list.name,
                 description: list.description,
                 visibility: list.visibility,
+                ranked: list.ranked,
                 count: list.count,
               }}
               covers={list.covers}
@@ -198,15 +434,18 @@ export function ListsCollection({
         </div>
       )}
 
-      {!lists.length && !searching && searched && (
+      {!rows.length && !loading && (
         <p className="lists-search-empty">
-          {pt
-            ? `Nenhuma lista com “${query.trim()}”.`
-            : `No list matching “${query.trim()}”.`}
+          {tri(
+            lang,
+            "Nenhuma lista corresponde a este filtro.",
+            "No lists match this filter.",
+            "Ninguna lista coincide con este filtro.",
+          )}
         </p>
       )}
 
-      {!done && lists.length > 0 && (
+      {!done && rows.length > 0 && (
         <div className="load-more-row">
           <button type="button" onClick={loadMore} disabled={loadingMore}>
             {loadingMore ? (

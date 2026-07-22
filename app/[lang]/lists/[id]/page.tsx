@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { Layers3 } from "lucide-react";
+import { Layers3, ListOrdered } from "lucide-react";
 import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { ListAddGame } from "@/components/social/list-add-game";
@@ -65,7 +65,7 @@ export default async function ListPage({ params }: Props) {
     supabase
       .from("game_lists")
       .select(
-        "id,public_id,profile_id,name,description,visibility,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name,content_comment_scope),game_list_items(id,igdb_id,game_slug,position,note)",
+        "id,public_id,profile_id,name,description,visibility,ranked,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name,content_comment_scope),game_list_items(id,igdb_id,game_slug,position,note)",
       )
       .eq(key[0], key[1])
       .maybeSingle(),
@@ -138,6 +138,7 @@ export default async function ListPage({ params }: Props) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const isOwner = user?.id === list.profile_id;
+  const isRanked = Boolean(list.ranked);
   return (
     <main className="social-page">
       <header className="list-detail-header">
@@ -146,9 +147,24 @@ export default async function ListPage({ params }: Props) {
         </span>
         <h1>{list.name}</h1>
         {list.description && <p>{list.description}</p>}
-        <small>
-          {items.length} {t.gamesLower}
-        </small>
+        <div className="list-detail-meta">
+          <span
+            className="list-preview-mode"
+            data-ranked={isRanked || undefined}
+          >
+            {isRanked ? (
+              <ListOrdered size={13} aria-hidden />
+            ) : (
+              <Layers3 size={13} aria-hidden />
+            )}
+            {isRanked
+              ? tri(lang, "Ranking", "Ranking", "Ranking")
+              : tri(lang, "Coleção", "Collection", "Colección")}
+          </span>
+          <small>
+            {items.length} {t.gamesLower}
+          </small>
+        </div>
         <div className="list-detail-social">
           <LikeButton
             contentType="list"
@@ -192,6 +208,7 @@ export default async function ListPage({ params }: Props) {
             }))}
           games={Object.fromEntries(byId)}
           isOwner={isOwner}
+          ranked={Boolean(list.ranked)}
           lang={lang}
         />
       ) : (

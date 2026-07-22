@@ -1,11 +1,25 @@
+export type ListVisibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+export type ListMode = "COLLECTION" | "RANKED";
+export type ListSort = "recent" | "oldest" | "name" | "size" | "likes";
+
 export type ListPreview = {
   id: string;
   publicId: string;
   name: string;
   description: string | null;
-  visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+  visibility: ListVisibility;
+  ranked: boolean;
   count: number;
   covers: { url: string; fallbackUrl: string; name: string }[];
   likes: number;
   updatedAt: string;
 };
+
+export type ListFilters = {
+  visibility?: ListVisibility | "ALL";
+  mode?: ListMode | "ALL";
+  sort?: ListSort;
+};
+
+export const LIST_PAGE_SIZE = 24;
+export const LIST_PAGE_SIZE_MAX = 48;
