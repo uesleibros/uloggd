@@ -7,6 +7,8 @@ import { ContentComments } from "@/components/social/content-comments";
 import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { ScreenshotActions } from "@/components/social/screenshot-actions";
+import { MentionText } from "@/components/social/mention-text";
 import { getGamesByIds } from "@/lib/igdb";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri } from "@/lib/ui-text";
@@ -137,7 +139,7 @@ export default async function ScreenshotPage({ params }: Props) {
             {media}
             {shot.description && (
               <p className="screenshot-spoiler-description">
-                {shot.description}
+                <MentionText text={shot.description} lang={lang} />
               </p>
             )}
           </details>
@@ -172,6 +174,20 @@ export default async function ScreenshotPage({ params }: Props) {
             </Link>
             {profile.verified && <VerifiedBadge lang={lang} />}
             <time dateTime={shot.created_at}>{date}</time>
+            <ScreenshotActions
+              viewerId={user?.id ?? null}
+              lang={lang}
+              shot={{
+                id: shot.id,
+                publicId: shot.public_id,
+                ownerId: shot.profile_id,
+                ownerUsername: profile.username,
+                description: shot.description ?? "",
+                spoilers: shot.contains_spoilers,
+                visibility: shot.visibility,
+                commentsScope: shot.comments_scope,
+              }}
+            />
           </header>
           <Link
             className="screenshot-game"
@@ -180,7 +196,9 @@ export default async function ScreenshotPage({ params }: Props) {
             <Gamepad2 size={14} /> {game?.name ?? shot.game_slug}
           </Link>
           {shot.description && !shot.contains_spoilers && (
-            <p>{shot.description}</p>
+            <p>
+              <MentionText text={shot.description} lang={lang} />
+            </p>
           )}
           <footer>
             <LikeButton

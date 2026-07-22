@@ -157,3 +157,32 @@ export async function POST(request: Request) {
   }
   return Response.json({ id: screenshot.public_id }, { status: 201 });
 }
+
+export async function DELETE(request: Request) {
+  if (!sameOrigin(request))
+    return Response.json({ error: "invalid_origin" }, { status: 403 });
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const id = new URL(request.url).searchParams.get("id");
+  if (!id || !/^[0-9a-f-]{36}$/i.test(id))
+    return Response.json({ error: "invalid_input" }, { status: 400 });
+  const { data: shot } = await supabase
+    .from("screenshots")
+    .select("id,profile_id,storage_path")
+    .eq("id", id)
+    .maybeSingle();
+  if (!shot || shot.profile_id !== user.id)
+    return Response.json({ error: "not_found" }, { status: 404 });
+  const { error: deleteError } = await supabase
+    .from("screenshots")
+    .delete()
+    .eq("id", id)
+    .eq("profile_id", user.id);
+  if (deleteError)
+    return Response.json({ error: "delete_failed" }, { status: 500 });
+  await removeUpload(shot.storage_path, supabase);
+  return new Response(null, { status: 204 });
+}

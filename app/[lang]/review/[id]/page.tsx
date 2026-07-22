@@ -13,7 +13,7 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ActivityEntryActions } from "@/components/social/activity-entry-actions";
 import type { SocialEntry } from "@/components/social/activity-stream";
 import { LikeButton } from "@/components/social/like-button";
@@ -22,6 +22,7 @@ import { VerifiedBadge } from "@/components/verified-badge";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getGamesByIds } from "@/lib/igdb";
 import { ContentComments } from "@/components/social/content-comments";
+import { MentionText } from "@/components/social/mention-text";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -103,6 +104,7 @@ export default async function ReviewPage({ params }: Props) {
     getAuthUser(),
   ]);
   if (!review) notFound();
+  if (key[0] === "id") permanentRedirect(`/${lang}/review/${review.public_id}`);
   const profile = Array.isArray(review.profiles)
     ? review.profiles[0]
     : review.profiles;
@@ -342,10 +344,14 @@ export default async function ReviewPage({ params }: Props) {
                   "Mostrar contenido con spoilers",
                 )}
               </summary>
-              <p>{review.content}</p>
+              <p>
+                <MentionText text={review.content} lang={lang} />
+              </p>
             </details>
           ) : (
-            <p className="review-page-content">{review.content}</p>
+            <p className="review-page-content">
+              <MentionText text={review.content} lang={lang} />
+            </p>
           ))}
 
         {aspects.length > 0 && (
@@ -375,7 +381,11 @@ export default async function ReviewPage({ params }: Props) {
                   >
                     <i style={{ width: `${aspect.rating}%` }} />
                   </div>
-                  {aspect.note && <p>{aspect.note}</p>}
+                  {aspect.note && (
+                    <p>
+                      <MentionText text={aspect.note} lang={lang} />
+                    </p>
+                  )}
                 </article>
               ))}
             </div>

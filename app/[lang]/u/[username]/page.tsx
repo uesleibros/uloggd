@@ -13,7 +13,7 @@ import {
   Star,
 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, type CSSProperties } from "react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ActivityStream } from "@/components/social/activity-stream";
@@ -470,22 +470,21 @@ export default async function ProfilePage({ params }: Props) {
     timeZone: "UTC",
   }).format(new Date(profile.created_at));
   return (
-    <main className="profile-page">
+    <main
+      className="profile-page"
+      style={
+        profile.banner_url
+          ? ({
+              "--profile-banner-image": `url("${profile.banner_url.replace(/["\\\n\r]/g, encodeURIComponent)}")`,
+            } as CSSProperties)
+          : undefined
+      }
+      data-has-banner={Boolean(profile.banner_url) || undefined}
+    >
       <div
         className="profile-banner"
         data-empty={!profile.banner_url || undefined}
-      >
-        {profile.banner_url && (
-          <Image
-            src={profile.banner_url}
-            alt=""
-            fill
-            priority
-            sizes="1200px"
-            unoptimized
-          />
-        )}
-      </div>
+      ></div>
       <header className="profile-header">
         <div className="profile-avatar-anchor">
           {profile.thought && (

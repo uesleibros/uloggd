@@ -15796,6 +15796,15 @@ adapted to the current uloggd surface system. */
 .md-gc-carousel-track:active {
   cursor: grabbing;
 }
+.user-mention {
+  color: var(--brand-blurple-bright);
+  font-weight: 600;
+  text-decoration: none;
+}
+.user-mention:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .md-gc-row-loop {
   flex: none;
   flex-wrap: nowrap;
@@ -16891,6 +16900,28 @@ adapted to the current uloggd surface system. */
   margin-left: auto;
   color: var(--screen-muted);
   font-size: 10px;
+}
+.screenshot-more-action {
+  display: grid;
+  place-items: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  margin-left: 2px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--screen-muted);
+  cursor: pointer;
+}
+.screenshot-more-action:hover,
+.screenshot-more-action:focus-visible {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.screenshot-edit-dialog,
+.screenshot-report-dialog {
+  max-width: 560px;
 }
 .screenshot-author {
   display: flex;

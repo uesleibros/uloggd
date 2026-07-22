@@ -7,6 +7,10 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { EditorVisibilitySelect } from "./review-studio-form";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import {
+  CommunityScopeSelect,
+  type CommunityScope,
+} from "./community-scope-select";
 
 export function ListOwnerControls({
   list,
@@ -17,6 +21,7 @@ export function ListOwnerControls({
     name: string;
     description: string | null;
     visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+    comments_scope: CommunityScope;
   };
   lang: UiLang;
 }) {
@@ -27,6 +32,7 @@ export function ListOwnerControls({
   const [armed, setArmed] = useState(false);
   const disarmTimer = useRef<number | null>(null);
   const [visibility, setVisibility] = useState(list.visibility);
+  const [commentsScope, setCommentsScope] = useState(list.comments_scope);
   const [error, setError] = useState<string | null>(null);
   useEffect(
     () => () => {
@@ -46,7 +52,13 @@ export function ListOwnerControls({
         list_visibility: visibility,
       },
     );
-    if (actionError)
+    const { error: scopeError } = !actionError
+      ? await createClient()
+          .from("game_lists")
+          .update({ comments_scope: commentsScope })
+          .eq("id", list.id)
+      : { error: actionError };
+    if (actionError || scopeError)
       setError(
         tri(
           lang,
@@ -174,6 +186,16 @@ export function ListOwnerControls({
                 <EditorVisibilitySelect
                   value={visibility}
                   onChange={setVisibility}
+                  lang={lang}
+                />
+              </label>
+              <label>
+                <span>
+                  {tri(lang, "Comentários", "Comments", "Comentarios")}
+                </span>
+                <CommunityScopeSelect
+                  value={commentsScope}
+                  onChange={setCommentsScope}
                   lang={lang}
                 />
               </label>

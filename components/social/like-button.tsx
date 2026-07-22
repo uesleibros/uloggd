@@ -29,9 +29,12 @@ export function LikeButton({
   const [pending, setPending] = useState(false);
 
   if (!canLike) {
-    if (currentCount === 0) return null;
     return (
-      <span className="content-like" data-static>
+      <span
+        className="content-like"
+        data-static
+        aria-label={tri(lang, "Curtidas", "Likes", "Me gusta")}
+      >
         <Heart size={14} fill={currentLiked ? "currentColor" : "none"} />
         <span>{currentCount.toLocaleString(lang)}</span>
       </span>

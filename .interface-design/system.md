@@ -496,6 +496,9 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Post editors expose visibility and a separate comment audience (`EVERYONE`, `FOLLOWERS`, `NOBODY`); the stricter post/profile policy wins.
 - Community composers reuse `CommunityTextArea` so focus, counter, spacing, and action treatment stay identical.
 - Profile screenshots use a dedicated dense gallery; game metadata and signed media URLs are fetched in batches.
+- The profile overview uses a horizontally scrollable row of circular, labeled collection portals (Library, Reviews, Sessions, Lists, Screenshots, Wrapped), with counts as quiet corner badges rather than metric cards.
+- Uploaded profile banners become a full-width atmospheric backdrop behind the identity header, using edge and bottom gradients for readability; they are not framed as a standalone card.
+- Auto game showcases use a normalized three-copy loop. Native image/link dragging is disabled, pointer dragging stays inside the middle loop, hover pauses temporarily, and release always resumes motion.
 
 - Never fabricate user activity, online counts, progress, or authenticated identity.
 - IGDB catalog data may populate discovery surfaces; clearly distinguish it from uloggd community data.

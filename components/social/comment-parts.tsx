@@ -4,6 +4,7 @@ import { Heart } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { MentionText } from "./mention-text";
 
 /**
  * The pieces every comment thread on the platform shares.
@@ -193,14 +194,16 @@ export function CommentArticle({
         )}
         {editor ?? (
           <p data-deleted={deleted || undefined}>
-            {deleted
-              ? tri(
-                  lang,
-                  "Comentário removido",
-                  "Comment deleted",
-                  "Comentario eliminado",
-                )
-              : body}
+            {deleted ? (
+              tri(
+                lang,
+                "Comentário removido",
+                "Comment deleted",
+                "Comentario eliminado",
+              )
+            ) : (
+              <MentionText text={body} lang={lang} />
+            )}
           </p>
         )}
         {!editor && actions}

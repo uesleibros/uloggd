@@ -417,10 +417,15 @@ function MdGameTile({
       </span>
     );
   return (
-    <Link className="md-gc-tile" href={`/${lang}/game/${game.slug}`}>
+    <Link
+      className="md-gc-tile"
+      href={`/${lang}/game/${game.slug}`}
+      draggable={false}
+      onDragStart={(event) => event.preventDefault()}
+    >
       <span className="md-gc-tile-cover">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={game.coverUrl} alt="" loading="lazy" />
+        <img src={game.coverUrl} alt="" loading="lazy" draggable={false} />
         {favorite && (
           <b className="md-gc-favorite" aria-hidden>
             <Star size={11} />
@@ -483,6 +488,13 @@ function MdGameCarousel({
   const drag = useRef({ pointerId: -1, x: 0, scrollLeft: 0, moved: false });
   const paused = useRef(false);
 
+  function normalizeLoop(node: HTMLSpanElement) {
+    const loopWidth = node.scrollWidth / 3;
+    if (loopWidth <= 0) return;
+    while (node.scrollLeft >= loopWidth * 2) node.scrollLeft -= loopWidth;
+    while (node.scrollLeft < loopWidth * 0.25) node.scrollLeft += loopWidth;
+  }
+
   useEffect(() => {
     const node = viewport.current;
     if (!node) return;
@@ -502,12 +514,8 @@ function MdGameCarousel({
     const tick = (now: number) => {
       const elapsed = Math.min(now - previous, 40);
       previous = now;
-      if (!paused.current) node.scrollLeft += elapsed * 0.025;
-      const loopWidth = node.scrollWidth / 3;
-      if (loopWidth > 0 && node.scrollLeft >= loopWidth * 2)
-        node.scrollLeft -= loopWidth;
-      else if (loopWidth > 0 && node.scrollLeft <= 0)
-        node.scrollLeft += loopWidth;
+      if (!paused.current) node.scrollLeft += elapsed * 0.04;
+      normalizeLoop(node);
       frame = window.requestAnimationFrame(tick);
     };
     frame = window.requestAnimationFrame(tick);
@@ -539,12 +547,15 @@ function MdGameCarousel({
     if (drag.current.moved) {
       event.preventDefault();
       node.scrollLeft = drag.current.scrollLeft - distance;
+      normalizeLoop(node);
     }
   }
 
   function finishDrag(event: ReactPointerEvent<HTMLSpanElement>) {
     if (drag.current.pointerId !== event.pointerId) return;
     drag.current.pointerId = -1;
+    const node = viewport.current;
+    if (node) normalizeLoop(node);
     paused.current = false;
   }
 

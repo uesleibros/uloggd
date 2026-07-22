@@ -1,0 +1,317 @@
+"use client";
+
+import * as Dialog from "@radix-ui/react-dialog";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import {
+  Flag,
+  LoaderCircle,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  X,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import {
+  CommunityScopeSelect,
+  type CommunityScope,
+} from "./community-scope-select";
+import { CommunityTextArea } from "./comment-parts";
+import {
+  EditorVisibilitySelect,
+  type ReviewVisibility,
+} from "./review-studio-form";
+
+export function ScreenshotActions({
+  shot,
+  viewerId,
+  lang,
+}: {
+  shot: {
+    id: string;
+    publicId: string;
+    ownerId: string;
+    ownerUsername: string;
+    description: string;
+    spoilers: boolean;
+    visibility: ReviewVisibility;
+    commentsScope: CommunityScope;
+  };
+  viewerId: string | null;
+  lang: UiLang;
+}) {
+  const t = uiText(lang);
+  const router = useRouter();
+  const owner = viewerId === shot.ownerId;
+  const [editing, setEditing] = useState(false);
+  const [reporting, setReporting] = useState(false);
+  const [description, setDescription] = useState(shot.description);
+  const [spoilers, setSpoilers] = useState(shot.spoilers);
+  const [visibility, setVisibility] = useState(shot.visibility);
+  const [commentsScope, setCommentsScope] = useState(shot.commentsScope);
+  const [pending, setPending] = useState(false);
+  const [armed, setArmed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    setPending(true);
+    setError(null);
+    const { error: updateError } = await createClient()
+      .from("screenshots")
+      .update({
+        description: description.trim() || null,
+        contains_spoilers: spoilers,
+        visibility,
+        comments_scope: commentsScope,
+      })
+      .eq("id", shot.id);
+    if (updateError) setError(t.couldNotSave);
+    else {
+      setEditing(false);
+      router.refresh();
+    }
+    setPending(false);
+  }
+  async function remove() {
+    if (!armed) {
+      setArmed(true);
+      window.setTimeout(() => setArmed(false), 4000);
+      return;
+    }
+    setPending(true);
+    setError(null);
+    const response = await fetch(
+      `/api/screenshots?id=${encodeURIComponent(shot.id)}`,
+      { method: "DELETE" },
+    );
+    if (!response.ok) {
+      setError(t.couldNotRemove);
+      setPending(false);
+      return;
+    }
+    router.push(`/${lang}/u/${shot.ownerUsername}/shots`);
+    router.refresh();
+  }
+  async function report(formData: FormData) {
+    if (!viewerId) return;
+    setPending(true);
+    setError(null);
+    const { error: reportError } = await createClient()
+      .from("reports")
+      .insert({
+        reporter_id: viewerId,
+        target_profile_id: shot.ownerId,
+        content_type: "SCREENSHOT",
+        content_id: shot.id,
+        reason: formData.get("reason"),
+        details: String(formData.get("details") ?? "").trim() || null,
+      });
+    if (reportError)
+      setError(
+        tri(
+          lang,
+          "Não foi possível enviar a denúncia.",
+          "Could not send the report.",
+          "No se pudo enviar la denuncia.",
+        ),
+      );
+    else setReporting(false);
+    setPending(false);
+  }
+  if (!viewerId) return null;
+  return (
+    <>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild>
+          <button
+            className="screenshot-more-action"
+            type="button"
+            aria-label={tri(lang, "Mais ações", "More actions", "Más acciones")}
+          >
+            <MoreHorizontal size={18} />
+          </button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            className="profile-comment-action-menu"
+            align="end"
+            sideOffset={6}
+          >
+            {owner ? (
+              <>
+                <DropdownMenu.Item onSelect={() => setEditing(true)}>
+                  <Pencil size={14} /> {t.edit}
+                </DropdownMenu.Item>
+                <DropdownMenu.Item data-danger onSelect={() => void remove()}>
+                  <Trash2 size={14} />{" "}
+                  {armed
+                    ? tri(
+                        lang,
+                        "Excluir mesmo?",
+                        "Really delete?",
+                        "¿Eliminar de verdad?",
+                      )
+                    : t.delete}
+                </DropdownMenu.Item>
+              </>
+            ) : (
+              <DropdownMenu.Item onSelect={() => setReporting(true)}>
+                <Flag size={14} />{" "}
+                {tri(
+                  lang,
+                  "Denunciar captura",
+                  "Report screenshot",
+                  "Denunciar captura",
+                )}
+              </DropdownMenu.Item>
+            )}
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
+      <Dialog.Root open={editing} onOpenChange={setEditing}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="drawer-backdrop" />
+          <Dialog.Content
+            className="social-editor-dialog screenshot-edit-dialog"
+            aria-describedby={undefined}
+          >
+            <header>
+              <Dialog.Title>
+                {tri(
+                  lang,
+                  "Editar captura",
+                  "Edit screenshot",
+                  "Editar captura",
+                )}
+              </Dialog.Title>
+              <Dialog.Close aria-label={t.close}>
+                <X size={18} />
+              </Dialog.Close>
+            </header>
+            <form action={save} className="social-editor-form">
+              <CommunityTextArea
+                id="edit-screenshot-description"
+                label={tri(lang, "Descrição", "Description", "Descripción")}
+                value={description}
+                onChange={setDescription}
+                maxLength={1000}
+                rows={4}
+                placeholder={tri(
+                  lang,
+                  "Conte o contexto da captura…",
+                  "Add context to the screenshot…",
+                  "Añade contexto a la captura…",
+                )}
+              />
+              <label>
+                <span>{t.visibility}</span>
+                <EditorVisibilitySelect
+                  value={visibility}
+                  onChange={setVisibility}
+                  lang={lang}
+                />
+              </label>
+              <label>
+                <span>
+                  {tri(lang, "Comentários", "Comments", "Comentarios")}
+                </span>
+                <CommunityScopeSelect
+                  value={commentsScope}
+                  onChange={setCommentsScope}
+                  lang={lang}
+                />
+              </label>
+              <label className="social-check">
+                <input
+                  type="checkbox"
+                  checked={spoilers}
+                  onChange={(event) => setSpoilers(event.target.checked)}
+                />
+                <span>{t.containsSpoilers}</span>
+              </label>
+              {error && (
+                <p className="social-form-error" role="alert">
+                  {error}
+                </p>
+              )}
+              <footer>
+                <Dialog.Close type="button">{t.cancel}</Dialog.Close>
+                <button type="submit" disabled={pending}>
+                  {pending && <LoaderCircle className="spin" size={14} />}{" "}
+                  {t.save}
+                </button>
+              </footer>
+            </form>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+      <Dialog.Root open={reporting} onOpenChange={setReporting}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="drawer-backdrop" />
+          <Dialog.Content
+            className="social-editor-dialog screenshot-report-dialog"
+            aria-describedby={undefined}
+          >
+            <header>
+              <Dialog.Title>
+                {tri(
+                  lang,
+                  "Denunciar captura",
+                  "Report screenshot",
+                  "Denunciar captura",
+                )}
+              </Dialog.Title>
+              <Dialog.Close aria-label={t.close}>
+                <X size={18} />
+              </Dialog.Close>
+            </header>
+            <form action={report} className="social-editor-form">
+              <label>
+                <span>{tri(lang, "Motivo", "Reason", "Motivo")}</span>
+                <select name="reason" defaultValue="OTHER">
+                  <option value="HARASSMENT">
+                    {tri(lang, "Assédio", "Harassment", "Acoso")}
+                  </option>
+                  <option value="HATE_SPEECH">
+                    {tri(
+                      lang,
+                      "Discurso de ódio",
+                      "Hate speech",
+                      "Discurso de odio",
+                    )}
+                  </option>
+                  <option value="SEXUAL_CONTENT">NSFW</option>
+                  <option value="OTHER">
+                    {tri(lang, "Outro", "Other", "Otro")}
+                  </option>
+                </select>
+              </label>
+              <label>
+                <span>{tri(lang, "Detalhes", "Details", "Detalles")}</span>
+                <textarea name="details" maxLength={1000} rows={4} />
+              </label>
+              {error && (
+                <p className="social-form-error" role="alert">
+                  {error}
+                </p>
+              )}
+              <footer>
+                <Dialog.Close type="button">{t.cancel}</Dialog.Close>
+                <button type="submit" disabled={pending}>
+                  {tri(
+                    lang,
+                    "Enviar denúncia",
+                    "Send report",
+                    "Enviar denuncia",
+                  )}
+                </button>
+              </footer>
+            </form>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </>
+  );
+}

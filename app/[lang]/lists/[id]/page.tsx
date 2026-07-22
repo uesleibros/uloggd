@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Layers3 } from "lucide-react";
 import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
@@ -72,6 +72,7 @@ export default async function ListPage({ params }: Props) {
     getAuthUser(),
   ]);
   if (!list) notFound();
+  if (key[0] === "id") permanentRedirect(`/${lang}/lists/${list.public_id}`);
   const items = [...(list.game_list_items ?? [])].sort(
     (a, b) => a.position - b.position,
   );

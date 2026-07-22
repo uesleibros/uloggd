@@ -16,6 +16,7 @@ import {
 import type { Game } from "@/lib/igdb";
 import { ActivityEntryActions } from "./activity-entry-actions";
 import { LikeButton } from "./like-button";
+import { MentionText } from "./mention-text";
 import { VerifiedBadge } from "../verified-badge";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
@@ -336,10 +337,14 @@ export function ActivityStream({
                       "Mostrar contenido con spoilers",
                     )}
                   </summary>
-                  <p>{entry.content}</p>
+                  <p>
+                    <MentionText text={entry.content} lang={lang} />
+                  </p>
                 </details>
               ) : (
-                <p className="activity-content">{entry.content}</p>
+                <p className="activity-content">
+                  <MentionText text={entry.content} lang={lang} />
+                </p>
               ))}
             {entry.kind === "review" &&
               entry.aspects &&
