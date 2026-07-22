@@ -13,6 +13,37 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
+function createListErrorMessage(message: string, lang: UiLang) {
+  const lower = message.toLowerCase();
+  if (lower.includes("authentication"))
+    return tri(
+      lang,
+      "Entre na sua conta para criar listas.",
+      "Sign in to create lists.",
+      "Inicia sesión para crear listas.",
+    );
+  if (lower.includes("invalid name"))
+    return tri(
+      lang,
+      "Nome precisa ter entre 1 e 100 caracteres.",
+      "Name must have 1–100 characters.",
+      "El nombre debe tener entre 1 y 100 caracteres.",
+    );
+  if (lower.includes("description"))
+    return tri(
+      lang,
+      "Descrição passa de 500 caracteres.",
+      "Description exceeds 500 characters.",
+      "La descripción supera los 500 caracteres.",
+    );
+  return tri(
+    lang,
+    "Não foi possível criar a lista.",
+    "Could not create the list.",
+    "No se pudo crear la lista.",
+  );
+}
+
 export function CreateListForm({ lang }: { lang: UiLang }) {
   const t = uiText(lang);
   const router = useRouter();
@@ -24,21 +55,23 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
   async function submit(formData: FormData) {
     setPending(true);
     setError(null);
-    const client = createClient();
-    const { error: actionError } = await client.rpc("create_game_list", {
-      list_name: formData.get("name"),
-      list_description: formData.get("description"),
-      list_ranked: mode === "RANKED",
-    });
+    const name = String(formData.get("name") ?? "").trim();
+    const description = String(formData.get("description") ?? "").trim();
+    if (!name) {
+      setError(tri(lang, "Dê um nome à lista.", "Give the list a name.", "Dale un nombre a la lista."));
+      setPending(false);
+      return;
+    }
+    const { error: actionError } = await createClient().rpc(
+      "create_game_list",
+      {
+        list_name: name,
+        list_description: description || null,
+        list_ranked: mode === "RANKED",
+      },
+    );
     if (actionError) {
-      setError(
-        tri(
-          lang,
-          "Não foi possível criar a lista.",
-          "Could not create the list.",
-          "No se pudo crear la lista.",
-        ),
-      );
+      setError(createListErrorMessage(actionError.message, lang));
     } else {
       setOpen(false);
       router.refresh();

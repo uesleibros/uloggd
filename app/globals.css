@@ -17152,21 +17152,23 @@ adapted to the current uloggd surface system. */
   font-weight: 550;
 }
 .create-list-mode > label {
+  position: relative;
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: start;
   gap: 12px;
   padding: 12px 14px;
-  border: 1px solid var(--shell-line-strong);
   border-radius: 10px;
   background: var(--console-inset);
+  background-clip: padding-box;
+  box-shadow: inset 0 0 0 1px var(--shell-line-strong);
   cursor: pointer;
+  isolation: isolate;
   transition:
-    border-color 150ms ease-out,
+    box-shadow 150ms ease-out,
     background-color 150ms ease-out;
 }
 .create-list-mode > label:hover {
-  border-color: var(--shell-line-strong);
   background: var(--console-hover);
 }
 .create-list-mode > label > input {
@@ -17198,8 +17200,8 @@ adapted to the current uloggd surface system. */
   line-height: 1.45;
 }
 .create-list-mode > label[data-selected] {
-  border-color: var(--brand-blurple);
   background: var(--brand-blurple-wash);
+  box-shadow: inset 0 0 0 1px var(--brand-blurple);
 }
 .create-list-mode > label[data-selected] > span:first-of-type {
   background: var(--brand-blurple);
