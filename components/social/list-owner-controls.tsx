@@ -54,18 +54,27 @@ export function ListOwnerControls({
   async function update(formData: FormData) {
     setPending(true);
     setError(null);
-    const { error: actionError } = await createClient().rpc(
-      "update_game_list",
-      {
+    const client = createClient();
+    let { error: actionError } = await client.rpc("update_game_list", {
+      target_list: list.id,
+      list_name: formData.get("name"),
+      list_description: formData.get("description"),
+      list_visibility: visibility,
+      list_ranked: mode === "RANKED",
+    });
+    if (
+      actionError &&
+      actionError.message.toLowerCase().includes("could not find the function")
+    ) {
+      ({ error: actionError } = await client.rpc("update_game_list", {
         target_list: list.id,
         list_name: formData.get("name"),
         list_description: formData.get("description"),
         list_visibility: visibility,
-        list_ranked: mode === "RANKED",
-      },
-    );
+      }));
+    }
     const { error: scopeError } = !actionError
-      ? await createClient()
+      ? await client
           .from("game_lists")
           .update({ comments_scope: commentsScope })
           .eq("id", list.id)

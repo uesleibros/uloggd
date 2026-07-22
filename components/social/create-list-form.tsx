@@ -62,14 +62,21 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
       setPending(false);
       return;
     }
-    const { error: actionError } = await createClient().rpc(
-      "create_game_list",
-      {
+    const client = createClient();
+    let { error: actionError } = await client.rpc("create_game_list", {
+      list_name: name,
+      list_description: description || null,
+      list_ranked: mode === "RANKED",
+    });
+    if (
+      actionError &&
+      actionError.message.toLowerCase().includes("could not find the function")
+    ) {
+      ({ error: actionError } = await client.rpc("create_game_list", {
         list_name: name,
         list_description: description || null,
-        list_ranked: mode === "RANKED",
-      },
-    );
+      }));
+    }
     if (actionError) {
       const localized = createListErrorMessage(actionError.message, lang);
       const generic =
