@@ -21,6 +21,9 @@ test("keeps the advanced-filter sheet themed and inside the mobile viewport", as
   const footer = page.locator(".catalog-filter-dialog-actions");
   await expect(dialog).toBeVisible();
   await expect(footer).toBeVisible();
+  await dialog.evaluate(async (element) => {
+    await Promise.all(element.getAnimations().map((animation) => animation.finished));
+  });
 
   const geometry = await page.evaluate(() => {
     const dialog = document.querySelector(
@@ -74,8 +77,8 @@ test("keeps profile identity, metadata, and actions in their responsive contract
     const actions = document.querySelector(
       ".profile-action-cluster",
     ) as HTMLElement;
-    const share = document.querySelector(
-      ".profile-action-cluster .share-action-button",
+    const moreActions = document.querySelector(
+      ".profile-action-cluster .profile-more-trigger",
     ) as HTMLElement;
     const identityBox = identity.getBoundingClientRect();
     const actionsBox = actions.getBoundingClientRect();
@@ -85,7 +88,7 @@ test("keeps profile identity, metadata, and actions in their responsive contract
       actionsLeft: actionsBox.left,
       actionsRight: actionsBox.right,
       actionPosition: getComputedStyle(actions).position,
-      shareHeight: share.getBoundingClientRect().height,
+      actionHeight: moreActions.getBoundingClientRect().height,
       documentWidth: document.documentElement.scrollWidth,
       viewportWidth: window.innerWidth,
     };
@@ -97,9 +100,7 @@ test("keeps profile identity, metadata, and actions in their responsive contract
   expect(layout.actionPosition).toBe(
     testInfo.project.name.startsWith("mobile") ? "static" : "absolute",
   );
-  expect(layout.shareHeight).toBe(
-    testInfo.project.name.startsWith("mobile") ? 40 : 38,
-  );
+  expect(layout.actionHeight).toBe(38);
 });
 
 test("keeps connection search available across follower tabs", async ({
