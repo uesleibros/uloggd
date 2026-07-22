@@ -5,9 +5,23 @@ export function SocialPageSkeleton({ profile = false }: { profile?: boolean }) {
       aria-busy="true"
       aria-label="Loading"
     >
-      {profile && <div className="skeleton-block skeleton-banner" />}
-      <div className="skeleton-block skeleton-title" />
-      <div className="skeleton-block skeleton-subtitle" />
+      {profile ? (
+        <>
+          <div className="skeleton-block skeleton-banner" />
+          <div className="skeleton-profile-header">
+            <span className="skeleton-block skeleton-profile-avatar" />
+            <div>
+              <span className="skeleton-block skeleton-title" />
+              <span className="skeleton-block skeleton-subtitle" />
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="skeleton-block skeleton-title" />
+          <div className="skeleton-block skeleton-subtitle" />
+        </>
+      )}
       <div className="skeleton-stream">
         {Array.from({ length: 4 }, (_, index) => (
           <div className="skeleton-entry" key={index}>

@@ -8879,6 +8879,36 @@ and lists */
   margin: 0;
   border-radius: 12px;
 }
+.profile-page.social-skeleton .skeleton-banner {
+  width: calc(100% + var(--profile-page-gutter) * 2);
+  height: clamp(320px, 34vw, 430px);
+  margin-inline: calc(var(--profile-page-gutter) * -1);
+  border-radius: 12px;
+}
+.skeleton-profile-header {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+  margin-top: -128px;
+  padding-inline: 28px;
+}
+.skeleton-profile-avatar {
+  width: 112px;
+  height: 112px;
+  margin-top: 56px;
+  border-radius: 50%;
+}
+.skeleton-profile-header > div {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding-top: 68px;
+}
+.skeleton-profile-header .skeleton-title,
+.skeleton-profile-header .skeleton-subtitle {
+  margin-top: 0;
+}
 /* Matches .page-back-link so the placeholder does not change shape when the
    real pill arrives. */
 .skeleton-back {
@@ -16902,8 +16932,10 @@ adapted to the current uloggd surface system. */
 }
 .screenshot-post-body > header > .verified-badge {
   align-self: flex-start;
-  margin-top: 3px;
-  margin-left: -5px;
+  width: 20px;
+  height: 20px;
+  margin-top: -1px;
+  margin-left: -4px;
 }
 .screenshot-more-action {
   display: grid;
@@ -16931,6 +16963,16 @@ adapted to the current uloggd surface system. */
 }
 .screenshot-report-trigger {
   width: 100%;
+}
+.screenshot-report-menu {
+  min-width: max(var(--radix-select-trigger-width), 260px);
+}
+.screenshot-report-menu .editor-select-option {
+  grid-template-columns: minmax(0, 1fr) 18px;
+  gap: 12px;
+  min-height: 40px;
+  padding-inline: 12px;
+  line-height: 1.4;
 }
 .screenshot-author {
   display: flex;
@@ -17052,6 +17094,26 @@ adapted to the current uloggd surface system. */
   }
   .screenshot-page {
     padding: 12px 0 40px;
+  }
+  .profile-page.social-skeleton .skeleton-banner {
+    height: 360px;
+    aspect-ratio: auto;
+    border-radius: 0;
+  }
+  .skeleton-profile-header {
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 13px;
+    margin-top: -104px;
+    padding-inline: 8px;
+  }
+  .skeleton-profile-avatar {
+    width: 82px;
+    height: 82px;
+    margin-top: 0;
+  }
+  .skeleton-profile-header > div {
+    align-self: center;
+    padding-top: 0;
   }
   .screenshot-post {
     border-inline: 0;

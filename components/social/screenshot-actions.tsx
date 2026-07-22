@@ -279,7 +279,7 @@ export function ScreenshotActions({
                   </Select.Trigger>
                   <Select.Portal>
                     <Select.Content
-                      className="editor-select-menu"
+                      className="editor-select-menu screenshot-report-menu"
                       position="popper"
                       sideOffset={6}
                       collisionPadding={12}
