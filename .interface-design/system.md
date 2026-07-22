@@ -497,7 +497,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Community composers reuse `CommunityTextArea` so focus, counter, spacing, and action treatment stay identical.
 - Profile screenshots use a dedicated dense gallery; game metadata and signed media URLs are fetched in batches.
 - The profile overview uses a horizontally scrollable row of circular, labeled collection portals (Library, Reviews, Sessions, Lists, Screenshots, Wrapped), with counts as quiet corner badges rather than metric cards.
-- Uploaded profile banners become a full-width atmospheric backdrop behind a lower-anchored identity header, using edge and bottom gradients for readability; avatars have no framing ring and the identity/actions finish before collection portals begin.
+- Uploaded profile banners become a full-width atmospheric backdrop behind a lower-anchored identity header, using edge and bottom gradients for readability; avatars have no framing ring, align with the identity on desktop and mobile, and the identity/actions finish before collection portals begin.
 - Community timestamps share one live relative-time formatter in every locale, always using explicit elapsed units from seconds through years; calendar controls, birth dates, and game release metadata remain absolute because they describe a date rather than recency.
 - Auto game showcases use a normalized three-copy loop. Native image/link dragging is disabled, pointer dragging stays inside the middle loop, hover pauses temporarily, and release always resumes motion.
 
