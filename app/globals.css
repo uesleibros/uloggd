@@ -16627,11 +16627,11 @@ adapted to the current uloggd surface system. */
 }
 .screenshot-options {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: end;
   gap: 12px;
 }
-.screenshot-options > label:first-child {
+.screenshot-options > label:not(.screenshot-spoiler) {
   display: grid;
   gap: 7px;
 }
@@ -16688,6 +16688,145 @@ adapted to the current uloggd surface system. */
   width: min(100%, 820px);
   margin: 0 auto;
   padding: 32px 20px 56px;
+}
+.screenshot-gallery-page {
+  width: min(100%, 1180px);
+  margin-inline: auto;
+}
+.screenshot-gallery-header {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 24px;
+}
+.screenshot-gallery-header > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--brand-blurple-bright);
+  font-size: 10px;
+  font-weight: 680;
+  letter-spacing: 0.08em;
+}
+.screenshot-gallery-header h1 {
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+.screenshot-gallery-header p {
+  color: var(--screen-muted);
+  font-size: 12px;
+}
+.screenshot-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px 14px;
+}
+.screenshot-gallery-card {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: var(--screen-white);
+  text-decoration: none;
+}
+.screenshot-gallery-media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-black);
+}
+.screenshot-gallery-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.screenshot-gallery-card:hover .screenshot-gallery-media img {
+  transform: scale(1.025);
+}
+.screenshot-gallery-media i {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: rgb(11 10 13 / 84%);
+  color: var(--screen-white);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 650;
+  backdrop-filter: blur(14px);
+}
+.screenshot-gallery-card > strong {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.screenshot-gallery-card > small {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 10px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.diary-entry-page {
+  width: min(100%, 780px);
+  margin-inline: auto;
+}
+.diary-entry-post {
+  display: grid;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 14px;
+  background: var(--console-raised);
+}
+.diary-entry-post > header {
+  display: grid;
+  gap: 5px;
+}
+.diary-entry-post > header > span {
+  color: var(--brand-blurple-bright);
+  font-size: 10px;
+  font-weight: 680;
+  letter-spacing: 0.08em;
+}
+.diary-entry-post h1 {
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+.diary-entry-post a {
+  color: var(--screen-dim);
+  text-decoration: none;
+}
+.diary-entry-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding-block: 12px;
+  border-block: 1px solid var(--shell-line);
+}
+.diary-entry-meta > * {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--screen-muted);
+  font-size: 11px;
+}
+.diary-entry-post > p {
+  color: var(--screen-dim);
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
 }
 .screenshot-post {
   overflow: hidden;
@@ -16843,6 +16982,13 @@ adapted to the current uloggd surface system. */
   backdrop-filter: blur(18px);
 }
 @media (max-width: 620px) {
+  .screenshot-gallery-page {
+    padding-inline: 12px;
+  }
+  .screenshot-gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 10px;
+  }
   .screenshot-studio {
     padding: 12px;
   }

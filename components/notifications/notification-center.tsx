@@ -51,7 +51,11 @@ type Preferences = {
   list_likes_enabled: boolean;
   comments_enabled: boolean;
 };
-type CommentTarget = { ownerUsername: string; isReply: boolean };
+type CommentTarget = {
+  ownerUsername: string;
+  isReply: boolean;
+  publicId: string;
+};
 
 const defaultPreferences: Preferences = {
   follows_enabled: true,
@@ -76,6 +80,9 @@ export function NotificationCenter({
   const [commentTargets, setCommentTargets] = useState<
     Record<string, CommentTarget>
   >({});
+  const [contentTargets, setContentTargets] = useState<Record<string, string>>(
+    {},
+  );
   const [preferences, setPreferences] =
     useState<Preferences>(defaultPreferences);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
@@ -116,12 +123,27 @@ export function NotificationCenter({
           item.target_id,
       )
       .map((item) => item.target_id as string);
-    const { data: comments } = commentIds.length
-      ? await supabase
-          .from("profile_comments")
-          .select("id,profile_id,parent_id")
-          .in("id", commentIds)
-      : { data: [] };
+    const reviewIds = rows
+      .filter((item) => item.kind === "review_like" && item.target_id)
+      .map((item) => item.target_id as string);
+    const listIds = rows
+      .filter((item) => item.kind === "list_like" && item.target_id)
+      .map((item) => item.target_id as string);
+    const [{ data: comments }, { data: reviews }, { data: lists }] =
+      await Promise.all([
+        commentIds.length
+          ? supabase
+              .from("profile_comments")
+              .select("id,public_id,profile_id,parent_id")
+              .in("id", commentIds)
+          : Promise.resolve({ data: [] }),
+        reviewIds.length
+          ? supabase.from("reviews").select("id,public_id").in("id", reviewIds)
+          : Promise.resolve({ data: [] }),
+        listIds.length
+          ? supabase.from("game_lists").select("id,public_id").in("id", listIds)
+          : Promise.resolve({ data: [] }),
+      ]);
     const ownerIds = (comments ?? []).map((comment) => comment.profile_id);
     const profileIds = [...new Set([...actorIds, ...ownerIds])];
     let nextActors: Record<string, Actor> = {};
@@ -156,6 +178,7 @@ export function NotificationCenter({
                   {
                     ownerUsername: username,
                     isReply: Boolean(comment.parent_id),
+                    publicId: comment.public_id,
                   },
                 ],
               ]
@@ -166,6 +189,14 @@ export function NotificationCenter({
     setItems(rows);
     setActors(nextActors);
     setCommentTargets(nextCommentTargets);
+    setContentTargets(
+      Object.fromEntries(
+        [...(reviews ?? []), ...(lists ?? [])].map((item) => [
+          item.id,
+          item.public_id,
+        ]),
+      ),
+    );
     if (preferenceData) setPreferences(preferenceData as Preferences);
     setStatus("ready");
   }, [viewerId]);
@@ -371,12 +402,12 @@ export function NotificationCenter({
                           ? `/${lang}/u/${actor.username}`
                           : `/${lang}`
                         : isCommentNotification && commentTarget
-                          ? `/${lang}/u/${commentTarget.ownerUsername}#comment-${item.target_id}`
+                          ? `/${lang}/u/${commentTarget.ownerUsername}#comment-${commentTarget.publicId}`
                           : isCommentNotification
                             ? `/${lang}`
                             : item.kind === "review_like"
-                              ? `/${lang}/review/${item.target_id}`
-                              : `/${lang}/lists/${item.target_id}`;
+                              ? `/${lang}/review/${item.target_id ? (contentTargets[item.target_id] ?? item.target_id) : ""}`
+                              : `/${lang}/lists/${item.target_id ? (contentTargets[item.target_id] ?? item.target_id) : ""}`;
                     const Icon =
                       item.kind === "moderation_comment_removed"
                         ? ShieldAlert
@@ -472,7 +503,10 @@ export function NotificationCenter({
                         data-unread={!item.read_at || undefined}
                         onClick={() => {
                           void markRead(item);
-                          openComment(item.target_id!, href);
+                          openComment(
+                            commentTarget?.publicId ?? item.target_id!,
+                            href,
+                          );
                         }}
                       >
                         {content}

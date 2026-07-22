@@ -16,6 +16,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import {
+  CommunityScopeSelect,
+  type CommunityScope,
+} from "./community-scope-select";
 
 export function CreateListForm({ lang }: { lang: UiLang }) {
   const t = uiText(lang);
@@ -24,19 +28,27 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [visibilityValue, setVisibilityValue] = useState("PUBLIC");
+  const [commentsScope, setCommentsScope] =
+    useState<CommunityScope>("EVERYONE");
 
   async function submit(formData: FormData) {
     setPending(true);
     setError(null);
-    const { error: actionError } = await createClient().rpc(
-      "create_game_list",
-      {
-        list_name: formData.get("name"),
-        list_description: formData.get("description"),
-        list_visibility: formData.get("visibility"),
-      },
-    );
-    if (actionError) {
+    const client = createClient();
+    const { data, error: actionError } = await client.rpc("create_game_list", {
+      list_name: formData.get("name"),
+      list_description: formData.get("description"),
+      list_visibility: formData.get("visibility"),
+    });
+    const row = Array.isArray(data) ? data[0] : data;
+    const { error: scopeError } =
+      !actionError && row?.id
+        ? await client
+            .from("game_lists")
+            .update({ comments_scope: commentsScope })
+            .eq("id", row.id)
+        : { error: actionError };
+    if (actionError || scopeError) {
       setError(
         tri(
           lang,
@@ -200,6 +212,14 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
                   </Select.Content>
                 </Select.Portal>
               </Select.Root>
+            </label>
+            <label>
+              <span>{tri(lang, "Comentários", "Comments", "Comentarios")}</span>
+              <CommunityScopeSelect
+                value={commentsScope}
+                onChange={setCommentsScope}
+                lang={lang}
+              />
             </label>
             {error && <p role="alert">{error}</p>}
             <footer>

@@ -6,6 +6,7 @@ import {
   BookOpen,
   CalendarDays,
   Gamepad2,
+  Images,
   List,
   Settings,
   Sparkles,
@@ -344,6 +345,7 @@ export default async function ProfilePage({ params }: Props) {
     listsCount,
     reviewCount,
     diaryCount,
+    screenshotCount,
     followerCount,
     followingCount,
     followState,
@@ -366,6 +368,10 @@ export default async function ProfilePage({ params }: Props) {
       .eq("profile_id", profile.id),
     supabase
       .from("diary_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", profile.id),
+    supabase
+      .from("screenshots")
       .select("id", { count: "exact", head: true })
       .eq("profile_id", profile.id),
     supabase
@@ -669,6 +675,13 @@ export default async function ProfilePage({ params }: Props) {
             <List size={14} /> {t.lists}
           </span>
           <strong>{listsCount.count ?? 0}</strong>
+        </Link>
+        <Link href={`/${lang}/u/${profile.username}/shots`}>
+          <span className="profile-stat-label">
+            <Images size={14} />{" "}
+            {tri(lang, "Capturas", "Screenshots", "Capturas")}
+          </span>
+          <strong>{screenshotCount.count ?? 0}</strong>
         </Link>
         <Link
           href={`/${lang}/u/${profile.username}/year/${new Date().getUTCFullYear()}`}

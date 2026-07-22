@@ -26,12 +26,14 @@ import {
   CommentArticle,
   CommentInlineForm,
   CommentLike,
+  CommunityTextArea,
   PendingComment,
 } from "./comment-parts";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export type ProfileComment = {
   id: string;
+  public_id: string;
   author_id: string;
   parent_id: string | null;
   body: string;
@@ -242,10 +244,10 @@ export function ProfileComments({
     setPending(null);
   }
 
-  async function copyCommentLink(commentId: string) {
+  async function copyCommentLink(commentId: string, publicId: string) {
     try {
       const url = new URL(window.location.href);
-      url.hash = `comment-${commentId}`;
+      url.hash = `comment-${publicId}`;
       await navigator.clipboard.writeText(url.toString());
       setCopiedComment(commentId);
       window.setTimeout(
@@ -362,7 +364,7 @@ export function ProfileComments({
         key={comment.id}
       >
         <CommentArticle
-          id={comment.id}
+          id={comment.public_id}
           deleted={deleted}
           lang={lang}
           username={comment.author.username}
@@ -467,7 +469,9 @@ export function ProfileComments({
                         align="end"
                       >
                         <DropdownMenu.Item
-                          onSelect={() => void copyCommentLink(comment.id)}
+                          onSelect={() =>
+                            void copyCommentLink(comment.id, comment.public_id)
+                          }
                         >
                           {copiedComment === comment.id ? (
                             <Check size={14} />
@@ -590,38 +594,35 @@ export function ProfileComments({
             void createComment(body, null);
           }}
         >
-          <label htmlFor="profile-comment-body">
-            {tri(
+          <CommunityTextArea
+            id="profile-comment-body"
+            value={body}
+            maxLength={500}
+            rows={2}
+            label={tri(
               lang,
               "Inicie uma conversa",
               "Start a conversation",
               "Inicia una conversación",
             )}
-          </label>
-          <textarea
-            id="profile-comment-body"
-            value={body}
-            maxLength={500}
-            rows={2}
             placeholder={tri(
               lang,
               "Adicione algo à conversa…",
               "Add something to the conversation…",
               "Añade algo a la conversación…",
             )}
-            onChange={(event) => setBody(event.target.value)}
+            onChange={setBody}
+            action={
+              <button type="submit" disabled={!body.trim() || Boolean(pending)}>
+                {pending === "create" ? (
+                  <LoaderCircle className="spin" size={14} aria-hidden />
+                ) : (
+                  <Send size={14} />
+                )}
+                {t.comment}
+              </button>
+            }
           />
-          <footer>
-            <small>{body.length}/500</small>
-            <button type="submit" disabled={!body.trim() || Boolean(pending)}>
-              {pending === "create" ? (
-                <LoaderCircle className="spin" size={14} aria-hidden />
-              ) : (
-                <Send size={14} />
-              )}
-              {t.comment}
-            </button>
-          </footer>
         </form>
       )}
 

@@ -22,11 +22,13 @@ import {
   CommentArticle,
   CommentInlineForm,
   CommentLike,
+  CommunityTextArea,
   PendingComment,
 } from "./comment-parts";
 
 export type ContentComment = {
   id: string;
+  public_id: string;
   parent_id: string | null;
   author_id: string;
   body: string;
@@ -48,12 +50,16 @@ export function ContentComments({
   contentId,
   ownerId,
   viewerId,
+  canComment = Boolean(viewerId),
+  commentsScope = "EVERYONE",
   lang,
 }: {
-  contentType: "list" | "review" | "screenshot";
+  contentType: "list" | "review" | "screenshot" | "diary";
   contentId: string;
   ownerId: string;
   viewerId: string | null;
+  canComment?: boolean;
+  commentsScope?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   lang: UiLang;
 }) {
   const t = uiText(lang);
@@ -168,10 +174,10 @@ export function ContentComments({
     setPending(null);
   }
 
-  async function copyCommentLink(id: string) {
+  async function copyCommentLink(id: string, publicId: string) {
     try {
       const url = new URL(window.location.href);
-      url.hash = `comment-${id}`;
+      url.hash = `comment-${publicId}`;
       await navigator.clipboard.writeText(url.toString());
       setCopiedComment(id);
       window.setTimeout(
@@ -253,7 +259,7 @@ export function ContentComments({
         key={comment.id}
       >
         <CommentArticle
-          id={comment.id}
+          id={comment.public_id}
           deleted={deleted}
           lang={lang}
           username={comment.username}
@@ -362,7 +368,9 @@ export function ContentComments({
                       align="end"
                     >
                       <DropdownMenu.Item
-                        onSelect={() => void copyCommentLink(comment.id)}
+                        onSelect={() =>
+                          void copyCommentLink(comment.id, comment.public_id)
+                        }
                       >
                         {copiedComment === comment.id ? (
                           <Check size={14} />
@@ -445,18 +453,32 @@ export function ContentComments({
                   "Talk about this list. Replies stay in the same conversation.",
                   "Habla sobre esta lista. Las respuestas quedan en la misma conversación.",
                 )
-              : tri(
-                  lang,
-                  "Converse sobre esta avaliação. Respostas ficam na mesma conversa.",
-                  "Talk about this review. Replies stay in the same conversation.",
-                  "Habla sobre esta reseña. Las respuestas quedan en la misma conversación.",
-                )}
+              : contentType === "review"
+                ? tri(
+                    lang,
+                    "Converse sobre esta avaliação. Respostas ficam na mesma conversa.",
+                    "Talk about this review. Replies stay in the same conversation.",
+                    "Habla sobre esta reseña. Las respuestas quedan en la misma conversación.",
+                  )
+                : contentType === "screenshot"
+                  ? tri(
+                      lang,
+                      "Converse sobre esta captura. Respostas ficam na mesma conversa.",
+                      "Talk about this screenshot. Replies stay in the same conversation.",
+                      "Habla sobre esta captura. Las respuestas quedan en la misma conversación.",
+                    )
+                  : tri(
+                      lang,
+                      "Converse sobre esta sessão. Respostas ficam na mesma conversa.",
+                      "Talk about this session. Replies stay in the same conversation.",
+                      "Habla sobre esta sesión. Las respuestas quedan en la misma conversación.",
+                    )}
           </p>
         </div>
         <span>{total}</span>
       </header>
 
-      {viewerId ? (
+      {viewerId && canComment ? (
         <form
           className="profile-comment-composer"
           onSubmit={(event) => {
@@ -464,47 +486,58 @@ export function ContentComments({
             void submit(body, null);
           }}
         >
-          <label htmlFor="content-comment-body">
-            {tri(
+          <CommunityTextArea
+            id="content-comment-body"
+            value={body}
+            maxLength={500}
+            rows={2}
+            label={tri(
               lang,
               "Inicie uma conversa",
               "Start a conversation",
               "Inicia una conversación",
             )}
-          </label>
-          <textarea
-            id="content-comment-body"
-            value={body}
-            maxLength={500}
-            rows={2}
             placeholder={tri(
               lang,
               "Adicione algo à conversa…",
               "Add something to the conversation…",
               "Añade algo a la conversación…",
             )}
-            onChange={(event) => setBody(event.target.value)}
+            onChange={setBody}
+            action={
+              <button type="submit" disabled={!body.trim() || Boolean(pending)}>
+                {pending === "create" ? (
+                  <LoaderCircle className="spin" size={14} aria-hidden />
+                ) : (
+                  <Send size={14} />
+                )}
+                {t.comment}
+              </button>
+            }
           />
-          <footer>
-            <small>{body.length}/500</small>
-            <button type="submit" disabled={!body.trim() || Boolean(pending)}>
-              {pending === "create" ? (
-                <LoaderCircle className="spin" size={14} aria-hidden />
-              ) : (
-                <Send size={14} />
-              )}
-              {t.comment}
-            </button>
-          </footer>
         </form>
       ) : (
         <p className="profile-comments-notice">
-          {tri(
-            lang,
-            "Entre na sua conta para comentar.",
-            "Sign in to leave a comment.",
-            "Inicia sesión para comentar.",
-          )}
+          {!viewerId
+            ? tri(
+                lang,
+                "Entre na sua conta para comentar.",
+                "Sign in to leave a comment.",
+                "Inicia sesión para comentar.",
+              )
+            : commentsScope === "NOBODY"
+              ? tri(
+                  lang,
+                  "Os comentários estão desativados nesta publicação.",
+                  "Comments are disabled on this post.",
+                  "Los comentarios están desactivados en esta publicación.",
+                )
+              : tri(
+                  lang,
+                  "Somente seguidores podem comentar nesta publicação.",
+                  "Only followers can comment on this post.",
+                  "Solo los seguidores pueden comentar en esta publicación.",
+                )}
         </p>
       )}
 

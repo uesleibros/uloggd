@@ -23,6 +23,7 @@ export type JourneySession = {
   marksFinish: boolean;
   spoilers: boolean;
   visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+  commentsScope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   journeyId: string | null;
 };
 

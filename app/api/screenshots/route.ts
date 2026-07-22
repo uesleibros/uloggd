@@ -48,6 +48,7 @@ export async function POST(request: Request) {
   const gameSlug = String(input.get("gameSlug") ?? "").trim();
   const description = String(input.get("description") ?? "").trim();
   const visibility = String(input.get("visibility") ?? "PUBLIC");
+  const commentsScope = String(input.get("commentsScope") ?? "EVERYONE");
   const spoilers = input.get("spoilers") === "true";
 
   if (
@@ -59,7 +60,8 @@ export async function POST(request: Request) {
     gameId <= 0 ||
     !/^[a-z0-9-]{1,80}$/.test(gameSlug) ||
     description.length > maxDescription ||
-    !["PUBLIC", "FOLLOWERS", "PRIVATE"].includes(visibility)
+    !["PUBLIC", "FOLLOWERS", "PRIVATE"].includes(visibility) ||
+    !["EVERYONE", "FOLLOWERS", "NOBODY"].includes(commentsScope)
   ) {
     return Response.json({ error: "invalid_input" }, { status: 400 });
   }
@@ -141,6 +143,7 @@ export async function POST(request: Request) {
       description: description || null,
       contains_spoilers: spoilers,
       visibility,
+      comments_scope: commentsScope,
       width,
       height,
     })

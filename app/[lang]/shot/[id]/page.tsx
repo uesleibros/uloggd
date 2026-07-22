@@ -15,7 +15,7 @@ import { hasLocale } from "../../dictionaries";
 type Props = { params: Promise<{ lang: string; id: string }> };
 
 const screenshotSelect =
-  "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,width,height,created_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified)";
+  "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified)";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
@@ -61,16 +61,25 @@ export default async function ScreenshotPage({ params }: Props) {
     ? shot.profiles[0]
     : shot.profiles;
   if (!profile?.username) notFound();
-  const [{ data: signed }, games, { data: likes }] = await Promise.all([
-    supabase.storage
-      .from("screenshots")
-      .createSignedUrl(shot.storage_path, 3600),
-    getGamesByIds([shot.igdb_id]),
-    supabase.rpc("get_content_likes", {
-      target_type: "screenshot",
-      target_ids: [shot.id],
-    }),
-  ]);
+  const [{ data: signed }, games, { data: likes }, { data: follow }] =
+    await Promise.all([
+      supabase.storage
+        .from("screenshots")
+        .createSignedUrl(shot.storage_path, 3600),
+      getGamesByIds([shot.igdb_id]),
+      supabase.rpc("get_content_likes", {
+        target_type: "screenshot",
+        target_ids: [shot.id],
+      }),
+      user && user.id !== shot.profile_id
+        ? supabase
+            .from("follows")
+            .select("follower_id")
+            .eq("follower_id", user.id)
+            .eq("following_id", shot.profile_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
   if (!signed?.signedUrl) notFound();
   const game = games[0] ?? null;
   const like = likes?.[0] as
@@ -207,6 +216,15 @@ export default async function ScreenshotPage({ params }: Props) {
         contentId={shot.id}
         ownerId={shot.profile_id}
         viewerId={user?.id ?? null}
+        canComment={
+          Boolean(user) &&
+          (user?.id === shot.profile_id ||
+            shot.comments_scope === "EVERYONE" ||
+            (shot.comments_scope === "FOLLOWERS" && Boolean(follow)))
+        }
+        commentsScope={
+          shot.comments_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"
+        }
         lang={lang}
       />
     </main>

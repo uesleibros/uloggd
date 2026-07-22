@@ -264,6 +264,48 @@ export function CommentInlineForm({
   );
 }
 
+export function CommunityTextArea({
+  id,
+  label,
+  value,
+  maxLength,
+  rows = 2,
+  placeholder,
+  className,
+  action,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  maxLength: number;
+  rows?: number;
+  placeholder: string;
+  className?: string;
+  action?: ReactNode;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className={className}>
+      <label htmlFor={id}>{label}</label>
+      <textarea
+        id={id}
+        value={value}
+        maxLength={maxLength}
+        rows={rows}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <footer>
+        <small>
+          {value.length}/{maxLength}
+        </small>
+        {action}
+      </footer>
+    </div>
+  );
+}
+
 /**
  * Interactive for anyone who may like, a plain count otherwise — including for
  * the author, who cannot like their own comment but should still see the total.

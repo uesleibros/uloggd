@@ -42,6 +42,7 @@ export function EditReviewDialog({
     finishedOn: entry.finishedOn ?? "",
     platform: entry.platform ?? "",
     journeyId: entry.journeyId ?? null,
+    commentsScope: entry.commentsScope ?? "EVERYONE",
     aspects: (entry.aspects ?? []).map((aspect, index) => ({
       id: `${entry.id}-${index}`,
       label: aspect.label,
@@ -53,16 +54,24 @@ export function EditReviewDialog({
 
   async function perform(fields: ReviewRpcFields) {
     setPending(true);
-    const { error } = await createClient().rpc("update_review", {
+    const { review_comments_scope, ...rpcFields } = fields;
+    const client = createClient();
+    const { error } = await client.rpc("update_review", {
       review_id: entry.id,
-      ...fields,
+      ...rpcFields,
     });
-    if (!error) {
+    const { error: scopeError } = !error
+      ? await client
+          .from("reviews")
+          .update({ comments_scope: review_comments_scope })
+          .eq("id", entry.id)
+      : { error };
+    if (!error && !scopeError) {
       router.refresh();
       window.setTimeout(() => onOpenChange(false), 420);
     }
     setPending(false);
-    return !error;
+    return !error && !scopeError;
   }
 
   return (

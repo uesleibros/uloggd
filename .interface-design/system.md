@@ -492,6 +492,10 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Desktop uses a centered surface up to 640px; mobile becomes a bottom sheet with safe-area padding. Both keep their mode mounted through the closing animation so the backdrop and surface exit together.
 - Every modal inherits semantic theme tokens from the document; light mode uses a white/paper panel, dark modes use console panels, and artwork-only lightboxes are the sole invariant-dark exception. Mobile sheets keep their footer at `bottom: 0`, never use a negative bottom margin, and must fit entirely within `100dvh` including safe-area padding.
 - Diary entries are repeatable sessions, not a single game-level field. “View logs” opens a private per-game timeline with total entries and playtime; every session can be edited or removed independently.
+- Reviews, lists, screenshots, and diary sessions share one community-post contract: compact public URL, like, comments, and share.
+- Post editors expose visibility and a separate comment audience (`EVERYONE`, `FOLLOWERS`, `NOBODY`); the stricter post/profile policy wins.
+- Community composers reuse `CommunityTextArea` so focus, counter, spacing, and action treatment stay identical.
+- Profile screenshots use a dedicated dense gallery; game metadata and signed media URLs are fetched in batches.
 
 - Never fabricate user activity, online counts, progress, or authenticated identity.
 - IGDB catalog data may populate discovery surfaces; clearly distinguish it from uloggd community data.

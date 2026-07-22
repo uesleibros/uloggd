@@ -36,7 +36,7 @@ type Aspect = {
 };
 
 const reviewSelect =
-  "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)";
+  "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)";
 
 function reviewKey(id: string) {
   if (/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
@@ -116,6 +116,7 @@ export default async function ReviewPage({ params }: Props) {
     { data: likeRows },
     { data: customCovers },
     { data: viewerPreference },
+    { data: follow },
   ] = await Promise.all([
     getGamesByIds([review.igdb_id]),
     supabase.rpc("get_content_likes", {
@@ -134,6 +135,14 @@ export default async function ReviewPage({ params }: Props) {
           .from("profiles")
           .select("custom_cover_scope")
           .eq("id", user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    user
+      ? supabase
+          .from("follows")
+          .select("follower_id")
+          .eq("follower_id", user.id)
+          .eq("following_id", review.profile_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
@@ -402,6 +411,15 @@ export default async function ReviewPage({ params }: Props) {
         contentId={review.id}
         ownerId={review.profile_id}
         viewerId={user?.id ?? null}
+        canComment={
+          Boolean(user) &&
+          (isOwner ||
+            review.comments_scope === "EVERYONE" ||
+            (review.comments_scope === "FOLLOWERS" && Boolean(follow)))
+        }
+        commentsScope={
+          review.comments_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"
+        }
         lang={lang}
       />
     </main>

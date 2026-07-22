@@ -66,6 +66,7 @@ export type SocialEntry = {
   journeySessions?: JourneyDetailSession[];
   spoilers: boolean;
   visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+  commentsScope?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   createdAt: string;
   updatedAt?: string;
   likes?: number;
@@ -380,6 +381,14 @@ export function ActivityStream({
                   href={`/${lang}/shot/${entry.publicId ?? entry.id}`}
                 >
                   {tri(lang, "Ver captura", "View screenshot", "Ver captura")}
+                </Link>
+              )}
+              {entry.kind === "diary" && entry.publicId && (
+                <Link
+                  className="activity-read-more"
+                  href={`/${lang}/entry/${entry.publicId}`}
+                >
+                  {tri(lang, "Ver sessão", "View session", "Ver sesión")}
                 </Link>
               )}
               {viewerId === entry.profileId && entry.kind !== "screenshot" && (

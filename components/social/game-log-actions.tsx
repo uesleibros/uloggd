@@ -35,6 +35,11 @@ import {
   type ReviewRpcFields,
 } from "./review-studio-form";
 import { ScreenshotStudioForm } from "./screenshot-studio-form";
+import {
+  CommunityScopeSelect,
+  type CommunityScope,
+} from "./community-scope-select";
+import { CommunityTextArea } from "./comment-parts";
 
 type Mode = "review" | "diary" | "list" | "screenshot";
 type ListOption = { id: string; name: string };
@@ -47,6 +52,7 @@ type DayPayload = {
   marksFinish: boolean;
   spoilers: boolean;
   visibility: Visibility;
+  commentsScope: CommunityScope;
 };
 
 export function GameLogActions({
@@ -121,17 +127,27 @@ export function GameLogActions({
 
   async function performReview(fields: ReviewRpcFields) {
     setPending(true);
-    const { error: rpcError } = await createClient().rpc("create_review", {
+    const { review_comments_scope, ...rpcFields } = fields;
+    const client = createClient();
+    const { data, error: rpcError } = await client.rpc("create_review", {
       game_id: game.id,
       game_slug: game.slug,
-      ...fields,
+      ...rpcFields,
     });
-    if (!rpcError) {
+    const row = Array.isArray(data) ? data[0] : data;
+    const { error: scopeError } =
+      !rpcError && row?.id
+        ? await client
+            .from("reviews")
+            .update({ comments_scope: review_comments_scope })
+            .eq("id", row.id)
+        : { error: rpcError };
+    if (!rpcError && !scopeError) {
       router.refresh();
       window.setTimeout(() => setOpen(false), 420);
     }
     setPending(false);
-    return !rpcError;
+    return !rpcError && !scopeError;
   }
 
   async function submitJourneyName() {
@@ -251,6 +267,7 @@ export function GameLogActions({
         marksFinish: false,
         spoilers: false,
         visibility: "PUBLIC" as const,
+        commentsScope: "EVERYONE" as const,
         journeyId: entryJourney,
       })),
     ]);
@@ -310,7 +327,7 @@ export function GameLogActions({
     setPending(true);
     const supabase = createClient();
     const { session, day } = dayEditor;
-    const { error: rpcError } = session
+    const { data, error: rpcError } = session
       ? await supabase.rpc("update_diary_entry", {
           entry_id: session.id,
           entry_date: session.start,
@@ -337,6 +354,18 @@ export function GameLogActions({
     if (rpcError) {
       setPending(false);
       return false;
+    }
+    const saved = Array.isArray(data) ? data[0] : data;
+    const entryId = session?.id ?? saved?.id;
+    if (entryId) {
+      const { error: scopeError } = await supabase
+        .from("diary_entries")
+        .update({ comments_scope: payload.commentsScope })
+        .eq("id", entryId);
+      if (scopeError) {
+        setPending(false);
+        return false;
+      }
     }
     setDayEditor(null);
     router.refresh();
@@ -851,6 +880,9 @@ function JourneyDayEditor({
   const [visibility, setVisibility] = useState<Visibility>(
     session?.visibility ?? "PUBLIC",
   );
+  const [commentsScope, setCommentsScope] = useState<CommunityScope>(
+    session?.commentsScope ?? "EVERYONE",
+  );
   const [failed, setFailed] = useState(false);
 
   const rangeLabel = new Intl.DateTimeFormat(lang, {
@@ -872,6 +904,7 @@ function JourneyDayEditor({
       marksFinish,
       spoilers,
       visibility,
+      commentsScope,
     });
     if (!saved) setFailed(true);
   }
@@ -982,29 +1015,34 @@ function JourneyDayEditor({
           </label>
         </div>
       </div>
-      <label>
-        <span>
-          {tri(lang, "O que rolou na sessão", "What happened", "Qué pasó")}
-        </span>
-        <textarea
-          maxLength={1000}
-          rows={4}
-          value={note}
-          onChange={(event) => setNote(event.target.value)}
-          placeholder={tri(
-            lang,
-            "Conte o que você fez nesse dia.",
-            "Tell what you did on this day.",
-            "Cuenta lo que hiciste ese día.",
-          )}
-        />
-      </label>
+      <CommunityTextArea
+        id="diary-note"
+        label={tri(lang, "O que rolou na sessão", "What happened", "Qué pasó")}
+        maxLength={1000}
+        rows={4}
+        value={note}
+        onChange={setNote}
+        placeholder={tri(
+          lang,
+          "Conte o que você fez nesse dia.",
+          "Tell what you did on this day.",
+          "Cuenta lo que hiciste ese día.",
+        )}
+      />
       <div className="social-form-row social-form-options">
         <label>
           <span>{t.visibility}</span>
           <EditorVisibilitySelect
             value={visibility}
             onChange={setVisibility}
+            lang={lang}
+          />
+        </label>
+        <label>
+          <span>{tri(lang, "Comentários", "Comments", "Comentarios")}</span>
+          <CommunityScopeSelect
+            value={commentsScope}
+            onChange={setCommentsScope}
             lang={lang}
           />
         </label>
