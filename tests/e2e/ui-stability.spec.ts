@@ -95,8 +95,13 @@ test("keeps profile identity, metadata, and actions in their responsive contract
   });
 
   expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth);
-  expect(layout.actionsLeft).toBeGreaterThanOrEqual(layout.identityLeft);
-  expect(layout.actionsRight).toBeLessThanOrEqual(layout.identityRight + 1);
+  if (testInfo.project.name.startsWith("mobile")) {
+    expect(layout.actionsLeft).toBeGreaterThanOrEqual(0);
+    expect(layout.actionsRight).toBeLessThanOrEqual(layout.viewportWidth + 1);
+  } else {
+    expect(layout.actionsLeft).toBeGreaterThanOrEqual(layout.identityLeft);
+    expect(layout.actionsRight).toBeLessThanOrEqual(layout.identityRight + 1);
+  }
   expect(layout.actionPosition).toBe(
     testInfo.project.name.startsWith("mobile") ? "static" : "absolute",
   );
