@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    // Remote providers already serve correctly sized assets. Bypass the
+    // hosted /_next/image optimizer so image delivery never depends on a
+    // metered optimization quota.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",

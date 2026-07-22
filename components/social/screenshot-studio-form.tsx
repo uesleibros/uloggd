@@ -17,6 +17,45 @@ import { tri, type UiLang } from "@/lib/ui-text";
 
 type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
 
+const maxSourceBytes = 12 * 1024 * 1024;
+const maxTransportBytes = 4 * 1024 * 1024;
+
+async function prepareScreenshot(file: File) {
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const source = new Image();
+    source.src = sourceUrl;
+    await source.decode();
+    const largestSide = Math.max(source.naturalWidth, source.naturalHeight);
+    let scale = Math.min(1, 2560 / largestSide);
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("canvas_unavailable");
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+
+    for (const quality of [0.86, 0.78, 0.7, 0.62]) {
+      canvas.width = Math.max(1, Math.round(source.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(source.naturalHeight * scale));
+      context.drawImage(source, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise<Blob>((resolve, reject) =>
+        canvas.toBlob(
+          (result) =>
+            result ? resolve(result) : reject(new Error("encode_failed")),
+          "image/webp",
+          quality,
+        ),
+      );
+      if (blob.type === "image/webp" && blob.size <= maxTransportBytes)
+        return new File([blob], "screenshot.webp", { type: "image/webp" });
+      scale *= 0.82;
+    }
+    throw new Error("transport_too_large");
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
 export function ScreenshotStudioForm({
   game,
   lang,
@@ -58,6 +97,7 @@ export function ScreenshotStudioForm({
     body.set("visibility", visibility);
     body.set("spoilers", String(spoilers));
     try {
+      body.set("image", await prepareScreenshot(image));
       const response = await fetch("/api/screenshots", {
         method: "POST",
         body,
@@ -69,14 +109,29 @@ export function ScreenshotStudioForm({
       if (!response.ok || !payload.id) throw new Error(payload.error);
       router.push(`/${lang}/shot/${payload.id}`);
     } catch (reason) {
+      const code = reason instanceof Error ? reason.message : "unknown";
       setError(
-        reason instanceof Error && reason.message === "rate_limited"
+        code === "rate_limited"
           ? tri(
               lang,
               "Você atingiu o limite temporário de publicações.",
               "You reached the temporary publishing limit.",
               "Alcanzaste el límite temporal de publicaciones.",
             )
+          : code === "invalid_image" || code === "transport_too_large"
+            ? tri(
+                lang,
+                "Não foi possível processar esta imagem. Tente outra captura.",
+                "Could not process this image. Try another screenshot.",
+                "No se pudo procesar esta imagen. Prueba otra captura.",
+              )
+            : code === "service_unavailable"
+              ? tri(
+                  lang,
+                  "O serviço está temporariamente indisponível. Tente novamente.",
+                  "The service is temporarily unavailable. Try again.",
+                  "El servicio no está disponible temporalmente. Inténtalo de nuevo.",
+                )
           : tri(
               lang,
               "Não foi possível publicar a captura.",
@@ -115,7 +170,7 @@ export function ScreenshotStudioForm({
           disabled={pending}
           onChange={(event) => {
             const selected = event.target.files?.[0] ?? null;
-            if (selected && selected.size > 12 * 1024 * 1024) {
+            if (selected && selected.size > maxSourceBytes) {
               setError(
                 tri(
                   lang,

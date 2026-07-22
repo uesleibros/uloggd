@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
@@ -9,8 +10,26 @@ const maxDescription = 2200;
 function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   if (!origin) return true;
-  const expected = process.env.NEXT_PUBLIC_SITE_URL;
-  return origin === new URL(expected || request.url).origin;
+  return origin === new URL(request.url).origin;
+}
+
+async function removeUpload(
+  storagePath: string,
+  supabase: Awaited<ReturnType<typeof createClient>>,
+) {
+  const { error } = await supabase.storage
+    .from("screenshots")
+    .remove([storagePath]);
+  if (!error) return;
+  try {
+    await createAdminClient().storage.from("screenshots").remove([storagePath]);
+  } catch (cleanupError) {
+    console.error("[screenshots] orphan cleanup failed", {
+      storagePath,
+      error,
+      cleanupError,
+    });
+  }
 }
 
 export async function POST(request: Request) {
@@ -46,11 +65,15 @@ export async function POST(request: Request) {
   }
 
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const { count } = await supabase
+  const { count, error: countError } = await supabase
     .from("screenshots")
     .select("id", { count: "exact", head: true })
     .eq("profile_id", user.id)
     .gte("created_at", oneHourAgo);
+  if (countError) {
+    console.error("[screenshots] rate-limit query failed", countError);
+    return Response.json({ error: "service_unavailable" }, { status: 503 });
+  }
   if ((count ?? 0) >= 20)
     return Response.json({ error: "rate_limited" }, { status: 429 });
 
@@ -102,8 +125,10 @@ export async function POST(request: Request) {
       cacheControl: "31536000",
       upsert: false,
     });
-  if (uploadError)
+  if (uploadError) {
+    console.error("[screenshots] storage upload failed", uploadError);
     return Response.json({ error: "upload_failed" }, { status: 502 });
+  }
 
   const { data: screenshot, error: insertError } = await supabase
     .from("screenshots")
@@ -123,7 +148,8 @@ export async function POST(request: Request) {
     .single();
 
   if (insertError || !screenshot) {
-    await supabase.storage.from("screenshots").remove([storagePath]);
+    console.error("[screenshots] database insert failed", insertError);
+    await removeUpload(storagePath, supabase);
     return Response.json({ error: "publish_failed" }, { status: 500 });
   }
   return Response.json({ id: screenshot.public_id }, { status: 201 });

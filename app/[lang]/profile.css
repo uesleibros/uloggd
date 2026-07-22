@@ -904,6 +904,14 @@
 .profile-shelf {
   margin-bottom: 40px;
 }
+.profile-page .profile-shelf .cover-shelf {
+  grid-template-columns: repeat(5, minmax(0, 144px));
+  justify-content: start;
+  gap: 12px;
+}
+.profile-page .profile-shelf .shelf-cover-skeleton {
+  width: 144px;
+}
 .profile-lists-empty {
   padding: 14px 0;
   border-top: 1px solid var(--shell-line);
@@ -911,6 +919,14 @@
   font-size: 11px;
 }
 @media (max-width: 620px) {
+  .profile-page .profile-shelf .cover-shelf {
+    gap: 10px;
+  }
+  .profile-page .profile-shelf .cover-shelf .quick-game-card,
+  .profile-page .profile-shelf .shelf-cover-skeleton {
+    flex: 0 0 104px;
+    width: 104px;
+  }
   .profile-banner {
     min-height: 0;
     aspect-ratio: 3 / 1;

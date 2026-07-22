@@ -80,6 +80,9 @@ test("keeps profile identity, metadata, and actions in their responsive contract
     const moreActions = document.querySelector(
       ".profile-action-cluster .profile-more-trigger",
     ) as HTMLElement;
+    const recentCover = document.querySelector(
+      ".profile-shelf .quick-game-card",
+    ) as HTMLElement | null;
     const identityBox = identity.getBoundingClientRect();
     const actionsBox = actions.getBoundingClientRect();
     return {
@@ -89,6 +92,10 @@ test("keeps profile identity, metadata, and actions in their responsive contract
       actionsRight: actionsBox.right,
       actionPosition: getComputedStyle(actions).position,
       actionHeight: moreActions.getBoundingClientRect().height,
+      recentCoverWidth: recentCover?.getBoundingClientRect().width ?? null,
+      usesMeteredImageOptimizer: Array.from(document.images).some((image) =>
+        image.currentSrc.includes("/_next/image"),
+      ),
       documentWidth: document.documentElement.scrollWidth,
       viewportWidth: window.innerWidth,
     };
@@ -106,6 +113,11 @@ test("keeps profile identity, metadata, and actions in their responsive contract
     testInfo.project.name.startsWith("mobile") ? "static" : "absolute",
   );
   expect(layout.actionHeight).toBe(38);
+  expect(layout.usesMeteredImageOptimizer).toBe(false);
+  expect(layout.recentCoverWidth).not.toBeNull();
+  expect(layout.recentCoverWidth!).toBeLessThanOrEqual(
+    testInfo.project.name.startsWith("mobile") ? 104 : 144,
+  );
 });
 
 test("keeps connection search available across follower tabs", async ({
