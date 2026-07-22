@@ -155,6 +155,38 @@ export function ModerationConsole({
     [moderationStateRows],
   );
 
+  // Every panel above is seeded from a server prop, and useState ignores a prop
+  // that changes later. Switching the status tab is a router.push, so without
+  // this the URL and the highlighted tab moved while the rows stayed on
+  // whichever tab the console first rendered.
+  const serverKey = useMemo(
+    () =>
+      [
+        initialStatus,
+        initialSearch,
+        reports.map((report) => `${report.id}:${report.status}`).join(),
+      ].join("|"),
+    [initialStatus, initialSearch, reports],
+  );
+  const [syncedServerKey, setSyncedServerKey] = useState(serverKey);
+  if (syncedServerKey !== serverKey) {
+    setSyncedServerKey(serverKey);
+    setReportRows(reports);
+    setCommentRows(comments);
+    setScreenshotRows(screenshots);
+    setAccountRows(accounts);
+    setModerationStateRows(moderationStates);
+    // Profiles pulled in by the client-side account search are absent from the
+    // server payload; keep them so names already on screen do not blank out.
+    setKnownProfiles((current) => {
+      const merged = new Map(current.map((profile) => [profile.id, profile]));
+      profiles.forEach((profile) => merged.set(profile.id, profile));
+      return [...merged.values()];
+    });
+    setError(null);
+    setPending(null);
+  }
+
   function profileName(profile: Profile | undefined) {
     return profile?.display_name || `@${profile?.username ?? "usuário"}`;
   }

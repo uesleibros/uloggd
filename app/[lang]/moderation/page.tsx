@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ModerationConsole } from "@/components/moderation/moderation-console";
 import {
-  MODERATION_REPORT_STATUSES,
+  MODERATION_REPORT_STATE_VALUES,
   MODERATION_PAGE_SIZE,
   MODERATION_AUDIT_PAGE_SIZE,
   isModerationStatus,
@@ -74,7 +74,7 @@ export default async function ModerationPage({
       )
       .order("created_at", { ascending: false })
       .limit(MODERATION_AUDIT_PAGE_SIZE),
-    ...MODERATION_REPORT_STATUSES.map((entry) =>
+    ...MODERATION_REPORT_STATE_VALUES.map((entry) =>
       supabase
         .from("reports")
         .select("id", { count: "exact", head: true })
@@ -84,14 +84,15 @@ export default async function ModerationPage({
 
   const reportRows = reports ?? [];
   const statusCounts = Object.fromEntries(
-    MODERATION_REPORT_STATUSES.map((entry, index) => [
+    MODERATION_REPORT_STATE_VALUES.map((entry, index) => [
       entry,
       countPromises[index]?.count ?? 0,
     ]),
   ) as Record<ModerationStatus, number>;
-  statusCounts.ALL = MODERATION_REPORT_STATUSES.filter(
-    (entry) => entry !== "ALL",
-  ).reduce((sum, entry) => sum + (statusCounts[entry] ?? 0), 0);
+  statusCounts.ALL = MODERATION_REPORT_STATE_VALUES.reduce(
+    (sum, entry) => sum + (statusCounts[entry] ?? 0),
+    0,
+  );
 
   const profileIds = [
     ...new Set(

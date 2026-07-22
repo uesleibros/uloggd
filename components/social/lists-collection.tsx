@@ -92,10 +92,32 @@ export function ListsCollection({
   const done = rows.length >= filtered;
   const filtersActive = !isDefault(filters);
 
+  // A server render is the authoritative snapshot: the first paint, a
+  // router.refresh() after the create dialog saves, or a back/forward. useState
+  // ignores a changed `initial` prop, so without adopting it here a list created
+  // in the dialog never showed up until a hard reload.
+  const serverKey = useMemo(
+    () =>
+      [
+        JSON.stringify(initialFilters),
+        total,
+        initial.map((row) => row.id).join(),
+      ].join("|"),
+    [initialFilters, total, initial],
+  );
+  const [syncedServerKey, setSyncedServerKey] = useState(serverKey);
+  if (syncedServerKey !== serverKey) {
+    setSyncedServerKey(serverKey);
+    // A refresh can land while the client holds filters the server never
+    // rendered. That payload describes a different view, so the client-side
+    // fetch stays authoritative and this snapshot is dropped.
+    if (JSON.stringify(initialFilters) === JSON.stringify(filters)) {
+      setRows(initial);
+      setError(false);
+    }
+  }
+
   // Debounces free-text search but commits the other filters immediately.
-  useEffect(() => {
-    setQuery(initialFilters.q);
-  }, [initialFilters.q]);
   useEffect(() => {
     const handle = window.setTimeout(() => {
       if (query !== filters.q) setFilters((prev) => ({ ...prev, q: query }));

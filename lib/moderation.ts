@@ -1,8 +1,13 @@
-export const MODERATION_REPORT_STATUSES = [
+/** Real values of reports.status. "ALL" is a view, not a status. */
+export const MODERATION_REPORT_STATE_VALUES = [
   "OPEN",
   "REVIEWING",
   "RESOLVED",
   "DISMISSED",
+] as const;
+
+export const MODERATION_REPORT_STATUSES = [
+  ...MODERATION_REPORT_STATE_VALUES,
   "ALL",
 ] as const;
 
