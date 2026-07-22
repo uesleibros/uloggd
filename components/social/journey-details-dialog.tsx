@@ -3,6 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { CalendarDays, Clock3, Flag, Map, Play, X } from "lucide-react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { RelativeTime } from "@/components/relative-time";
 
 export type JourneyDetailSession = {
   id: string;
@@ -26,12 +27,6 @@ export function JourneyDetailsDialog({
   lang: UiLang;
 }) {
   const t = uiText(lang);
-  const date = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
   const totalMinutes = sessions.reduce(
     (total, session) => total + (session.minutes ?? 0),
     0,
@@ -85,13 +80,22 @@ export function JourneyDetailsDialog({
               sessions.map((session) => (
                 <article key={session.id}>
                   <div>
-                    <time dateTime={session.playedOn}>
-                      {date.format(new Date(`${session.playedOn}T00:00:00Z`))}
-                      {session.endedOn &&
-                        ` – ${date.format(
-                          new Date(`${session.endedOn}T00:00:00Z`),
-                        )}`}
-                    </time>
+                    <span>
+                      <RelativeTime
+                        value={`${session.playedOn}T00:00:00Z`}
+                        lang={lang}
+                      />
+                      {session.endedOn && (
+                        <>
+                          {" "}
+                          –{" "}
+                          <RelativeTime
+                            value={`${session.endedOn}T00:00:00Z`}
+                            lang={lang}
+                          />
+                        </>
+                      )}
+                    </span>
                     {session.minutes ? (
                       <span>{formatMinutes(session.minutes)}</span>
                     ) : null}

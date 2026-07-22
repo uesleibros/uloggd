@@ -473,7 +473,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Adaptive header visibility distinguishes real mouse hover from touch-synthesized hover. Touching the mobile capsule or one of its closed triggers must never pin it open during downward scroll; only an open menu/dialog, an editable field, or keyboard-visible focus may lock it in place.
 - On mobile home, the catalog spotlight backdrop starts at the viewport top and passes behind the glass header; its content retains a 64px safe offset so controls never sit beneath navigation.
 - Mobile header menu and search triggers use explicit 40×40px boxes with zero inherited padding and optically centered icons; the right-side action cluster uses a fixed 4px gap.
-- Full-bleed mobile routes (home spotlight, library hero, and game stage, including skeletons) begin 64px behind the glass header and add the same space back inside the hero. Profile banners and lists retain their intentional top margin and complete border radius.
+- Full-bleed mobile routes (home spotlight, library hero, profile banner, and game stage, including skeletons) begin behind the glass header and add the same space back inside the hero. Profile identity anchors low in its banner with avatar and name sharing one row; the mobile banner has no side inset or corner radius.
 - Workspace headers state each page concept once; eyebrow copy adds context instead of repeating the title. Lists use real collection/game/public counts, a responsive two-column card grid, and a motion-enabled Radix creation dialog with a custom visibility select.
 - Profile statistics always use exact database counts rather than the number of preview rows currently rendered. The owner gets a quiet edit action; visitors get a follow control in the same position.
 - Profile metadata uses display name/username, bio, and the uploaded banner (avatar fallback) for Open Graph and Twitter embeds.
@@ -498,6 +498,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Profile screenshots use a dedicated dense gallery; game metadata and signed media URLs are fetched in batches.
 - The profile overview uses a horizontally scrollable row of circular, labeled collection portals (Library, Reviews, Sessions, Lists, Screenshots, Wrapped), with counts as quiet corner badges rather than metric cards.
 - Uploaded profile banners become a full-width atmospheric backdrop behind a lower-anchored identity header, using edge and bottom gradients for readability; avatars have no framing ring and the identity/actions finish before collection portals begin.
+- Community timestamps share one live relative-time formatter in every locale, always using explicit elapsed units from seconds through years; calendar controls, birth dates, and game release metadata remain absolute because they describe a date rather than recency.
 - Auto game showcases use a normalized three-copy loop. Native image/link dragging is disabled, pointer dragging stays inside the middle loop, hover pauses temporarily, and release always resumes motion.
 
 - Never fabricate user activity, online counts, progress, or authenticated identity.

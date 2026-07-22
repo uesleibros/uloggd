@@ -2,7 +2,10 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as Select from "@/components/ui/select";
 import {
+  Check,
+  ChevronDown,
   Flag,
   LoaderCircle,
   MoreHorizontal,
@@ -47,6 +50,8 @@ export function ScreenshotActions({
   const [visibility, setVisibility] = useState(shot.visibility);
   const [pending, setPending] = useState(false);
   const [armed, setArmed] = useState(false);
+  const [reportReason, setReportReason] = useState("OTHER");
+  const [reportDetails, setReportDetails] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   async function save() {
@@ -87,7 +92,7 @@ export function ScreenshotActions({
     router.push(`/${lang}/u/${shot.ownerUsername}/shots`);
     router.refresh();
   }
-  async function report(formData: FormData) {
+  async function report() {
     if (!viewerId) return;
     setPending(true);
     setError(null);
@@ -98,8 +103,8 @@ export function ScreenshotActions({
         target_profile_id: shot.ownerId,
         content_type: "SCREENSHOT",
         content_id: shot.id,
-        reason: formData.get("reason"),
-        details: String(formData.get("details") ?? "").trim() || null,
+        reason: reportReason,
+        details: reportDetails.trim() || null,
       });
     if (reportError)
       setError(
@@ -238,65 +243,117 @@ export function ScreenshotActions({
       </Dialog.Root>
       <Dialog.Root open={reporting} onOpenChange={setReporting}>
         <Dialog.Portal>
-          <Dialog.Overlay className="drawer-backdrop" />
+          <Dialog.Overlay className="report-dialog-overlay" />
           <Dialog.Content
-            className="social-editor-dialog screenshot-report-dialog"
+            className="report-dialog screenshot-report-dialog"
             aria-describedby={undefined}
           >
             <header>
-              <Dialog.Title>
-                {tri(
-                  lang,
-                  "Denunciar captura",
-                  "Report screenshot",
-                  "Denunciar captura",
-                )}
-              </Dialog.Title>
+              <div>
+                <span>{t.safety}</span>
+                <Dialog.Title>
+                  {tri(
+                    lang,
+                    "Denunciar captura",
+                    "Report screenshot",
+                    "Denunciar captura",
+                  )}
+                </Dialog.Title>
+              </div>
               <Dialog.Close aria-label={t.close}>
                 <X size={18} />
               </Dialog.Close>
             </header>
-            <form action={report} className="social-editor-form">
+            <form action={report}>
               <label>
-                <span>{tri(lang, "Motivo", "Reason", "Motivo")}</span>
-                <select name="reason" defaultValue="OTHER">
-                  <option value="HARASSMENT">
-                    {tri(lang, "Assédio", "Harassment", "Acoso")}
-                  </option>
-                  <option value="HATE_SPEECH">
-                    {tri(
-                      lang,
-                      "Discurso de ódio",
-                      "Hate speech",
-                      "Discurso de odio",
-                    )}
-                  </option>
-                  <option value="SEXUAL_CONTENT">NSFW</option>
-                  <option value="OTHER">
-                    {tri(lang, "Outro", "Other", "Otro")}
-                  </option>
-                </select>
+                {tri(lang, "Motivo", "Reason", "Motivo")}
+                <Select.Root
+                  value={reportReason}
+                  onValueChange={setReportReason}
+                >
+                  <Select.Trigger className="editor-select-trigger screenshot-report-trigger">
+                    <Select.Value />
+                    <Select.Icon>
+                      <ChevronDown size={14} />
+                    </Select.Icon>
+                  </Select.Trigger>
+                  <Select.Portal>
+                    <Select.Content
+                      className="editor-select-menu"
+                      position="popper"
+                      sideOffset={6}
+                      collisionPadding={12}
+                    >
+                      <Select.Viewport>
+                        {[
+                          [
+                            "HARASSMENT",
+                            tri(lang, "Assédio", "Harassment", "Acoso"),
+                          ],
+                          [
+                            "HATE_SPEECH",
+                            tri(
+                              lang,
+                              "Discurso de ódio",
+                              "Hate speech",
+                              "Discurso de odio",
+                            ),
+                          ],
+                          [
+                            "SEXUAL_CONTENT",
+                            tri(
+                              lang,
+                              "Conteúdo sexual",
+                              "Sexual content",
+                              "Contenido sexual",
+                            ),
+                          ],
+                          ["OTHER", tri(lang, "Outro", "Other", "Otro")],
+                        ].map(([value, label]) => (
+                          <Select.Item
+                            className="editor-select-option"
+                            value={value}
+                            key={value}
+                          >
+                            <Select.ItemText>{label}</Select.ItemText>
+                            <Select.ItemIndicator>
+                              <Check size={13} />
+                            </Select.ItemIndicator>
+                          </Select.Item>
+                        ))}
+                      </Select.Viewport>
+                    </Select.Content>
+                  </Select.Portal>
+                </Select.Root>
               </label>
-              <label>
-                <span>{tri(lang, "Detalhes", "Details", "Detalles")}</span>
-                <textarea name="details" maxLength={1000} rows={4} />
-              </label>
+              <CommunityTextArea
+                id="screenshot-report-details"
+                label={tri(
+                  lang,
+                  "Detalhes (opcional)",
+                  "Details (optional)",
+                  "Detalles (opcional)",
+                )}
+                value={reportDetails}
+                onChange={setReportDetails}
+                maxLength={1000}
+                rows={3}
+                placeholder={tri(
+                  lang,
+                  "Ajude a moderação a entender o problema…",
+                  "Help moderation understand the issue…",
+                  "Ayuda a moderación a entender el problema…",
+                )}
+              />
               {error && (
                 <p className="social-form-error" role="alert">
                   {error}
                 </p>
               )}
-              <footer>
-                <Dialog.Close type="button">{t.cancel}</Dialog.Close>
-                <button type="submit" disabled={pending}>
-                  {tri(
-                    lang,
-                    "Enviar denúncia",
-                    "Send report",
-                    "Enviar denuncia",
-                  )}
-                </button>
-              </footer>
+              <button type="submit" disabled={pending}>
+                {pending && <LoaderCircle className="spin" size={15} />}
+                {tri(lang, "Enviar denúncia", "Send report", "Enviar denuncia")}
+              </button>
             </form>
           </Dialog.Content>
         </Dialog.Portal>

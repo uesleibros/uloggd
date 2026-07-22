@@ -22,6 +22,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { createClient } from "@/lib/supabase/client";
 import { tri } from "@/lib/ui-text";
+import { RelativeTime } from "@/components/relative-time";
 
 type Labels = Dictionary["notifications"];
 type NotificationKind =
@@ -567,9 +568,7 @@ export function NotificationCenter({
                               </>
                             )}
                           </span>
-                          <time dateTime={item.created_at}>
-                            {formatRelativeTime(item.created_at, lang)}
-                          </time>
+                          <RelativeTime value={item.created_at} lang={lang} />
                         </span>
                         {!item.read_at && (
                           <span
@@ -694,17 +693,4 @@ function NotificationSkeleton() {
       ))}
     </div>
   );
-}
-
-function formatRelativeTime(value: string, locale: Locale) {
-  const elapsed = new Date(value).getTime() - Date.now();
-  const absolute = Math.abs(elapsed);
-  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
-  if (absolute < 60_000)
-    return formatter.format(Math.round(elapsed / 1000), "second");
-  if (absolute < 3_600_000)
-    return formatter.format(Math.round(elapsed / 60_000), "minute");
-  if (absolute < 86_400_000)
-    return formatter.format(Math.round(elapsed / 3_600_000), "hour");
-  return formatter.format(Math.round(elapsed / 86_400_000), "day");
 }

@@ -19,6 +19,7 @@ import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { FollowButton } from "@/components/social/follow-button";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { RelativeTime } from "@/components/relative-time";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { ProfileActions } from "@/components/profile-actions";
 import { MarkdownContent } from "@/components/markdown/markdown-content";
@@ -292,9 +293,7 @@ function SuspendedProfile({
               "Suspended until ",
               "Suspensión hasta ",
             )}
-            {new Intl.DateTimeFormat(lang, { dateStyle: "long" }).format(
-              new Date(until),
-            )}
+            <RelativeTime value={until} lang={lang} />
           </small>
         )}
         <Link href={`/${lang}`}>
@@ -464,11 +463,6 @@ export default async function ProfilePage({ params }: Props) {
       : [];
   });
   const t = uiText(lang);
-  const joined = new Intl.DateTimeFormat(lang, {
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(profile.created_at));
   return (
     <main
       className="profile-page"
@@ -536,13 +530,8 @@ export default async function ProfilePage({ params }: Props) {
                 </p>
                 <p className="profile-joined">
                   <CalendarDays size={13} />{" "}
-                  {tri(
-                    lang,
-                    "No uloggd desde",
-                    "On uloggd since",
-                    "En uloggd desde",
-                  )}{" "}
-                  {joined}
+                  {tri(lang, "Entrou", "Joined", "Se unió")}{" "}
+                  <RelativeTime value={profile.created_at} lang={lang} />
                 </p>
               </div>
             </div>

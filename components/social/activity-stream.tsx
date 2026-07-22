@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import type { Game } from "@/lib/igdb";
+import { RelativeTime } from "@/components/relative-time";
 import { ActivityEntryActions } from "./activity-entry-actions";
 import { LikeButton } from "./like-button";
 import { MentionText } from "./mention-text";
@@ -84,12 +85,6 @@ export function ActivityStream({
   viewerId?: string | null;
 }) {
   const t = uiText(lang);
-  const date = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
   if (!entries.length)
     return (
       <div className="social-empty">
@@ -162,8 +157,7 @@ export function ActivityStream({
                   </Link>
                 </span>
               </div>
-              <time dateTime={entry.createdAt}>
-                {date.format(new Date(entry.createdAt))}
+              <RelativeTime value={entry.createdAt} lang={lang}>
                 {entry.updatedAt &&
                   new Date(entry.updatedAt).getTime() -
                     new Date(entry.createdAt).getTime() >
@@ -173,7 +167,7 @@ export function ActivityStream({
                       · {tri(lang, "editada", "edited", "editada")}
                     </small>
                   )}
-              </time>
+              </RelativeTime>
             </header>
             <p className="activity-verb">
               {entry.kind === "review"

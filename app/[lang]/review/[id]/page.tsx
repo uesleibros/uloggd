@@ -19,6 +19,7 @@ import type { SocialEntry } from "@/components/social/activity-stream";
 import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { RelativeTime } from "@/components/relative-time";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getGamesByIds } from "@/lib/igdb";
 import { ContentComments } from "@/components/social/content-comments";
@@ -168,12 +169,6 @@ export default async function ReviewPage({ params }: Props) {
   const journeyTitle = journeyJoin?.title ?? null;
   const ratingMode = (review.rating_mode ?? "stars_5") as RatingMode;
   const aspects = (review.aspect_ratings ?? []) as Aspect[];
-  const date = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
   const edited =
     new Date(review.updated_at).getTime() -
       new Date(review.created_at).getTime() >
@@ -260,15 +255,14 @@ export default async function ReviewPage({ params }: Props) {
                 </strong>
               </Link>
               {profile.verified && <VerifiedBadge lang={lang} />}
-              <time dateTime={review.created_at}>
-                {date.format(new Date(review.created_at))}
+              <RelativeTime value={review.created_at} lang={lang}>
                 {edited && (
                   <small className="activity-edited">
                     {" "}
                     · {tri(lang, "editada", "edited", "editada")}
                   </small>
                 )}
-              </time>
+              </RelativeTime>
             </div>
             <div className="review-page-verdict">
               {typeof review.rating === "number" && (

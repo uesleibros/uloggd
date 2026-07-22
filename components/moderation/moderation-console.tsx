@@ -21,6 +21,7 @@ import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
+import { RelativeTime } from "@/components/relative-time";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Role = "USER" | "MODERATOR" | "ADMIN";
@@ -530,12 +531,7 @@ export function ModerationConsole({
                   <span>
                     <Flag size={14} /> {report.reason.replaceAll("_", " ")}
                   </span>
-                  <time dateTime={report.created_at}>
-                    {new Intl.DateTimeFormat(lang, {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    }).format(new Date(report.created_at))}
-                  </time>
+                  <RelativeTime value={report.created_at} lang={lang} />
                 </header>
                 <div className="moderation-report-people">
                   <span>
@@ -866,10 +862,7 @@ export function ModerationConsole({
                 {action.reason && <p>{action.reason}</p>}
                 <small>
                   {profileName(profileById.get(action.moderator_id))} ·{" "}
-                  {new Intl.DateTimeFormat(lang, {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  }).format(new Date(action.created_at))}
+                  <RelativeTime value={action.created_at} lang={lang} />
                 </small>
               </span>
             </li>

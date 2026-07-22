@@ -6,6 +6,7 @@ import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale, resolveLocale } from "../dictionaries";
 import "./suspended.css";
 import { tri, uiText } from "@/lib/ui-text";
+import { RelativeTime } from "@/components/relative-time";
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -45,11 +46,6 @@ export default async function SuspendedPage({ params }: Props) {
   if (!active?.length || !state) redirect(`/${lang}`);
 
   const permanent = !state.banned_until;
-  const formatter = new Intl.DateTimeFormat(lang, {
-    dateStyle: "long",
-    timeStyle: "short",
-  });
-
   return (
     <main className="suspension-screen">
       <div className="suspension-card">
@@ -91,21 +87,25 @@ export default async function SuspendedPage({ params }: Props) {
         <dl className="suspension-facts">
           <div>
             <dt>{tri(lang, "Suspensa em", "Suspended on", "Suspendida el")}</dt>
-            <dd>{formatter.format(new Date(state.banned_at))}</dd>
+            <dd>
+              <RelativeTime value={state.banned_at} lang={lang} />
+            </dd>
           </div>
           <div>
             <dt>
               {tri(lang, "Liberação", "Reinstatement", "Reincorporación")}
             </dt>
             <dd>
-              {permanent
-                ? tri(
-                    lang,
-                    "Sem previsão",
-                    "No scheduled date",
-                    "Sin fecha prevista",
-                  )
-                : formatter.format(new Date(state.banned_until!))}
+              {permanent ? (
+                tri(
+                  lang,
+                  "Sem previsão",
+                  "No scheduled date",
+                  "Sin fecha prevista",
+                )
+              ) : (
+                <RelativeTime value={state.banned_until!} lang={lang} />
+              )}
             </dd>
           </div>
         </dl>

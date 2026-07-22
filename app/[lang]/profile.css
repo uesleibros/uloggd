@@ -656,7 +656,8 @@
 }
 .profile-banner {
   position: relative;
-  width: 100%;
+  width: calc(100% + var(--profile-page-gutter) * 2);
+  margin-inline: calc(var(--profile-page-gutter) * -1);
   height: clamp(320px, 34vw, 430px);
   overflow: hidden;
   border-radius: 12px;
@@ -666,15 +667,18 @@
   box-shadow: inset 0 0 0 1px var(--shell-line);
 }
 .profile-page {
+  --profile-page-gutter: 36px;
   position: relative;
   isolation: isolate;
+  margin-top: -76px;
+  padding-top: 0;
 }
 .profile-page[data-has-banner]::before {
   position: absolute;
   z-index: -1;
   top: 0;
-  right: 0;
-  left: 0;
+  right: calc(var(--profile-page-gutter) * -1);
+  left: calc(var(--profile-page-gutter) * -1);
   height: clamp(300px, 34vw, 430px);
   background:
     linear-gradient(180deg, rgb(9 8 12 / 18%) 0%, var(--console-canvas) 96%),
@@ -692,6 +696,11 @@
 .profile-page[data-has-banner] .profile-banner {
   background: transparent;
   box-shadow: none;
+}
+@media (max-width: 960px) {
+  .profile-page {
+    --profile-page-gutter: 24px;
+  }
 }
 .profile-banner[data-empty]::after {
   position: absolute;
@@ -945,6 +954,9 @@
   font-size: 11px;
 }
 @media (max-width: 620px) {
+  .profile-page {
+    --profile-page-gutter: 16px;
+  }
   .profile-page .profile-shelf .cover-shelf {
     gap: 10px;
   }
@@ -962,7 +974,7 @@
     grid-template-columns: 82px minmax(0, 1fr);
     align-items: start;
     gap: 13px;
-    margin-top: -132px;
+    margin-top: -104px;
     padding: 0 8px;
   }
   .profile-identity {
@@ -985,7 +997,8 @@
   }
   .profile-title-row {
     grid-column: 2;
-    margin-top: 104px;
+    align-self: center;
+    margin-top: 0;
     gap: 10px;
   }
   .profile-edit-link,
@@ -1001,7 +1014,6 @@
   .profile-avatar {
     width: 82px;
     height: 82px;
-    border-width: 4px;
     font-size: 20px;
   }
   .profile-avatar-anchor {

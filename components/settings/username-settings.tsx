@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { usernameSchema } from "@/lib/auth-validation";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { formatRelativeTime } from "@/lib/relative-time";
 
 const reserved = new Set([
   "admin",
@@ -62,7 +63,7 @@ export function UsernameSettings({
     nextChangeAt && nextChangeAt.getTime() > renderedAt,
   );
   const nextChangeLabel = nextChangeAt
-    ? new Intl.DateTimeFormat(lang, { dateStyle: "long" }).format(nextChangeAt)
+    ? formatRelativeTime(nextChangeAt, lang, renderedAt)
     : null;
 
   useEffect(() => {

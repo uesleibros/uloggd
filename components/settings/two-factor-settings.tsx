@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { RelativeTime } from "@/components/relative-time";
 import { createClient } from "@/lib/supabase/client";
 import "../auth/mfa.css";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -261,9 +262,7 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
                 <strong>{factor.friendly_name || t.authenticatorApp}</strong>
                 <small>
                   {tri(lang, "Adicionado em", "Added", "Añadido el")}{" "}
-                  {new Intl.DateTimeFormat(lang, {
-                    dateStyle: "medium",
-                  }).format(new Date(factor.created_at))}
+                  <RelativeTime value={factor.created_at} lang={lang} />
                 </small>
               </div>
               <button

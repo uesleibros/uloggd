@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CalendarDays, Clock3, Gamepad2 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ContentComments } from "@/components/social/content-comments";
+import { RelativeTime } from "@/components/relative-time";
 import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { getGamesByIds } from "@/lib/igdb";
@@ -50,10 +51,6 @@ export default async function DiaryEntryPage({ params }: Props) {
   const like = likes?.[0] as
     { like_count: number; liked_by_viewer: boolean } | undefined;
   const t = uiText(lang);
-  const date = new Intl.DateTimeFormat(lang, {
-    dateStyle: "long",
-    timeZone: "UTC",
-  }).format(new Date(`${entry.played_on}T00:00:00Z`));
   const canComment =
     Boolean(user) &&
     (user?.id === entry.profile_id ||
@@ -75,7 +72,8 @@ export default async function DiaryEntryPage({ params }: Props) {
         </header>
         <div className="diary-entry-meta">
           <span>
-            <CalendarDays size={14} /> {date}
+            <CalendarDays size={14} />
+            <RelativeTime value={`${entry.played_on}T00:00:00Z`} lang={lang} />
           </span>
           {entry.minutes && (
             <span>

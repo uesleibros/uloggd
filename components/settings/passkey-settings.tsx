@@ -8,6 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { RelativeTime } from "@/components/relative-time";
 import { createClient } from "@/lib/supabase/client";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -151,9 +152,7 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
                 </strong>
                 <small>
                   {tri(lang, "Criada em", "Created", "Creada el")}{" "}
-                  {new Intl.DateTimeFormat(lang, {
-                    dateStyle: "medium",
-                  }).format(new Date(item.created_at))}
+                  <RelativeTime value={item.created_at} lang={lang} />
                 </small>
               </div>
               <button

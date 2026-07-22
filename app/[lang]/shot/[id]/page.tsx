@@ -9,6 +9,7 @@ import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ScreenshotActions } from "@/components/social/screenshot-actions";
 import { MentionText } from "@/components/social/mention-text";
+import { RelativeTime } from "@/components/relative-time";
 import { getGamesByIds } from "@/lib/igdb";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri } from "@/lib/ui-text";
@@ -86,12 +87,6 @@ export default async function ScreenshotPage({ params }: Props) {
   const game = games[0] ?? null;
   const like = likes?.[0] as
     { like_count: number; liked_by_viewer: boolean } | undefined;
-  const date = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(shot.created_at));
-
   const media = (
     <Image
       src={signed.signedUrl}
@@ -173,7 +168,7 @@ export default async function ScreenshotPage({ params }: Props) {
               </span>
             </Link>
             {profile.verified && <VerifiedBadge lang={lang} />}
-            <time dateTime={shot.created_at}>{date}</time>
+            <RelativeTime value={shot.created_at} lang={lang} />
             <ScreenshotActions
               viewerId={user?.id ?? null}
               lang={lang}

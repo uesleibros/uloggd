@@ -10019,8 +10019,7 @@ button.content-like:hover:not(:disabled) {
   color: var(--state-liked-text);
 }
 .content-like[data-static] {
-  border-color: transparent;
-  padding-inline: 0;
+  opacity: 0.72;
 }
 .list-detail-social {
   display: flex;
@@ -16901,6 +16900,11 @@ adapted to the current uloggd surface system. */
   color: var(--screen-muted);
   font-size: 10px;
 }
+.screenshot-post-body > header > .verified-badge {
+  align-self: flex-start;
+  margin-top: 3px;
+  margin-left: -5px;
+}
 .screenshot-more-action {
   display: grid;
   place-items: center;
@@ -16919,9 +16923,14 @@ adapted to the current uloggd surface system. */
   background: var(--console-hover);
   color: var(--screen-white);
 }
-.screenshot-edit-dialog,
-.screenshot-report-dialog {
+.screenshot-edit-dialog {
   max-width: 560px;
+}
+.screenshot-report-dialog {
+  max-width: 440px;
+}
+.screenshot-report-trigger {
+  width: 100%;
 }
 .screenshot-author {
   display: flex;
@@ -16976,6 +16985,10 @@ adapted to the current uloggd surface system. */
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.screenshot-post-body > footer > .content-like,
+.screenshot-post-body > footer > .share-action-button {
+  min-height: 40px;
 }
 .screenshot-page > .content-comments {
   margin-top: 28px;
