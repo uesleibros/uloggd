@@ -15,7 +15,7 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 function createListErrorMessage(message: string, lang: UiLang) {
   const lower = message.toLowerCase();
-  if (lower.includes("authentication"))
+  if (lower.includes("authentication required"))
     return tri(
       lang,
       "Entre na sua conta para criar listas.",
@@ -29,7 +29,7 @@ function createListErrorMessage(message: string, lang: UiLang) {
       "Name must have 1–100 characters.",
       "El nombre debe tener entre 1 y 100 caracteres.",
     );
-  if (lower.includes("description"))
+  if (lower.includes("description too long"))
     return tri(
       lang,
       "Descrição passa de 500 caracteres.",
@@ -71,7 +71,20 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
       },
     );
     if (actionError) {
-      setError(createListErrorMessage(actionError.message, lang));
+      const localized = createListErrorMessage(actionError.message, lang);
+      const generic =
+        localized ===
+        tri(
+          lang,
+          "Não foi possível criar a lista.",
+          "Could not create the list.",
+          "No se pudo crear la lista.",
+        );
+      setError(
+        generic && actionError.message
+          ? `${localized} (${actionError.message.slice(0, 120)})`
+          : localized,
+      );
     } else {
       setOpen(false);
       router.refresh();
