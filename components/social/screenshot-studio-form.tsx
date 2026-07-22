@@ -4,9 +4,12 @@ import * as Select from "@/components/ui/select";
 import {
   Check,
   ChevronDown,
+  Globe2,
   ImagePlus,
+  LockKeyhole,
   LoaderCircle,
   ShieldAlert,
+  Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -160,18 +163,26 @@ export function ScreenshotStudioForm({
             </Select.Trigger>
             <Select.Portal>
               <Select.Content
-                className="editor-select-content"
+                className="editor-select-menu"
                 position="popper"
                 sideOffset={6}
+                collisionPadding={12}
               >
                 <Select.Viewport>
                   {(["PUBLIC", "FOLLOWERS", "PRIVATE"] as const).map(
                     (value) => (
                       <Select.Item
-                        className="editor-select-item"
+                        className="editor-select-option"
                         value={value}
                         key={value}
                       >
+                        {value === "PUBLIC" ? (
+                          <Globe2 size={14} />
+                        ) : value === "FOLLOWERS" ? (
+                          <Users size={14} />
+                        ) : (
+                          <LockKeyhole size={14} />
+                        )}
                         <Select.ItemText>
                           {value === "PUBLIC"
                             ? tri(lang, "Pública", "Public", "Pública")
