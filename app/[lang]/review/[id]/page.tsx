@@ -169,6 +169,12 @@ export default async function ReviewPage({ params }: Props) {
   const journeyTitle = journeyJoin?.title ?? null;
   const ratingMode = (review.rating_mode ?? "stars_5") as RatingMode;
   const aspects = (review.aspect_ratings ?? []) as Aspect[];
+  const playedDate = new Intl.DateTimeFormat(lang, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
   const edited =
     new Date(review.updated_at).getTime() -
       new Date(review.created_at).getTime() >
@@ -312,10 +318,14 @@ export default async function ReviewPage({ params }: Props) {
                   <CalendarDays size={13} />{" "}
                   {[
                     review.started_on
-                      ? date.format(new Date(`${review.started_on}T00:00:00Z`))
+                      ? playedDate.format(
+                          new Date(`${review.started_on}T00:00:00Z`),
+                        )
                       : null,
                     review.finished_on
-                      ? date.format(new Date(`${review.finished_on}T00:00:00Z`))
+                      ? playedDate.format(
+                          new Date(`${review.finished_on}T00:00:00Z`),
+                        )
                       : null,
                   ]
                     .filter(Boolean)
