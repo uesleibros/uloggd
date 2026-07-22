@@ -1,7 +1,14 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { Layers3, ListOrdered, LoaderCircle, Pencil, Trash2, X } from "lucide-react";
+import {
+  Layers3,
+  ListOrdered,
+  LoaderCircle,
+  Settings2,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -109,7 +116,8 @@ export function ListOwnerControls({
     <>
       <div className="list-owner-actions">
         <button type="button" onClick={() => setOpen(true)}>
-          <Pencil size={14} /> {t.edit}
+          <Settings2 size={14} />{" "}
+          {tri(lang, "Configurações", "Settings", "Configuración")}
         </button>
         <button
           type="button"
@@ -138,10 +146,7 @@ export function ListOwnerControls({
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="drawer-backdrop" />
-          <Dialog.Content
-            className="social-editor-dialog"
-            aria-describedby={undefined}
-          >
+          <Dialog.Content className="social-editor-dialog">
             <header>
               <div>
                 <span>
@@ -155,11 +160,19 @@ export function ListOwnerControls({
                 <Dialog.Title>
                   {tri(
                     lang,
-                    "Editar detalhes",
-                    "Edit details",
-                    "Editar detalles",
+                    "Configurações da lista",
+                    "List settings",
+                    "Configuración de la lista",
                   )}
                 </Dialog.Title>
+                <Dialog.Description>
+                  {tri(
+                    lang,
+                    "Nome, formato, visibilidade e quem pode comentar.",
+                    "Name, format, visibility, and who can comment.",
+                    "Nombre, formato, visibilidad y quién puede comentar.",
+                  )}
+                </Dialog.Description>
               </div>
               <Dialog.Close aria-label={t.close}>
                 <X size={19} />
