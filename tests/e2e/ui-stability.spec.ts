@@ -80,12 +80,23 @@ test("keeps profile identity, metadata, and actions in their responsive contract
     const moreActions = document.querySelector(
       ".profile-action-cluster .profile-more-trigger",
     ) as HTMLElement;
-    const recentCover = document.querySelector(
+    let recentCover = document.querySelector(
       ".profile-shelf .quick-game-card",
     ) as HTMLElement | null;
+    let coverFixture: HTMLElement | null = null;
+    if (!recentCover) {
+      coverFixture = document.createElement("div");
+      coverFixture.className = "profile-page";
+      coverFixture.style.cssText =
+        "position:fixed;inset:0 auto auto 0;width:100%;visibility:hidden";
+      coverFixture.innerHTML =
+        '<section class="profile-shelf"><div class="cover-shelf"><article class="quick-game-card"></article></div></section>';
+      document.body.append(coverFixture);
+      recentCover = coverFixture.querySelector(".quick-game-card");
+    }
     const identityBox = identity.getBoundingClientRect();
     const actionsBox = actions.getBoundingClientRect();
-    return {
+    const result = {
       identityLeft: identityBox.left,
       identityRight: identityBox.right,
       actionsLeft: actionsBox.left,
@@ -99,6 +110,8 @@ test("keeps profile identity, metadata, and actions in their responsive contract
       documentWidth: document.documentElement.scrollWidth,
       viewportWidth: window.innerWidth,
     };
+    coverFixture?.remove();
+    return result;
   });
 
   expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth);
