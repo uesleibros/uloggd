@@ -119,7 +119,13 @@ export function ListItemsGrid({
             data-drop-after={showAfter || undefined}
             style={{ "--item-index": index % 12 } as React.CSSProperties}
           >
-            {ranked && <span>{String(index + 1).padStart(2, "0")}</span>}
+            {ranked && (
+              // Only the podium carries a medal; past third the badge stays
+              // neutral so the top three keep their meaning.
+              <span data-rank={index < 3 ? index + 1 : undefined}>
+                {String(index + 1).padStart(2, "0")}
+              </span>
+            )}
             {dragEnabled && (
               <button
                 type="button"

@@ -10922,6 +10922,28 @@ details.review-page-content p {
   color: #f2f3f7;
   font: 600 11px var(--font-inter);
 }
+/* Medal colours for the podium. A ranking's whole point is the first three
+   places, and a uniform badge made 1st read the same as 11th. Fixed colours,
+   not tokens: a silver medal is silver in either theme. */
+.ranked-list-item > span[data-rank] {
+  border: 1px solid rgb(0 0 0 / 20%);
+  font-weight: 700;
+}
+.ranked-list-item > span[data-rank="1"] {
+  background: linear-gradient(150deg, #f7de85, #d8a520 62%, #b3831a);
+  color: #3a2703;
+  box-shadow: 0 2px 8px rgb(197 152 30 / 40%);
+}
+.ranked-list-item > span[data-rank="2"] {
+  background: linear-gradient(150deg, #eff2f7, #b9c0cb 60%, #929aaa);
+  color: #24272e;
+  box-shadow: 0 2px 8px rgb(140 149 165 / 36%);
+}
+.ranked-list-item > span[data-rank="3"] {
+  background: linear-gradient(150deg, #e9aa6d, #c47a3a 60%, #9b5a25);
+  color: #371d07;
+  box-shadow: 0 2px 8px rgb(164 96 44 / 38%);
+}
 .ranked-list-item > p {
   margin-top: 7px;
   color: var(--screen-muted);
