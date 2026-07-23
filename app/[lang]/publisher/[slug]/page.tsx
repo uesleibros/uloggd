@@ -12,11 +12,14 @@ import {
   Star,
 } from "lucide-react";
 import { QuickGameCard } from "@/components/library/quick-game-card";
-import { ShelfCarousel } from "@/components/shelf-carousel";
+import { RelativeTime } from "@/components/relative-time";
 import { countryFromIgdb, flagEmoji } from "@/lib/countries";
 import {
   getCompanyBySlug,
+  getCompanyEvents,
   getCompanyTimeline,
+  getCompanyTrailers,
+  getCompanyUpcoming,
   type CompanyProfile,
   type Game,
 } from "@/lib/igdb";
@@ -187,7 +190,10 @@ function GameShelf({
           </Link>
         )}
       </header>
-      <ShelfCarousel label={title} lang={lang}>
+      {/* Same shelf the profile uses for "jogos recentes": five per row on
+          desktop, a snapping strip of 126px covers on a phone. The carousel
+          this replaced sized its columns for a viewport this page never has. */}
+      <div className="cover-shelf">
         {games.map((game) => (
           <QuickGameCard
             key={game.id}
@@ -197,7 +203,189 @@ function GameShelf({
             enabled={signedIn}
           />
         ))}
-      </ShelfCarousel>
+      </div>
+    </section>
+  );
+}
+
+function dateLabel(timestamp: number | null, lang: UiLang) {
+  if (!timestamp) return null;
+  return new Intl.DateTimeFormat(lang, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(timestamp * 1000));
+}
+
+/** Announced but unreleased, with the wait spelled out next to each date. */
+async function UpcomingGames({
+  companyId,
+  lang,
+}: {
+  companyId: number;
+  lang: UiLang;
+}) {
+  const games = await getCompanyUpcoming(companyId);
+  if (!games.length) return null;
+  return (
+    <section className="publisher-section">
+      <header>
+        <div>
+          <h2>{tri(lang, "Em breve", "Coming soon", "Próximamente")}</h2>
+          <p>
+            {tri(
+              lang,
+              "Anunciados e ainda sem lançamento.",
+              "Announced and not out yet.",
+              "Anunciados y aún sin lanzamiento.",
+            )}
+          </p>
+        </div>
+      </header>
+      <ol className="publisher-upcoming">
+        {games.map((game) => (
+          <li key={game.id}>
+            <Link href={`/${lang}/game/${game.slug}`}>
+              <Image
+                src={game.coverUrl}
+                alt=""
+                width={64}
+                height={85}
+                unoptimized
+              />
+              <span>
+                <strong>{game.name}</strong>
+                <small>{dateLabel(game.releaseTimestamp, lang)}</small>
+                {game.releaseTimestamp && (
+                  <RelativeTime
+                    value={new Date(game.releaseTimestamp * 1000).toISOString()}
+                    lang={lang}
+                    className="publisher-countdown"
+                  />
+                )}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+async function RecentTrailers({
+  companyId,
+  lang,
+}: {
+  companyId: number;
+  lang: UiLang;
+}) {
+  const trailers = await getCompanyTrailers(companyId);
+  if (!trailers.length) return null;
+  return (
+    <section className="publisher-section">
+      <header>
+        <div>
+          <h2>
+            {tri(
+              lang,
+              "Trailers dos últimos lançamentos",
+              "Trailers from the latest releases",
+              "Tráilers de los últimos lanzamientos",
+            )}
+          </h2>
+          <p>
+            {tri(
+              lang,
+              "O que a empresa colocou na rua mais recentemente.",
+              "What the company shipped most recently.",
+              "Lo más reciente que la empresa lanzó.",
+            )}
+          </p>
+        </div>
+      </header>
+      <div className="publisher-trailers">
+        {trailers.map((trailer) => (
+          <article key={trailer.id}>
+            <div>
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${trailer.video.id}`}
+                title={trailer.video.name}
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            <h3>
+              <Link href={`/${lang}/game/${trailer.slug}`}>{trailer.name}</Link>
+            </h3>
+            <small>{dateLabel(trailer.releaseTimestamp, lang)}</small>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+async function CompanyEvents({
+  companyId,
+  lang,
+}: {
+  companyId: number;
+  lang: UiLang;
+}) {
+  const events = await getCompanyEvents(companyId);
+  if (!events.length) return null;
+  return (
+    <section className="publisher-section">
+      <header>
+        <div>
+          <h2>{tri(lang, "Eventos", "Events", "Eventos")}</h2>
+          {/* Said plainly: IGDB has no company field on events, so this is
+              "events that featured their games", not a hosting credit. */}
+          <p>
+            {tri(
+              lang,
+              "Transmissões e feiras onde os jogos da empresa apareceram.",
+              "Showcases and expos where the company's games appeared.",
+              "Transmisiones y ferias donde aparecieron sus juegos.",
+            )}
+          </p>
+        </div>
+      </header>
+      <ol className="publisher-events">
+        {events.map((event) => (
+          <li key={event.id}>
+            <span className="publisher-event-logo">
+              {event.logoUrl ? (
+                <Image
+                  src={event.logoUrl}
+                  alt=""
+                  width={44}
+                  height={44}
+                  unoptimized
+                />
+              ) : (
+                <CalendarDays size={16} aria-hidden />
+              )}
+            </span>
+            <span>
+              <strong>{event.name}</strong>
+              <small>{dateLabel(event.startTimestamp, lang)}</small>
+            </span>
+            {event.liveStreamUrl && (
+              <a
+                href={event.liveStreamUrl}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+              >
+                {tri(lang, "Assistir", "Watch", "Ver")}{" "}
+                <ExternalLink size={12} aria-hidden />
+              </a>
+            )}
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }
@@ -270,6 +458,16 @@ export default async function PublisherPage({ params }: Props) {
   const backdrop =
     uniqueHighlights.find((game) => game.heroUrl)?.heroUrl ?? null;
   const searchHref = `/${lang}/search?publishers=${company.id}`;
+  // IGDB's own vocabulary, translated where it has an obvious equivalent and
+  // passed through capitalised where it does not.
+  const status =
+    company.status === "active"
+      ? tri(lang, "Ativa", "Active", "Activa")
+      : company.status === "defunct"
+        ? tri(lang, "Extinta", "Defunct", "Extinta")
+        : company.status
+          ? company.status[0].toUpperCase() + company.status.slice(1)
+          : null;
 
   return (
     <main className="publisher-page">
@@ -337,6 +535,11 @@ export default async function PublisherPage({ params }: Props) {
               {company.publishedCount >= company.developedCount
                 ? tri(lang, "PUBLICADORA", "PUBLISHER", "DISTRIBUIDORA")
                 : tri(lang, "DESENVOLVEDORA", "DEVELOPER", "DESARROLLADORA")}
+              {status && (
+                <b className="publisher-status" data-status={company.status}>
+                  {status}
+                </b>
+              )}
             </span>
             <h1>{company.name}</h1>
             <p className="publisher-meta">
@@ -365,7 +568,7 @@ export default async function PublisherPage({ params }: Props) {
         {company.description && (
           <p className="publisher-description">{company.description}</p>
         )}
-        {company.websites.length > 0 && (
+        {(company.websites.length > 0 || company.igdbUrl) && (
           <div className="publisher-links">
             {company.websites.map((url) => (
               <a
@@ -377,6 +580,17 @@ export default async function PublisherPage({ params }: Props) {
                 {websiteLabel(url)} <ExternalLink size={12} aria-hidden />
               </a>
             ))}
+            {company.igdbUrl && (
+              <a
+                className="publisher-source"
+                href={company.igdbUrl}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+              >
+                {tri(lang, "Fonte: IGDB", "Source: IGDB", "Fuente: IGDB")}{" "}
+                <ExternalLink size={12} aria-hidden />
+              </a>
+            )}
           </div>
         )}
       </header>
@@ -419,6 +633,13 @@ export default async function PublisherPage({ params }: Props) {
         )}
       </section>
 
+      {/* Each of these costs its own IGDB round trip, so they stream instead of
+          holding the shell. React patches them into place, so the reading order
+          is what the markup says, not what finishes first. */}
+      <Suspense fallback={null}>
+        <UpcomingGames companyId={company.id} lang={lang} />
+      </Suspense>
+
       <GameShelf
         title={tri(lang, "Publicados", "Published", "Publicados")}
         description={tri(
@@ -449,6 +670,14 @@ export default async function PublisherPage({ params }: Props) {
         saved={saved}
         signedIn={Boolean(user)}
       />
+
+      <Suspense fallback={null}>
+        <RecentTrailers companyId={company.id} lang={lang} />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <CompanyEvents companyId={company.id} lang={lang} />
+      </Suspense>
 
       <Suspense
         fallback={

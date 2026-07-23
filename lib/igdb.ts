@@ -180,7 +180,7 @@ async function getAccessToken() {
 
 function imageUrl(
   imageId: string,
-  size: "cover_big" | "1080p" | "logo_med" | "thumb",
+  size: "cover_big" | "1080p" | "logo_med" | "thumb" | "original",
 ) {
   return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`;
 }
@@ -1113,6 +1113,8 @@ type IgdbCompanyResponse = {
   parent?: { id: number; name: string; slug: string };
   published?: number[];
   developed?: number[];
+  status?: { id: number; name: string };
+  url?: string;
 };
 
 export type CompanyProfile = {
@@ -1125,10 +1127,31 @@ export type CompanyProfile = {
   logoUrl: string | null;
   websites: string[];
   parent: { name: string; slug: string } | null;
+  /** "active", "defunct", "acquired"… straight from IGDB's company_statuses. */
+  status: string | null;
+  igdbUrl: string | null;
   publishedCount: number;
   developedCount: number;
   published: Game[];
   developed: Game[];
+};
+
+export type CompanyTrailer = {
+  id: number;
+  name: string;
+  slug: string;
+  releaseTimestamp: number | null;
+  video: { id: string; name: string };
+};
+
+export type CompanyEvent = {
+  id: number;
+  name: string;
+  slug: string;
+  startTimestamp: number | null;
+  endTimestamp: number | null;
+  liveStreamUrl: string | null;
+  logoUrl: string | null;
 };
 
 /** Releases per year across the whole catalogue, oldest first. */
@@ -1151,7 +1174,7 @@ export const getCompanyBySlug = cache(async function getCompanyBySlug(
     "companies",
     `
     fields id,name,slug,description,country,start_date,logo.image_id,websites.url,
-      parent.id,parent.name,parent.slug,published,developed;
+      parent.id,parent.name,parent.slug,published,developed,status.name,url;
     where slug = "${escapeIgdb(slug)}";
     limit 1;
   `,
@@ -1167,7 +1190,7 @@ export const getCompanyBySlug = cache(async function getCompanyBySlug(
       & cover != null
       & game_type = (0,8,9);
     sort total_rating_count desc;
-    limit 12;
+    limit 10;
   `;
   const [published, developed] = await Promise.all([
     company.published?.length
@@ -1185,7 +1208,9 @@ export const getCompanyBySlug = cache(async function getCompanyBySlug(
     description: company.description?.trim() ?? "",
     countryCode: company.country ?? null,
     foundedTimestamp: company.start_date ?? null,
-    logoUrl: company.logo ? imageUrl(company.logo.image_id, "logo_med") : null,
+    // t_original keeps the upload as it was, transparency included; the logo_med
+    // preset downscales to a width that looked washed out at hero size.
+    logoUrl: company.logo ? imageUrl(company.logo.image_id, "original") : null,
     websites: [
       ...new Set(
         (company.websites ?? [])
@@ -1196,6 +1221,8 @@ export const getCompanyBySlug = cache(async function getCompanyBySlug(
     parent: company.parent
       ? { name: company.parent.name, slug: company.parent.slug }
       : null,
+    status: company.status?.name ?? null,
+    igdbUrl: company.url ?? null,
     publishedCount: company.published?.length ?? 0,
     developedCount: company.developed?.length ?? 0,
     published,
@@ -1236,4 +1263,106 @@ export const getCompanyTimeline = cache(async function getCompanyTimeline(
   return [...perYear.entries()]
     .map(([year, count]) => ({ year, count }))
     .sort((a, b) => a.year - b.year);
+});
+
+/** Announced but unreleased, nearest first — the company's own release radar. */
+export const getCompanyUpcoming = cache(async function getCompanyUpcoming(
+  companyId: number,
+): Promise<Game[]> {
+  if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
+  // Rounded to the day so every visitor inside the same day shares one cache
+  // entry instead of minting a new query string per request.
+  const today = Math.floor(Date.now() / 86_400_000) * 86_400;
+  return queryGames(
+    `
+    ${COMPANY_GAME_FIELDS}
+    where involved_companies.company = ${companyId}
+      & first_release_date > ${today}
+      & cover != null
+      & game_type = (0,8,9);
+    sort first_release_date asc;
+    limit 8;
+  `,
+    6 * CACHE_HOURS,
+  ).catch(() => []);
+});
+
+/**
+ * Recent releases that actually have a video attached. Asking for `videos !=
+ * null` up front avoids pulling a page of games and finding none to play.
+ */
+export const getCompanyTrailers = cache(async function getCompanyTrailers(
+  companyId: number,
+): Promise<CompanyTrailer[]> {
+  if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
+  const today = Math.floor(Date.now() / 86_400_000) * 86_400;
+  const rows = await queryGamesRaw(
+    `
+    fields name,slug,first_release_date,videos.video_id,videos.name;
+    where involved_companies.company = ${companyId}
+      & first_release_date <= ${today}
+      & videos != null
+      & cover != null
+      & game_type = (0,8,9);
+    sort first_release_date desc;
+    limit 4;
+  `,
+    6 * CACHE_HOURS,
+  ).catch(() => []);
+  return rows.flatMap((game) => {
+    const video = game.videos?.[0];
+    if (!video?.video_id) return [];
+    return [
+      {
+        id: game.id,
+        name: game.name,
+        slug: game.slug,
+        releaseTimestamp: game.first_release_date ?? null,
+        video: { id: video.video_id, name: video.name ?? game.name },
+      },
+    ];
+  });
+});
+
+/**
+ * IGDB's events carry no company field, so the link runs through the games:
+ * an event that features this company's best-known titles is an event the
+ * company took part in. That is how a Nintendo Direct surfaces on Nintendo.
+ */
+export const getCompanyEvents = cache(async function getCompanyEvents(
+  companyId: number,
+): Promise<CompanyEvent[]> {
+  if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
+  const games = await queryIgdbRaw<{ id: number }>(
+    "games",
+    `
+    fields id;
+    where involved_companies.company = ${companyId} & cover != null;
+    sort total_rating_count desc;
+    limit 50;
+  `,
+    12 * CACHE_HOURS,
+  ).catch(() => []);
+  if (!games.length) return [];
+  const events = await queryIgdbRaw<IgdbEventResponse>(
+    "events",
+    `
+    fields name,slug,start_time,end_time,live_stream_url,event_logo.image_id;
+    where games = (${games.map((game) => game.id).join(",")});
+    sort start_time desc;
+    limit 6;
+  `,
+    12 * CACHE_HOURS,
+  ).catch(() => []);
+  return events.map((event) => ({
+    id: event.id,
+    name: event.name,
+    slug: event.slug,
+    startTimestamp: event.start_time ?? null,
+    endTimestamp: event.end_time ?? null,
+    liveStreamUrl: event.live_stream_url ?? null,
+    logoUrl: event.event_logo
+      ? imageUrl(event.event_logo.image_id, "thumb")
+      : null,
+  }));
 });

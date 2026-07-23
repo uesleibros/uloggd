@@ -64,10 +64,30 @@
   object-fit: contain;
 }
 .publisher-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--brand-blurple-bright);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.12em;
+}
+.publisher-status {
+  padding: 3px 7px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 999px;
+  color: var(--screen-muted);
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+}
+.publisher-status[data-status="active"] {
+  border-color: color-mix(in oklab, var(--brand-blurple) 45%, transparent);
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
+.publisher-status[data-status="defunct"] {
+  border-color: color-mix(in srgb, var(--danger-text) 30%, transparent);
+  color: var(--danger-text);
 }
 .publisher-identity h1 {
   margin-top: 6px;
@@ -219,6 +239,164 @@
   color: var(--screen-white);
 }
 
+/* ── Coming soon ──────────────────────────────────────────────────────── */
+.publisher-upcoming {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 10px;
+}
+.publisher-upcoming a {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-panel);
+  transition:
+    border-color 150ms ease-out,
+    background-color 150ms ease-out;
+}
+.publisher-upcoming a:hover {
+  border-color: var(--brand-blurple);
+  background: var(--console-raised);
+}
+.publisher-upcoming img {
+  width: 64px;
+  height: 85px;
+  border-radius: 7px;
+  object-fit: cover;
+}
+.publisher-upcoming strong {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 12.5px;
+  font-weight: 620;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.publisher-upcoming small {
+  display: block;
+  margin-top: 5px;
+  color: var(--screen-muted);
+  font-size: 10.5px;
+}
+/* The wait is the point of this card, so it gets the accent, not the date. */
+.publisher-countdown {
+  display: block;
+  margin-top: 3px;
+  color: var(--brand-blurple-bright);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+/* ── Trailers ─────────────────────────────────────────────────────────── */
+.publisher-trailers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.publisher-trailers > article > div {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-inset);
+}
+.publisher-trailers iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.publisher-trailers h3 {
+  margin-top: 9px;
+  font-size: 12.5px;
+  font-weight: 620;
+}
+.publisher-trailers h3 a {
+  color: var(--screen-white);
+}
+.publisher-trailers h3 a:hover {
+  color: var(--brand-blurple-bright);
+}
+.publisher-trailers small {
+  display: block;
+  margin-top: 2px;
+  color: var(--screen-muted);
+  font-size: 10.5px;
+}
+
+/* ── Events ───────────────────────────────────────────────────────────── */
+.publisher-events {
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 12px;
+  background: var(--console-panel);
+}
+.publisher-events li {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+.publisher-events li + li {
+  border-top: 1px solid var(--shell-line);
+}
+.publisher-event-logo {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.publisher-event-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.publisher-events strong {
+  display: block;
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.publisher-events small {
+  display: block;
+  margin-top: 2px;
+  color: var(--screen-muted);
+  font-size: 10.5px;
+}
+.publisher-events a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  color: var(--screen-dim);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.publisher-events a:hover {
+  border-color: var(--brand-blurple);
+  color: var(--screen-white);
+}
+.publisher-source {
+  margin-left: auto;
+}
+
 /* ── Release timeline ─────────────────────────────────────────────────── */
 .publisher-timeline {
   display: flex;
@@ -287,5 +465,19 @@
   }
   .publisher-see-all {
     align-self: flex-start;
+  }
+  .publisher-upcoming {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .publisher-events li {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+  /* The watch link wraps under the name instead of squeezing it to nothing. */
+  .publisher-events a {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .publisher-source {
+    margin-left: 0;
   }
 }
