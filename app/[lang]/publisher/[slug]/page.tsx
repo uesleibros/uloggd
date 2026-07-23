@@ -557,40 +557,40 @@ export default async function PublisherPage({ params }: Props) {
               )}
             </div>
           )}
-        </div>
-        <dl className="publisher-stats">
-          <div>
-            <dt>
-              <Library size={13} aria-hidden />{" "}
-              {tri(lang, "Publicados", "Published", "Publicados")}
-            </dt>
-            <dd>{company.publishedCount}</dd>
-          </div>
-          <div>
-            <dt>
-              <Gamepad2 size={13} aria-hidden />{" "}
-              {tri(lang, "Desenvolvidos", "Developed", "Desarrollados")}
-            </dt>
-            <dd>{company.developedCount}</dd>
-          </div>
-          {user && (
+          <dl className="publisher-stats">
             <div>
               <dt>
-                <Star size={13} aria-hidden />{" "}
-                {tri(
-                  lang,
-                  "Na sua biblioteca",
-                  "In your library",
-                  "En tu biblioteca",
-                )}
+                <Library size={13} aria-hidden />{" "}
+                {tri(lang, "Publicados", "Published", "Publicados")}
               </dt>
-              <dd>
-                {saved.size}
-                <small>/{uniqueHighlights.length}</small>
-              </dd>
+              <dd>{company.publishedCount}</dd>
             </div>
-          )}
-        </dl>
+            <div>
+              <dt>
+                <Gamepad2 size={13} aria-hidden />{" "}
+                {tri(lang, "Desenvolvidos", "Developed", "Desarrollados")}
+              </dt>
+              <dd>{company.developedCount}</dd>
+            </div>
+            {user && (
+              <div>
+                <dt>
+                  <Star size={13} aria-hidden />{" "}
+                  {tri(
+                    lang,
+                    "Na sua biblioteca",
+                    "In your library",
+                    "En tu biblioteca",
+                  )}
+                </dt>
+                <dd>
+                  {saved.size}
+                  <small>/{uniqueHighlights.length}</small>
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
       </header>
 
       {/* Each of these costs its own IGDB round trip, so they stream instead of

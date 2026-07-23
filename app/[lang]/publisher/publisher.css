@@ -274,6 +274,19 @@
   color: var(--screen-white);
 }
 
+/* ── Game shelves ─────────────────────────────────────────────────────────
+   The global .cover-shelf is five 1fr columns, which on a full-width page
+   blows each cover up to ~215px — half again the size the profile shows. The
+   profile caps its own at 144px in profile.css; the same cap belongs here, or
+   "use o tamanho do perfil" only holds on the profile. */
+.publisher-section .cover-shelf {
+  grid-template-columns: repeat(5, minmax(0, 144px));
+  justify-content: start;
+  gap: 12px;
+  /* The section header already supplies the gap above the covers. */
+  margin-top: 0;
+}
+
 /* ── Coming soon ──────────────────────────────────────────────────────── */
 .publisher-upcoming {
   display: grid;
@@ -521,7 +534,8 @@
     font-size: 21px;
   }
   .publisher-description,
-  .publisher-links {
+  .publisher-links,
+  .publisher-stats {
     grid-column: 1 / -1;
   }
   .publisher-section > header {
@@ -534,6 +548,18 @@
   }
   .publisher-upcoming {
     grid-template-columns: minmax(0, 1fr);
+  }
+  /* Below 620px .cover-shelf turns into a scroller that bleeds -18px to the
+     right, a figure taken from the profile's gutter. Ours is its own. */
+  .publisher-section .cover-shelf {
+    gap: 10px;
+    margin-right: calc(var(--publisher-gutter) * -1);
+  }
+  .publisher-section .cover-shelf .quick-game-card {
+    flex: 0 0 118px;
+  }
+  .publisher-section .cover-shelf .quick-game-card:last-child {
+    margin-right: var(--publisher-gutter);
   }
   .publisher-events li {
     grid-template-columns: 44px minmax(0, 1fr);
