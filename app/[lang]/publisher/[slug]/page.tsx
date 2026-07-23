@@ -470,7 +470,20 @@ export default async function PublisherPage({ params }: Props) {
           : null;
 
   return (
-    <main className="publisher-page">
+    <main
+      className="publisher-page"
+      data-has-backdrop={Boolean(backdrop) || undefined}
+      style={
+        backdrop
+          ? ({
+              // Same trick the profile banner uses: the art goes through a CSS
+              // variable so the bleeding ::before layer can carry it past the
+              // page gutters without a second <img> in the markup.
+              "--publisher-backdrop-image": `url("${backdrop.replace(/["\\\n\r]/g, encodeURIComponent)}")`,
+            } as React.CSSProperties)
+          : undefined
+      }
+    >
       {/* Organization markup: it is what lets a search engine tie the page to
           the real company entity instead of treating it as a list of links. */}
       <script
@@ -503,33 +516,25 @@ export default async function PublisherPage({ params }: Props) {
           ...(company.websites.length ? { sameAs: company.websites } : {}),
         })}
       />
-      <header className="publisher-hero">
-        {backdrop && (
-          <div className="publisher-hero-backdrop" aria-hidden>
-            <Image
-              src={backdrop}
-              alt=""
-              fill
-              sizes="100vw"
-              unoptimized
-              priority
-            />
-          </div>
-        )}
-        <div className="publisher-identity">
+      <div className="publisher-banner" data-empty={!backdrop || undefined} />
+      <header className="publisher-header">
+        <div className="publisher-logo-anchor">
           <span className="publisher-logo">
             {company.logoUrl ? (
               <Image
                 src={company.logoUrl}
                 alt=""
-                width={104}
-                height={104}
+                width={112}
+                height={112}
                 unoptimized
+                priority
               />
             ) : (
-              <Building2 size={30} aria-hidden />
+              <Building2 size={34} aria-hidden />
             )}
           </span>
+        </div>
+        <div className="publisher-identity">
           <div>
             <span className="publisher-eyebrow">
               {company.publishedCount >= company.developedCount
@@ -564,35 +569,35 @@ export default async function PublisherPage({ params }: Props) {
               )}
             </p>
           </div>
+          {company.description && (
+            <p className="publisher-description">{company.description}</p>
+          )}
+          {(company.websites.length > 0 || company.igdbUrl) && (
+            <div className="publisher-links">
+              {company.websites.map((url) => (
+                <a
+                  key={url}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                >
+                  {websiteLabel(url)} <ExternalLink size={12} aria-hidden />
+                </a>
+              ))}
+              {company.igdbUrl && (
+                <a
+                  className="publisher-source"
+                  href={company.igdbUrl}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                >
+                  {tri(lang, "Fonte: IGDB", "Source: IGDB", "Fuente: IGDB")}{" "}
+                  <ExternalLink size={12} aria-hidden />
+                </a>
+              )}
+            </div>
+          )}
         </div>
-        {company.description && (
-          <p className="publisher-description">{company.description}</p>
-        )}
-        {(company.websites.length > 0 || company.igdbUrl) && (
-          <div className="publisher-links">
-            {company.websites.map((url) => (
-              <a
-                key={url}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-              >
-                {websiteLabel(url)} <ExternalLink size={12} aria-hidden />
-              </a>
-            ))}
-            {company.igdbUrl && (
-              <a
-                className="publisher-source"
-                href={company.igdbUrl}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-              >
-                {tri(lang, "Fonte: IGDB", "Source: IGDB", "Fuente: IGDB")}{" "}
-                <ExternalLink size={12} aria-hidden />
-              </a>
-            )}
-          </div>
-        )}
       </header>
 
       <section className="publisher-stats">
