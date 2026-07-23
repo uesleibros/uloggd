@@ -7,11 +7,14 @@ import {
   Camera,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   ExternalLink,
   Flag,
   LoaderCircle,
   MessageSquareOff,
+  NotebookPen,
   Search,
   ShieldCheck,
   ShieldOff,
@@ -21,11 +24,12 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
 import { RelativeTime } from "@/components/relative-time";
 import {
+  MODERATION_AUDIT_PAGE_SIZE,
   MODERATION_BAN_DURATIONS,
   type ModerationStatus,
 } from "@/lib/moderation";
@@ -81,6 +85,109 @@ type Screenshot = {
   deletedAt: string | null;
   imageUrl: string | null;
 };
+/** "Mostrando 1–12 de 87" — the count a moderator needs to gauge the backlog. */
+function rangeLabel(
+  lang: UiLang,
+  page: number,
+  pageSize: number,
+  total: number,
+) {
+  if (total === 0)
+    return tri(lang, "Nenhum registro", "No records", "Ningún registro");
+  const first = (page - 1) * pageSize + 1;
+  const last = Math.min(page * pageSize, total);
+  return tri(
+    lang,
+    `Mostrando ${first}–${last} de ${total}`,
+    `Showing ${first}–${last} of ${total}`,
+    `Mostrando ${first}–${last} de ${total}`,
+  );
+}
+
+/**
+ * First, last, and the current page's neighbours. Anything else collapses into
+ * a gap, so a hundred pages still fit on one line.
+ */
+function pageWindow(page: number, pageCount: number): (number | "gap")[] {
+  const slots = new Set([1, pageCount, page, page - 1, page + 1]);
+  const pages = [...slots]
+    .filter((value) => value >= 1 && value <= pageCount)
+    .sort((a, b) => a - b);
+  return pages.flatMap((value, index) =>
+    index > 0 && value - pages[index - 1] > 1
+      ? (["gap", value] as (number | "gap")[])
+      : [value],
+  );
+}
+
+function Pager({
+  lang,
+  page,
+  pageCount,
+  busy,
+  label,
+  onGo,
+}: {
+  lang: UiLang;
+  page: number;
+  pageCount: number;
+  busy: boolean;
+  label: string;
+  onGo: (page: number) => void;
+}) {
+  if (pageCount <= 1) return null;
+  return (
+    <nav className="moderation-pager" aria-label={label}>
+      <button
+        type="button"
+        disabled={page <= 1 || busy}
+        aria-label={tri(
+          lang,
+          "Página anterior",
+          "Previous page",
+          "Página anterior",
+        )}
+        onClick={() => onGo(page - 1)}
+      >
+        <ChevronLeft size={14} />
+      </button>
+      <ol>
+        {pageWindow(page, pageCount).map((entry, index) =>
+          entry === "gap" ? (
+            <li key={`gap-${index}`} aria-hidden>
+              …
+            </li>
+          ) : (
+            <li key={entry}>
+              <button
+                type="button"
+                disabled={busy}
+                aria-current={entry === page ? "page" : undefined}
+                onClick={() => onGo(entry)}
+              >
+                {entry}
+              </button>
+            </li>
+          ),
+        )}
+      </ol>
+      <button
+        type="button"
+        disabled={page >= pageCount || busy}
+        aria-label={tri(
+          lang,
+          "Próxima página",
+          "Next page",
+          "Página siguiente",
+        )}
+        onClick={() => onGo(page + 1)}
+      >
+        <ChevronRight size={14} />
+      </button>
+    </nav>
+  );
+}
+
 type ProfileAction = "BAN" | "UNBAN" | "VERIFY" | "UNVERIFY";
 type Removal =
   | { kind: "COMMENT"; reportId: string; commentId: string }
@@ -99,6 +206,13 @@ export function ModerationConsole({
   screenshots,
   moderationStates,
   actions,
+  page,
+  pageCount,
+  pageSize,
+  reportTotal,
+  auditPage,
+  auditPageCount,
+  auditTotal,
 }: {
   lang: UiLang;
   actorRole: "MODERATOR" | "ADMIN";
@@ -112,10 +226,20 @@ export function ModerationConsole({
   screenshots: Screenshot[];
   moderationStates: ModerationState[];
   actions: Action[];
+  page: number;
+  pageCount: number;
+  pageSize: number;
+  reportTotal: number;
+  auditPage: number;
+  auditPageCount: number;
+  auditTotal: number;
 }) {
   const t = uiText(lang);
   const pathname = usePathname();
   const router = useRouter();
+  const [navigating, startNavigation] = useTransition();
+  const queueRef = useRef<HTMLElement>(null);
+  const auditRef = useRef<HTMLElement>(null);
   const [reportRows, setReportRows] = useState(reports);
   const [search, setSearch] = useState(initialSearch);
   const [accountRows, setAccountRows] = useState(accounts);
@@ -125,6 +249,7 @@ export function ModerationConsole({
   const [searching, setSearching] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [openNotes, setOpenNotes] = useState<Record<string, boolean>>({});
   const [targetAction, setTargetAction] = useState<{
     profile: Profile;
     action: ProfileAction;
@@ -164,9 +289,11 @@ export function ModerationConsole({
       [
         initialStatus,
         initialSearch,
+        page,
+        auditPage,
         reports.map((report) => `${report.id}:${report.status}`).join(),
       ].join("|"),
-    [initialStatus, initialSearch, reports],
+    [initialStatus, initialSearch, page, auditPage, reports],
   );
   const [syncedServerKey, setSyncedServerKey] = useState(serverKey);
   if (syncedServerKey !== serverKey) {
@@ -211,9 +338,17 @@ export function ModerationConsole({
     targetAction !== null && pending === `profile-${targetAction.profile.id}`;
   const removalPending =
     removal !== null &&
-    (pending === `comment-${removal.kind === "COMMENT" ? removal.commentId : ""}` ||
+    (pending ===
+      `comment-${removal.kind === "COMMENT" ? removal.commentId : ""}` ||
       pending ===
         `screenshot-${removal.kind === "SCREENSHOT" ? removal.screenshotId : ""}`);
+
+  const statusLabels: Record<string, string> = {
+    OPEN: tri(lang, "Aberta", "Open", "Abierta"),
+    REVIEWING: tri(lang, "Em análise", "Reviewing", "En revisión"),
+    RESOLVED: tri(lang, "Resolvida", "Resolved", "Resuelta"),
+    DISMISSED: tri(lang, "Descartada", "Dismissed", "Descartada"),
+  };
 
   const statusTabs: {
     id: ModerationStatus;
@@ -239,11 +374,31 @@ export function ModerationConsole({
     { id: "ALL", label: tri(lang, "Todas", "All", "Todas"), icon: ShieldCheck },
   ];
 
-  function setStatus(next: ModerationStatus) {
+  // Every filter and both pagers write to the same URL, so a moderator can hand
+  // a colleague the address bar and land them on the exact same view.
+  function navigate(
+    next: { status?: ModerationStatus; page?: number; audit?: number },
+    anchor?: React.RefObject<HTMLElement | null>,
+  ) {
     const params = new URLSearchParams();
-    params.set("status", next);
+    params.set("status", next.status ?? initialStatus);
     if (search.trim()) params.set("q", search.trim());
-    router.push(`${pathname}?${params.toString()}`);
+    const nextPage = next.page ?? page;
+    if (nextPage > 1) params.set("page", String(nextPage));
+    const nextAudit = next.audit ?? auditPage;
+    if (nextAudit > 1) params.set("audit", String(nextAudit));
+    // scroll: false keeps a page change inside the section it belongs to; the
+    // default would fling the moderator back to the hero every click.
+    startNavigation(() =>
+      router.push(`${pathname}?${params.toString()}`, { scroll: false }),
+    );
+    anchor?.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function setStatus(next: ModerationStatus) {
+    // A different filter has a different length, so page 3 of the old one means
+    // nothing here.
+    navigate({ status: next, page: 1 }, queueRef);
   }
 
   async function searchAccounts(event: React.FormEvent<HTMLFormElement>) {
@@ -290,6 +445,9 @@ export function ModerationConsole({
       const params = new URLSearchParams();
       params.set("status", initialStatus);
       params.set("q", query);
+      // The account search never touches the queue, so its paging survives.
+      if (page > 1) params.set("page", String(page));
+      if (auditPage > 1) params.set("audit", String(auditPage));
       window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
     }
     setSearching(false);
@@ -551,7 +709,7 @@ export function ModerationConsole({
         </p>
       )}
 
-      <section className="moderation-section">
+      <section className="moderation-section" ref={queueRef}>
         <header>
           <div>
             <h2>
@@ -562,15 +720,7 @@ export function ModerationConsole({
                 "Cola de denuncias",
               )}
             </h2>
-            <p>
-              {reportRows.length}{" "}
-              {tri(
-                lang,
-                "registro(s) neste filtro",
-                "record(s) in this filter",
-                "registro(s) en este filtro",
-              )}
-            </p>
+            <p>{rangeLabel(lang, page, pageSize, reportTotal)}</p>
           </div>
           <nav
             className="game-page-nav moderation-status-tabs"
@@ -622,7 +772,7 @@ export function ModerationConsole({
             })}
           </nav>
         </header>
-        <div className="moderation-report-list">
+        <div className="moderation-report-list" aria-busy={navigating}>
           {reportRows.length === 0 && (
             <div className="moderation-empty">
               <Check size={22} />
@@ -645,117 +795,213 @@ export function ModerationConsole({
             const shot = report.content_id
               ? screenshotById.get(report.content_id)
               : undefined;
+            const note = notes[report.id] ?? report.moderator_note ?? "";
             return (
-              <article className="moderation-report-card" key={report.id}>
+              <article
+                className="moderation-report-card"
+                data-status={report.status}
+                key={report.id}
+              >
                 <header>
-                  <span>
+                  <span className="moderation-report-reason">
                     <Flag size={14} /> {report.reason.replaceAll("_", " ")}
+                  </span>
+                  <b className="moderation-report-kind">
+                    {report.content_type || "PROFILE"}
+                  </b>
+                  <span
+                    className="moderation-status-chip"
+                    data-status={report.status}
+                  >
+                    {statusLabels[report.status] ?? report.status}
                   </span>
                   <RelativeTime value={report.created_at} lang={lang} />
                 </header>
-                <div className="moderation-report-people">
-                  <span>
-                    {tri(lang, "Alvo", "Target", "Objetivo")}:{" "}
-                    <strong>{profileName(target)}</strong>
-                  </span>
-                  <span>
-                    {tri(lang, "Enviado por", "Reported by", "Enviado por")}:{" "}
-                    <strong>{profileName(reporter)}</strong>
-                  </span>
-                  <b>{report.content_type || "PROFILE"}</b>
-                </div>
-                {comment && (
-                  <blockquote data-deleted={comment.deleted_at || undefined}>
-                    {comment.deleted_at
-                      ? tri(
-                          lang,
-                          "Comentário removido",
-                          "Deleted comment",
-                          "Comentario eliminado",
-                        )
-                      : comment.body}
-                  </blockquote>
-                )}
-                {shot && (
-                  <div
-                    className="moderation-report-screenshot"
-                    data-deleted={shot.deletedAt || undefined}
-                  >
-                    {shot.deletedAt ? (
-                      <p>
-                        <Camera size={14} />
-                        {tri(
-                          lang,
-                          "Screenshot removido",
-                          "Screenshot removed",
-                          "Captura eliminada",
+                <div className="moderation-report-grid">
+                  <div className="moderation-report-evidence">
+                    {comment && (
+                      <blockquote
+                        data-deleted={comment.deleted_at || undefined}
+                      >
+                        {comment.deleted_at
+                          ? tri(
+                              lang,
+                              "Comentário removido",
+                              "Deleted comment",
+                              "Comentario eliminado",
+                            )
+                          : comment.body}
+                      </blockquote>
+                    )}
+                    {shot && (
+                      <div
+                        className="moderation-report-screenshot"
+                        data-deleted={shot.deletedAt || undefined}
+                      >
+                        {shot.deletedAt ? (
+                          <p>
+                            <Camera size={14} />
+                            {tri(
+                              lang,
+                              "Screenshot removido",
+                              "Screenshot removed",
+                              "Captura eliminada",
+                            )}
+                          </p>
+                        ) : shot.imageUrl ? (
+                          <Image
+                            src={shot.imageUrl}
+                            alt=""
+                            width={Math.min(shot.width, 480)}
+                            height={Math.round(
+                              (shot.height / shot.width) *
+                                Math.min(shot.width, 480),
+                            )}
+                            unoptimized
+                          />
+                        ) : (
+                          <p>
+                            <Camera size={14} />
+                            {tri(
+                              lang,
+                              "Prévia indisponível",
+                              "Preview unavailable",
+                              "Vista previa no disponible",
+                            )}
+                          </p>
                         )}
-                      </p>
-                    ) : shot.imageUrl ? (
-                      <Image
-                        src={shot.imageUrl}
-                        alt=""
-                        width={Math.min(shot.width, 480)}
-                        height={Math.round(
-                          (shot.height / shot.width) * Math.min(shot.width, 480),
+                        {shot.description && !shot.deletedAt && (
+                          <blockquote>{shot.description}</blockquote>
                         )}
-                        unoptimized
-                      />
-                    ) : (
-                      <p>
-                        <Camera size={14} />
-                        {tri(
-                          lang,
-                          "Prévia indisponível",
-                          "Preview unavailable",
-                          "Vista previa no disponible",
+                        {shot.containsSpoilers && !shot.deletedAt && (
+                          <small className="moderation-report-flag">
+                            {tri(
+                              lang,
+                              "Contém spoilers",
+                              "Contains spoilers",
+                              "Contiene spoilers",
+                            )}
+                          </small>
                         )}
+                      </div>
+                    )}
+                    {report.details && (
+                      <p className="moderation-report-details">
+                        {report.details}
                       </p>
                     )}
-                    {shot.description && !shot.deletedAt && (
-                      <blockquote>{shot.description}</blockquote>
-                    )}
-                    {shot.containsSpoilers && !shot.deletedAt && (
-                      <small className="moderation-report-flag">
+                    {!comment && !shot && !report.details && (
+                      <p className="moderation-report-details" data-empty>
                         {tri(
                           lang,
-                          "Contém spoilers",
-                          "Contains spoilers",
-                          "Contiene spoilers",
+                          "Denúncia sem conteúdo anexado.",
+                          "Report with no attached content.",
+                          "Denuncia sin contenido adjunto.",
                         )}
-                      </small>
+                      </p>
                     )}
                   </div>
-                )}
-                {report.details && <p>{report.details}</p>}
-                {report.target_profile_id && target?.username && (
-                  <Link href={`/${lang}/u/${target.username}`} target="_blank">
-                    {tri(lang, "Abrir perfil", "Open profile", "Abrir perfil")}{" "}
-                    <ExternalLink size={12} />
-                  </Link>
-                )}
-                <textarea
-                  value={notes[report.id] ?? report.moderator_note ?? ""}
-                  maxLength={1000}
-                  aria-label={tri(
-                    lang,
-                    "Nota interna da decisão",
-                    "Internal decision note",
-                    "Nota interna de la decisión",
-                  )}
-                  placeholder={tri(
-                    lang,
-                    "Nota interna da decisão…",
-                    "Internal decision note…",
-                    "Nota interna de la decisión…",
-                  )}
-                  onChange={(event) =>
-                    setNotes((current) => ({
+                  <aside className="moderation-report-meta">
+                    <dl>
+                      <div>
+                        <dt>{tri(lang, "Alvo", "Target", "Objetivo")}</dt>
+                        <dd>{profileName(target)}</dd>
+                      </div>
+                      <div>
+                        <dt>
+                          {tri(
+                            lang,
+                            "Denunciado por",
+                            "Reported by",
+                            "Denunciado por",
+                          )}
+                        </dt>
+                        <dd>{profileName(reporter)}</dd>
+                      </div>
+                      {report.reviewed_at && (
+                        <div>
+                          <dt>
+                            {tri(lang, "Revisada", "Reviewed", "Revisada")}
+                          </dt>
+                          <dd>
+                            <RelativeTime
+                              value={report.reviewed_at}
+                              lang={lang}
+                            />
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                    {report.target_profile_id && target?.username && (
+                      <Link
+                        href={`/${lang}/u/${target.username}`}
+                        target="_blank"
+                      >
+                        {tri(
+                          lang,
+                          "Abrir perfil",
+                          "Open profile",
+                          "Abrir perfil",
+                        )}{" "}
+                        <ExternalLink size={12} />
+                      </Link>
+                    )}
+                    {shot && !shot.deletedAt && (
+                      <Link
+                        href={`/${lang}/shot/${shot.publicId}`}
+                        target="_blank"
+                      >
+                        {tri(
+                          lang,
+                          "Abrir captura",
+                          "Open screenshot",
+                          "Abrir captura",
+                        )}{" "}
+                        <ExternalLink size={12} />
+                      </Link>
+                    )}
+                  </aside>
+                </div>
+                {/* Collapsed by default: forty open textareas is what made this
+                    queue read as a pile instead of a list. */}
+                <details
+                  className="moderation-report-note"
+                  open={openNotes[report.id] ?? Boolean(report.moderator_note)}
+                  onToggle={(event) =>
+                    setOpenNotes((current) => ({
                       ...current,
-                      [report.id]: event.target.value,
+                      [report.id]: event.currentTarget.open,
                     }))
                   }
-                />
+                >
+                  <summary>
+                    <NotebookPen size={13} />
+                    {tri(lang, "Nota interna", "Internal note", "Nota interna")}
+                    {note.trim() && <b aria-hidden />}
+                  </summary>
+                  <textarea
+                    value={note}
+                    maxLength={1000}
+                    aria-label={tri(
+                      lang,
+                      "Nota interna da decisão",
+                      "Internal decision note",
+                      "Nota interna de la decisión",
+                    )}
+                    placeholder={tri(
+                      lang,
+                      "Nota interna da decisão…",
+                      "Internal decision note…",
+                      "Nota interna de la decisión…",
+                    )}
+                    onChange={(event) =>
+                      setNotes((current) => ({
+                        ...current,
+                        [report.id]: event.target.value,
+                      }))
+                    }
+                  />
+                </details>
                 <footer>
                   {report.content_type === "PROFILE_COMMENT" &&
                     comment &&
@@ -848,6 +1094,19 @@ export function ModerationConsole({
             );
           })}
         </div>
+        <Pager
+          lang={lang}
+          page={page}
+          pageCount={pageCount}
+          busy={navigating}
+          onGo={(next) => navigate({ page: next }, queueRef)}
+          label={tri(
+            lang,
+            "Páginas da fila",
+            "Queue pages",
+            "Páginas de la cola",
+          )}
+        />
       </section>
 
       <section className="moderation-section">
@@ -930,8 +1189,8 @@ export function ModerationConsole({
             const state = stateByProfile.get(profile.id);
             const banned = Boolean(
               state &&
-                (!state.banned_until ||
-                  new Date(state.banned_until).getTime() > renderedAt),
+              (!state.banned_until ||
+                new Date(state.banned_until).getTime() > renderedAt),
             );
             const protectedTarget =
               profile.role === "ADMIN" ||
@@ -1016,23 +1275,22 @@ export function ModerationConsole({
         </div>
       </section>
 
-      <section className="moderation-section moderation-audit">
+      <section className="moderation-section moderation-audit" ref={auditRef}>
         <header>
           <div>
-            <h2>
-              {tri(
-                lang,
-                "Auditoria recente",
-                "Recent audit log",
-                "Auditoría reciente",
-              )}
-            </h2>
+            <h2>{tri(lang, "Auditoria", "Audit log", "Auditoría")}</h2>
             <p>
               {tri(
                 lang,
                 "Registro imutável das decisões.",
                 "Immutable decisions log.",
                 "Registro inmutable de las decisiones.",
+              )}{" "}
+              {rangeLabel(
+                lang,
+                auditPage,
+                MODERATION_AUDIT_PAGE_SIZE,
+                auditTotal,
               )}
             </p>
           </div>
@@ -1047,7 +1305,7 @@ export function ModerationConsole({
             )}
           </div>
         )}
-        <ol>
+        <ol aria-busy={navigating}>
           {actions.map((action) => (
             <li key={action.id}>
               <ShieldCheck size={14} />
@@ -1062,6 +1320,19 @@ export function ModerationConsole({
             </li>
           ))}
         </ol>
+        <Pager
+          lang={lang}
+          page={auditPage}
+          pageCount={auditPageCount}
+          busy={navigating}
+          onGo={(next) => navigate({ audit: next }, auditRef)}
+          label={tri(
+            lang,
+            "Páginas da auditoria",
+            "Audit pages",
+            "Páginas de la auditoría",
+          )}
+        />
       </section>
 
       <Dialog.Root
@@ -1125,15 +1396,18 @@ export function ModerationConsole({
                     >
                       <Select.Viewport>
                         {[
-                          ...MODERATION_BAN_DURATIONS.map(({ value, days }) => [
-                            value,
-                            tri(
-                              lang,
-                              `${days} ${days === 1 ? "dia" : "dias"}`,
-                              `${days} ${days === 1 ? "day" : "days"}`,
-                              `${days} ${days === 1 ? "día" : "días"}`,
-                            ),
-                          ] as const),
+                          ...MODERATION_BAN_DURATIONS.map(
+                            ({ value, days }) =>
+                              [
+                                value,
+                                tri(
+                                  lang,
+                                  `${days} ${days === 1 ? "dia" : "dias"}`,
+                                  `${days} ${days === 1 ? "day" : "days"}`,
+                                  `${days} ${days === 1 ? "día" : "días"}`,
+                                ),
+                              ] as const,
+                          ),
                           ...(actorRole === "ADMIN"
                             ? ([
                                 [

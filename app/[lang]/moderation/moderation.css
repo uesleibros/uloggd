@@ -84,52 +84,132 @@
   display: grid;
   gap: 10px;
 }
+/* A page swap keeps the old rows in place, dimmed, instead of collapsing the
+   list to nothing and bouncing the scroll position. */
+.moderation-report-list[aria-busy="true"],
+.moderation-audit ol[aria-busy="true"] {
+  opacity: 0.5;
+  transition: opacity 140ms ease-out;
+}
 .moderation-report-card {
-  padding: 16px;
+  display: grid;
+  gap: 12px;
+  padding: 15px 16px;
   border: 1px solid var(--shell-line);
+  /* The status is what a moderator scans for, so it also tints the edge. */
+  border-left: 3px solid var(--shell-line-strong);
   border-radius: 11px;
   background: var(--console-panel);
 }
-.moderation-report-card > header,
-.moderation-report-people,
-.moderation-report-card footer {
+.moderation-report-card[data-status="OPEN"] {
+  border-left-color: var(--danger-text);
+}
+.moderation-report-card[data-status="REVIEWING"] {
+  border-left-color: var(--warning-text);
+}
+.moderation-report-card[data-status="RESOLVED"] {
+  border-left-color: var(--brand-blurple);
+}
+.moderation-report-card > header {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
 }
-.moderation-report-card > header {
-  justify-content: space-between;
-}
-.moderation-report-card > header span {
+.moderation-report-reason {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   color: var(--danger-text);
   font-size: 10px;
   font-weight: 680;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
-.moderation-report-card time,
-.moderation-report-people {
-  color: var(--screen-muted);
-  font-size: 10px;
-}
-.moderation-report-people {
-  margin-top: 9px;
-}
-.moderation-report-people strong {
-  color: var(--screen-dim);
-}
-.moderation-report-people b {
-  padding: 3px 5px;
+.moderation-report-kind {
+  padding: 3px 6px;
   border-radius: 4px;
   background: var(--console-inset);
   color: var(--screen-muted);
   font-size: 8px;
+  letter-spacing: 0.04em;
+}
+.moderation-status-chip {
+  padding: 3px 8px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 999px;
+  color: var(--screen-dim);
+  font-size: 9px;
+  font-weight: 640;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.moderation-status-chip[data-status="OPEN"] {
+  border-color: color-mix(in srgb, var(--danger-text) 34%, transparent);
+  background: color-mix(in srgb, var(--danger-text) 12%, transparent);
+  color: var(--danger-text);
+}
+.moderation-status-chip[data-status="REVIEWING"] {
+  border-color: color-mix(in srgb, var(--warning-text) 34%, transparent);
+  background: color-mix(in srgb, var(--warning-text) 12%, transparent);
+  color: var(--warning-text);
+}
+.moderation-status-chip[data-status="RESOLVED"] {
+  border-color: rgb(88 101 242 / 34%);
+  background: var(--brand-blurple-wash);
+  color: var(--tonal-brand-text);
+}
+/* Pushes the timestamp to the far edge whatever chips precede it. */
+.moderation-report-card > header time {
+  margin-left: auto;
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.moderation-report-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  align-items: start;
+  gap: 14px;
+}
+.moderation-report-evidence {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.moderation-report-meta {
+  display: grid;
+  gap: 8px;
+  padding: 11px 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-inset);
+}
+.moderation-report-meta dl {
+  display: grid;
+  gap: 8px;
+}
+.moderation-report-meta dt {
+  color: var(--screen-muted);
+  font-size: 8.5px;
+  font-weight: 640;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.moderation-report-meta dd {
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+  color: var(--screen-dim);
+  font-size: 11px;
+}
+.moderation-report-meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--brand-blurple-bright);
+  font-size: 10px;
 }
 .moderation-report-card blockquote,
 .moderation-user-card blockquote {
-  margin-top: 12px;
   padding: 10px 12px;
   border-left: 2px solid var(--shell-line-strong);
   background: var(--console-inset);
@@ -138,19 +218,44 @@
   line-height: 1.5;
   white-space: pre-wrap;
 }
-.moderation-report-card > p {
-  margin-top: 10px;
+.moderation-user-card blockquote {
+  margin-top: 12px;
+}
+.moderation-report-details {
   color: var(--screen-dim);
   font-size: 11px;
   line-height: 1.5;
 }
-.moderation-report-card > a {
-  display: inline-flex;
+.moderation-report-details[data-empty] {
+  color: var(--screen-muted);
+  font-style: italic;
+}
+.moderation-report-note > summary {
+  display: flex;
   align-items: center;
-  gap: 5px;
-  margin-top: 10px;
-  color: var(--brand-blurple-bright);
+  gap: 6px;
+  width: fit-content;
+  padding: 5px 9px 5px 7px;
+  border-radius: 7px;
+  color: var(--screen-muted);
   font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+.moderation-report-note > summary::-webkit-details-marker {
+  display: none;
+}
+.moderation-report-note > summary:hover {
+  background: var(--console-hover);
+  color: var(--screen-dim);
+}
+/* A filled dot says "this decision already has a note" without opening it. */
+.moderation-report-note > summary b {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand-blurple-bright);
 }
 .moderation-report-card textarea,
 .moderation-dialog textarea {
@@ -164,12 +269,62 @@
 }
 .moderation-report-card textarea {
   min-height: 70px;
-  margin-top: 12px;
+  margin-top: 8px;
   padding: 9px 10px;
 }
 .moderation-report-card footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   justify-content: flex-end;
-  margin-top: 10px;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--shell-line);
+}
+.moderation-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+.moderation-pager ol {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.moderation-pager li {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  color: var(--screen-muted);
+  font-size: 10px;
+}
+.moderation-pager button {
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-panel);
+  color: var(--screen-dim);
+  font: 600 10px var(--font-inter);
+}
+.moderation-pager button:hover:not(:disabled) {
+  border-color: var(--shell-line-strong);
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.moderation-pager button[aria-current="page"] {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple);
+  color: white;
+}
+.moderation-pager button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 .moderation-report-card footer button,
 .moderation-user-card footer button,
@@ -544,6 +699,18 @@
   .moderation-report-card footer button {
     flex: 1;
   }
+  /* The meta rail becomes a band under the evidence rather than a 200px
+     column squeezed against a phone edge. */
+  .moderation-report-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .moderation-report-card > header time {
+    margin-left: 0;
+  }
+  .moderation-pager ol {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
   .moderation-dialog {
     top: auto;
     bottom: 0;
@@ -583,7 +750,6 @@
 .moderation-report-screenshot {
   display: grid;
   gap: 8px;
-  margin-top: 10px;
   padding: 10px;
   border: 1px solid var(--shell-line);
   border-radius: 10px;

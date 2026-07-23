@@ -10,6 +10,10 @@ import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { ContentComments } from "@/components/social/content-comments";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import {
+  isMissingSchemaError,
+  warnSchemaGap,
+} from "@/lib/supabase/schema-fallback";
 import { hasLocale } from "../../dictionaries";
 import { tri, uiText } from "@/lib/ui-text";
 
@@ -61,7 +65,9 @@ export default async function ListPage({ params }: Props) {
   const key = listKey(id);
   if (!hasLocale(lang) || !key) notFound();
   const supabase = await getSupabase();
-  const [{ data: list }, user] = await Promise.all([
+  // Both selects are spelled out because supabase-js infers the row type from
+  // the literal string; a built-up one degrades to a parser error type.
+  const [listResult, user] = await Promise.all([
     supabase
       .from("game_lists")
       .select(
@@ -71,6 +77,22 @@ export default async function ListPage({ params }: Props) {
       .maybeSingle(),
     getAuthUser(),
   ]);
+  let list = listResult.data;
+  // The ranked column ships with a migration that may not have run yet; a list
+  // page is worth serving as a plain collection rather than 404ing over it.
+  if (isMissingSchemaError(listResult.error)) {
+    warnSchemaGap("game_lists.ranked (detail)", listResult.error);
+    const { data: fallback } = await supabase
+      .from("game_lists")
+      .select(
+        "id,public_id,profile_id,name,description,visibility,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name,content_comment_scope),game_list_items(id,igdb_id,game_slug,position,note)",
+      )
+      .eq(key[0], key[1])
+      .maybeSingle();
+    list = fallback
+      ? ({ ...fallback, ranked: false } as NonNullable<typeof list>)
+      : null;
+  }
   if (!list) notFound();
   if (key[0] === "id") permanentRedirect(`/${lang}/lists/${list.public_id}`);
   const items = [...(list.game_list_items ?? [])].sort(

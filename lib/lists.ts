@@ -8,8 +8,17 @@ import {
   type ListPreview,
   type ListSort,
 } from "@/lib/lists-types";
+import {
+  isMissingSchemaError,
+  warnSchemaGap,
+} from "@/lib/supabase/schema-fallback";
 
 export type { ListPreview };
+
+// `ranked` arrives with the ranked_lists migration. Until that runs every list
+// is a collection, so the queries below drop the column instead of failing.
+const LIST_COLUMNS = "id,public_id,name,description,visibility,updated_at";
+const LIST_ITEMS = "game_list_items(igdb_id,position)";
 
 type PreviewOptions = ListFilters & {
   ownerId: string;
@@ -33,31 +42,58 @@ export async function getListPreviews(
   const sort: ListSort = options.sort ?? "recent";
   const visibility = options.visibility ?? "ALL";
   const mode = options.mode ?? "ALL";
-  let query = supabase
-    .from("game_lists")
-    .select(
-      "id,public_id,name,description,visibility,ranked,updated_at,game_list_items(igdb_id,position)",
-    )
-    .eq("profile_id", options.ownerId);
-  if (options.publicOnly) query = query.eq("visibility", "PUBLIC");
-  else if (visibility !== "ALL") query = query.eq("visibility", visibility);
-  if (mode !== "ALL") query = query.eq("ranked", mode === "RANKED");
-  if (options.query) {
-    // Escape the LIKE wildcards so a name containing % or _ still matches
-    // literally instead of turning into a pattern.
-    const safe = options.query.replace(/[%_\\]/g, (char) => `\\${char}`);
-    query = query.ilike("name", `%${safe}%`);
+  const build = (withRanked: boolean) => {
+    let query = supabase
+      .from("game_lists")
+      .select(
+        withRanked
+          ? `${LIST_COLUMNS},ranked,${LIST_ITEMS}`
+          : `${LIST_COLUMNS},${LIST_ITEMS}`,
+      )
+      .eq("profile_id", options.ownerId);
+    if (options.publicOnly) query = query.eq("visibility", "PUBLIC");
+    else if (visibility !== "ALL") query = query.eq("visibility", visibility);
+    if (withRanked && mode !== "ALL")
+      query = query.eq("ranked", mode === "RANKED");
+    if (options.query) {
+      // Escape the LIKE wildcards so a name containing % or _ still matches
+      // literally instead of turning into a pattern.
+      const safe = options.query.replace(/[%_\\]/g, (char) => `\\${char}`);
+      query = query.ilike("name", `%${safe}%`);
+    }
+    // "size" and "likes" are sorted client-side after the page loads because the
+    // count lives inside the child rows and likes come from a separate RPC.
+    if (sort === "recent" || sort === "size" || sort === "likes")
+      query = query.order("updated_at", { ascending: false });
+    else if (sort === "oldest")
+      query = query.order("updated_at", { ascending: true });
+    else if (sort === "name") query = query.order("name", { ascending: true });
+    if (options.before) query = query.lt("updated_at", options.before);
+    return query.range(offset, offset + limit - 1);
+  };
+
+  type ListRow = {
+    id: string;
+    public_id: string;
+    name: string;
+    description: string | null;
+    visibility: string;
+    ranked?: boolean | null;
+    updated_at: string;
+    game_list_items: { igdb_id: number; position: number }[];
+  };
+  const first = (await build(true)) as {
+    data: ListRow[] | null;
+    error: { code?: string | null; message?: string | null } | null;
+  };
+  let lists = first.data;
+  if (isMissingSchemaError(first.error)) {
+    warnSchemaGap("game_lists.ranked", first.error);
+    // Without the column nothing is ranked, so a RANKED filter matches nothing
+    // and COLLECTION matches everything.
+    if (mode === "RANKED") return [];
+    ({ data: lists } = (await build(false)) as { data: ListRow[] | null });
   }
-  // "size" and "likes" are sorted client-side after the page loads because the
-  // count lives inside the child rows and likes come from a separate RPC.
-  if (sort === "recent" || sort === "size" || sort === "likes")
-    query = query.order("updated_at", { ascending: false });
-  else if (sort === "oldest")
-    query = query.order("updated_at", { ascending: true });
-  else if (sort === "name") query = query.order("name", { ascending: true });
-  if (options.before) query = query.lt("updated_at", options.before);
-  query = query.range(offset, offset + limit - 1);
-  const { data: lists } = await query;
   if (!lists?.length) return [];
 
   const itemsByList = lists.map((list) =>
@@ -140,21 +176,33 @@ export async function getListPreviews(
 // header total stay in sync with what the grid actually renders.
 export async function getListsCount(
   supabase: SupabaseClient,
-  options: Pick<PreviewOptions, "ownerId" | "publicOnly" | "visibility" | "mode" | "query">,
+  options: Pick<
+    PreviewOptions,
+    "ownerId" | "publicOnly" | "visibility" | "mode" | "query"
+  >,
 ): Promise<number> {
-  let query = supabase
-    .from("game_lists")
-    .select("id", { count: "exact", head: true })
-    .eq("profile_id", options.ownerId);
-  if (options.publicOnly) query = query.eq("visibility", "PUBLIC");
-  else if (options.visibility && options.visibility !== "ALL")
-    query = query.eq("visibility", options.visibility);
-  if (options.mode && options.mode !== "ALL")
-    query = query.eq("ranked", options.mode === "RANKED");
-  if (options.query) {
-    const safe = options.query.replace(/[%_\\]/g, (char) => `\\${char}`);
-    query = query.ilike("name", `%${safe}%`);
+  const build = (withRanked: boolean) => {
+    let query = supabase
+      .from("game_lists")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", options.ownerId);
+    if (options.publicOnly) query = query.eq("visibility", "PUBLIC");
+    else if (options.visibility && options.visibility !== "ALL")
+      query = query.eq("visibility", options.visibility);
+    if (withRanked && options.mode && options.mode !== "ALL")
+      query = query.eq("ranked", options.mode === "RANKED");
+    if (options.query) {
+      const safe = options.query.replace(/[%_\\]/g, (char) => `\\${char}`);
+      query = query.ilike("name", `%${safe}%`);
+    }
+    return query;
+  };
+  const first = await build(true);
+  let count = first.count;
+  if (isMissingSchemaError(first.error)) {
+    warnSchemaGap("game_lists.ranked (count)", first.error);
+    if (options.mode === "RANKED") return 0;
+    ({ count } = await build(false));
   }
-  const { count } = await query;
   return count ?? 0;
 }

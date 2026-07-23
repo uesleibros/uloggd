@@ -4,10 +4,15 @@ import {
   MODERATION_REPORT_STATE_VALUES,
   MODERATION_PAGE_SIZE,
   MODERATION_AUDIT_PAGE_SIZE,
+  clampPage,
   isModerationStatus,
   type ModerationStatus,
 } from "@/lib/moderation";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import {
+  isMissingSchemaError,
+  warnSchemaGap,
+} from "@/lib/supabase/schema-fallback";
 import { hasLocale } from "../dictionaries";
 import "./moderation.css";
 
@@ -38,13 +43,53 @@ export default async function ModerationPage({
     : "OPEN";
   const search = typeof query.q === "string" ? query.q.trim().slice(0, 32) : "";
 
+  // The totals come first because they decide how many pages exist, which in
+  // turn decides which slice the queries below are allowed to ask for.
+  const [{ count: auditTotal }, ...countResults] = await Promise.all([
+    supabase
+      .from("moderation_actions")
+      .select("id", { count: "exact", head: true }),
+    ...MODERATION_REPORT_STATE_VALUES.map((entry) =>
+      supabase
+        .from("reports")
+        .select("id", { count: "exact", head: true })
+        .eq("status", entry),
+    ),
+  ]);
+  const statusCounts = Object.fromEntries(
+    MODERATION_REPORT_STATE_VALUES.map((entry, index) => [
+      entry,
+      countResults[index]?.count ?? 0,
+    ]),
+  ) as Record<ModerationStatus, number>;
+  statusCounts.ALL = MODERATION_REPORT_STATE_VALUES.reduce(
+    (sum, entry) => sum + (statusCounts[entry] ?? 0),
+    0,
+  );
+
+  // Reports are filtered by status only — the search box targets accounts — so
+  // the tab count is already the total for this view.
+  const reportTotal = statusCounts[status] ?? 0;
+  const { page, pageCount } = clampPage(
+    query.page,
+    reportTotal,
+    MODERATION_PAGE_SIZE,
+  );
+  const { page: auditPage, pageCount: auditPageCount } = clampPage(
+    query.audit,
+    auditTotal ?? 0,
+    MODERATION_AUDIT_PAGE_SIZE,
+  );
+  const reportOffset = (page - 1) * MODERATION_PAGE_SIZE;
+  const auditOffset = (auditPage - 1) * MODERATION_AUDIT_PAGE_SIZE;
+
   let reportQuery = supabase
     .from("reports")
     .select(
       "id,reporter_id,target_profile_id,content_type,content_id,reason,details,status,created_at,moderator_note,reviewed_at",
     )
     .order("created_at", { ascending: false })
-    .limit(MODERATION_PAGE_SIZE);
+    .range(reportOffset, reportOffset + MODERATION_PAGE_SIZE - 1);
   if (status !== "ALL") reportQuery = reportQuery.eq("status", status);
 
   let accountQuery = supabase
@@ -59,40 +104,20 @@ export default async function ModerationPage({
     );
   }
 
-  const [
-    { data: reports },
-    { data: searchedAccounts },
-    { data: actions },
-    ...countPromises
-  ] = await Promise.all([
-    reportQuery,
-    accountQuery,
-    supabase
-      .from("moderation_actions")
-      .select(
-        "id,moderator_id,target_profile_id,action,reason,created_at,metadata",
-      )
-      .order("created_at", { ascending: false })
-      .limit(MODERATION_AUDIT_PAGE_SIZE),
-    ...MODERATION_REPORT_STATE_VALUES.map((entry) =>
+  const [{ data: reports }, { data: searchedAccounts }, { data: actions }] =
+    await Promise.all([
+      reportQuery,
+      accountQuery,
       supabase
-        .from("reports")
-        .select("id", { count: "exact", head: true })
-        .eq("status", entry),
-    ),
-  ]);
+        .from("moderation_actions")
+        .select(
+          "id,moderator_id,target_profile_id,action,reason,created_at,metadata",
+        )
+        .order("created_at", { ascending: false })
+        .range(auditOffset, auditOffset + MODERATION_AUDIT_PAGE_SIZE - 1),
+    ]);
 
   const reportRows = reports ?? [];
-  const statusCounts = Object.fromEntries(
-    MODERATION_REPORT_STATE_VALUES.map((entry, index) => [
-      entry,
-      countPromises[index]?.count ?? 0,
-    ]),
-  ) as Record<ModerationStatus, number>;
-  statusCounts.ALL = MODERATION_REPORT_STATE_VALUES.reduce(
-    (sum, entry) => sum + (statusCounts[entry] ?? 0),
-    0,
-  );
 
   const profileIds = [
     ...new Set(
@@ -122,7 +147,7 @@ export default async function ModerationPage({
   const [
     { data: profiles },
     { data: comments },
-    { data: screenshotRows },
+    screenshotResult,
     { data: moderationStates },
   ] = await Promise.all([
     profileIds.length
@@ -146,7 +171,7 @@ export default async function ModerationPage({
             "id,public_id,storage_path,description,igdb_id,game_slug,width,height,contains_spoilers,deleted_at",
           )
           .in("id", screenshotIds)
-      : Promise.resolve({ data: [] }),
+      : Promise.resolve({ data: [], error: null }),
     profileIds.length
       ? supabase
           .from("profile_moderation_state")
@@ -154,6 +179,26 @@ export default async function ModerationPage({
           .in("profile_id", profileIds)
       : Promise.resolve({ data: [] }),
   ]);
+  // deleted_at comes from a migration that may still be pending; asking for it
+  // against an older schema fails the whole select and leaves every screenshot
+  // report with no evidence attached.
+  let screenshotRows = screenshotResult.data;
+  if (isMissingSchemaError(screenshotResult.error)) {
+    warnSchemaGap(
+      "screenshots.deleted_at (moderation)",
+      screenshotResult.error,
+    );
+    const { data: fallback } = await supabase
+      .from("screenshots")
+      .select(
+        "id,public_id,storage_path,description,igdb_id,game_slug,width,height,contains_spoilers",
+      )
+      .in("id", screenshotIds);
+    screenshotRows = (fallback ?? []).map((row) => ({
+      ...row,
+      deleted_at: null,
+    })) as NonNullable<typeof screenshotRows>;
+  }
 
   const paths = (screenshotRows ?? [])
     .filter((row) => !row.deleted_at)
@@ -173,7 +218,7 @@ export default async function ModerationPage({
     width: row.width,
     height: row.height,
     containsSpoilers: row.contains_spoilers,
-    deletedAt: row.deleted_at,
+    deletedAt: row.deleted_at ?? null,
     imageUrl: signedByPath.get(row.storage_path) ?? null,
   }));
 
@@ -191,6 +236,13 @@ export default async function ModerationPage({
       screenshots={screenshots}
       moderationStates={moderationStates ?? []}
       actions={actions ?? []}
+      page={page}
+      pageCount={pageCount}
+      pageSize={MODERATION_PAGE_SIZE}
+      reportTotal={reportTotal}
+      auditPage={auditPage}
+      auditPageCount={auditPageCount}
+      auditTotal={auditTotal ?? 0}
     />
   );
 }

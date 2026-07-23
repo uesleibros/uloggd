@@ -12,27 +12,51 @@ import { MentionText } from "@/components/social/mention-text";
 import { RelativeTime } from "@/components/relative-time";
 import { getGamesByIds } from "@/lib/igdb";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import {
+  isMissingSchemaError,
+  warnSchemaGap,
+} from "@/lib/supabase/schema-fallback";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
 
+// deleted_at arrives with the screenshot-moderation migration. Naming a column
+// the database does not have yet fails the whole select, and this page reads a
+// null row as "gone" — which is how every screenshot turned into a 404. Both
+// selects below fall back to the pre-migration shape.
+// Both variants are written out in full: supabase-js derives the row type from
+// the literal select string, so composing one loses every property.
 const screenshotSelect =
   "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
+const screenshotSelectLegacy =
+  "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
   if (!hasLocale(lang) || !/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
     return {};
-  const { data } = await (
-    await getSupabase()
-  )
+  const supabase = await getSupabase();
+  const first = await supabase
     .from("screenshots")
     .select(
       "description,game_slug,contains_spoilers,deleted_at,profiles!screenshots_profile_id_fkey(username)",
     )
     .eq("public_id", id)
     .maybeSingle();
+  let data = first.data;
+  if (isMissingSchemaError(first.error)) {
+    const { data: fallback } = await supabase
+      .from("screenshots")
+      .select(
+        "description,game_slug,contains_spoilers,profiles!screenshots_profile_id_fkey(username)",
+      )
+      .eq("public_id", id)
+      .maybeSingle();
+    data = fallback
+      ? ({ ...fallback, deleted_at: null } as NonNullable<typeof data>)
+      : null;
+  }
   if (!data || data.deleted_at) return {};
   const profile = Array.isArray(data.profiles)
     ? data.profiles[0]
@@ -58,7 +82,7 @@ export default async function ScreenshotPage({ params }: Props) {
   if (!hasLocale(lang) || !/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
     notFound();
   const supabase = await getSupabase();
-  const [{ data: shot }, user] = await Promise.all([
+  const [shotResult, user] = await Promise.all([
     supabase
       .from("screenshots")
       .select(screenshotSelect)
@@ -66,6 +90,18 @@ export default async function ScreenshotPage({ params }: Props) {
       .maybeSingle(),
     getAuthUser(),
   ]);
+  let shot = shotResult.data;
+  if (isMissingSchemaError(shotResult.error)) {
+    warnSchemaGap("screenshots.deleted_at", shotResult.error);
+    const { data: fallback } = await supabase
+      .from("screenshots")
+      .select(screenshotSelectLegacy)
+      .eq("public_id", id)
+      .maybeSingle();
+    shot = fallback
+      ? ({ ...fallback, deleted_at: null } as NonNullable<typeof shot>)
+      : null;
+  }
   // Moderators keep read access so the console can show an actioned report, but
   // the public page is not where a removed screenshot should surface.
   if (!shot || shot.deleted_at) notFound();
