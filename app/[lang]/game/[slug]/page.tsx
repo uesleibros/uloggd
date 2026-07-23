@@ -447,10 +447,17 @@ export default async function GamePage({ params, searchParams }: Props) {
                         {tri(lang, "Publicação", "Published by", "Publicación")}
                       </dt>
                       <dd>
+                        {/* With a slug the name goes to the publisher page;
+                            without one there is nothing to show, so it falls
+                            back to the catalogue filtered by that company. */}
                         {game.searchFilters.publishers.map((item) => (
                           <Link
                             className="game-detail-filter-link"
-                            href={`/${lang}/search?publishers=${item.id}`}
+                            href={
+                              item.slug
+                                ? `/${lang}/publisher/${item.slug}`
+                                : `/${lang}/search?publishers=${item.id}`
+                            }
                             key={item.id}
                           >
                             {item.name}

@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { Layers3, ListOrdered, LoaderCircle, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -45,6 +45,10 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"COLLECTION" | "RANKED">("COLLECTION");
+  // The RPC finishing is not the same as the new list being on screen; the
+  // button stays busy until router.refresh() has re-rendered the grid.
+  const [refreshing, startRefresh] = useTransition();
+  const busy = pending || refreshing;
 
   async function submit(formData: FormData) {
     setPending(true);
@@ -98,10 +102,10 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
           : localized,
       );
     } else {
-      router.refresh();
       // The list exists either way; saying so beats letting the author discover
       // later that the ranking they asked for is a plain collection.
-      if (droppedMode && mode === "RANKED")
+      const halfApplied = droppedMode && mode === "RANKED";
+      if (halfApplied)
         setError(
           tri(
             lang,
@@ -110,7 +114,10 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
             "La lista se creó como colección: la base de datos no tiene la migración ranked_lists para el formato Ranking.",
           ),
         );
-      else setOpen(false);
+      startRefresh(() => {
+        router.refresh();
+        if (!halfApplied) setOpen(false);
+      });
     }
     setPending(false);
   }
@@ -242,9 +249,9 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
             {error && <p role="alert">{error}</p>}
             <footer>
               <Dialog.Close type="button">{t.cancel}</Dialog.Close>
-              <button type="submit" disabled={pending}>
-                {pending && <LoaderCircle className="spin" size={15} />}
-                {pending
+              <button type="submit" disabled={busy}>
+                {busy && <LoaderCircle className="spin" size={15} />}
+                {busy
                   ? tri(lang, "Criando…", "Creating…", "Creando…")
                   : tri(lang, "Criar lista", "Create list", "Crear lista")}
               </button>

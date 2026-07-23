@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { EditorVisibilitySelect } from "./review-studio-form";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -39,6 +39,11 @@ export function ListOwnerControls({
     list.ranked ? "RANKED" : "COLLECTION",
   );
   const [error, setError] = useState<string | null>(null);
+  // router.refresh() is server work the RPC's own pending flag knows nothing
+  // about. Without this the spinner stopped and the dialog closed while the
+  // page was still showing the old name, which read as "nothing happened".
+  const [refreshing, startRefresh] = useTransition();
+  const busy = pending || refreshing;
   useEffect(
     () => () => {
       if (disarmTimer.current) window.clearTimeout(disarmTimer.current);
@@ -83,10 +88,10 @@ export function ListOwnerControls({
       setPending(false);
       return;
     }
-    router.refresh();
     // Closing on a half-applied save is how "salvei e não mudou nada" happens;
     // the dialog stays open to say which part did not land.
-    if (droppedMode && (mode === "RANKED") !== list.ranked) {
+    const halfApplied = droppedMode && (mode === "RANKED") !== list.ranked;
+    if (halfApplied) {
       setError(
         tri(
           lang,
@@ -95,8 +100,14 @@ export function ListOwnerControls({
           "Nombre, descripción y visibilidad se guardaron, pero el formato no: la base de datos no tiene la migración ranked_lists.",
         ),
       );
-    } else setOpen(false);
+    }
     setPending(false);
+    // Closing inside the transition means the dialog stays put, spinner and
+    // all, until the refreshed page is ready behind it.
+    startRefresh(() => {
+      router.refresh();
+      if (!halfApplied) setOpen(false);
+    });
   }
   async function remove() {
     if (pending) return;
@@ -279,12 +290,14 @@ export function ListOwnerControls({
                 </p>
               )}
               <footer>
-                <Dialog.Close type="button">{t.cancel}</Dialog.Close>
-                <button type="submit" disabled={pending}>
-                  {pending && (
+                <Dialog.Close type="button" disabled={busy}>
+                  {t.cancel}
+                </Dialog.Close>
+                <button type="submit" disabled={busy}>
+                  {busy && (
                     <LoaderCircle className="spin" size={15} aria-hidden />
                   )}
-                  {pending ? t.saving : t.save}
+                  {busy ? t.saving : t.save}
                 </button>
               </footer>
             </form>

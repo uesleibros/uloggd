@@ -34,7 +34,7 @@ type IgdbGameResponse = {
   involved_companies?: {
     developer?: boolean;
     publisher?: boolean;
-    company?: { id: number; name: string };
+    company?: { id: number; name: string; slug?: string };
   }[];
   videos?: { video_id: string; name?: string }[];
   themes?: { id: number; name: string }[];
@@ -178,7 +178,10 @@ async function getAccessToken() {
   return data.access_token;
 }
 
-function imageUrl(imageId: string, size: "cover_big" | "1080p") {
+function imageUrl(
+  imageId: string,
+  size: "cover_big" | "1080p" | "logo_med" | "thumb",
+) {
   return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`;
 }
 
@@ -762,7 +765,9 @@ export type GameDetail = Game & {
     platforms: { id: number; name: string }[];
     themes: { id: number; name: string }[];
     modes: { id: number; name: string }[];
-    publishers: { id: number; name: string }[];
+    // slug is what links a game to its publisher page; it is optional because
+    // IGDB occasionally has a company row without one.
+    publishers: { id: number; name: string; slug?: string }[];
   };
   ageRatings: {
     organization: string;
@@ -820,7 +825,7 @@ export const getGameBySlug = cache(async function getGameBySlug(
     `
     fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
       cover.image_id,artworks.image_id,screenshots.image_id,genres.id,genres.name,
-      platforms.id,platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.id,involved_companies.company.name,
+      platforms.id,platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.id,involved_companies.company.name,involved_companies.company.slug,
       videos.video_id,videos.name,themes.id,themes.name,game_modes.id,game_modes.name,websites.url,
       age_ratings.organization.name,age_ratings.rating_category.rating,
       language_supports.language.name,language_supports.language.native_name,language_supports.language_support_type.name,
@@ -1095,3 +1100,140 @@ export async function getGenreCollections(): Promise<GenreCollection[]> {
   );
   return genres.map((genre, index) => ({ ...genre, games: games[index] }));
 }
+
+type IgdbCompanyResponse = {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  country?: number;
+  start_date?: number;
+  logo?: IgdbImage;
+  websites?: { url: string }[];
+  parent?: { id: number; name: string; slug: string };
+  published?: number[];
+  developed?: number[];
+};
+
+export type CompanyProfile = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  countryCode: number | null;
+  foundedTimestamp: number | null;
+  logoUrl: string | null;
+  websites: string[];
+  parent: { name: string; slug: string } | null;
+  publishedCount: number;
+  developedCount: number;
+  published: Game[];
+  developed: Game[];
+};
+
+/** Releases per year across the whole catalogue, oldest first. */
+export type CompanyTimeline = { year: number; count: number }[];
+
+const COMPANY_GAME_FIELDS =
+  "fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.developer,involved_companies.company.name;";
+
+// A company's `published`/`developed` arrays hold every game id, which is the
+// cheapest exact total available — counting through the games endpoint would
+// need a second round trip per role.
+export const getCompanyBySlug = cache(async function getCompanyBySlug(
+  slug: string,
+): Promise<CompanyProfile | null> {
+  if (!/^[a-z0-9-]{1,255}$/.test(slug)) return null;
+  // The e2e fixtures carry games, not companies; without credentials the live
+  // query would throw instead of rendering a clean 404.
+  if (process.env.ULOGGD_E2E === "1") return null;
+  const companies = await queryIgdbRaw<IgdbCompanyResponse>(
+    "companies",
+    `
+    fields id,name,slug,description,country,start_date,logo.image_id,websites.url,
+      parent.id,parent.name,parent.slug,published,developed;
+    where slug = "${escapeIgdb(slug)}";
+    limit 1;
+  `,
+    12 * CACHE_HOURS,
+  );
+  const company = companies[0];
+  if (!company) return null;
+
+  const roleQuery = (role: "publisher" | "developer") => `
+    ${COMPANY_GAME_FIELDS}
+    where involved_companies.company = ${company.id}
+      & involved_companies.${role} = true
+      & cover != null
+      & game_type = (0,8,9);
+    sort total_rating_count desc;
+    limit 12;
+  `;
+  const [published, developed] = await Promise.all([
+    company.published?.length
+      ? queryGames(roleQuery("publisher"), 12 * CACHE_HOURS)
+      : Promise.resolve([]),
+    company.developed?.length
+      ? queryGames(roleQuery("developer"), 12 * CACHE_HOURS)
+      : Promise.resolve([]),
+  ]);
+
+  return {
+    id: company.id,
+    name: company.name,
+    slug: company.slug,
+    description: company.description?.trim() ?? "",
+    countryCode: company.country ?? null,
+    foundedTimestamp: company.start_date ?? null,
+    logoUrl: company.logo ? imageUrl(company.logo.image_id, "logo_med") : null,
+    websites: [
+      ...new Set(
+        (company.websites ?? [])
+          .map((site) => site.url)
+          .filter((url) => /^https?:\/\//.test(url)),
+      ),
+    ].slice(0, 6),
+    parent: company.parent
+      ? { name: company.parent.name, slug: company.parent.slug }
+      : null,
+    publishedCount: company.published?.length ?? 0,
+    developedCount: company.developed?.length ?? 0,
+    published,
+    developed,
+  };
+});
+
+/**
+ * Sweeps every dated release for one company, one field per row. A big
+ * publisher needs several pages — IGDB caps a request at 500 — so this is kept
+ * out of getCompanyBySlug and streamed into the page behind Suspense instead of
+ * holding the shell hostage.
+ */
+export const getCompanyTimeline = cache(async function getCompanyTimeline(
+  companyId: number,
+): Promise<CompanyTimeline> {
+  if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
+  const perYear = new Map<number, number>();
+  const PAGE = 500;
+  for (let page = 0; page < 6; page += 1) {
+    const rows = await queryIgdbRaw<{ first_release_date: number }>(
+      "games",
+      `
+      fields first_release_date;
+      where involved_companies.company = ${companyId} & first_release_date != null;
+      sort first_release_date asc;
+      limit ${PAGE};
+      offset ${page * PAGE};
+    `,
+      24 * CACHE_HOURS,
+    ).catch(() => []);
+    for (const row of rows) {
+      const year = new Date(row.first_release_date * 1000).getUTCFullYear();
+      perYear.set(year, (perYear.get(year) ?? 0) + 1);
+    }
+    if (rows.length < PAGE) break;
+  }
+  return [...perYear.entries()]
+    .map(([year, count]) => ({ year, count }))
+    .sort((a, b) => a.year - b.year);
+});

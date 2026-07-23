@@ -13,6 +13,9 @@ const publicSegments = new Set([
   "search",
   "u",
   "lists",
+  // Company pages are catalogue data, same as /game — nothing on them depends
+  // on who is looking, so they stay reachable without an account.
+  "publisher",
 ]);
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
