@@ -30,6 +30,9 @@ export function ScrollReset() {
       cameFromHistory.current = false;
       return;
     }
+    // A URL that names an anchor is asking for a specific place on the page,
+    // not the top. Without this the reset raced CommentAnchor and won.
+    if (window.location.hash) return;
     // Instant, not smooth: a new route should already be at the top when it
     // paints, not scroll up while the reader watches.
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });

@@ -7,6 +7,7 @@ import { DesktopGameSearch } from "@/components/game-search";
 import { PlatformFooter } from "@/components/platform-footer";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { CookieConsent } from "@/components/cookie-consent";
+import { CommentAnchor } from "@/components/comment-anchor";
 import { ScrollReset } from "@/components/scroll-reset";
 import { SmartHeader } from "@/components/smart-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -118,6 +119,7 @@ export default async function LocaleLayout({
       </head>
       <body>
         <ScrollReset />
+        <CommentAnchor />
         <ThemeManager />
         <TwemojiManager />
         <TextareaAutosizeManager />

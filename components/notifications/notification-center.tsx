@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
+import { COMMENT_REVEAL_EVENT } from "@/components/comment-anchor";
 import { createClient } from "@/lib/supabase/client";
 import { tri } from "@/lib/ui-text";
 import { RelativeTime } from "@/components/relative-time";
@@ -328,28 +329,18 @@ export function NotificationCenter({
     setSaving(false);
   }
 
-  function openComment(targetId: string, href: string) {
+  function openComment(href: string) {
     setOpen(false);
-    const destination = new URL(href, window.location.origin);
-    const alreadyOnProfile = destination.pathname === window.location.pathname;
+    // Navigating is the whole job now: CommentAnchor watches the hash and waits
+    // for the comment to arrive, which the old poll here could not do — the
+    // thread is fetched after mount and the two-second budget ran out first.
     router.push(href, { scroll: false });
-    if (alreadyOnProfile) router.refresh();
-    let attempts = 0;
-    const reveal = () => {
-      const target = document.getElementById(`comment-${targetId}`);
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "center" });
-        target.focus({ preventScroll: true });
-        target.dataset.highlight = "true";
-        window.setTimeout(() => {
-          delete target.dataset.highlight;
-        }, 2400);
-        return;
-      }
-      attempts += 1;
-      if (attempts < 40) window.setTimeout(reveal, 50);
-    };
-    window.setTimeout(reveal, 0);
+    // Same page, same hash: neither the router nor hashchange fires, so the
+    // reveal has to be asked for explicitly.
+    window.setTimeout(
+      () => window.dispatchEvent(new Event(COMMENT_REVEAL_EVENT)),
+      0,
+    );
   }
 
   return (
@@ -608,12 +599,7 @@ export function NotificationCenter({
                         data-unread={!item.read_at || undefined}
                         onClick={() => {
                           void markRead(item);
-                          openComment(
-                            commentTarget?.publicId ??
-                              screenshotCommentTarget?.commentPublicId ??
-                              item.target_id!,
-                            href,
-                          );
+                          openComment(href);
                         }}
                       >
                         {content}
