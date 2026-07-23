@@ -17330,25 +17330,35 @@ adapted to the current uloggd surface system. */
 
 /* Notification deep-links scroll to a comment and flag data-highlight so the
    reader can spot which one triggered the notification. */
+/* Arrives with a flash and settles into the resting tint below: a from-only
+   keyframe animates back to the element's own style, so there is no jump when
+   the animation ends. */
 @keyframes comment-notification-highlight {
-  0% {
-    background: color-mix(in oklab, var(--brand-blurple) 32%, transparent);
-    box-shadow: 0 0 0 2px
-      color-mix(in oklab, var(--brand-blurple) 55%, transparent);
-  }
-  70% {
-    background: color-mix(in oklab, var(--brand-blurple) 18%, transparent);
-    box-shadow: 0 0 0 2px
-      color-mix(in oklab, var(--brand-blurple) 30%, transparent);
-  }
-  100% {
-    background: transparent;
-    box-shadow: 0 0 0 2px transparent;
+  from {
+    background: color-mix(in oklab, var(--brand-blurple) 34%, transparent);
+    box-shadow:
+      inset 3px 0 0 var(--brand-blurple),
+      0 0 0 2px color-mix(in oklab, var(--brand-blurple) 58%, transparent);
   }
 }
+/* The mark stays for as long as the URL points at this comment — the reader
+   should still be able to tell which one they were sent to after scrolling
+   through the rest of the thread. */
 article[id^="comment-"][data-highlight] {
   border-radius: 12px;
-  animation: comment-notification-highlight 2400ms ease-out;
+  background: color-mix(in oklab, var(--brand-blurple) 9%, transparent);
+  box-shadow:
+    inset 3px 0 0 var(--brand-blurple),
+    0 0 0 1px color-mix(in oklab, var(--brand-blurple) 26%, transparent);
+  animation: comment-notification-highlight 1100ms ease-out;
+}
+article[id^="comment-"][data-highlight]:focus-visible {
+  outline: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  article[id^="comment-"][data-highlight] {
+    animation: none;
+  }
 }
 
 /* ── Pagination ───────────────────────────────────────────────────────────

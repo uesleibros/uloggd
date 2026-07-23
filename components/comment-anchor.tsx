@@ -11,8 +11,6 @@ const COMMENT_HASH = /^#comment-([A-Za-z0-9_-]{1,64})$/;
 const WAIT_FOR_COMMENT = 15_000;
 /** How long the target is held in place while the page keeps filling in. */
 const HOLD_ALIGNMENT = 1_400;
-/** Slightly longer than the CSS highlight animation. */
-const HIGHLIGHT = 2_600;
 
 /**
  * Reveals the comment named in the URL hash.
@@ -59,11 +57,12 @@ export function CommentAnchor() {
       window.addEventListener("keydown", release);
       releaseTimer = window.setTimeout(release, HOLD_ALIGNMENT);
       disposers.push(release);
-
-      const fade = window.setTimeout(() => {
+      // The mark is not on a timer: it lives as long as the URL points here, so
+      // scrolling through the rest of the thread and coming back still shows
+      // which comment was linked. Only a new target or leaving clears it.
+      disposers.push(() => {
         delete node.dataset.highlight;
-      }, HIGHLIGHT);
-      disposers.push(() => window.clearTimeout(fade));
+      });
     }
 
     function run() {
