@@ -171,7 +171,10 @@ export function ListAddGame({
             {query.trim().length >= 2 ? (
               <div className="list-add-game-results" aria-busy={searching}>
                 {searching && !results.length ? (
-                  <p>{tri(lang, "Buscando…", "Searching…", "Buscando…")}</p>
+                  <p className="list-add-game-status">
+                    <LoaderCircle className="spin" size={14} aria-hidden />
+                    {tri(lang, "Buscando…", "Searching…", "Buscando…")}
+                  </p>
                 ) : results.length ? (
                   results.map((game) => {
                     const already = inList.has(game.id);

@@ -9,6 +9,7 @@ import { LocaleSwitcher } from "@/components/locale-switcher";
 import { CookieConsent } from "@/components/cookie-consent";
 import { CommentAnchor } from "@/components/comment-anchor";
 import { ScrollReset } from "@/components/scroll-reset";
+import { TopProgress } from "@/components/top-progress";
 import { SmartHeader } from "@/components/smart-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeManager } from "@/components/theme-manager";
@@ -118,6 +119,7 @@ export default async function LocaleLayout({
         />
       </head>
       <body>
+        <TopProgress />
         <ScrollReset />
         <CommentAnchor />
         <ThemeManager />
