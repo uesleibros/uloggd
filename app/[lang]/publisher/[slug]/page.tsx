@@ -163,7 +163,8 @@ function GameShelf({
   signedIn,
 }: {
   title: string;
-  description: string;
+  /** Only when there is something to say the heading does not already say. */
+  description?: string;
   games: Game[];
   total: number;
   href: string;
@@ -177,7 +178,7 @@ function GameShelf({
       <header>
         <div>
           <h2>{title}</h2>
-          <p>{description}</p>
+          {description && <p>{description}</p>}
         </div>
         {total > games.length && (
           <Link className="publisher-see-all" href={href}>
@@ -233,14 +234,6 @@ async function UpcomingGames({
       <header>
         <div>
           <h2>{tri(lang, "Em breve", "Coming soon", "Próximamente")}</h2>
-          <p>
-            {tri(
-              lang,
-              "Anunciados e ainda sem lançamento.",
-              "Announced and not out yet.",
-              "Anunciados y aún sin lanzamiento.",
-            )}
-          </p>
         </div>
       </header>
       <ol className="publisher-upcoming">
@@ -286,20 +279,13 @@ async function RecentTrailers({
     <section className="publisher-section">
       <header>
         <div>
-          <h2>
-            {tri(
-              lang,
-              "Trailers dos últimos lançamentos",
-              "Trailers from the latest releases",
-              "Tráilers de los últimos lanzamientos",
-            )}
-          </h2>
+          <h2>{tri(lang, "Trailers", "Trailers", "Tráilers")}</h2>
           <p>
             {tri(
               lang,
-              "O que a empresa colocou na rua mais recentemente.",
-              "What the company shipped most recently.",
-              "Lo más reciente que la empresa lanzó.",
+              "Lançamentos mais recentes com vídeo",
+              "Most recent releases with video",
+              "Lanzamientos más recientes con video",
             )}
           </p>
         </div>
@@ -346,9 +332,9 @@ async function CompanyEvents({
           <p>
             {tri(
               lang,
-              "Transmissões e feiras onde os jogos da empresa apareceram.",
-              "Showcases and expos where the company's games appeared.",
-              "Transmisiones y ferias donde aparecieron sus juegos.",
+              "Onde os jogos da empresa apareceram",
+              "Where the company's games showed up",
+              "Donde aparecieron los juegos de la empresa",
             )}
           </p>
         </div>
@@ -390,29 +376,6 @@ async function CompanyEvents({
   );
 }
 
-function StatTile({
-  icon,
-  label,
-  value,
-  hint,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  hint?: string;
-}) {
-  return (
-    <div className="publisher-stat">
-      <span>{icon}</span>
-      <p>
-        <strong>{value}</strong>
-        <small>{label}</small>
-      </p>
-      {hint && <em>{hint}</em>}
-    </div>
-  );
-}
-
 export default async function PublisherPage({ params }: Props) {
   const { lang, slug } = await params;
   if (!hasLocale(lang)) notFound();
@@ -447,14 +410,7 @@ export default async function PublisherPage({ params }: Props) {
   const founded = company.foundedTimestamp
     ? new Date(company.foundedTimestamp * 1000).getUTCFullYear()
     : null;
-  const rated = uniqueHighlights.filter(
-    (game) => typeof game.rating === "number",
-  );
-  const bestRated = rated.length
-    ? rated.reduce((best, game) =>
-        (game.rating ?? 0) > (best.rating ?? 0) ? game : best,
-      )
-    : null;
+  const initial = company.name.toUpperCase().match(/[\p{L}\p{N}]/u)?.[0] ?? "";
   const backdrop =
     uniqueHighlights.find((game) => game.heroUrl)?.heroUrl ?? null;
   const searchHref = `/${lang}/search?publishers=${company.id}`;
@@ -474,14 +430,19 @@ export default async function PublisherPage({ params }: Props) {
       className="publisher-page"
       data-has-backdrop={Boolean(backdrop) || undefined}
       style={
-        backdrop
-          ? ({
-              // Same trick the profile banner uses: the art goes through a CSS
-              // variable so the bleeding ::before layer can carry it past the
-              // page gutters without a second <img> in the markup.
-              "--publisher-backdrop-image": `url("${backdrop.replace(/["\\\n\r]/g, encodeURIComponent)}")`,
-            } as React.CSSProperties)
-          : undefined
+        {
+          // Letters and digits only: the value lands inside a quoted CSS
+          // string, and a name starting with a quote would break out of it.
+          "--publisher-initial": `"${initial}"`,
+          ...(backdrop
+            ? {
+                // Same trick the profile banner uses: the art goes through a CSS
+                // variable so the bleeding ::before layer can carry it past the
+                // page gutters without a second <img> in the markup.
+                "--publisher-backdrop-image": `url("${backdrop.replace(/["\\\n\r]/g, encodeURIComponent)}")`,
+              }
+            : {}),
+        } as React.CSSProperties
       }
     >
       {/* Organization markup: it is what lets a search engine tie the page to
@@ -598,45 +559,40 @@ export default async function PublisherPage({ params }: Props) {
             </div>
           )}
         </div>
+        <dl className="publisher-stats">
+          <div>
+            <dt>
+              <Library size={13} aria-hidden />{" "}
+              {tri(lang, "Publicados", "Published", "Publicados")}
+            </dt>
+            <dd>{company.publishedCount}</dd>
+          </div>
+          <div>
+            <dt>
+              <Gamepad2 size={13} aria-hidden />{" "}
+              {tri(lang, "Desenvolvidos", "Developed", "Desarrollados")}
+            </dt>
+            <dd>{company.developedCount}</dd>
+          </div>
+          {user && (
+            <div>
+              <dt>
+                <Star size={13} aria-hidden />{" "}
+                {tri(
+                  lang,
+                  "Na sua biblioteca",
+                  "In your library",
+                  "En tu biblioteca",
+                )}
+              </dt>
+              <dd>
+                {saved.size}
+                <small>/{uniqueHighlights.length}</small>
+              </dd>
+            </div>
+          )}
+        </dl>
       </header>
-
-      <section className="publisher-stats">
-        <StatTile
-          icon={<Library size={16} aria-hidden />}
-          label={tri(lang, "Publicados", "Published", "Publicados")}
-          value={String(company.publishedCount)}
-        />
-        <StatTile
-          icon={<Gamepad2 size={16} aria-hidden />}
-          label={tri(lang, "Desenvolvidos", "Developed", "Desarrollados")}
-          value={String(company.developedCount)}
-        />
-        {bestRated && (
-          <StatTile
-            icon={<Star size={16} aria-hidden />}
-            label={tri(
-              lang,
-              "Melhor avaliado",
-              "Highest rated",
-              "Mejor valorado",
-            )}
-            value={`${bestRated.rating}`}
-            hint={bestRated.name}
-          />
-        )}
-        {user && (
-          <StatTile
-            icon={<Library size={16} aria-hidden />}
-            label={tri(
-              lang,
-              "Destaques na sua biblioteca",
-              "Highlights in your library",
-              "Destacados en tu biblioteca",
-            )}
-            value={`${saved.size}/${uniqueHighlights.length}`}
-          />
-        )}
-      </section>
 
       {/* Each of these costs its own IGDB round trip, so they stream instead of
           holding the shell. React patches them into place, so the reading order
@@ -649,9 +605,9 @@ export default async function PublisherPage({ params }: Props) {
         title={tri(lang, "Publicados", "Published", "Publicados")}
         description={tri(
           lang,
-          "Os mais registrados da comunidade IGDB.",
-          "The most logged across the IGDB community.",
-          "Los más registrados de la comunidad IGDB.",
+          "Do mais registrado ao menos",
+          "Most logged first",
+          "Del más registrado al menos",
         )}
         games={company.published}
         total={company.publishedCount}
@@ -662,12 +618,6 @@ export default async function PublisherPage({ params }: Props) {
       />
       <GameShelf
         title={tri(lang, "Desenvolvidos", "Developed", "Desarrollados")}
-        description={tri(
-          lang,
-          "Feitos pela própria casa.",
-          "Made in house.",
-          "Hechos en casa.",
-        )}
         games={company.developed}
         total={company.developedCount}
         href={`${searchHref}&role=developer`}

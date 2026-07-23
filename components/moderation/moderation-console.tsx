@@ -617,9 +617,9 @@ export function ModerationConsole({
           <p>
             {tri(
               lang,
-              "Analise denúncias, proteja a comunidade e mantenha toda decisão auditável.",
-              "Review reports, protect the community, and keep every decision auditable.",
-              "Revisa denuncias, protege la comunidad y mantén cada decisión auditable.",
+              `${statusCounts.OPEN} abertas · ${statusCounts.REVIEWING} em análise`,
+              `${statusCounts.OPEN} open · ${statusCounts.REVIEWING} under review`,
+              `${statusCounts.OPEN} abiertas · ${statusCounts.REVIEWING} en revisión`,
             )}
           </p>
         </div>
@@ -1061,14 +1061,6 @@ export function ModerationConsole({
                 "Gestionar usuarios",
               )}
             </h2>
-            <p>
-              {tri(
-                lang,
-                "Busque pelo @ ou nome de exibição.",
-                "Search by handle or display name.",
-                "Busca por @ o nombre visible.",
-              )}
-            </p>
           </div>
           <form
             className="moderation-search"
@@ -1221,12 +1213,6 @@ export function ModerationConsole({
           <div>
             <h2>{tri(lang, "Auditoria", "Audit log", "Auditoría")}</h2>
             <p>
-              {tri(
-                lang,
-                "Registro imutável das decisões.",
-                "Immutable decisions log.",
-                "Registro inmutable de las decisiones.",
-              )}{" "}
               {rangeLabel(
                 lang,
                 auditPage,

@@ -50,12 +50,14 @@
   background: transparent;
   box-shadow: none;
 }
+/* The profile prints a giant "U" here; on a company that letter means nothing,
+   so this one carries the company's own initial. */
 .publisher-banner[data-empty]::after {
   position: absolute;
   right: clamp(24px, 5vw, 72px);
   bottom: clamp(-50px, -3vw, -24px);
   color: rgb(244 242 246 / 4%);
-  content: "U";
+  content: var(--publisher-initial, "");
   font-size: clamp(180px, 22vw, 320px);
   font-weight: 760;
   letter-spacing: -0.09em;
@@ -189,55 +191,50 @@
   color: var(--screen-white);
 }
 
-/* ── Stat tiles ───────────────────────────────────────────────────────── */
+/* ── Stats ───────────────────────────────────────────────────────────────
+   One segmented strip, same as the lists workspace hero. Four bordered cards
+   with an icon plate each was chrome the rest of the app does not use. */
 .publisher-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 10px;
-  /* Clears the 28px the header adds on top of the page gutter, so the tiles
-     line up with the sections below rather than with the name above. */
-  margin-top: 26px;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(96px, auto);
+  justify-content: start;
+  margin: 18px 0 0;
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--console-panel) 82%, transparent);
+  backdrop-filter: blur(12px);
 }
-.publisher-stat {
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
+.publisher-stats > div {
+  padding: 12px 15px;
+  border-left: 1px solid var(--shell-line);
+}
+.publisher-stats > div:first-child {
+  border-left: 0;
+}
+.publisher-stats dt {
+  display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 14px 15px;
-  border: 1px solid var(--shell-line);
-  border-radius: 12px;
-  background: var(--console-panel);
-}
-.publisher-stat > span {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: var(--brand-blurple-wash);
-  color: var(--brand-blurple-bright);
-}
-.publisher-stat strong {
-  display: block;
-  color: var(--screen-white);
-  font-size: 20px;
-  font-weight: 660;
-  letter-spacing: -0.03em;
-}
-.publisher-stat small {
-  display: block;
-  margin-top: 1px;
+  gap: 5px;
   color: var(--screen-muted);
   font-size: 10px;
-}
-.publisher-stat em {
-  grid-column: 2;
-  overflow: hidden;
-  color: var(--screen-dim);
-  font-size: 10.5px;
-  font-style: normal;
-  text-overflow: ellipsis;
   white-space: nowrap;
+}
+.publisher-stats dt svg {
+  color: var(--brand-blurple-bright);
+}
+.publisher-stats dd {
+  margin: 6px 0 0;
+  color: var(--screen-white);
+  font-size: 19px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.publisher-stats dd small {
+  color: var(--screen-muted);
+  font-size: 12px;
+  font-weight: 550;
 }
 
 /* ── Sections ─────────────────────────────────────────────────────────── */
