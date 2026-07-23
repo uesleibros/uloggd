@@ -17,10 +17,10 @@ export type ListGridItem = {
 };
 
 /**
- * `ranked` decides the item chrome: numbered rank badge + drag surface for
- * rankings, plain grid for unordered collections. Owners can still reorder
- * a collection through the up/down tools if they want to, but drag on the
- * card is reserved for lists where position is the point.
+ * `ranked` decides the item chrome: only a ranking paints the numbered badge.
+ * Dragging is for any owner, because both formats store a position and both
+ * already expose the same reorder through the up/down tools — withholding the
+ * handle from collections just made the tools the only way to do it.
  */
 export function ListItemsGrid({
   listId,
@@ -82,7 +82,7 @@ export function ListItemsGrid({
     setPending(false);
   }
 
-  const dragEnabled = isOwner && ranked;
+  const dragEnabled = isOwner;
   return (
     <div
       ref={gridRef}

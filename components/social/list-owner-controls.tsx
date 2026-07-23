@@ -14,10 +14,6 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { EditorVisibilitySelect } from "./review-studio-form";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-import {
-  CommunityScopeSelect,
-  type CommunityScope,
-} from "./community-scope-select";
 
 export function ListOwnerControls({
   list,
@@ -29,7 +25,6 @@ export function ListOwnerControls({
     description: string | null;
     visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
     ranked: boolean;
-    comments_scope: CommunityScope;
   };
   lang: UiLang;
 }) {
@@ -43,7 +38,6 @@ export function ListOwnerControls({
   const [mode, setMode] = useState<"COLLECTION" | "RANKED">(
     list.ranked ? "RANKED" : "COLLECTION",
   );
-  const [commentsScope, setCommentsScope] = useState(list.comments_scope);
   const [error, setError] = useState<string | null>(null);
   useEffect(
     () => () => {
@@ -55,6 +49,7 @@ export function ListOwnerControls({
     setPending(true);
     setError(null);
     const client = createClient();
+    let droppedMode = false;
     let { error: actionError } = await client.rpc("update_game_list", {
       target_list: list.id,
       list_name: formData.get("name"),
@@ -66,6 +61,9 @@ export function ListOwnerControls({
       actionError &&
       actionError.message.toLowerCase().includes("could not find the function")
     ) {
+      // The database predates the ranked_lists migration. Everything else still
+      // saves through the older signature — the format simply cannot.
+      droppedMode = true;
       ({ error: actionError } = await client.rpc("update_game_list", {
         target_list: list.id,
         list_name: formData.get("name"),
@@ -73,13 +71,7 @@ export function ListOwnerControls({
         list_visibility: visibility,
       }));
     }
-    const { error: scopeError } = !actionError
-      ? await client
-          .from("game_lists")
-          .update({ comments_scope: commentsScope })
-          .eq("id", list.id)
-      : { error: actionError };
-    if (actionError || scopeError)
+    if (actionError) {
       setError(
         tri(
           lang,
@@ -88,10 +80,22 @@ export function ListOwnerControls({
           "No se pudo actualizar la lista.",
         ),
       );
-    else {
-      setOpen(false);
-      router.refresh();
+      setPending(false);
+      return;
     }
+    router.refresh();
+    // Closing on a half-applied save is how "salvei e não mudou nada" happens;
+    // the dialog stays open to say which part did not land.
+    if (droppedMode && (mode === "RANKED") !== list.ranked) {
+      setError(
+        tri(
+          lang,
+          "Nome, descrição e visibilidade foram salvos, mas o formato não: o banco ainda não tem a migração ranked_lists.",
+          "Name, description, and visibility were saved, but the format was not: the database is missing the ranked_lists migration.",
+          "Nombre, descripción y visibilidad se guardaron, pero el formato no: la base de datos no tiene la migración ranked_lists.",
+        ),
+      );
+    } else setOpen(false);
     setPending(false);
   }
   async function remove() {
@@ -177,9 +181,9 @@ export function ListOwnerControls({
                 <Dialog.Description>
                   {tri(
                     lang,
-                    "Nome, formato, visibilidade e quem pode comentar.",
-                    "Name, format, visibility, and who can comment.",
-                    "Nombre, formato, visibilidad y quién puede comentar.",
+                    "Nome, descrição, formato e visibilidade.",
+                    "Name, description, format, and visibility.",
+                    "Nombre, descripción, formato y visibilidad.",
                   )}
                 </Dialog.Description>
               </div>
@@ -266,16 +270,6 @@ export function ListOwnerControls({
                 <EditorVisibilitySelect
                   value={visibility}
                   onChange={setVisibility}
-                  lang={lang}
-                />
-              </label>
-              <label>
-                <span>
-                  {tri(lang, "Comentários", "Comments", "Comentarios")}
-                </span>
-                <CommunityScopeSelect
-                  value={commentsScope}
-                  onChange={setCommentsScope}
                   lang={lang}
                 />
               </label>

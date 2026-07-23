@@ -1,13 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import {
-  Layers3,
-  ListOrdered,
-  LoaderCircle,
-  Plus,
-  X,
-} from "lucide-react";
+import { Layers3, ListOrdered, LoaderCircle, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -58,7 +52,14 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
     const name = String(formData.get("name") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
     if (!name) {
-      setError(tri(lang, "Dê um nome à lista.", "Give the list a name.", "Dale un nombre a la lista."));
+      setError(
+        tri(
+          lang,
+          "Dê um nome à lista.",
+          "Give the list a name.",
+          "Dale un nombre a la lista.",
+        ),
+      );
       setPending(false);
       return;
     }
@@ -68,10 +69,14 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
       list_description: description || null,
       list_ranked: mode === "RANKED",
     });
+    let droppedMode = false;
     if (
       actionError &&
       actionError.message.toLowerCase().includes("could not find the function")
     ) {
+      // Older signature: the list still gets created, just always as a
+      // collection, because the database predates the ranked_lists migration.
+      droppedMode = true;
       ({ error: actionError } = await client.rpc("create_game_list", {
         list_name: name,
         list_description: description || null,
@@ -93,8 +98,19 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
           : localized,
       );
     } else {
-      setOpen(false);
       router.refresh();
+      // The list exists either way; saying so beats letting the author discover
+      // later that the ranking they asked for is a plain collection.
+      if (droppedMode && mode === "RANKED")
+        setError(
+          tri(
+            lang,
+            "A lista foi criada como coleção: o banco ainda não tem a migração ranked_lists para o formato Ranking.",
+            "The list was created as a collection: the database is missing the ranked_lists migration needed for Ranking format.",
+            "La lista se creó como colección: la base de datos no tiene la migración ranked_lists para el formato Ranking.",
+          ),
+        );
+      else setOpen(false);
     }
     setPending(false);
   }
@@ -203,9 +219,7 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
                   <ListOrdered size={17} aria-hidden />
                 </span>
                 <span>
-                  <strong>
-                    {tri(lang, "Ranking", "Ranking", "Ranking")}
-                  </strong>
+                  <strong>{tri(lang, "Ranking", "Ranking", "Ranking")}</strong>
                   <small>
                     {tri(
                       lang,

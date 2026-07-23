@@ -249,6 +249,9 @@ export default async function ListPage({ params }: Props) {
           </p>
         </div>
       )}
+      {/* Who can comment is a profile-wide preference now — the list dialog no
+          longer carries a per-list override, so gating on the stored column
+          would apply a rule the owner has no way to see or change. */}
       <ContentComments
         contentType="list"
         contentId={list.id}
@@ -257,14 +260,11 @@ export default async function ListPage({ params }: Props) {
         canComment={
           Boolean(user) &&
           (isOwner ||
-            ((owner?.content_comment_scope === "EVERYONE" ||
-              (owner?.content_comment_scope === "FOLLOWERS" &&
-                Boolean(follow))) &&
-              (list.comments_scope === "EVERYONE" ||
-                (list.comments_scope === "FOLLOWERS" && Boolean(follow)))))
+            owner?.content_comment_scope === "EVERYONE" ||
+            (owner?.content_comment_scope === "FOLLOWERS" && Boolean(follow)))
         }
         commentsScope={
-          list.comments_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"
+          owner?.content_comment_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"
         }
         lang={lang}
       />
