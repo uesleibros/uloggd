@@ -100,7 +100,7 @@ async function ReleaseTimeline({
   );
 
   return (
-    <section className="publisher-section publisher-timeline-section">
+    <section className="publisher-section">
       <header>
         <div>
           <h2>
@@ -410,6 +410,7 @@ export default async function PublisherPage({ params }: Props) {
   const founded = company.foundedTimestamp
     ? new Date(company.foundedTimestamp * 1000).getUTCFullYear()
     : null;
+  const summary = company.description.split(/\n{2,}/)[0].trim();
   const initial = company.name.toUpperCase().match(/[\p{L}\p{N}]/u)?.[0] ?? "";
   const backdrop =
     uniqueHighlights.find((game) => game.heroUrl)?.heroUrl ?? null;
@@ -455,7 +456,7 @@ export default async function PublisherPage({ params }: Props) {
           name: company.name,
           url: `${SITE_URL}/${lang}/publisher/${company.slug}`,
           ...(company.logoUrl ? { logo: company.logoUrl } : {}),
-          ...(company.description ? { description: company.description } : {}),
+          ...(summary ? { description: summary } : {}),
           ...(founded ? { foundingDate: String(founded) } : {}),
           ...(country
             ? {
@@ -530,9 +531,7 @@ export default async function PublisherPage({ params }: Props) {
               )}
             </p>
           </div>
-          {company.description && (
-            <p className="publisher-description">{company.description}</p>
-          )}
+          {summary && <p className="publisher-description">{summary}</p>}
           {(company.websites.length > 0 || company.igdbUrl) && (
             <div className="publisher-links">
               {company.websites.map((url) => (
@@ -605,9 +604,9 @@ export default async function PublisherPage({ params }: Props) {
         title={tri(lang, "Publicados", "Published", "Publicados")}
         description={tri(
           lang,
-          "Do mais registrado ao menos",
+          "Mais registrados primeiro",
           "Most logged first",
-          "Del más registrado al menos",
+          "Más registrados primero",
         )}
         games={company.published}
         total={company.publishedCount}
