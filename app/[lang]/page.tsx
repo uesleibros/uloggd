@@ -12,8 +12,17 @@ import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { resolveGameCover } from "@/lib/game-cover";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
+import { localeAlternates } from "@/lib/seo";
 import { getDictionary, hasLocale } from "./dictionaries";
 import { tri, type UiLang } from "@/lib/ui-text";
+
+export async function generateMetadata({ params }: PageProps<"/[lang]">) {
+  const { lang } = await params;
+  if (!hasLocale(lang)) return {};
+  // The home page is the one place all three locales compete for the same
+  // query, so it needs the hreflang set more than any other route.
+  return { alternates: localeAlternates(lang, "/") };
+}
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;

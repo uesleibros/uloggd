@@ -30,6 +30,7 @@ import {
 import { getGamesByIds } from "@/lib/igdb";
 import { getListPreviews } from "@/lib/lists";
 import { getActivity } from "@/lib/social";
+import { localeAlternates } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import "../../profile.css";
@@ -240,7 +241,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: name,
     description,
-    alternates: { canonical: `/${lang}/u/${profile.username}` },
+    alternates: localeAlternates(lang, `/u/${profile.username}`),
     openGraph: {
       title: `${name} · uloggd`,
       description,

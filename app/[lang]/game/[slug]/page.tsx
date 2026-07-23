@@ -30,6 +30,7 @@ import {
   readAnonymousAgeAssertion,
 } from "@/lib/anonymous-age";
 import { resolveGameCover } from "@/lib/game-cover";
+import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getActivity } from "@/lib/social";
 import { getSpawndGame } from "@/lib/spawnd";
@@ -79,6 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: game.name,
     description,
+    alternates: localeAlternates(lang, `/game/${game.slug}`),
     openGraph: {
       title: `${game.name} · uloggd`,
       description,
@@ -263,6 +265,60 @@ export default async function GamePage({ params, searchParams }: Props) {
   });
   return (
     <main className="game-page">
+      {/* VideoGame markup feeds the rich result: title, cover, publisher and the
+          aggregate score a search engine would otherwise have to guess at. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd({
+          "@context": "https://schema.org",
+          "@type": "VideoGame",
+          name: game.name,
+          url: `${SITE_URL}/${lang}/game/${game.slug}`,
+          image: game.coverUrl,
+          ...(game.summary ? { description: game.summary } : {}),
+          ...(game.releaseTimestamp
+            ? {
+                datePublished: new Date(game.releaseTimestamp * 1000)
+                  .toISOString()
+                  .slice(0, 10),
+              }
+            : {}),
+          ...(game.genres.length ? { genre: game.genres } : {}),
+          ...(game.platforms.length ? { gamePlatform: game.platforms } : {}),
+          ...(game.searchFilters.publishers.length
+            ? {
+                publisher: game.searchFilters.publishers.map((item) => ({
+                  "@type": "Organization",
+                  name: item.name,
+                  ...(item.slug
+                    ? { url: `${SITE_URL}/${lang}/publisher/${item.slug}` }
+                    : {}),
+                })),
+              }
+            : {}),
+          ...(game.developers.length
+            ? {
+                author: game.developers.map((name) => ({
+                  "@type": "Organization",
+                  name,
+                })),
+              }
+            : {}),
+          // A rating with no votes behind it is not an aggregate; omitting it
+          // beats publishing a number Google would flag as unsupported.
+          ...(game.rating !== null && game.ratingCount > 0
+            ? {
+                aggregateRating: {
+                  "@type": "AggregateRating",
+                  ratingValue: game.rating,
+                  ratingCount: game.ratingCount,
+                  bestRating: 100,
+                  worstRating: 0,
+                },
+              }
+            : {}),
+        })}
+      />
       <section className="game-stage">
         {game.heroUrl && (
           <div className="game-hero">

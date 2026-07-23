@@ -9,6 +9,7 @@ import { ListOwnerControls } from "@/components/social/list-owner-controls";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { ContentComments } from "@/components/social/content-comments";
+import { localeAlternates } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import {
   isMissingSchemaError,
@@ -34,7 +35,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     await getSupabase()
   )
     .from("game_lists")
-    .select("name,description,profiles!game_lists_profile_id_fkey(username)")
+    .select(
+      "public_id,name,description,profiles!game_lists_profile_id_fkey(username)",
+    )
     .eq(key[0], key[1])
     .maybeSingle();
   if (!list) return {};
@@ -50,6 +53,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: list.name,
     description,
+    // Always the short id, never the uuid form of the same list — two URLs for
+    // one page is exactly what a canonical exists to collapse.
+    alternates: localeAlternates(lang, `/lists/${list.public_id}`),
     openGraph: {
       title: `${list.name} · uloggd`,
       description,

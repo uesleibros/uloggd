@@ -16,7 +16,28 @@ const publicSegments = new Set([
   // Company pages are catalogue data, same as /game — nothing on them depends
   // on who is looking, so they stay reachable without an account.
   "publisher",
+  // Where dead URLs land; gating it behind auth would turn every 404 into a
+  // login redirect again.
+  "not-found",
 ]);
+// Every top-level segment the app actually serves. A path outside this set has
+// no page behind it, and the proxy is the only place that can still set a real
+// 404 status: once the layout's Suspense shell starts streaming, the response
+// headers are already gone and notFound() can only mark the HTML noindex.
+const knownSegments = new Set([
+  ...publicSegments,
+  "entry",
+  "explore",
+  "feed",
+  "library",
+  "moderation",
+  "review",
+  "reviews",
+  "settings",
+  "shot",
+  "suspended",
+]);
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const lang = locales.find(
@@ -37,6 +58,14 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   if (process.env.ULOGGD_E2E === "1") return response;
   const segment = pathname.slice(lang.length + 2).split("/")[0] || "";
+  // Before the auth checks: a URL that matches no route is not a login problem,
+  // and bouncing it to /login told crawlers the page exists. Rewriting instead
+  // of redirecting keeps the dead URL in the address bar, which is what a 404
+  // is supposed to do.
+  if (!knownSegments.has(segment))
+    return NextResponse.rewrite(new URL(`/${lang}/not-found`, request.url), {
+      status: 404,
+    });
   if (segment === "explore")
     return NextResponse.redirect(new URL(`/${lang}`, request.url));
   const hasAuthCookies = request.cookies

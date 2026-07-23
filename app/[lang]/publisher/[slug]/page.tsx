@@ -20,6 +20,7 @@ import {
   type CompanyProfile,
   type Game,
 } from "@/lib/igdb";
+import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
@@ -51,6 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: company.name,
     description,
+    alternates: localeAlternates(lang, `/publisher/${company.slug}`),
     openGraph: {
       title: `${company.name} · uloggd`,
       description,
@@ -271,6 +273,38 @@ export default async function PublisherPage({ params }: Props) {
 
   return (
     <main className="publisher-page">
+      {/* Organization markup: it is what lets a search engine tie the page to
+          the real company entity instead of treating it as a list of links. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: company.name,
+          url: `${SITE_URL}/${lang}/publisher/${company.slug}`,
+          ...(company.logoUrl ? { logo: company.logoUrl } : {}),
+          ...(company.description ? { description: company.description } : {}),
+          ...(founded ? { foundingDate: String(founded) } : {}),
+          ...(country
+            ? {
+                address: {
+                  "@type": "PostalAddress",
+                  addressCountry: country.code,
+                },
+              }
+            : {}),
+          ...(company.parent
+            ? {
+                parentOrganization: {
+                  "@type": "Organization",
+                  name: company.parent.name,
+                  url: `${SITE_URL}/${lang}/publisher/${company.parent.slug}`,
+                },
+              }
+            : {}),
+          ...(company.websites.length ? { sameAs: company.websites } : {}),
+        })}
+      />
       <header className="publisher-hero">
         {backdrop && (
           <div className="publisher-hero-backdrop" aria-hidden>
