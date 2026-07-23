@@ -121,6 +121,8 @@ export type CatalogSearchFilters = {
   types: number[];
   perspectives: number[];
   publishers: number[];
+  /** Narrows a selected company to one role; "any" keeps both. */
+  publisherRole: "any" | "publisher" | "developer";
   releaseStatus: "all" | "released" | "upcoming";
   ratedOnly: boolean;
   anticipatedOnly: boolean;
@@ -522,6 +524,10 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
   addIds("game_modes", filters.modes);
   addIds("player_perspectives", filters.perspectives);
   addIds("involved_companies.company", filters.publishers);
+  // Only meaningful next to a company: on its own the role clause would match
+  // every game that has any publisher at all.
+  if (filters.publishers.length && filters.publisherRole !== "any")
+    clauses.push(`involved_companies.${filters.publisherRole} = true`);
   const types = ids(filters.types);
   clauses.push(
     types.length ? `game_type = (${types.join(",")})` : "game_type = (0,8,9)",

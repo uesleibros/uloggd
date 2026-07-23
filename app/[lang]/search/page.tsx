@@ -69,6 +69,10 @@ export default async function SearchPage({
     types: numberList(query.types),
     perspectives: numberList(query.perspectives),
     publishers: numberList(query.publishers),
+    publisherRole:
+      first(query.role) === "publisher" || first(query.role) === "developer"
+        ? (first(query.role) as "publisher" | "developer")
+        : "any",
     releaseStatus:
       first(query.release) === "released" || first(query.release) === "upcoming"
         ? (first(query.release) as "released" | "upcoming")

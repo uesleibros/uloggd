@@ -281,50 +281,29 @@
   padding-top: 12px;
   border-top: 1px solid var(--shell-line);
 }
-.moderation-pager {
-  display: flex;
+/* A closed case states its outcome where the buttons used to be, so the card
+   still reads as finished rather than merely empty. */
+.moderation-report-decided {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 14px;
-}
-.moderation-pager ol {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.moderation-pager li {
-  display: grid;
-  place-items: center;
-  min-width: 22px;
-  color: var(--screen-muted);
-  font-size: 10px;
-}
-.moderation-pager button {
-  display: grid;
-  place-items: center;
-  min-width: 32px;
-  min-height: 32px;
-  padding: 0 8px;
+  gap: 7px;
+  margin-left: auto;
+  padding: 7px 11px;
   border: 1px solid var(--shell-line);
   border-radius: 8px;
-  background: var(--console-panel);
+  background: var(--console-inset);
   color: var(--screen-dim);
-  font: 600 10px var(--font-inter);
+  font-size: 10.5px;
+  font-weight: 600;
 }
-.moderation-pager button:hover:not(:disabled) {
-  border-color: var(--shell-line-strong);
-  background: var(--console-hover);
-  color: var(--screen-white);
+.moderation-report-decided time {
+  color: var(--screen-muted);
+  font-weight: 500;
 }
-.moderation-pager button[aria-current="page"] {
-  border-color: var(--brand-blurple);
-  background: var(--brand-blurple);
-  color: white;
-}
-.moderation-pager button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+/* The shared pager already draws its own top rule; inside a section that has
+   one, the extra margin is all it needs. */
+.moderation-audit-pagination {
+  margin-top: 20px;
 }
 .moderation-report-card footer button,
 .moderation-user-card footer button,

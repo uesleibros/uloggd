@@ -655,7 +655,7 @@ export default async function PublisherPage({ params }: Props) {
         )}
         games={company.published}
         total={company.publishedCount}
-        href={searchHref}
+        href={`${searchHref}&role=publisher`}
         lang={lang}
         saved={saved}
         signedIn={Boolean(user)}
@@ -670,7 +670,7 @@ export default async function PublisherPage({ params }: Props) {
         )}
         games={company.developed}
         total={company.developedCount}
-        href={searchHref}
+        href={`${searchHref}&role=developer`}
         lang={lang}
         saved={saved}
         signedIn={Boolean(user)}

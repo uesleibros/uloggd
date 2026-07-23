@@ -20,6 +20,7 @@ import type {
   CatalogSearchFilters,
   CatalogSearchOptions,
 } from "@/lib/igdb";
+import { Pagination } from "./pagination";
 import { QuickGameCard } from "./library/quick-game-card";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -46,6 +47,7 @@ type DraftArrayKey =
 type FilterDraft = Pick<
   CatalogSearchFilters,
   | DraftArrayKey
+  | "publisherRole"
   | "releaseStatus"
   | "ratedOnly"
   | "anticipatedOnly"
@@ -64,6 +66,7 @@ function draftFromFilters(filters: CatalogSearchFilters): FilterDraft {
     types: filters.types,
     perspectives: filters.perspectives,
     publishers: filters.publishers,
+    publisherRole: filters.publisherRole,
     releaseStatus: filters.releaseStatus,
     ratedOnly: filters.ratedOnly,
     anticipatedOnly: filters.anticipatedOnly,
@@ -83,6 +86,7 @@ function emptyDraft(): FilterDraft {
     types: [],
     perspectives: [],
     publishers: [],
+    publisherRole: "any",
     releaseStatus: "all",
     ratedOnly: false,
     anticipatedOnly: false,
@@ -284,20 +288,6 @@ function CatalogSelect({
   );
 }
 
-function paginationItems(current: number, total: number) {
-  const pages = new Set([1, total]);
-  for (let page = current - 2; page <= current + 2; page += 1) {
-    if (page > 0 && page <= total) pages.add(page);
-  }
-  const ordered = [...pages].sort((a, b) => a - b);
-  return ordered.flatMap<number | string>((page, index) => {
-    const previous = ordered[index - 1];
-    return previous && page - previous > 1
-      ? [`gap-${previous}-${page}`, page]
-      : [page];
-  });
-}
-
 export function CatalogSearchWorkspace({
   lang,
   filters,
@@ -371,6 +361,12 @@ export function CatalogSearchWorkspace({
         ? draft.perspectives.join(",")
         : null,
       publishers: draft.publishers.length ? draft.publishers.join(",") : null,
+      // The role only travels with a company; alone in the URL it would filter
+      // nothing and still look like an active filter.
+      role:
+        draft.publishers.length && draft.publisherRole !== "any"
+          ? draft.publisherRole
+          : null,
       release: draft.releaseStatus === "all" ? null : draft.releaseStatus,
       rated: draft.ratedOnly ? 1 : null,
       anticipated: draft.anticipatedOnly ? 1 : null,
@@ -420,6 +416,7 @@ export function CatalogSearchWorkspace({
     Number(filters.ratingCountMin !== null);
   const appliedCount =
     activeCount +
+    Number(filters.publisherRole !== "any") +
     Number(filters.releaseStatus !== "all") +
     Number(filters.ratedOnly) +
     Number(filters.anticipatedOnly);
@@ -431,6 +428,7 @@ export function CatalogSearchWorkspace({
     draft.types.length +
     draft.perspectives.length +
     draft.publishers.length +
+    Number(draft.publisherRole !== "any") +
     Number(draft.releaseStatus !== "all") +
     Number(draft.ratedOnly) +
     Number(draft.anticipatedOnly) +
@@ -519,6 +517,16 @@ export function CatalogSearchWorkspace({
     label: string;
     changes: Record<string, string | number | null>;
   }[] = [];
+  if (filters.publisherRole !== "any") {
+    scalarChips.push({
+      key: "role",
+      label:
+        filters.publisherRole === "publisher"
+          ? tri(lang, "Publicados", "Published", "Publicados")
+          : tri(lang, "Desenvolvidos", "Developed", "Desarrollados"),
+      changes: { role: null },
+    });
+  }
   if (filters.releaseStatus !== "all") {
     scalarChips.push({
       key: "release",
@@ -909,6 +917,59 @@ export function CatalogSearchWorkspace({
                 remoteSearch
                 lang={lang}
               />
+              {/* Only shown once a company is picked: a role with nobody to
+                  apply it to would filter nothing. */}
+              {draft.publishers.length > 0 && (
+                <section className="catalog-choice-filter">
+                  <header>
+                    {tri(
+                      lang,
+                      "Papel da empresa",
+                      "Company role",
+                      "Rol de la empresa",
+                    )}
+                  </header>
+                  <div className="catalog-segmented-filter">
+                    {[
+                      ["any", t.all],
+                      [
+                        "publisher",
+                        tri(lang, "Publicados", "Published", "Publicados"),
+                      ],
+                      [
+                        "developer",
+                        tri(
+                          lang,
+                          "Desenvolvidos",
+                          "Developed",
+                          "Desarrollados",
+                        ),
+                      ],
+                    ].map(([value, label]) => (
+                      <label
+                        key={value}
+                        data-selected={
+                          draft.publisherRole === value || undefined
+                        }
+                      >
+                        <input
+                          type="radio"
+                          name="publisher-role"
+                          checked={draft.publisherRole === value}
+                          onChange={() =>
+                            setDraft((current) => ({
+                              ...current,
+                              publisherRole:
+                                value as FilterDraft["publisherRole"],
+                            }))
+                          }
+                        />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                </section>
+              )}
               <OptionGroup
                 title={tri(
                   lang,
@@ -1157,96 +1218,15 @@ export function CatalogSearchWorkspace({
               </div>
             )}
 
-            {totalPages > 1 && (
-              <nav
-                className="catalog-pagination"
-                aria-label={tri(lang, "Paginação", "Pagination", "Paginación")}
-              >
-                <div className="catalog-pagination-summary">
-                  <strong>
-                    {tri(
-                      lang,
-                      `Página ${filters.page}`,
-                      `Page ${filters.page}`,
-                      `Página ${filters.page}`,
-                    )}
-                  </strong>
-                  <span>
-                    {tri(
-                      lang,
-                      `de ${totalPages}`,
-                      `of ${totalPages}`,
-                      `de ${totalPages}`,
-                    )}
-                  </span>
-                </div>
-                <div className="catalog-pagination-pages">
-                  <button
-                    type="button"
-                    disabled={filters.page === 1 || pending}
-                    onClick={() => navigate({ page: null }, true)}
-                  >
-                    {tri(lang, "Primeira", "First", "Primera")}
-                  </button>
-                  {paginationItems(filters.page, totalPages).map((item) =>
-                    typeof item === "number" ? (
-                      <button
-                        type="button"
-                        key={item}
-                        aria-current={
-                          item === filters.page ? "page" : undefined
-                        }
-                        disabled={pending}
-                        onClick={() =>
-                          navigate({ page: item === 1 ? null : item }, true)
-                        }
-                      >
-                        {item}
-                      </button>
-                    ) : (
-                      <span key={item} aria-hidden>
-                        …
-                      </span>
-                    ),
-                  )}
-                  <button
-                    type="button"
-                    disabled={filters.page === totalPages || pending}
-                    onClick={() => navigate({ page: totalPages }, true)}
-                  >
-                    {tri(lang, "Última", "Last", "Última")}
-                  </button>
-                </div>
-                <form
-                  className="catalog-pagination-jump"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    const value = new FormData(event.currentTarget).get("page");
-                    const page = Math.max(
-                      1,
-                      Math.min(totalPages, Number(value) || 1),
-                    );
-                    navigate({ page: page === 1 ? null : page }, true);
-                  }}
-                >
-                  <label htmlFor="catalog-jump-page">
-                    {tri(lang, "Ir para", "Go to", "Ir a")}
-                  </label>
-                  <input
-                    id="catalog-jump-page"
-                    type="number"
-                    name="page"
-                    min="1"
-                    max={totalPages}
-                    defaultValue={filters.page}
-                    key={filters.page}
-                  />
-                  <button type="submit" disabled={pending}>
-                    {tri(lang, "Ir", "Go", "Ir")}
-                  </button>
-                </form>
-              </nav>
-            )}
+            <Pagination
+              page={filters.page}
+              totalPages={totalPages}
+              pending={pending}
+              lang={lang}
+              onGo={(page) =>
+                navigate({ page: page === 1 ? null : page }, true)
+              }
+            />
           </section>
 
           <aside

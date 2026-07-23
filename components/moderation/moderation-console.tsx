@@ -7,8 +7,6 @@ import {
   Camera,
   Check,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Clock3,
   ExternalLink,
   Flag,
@@ -27,6 +25,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useRef, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark } from "@/components/verified-badge";
+import { Pagination } from "@/components/pagination";
 import { RelativeTime } from "@/components/relative-time";
 import {
   MODERATION_AUDIT_PAGE_SIZE,
@@ -101,90 +100,6 @@ function rangeLabel(
     `Mostrando ${first}–${last} de ${total}`,
     `Showing ${first}–${last} of ${total}`,
     `Mostrando ${first}–${last} de ${total}`,
-  );
-}
-
-/**
- * First, last, and the current page's neighbours. Anything else collapses into
- * a gap, so a hundred pages still fit on one line.
- */
-function pageWindow(page: number, pageCount: number): (number | "gap")[] {
-  const slots = new Set([1, pageCount, page, page - 1, page + 1]);
-  const pages = [...slots]
-    .filter((value) => value >= 1 && value <= pageCount)
-    .sort((a, b) => a - b);
-  return pages.flatMap((value, index) =>
-    index > 0 && value - pages[index - 1] > 1
-      ? (["gap", value] as (number | "gap")[])
-      : [value],
-  );
-}
-
-function Pager({
-  lang,
-  page,
-  pageCount,
-  busy,
-  label,
-  onGo,
-}: {
-  lang: UiLang;
-  page: number;
-  pageCount: number;
-  busy: boolean;
-  label: string;
-  onGo: (page: number) => void;
-}) {
-  if (pageCount <= 1) return null;
-  return (
-    <nav className="moderation-pager" aria-label={label}>
-      <button
-        type="button"
-        disabled={page <= 1 || busy}
-        aria-label={tri(
-          lang,
-          "Página anterior",
-          "Previous page",
-          "Página anterior",
-        )}
-        onClick={() => onGo(page - 1)}
-      >
-        <ChevronLeft size={14} />
-      </button>
-      <ol>
-        {pageWindow(page, pageCount).map((entry, index) =>
-          entry === "gap" ? (
-            <li key={`gap-${index}`} aria-hidden>
-              …
-            </li>
-          ) : (
-            <li key={entry}>
-              <button
-                type="button"
-                disabled={busy}
-                aria-current={entry === page ? "page" : undefined}
-                onClick={() => onGo(entry)}
-              >
-                {entry}
-              </button>
-            </li>
-          ),
-        )}
-      </ol>
-      <button
-        type="button"
-        disabled={page >= pageCount || busy}
-        aria-label={tri(
-          lang,
-          "Próxima página",
-          "Next page",
-          "Página siguiente",
-        )}
-        onClick={() => onGo(page + 1)}
-      >
-        <ChevronRight size={14} />
-      </button>
-    </nav>
   );
 }
 
@@ -455,6 +370,11 @@ export function ModerationConsole({
 
   async function updateReport(reportId: string, status: string) {
     if (pending) return;
+    // The buttons are gone once a report is decided, but a tab left open since
+    // before someone else closed it would still have them.
+    const current = reportRows.find((report) => report.id === reportId);
+    if (current?.status === "RESOLVED" || current?.status === "DISMISSED")
+      return;
     setPending(`report-${reportId}-${status}`);
     setError(null);
     const { error: actionError } = await createClient().rpc("moderate_report", {
@@ -480,6 +400,7 @@ export function ModerationConsole({
                 status,
                 moderator_note:
                   notes[reportId]?.trim() || report.moderator_note,
+                reviewed_at: new Date().toISOString(),
               }
             : report,
         ),
@@ -615,6 +536,7 @@ export function ModerationConsole({
                   ...report,
                   status: "RESOLVED",
                   moderator_note: clean ?? report.moderator_note,
+                  reviewed_at: new Date().toISOString(),
                 }
               : report,
           ),
@@ -662,6 +584,7 @@ export function ModerationConsole({
                   ...report,
                   status: "RESOLVED",
                   moderator_note: clean ?? report.moderator_note,
+                  reviewed_at: new Date().toISOString(),
                 }
               : report,
           ),
@@ -796,6 +719,11 @@ export function ModerationConsole({
               ? screenshotById.get(report.content_id)
               : undefined;
             const note = notes[report.id] ?? report.moderator_note ?? "";
+            // RESOLVED and DISMISSED are end states. Leaving the buttons up let
+            // a moderator dismiss a report someone else had already resolved,
+            // writing a second audit entry over a closed case.
+            const decided =
+              report.status === "RESOLVED" || report.status === "DISMISSED";
             return (
               <article
                 className="moderation-report-card"
@@ -982,6 +910,7 @@ export function ModerationConsole({
                   <textarea
                     value={note}
                     maxLength={1000}
+                    readOnly={decided}
                     aria-label={tri(
                       lang,
                       "Nota interna da decisão",
@@ -1003,109 +932,121 @@ export function ModerationConsole({
                   />
                 </details>
                 <footer>
-                  {report.content_type === "PROFILE_COMMENT" &&
-                    comment &&
-                    !comment.deleted_at && (
-                      <button
-                        type="button"
-                        data-danger
-                        disabled={Boolean(pending)}
-                        onClick={() =>
-                          openRemoval({
-                            kind: "COMMENT",
-                            reportId: report.id,
-                            commentId: comment.id,
-                          })
-                        }
-                      >
-                        <MessageSquareOff size={13} />
-                        {t.removeComment}
-                      </button>
-                    )}
-                  {report.content_type === "SCREENSHOT" &&
-                    shot &&
-                    !shot.deletedAt && (
-                      <button
-                        type="button"
-                        data-danger
-                        disabled={Boolean(pending)}
-                        onClick={() =>
-                          openRemoval({
-                            kind: "SCREENSHOT",
-                            reportId: report.id,
-                            screenshotId: shot.id,
-                          })
-                        }
-                      >
-                        <Trash2 size={13} />
-                        {tri(
-                          lang,
-                          "Remover screenshot",
-                          "Remove screenshot",
-                          "Quitar captura",
+                  {decided ? (
+                    <p className="moderation-report-decided">
+                      <ShieldCheck size={13} aria-hidden />
+                      {report.status === "RESOLVED"
+                        ? tri(lang, "Resolvida", "Resolved", "Resuelta")
+                        : tri(lang, "Descartada", "Dismissed", "Descartada")}
+                      {report.reviewed_at && (
+                        <RelativeTime value={report.reviewed_at} lang={lang} />
+                      )}
+                    </p>
+                  ) : (
+                    <>
+                      {report.content_type === "PROFILE_COMMENT" &&
+                        comment &&
+                        !comment.deleted_at && (
+                          <button
+                            type="button"
+                            data-danger
+                            disabled={Boolean(pending)}
+                            onClick={() =>
+                              openRemoval({
+                                kind: "COMMENT",
+                                reportId: report.id,
+                                commentId: comment.id,
+                              })
+                            }
+                          >
+                            <MessageSquareOff size={13} />
+                            {t.removeComment}
+                          </button>
                         )}
+                      {report.content_type === "SCREENSHOT" &&
+                        shot &&
+                        !shot.deletedAt && (
+                          <button
+                            type="button"
+                            data-danger
+                            disabled={Boolean(pending)}
+                            onClick={() =>
+                              openRemoval({
+                                kind: "SCREENSHOT",
+                                reportId: report.id,
+                                screenshotId: shot.id,
+                              })
+                            }
+                          >
+                            <Trash2 size={13} />
+                            {tri(
+                              lang,
+                              "Remover screenshot",
+                              "Remove screenshot",
+                              "Quitar captura",
+                            )}
+                          </button>
+                        )}
+                      {report.status !== "REVIEWING" && (
+                        <button
+                          type="button"
+                          disabled={Boolean(pending)}
+                          onClick={() =>
+                            void updateReport(report.id, "REVIEWING")
+                          }
+                        >
+                          {pending === `report-${report.id}-REVIEWING` ? (
+                            <LoaderCircle className="spin" size={13} />
+                          ) : (
+                            <Clock3 size={13} />
+                          )}
+                          {tri(
+                            lang,
+                            "Assumir análise",
+                            "Start review",
+                            "Tomar la revisión",
+                          )}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        disabled={Boolean(pending)}
+                        onClick={() =>
+                          void updateReport(report.id, "DISMISSED")
+                        }
+                      >
+                        {pending === `report-${report.id}-DISMISSED` ? (
+                          <LoaderCircle className="spin" size={13} />
+                        ) : (
+                          <X size={13} />
+                        )}
+                        {tri(lang, "Descartar", "Dismiss", "Descartar")}
                       </button>
-                    )}
-                  {report.status !== "REVIEWING" && (
-                    <button
-                      type="button"
-                      disabled={Boolean(pending)}
-                      onClick={() => void updateReport(report.id, "REVIEWING")}
-                    >
-                      {pending === `report-${report.id}-REVIEWING` ? (
-                        <LoaderCircle className="spin" size={13} />
-                      ) : (
-                        <Clock3 size={13} />
-                      )}
-                      {tri(
-                        lang,
-                        "Assumir análise",
-                        "Start review",
-                        "Tomar la revisión",
-                      )}
-                    </button>
+                      <button
+                        type="button"
+                        disabled={Boolean(pending)}
+                        onClick={() => void updateReport(report.id, "RESOLVED")}
+                      >
+                        {pending === `report-${report.id}-RESOLVED` ? (
+                          <LoaderCircle className="spin" size={13} />
+                        ) : (
+                          <Check size={13} />
+                        )}
+                        {tri(lang, "Resolver", "Resolve", "Resolver")}
+                      </button>
+                    </>
                   )}
-                  <button
-                    type="button"
-                    disabled={Boolean(pending)}
-                    onClick={() => void updateReport(report.id, "DISMISSED")}
-                  >
-                    {pending === `report-${report.id}-DISMISSED` ? (
-                      <LoaderCircle className="spin" size={13} />
-                    ) : (
-                      <X size={13} />
-                    )}
-                    {tri(lang, "Descartar", "Dismiss", "Descartar")}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={Boolean(pending)}
-                    onClick={() => void updateReport(report.id, "RESOLVED")}
-                  >
-                    {pending === `report-${report.id}-RESOLVED` ? (
-                      <LoaderCircle className="spin" size={13} />
-                    ) : (
-                      <Check size={13} />
-                    )}
-                    {tri(lang, "Resolver", "Resolve", "Resolver")}
-                  </button>
                 </footer>
               </article>
             );
           })}
         </div>
-        <Pager
-          lang={lang}
+        <Pagination
           page={page}
-          pageCount={pageCount}
-          busy={navigating}
+          totalPages={pageCount}
+          pending={navigating}
+          lang={lang}
           onGo={(next) => navigate({ page: next }, queueRef)}
-          label={tri(
-            lang,
-            "Páginas da fila",
-            "Queue pages",
-            "Páginas de la cola",
-          )}
         />
       </section>
 
@@ -1320,18 +1261,13 @@ export function ModerationConsole({
             </li>
           ))}
         </ol>
-        <Pager
-          lang={lang}
+        <Pagination
           page={auditPage}
-          pageCount={auditPageCount}
-          busy={navigating}
+          totalPages={auditPageCount}
+          pending={navigating}
+          lang={lang}
+          className="moderation-audit-pagination"
           onGo={(next) => navigate({ audit: next }, auditRef)}
-          label={tri(
-            lang,
-            "Páginas da auditoria",
-            "Audit pages",
-            "Páginas de la auditoría",
-          )}
         />
       </section>
 
