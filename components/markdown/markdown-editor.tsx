@@ -47,6 +47,8 @@ import {
   Eye,
   EyeOff,
   FileCode2,
+  Gamepad2,
+  GalleryHorizontal,
   GripVertical,
   Heading,
   Image,
@@ -55,6 +57,7 @@ import {
   Info,
   Italic,
   Languages,
+  LayoutGrid,
   Link2,
   List,
   ListCollapse,
@@ -70,6 +73,7 @@ import {
   Smartphone,
   Strikethrough,
   Table,
+  Tag,
   X,
   Video,
 } from "lucide-react";
@@ -109,6 +113,10 @@ type Tool =
   | "desktop"
   | "mobile"
   | "mention"
+  | "game"
+  | "gamemini"
+  | "gamegrid"
+  | "gamegridauto"
   | "table"
   | "details"
   | "lang"
@@ -147,6 +155,18 @@ const insertGroups: Array<{
   titleEs: string;
   tools: Array<[Tool, ComponentType<{ size?: number }>]>;
 }> = [
+  {
+    titlePt: "Jogos",
+    titleEn: "Games",
+    titleEs: "Juegos",
+    tools: [
+      ["game", Gamepad2],
+      ["gamemini", Tag],
+      ["gamegrid", LayoutGrid],
+      ["gamegridauto", GalleryHorizontal],
+      ["mention", AtSign],
+    ],
+  },
   {
     titlePt: "Texto",
     titleEn: "Text",
@@ -192,7 +212,6 @@ const insertGroups: Array<{
     titleEn: "uloggd",
     titleEs: "uloggd",
     tools: [
-      ["mention", AtSign],
       ["center", AlignCenter],
       ["lang", Languages],
       ["theme", Contrast],
@@ -752,6 +771,15 @@ export function MarkdownEditor({
     desktop: tri(lang, "Somente desktop", "Desktop only", "Solo escritorio"),
     mobile: tri(lang, "Somente mobile", "Mobile only", "Solo móvil"),
     mention: tri(lang, "Mencionar", "Mention", "Mencionar"),
+    game: tri(lang, "Card de jogo", "Game card", "Tarjeta de juego"),
+    gamemini: tri(lang, "Card compacto", "Compact card", "Tarjeta compacta"),
+    gamegrid: tri(lang, "Grade de jogos", "Game grid", "Cuadrícula de juegos"),
+    gamegridauto: tri(
+      lang,
+      "Carrossel de jogos",
+      "Game carousel",
+      "Carrusel de juegos",
+    ),
     table: tri(lang, "Tabela", "Table", "Tabla"),
     details: tri(
       lang,
@@ -941,6 +969,12 @@ export function MarkdownEditor({
         desktop: () => insertBlock(`<desktop>\n\n${text}\n\n</desktop>`),
         mobile: () => insertBlock(`<mobile>\n\n${text}\n\n</mobile>`),
         mention: () => insertText("@", "", "username"),
+        game: () => insertText("!game(", ")", "slug"),
+        gamemini: () => insertText("!game:mini(", ")", "slug"),
+        gamegrid: () =>
+          insertText("!game:grid(", ")", "slug-1, slug-2, slug-3"),
+        gamegridauto: () =>
+          insertText("!game:grid-auto(", ")", "slug-1, slug-2, slug-3"),
         table: () =>
           insertBlock(
             "| Coluna 1 | Coluna 2 |\n| --- | --- |\n| dado | dado |",
