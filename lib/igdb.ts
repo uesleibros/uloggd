@@ -344,7 +344,6 @@ export async function searchGames(
   rawQuery: string,
 ): Promise<GameSearchResult[]> {
   const query = rawQuery.trim().replace(/\s+/g, " ").slice(0, 80);
-  if (query.length < 2) return [];
   const words = query
     .split(" ")
     .map(escapeIgdb)
@@ -352,33 +351,27 @@ export async function searchGames(
     .slice(0, 6);
   if (!words.length) return [];
 
-  const fields = `fields name,slug,first_release_date,cover.image_id,platforms.name,
-    alternative_names.name,total_rating_count,game_type;`;
+  // The original wildcard search, restored verbatim: every word must match the
+  // name, or every word must match an alternative name. Ordered by popularity so
+  // the well-known titles surface, then re-ranked in JS. It is the ~1s query the
+  // search box always used — the earlier 10s was the auth round-trip in the
+  // route (now getClaims) and cold caches, not this query.
   const nameFilter = words.map((word) => `name ~ *"${word}"*`).join(" & ");
+  const alternativeFilter = words
+    .map((word) => `alternative_names.name ~ *"${word}"*`)
+    .join(" & ");
+  const games = await queryGamesRaw(
+    `
+    fields name,slug,first_release_date,cover.image_id,platforms.name,
+      alternative_names.name,total_rating_count,game_type;
+    where (${nameFilter} | ${alternativeFilter}) & cover != null;
+    sort total_rating_count desc;
+    limit 20;
+  `,
+    15 * CACHE_MINUTES,
+  );
 
-  // Two cheap passes run in parallel and merged, instead of the old single
-  // `name ~ | alternative_names.name ~` wildcard that matched both in one query
-  // but took ~1.5s. The name wildcard, sorted by popularity, nails direct title
-  // matches (Super Mario 64 for "mario"); IGDB's `search` index catches
-  // acronyms and alternative names the name wildcard misses (GTA → Grand Theft
-  // Auto). The JS re-rank over the union restores the old popularity-first order.
-  const [byName, bySearch] = await Promise.all([
-    queryGamesRaw(
-      `${fields} where (${nameFilter}) & cover != null;
-       sort total_rating_count desc; limit 20;`,
-      15 * CACHE_MINUTES,
-    ),
-    queryGamesRaw(
-      `search "${escapeIgdb(query)}"; ${fields} where cover != null; limit 20;`,
-      15 * CACHE_MINUTES,
-    ),
-  ]);
-
-  const byId = new Map<number, IgdbGameResponse>();
-  for (const game of [...byName, ...bySearch])
-    if (!byId.has(game.id)) byId.set(game.id, game);
-
-  return [...byId.values()]
+  return games
     .sort((a, b) => searchRelevance(b, query) - searchRelevance(a, query))
     .slice(0, 12)
     .map((game) => ({
