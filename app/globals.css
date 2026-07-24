@@ -6309,7 +6309,7 @@ never the tracking violet. */
 }
 .editor-select-option {
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr) 18px;
+  grid-template-columns: 18px minmax(min-content, 1fr) 18px;
   align-items: center;
   gap: 7px;
   min-height: 36px;
@@ -6319,6 +6319,10 @@ never the tracking violet. */
   color: var(--screen-dim);
   font-size: 11px;
   cursor: pointer;
+  /* Options stay on one line; the menu grows to the widest label instead of
+     wrapping it, so an option without a leading icon can't collapse into the
+     icon column. */
+  white-space: nowrap;
 }
 .editor-select-option[data-highlighted] {
   background: var(--console-hover);
@@ -17642,7 +17646,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   display: grid;
   grid-template-columns: 60px minmax(0, 1fr);
   align-items: stretch;
-  min-height: 74px;
+  min-height: 80px;
 }
 .tierlist-row + .tierlist-row {
   border-top: 1px solid var(--shell-line);
@@ -17685,8 +17689,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-cover img {
   display: block;
-  width: 50px;
-  height: 66px;
+  width: 54px;
+  height: 72px;
   object-fit: cover;
 }
 .tierlist-board[data-compact] .tierlist-cover img {
@@ -17694,7 +17698,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   height: 45px;
 }
 .tierlist-row-empty {
-  min-height: 66px;
+  min-height: 72px;
 }
 .tierlist-board-empty,
 .tierlist-pool-empty {
@@ -17811,7 +17815,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   flex-wrap: wrap;
   gap: 4px;
   align-content: flex-start;
-  min-height: 78px;
+  min-height: 84px;
   padding: 6px;
   background: var(--console-inset);
   transition: background-color 140ms ease-out;
@@ -18012,8 +18016,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-ghost-cover img {
   display: block;
-  width: 50px;
-  height: 66px;
+  width: 54px;
+  height: 72px;
   object-fit: cover;
 }
 .tierlist-ghost-tier {

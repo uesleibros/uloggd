@@ -2,7 +2,18 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Select from "@/components/ui/select";
-import { Check, ChevronDown, Flag, LoaderCircle, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  CircleHelp,
+  EyeOff,
+  Flag,
+  LoaderCircle,
+  Megaphone,
+  MessageSquareWarning,
+  UserX,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -133,37 +144,51 @@ export function ListReport({
                       collisionPadding={12}
                     >
                       <Select.Viewport>
-                        {[
+                        {(
                           [
-                            "HARASSMENT",
-                            tri(lang, "Assédio", "Harassment", "Acoso"),
-                          ],
-                          [
-                            "HATE_SPEECH",
-                            tri(
-                              lang,
-                              "Discurso de ódio",
-                              "Hate speech",
-                              "Discurso de odio",
-                            ),
-                          ],
-                          [
-                            "SEXUAL_CONTENT",
-                            tri(
-                              lang,
-                              "Conteúdo sexual",
-                              "Sexual content",
-                              "Contenido sexual",
-                            ),
-                          ],
-                          ["SPAM", tri(lang, "Spam", "Spam", "Spam")],
-                          ["OTHER", tri(lang, "Outro", "Other", "Otro")],
-                        ].map(([value, label]) => (
+                            [
+                              "HARASSMENT",
+                              tri(lang, "Assédio", "Harassment", "Acoso"),
+                              UserX,
+                            ],
+                            [
+                              "HATE_SPEECH",
+                              tri(
+                                lang,
+                                "Discurso de ódio",
+                                "Hate speech",
+                                "Discurso de odio",
+                              ),
+                              MessageSquareWarning,
+                            ],
+                            [
+                              "SEXUAL_CONTENT",
+                              tri(
+                                lang,
+                                "Conteúdo sexual",
+                                "Sexual content",
+                                "Contenido sexual",
+                              ),
+                              EyeOff,
+                            ],
+                            [
+                              "SPAM",
+                              tri(lang, "Spam", "Spam", "Spam"),
+                              Megaphone,
+                            ],
+                            [
+                              "OTHER",
+                              tri(lang, "Outro", "Other", "Otro"),
+                              CircleHelp,
+                            ],
+                          ] as const
+                        ).map(([value, label, Icon]) => (
                           <Select.Item
                             className="editor-select-option"
                             value={value}
                             key={value}
                           >
+                            <Icon size={14} />
                             <Select.ItemText>{label}</Select.ItemText>
                             <Select.ItemIndicator>
                               <Check size={13} />

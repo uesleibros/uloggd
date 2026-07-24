@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
 import { LayoutGrid, Layers3, ListOrdered } from "lucide-react";
 import { LikeButton } from "@/components/social/like-button";
@@ -7,7 +8,10 @@ import { ListAddGame } from "@/components/social/list-add-game";
 import { ListItemsGrid } from "@/components/social/list-items-grid";
 import { ListOwnerControls } from "@/components/social/list-owner-controls";
 import { ListReport } from "@/components/social/list-report";
-import { TierlistBoard } from "@/components/social/tierlist-board";
+import {
+  TierlistBoard,
+  TierlistSkeleton,
+} from "@/components/social/tierlist-board";
 import { TierlistEditor } from "@/components/social/tierlist-editor";
 import { getTierlist } from "@/lib/tierlists";
 import { getGamesByIds } from "@/lib/igdb";
@@ -20,7 +24,7 @@ import {
   warnSchemaGap,
 } from "@/lib/supabase/schema-fallback";
 import { hasLocale } from "../../dictionaries";
-import { tri, uiText } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Props = PageProps<"/[lang]/lists/[id]">;
 
@@ -70,6 +74,54 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+// Streamed under Suspense: getTierlist fans out to IGDB for covers, the slow
+// part of the page. The header renders first, this fills in behind the tier
+// skeleton. The author always gets the editor; others get the board or, when
+// nothing is ranked, the empty state.
+async function TierlistBody({
+  listId,
+  ownerId,
+  isOwner,
+  lang,
+}: {
+  listId: string;
+  ownerId: string;
+  isOwner: boolean;
+  lang: UiLang;
+}) {
+  const supabase = await getSupabase();
+  const tierlist = await getTierlist(supabase, listId, ownerId, {
+    includePool: isOwner,
+  });
+  if (isOwner)
+    return <TierlistEditor listId={listId} initial={tierlist} lang={lang} />;
+  if (tierlist.items.length)
+    return (
+      <TierlistBoard
+        tiers={tierlist.tiers}
+        items={tierlist.items}
+        lang={lang}
+        linkGames
+      />
+    );
+  return (
+    <div className="social-empty">
+      <span aria-hidden>
+        <LayoutGrid size={22} />
+      </span>
+      <h2>{tri(lang, "Tierlist vazia", "Empty tierlist", "Tierlist vacía")}</h2>
+      <p>
+        {tri(
+          lang,
+          "Nenhum jogo classificado ainda.",
+          "No games ranked yet.",
+          "Ningún juego clasificado todavía.",
+        )}
+      </p>
+    </div>
+  );
+}
+
 export default async function ListPage({ params }: Props) {
   const { lang, id } = await params;
   const key = listKey(id);
@@ -111,28 +163,28 @@ export default async function ListPage({ params }: Props) {
 
   if (list.kind === "TIERLIST") {
     const t = uiText(lang);
-    // The author always lands in the editor; there is no separate view mode to
-    // toggle into, so no edit/view buttons either.
-    const editing = isOwner;
-    const [tierlist, { data: likeRows }, { data: follow }] = await Promise.all([
-      getTierlist(supabase, list.id, list.profile_id, {
-        includePool: isOwner,
-      }),
-      supabase.rpc("get_content_likes", {
-        target_type: "list",
-        target_ids: [list.id],
-      }),
-      user
-        ? supabase
-            .from("follows")
-            .select("follower_id")
-            .eq("follower_id", user.id)
-            .eq("following_id", list.profile_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-    ]);
+    // The header only needs a cheap ranked count (no IGDB); the board itself
+    // streams under Suspense with a tier-shaped skeleton, so the page never
+    // flashes the collection cover-grid loader.
+    const [{ data: likeRows }, { data: follow }, { data: liveIds }] =
+      await Promise.all([
+        supabase.rpc("get_content_likes", {
+          target_type: "list",
+          target_ids: [list.id],
+        }),
+        user
+          ? supabase
+              .from("follows")
+              .select("follower_id")
+              .eq("follower_id", user.id)
+              .eq("following_id", list.profile_id)
+              .maybeSingle()
+          : Promise.resolve({ data: null }),
+        supabase.rpc("tierlist_live_ids", { target_list: list.id }),
+      ]);
     const likeState = likeRows?.[0] as
       { like_count: number; liked_by_viewer: boolean } | undefined;
+    const rankedCount = ((liveIds ?? []) as unknown[]).length;
     return (
       <main className="social-page">
         <header className="list-detail-header">
@@ -146,7 +198,7 @@ export default async function ListPage({ params }: Props) {
               <LayoutGrid size={13} aria-hidden /> Tierlist
             </span>
             <small>
-              {tierlist.rankedCount} {t.gamesLower}
+              {rankedCount} {t.gamesLower}
             </small>
           </div>
           <div className="list-detail-social">
@@ -180,33 +232,14 @@ export default async function ListPage({ params }: Props) {
           </div>
           {isOwner && <ListOwnerControls list={list} lang={lang} />}
         </header>
-        {editing ? (
-          <TierlistEditor listId={list.id} initial={tierlist} lang={lang} />
-        ) : tierlist.items.length ? (
-          <TierlistBoard
-            tiers={tierlist.tiers}
-            items={tierlist.items}
+        <Suspense fallback={<TierlistSkeleton />}>
+          <TierlistBody
+            listId={list.id}
+            ownerId={list.profile_id}
+            isOwner={isOwner}
             lang={lang}
-            linkGames
           />
-        ) : (
-          <div className="social-empty">
-            <span aria-hidden>
-              <LayoutGrid size={22} />
-            </span>
-            <h2>
-              {tri(lang, "Tierlist vazia", "Empty tierlist", "Tierlist vacía")}
-            </h2>
-            <p>
-              {tri(
-                lang,
-                "Nenhum jogo classificado ainda.",
-                "No games ranked yet.",
-                "Ningún juego clasificado todavía.",
-              )}
-            </p>
-          </div>
-        )}
+        </Suspense>
         <ContentComments
           contentType="list"
           contentId={list.id}

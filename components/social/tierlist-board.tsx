@@ -59,8 +59,8 @@ export function TierlistBoard({
                       fallbackSrc={game.fallbackUrl}
                       alt={game.name}
                       title={game.name}
-                      width={compact ? 34 : 50}
-                      height={compact ? 45 : 66}
+                      width={compact ? 34 : 54}
+                      height={compact ? 45 : 72}
                       unoptimized
                     />
                   );
@@ -95,6 +95,32 @@ export function TierlistBoard({
           )}
         </p>
       )}
+    </div>
+  );
+}
+
+/**
+ * Loading state for the board — the same row shape (label plate + a strip of
+ * covers) so the tierlist page never flashes the collection cover-grid
+ * skeleton while the games load. Rows taper to read as a real board.
+ */
+export function TierlistSkeleton() {
+  return (
+    <div className="tierlist-board" aria-busy="true" aria-hidden>
+      {[6, 5, 4, 3, 2].map((count, row) => (
+        <div className="tierlist-row" key={row}>
+          <span className="tierlist-row-label skeleton-block" />
+          <div className="tierlist-row-games">
+            {Array.from({ length: count }, (_, index) => (
+              <span
+                className="tierlist-cover skeleton-block"
+                key={index}
+                style={{ width: "54px", height: "72px" }}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
