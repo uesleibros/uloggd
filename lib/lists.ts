@@ -12,12 +12,13 @@ import {
   isMissingSchemaError,
   warnSchemaGap,
 } from "@/lib/supabase/schema-fallback";
+import { getTierlistPreview } from "@/lib/tierlists";
 
 export type { ListPreview };
 
 // `ranked` arrives with the ranked_lists migration. Until that runs every list
 // is a collection, so the queries below drop the column instead of failing.
-const LIST_COLUMNS = "id,public_id,name,description,visibility,updated_at";
+const LIST_COLUMNS = "id,public_id,name,description,visibility,kind,updated_at";
 const LIST_ITEMS = "game_list_items(igdb_id,position)";
 
 type PreviewOptions = ListFilters & {
@@ -79,6 +80,7 @@ export async function getListPreviews(
     description: string | null;
     visibility: string;
     ranked?: boolean | null;
+    kind?: string | null;
     updated_at: string;
     game_list_items: { igdb_id: number; position: number }[];
   };
@@ -150,6 +152,7 @@ export async function getListPreviews(
       description: list.description,
       visibility: list.visibility as ListPreview["visibility"],
       ranked: Boolean(list.ranked),
+      kind: list.kind === "TIERLIST" ? "TIERLIST" : "COLLECTION",
       count: items.length,
       covers: items.slice(0, 5).flatMap((item) => {
         const game = gamesById.get(item.igdb_id);
@@ -167,6 +170,24 @@ export async function getListPreviews(
       updatedAt: list.updated_at,
     };
   });
+
+  // A tierlist keeps its games in a separate table, so its covers and count
+  // come from there. Only the few on this page are hydrated, tier by tier.
+  const tierlistPreviews = previews.filter(
+    (preview) => preview.kind === "TIERLIST",
+  );
+  if (tierlistPreviews.length) {
+    const filled = await Promise.all(
+      tierlistPreviews.map((preview) =>
+        getTierlistPreview(supabase, preview.id),
+      ),
+    );
+    tierlistPreviews.forEach((preview, index) => {
+      preview.covers = filled[index].covers;
+      preview.count = filled[index].count;
+    });
+  }
+
   if (sort === "size") previews.sort((a, b) => b.count - a.count);
   else if (sort === "likes") previews.sort((a, b) => b.likes - a.likes);
   return previews;

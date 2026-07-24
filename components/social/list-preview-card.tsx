@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { Globe2, Heart, Layers3, ListOrdered, Lock, Users } from "lucide-react";
+import {
+  Globe2,
+  Heart,
+  Layers3,
+  LayoutGrid,
+  ListOrdered,
+  Lock,
+  Users,
+} from "lucide-react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { SafeImage } from "@/components/safe-image";
 
@@ -26,6 +34,7 @@ export function ListPreviewCard({
     description: string | null;
     visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
     ranked?: boolean;
+    kind?: "COLLECTION" | "TIERLIST";
     count: number;
   };
   covers: { url: string; fallbackUrl?: string; name: string }[];
@@ -46,12 +55,14 @@ export function ListPreviewCard({
         ? Users
         : Globe2;
   const ranked = Boolean(list.ranked);
+  const tierlist = list.kind === "TIERLIST";
+  const mode = tierlist ? "tierlist" : ranked ? "ranked" : "collection";
   const shown = covers.slice(0, 5);
   return (
     <Link
       className="list-preview"
       href={`/${lang}/lists/${list.publicId ?? list.id}`}
-      data-mode={ranked ? "ranked" : "collection"}
+      data-mode={mode}
     >
       <span className="list-preview-stack" aria-hidden>
         {shown.length ? (
@@ -70,11 +81,19 @@ export function ListPreviewCard({
           <span className="list-preview-blank" />
         )}
       </span>
-      <span className="list-preview-mode" data-ranked={ranked || undefined}>
-        {ranked ? <ListOrdered size={11} /> : <Layers3 size={11} />}
-        {ranked
-          ? tri(lang, "Ranking", "Ranking", "Ranking")
-          : tri(lang, "Coleção", "Collection", "Colección")}
+      <span className="list-preview-mode" data-mode={mode}>
+        {tierlist ? (
+          <LayoutGrid size={11} />
+        ) : ranked ? (
+          <ListOrdered size={11} />
+        ) : (
+          <Layers3 size={11} />
+        )}
+        {tierlist
+          ? "Tierlist"
+          : ranked
+            ? tri(lang, "Ranking", "Ranking", "Ranking")
+            : tri(lang, "Coleção", "Collection", "Colección")}
       </span>
       <span className="list-preview-name">{list.name}</span>
       <span className="list-preview-facts">

@@ -1,7 +1,14 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { Layers3, ListOrdered, LoaderCircle, Plus, X } from "lucide-react";
+import {
+  LayoutGrid,
+  Layers3,
+  ListOrdered,
+  LoaderCircle,
+  Plus,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -44,7 +51,9 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"COLLECTION" | "RANKED">("COLLECTION");
+  const [mode, setMode] = useState<"COLLECTION" | "RANKED" | "TIERLIST">(
+    "COLLECTION",
+  );
   // The RPC finishing is not the same as the new list being on screen; the
   // button stays busy until router.refresh() has re-rendered the grid.
   const [refreshing, startRefresh] = useTransition();
@@ -68,11 +77,15 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
       return;
     }
     const client = createClient();
-    let { error: actionError } = await client.rpc("create_game_list", {
-      list_name: name,
-      list_description: description || null,
-      list_ranked: mode === "RANKED",
-    });
+    let { data: created, error: actionError } = await client.rpc(
+      "create_game_list",
+      {
+        list_name: name,
+        list_description: description || null,
+        list_ranked: mode === "RANKED",
+        list_kind: mode === "TIERLIST" ? "TIERLIST" : "COLLECTION",
+      },
+    );
     let droppedMode = false;
     if (
       actionError &&
@@ -81,10 +94,13 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
       // Older signature: the list still gets created, just always as a
       // collection, because the database predates the ranked_lists migration.
       droppedMode = true;
-      ({ error: actionError } = await client.rpc("create_game_list", {
-        list_name: name,
-        list_description: description || null,
-      }));
+      ({ data: created, error: actionError } = await client.rpc(
+        "create_game_list",
+        {
+          list_name: name,
+          list_description: description || null,
+        },
+      ));
     }
     if (actionError) {
       const localized = createListErrorMessage(actionError.message, lang);
@@ -114,7 +130,18 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
             "La lista se creó como colección: la base de datos no tiene la migración ranked_lists para el formato Ranking.",
           ),
         );
+      // A new tierlist opens straight into its editor — an empty board is
+      // useless until games are dragged in.
+      const row = Array.isArray(created) ? created[0] : created;
+      const tierlistId =
+        mode === "TIERLIST" && row && "public_id" in row
+          ? (row as { public_id: string }).public_id
+          : null;
       startRefresh(() => {
+        if (tierlistId) {
+          router.push(`/${lang}/lists/${tierlistId}?edit=1`);
+          return;
+        }
         router.refresh();
         if (!halfApplied) setOpen(false);
       });
@@ -233,6 +260,29 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
                       "Ordem importa: 1º, 2º, 3º… você define a posição.",
                       "Order matters: 1st, 2nd, 3rd… you set the position.",
                       "El orden importa: 1º, 2º, 3º… tú defines la posición.",
+                    )}
+                  </small>
+                </span>
+              </label>
+              <label data-selected={mode === "TIERLIST" || undefined}>
+                <input
+                  type="radio"
+                  name="mode"
+                  value="TIERLIST"
+                  checked={mode === "TIERLIST"}
+                  onChange={() => setMode("TIERLIST")}
+                />
+                <span>
+                  <LayoutGrid size={17} aria-hidden />
+                </span>
+                <span>
+                  <strong>Tierlist</strong>
+                  <small>
+                    {tri(
+                      lang,
+                      "Arraste os jogos da sua biblioteca para tiers de S a D.",
+                      "Drag your library games into tiers from S to D.",
+                      "Arrastra los juegos de tu biblioteca a tiers de S a D.",
                     )}
                   </small>
                 </span>

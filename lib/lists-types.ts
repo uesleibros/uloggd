@@ -9,6 +9,7 @@ export type ListPreview = {
   description: string | null;
   visibility: ListVisibility;
   ranked: boolean;
+  kind: "COLLECTION" | "TIERLIST";
   count: number;
   covers: { url: string; fallbackUrl: string; name: string }[];
   likes: number;

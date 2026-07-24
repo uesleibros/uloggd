@@ -67,6 +67,7 @@ export function LoadMoreLists({
                 description: list.description,
                 visibility: list.visibility,
                 ranked: list.ranked,
+                kind: list.kind,
                 count: list.count,
               }}
               covers={list.covers}

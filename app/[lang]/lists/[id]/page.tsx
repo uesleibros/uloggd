@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { Layers3, ListOrdered } from "lucide-react";
+import { LayoutGrid, Layers3, ListOrdered } from "lucide-react";
 import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { ListAddGame } from "@/components/social/list-add-game";
 import { ListItemsGrid } from "@/components/social/list-items-grid";
 import { ListOwnerControls } from "@/components/social/list-owner-controls";
+import { ListReport } from "@/components/social/list-report";
+import { TierlistBoard } from "@/components/social/tierlist-board";
+import { TierlistEditor } from "@/components/social/tierlist-editor";
+import { getTierlist } from "@/lib/tierlists";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { ContentComments } from "@/components/social/content-comments";
@@ -66,8 +70,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ListPage({ params }: Props) {
-  const { lang, id } = await params;
+export default async function ListPage({ params, searchParams }: Props) {
+  const [{ lang, id }, query] = await Promise.all([params, searchParams]);
   const key = listKey(id);
   if (!hasLocale(lang) || !key) notFound();
   const supabase = await getSupabase();
@@ -77,7 +81,7 @@ export default async function ListPage({ params }: Props) {
     supabase
       .from("game_lists")
       .select(
-        "id,public_id,profile_id,name,description,visibility,ranked,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name,content_comment_scope),game_list_items(id,igdb_id,game_slug,position,note)",
+        "id,public_id,profile_id,name,description,visibility,ranked,kind,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name,content_comment_scope),game_list_items(id,igdb_id,game_slug,position,note)",
       )
       .eq(key[0], key[1])
       .maybeSingle(),
@@ -101,6 +105,153 @@ export default async function ListPage({ params }: Props) {
   }
   if (!list) notFound();
   if (key[0] === "id") permanentRedirect(`/${lang}/lists/${list.public_id}`);
+
+  const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
+  const isOwner = user?.id === list.profile_id;
+
+  if (list.kind === "TIERLIST") {
+    const t = uiText(lang);
+    const editing = isOwner && query.edit === "1";
+    const [tierlist, { data: likeRows }, { data: follow }] = await Promise.all([
+      getTierlist(supabase, list.id, list.profile_id, {
+        includePool: isOwner,
+      }),
+      supabase.rpc("get_content_likes", {
+        target_type: "list",
+        target_ids: [list.id],
+      }),
+      user
+        ? supabase
+            .from("follows")
+            .select("follower_id")
+            .eq("follower_id", user.id)
+            .eq("following_id", list.profile_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+    const likeState = likeRows?.[0] as
+      { like_count: number; liked_by_viewer: boolean } | undefined;
+    return (
+      <main className="social-page">
+        <header className="list-detail-header">
+          <span>
+            {tri(lang, "LISTA DE", "LIST BY", "LISTA DE")} @{owner?.username}
+          </span>
+          <h1>{list.name}</h1>
+          {list.description && <p>{list.description}</p>}
+          <div className="list-detail-meta">
+            <span className="list-preview-mode" data-mode="tierlist">
+              <LayoutGrid size={13} aria-hidden /> Tierlist
+            </span>
+            <small>
+              {tierlist.rankedCount} {t.gamesLower}
+            </small>
+          </div>
+          <div className="list-detail-social">
+            <LikeButton
+              contentType="list"
+              contentId={list.id}
+              count={Number(likeState?.like_count ?? 0)}
+              liked={Boolean(likeState?.liked_by_viewer)}
+              canLike={Boolean(user) && !isOwner}
+              lang={lang}
+            />
+            <ShareButton
+              className="content-share-action"
+              title={list.name}
+              text={
+                lang === "pt-BR"
+                  ? `Tierlist por @${owner?.username} no uloggd`
+                  : `Tierlist by @${owner?.username} on uloggd`
+              }
+              label={t.share}
+              copiedLabel={t.linkCopied}
+              lang={lang}
+            />
+            {user && !isOwner && (
+              <ListReport
+                listId={list.id}
+                ownerId={list.profile_id}
+                lang={lang}
+              />
+            )}
+          </div>
+          {isOwner && <ListOwnerControls list={list} lang={lang} />}
+        </header>
+        {editing ? (
+          <TierlistEditor listId={list.id} initial={tierlist} lang={lang} />
+        ) : (
+          <>
+            {isOwner && (
+              <a className="tierlist-edit-link" href={`?edit=1`}>
+                <LayoutGrid size={14} aria-hidden />
+                {tri(
+                  lang,
+                  "Editar tierlist",
+                  "Edit tierlist",
+                  "Editar tierlist",
+                )}
+              </a>
+            )}
+            {tierlist.items.length ? (
+              <TierlistBoard
+                tiers={tierlist.tiers}
+                items={tierlist.items}
+                lang={lang}
+                linkGames
+              />
+            ) : (
+              <div className="social-empty">
+                <span aria-hidden>
+                  <LayoutGrid size={22} />
+                </span>
+                <h2>
+                  {tri(
+                    lang,
+                    "Tierlist vazia",
+                    "Empty tierlist",
+                    "Tierlist vacía",
+                  )}
+                </h2>
+                <p>
+                  {isOwner
+                    ? tri(
+                        lang,
+                        "Abra o editor e arraste os jogos da sua biblioteca para as tiers.",
+                        "Open the editor and drag your library games into the tiers.",
+                        "Abre el editor y arrastra los juegos de tu biblioteca a las tiers.",
+                      )
+                    : tri(
+                        lang,
+                        "Nenhum jogo classificado ainda.",
+                        "No games ranked yet.",
+                        "Ningún juego clasificado todavía.",
+                      )}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+        <ContentComments
+          contentType="list"
+          contentId={list.id}
+          ownerId={list.profile_id}
+          viewerId={user?.id ?? null}
+          canComment={
+            Boolean(user) &&
+            (isOwner ||
+              owner?.content_comment_scope === "EVERYONE" ||
+              (owner?.content_comment_scope === "FOLLOWERS" && Boolean(follow)))
+          }
+          commentsScope={
+            owner?.content_comment_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"
+          }
+          lang={lang}
+        />
+      </main>
+    );
+  }
+
   const items = [...(list.game_list_items ?? [])].sort(
     (a, b) => a.position - b.position,
   );
@@ -162,10 +313,8 @@ export default async function ListPage({ params }: Props) {
       },
     ]),
   );
-  const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const pt = lang === "pt-BR";
   const t = uiText(lang);
-  const isOwner = user?.id === list.profile_id;
   const isRanked = Boolean(list.ranked);
   return (
     <main className="social-page">

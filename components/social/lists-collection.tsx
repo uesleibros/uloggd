@@ -13,11 +13,7 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type {
-  ListPreview,
-  ListSort,
-  ListVisibility,
-} from "@/lib/lists-types";
+import type { ListPreview, ListSort, ListVisibility } from "@/lib/lists-types";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { ListPreviewCard } from "./list-preview-card";
 
@@ -244,9 +240,7 @@ export function ListsCollection({
     <section className="lists-collection">
       <header className="lists-toolbar">
         <div className="lists-toolbar-heading">
-          <h2>
-            {tri(lang, "Suas listas", "Your lists", "Tus listas")}
-          </h2>
+          <h2>{tri(lang, "Suas listas", "Your lists", "Tus listas")}</h2>
           <p>
             {filtersActive
               ? tri(
@@ -266,7 +260,12 @@ export function ListsCollection({
         <nav
           className="lists-mode-tabs game-page-nav"
           role="tablist"
-          aria-label={tri(lang, "Modo da lista", "List mode", "Modo de la lista")}
+          aria-label={tri(
+            lang,
+            "Modo da lista",
+            "List mode",
+            "Modo de la lista",
+          )}
         >
           {modeTabs.map((tab) => (
             <button
@@ -347,8 +346,9 @@ export function ListsCollection({
               <Select.Trigger className="lists-select-trigger">
                 <Select.Value>
                   {
-                    visibilityOptions.find((o) => o.value === filters.visibility)
-                      ?.label
+                    visibilityOptions.find(
+                      (o) => o.value === filters.visibility,
+                    )?.label
                   }
                 </Select.Value>
                 <Select.Icon>
@@ -446,6 +446,7 @@ export function ListsCollection({
                 description: list.description,
                 visibility: list.visibility,
                 ranked: list.ranked,
+                kind: list.kind,
                 count: list.count,
               }}
               covers={list.covers}
