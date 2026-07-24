@@ -364,6 +364,7 @@ export function ProfileComments({
       <div
         className="profile-comment-thread"
         data-depth={Math.min(depth, 3)}
+        data-has-replies={comment.replies.length > 0 || undefined}
         key={comment.id}
       >
         <CommentArticle

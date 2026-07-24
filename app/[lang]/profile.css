@@ -1368,15 +1368,20 @@
 }
 /* Trunk: drops from under the replied-to avatar down to where its replies
    begin, so the thread visibly hangs off that person's picture instead of
-   starting below it in empty space. It begins a few pixels inside the avatar
-   (which is opaque and clips its own overflow) and is colinear with the reply
-   rail, so the line reads as one continuous branch. */
-.profile-comment-thread:has(> .profile-comment-replies) > article {
+   starting below it in empty space. It starts well inside the avatar and the
+   avatar sits above it (z-index below), so the line is hidden behind the photo
+   and emerges cleanly from its rounded bottom — no gap at the top. Colinear
+   with the reply rail so it reads as one continuous branch. */
+.profile-comment-avatar {
+  position: relative;
+  z-index: 1;
+}
+.profile-comment-thread[data-has-replies] > article {
   position: relative;
 }
-.profile-comment-thread:has(> .profile-comment-replies) > article::after {
+.profile-comment-thread[data-has-replies] > article::after {
   position: absolute;
-  top: 40px;
+  top: 22px;
   bottom: 0;
   left: 16px;
   border-left: 1px solid var(--shell-line-strong);
@@ -1384,12 +1389,9 @@
 }
 /* Deeper levels drop their indent to 0, so their trunk hugs the avatar's left
    edge to stay colinear with the reply rail there. */
-.profile-comment-thread[data-depth="1"]:has(> .profile-comment-replies)
-  > article::after,
-.profile-comment-thread[data-depth="2"]:has(> .profile-comment-replies)
-  > article::after,
-.profile-comment-thread[data-depth="3"]:has(> .profile-comment-replies)
-  > article::after {
+.profile-comment-thread[data-depth="1"][data-has-replies] > article::after,
+.profile-comment-thread[data-depth="2"][data-has-replies] > article::after,
+.profile-comment-thread[data-depth="3"][data-has-replies] > article::after {
   left: 0;
 }
 .profile-comment-thread[data-depth="1"] > .profile-comment-replies,
