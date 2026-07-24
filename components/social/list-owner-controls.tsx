@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { ListOrdered, LoaderCircle, Settings2, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { Switch } from "@/components/switch";
 import { createClient } from "@/lib/supabase/client";
 import { EditorVisibilitySelect } from "./review-studio-form";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -219,7 +220,7 @@ export function ListOwnerControls({
               {/* A tierlist ranks through its tiers, so it never shows the
                   numbered-ranking switch. */}
               {!isTierlist && (
-                <label className="create-list-rank-toggle">
+                <div className="create-list-rank-toggle">
                   <span>
                     <ListOrdered size={16} aria-hidden />
                     <span>
@@ -236,13 +237,12 @@ export function ListOwnerControls({
                       </small>
                     </span>
                   </span>
-                  <input
-                    type="checkbox"
-                    role="switch"
+                  <Switch
                     checked={ranked}
-                    onChange={(event) => setRanked(event.target.checked)}
+                    onChange={setRanked}
+                    label={tri(lang, "Ranquear", "Rank", "Ranquear")}
                   />
-                </label>
+                </div>
               )}
               <label>
                 <span>{t.visibility}</span>

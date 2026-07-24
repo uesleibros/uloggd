@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { Switch } from "@/components/switch";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -269,7 +270,7 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
             {/* Ranking is a switch on top of a collection, not a format of its
                 own: a tierlist already ranks through its tiers. */}
             {format === "COLLECTION" && (
-              <label className="create-list-rank-toggle">
+              <div className="create-list-rank-toggle">
                 <span>
                   <ListOrdered size={16} aria-hidden />
                   <span>
@@ -284,13 +285,12 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
                     </small>
                   </span>
                 </span>
-                <input
-                  type="checkbox"
-                  role="switch"
+                <Switch
                   checked={ranked}
-                  onChange={(event) => setRanked(event.target.checked)}
+                  onChange={setRanked}
+                  label={tri(lang, "Ranquear", "Rank", "Ranquear")}
                 />
-              </label>
+              </div>
             )}
             <p className="create-list-hint">
               {tri(
