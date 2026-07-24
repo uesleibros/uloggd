@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { Compass, Sparkles, UserRoundPlus } from "lucide-react";
+import { Compass, UserRoundPlus } from "lucide-react";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { LoadMoreActivity } from "@/components/social/load-more-activity";
 import { FollowButton } from "@/components/social/follow-button";
@@ -52,24 +52,7 @@ export default async function FeedPage({ params }: PageProps<"/[lang]/feed">) {
     <main className="social-page feed-page">
       <header className="feed-header">
         <div>
-          <span className="feed-eyebrow">
-            <Sparkles size={13} />
-            {tri(
-              lang,
-              "QUEM VOCÊ SEGUE",
-              "PEOPLE YOU FOLLOW",
-              "A QUIÉN SIGUES",
-            )}
-          </span>
           <h1>{tri(lang, "Seu feed", "Your feed", "Tu feed")}</h1>
-          <p>
-            {tri(
-              lang,
-              "Avaliações e sessões de quem você acompanha, em ordem de chegada.",
-              "Reviews and sessions from the people you follow, newest first.",
-              "Reseñas y sesiones de quienes sigues, por orden de llegada.",
-            )}
-          </p>
         </div>
         <Link className="feed-explore-link" href={`/${lang}/search`}>
           <Compass size={15} />

@@ -188,9 +188,6 @@ export default async function ListPage({ params }: Props) {
     return (
       <main className="social-page">
         <header className="list-detail-header">
-          <span>
-            {tri(lang, "LISTA DE", "LIST BY", "LISTA DE")} @{owner?.username}
-          </span>
           <h1>{list.name}</h1>
           {list.description && <p>{list.description}</p>}
           <div className="list-detail-meta">
@@ -327,9 +324,6 @@ export default async function ListPage({ params }: Props) {
   return (
     <main className="social-page">
       <header className="list-detail-header">
-        <span>
-          {tri(lang, "LISTA DE", "LIST BY", "LISTA DE")} @{owner?.username}
-        </span>
         <h1>{list.name}</h1>
         {list.description && <p>{list.description}</p>}
         <div className="list-detail-meta">

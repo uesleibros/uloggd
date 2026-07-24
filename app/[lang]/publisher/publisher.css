@@ -62,17 +62,6 @@
 }
 /* The profile prints a giant "U" here; on a company that letter means nothing,
    so this one carries the company's own initial. */
-.publisher-banner[data-empty]::after {
-  position: absolute;
-  right: clamp(24px, 5vw, 72px);
-  bottom: clamp(-50px, -3vw, -24px);
-  color: color-mix(in oklab, var(--screen-white) 8%, transparent);
-  content: var(--publisher-initial, "");
-  font-size: clamp(180px, 22vw, 320px);
-  font-weight: 760;
-  letter-spacing: -0.09em;
-  line-height: 0.8;
-}
 .publisher-header {
   position: relative;
   z-index: 1;

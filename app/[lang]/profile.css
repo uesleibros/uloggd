@@ -714,22 +714,6 @@
     --profile-page-gutter: 24px;
   }
 }
-.profile-banner[data-empty]::after {
-  position: absolute;
-  right: clamp(24px, 5vw, 72px);
-  /* Anchored to the top of the banner — the empty half. The avatar and name are
-     pulled up into the lower half, so a bottom-anchored watermark sat right
-     under them and read as if it were on top of the content. */
-  top: clamp(-56px, -3vw, -20px);
-  /* Tied to the ink colour so the watermark shows in both themes — the old
-     fixed near-white vanished on the light banner. */
-  color: color-mix(in oklab, var(--screen-white) 6%, transparent);
-  content: "U";
-  font-size: clamp(160px, 20vw, 300px);
-  font-weight: 760;
-  letter-spacing: -0.09em;
-  line-height: 0.8;
-}
 .profile-banner img {
   object-fit: cover;
 }
@@ -1346,7 +1330,9 @@
   --thread-elbow: 29px;
   position: relative;
   min-width: 0;
-  margin-left: 15px;
+  /* 16px == half the 32px avatar, so the rail sits under the parent avatar's
+     centre and the trunk drops straight from the circle's lowest point. */
+  margin-left: 16px;
   padding-left: var(--thread-indent);
 }
 .profile-comment-replies .profile-comment-thread > article {
@@ -1392,9 +1378,19 @@
   position: absolute;
   top: 40px;
   bottom: 0;
-  left: 15px;
+  left: 16px;
   border-left: 1px solid var(--shell-line-strong);
   content: "";
+}
+/* Deeper levels drop their indent to 0, so their trunk hugs the avatar's left
+   edge to stay colinear with the reply rail there. */
+.profile-comment-thread[data-depth="1"]:has(> .profile-comment-replies)
+  > article::after,
+.profile-comment-thread[data-depth="2"]:has(> .profile-comment-replies)
+  > article::after,
+.profile-comment-thread[data-depth="3"]:has(> .profile-comment-replies)
+  > article::after {
+  left: 0;
 }
 .profile-comment-thread[data-depth="1"] > .profile-comment-replies,
 .profile-comment-thread[data-depth="2"] > .profile-comment-replies,
@@ -1518,7 +1514,7 @@
   color: var(--screen-white);
 }
 .profile-comment-actions .profile-comment-like-action[data-liked] {
-  color: var(--accent);
+  color: var(--state-liked-text);
 }
 .profile-comment-like-static {
   display: inline-flex;
