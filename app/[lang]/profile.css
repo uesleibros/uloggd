@@ -717,12 +717,15 @@
 .profile-banner[data-empty]::after {
   position: absolute;
   right: clamp(24px, 5vw, 72px);
-  bottom: clamp(-50px, -3vw, -24px);
+  /* Anchored to the top of the banner — the empty half. The avatar and name are
+     pulled up into the lower half, so a bottom-anchored watermark sat right
+     under them and read as if it were on top of the content. */
+  top: clamp(-56px, -3vw, -20px);
   /* Tied to the ink colour so the watermark shows in both themes — the old
      fixed near-white vanished on the light banner. */
-  color: color-mix(in oklab, var(--screen-white) 8%, transparent);
+  color: color-mix(in oklab, var(--screen-white) 6%, transparent);
   content: "U";
-  font-size: clamp(180px, 22vw, 320px);
+  font-size: clamp(160px, 20vw, 300px);
   font-weight: 760;
   letter-spacing: -0.09em;
   line-height: 0.8;

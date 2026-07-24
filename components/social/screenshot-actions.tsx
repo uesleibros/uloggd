@@ -251,7 +251,6 @@ export function ScreenshotActions({
           >
             <header>
               <div>
-                <span>{t.safety}</span>
                 <Dialog.Title>
                   {tri(
                     lang,

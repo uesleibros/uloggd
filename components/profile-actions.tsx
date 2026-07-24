@@ -2,8 +2,11 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as Select from "@radix-ui/react-select";
 import {
   Ban,
+  Check,
+  ChevronDown,
   Flag,
   LoaderCircle,
   MoreHorizontal,
@@ -14,6 +17,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { reportReasonIcon } from "@/lib/report-reasons";
 import { ShareButton } from "./share-button";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -200,7 +204,6 @@ export function ProfileActions({
           <Dialog.Content className="report-dialog">
             <header>
               <div>
-                <span>{t.safety}</span>
                 <Dialog.Title>
                   {tri(
                     lang,
@@ -236,20 +239,51 @@ export function ProfileActions({
               </div>
             ) : (
               <form onSubmit={submit}>
-                <fieldset>
-                  <legend>{tri(lang, "Motivo", "Reason", "Motivo")}</legend>
-                  {reasons.map((item) => (
-                    <label key={item}>
-                      <input
-                        type="radio"
-                        name="reason"
-                        checked={reason === item}
-                        onChange={() => setReason(item)}
-                      />
-                      {labels[item]}
-                    </label>
-                  ))}
-                </fieldset>
+                <label>
+                  {tri(lang, "Motivo", "Reason", "Motivo")}
+                  <Select.Root
+                    value={reason}
+                    onValueChange={(value) =>
+                      setReason(value as (typeof reasons)[number])
+                    }
+                  >
+                    <Select.Trigger className="editor-select-trigger">
+                      <Select.Value />
+                      <Select.Icon>
+                        <ChevronDown size={14} />
+                      </Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Content
+                        className="editor-select-menu"
+                        position="popper"
+                        sideOffset={6}
+                        collisionPadding={12}
+                      >
+                        <Select.Viewport>
+                          {reasons.map((item) => {
+                            const Icon = reportReasonIcon(item);
+                            return (
+                              <Select.Item
+                                className="editor-select-option"
+                                value={item}
+                                key={item}
+                              >
+                                <Icon size={14} />
+                                <Select.ItemText>
+                                  {labels[item]}
+                                </Select.ItemText>
+                                <Select.ItemIndicator>
+                                  <Check size={13} />
+                                </Select.ItemIndicator>
+                              </Select.Item>
+                            );
+                          })}
+                        </Select.Viewport>
+                      </Select.Content>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
                 <label>
                   {tri(
                     lang,

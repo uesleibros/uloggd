@@ -686,7 +686,6 @@ export function ProfileComments({
           <Dialog.Content className="report-dialog profile-comment-report">
             <header>
               <div>
-                <span>{t.safety}</span>
                 <Dialog.Title>
                   {tri(
                     lang,
@@ -855,7 +854,6 @@ export function ProfileComments({
           <Dialog.Content className="report-dialog profile-comment-report">
             <header>
               <div>
-                <span>{t.safety}</span>
                 <Dialog.Title>
                   {pt
                     ? `Bloquear @${blocking?.author.username ?? ""}?`

@@ -86,7 +86,6 @@ export function ListReport({
         >
           <header>
             <div>
-              <span>{t.safety}</span>
               <Dialog.Title>
                 {tri(lang, "Denunciar lista", "Report list", "Denunciar lista")}
               </Dialog.Title>
