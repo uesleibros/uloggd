@@ -8,6 +8,7 @@ import { PlatformFooter } from "@/components/platform-footer";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { CookieConsent } from "@/components/cookie-consent";
 import { CommentAnchor } from "@/components/comment-anchor";
+import { ClientErrorReporter } from "@/components/client-error-reporter";
 import { ScrollReset } from "@/components/scroll-reset";
 import { TopProgress } from "@/components/top-progress";
 import { SmartHeader } from "@/components/smart-header";
@@ -120,6 +121,7 @@ export default async function LocaleLayout({
       </head>
       <body>
         <TopProgress />
+        <ClientErrorReporter />
         <ScrollReset />
         <CommentAnchor />
         <ThemeManager />

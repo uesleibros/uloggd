@@ -23,9 +23,10 @@ export async function GET(request: NextRequest) {
         : searchGames(query),
       createClient(),
     ]);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // Local JWT verification instead of a round-trip to the Auth server — that
+    // network hop ran on every keystroke and added a fixed tax to each search.
+    const { data: claims } = await supabase.auth.getClaims();
+    const user = claims?.claims.sub ? { id: claims.claims.sub } : null;
     const { data: savedGames } =
       user && results.length
         ? await supabase

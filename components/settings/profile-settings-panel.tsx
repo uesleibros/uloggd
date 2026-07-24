@@ -18,6 +18,29 @@ const ImageCropDialog = dynamic(
   { ssr: false },
 );
 
+// People paste the whole profile URL ("instagram.com/foo",
+// "https://youtube.com/@chan") or an @handle; the RPC only accepts the bare
+// handle, so pull it out here instead of erroring on a reasonable input.
+function socialHandle(raw: string): string {
+  let value = raw.trim();
+  if (!value) return "";
+  const url = /^(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+\.[a-z.]{2,}\/(.+)$/i.exec(
+    value,
+  );
+  if (url) {
+    const parts = url[1].split(/[/?#]/).filter(Boolean);
+    // Prefer an @handle segment (youtube.com/@chan) over a leading path like /c/.
+    value = parts.find((part) => part.startsWith("@")) ?? parts[0] ?? "";
+  }
+  return value.split(/[/?#]/)[0].replace(/^@+/, "").trim();
+}
+
+const SOCIAL_RULES = {
+  youtube: /^[A-Za-z0-9._-]{1,100}$/,
+  instagram: /^[A-Za-z0-9._]{1,30}$/,
+  twitter: /^[A-Za-z0-9_]{1,15}$/,
+} as const;
+
 export type Profile = {
   username: string;
   display_name: string | null;
@@ -126,9 +149,9 @@ export function ProfileSettingsPanel({
     const pronouns = String(values.get("pronouns") ?? "").trim();
     const bio = String(values.get("bio") ?? "").trim();
     const currentThought = String(values.get("thought") ?? "").trim();
-    const youtube = String(values.get("youtube") ?? "").trim();
-    const instagram = String(values.get("instagram") ?? "").trim();
-    const twitter = String(values.get("twitter") ?? "").trim();
+    const youtube = socialHandle(String(values.get("youtube") ?? ""));
+    const instagram = socialHandle(String(values.get("instagram") ?? ""));
+    const twitter = socialHandle(String(values.get("twitter") ?? ""));
     if (
       displayName.length > 80 ||
       pronouns.length > 30 ||
@@ -142,6 +165,26 @@ export function ProfileSettingsPanel({
           "Revise os limites dos campos antes de salvar.",
           "Review the field limits before saving.",
           "Revisa los límites de los campos antes de guardar.",
+        ),
+      );
+      return;
+    }
+    // A specific message beats the generic "could not save" when a handle still
+    // has stray characters after extraction.
+    const badSocial = (
+      [
+        [youtube, SOCIAL_RULES.youtube, "YouTube"],
+        [instagram, SOCIAL_RULES.instagram, "Instagram"],
+        [twitter, SOCIAL_RULES.twitter, "X"],
+      ] as const
+    ).find(([value, rule]) => value && !rule.test(value));
+    if (badSocial) {
+      setError(
+        tri(
+          lang,
+          `Usuário do ${badSocial[2]} inválido — use só o @ ou o nome de usuário.`,
+          `Invalid ${badSocial[2]} username — use just the @ or the handle.`,
+          `Usuario de ${badSocial[2]} inválido — usa solo el @ o el nombre de usuario.`,
         ),
       );
       return;

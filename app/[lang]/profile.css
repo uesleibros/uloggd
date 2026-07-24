@@ -661,8 +661,11 @@
   height: clamp(320px, 34vw, 430px);
   overflow: hidden;
   border-radius: 12px;
+  /* Two brand-tinted radials over the surface gradient so an empty banner still
+     reads as a designed gradient in both themes, not a flat light rectangle. */
   background:
-    radial-gradient(circle at 72% 18%, rgb(88 101 242 / 18%), transparent 36%),
+    radial-gradient(circle at 78% 12%, rgb(88 101 242 / 26%), transparent 46%),
+    radial-gradient(circle at 8% 92%, rgb(88 101 242 / 14%), transparent 42%),
     linear-gradient(135deg, var(--console-raised), var(--console-panel));
   box-shadow: inset 0 0 0 1px var(--shell-line);
 }
@@ -706,7 +709,9 @@
   position: absolute;
   right: clamp(24px, 5vw, 72px);
   bottom: clamp(-50px, -3vw, -24px);
-  color: rgb(244 242 246 / 4%);
+  /* Tied to the ink colour so the watermark shows in both themes — the old
+     fixed near-white vanished on the light banner. */
+  color: color-mix(in oklab, var(--screen-white) 8%, transparent);
   content: "U";
   font-size: clamp(180px, 22vw, 320px);
   font-weight: 760;
