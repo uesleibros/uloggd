@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
@@ -89,7 +89,6 @@ export function TierlistEditor({
     index: number;
   } | null>(null);
   const [ghost, setGhost] = useState<{ x: number; y: number } | null>(null);
-  const [tierOver, setTierOver] = useState<string | null>(null);
 
   const [poolQuery, setPoolQuery] = useState("");
   const [editingTier, setEditingTier] = useState<TierlistTier | null>(null);
@@ -102,6 +101,25 @@ export function TierlistEditor({
     setDirty(true);
     setSaved(false);
   }, []);
+
+  // Live references the rAF auto-scroll loop reads without re-subscribing. The
+  // drag handlers also set dragRef imperatively so the loop sees a drag the
+  // same frame it starts; these effects keep the refs honest afterwards.
+  const dragRef = useRef<Drag>(null);
+  const tiersRef = useRef(tiers);
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef(0);
+  // The tier order at the moment a tier drag began, so live reordering is
+  // always derived from a stable base instead of a mutating one (no jitter).
+  const baseTiersRef = useRef<TierlistTier[]>([]);
+
+  useEffect(() => {
+    dragRef.current = drag;
+  }, [drag]);
+  useEffect(() => {
+    tiersRef.current = tiers;
+  }, [tiers]);
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
   // ── Game drag ────────────────────────────────────────────────────────────
   function gameTargetFromPoint(clientX: number, clientY: number) {
@@ -132,18 +150,77 @@ export function TierlistEditor({
     return { zone, index: best };
   }
 
+  // Re-evaluates the drop for the current pointer position. Called on move and
+  // by the auto-scroll loop, so the indicator stays live even when the finger
+  // holds still at an edge while the page scrolls under it.
+  function applyMove(x: number, y: number) {
+    const current = dragRef.current;
+    if (!current) return;
+    if (current.kind === "game") {
+      setDropTarget(gameTargetFromPoint(x, y));
+    } else {
+      applyTierOrder(x, y, current.tierId);
+    }
+  }
+
+  // Tiers reorder live as you drag — the rearrangement itself is the preview,
+  // the same way a real tier maker shows it. Derived from the frozen base order
+  // so passing a row back and forth never oscillates.
+  function applyTierOrder(x: number, y: number, tierId: string) {
+    const root = rootRef.current;
+    if (!root) return;
+    const base = baseTiersRef.current;
+    const dragged = base.find((tier) => tier.id === tierId);
+    if (!dragged) return;
+    const rows = [...root.querySelectorAll<HTMLElement>("[data-tier-row]")];
+    let index = 0;
+    for (const el of rows) {
+      if (el.dataset.tierRow === tierId) continue;
+      const rect = el.getBoundingClientRect();
+      if (y < rect.top + rect.height / 2) break;
+      index += 1;
+    }
+    const without = base.filter((tier) => tier.id !== tierId);
+    const next = [...without.slice(0, index), dragged, ...without.slice(index)];
+    const same =
+      tiersRef.current.length === next.length &&
+      tiersRef.current.every((tier, i) => tier.id === next[i].id);
+    if (same) return;
+    setTiers(next);
+    markDirty();
+  }
+
+  function autoScroll() {
+    if (!dragRef.current) {
+      rafRef.current = 0;
+      return;
+    }
+    const { x, y } = pointerRef.current;
+    // Speed ramps up the closer the finger is to the edge, like every drag UI.
+    const EDGE = 110;
+    const MAX = 22;
+    const height = window.innerHeight;
+    let dy = 0;
+    if (y < EDGE) dy = -Math.ceil(((EDGE - y) / EDGE) * MAX);
+    else if (y > height - EDGE)
+      dy = Math.ceil(((y - (height - EDGE)) / EDGE) * MAX);
+    if (dy !== 0) {
+      window.scrollBy(0, dy);
+      applyMove(x, y);
+    }
+    rafRef.current = requestAnimationFrame(autoScroll);
+  }
+
+  function trackPointer(x: number, y: number) {
+    pointerRef.current = { x, y };
+    if (!rafRef.current) rafRef.current = requestAnimationFrame(autoScroll);
+  }
+
   function onPointerMove(event: React.PointerEvent) {
     if (!drag) return;
     setGhost({ x: event.clientX, y: event.clientY });
-    if (drag.kind === "game") {
-      const target = gameTargetFromPoint(event.clientX, event.clientY);
-      setDropTarget(target);
-    } else {
-      const row = document
-        .elementFromPoint(event.clientX, event.clientY)
-        ?.closest<HTMLElement>("[data-tier-row]");
-      setTierOver(row?.dataset.tierRow ?? null);
-    }
+    trackPointer(event.clientX, event.clientY);
+    applyMove(event.clientX, event.clientY);
   }
 
   function moveGame(igdbId: number, from: string, to: string, index: number) {
@@ -162,34 +239,25 @@ export function TierlistEditor({
     markDirty();
   }
 
-  function endGameDrag() {
-    if (drag?.kind === "game" && dropTarget) {
-      moveGame(drag.igdbId, drag.zone, dropTarget.zone, dropTarget.index);
-    }
+  function stopDrag() {
+    dragRef.current = null;
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = 0;
     setDrag(null);
     setDropTarget(null);
     setGhost(null);
   }
 
-  function reorderTier(tierId: string, overId: string | null) {
-    if (!overId || overId === tierId) return;
-    setTiers((current) => {
-      const from = current.findIndex((tier) => tier.id === tierId);
-      const to = current.findIndex((tier) => tier.id === overId);
-      if (from < 0 || to < 0) return current;
-      const next = [...current];
-      const [moved] = next.splice(from, 1);
-      next.splice(to, 0, moved);
-      return next;
-    });
-    markDirty();
+  function endGameDrag() {
+    if (drag?.kind === "game" && dropTarget) {
+      moveGame(drag.igdbId, drag.zone, dropTarget.zone, dropTarget.index);
+    }
+    stopDrag();
   }
 
   function endTierDrag() {
-    if (drag?.kind === "tier") reorderTier(drag.tierId, tierOver);
-    setDrag(null);
-    setTierOver(null);
-    setGhost(null);
+    // The order is already applied live; nothing to commit here.
+    stopDrag();
   }
 
   function startGameDrag(
@@ -199,14 +267,22 @@ export function TierlistEditor({
   ) {
     event.preventDefault();
     rootRef.current?.setPointerCapture(event.pointerId);
-    setDrag({ kind: "game", igdbId, zone });
+    const next: Drag = { kind: "game", igdbId, zone };
+    dragRef.current = next;
+    setDrag(next);
     setGhost({ x: event.clientX, y: event.clientY });
+    trackPointer(event.clientX, event.clientY);
   }
 
   function startTierDrag(event: React.PointerEvent, tierId: string) {
     event.preventDefault();
     rootRef.current?.setPointerCapture(event.pointerId);
-    setDrag({ kind: "tier", tierId });
+    baseTiersRef.current = tiers;
+    const next: Drag = { kind: "tier", tierId };
+    dragRef.current = next;
+    setDrag(next);
+    setGhost({ x: event.clientX, y: event.clientY });
+    trackPointer(event.clientX, event.clientY);
   }
 
   // ── Tier CRUD ──────────────────────────────────────────────────────────
@@ -372,12 +448,7 @@ export function TierlistEditor({
         if (drag?.kind === "game") endGameDrag();
         else if (drag?.kind === "tier") endTierDrag();
       }}
-      onPointerCancel={() => {
-        setDrag(null);
-        setDropTarget(null);
-        setTierOver(null);
-        setGhost(null);
-      }}
+      onPointerCancel={stopDrag}
     >
       <div className="tierlist-editor-bar">
         <p>
@@ -427,9 +498,6 @@ export function TierlistEditor({
               className="tierlist-edit-row"
               key={tier.id}
               data-tier-row={tier.id}
-              data-over={
-                (tierOver === tier.id && drag?.kind === "tier") || undefined
-              }
               data-dragging={
                 (drag?.kind === "tier" && drag.tierId === tier.id) || undefined
               }
