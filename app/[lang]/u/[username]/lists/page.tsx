@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, Layers3, List } from "lucide-react";
+import { ArrowLeft, Layers3 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
@@ -57,15 +57,6 @@ export default async function ProfileListsPage({ params }: Props) {
         <ArrowLeft size={15} /> {t.backToProfile}
       </Link>
       <header className="profile-subpage-header">
-        <span>
-          <List size={14} />{" "}
-          {tri(
-            lang,
-            "COLEÇÕES PÚBLICAS",
-            "PUBLIC COLLECTIONS",
-            "COLECCIONES PÚBLICAS",
-          )}
-        </span>
         <h1>
           {tri(
             lang,
@@ -74,14 +65,6 @@ export default async function ProfileListsPage({ params }: Props) {
             `Listas de ${name}`,
           )}
         </h1>
-        <p>
-          {tri(
-            lang,
-            "Seleções organizadas por tema, ranking ou uma ideia em comum.",
-            "Selections organized by theme, ranking, or a shared idea.",
-            "Selecciones organizadas por tema, ranking o una idea en común.",
-          )}
-        </p>
       </header>
       {lists.length ? (
         <>

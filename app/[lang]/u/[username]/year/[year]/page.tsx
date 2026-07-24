@@ -167,10 +167,6 @@ export default async function YearWrappedPage({ params }: Props) {
         <ArrowLeft size={15} /> {t.backToProfile}
       </Link>
       <header className="profile-subpage-header">
-        <span>
-          <Sparkles size={14} />{" "}
-          {tri(lang, "RETROSPECTIVA", "WRAPPED", "RETROSPECTIVA")}
-        </span>
         <h1>
           {tri(
             lang,
@@ -179,14 +175,6 @@ export default async function YearWrappedPage({ params }: Props) {
             `${year} en juegos de ${name}`,
           )}
         </h1>
-        <p>
-          {tri(
-            lang,
-            "O ano contado pelas sessões e avaliações registradas.",
-            "The year as told by logged sessions and reviews.",
-            "El año contado por las sesiones y reseñas registradas.",
-          )}
-        </p>
       </header>
       <div className="year-toolbar">
         {year > MIN_WRAPPED_YEAR ? (

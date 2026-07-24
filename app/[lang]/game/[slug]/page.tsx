@@ -852,14 +852,6 @@ export default async function GamePage({ params, searchParams }: Props) {
             <div className="social-section-title">
               <div>
                 <h2>{tri(lang, "Comunidade", "Community", "Comunidad")}</h2>
-                <p>
-                  {tri(
-                    lang,
-                    "Avaliações e sessões recentes",
-                    "Recent reviews and sessions",
-                    "Reseñas y sesiones recientes",
-                  )}
-                </p>
               </div>
             </div>
             <Suspense

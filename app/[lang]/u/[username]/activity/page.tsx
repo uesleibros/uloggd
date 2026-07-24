@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, BookOpen, CalendarDays, Star } from "lucide-react";
+import { ArrowLeft, CalendarDays, Star } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityStream } from "@/components/social/activity-stream";
@@ -71,15 +71,6 @@ export default async function ProfileActivityPage({
         <ArrowLeft size={15} /> {t.backToProfile}
       </Link>
       <header className="profile-subpage-header">
-        <span>
-          <BookOpen size={14} />{" "}
-          {tri(
-            lang,
-            "HISTÓRICO PÚBLICO",
-            "PUBLIC HISTORY",
-            "HISTORIAL PÚBLICO",
-          )}
-        </span>
         <h1>
           {tri(
             lang,
@@ -88,14 +79,6 @@ export default async function ProfileActivityPage({
             `Actividad de ${name}`,
           )}
         </h1>
-        <p>
-          {tri(
-            lang,
-            "Avaliações e sessões que fazem parte desta jornada.",
-            "Reviews and sessions that are part of this journey.",
-            "Reseñas y sesiones que forman parte de este recorrido.",
-          )}
-        </p>
       </header>
       <div className="profile-subpage-summary">
         <span>

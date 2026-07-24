@@ -18,14 +18,6 @@ export default async function SettingsLayout({
     <main className="settings-page">
       <header className="settings-page-header">
         <h1>{tri(lang, "Configurações", "Settings", "Ajustes")}</h1>
-        <p>
-          {tri(
-            lang,
-            "Ajuste sua conta, identidade, preferências, aparência e segurança no uloggd.",
-            "Control your account, identity, preferences, appearance, and security across uloggd.",
-            "Ajusta tu cuenta, identidad, preferencias, apariencia y seguridad en uloggd.",
-          )}
-        </p>
       </header>
       <div className="settings-main">{children}</div>
     </main>

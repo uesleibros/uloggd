@@ -393,9 +393,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
         <section className="rail-intro">
           {user ? (
             <>
-              <span>
-                {tri(lang, "SUA JORNADA", "YOUR JOURNEY", "TU RECORRIDO")}
-              </span>
               <h2>
                 {tri(
                   lang,
@@ -404,14 +401,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                   "Continúa donde lo dejaste",
                 )}
               </h2>
-              <p>
-                {tri(
-                  lang,
-                  "Sua coleção e suas avaliações, reunidas em um só lugar.",
-                  "Your collection and ratings, together in one place.",
-                  "Tu colección y tus valoraciones, reunidas en un solo lugar.",
-                )}
-              </p>
               <dl className="rail-library-stats">
                 <div>
                   <dt>{tri(lang, "Jogos", "Games", "Juegos")}</dt>

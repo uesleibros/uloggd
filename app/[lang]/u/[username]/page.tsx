@@ -80,14 +80,6 @@ async function ProfileRecentGames({
           <h2>
             {tri(lang, "Jogos recentes", "Recent games", "Juegos recientes")}
           </h2>
-          <p>
-            {tri(
-              lang,
-              "Últimas mudanças na biblioteca",
-              "Latest library changes",
-              "Últimos cambios en la biblioteca",
-            )}
-          </p>
         </div>
       </div>
       <div className="cover-shelf">
@@ -722,14 +714,6 @@ export default async function ProfilePage({ params }: Props) {
               <div className="social-section-title">
                 <div>
                   <h2>{tri(lang, "Vitrine", "Showcase", "Vitrina")}</h2>
-                  <p>
-                    {tri(
-                      lang,
-                      `Um cantinho de ${profile.display_name || `@${profile.username}`}`,
-                      `A corner curated by ${profile.display_name || `@${profile.username}`}`,
-                      `Un rincón de ${profile.display_name || `@${profile.username}`}`,
-                    )}
-                  </p>
                 </div>
               </div>
               <div className="profile-drawer-body">
@@ -759,14 +743,6 @@ export default async function ProfilePage({ params }: Props) {
                           "Juegos recientes",
                         )}
                       </h2>
-                      <p>
-                        {tri(
-                          lang,
-                          "Últimas mudanças na biblioteca",
-                          "Latest library changes",
-                          "Últimos cambios en la biblioteca",
-                        )}
-                      </p>
                     </div>
                   </div>
                   <div className="cover-shelf">
@@ -792,14 +768,6 @@ export default async function ProfilePage({ params }: Props) {
               <div className="social-section-title">
                 <div>
                   <h2>{tri(lang, "Atividade", "Activity", "Actividad")}</h2>
-                  <p>
-                    {tri(
-                      lang,
-                      "Avaliações e sessões públicas",
-                      "Public reviews and sessions",
-                      "Reseñas y sesiones públicas",
-                    )}
-                  </p>
                 </div>
               </div>
               <Suspense

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { LoadMoreActivity } from "@/components/social/load-more-activity";
@@ -72,10 +72,6 @@ export default async function GameLogsPage({ params }: Props) {
         {tri(lang, "Voltar ao jogo", "Back to game", "Volver al juego")}
       </Link>
       <header className="social-page-header">
-        <span>
-          <CalendarDays size={14} />{" "}
-          {tri(lang, "SUA JORNADA", "YOUR JOURNEY", "TU RECORRIDO")}
-        </span>
         <h1>{game.name}</h1>
         <p>
           {(sessions ?? []).length}{" "}

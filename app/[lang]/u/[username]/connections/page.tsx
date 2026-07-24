@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, Search, UserRound, Users } from "lucide-react";
+import { ArrowLeft, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConnectionCard } from "@/components/social/connection-card";
@@ -77,9 +77,6 @@ export default async function ProfileConnectionsPage({
         <ArrowLeft size={15} /> {t.backToProfile}
       </Link>
       <header className="profile-subpage-header">
-        <span>
-          <Users size={14} /> {tri(lang, "REDE", "NETWORK", "RED")}
-        </span>
         <h1>
           {tri(
             lang,
@@ -88,14 +85,6 @@ export default async function ProfileConnectionsPage({
             `Conexiones de ${name}`,
           )}
         </h1>
-        <p>
-          {tri(
-            lang,
-            "Pessoas que acompanham esta jornada e perfis seguidos por ela.",
-            "People following this journey and profiles it follows.",
-            "Personas que siguen este recorrido y perfiles a los que sigue.",
-          )}
-        </p>
       </header>
       <nav
         className="social-filter-tabs"

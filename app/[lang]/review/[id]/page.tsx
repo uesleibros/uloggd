@@ -229,9 +229,6 @@ export default async function ReviewPage({ params }: Props) {
             {coverUrl && <Image src={coverUrl} alt="" fill sizes="120px" />}
           </Link>
           <div className="review-page-identity">
-            <span className="review-page-eyebrow">
-              {tri(lang, "AVALIAÇÃO", "REVIEW", "RESEÑA")}
-            </span>
             <h1>
               {review.title ||
                 (pt
