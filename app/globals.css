@@ -56,10 +56,10 @@
   --state-wishlist-bg: rgb(170 119 31 / 42%);
   --state-wishlist-soft-bg: rgb(170 119 31 / 24%);
   --state-wishlist-text: #ffe7ad;
-  --state-liked-border: rgb(255 170 164 / 68%);
-  --state-liked-bg: rgb(255 170 164 / 24%);
-  --state-liked-soft-bg: rgb(255 170 164 / 16%);
-  --state-liked-text: #ffaaa4;
+  --state-liked-border: rgb(255 107 145 / 62%);
+  --state-liked-bg: rgb(255 107 145 / 24%);
+  --state-liked-soft-bg: rgb(255 107 145 / 16%);
+  --state-liked-text: #ff6b91;
   --state-completed-border: rgb(115 198 154 / 52%);
   --state-completed-bg: rgb(56 151 104 / 76%);
   --state-completed-soft-bg: rgb(56 151 104 / 18%);
@@ -197,9 +197,9 @@
   --state-wishlist-border: rgb(232 190 91 / 48%);
   --state-wishlist-bg: rgb(170 119 31 / 42%);
   --state-wishlist-text: #ffe7ad;
-  --state-liked-border: rgb(255 170 164 / 68%);
-  --state-liked-bg: rgb(255 170 164 / 24%);
-  --state-liked-text: #ffaaa4;
+  --state-liked-border: rgb(255 107 145 / 62%);
+  --state-liked-bg: rgb(255 107 145 / 24%);
+  --state-liked-text: #ff6b91;
   --state-completed-border: rgb(115 198 154 / 52%);
   --state-completed-bg: rgb(56 151 104 / 76%);
   --state-completed-text: #e1fff0;
@@ -584,7 +584,6 @@ html[data-sidebar-collapsed] {
   height: 7px;
   border-radius: 50%;
   background: var(--brand-blurple-bright);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
 }
 .notification-state {
   display: grid;
@@ -5512,7 +5511,7 @@ html[data-sidebar-collapsed]
 }
 
 .quick-card-flags {
-  --state-liked-text: #ffaaa4;
+  --state-liked-text: #ff6b91;
   position: absolute;
   z-index: 3;
   top: 7px;
@@ -17441,21 +17440,15 @@ adapted to the current uloggd surface system. */
    the animation ends. */
 @keyframes comment-notification-highlight {
   from {
-    background: color-mix(in oklab, var(--brand-blurple) 34%, transparent);
-    box-shadow:
-      inset 3px 0 0 var(--brand-blurple),
-      0 0 0 2px color-mix(in oklab, var(--brand-blurple) 58%, transparent);
+    background: color-mix(in oklab, var(--brand-blurple) 30%, transparent);
   }
 }
 /* The mark stays for as long as the URL points at this comment — the reader
    should still be able to tell which one they were sent to after scrolling
-   through the rest of the thread. */
+   through the rest of the thread. Just a tinted fill: no left rail, no ring. */
 article[id^="comment-"][data-highlight] {
   border-radius: 12px;
-  background: color-mix(in oklab, var(--brand-blurple) 9%, transparent);
-  box-shadow:
-    inset 3px 0 0 var(--brand-blurple),
-    0 0 0 1px color-mix(in oklab, var(--brand-blurple) 26%, transparent);
+  background: color-mix(in oklab, var(--brand-blurple) 12%, transparent);
   animation: comment-notification-highlight 1100ms ease-out;
 }
 article[id^="comment-"][data-highlight]:focus-visible {

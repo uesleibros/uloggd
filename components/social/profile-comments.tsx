@@ -407,7 +407,6 @@ export function ProfileComments({
                       Boolean(viewerId) && viewerId !== comment.author_id
                     }
                     pending={commentLike.pending}
-                    showEmpty={viewerId === comment.author_id}
                     onToggle={() => void toggleLike(comment)}
                   />
                 )}

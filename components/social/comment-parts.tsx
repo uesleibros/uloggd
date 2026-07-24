@@ -302,7 +302,6 @@ export function CommentLike({
   liked,
   canLike,
   pending = false,
-  showEmpty = false,
   onToggle,
 }: {
   lang: UiLang;
@@ -310,12 +309,11 @@ export function CommentLike({
   liked: boolean;
   canLike: boolean;
   pending?: boolean;
-  /** The author cannot like their own comment but still sees the affordance. */
-  showEmpty?: boolean;
   onToggle: () => void;
 }) {
   if (!canLike) {
-    if (count <= 0 && !showEmpty) return null;
+    // The like affordance always shows, even on your own content with no likes
+    // yet — a like you can see is the whole point of the counter.
     return (
       <span
         className="profile-comment-like-static"
