@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { LayoutGrid, Layers3, ListOrdered } from "lucide-react";
+import { Eye, LayoutGrid, Layers3, ListOrdered } from "lucide-react";
 import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { ListAddGame } from "@/components/social/list-add-game";
@@ -179,11 +180,25 @@ export default async function ListPage({ params, searchParams }: Props) {
           {isOwner && <ListOwnerControls list={list} lang={lang} />}
         </header>
         {editing ? (
-          <TierlistEditor listId={list.id} initial={tierlist} lang={lang} />
+          <>
+            <Link
+              className="tierlist-edit-link"
+              href={`/${lang}/lists/${list.public_id}`}
+              scroll={false}
+            >
+              <Eye size={14} aria-hidden />
+              {tri(lang, "Ver tierlist", "View tierlist", "Ver tierlist")}
+            </Link>
+            <TierlistEditor listId={list.id} initial={tierlist} lang={lang} />
+          </>
         ) : (
           <>
             {isOwner && (
-              <a className="tierlist-edit-link" href={`?edit=1`}>
+              <Link
+                className="tierlist-edit-link"
+                href={`/${lang}/lists/${list.public_id}?edit=1`}
+                scroll={false}
+              >
                 <LayoutGrid size={14} aria-hidden />
                 {tri(
                   lang,
@@ -191,7 +206,7 @@ export default async function ListPage({ params, searchParams }: Props) {
                   "Edit tierlist",
                   "Editar tierlist",
                 )}
-              </a>
+              </Link>
             )}
             {tierlist.items.length ? (
               <TierlistBoard

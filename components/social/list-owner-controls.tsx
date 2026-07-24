@@ -1,14 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import {
-  Layers3,
-  ListOrdered,
-  LoaderCircle,
-  Settings2,
-  Trash2,
-  X,
-} from "lucide-react";
+import { ListOrdered, LoaderCircle, Settings2, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -25,9 +18,11 @@ export function ListOwnerControls({
     description: string | null;
     visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
     ranked: boolean;
+    kind?: "COLLECTION" | "TIERLIST";
   };
   lang: UiLang;
 }) {
+  const isTierlist = list.kind === "TIERLIST";
   const t = uiText(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -35,9 +30,7 @@ export function ListOwnerControls({
   const [armed, setArmed] = useState(false);
   const disarmTimer = useRef<number | null>(null);
   const [visibility, setVisibility] = useState(list.visibility);
-  const [mode, setMode] = useState<"COLLECTION" | "RANKED">(
-    list.ranked ? "RANKED" : "COLLECTION",
-  );
+  const [ranked, setRanked] = useState(list.ranked);
   const [error, setError] = useState<string | null>(null);
   // router.refresh() is server work the RPC's own pending flag knows nothing
   // about. Without this the spinner stopped and the dialog closed while the
@@ -60,7 +53,7 @@ export function ListOwnerControls({
       list_name: formData.get("name"),
       list_description: formData.get("description"),
       list_visibility: visibility,
-      list_ranked: mode === "RANKED",
+      list_ranked: ranked,
     });
     if (
       actionError &&
@@ -90,7 +83,7 @@ export function ListOwnerControls({
     }
     // Closing on a half-applied save is how "salvei e não mudou nada" happens;
     // the dialog stays open to say which part did not land.
-    const halfApplied = droppedMode && (mode === "RANKED") !== list.ranked;
+    const halfApplied = droppedMode && ranked !== list.ranked;
     if (halfApplied) {
       setError(
         tri(
@@ -223,59 +216,34 @@ export function ListOwnerControls({
                   rows={5}
                 />
               </label>
-              <fieldset className="create-list-mode">
-                <legend>{tri(lang, "Formato", "Format", "Formato")}</legend>
-                <label data-selected={mode === "COLLECTION" || undefined}>
+              {/* A tierlist ranks through its tiers, so it never shows the
+                  numbered-ranking switch. */}
+              {!isTierlist && (
+                <label className="create-list-rank-toggle">
+                  <span>
+                    <ListOrdered size={16} aria-hidden />
+                    <span>
+                      <strong>
+                        {tri(lang, "Ranquear", "Rank", "Ranquear")}
+                      </strong>
+                      <small>
+                        {tri(
+                          lang,
+                          "Numera do melhor ao pior; você define a posição.",
+                          "Numbers from best to worst; you set the position.",
+                          "Numera del mejor al peor; tú defines la posición.",
+                        )}
+                      </small>
+                    </span>
+                  </span>
                   <input
-                    type="radio"
-                    name="mode"
-                    value="COLLECTION"
-                    checked={mode === "COLLECTION"}
-                    onChange={() => setMode("COLLECTION")}
+                    type="checkbox"
+                    role="switch"
+                    checked={ranked}
+                    onChange={(event) => setRanked(event.target.checked)}
                   />
-                  <span>
-                    <Layers3 size={17} aria-hidden />
-                  </span>
-                  <span>
-                    <strong>
-                      {tri(lang, "Coleção", "Collection", "Colección")}
-                    </strong>
-                    <small>
-                      {tri(
-                        lang,
-                        "Jogos reunidos por tema, sem ordem obrigatória.",
-                        "Games grouped by theme, no required order.",
-                        "Juegos reunidos por tema, sin orden obligatorio.",
-                      )}
-                    </small>
-                  </span>
                 </label>
-                <label data-selected={mode === "RANKED" || undefined}>
-                  <input
-                    type="radio"
-                    name="mode"
-                    value="RANKED"
-                    checked={mode === "RANKED"}
-                    onChange={() => setMode("RANKED")}
-                  />
-                  <span>
-                    <ListOrdered size={17} aria-hidden />
-                  </span>
-                  <span>
-                    <strong>
-                      {tri(lang, "Ranking", "Ranking", "Ranking")}
-                    </strong>
-                    <small>
-                      {tri(
-                        lang,
-                        "Ordem importa: 1º, 2º, 3º… você define a posição.",
-                        "Order matters: 1st, 2nd, 3rd… you set the position.",
-                        "El orden importa: 1º, 2º, 3º… tú defines la posición.",
-                      )}
-                    </small>
-                  </span>
-                </label>
-              </fieldset>
+              )}
               <label>
                 <span>{t.visibility}</span>
                 <EditorVisibilitySelect

@@ -51,9 +51,10 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"COLLECTION" | "RANKED" | "TIERLIST">(
-    "COLLECTION",
-  );
+  // Format and ranking are independent: a collection can be ranked (numbered
+  // best-to-worst) or not, and a tierlist ranks through its tiers instead.
+  const [format, setFormat] = useState<"COLLECTION" | "TIERLIST">("COLLECTION");
+  const [ranked, setRanked] = useState(false);
   // The RPC finishing is not the same as the new list being on screen; the
   // button stays busy until router.refresh() has re-rendered the grid.
   const [refreshing, startRefresh] = useTransition();
@@ -82,8 +83,8 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
       {
         list_name: name,
         list_description: description || null,
-        list_ranked: mode === "RANKED",
-        list_kind: mode === "TIERLIST" ? "TIERLIST" : "COLLECTION",
+        list_ranked: format === "COLLECTION" && ranked,
+        list_kind: format,
       },
     );
     let droppedMode = false;
@@ -120,7 +121,7 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
     } else {
       // The list exists either way; saying so beats letting the author discover
       // later that the ranking they asked for is a plain collection.
-      const halfApplied = droppedMode && mode === "RANKED";
+      const halfApplied = droppedMode && format === "COLLECTION" && ranked;
       if (halfApplied)
         setError(
           tri(
@@ -134,7 +135,7 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
       // useless until games are dragged in.
       const row = Array.isArray(created) ? created[0] : created;
       const tierlistId =
-        mode === "TIERLIST" && row && "public_id" in row
+        format === "TIERLIST" && row && "public_id" in row
           ? (row as { public_id: string }).public_id
           : null;
       startRefresh(() => {
@@ -216,13 +217,13 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
             </label>
             <fieldset className="create-list-mode">
               <legend>{tri(lang, "Formato", "Format", "Formato")}</legend>
-              <label data-selected={mode === "COLLECTION" || undefined}>
+              <label data-selected={format === "COLLECTION" || undefined}>
                 <input
                   type="radio"
-                  name="mode"
+                  name="format"
                   value="COLLECTION"
-                  checked={mode === "COLLECTION"}
-                  onChange={() => setMode("COLLECTION")}
+                  checked={format === "COLLECTION"}
+                  onChange={() => setFormat("COLLECTION")}
                 />
                 <span>
                   <Layers3 size={17} aria-hidden />
@@ -234,43 +235,20 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
                   <small>
                     {tri(
                       lang,
-                      "Jogos reunidos por tema, sem ordem obrigatória.",
-                      "Games grouped by theme, no required order.",
-                      "Juegos reunidos por tema, sin orden obligatorio.",
+                      "Jogos reunidos por tema.",
+                      "Games grouped by theme.",
+                      "Juegos reunidos por tema.",
                     )}
                   </small>
                 </span>
               </label>
-              <label data-selected={mode === "RANKED" || undefined}>
+              <label data-selected={format === "TIERLIST" || undefined}>
                 <input
                   type="radio"
-                  name="mode"
-                  value="RANKED"
-                  checked={mode === "RANKED"}
-                  onChange={() => setMode("RANKED")}
-                />
-                <span>
-                  <ListOrdered size={17} aria-hidden />
-                </span>
-                <span>
-                  <strong>{tri(lang, "Ranking", "Ranking", "Ranking")}</strong>
-                  <small>
-                    {tri(
-                      lang,
-                      "Ordem importa: 1º, 2º, 3º… você define a posição.",
-                      "Order matters: 1st, 2nd, 3rd… you set the position.",
-                      "El orden importa: 1º, 2º, 3º… tú defines la posición.",
-                    )}
-                  </small>
-                </span>
-              </label>
-              <label data-selected={mode === "TIERLIST" || undefined}>
-                <input
-                  type="radio"
-                  name="mode"
+                  name="format"
                   value="TIERLIST"
-                  checked={mode === "TIERLIST"}
-                  onChange={() => setMode("TIERLIST")}
+                  checked={format === "TIERLIST"}
+                  onChange={() => setFormat("TIERLIST")}
                 />
                 <span>
                   <LayoutGrid size={17} aria-hidden />
@@ -280,14 +258,40 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
                   <small>
                     {tri(
                       lang,
-                      "Arraste os jogos da sua biblioteca para tiers de S a D.",
+                      "Arraste os jogos da biblioteca para tiers de S a D.",
                       "Drag your library games into tiers from S to D.",
-                      "Arrastra los juegos de tu biblioteca a tiers de S a D.",
+                      "Arrastra los juegos de la biblioteca a tiers de S a D.",
                     )}
                   </small>
                 </span>
               </label>
             </fieldset>
+            {/* Ranking is a switch on top of a collection, not a format of its
+                own: a tierlist already ranks through its tiers. */}
+            {format === "COLLECTION" && (
+              <label className="create-list-rank-toggle">
+                <span>
+                  <ListOrdered size={16} aria-hidden />
+                  <span>
+                    <strong>{tri(lang, "Ranquear", "Rank", "Ranquear")}</strong>
+                    <small>
+                      {tri(
+                        lang,
+                        "Numera do melhor ao pior; você define a posição.",
+                        "Numbers from best to worst; you set the position.",
+                        "Numera del mejor al peor; tú defines la posición.",
+                      )}
+                    </small>
+                  </span>
+                </span>
+                <input
+                  type="checkbox"
+                  role="switch"
+                  checked={ranked}
+                  onChange={(event) => setRanked(event.target.checked)}
+                />
+              </label>
+            )}
             <p className="create-list-hint">
               {tri(
                 lang,

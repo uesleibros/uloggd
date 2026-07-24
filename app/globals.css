@@ -17068,6 +17068,70 @@ adapted to the current uloggd surface system. */
   font-size: 11px;
   font-weight: 550;
 }
+/* Ranking is a switch under the format cards, not a card of its own. */
+.create-list-rank-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 10px;
+  background: var(--console-inset);
+  cursor: pointer;
+}
+.create-list-rank-toggle > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: var(--brand-blurple-bright);
+}
+.create-list-rank-toggle strong {
+  display: block;
+  color: var(--screen-white);
+  font-size: 12px;
+  font-weight: 620;
+}
+.create-list-rank-toggle small {
+  display: block;
+  margin-top: 2px;
+  color: var(--screen-muted);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+.create-list-rank-toggle input {
+  appearance: none;
+  flex: none;
+  width: 40px;
+  height: 23px;
+  border-radius: 999px;
+  background: var(--console-hover);
+  box-shadow: inset 0 0 0 1px var(--shell-line-strong);
+  cursor: pointer;
+  transition: background-color 150ms ease-out;
+}
+.create-list-rank-toggle input::after {
+  content: "";
+  display: block;
+  width: 17px;
+  height: 17px;
+  margin: 3px;
+  border-radius: 50%;
+  background: var(--screen-white);
+  transition: transform 150ms ease-out;
+}
+.create-list-rank-toggle input:checked {
+  background: var(--brand-blurple);
+  box-shadow: none;
+}
+.create-list-rank-toggle input:checked::after {
+  transform: translateX(17px);
+}
+.create-list-rank-toggle input:focus-visible {
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
+}
 .create-list-mode legend {
   padding: 0;
   color: var(--screen-dim);
@@ -17704,6 +17768,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  flex: none;
   min-height: 34px;
   padding: 0 14px;
   border-radius: 8px;
@@ -17711,6 +17776,15 @@ article[id^="comment-"][data-highlight]:focus-visible {
   color: white;
   font-size: 11px;
   font-weight: 620;
+  white-space: nowrap;
+}
+/* The spinner must not squeeze the label: the icon holds its size and the
+   label keeps a single line whether it reads "Salvar" or "Salvando…". */
+.tierlist-save svg {
+  flex: none;
+}
+.tierlist-save span {
+  flex: none;
 }
 .tierlist-save:disabled {
   opacity: 0.5;
@@ -17821,38 +17895,31 @@ article[id^="comment-"][data-highlight]:focus-visible {
   opacity: 0.35;
   pointer-events: none;
 }
-.tierlist-sort {
-  position: relative;
-}
-.tierlist-sort-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-}
+/* Radix-portaled menu, so the tier row's overflow no longer clips it. */
 .tierlist-sort-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 4px);
-  z-index: 21;
+  z-index: 200;
   display: grid;
   gap: 2px;
-  min-width: 150px;
+  min-width: 160px;
   padding: 5px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 9px;
   background: var(--overlay-panel);
   box-shadow: 0 12px 34px var(--overlay-shadow);
+  animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
-.tierlist-sort-menu button {
+.tierlist-sort-menu [role="menuitem"] {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 7px 9px;
   border-radius: 6px;
+  outline: 0;
   color: var(--screen-dim);
   font-size: 11.5px;
+  cursor: pointer;
 }
-.tierlist-sort-menu button:hover {
+.tierlist-sort-menu [role="menuitem"][data-highlighted] {
   background: var(--console-hover);
   color: var(--screen-white);
 }
@@ -17905,19 +17972,27 @@ article[id^="comment-"][data-highlight]:focus-visible {
   font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
+/* Standard bordered search box, same as the lists toolbar and moderation. */
 .tierlist-pool-search {
   display: flex;
   align-items: center;
-  gap: 7px;
-  min-height: 32px;
-  padding: 0 10px;
-  border-radius: 8px;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-inset);
   color: var(--screen-muted);
+  cursor: text;
+  transition: border-color 150ms ease-out;
+}
+.tierlist-pool-search:focus-within {
+  border-color: var(--brand-blurple);
 }
 .tierlist-pool-search input {
   min-width: 0;
-  width: 140px;
-  max-width: 40vw;
+  width: 150px;
+  max-width: 42vw;
   background: transparent;
   color: var(--screen-white);
   font-size: 12px;
@@ -17938,22 +18013,42 @@ article[id^="comment-"][data-highlight]:focus-visible {
   background: var(--brand-blurple-wash);
   box-shadow: inset 0 0 0 1px var(--brand-blurple);
 }
+/* Follows the pointer from document.body; the offset centres it on the finger,
+   and pointer-events:none keeps it out of elementFromPoint hit-testing. */
 .tierlist-ghost {
   position: fixed;
-  z-index: 200;
-  margin: -30px 0 0 -23px;
+  z-index: 320;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(-3deg);
+  filter: drop-shadow(0 12px 30px rgb(0 0 0 / 45%));
+}
+.tierlist-ghost-cover {
+  display: block;
   border-radius: 5px;
   overflow: hidden;
-  pointer-events: none;
   opacity: 0.92;
-  box-shadow: 0 12px 30px rgb(0 0 0 / 45%);
-  transform: rotate(-3deg);
 }
-.tierlist-ghost img {
+.tierlist-ghost-cover img {
   display: block;
   width: 46px;
   height: 61px;
   object-fit: cover;
+}
+.tierlist-ghost-tier {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font: 700 16px var(--font-inter);
+  opacity: 0.95;
+}
+.tierlist-ghost-tier small {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 22%);
+  font-size: 11px;
+  font-weight: 600;
 }
 .tierlist-dialog-overlay {
   position: fixed;

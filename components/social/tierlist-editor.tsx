@@ -2,8 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
   ArrowDownAZ,
+  ArrowDownUp,
   ArrowUpAZ,
   Check,
   GripVertical,
@@ -189,7 +192,11 @@ export function TierlistEditor({
     setGhost(null);
   }
 
-  function startGameDrag(event: React.PointerEvent, igdbId: number, zone: string) {
+  function startGameDrag(
+    event: React.PointerEvent,
+    igdbId: number,
+    zone: string,
+  ) {
     event.preventDefault();
     rootRef.current?.setPointerCapture(event.pointerId);
     setDrag({ kind: "game", igdbId, zone });
@@ -205,9 +212,7 @@ export function TierlistEditor({
   // ── Tier CRUD ──────────────────────────────────────────────────────────
   function addTier() {
     const id = newId();
-    const label = String.fromCharCode(
-      65 + (tiers.length % 26),
-    ); // A, B, C…
+    const label = String.fromCharCode(65 + (tiers.length % 26)); // A, B, C…
     const color = TIER_COLORS[tiers.length % TIER_COLORS.length];
     setTiers((current) => [
       ...current,
@@ -304,13 +309,58 @@ export function TierlistEditor({
       .map((id) => gamesById.get(id))
       .filter((game): game is TierlistGame => Boolean(game));
     return query
-      ? games.filter((game) =>
-          game.name.toLocaleLowerCase().includes(query),
-        )
+      ? games.filter((game) => game.name.toLocaleLowerCase().includes(query))
       : games;
   }, [zones, gamesById, poolQuery]);
 
   const draggedGame = drag?.kind === "game" ? gamesById.get(drag.igdbId) : null;
+  const draggedTier =
+    drag?.kind === "tier"
+      ? tiers.find((tier) => tier.id === drag.tierId)
+      : null;
+  const draggedTierCount = draggedTier
+    ? (zones[tierZone(draggedTier.id)] ?? []).length
+    : 0;
+
+  // Portaled to the body so the fixed ghost is positioned against the viewport.
+  // The route wrapper keeps a residual transform from its enter animation, and
+  // a fixed child of a transformed element anchors to that element instead —
+  // which is why the ghost drifted from the finger on mobile.
+  const ghostNode =
+    ghost && (draggedGame || draggedTier) ? (
+      <div
+        className="tierlist-ghost"
+        style={{ left: ghost.x, top: ghost.y }}
+        aria-hidden
+      >
+        {draggedGame ? (
+          <span className="tierlist-ghost-cover">
+            <SafeImage
+              src={draggedGame.coverUrl}
+              fallbackSrc={draggedGame.fallbackUrl}
+              alt=""
+              width={46}
+              height={61}
+              unoptimized
+              draggable={false}
+            />
+          </span>
+        ) : (
+          draggedTier && (
+            <span
+              className="tierlist-ghost-tier"
+              style={{
+                background: draggedTier.color,
+                color: readableInk(draggedTier.color),
+              }}
+            >
+              <b>{draggedTier.label}</b>
+              <small>{draggedTierCount}</small>
+            </span>
+          )
+        )}
+      </div>
+    ) : null;
 
   return (
     <div
@@ -358,7 +408,7 @@ export function TierlistEditor({
           ) : (
             <Check size={14} aria-hidden />
           )}
-          {saving ? t.saving : t.save}
+          <span>{saving ? t.saving : t.save}</span>
         </button>
       </div>
       {error && (
@@ -371,16 +421,17 @@ export function TierlistEditor({
         {tiers.map((tier) => {
           const zone = tierZone(tier.id);
           const ids = zones[zone] ?? [];
-          const isDropZone =
-            drag?.kind === "game" && dropTarget?.zone === zone;
+          const isDropZone = drag?.kind === "game" && dropTarget?.zone === zone;
           return (
             <div
               className="tierlist-edit-row"
               key={tier.id}
               data-tier-row={tier.id}
-              data-over={tierOver === tier.id && drag?.kind === "tier" || undefined}
+              data-over={
+                (tierOver === tier.id && drag?.kind === "tier") || undefined
+              }
               data-dragging={
-                drag?.kind === "tier" && drag.tierId === tier.id || undefined
+                (drag?.kind === "tier" && drag.tierId === tier.id) || undefined
               }
             >
               <span
@@ -393,7 +444,12 @@ export function TierlistEditor({
                 <button
                   type="button"
                   className="tierlist-tier-handle"
-                  aria-label={tri(lang, "Mover tier", "Move tier", "Mover tier")}
+                  aria-label={tri(
+                    lang,
+                    "Mover tier",
+                    "Move tier",
+                    "Mover tier",
+                  )}
                   onPointerDown={(event) => startTierDrag(event, tier.id)}
                 >
                   <GripVertical size={13} />
@@ -408,8 +464,7 @@ export function TierlistEditor({
                 {ids.map((igdbId, index) => {
                   const game = gamesById.get(igdbId);
                   if (!game) return null;
-                  const showBefore =
-                    isDropZone && dropTarget?.index === index;
+                  const showBefore = isDropZone && dropTarget?.index === index;
                   return (
                     <span
                       key={igdbId}
@@ -446,7 +501,12 @@ export function TierlistEditor({
                 <TierSortMenu tierId={tier.id} onSort={sortTier} lang={lang} />
                 <button
                   type="button"
-                  aria-label={tri(lang, "Editar tier", "Edit tier", "Editar tier")}
+                  aria-label={tri(
+                    lang,
+                    "Editar tier",
+                    "Edit tier",
+                    "Editar tier",
+                  )}
                   onClick={() => setEditingTier(tier)}
                 >
                   <Pencil size={13} />
@@ -454,7 +514,12 @@ export function TierlistEditor({
                 <button
                   type="button"
                   data-danger
-                  aria-label={tri(lang, "Excluir tier", "Delete tier", "Eliminar tier")}
+                  aria-label={tri(
+                    lang,
+                    "Excluir tier",
+                    "Delete tier",
+                    "Eliminar tier",
+                  )}
                   onClick={() => deleteTier(tier.id)}
                   disabled={tiers.length <= 1}
                 >
@@ -473,16 +538,23 @@ export function TierlistEditor({
         <header>
           <div>
             <Layers3 size={14} aria-hidden />
-            <h3>{tri(lang, "Sua biblioteca", "Your library", "Tu biblioteca")}</h3>
+            <h3>
+              {tri(lang, "Sua biblioteca", "Your library", "Tu biblioteca")}
+            </h3>
             <small>{filteredPool.length}</small>
           </div>
-          <label className="tierlist-pool-search search-field-hit">
+          <label className="tierlist-pool-search">
             <Search size={14} aria-hidden />
             <input
               value={poolQuery}
               onChange={(event) => setPoolQuery(event.target.value)}
               placeholder={tri(lang, "Filtrar", "Filter", "Filtrar")}
-              aria-label={tri(lang, "Filtrar jogos", "Filter games", "Filtrar juegos")}
+              aria-label={tri(
+                lang,
+                "Filtrar jogos",
+                "Filter games",
+                "Filtrar juegos",
+              )}
             />
           </label>
         </header>
@@ -503,9 +575,7 @@ export function TierlistEditor({
                   ? "true"
                   : undefined
               }
-              onPointerDown={(event) =>
-                startGameDrag(event, game.igdbId, POOL)
-              }
+              onPointerDown={(event) => startGameDrag(event, game.igdbId, POOL)}
             >
               <SafeImage
                 src={game.coverUrl}
@@ -522,7 +592,12 @@ export function TierlistEditor({
           {!filteredPool.length && (
             <p className="tierlist-pool-empty">
               {zones[POOL]?.length
-                ? tri(lang, "Nada encontrado.", "Nothing found.", "Nada encontrado.")
+                ? tri(
+                    lang,
+                    "Nada encontrado.",
+                    "Nothing found.",
+                    "Nada encontrado.",
+                  )
                 : tri(
                     lang,
                     "Todos os jogos da biblioteca já estão classificados.",
@@ -534,23 +609,9 @@ export function TierlistEditor({
         </div>
       </div>
 
-      {ghost && draggedGame && (
-        <span
-          className="tierlist-ghost"
-          style={{ left: ghost.x, top: ghost.y }}
-          aria-hidden
-        >
-          <SafeImage
-            src={draggedGame.coverUrl}
-            fallbackSrc={draggedGame.fallbackUrl}
-            alt=""
-            width={46}
-            height={61}
-            unoptimized
-            draggable={false}
-          />
-        </span>
-      )}
+      {ghostNode &&
+        typeof document !== "undefined" &&
+        createPortal(ghostNode, document.body)}
 
       {editingTier && (
         <TierEditDialog
@@ -573,7 +634,6 @@ function TierSortMenu({
   onSort: (tierId: string, mode: SortMode) => void;
   lang: UiLang;
 }) {
-  const [open, setOpen] = useState(false);
   const options: { mode: SortMode; label: string; icon: typeof ArrowDownAZ }[] =
     [
       { mode: "az", label: "A–Z", icon: ArrowDownAZ },
@@ -590,39 +650,32 @@ function TierSortMenu({
       },
     ];
   return (
-    <div className="tierlist-sort">
-      <button
-        type="button"
-        aria-label={tri(lang, "Ordenar tier", "Sort tier", "Ordenar tier")}
-        aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
-      >
-        <ArrowDownAZ size={13} />
-      </button>
-      {open && (
-        <>
-          <div
-            className="tierlist-sort-backdrop"
-            onClick={() => setOpen(false)}
-          />
-          <div className="tierlist-sort-menu" role="menu">
-            {options.map(({ mode, label, icon: Icon }) => (
-              <button
-                key={mode}
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  onSort(tierId, mode);
-                  setOpen(false);
-                }}
-              >
-                <Icon size={13} /> {label}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          type="button"
+          aria-label={tri(lang, "Ordenar tier", "Sort tier", "Ordenar tier")}
+        >
+          <ArrowDownUp size={13} />
+        </button>
+      </DropdownMenu.Trigger>
+      {/* Portaled: the tier row clips its overflow for the rounded label, which
+          used to cut this menu in half. */}
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          className="tierlist-sort-menu"
+          align="end"
+          sideOffset={6}
+          collisionPadding={12}
+        >
+          {options.map(({ mode, label, icon: Icon }) => (
+            <DropdownMenu.Item key={mode} onSelect={() => onSort(tierId, mode)}>
+              <Icon size={13} /> {label}
+            </DropdownMenu.Item>
+          ))}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 }
 
@@ -674,7 +727,10 @@ function TierEditDialog({
               onClick={() => setColor(preset)}
             />
           ))}
-          <label className="tierlist-dialog-custom" style={{ background: color }}>
+          <label
+            className="tierlist-dialog-custom"
+            style={{ background: color }}
+          >
             <Pencil size={12} style={{ color: readableInk(color) }} />
             <input
               type="color"
