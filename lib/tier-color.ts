@@ -14,6 +14,32 @@ export const TIER_COLORS = [
   "#a2d2fb",
 ] as const;
 
+/** Longest a tier label may be. Beyond a short word it stops being a tier. */
+export const TIER_LABEL_MAX = 24;
+
+/**
+ * Shrinks the tier label as it gets longer so a one-letter "S" stays big and a
+ * long word still fits the plate instead of overflowing or wrapping to a blur.
+ * `base` scales the whole ramp for the two sizes the label renders at (board
+ * vs. editor).
+ */
+export function tierLabelFontSize(label: string, base = 1): number {
+  const n = label.trim().length;
+  const size =
+    n <= 2
+      ? 18
+      : n <= 4
+        ? 15
+        : n <= 7
+          ? 12
+          : n <= 12
+            ? 10
+            : n <= 18
+              ? 8.5
+              : 7.5;
+  return Math.round(size * base * 10) / 10;
+}
+
 /**
  * Black or white for a label sitting on `hex`, by perceived luminance. Keeps a
  * yellow tier's letter readable without a per-colour lookup table.

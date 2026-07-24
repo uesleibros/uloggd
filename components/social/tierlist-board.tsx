@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { SafeImage } from "@/components/safe-image";
-import { readableInk } from "@/lib/tier-color";
+import { readableInk, tierLabelFontSize } from "@/lib/tier-color";
 import type { TierlistItem, TierlistTier } from "@/lib/tierlists";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -41,7 +41,11 @@ export function TierlistBoard({
           <div className="tierlist-row" key={tier.id}>
             <span
               className="tierlist-row-label"
-              style={{ background: tier.color, color: readableInk(tier.color) }}
+              style={{
+                background: tier.color,
+                color: readableInk(tier.color),
+                fontSize: tierLabelFontSize(tier.label, compact ? 0.72 : 1),
+              }}
               title={tier.label}
             >
               {tier.label}

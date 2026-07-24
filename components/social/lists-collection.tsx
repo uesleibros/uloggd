@@ -2,13 +2,22 @@
 
 import * as Select from "@/components/ui/select";
 import {
+  ArrowDownAZ,
+  Check,
   ChevronDown,
+  Clock3,
   Filter,
+  Gamepad2,
+  Globe2,
+  Heart,
+  History,
   Layers3,
   ListOrdered,
   LoaderCircle,
+  Lock,
   Plus,
   Search,
+  Users,
   X,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -181,15 +190,17 @@ export function ListsCollection({
 
   const visibilityOptions = useMemo(
     () => [
-      { value: "ALL" as const, label: t.all },
+      { value: "ALL" as const, label: t.all, icon: Layers3 },
       {
         value: "PUBLIC" as const,
         label: tri(lang, "Públicas", "Public", "Públicas"),
+        icon: Globe2,
       },
-      { value: "FOLLOWERS" as const, label: t.followers },
+      { value: "FOLLOWERS" as const, label: t.followers, icon: Users },
       {
         value: "PRIVATE" as const,
         label: tri(lang, "Privadas", "Private", "Privadas"),
+        icon: Lock,
       },
     ],
     [lang, t.all, t.followers],
@@ -204,22 +215,27 @@ export function ListsCollection({
           "Recently updated",
           "Actualizadas recientes",
         ),
+        icon: Clock3,
       },
       {
         value: "oldest" as const,
         label: tri(lang, "Mais antigas", "Oldest first", "Más antiguas"),
+        icon: History,
       },
       {
         value: "name" as const,
         label: tri(lang, "Nome (A→Z)", "Name (A→Z)", "Nombre (A→Z)"),
+        icon: ArrowDownAZ,
       },
       {
         value: "size" as const,
         label: tri(lang, "Mais jogos", "Most games", "Más juegos"),
+        icon: Gamepad2,
       },
       {
         value: "likes" as const,
         label: tri(lang, "Mais curtidas", "Most liked", "Más gustadas"),
+        icon: Heart,
       },
     ],
     [lang],
@@ -343,7 +359,7 @@ export function ListsCollection({
                 }))
               }
             >
-              <Select.Trigger className="lists-select-trigger">
+              <Select.Trigger className="editor-select-trigger">
                 <Select.Value>
                   {
                     visibilityOptions.find(
@@ -357,19 +373,23 @@ export function ListsCollection({
               </Select.Trigger>
               <Select.Portal>
                 <Select.Content
-                  className="lists-select-content"
+                  className="editor-select-menu"
                   position="popper"
                   sideOffset={6}
                   collisionPadding={12}
                 >
                   <Select.Viewport>
-                    {visibilityOptions.map((opt) => (
+                    {visibilityOptions.map(({ value, label, icon: Icon }) => (
                       <Select.Item
-                        key={opt.value}
-                        value={opt.value}
-                        className="lists-select-item"
+                        key={value}
+                        value={value}
+                        className="editor-select-option"
                       >
-                        <Select.ItemText>{opt.label}</Select.ItemText>
+                        <Icon size={14} />
+                        <Select.ItemText>{label}</Select.ItemText>
+                        <Select.ItemIndicator>
+                          <Check size={13} />
+                        </Select.ItemIndicator>
                       </Select.Item>
                     ))}
                   </Select.Viewport>
@@ -388,7 +408,7 @@ export function ListsCollection({
                 }))
               }
             >
-              <Select.Trigger className="lists-select-trigger">
+              <Select.Trigger className="editor-select-trigger">
                 <Select.Value>
                   {sortOptions.find((o) => o.value === filters.sort)?.label}
                 </Select.Value>
@@ -398,19 +418,23 @@ export function ListsCollection({
               </Select.Trigger>
               <Select.Portal>
                 <Select.Content
-                  className="lists-select-content"
+                  className="editor-select-menu"
                   position="popper"
                   sideOffset={6}
                   collisionPadding={12}
                 >
                   <Select.Viewport>
-                    {sortOptions.map((opt) => (
+                    {sortOptions.map(({ value, label, icon: Icon }) => (
                       <Select.Item
-                        key={opt.value}
-                        value={opt.value}
-                        className="lists-select-item"
+                        key={value}
+                        value={value}
+                        className="editor-select-option"
                       >
-                        <Select.ItemText>{opt.label}</Select.ItemText>
+                        <Icon size={14} />
+                        <Select.ItemText>{label}</Select.ItemText>
+                        <Select.ItemIndicator>
+                          <Check size={13} />
+                        </Select.ItemIndicator>
                       </Select.Item>
                     ))}
                   </Select.Viewport>

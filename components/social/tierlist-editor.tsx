@@ -21,7 +21,12 @@ import {
 } from "lucide-react";
 import { SafeImage } from "@/components/safe-image";
 import { createClient } from "@/lib/supabase/client";
-import { readableInk, TIER_COLORS } from "@/lib/tier-color";
+import {
+  readableInk,
+  TIER_COLORS,
+  TIER_LABEL_MAX,
+  tierLabelFontSize,
+} from "@/lib/tier-color";
 import type { TierlistData, TierlistGame, TierlistTier } from "@/lib/tierlists";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -121,10 +126,19 @@ export function TierlistEditor({
   }, [tiers]);
   useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
+  // The sticky site header sits over the top of the viewport; sampling a point
+  // under it hits the header instead of a tier, which is what made the drop
+  // indicator flicker near the top. Every hit test is pushed below it.
+  function headerBottom() {
+    const header = document.querySelector<HTMLElement>(".content-header");
+    return header ? header.getBoundingClientRect().bottom : 0;
+  }
+
   // ── Game drag ────────────────────────────────────────────────────────────
   function gameTargetFromPoint(clientX: number, clientY: number) {
+    const sampleY = Math.max(clientY, headerBottom() + 6);
     const zoneEl = document
-      .elementFromPoint(clientX, clientY)
+      .elementFromPoint(clientX, sampleY)
       ?.closest<HTMLElement>("[data-zone]");
     if (!zoneEl) return null;
     const zone = zoneEl.dataset.zone!;
@@ -157,9 +171,12 @@ export function TierlistEditor({
     const current = dragRef.current;
     if (!current) return;
     if (current.kind === "game") {
-      setDropTarget(gameTargetFromPoint(x, y));
+      // Keep the last valid target when the point resolves to nothing (over a
+      // gutter or the header) so the indicator never blinks off mid-drag.
+      const target = gameTargetFromPoint(x, y);
+      if (target) setDropTarget(target);
     } else {
-      applyTierOrder(x, y, current.tierId);
+      applyTierOrder(x, Math.max(y, headerBottom() + 6), current.tierId);
     }
   }
 
@@ -196,14 +213,20 @@ export function TierlistEditor({
       return;
     }
     const { x, y } = pointerRef.current;
-    // Speed ramps up the closer the finger is to the edge, like every drag UI.
-    const EDGE = 110;
-    const MAX = 22;
+    // The top band starts below the sticky header so the page already scrolls
+    // by the time the finger reaches it. Speed ramps quadratically to the edge.
+    const EDGE = 150;
+    const MAX = 46;
     const height = window.innerHeight;
+    const topLine = headerBottom() + EDGE;
     let dy = 0;
-    if (y < EDGE) dy = -Math.ceil(((EDGE - y) / EDGE) * MAX);
-    else if (y > height - EDGE)
-      dy = Math.ceil(((y - (height - EDGE)) / EDGE) * MAX);
+    if (y < topLine) {
+      const t = Math.min(1, (topLine - y) / EDGE);
+      dy = -Math.ceil(t * t * MAX);
+    } else if (y > height - EDGE) {
+      const t = Math.min(1, (y - (height - EDGE)) / EDGE);
+      dy = Math.ceil(t * t * MAX);
+    }
     if (dy !== 0) {
       window.scrollBy(0, dy);
       applyMove(x, y);
@@ -523,7 +546,9 @@ export function TierlistEditor({
                 >
                   <GripVertical size={13} />
                 </button>
-                <b>{tier.label}</b>
+                <b style={{ fontSize: tierLabelFontSize(tier.label) }}>
+                  {tier.label}
+                </b>
               </span>
               <div
                 className="tierlist-edit-games"
@@ -782,7 +807,7 @@ function TierEditDialog({
           <span>{tri(lang, "Rótulo", "Label", "Etiqueta")}</span>
           <input
             value={label}
-            maxLength={30}
+            maxLength={TIER_LABEL_MAX}
             autoFocus
             onChange={(event) => setLabel(event.target.value)}
           />
@@ -819,7 +844,11 @@ function TierEditDialog({
             className="tierlist-dialog-save"
             disabled={!label.trim()}
             onClick={() =>
-              onSave({ ...tier, label: label.trim().slice(0, 30), color })
+              onSave({
+                ...tier,
+                label: label.trim().slice(0, TIER_LABEL_MAX),
+                color,
+              })
             }
           >
             {t.save}
