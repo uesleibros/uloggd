@@ -1330,9 +1330,10 @@
   --thread-elbow: 29px;
   position: relative;
   min-width: 0;
-  /* 16px == half the 32px avatar, so the rail sits under the parent avatar's
-     centre and the trunk drops straight from the circle's lowest point. */
-  margin-left: 16px;
+  /* Shifted in from the avatar centre so the rail reads as tucked under the
+     comment rather than hugging the far-left edge; the reply column lands under
+     the parent's text. Kept in lockstep with .profile-comment-trunk's left. */
+  margin-left: 24px;
   padding-left: var(--thread-indent);
 }
 .profile-comment-replies .profile-comment-thread > article {
@@ -1387,7 +1388,7 @@
   position: absolute;
   top: 22px;
   bottom: 0;
-  left: 16px;
+  left: 24px;
   border-left: 1px solid var(--shell-line-strong);
 }
 /* Deeper levels drop their indent to 0, so their trunk hugs the avatar's left
