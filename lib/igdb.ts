@@ -345,23 +345,40 @@ export async function searchGames(
 ): Promise<GameSearchResult[]> {
   const query = rawQuery.trim().replace(/\s+/g, " ").slice(0, 80);
   if (query.length < 2) return [];
+  const words = query
+    .split(" ")
+    .map(escapeIgdb)
+    .filter((word) => word.length >= 2)
+    .slice(0, 6);
+  if (!words.length) return [];
 
-  // IGDB's `search` clause is a relevance-ranked full-text index (name and
-  // alternative names both). It returns in ~400ms where the old
-  // `name ~ *"word"*` wildcard scan took 2s+ — the search box's slowness. It
-  // cannot be combined with `sort`, so popularity ordering is applied in JS.
-  const games = await queryGamesRaw(
-    `
-    search "${escapeIgdb(query)}";
-    fields name,slug,first_release_date,cover.image_id,platforms.name,
-      alternative_names.name,total_rating_count,game_type;
-    where cover != null;
-    limit 20;
-  `,
-    15 * CACHE_MINUTES,
-  );
+  const fields = `fields name,slug,first_release_date,cover.image_id,platforms.name,
+    alternative_names.name,total_rating_count,game_type;`;
+  const nameFilter = words.map((word) => `name ~ *"${word}"*`).join(" & ");
 
-  return games
+  // Two cheap passes run in parallel and merged, instead of the old single
+  // `name ~ | alternative_names.name ~` wildcard that matched both in one query
+  // but took ~1.5s. The name wildcard, sorted by popularity, nails direct title
+  // matches (Super Mario 64 for "mario"); IGDB's `search` index catches
+  // acronyms and alternative names the name wildcard misses (GTA → Grand Theft
+  // Auto). The JS re-rank over the union restores the old popularity-first order.
+  const [byName, bySearch] = await Promise.all([
+    queryGamesRaw(
+      `${fields} where (${nameFilter}) & cover != null;
+       sort total_rating_count desc; limit 20;`,
+      15 * CACHE_MINUTES,
+    ),
+    queryGamesRaw(
+      `search "${escapeIgdb(query)}"; ${fields} where cover != null; limit 20;`,
+      15 * CACHE_MINUTES,
+    ),
+  ]);
+
+  const byId = new Map<number, IgdbGameResponse>();
+  for (const game of [...byName, ...bySearch])
+    if (!byId.has(game.id)) byId.set(game.id, game);
+
+  return [...byId.values()]
     .sort((a, b) => searchRelevance(b, query) - searchRelevance(a, query))
     .slice(0, 12)
     .map((game) => ({
