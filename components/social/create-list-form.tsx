@@ -140,7 +140,7 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
           : null;
       startRefresh(() => {
         if (tierlistId) {
-          router.push(`/${lang}/lists/${tierlistId}?edit=1`);
+          router.push(`/${lang}/lists/${tierlistId}`);
           return;
         }
         router.refresh();

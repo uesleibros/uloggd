@@ -183,8 +183,10 @@ export async function getListPreviews(
       ),
     );
     tierlistPreviews.forEach((preview, index) => {
-      preview.covers = filled[index].covers;
+      preview.tierRows = filled[index].rows;
       preview.count = filled[index].count;
+      // The flat cover fan is unused for a tierlist; its rows carry the covers.
+      preview.covers = [];
     });
   }
 

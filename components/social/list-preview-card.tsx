@@ -24,6 +24,7 @@ import { SafeImage } from "@/components/safe-image";
 export function ListPreviewCard({
   list,
   covers,
+  tierRows,
   lang,
   likes = 0,
 }: {
@@ -38,6 +39,11 @@ export function ListPreviewCard({
     count: number;
   };
   covers: { url: string; fallbackUrl?: string; name: string }[];
+  /** Miniature tier rows; when present the card previews the board itself. */
+  tierRows?: {
+    color: string;
+    covers: { url: string; fallbackUrl?: string }[];
+  }[];
   lang: UiLang;
   likes?: number;
 }) {
@@ -64,23 +70,55 @@ export function ListPreviewCard({
       href={`/${lang}/lists/${list.publicId ?? list.id}`}
       data-mode={mode}
     >
-      <span className="list-preview-stack" aria-hidden>
-        {shown.length ? (
-          shown.map((cover, index) => (
-            <span key={`${cover.url}-${index}`}>
-              <SafeImage
-                src={cover.url}
-                fallbackSrc={cover.fallbackUrl}
-                alt=""
-                fill
-                sizes="120px"
-              />
+      {tierlist ? (
+        <span className="list-preview-tiers" aria-hidden>
+          {tierRows && tierRows.length ? (
+            tierRows.map((row, rowIndex) => (
+              <span className="list-preview-tier" key={rowIndex}>
+                <span
+                  className="list-preview-tier-swatch"
+                  style={{ background: row.color }}
+                />
+                <span className="list-preview-tier-covers">
+                  {row.covers.map((cover, index) => (
+                    <span key={`${cover.url}-${index}`}>
+                      <SafeImage
+                        src={cover.url}
+                        fallbackSrc={cover.fallbackUrl}
+                        alt=""
+                        fill
+                        sizes="40px"
+                      />
+                    </span>
+                  ))}
+                </span>
+              </span>
+            ))
+          ) : (
+            <span className="list-preview-blank">
+              <LayoutGrid size={22} />
             </span>
-          ))
-        ) : (
-          <span className="list-preview-blank" />
-        )}
-      </span>
+          )}
+        </span>
+      ) : (
+        <span className="list-preview-stack" aria-hidden>
+          {shown.length ? (
+            shown.map((cover, index) => (
+              <span key={`${cover.url}-${index}`}>
+                <SafeImage
+                  src={cover.url}
+                  fallbackSrc={cover.fallbackUrl}
+                  alt=""
+                  fill
+                  sizes="120px"
+                />
+              </span>
+            ))
+          ) : (
+            <span className="list-preview-blank" />
+          )}
+        </span>
+      )}
       <span className="list-preview-mode" data-mode={mode}>
         {tierlist ? (
           <LayoutGrid size={11} />

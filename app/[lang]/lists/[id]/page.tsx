@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { Eye, LayoutGrid, Layers3, ListOrdered } from "lucide-react";
+import { LayoutGrid, Layers3, ListOrdered } from "lucide-react";
 import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { ListAddGame } from "@/components/social/list-add-game";
@@ -71,8 +70,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ListPage({ params, searchParams }: Props) {
-  const [{ lang, id }, query] = await Promise.all([params, searchParams]);
+export default async function ListPage({ params }: Props) {
+  const { lang, id } = await params;
   const key = listKey(id);
   if (!hasLocale(lang) || !key) notFound();
   const supabase = await getSupabase();
@@ -112,7 +111,9 @@ export default async function ListPage({ params, searchParams }: Props) {
 
   if (list.kind === "TIERLIST") {
     const t = uiText(lang);
-    const editing = isOwner && query.edit === "1";
+    // The author always lands in the editor; there is no separate view mode to
+    // toggle into, so no edit/view buttons either.
+    const editing = isOwner;
     const [tierlist, { data: likeRows }, { data: follow }] = await Promise.all([
       getTierlist(supabase, list.id, list.profile_id, {
         includePool: isOwner,
@@ -180,72 +181,31 @@ export default async function ListPage({ params, searchParams }: Props) {
           {isOwner && <ListOwnerControls list={list} lang={lang} />}
         </header>
         {editing ? (
-          <>
-            <Link
-              className="tierlist-edit-link"
-              href={`/${lang}/lists/${list.public_id}`}
-              scroll={false}
-            >
-              <Eye size={14} aria-hidden />
-              {tri(lang, "Ver tierlist", "View tierlist", "Ver tierlist")}
-            </Link>
-            <TierlistEditor listId={list.id} initial={tierlist} lang={lang} />
-          </>
+          <TierlistEditor listId={list.id} initial={tierlist} lang={lang} />
+        ) : tierlist.items.length ? (
+          <TierlistBoard
+            tiers={tierlist.tiers}
+            items={tierlist.items}
+            lang={lang}
+            linkGames
+          />
         ) : (
-          <>
-            {isOwner && (
-              <Link
-                className="tierlist-edit-link"
-                href={`/${lang}/lists/${list.public_id}?edit=1`}
-                scroll={false}
-              >
-                <LayoutGrid size={14} aria-hidden />
-                {tri(
-                  lang,
-                  "Editar tierlist",
-                  "Edit tierlist",
-                  "Editar tierlist",
-                )}
-              </Link>
-            )}
-            {tierlist.items.length ? (
-              <TierlistBoard
-                tiers={tierlist.tiers}
-                items={tierlist.items}
-                lang={lang}
-                linkGames
-              />
-            ) : (
-              <div className="social-empty">
-                <span aria-hidden>
-                  <LayoutGrid size={22} />
-                </span>
-                <h2>
-                  {tri(
-                    lang,
-                    "Tierlist vazia",
-                    "Empty tierlist",
-                    "Tierlist vacía",
-                  )}
-                </h2>
-                <p>
-                  {isOwner
-                    ? tri(
-                        lang,
-                        "Abra o editor e arraste os jogos da sua biblioteca para as tiers.",
-                        "Open the editor and drag your library games into the tiers.",
-                        "Abre el editor y arrastra los juegos de tu biblioteca a las tiers.",
-                      )
-                    : tri(
-                        lang,
-                        "Nenhum jogo classificado ainda.",
-                        "No games ranked yet.",
-                        "Ningún juego clasificado todavía.",
-                      )}
-                </p>
-              </div>
-            )}
-          </>
+          <div className="social-empty">
+            <span aria-hidden>
+              <LayoutGrid size={22} />
+            </span>
+            <h2>
+              {tri(lang, "Tierlist vazia", "Empty tierlist", "Tierlist vacía")}
+            </h2>
+            <p>
+              {tri(
+                lang,
+                "Nenhum jogo classificado ainda.",
+                "No games ranked yet.",
+                "Ningún juego clasificado todavía.",
+              )}
+            </p>
+          </div>
         )}
         <ContentComments
           contentType="list"

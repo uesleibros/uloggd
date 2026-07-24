@@ -17102,31 +17102,36 @@ adapted to the current uloggd surface system. */
 }
 .create-list-rank-toggle input {
   appearance: none;
+  position: relative;
   flex: none;
-  width: 40px;
-  height: 23px;
+  width: 42px;
+  height: 24px;
   border-radius: 999px;
   background: var(--console-hover);
   box-shadow: inset 0 0 0 1px var(--shell-line-strong);
   cursor: pointer;
-  transition: background-color 150ms ease-out;
+  transition:
+    background-color 170ms ease-out,
+    box-shadow 170ms ease-out;
 }
-.create-list-rank-toggle input::after {
+.create-list-rank-toggle input::before {
   content: "";
-  display: block;
-  width: 17px;
-  height: 17px;
-  margin: 3px;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--screen-white);
-  transition: transform 150ms ease-out;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 35%);
+  transition: transform 170ms cubic-bezier(0.3, 1.3, 0.6, 1);
 }
 .create-list-rank-toggle input:checked {
   background: var(--brand-blurple);
   box-shadow: none;
 }
-.create-list-rank-toggle input:checked::after {
-  transform: translateX(17px);
+.create-list-rank-toggle input:checked::before {
+  transform: translateX(18px);
 }
 .create-list-rank-toggle input:focus-visible {
   outline: 2px solid var(--brand-blurple);
@@ -17436,25 +17441,6 @@ adapted to the current uloggd surface system. */
   font-size: 11px;
   font-weight: 600;
 }
-.tierlist-edit-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  width: fit-content;
-  min-height: 36px;
-  padding: 0 14px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 9px;
-  background: var(--console-panel);
-  color: var(--screen-dim);
-  font-size: 12px;
-  font-weight: 600;
-}
-.tierlist-edit-link:hover {
-  border-color: var(--brand-blurple);
-  color: var(--screen-white);
-}
-
 /* Un-ranked collections don't paint the numbered rank badge, so remove the
    space that badge would have reserved. */
 .list-items-grid[data-mode="collection"] .ranked-list-item {
@@ -17853,6 +17839,17 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .tierlist-cover-drag {
   cursor: grab;
   touch-action: none;
+  /* Long-pressing a cover on a phone must start a drag, not pop the browser's
+     "save image / open in new tab" callout. */
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.tierlist-cover-drag img {
+  -webkit-touch-callout: none;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .tierlist-cover-drag[data-dragging="true"] {
   opacity: 0.3;
@@ -18157,4 +18154,48 @@ article[id^="comment-"][data-highlight]:focus-visible {
   .tierlist-edit-tools {
     flex-direction: column;
   }
+}
+
+/* Tierlist card preview: a miniature of the board — coloured tier rows with a
+   few covers each, in place of the fanned cover stack collections use. */
+.list-preview-tiers {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 7px;
+  padding: 4px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--console-inset);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+}
+.list-preview-tier {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  gap: 4px;
+  align-items: stretch;
+}
+.list-preview-tier-swatch {
+  border-radius: 3px;
+}
+.list-preview-tier-covers {
+  display: flex;
+  gap: 3px;
+  min-width: 0;
+  overflow: hidden;
+}
+.list-preview-tier-covers > span {
+  position: relative;
+  flex: none;
+  width: 15%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--console-raised);
+}
+.list-preview-tiers .list-preview-blank {
+  display: grid;
+  place-items: center;
+  min-height: 96px;
+  border-radius: 6px;
+  color: var(--screen-muted);
 }

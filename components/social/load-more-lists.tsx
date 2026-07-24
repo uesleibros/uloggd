@@ -71,6 +71,7 @@ export function LoadMoreLists({
                 count: list.count,
               }}
               covers={list.covers}
+              tierRows={list.tierRows}
               lang={lang}
               likes={list.likes}
             />

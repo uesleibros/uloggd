@@ -10,6 +10,11 @@ export type ListPreview = {
   visibility: ListVisibility;
   ranked: boolean;
   kind: "COLLECTION" | "TIERLIST";
+  /** Miniature tier rows for the tierlist card; absent on collections. */
+  tierRows?: {
+    color: string;
+    covers: { url: string; fallbackUrl: string }[];
+  }[];
   count: number;
   covers: { url: string; fallbackUrl: string; name: string }[];
   likes: number;

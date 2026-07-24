@@ -100,6 +100,7 @@ export default async function ProfileListsPage({ params }: Props) {
                   count: list.count,
                 }}
                 covers={list.covers}
+                tierRows={list.tierRows}
                 lang={lang}
                 likes={list.likes}
               />

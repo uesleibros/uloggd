@@ -131,71 +131,84 @@ export async function getTierlist(
   };
 }
 
+export type TierlistPreviewRow = {
+  color: string;
+  covers: { url: string; fallbackUrl: string }[];
+};
+
 /**
- * Covers and ranked count for the collection card, taken tier by tier so the
- * preview reads top-down like the board does. Only games still in the owner's
- * library are counted, matching what the board itself shows.
+ * A miniature of the board for the collection card: the top tiers as coloured
+ * rows with a few covers each, plus the ranked count. Only games still in the
+ * owner's library appear, matching what the board itself shows. Empty tiers are
+ * dropped so a tiny card never shows blank rows.
  */
 export async function getTierlistPreview(
   supabase: SupabaseClient,
   listId: string,
-  limit = 5,
-): Promise<{
-  covers: { url: string; fallbackUrl: string; name: string }[];
-  count: number;
-}> {
-  const [{ data: tierRows }, { data: itemRows }] = await Promise.all([
-    supabase
-      .from("tierlist_tiers")
-      .select("id,position")
-      .eq("list_id", listId)
-      .order("position", { ascending: true }),
-    supabase
-      .from("tierlist_items")
-      .select("tier_id,igdb_id,position")
-      .eq("list_id", listId),
-  ]);
-  const tierOrder = new Map(
-    (tierRows ?? []).map((tier, index) => [tier.id, index]),
-  );
-  const items = ((itemRows ?? []) as ItemRow[])
-    .filter((item) => tierOrder.has(item.tier_id))
-    .sort(
-      (a, b) =>
-        (tierOrder.get(a.tier_id) ?? 0) - (tierOrder.get(b.tier_id) ?? 0) ||
-        a.position - b.position,
-    );
-  // Same definer path as the board: reconciled with the owner's reach so a
-  // private library still previews on a public list.
-  const { data: liveIds } = await supabase.rpc("tierlist_live_ids", {
-    target_list: listId,
-  });
+  { maxTiers = 4, maxCoversPerTier = 6 } = {},
+): Promise<{ rows: TierlistPreviewRow[]; count: number }> {
+  const [{ data: tierRows }, { data: itemRows }, { data: liveIds }] =
+    await Promise.all([
+      supabase
+        .from("tierlist_tiers")
+        .select("id,color,position")
+        .eq("list_id", listId)
+        .order("position", { ascending: true }),
+      supabase
+        .from("tierlist_items")
+        .select("tier_id,igdb_id,position")
+        .eq("list_id", listId),
+      // Same definer path as the board: reconciled with the owner's reach so a
+      // private library still previews on a public list.
+      supabase.rpc("tierlist_live_ids", { target_list: listId }),
+    ]);
   const inLibrary = new Set(
     ((liveIds ?? []) as (number | { igdb_id: number })[]).map((row) =>
       typeof row === "number" ? row : row.igdb_id,
     ),
   );
-  const live = items.filter((item) => inLibrary.has(item.igdb_id));
-  const count = new Set(live.map((item) => item.igdb_id)).size;
-  const ids: number[] = [];
-  for (const item of live) {
-    if (!ids.includes(item.igdb_id)) ids.push(item.igdb_id);
-    if (ids.length >= limit) break;
+  const tiers = (tierRows ?? []) as {
+    id: string;
+    color: string;
+    position: number;
+  }[];
+  const byTier = new Map<string, number[]>();
+  for (const item of ((itemRows ?? []) as ItemRow[])
+    .filter((item) => inLibrary.has(item.igdb_id))
+    .sort((a, b) => a.position - b.position)) {
+    const bucket = byTier.get(item.tier_id);
+    if (bucket) bucket.push(item.igdb_id);
+    else byTier.set(item.tier_id, [item.igdb_id]);
   }
-  if (!ids.length) return { covers: [], count };
-  const games = await getGamesByIds(ids);
+
+  const count = new Set([...byTier.values()].flat()).size;
+
+  // Only tiers that actually have games, top-down, capped for the card.
+  const shownTiers = tiers
+    .filter((tier) => (byTier.get(tier.id)?.length ?? 0) > 0)
+    .slice(0, maxTiers)
+    .map((tier) => ({
+      color: tier.color,
+      ids: (byTier.get(tier.id) ?? []).slice(0, maxCoversPerTier),
+    }));
+
+  const allIds = [...new Set(shownTiers.flatMap((tier) => tier.ids))];
+  if (!allIds.length) return { rows: [], count };
+  const games = await getGamesByIds(allIds);
   const byId = new Map(games.map((game) => [game.id, game]));
-  const covers = ids.flatMap((id) => {
-    const game = byId.get(id);
-    return game
-      ? [
-          {
-            url: resolveGameCover(game.coverUrl, null),
-            fallbackUrl: game.coverUrl,
-            name: game.name,
-          },
-        ]
-      : [];
-  });
-  return { covers, count };
+  const rows: TierlistPreviewRow[] = shownTiers.map((tier) => ({
+    color: tier.color,
+    covers: tier.ids.flatMap((id) => {
+      const game = byId.get(id);
+      return game
+        ? [
+            {
+              url: resolveGameCover(game.coverUrl, null),
+              fallbackUrl: game.coverUrl,
+            },
+          ]
+        : [];
+    }),
+  }));
+  return { rows, count };
 }

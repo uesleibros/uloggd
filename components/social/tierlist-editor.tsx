@@ -451,6 +451,7 @@ export function TierlistEditor({
                     "Mover tier",
                   )}
                   onPointerDown={(event) => startTierDrag(event, tier.id)}
+                  onContextMenu={(event) => event.preventDefault()}
                 >
                   <GripVertical size={13} />
                 </button>
@@ -479,6 +480,7 @@ export function TierlistEditor({
                       onPointerDown={(event) =>
                         startGameDrag(event, igdbId, zone)
                       }
+                      onContextMenu={(event) => event.preventDefault()}
                     >
                       <SafeImage
                         src={game.coverUrl}
@@ -576,6 +578,7 @@ export function TierlistEditor({
                   : undefined
               }
               onPointerDown={(event) => startGameDrag(event, game.igdbId, POOL)}
+              onContextMenu={(event) => event.preventDefault()}
             >
               <SafeImage
                 src={game.coverUrl}
