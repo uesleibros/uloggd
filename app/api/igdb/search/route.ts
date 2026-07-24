@@ -15,17 +15,50 @@ export async function GET(request: NextRequest) {
     return Response.json({ results: [] });
 
   try {
-    const [results, supabase] = await Promise.all([
-      ids.length
-        ? getGamesByIds(ids).then((games) =>
-            games.map((game) => ({ ...game, kind: "game" as const })),
-          )
-        : searchGames(query),
-      createClient(),
-    ]);
+    const supabase = await createClient();
+    // Beyond the game catalog, quick search also surfaces people and public
+    // lists; id refreshes (recently viewed) skip this.
+    const sanitized = query.replace(/[%_,()]/g, "").trim();
+    const wantsEntities = ids.length === 0 && sanitized.length >= 2;
+
+    // The catalog search, the auth claims and the people/list lookups are
+    // independent, so they run concurrently instead of one after another. Only
+    // saved-cover personalization has to wait, since it needs both the result
+    // ids and the viewer. This overlaps the two Supabase round-trips with the
+    // ~1s IGDB query rather than stacking them after it.
+    const [results, { data: claims }, [{ data: users }, { data: lists }]] =
+      await Promise.all([
+        ids.length
+          ? getGamesByIds(ids).then((games) =>
+              games.map((game) => ({ ...game, kind: "game" as const })),
+            )
+          : searchGames(query),
+        supabase.auth.getClaims(),
+        wantsEntities
+          ? Promise.all([
+              supabase
+                .from("profiles")
+                .select("username,display_name,avatar_url,verified")
+                .or(
+                  `username.ilike.%${sanitized}%,display_name.ilike.%${sanitized}%`,
+                )
+                .not("username", "is", null)
+                .limit(4),
+              supabase
+                .from("game_lists")
+                .select(
+                  "id,public_id,name,visibility,owner:profiles!game_lists_profile_id_fkey(username)",
+                )
+                .eq("visibility", "PUBLIC")
+                .ilike("name", `%${sanitized}%`)
+                .order("updated_at", { ascending: false })
+                .limit(4),
+            ])
+          : Promise.resolve([{ data: [] }, { data: [] }] as const),
+      ]);
+
     // Local JWT verification instead of a round-trip to the Auth server — that
     // network hop ran on every keystroke and added a fixed tax to each search.
-    const { data: claims } = await supabase.auth.getClaims();
     const user = claims?.claims.sub ? { id: claims.claims.sub } : null;
     const { data: savedGames } =
       user && results.length
@@ -49,31 +82,6 @@ export async function GET(request: NextRequest) {
         lang: "en",
       }).available,
     }));
-    // Beyond the game catalog, quick search also surfaces people and public
-    // lists; id refreshes (recently viewed) skip this.
-    const sanitized = query.replace(/[%_,()]/g, "").trim();
-    const [{ data: users }, { data: lists }] =
-      ids.length === 0 && sanitized.length >= 2
-        ? await Promise.all([
-            supabase
-              .from("profiles")
-              .select("username,display_name,avatar_url,verified")
-              .or(
-                `username.ilike.%${sanitized}%,display_name.ilike.%${sanitized}%`,
-              )
-              .not("username", "is", null)
-              .limit(4),
-            supabase
-              .from("game_lists")
-              .select(
-                "id,public_id,name,visibility,owner:profiles!game_lists_profile_id_fkey(username)",
-              )
-              .eq("visibility", "PUBLIC")
-              .ilike("name", `%${sanitized}%`)
-              .order("updated_at", { ascending: false })
-              .limit(4),
-          ])
-        : [{ data: [] }, { data: [] }];
     return Response.json(
       {
         results: personalizedResults,
