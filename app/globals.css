@@ -17642,7 +17642,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   display: grid;
   grid-template-columns: 60px minmax(0, 1fr);
   align-items: stretch;
-  min-height: 68px;
+  min-height: 74px;
 }
 .tierlist-row + .tierlist-row {
   border-top: 1px solid var(--shell-line);
@@ -17685,8 +17685,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-cover img {
   display: block;
-  width: 46px;
-  height: 61px;
+  width: 50px;
+  height: 66px;
   object-fit: cover;
 }
 .tierlist-board[data-compact] .tierlist-cover img {
@@ -17694,7 +17694,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   height: 45px;
 }
 .tierlist-row-empty {
-  min-height: 61px;
+  min-height: 66px;
 }
 .tierlist-board-empty,
 .tierlist-pool-empty {
@@ -17811,7 +17811,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   flex-wrap: wrap;
   gap: 4px;
   align-content: flex-start;
-  min-height: 73px;
+  min-height: 78px;
   padding: 6px;
   background: var(--console-inset);
   transition: background-color 140ms ease-out;
@@ -18012,8 +18012,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-ghost-cover img {
   display: block;
-  width: 46px;
-  height: 61px;
+  width: 50px;
+  height: 66px;
   object-fit: cover;
 }
 .tierlist-ghost-tier {

@@ -59,8 +59,8 @@ export function TierlistBoard({
                       fallbackSrc={game.fallbackUrl}
                       alt={game.name}
                       title={game.name}
-                      width={compact ? 34 : 46}
-                      height={compact ? 45 : 61}
+                      width={compact ? 34 : 50}
+                      height={compact ? 45 : 66}
                       unoptimized
                     />
                   );
