@@ -1330,10 +1330,13 @@
   --thread-elbow: 29px;
   position: relative;
   min-width: 0;
-  /* Shifted in from the avatar centre so the rail reads as tucked under the
-     comment rather than hugging the far-left edge; the reply column lands under
-     the parent's text. Kept in lockstep with .profile-comment-trunk's left. */
-  margin-left: 24px;
+  /* Two knobs for the thread line:
+     - margin-left  == where the vertical line sits. 16px is the avatar centre,
+       so the trunk drops straight out of the photo's bottom. Must stay in
+       lockstep with .profile-comment-trunk's left.
+     - --thread-indent == how far the reply is pushed past the line (the width
+       of the curved elbow). Raise it to indent replies further right. */
+  margin-left: 16px;
   padding-left: var(--thread-indent);
 }
 .profile-comment-replies .profile-comment-thread > article {
@@ -1388,7 +1391,7 @@
   position: absolute;
   top: 22px;
   bottom: 0;
-  left: 24px;
+  left: 16px;
   border-left: 1px solid var(--shell-line-strong);
 }
 /* Deeper levels drop their indent to 0, so their trunk hugs the avatar's left
