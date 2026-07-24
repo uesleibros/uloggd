@@ -12,14 +12,6 @@
   margin: auto;
   border-bottom: 1px solid var(--shell-line);
 }
-.legal-header > a:last-child {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--screen-muted);
-  font-size: 12px;
-  font-weight: 600;
-}
 .legal-page {
   width: min(calc(100% - 40px), 760px);
   margin: auto;

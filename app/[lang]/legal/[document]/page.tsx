@@ -51,8 +51,8 @@ export default async function LegalPage({ params }: Props) {
   return (
     <div className="legal-shell">
       <header className="legal-header">
-        <Link href={`/${lang}`}>
-          <ArrowLeft size={18} />
+        <Link className="page-back-link" href={`/${lang}`}>
+          <ArrowLeft size={15} />
           {d.legalUi.back}
         </Link>
       </header>

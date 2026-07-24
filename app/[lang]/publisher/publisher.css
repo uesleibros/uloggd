@@ -18,19 +18,20 @@
   margin-inline: calc(var(--publisher-gutter) * -1);
   overflow: hidden;
   border-radius: 12px;
+  /* Matches the empty profile banner: brand tint fading into the page canvas,
+     no inset border. */
   background:
     radial-gradient(
-      120% 120% at 84% 6%,
-      color-mix(in oklab, var(--brand-blurple-bright) 45%, transparent) 0%,
-      transparent 58%
+      130% 130% at 82% -12%,
+      color-mix(in oklab, var(--brand-blurple-bright) 42%, transparent) 0%,
+      transparent 56%
     ),
     linear-gradient(
-      125deg,
-      color-mix(in oklab, var(--brand-blurple) 52%, var(--console-panel)) 0%,
-      color-mix(in oklab, var(--brand-blurple) 22%, var(--console-panel)) 52%,
-      var(--console-raised) 100%
+      180deg,
+      color-mix(in oklab, var(--brand-blurple) 48%, var(--console-panel)) 0%,
+      color-mix(in oklab, var(--brand-blurple) 20%, var(--console-panel)) 46%,
+      var(--console-canvas) 94%
     );
-  box-shadow: inset 0 0 0 1px var(--shell-line);
 }
 /* Artwork from the company's best-known game. The vertical gradient hands it
    over to the page background and the horizontal one fades both edges, so the
