@@ -2,8 +2,10 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as Select from "@/components/ui/select";
 import {
   Check,
+  ChevronDown,
   CornerDownRight,
   Flag,
   Link2,
@@ -19,6 +21,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { reportReasonIcon } from "@/lib/report-reasons";
 import { VerifiedMark } from "@/components/verified-badge";
 import {
   commentErrorMessage,
@@ -701,35 +704,70 @@ export function ProfileComments({
             <form onSubmit={report}>
               <label>
                 {tri(lang, "Motivo", "Reason", "Motivo")}
-                <select
+                <Select.Root
                   value={reportReason}
-                  onChange={(event) => setReportReason(event.target.value)}
+                  onValueChange={setReportReason}
                 >
-                  <option value="HARASSMENT">
-                    {tri(lang, "Assédio", "Harassment", "Acoso")}
-                  </option>
-                  <option value="HATE_SPEECH">
-                    {tri(
-                      lang,
-                      "Discurso de ódio",
-                      "Hate speech",
-                      "Discurso de odio",
-                    )}
-                  </option>
-                  <option value="SPAM">Spam</option>
-                  <option value="CHILD_SAFETY">
-                    {tri(
-                      lang,
-                      "Segurança infantil",
-                      "Child safety",
-                      "Seguridad infantil",
-                    )}
-                  </option>
-                  <option value="PRIVACY">{t.privacy}</option>
-                  <option value="OTHER">
-                    {tri(lang, "Outro", "Other", "Otro")}
-                  </option>
-                </select>
+                  <Select.Trigger className="editor-select-trigger">
+                    <Select.Value />
+                    <Select.Icon>
+                      <ChevronDown size={14} />
+                    </Select.Icon>
+                  </Select.Trigger>
+                  <Select.Portal>
+                    <Select.Content
+                      className="editor-select-menu"
+                      position="popper"
+                      sideOffset={6}
+                      collisionPadding={12}
+                    >
+                      <Select.Viewport>
+                        {[
+                          [
+                            "HARASSMENT",
+                            tri(lang, "Assédio", "Harassment", "Acoso"),
+                          ],
+                          [
+                            "HATE_SPEECH",
+                            tri(
+                              lang,
+                              "Discurso de ódio",
+                              "Hate speech",
+                              "Discurso de odio",
+                            ),
+                          ],
+                          ["SPAM", "Spam"],
+                          [
+                            "CHILD_SAFETY",
+                            tri(
+                              lang,
+                              "Segurança infantil",
+                              "Child safety",
+                              "Seguridad infantil",
+                            ),
+                          ],
+                          ["PRIVACY", t.privacy],
+                          ["OTHER", tri(lang, "Outro", "Other", "Otro")],
+                        ].map(([value, label]) => {
+                          const Icon = reportReasonIcon(value);
+                          return (
+                            <Select.Item
+                              className="editor-select-option"
+                              value={value}
+                              key={value}
+                            >
+                              <Icon size={14} />
+                              <Select.ItemText>{label}</Select.ItemText>
+                              <Select.ItemIndicator>
+                                <Check size={13} />
+                              </Select.ItemIndicator>
+                            </Select.Item>
+                          );
+                        })}
+                      </Select.Viewport>
+                    </Select.Content>
+                  </Select.Portal>
+                </Select.Root>
               </label>
               <label>
                 {tri(

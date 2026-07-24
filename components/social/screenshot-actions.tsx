@@ -16,6 +16,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { reportReasonIcon } from "@/lib/report-reasons";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { CommunityTextArea } from "./comment-parts";
 import {
@@ -309,18 +310,22 @@ export function ScreenshotActions({
                             ),
                           ],
                           ["OTHER", tri(lang, "Outro", "Other", "Otro")],
-                        ].map(([value, label]) => (
-                          <Select.Item
-                            className="editor-select-option"
-                            value={value}
-                            key={value}
-                          >
-                            <Select.ItemText>{label}</Select.ItemText>
-                            <Select.ItemIndicator>
-                              <Check size={13} />
-                            </Select.ItemIndicator>
-                          </Select.Item>
-                        ))}
+                        ].map(([value, label]) => {
+                          const Icon = reportReasonIcon(value);
+                          return (
+                            <Select.Item
+                              className="editor-select-option"
+                              value={value}
+                              key={value}
+                            >
+                              <Icon size={14} />
+                              <Select.ItemText>{label}</Select.ItemText>
+                              <Select.ItemIndicator>
+                                <Check size={13} />
+                              </Select.ItemIndicator>
+                            </Select.Item>
+                          );
+                        })}
                       </Select.Viewport>
                     </Select.Content>
                   </Select.Portal>
