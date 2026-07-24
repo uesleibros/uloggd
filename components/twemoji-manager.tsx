@@ -60,6 +60,8 @@ function parseSafely(element: HTMLElement) {
 export function TwemojiManager() {
   useEffect(() => {
     let frame = 0;
+    let idle = 0;
+    let started = false;
     const pending = new Set<HTMLElement>();
 
     const observer = new MutationObserver((mutations) => {
@@ -93,14 +95,43 @@ export function TwemojiManager() {
       });
     });
 
-    parseSafely(document.body);
-    observer.observe(document.body, {
-      childList: true,
-      characterData: true,
-      subtree: true,
-    });
+    // Rewriting emoji into <img> before React has finished hydrating a subtree
+    // mutates DOM it is about to claim, and React 19 streams and hydrates
+    // concurrently — so the first paint of any page carrying server-rendered
+    // emoji raced this parse and threw hydration mismatches (#418). Waiting for
+    // load, then for the main thread to go idle, lets that hydration work drain
+    // first; the observer then keeps up with content added afterwards (client
+    // navigations, live updates), which React owns cleanly.
+    const start = () => {
+      if (started) return;
+      started = true;
+      parseSafely(document.body);
+      observer.observe(document.body, {
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
+    };
+
+    const schedule = () => {
+      idle =
+        typeof window.requestIdleCallback === "function"
+          ? window.requestIdleCallback(start, { timeout: 2000 })
+          : window.setTimeout(start, 200);
+    };
+    const cancelSchedule = () => {
+      if (!idle) return;
+      if (typeof window.cancelIdleCallback === "function")
+        window.cancelIdleCallback(idle);
+      else window.clearTimeout(idle);
+    };
+
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
 
     return () => {
+      window.removeEventListener("load", schedule);
+      cancelSchedule();
       observer.disconnect();
       if (frame) window.cancelAnimationFrame(frame);
       pending.clear();
