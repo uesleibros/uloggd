@@ -136,6 +136,7 @@ export function CommentArticle({
   body,
   editor,
   actions,
+  trunk = false,
 }: {
   id: string;
   deleted: boolean;
@@ -149,6 +150,8 @@ export function CommentArticle({
   body: string;
   editor?: ReactNode;
   actions?: ReactNode;
+  /** Draws the thread line that hangs off this comment's avatar to its replies. */
+  trunk?: boolean;
 }) {
   return (
     <article
@@ -156,6 +159,9 @@ export function CommentArticle({
       data-deleted={deleted || undefined}
       tabIndex={-1}
     >
+      {trunk && !deleted && (
+        <span className="profile-comment-trunk" aria-hidden />
+      )}
       {!deleted && (
         <CommentAvatar
           lang={lang}

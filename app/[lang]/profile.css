@@ -1379,19 +1379,22 @@
 .profile-comment-thread[data-has-replies] > article {
   position: relative;
 }
-.profile-comment-thread[data-has-replies] > article::after {
+/* Real element (not a pseudo) so it renders reliably inside the grid article.
+   Spans from inside the avatar down to the article's bottom edge, which is
+   exactly where the replies begin. The avatar (z-index above) hides the top,
+   so the line emerges from the photo's rounded base with no gap. */
+.profile-comment-trunk {
   position: absolute;
   top: 22px;
   bottom: 0;
   left: 16px;
   border-left: 1px solid var(--shell-line-strong);
-  content: "";
 }
 /* Deeper levels drop their indent to 0, so their trunk hugs the avatar's left
    edge to stay colinear with the reply rail there. */
-.profile-comment-thread[data-depth="1"][data-has-replies] > article::after,
-.profile-comment-thread[data-depth="2"][data-has-replies] > article::after,
-.profile-comment-thread[data-depth="3"][data-has-replies] > article::after {
+.profile-comment-thread[data-depth="1"] > article > .profile-comment-trunk,
+.profile-comment-thread[data-depth="2"] > article > .profile-comment-trunk,
+.profile-comment-thread[data-depth="3"] > article > .profile-comment-trunk {
   left: 0;
 }
 .profile-comment-thread[data-depth="1"] > .profile-comment-replies,

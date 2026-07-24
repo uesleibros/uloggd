@@ -369,6 +369,7 @@ export function ProfileComments({
       >
         <CommentArticle
           id={comment.public_id}
+          trunk={comment.replies.length > 0}
           deleted={deleted}
           lang={lang}
           username={comment.author.username}
