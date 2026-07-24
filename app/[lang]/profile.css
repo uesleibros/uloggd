@@ -1377,6 +1377,22 @@
   > .profile-comment-thread:has(> article[data-deleted]) {
   --thread-elbow: 20px;
 }
+/* Trunk: drops from under the replied-to avatar down to where its replies
+   begin, so the thread visibly hangs off that person's picture instead of
+   starting below it in empty space. It begins a few pixels inside the avatar
+   (which is opaque and clips its own overflow) and is colinear with the reply
+   rail, so the line reads as one continuous branch. */
+.profile-comment-thread:has(> .profile-comment-replies) > article {
+  position: relative;
+}
+.profile-comment-thread:has(> .profile-comment-replies) > article::after {
+  position: absolute;
+  top: 40px;
+  bottom: 0;
+  left: 15px;
+  border-left: 1px solid var(--shell-line-strong);
+  content: "";
+}
 .profile-comment-thread[data-depth="1"] > .profile-comment-replies,
 .profile-comment-thread[data-depth="2"] > .profile-comment-replies,
 .profile-comment-thread[data-depth="3"] > .profile-comment-replies {

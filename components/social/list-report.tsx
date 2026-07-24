@@ -80,24 +80,19 @@ export function ListReport({
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="drawer-backdrop" />
-        <Dialog.Content className="social-editor-dialog list-report-dialog">
+        <Dialog.Content
+          className="social-editor-dialog list-report-dialog"
+          aria-describedby={undefined}
+        >
           <header>
             <div>
-              <span>{tri(lang, "MODERAÇÃO", "MODERATION", "MODERACIÓN")}</span>
+              <span>{t.safety}</span>
               <Dialog.Title>
                 {tri(lang, "Denunciar lista", "Report list", "Denunciar lista")}
               </Dialog.Title>
-              <Dialog.Description>
-                {tri(
-                  lang,
-                  "A equipe de moderação vai analisar.",
-                  "The moderation team will review it.",
-                  "El equipo de moderación lo revisará.",
-                )}
-              </Dialog.Description>
             </div>
             <Dialog.Close aria-label={t.close}>
-              <X size={19} />
+              <X size={18} />
             </Dialog.Close>
           </header>
           {done ? (
