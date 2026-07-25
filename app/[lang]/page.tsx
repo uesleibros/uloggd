@@ -9,6 +9,7 @@ import {
   type Game,
 } from "@/lib/igdb";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getForYouGames, getRecentlyViewedGames } from "@/lib/history";
 import { resolveGameCover } from "@/lib/game-cover";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
@@ -125,9 +126,17 @@ async function HomeContent({ lang }: { lang: UiLang }) {
   const discoveryLanes = distributeUniqueLanes(discoveryCandidates, 8);
   // Saved-state is only rendered for on-screen games and the counts come
   // from head-only count queries, so a large library never ships extra rows.
-  const snapshot = user
-    ? await (async () => {
-        const supabase = await getSupabase();
+  const supabase = user ? await getSupabase() : null;
+  const [recentlyViewed, forYou] =
+    user && supabase
+      ? await Promise.all([
+          getRecentlyViewedGames(supabase, user.id, 12),
+          getForYouGames(supabase, user.id),
+        ])
+      : [[] as Game[], [] as Game[]];
+  const snapshot =
+    user && supabase
+      ? await (async () => {
         const [saved, library, playing, rated] = await Promise.all([
           supabase
             .from("user_games")
@@ -135,7 +144,11 @@ async function HomeContent({ lang }: { lang: UiLang }) {
               "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
             )
             .eq("profile_id", user.id)
-            .in("igdb_id", [...visibleGameIds]),
+            .in("igdb_id", [
+              ...visibleGameIds,
+              ...recentlyViewed.map((game) => game.id),
+              ...forYou.map((game) => game.id),
+            ]),
           supabase
             .from("user_games")
             .select("igdb_id", { count: "exact", head: true })
@@ -219,6 +232,67 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                 </a>
               </div>
             </div>
+          </section>
+        )}
+
+        {user && recentlyViewed.length > 0 && (
+          <section className="library-section">
+            <div className="section-heading">
+              <div>
+                <h2>
+                  {tri(
+                    lang,
+                    "Vistos recentemente",
+                    "Recently viewed",
+                    "Vistos recientemente",
+                  )}
+                </h2>
+              </div>
+            </div>
+            <ShelfCarousel
+              label={tri(
+                lang,
+                "Vistos recentemente",
+                "Recently viewed",
+                "Vistos recientemente",
+              )}
+              lang={lang}
+            >
+              {recentlyViewed.map((game) => (
+                <QuickGameCard
+                  key={game.id}
+                  game={game}
+                  initial={savedById.get(game.id) ?? null}
+                  lang={lang}
+                  enabled
+                />
+              ))}
+            </ShelfCarousel>
+          </section>
+        )}
+
+        {user && forYou.length > 0 && (
+          <section className="library-section">
+            <div className="section-heading">
+              <div>
+                <h2>{tri(lang, "Pra você", "For you", "Para ti")}</h2>
+              </div>
+            </div>
+            <ShelfCarousel
+              label={tri(lang, "Pra você", "For you", "Para ti")}
+              lang={lang}
+            >
+              {forYou.map((game) => (
+                <QuickGameCard
+                  key={game.id}
+                  game={game}
+                  initial={savedById.get(game.id) ?? null}
+                  lang={lang}
+                  enabled
+                  meta={game.rating ? `${game.rating}/100` : undefined}
+                />
+              ))}
+            </ShelfCarousel>
           </section>
         )}
 
