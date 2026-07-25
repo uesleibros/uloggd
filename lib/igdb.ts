@@ -1112,6 +1112,52 @@ export async function getGenreCollections(): Promise<GenreCollection[]> {
   return genres.map((genre, index) => ({ ...genre, games: games[index] }));
 }
 
+/**
+ * Genre-driven recommendations from what a viewer has been looking at. Reads the
+ * genre ids of their recent games, takes the most frequent ones, and returns the
+ * best-rated games in those genres, minus anything already seen or owned.
+ */
+export async function getForYouGames(
+  recentGameIds: number[],
+  excludeIds: number[] = [],
+): Promise<Game[]> {
+  if (process.env.ULOGGD_E2E === "1") return [];
+  const seed = [...new Set(recentGameIds)]
+    .filter((id) => Number.isInteger(id) && id > 0)
+    .slice(0, 30);
+  if (seed.length < 2) return [];
+
+  // `fields genres` (no .name) returns the genre ids, so they can be counted
+  // straight away.
+  const seeds = await queryGamesRaw(
+    `fields genres; where id = (${seed.join(",")}) & genres != null; limit ${seed.length};`,
+    30 * CACHE_MINUTES,
+  );
+  const counts = new Map<number, number>();
+  for (const row of seeds) {
+    for (const genreId of (row.genres as unknown as number[] | undefined) ?? [])
+      counts.set(genreId, (counts.get(genreId) ?? 0) + 1);
+  }
+  const topGenres = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([id]) => id);
+  if (!topGenres.length) return [];
+
+  const genreClause = topGenres.map((id) => `genres = (${id})`).join(" | ");
+  const games = await queryGames(
+    `
+    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.company.name;
+    where cover != null & (${genreClause}) & total_rating_count >= 30 & game_type = 0;
+    sort total_rating_count desc;
+    limit 40;
+  `,
+    30 * CACHE_MINUTES,
+  );
+  const exclude = new Set([...excludeIds, ...seed]);
+  return games.filter((game) => !exclude.has(game.id)).slice(0, 18);
+}
+
 type IgdbCompanyResponse = {
   id: number;
   name: string;
