@@ -43,9 +43,6 @@ export default async function ScreenshotGalleryPage({ params }: Props) {
   return (
     <main className="social-page screenshot-gallery-page">
       <header className="screenshot-gallery-header">
-        <span>
-          <Images size={16} /> {tri(lang, "GALERIA", "GALLERY", "GALERÍA")}
-        </span>
         <h1>
           {tri(
             lang,

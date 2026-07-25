@@ -55,12 +55,6 @@ export default async function ReviewsPage({
     <main className="social-page workspace-layout-page reviews-page">
       <WorkspaceHero
         profile={profile}
-        eyebrow={
-          <>
-            <BookOpen size={14} />{" "}
-            {tri(lang, "SEU HISTÓRICO", "YOUR HISTORY", "TU HISTORIAL")}
-          </>
-        }
         title={tri(
           lang,
           "Diário e avaliações",

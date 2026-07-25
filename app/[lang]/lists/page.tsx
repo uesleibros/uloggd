@@ -1,4 +1,4 @@
-import { Gamepad2, Globe2, Layers3, List } from "lucide-react";
+import { Gamepad2, Globe2, Layers3 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { CreateListForm } from "@/components/social/create-list-form";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
@@ -110,17 +110,6 @@ export default async function ListsPage({
     <main className="social-page lists-page workspace-layout-page">
       <WorkspaceHero
         profile={profile}
-        eyebrow={
-          <>
-            <List size={14} />{" "}
-            {tri(
-              lang,
-              "ORGANIZE DO SEU JEITO",
-              "ORGANIZE YOUR WAY",
-              "ORGANIZA A TU MANERA",
-            )}
-          </>
-        }
         title={t.lists}
         description={tri(
           lang,

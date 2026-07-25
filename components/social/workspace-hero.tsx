@@ -16,14 +16,12 @@ export type WorkspaceProfile = {
  */
 export function WorkspaceHero({
   profile,
-  eyebrow,
   title,
   description,
   stats,
   children,
 }: {
   profile: WorkspaceProfile;
-  eyebrow: ReactNode;
   title: string;
   description: string;
   stats: Array<{ icon: ReactNode; label: string; value: ReactNode }>;
@@ -57,7 +55,6 @@ export function WorkspaceHero({
           )}
         </div>
         <div className="workspace-hero-copy">
-          <span>{eyebrow}</span>
           <h1>{title}</h1>
           <p>{description}</p>
           {children}

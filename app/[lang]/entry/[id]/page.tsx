@@ -62,9 +62,6 @@ export default async function DiaryEntryPage({ params }: Props) {
     <main className="social-page diary-entry-page">
       <article className="diary-entry-post">
         <header>
-          <span>
-            {tri(lang, "SESSÃO DE JOGO", "PLAY SESSION", "SESIÓN DE JUEGO")}
-          </span>
           <h1>{game?.name ?? entry.game_slug}</h1>
           <Link href={`/${lang}/u/${profile.username}`}>
             {profile.display_name || `@${profile.username}`}
