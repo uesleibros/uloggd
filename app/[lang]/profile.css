@@ -1326,7 +1326,7 @@
    is a next sibling to reach. Every measure comes from these two variables, so
    the geometry cannot drift apart again. */
 .profile-comment-replies {
-  --thread-indent: 23px;
+  --thread-indent: 10px;
   --thread-elbow: 29px;
   position: relative;
   min-width: 0;
