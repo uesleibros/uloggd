@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 type RecordViewProps =
   | { type: "game"; gameIgdbId: number; gameSlug: string }
@@ -30,13 +29,18 @@ export function RecordView(props: RecordViewProps) {
     // The effect runs once per mount (stable deps), so a real visit records
     // exactly once and navigating back later records again.
     const timer = window.setTimeout(() => {
-      void createClient().rpc("record_content_view", {
-        p_type: type,
-        p_game_igdb_id: gameIgdbId,
-        p_game_slug: gameSlug,
-        p_profile_id: profileId,
-        p_list_id: listId,
-      });
+      void fetch("/api/history/record", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type,
+          gameIgdbId,
+          gameSlug,
+          profileId,
+          listId,
+        }),
+        keepalive: true,
+      }).catch(() => undefined);
     }, 700);
     return () => window.clearTimeout(timer);
   }, [type, ref, gameIgdbId, gameSlug, profileId, listId]);
