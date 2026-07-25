@@ -18,6 +18,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 import type { GameSearchResult } from "@/lib/igdb";
+import { createClient } from "@/lib/supabase/client";
 import { SpawndLogo } from "./spawnd-logo";
 import { VerifiedMark } from "./verified-badge";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -37,7 +38,6 @@ type SearchPayload = {
 
 const emptyPayload: SearchPayload = { results: [], users: [], lists: [] };
 const searchCache = new Map<string, SearchPayload>();
-const RECENT_SEARCHES_KEY = "uloggd:recent-games";
 
 function useGameSearch(cacheScope: string) {
   const [query, setQuery] = useState("");
@@ -408,59 +408,57 @@ function SearchSurface({
 
   useEffect(() => {
     const controller = new AbortController();
-    try {
-      const stored = JSON.parse(
-        localStorage.getItem(RECENT_SEARCHES_KEY) ?? "[]",
-      );
-      if (Array.isArray(stored)) {
-        const initial = (stored as GameSearchResult[]).slice(0, 6);
-        const timer = window.setTimeout(() => setRecent(initial), 0);
-        if (initial.length) {
-          void fetch(
-            `/api/igdb/search?ids=${initial.map((game) => game.id).join(",")}`,
-            {
-              signal: controller.signal,
-            },
-          )
-            .then((response) => (response.ok ? response.json() : null))
-            .then((payload: { results?: GameSearchResult[] } | null) => {
-              if (!payload?.results) return;
-              const refreshed = new Map(
-                payload.results.map((game) => [game.id, game]),
-              );
-              const next = initial.map(
-                (game) => refreshed.get(game.id) ?? game,
-              );
-              setRecent(next);
-              localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
-            })
-            .catch((error: Error) => {
-              if (error.name !== "AbortError") return;
-            });
-        }
-        return () => {
-          window.clearTimeout(timer);
-          controller.abort();
+    let active = true;
+    void (async () => {
+      // Recently viewed comes from the view history (record_content_view on the
+      // game pages), so it's the same list everywhere and follows the account
+      // across devices. RLS scopes the rows to the signed-in viewer already.
+      const { data } = await createClient()
+        .from("content_views")
+        .select("game_igdb_id")
+        .eq("content_type", "game")
+        .order("viewed_at", { ascending: false })
+        .limit(6);
+      const ids = (data ?? [])
+        .map((row) => row.game_igdb_id as number | null)
+        .filter((id): id is number => typeof id === "number");
+      if (!active || !ids.length) return;
+      try {
+        const response = await fetch(`/api/igdb/search?ids=${ids.join(",")}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+        const payload = (await response.json()) as {
+          results?: GameSearchResult[];
         };
+        const byId = new Map(
+          (payload.results ?? []).map((game) => [game.id, game]),
+        );
+        const ordered = ids
+          .map((id) => byId.get(id))
+          .filter((game): game is GameSearchResult => Boolean(game));
+        if (active) setRecent(ordered);
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") return;
       }
-    } catch {
-      localStorage.removeItem(RECENT_SEARCHES_KEY);
-    }
-    return () => controller.abort();
+    })();
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, []);
+  // Optimistic bump — opening the game records the real view server-side.
   const remember = useCallback((game: GameSearchResult) => {
-    setRecent((current) => {
-      const next = [
-        game,
-        ...current.filter((item) => item.id !== game.id),
-      ].slice(0, 6);
-      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
-      return next;
-    });
+    setRecent((current) =>
+      [game, ...current.filter((item) => item.id !== game.id)].slice(0, 6),
+    );
   }, []);
   const clearRecent = useCallback(() => {
-    localStorage.removeItem(RECENT_SEARCHES_KEY);
     setRecent([]);
+    void createClient()
+      .from("content_views")
+      .delete()
+      .eq("content_type", "game");
   }, []);
   useEffect(() => {
     if (mobile) window.setTimeout(() => inputRef.current?.focus(), 80);
