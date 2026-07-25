@@ -1916,18 +1916,6 @@
   .profile-blocked-notice {
     margin: -12px 4px 32px;
   }
-  .profile-comment-replies {
-    margin-left: 12px;
-    padding-left: 12px;
-  }
-  .profile-comment-thread[data-depth="1"] > .profile-comment-replies {
-    margin-left: 6px;
-    padding-left: 10px;
-  }
-  .profile-comment-thread[data-depth="2"] > .profile-comment-replies,
-  .profile-comment-thread[data-depth="3"] > .profile-comment-replies {
-    margin-left: 0;
-  }
   .profile-stats {
     display: flex;
     margin: 22px 4px 32px;
