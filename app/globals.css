@@ -7981,6 +7981,58 @@ catalog modules second. */
   transform: scale(0.98);
 }
 
+/* Link-based tabs (URL navigation, e.g. the reviews filter) reuse the standard
+   nav so they match the button-based ones; aria-current stands in for
+   aria-selected. */
+.game-page-nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 7px;
+  color: var(--screen-muted);
+  font-size: 12px;
+  font-weight: 520;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+.game-page-nav a[aria-current="page"],
+.game-page-nav a:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.game-page-nav a[aria-current="page"]::after {
+  position: absolute;
+  right: 10px;
+  bottom: -10px;
+  left: 10px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--brand-blurple-bright);
+  content: "";
+}
+/* Count badge inside a tab (e.g. the followers/following counts). */
+.game-page-nav-counted a span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 5px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.game-page-nav-counted a[aria-current="page"] span {
+  color: var(--screen-white);
+}
+
 .game-page-nav .spawnd-logo-mark {
   width: 11px;
   height: 15px;
@@ -9220,30 +9272,6 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
-}
-.social-filter-tabs {
-  display: flex;
-  gap: 4px;
-  margin: -12px 0 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--shell-line);
-}
-.social-filter-tabs a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 0 11px;
-  border-radius: 7px;
-  color: var(--screen-muted);
-  font-size: 11px;
-  font-weight: 550;
-}
-.social-filter-tabs a:hover {
-  color: var(--screen-white);
-}
-.social-filter-tabs a[aria-current="page"] {
-  background: var(--console-hover);
-  color: var(--screen-white);
 }
 .social-section-title h2 {
   color: var(--screen-white);
@@ -14301,12 +14329,6 @@ shareable IGDB search workspace. */
 }
 
 /* Profile statistics are compact navigation into complete public subpages. */
-
-.profile-subpage .social-filter-tabs a > span {
-  margin-left: 5px;
-  color: var(--screen-muted);
-  font-size: 10px;
-}
 
 @media (prefers-reduced-motion: reduce) {
   .smart-header {

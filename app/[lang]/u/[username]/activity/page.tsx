@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, CalendarDays, Star } from "lucide-react";
+import { ArrowLeft, CalendarDays, Layers3, Star } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityStream } from "@/components/social/activity-stream";
@@ -93,7 +93,7 @@ export default async function ProfileActivityPage({
         </span>
       </div>
       <nav
-        className="social-filter-tabs"
+        className="game-page-nav"
         aria-label={tri(
           lang,
           "Filtrar atividade",
@@ -102,10 +102,18 @@ export default async function ProfileActivityPage({
         )}
       >
         {[
-          ["all", tri(lang, "Tudo", "All", "Todo")],
-          ["review", t.reviews],
-          ["diary", t.sessions],
-        ].map(([value, label]) => (
+          {
+            value: "all",
+            label: tri(lang, "Tudo", "All", "Todo"),
+            icon: <Layers3 size={14} />,
+          },
+          { value: "review", label: t.reviews, icon: <Star size={14} /> },
+          {
+            value: "diary",
+            label: t.sessions,
+            icon: <CalendarDays size={14} />,
+          },
+        ].map(({ value, label, icon }) => (
           <Link
             key={value}
             href={
@@ -115,6 +123,7 @@ export default async function ProfileActivityPage({
             }
             aria-current={activeType === value ? "page" : undefined}
           >
+            {icon}
             {label}
           </Link>
         ))}

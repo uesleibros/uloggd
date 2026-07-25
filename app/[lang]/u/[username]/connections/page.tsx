@@ -87,7 +87,7 @@ export default async function ProfileConnectionsPage({
         </h1>
       </header>
       <nav
-        className="social-filter-tabs"
+        className="game-page-nav game-page-nav-counted"
         aria-label={tri(
           lang,
           "Filtrar conexões",
