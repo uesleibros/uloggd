@@ -16,6 +16,7 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense, type CSSProperties } from "react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { QuickGameCard } from "@/components/library/quick-game-card";
+import { RecordView } from "@/components/record-view";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { FollowButton } from "@/components/social/follow-button";
 import { VerifiedBadge } from "@/components/verified-badge";
@@ -472,6 +473,9 @@ export default async function ProfilePage({ params }: Props) {
       }
       data-has-banner={Boolean(profile.banner_url) || undefined}
     >
+      {user && user.id !== profile.id && (
+        <RecordView type="profile" profileId={profile.id} />
+      )}
       <div
         className="profile-banner"
         data-empty={!profile.banner_url || undefined}

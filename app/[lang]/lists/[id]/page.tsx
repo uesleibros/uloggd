@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
 import { LayoutGrid, Layers3, ListOrdered } from "lucide-react";
 import { LikeButton } from "@/components/social/like-button";
+import { RecordView } from "@/components/record-view";
 import { ShareButton } from "@/components/share-button";
 import { ListAddGame } from "@/components/social/list-add-game";
 import { ListItemsGrid } from "@/components/social/list-items-grid";
@@ -187,6 +188,7 @@ export default async function ListPage({ params }: Props) {
     const rankedCount = ((liveIds ?? []) as unknown[]).length;
     return (
       <main className="social-page">
+        {user && !isOwner && <RecordView type="list" listId={list.id} />}
         <header className="list-detail-header">
           <h1>{list.name}</h1>
           {list.description && <p>{list.description}</p>}
@@ -323,6 +325,7 @@ export default async function ListPage({ params }: Props) {
   const isRanked = Boolean(list.ranked);
   return (
     <main className="social-page">
+      {user && !isOwner && <RecordView type="list" listId={list.id} />}
       <header className="list-detail-header">
         <h1>{list.name}</h1>
         {list.description && <p>{list.description}</p>}

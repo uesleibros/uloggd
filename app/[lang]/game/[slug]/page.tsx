@@ -14,6 +14,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { GameExtendedContent } from "@/components/game-extended-content";
+import { RecordView } from "@/components/record-view";
 import { GameAgeGate } from "@/components/game-age-gate";
 import { GameMediaGallery } from "@/components/game-media-gallery";
 import { GamePageTabs } from "@/components/game-page-tabs";
@@ -265,6 +266,9 @@ export default async function GamePage({ params, searchParams }: Props) {
   });
   return (
     <main className="game-page">
+      {user && (
+        <RecordView type="game" gameIgdbId={game.id} gameSlug={game.slug} />
+      )}
       {/* VideoGame markup feeds the rich result: title, cover, publisher and the
           aggregate score a search engine would otherwise have to guess at. */}
       <script
