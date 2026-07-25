@@ -257,6 +257,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                 "Vistos recientemente",
               )}
               lang={lang}
+              className="home-popular-carousel"
             >
               {recentlyViewed.map((game) => (
                 <QuickGameCard
@@ -281,6 +282,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             <ShelfCarousel
               label={tri(lang, "Pra você", "For you", "Para ti")}
               lang={lang}
+              className="home-popular-carousel"
             >
               {forYou.map((game) => (
                 <QuickGameCard
