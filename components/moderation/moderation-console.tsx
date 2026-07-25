@@ -603,9 +603,6 @@ export function ModerationConsole({
           <ShieldCheck size={18} />
         </span>
         <div>
-          <small>
-            {tri(lang, "ÁREA INTERNA", "INTERNAL AREA", "ÁREA INTERNA")}
-          </small>
           <h1>
             {tri(
               lang,

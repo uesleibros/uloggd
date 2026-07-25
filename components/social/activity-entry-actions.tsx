@@ -149,7 +149,6 @@ export function ActivityEntryActions({
             >
               <header>
                 <div>
-                  <span>{tri(lang, "JORNADA", "JOURNEY", "RECORRIDO")}</span>
                   <Dialog.Title>
                     {tri(
                       lang,

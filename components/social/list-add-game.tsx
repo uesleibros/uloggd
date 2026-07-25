@@ -114,7 +114,6 @@ export function ListAddGame({
         >
           <header>
             <div>
-              <span>{tri(lang, "CATÁLOGO", "CATALOG", "CATÁLOGO")}</span>
               <Dialog.Title>
                 {tri(
                   lang,

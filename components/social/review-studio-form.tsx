@@ -260,9 +260,6 @@ export function ReviewStudioForm({
           <section className="review-score-stage">
             <header>
               <div>
-                <small>
-                  {tri(lang, "SEU JULGAMENTO", "YOUR VERDICT", "TU VALORACIÓN")}
-                </small>
                 <h3>
                   {tri(
                     lang,

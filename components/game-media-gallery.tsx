@@ -22,7 +22,6 @@ export function GameMediaGallery({
     <section className="game-section game-gallery-section">
       <header className="game-section-heading">
         <div>
-          <span>{tri(lang, "IMAGENS", "IMAGES", "IMÁGENES")}</span>
           <h2>{tri(lang, "Galeria", "Gallery", "Galería")}</h2>
         </div>
         <small>{items.length}</small>

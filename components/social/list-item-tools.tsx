@@ -144,9 +144,6 @@ export function ListItemTools({
           >
             <header>
               <div>
-                <span>
-                  {tri(lang, "NOTA DO ITEM", "ITEM NOTE", "NOTA DEL ELEMENTO")}
-                </span>
                 <Dialog.Title>
                   {tri(
                     lang,

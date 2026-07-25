@@ -81,7 +81,6 @@ export function AppearanceSettings({ lang }: { lang: UiLang }) {
   return (
     <section className="appearance-settings" aria-labelledby="appearance-title">
       <header>
-        <span>{tri(lang, "INTERFACE", "INTERFACE", "INTERFAZ")}</span>
         <h2 id="appearance-title">
           {tri(lang, "Tema do uloggd", "uloggd theme", "Tema de uloggd")}
         </h2>

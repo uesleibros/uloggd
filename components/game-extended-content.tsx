@@ -67,9 +67,6 @@ export function GameExtendedContent({
         <section className="game-section">
           <header className="game-section-heading">
             <div>
-              <span>
-                {tri(lang, "ATUALIZAÇÕES", "UPDATES", "ACTUALIZACIONES")}
-              </span>
               <h2>
                 {tri(
                   lang,

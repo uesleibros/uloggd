@@ -1116,7 +1116,6 @@ export function CatalogSearchWorkspace({
           <section className="catalog-results-panel" aria-busy={pending}>
             <header className="catalog-results-heading">
               <div className="catalog-results-heading-copy">
-                <span>{tri(lang, "RESULTADOS", "RESULTS", "RESULTADOS")}</span>
                 <h2>
                   {filters.query
                     ? pt

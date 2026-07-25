@@ -429,9 +429,6 @@ export default async function GamePage({ params, searchParams }: Props) {
             <div className="game-wide-content">
               <section className="game-summary game-surface">
                 <header className="game-panel-heading">
-                  <span>
-                    {tri(lang, "VISÃO GERAL", "OVERVIEW", "VISIÓN GENERAL")}
-                  </span>
                   <h2>
                     {tri(
                       lang,
@@ -453,9 +450,6 @@ export default async function GamePage({ params, searchParams }: Props) {
               </section>
               <section className="game-details-panel game-surface">
                 <header className="game-panel-heading">
-                  <span>
-                    {tri(lang, "INFORMAÇÕES", "INFORMATION", "INFORMACIÓN")}
-                  </span>
                   <h2>{tri(lang, "Detalhes", "Details", "Detalles")}</h2>
                 </header>
                 <dl className="game-details">
@@ -555,9 +549,6 @@ export default async function GamePage({ params, searchParams }: Props) {
               {game.languages.length > 0 && (
                 <section className="game-languages-panel game-surface">
                   <header className="game-panel-heading">
-                    <span>
-                      {tri(lang, "LOCALIZAÇÃO", "LOCALIZATION", "LOCALIZACIÓN")}
-                    </span>
                     <h2>
                       {tri(
                         lang,
@@ -753,7 +744,6 @@ export default async function GamePage({ params, searchParams }: Props) {
               {similarGames.length > 0 && (
                 <section className="game-similar-rail game-surface">
                   <header>
-                    <span>{tri(lang, "DESCUBRA", "DISCOVER", "DESCUBRE")}</span>
                     <h2>
                       {tri(
                         lang,

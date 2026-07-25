@@ -164,9 +164,6 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
         <Dialog.Content className="create-list-dialog">
           <header>
             <div>
-              <span>
-                {tri(lang, "NOVA COLEÇÃO", "NEW COLLECTION", "NUEVA COLECCIÓN")}
-              </span>
               <Dialog.Title>
                 {tri(lang, "Criar lista", "Create list", "Crear lista")}
               </Dialog.Title>

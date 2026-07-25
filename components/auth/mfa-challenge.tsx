@@ -81,7 +81,6 @@ export function MfaChallenge({ lang }: { lang: UiLang }) {
       <div className="mfa-challenge-mark">
         <ShieldCheck size={28} />
       </div>
-      <span>{tri(lang, "SEGUNDA ETAPA", "SECOND STEP", "SEGUNDO PASO")}</span>
       <h1>
         {tri(
           lang,

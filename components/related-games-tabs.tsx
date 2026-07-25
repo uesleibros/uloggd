@@ -56,9 +56,6 @@ export function RelatedGamesTabs({
     <section className="game-section game-related-section" id="related">
       <header className="game-section-heading">
         <div>
-          <span>
-            {tri(lang, "MAIS DO JOGO", "MORE FROM THE GAME", "MÁS DEL JUEGO")}
-          </span>
           <h2>
             {tri(
               lang,
