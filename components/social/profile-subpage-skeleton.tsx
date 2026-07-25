@@ -11,7 +11,6 @@ export function ProfileSubpageSkeleton({
     >
       <span className="skeleton-block skeleton-back" />
       <div className="skeleton-block skeleton-title" />
-      <div className="skeleton-block skeleton-subtitle" />
       {variant === "grid" ? (
         <div className="skeleton-card-grid">
           {Array.from({ length: 6 }, (_, index) => (

@@ -17682,8 +17682,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-cover img {
   display: block;
-  width: 54px;
-  height: 72px;
+  width: 84px;
+  height: 112px;
   object-fit: cover;
 }
 .tierlist-board[data-compact] .tierlist-cover img {
@@ -17691,7 +17691,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   height: 45px;
 }
 .tierlist-row-empty {
-  min-height: 72px;
+  min-height: 112px;
 }
 .tierlist-board-empty,
 .tierlist-pool-empty {
@@ -18009,8 +18009,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-ghost-cover img {
   display: block;
-  width: 54px;
-  height: 72px;
+  width: 84px;
+  height: 112px;
   object-fit: cover;
 }
 .tierlist-ghost-tier {

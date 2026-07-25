@@ -59,8 +59,8 @@ export function TierlistBoard({
                       fallbackSrc={game.fallbackUrl}
                       alt={game.name}
                       title={game.name}
-                      width={compact ? 34 : 54}
-                      height={compact ? 45 : 72}
+                      width={compact ? 34 : 84}
+                      height={compact ? 45 : 112}
                       unoptimized
                     />
                   );
@@ -115,7 +115,7 @@ export function TierlistSkeleton() {
               <span
                 className="tierlist-cover skeleton-block"
                 key={index}
-                style={{ width: "54px", height: "72px" }}
+                style={{ width: "84px", height: "112px" }}
               />
             ))}
           </div>

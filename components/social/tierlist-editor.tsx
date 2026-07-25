@@ -438,8 +438,8 @@ export function TierlistEditor({
               src={draggedGame.coverUrl}
               fallbackSrc={draggedGame.fallbackUrl}
               alt=""
-              width={54}
-              height={72}
+              width={84}
+              height={112}
               unoptimized
               draggable={false}
             />
@@ -580,8 +580,8 @@ export function TierlistEditor({
                         fallbackSrc={game.fallbackUrl}
                         alt={game.name}
                         title={game.name}
-                        width={54}
-                        height={72}
+                        width={84}
+                        height={112}
                         unoptimized
                         draggable={false}
                       />
@@ -678,8 +678,8 @@ export function TierlistEditor({
                 fallbackSrc={game.fallbackUrl}
                 alt={game.name}
                 title={game.name}
-                width={54}
-                height={72}
+                width={84}
+                height={112}
                 unoptimized
                 draggable={false}
               />
