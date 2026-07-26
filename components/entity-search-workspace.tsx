@@ -1,35 +1,16 @@
 import Link from "next/link";
-import {
-  Building2,
-  CalendarDays,
-  Layers3,
-  Search,
-  SearchX,
-  Users,
-} from "lucide-react";
+import { Building2, CalendarDays, Search, SearchX } from "lucide-react";
 import { SafeImage } from "@/components/safe-image";
-import { VerifiedMark } from "@/components/verified-badge";
+import {
+  ConnectionCard,
+  type ConnectionPerson,
+} from "@/components/social/connection-card";
+import { ListPreviewCard } from "@/components/social/list-preview-card";
 import type { CompanySearchResult } from "@/lib/igdb";
+import type { ListPreview } from "@/lib/lists-types";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { SearchEntityPagination } from "./search-entity-pagination";
 import { SearchScopeTabs, type SearchScope } from "./search-scope-tabs";
-
-export type EntityListResult = {
-  publicId: string;
-  name: string;
-  description: string | null;
-  owner: string | null;
-  itemCount: number;
-  updatedAt: string;
-};
-
-export type PersonSearchResult = {
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-  bio: string | null;
-  verified: boolean;
-};
 
 type FilterOption = { value: string; label: string };
 
@@ -78,8 +59,8 @@ export function EntitySearchWorkspace({
   page: number;
   total: number;
   totalPages: number;
-  lists?: EntityListResult[];
-  people?: PersonSearchResult[];
+  lists?: ListPreview[];
+  people?: ConnectionPerson[];
   companies?: CompanySearchResult[];
 }) {
   const tierlists = scope === "tierlists";
@@ -385,53 +366,27 @@ export function EntitySearchWorkspace({
           </div>
         </header>
         {hasResults ? (
-          <div className="entity-search-grid">
+          <div
+            className={
+              lists.length
+                ? "lists-row"
+                : people.length
+                  ? "profile-connections-grid"
+                  : "entity-search-grid"
+            }
+          >
             {lists.map((list) => (
-              <Link
-                className="entity-result-card"
-                href={`/${lang}/lists/${list.publicId}`}
-                key={list.publicId}
-              >
-                <span className="entity-result-mark">
-                  <Layers3 size={22} />
-                </span>
-                <span className="entity-result-copy">
-                  <strong>{list.name}</strong>
-                  <small>
-                    {list.owner ? `@${list.owner} · ` : ""}
-                    {list.itemCount} {tri(lang, "jogos", "games", "juegos")}
-                  </small>
-                  {list.description && <p>{list.description}</p>}
-                </span>
-              </Link>
+              <ListPreviewCard
+                key={list.id}
+                list={list}
+                covers={list.covers}
+                tierRows={list.tierRows}
+                likes={list.likes}
+                lang={lang}
+              />
             ))}
             {people.map((person) => (
-              <Link
-                className="entity-result-card"
-                href={`/${lang}/u/${person.username}`}
-                key={person.username}
-              >
-                <span className="entity-result-mark entity-result-avatar">
-                  {person.avatarUrl ? (
-                    <SafeImage
-                      src={person.avatarUrl}
-                      alt=""
-                      fill
-                      sizes="56px"
-                    />
-                  ) : (
-                    <Users size={22} />
-                  )}
-                </span>
-                <span className="entity-result-copy">
-                  <strong>
-                    {person.displayName || `@${person.username}`}
-                    {person.verified && <VerifiedMark size={14} />}
-                  </strong>
-                  <small>@{person.username}</small>
-                  {person.bio && <p>{person.bio}</p>}
-                </span>
-              </Link>
+              <ConnectionCard key={person.id} person={person} lang={lang} />
             ))}
             {companies.map((company) => (
               <Link

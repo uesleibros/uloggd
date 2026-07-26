@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CatalogSearchWorkspace } from "@/components/catalog-search-workspace";
-import {
-  EntitySearchWorkspace,
-  type EntityListResult,
-  type PersonSearchResult,
-} from "@/components/entity-search-workspace";
+import { EntitySearchWorkspace } from "@/components/entity-search-workspace";
+import type { ConnectionPerson } from "@/components/social/connection-card";
 import {
   SearchScopeTabs,
   type SearchScope,
@@ -13,12 +10,16 @@ import {
 import {
   getCatalogSearchOptions,
   getCatalogPublisherOptions,
+  getGamesByIds,
   searchCatalogGames,
   searchCompanies,
   type CatalogSearchFilters,
 } from "@/lib/igdb";
+import { resolveGameCover } from "@/lib/game-cover";
+import type { ListPreview } from "@/lib/lists-types";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getSpawndGame } from "@/lib/spawnd";
+import { getTierlistPreview } from "@/lib/tierlists";
 import { localeAlternates } from "@/lib/seo";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../dictionaries";
@@ -167,7 +168,7 @@ export default async function SearchPage({
           : "relevance";
       let request = supabase
         .from("profiles")
-        .select("username,display_name,avatar_url,bio,verified", {
+        .select("id,username,display_name,avatar_url,bio,verified", {
           count: "exact",
         })
         .not("username", "is", null);
@@ -188,10 +189,11 @@ export default async function SearchPage({
         (entityPage - 1) * 24,
         entityPage * 24 - 1,
       );
-      const people: PersonSearchResult[] = (data ?? []).map((person) => ({
+      const people: ConnectionPerson[] = (data ?? []).map((person) => ({
+        id: person.id,
         username: String(person.username),
-        displayName: person.display_name,
-        avatarUrl: person.avatar_url,
+        display_name: person.display_name,
+        avatar_url: person.avatar_url,
         bio: person.bio,
         verified: Boolean(person.verified),
       }));
@@ -218,7 +220,7 @@ export default async function SearchPage({
     let request = supabase
       .from("game_lists")
       .select(
-        "public_id,name,description,kind,ranked,updated_at,owner:profiles!game_lists_profile_id_fkey(username),game_list_items(count)",
+        "id,public_id,name,description,kind,ranked,updated_at,game_list_items(count)",
         { count: "exact" },
       )
       .eq("visibility", "PUBLIC");
@@ -237,20 +239,94 @@ export default async function SearchPage({
       (entityPage - 1) * 24,
       entityPage * 24 - 1,
     );
-    const lists: EntityListResult[] = (data ?? []).map((list) => {
-      const owner = Array.isArray(list.owner) ? list.owner[0] : list.owner;
-      const itemCount = Array.isArray(list.game_list_items)
-        ? Number(list.game_list_items[0]?.count ?? 0)
-        : 0;
-      return {
-        publicId: list.public_id,
-        name: list.name,
-        description: list.description,
-        owner: owner?.username ?? null,
-        itemCount,
-        updatedAt: list.updated_at,
-      };
+    const rows = data ?? [];
+    const listIds = rows.map((list) => list.id);
+    const compactItems = listIds.length
+      ? await supabase.rpc("get_list_preview_items", {
+          target_lists: listIds,
+          items_per_list: 5,
+        })
+      : { data: [], error: null };
+    const fallbackItems = compactItems.error
+      ? await supabase
+          .from("game_list_items")
+          .select("list_id,igdb_id,position")
+          .in("list_id", listIds)
+          .order("position", { ascending: true })
+      : null;
+    const previewItems = (
+      compactItems.error
+        ? (fallbackItems?.data ?? [])
+        : (compactItems.data ?? [])
+    ) as {
+      list_id: string;
+      igdb_id: number;
+      item_count?: number;
+    }[];
+    const itemsByList = new Map<string, typeof previewItems>();
+    previewItems.forEach((item) => {
+      const items = itemsByList.get(item.list_id) ?? [];
+      items.push(item);
+      itemsByList.set(item.list_id, items);
     });
+    const coverIds = [...new Set(previewItems.map((item) => item.igdb_id))];
+    const [coverGames, likesResult] = await Promise.all([
+      getGamesByIds(coverIds),
+      listIds.length
+        ? supabase.rpc("get_content_likes", {
+            target_type: "list",
+            target_ids: listIds,
+          })
+        : Promise.resolve({ data: [] }),
+    ]);
+    const gamesById = new Map(coverGames.map((game) => [game.id, game]));
+    const likesById = new Map(
+      (
+        (likesResult.data ?? []) as {
+          content_id: string;
+          like_count: number;
+        }[]
+      ).map((item) => [item.content_id, Number(item.like_count)]),
+    );
+    const lists: ListPreview[] = await Promise.all(
+      rows.map(async (list) => {
+        const items = itemsByList.get(list.id) ?? [];
+        const tier =
+          list.kind === "TIERLIST"
+            ? await getTierlistPreview(supabase, list.id)
+            : null;
+        return {
+          id: list.id,
+          publicId: list.public_id,
+          name: list.name,
+          description: list.description,
+          visibility: "PUBLIC" as const,
+          ranked: Boolean(list.ranked),
+          kind:
+            list.kind === "TIERLIST"
+              ? ("TIERLIST" as const)
+              : ("COLLECTION" as const),
+          count: tier?.count ?? Number(items[0]?.item_count ?? items.length),
+          covers: tier
+            ? []
+            : items.flatMap((item) => {
+                const game = gamesById.get(item.igdb_id);
+                return game
+                  ? [
+                      {
+                        url: resolveGameCover(game.coverUrl),
+                        fallbackUrl: game.coverUrl,
+                        name: game.name,
+                      },
+                    ]
+                  : [];
+              }),
+          tierRows: tier?.rows,
+          likes: likesById.get(list.id) ?? 0,
+          updatedAt: list.updated_at,
+        };
+      }),
+    );
     const total = count ?? 0;
     return (
       <EntitySearchWorkspace

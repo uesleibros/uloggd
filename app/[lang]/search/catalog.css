@@ -1336,15 +1336,9 @@
   background: var(--console-raised);
   color: var(--screen-muted);
 }
-.entity-result-avatar {
-  border-radius: 50%;
-}
 .entity-result-company img {
   object-fit: contain;
   padding: 5px;
-}
-.entity-result-avatar img {
-  object-fit: cover;
 }
 .entity-result-copy {
   display: block;
