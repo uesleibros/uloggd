@@ -19,7 +19,6 @@ export type { ListPreview };
 // `ranked` arrives with the ranked_lists migration. Until that runs every list
 // is a collection, so the queries below drop the column instead of failing.
 const LIST_COLUMNS = "id,public_id,name,description,visibility,kind,updated_at";
-const LIST_ITEMS = "game_list_items(igdb_id,position)";
 
 type PreviewOptions = ListFilters & {
   ownerId: string;
@@ -46,11 +45,7 @@ export async function getListPreviews(
   const build = (withRanked: boolean) => {
     let query = supabase
       .from("game_lists")
-      .select(
-        withRanked
-          ? `${LIST_COLUMNS},ranked,${LIST_ITEMS}`
-          : `${LIST_COLUMNS},${LIST_ITEMS}`,
-      )
+      .select(withRanked ? `${LIST_COLUMNS},ranked` : LIST_COLUMNS)
       .eq("profile_id", options.ownerId);
     if (options.publicOnly) query = query.eq("visibility", "PUBLIC");
     else if (visibility !== "ALL") query = query.eq("visibility", visibility);
@@ -82,7 +77,6 @@ export async function getListPreviews(
     ranked?: boolean | null;
     kind?: string | null;
     updated_at: string;
-    game_list_items: { igdb_id: number; position: number }[];
   };
   const first = (await build(true)) as {
     data: ListRow[] | null;
@@ -98,9 +92,37 @@ export async function getListPreviews(
   }
   if (!lists?.length) return [];
 
-  const itemsByList = lists.map((list) =>
-    [...list.game_list_items].sort((a, b) => a.position - b.position),
-  );
+  type PreviewItemRow = {
+    list_id: string;
+    igdb_id: number;
+    item_position?: number;
+    position?: number;
+    item_count: number;
+  };
+  const listIds = lists.map((list) => list.id);
+  const compactItems = await supabase.rpc("get_list_preview_items", {
+    target_lists: listIds,
+    items_per_list: 5,
+  });
+  // Keep the application deploy-safe if code reaches an environment a few
+  // seconds before its migration. The fallback is correct, only less compact.
+  const fallbackItems = compactItems.error
+    ? await supabase
+        .from("game_list_items")
+        .select("list_id,igdb_id,position")
+        .in("list_id", listIds)
+        .order("position", { ascending: true })
+    : null;
+  const previewRows = (
+    compactItems.error ? (fallbackItems?.data ?? []) : (compactItems.data ?? [])
+  ) as PreviewItemRow[];
+  const rowsByList = new Map<string, PreviewItemRow[]>();
+  for (const item of previewRows) {
+    const bucket = rowsByList.get(item.list_id);
+    if (bucket) bucket.push(item);
+    else rowsByList.set(item.list_id, [item]);
+  }
+  const itemsByList = lists.map((list) => rowsByList.get(list.id) ?? []);
   const coverIds = [
     ...new Set(
       itemsByList.flatMap((items) => items.slice(0, 5).map((i) => i.igdb_id)),
@@ -153,7 +175,7 @@ export async function getListPreviews(
       visibility: list.visibility as ListPreview["visibility"],
       ranked: Boolean(list.ranked),
       kind: list.kind === "TIERLIST" ? "TIERLIST" : "COLLECTION",
-      count: items.length,
+      count: Number(items[0]?.item_count ?? items.length),
       covers: items.slice(0, 5).flatMap((item) => {
         const game = gamesById.get(item.igdb_id);
         return game

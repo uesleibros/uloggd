@@ -46,6 +46,19 @@ export async function getActivity(
   // "no filter" — without this the feed would show the whole platform.
   if (options.profileIds && !options.profileIds.length) return [];
   const limit = options.limit ?? 30;
+  const viewerIdPromise =
+    options.viewerId === undefined
+      ? getAuthUser().then((user) => user?.id ?? null)
+      : Promise.resolve(options.viewerId);
+  const viewerPreferencePromise = viewerIdPromise.then(async (viewerId) => {
+    if (!viewerId) return null;
+    const { data } = await supabase
+      .from("profiles")
+      .select("custom_cover_scope")
+      .eq("id", viewerId)
+      .maybeSingle();
+    return data;
+  });
   let reviewsQuery = supabase
     .from("reviews")
     .select(
@@ -101,15 +114,56 @@ export async function getActivity(
         .filter((id): id is string => Boolean(id)),
     ),
   ];
-  const { data: journeySessionRows } = reviewJourneyIds.length
-    ? await supabase
-        .from("diary_entries")
-        .select(
-          "id,journey_id,played_on,ended_on,minutes,note,marks_start,marks_finish",
+  const reviewIds = (reviews ?? []).map((row) => row.id);
+  const diaryIds = (diary ?? []).map((row) => row.id);
+  const screenshotIds = (screenshots ?? []).map((row) => row.id);
+  const [
+    { data: journeySessionRows },
+    games,
+    viewerId,
+    viewerPreference,
+    reviewLikes,
+    diaryLikes,
+    screenshotLikes,
+    signedScreenshots,
+  ] = await Promise.all([
+    reviewJourneyIds.length
+      ? supabase
+          .from("diary_entries")
+          .select(
+            "id,journey_id,played_on,ended_on,minutes,note,marks_start,marks_finish",
+          )
+          .in("journey_id", reviewJourneyIds)
+          .order("played_on", { ascending: true })
+      : Promise.resolve({ data: [] }),
+    getGamesByIds(rows.map((row) => row.igdb_id)),
+    viewerIdPromise,
+    viewerPreferencePromise,
+    reviewIds.length
+      ? supabase.rpc("get_content_likes", {
+          target_type: "review",
+          target_ids: reviewIds,
+        })
+      : Promise.resolve({ data: [] }),
+    diaryIds.length
+      ? supabase.rpc("get_content_likes", {
+          target_type: "diary",
+          target_ids: diaryIds,
+        })
+      : Promise.resolve({ data: [] }),
+    screenshotIds.length
+      ? supabase.rpc("get_content_likes", {
+          target_type: "screenshot",
+          target_ids: screenshotIds,
+        })
+      : Promise.resolve({ data: [] }),
+    screenshots?.length
+      ? supabase.storage.from("screenshots").createSignedUrls(
+          screenshots.map((item) => item.storage_path),
+          3600,
         )
-        .in("journey_id", reviewJourneyIds)
-        .order("played_on", { ascending: true })
-    : { data: [] };
+      : Promise.resolve({ data: [] }),
+  ]);
   const sessionsByJourney = new Map<string, SocialEntry["journeySessions"]>();
   for (const session of journeySessionRows ?? []) {
     if (!session.journey_id) continue;
@@ -125,18 +179,6 @@ export async function getActivity(
     });
     sessionsByJourney.set(session.journey_id, current);
   }
-  const games = await getGamesByIds(rows.map((row) => row.igdb_id));
-  const viewerId =
-    options.viewerId === undefined
-      ? (await getAuthUser())?.id
-      : options.viewerId;
-  const { data: viewerPreference } = viewerId
-    ? await supabase
-        .from("profiles")
-        .select("custom_cover_scope")
-        .eq("id", viewerId)
-        .maybeSingle()
-    : { data: null };
   const coverProfileIds =
     viewerPreference?.custom_cover_scope === "EVERYONE"
       ? [...new Set(rows.map((row) => row.profile_id))]
@@ -161,36 +203,6 @@ export async function getActivity(
     ]),
   );
   const baseGamesById = new Map(games.map((game) => [game.id, game]));
-  const reviewIds = (reviews ?? []).map((row) => row.id);
-  const diaryIds = (diary ?? []).map((row) => row.id);
-  const screenshotIds = (screenshots ?? []).map((row) => row.id);
-  const [reviewLikes, diaryLikes, screenshotLikes, signedScreenshots] =
-    await Promise.all([
-      reviewIds.length
-        ? supabase.rpc("get_content_likes", {
-            target_type: "review",
-            target_ids: reviewIds,
-          })
-        : { data: [] },
-      diaryIds.length
-        ? supabase.rpc("get_content_likes", {
-            target_type: "diary",
-            target_ids: diaryIds,
-          })
-        : { data: [] },
-      screenshotIds.length
-        ? supabase.rpc("get_content_likes", {
-            target_type: "screenshot",
-            target_ids: screenshotIds,
-          })
-        : { data: [] },
-      screenshots?.length
-        ? supabase.storage.from("screenshots").createSignedUrls(
-            screenshots.map((item) => item.storage_path),
-            3600,
-          )
-        : { data: [] },
-    ]);
   const screenshotUrlByPath = new Map(
     (signedScreenshots.data ?? []).map((item) => [item.path, item.signedUrl]),
   );

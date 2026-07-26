@@ -9,7 +9,7 @@ import {
   type Game,
 } from "@/lib/igdb";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
-import { getForYouGames, getRecentlyViewedGames } from "@/lib/history";
+import { getHomePersonalization } from "@/lib/history";
 import { resolveGameCover } from "@/lib/game-cover";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
@@ -127,51 +127,48 @@ async function HomeContent({ lang }: { lang: UiLang }) {
   // Saved-state is only rendered for on-screen games and the counts come
   // from head-only count queries, so a large library never ships extra rows.
   const supabase = user ? await getSupabase() : null;
-  const [recentlyViewed, forYou] =
+  const { recentlyViewed, forYou } =
     user && supabase
-      ? await Promise.all([
-          getRecentlyViewedGames(supabase, user.id, 12),
-          getForYouGames(supabase, user.id),
-        ])
-      : [[] as Game[], [] as Game[]];
+      ? await getHomePersonalization(supabase, user.id)
+      : { recentlyViewed: [] as Game[], forYou: [] as Game[] };
   const snapshot =
     user && supabase
       ? await (async () => {
-        const [saved, library, playing, rated] = await Promise.all([
-          supabase
-            .from("user_games")
-            .select(
-              "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-            )
-            .eq("profile_id", user.id)
-            .in("igdb_id", [
-              ...visibleGameIds,
-              ...recentlyViewed.map((game) => game.id),
-              ...forYou.map((game) => game.id),
-            ]),
-          supabase
-            .from("user_games")
-            .select("igdb_id", { count: "exact", head: true })
-            .eq("profile_id", user.id),
-          supabase
-            .from("user_games")
-            .select("igdb_id", { count: "exact", head: true })
-            .eq("profile_id", user.id)
-            .or("playing.eq.true,status.eq.PLAYING"),
-          supabase
-            .from("user_games")
-            .select("igdb_id", { count: "exact", head: true })
-            .eq("profile_id", user.id)
-            .not("quick_rating", "is", null),
-        ]);
-        return {
-          savedGames: saved.data ?? [],
-          libraryCount: library.count ?? 0,
-          playingCount: playing.count ?? 0,
-          ratedCount: rated.count ?? 0,
-        };
-      })()
-    : null;
+          const [saved, library, playing, rated] = await Promise.all([
+            supabase
+              .from("user_games")
+              .select(
+                "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
+              )
+              .eq("profile_id", user.id)
+              .in("igdb_id", [
+                ...visibleGameIds,
+                ...recentlyViewed.map((game) => game.id),
+                ...forYou.map((game) => game.id),
+              ]),
+            supabase
+              .from("user_games")
+              .select("igdb_id", { count: "exact", head: true })
+              .eq("profile_id", user.id),
+            supabase
+              .from("user_games")
+              .select("igdb_id", { count: "exact", head: true })
+              .eq("profile_id", user.id)
+              .or("playing.eq.true,status.eq.PLAYING"),
+            supabase
+              .from("user_games")
+              .select("igdb_id", { count: "exact", head: true })
+              .eq("profile_id", user.id)
+              .not("quick_rating", "is", null),
+          ]);
+          return {
+            savedGames: saved.data ?? [],
+            libraryCount: library.count ?? 0,
+            playingCount: playing.count ?? 0,
+            ratedCount: rated.count ?? 0,
+          };
+        })()
+      : null;
   const savedById = new Map(
     (snapshot?.savedGames ?? []).map((item) => [item.igdb_id, item]),
   );

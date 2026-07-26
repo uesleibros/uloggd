@@ -414,12 +414,23 @@ export default async function ProfilePage({ params }: Props) {
     ProfileComment,
     "author" | "like_count" | "liked_by_viewer"
   >[];
-  const { data: commentLikes } = commentRows.length
-    ? await supabase.rpc("get_content_likes", {
-        target_type: "profile_comment",
-        target_ids: commentRows.map((comment) => comment.id),
-      })
-    : { data: [] };
+  const commentAuthorIds = [
+    ...new Set(commentRows.map((comment) => comment.author_id)),
+  ];
+  const [{ data: commentLikes }, { data: commentAuthors }] = await Promise.all([
+    commentRows.length
+      ? supabase.rpc("get_content_likes", {
+          target_type: "profile_comment",
+          target_ids: commentRows.map((comment) => comment.id),
+        })
+      : Promise.resolve({ data: [] }),
+    commentAuthorIds.length
+      ? supabase
+          .from("profiles")
+          .select("id,username,display_name,avatar_url,verified")
+          .in("id", commentAuthorIds)
+      : Promise.resolve({ data: [] }),
+  ]);
   const commentLikesById = new Map<
     string,
     { like_count: number; liked_by_viewer: boolean }
@@ -438,15 +449,6 @@ export default async function ProfilePage({ params }: Props) {
       },
     ]),
   );
-  const commentAuthorIds = [
-    ...new Set(commentRows.map((comment) => comment.author_id)),
-  ];
-  const { data: commentAuthors } = commentAuthorIds.length
-    ? await supabase
-        .from("profiles")
-        .select("id,username,display_name,avatar_url,verified")
-        .in("id", commentAuthorIds)
-    : { data: [] };
   const commentAuthorById = new Map(
     (commentAuthors ?? []).map((author) => [author.id, author]),
   );

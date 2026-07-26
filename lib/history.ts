@@ -104,3 +104,32 @@ export async function getForYouGames(
   if (recentIds.length < 2) return [];
   return igdbForYouGames(recentIds, ownedIds);
 }
+
+/**
+ * Home personalization shares one history read between both shelves. Keeping
+ * this orchestration here prevents the home from asking Supabase for the same
+ * recent views twice on every signed-in request.
+ */
+export async function getHomePersonalization(
+  supabase: SupabaseClient,
+  viewerId: string,
+): Promise<{ recentlyViewed: Game[]; forYou: Game[] }> {
+  const [recentIds, ownedIds] = await Promise.all([
+    getRecentGameIds(supabase, viewerId, 30),
+    getOwnedGameIds(supabase, viewerId),
+  ]);
+  const visibleRecentIds = recentIds.slice(0, 12);
+  const [recentGames, forYou] = await Promise.all([
+    getGamesByIds(visibleRecentIds),
+    recentIds.length >= 2
+      ? igdbForYouGames(recentIds, ownedIds)
+      : Promise.resolve([]),
+  ]);
+  const recentById = new Map(recentGames.map((game) => [game.id, game]));
+  return {
+    recentlyViewed: visibleRecentIds
+      .map((id) => recentById.get(id))
+      .filter((game): game is Game => Boolean(game)),
+    forYou,
+  };
+}
