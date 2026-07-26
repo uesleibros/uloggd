@@ -2,7 +2,7 @@
 
 import { GripVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Game } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/client";
 import { QuickGameCard } from "../library/quick-game-card";
@@ -51,6 +51,20 @@ export function ListItemsGrid({
   } | null>(null);
   const [pending, setPending] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<typeof drag>(null);
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef(0);
+
+  useEffect(() => {
+    dragRef.current = drag;
+  }, [drag]);
+
+  useEffect(
+    () => () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    },
+    [],
+  );
 
   function slotFromPoint(clientX: number, clientY: number) {
     const target = document
@@ -62,6 +76,58 @@ export function ListItemsGrid({
     const rect = target.getBoundingClientRect();
     const after = clientX - rect.left > rect.width / 2;
     return index + (after ? 1 : 0);
+  }
+
+  function headerBottom() {
+    const header = document.querySelector<HTMLElement>(".content-header");
+    return header ? header.getBoundingClientRect().bottom : 0;
+  }
+
+  function applyPointerPosition(x: number, y: number) {
+    const current = dragRef.current;
+    if (!current) return;
+    const slot = slotFromPoint(x, Math.max(y, headerBottom() + 6));
+    if (slot !== null && slot !== current.insertIndex) {
+      const next = { index: current.index, insertIndex: slot };
+      dragRef.current = next;
+      setDrag(next);
+    }
+  }
+
+  function autoScroll() {
+    if (!dragRef.current) {
+      rafRef.current = 0;
+      return;
+    }
+    const { x, y } = pointerRef.current;
+    const edge = 150;
+    const maxSpeed = 46;
+    const topLine = headerBottom() + edge;
+    let delta = 0;
+    if (y < topLine) {
+      const distance = Math.min(1, (topLine - y) / edge);
+      delta = -Math.ceil(distance * distance * maxSpeed);
+    } else if (y > window.innerHeight - edge) {
+      const distance = Math.min(1, (y - (window.innerHeight - edge)) / edge);
+      delta = Math.ceil(distance * distance * maxSpeed);
+    }
+    if (delta) {
+      window.scrollBy(0, delta);
+      applyPointerPosition(x, y);
+    }
+    rafRef.current = requestAnimationFrame(autoScroll);
+  }
+
+  function trackPointer(x: number, y: number) {
+    pointerRef.current = { x, y };
+    if (!rafRef.current) rafRef.current = requestAnimationFrame(autoScroll);
+  }
+
+  function stopDragging() {
+    dragRef.current = null;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = 0;
+    setDrag(null);
   }
 
   async function drop(fromIndex: number, insertIndex: number) {
@@ -91,17 +157,16 @@ export function ListItemsGrid({
       data-reordering={drag ? "" : undefined}
       onPointerMove={(event) => {
         if (!drag) return;
-        const slot = slotFromPoint(event.clientX, event.clientY);
-        if (slot !== null && slot !== drag.insertIndex)
-          setDrag({ index: drag.index, insertIndex: slot });
+        trackPointer(event.clientX, event.clientY);
+        applyPointerPosition(event.clientX, event.clientY);
       }}
       onPointerUp={() => {
         if (!drag) return;
         const { index, insertIndex } = drag;
-        setDrag(null);
+        stopDragging();
         void drop(index, insertIndex);
       }}
-      onPointerCancel={() => setDrag(null)}
+      onPointerCancel={stopDragging}
     >
       {localItems.map((item, index) => {
         const game = games[item.igdbId];
@@ -139,7 +204,10 @@ export function ListItemsGrid({
                 onPointerDown={(event) => {
                   event.preventDefault();
                   gridRef.current?.setPointerCapture(event.pointerId);
-                  setDrag({ index, insertIndex: index });
+                  const next = { index, insertIndex: index };
+                  dragRef.current = next;
+                  setDrag(next);
+                  trackPointer(event.clientX, event.clientY);
                 }}
               >
                 <GripVertical size={14} />

@@ -149,6 +149,11 @@
   font-weight: 560;
   animation: catalog-chip-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
+.catalog-active-filters > a.entity-active-filter {
+  border-color: rgb(88 101 242 / 24%);
+  background: var(--brand-blurple-wash);
+  color: var(--tonal-brand-text);
+}
 .catalog-active-filters > a {
   border-color: transparent;
   background: transparent;
@@ -1244,47 +1249,6 @@
 .search-scope-tabs a {
   flex: 0 0 auto;
 }
-.entity-search-filters {
-  display: grid;
-  gap: 12px;
-  margin-top: 16px;
-  padding: 16px;
-  border: 1px solid var(--shell-line);
-  border-radius: 10px;
-  background: var(--console-panel);
-}
-.entity-search-filters > div {
-  display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  gap: 12px;
-  align-items: center;
-}
-.entity-search-filters strong {
-  color: var(--screen-muted);
-  font-size: 11px;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-.entity-search-filters span {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.entity-search-filters a {
-  padding: 7px 10px;
-  border: 1px solid var(--shell-line);
-  border-radius: 7px;
-  color: var(--screen-muted);
-  font-size: 12px;
-  font-weight: 650;
-  line-height: 1;
-}
-.entity-search-filters a:hover,
-.entity-search-filters a[aria-current="true"] {
-  border-color: color-mix(in srgb, var(--brand-blurple) 48%, var(--shell-line));
-  background: var(--brand-blurple-wash);
-  color: var(--screen-white);
-}
 .entity-search-results {
   margin-top: 24px;
 }
@@ -1294,13 +1258,13 @@
   justify-content: space-between;
   margin-bottom: 12px;
 }
-.entity-search-results > header span {
+.entity-search-results > header .catalog-results-heading-copy > span {
   color: var(--screen-muted);
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 0.12em;
 }
-.entity-search-results > header h2 {
+.entity-search-results > header .catalog-results-heading-copy > h2 {
   margin-top: 3px;
   font-size: 18px;
   line-height: 1.2;
@@ -1381,10 +1345,6 @@
   .search-scope-tabs {
     margin-inline: -2px;
     padding-inline: 2px;
-  }
-  .entity-search-filters > div {
-    grid-template-columns: 1fr;
-    gap: 7px;
   }
   .entity-search-grid {
     grid-template-columns: 1fr;

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, CalendarDays, Search, SearchX } from "lucide-react";
+import { Building2, CalendarDays, SearchX } from "lucide-react";
 import { SafeImage } from "@/components/safe-image";
 import {
   ConnectionCard,
@@ -9,6 +9,8 @@ import { ListPreviewCard } from "@/components/social/list-preview-card";
 import type { CompanySearchResult } from "@/lib/igdb";
 import type { ListPreview } from "@/lib/lists-types";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { EntitySearchControls } from "./entity-search-controls";
+import { EntitySearchForm } from "./entity-search-form";
 import { SearchEntityPagination } from "./search-entity-pagination";
 import { SearchScopeTabs, type SearchScope } from "./search-scope-tabs";
 
@@ -185,185 +187,94 @@ export function EntitySearchWorkspace({
       <header className="catalog-search-hero">
         <h1>{title}</h1>
         <p>{description}</p>
-        <form className="catalog-search-main-form" action={`/${lang}/search`}>
-          <input type="hidden" name="scope" value={scope} />
-          <label className="catalog-search-main-field">
-            <Search size={20} />
-            <input
-              name="q"
-              defaultValue={query}
-              placeholder={
-                scope === "people"
-                  ? tri(
-                      lang,
-                      "Nome ou @usuário…",
-                      "Name or @username…",
-                      "Nombre o @usuario…",
-                    )
-                  : scope === "companies"
-                    ? tri(
-                        lang,
-                        "Nome da empresa…",
-                        "Company name…",
-                        "Nombre de la empresa…",
-                      )
-                    : tri(
-                        lang,
-                        "Nome da lista…",
-                        "List name…",
-                        "Nombre de la lista…",
-                      )
-              }
-            />
-          </label>
-          <button type="submit">
-            {tri(lang, "Buscar", "Search", "Buscar")}
-          </button>
-        </form>
+        <EntitySearchForm lang={lang} scope={scope} query={query} />
       </header>
 
       <SearchScopeTabs lang={lang} active={scope} query={query} />
 
-      <section
-        className="entity-search-filters"
-        aria-label={tri(lang, "Filtros", "Filters", "Filtros")}
-      >
-        <div>
-          <strong>{tri(lang, "Ordenar", "Sort", "Ordenar")}</strong>
-          <span>
-            {sortOptions.map((option) => (
-              <Link
-                key={option.value}
-                href={filterHref(
-                  lang,
-                  scope,
-                  query,
-                  "sort",
-                  option.value,
-                  currentFilters,
-                )}
-                aria-current={sort === option.value ? "true" : undefined}
-              >
-                {option.label}
-              </Link>
-            ))}
-          </span>
+      {(verified || role !== "any" || status !== "any") && (
+        <div className="catalog-active-filters">
+          {verified && (
+            <Link
+              className="entity-active-filter"
+              href={filterHref(
+                lang,
+                scope,
+                query,
+                "verified",
+                "any",
+                currentFilters,
+              )}
+            >
+              {tri(lang, "Verificadas", "Verified", "Verificadas")}{" "}
+              <span aria-hidden>×</span>
+            </Link>
+          )}
+          {role !== "any" && (
+            <Link
+              className="entity-active-filter"
+              href={filterHref(
+                lang,
+                scope,
+                query,
+                "role",
+                "any",
+                currentFilters,
+              )}
+            >
+              {role === "publisher"
+                ? tri(lang, "Publicadoras", "Publishers", "Editoras")
+                : tri(
+                    lang,
+                    "Desenvolvedoras",
+                    "Developers",
+                    "Desarrolladoras",
+                  )}{" "}
+              <span aria-hidden>×</span>
+            </Link>
+          )}
+          {status !== "any" && (
+            <Link
+              className="entity-active-filter"
+              href={filterHref(
+                lang,
+                scope,
+                query,
+                "status",
+                "any",
+                currentFilters,
+              )}
+            >
+              {tri(lang, "Ativas", "Active", "Activas")}{" "}
+              <span aria-hidden>×</span>
+            </Link>
+          )}
+          <Link
+            href={`/${lang}/search?scope=${scope}${query ? `&q=${encodeURIComponent(query)}` : ""}`}
+          >
+            {tri(lang, "Limpar tudo", "Clear all", "Limpiar todo")}
+          </Link>
         </div>
-        {scope === "people" && (
-          <div>
-            <strong>{tri(lang, "Conta", "Account", "Cuenta")}</strong>
-            <span>
-              <Link
-                href={filterHref(
-                  lang,
-                  scope,
-                  query,
-                  "verified",
-                  "any",
-                  currentFilters,
-                )}
-                aria-current={!verified ? "true" : undefined}
-              >
-                {tri(lang, "Todas", "All", "Todas")}
-              </Link>
-              <Link
-                href={filterHref(
-                  lang,
-                  scope,
-                  query,
-                  "verified",
-                  "1",
-                  currentFilters,
-                )}
-                aria-current={verified ? "true" : undefined}
-              >
-                {tri(lang, "Verificadas", "Verified", "Verificadas")}
-              </Link>
-            </span>
-          </div>
-        )}
-        {scope === "companies" && (
-          <>
-            <div>
-              <strong>{tri(lang, "Papel", "Role", "Función")}</strong>
-              <span>
-                {[
-                  ["any", tri(lang, "Todos", "All", "Todos")],
-                  [
-                    "publisher",
-                    tri(lang, "Publicadoras", "Publishers", "Editoras"),
-                  ],
-                  [
-                    "developer",
-                    tri(
-                      lang,
-                      "Desenvolvedoras",
-                      "Developers",
-                      "Desarrolladoras",
-                    ),
-                  ],
-                ].map(([value, label]) => (
-                  <Link
-                    key={value}
-                    href={filterHref(
-                      lang,
-                      scope,
-                      query,
-                      "role",
-                      value,
-                      currentFilters,
-                    )}
-                    aria-current={role === value ? "true" : undefined}
-                  >
-                    {label}
-                  </Link>
-                ))}
-              </span>
-            </div>
-            <div>
-              <strong>Status</strong>
-              <span>
-                <Link
-                  href={filterHref(
-                    lang,
-                    scope,
-                    query,
-                    "status",
-                    "any",
-                    currentFilters,
-                  )}
-                  aria-current={status === "any" ? "true" : undefined}
-                >
-                  {tri(lang, "Todas", "All", "Todas")}
-                </Link>
-                <Link
-                  href={filterHref(
-                    lang,
-                    scope,
-                    query,
-                    "status",
-                    "active",
-                    currentFilters,
-                  )}
-                  aria-current={status === "active" ? "true" : undefined}
-                >
-                  {tri(lang, "Ativas", "Active", "Activas")}
-                </Link>
-              </span>
-            </div>
-          </>
-        )}
-      </section>
+      )}
 
       <section className="entity-search-results">
-        <header>
-          <div>
+        <header className="catalog-results-heading">
+          <div className="catalog-results-heading-copy">
             <span>{tri(lang, "RESULTADOS", "RESULTS", "RESULTADOS")}</span>
             <h2>
               {total.toLocaleString(lang)}{" "}
               {tri(lang, "encontrados", "found", "encontrados")}
             </h2>
           </div>
+          <EntitySearchControls
+            lang={lang}
+            scope={scope}
+            sort={sort}
+            sortOptions={sortOptions}
+            role={role}
+            status={status}
+            verified={verified}
+          />
         </header>
         {hasResults ? (
           <div
