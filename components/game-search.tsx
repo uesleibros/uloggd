@@ -20,23 +20,15 @@ import type { Dictionary } from "@/app/[lang]/dictionaries";
 import type { GameSearchResult } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/client";
 import { SpawndLogo } from "./spawnd-logo";
-import { VerifiedMark } from "./verified-badge";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
-type SearchUser = {
-  username: string;
-  display_name: string | null;
-  avatar_url: string | null;
-  verified: boolean;
-};
 type SearchList = { id: string; name: string; owner: string | null };
 type SearchPayload = {
   results: GameSearchResult[];
-  users: SearchUser[];
   lists: SearchList[];
 };
 
-const emptyPayload: SearchPayload = { results: [], users: [], lists: [] };
+const emptyPayload: SearchPayload = { results: [], lists: [] };
 const searchCache = new Map<string, SearchPayload>();
 
 function useGameSearch(cacheScope: string) {
@@ -83,7 +75,6 @@ function useGameSearch(cacheScope: string) {
         const data = (await response.json()) as Partial<SearchPayload>;
         const next: SearchPayload = {
           results: Array.isArray(data.results) ? data.results : [],
-          users: Array.isArray(data.users) ? data.users : [],
           lists: Array.isArray(data.lists) ? data.lists : [],
         };
         searchCache.set(cacheKey, next);
@@ -123,7 +114,6 @@ function useGameSearch(cacheScope: string) {
     query,
     setQuery: updateQuery,
     results: payload.results,
-    users: payload.users,
     lists: payload.lists,
     status,
   };
@@ -132,7 +122,6 @@ function useGameSearch(cacheScope: string) {
 function ResultList({
   dictionary: d,
   results,
-  users,
   lists,
   status,
   query,
@@ -147,7 +136,6 @@ function ResultList({
 }: {
   dictionary: Dictionary;
   results: GameSearchResult[];
-  users: SearchUser[];
   lists: SearchList[];
   status: "idle" | "loading" | "ready" | "error";
   query: string;
@@ -249,12 +237,7 @@ function ResultList({
     ) : (
       <div className="search-message">{d.search.start}</div>
     );
-  if (
-    status === "ready" &&
-    results.length === 0 &&
-    users.length === 0 &&
-    lists.length === 0
-  )
+  if (status === "ready" && results.length === 0 && lists.length === 0)
     return <div className="search-message">{d.search.empty}</div>;
 
   const t = uiText(lang);
@@ -314,44 +297,6 @@ function ResultList({
           </Link>
         ))}
       </div>
-      {users.length > 0 && (
-        <>
-          <div className="search-results-label">
-            <span>{tri(lang, "Usuários", "Users", "Usuarios")}</span>
-          </div>
-          <div role="list">
-            {users.map((person) => (
-              <Link
-                key={person.username}
-                href={`/${lang}/u/${person.username}`}
-                className="search-result"
-                onClick={onNavigate}
-              >
-                <span className="search-result-cover search-result-avatar">
-                  {person.avatar_url ? (
-                    <Image
-                      src={person.avatar_url}
-                      alt=""
-                      fill
-                      sizes="44px"
-                      unoptimized
-                    />
-                  ) : (
-                    person.username.slice(0, 1).toUpperCase()
-                  )}
-                </span>
-                <span className="search-result-copy">
-                  <strong>
-                    {person.display_name || `@${person.username}`}
-                    {person.verified && <VerifiedMark size={15} />}
-                  </strong>
-                  <small>@{person.username}</small>
-                </span>
-              </Link>
-            ))}
-          </div>
-        </>
-      )}
       {lists.length > 0 && (
         <>
           <div className="search-results-label">
@@ -397,8 +342,7 @@ function SearchSurface({
   cacheScope: string;
 }) {
   const router = useRouter();
-  const { query, setQuery, results, users, lists, status } =
-    useGameSearch(cacheScope);
+  const { query, setQuery, results, lists, status } = useGameSearch(cacheScope);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [expanded, setExpanded] = useState(mobile);
   const [recent, setRecent] = useState<GameSearchResult[]>([]);
@@ -589,7 +533,6 @@ function SearchSurface({
           <ResultList
             dictionary={d}
             results={results}
-            users={users}
             lists={lists}
             status={status}
             query={query}

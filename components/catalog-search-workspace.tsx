@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import type { ReactNode } from "react";
 import type {
   CatalogGame,
   CatalogOption,
@@ -298,6 +299,7 @@ export function CatalogSearchWorkspace({
   saved,
   enabled,
   createMode = null,
+  scopeTabs,
 }: {
   lang: UiLang;
   filters: CatalogSearchFilters;
@@ -308,6 +310,7 @@ export function CatalogSearchWorkspace({
   saved: Record<number, SavedState>;
   enabled: boolean;
   createMode?: "review" | "screenshot" | null;
+  scopeTabs?: ReactNode;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
@@ -677,6 +680,8 @@ export function CatalogSearchWorkspace({
           </span>
         </div>
       </header>
+
+      {scopeTabs}
 
       {(selectedChips.length > 0 || scalarChips.length > 0) && (
         <div

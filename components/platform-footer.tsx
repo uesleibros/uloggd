@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FaXTwitter } from "react-icons/fa6";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { CookieSettingsButton } from "./cookie-settings-button";
 import { tri } from "@/lib/ui-text";
@@ -25,6 +26,16 @@ export function PlatformFooter({
             IGDB
           </a>
         </span>
+        <a
+          className="platform-social-link"
+          href="https://x.com/uloggd"
+          target="_blank"
+          rel="me noreferrer"
+          aria-label="uloggd no X · @uloggd"
+        >
+          <FaXTwitter size={13} aria-hidden />
+          @uloggd
+        </a>
       </div>
       <nav
         aria-label={tri(

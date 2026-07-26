@@ -3946,6 +3946,12 @@ html[data-sidebar-collapsed]
   text-decoration-color: var(--shell-line-strong);
   text-underline-offset: 3px;
 }
+.platform-footer .platform-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--screen-dim);
+}
 .platform-footer a:hover,
 .platform-footer nav > button:hover {
   color: var(--screen-dim);

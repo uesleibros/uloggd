@@ -507,6 +507,97 @@ export async function searchCatalogPublishers(query: string) {
     .slice(0, 30);
 }
 
+export type CompanySearchResult = {
+  id: number;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  status: string | null;
+  foundedYear: number | null;
+  publishedCount: number;
+  developedCount: number;
+};
+
+export async function searchCompanies(options: {
+  query: string;
+  role: "any" | "publisher" | "developer";
+  status: "any" | "active";
+  sort: "relevance" | "name" | "oldest" | "newest" | "catalog";
+  page: number;
+  pageSize?: number;
+}): Promise<{
+  companies: CompanySearchResult[];
+  total: number;
+  totalPages: number;
+}> {
+  if (process.env.ULOGGD_E2E === "1")
+    return { companies: [], total: 0, totalPages: 0 };
+  const query = options.query.trim().replace(/\s+/g, " ").slice(0, 60);
+  const roleClause =
+    options.role === "publisher"
+      ? "published != null"
+      : options.role === "developer"
+        ? "developed != null"
+        : "(published != null | developed != null)";
+  const rows = await queryIgdbRaw<IgdbCompanyResponse>(
+    "companies",
+    `
+      fields id,name,slug,logo.image_id,status.name,start_date,published,developed;
+      where ${roleClause}${query ? ` & name ~ *"${escapeIgdb(query)}"*` : ""};
+      limit 100;
+    `,
+    6 * CACHE_HOURS,
+  );
+  const needle = query.toLocaleLowerCase();
+  const normalized = rows
+    .filter(
+      (company) =>
+        options.status !== "active" ||
+        company.status?.name.toLocaleLowerCase() === "active",
+    )
+    .map((company): CompanySearchResult => ({
+      id: company.id,
+      name: company.name,
+      slug: company.slug,
+      logoUrl: company.logo
+        ? imageUrl(company.logo.image_id, "logo_med")
+        : null,
+      status: company.status?.name ?? null,
+      foundedYear: company.start_date
+        ? new Date(company.start_date * 1000).getUTCFullYear()
+        : null,
+      publishedCount: company.published?.length ?? 0,
+      developedCount: company.developed?.length ?? 0,
+    }));
+  normalized.sort((a, b) => {
+    if (options.sort === "name") return a.name.localeCompare(b.name);
+    if (options.sort === "oldest")
+      return (a.foundedYear ?? 9999) - (b.foundedYear ?? 9999);
+    if (options.sort === "newest")
+      return (b.foundedYear ?? 0) - (a.foundedYear ?? 0);
+    if (options.sort === "catalog")
+      return (
+        b.publishedCount +
+        b.developedCount -
+        (a.publishedCount + a.developedCount)
+      );
+    const rank = (name: string) => {
+      const value = name.toLocaleLowerCase();
+      return value === needle ? 0 : value.startsWith(needle) ? 1 : 2;
+    };
+    return rank(a.name) - rank(b.name) || a.name.localeCompare(b.name);
+  });
+  const pageSize = options.pageSize ?? 24;
+  const total = normalized.length;
+  const totalPages = total ? Math.ceil(total / pageSize) : 0;
+  const page = Math.min(Math.max(1, options.page), Math.max(1, totalPages));
+  return {
+    companies: normalized.slice((page - 1) * pageSize, page * pageSize),
+    total,
+    totalPages,
+  };
+}
+
 export async function searchCatalogGames(filters: CatalogSearchFilters) {
   if (process.env.ULOGGD_E2E === "1") {
     const { searchE2eCatalog } = await import("@/lib/igdb-e2e");
