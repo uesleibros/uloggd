@@ -269,8 +269,8 @@ export default async function GamePage({ params, searchParams }: Props) {
       {user && (
         <RecordView type="game" gameIgdbId={game.id} gameSlug={game.slug} />
       )}
-      {/* VideoGame markup feeds the rich result: title, cover, publisher and the
-          aggregate score a search engine would otherwise have to guess at. */}
+      {/* VideoGame markup describes the catalog entity: title, cover, publisher
+          and the aggregate score a search engine would otherwise have to infer. */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={jsonLd({

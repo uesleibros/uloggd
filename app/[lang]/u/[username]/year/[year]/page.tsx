@@ -22,6 +22,7 @@ import { MIN_WRAPPED_YEAR, parseWrappedYear } from "@/lib/year-wrapped";
 import { hasLocale, resolveLocale } from "../../../../dictionaries";
 import "../../../../profile.css";
 import { tri, uiText } from "@/lib/ui-text";
+import { localeAlternates } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ lang: string; username: string; year: string }>;
@@ -40,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: `/${lang}/u/${username}/year/${year}` },
+    alternates: localeAlternates(lang, `/u/${username}/year/${year}`),
     openGraph: {
       title,
       description,

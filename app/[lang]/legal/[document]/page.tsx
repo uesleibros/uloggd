@@ -17,13 +17,19 @@ import {
 import { getDictionary, hasLocale } from "../../dictionaries";
 import "../legal.css";
 import { tri } from "@/lib/ui-text";
+import { localeAlternates } from "@/lib/seo";
 
 type Props = PageProps<"/[lang]/legal/[document]">;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, document } = await params;
   if (!hasLocale(lang) || !isLegalDocument(document)) return {};
-  return { title: getLegalContent(lang, document).title };
+  const content = getLegalContent(lang, document);
+  return {
+    title: content.title,
+    description: content.intro.slice(0, 160),
+    alternates: localeAlternates(lang, `/legal/${document}`),
+  };
 }
 
 export default async function LegalPage({ params }: Props) {

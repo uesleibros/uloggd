@@ -5,6 +5,7 @@ import { LibraryScreen } from "@/components/library/library-screen";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
 import { tri } from "@/lib/ui-text";
+import { localeAlternates } from "@/lib/seo";
 
 type Props = { params: Promise<{ lang: string; username: string }> };
 
@@ -18,6 +19,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `@${username}'s library`,
       `Biblioteca de @${username}`,
     ),
+    description: tri(
+      lang,
+      `Jogos salvos, em andamento e concluídos por @${username}.`,
+      `Games saved, played, and completed by @${username}.`,
+      `Juegos guardados, en curso y completados por @${username}.`,
+    ),
+    alternates: localeAlternates(lang, `/u/${username}/library`),
   };
 }
 

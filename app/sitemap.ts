@@ -14,15 +14,16 @@ function entry(
   options: {
     changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"];
     priority: number;
+    images?: string[];
   },
 ): MetadataRoute.Sitemap {
   const suffix = path === "/" ? "" : path;
   const languages = Object.fromEntries(
     locales.map((locale) => [locale, `${SITE_URL}/${locale}${suffix}`]),
   );
+  languages["x-default"] = `${SITE_URL}/pt-BR${suffix}`;
   return locales.map((locale) => ({
     url: `${SITE_URL}/${locale}${suffix}`,
-    lastModified: new Date(),
     alternates: { languages },
     ...options,
   }));
@@ -49,6 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       entry(`/game/${game.slug}`, {
         changeFrequency: "weekly",
         priority: 0.7,
+        images: [game.coverUrl],
       }),
     ),
   ];

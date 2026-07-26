@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { CalendarDays, Clock3, Gamepad2 } from "lucide-react";
 import { notFound } from "next/navigation";
@@ -9,8 +10,70 @@ import { getGamesByIds } from "@/lib/igdb";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, uiText } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
+import { localeAlternates } from "@/lib/seo";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang, id } = await params;
+  if (!hasLocale(lang) || !/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
+    return {};
+  const { data: entry } = await (
+    await getSupabase()
+  )
+    .from("diary_entries")
+    .select(
+      "public_id,igdb_id,game_slug,note,contains_spoilers,played_on,profiles!diary_entries_profile_id_fkey(username)",
+    )
+    .eq("public_id", id)
+    .maybeSingle();
+  if (!entry) return {};
+  const profile = Array.isArray(entry.profiles)
+    ? entry.profiles[0]
+    : entry.profiles;
+  const game = (await getGamesByIds([entry.igdb_id]))[0];
+  const gameName = game?.name ?? entry.game_slug;
+  const title = tri(
+    lang,
+    `${gameName} no diário de @${profile?.username}`,
+    `${gameName} in @${profile?.username}'s journal`,
+    `${gameName} en el diario de @${profile?.username}`,
+  );
+  const description = entry.contains_spoilers
+    ? tri(
+        lang,
+        `Registro com spoilers de ${gameName}.`,
+        `A journal entry with spoilers for ${gameName}.`,
+        `Una entrada con spoilers de ${gameName}.`,
+      )
+    : entry.note?.slice(0, 160) ||
+      tri(
+        lang,
+        `Sessão de ${gameName} registrada no uloggd.`,
+        `A ${gameName} play session logged on uloggd.`,
+        `Una sesión de ${gameName} registrada en uloggd.`,
+      );
+  return {
+    title,
+    description,
+    alternates: localeAlternates(lang, `/entry/${entry.public_id}`),
+    openGraph: {
+      title: `${title} · uloggd`,
+      description,
+      type: "article",
+      siteName: "uloggd",
+      images: game?.coverUrl
+        ? [{ url: game.coverUrl, alt: gameName }]
+        : undefined,
+    },
+    twitter: {
+      card: game?.coverUrl ? "summary_large_image" : "summary",
+      title: `${title} · uloggd`,
+      description,
+      images: game?.coverUrl ? [game.coverUrl] : undefined,
+    },
+  };
+}
 
 export default async function DiaryEntryPage({ params }: Props) {
   const { lang, id } = await params;

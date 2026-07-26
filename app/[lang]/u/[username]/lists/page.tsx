@@ -10,6 +10,7 @@ import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale, resolveLocale } from "../../../dictionaries";
 import "../../../profile.css";
 import { tri, uiText } from "@/lib/ui-text";
+import { localeAlternates } from "@/lib/seo";
 
 type Props = { params: Promise<{ lang: string; username: string }> };
 
@@ -25,6 +26,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `@${username}'s lists`,
       `Listas de @${username}`,
     ),
+    description: tri(
+      lang,
+      `Coleções e rankings públicos de jogos criados por @${username}.`,
+      `Public game collections and rankings created by @${username}.`,
+      `Colecciones y rankings públicos de juegos creados por @${username}.`,
+    ),
+    alternates: localeAlternates(lang, `/u/${username}/lists`),
   };
 }
 

@@ -27,6 +27,7 @@ import { MentionText } from "@/components/social/mention-text";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { localeAlternates } from "@/lib/seo";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
 type RatingMode = NonNullable<SocialEntry["ratingMode"]>;
@@ -64,7 +65,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   )
     .from("reviews")
     .select(
-      "title,content,game_slug,profiles!reviews_profile_id_fkey(username)",
+      "public_id,title,content,contains_spoilers,game_slug,profiles!reviews_profile_id_fkey(username)",
     )
     .eq(key[0], key[1])
     .maybeSingle();
@@ -77,10 +78,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     (lang === "pt-BR"
       ? `Avaliação de @${owner?.username}`
       : `Review by @${owner?.username}`);
-  const description = (review.content ?? "").slice(0, 160) || undefined;
+  const description = review.contains_spoilers
+    ? tri(
+        lang,
+        `Avaliação com spoilers publicada por @${owner?.username}.`,
+        `A spoiler review published by @${owner?.username}.`,
+        `Una reseña con spoilers publicada por @${owner?.username}.`,
+      )
+    : (review.content ?? "").slice(0, 160) || undefined;
   return {
     title,
     description,
+    alternates: localeAlternates(lang, `/review/${review.public_id}`),
     openGraph: {
       title: `${title} · uloggd`,
       description,

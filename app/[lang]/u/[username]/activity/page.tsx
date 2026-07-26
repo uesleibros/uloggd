@@ -9,19 +9,35 @@ import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
 import "../../../profile.css";
 import { tri, uiText } from "@/lib/ui-text";
+import { localeAlternates } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ lang: string; username: string }>;
   searchParams: Promise<{ type?: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { lang, username } = await params;
+export async function generateMetadata({
+  params,
+  searchParams,
+}: Props): Promise<Metadata> {
+  const [{ lang, username }, query] = await Promise.all([params, searchParams]);
+  if (!hasLocale(lang)) return {};
+  const description = tri(
+    lang,
+    `Avaliações e sessões de jogos publicadas por @${username}.`,
+    `Game reviews and play sessions published by @${username}.`,
+    `Reseñas y sesiones de juegos publicadas por @${username}.`,
+  );
   return {
-    title:
-      lang === "pt-BR"
-        ? `Atividade de @${username}`
-        : `@${username}'s activity`,
+    title: tri(
+      lang,
+      `Atividade de @${username}`,
+      `@${username}'s activity`,
+      `Actividad de @${username}`,
+    ),
+    description,
+    alternates: localeAlternates(lang, `/u/${username}/activity`),
+    robots: query.type ? { index: false, follow: true } : undefined,
   };
 }
 

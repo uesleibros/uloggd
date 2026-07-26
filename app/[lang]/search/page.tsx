@@ -9,10 +9,36 @@ import {
 } from "@/lib/igdb";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getSpawndGame } from "@/lib/spawnd";
+import { localeAlternates } from "@/lib/seo";
+import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../dictionaries";
 import "./catalog.css";
 
-export const metadata: Metadata = { title: "Buscar jogos" };
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ lang: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const [{ lang }, query] = await Promise.all([params, searchParams]);
+  if (!hasLocale(lang)) return {};
+  const filtered = Object.values(query).some((value) =>
+    Array.isArray(value) ? value.some(Boolean) : Boolean(value),
+  );
+  const description = tri(
+    lang,
+    "Explore jogos por gênero, plataforma, ano, avaliação e popularidade.",
+    "Explore games by genre, platform, year, rating, and popularity.",
+    "Explora juegos por género, plataforma, año, valoración y popularidad.",
+  );
+  return {
+    title: tri(lang, "Buscar jogos", "Search games", "Buscar juegos"),
+    description,
+    alternates: localeAlternates(lang, "/search"),
+    robots: filtered ? { index: false, follow: true } : undefined,
+  };
+}
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;

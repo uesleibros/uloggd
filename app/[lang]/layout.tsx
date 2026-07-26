@@ -18,6 +18,7 @@ import { TwemojiManager } from "@/components/twemoji-manager";
 import { TextareaAutosizeManager } from "@/components/textarea-autosize-manager";
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { themeBootstrapScript } from "@/lib/theme";
+import { jsonLd, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getNavigationAccount } from "@/lib/supabase/auth";
 import {
   getDictionary,
@@ -43,6 +44,33 @@ export async function generateMetadata({
     ),
     title: { default: "uloggd", template: "%s · uloggd" },
     description: dictionary.home.subtitle,
+    applicationName: "uloggd",
+    category: "games",
+    referrer: "origin-when-cross-origin",
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
+    openGraph: {
+      type: "website",
+      siteName: "uloggd",
+      title: "uloggd",
+      description: dictionary.home.subtitle,
+      locale:
+        locale === "pt-BR" ? "pt_BR" : locale === "en" ? "en_US" : "es_ES",
+    },
+    twitter: {
+      card: "summary",
+      title: "uloggd",
+      description: dictionary.home.subtitle,
+    },
   };
 }
 
@@ -114,6 +142,18 @@ export default async function LocaleLayout({
   return (
     <html lang={lang} className={inter.variable} suppressHydrationWarning>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={jsonLd({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": `${SITE_URL}/#website`,
+            url: SITE_URL,
+            name: "uloggd",
+            alternateName: "Uloggd",
+            inLanguage: lang,
+          })}
+        />
         <script
           id="uloggd-theme-bootstrap"
           dangerouslySetInnerHTML={{ __html: themeBootstrapScript }}

@@ -22,7 +22,15 @@ export async function generateMetadata({ params }: PageProps<"/[lang]">) {
   if (!hasLocale(lang)) return {};
   // The home page is the one place all three locales compete for the same
   // query, so it needs the hreflang set more than any other route.
-  return { alternates: localeAlternates(lang, "/") };
+  return {
+    title: tri(
+      lang,
+      "Seu diário e biblioteca de jogos",
+      "Your game journal and library",
+      "Tu diario y biblioteca de juegos",
+    ),
+    alternates: localeAlternates(lang, "/"),
+  };
 }
 
 export default async function Home({ params }: PageProps<"/[lang]">) {

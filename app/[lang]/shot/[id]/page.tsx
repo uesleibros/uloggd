@@ -18,6 +18,7 @@ import {
 } from "@/lib/supabase/schema-fallback";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
+import { localeAlternates } from "@/lib/seo";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
 
@@ -40,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const first = await supabase
     .from("screenshots")
     .select(
-      "description,game_slug,contains_spoilers,deleted_at,profiles!screenshots_profile_id_fkey(username)",
+      "public_id,description,game_slug,contains_spoilers,deleted_at,profiles!screenshots_profile_id_fkey(username)",
     )
     .eq("public_id", id)
     .maybeSingle();
@@ -49,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { data: fallback } = await supabase
       .from("screenshots")
       .select(
-        "description,game_slug,contains_spoilers,profiles!screenshots_profile_id_fkey(username)",
+        "public_id,description,game_slug,contains_spoilers,profiles!screenshots_profile_id_fkey(username)",
       )
       .eq("public_id", id)
       .maybeSingle();
@@ -67,13 +68,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     `Screenshot by @${profile?.username}`,
     `Captura de @${profile?.username}`,
   );
+  const description = data.contains_spoilers
+    ? tri(
+        lang,
+        `Captura com spoilers publicada por @${profile?.username}.`,
+        `A spoiler screenshot published by @${profile?.username}.`,
+        `Una captura con spoilers publicada por @${profile?.username}.`,
+      )
+    : data.description?.slice(0, 160) || undefined;
   // The description of a spoiler shot stays behind the gate; putting it in the
   // meta tag would spill it into search results and link previews.
   return {
     title,
-    description: data.contains_spoilers
-      ? undefined
-      : data.description?.slice(0, 160) || undefined,
+    description,
+    alternates: localeAlternates(lang, `/shot/${data.public_id}`),
+    openGraph: {
+      title: `${title} · uloggd`,
+      description,
+      type: "article",
+      siteName: "uloggd",
+    },
+    twitter: {
+      card: "summary",
+      title: `${title} · uloggd`,
+      description,
+    },
   };
 }
 

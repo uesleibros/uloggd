@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hasLocale, resolveLocale } from "../../../dictionaries";
 import "../../../profile.css";
 import { tri, uiText } from "@/lib/ui-text";
+import { localeAlternates } from "@/lib/seo";
 
 const PAGE_SIZE = 24;
 
@@ -17,8 +18,14 @@ type Props = {
   searchParams: Promise<{ tab?: string; q?: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { lang: rawLang, username } = await params;
+export async function generateMetadata({
+  params,
+  searchParams,
+}: Props): Promise<Metadata> {
+  const [{ lang: rawLang, username }, query] = await Promise.all([
+    params,
+    searchParams,
+  ]);
   const lang = resolveLocale(rawLang);
   return {
     title: tri(
@@ -27,6 +34,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `@${username}'s connections`,
       `Conexiones de @${username}`,
     ),
+    description: tri(
+      lang,
+      `Pessoas que seguem @${username} e perfis acompanhados por esta conta.`,
+      `People following @${username} and profiles followed by this account.`,
+      `Personas que siguen a @${username} y perfiles seguidos por esta cuenta.`,
+    ),
+    alternates: localeAlternates(lang, `/u/${username}/connections`),
+    robots: query.q || query.tab ? { index: false, follow: true } : undefined,
   };
 }
 
