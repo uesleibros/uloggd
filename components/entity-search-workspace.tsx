@@ -87,29 +87,29 @@ export function EntitySearchWorkspace({
     scope === "people"
       ? tri(
           lang,
-          "Encontre pessoas para seguir",
+          "Encontre pessoas para acompanhar",
           "Find people to follow",
-          "Encuentra personas a quienes seguir",
+          "Encuentra personas para seguir",
         )
       : scope === "companies"
         ? tri(
             lang,
-            "Explore empresas de jogos",
-            "Explore game companies",
-            "Explora empresas de videojuegos",
+            "Encontre empresas de jogos",
+            "Find game companies",
+            "Encuentra empresas de videojuegos",
           )
         : tierlists
           ? tri(
               lang,
-              "Descubra tier lists",
-              "Discover tier lists",
-              "Descubre tier lists",
+              "Encontre tier lists da comunidade",
+              "Find community tier lists",
+              "Encuentra tier lists de la comunidad",
             )
           : tri(
               lang,
-              "Descubra listas da comunidade",
-              "Discover community lists",
-              "Descubre listas de la comunidad",
+              "Encontre listas da comunidade",
+              "Find community lists",
+              "Encuentra listas de la comunidad",
             );
   const description =
     scope === "people"

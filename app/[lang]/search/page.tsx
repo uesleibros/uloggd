@@ -33,6 +33,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const [{ lang }, query] = await Promise.all([params, searchParams]);
   if (!hasLocale(lang)) return {};
+  const scope = first(query.scope);
   const filtered = Object.values(query).some((value) =>
     Array.isArray(value) ? value.some(Boolean) : Boolean(value),
   );
@@ -42,8 +43,28 @@ export async function generateMetadata({
     "Find games, lists, tier lists, people, and companies on uloggd.",
     "Encuentra juegos, listas, tier lists, personas y empresas en uloggd.",
   );
+  const title =
+    scope === "lists"
+      ? tri(lang, "Buscar listas", "Search lists", "Buscar listas")
+      : scope === "tierlists"
+        ? tri(
+            lang,
+            "Buscar tier lists",
+            "Search tier lists",
+            "Buscar tier lists",
+          )
+        : scope === "people"
+          ? tri(lang, "Buscar pessoas", "Search people", "Buscar personas")
+          : scope === "companies"
+            ? tri(
+                lang,
+                "Buscar empresas",
+                "Search companies",
+                "Buscar empresas",
+              )
+            : tri(lang, "Buscar jogos", "Search games", "Buscar juegos");
   return {
-    title: tri(lang, "Buscar no uloggd", "Search uloggd", "Buscar en uloggd"),
+    title,
     description,
     alternates: localeAlternates(lang, "/search"),
     robots: filtered ? { index: false, follow: true } : undefined,

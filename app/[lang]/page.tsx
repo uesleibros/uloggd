@@ -26,9 +26,9 @@ export async function generateMetadata({ params }: PageProps<"/[lang]">) {
     title: {
       absolute: tri(
         lang,
-        "uloggd — Diário e biblioteca de jogos",
-        "uloggd — Game journal and library",
-        "uloggd — Diario y biblioteca de juegos",
+        "Diário e biblioteca de jogos · uloggd",
+        "Game journal and library · uloggd",
+        "Diario y biblioteca de juegos · uloggd",
       ),
     },
     alternates: localeAlternates(lang, "/"),
