@@ -1150,12 +1150,15 @@ html[data-sidebar-ready] .account-button > svg {
     color 140ms ease-out;
 }
 .main-nav > .nav-disabled,
-.sidebar-bottom > .nav-disabled {
+.sidebar-bottom > .nav-disabled,
+.nav-more-menu [data-disabled] {
   cursor: not-allowed;
   color: var(--screen-muted);
   opacity: 0.62;
 }
-.nav-disabled .nav-lock {
+
+.nav-disabled .nav-lock,
+.nav-more-menu [data-disabled] .nav-lock {
   margin-left: auto;
   color: var(--screen-muted);
 }
