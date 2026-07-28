@@ -102,9 +102,9 @@ async function readImportResponse<T>(response: Response): Promise<T> {
 function errorCopy(lang: UiLang, code: string, reference?: string) {
   const titles: Record<string, [string, string, string]> = {
     partner_access_required: [
-      "Conexão aguardando liberação",
-      "Connection awaiting approval",
-      "Conexión pendiente de aprobación",
+      "Verificação do Backloggd não concluída",
+      "Backloggd verification could not finish",
+      "No se completó la verificación de Backloggd",
     ],
     source_timeout: [
       "Backloggd demorou para responder",
@@ -139,9 +139,9 @@ function errorCopy(lang: UiLang, code: string, reference?: string) {
       "La colección debe ser pública durante la validación.",
     ],
     partner_access_required: [
-      "O Backloggd bloqueou a leitura automática deste servidor. A parceria precisa liberar a integração; nenhum dado foi importado.",
-      "Backloggd blocked this server's automated read. The partner integration needs to be approved; no data was imported.",
-      "Backloggd bloqueó la lectura automática de este servidor. La integración debe ser aprobada; no se importó ningún dato.",
+      "O desafio de acesso mudou ou ultrapassou os limites seguros da importação. Tente novamente; nenhum dado foi importado.",
+      "The access challenge changed or exceeded the import safety limits. Try again; no data was imported.",
+      "El desafío de acceso cambió o superó los límites seguros de importación. Inténtalo de nuevo; no se importó ningún dato.",
     ],
     source_too_large: [
       "A coleção ultrapassou o limite seguro desta importação.",

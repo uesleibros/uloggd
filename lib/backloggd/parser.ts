@@ -4,6 +4,11 @@ const BACKLOGGD_HOST = "backloggd.com";
 const USERNAME_PATTERN = /^[A-Za-z0-9_-]{1,32}$/;
 const GAME_PATH_PATTERN = /^\/games\/([a-z0-9-]{1,120})\/?$/;
 const MAX_PAGE_NUMBER = 40;
+const ANUBIS_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ANUBIS_RANDOM_DATA_PATTERN = /^[0-9a-f]{128}$/i;
+const ANUBIS_BASE_PREFIX_PATTERN = /^(?:\/[A-Za-z0-9._~-]+)*$/;
+const MAX_ANUBIS_DIFFICULTY = 5;
 
 export type BackloggdSourceGame = {
   slug: string;
@@ -15,6 +20,14 @@ export type ParsedBackloggdPage = {
   pageUrls: string[];
   challenge: boolean;
   privateProfile: boolean;
+};
+
+export type ParsedAnubisChallenge = {
+  id: string;
+  randomData: string;
+  difficulty: number;
+  method: "fast";
+  basePrefix: string;
 };
 
 function canonicalHost(hostname: string) {
@@ -101,6 +114,53 @@ function sourceName(anchor: HTMLElement) {
     cleanText(imageAlt) ??
     cleanText(anchor.textContent)
   );
+}
+
+export function parseAnubisChallenge(
+  html: string,
+): ParsedAnubisChallenge | null {
+  const document = parse(html);
+  const challengeScript = document.querySelector("#anubis_challenge");
+  if (!challengeScript) return null;
+
+  let envelope: unknown;
+  let basePrefix: unknown = "";
+  try {
+    envelope = JSON.parse(challengeScript.textContent);
+    const basePrefixScript = document.querySelector("#anubis_base_prefix");
+    if (basePrefixScript) basePrefix = JSON.parse(basePrefixScript.textContent);
+  } catch {
+    return null;
+  }
+  if (!envelope || typeof envelope !== "object") return null;
+  const record = envelope as Record<string, unknown>;
+  if (!record.rules || typeof record.rules !== "object") return null;
+  if (!record.challenge || typeof record.challenge !== "object") return null;
+  const rules = record.rules as Record<string, unknown>;
+  const challenge = record.challenge as Record<string, unknown>;
+  if (
+    rules.algorithm !== "fast" ||
+    challenge.method !== "fast" ||
+    typeof challenge.id !== "string" ||
+    !ANUBIS_ID_PATTERN.test(challenge.id) ||
+    typeof challenge.randomData !== "string" ||
+    !ANUBIS_RANDOM_DATA_PATTERN.test(challenge.randomData) ||
+    !Number.isInteger(rules.difficulty) ||
+    rules.difficulty !== challenge.difficulty ||
+    (rules.difficulty as number) < 0 ||
+    (rules.difficulty as number) > MAX_ANUBIS_DIFFICULTY ||
+    typeof basePrefix !== "string" ||
+    !ANUBIS_BASE_PREFIX_PATTERN.test(basePrefix)
+  )
+    return null;
+
+  return {
+    id: challenge.id,
+    randomData: challenge.randomData,
+    difficulty: rules.difficulty as number,
+    method: "fast",
+    basePrefix,
+  };
 }
 
 export function parseBackloggdGamesPage(

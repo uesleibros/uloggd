@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import test from "node:test";
 import {
   isAllowedBackloggdCollectionUrl,
   normalizeBackloggdUsername,
+  parseAnubisChallenge,
   parseBackloggdGamesPage,
 } from "../../lib/backloggd/parser";
+import { solveAnubisChallenge } from "../../lib/backloggd/anubis";
 
 test("accepts only a Backloggd username or canonical public profile URL", () => {
   assert.equal(normalizeBackloggdUsername("Player_One"), "Player_One");
@@ -65,6 +68,47 @@ test("detects BotStopper responses instead of parsing challenge links", () => {
   );
   assert.equal(page.challenge, true);
   assert.deepEqual(page.games, []);
+});
+
+test("parses and solves the bounded Anubis fast proof-of-work challenge", () => {
+  const randomData = "ab".repeat(64);
+  const challenge = parseAnubisChallenge(
+    `<html><head>
+      <script id="anubis_challenge" type="application/json">${JSON.stringify({
+        rules: { algorithm: "fast", difficulty: 2 },
+        challenge: {
+          id: "019fa920-9064-72d5-964a-6437ec472e1c",
+          method: "fast",
+          randomData,
+          difficulty: 2,
+        },
+      })}</script>
+      <script id="anubis_base_prefix" type="application/json">""</script>
+    </head></html>`,
+  );
+  assert.ok(challenge);
+  const proof = solveAnubisChallenge(challenge);
+  assert.ok(proof);
+  assert.match(proof.hash, /^00/);
+  assert.equal(
+    proof.hash,
+    createHash("sha256").update(`${randomData}${proof.nonce}`).digest("hex"),
+  );
+});
+
+test("rejects unsupported or excessive Anubis challenges", () => {
+  const challenge = parseAnubisChallenge(
+    `<script id="anubis_challenge">${JSON.stringify({
+      rules: { algorithm: "slow", difficulty: 20 },
+      challenge: {
+        id: "019fa920-9064-72d5-964a-6437ec472e1c",
+        method: "slow",
+        randomData: "ab".repeat(64),
+        difficulty: 20,
+      },
+    })}</script>`,
+  );
+  assert.equal(challenge, null);
 });
 
 test("collection URL allowlist rejects redirects outside the exact profile path", () => {

@@ -1,10 +1,12 @@
-# Backloggd partner access
+# Backloggd source access
 
-The importer reads only public game collection pages. It deliberately does not solve or automate Backloggd's Anubis/BotStopper challenge. Backloggd must allow the partner request before an import can reach IGDB validation.
+The importer reads only public game collection pages and parses them with `h1-parser@1.0.2`. When Backloggd presents its public Anubis/BotStopper proof-of-work challenge, the server completes the official `fast` SHA-256 protocol in a short-lived in-memory session before parsing the collection.
 
-## Preferred setup
+Challenge input is parsed as untrusted data. Only the official `fast` method, a canonical challenge UUID, 128 hexadecimal random-data characters, a local base prefix, and difficulty up to 5 are accepted. Solving stops after 2.5 million nonces or 8 seconds. Cookies are restricted to `backloggd.com`, capped at 8 KiB, used only for the current import, and never persisted or returned to the browser.
 
-Ask Backloggd to allow a secret request header for the collection route. Agree on the header name and a randomly generated value, then configure both as encrypted Vercel environment variables:
+## Optional partner bypass
+
+If Backloggd offers a dedicated bypass, prefer a secret request header for the collection route to avoid unnecessary proof-of-work. Agree on the header name and a randomly generated value, then configure both as encrypted Vercel environment variables:
 
 ```text
 BACKLOGGD_PARTNER_HEADER_NAME=X-Uloggd-Partner-Key
@@ -27,4 +29,4 @@ Failed preview rows remain in `backloggd_imports` with an `error_code`. The API 
 [backloggd-import] commit failed
 ```
 
-`partner_access_required` means Backloggd returned its challenge page before catalog validation. It is reported as HTTP 503, not as a generic 502. No game is written before a validated preview is explicitly confirmed.
+`partner_access_required` means the challenge was unsupported, exceeded the bounded work limits, or remained active after a valid proof. It is reported as HTTP 503, not as a generic 502. Successful proofs emit `[backloggd-import] source challenge solved`. No game is written before a validated preview is explicitly confirmed.
