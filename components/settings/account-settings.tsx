@@ -3,6 +3,7 @@
 import {
   AlertTriangle,
   CalendarDays,
+  CloudDownload,
   CircleUserRound,
   SlidersHorizontal,
   ShieldCheck,
@@ -19,6 +20,7 @@ import { AppearanceSettings } from "./appearance-settings";
 import { ContentPreferences } from "./content-preferences";
 import { PrivacySettings, type FollowRequest } from "./privacy-settings";
 import { UsernameSettings } from "./username-settings";
+import { BackloggdImportSettings } from "./backloggd-import-settings";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
@@ -35,7 +37,13 @@ type BlockedProfile = {
   display_name: string | null;
 };
 type Tab =
-  "general" | "profile" | "preferences" | "privacy" | "appearance" | "security";
+  | "general"
+  | "profile"
+  | "preferences"
+  | "privacy"
+  | "appearance"
+  | "import"
+  | "security";
 
 export function AccountSettings({
   profile,
@@ -61,6 +69,7 @@ export function AccountSettings({
     requestedTab === "preferences" ||
     requestedTab === "privacy" ||
     requestedTab === "appearance" ||
+    requestedTab === "import" ||
     requestedTab === "security"
       ? requestedTab
       : "general";
@@ -98,6 +107,11 @@ export function AccountSettings({
       id: "appearance" as const,
       label: tri(lang, "Aparência", "Appearance", "Apariencia"),
       icon: SwatchBook,
+    },
+    {
+      id: "import" as const,
+      label: tri(lang, "Importar", "Import", "Importar"),
+      icon: CloudDownload,
     },
     {
       id: "security" as const,
@@ -266,6 +280,7 @@ export function AccountSettings({
           />
         )}
         {tab === "appearance" && <AppearanceSettings lang={lang} />}
+        {tab === "import" && <BackloggdImportSettings lang={lang} />}
         {tab === "security" && (
           <div className="settings-security-stack">
             <TwoFactorSettings lang={lang} />

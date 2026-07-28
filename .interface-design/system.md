@@ -294,7 +294,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 ### Account settings
 
-- Settings use the same 38px horizontal tab anatomy as game pages: General, Profile, and Security. General owns immutable account identity, birth date, and owner-only infraction standing; Profile owns public copy, imagery, and social usernames; Security owns passkey management.
+- Settings use the same 38px horizontal tab anatomy as game pages: General, Profile, Preferences, Privacy, Appearance, Import, and Security. General owns immutable account identity, birth date, and owner-only infraction standing; Profile owns public copy, imagery, and social usernames; Security owns passkey management.
 - General ends with a full-width danger zone for permanent account deletion. Its motion-polished confirmation dialog names the affected data, requires both an acknowledgement and the exact `@username`, and keeps the safe cancellation action visually dominant until every condition is met.
 - Social fields accept usernames only for YouTube, Instagram, and Twitter/X. Settings use the official vector marks beside inputs; public profiles expose only 42px square brand-color logo buttons (YouTube red, Instagram magenta, X black), with no redundant text labels.
 - Passkeys use Supabase Auth's experimental passkey API to list, register, and remove device credentials. Security copy explains the device-bound private key and exposes unsupported/disabled states inline.
@@ -302,6 +302,19 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Mobile profiles preserve the banner/avatar focal point, keep identity actions in normal flow, move social/share/report actions full-width below identity, and turn the six metrics into a contained horizontal snap rail instead of squeezing labels.
 - Desktop profile banners are quiet identity strips rather than page heroes: 144–200px tall with a 15vw fluid target, preserving the existing cover crop while letting avatar, name, thought, and actions lead. Mobile retains the roomier 3:1 banner because its identity stack needs the visual anchor.
 - Profile thoughts grow toward the content side of the avatar: rightward on desktop so they never pass beneath the sidebar, and inward on mobile. Their entrance uses a short overshoot followed by a restrained floating drift, removed entirely under reduced motion.
+
+### Select overlays
+
+- Every shared Base UI Select places stacking responsibility on its `Positioner` through `.ui-select-positioner` and `--layer-popover`; the popup class owns only surface, dimensions, and motion. Never try to rescue a clipped select by adding a one-off z-index to the popup.
+- Legacy `position="popper"` selects map to `alignItemWithTrigger={false}`; item-aligned selects keep the primitive default. This prevents Base UI composition error #31 while preserving anchored collision behavior inside dialogs.
+- `Select.ItemText` is the canonical visible label. Triggers and previews resolve that label—translated when the option is an enum—instead of rendering the stored literal value.
+
+### Catalog imports
+
+- Settings → Import treats an external library as a source check, not an automatic sync. The focal control accepts only a public username/profile link; it never asks for a password, cookie, token, or arbitrary URL.
+- Backloggd import collects game links only, validates exact slugs against IGDB, skips uncertain matches, and shows a compact cover-led conference shelf before any write. Reviews, ratings, notes, statuses, dates, lists, and journals never cross the boundary.
+- A confirmed import adds only missing games as Unclassified. Existing library rows are immutable during import. The server owns a 30-minute preview session and the database consumes it atomically, so IDs cannot be changed from the client and repeated confirmation cannot duplicate games.
+- The import surface uses the standard panel → inset depth, 44px controls, tabular validation counts, green only for confirmed matches, and blurple only for the final commit. Mobile collapses guardrails, game rows, and actions to one column without removing any validation state.
 
 ### Search recents
 

@@ -816,7 +816,10 @@ export async function getGamesByIds(ids: number[]): Promise<Game[]> {
 
 // Markdown game cards reference games by slug; same memo strategy as ids.
 const slugMemo = new Map<string, { game: Game | null; expires: number }>();
-const SLUG_BATCH = 30;
+// Importers can validate hundreds of exact IGDB slugs at once. A 100-item body
+// remains small while cutting large-library validation from dozens of upstream
+// round trips to a handful.
+const SLUG_BATCH = 100;
 
 export async function getGamesBySlugs(slugs: string[]): Promise<Game[]> {
   const safeSlugs = [...new Set(slugs.map((slug) => slug.trim().toLowerCase()))]

@@ -103,7 +103,7 @@ const pt: Record<LegalDocument, LegalContent> = {
     title: "Política de Privacidade",
     intro:
       "Esta política explica quais dados o uloggd usa, para quê e quais escolhas você tem.",
-    updated: "Última atualização: 19 de julho de 2026",
+    updated: "Última atualização: 28 de julho de 2026",
     sections: [
       {
         title: "1. Dados tratados",
@@ -112,6 +112,7 @@ const pt: Record<LegalDocument, LegalContent> = {
           "No cadastro, coletamos sua data de nascimento para aplicar proteção etária conforme a Classificação Indicativa brasileira. Ela não aparece no perfil e, como medida de integridade, não pode ser alterada depois da confirmação. A data informada pelo usuário é uma autodeclaração e poderá ser complementada por métodos de aferição adequados ao risco.",
           "Supabase fornece autenticação e banco de dados; Resend entrega e-mails transacionais configurados no Supabase; Cloudflare Turnstile previne abuso; e o ImgChest hospeda avatares e banners enviados voluntariamente. Google, Discord ou Twitch tratam dados quando você escolhe o respectivo login. Dados de catálogo vêm da IGDB.",
           "Quando você escolhe carregar uma demo incorporada, o player do spawnd.gg é conectado e pode tratar endereço IP, dados técnicos, cookies e informações da sessão de jogo conforme os termos e a política do próprio spawnd. O player permanece bloqueado até essa ação explícita.",
+          "Quando você solicita uma importação do Backloggd, enviamos ao serviço apenas a requisição necessária para ler a coleção pública indicada. Processamos somente links de jogos, validamos as correspondências com a IGDB e mantemos a prévia temporária pelo período necessário para sua confirmação; não coletamos credenciais, avaliações, notas ou diário do Backloggd.",
           "Usamos cookies de sessão necessários e armazenamento funcional conforme descrito na Política de Cookies. Não usamos atualmente analytics ou marketing.",
         ],
       },
@@ -303,7 +304,7 @@ const en: Record<LegalDocument, LegalContent> = {
     title: "Privacy Policy",
     intro:
       "This policy explains which data uloggd uses, why it is used, and the choices available to you.",
-    updated: "Last updated: July 19, 2026",
+    updated: "Last updated: July 28, 2026",
     sections: [
       {
         title: "1. Data we process",
@@ -312,6 +313,7 @@ const en: Record<LegalDocument, LegalContent> = {
           "During registration, we collect your birth date to apply age protection based on Brazil's age-rating system. It is not shown on your profile and, as an integrity measure, cannot be changed after confirmation. The date entered by the user is self-declared and may be supplemented by risk-appropriate age-assurance methods.",
           "Supabase provides authentication and database services; Resend delivers transactional email configured through Supabase; Cloudflare Turnstile prevents abuse; and ImgChest hosts avatars and banners you voluntarily upload. Google, Discord, or Twitch process data when you choose that sign-in provider. Catalog data comes from IGDB.",
           "When you choose to load an embedded demo, the spawnd.gg player connects and may process your IP address, technical data, cookies, and play-session information under spawnd's own terms and privacy policy. The player remains blocked until that explicit action.",
+          "When you request a Backloggd import, we send only the request needed to read the public collection you identify. We process game links only, validate matches against IGDB, and retain the temporary preview only as long as needed for your confirmation; we do not collect Backloggd credentials, reviews, notes, or journal data.",
           "We use necessary session cookies and functional storage as described in the Cookie Policy. We do not currently use analytics or marketing.",
         ],
       },
