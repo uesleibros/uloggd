@@ -13,6 +13,11 @@ import {
   parseBackloggdGamesPage,
 } from "../../lib/backloggd/parser";
 import { solveAnubisChallenge } from "../../lib/backloggd/anubis";
+import {
+  backloggdImportMetadata,
+  classifyBackloggdSourceGame,
+  mergeBackloggdSourceGame,
+} from "../../lib/backloggd/metadata";
 
 test("accepts only a Backloggd username or canonical public profile URL", () => {
   assert.equal(normalizeBackloggdUsername("Player_One"), "Player_One");
@@ -88,6 +93,8 @@ test("extracts only canonical Backloggd game links and safe pagination", () => {
     ["hades", "alan-wake-ii"],
   );
   assert.equal(page.games[0].sourceName, "Hades");
+  assert.equal(page.games[0].personalRating, null);
+  assert.equal(page.games[0].played, false);
   assert.equal(page.profileDisplayName, "Player One");
   assert.equal(
     page.profileAvatarUrl,
@@ -97,6 +104,73 @@ test("extracts only canonical Backloggd game links and safe pagination", () => {
     "https://backloggd.com/u/Player_One/games/?page=2",
   ]);
   assert.equal(page.challenge, false);
+});
+
+test("extracts personal ratings and the exact filtered collection", () => {
+  const url = new URL(
+    "https://backloggd.com/u/Player_One/games/added/type:playing/?page=2",
+  );
+  const page = parseBackloggdGamesPage(
+    `<html><body>
+      <div class="card game-cover user-rating" data-rating="9">
+        <a href="/games/hades/" class="cover-link"></a>
+        <img alt="Hades">
+      </div>
+      <a href="/u/Player_One/games/added/type:playing/?page=3">Next</a>
+      <a href="/u/Player_One/games/added/type:played/?page=3">Other filter</a>
+    </body></html>`,
+    url,
+    "Player_One",
+  );
+
+  assert.deepEqual(page.games[0], {
+    slug: "hades",
+    sourceName: "Hades",
+    personalRating: 90,
+    played: false,
+    playing: true,
+    backlog: false,
+    wishlist: false,
+  });
+  assert.deepEqual(page.pageUrls, [
+    "https://backloggd.com/u/Player_One/games/added/type:playing/?page=3",
+  ]);
+});
+
+test("preserves overlapping categories and converts source metadata", () => {
+  const played = {
+    slug: "hades",
+    sourceName: "Hades",
+    personalRating: 90,
+    played: true,
+    playing: false,
+    backlog: false,
+    wishlist: false,
+  };
+  const replayBacklog = {
+    ...played,
+    sourceName: null,
+    personalRating: null,
+    played: false,
+    backlog: true,
+  };
+  const merged = mergeBackloggdSourceGame(played, replayBacklog);
+
+  assert.deepEqual(backloggdImportMetadata(merged), {
+    status: "COMPLETED",
+    playing: false,
+    backlog: true,
+    wishlist: false,
+    quickRating: 90,
+  });
+  assert.equal(
+    classifyBackloggdSourceGame({
+      ...played,
+      personalRating: null,
+      played: false,
+    }).backlog,
+    true,
+  );
 });
 
 test("detects BotStopper responses instead of parsing challenge links", () => {
@@ -152,6 +226,22 @@ test("rejects unsupported or excessive Anubis challenges", () => {
 });
 
 test("collection URL allowlist rejects redirects outside the exact profile path", () => {
+  assert.equal(
+    isAllowedBackloggdCollectionUrl(
+      new URL(
+        "https://backloggd.com/u/player/games/added/type:backlog/?page=2",
+      ),
+      "player",
+    ),
+    true,
+  );
+  assert.equal(
+    isAllowedBackloggdCollectionUrl(
+      new URL("https://backloggd.com/u/player/games/rating/type:played"),
+      "player",
+    ),
+    false,
+  );
   assert.equal(
     isAllowedBackloggdCollectionUrl(
       new URL("https://backloggd.com/u/player/games/?page=40"),

@@ -2,17 +2,22 @@ import "server-only";
 
 import { solveAnubisChallenge } from "@/lib/backloggd/anubis";
 import {
+  classifyBackloggdSourceGame,
+  mergeBackloggdSourceGame,
+} from "@/lib/backloggd/metadata";
+import {
   backloggdCollectionUrl,
   isAllowedBackloggdCollectionUrl,
   parseAnubisChallenge,
   parseBackloggdGamesPage,
   type BackloggdSourceGame,
+  type BackloggdCollectionKind,
   type ParsedBackloggdPage,
 } from "@/lib/backloggd/parser";
 import { getGamesBySlugs, type Game } from "@/lib/igdb";
 
 const MAX_HTML_BYTES = 2 * 1024 * 1024;
-const MAX_PAGES = 100;
+const MAX_PAGES = 250;
 const MAX_GAMES = 2_000;
 const FETCH_CONCURRENCY = 4;
 const MAX_CHALLENGE_ATTEMPTS = 2;
@@ -349,6 +354,13 @@ export type BackloggdValidatedImport = {
   sourcePageCount: number;
 };
 
+const SOURCE_COLLECTIONS: Exclude<BackloggdCollectionKind, "all">[] = [
+  "played",
+  "playing",
+  "backlog",
+  "wishlist",
+];
+
 export async function collectAndValidateBackloggdGames(
   username: string,
   options: CollectOptions = {},
@@ -368,7 +380,12 @@ export async function collectAndValidateBackloggdGames(
 
   const sourceGames = new Map(firstPage.games.map((game) => [game.slug, game]));
   const seenPages = new Set([first.finalUrl.toString()]);
-  const queuedPages = new Set(firstPage.pageUrls);
+  const queuedPages = new Set([
+    ...firstPage.pageUrls,
+    ...SOURCE_COLLECTIONS.map((kind) =>
+      backloggdCollectionUrl(username, 1, kind).toString(),
+    ),
+  ]);
   const queue = [...queuedPages];
 
   while (queue.length) {
@@ -390,7 +407,11 @@ export async function collectAndValidateBackloggdGames(
     for (const page of pages) {
       if (page.privateProfile)
         throw new BackloggdImportError("profile_private");
-      for (const game of page.games) sourceGames.set(game.slug, game);
+      for (const game of page.games)
+        sourceGames.set(
+          game.slug,
+          mergeBackloggdSourceGame(sourceGames.get(game.slug), game),
+        );
       if (sourceGames.size > MAX_GAMES)
         throw new BackloggdImportError("source_too_large");
       for (const href of page.pageUrls) {
@@ -401,7 +422,7 @@ export async function collectAndValidateBackloggdGames(
     }
   }
 
-  const source = [...sourceGames.values()];
+  const source = [...sourceGames.values()].map(classifyBackloggdSourceGame);
   const eligible = source.filter((game) => game.slug.length <= 80);
   const validatedGames = await getGamesBySlugs(
     eligible.map((game) => game.slug),

@@ -5,6 +5,13 @@ const BACKLOGGD_HOST = "backloggd.com";
 const USERNAME_PATTERN = /^[A-Za-z0-9_-]{1,32}$/;
 const GAME_PATH_PATTERN = /^\/games\/([a-z0-9-]{1,120})\/?$/;
 const MAX_PAGE_NUMBER = 100;
+const COLLECTION_KINDS = [
+  "all",
+  "played",
+  "playing",
+  "backlog",
+  "wishlist",
+] as const;
 const ANUBIS_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ANUBIS_RANDOM_DATA_PATTERN = /^[0-9a-f]{128}$/i;
@@ -14,7 +21,14 @@ const MAX_ANUBIS_DIFFICULTY = 5;
 export type BackloggdSourceGame = {
   slug: string;
   sourceName: string | null;
+  personalRating: number | null;
+  played: boolean;
+  playing: boolean;
+  backlog: boolean;
+  wishlist: boolean;
 };
+
+export type BackloggdCollectionKind = (typeof COLLECTION_KINDS)[number];
 
 export type ParsedBackloggdPage = {
   games: BackloggdSourceGame[];
@@ -73,14 +87,31 @@ export function normalizeBackloggdUsername(input: string): string | null {
   return USERNAME_PATTERN.test(username) ? username : null;
 }
 
-export function backloggdCollectionUrl(username: string, page = 1) {
+export function backloggdCollectionUrl(
+  username: string,
+  page = 1,
+  kind: BackloggdCollectionKind = "all",
+) {
   if (!USERNAME_PATTERN.test(username)) throw new Error("Invalid username");
+  if (!COLLECTION_KINDS.includes(kind)) throw new Error("Invalid collection");
+  const suffix = kind === "all" ? "games/" : `games/added/type:${kind}/`;
   const url = new URL(
-    `/u/${encodeURIComponent(username)}/games/`,
+    `/u/${encodeURIComponent(username)}/${suffix}`,
     `https://${BACKLOGGD_HOST}`,
   );
   if (page > 1) url.searchParams.set("page", String(page));
   return url;
+}
+
+function collectionKind(candidate: URL, username: string) {
+  const base = `/u/${encodeURIComponent(username)}/`.toLowerCase();
+  const path = candidate.pathname.toLowerCase().replace(/\/$/, "");
+  if (path === `${base}games`) return "all" as const;
+  for (const kind of COLLECTION_KINDS) {
+    if (kind !== "all" && path === `${base}games/added/type:${kind}`)
+      return kind;
+  }
+  return null;
 }
 
 export function isAllowedBackloggdCollectionUrl(
@@ -96,14 +127,7 @@ export function isAllowedBackloggdCollectionUrl(
     candidate.hash
   )
     return false;
-  const expectedPath =
-    `/u/${encodeURIComponent(username)}/games/`.toLowerCase();
-  const candidatePath = candidate.pathname.toLowerCase();
-  if (
-    candidatePath !== expectedPath &&
-    candidatePath !== expectedPath.slice(0, -1)
-  )
-    return false;
+  if (!collectionKind(candidate, username)) return false;
   if ([...candidate.searchParams.keys()].some((key) => key !== "page"))
     return false;
   const page = candidate.searchParams.get("page");
@@ -114,12 +138,20 @@ export function isAllowedBackloggdCollectionUrl(
 }
 
 function sourceName(anchor: HTMLElement) {
-  const imageAlt = anchor.querySelector("img")?.getAttribute("alt");
+  const imageAlt =
+    anchor.querySelector("img")?.getAttribute("alt") ??
+    anchor.closest(".game-cover")?.querySelector("img")?.getAttribute("alt");
   return (
     cleanText(anchor.getAttribute("title")) ??
     cleanText(imageAlt) ??
     cleanText(anchor.textContent)
   );
+}
+
+function personalRating(anchor: HTMLElement) {
+  const raw = anchor.closest(".game-cover")?.getAttribute("data-rating");
+  if (!raw || !/^(?:[1-9]|10)$/.test(raw)) return null;
+  return Number(raw) * 10;
 }
 
 function profileDisplayName(document: HTMLElement) {
@@ -201,6 +233,7 @@ export function parseBackloggdGamesPage(
 
   const games = new Map<string, BackloggdSourceGame>();
   const pageUrls = new Set<string>();
+  const currentCollection = collectionKind(pageUrl, username);
   for (const anchor of document.querySelectorAll("a[href]")) {
     const href = anchor.getAttribute("href");
     if (!href) continue;
@@ -217,17 +250,30 @@ export function parseBackloggdGamesPage(
       const slug = gameMatch[1];
       const previous = games.get(slug);
       const name = sourceName(anchor);
+      const rating = personalRating(anchor);
       games.set(slug, {
         slug,
         sourceName: previous?.sourceName ?? name,
+        personalRating: previous?.personalRating ?? rating,
+        played: previous?.played ?? currentCollection === "played",
+        playing: previous?.playing ?? currentCollection === "playing",
+        backlog: previous?.backlog ?? currentCollection === "backlog",
+        wishlist: previous?.wishlist ?? currentCollection === "wishlist",
       });
       continue;
     }
 
     if (!isAllowedBackloggdCollectionUrl(url, username)) continue;
+    if (collectionKind(url, username) !== currentCollection) continue;
     const page = Number(url.searchParams.get("page") ?? 1);
     if (page > 1)
-      pageUrls.add(backloggdCollectionUrl(username, page).toString());
+      pageUrls.add(
+        backloggdCollectionUrl(
+          username,
+          page,
+          currentCollection ?? "all",
+        ).toString(),
+      );
   }
 
   return {

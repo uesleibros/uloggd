@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { backloggdAvatarProxyPath } from "@/lib/backloggd/avatar";
+import { backloggdImportMetadata } from "@/lib/backloggd/metadata";
 import {
   BackloggdImportError,
   collectAndValidateBackloggdGames,
@@ -163,10 +164,27 @@ export async function POST(request: Request) {
       supabase,
     );
     const expiresAt = new Date(now + 30 * 60 * 1_000).toISOString();
-    const items = validated.map((game) => ({
-      igdb_id: game.id,
-      game_slug: game.slug,
-    }));
+    const sourceBySlug = new Map(
+      result.sourceGames.map((game) => [game.slug, game]),
+    );
+    const metadataBySlug = new Map(
+      validated.map((game) => [
+        game.slug,
+        backloggdImportMetadata(sourceBySlug.get(game.slug)!),
+      ]),
+    );
+    const items = validated.map((game) => {
+      const metadata = metadataBySlug.get(game.slug)!;
+      return {
+        igdb_id: game.id,
+        game_slug: game.slug,
+        status: metadata.status,
+        playing: metadata.playing,
+        backlog: metadata.backlog,
+        wishlist: metadata.wishlist,
+        quick_rating: metadata.quickRating,
+      };
+    });
     const { error: updateError } = await admin
       .from("backloggd_imports")
       .update({
@@ -181,14 +199,26 @@ export async function POST(request: Request) {
       .eq("profile_id", user.id);
     if (updateError) throw updateError;
 
-    const games = validated.slice(0, 48).map((game) => ({
-      id: game.id,
-      name: game.name,
-      slug: game.slug,
-      coverUrl: game.coverUrl,
-      releaseYear: game.releaseYear,
-      alreadySaved: existing.has(game.id),
-    }));
+    const games = validated.slice(0, 48).map((game) => {
+      const metadata = metadataBySlug.get(game.slug)!;
+      return {
+        id: game.id,
+        name: game.name,
+        slug: game.slug,
+        coverUrl: game.coverUrl,
+        releaseYear: game.releaseYear,
+        alreadySaved: existing.has(game.id),
+        status: metadata.status,
+        playing: metadata.playing,
+        backlog: metadata.backlog,
+        wishlist: metadata.wishlist,
+        personalRating: metadata.quickRating,
+      };
+    });
+    const newGames = validated.filter((game) => !existing.has(game.id));
+    const readyRatedCount = newGames.filter(
+      (game) => (metadataBySlug.get(game.slug)?.quickRating ?? null) !== null,
+    ).length;
     return Response.json(
       {
         importId,
@@ -200,6 +230,7 @@ export async function POST(request: Request) {
         validatedCount: validated.length,
         existingCount: existing.size,
         readyCount: validated.length - existing.size,
+        readyRatedCount,
         skippedCount: result.unmatchedGames.length,
         games,
         previewedCount: games.length,

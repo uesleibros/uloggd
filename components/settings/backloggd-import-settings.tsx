@@ -17,7 +17,10 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { useState } from "react";
+import * as Dialog from "@/components/ui/dialog";
 import { tri, type UiLang } from "@/lib/ui-text";
+
+type ImportStatus = "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED";
 
 type PreviewGame = {
   id: number;
@@ -26,6 +29,11 @@ type PreviewGame = {
   coverUrl: string;
   releaseYear: number | null;
   alreadySaved: boolean;
+  status: ImportStatus;
+  playing: boolean;
+  backlog: boolean;
+  wishlist: boolean;
+  personalRating: number | null;
 };
 
 type Preview = {
@@ -38,6 +46,7 @@ type Preview = {
   validatedCount: number;
   existingCount: number;
   readyCount: number;
+  readyRatedCount: number;
   skippedCount: number;
   games: PreviewGame[];
   previewedCount: number;
@@ -290,6 +299,22 @@ function gameCount(lang: UiLang, count: number) {
   );
 }
 
+function gameCategories(lang: UiLang, game: PreviewGame) {
+  const categories: string[] = [];
+  if (game.status === "COMPLETED")
+    categories.push(tri(lang, "Jogado", "Played", "Jugado"));
+  if (game.playing) categories.push(tri(lang, "Jogando", "Playing", "Jugando"));
+  if (game.backlog) categories.push("Backlog");
+  if (game.wishlist)
+    categories.push(tri(lang, "Desejos", "Wishlist", "Deseos"));
+  return categories;
+}
+
+function personalRating(lang: UiLang, rating: number) {
+  const locale = lang === "pt-BR" ? "pt-BR" : lang === "es" ? "es" : "en";
+  return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(rating / 20)} ★`;
+}
+
 export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
   const router = useRouter();
   const [profile, setProfile] = useState("");
@@ -297,6 +322,7 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
   const [result, setResult] = useState<ImportResult | null>(null);
   const [pending, setPending] = useState<"preview" | "commit" | null>(null);
   const [error, setError] = useState<ImportErrorState | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const profileIsUrl = /^https?:\/\//i.test(profile.trim());
 
   async function validateProfile(event: React.FormEvent<HTMLFormElement>) {
@@ -306,6 +332,7 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
     setError(null);
     setPreview(null);
     setResult(null);
+    setConfirmOpen(false);
     try {
       const response = await fetch("/api/imports/backloggd/preview", {
         method: "POST",
@@ -342,6 +369,7 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
       const payload = await readImportResponse<ImportResult>(response);
       setResult(payload);
       setPreview(null);
+      setConfirmOpen(false);
       router.refresh();
     } catch (requestError) {
       const code =
@@ -351,6 +379,7 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
           ? requestError.reference
           : undefined;
       setError(errorCopy(lang, code, reference));
+      setConfirmOpen(false);
     } finally {
       setPending(null);
     }
@@ -361,6 +390,7 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
     setResult(null);
     setError(null);
     setProfile("");
+    setConfirmOpen(false);
   }
 
   return (
@@ -467,9 +497,9 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
                 <span>
                   {tri(
                     lang,
-                    "Sem avaliações, notas ou diário.",
-                    "No reviews, notes, or journal.",
-                    "Sin reseñas, notas ni diario.",
+                    "Categorias e nota pessoal incluídas; sem reviews ou diário.",
+                    "Categories and personal rating included; no reviews or journal.",
+                    "Categorías y nota personal incluidas; sin reseñas ni diario.",
                   )}
                 </span>
               </div>
@@ -582,9 +612,9 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
                 <p>
                   {tri(
                     lang,
-                    "A confirmação adiciona apenas jogos novos como não classificados e preserva tudo que já existe.",
-                    "Confirmation adds only new games as unclassified and preserves everything already saved.",
-                    "La confirmación añade solo juegos nuevos como no clasificados y conserva todo lo existente.",
+                    "Cada jogo novo mantém suas categorias e sua nota pessoal do Backloggd. O que já existe permanece intacto.",
+                    "Each new game keeps its Backloggd categories and personal rating. Existing records remain untouched.",
+                    "Cada juego nuevo conserva sus categorías y su nota personal de Backloggd. Lo existente permanece intacto.",
                   )}
                 </p>
               </div>
@@ -635,9 +665,21 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
                   </span>
                   <div>
                     <strong>{game.name}</strong>
-                    <small>
-                      {game.releaseYear ??
-                        tri(lang, "Sem ano", "No year", "Sin año")}
+                    <small className="backloggd-preview-metadata">
+                      <span>
+                        {game.releaseYear ??
+                          tri(lang, "Sem ano", "No year", "Sin año")}
+                      </span>
+                      {gameCategories(lang, game).map((category) => (
+                        <span data-category key={category}>
+                          {category}
+                        </span>
+                      ))}
+                      {game.personalRating !== null && (
+                        <span data-rating>
+                          {personalRating(lang, game.personalRating)}
+                        </span>
+                      )}
                     </small>
                   </div>
                   <span>
@@ -687,31 +729,113 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
             </button>
             <button
               type="button"
-              onClick={() => void commitImport()}
+              onClick={() => setConfirmOpen(true)}
               disabled={pending !== null || preview.readyCount <= 0}
             >
-              {pending === "commit" ? (
-                <LoaderCircle className="spin" size={16} />
-              ) : (
-                <Download size={16} />
-              )}
-              {pending === "commit"
-                ? tri(lang, "Importando…", "Importing…", "Importando…")
-                : preview.readyCount > 0
-                  ? tri(
-                      lang,
-                      `Importar ${gameCount(lang, preview.readyCount)}`,
-                      `Import ${gameCount(lang, preview.readyCount)}`,
-                      `Importar ${gameCount(lang, preview.readyCount)}`,
-                    )
-                  : tri(
-                      lang,
-                      "Biblioteca já sincronizada",
-                      "Library already synced",
-                      "Biblioteca ya sincronizada",
-                    )}
+              <Download size={16} />
+              {preview.readyCount > 0
+                ? tri(
+                    lang,
+                    `Importar ${gameCount(lang, preview.readyCount)}`,
+                    `Import ${gameCount(lang, preview.readyCount)}`,
+                    `Importar ${gameCount(lang, preview.readyCount)}`,
+                  )
+                : tri(
+                    lang,
+                    "Biblioteca já sincronizada",
+                    "Library already synced",
+                    "Biblioteca ya sincronizada",
+                  )}
             </button>
           </footer>
+
+          <Dialog.Root
+            open={confirmOpen}
+            onOpenChange={(open) => {
+              if (pending !== "commit") setConfirmOpen(open);
+            }}
+          >
+            <Dialog.Portal>
+              <Dialog.Overlay className="backloggd-confirm-overlay" />
+              <Dialog.Content className="backloggd-confirm-dialog">
+                <span className="backloggd-confirm-mark" aria-hidden>
+                  <Download size={20} />
+                </span>
+                <Dialog.Title>
+                  {tri(
+                    lang,
+                    "Confirmar importação?",
+                    "Confirm import?",
+                    "¿Confirmar importación?",
+                  )}
+                </Dialog.Title>
+                <Dialog.Description>
+                  {tri(
+                    lang,
+                    `Você está prestes a adicionar ${gameCount(lang, preview.readyCount)} de @${preview.sourceUsername}.`,
+                    `You are about to add ${gameCount(lang, preview.readyCount)} from @${preview.sourceUsername}.`,
+                    `Estás a punto de añadir ${gameCount(lang, preview.readyCount)} de @${preview.sourceUsername}.`,
+                  )}
+                </Dialog.Description>
+                <dl className="backloggd-confirm-summary">
+                  <div>
+                    <dt>
+                      {tri(lang, "Jogos novos", "New games", "Juegos nuevos")}
+                    </dt>
+                    <dd>{preview.readyCount}</dd>
+                  </div>
+                  <div>
+                    <dt>
+                      {tri(
+                        lang,
+                        "Com categoria",
+                        "With category",
+                        "Con categoría",
+                      )}
+                    </dt>
+                    <dd>{preview.readyCount}</dd>
+                  </div>
+                  <div>
+                    <dt>{tri(lang, "Com nota", "With rating", "Con nota")}</dt>
+                    <dd>{preview.readyRatedCount}</dd>
+                  </div>
+                </dl>
+                <p className="backloggd-confirm-note">
+                  <ShieldCheck size={14} />
+                  {tri(
+                    lang,
+                    `${gameCount(lang, preview.existingCount)} já salvos não serão alterados.`,
+                    `${gameCount(lang, preview.existingCount)} already saved will not be changed.`,
+                    `${gameCount(lang, preview.existingCount)} ya guardados no se modificarán.`,
+                  )}
+                </p>
+                <footer>
+                  <Dialog.Close type="button" disabled={pending === "commit"}>
+                    {tri(lang, "Cancelar", "Cancel", "Cancelar")}
+                  </Dialog.Close>
+                  <button
+                    type="button"
+                    onClick={() => void commitImport()}
+                    disabled={pending === "commit"}
+                  >
+                    {pending === "commit" ? (
+                      <LoaderCircle className="spin" size={16} />
+                    ) : (
+                      <Download size={16} />
+                    )}
+                    {pending === "commit"
+                      ? tri(lang, "Importando…", "Importing…", "Importando…")
+                      : tri(
+                          lang,
+                          "Sim, importar agora",
+                          "Yes, import now",
+                          "Sí, importar ahora",
+                        )}
+                  </button>
+                </footer>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
         </div>
       )}
 
