@@ -519,36 +519,35 @@ export function LoginPanel({
 
   return (
     <section className="login-panel" aria-labelledby="login-title">
-      {mode === "forgot" ? (
+      <div className="auth-tabs" role="tablist" aria-label={d.auth.title}>
         <button
           type="button"
-          className="auth-text-button"
+          role="tab"
+          aria-selected={mode === "signin"}
+          tabIndex={mode === "signin" ? 0 : -1}
           onClick={() => changeMode("signin")}
         >
-          {copy.backToSignin}
+          {copy.signin}
         </button>
-      ) : (
-        <div className="auth-tabs" role="tablist" aria-label={d.auth.title}>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "signin"}
-            tabIndex={mode === "signin" ? 0 : -1}
-            onClick={() => changeMode("signin")}
-          >
-            {copy.signin}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "signup"}
-            tabIndex={mode === "signup" ? 0 : -1}
-            onClick={() => changeMode("signup")}
-          >
-            {copy.signup}
-          </button>
-        </div>
-      )}
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "signup"}
+          tabIndex={mode === "signup" ? 0 : -1}
+          onClick={() => changeMode("signup")}
+        >
+          {copy.signup}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "forgot"}
+          tabIndex={mode === "forgot" ? 0 : -1}
+          onClick={() => changeMode("forgot")}
+        >
+          {copy.forgot}
+        </button>
+      </div>
 
       <header className="login-panel-heading">
         <h1 id="login-title">
@@ -665,15 +664,6 @@ export function LoginPanel({
               </span>
             )}
 
-            {mode === "signin" && (
-              <button
-                type="button"
-                className="auth-text-button"
-                onClick={() => changeMode("forgot")}
-              >
-                {copy.forgot}
-              </button>
-            )}
           </label>
         )}
 
