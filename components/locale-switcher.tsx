@@ -1,6 +1,6 @@
 "use client";
 
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import { Check, ChevronDown, Globe2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { tri, type UiLang } from "@/lib/ui-text";

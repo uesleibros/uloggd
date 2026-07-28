@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/ui/dialog";
 import {
   ArrowLeft,
   Bell,

@@ -53,7 +53,7 @@ export function SmartHeader({
       hasFocusThatNeedsVisibility() ||
       Boolean(
         header.querySelector(
-          '[aria-expanded="true"], [data-state="open"], [aria-pressed="true"]',
+          '[aria-expanded="true"], [data-open], [aria-pressed="true"]',
         ),
       );
     const conceal = () => {

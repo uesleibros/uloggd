@@ -1,6 +1,6 @@
 "use client";
 
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

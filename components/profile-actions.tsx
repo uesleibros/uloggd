@@ -1,8 +1,8 @@
 "use client";
 
-import * as Dialog from "@radix-ui/react-dialog";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import * as Select from "@radix-ui/react-select";
+import * as Dialog from "@/components/ui/dialog";
+import * as DropdownMenu from "@/components/ui/dropdown-menu";
+import * as Select from "@/components/ui/select";
 import {
   Ban,
   Check,

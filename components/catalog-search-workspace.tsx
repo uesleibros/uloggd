@@ -1,6 +1,6 @@
 "use client";
 
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/ui/dialog";
 import * as Select from "@/components/ui/select";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";

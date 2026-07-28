@@ -1564,7 +1564,7 @@
   border-radius: 9px;
   background: var(--overlay-panel);
   box-shadow: 0 14px 38px var(--overlay-shadow);
-  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+  transform-origin: var(--transform-origin);
   animation: profile-comment-menu-in 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .profile-comment-action-menu [role="menuitem"] {
@@ -2356,7 +2356,7 @@ a.year-top-game:hover .year-top-copy strong {
     color 150ms ease-out;
 }
 .profile-more-trigger:hover,
-.profile-more-trigger[data-state="open"] {
+.profile-more-trigger[data-open] {
   border-color: var(--brand-blurple);
   background: var(--console-hover);
   color: var(--screen-white);
@@ -2369,7 +2369,7 @@ a.year-top-game:hover .year-top-copy strong {
   border-radius: 10px;
   background: var(--overlay-panel);
   box-shadow: 0 16px 42px var(--overlay-shadow);
-  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+  transform-origin: var(--transform-origin);
   animation: profile-comment-menu-in 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .profile-more-menu [role="menuitem"] {

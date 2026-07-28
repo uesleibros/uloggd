@@ -492,10 +492,10 @@
   background: rgb(4 3 8 / 72%);
   backdrop-filter: blur(7px);
 }
-.moderation-dialog-overlay[data-state="open"] {
+.moderation-dialog-overlay[data-open] {
   animation: modal-veil-in 180ms ease-out both;
 }
-.moderation-dialog-overlay[data-state="closed"] {
+.moderation-dialog-overlay[data-closed] {
   animation: modal-veil-out 140ms ease-out both;
 }
 .moderation-dialog {
@@ -513,10 +513,10 @@
   box-shadow: 0 28px 80px var(--overlay-shadow);
   transform: translate(-50%, -50%);
 }
-.moderation-dialog[data-state="open"] {
+.moderation-dialog[data-open] {
   animation: modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
-.moderation-dialog[data-state="closed"] {
+.moderation-dialog[data-closed] {
   animation: modal-center-out 150ms cubic-bezier(0.77, 0, 0.175, 1) both;
 }
 .moderation-dialog > button {
@@ -577,16 +577,16 @@
 }
 .moderation-select-content {
   z-index: 1000;
-  min-width: var(--radix-select-trigger-width);
+  min-width: var(--anchor-width);
   overflow: hidden;
   border: 1px solid var(--shell-line-strong);
   border-radius: 9px;
   background: var(--overlay-panel);
   box-shadow: 0 14px 38px var(--overlay-shadow);
-  transform-origin: var(--radix-select-content-transform-origin);
+  transform-origin: var(--transform-origin);
   animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
-.moderation-select-content[data-state="closed"] {
+.moderation-select-content[data-closed] {
   animation: menu-out 110ms cubic-bezier(0.77, 0, 0.175, 1);
 }
 .moderation-select-item {
@@ -601,7 +601,7 @@
   cursor: pointer;
 }
 .moderation-select-item[data-highlighted],
-.moderation-select-item[data-state="checked"] {
+.moderation-select-item[data-checked] {
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
 }
@@ -699,10 +699,10 @@
     border-radius: 15px 15px 0 0;
     transform: none;
   }
-  .moderation-dialog[data-state="open"] {
+  .moderation-dialog[data-open] {
     animation-name: modal-sheet-in;
   }
-  .moderation-dialog[data-state="closed"] {
+  .moderation-dialog[data-closed] {
     animation-name: modal-sheet-out;
   }
 }

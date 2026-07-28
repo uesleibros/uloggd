@@ -1,6 +1,6 @@
 "use client";
 
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/ui/dialog";
 import { Check, Copy, Send, Share2, X } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";

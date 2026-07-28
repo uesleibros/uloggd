@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import {
   ChevronDown,
   LoaderCircle,

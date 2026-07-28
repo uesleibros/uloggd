@@ -1,6 +1,6 @@
 "use client";
 
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/ui/dialog";
 import { CalendarDays, Clock3, Flag, Map, Play, X } from "lucide-react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { RelativeTime } from "@/components/relative-time";

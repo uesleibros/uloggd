@@ -1,6 +1,6 @@
 "use client";
 
-import * as RadixTooltip from "@radix-ui/react-tooltip";
+import { Tooltip as BaseTooltip } from "@base-ui/react/tooltip";
 import type { ReactElement, ReactNode } from "react";
 
 /**
@@ -25,27 +25,28 @@ export function Tooltip({
 }) {
   if (!label) return children;
   return (
-    <RadixTooltip.Root>
-      <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
-      <RadixTooltip.Portal>
-        <RadixTooltip.Content
-          className="app-tooltip"
+    <BaseTooltip.Root>
+      <BaseTooltip.Trigger render={children} />
+      <BaseTooltip.Portal>
+        <BaseTooltip.Positioner
           side={side}
           sideOffset={sideOffset}
           collisionPadding={8}
         >
-          {label}
-          <RadixTooltip.Arrow className="app-tooltip-arrow" />
-        </RadixTooltip.Content>
-      </RadixTooltip.Portal>
-    </RadixTooltip.Root>
+          <BaseTooltip.Popup className="app-tooltip">
+            {label}
+            <BaseTooltip.Arrow className="app-tooltip-arrow" />
+          </BaseTooltip.Popup>
+        </BaseTooltip.Positioner>
+      </BaseTooltip.Portal>
+    </BaseTooltip.Root>
   );
 }
 
 export function TooltipProvider({ children }: { children: ReactNode }) {
   return (
-    <RadixTooltip.Provider delayDuration={350} skipDelayDuration={300}>
+    <BaseTooltip.Provider delay={350} closeDelay={0} timeout={300}>
       {children}
-    </RadixTooltip.Provider>
+    </BaseTooltip.Provider>
   );
 }

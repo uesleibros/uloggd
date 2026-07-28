@@ -1,6 +1,6 @@
 "use client";
 
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/ui/dialog";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";

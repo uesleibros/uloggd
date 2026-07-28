@@ -83,7 +83,11 @@
   left: calc(var(--publisher-gutter) * -1);
   height: clamp(300px, 30vw, 400px);
   background:
-    linear-gradient(180deg, rgb(9 8 12 / 18%) 0%, var(--console-canvas) 96%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--console-black) 18%, transparent) 0%,
+      var(--console-canvas) 96%
+    ),
     linear-gradient(
       90deg,
       var(--console-canvas) 0%,
@@ -130,9 +134,9 @@
   border-radius: 16px;
   /* Logos are supplied on white far more often than not, so the plate stays
      light in both themes instead of hiding half of them. */
-  background: #f4f5f8;
+  background: var(--screen-white);
   box-shadow: 0 0 0 1px var(--shell-line-strong);
-  color: #4c5058;
+  color: var(--console-panel);
 }
 .publisher-logo img {
   width: 100%;

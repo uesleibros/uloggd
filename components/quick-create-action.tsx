@@ -1,6 +1,6 @@
 "use client";
 
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { BookOpen, LockKeyhole, Plus, ScanLine } from "lucide-react";
 import { tri, type UiLang } from "@/lib/ui-text";

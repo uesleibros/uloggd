@@ -1,6 +1,6 @@
 "use client";
 
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import {
   Check,

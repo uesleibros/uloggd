@@ -1,6 +1,6 @@
 "use client";
 
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/ui/dialog";
 import { Check, Cookie, LockKeyhole, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";

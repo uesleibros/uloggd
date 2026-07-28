@@ -1,6 +1,6 @@
 "use client";
 
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/ui/dialog";
 import "react-image-crop/dist/ReactCrop.css";
 import { Check, LoaderCircle, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";

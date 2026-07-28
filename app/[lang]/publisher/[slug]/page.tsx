@@ -379,14 +379,14 @@ async function CompanyEvents({
 export default async function PublisherPage({ params }: Props) {
   const { lang, slug } = await params;
   if (!hasLocale(lang)) notFound();
-  const company: CompanyProfile | null = await getCompanyBySlug(slug);
+  const [company, user]: [CompanyProfile | null, Awaited<ReturnType<typeof getAuthUser>>] =
+    await Promise.all([getCompanyBySlug(slug), getAuthUser()]);
   if (!company) notFound();
 
   const highlights = [...company.published, ...company.developed];
   const uniqueHighlights = [
     ...new Map(highlights.map((game) => [game.id, game])).values(),
   ];
-  const user = await getAuthUser();
   const savedRows =
     user && uniqueHighlights.length
       ? ((
@@ -412,8 +412,10 @@ export default async function PublisherPage({ params }: Props) {
     : null;
   const summary = company.description.split(/\n{2,}/)[0].trim();
   const initial = company.name.toUpperCase().match(/[\p{L}\p{N}]/u)?.[0] ?? "";
-  const backdrop =
-    uniqueHighlights.find((game) => game.heroUrl)?.heroUrl ?? null;
+  // A company's visual identity must reflect work it actually developed.
+  // Publishing credit still belongs in the catalogue, but never supplies the
+  // hero artwork because that would visually attribute another studio's work.
+  const backdrop = company.developed.find((game) => game.heroUrl)?.heroUrl ?? null;
   const searchHref = `/${lang}/search?publishers=${company.id}`;
   // IGDB's own vocabulary, translated where it has an obvious equivalent and
   // passed through capitalised where it does not.
