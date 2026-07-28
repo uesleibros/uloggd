@@ -54,11 +54,11 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname = `/${detected}${pathname}`;
     return NextResponse.redirect(request.nextUrl);
   }
-  let response = NextResponse.next({ request });
-  if (process.env.ULOGGD_E2E === "1") return response;
   const segment = pathname.slice(lang.length + 2).split("/")[0] || "";
   if (segment === "feed")
     return NextResponse.redirect(new URL(`/${lang}`, request.url), 308);
+  let response = NextResponse.next({ request });
+  if (process.env.ULOGGD_E2E === "1") return response;
   // Before the auth checks: a URL that matches no route is not a login problem,
   // and bouncing it to /login told crawlers the page exists. Rewriting instead
   // of redirecting keeps the dead URL in the address bar, which is what a 404
