@@ -2,6 +2,8 @@
 
 The importer reads only public game collection pages and parses them with `h1-parser@1.0.2`. When Backloggd presents its public Anubis/BotStopper proof-of-work challenge, the server completes the official `fast` SHA-256 protocol in a short-lived in-memory session before parsing the collection.
 
+Collection pagination accepts Backloggd's canonical `/games/` route and its slashless `Next` links, follows pages sequentially through the same in-memory session, deduplicates game slugs, and validates the complete result against IGDB. The preview identity comes from the same public games page: a bounded display name and an HTTPS avatar hosted by Backloggd's avatar CDN.
+
 Challenge input is parsed as untrusted data. Only the official `fast` method, a canonical challenge UUID, 128 hexadecimal random-data characters, a local base prefix, and difficulty up to 5 are accepted. Solving stops after 2.5 million nonces or 8 seconds. Cookies are restricted to `backloggd.com`, capped at 8 KiB, used only for the current import, and never persisted or returned to the browser.
 
 ## Optional partner bypass

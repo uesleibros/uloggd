@@ -31,6 +31,9 @@ type PreviewGame = {
 type Preview = {
   importId: string;
   sourceUsername: string;
+  sourceDisplayName: string;
+  sourceAvatarUrl: string | null;
+  sourcePageCount: number;
   discoveredCount: number;
   validatedCount: number;
   existingCount: number;
@@ -478,7 +481,18 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
           aria-live="polite"
           aria-busy="true"
         >
-          <span className="skeleton-block" />
+          <div className="backloggd-import-loading-profile">
+            <span className="skeleton-block" />
+            <div>
+              <span className="skeleton-block" />
+              <span className="skeleton-block" />
+            </div>
+          </div>
+          <div className="backloggd-import-loading-stats">
+            {Array.from({ length: 4 }, (_, index) => (
+              <span className="skeleton-block" key={index} />
+            ))}
+          </div>
           {Array.from({ length: 4 }, (_, index) => (
             <article key={index}>
               <span className="skeleton-block" />
@@ -494,24 +508,54 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
       {preview && (
         <div className="backloggd-import-preview">
           <div className="backloggd-preview-heading">
-            <div>
-              <small>
-                {tri(
-                  lang,
-                  "PRÉVIA VALIDADA",
-                  "VALIDATED PREVIEW",
-                  "VISTA VALIDADA",
+            <div className="backloggd-preview-profile">
+              <span className="backloggd-preview-avatar" aria-hidden>
+                {preview.sourceAvatarUrl ? (
+                  <Image
+                    src={preview.sourceAvatarUrl}
+                    width={48}
+                    height={48}
+                    alt=""
+                    unoptimized
+                  />
+                ) : (
+                  preview.sourceDisplayName.slice(0, 1).toUpperCase()
                 )}
-              </small>
-              <h3>@{preview.sourceUsername}</h3>
-              <p>
-                {tri(
-                  lang,
-                  "A confirmação adiciona apenas jogos novos como não classificados e preserva tudo que já existe.",
-                  "Confirmation adds only new games as unclassified and preserves everything already saved.",
-                  "La confirmación añade solo juegos nuevos como no clasificados y conserva todo lo existente.",
-                )}
-              </p>
+              </span>
+              <div>
+                <small>
+                  {tri(
+                    lang,
+                    "PRÉVIA VALIDADA",
+                    "VALIDATED PREVIEW",
+                    "VISTA VALIDADA",
+                  )}
+                </small>
+                <h3>{preview.sourceDisplayName}</h3>
+                <span className="backloggd-preview-handle">
+                  @{preview.sourceUsername} · {preview.sourcePageCount}{" "}
+                  {tri(
+                    lang,
+                    preview.sourcePageCount === 1
+                      ? "página conferida"
+                      : "páginas conferidas",
+                    preview.sourcePageCount === 1
+                      ? "page checked"
+                      : "pages checked",
+                    preview.sourcePageCount === 1
+                      ? "página comprobada"
+                      : "páginas comprobadas",
+                  )}
+                </span>
+                <p>
+                  {tri(
+                    lang,
+                    "A confirmação adiciona apenas jogos novos como não classificados e preserva tudo que já existe.",
+                    "Confirmation adds only new games as unclassified and preserves everything already saved.",
+                    "La confirmación añade solo juegos nuevos como no clasificados y conserva todo lo existente.",
+                  )}
+                </p>
+              </div>
             </div>
             <a
               href={`https://backloggd.com/u/${encodeURIComponent(preview.sourceUsername)}/games/`}

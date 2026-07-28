@@ -12,7 +12,7 @@ import {
 import { getGamesBySlugs, type Game } from "@/lib/igdb";
 
 const MAX_HTML_BYTES = 2 * 1024 * 1024;
-const MAX_PAGES = 40;
+const MAX_PAGES = 100;
 const MAX_GAMES = 2_000;
 const FETCH_CONCURRENCY = 4;
 const MAX_CHALLENGE_ATTEMPTS = 2;
@@ -344,6 +344,9 @@ export type BackloggdValidatedImport = {
   sourceGames: BackloggdSourceGame[];
   validatedGames: Game[];
   unmatchedGames: BackloggdSourceGame[];
+  sourceDisplayName: string;
+  sourceAvatarUrl: string | null;
+  sourcePageCount: number;
 };
 
 export async function collectAndValidateBackloggdGames(
@@ -408,5 +411,8 @@ export async function collectAndValidateBackloggdGames(
     sourceGames: source,
     validatedGames,
     unmatchedGames: source.filter((game) => !validatedSlugs.has(game.slug)),
+    sourceDisplayName: firstPage.profileDisplayName ?? username,
+    sourceAvatarUrl: firstPage.profileAvatarUrl,
+    sourcePageCount: seenPages.size,
   };
 }

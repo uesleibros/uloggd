@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
         hostname: "images.igdb.com",
         pathname: "/igdb/image/upload/**",
       },
+      {
+        protocol: "https",
+        hostname: "backloggd-avatars.b-cdn.net",
+        pathname: "/**",
+      },
     ],
   },
 };

@@ -192,6 +192,9 @@ export async function POST(request: Request) {
       {
         importId,
         sourceUsername: username,
+        sourceDisplayName: result.sourceDisplayName,
+        sourceAvatarUrl: result.sourceAvatarUrl,
+        sourcePageCount: result.sourcePageCount,
         discoveredCount: result.sourceGames.length,
         validatedCount: validated.length,
         existingCount: existing.size,

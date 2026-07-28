@@ -1,9 +1,10 @@
 import parse, { type HTMLElement } from "h1-parser";
 
 const BACKLOGGD_HOST = "backloggd.com";
+const BACKLOGGD_AVATAR_HOST = "backloggd-avatars.b-cdn.net";
 const USERNAME_PATTERN = /^[A-Za-z0-9_-]{1,32}$/;
 const GAME_PATH_PATTERN = /^\/games\/([a-z0-9-]{1,120})\/?$/;
-const MAX_PAGE_NUMBER = 40;
+const MAX_PAGE_NUMBER = 100;
 const ANUBIS_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ANUBIS_RANDOM_DATA_PATTERN = /^[0-9a-f]{128}$/i;
@@ -20,6 +21,8 @@ export type ParsedBackloggdPage = {
   pageUrls: string[];
   challenge: boolean;
   privateProfile: boolean;
+  profileDisplayName: string | null;
+  profileAvatarUrl: string | null;
 };
 
 export type ParsedAnubisChallenge = {
@@ -93,9 +96,12 @@ export function isAllowedBackloggdCollectionUrl(
     candidate.hash
   )
     return false;
+  const expectedPath =
+    `/u/${encodeURIComponent(username)}/games/`.toLowerCase();
+  const candidatePath = candidate.pathname.toLowerCase();
   if (
-    candidate.pathname.toLowerCase() !==
-    `/u/${encodeURIComponent(username)}/games/`.toLowerCase()
+    candidatePath !== expectedPath &&
+    candidatePath !== expectedPath.slice(0, -1)
   )
     return false;
   if ([...candidate.searchParams.keys()].some((key) => key !== "page"))
@@ -114,6 +120,36 @@ function sourceName(anchor: HTMLElement) {
     cleanText(imageAlt) ??
     cleanText(anchor.textContent)
   );
+}
+
+function profileDisplayName(document: HTMLElement) {
+  const value = cleanText(
+    document.querySelector("h3.main-header")?.textContent,
+  );
+  return value && value.length <= 80 ? value : null;
+}
+
+function profileAvatarUrl(document: HTMLElement, pageUrl: URL) {
+  const source = document
+    .querySelector(".avatar.avatar-static img")
+    ?.getAttribute("src");
+  if (!source || source.length > 500) return null;
+  let url: URL;
+  try {
+    url = new URL(source, pageUrl);
+  } catch {
+    return null;
+  }
+  if (
+    url.protocol !== "https:" ||
+    canonicalHost(url.hostname) !== BACKLOGGD_AVATAR_HOST ||
+    url.port ||
+    url.username ||
+    url.password ||
+    url.hash
+  )
+    return null;
+  return url.toString();
 }
 
 export function parseAnubisChallenge(
@@ -206,7 +242,8 @@ export function parseBackloggdGamesPage(
 
     if (!isAllowedBackloggdCollectionUrl(url, username)) continue;
     const page = Number(url.searchParams.get("page") ?? 1);
-    if (page > 1) pageUrls.add(url.toString());
+    if (page > 1)
+      pageUrls.add(backloggdCollectionUrl(username, page).toString());
   }
 
   return {
@@ -214,5 +251,7 @@ export function parseBackloggdGamesPage(
     pageUrls: [...pageUrls],
     challenge,
     privateProfile,
+    profileDisplayName: profileDisplayName(document),
+    profileAvatarUrl: profileAvatarUrl(document, pageUrl),
   };
 }

@@ -36,11 +36,17 @@ test("extracts only canonical Backloggd game links and safe pagination", () => {
   const page = parseBackloggdGamesPage(
     `<!doctype html>
       <html><head><title>Player_One's games</title></head><body>
+        <div class="profile-summary">
+          <span class="avatar avatar-static">
+            <img src="https://backloggd-avatars.b-cdn.net/avatar-token">
+          </span>
+          <h3 class="mr-2 mb-0 main-header">Player One</h3>
+        </div>
         <a class="game-card" href="/games/hades/"><img alt="Hades"></a>
         <a href="https://www.backloggd.com/games/alan-wake-ii/">Alan Wake II</a>
         <a href="/games/hades/">Duplicate Hades</a>
         <a href="https://evil.example/games/not-a-game/">Ignore me</a>
-        <a href="?page=2">2</a>
+        <a href="/u/Player_One/games?page=2">Next</a>
         <a href="?page=3&sort=rating">unsafe filter</a>
         <a href="/u/another-user/games/?page=2">wrong profile</a>
       </body></html>`,
@@ -53,6 +59,11 @@ test("extracts only canonical Backloggd game links and safe pagination", () => {
     ["hades", "alan-wake-ii"],
   );
   assert.equal(page.games[0].sourceName, "Hades");
+  assert.equal(page.profileDisplayName, "Player One");
+  assert.equal(
+    page.profileAvatarUrl,
+    "https://backloggd-avatars.b-cdn.net/avatar-token",
+  );
   assert.deepEqual(page.pageUrls, [
     "https://backloggd.com/u/Player_One/games/?page=2",
   ]);
@@ -121,7 +132,14 @@ test("collection URL allowlist rejects redirects outside the exact profile path"
   );
   assert.equal(
     isAllowedBackloggdCollectionUrl(
-      new URL("https://backloggd.com/u/player/games/?page=41"),
+      new URL("https://backloggd.com/u/player/games?page=100"),
+      "player",
+    ),
+    true,
+  );
+  assert.equal(
+    isAllowedBackloggdCollectionUrl(
+      new URL("https://backloggd.com/u/player/games?page=101"),
       "player",
     ),
     false,
