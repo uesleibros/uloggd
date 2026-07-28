@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LibraryBig, ListChecks, RefreshCw } from "lucide-react";
+import { Gamepad2, LibraryBig, ListChecks, MessageSquareText, RefreshCw, Sparkles } from "lucide-react";
 import { redirect, notFound } from "next/navigation";
 import { LoginPanel } from "@/components/auth/login-panel";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
@@ -50,15 +50,60 @@ export default async function LoginPage({
       ListChecks,
       tri(
         lang,
-        "Registre do seu jeito",
-        "Log it your way",
-        "Registra a tu manera",
+        "Crie listas do seu jeito",
+        "Create lists your way",
+        "Crea listas a tu manera",
       ),
       tri(
         lang,
-        "Guarde avaliações, listas e pensamentos sobre os jogos que fazem parte da sua história.",
-        "Keep reviews, lists, and thoughts about the games that are part of your story.",
-        "Guarda reseñas, listas y pensamientos sobre los juegos que forman parte de tu historia.",
+        "Monte rankings, coleções e listas personalizadas com os jogos que quiser.",
+        "Build rankings, collections, and custom lists with any games you want.",
+        "Crea rankings, colecciones y listas personalizadas con los juegos que quieras.",
+      ),
+    ],
+    [
+      MessageSquareText,
+      tri(
+        lang,
+        "Compartilhe suas opiniões",
+        "Share your opinions",
+        "Comparte tus opiniones",
+      ),
+      tri(
+        lang,
+        "Publique avaliações e registre o que cada jogo significou para você.",
+        "Publish reviews and record what each game meant to you.",
+        "Publica reseñas y registra lo que cada juego significó para ti.",
+      ),
+    ],
+    [
+      Sparkles,
+      tri(
+        lang,
+        "Descubra novos jogos",
+        "Discover new games",
+        "Descubre nuevos juegos",
+      ),
+      tri(
+        lang,
+        "Encontre sua próxima experiência através de avaliações, listas e perfis.",
+        "Find your next experience through reviews, lists, and profiles.",
+        "Encuentra tu próxima experiencia mediante reseñas, listas y perfiles.",
+      ),
+    ],
+    [
+      Gamepad2,
+      tri(
+        lang,
+        "Construa seu perfil gamer",
+        "Build your gaming profile",
+        "Construye tu perfil gamer",
+      ),
+      tri(
+        lang,
+        "Mostre seus jogos favoritos, seu histórico e tudo que faz parte da sua jornada.",
+        "Show your favorite games, your history, and everything in your gaming journey.",
+        "Muestra tus juegos favoritos, tu historial y todo lo que forma parte de tu recorrido.",
       ),
     ],
     [
@@ -71,9 +116,9 @@ export default async function LoginPage({
       ),
       tri(
         lang,
-        "Sua biblioteca e preferências permanecem sincronizadas com sua conta.",
-        "Your library and preferences stay synchronized with your account.",
-        "Tu biblioteca y tus preferencias permanecen sincronizadas con tu cuenta.",
+        "Sua biblioteca, listas e preferências permanecem sincronizadas com sua conta.",
+        "Your library, lists, and preferences stay synchronized with your account.",
+        "Tu biblioteca, listas y preferencias permanecen sincronizadas con tu cuenta.",
       ),
     ],
   ] as const;
