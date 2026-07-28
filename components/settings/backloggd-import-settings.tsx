@@ -67,6 +67,48 @@ class ImportRequestError extends Error {
   }
 }
 
+const BACKLOGGD_MARK_URL = "https://backloggd.com/apple-touch-icon.png";
+
+function BackloggdMark() {
+  const [failed, setFailed] = useState(false);
+  return (
+    <span className="backloggd-import-mark" aria-hidden>
+      {failed ? (
+        <span>B</span>
+      ) : (
+        <Image
+          src={BACKLOGGD_MARK_URL}
+          width={42}
+          height={42}
+          alt=""
+          unoptimized
+          onError={() => setFailed(true)}
+        />
+      )}
+    </span>
+  );
+}
+
+function BackloggdAvatar({ src, name }: { src: string | null; name: string }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <span className="backloggd-preview-avatar" aria-hidden>
+      {src && !failed ? (
+        <Image
+          src={src}
+          width={48}
+          height={48}
+          alt=""
+          unoptimized
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        name.slice(0, 1).toUpperCase()
+      )}
+    </span>
+  );
+}
+
 function fallbackErrorCode(status: number) {
   if (status === 401) return "unauthorized";
   if (status === 403) return "request_blocked";
@@ -327,9 +369,7 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
       aria-labelledby="backloggd-import-title"
     >
       <header className="backloggd-import-header">
-        <span className="backloggd-import-mark" aria-hidden>
-          <Download size={19} />
-        </span>
+        <BackloggdMark />
         <div>
           <small>{tri(lang, "IMPORTAÇÃO", "IMPORT", "IMPORTACIÓN")}</small>
           <h2 id="backloggd-import-title">
@@ -509,19 +549,11 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
         <div className="backloggd-import-preview">
           <div className="backloggd-preview-heading">
             <div className="backloggd-preview-profile">
-              <span className="backloggd-preview-avatar" aria-hidden>
-                {preview.sourceAvatarUrl ? (
-                  <Image
-                    src={preview.sourceAvatarUrl}
-                    width={48}
-                    height={48}
-                    alt=""
-                    unoptimized
-                  />
-                ) : (
-                  preview.sourceDisplayName.slice(0, 1).toUpperCase()
-                )}
-              </span>
+              <BackloggdAvatar
+                key={preview.sourceAvatarUrl ?? preview.sourceUsername}
+                src={preview.sourceAvatarUrl}
+                name={preview.sourceDisplayName}
+              />
               <div>
                 <small>
                   {tri(

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { backloggdAvatarProxyPath } from "@/lib/backloggd/avatar";
 import {
   BackloggdImportError,
   collectAndValidateBackloggdGames,
@@ -193,7 +194,7 @@ export async function POST(request: Request) {
         importId,
         sourceUsername: username,
         sourceDisplayName: result.sourceDisplayName,
-        sourceAvatarUrl: result.sourceAvatarUrl,
+        sourceAvatarUrl: backloggdAvatarProxyPath(result.sourceAvatarUrl),
         sourcePageCount: result.sourcePageCount,
         discoveredCount: result.sourceGames.length,
         validatedCount: validated.length,

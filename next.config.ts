@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
         hostname: "backloggd-avatars.b-cdn.net",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "backloggd.com",
+        pathname: "/apple-touch-icon.png",
+      },
     ],
   },
 };

@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import test from "node:test";
 import {
+  backloggdAvatarProxyPath,
+  backloggdAvatarSourceUrl,
+  normalizeBackloggdAvatarUrl,
+} from "../../lib/backloggd/avatar";
+import {
   isAllowedBackloggdCollectionUrl,
   normalizeBackloggdUsername,
   parseAnubisChallenge,
@@ -29,6 +34,23 @@ test("accepts only a Backloggd username or canonical public profile URL", () => 
     null,
   );
   assert.equal(normalizeBackloggdUsername("name/../../admin"), null);
+});
+
+test("accepts only opaque Backloggd avatar tokens and builds a same-origin path", () => {
+  const source = "https://backloggd-avatars.b-cdn.net/avatar_token-123";
+  assert.equal(normalizeBackloggdAvatarUrl(source), source);
+  assert.equal(
+    backloggdAvatarProxyPath(source),
+    "/api/imports/backloggd/avatar/avatar_token-123",
+  );
+  assert.equal(backloggdAvatarSourceUrl("avatar_token-123"), source);
+  assert.equal(
+    normalizeBackloggdAvatarUrl(
+      "https://backloggd-avatars.b-cdn.net/avatar?redirect=evil",
+    ),
+    null,
+  );
+  assert.equal(backloggdAvatarSourceUrl("../../admin"), null);
 });
 
 test("extracts only canonical Backloggd game links and safe pagination", () => {

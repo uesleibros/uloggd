@@ -917,6 +917,14 @@
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--brand-blurple-bright);
+  overflow: hidden;
+  font-size: 21px;
+  font-weight: 720;
+}
+.backloggd-import-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .backloggd-import-header small,
 .backloggd-preview-heading small,

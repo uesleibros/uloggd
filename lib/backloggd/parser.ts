@@ -1,7 +1,7 @@
 import parse, { type HTMLElement } from "h1-parser";
+import { normalizeBackloggdAvatarUrl } from "@/lib/backloggd/avatar";
 
 const BACKLOGGD_HOST = "backloggd.com";
-const BACKLOGGD_AVATAR_HOST = "backloggd-avatars.b-cdn.net";
 const USERNAME_PATTERN = /^[A-Za-z0-9_-]{1,32}$/;
 const GAME_PATH_PATTERN = /^\/games\/([a-z0-9-]{1,120})\/?$/;
 const MAX_PAGE_NUMBER = 100;
@@ -133,23 +133,7 @@ function profileAvatarUrl(document: HTMLElement, pageUrl: URL) {
   const source = document
     .querySelector(".avatar.avatar-static img")
     ?.getAttribute("src");
-  if (!source || source.length > 500) return null;
-  let url: URL;
-  try {
-    url = new URL(source, pageUrl);
-  } catch {
-    return null;
-  }
-  if (
-    url.protocol !== "https:" ||
-    canonicalHost(url.hostname) !== BACKLOGGD_AVATAR_HOST ||
-    url.port ||
-    url.username ||
-    url.password ||
-    url.hash
-  )
-    return null;
-  return url.toString();
+  return source ? normalizeBackloggdAvatarUrl(source, pageUrl) : null;
 }
 
 export function parseAnubisChallenge(
