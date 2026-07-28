@@ -4,6 +4,7 @@ import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import {
   Ellipsis,
   ListTree,
+  LockKeyhole,
   Settings,
   ShieldCheck,
   Star,
@@ -24,19 +25,30 @@ const icons: Record<string, LucideIcon> = {
   settings: Settings,
 };
 
-export type MoreItem = { key: string; label: string; href: string };
+export type MoreItem = {
+  key: string;
+  label: string;
+  href: string;
+  requiresAuth?: boolean;
+};
 
 export function NavMoreMenu({
   items,
   label,
+  isAuthenticated,
+  pending = false,
+  requiresSignIn,
 }: {
   items: MoreItem[];
   label: string;
+  isAuthenticated: boolean;
+  pending?: boolean;
+  requiresSignIn: string;
 }) {
   const pathname = usePathname();
+
   if (!items.length) return null;
-  // The trigger reads as active while you are on one of the pages it hides,
-  // otherwise the sidebar would show nothing selected on those routes.
+
   const holdsCurrent = items.some(
     (item) => pathname === item.href.split("?")[0],
   );
@@ -54,6 +66,7 @@ export function NavMoreMenu({
           <span>{label}</span>
         </button>
       </DropdownMenu.Trigger>
+
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           className="nav-more-menu"
@@ -64,6 +77,27 @@ export function NavMoreMenu({
         >
           {items.map((item) => {
             const Icon = icons[item.key] ?? Settings;
+            const disabled =
+              pending || (item.requiresAuth === true && !isAuthenticated);
+
+            if (disabled) {
+              return (
+                <DropdownMenu.Item
+                  key={item.key}
+                  disabled
+                  aria-label={
+                    pending
+                      ? item.label
+                      : `${item.label}: ${requiresSignIn}`
+                  }
+                >
+                  <Icon size={17} />
+                  <span>{item.label}</span>
+                  {!pending && <LockKeyhole size={13} />}
+                </DropdownMenu.Item>
+              );
+            }
+
             return (
               <DropdownMenu.Item key={item.key} asChild>
                 <Link
