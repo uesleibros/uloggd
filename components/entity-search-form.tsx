@@ -1,6 +1,6 @@
 "use client";
 
-import { LoaderCircle, Search } from "lucide-react";
+import { LoaderCircle, Search, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
 import { tri, type UiLang } from "@/lib/ui-text";
@@ -67,6 +67,17 @@ export function EntitySearchForm({
           }
         />
       </label>
+      <button
+        type="button"
+        className="catalog-search-clear"
+        data-hidden={!value || undefined}
+        tabIndex={value ? undefined : -1}
+        aria-hidden={!value || undefined}
+        onClick={() => setValue("")}
+        aria-label={tri(lang, "Limpar", "Clear", "Limpiar")}
+      >
+        <X size={17} />
+      </button>
       <button type="submit" disabled={pending}>
         {pending && <LoaderCircle className="spin" size={14} />}
         {pending

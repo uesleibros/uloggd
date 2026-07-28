@@ -182,6 +182,21 @@ export function EntitySearchWorkspace({
     ...(scope === "people" ? { verified: verified ? "1" : "" } : {}),
     ...(scope === "companies" ? { role, status } : {}),
   };
+  const activeFilterCount =
+    Number(verified) + Number(role !== "any") + Number(status !== "any");
+  const scopeLabel =
+    scope === "people"
+      ? tri(lang, "Pessoas", "People", "Personas")
+      : scope === "companies"
+        ? tri(lang, "Empresas", "Companies", "Empresas")
+        : tierlists
+          ? "Tier lists"
+          : tri(lang, "Listas", "Lists", "Listas");
+  const activeSort =
+    sortOptions.find((option) => option.value === sort)?.label ??
+    sortOptions[0].label;
+  const pageHref = (nextPage: number) =>
+    filterHref(lang, scope, query, "page", String(nextPage), currentFilters);
   return (
     <main className="catalog-search-page entity-search-page">
       <header className="catalog-search-hero">
@@ -193,6 +208,24 @@ export function EntitySearchWorkspace({
           scope={scope}
           query={query}
         />
+        <div className="catalog-search-signals">
+          <span>
+            {tri(
+              lang,
+              "Filtros persistem na URL",
+              "Filters persist in the URL",
+              "Los filtros se guardan en la URL",
+            )}
+          </span>
+          <span>
+            {tri(
+              lang,
+              "24 resultados por página",
+              "24 results per page",
+              "24 resultados por página",
+            )}
+          </span>
+        </div>
       </header>
 
       <SearchScopeTabs lang={lang} active={scope} query={query} />
@@ -262,111 +295,207 @@ export function EntitySearchWorkspace({
         </div>
       )}
 
-      <section className="entity-search-results">
-        <header className="catalog-results-heading">
-          <div className="catalog-results-heading-copy">
-            <span>{tri(lang, "RESULTADOS", "RESULTS", "RESULTADOS")}</span>
-            <h2>
-              {total.toLocaleString(lang)}{" "}
-              {tri(lang, "encontrados", "found", "encontrados")}
-            </h2>
-          </div>
-          <EntitySearchControls
+      <div className="catalog-search-workspace entity-search-workspace">
+        <section className="entity-search-results catalog-results-panel">
+          <header className="catalog-results-heading">
+            <div className="catalog-results-heading-copy">
+              <span>{tri(lang, "RESULTADOS", "RESULTS", "RESULTADOS")}</span>
+              <h2>
+                {total.toLocaleString(lang)}{" "}
+                {tri(lang, "encontrados", "found", "encontrados")}
+              </h2>
+            </div>
+            <EntitySearchControls
+              lang={lang}
+              scope={scope}
+              sort={sort}
+              sortOptions={sortOptions}
+              role={role}
+              status={status}
+              verified={verified}
+            />
+          </header>
+          {hasResults ? (
+            <div
+              className={
+                lists.length
+                  ? "lists-row"
+                  : people.length
+                    ? "profile-connections-grid"
+                    : "entity-search-grid"
+              }
+            >
+              {lists.map((list) => (
+                <ListPreviewCard
+                  key={list.id}
+                  list={list}
+                  covers={list.covers}
+                  tierRows={list.tierRows}
+                  likes={list.likes}
+                  lang={lang}
+                />
+              ))}
+              {people.map((person) => (
+                <ConnectionCard key={person.id} person={person} lang={lang} />
+              ))}
+              {companies.map((company) => (
+                <Link
+                  className="entity-result-card"
+                  href={`/${lang}/publisher/${company.slug}`}
+                  key={company.id}
+                >
+                  <span className="entity-result-mark entity-result-company">
+                    {company.logoUrl ? (
+                      <SafeImage
+                        src={company.logoUrl}
+                        alt=""
+                        fill
+                        sizes="56px"
+                      />
+                    ) : (
+                      <Building2 size={22} />
+                    )}
+                  </span>
+                  <span className="entity-result-copy">
+                    <strong>{company.name}</strong>
+                    <small>
+                      {company.foundedYear && (
+                        <>
+                          <CalendarDays size={11} /> {company.foundedYear}{" "}
+                          ·{" "}
+                        </>
+                      )}
+                      {company.publishedCount + company.developedCount}{" "}
+                      {tri(lang, "jogos", "games", "juegos")}
+                    </small>
+                    <p>
+                      {tri(
+                        lang,
+                        `${company.publishedCount} publicados · ${company.developedCount} desenvolvidos`,
+                        `${company.publishedCount} published · ${company.developedCount} developed`,
+                        `${company.publishedCount} publicados · ${company.developedCount} desarrollados`,
+                      )}
+                    </p>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="catalog-results-empty entity-results-empty">
+              <SearchX size={25} />
+              <h2>
+                {tri(
+                  lang,
+                  "Nada encontrado",
+                  "Nothing found",
+                  "No encontramos resultados",
+                )}
+              </h2>
+              <p>
+                {tri(
+                  lang,
+                  "Tente um termo mais curto ou remova um filtro.",
+                  "Try a shorter term or remove a filter.",
+                  "Prueba un término más corto o elimina un filtro.",
+                )}
+              </p>
+            </div>
+          )}
+          <SearchEntityPagination
+            page={page}
+            totalPages={totalPages}
             lang={lang}
-            scope={scope}
-            sort={sort}
-            sortOptions={sortOptions}
-            role={role}
-            status={status}
-            verified={verified}
           />
-        </header>
-        {hasResults ? (
-          <div
-            className={
-              lists.length
-                ? "lists-row"
-                : people.length
-                  ? "profile-connections-grid"
-                  : "entity-search-grid"
-            }
-          >
-            {lists.map((list) => (
-              <ListPreviewCard
-                key={list.id}
-                list={list}
-                covers={list.covers}
-                tierRows={list.tierRows}
-                likes={list.likes}
-                lang={lang}
-              />
-            ))}
-            {people.map((person) => (
-              <ConnectionCard key={person.id} person={person} lang={lang} />
-            ))}
-            {companies.map((company) => (
-              <Link
-                className="entity-result-card"
-                href={`/${lang}/publisher/${company.slug}`}
-                key={company.id}
-              >
-                <span className="entity-result-mark entity-result-company">
-                  {company.logoUrl ? (
-                    <SafeImage src={company.logoUrl} alt="" fill sizes="56px" />
-                  ) : (
-                    <Building2 size={22} />
+        </section>
+        <aside
+          className="catalog-context-rail entity-context-rail"
+          aria-label={tri(
+            lang,
+            "Resumo da busca",
+            "Search summary",
+            "Resumen de la búsqueda",
+          )}
+        >
+          <section className="catalog-context-total">
+            <span>{tri(lang, "RESULTADOS", "RESULTS", "RESULTADOS")}</span>
+            <strong>{total.toLocaleString(lang)}</strong>
+            <small>
+              {tri(
+                lang,
+                "itens correspondem à busca",
+                "items match this search",
+                "elementos coinciden con la búsqueda",
+              )}
+            </small>
+          </section>
+          <section className="catalog-context-card">
+            <header>
+              <strong>
+                {tri(lang, "Sua busca", "Your search", "Tu búsqueda")}
+              </strong>
+              {activeFilterCount > 0 && <span>{activeFilterCount}</span>}
+            </header>
+            <dl>
+              <div>
+                <dt>{tri(lang, "Escopo", "Scope", "Ámbito")}</dt>
+                <dd>{scopeLabel}</dd>
+              </div>
+              <div>
+                <dt>{tri(lang, "Ordenação", "Sorting", "Ordenación")}</dt>
+                <dd>{activeSort}</dd>
+              </div>
+              {query && (
+                <div>
+                  <dt>{tri(lang, "Termo", "Query", "Consulta")}</dt>
+                  <dd>{query}</dd>
+                </div>
+              )}
+            </dl>
+          </section>
+          {totalPages > 1 && (
+            <section className="catalog-context-card catalog-context-navigation">
+              <div>
+                <strong>
+                  {tri(
+                    lang,
+                    `Página ${page}`,
+                    `Page ${page}`,
+                    `Página ${page}`,
+                  )}
+                </strong>
+                <span>
+                  {tri(
+                    lang,
+                    `de ${totalPages}`,
+                    `of ${totalPages}`,
+                    `de ${totalPages}`,
                   )}
                 </span>
-                <span className="entity-result-copy">
-                  <strong>{company.name}</strong>
-                  <small>
-                    {company.foundedYear && (
-                      <>
-                        <CalendarDays size={11} /> {company.foundedYear} ·{" "}
-                      </>
-                    )}
-                    {company.publishedCount + company.developedCount}{" "}
-                    {tri(lang, "jogos", "games", "juegos")}
-                  </small>
-                  <p>
-                    {tri(
-                      lang,
-                      `${company.publishedCount} publicados · ${company.developedCount} desenvolvidos`,
-                      `${company.publishedCount} published · ${company.developedCount} developed`,
-                      `${company.publishedCount} publicados · ${company.developedCount} desarrollados`,
-                    )}
-                  </p>
-                </span>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="catalog-results-empty entity-results-empty">
-            <SearchX size={25} />
-            <h2>
-              {tri(
-                lang,
-                "Nada encontrado",
-                "Nothing found",
-                "No encontramos resultados",
-              )}
-            </h2>
-            <p>
-              {tri(
-                lang,
-                "Tente um termo mais curto ou remova um filtro.",
-                "Try a shorter term or remove a filter.",
-                "Prueba un término más corto o elimina un filtro.",
-              )}
-            </p>
-          </div>
-        )}
-        <SearchEntityPagination
-          page={page}
-          totalPages={totalPages}
-          lang={lang}
-        />
-      </section>
+              </div>
+              <div>
+                {page > 1 ? (
+                  <Link href={pageHref(page - 1)}>
+                    {tri(lang, "Anterior", "Previous", "Anterior")}
+                  </Link>
+                ) : (
+                  <span aria-disabled="true">
+                    {tri(lang, "Anterior", "Previous", "Anterior")}
+                  </span>
+                )}
+                {page < totalPages ? (
+                  <Link href={pageHref(page + 1)}>
+                    {tri(lang, "Próxima", "Next", "Siguiente")}
+                  </Link>
+                ) : (
+                  <span aria-disabled="true">
+                    {tri(lang, "Próxima", "Next", "Siguiente")}
+                  </span>
+                )}
+              </div>
+            </section>
+          )}
+        </aside>
+      </div>
     </main>
   );
 }

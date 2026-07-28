@@ -28,6 +28,10 @@ export const e2eCatalogOptions: CatalogSearchOptions = {
     { id: 1, name: "Single player" },
     { id: 2, name: "Multiplayer" },
   ],
+  engines: [
+    { id: 1, name: "E2E Engine" },
+    { id: 2, name: "E2E Engine Next" },
+  ],
   types: [{ id: 0, name: "Main Game" }],
   perspectives: [
     { id: 1, name: "First person" },
@@ -58,6 +62,7 @@ const allGames: CatalogGame[] = Array.from({ length: 61 }, (_, index) => {
     publishers: ["E2E Publisher"],
     themes: [adventure ? "Fantasy" : "Action"],
     modes: [number % 3 ? "Single player" : "Multiplayer"],
+    engines: [number % 2 ? "E2E Engine" : "E2E Engine Next"],
     typeName: "Main Game",
     spawndAvailable: number === 1,
   };
@@ -110,8 +115,10 @@ export function e2eGameBySlug(slug: string): GameDetail | null {
       platforms: [],
       themes: [],
       modes: [],
+      engines: [{ id: 1, name: "E2E Engine" }],
       publishers: [],
     },
+    engines: ["E2E Engine"],
     websites: [],
     languages: [],
     related: [],
@@ -146,6 +153,14 @@ export async function searchE2eCatalog(filters: CatalogSearchFilters) {
       filters.perspectives.some((id) =>
         id === 1 ? game.id % 2 === 0 : id === 2 ? game.id % 2 === 1 : false,
       );
+    const matchesEngines =
+      !filters.engines.length ||
+      filters.engines.some((id) =>
+        game.engines.includes(
+          e2eCatalogOptions.engines.find((option) => option.id === id)?.name ??
+            "",
+        ),
+      );
     const currentYear = new Date().getUTCFullYear();
     const matchesRelease =
       filters.releaseStatus === "all" ||
@@ -158,6 +173,7 @@ export async function searchE2eCatalog(filters: CatalogSearchFilters) {
       matchesQuery &&
       matchesGenres &&
       matchesPlatforms &&
+      matchesEngines &&
       matchesPerspectives &&
       matchesRelease &&
       matchesRated &&

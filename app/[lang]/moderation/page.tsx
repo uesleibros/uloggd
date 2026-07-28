@@ -224,6 +224,9 @@ export default async function ModerationPage({
 
   return (
     <ModerationConsole
+      key={`${status}:${search}:${page}:${auditPage}:${reportRows
+        .map((report) => `${report.id}:${report.status}`)
+        .join(",")}:${actions?.[0]?.id ?? ""}`}
       lang={lang}
       actorRole={actor.role}
       initialStatus={status}

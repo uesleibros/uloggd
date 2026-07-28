@@ -4,9 +4,8 @@ export default function SearchLoading() {
   return (
     <main
       className="catalog-search-page catalog-search-loading"
-      aria-busy="true"
+      aria-hidden="true"
     >
-      <span className="sr-only">Carregando catálogo</span>
       <header className="catalog-search-hero catalog-search-hero-loading">
         <span className="skeleton-block" />
         <span className="skeleton-block" />
@@ -16,6 +15,11 @@ export default function SearchLoading() {
           <i className="skeleton-block" />
         </div>
       </header>
+      <div className="catalog-search-scope-loading">
+        {Array.from({ length: 5 }, (_, index) => (
+          <span className="skeleton-block" key={index} />
+        ))}
+      </div>
       <div className="catalog-search-workspace">
         <section className="catalog-results-loading">
           <header>

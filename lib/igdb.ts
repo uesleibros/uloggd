@@ -39,6 +39,7 @@ type IgdbGameResponse = {
   videos?: { video_id: string; name?: string }[];
   themes?: { id: number; name: string }[];
   game_modes?: { id: number; name: string }[];
+  game_engines?: { id: number; name: string }[];
   age_ratings?: {
     organization?: { name: string };
     rating_category?: { rating: string };
@@ -118,6 +119,7 @@ export type CatalogSearchFilters = {
   platforms: number[];
   themes: number[];
   modes: number[];
+  engines: number[];
   types: number[];
   perspectives: number[];
   publishers: number[];
@@ -137,6 +139,7 @@ export type CatalogSearchFilters = {
 export type CatalogGame = Game & {
   themes: string[];
   modes: string[];
+  engines: string[];
   typeName: string | null;
   spawndAvailable?: boolean;
 };
@@ -146,6 +149,7 @@ export type CatalogSearchOptions = {
   platforms: CatalogOption[];
   themes: CatalogOption[];
   modes: CatalogOption[];
+  engines: CatalogOption[];
   types: CatalogOption[];
   perspectives: CatalogOption[];
   publishers: CatalogOption[];
@@ -397,44 +401,57 @@ const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
     platform_family?: { name?: string };
     platform_type?: { name?: string };
   };
-  const [genres, platforms, themes, modes, rawTypes, perspectives, companies] =
-    await Promise.all([
-      queryIgdbRaw<Named>(
-        "genres",
-        "fields id,name; sort name asc; limit 500;",
-        24 * CACHE_HOURS,
-      ),
-      queryIgdbRaw<Platform>(
-        "platforms",
-        "fields id,name,abbreviation,generation,platform_family.name,platform_type.name; sort name asc; limit 500;",
-        24 * CACHE_HOURS,
-      ),
-      queryIgdbRaw<Named>(
-        "themes",
-        "fields id,name; sort name asc; limit 500;",
-        24 * CACHE_HOURS,
-      ),
-      queryIgdbRaw<Named>(
-        "game_modes",
-        "fields id,name; sort name asc; limit 500;",
-        24 * CACHE_HOURS,
-      ),
-      queryIgdbRaw<{ id: number; type: string }>(
-        "game_types",
-        "fields id,type; sort type asc; limit 500;",
-        24 * CACHE_HOURS,
-      ),
-      queryIgdbRaw<Named>(
-        "player_perspectives",
-        "fields id,name; sort name asc; limit 500;",
-        24 * CACHE_HOURS,
-      ),
-      queryIgdbRaw<Named>(
-        "companies",
-        "fields id,name; where published != null; sort name asc; limit 500;",
-        24 * CACHE_HOURS,
-      ),
-    ]);
+  const [
+    genres,
+    platforms,
+    themes,
+    modes,
+    engines,
+    rawTypes,
+    perspectives,
+    companies,
+  ] = await Promise.all([
+    queryIgdbRaw<Named>(
+      "genres",
+      "fields id,name; sort name asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+    queryIgdbRaw<Platform>(
+      "platforms",
+      "fields id,name,abbreviation,generation,platform_family.name,platform_type.name; sort name asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+    queryIgdbRaw<Named>(
+      "themes",
+      "fields id,name; sort name asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+    queryIgdbRaw<Named>(
+      "game_modes",
+      "fields id,name; sort name asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+    queryIgdbRaw<Named>(
+      "game_engines",
+      "fields id,name; sort name asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+    queryIgdbRaw<{ id: number; type: string }>(
+      "game_types",
+      "fields id,type; sort type asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+    queryIgdbRaw<Named>(
+      "player_perspectives",
+      "fields id,name; sort name asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+    queryIgdbRaw<Named>(
+      "companies",
+      "fields id,name; where published != null; sort name asc; limit 500;",
+      24 * CACHE_HOURS,
+    ),
+  ]);
   const named = (items: Named[]): CatalogOption[] =>
     items.map(({ id, name }) => ({ id, name }));
   return {
@@ -449,6 +466,7 @@ const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
     })),
     themes: named(themes),
     modes: named(modes),
+    engines: named(engines),
     types: rawTypes.map(({ id, type }) => ({ id, name: type })),
     perspectives: named(perspectives),
     publishers: named(companies),
@@ -618,6 +636,7 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
   addIds("platforms", filters.platforms);
   addIds("themes", filters.themes);
   addIds("game_modes", filters.modes);
+  addIds("game_engines", filters.engines);
   addIds("player_perspectives", filters.perspectives);
   addIds("involved_companies.company", filters.publishers);
   // Only meaningful next to a company: on its own the role clause would match
@@ -690,7 +709,7 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
       `
       fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
         cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,
-        themes.name,game_modes.name,game_type.type;
+        themes.name,game_modes.name,game_engines.name,game_type.type;
       where ${where};
       sort ${sorts[filters.sort]};
       limit ${limit + 1};
@@ -716,6 +735,7 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
     platforms: game.platforms?.map(({ name }) => name) ?? [],
     themes: game.themes?.map(({ name }) => name) ?? [],
     modes: game.game_modes?.map(({ name }) => name) ?? [],
+    engines: game.game_engines?.map(({ name }) => name) ?? [],
     typeName: typeof game.game_type === "object" ? game.game_type.type : null,
   }));
   return { games, hasMore, page: filters.page, total, totalPages };
@@ -867,6 +887,7 @@ export type GameDetail = Game & {
     platforms: { id: number; name: string }[];
     themes: { id: number; name: string }[];
     modes: { id: number; name: string }[];
+    engines: { id: number; name: string }[];
     // slug is what links a game to its publisher page; it is optional because
     // IGDB occasionally has a company row without one.
     publishers: { id: number; name: string; slug?: string }[];
@@ -897,6 +918,7 @@ export type GameDetail = Game & {
   publishers: string[];
   themes: string[];
   modes: string[];
+  engines: string[];
   websites: string[];
   languages: {
     name: string;
@@ -928,7 +950,7 @@ export const getGameBySlug = cache(async function getGameBySlug(
     fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
       cover.image_id,artworks.image_id,screenshots.image_id,genres.id,genres.name,
       platforms.id,platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.id,involved_companies.company.name,involved_companies.company.slug,
-      videos.video_id,videos.name,themes.id,themes.name,game_modes.id,game_modes.name,websites.url,
+      videos.video_id,videos.name,themes.id,themes.name,game_modes.id,game_modes.name,game_engines.id,game_engines.name,websites.url,
       age_ratings.organization.name,age_ratings.rating_category.rating,
       language_supports.language.name,language_supports.language.native_name,language_supports.language_support_type.name,
       similar_games.name,similar_games.slug,similar_games.first_release_date,similar_games.total_rating,similar_games.total_rating_count,similar_games.cover.image_id,similar_games.genres.name,
@@ -1061,6 +1083,7 @@ export const getGameBySlug = cache(async function getGameBySlug(
       platforms: raw.platforms ?? [],
       themes: raw.themes ?? [],
       modes: raw.game_modes ?? [],
+      engines: raw.game_engines ?? [],
       publishers:
         raw.involved_companies
           ?.filter((item) => item.publisher && item.company)
@@ -1105,6 +1128,7 @@ export const getGameBySlug = cache(async function getGameBySlug(
         .map((item) => item.company!.name) ?? [],
     themes: raw.themes?.map((theme) => theme.name) ?? [],
     modes: raw.game_modes?.map((mode) => mode.name) ?? [],
+    engines: raw.game_engines?.map((engine) => engine.name) ?? [],
     websites: (raw.websites ?? [])
       .map((website) => website.url)
       .filter((url) => url.startsWith("https://"))

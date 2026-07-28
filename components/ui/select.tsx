@@ -1,18 +1,81 @@
 "use client";
 
 import { Select as BaseSelect } from "@base-ui/react/select";
-import type { ComponentProps, ReactElement, ReactNode } from "react";
+import {
+  Children,
+  isValidElement,
+  type ComponentProps,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 
-export function Root({ onValueChange, ...props }: Record<string, unknown> & {
+type RootProps = Record<string, unknown> & {
+  children?: ReactNode;
+  items?: ComponentProps<typeof BaseSelect.Root>["items"];
+  modal?: boolean;
   onValueChange?: (value: string) => void;
-}) {
+};
+
+function findItemText(node: ReactNode): ReactNode | undefined {
+  let label: ReactNode | undefined;
+
+  Children.forEach(node, (child) => {
+    if (label !== undefined || !isValidElement(child)) return;
+
+    if (child.type === BaseSelect.ItemText) {
+      label = (child.props as { children?: ReactNode }).children;
+      return;
+    }
+
+    label = findItemText((child.props as { children?: ReactNode }).children);
+  });
+
+  return label;
+}
+
+function collectItemLabels(node: ReactNode, labels: Record<string, ReactNode>) {
+  Children.forEach(node, (child) => {
+    if (!isValidElement(child)) return;
+
+    const childProps = child.props as {
+      children?: ReactNode;
+      value?: unknown;
+    };
+
+    if (child.type === Item && childProps.value != null) {
+      const label = findItemText(childProps.children);
+      if (label !== undefined) labels[String(childProps.value)] = label;
+      return;
+    }
+
+    collectItemLabels(childProps.children, labels);
+  });
+}
+
+export function Root({
+  children,
+  items,
+  modal = false,
+  onValueChange,
+  ...props
+}: RootProps) {
+  const inferredItems: Record<string, ReactNode> = {};
+  if (items === undefined) collectItemLabels(children, inferredItems);
+  const resolvedItems =
+    items ??
+    (Object.keys(inferredItems).length > 0 ? inferredItems : undefined);
+
   return (
     <BaseSelect.Root
       {...props}
+      items={resolvedItems}
+      modal={modal}
       onValueChange={(value) => {
         if (value !== null) onValueChange?.(String(value));
       }}
-    />
+    >
+      {children}
+    </BaseSelect.Root>
   );
 }
 export const Value = BaseSelect.Value;

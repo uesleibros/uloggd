@@ -41,6 +41,7 @@ type DraftArrayKey =
   | "platforms"
   | "themes"
   | "modes"
+  | "engines"
   | "types"
   | "perspectives"
   | "publishers";
@@ -64,6 +65,7 @@ function draftFromFilters(filters: CatalogSearchFilters): FilterDraft {
     platforms: filters.platforms,
     themes: filters.themes,
     modes: filters.modes,
+    engines: filters.engines,
     types: filters.types,
     perspectives: filters.perspectives,
     publishers: filters.publishers,
@@ -84,6 +86,7 @@ function emptyDraft(): FilterDraft {
     platforms: [],
     themes: [],
     modes: [],
+    engines: [],
     types: [],
     perspectives: [],
     publishers: [],
@@ -359,6 +362,7 @@ export function CatalogSearchWorkspace({
       platforms: draft.platforms.length ? draft.platforms.join(",") : null,
       themes: draft.themes.length ? draft.themes.join(",") : null,
       modes: draft.modes.length ? draft.modes.join(",") : null,
+      engines: draft.engines.length ? draft.engines.join(",") : null,
       types: draft.types.length ? draft.types.join(",") : null,
       perspectives: draft.perspectives.length
         ? draft.perspectives.join(",")
@@ -388,6 +392,7 @@ export function CatalogSearchWorkspace({
         | "platforms"
         | "themes"
         | "modes"
+        | "engines"
         | "types"
         | "perspectives"
         | "publishers"
@@ -398,6 +403,7 @@ export function CatalogSearchWorkspace({
       ["platforms", options.platforms],
       ["themes", options.themes],
       ["modes", options.modes],
+      ["engines", options.engines],
       ["types", options.types],
       ["perspectives", options.perspectives],
       ["publishers", options.publishers],
@@ -428,6 +434,7 @@ export function CatalogSearchWorkspace({
     draft.platforms.length +
     draft.themes.length +
     draft.modes.length +
+    draft.engines.length +
     draft.types.length +
     draft.perspectives.length +
     draft.publishers.length +
@@ -617,9 +624,9 @@ export function CatalogSearchWorkspace({
               )
             : tri(
                 lang,
-                "Cruze plataformas, gêneros, temas, modos, época e recepção para encontrar o jogo certo.",
-                "Cross platforms, genres, themes, modes, era, and reception to find the right game.",
-                "Cruza plataformas, géneros, temas, modos, época y recepción para encontrar el juego adecuado.",
+                "Cruze plataformas, gêneros, engines, modos, época e recepção para encontrar o jogo certo.",
+                "Cross platforms, genres, engines, modes, era, and reception to find the right game.",
+                "Cruza plataformas, géneros, motores, modos, época y recepción para encontrar el juego adecuado.",
               )}
         </p>
         <form
@@ -910,6 +917,15 @@ export function CatalogSearchWorkspace({
                 options={options.modes}
                 selected={draft.modes}
                 onChange={updateDraftArray}
+                lang={lang}
+              />
+              <OptionGroup
+                title={tri(lang, "Engine", "Engine", "Motor")}
+                param="engines"
+                options={options.engines}
+                selected={draft.engines}
+                onChange={updateDraftArray}
+                searchable
                 lang={lang}
               />
               <OptionGroup

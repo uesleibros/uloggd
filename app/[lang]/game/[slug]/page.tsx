@@ -548,6 +548,20 @@ export default async function GamePage({ params, searchParams }: Props) {
                       </dd>
                     </div>
                   )}
+                  {game.engines.length > 0 && (
+                    <div>
+                      <dt>{tri(lang, "Engine", "Engine", "Motor")}</dt>
+                      <dd>
+                        {game.searchFilters.engines.map((item) => (
+                          <span key={item.id}>
+                            <Link href={`/${lang}/search?engines=${item.id}`}>
+                              {item.name}
+                            </Link>
+                          </span>
+                        ))}
+                      </dd>
+                    </div>
+                  )}
                 </dl>
               </section>
               {game.languages.length > 0 && (

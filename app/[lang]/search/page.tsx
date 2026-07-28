@@ -361,6 +361,7 @@ export default async function SearchPage({
     platforms: numberList(query.platforms),
     themes: numberList(query.themes),
     modes: numberList(query.modes),
+    engines: numberList(query.engines),
     types: numberList(query.types),
     perspectives: numberList(query.perspectives),
     publishers: numberList(query.publishers),
