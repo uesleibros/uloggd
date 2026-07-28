@@ -7793,6 +7793,15 @@ catalog modules second. */
     );
 }
 
+.ui-dropdown-menu-positioner {
+  z-index: var(--layer-popover);
+}
+
+.account-menu,
+.nav-more-menu {
+  isolation: isolate;
+}
+
 .game-stage-inner {
   display: grid;
   grid-template-columns: 200px minmax(0, 1fr) 280px;
