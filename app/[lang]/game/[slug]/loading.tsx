@@ -10,19 +10,20 @@ export default function Loading() {
           <div className="game-page-content game-route-skeleton-copy">
             <span className="skeleton-block" />
             <span className="skeleton-block" />
+            <span className="skeleton-block" />
             <div className="game-route-skeleton-actions">
-              <span className="skeleton-block" />
-              <span className="skeleton-block" />
-              <span className="skeleton-block" />
+              {Array.from({ length: 4 }, (_, index) => (
+                <span className="skeleton-block" key={index} />
+              ))}
             </div>
-            <span className="skeleton-block" />
-            <span className="skeleton-block" />
-            <span className="skeleton-block" />
           </div>
           <aside className="game-stage-rail game-route-skeleton-rail">
-            {details.slice(0, 2).map((_, index) => (
-              <span className="skeleton-block" key={index} />
-            ))}
+            <div className="game-route-skeleton-personal">
+              {details.map((_, index) => (
+                <span className="skeleton-block" key={index} />
+              ))}
+            </div>
+            <span className="skeleton-block" />
           </aside>
         </div>
       </section>

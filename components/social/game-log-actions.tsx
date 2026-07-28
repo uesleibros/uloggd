@@ -5,9 +5,11 @@ import * as Select from "@/components/ui/select";
 import {
   ArrowLeft,
   BookOpen,
+  CalendarDays,
   CalendarPlus,
   Check,
   ChevronDown,
+  Clock3,
   Flag,
   ListPlus,
   LoaderCircle,
@@ -25,6 +27,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
+  formatSessionTime,
   JourneyCalendar,
   type JourneyOption,
   type JourneySession,
@@ -439,6 +442,29 @@ export function GameLogActions({
   }
 
   const namingOpen = naming !== null || selectedJourney === null;
+  const journeyMinutes = currentSessions.reduce(
+    (total, session) => total + (session.minutes ?? 0),
+    0,
+  );
+  const sortedJourneySessions = [...currentSessions].sort((a, b) =>
+    a.start.localeCompare(b.start),
+  );
+  const journeyStarted =
+    sortedJourneySessions.find((session) => session.marksStart)?.start ??
+    sortedJourneySessions[0]?.start ??
+    null;
+  const journeyFinished =
+    [...sortedJourneySessions].reverse().find((session) => session.marksFinish)
+      ?.start ?? null;
+  const journeyDate = (value: string | null) =>
+    value
+      ? new Intl.DateTimeFormat(lang, {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          timeZone: "UTC",
+        }).format(new Date(`${value}T00:00:00Z`))
+      : "—";
 
   return (
     <>
@@ -682,6 +708,68 @@ export function GameLogActions({
                 )}
                 {selectedJourney !== null && (
                   <>
+                    <section className="journey-overview">
+                      <header>
+                        <div>
+                          <span>
+                            {tri(
+                              lang,
+                              "DIÁRIO DE JOGO",
+                              "PLAY JOURNAL",
+                              "DIARIO DE JUEGO",
+                            )}
+                          </span>
+                          <strong>
+                            {activeJourney?.title ??
+                              tri(
+                                lang,
+                                "Sessões avulsas",
+                                "Loose sessions",
+                                "Sesiones sueltas",
+                              )}
+                          </strong>
+                        </div>
+                        <p>
+                          {tri(
+                            lang,
+                            "Toque em um dia para registrar o que aconteceu.",
+                            "Choose a day to record what happened.",
+                            "Elige un día para registrar lo que pasó.",
+                          )}
+                        </p>
+                      </header>
+                      <dl>
+                        <div>
+                          <dt>
+                            <CalendarDays size={13} /> {t.sessions}
+                          </dt>
+                          <dd>{currentSessions.length}</dd>
+                        </div>
+                        <div>
+                          <dt>
+                            <Clock3 size={13} />{" "}
+                            {tri(lang, "Tempo", "Time", "Tiempo")}
+                          </dt>
+                          <dd>{formatSessionTime(journeyMinutes) ?? "—"}</dd>
+                        </div>
+                        <div>
+                          <dt>
+                            <Play size={12} />{" "}
+                            {tri(lang, "Início", "Start", "Inicio")}
+                          </dt>
+                          <dd>{journeyDate(journeyStarted)}</dd>
+                        </div>
+                        <div
+                          data-finished={Boolean(journeyFinished) || undefined}
+                        >
+                          <dt>
+                            <Flag size={12} />{" "}
+                            {tri(lang, "Fim", "Finish", "Fin")}
+                          </dt>
+                          <dd>{journeyDate(journeyFinished)}</dd>
+                        </div>
+                      </dl>
+                    </section>
                     <JourneyCalendar
                       lang={lang}
                       maxDate={today}

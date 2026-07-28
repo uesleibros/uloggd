@@ -187,7 +187,12 @@ export function EntitySearchWorkspace({
       <header className="catalog-search-hero">
         <h1>{title}</h1>
         <p>{description}</p>
-        <EntitySearchForm lang={lang} scope={scope} query={query} />
+        <EntitySearchForm
+          key={`${scope}:${query}`}
+          lang={lang}
+          scope={scope}
+          query={query}
+        />
       </header>
 
       <SearchScopeTabs lang={lang} active={scope} query={query} />

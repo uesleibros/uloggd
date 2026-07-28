@@ -6,6 +6,7 @@ export function WorkspaceHeroSkeleton() {
         <div>
           <span className="skeleton-block" />
           <span className="skeleton-block" />
+          <span className="skeleton-block" />
         </div>
         <span className="skeleton-block" />
       </div>

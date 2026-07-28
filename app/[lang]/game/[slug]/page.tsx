@@ -369,12 +369,6 @@ export default async function GamePage({ params, searchParams }: Props) {
               )}
               lang={lang}
             />
-            <GameActionPanel
-              game={game}
-              initial={state}
-              lang={lang}
-              enabled={Boolean(user)}
-            />
             {spawnd.available && (
               <GameTabTrigger className="game-spawnd-cta" tab="spawnd">
                 <SpawndLogo compact />
@@ -404,6 +398,12 @@ export default async function GamePage({ params, searchParams }: Props) {
             )}
           </div>
           <aside className="game-stage-rail">
+            <GameActionPanel
+              game={game}
+              initial={state}
+              lang={lang}
+              enabled={Boolean(user)}
+            />
             <div className="game-score-line">
               <span>
                 {tri(

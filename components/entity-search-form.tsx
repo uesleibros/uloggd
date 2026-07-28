@@ -2,7 +2,7 @@
 
 import { LoaderCircle, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useState, useTransition } from "react";
+import { FormEvent, useState, useTransition } from "react";
 import { tri, type UiLang } from "@/lib/ui-text";
 import type { SearchScope } from "./search-scope-tabs";
 
@@ -20,8 +20,6 @@ export function EntitySearchForm({
   const router = useRouter();
   const [value, setValue] = useState(query);
   const [pending, startTransition] = useTransition();
-
-  useEffect(() => setValue(query), [query]);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -5377,36 +5377,31 @@ html[data-sidebar-collapsed]
   color: var(--state-completed-text);
 }
 
-.quick-menu
-  [role="menuitemcheckbox"][data-action="playing"][data-checked] {
+.quick-menu [role="menuitemcheckbox"][data-action="playing"][data-checked] {
   background: var(--state-playing-soft-bg);
   color: var(--state-playing-text);
   box-shadow: inset 0 0 0 1px var(--state-playing-border);
 }
 
-.quick-menu
-  [role="menuitemcheckbox"][data-action="backlog"][data-checked] {
+.quick-menu [role="menuitemcheckbox"][data-action="backlog"][data-checked] {
   background: var(--state-backlog-soft-bg);
   color: var(--state-backlog-text);
   box-shadow: inset 0 0 0 1px var(--state-backlog-border);
 }
 
-.quick-menu
-  [role="menuitemcheckbox"][data-action="wishlist"][data-checked] {
+.quick-menu [role="menuitemcheckbox"][data-action="wishlist"][data-checked] {
   background: var(--state-wishlist-soft-bg);
   color: var(--state-wishlist-text);
   box-shadow: inset 0 0 0 1px var(--state-wishlist-border);
 }
 
-.quick-menu
-  [role="menuitemcheckbox"][data-action="completed"][data-checked] {
+.quick-menu [role="menuitemcheckbox"][data-action="completed"][data-checked] {
   background: var(--state-completed-soft-bg);
   color: var(--state-completed-text);
   box-shadow: inset 0 0 0 1px var(--state-completed-border);
 }
 
-.quick-menu
-  [role="menuitemcheckbox"][data-action="liked"][data-checked] {
+.quick-menu [role="menuitemcheckbox"][data-action="liked"][data-checked] {
   background: var(--state-liked-soft-bg);
   color: var(--state-liked-text);
   box-shadow: inset 0 0 0 1px var(--state-liked-border);
@@ -5599,8 +5594,7 @@ never the tracking violet. */
   color: var(--state-liked-text);
 }
 
-.quick-menu
-  [role="menuitemcheckbox"][data-action="liked"][data-checked] {
+.quick-menu [role="menuitemcheckbox"][data-action="liked"][data-checked] {
   background: var(--state-liked-soft-bg);
   color: var(--state-liked-text);
   box-shadow: inset 0 0 0 1px var(--state-liked-border);
@@ -6593,34 +6587,116 @@ and the frosted stats block anchored bottom-right. */
   justify-content: space-between;
   align-items: end;
 }
+.lists-loading-workspace {
+  display: grid;
+  gap: 22px;
+}
+.lists-loading-toolbar {
+  display: grid;
+  gap: 14px;
+}
 .lists-loading-heading > span:first-child {
   width: 150px;
   height: 22px;
 }
 .lists-loading-heading > span:last-child {
-  width: 30px;
-  height: 26px;
+  width: 72px;
+  height: 12px;
 }
-/* Mirrors the fanned stack: one wide block where the covers sit, then the
-   name and meta lines. */
-.lists-loading-card > span {
-  display: block;
-  width: 86%;
-  aspect-ratio: 2.6 / 1;
+.lists-loading-tabs {
+  display: flex;
+  gap: 8px;
+}
+.lists-loading-tabs > span {
+  width: 104px;
+  height: 38px;
+  border-radius: 8px;
+}
+.lists-loading-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 160px 180px;
+  gap: 10px;
+}
+.lists-loading-controls > span {
+  height: 40px;
   border-radius: 9px;
 }
-.lists-loading-card > div {
+.lists-loading-card {
+  min-width: 0;
+}
+.lists-loading-stack {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  margin-bottom: 11px;
+  padding-right: 2px;
+}
+.lists-loading-stack > span {
+  position: relative;
+  flex: none;
+  width: 30%;
+  aspect-ratio: 3 / 4;
+  border-radius: 9px;
+}
+.lists-loading-stack > span + span {
+  margin-left: -16%;
+}
+.lists-loading-copy {
   display: grid;
   gap: 7px;
-  padding: 11px 0 0;
 }
-.lists-loading-card > div > span:first-child {
+.lists-loading-copy > span:first-child {
   width: 68%;
   height: 14px;
 }
-.lists-loading-card > div > span:last-child {
+.lists-loading-copy > span:nth-child(2) {
   width: 42%;
   height: 10px;
+}
+.lists-loading-copy > span:last-child {
+  width: 86%;
+  height: 10px;
+}
+
+.list-detail-loading-header {
+  display: grid;
+  gap: 11px;
+  width: min(760px, 100%);
+  margin-bottom: 32px;
+}
+.list-detail-loading-header > span:first-child {
+  width: min(420px, 72%);
+  height: 34px;
+}
+.list-detail-loading-header > span:nth-child(2) {
+  width: min(600px, 92%);
+  height: 13px;
+}
+.list-detail-loading-header > div {
+  display: flex;
+  gap: 8px;
+}
+.list-detail-loading-header > div:nth-of-type(1) span:first-child {
+  width: 92px;
+  height: 28px;
+}
+.list-detail-loading-header > div:nth-of-type(1) span:last-child {
+  width: 54px;
+  height: 12px;
+  margin-block: auto;
+}
+.list-detail-loading-header > div:nth-of-type(2) span {
+  width: 92px;
+  height: 34px;
+}
+.list-detail-loading-add {
+  width: min(520px, 100%);
+  height: 44px;
+  margin-bottom: 24px;
+  border-radius: 9px;
+}
+.list-detail-loading-grid > span {
+  border-radius: 9px;
 }
 
 @media (max-width: 760px) {
@@ -6631,6 +6707,30 @@ and the frosted stats block anchored bottom-right. */
   .workspace-hero-skeleton .workspace-hero-content > span:last-child {
     grid-column: 1 / -1;
     width: 100%;
+  }
+  .lists-loading-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(120px, 0.5fr);
+  }
+  .lists-loading-controls > span:last-child {
+    display: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .lists-loading-tabs {
+    overflow: hidden;
+  }
+  .lists-loading-tabs > span {
+    flex: 0 0 96px;
+  }
+  .lists-loading-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lists-loading-controls > span:not(:first-child) {
+    display: none;
+  }
+  .list-detail-loading-header > div:nth-of-type(2) {
+    flex-wrap: wrap;
   }
 }
 
@@ -7798,7 +7898,35 @@ catalog modules second. */
 }
 
 .game-stage .game-action-panel {
-  margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--console-panel) 84%, transparent);
+  backdrop-filter: blur(12px);
+  text-shadow: none;
+}
+
+.game-stage .game-action-panel .game-user-rating,
+.game-stage .game-action-panel .game-status-button,
+.game-stage .game-action-panel > p {
+  grid-column: 1 / -1;
+}
+
+.game-stage .game-action-panel > button,
+.game-stage .game-action-panel .game-status-button {
+  justify-content: flex-start;
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  padding-inline: 10px;
+}
+
+.game-stage .game-action-panel .game-status-button svg:last-child {
+  margin-left: auto;
 }
 
 .game-spawnd-cta {
@@ -7836,8 +7964,7 @@ catalog modules second. */
 }
 
 .game-stage .game-user-rating {
-  flex-basis: auto;
-  margin: 0 6px 0 0;
+  margin: 0 0 3px;
 }
 
 .game-stage .game-user-rating > span {
@@ -7876,6 +8003,20 @@ catalog modules second. */
   gap: 10px;
   align-self: stretch;
   align-content: end;
+}
+
+.game-stage .game-log-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
+  width: min(100%, 650px);
+}
+
+.game-stage .game-log-actions > button,
+.game-stage .game-log-actions > a {
+  justify-content: flex-start;
+  min-height: 40px;
+  background: color-mix(in srgb, var(--console-panel) 86%, transparent);
+  backdrop-filter: blur(10px);
 }
 
 .game-stage-rail .game-score-line,
@@ -8735,7 +8876,7 @@ a,
 
   .game-stage-rail {
     grid-column: 1 / -1;
-    grid-template-columns: 180px minmax(0, 1fr);
+    grid-template-columns: minmax(300px, 1fr) 180px;
     align-items: stretch;
   }
 
@@ -8826,7 +8967,6 @@ a,
   }
 
   .game-stage-description,
-  .game-stage .game-action-panel,
   .game-stage .game-log-actions {
     grid-column: 1 / -1;
   }
@@ -8835,14 +8975,14 @@ a,
     display: none;
   }
 
-  .game-stage .game-action-panel {
-    margin-top: 12px;
-  }
-
   .game-stage-rail {
     grid-column: 1 / -1;
     grid-row: 2;
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .game-stage .game-action-panel {
+    margin-top: 0;
   }
 
   .game-stage-rail .game-score-line {
@@ -9126,23 +9266,21 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   height: 38px;
 }
 
-.game-route-skeleton-copy > span:nth-last-child(-n + 3) {
-  width: 100%;
-  height: 12px;
-}
-
-.game-route-skeleton-copy > span:last-child {
-  width: 68%;
+.game-route-skeleton-copy > span:nth-child(3) {
+  width: 102px;
+  height: 40px;
+  border-radius: 8px;
 }
 
 .game-route-skeleton-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
   gap: 8px;
   margin: 6px 0 20px;
 }
 
 .game-route-skeleton-actions span {
-  width: 112px;
+  width: 100%;
   height: 44px;
   border-radius: 8px;
 }
@@ -9557,6 +9695,86 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   color: var(--screen-muted);
   font-size: 11px;
   line-height: 1.55;
+}
+.journey-overview {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-raised);
+}
+.journey-overview > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 15px 12px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.journey-overview > header > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.journey-overview > header span {
+  color: var(--state-playing-text);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+}
+.journey-overview > header strong {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 15px;
+  font-weight: 630;
+  letter-spacing: -0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.journey-overview > header p {
+  max-width: 280px;
+  margin: 0;
+  color: var(--screen-muted);
+  font-size: 10.5px;
+  line-height: 1.45;
+  text-align: right;
+}
+.journey-overview dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+}
+.journey-overview dl > div {
+  min-width: 0;
+  padding: 12px 14px;
+  border-left: 1px solid var(--shell-line);
+}
+.journey-overview dl > div:first-child {
+  border-left: 0;
+}
+.journey-overview dt {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--screen-muted);
+  font-size: 9.5px;
+  font-weight: 560;
+}
+.journey-overview dt svg {
+  color: var(--state-playing-text);
+}
+.journey-overview dl > div[data-finished] dt svg {
+  color: var(--state-completed-text);
+}
+.journey-overview dd {
+  overflow: hidden;
+  margin: 7px 0 0;
+  color: var(--screen-white);
+  font-size: 13px;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 /* Journey chips on activity rows and the review page */
 .activity-meta .activity-journey-chip {
@@ -10034,6 +10252,23 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   color: var(--state-completed-text);
 }
 @media (max-width: 620px) {
+  .journey-overview > header {
+    display: grid;
+    gap: 7px;
+  }
+  .journey-overview > header p {
+    max-width: none;
+    text-align: left;
+  }
+  .journey-overview dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .journey-overview dl > div:nth-child(3) {
+    border-left: 0;
+  }
+  .journey-overview dl > div:nth-child(n + 3) {
+    border-top: 1px solid var(--shell-line);
+  }
   .journey-milestones {
     grid-template-columns: 1fr;
   }
@@ -11897,6 +12132,29 @@ html
 
 .game-route-skeleton-stage .game-route-skeleton-rail > span {
   height: 112px;
+}
+
+.game-route-skeleton-personal {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  padding: 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--console-panel) 84%, transparent);
+}
+
+.game-route-skeleton-personal > span {
+  height: 38px;
+}
+
+.game-route-skeleton-personal > span:first-child,
+.game-route-skeleton-personal > span:nth-child(2) {
+  grid-column: 1 / -1;
+}
+
+.game-route-skeleton-personal > span:first-child {
+  height: 44px;
 }
 
 .game-route-skeleton-nav {
@@ -14094,8 +14352,7 @@ shareable IGDB search workspace. */
   box-shadow: inset 0 0 0 1px var(--state-liked-border);
 }
 
-.quick-menu
-  [role="menuitemcheckbox"][data-action="liked"][data-checked] {
+.quick-menu [role="menuitemcheckbox"][data-action="liked"][data-checked] {
   background: var(--state-liked-soft-bg);
   color: var(--state-liked-text);
   box-shadow: inset 0 0 0 1px var(--state-liked-border);
@@ -17382,6 +17639,46 @@ adapted to the current uloggd surface system. */
   background: var(--console-hover);
   color: var(--screen-white);
 }
+
+@media (max-width: 620px) {
+  .lists-toolbar-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+  }
+
+  .lists-toolbar-controls .lists-search {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .lists-toolbar-select {
+    min-width: 0;
+  }
+
+  .lists-toolbar-select .editor-select-trigger,
+  .lists-clear-filters {
+    width: 100%;
+  }
+
+  .lists-clear-filters {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 370px) {
+  .lists-toolbar-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lists-toolbar-controls .lists-search,
+  .lists-clear-filters {
+    grid-column: auto;
+  }
+}
+
 .lists-search-empty {
   padding: 22px 18px;
   border: 1px dashed var(--shell-line-strong);
