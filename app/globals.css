@@ -6197,7 +6197,6 @@ never the tracking violet. */
 .social-editor-dialog.review-studio-dialog
   .social-editor-form
   > footer.review-action-bar {
-  position: relative;
   z-index: 5;
   display: grid;
   flex: none;
