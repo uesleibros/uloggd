@@ -14,7 +14,12 @@ test("opens shared menus without composition errors and preserves motion", async
   page.on("pageerror", (error) => errors.push(error.message));
 
   await page.goto("/pt-BR");
-  const languageTrigger = page.locator(".locale-switcher-trigger").first();
+  // Both navigation variants stay mounted for responsive continuity. This
+  // desktop-only test must target the visible header instead of whichever
+  // trigger happens to come first in DOM order.
+  const languageTrigger = page.locator(
+    ".content-header .locale-switcher-trigger",
+  );
   await expect(languageTrigger).toBeVisible();
   await languageTrigger.click();
 
