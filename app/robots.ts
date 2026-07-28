@@ -9,14 +9,7 @@ import { SITE_URL } from "@/lib/seo";
 const PRIVATE_TREES = ["auth", "moderation", "onboarding", "settings"];
 // Private landing pages whose children are public: /pt-BR/lists is the owner's
 // workspace, /pt-BR/lists/<id> is a shareable list.
-const PRIVATE_INDEXES = [
-  "feed",
-  "library",
-  "lists",
-  "login",
-  "reviews",
-  "suspended",
-];
+const PRIVATE_INDEXES = ["library", "lists", "login", "reviews", "suspended"];
 
 export default function robots(): MetadataRoute.Robots {
   const disallow = [

@@ -6,6 +6,34 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
+test("uses Home as the community destination without a separate Feed", async ({
+  page,
+}) => {
+  await page.goto("/pt-BR");
+
+  await expect(
+    page.getByRole("heading", {
+      name: "Jogos ficam melhores quando viram conversa.",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Avaliações recentes" }),
+  ).toBeVisible();
+  await expect(page.locator('a[href="/pt-BR/feed"]')).toHaveCount(0);
+
+  const width = await page.evaluate(() => ({
+    document: document.documentElement.scrollWidth,
+    viewport: window.innerWidth,
+  }));
+  expect(width.document).toBeLessThanOrEqual(width.viewport);
+
+  const response = await page.request.get("/pt-BR/feed", {
+    maxRedirects: 0,
+  });
+  expect(response.status()).toBe(308);
+  expect(response.headers().location).toBe("/pt-BR");
+});
+
 test("opens shared menus without composition errors and preserves motion", async ({
   page,
 }, testInfo) => {

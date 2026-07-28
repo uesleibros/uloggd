@@ -6,7 +6,6 @@
     "lists": "Listas",
     "profile": "Perfil",
     "settings": "Ajustes",
-    "feed": "Feed",
     "more": "Más"
   },
   "actions": {
@@ -90,24 +89,10 @@
     }
   },
   "home": {
-    "eyebrow": "Tu recorrido continúa",
-    "title": "¿Qué vas a jugar ahora?",
     "subtitle": "Organiza tu biblioteca, comparte logros y descubre tu próxima aventura.",
     "trending": "Lo más reseñado del catálogo",
-    "todayTitle": "Lo que vale la pena jugar ahora",
     "mostLogged": "Populares del catálogo",
     "mostLoggedDescription": "Títulos con más valoraciones en el catálogo",
-    "nextAdventure": "Quizá tu próxima aventura",
-    "nextAdventureDescription": "Muy valorados por miles de jugadores",
-    "discoveries": "Descubrimientos",
-    "discoveriesDescription": "Del calendario de lanzamientos a juegos que pasan desapercibidos",
-    "mostAnticipated": "Más esperados",
-    "mostAnticipatedDescription": "Próximos lanzamientos que más expectativa generan",
-    "comingSoon": "Muy pronto",
-    "comingSoonDescription": "Juegos previstos para los próximos meses",
-    "hiddenGems": "Joyas ocultas",
-    "hiddenGemsDescription": "Juegos muy valorados que aún esperan ser descubiertos",
-    "releaseDatePending": "Fecha por confirmar",
     "libraryPitch": "Tu biblioteca, a tu manera.",
     "libraryPitchDescription": "Registra lo que jugaste, abandona juegos sin culpa y encuentra tu próximo favorito.",
     "trendingPeriod": "Desde siempre",

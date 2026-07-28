@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Switch } from "@/components/switch";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -213,16 +214,20 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
                 )}
               />
             </label>
-            <fieldset className="create-list-mode">
+            <RadioGroup
+              className="create-list-mode"
+              name="format"
+              value={format}
+              onValueChange={(value) =>
+                setFormat(value as "COLLECTION" | "TIERLIST")
+              }
+              render={<fieldset />}
+            >
               <legend>{tri(lang, "Formato", "Format", "Formato")}</legend>
-              <label data-selected={format === "COLLECTION" || undefined}>
-                <input
-                  type="radio"
-                  name="format"
-                  value="COLLECTION"
-                  checked={format === "COLLECTION"}
-                  onChange={() => setFormat("COLLECTION")}
-                />
+              <RadioGroupItem
+                value="COLLECTION"
+                data-selected={format === "COLLECTION" || undefined}
+              >
                 <span>
                   <Layers3 size={17} aria-hidden />
                 </span>
@@ -239,15 +244,11 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
                     )}
                   </small>
                 </span>
-              </label>
-              <label data-selected={format === "TIERLIST" || undefined}>
-                <input
-                  type="radio"
-                  name="format"
-                  value="TIERLIST"
-                  checked={format === "TIERLIST"}
-                  onChange={() => setFormat("TIERLIST")}
-                />
+              </RadioGroupItem>
+              <RadioGroupItem
+                value="TIERLIST"
+                data-selected={format === "TIERLIST" || undefined}
+              >
                 <span>
                   <LayoutGrid size={17} aria-hidden />
                 </span>
@@ -262,8 +263,8 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
                     )}
                   </small>
                 </span>
-              </label>
-            </fieldset>
+              </RadioGroupItem>
+            </RadioGroup>
             {/* Ranking is a switch on top of a collection, not a format of its
                 own: a tierlist already ranks through its tiers. */}
             {format === "COLLECTION" && (
@@ -284,8 +285,8 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
                 </span>
                 <Switch
                   checked={ranked}
-                  onChange={setRanked}
-                  label={tri(lang, "Ranquear", "Rank", "Ranquear")}
+                  onCheckedChange={setRanked}
+                  aria-label={tri(lang, "Ranquear", "Rank", "Ranquear")}
                 />
               </div>
             )}

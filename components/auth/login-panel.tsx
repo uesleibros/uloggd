@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
@@ -591,15 +593,14 @@ export function LoginPanel({
             </label>
             <div className="auth-checkbox-group">
               <label className="auth-checkbox">
-                <input
+                <Checkbox
                   name="terms"
-                  type="checkbox"
                   required
                   aria-invalid={Boolean(fieldErrors.terms)}
                   aria-describedby={
                     fieldErrors.terms ? "terms-error" : undefined
                   }
-                  onChange={() => clearFieldError("terms")}
+                  onCheckedChange={() => clearFieldError("terms")}
                 />
                 <span>{copy.terms}</span>
               </label>

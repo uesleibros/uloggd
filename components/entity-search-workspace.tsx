@@ -200,8 +200,10 @@ export function EntitySearchWorkspace({
   return (
     <main className="catalog-search-page entity-search-page">
       <header className="catalog-search-hero">
-        <h1>{title}</h1>
-        <p>{description}</p>
+        <div className="catalog-search-hero-copy">
+          <h1>{title}</h1>
+          <p>{description}</p>
+        </div>
         <EntitySearchForm
           key={`${scope}:${query}`}
           lang={lang}

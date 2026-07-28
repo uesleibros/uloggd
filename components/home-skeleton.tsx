@@ -1,20 +1,21 @@
 const covers = Array.from({ length: 5 });
-const rows = Array.from({ length: 4 });
+const rows = Array.from({ length: 3 });
 
 export function HomeSkeleton() {
   return (
     <div
-      className="home-shell home-loading"
+      className="home-shell home-community-shell home-loading"
       aria-busy="true"
       aria-label="Loading"
     >
-      <main className="feed">
-        <section className="home-loading-feature skeleton-block">
+      <main className="feed home-community-main">
+        <section className="home-loading-feature">
           <div>
-            <span />
-            <span />
-            <span />
+            <span className="skeleton-block" />
+            <span className="skeleton-block" />
+            <span className="skeleton-block" />
           </div>
+          <span className="skeleton-block" />
         </section>
         <section className="home-loading-section">
           <span className="skeleton-block" />

@@ -1,6 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getGamesByIds } from "@/lib/igdb";
+import { getGamesByIds, type Game } from "@/lib/igdb";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { resolveGameCover } from "@/lib/game-cover";
 import type { SocialEntry } from "@/components/social/activity-stream";
@@ -188,21 +188,45 @@ export async function getActivity(
       includeDiary ? diaryQuery : Promise.resolve({ data: [] }),
       includeScreenshots ? screenshotsQuery : Promise.resolve({ data: [] }),
     ]);
-  const rows = [
-    ...(reviews ?? []),
-    ...(diary ?? []),
-    ...(screenshots ?? []),
-  ] as unknown as (Row & Record<string, unknown>)[];
+  const rows = (
+    [
+      ...(reviews ?? []),
+      ...(diary ?? []),
+      ...(screenshots ?? []),
+    ] as unknown as (Row & Record<string, unknown>)[]
+  )
+    .sort((a, b) => {
+      if (options.order === "rating") {
+        const aRating = typeof a.rating === "number" ? a.rating : -1;
+        const bRating = typeof b.rating === "number" ? b.rating : -1;
+        return bRating - aRating || b.created_at.localeCompare(a.created_at);
+      }
+      return oldestFirst
+        ? a.created_at.localeCompare(b.created_at)
+        : b.created_at.localeCompare(a.created_at);
+    })
+    .slice(0, limit);
+  // Hydrate only the rows that can actually reach the response. Each source
+  // query deliberately overfetches up to `limit` so the global merge is
+  // correct, but IGDB, likes, journeys and signed media must not repeat that
+  // overfetch.
+  const selectedReviews = rows.filter(
+    (row) => !("storage_path" in row) && "rating" in row,
+  );
+  const selectedDiary = rows.filter(
+    (row) => !("storage_path" in row) && !("rating" in row),
+  );
+  const selectedScreenshots = rows.filter((row) => "storage_path" in row);
   const journeyIds = [
     ...new Set(
-      [...(reviews ?? []), ...(diary ?? [])]
+      [...selectedReviews, ...selectedDiary]
         .map((row) => row.journey_id)
         .filter((id): id is string => Boolean(id)),
     ),
   ];
-  const reviewIds = (reviews ?? []).map((row) => row.id);
-  const diaryIds = (diary ?? []).map((row) => row.id);
-  const screenshotIds = (screenshots ?? []).map((row) => row.id);
+  const reviewIds = selectedReviews.map((row) => row.id);
+  const diaryIds = selectedDiary.map((row) => row.id);
+  const screenshotIds = selectedScreenshots.map((row) => row.id);
   const [
     { data: journeySessionRows },
     games,
@@ -243,9 +267,9 @@ export async function getActivity(
           target_ids: screenshotIds,
         })
       : Promise.resolve({ data: [] }),
-    screenshots?.length
+    selectedScreenshots.length
       ? supabase.storage.from("screenshots").createSignedUrls(
-          screenshots.map((item) => item.storage_path),
+          selectedScreenshots.map((item) => String(item.storage_path)),
           3600,
         )
       : Promise.resolve({ data: [] }),
@@ -406,7 +430,7 @@ export async function getActivity(
     .slice(0, limit);
 }
 
-/** Ids the viewer follows. The feed needs them; RLS handles the rest. */
+/** Ids the viewer follows for relationship-aware Home and profile surfaces. */
 export async function getFollowingIds(
   supabase: SupabaseClient,
   viewerId: string,
@@ -417,6 +441,62 @@ export async function getFollowingIds(
     .eq("follower_id", viewerId)
     .limit(1000);
   return (data ?? []).map((row) => String(row.following_id));
+}
+
+export type FriendPlaying = {
+  profileId: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  verified: boolean;
+  game: Game;
+  updatedAt: string;
+};
+
+/** A small, real-time shelf for Home. RLS still decides whose library is visible. */
+export async function getFriendsPlaying(
+  supabase: SupabaseClient,
+  profileIds: string[],
+  limit = 10,
+): Promise<FriendPlaying[]> {
+  if (!profileIds.length) return [];
+
+  const { data: rows } = await supabase
+    .from("user_games")
+    .select(
+      "profile_id,igdb_id,updated_at,profiles!user_games_profile_id_fkey(username,display_name,avatar_url,verified)",
+    )
+    .in("profile_id", profileIds)
+    .or("playing.eq.true,status.eq.PLAYING")
+    .order("updated_at", { ascending: false })
+    .limit(Math.min(Math.max(limit * 2, limit), 40));
+
+  if (!rows?.length) return [];
+  const gameIds = [...new Set(rows.map((row) => Number(row.igdb_id)))];
+  const games = await getGamesByIds(gameIds);
+  const gamesById = new Map(games.map((game) => [game.id, game]));
+  const seen = new Set<string>();
+
+  return rows
+    .flatMap((row): FriendPlaying[] => {
+      const profile = profileOf(row.profiles);
+      const game = gamesById.get(row.igdb_id);
+      const key = `${row.profile_id}:${row.igdb_id}`;
+      if (!profile?.username || !game || seen.has(key)) return [];
+      seen.add(key);
+      return [
+        {
+          profileId: row.profile_id,
+          username: profile.username,
+          displayName: profile.display_name,
+          avatarUrl: profile.avatar_url,
+          verified: Boolean(profile.verified),
+          game,
+          updatedAt: row.updated_at,
+        },
+      ];
+    })
+    .slice(0, limit);
 }
 
 export type SuggestedProfile = {

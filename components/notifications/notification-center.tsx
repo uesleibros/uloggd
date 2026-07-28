@@ -1,5 +1,7 @@
 "use client";
 
+import { Switch } from "@/components/ui/switch";
+
 /* eslint-disable @next/next/no-img-element */
 
 import * as Dialog from "@/components/ui/dialog";
@@ -405,11 +407,11 @@ export function NotificationCenter({
               ).map(([key, label]) => (
                 <label className="notification-preference" key={key}>
                   <span>{label}</span>
-                  <input
-                    type="checkbox"
+                  <Switch
                     checked={preferences[key]}
                     disabled={saving}
-                    onChange={() => void updatePreference(key)}
+                    aria-label={label}
+                    onCheckedChange={() => void updatePreference(key)}
                   />
                 </label>
               ))}

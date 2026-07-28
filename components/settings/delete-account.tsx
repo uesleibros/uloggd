@@ -1,6 +1,7 @@
 "use client";
 
 import * as Dialog from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { AlertTriangle, LoaderCircle, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -191,13 +192,11 @@ export function DeleteAccount({
                 />
               </label>
               <label className="account-delete-understood">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={understood}
-                  onChange={(event) => setUnderstood(event.target.checked)}
+                  onCheckedChange={setUnderstood}
                   disabled={pending}
                 />
-                <span aria-hidden="true" />
                 <p>
                   {tri(
                     lang,

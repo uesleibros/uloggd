@@ -4,7 +4,7 @@ import * as Dialog from "@/components/ui/dialog";
 import { ListOrdered, LoaderCircle, Settings2, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Switch } from "@/components/switch";
+import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
 import { EditorVisibilitySelect } from "./review-studio-form";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -239,8 +239,8 @@ export function ListOwnerControls({
                   </span>
                   <Switch
                     checked={ranked}
-                    onChange={setRanked}
-                    label={tri(lang, "Ranquear", "Rank", "Ranquear")}
+                    onCheckedChange={setRanked}
+                    aria-label={tri(lang, "Ranquear", "Rank", "Ranquear")}
                   />
                 </div>
               )}

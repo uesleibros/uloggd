@@ -1,5 +1,8 @@
 "use client";
 
+import { Switch } from "@/components/ui/switch";
+import { Toggle } from "@/components/ui/toggle";
+
 import * as Dialog from "@/components/ui/dialog";
 import * as Select from "@/components/ui/select";
 import {
@@ -382,11 +385,7 @@ export function ReviewStudioForm({
           data-section="details"
         >
           <div className="review-achievement-toggles">
-            <button
-              type="button"
-              aria-pressed={mastered}
-              onClick={() => setMastered((value) => !value)}
-            >
+            <Toggle pressed={mastered} onPressedChange={setMastered}>
               <Trophy size={18} />
               <span>
                 <strong>{tri(lang, "Dominei", "Mastered", "Dominé")}</strong>
@@ -399,12 +398,8 @@ export function ReviewStudioForm({
                   )}
                 </small>
               </span>
-            </button>
-            <button
-              type="button"
-              aria-pressed={replay}
-              onClick={() => setReplay((value) => !value)}
-            >
+            </Toggle>
+            <Toggle pressed={replay} onPressedChange={setReplay}>
               <RotateCcw size={18} />
               <span>
                 <strong>{t.replay}</strong>
@@ -417,7 +412,7 @@ export function ReviewStudioForm({
                   )}
                 </small>
               </span>
-            </button>
+            </Toggle>
           </div>
           <label>
             <span>
@@ -486,12 +481,11 @@ export function ReviewStudioForm({
               />
             </label>
             <label className="review-spoiler-toggle">
-              <input
-                type="checkbox"
+              <Switch
                 checked={spoilers}
-                onChange={(event) => setSpoilers(event.target.checked)}
+                onCheckedChange={setSpoilers}
+                aria-label={t.containsSpoilers}
               />
-              <span aria-hidden="true" />
               <p>
                 <strong>{t.containsSpoilers}</strong>
                 <small>

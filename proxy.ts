@@ -28,7 +28,6 @@ const knownSegments = new Set([
   ...publicSegments,
   "entry",
   "explore",
-  "feed",
   "library",
   "moderation",
   "review",
@@ -58,6 +57,8 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   if (process.env.ULOGGD_E2E === "1") return response;
   const segment = pathname.slice(lang.length + 2).split("/")[0] || "";
+  if (segment === "feed")
+    return NextResponse.redirect(new URL(`/${lang}`, request.url), 308);
   // Before the auth checks: a URL that matches no route is not a login problem,
   // and bouncing it to /login told crawlers the page exists. Rewriting instead
   // of redirecting keeps the dead URL in the address bar, which is what a 404

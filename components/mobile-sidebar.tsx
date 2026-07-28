@@ -7,7 +7,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   HomeIcon,
-  Rss,
   LibraryBig,
   ListTree,
   LockKeyhole,
@@ -31,7 +30,6 @@ type MobileSidebarProps = {
     menu: string;
     close: string;
     home: string;
-    feed: string;
     library: string;
     reviews: string;
     lists: string;
@@ -52,7 +50,6 @@ export function MobileSidebar({
   const pathname = usePathname();
   const links = [
     [HomeIcon, labels.home, `/${lang}`, false],
-    [Rss, labels.feed, `/${lang}/feed`, true],
     [LibraryBig, labels.library, `/${lang}/library`, true],
     [Star, labels.reviews, `/${lang}/reviews`, true],
     [ListTree, labels.lists, `/${lang}/lists`, true],

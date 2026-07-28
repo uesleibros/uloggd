@@ -1756,11 +1756,6 @@
   font-size: 12px;
   cursor: pointer;
 }
-.privacy-toggle input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--brand-blurple);
-}
 .privacy-toggle > span {
   flex: 1;
 }

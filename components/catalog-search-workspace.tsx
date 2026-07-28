@@ -2,6 +2,9 @@
 
 import * as Dialog from "@/components/ui/dialog";
 import * as Select from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -196,10 +199,9 @@ function OptionGroup({
             const checked = selected.includes(option.id);
             return (
               <label key={option.id} data-selected={checked || undefined}>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={checked}
-                  onChange={() =>
+                  onCheckedChange={() =>
                     onChange(
                       param,
                       checked
@@ -208,9 +210,6 @@ function OptionGroup({
                     )
                   }
                 />
-                <span className="catalog-checkbox">
-                  <Check size={11} />
-                </span>
                 <span>
                   <strong>{option.name}</strong>
                   {(option.abbreviation || option.group) && (
@@ -587,48 +586,50 @@ export function CatalogSearchWorkspace({
       data-pending={pending || undefined}
     >
       <header className="catalog-search-hero">
-        <h1>
-          {createMode
-            ? tri(
-                lang,
-                createMode === "review"
-                  ? "Qual jogo você quer avaliar?"
-                  : "De qual jogo é a captura?",
-                createMode === "review"
-                  ? "Which game do you want to review?"
-                  : "Which game is the screenshot from?",
-                createMode === "review"
-                  ? "¿Qué juego quieres reseñar?"
-                  : "¿De qué juego es la captura?",
-              )
-            : tri(
-                lang,
-                "Encontre exatamente o que jogar",
-                "Find exactly what to play",
-                "Encuentra exactamente qué jugar",
-              )}
-        </h1>
-        <p>
-          {createMode
-            ? tri(
-                lang,
-                createMode === "review"
-                  ? "Selecione uma capa para abrir o estúdio de avaliação."
-                  : "Selecione uma capa para preparar a publicação.",
-                createMode === "review"
-                  ? "Select a cover to open the review studio."
-                  : "Select a cover to prepare the post.",
-                createMode === "review"
-                  ? "Selecciona una portada para abrir el estudio de reseñas."
-                  : "Selecciona una portada para preparar la publicación.",
-              )
-            : tri(
-                lang,
-                "Cruze plataformas, gêneros, engines, modos, época e recepção para encontrar o jogo certo.",
-                "Cross platforms, genres, engines, modes, era, and reception to find the right game.",
-                "Cruza plataformas, géneros, motores, modos, época y recepción para encontrar el juego adecuado.",
-              )}
-        </p>
+        <div className="catalog-search-hero-copy">
+          <h1>
+            {createMode
+              ? tri(
+                  lang,
+                  createMode === "review"
+                    ? "Qual jogo você quer avaliar?"
+                    : "De qual jogo é a captura?",
+                  createMode === "review"
+                    ? "Which game do you want to review?"
+                    : "Which game is the screenshot from?",
+                  createMode === "review"
+                    ? "¿Qué juego quieres reseñar?"
+                    : "¿De qué juego es la captura?",
+                )
+              : tri(
+                  lang,
+                  "Encontre exatamente o que jogar",
+                  "Find exactly what to play",
+                  "Encuentra exactamente qué jugar",
+                )}
+          </h1>
+          <p>
+            {createMode
+              ? tri(
+                  lang,
+                  createMode === "review"
+                    ? "Selecione uma capa para abrir o estúdio de avaliação."
+                    : "Selecione uma capa para preparar a publicação.",
+                  createMode === "review"
+                    ? "Select a cover to open the review studio."
+                    : "Select a cover to prepare the post.",
+                  createMode === "review"
+                    ? "Selecciona una portada para abrir el estudio de reseñas."
+                    : "Selecciona una portada para preparar la publicación.",
+                )
+              : tri(
+                  lang,
+                  "Cruze plataformas, gêneros, engines, modos, época e recepção para encontrar o jogo certo.",
+                  "Cross platforms, genres, engines, modes, era, and reception to find the right game.",
+                  "Cruza plataformas, géneros, motores, modos, época y recepción para encontrar el juego adecuado.",
+                )}
+          </p>
+        </div>
         <form
           className="catalog-search-main-form"
           onSubmit={(event) => {
@@ -782,7 +783,16 @@ export function CatalogSearchWorkspace({
                     "Estado de lanzamiento",
                   )}
                 </header>
-                <div className="catalog-segmented-filter">
+                <RadioGroup
+                  className="catalog-segmented-filter"
+                  value={draft.releaseStatus}
+                  onValueChange={(value) =>
+                    setDraft((current) => ({
+                      ...current,
+                      releaseStatus: value as FilterDraft["releaseStatus"],
+                    }))
+                  }
+                >
                   {[
                     ["all", t.all],
                     ["released", tri(lang, "Lançados", "Released", "Lanzados")],
@@ -791,73 +801,72 @@ export function CatalogSearchWorkspace({
                       tri(lang, "Em breve", "Upcoming", "Muy pronto"),
                     ],
                   ].map(([value, label]) => (
-                    <label
+                    <RadioGroupItem
                       key={value}
+                      value={value}
                       data-selected={draft.releaseStatus === value || undefined}
                     >
-                      <input
-                        type="radio"
-                        name="release-status"
-                        checked={draft.releaseStatus === value}
-                        onChange={() =>
-                          setDraft((current) => ({
-                            ...current,
-                            releaseStatus:
-                              value as FilterDraft["releaseStatus"],
-                          }))
-                        }
-                      />
                       {label}
-                    </label>
+                    </RadioGroupItem>
                   ))}
-                </div>
+                </RadioGroup>
                 <div className="catalog-boolean-filters">
-                  <label>
-                    <input
-                      type="checkbox"
+                  <div>
+                    <Switch
+                      id="catalog-rated-only"
                       checked={draft.ratedOnly}
-                      onChange={(event) =>
-                        setDraft((current) => ({
-                          ...current,
-                          ratedOnly: event.target.checked,
-                        }))
-                      }
-                    />
-                    <span>
-                      <i />
-                    </span>
-                    <b>
-                      {tri(
+                      aria-label={tri(
                         lang,
                         "Somente jogos avaliados",
                         "Rated games only",
                         "Solo juegos valorados",
                       )}
-                    </b>
-                  </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={draft.anticipatedOnly}
-                      onChange={(event) =>
+                      onCheckedChange={(checked) =>
                         setDraft((current) => ({
                           ...current,
-                          anticipatedOnly: event.target.checked,
+                          ratedOnly: checked,
                         }))
                       }
                     />
-                    <span>
-                      <i />
-                    </span>
-                    <b>
-                      {tri(
+                    <label htmlFor="catalog-rated-only">
+                      <b>
+                        {tri(
+                          lang,
+                          "Somente jogos avaliados",
+                          "Rated games only",
+                          "Solo juegos valorados",
+                        )}
+                      </b>
+                    </label>
+                  </div>
+                  <div>
+                    <Switch
+                      id="catalog-anticipated-only"
+                      checked={draft.anticipatedOnly}
+                      aria-label={tri(
                         lang,
                         "Somente jogos aguardados",
                         "Anticipated games only",
                         "Solo juegos esperados",
                       )}
-                    </b>
-                  </label>
+                      onCheckedChange={(checked) =>
+                        setDraft((current) => ({
+                          ...current,
+                          anticipatedOnly: checked,
+                        }))
+                      }
+                    />
+                    <label htmlFor="catalog-anticipated-only">
+                      <b>
+                        {tri(
+                          lang,
+                          "Somente jogos aguardados",
+                          "Anticipated games only",
+                          "Solo juegos esperados",
+                        )}
+                      </b>
+                    </label>
+                  </div>
                 </div>
               </section>
               <OptionGroup
@@ -950,7 +959,16 @@ export function CatalogSearchWorkspace({
                       "Rol de la empresa",
                     )}
                   </header>
-                  <div className="catalog-segmented-filter">
+                  <RadioGroup
+                    className="catalog-segmented-filter"
+                    value={draft.publisherRole}
+                    onValueChange={(value) =>
+                      setDraft((current) => ({
+                        ...current,
+                        publisherRole: value as FilterDraft["publisherRole"],
+                      }))
+                    }
+                  >
                     {[
                       ["any", t.all],
                       [
@@ -967,28 +985,17 @@ export function CatalogSearchWorkspace({
                         ),
                       ],
                     ].map(([value, label]) => (
-                      <label
+                      <RadioGroupItem
                         key={value}
+                        value={value}
                         data-selected={
                           draft.publisherRole === value || undefined
                         }
                       >
-                        <input
-                          type="radio"
-                          name="publisher-role"
-                          checked={draft.publisherRole === value}
-                          onChange={() =>
-                            setDraft((current) => ({
-                              ...current,
-                              publisherRole:
-                                value as FilterDraft["publisherRole"],
-                            }))
-                          }
-                        />
                         {label}
-                      </label>
+                      </RadioGroupItem>
                     ))}
-                  </div>
+                  </RadioGroup>
                 </section>
               )}
               <OptionGroup

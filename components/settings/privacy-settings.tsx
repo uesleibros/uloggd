@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText } from "@/lib/ui-text";
 import type { UiLang } from "@/lib/ui-text";
@@ -213,12 +214,17 @@ export function PrivacySettings({
             </p>
           </div>
         </header>
-        <label className="privacy-toggle">
-          <input
-            type="checkbox"
+        <div className="privacy-toggle">
+          <Switch
             checked={isPrivate}
             disabled={Boolean(pending)}
-            onChange={(event) => void updatePrivacy(event.target.checked)}
+            aria-label={tri(
+              lang,
+              "Conta privada",
+              "Private account",
+              "Cuenta privada",
+            )}
+            onCheckedChange={(checked) => void updatePrivacy(checked)}
           />
           <span>
             {isPrivate
@@ -238,7 +244,7 @@ export function PrivacySettings({
           {pending === "privacy" && (
             <LoaderCircle className="spin" size={14} aria-hidden />
           )}
-        </label>
+        </div>
 
         {isPrivate && (
           <div className="privacy-requests">

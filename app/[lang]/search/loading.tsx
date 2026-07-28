@@ -7,8 +7,10 @@ export default function SearchLoading() {
       aria-hidden="true"
     >
       <header className="catalog-search-hero catalog-search-hero-loading">
-        <span className="skeleton-block" />
-        <span className="skeleton-block" />
+        <div className="catalog-search-hero-copy">
+          <span className="skeleton-block" />
+          <span className="skeleton-block" />
+        </div>
         <div className="catalog-search-form-loading skeleton-block" />
         <div className="catalog-search-signals-loading">
           <i className="skeleton-block" />

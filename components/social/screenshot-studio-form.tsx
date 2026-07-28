@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 import * as Select from "@/components/ui/select";
 import {
   Check,
@@ -262,11 +264,7 @@ export function ScreenshotStudioForm({
           </Select.Root>
         </label>
         <label className="screenshot-spoiler">
-          <input
-            type="checkbox"
-            checked={spoilers}
-            onChange={(event) => setSpoilers(event.target.checked)}
-          />
+          <Checkbox checked={spoilers} onCheckedChange={setSpoilers} />
           <ShieldAlert size={16} />
           <span>
             {tri(

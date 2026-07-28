@@ -7,15 +7,10 @@
 .catalog-search-hero {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(220px, 0.72fr) minmax(380px, 1.28fr);
-  grid-template-areas:
-    "title form"
-    "description signals";
-  align-items: center;
-  column-gap: 32px;
-  row-gap: 6px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
   overflow: hidden;
-  padding: 20px 22px;
+  padding: 24px;
   border: 1px solid var(--shell-line);
   border-radius: 13px;
   background: var(--console-panel);
@@ -28,8 +23,12 @@
   font-weight: 650;
   letter-spacing: 0.1em;
 }
+.catalog-search-hero-copy {
+  display: grid;
+  gap: 7px;
+  max-width: 780px;
+}
 .catalog-search-hero h1 {
-  grid-area: title;
   max-width: 760px;
   margin: 0;
   color: var(--screen-white);
@@ -39,8 +38,7 @@
   line-height: 1.04;
   text-wrap: balance;
 }
-.catalog-search-hero > p {
-  grid-area: description;
+.catalog-search-hero-copy > p {
   max-width: 680px;
   margin: 0;
   color: var(--screen-muted);
@@ -49,12 +47,11 @@
   text-wrap: pretty;
 }
 .catalog-search-main-form {
-  grid-area: form;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 10px;
-  width: min(100%, 820px);
+  width: min(100%, 1040px);
   min-height: 48px;
   margin: 0;
   padding: 5px 6px 5px 14px;
@@ -119,7 +116,6 @@
   background: var(--brand-blurple-bright);
 }
 .catalog-search-signals {
-  grid-area: signals;
   display: flex;
   flex-wrap: wrap;
   gap: 0;
@@ -379,7 +375,7 @@
   border-radius: 8px;
   background: var(--console-inset);
 }
-.catalog-segmented-filter label {
+.catalog-segmented-filter .ui-radio-item {
   display: grid;
   place-items: center;
   min-width: 0;
@@ -391,73 +387,36 @@
   font-weight: 580;
   cursor: pointer;
 }
-.catalog-segmented-filter label:hover,
-.catalog-segmented-filter label[data-selected] {
+.catalog-segmented-filter .ui-radio-item:hover,
+.catalog-segmented-filter .ui-radio-item[data-selected] {
   background: var(--console-hover);
   color: var(--screen-white);
 }
-.catalog-segmented-filter label[data-selected] {
+.catalog-segmented-filter .ui-radio-item[data-selected] {
   box-shadow: inset 0 0 0 1px var(--shell-line-strong);
 }
-.catalog-segmented-filter input,
-.catalog-boolean-filters input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
-.catalog-segmented-filter label:has(input:focus-visible),
-.catalog-boolean-filters label:has(input:focus-visible) {
+.catalog-segmented-filter .ui-radio-item:focus-visible,
+.catalog-boolean-filters .ui-switch:focus-visible {
   box-shadow: 0 0 0 3px var(--brand-blurple-wash);
 }
 .catalog-boolean-filters {
   display: grid;
   gap: 4px;
 }
-.catalog-boolean-filters label {
+.catalog-boolean-filters > div {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-columns: 42px minmax(0, 1fr);
   align-items: center;
   gap: 9px;
   min-height: 34px;
   color: var(--screen-muted);
-  cursor: pointer;
-}
-.catalog-boolean-filters label > span {
-  position: relative;
-  display: block;
-  width: 30px;
-  height: 18px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 6px;
-  background: var(--console-inset);
-  transition:
-    background-color 140ms ease-out,
-    border-color 140ms ease-out;
-}
-.catalog-boolean-filters label > span i {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  background: var(--screen-muted);
-  transition:
-    transform 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 140ms ease-out;
-}
-.catalog-boolean-filters input:checked + span {
-  border-color: var(--brand-blurple);
-  background: var(--brand-blurple-wash);
-}
-.catalog-boolean-filters input:checked + span i {
-  background: var(--brand-blurple-bright);
-  transform: translateX(12px);
 }
 .catalog-boolean-filters b {
   font-size: 10px;
   font-weight: 540;
+}
+.catalog-boolean-filters label {
+  cursor: pointer;
 }
 .catalog-filter-group {
   border-bottom: 1px solid var(--shell-line);
@@ -565,13 +524,7 @@
   background: var(--console-hover);
   color: var(--screen-white);
 }
-.catalog-filter-options input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
-.catalog-checkbox {
+.catalog-filter-options .ui-checkbox {
   display: grid;
   place-items: center;
   width: 17px;
@@ -581,12 +534,12 @@
   background: var(--console-inset);
   color: transparent;
 }
-.catalog-filter-options input:checked + .catalog-checkbox {
+.catalog-filter-options .ui-checkbox[data-checked] {
   border-color: var(--brand-blurple);
   background: var(--brand-blurple);
   color: white;
 }
-.catalog-filter-options input:focus-visible + .catalog-checkbox {
+.catalog-filter-options .ui-checkbox:focus-visible {
   box-shadow: 0 0 0 3px var(--brand-blurple-wash);
 }
 .catalog-filter-options label > span:last-child {
@@ -959,21 +912,18 @@
   line-height: 36px;
 }
 .catalog-search-hero-loading {
-  min-height: 106px;
+  min-height: 164px;
 }
-.catalog-search-hero-loading > span:first-child {
-  grid-area: title;
+.catalog-search-hero-loading .catalog-search-hero-copy > span:first-child {
   width: min(360px, 82%);
   height: 30px;
 }
-.catalog-search-hero-loading > span:nth-child(2) {
-  grid-area: description;
+.catalog-search-hero-loading .catalog-search-hero-copy > span:nth-child(2) {
   width: min(420px, 94%);
   height: 10px;
   margin: 0;
 }
 .catalog-search-form-loading {
-  grid-area: form;
   width: 100%;
   height: 48px;
   margin: 0;
@@ -981,7 +931,6 @@
   background: var(--console-inset);
 }
 .catalog-search-signals-loading {
-  grid-area: signals;
   display: flex;
   gap: 20px;
   margin: 0;
@@ -1122,12 +1071,6 @@
     padding: 22px 14px 48px;
   }
   .catalog-search-hero {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "title"
-      "description"
-      "form"
-      "signals";
     gap: 8px;
     padding: 18px;
     border-radius: 11px;
@@ -1198,11 +1141,11 @@
   .catalog-results-loading .catalog-sort-loading {
     width: auto;
   }
-  .catalog-search-hero-loading > span:first-child {
+  .catalog-search-hero-loading .catalog-search-hero-copy > span:first-child {
     width: 90%;
     height: 25px;
   }
-  .catalog-search-hero-loading > span:nth-child(2) {
+  .catalog-search-hero-loading .catalog-search-hero-copy > span:nth-child(2) {
     width: 100%;
   }
   .catalog-search-form-loading {

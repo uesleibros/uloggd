@@ -2,6 +2,7 @@
 
 import { Check } from "lucide-react";
 import { useSyncExternalStore } from "react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   saveThemePreference,
   THEME_CHANGE_EVENT,
@@ -94,24 +95,25 @@ export function AppearanceSettings({ lang }: { lang: UiLang }) {
         </p>
       </header>
 
-      <fieldset className="theme-options">
-        <legend className="sr-only">
-          {tri(lang, "Escolha um tema", "Choose a theme", "Elige un tema")}
-        </legend>
+      <RadioGroup
+        className="theme-options"
+        value={selected}
+        onValueChange={(value) => selectTheme(value as ThemePreference)}
+        aria-label={tri(
+          lang,
+          "Escolha um tema",
+          "Choose a theme",
+          "Elige un tema",
+        )}
+      >
         {themes.map((theme) => (
-          <label
+          <RadioGroupItem
             className="theme-option"
             data-theme-preview={theme.id}
             data-selected={selected === theme.id || undefined}
             key={theme.id}
+            value={theme.id}
           >
-            <input
-              type="radio"
-              name="theme"
-              value={theme.id}
-              checked={selected === theme.id}
-              onChange={() => selectTheme(theme.id)}
-            />
             <span className="theme-preview" aria-hidden>
               <i />
               <b>
@@ -137,9 +139,9 @@ export function AppearanceSettings({ lang }: { lang: UiLang }) {
             <span className="theme-option-check" aria-hidden>
               <Check size={14} />
             </span>
-          </label>
+          </RadioGroupItem>
         ))}
-      </fieldset>
+      </RadioGroup>
 
       <p className="appearance-device-note">
         {tri(

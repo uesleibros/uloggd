@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 import * as Dialog from "@/components/ui/dialog";
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import * as Select from "@/components/ui/select";
@@ -219,11 +221,7 @@ export function ScreenshotActions({
                 />
               </label>
               <label className="social-check">
-                <input
-                  type="checkbox"
-                  checked={spoilers}
-                  onChange={(event) => setSpoilers(event.target.checked)}
-                />
+                <Checkbox checked={spoilers} onCheckedChange={setSpoilers} />
                 <span>{t.containsSpoilers}</span>
               </label>
               {error && (

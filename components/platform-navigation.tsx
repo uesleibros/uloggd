@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Tooltip } from "@/components/ui/tooltip";
 import {
   HomeIcon,
-  Rss,
   LibraryBig,
   ListTree,
   LogIn,
@@ -28,7 +27,6 @@ import { tri } from "@/lib/ui-text";
 
 const iconMap = {
   home: HomeIcon,
-  feed: Rss,
   library: LibraryBig,
   star: Star,
   user: UserRound,
@@ -55,7 +53,7 @@ export function PlatformNavigation({
   const profileHref = account?.username
     ? `/${lang}/u/${account.username}`
     : `/${lang}/onboarding/username`;
-  // Five primary destinations; everything else lives behind "More", so the
+  // Four primary destinations; everything else lives behind "More", so the
   // rail stays short no matter how many secondary pages exist.
   const nav = [
     {
@@ -64,13 +62,6 @@ export function PlatformNavigation({
       label: d.nav.home,
       href: `/${lang}`,
       requiresAuth: false,
-    },
-    {
-      key: "feed",
-      icon: "feed",
-      label: d.nav.feed,
-      href: `/${lang}/feed`,
-      requiresAuth: true,
     },
     {
       key: "search",
@@ -217,7 +208,6 @@ export function PlatformNavigation({
             menu: d.actions.menu,
             close: d.actions.close,
             home: d.nav.home,
-            feed: d.nav.feed,
             library: d.nav.library,
             reviews: d.nav.reviews,
             lists: d.nav.lists,

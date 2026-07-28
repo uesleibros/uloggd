@@ -1,34 +1,47 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, ArrowUpRight, Info, Star } from "lucide-react";
 import {
-  getDiscoveryGames,
-  getGenreCollections,
-  getPopularGames,
-  type Game,
-} from "@/lib/igdb";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
-import { getHomePersonalization } from "@/lib/history";
-import { resolveGameCover } from "@/lib/game-cover";
+  ArrowRight,
+  ArrowUpRight,
+  Compass,
+  Gamepad2,
+  MessagesSquare,
+  Star,
+} from "lucide-react";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
+import { ActivityStream } from "@/components/social/activity-stream";
+import { VerifiedMark } from "@/components/verified-badge";
+import { getHomePersonalization } from "@/lib/history";
+import { getPopularGames } from "@/lib/igdb";
+import { getActivity, getFollowingIds, getFriendsPlaying } from "@/lib/social";
 import { localeAlternates } from "@/lib/seo";
-import { getDictionary, hasLocale } from "./dictionaries";
+import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { getDictionary, hasLocale } from "./dictionaries";
+
+type SavedGameState = {
+  status:
+    "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
+  playing: boolean;
+  backlog: boolean;
+  wishlist: boolean;
+  liked: boolean;
+  quick_rating: number | null;
+  custom_cover_url: string | null;
+};
 
 export async function generateMetadata({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
-  // The home page is the one place all three locales compete for the same
-  // query, so it needs the hreflang set more than any other route.
   return {
     title: {
       absolute: tri(
         lang,
-        "Diário e biblioteca de jogos · uloggd",
-        "Game journal and library · uloggd",
-        "Diario y biblioteca de juegos · uloggd",
+        "Diário e comunidade de jogos · uloggd",
+        "Game journal and community · uloggd",
+        "Diario y comunidad de juegos · uloggd",
       ),
     },
     alternates: localeAlternates(lang, "/"),
@@ -38,444 +51,341 @@ export async function generateMetadata({ params }: PageProps<"/[lang]">) {
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  // loading.tsx já é o limite de Suspense desta rota e usa o mesmo skeleton;
-  // um segundo aqui só duplicava o mesmo estado de carregamento.
   return <HomeContent lang={lang} />;
 }
 
 async function HomeContent({ lang }: { lang: UiLang }) {
-  const [d, games, discoveries, genreCollections, user] = await Promise.all([
+  const [d, games, user, supabase] = await Promise.all([
     getDictionary(lang),
     getPopularGames(),
-    getDiscoveryGames(),
-    getGenreCollections(),
     getAuthUser(),
+    getSupabase(),
   ]);
-  const [featured, ...catalog] = games;
-  const visibleGameIds = new Set<number>();
-  if (featured) visibleGameIds.add(featured.id);
-  const takeUnique = (source: Game[], limit: number) => {
-    const unique: Game[] = [];
-    for (const game of source) {
-      if (visibleGameIds.has(game.id)) continue;
-      visibleGameIds.add(game.id);
-      unique.push(game);
-      if (unique.length === limit) break;
-    }
-    return unique;
-  };
-  const distributeUniqueLanes = <T extends { games: Game[] }>(
-    lanes: T[],
-    limit: number,
-  ) => {
-    const cursors = lanes.map(() => 0);
-    const allocated = lanes.map(() => [] as Game[]);
-    for (let round = 0; round < limit; round += 1) {
-      lanes.forEach((lane, laneIndex) => {
-        while (cursors[laneIndex] < lane.games.length) {
-          const game = lane.games[cursors[laneIndex]];
-          cursors[laneIndex] += 1;
-          if (visibleGameIds.has(game.id)) continue;
-          visibleGameIds.add(game.id);
-          allocated[laneIndex].push(game);
-          break;
-        }
-      });
-    }
-    return lanes
-      .map((lane, index) => ({ ...lane, games: allocated[index] }))
-      .filter((lane) => lane.games.length > 0);
-  };
-  const popularGames = takeUnique(catalog, 10);
-  const exploreGames = takeUnique(catalog, 4);
-  const uniqueGenreCollections = distributeUniqueLanes(genreCollections, 10);
-  const releaseFormatter = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
+  const followingPromise = user
+    ? getFollowingIds(supabase, user.id)
+    : Promise.resolve([]);
+  const personalizationPromise = user
+    ? getHomePersonalization(supabase, user.id)
+    : Promise.resolve({ recentlyViewed: [], forYou: [] });
+  const communityPromise = getActivity(supabase, {
+    viewerId: user?.id ?? null,
+    limit: 18,
   });
-  const discoveryCandidates: {
-    key: string;
-    title: string;
-    description: string;
-    games: Game[];
-    meta: (game: Game) => string;
-  }[] = [
-    {
-      key: "anticipated",
-      title: d.home.mostAnticipated,
-      description: d.home.mostAnticipatedDescription,
-      games: discoveries.anticipated,
-      meta: (game) =>
-        game.hype
-          ? `${game.hype.toLocaleString(lang)} ${tri(lang, "interessados", "following", "interesados")}`
-          : d.home.releaseDatePending,
-    },
-    {
-      key: "upcoming",
-      title: d.home.comingSoon,
-      description: d.home.comingSoonDescription,
-      games: discoveries.upcoming,
-      meta: (game) =>
-        game.releaseTimestamp
-          ? releaseFormatter.format(new Date(game.releaseTimestamp * 1000))
-          : d.home.releaseDatePending,
-    },
-    {
-      key: "hidden-gems",
-      title: d.home.hiddenGems,
-      description: d.home.hiddenGemsDescription,
-      games: discoveries.hiddenGems,
-      meta: (game) =>
-        game.rating
-          ? `${game.rating}/100 · ${game.ratingCount.toLocaleString(lang)} ${d.home.registrations}`
-          : d.home.releaseDatePending,
-    },
+  const friendsPlayingPromise = user
+    ? followingPromise.then((following) =>
+        getFriendsPlaying(supabase, following, 10),
+      )
+    : Promise.resolve([]);
+  const personalization = await personalizationPromise;
+  const { recentlyViewed, forYou } = personalization;
+  const popularGames = games.slice(0, 10);
+  const visibleGameIds = [
+    ...new Set([
+      ...popularGames.map((game) => game.id),
+      ...recentlyViewed.map((game) => game.id),
+      ...forYou.map((game) => game.id),
+    ]),
   ];
-  const discoveryLanes = distributeUniqueLanes(discoveryCandidates, 8);
-  // Saved-state is only rendered for on-screen games and the counts come
-  // from head-only count queries, so a large library never ships extra rows.
-  const supabase = user ? await getSupabase() : null;
-  const { recentlyViewed, forYou } =
-    user && supabase
-      ? await getHomePersonalization(supabase, user.id)
-      : { recentlyViewed: [] as Game[], forYou: [] as Game[] };
-  const snapshot =
-    user && supabase
-      ? await (async () => {
-          const [saved, library, playing, rated] = await Promise.all([
-            supabase
-              .from("user_games")
-              .select(
-                "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-              )
-              .eq("profile_id", user.id)
-              .in("igdb_id", [
-                ...visibleGameIds,
-                ...recentlyViewed.map((game) => game.id),
-                ...forYou.map((game) => game.id),
-              ]),
-            supabase
-              .from("user_games")
-              .select("igdb_id", { count: "exact", head: true })
-              .eq("profile_id", user.id),
-            supabase
-              .from("user_games")
-              .select("igdb_id", { count: "exact", head: true })
-              .eq("profile_id", user.id)
-              .or("playing.eq.true,status.eq.PLAYING"),
-            supabase
-              .from("user_games")
-              .select("igdb_id", { count: "exact", head: true })
-              .eq("profile_id", user.id)
-              .not("quick_rating", "is", null),
-          ]);
-          return {
-            savedGames: saved.data ?? [],
-            libraryCount: library.count ?? 0,
-            playingCount: playing.count ?? 0,
-            ratedCount: rated.count ?? 0,
-          };
-        })()
-      : null;
+  const snapshotPromise = user
+    ? (async () => {
+        const [saved, library, playing, rated] = await Promise.all([
+          visibleGameIds.length
+            ? supabase
+                .from("user_games")
+                .select(
+                  "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
+                )
+                .eq("profile_id", user.id)
+                .in("igdb_id", visibleGameIds)
+            : Promise.resolve({ data: [] }),
+          supabase
+            .from("user_games")
+            .select("igdb_id", { count: "exact", head: true })
+            .eq("profile_id", user.id),
+          supabase
+            .from("user_games")
+            .select("igdb_id", { count: "exact", head: true })
+            .eq("profile_id", user.id)
+            .or("playing.eq.true,status.eq.PLAYING"),
+          supabase
+            .from("user_games")
+            .select("igdb_id", { count: "exact", head: true })
+            .eq("profile_id", user.id)
+            .not("quick_rating", "is", null),
+        ]);
+        return {
+          savedGames: saved.data ?? [],
+          libraryCount: library.count ?? 0,
+          playingCount: playing.count ?? 0,
+          ratedCount: rated.count ?? 0,
+        };
+      })()
+    : Promise.resolve(null);
+  const [communityEntries, friendsPlaying, snapshot] = await Promise.all([
+    communityPromise,
+    friendsPlayingPromise,
+    snapshotPromise,
+  ]);
   const savedById = new Map(
     (snapshot?.savedGames ?? []).map((item) => [item.igdb_id, item]),
   );
-  const libraryCount = snapshot?.libraryCount ?? 0;
-  const playingCount = snapshot?.playingCount ?? 0;
-  const ratedCount = snapshot?.ratedCount ?? 0;
+  const reviews = communityEntries
+    .filter((entry) => entry.kind === "review")
+    .slice(0, 4);
+  const communityUpdates = communityEntries
+    .filter((entry) => entry.kind !== "review")
+    .slice(0, 6);
 
   return (
-    <div className="home-shell">
-      <main className="feed">
-        {featured && (
-          <section className="featured-game">
-            <Image
-              src={featured.heroUrl ?? featured.coverUrl}
-              alt=""
-              fill
-              priority
-              sizes="720px"
-              className="featured-backdrop"
-            />
-            <div className="featured-scrim" />
-            <div className="featured-copy">
-              <span className="featured-kicker">
-                {tri(
-                  lang,
-                  "DESTAQUE DO CATÁLOGO",
-                  "CATALOG SPOTLIGHT",
-                  "DESTACADO DEL CATÁLOGO",
-                )}
-              </span>
-              <h2>
-                <Link href={`/${lang}/game/${featured.slug}`}>
-                  {featured.name}
-                </Link>
-              </h2>
-              <div className="featured-meta">
-                <span>
-                  <Star size={13} fill="currentColor" />
-                  {featured.rating ? `${featured.rating}/100` : "—"}
-                </span>
-                <span>{featured.releaseYear}</span>
-                <span>{featured.genres.join(" · ")}</span>
-              </div>
-              <p>{featured.summary || d.home.subtitle}</p>
-              <div className="featured-actions">
-                <Link href={`/${lang}/game/${featured.slug}`}>
-                  <Info size={17} />
-                  {tri(lang, "Ver jogo", "View game", "Ver juego")}
-                </Link>
-                <a href="#popular-catalog">
-                  {tri(
-                    lang,
-                    "Explorar catálogo",
-                    "Explore catalog",
-                    "Explorar catálogo",
-                  )}
-                  <ArrowRight size={16} />
-                </a>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {user && recentlyViewed.length > 0 && (
-          <section className="library-section">
-            <div className="section-heading">
-              <div>
-                <h2>
-                  {tri(
-                    lang,
-                    "Vistos recentemente",
-                    "Recently viewed",
-                    "Vistos recientemente",
-                  )}
-                </h2>
-              </div>
-            </div>
-            <ShelfCarousel
-              label={tri(
-                lang,
-                "Vistos recentemente",
-                "Recently viewed",
-                "Vistos recientemente",
-              )}
-              lang={lang}
-              className="home-popular-carousel"
-            >
-              {recentlyViewed.map((game) => (
-                <QuickGameCard
-                  key={game.id}
-                  game={game}
-                  initial={savedById.get(game.id) ?? null}
-                  lang={lang}
-                  enabled
-                />
-              ))}
-            </ShelfCarousel>
-          </section>
-        )}
-
-        {user && forYou.length > 0 && (
-          <section className="library-section">
-            <div className="section-heading">
-              <div>
-                <h2>{tri(lang, "Pra você", "For you", "Para ti")}</h2>
-              </div>
-            </div>
-            <ShelfCarousel
-              label={tri(lang, "Pra você", "For you", "Para ti")}
-              lang={lang}
-              className="home-popular-carousel"
-            >
-              {forYou.map((game) => (
-                <QuickGameCard
-                  key={game.id}
-                  game={game}
-                  initial={savedById.get(game.id) ?? null}
-                  lang={lang}
-                  enabled
-                  meta={game.rating ? `${game.rating}/100` : undefined}
-                />
-              ))}
-            </ShelfCarousel>
-          </section>
-        )}
-
-        <section className="library-section" id="popular-catalog">
-          <div className="section-heading">
-            <div>
-              <h2>{d.home.mostLogged}</h2>
-              <p>{d.home.mostLoggedDescription}</p>
-            </div>
-          </div>
-          <ShelfCarousel
-            label={d.home.mostLogged}
-            lang={lang}
-            className="home-popular-carousel"
-          >
-            {popularGames.map((game, index) => (
-              <QuickGameCard
-                key={game.id}
-                game={game}
-                initial={savedById.get(game.id) ?? null}
-                lang={lang}
-                rank={index + 1}
-                enabled={Boolean(user)}
-              />
-            ))}
-          </ShelfCarousel>
-        </section>
-
-        <section className="genre-section">
-          <div className="genre-section-heading">
+    <div className="home-shell home-community-shell">
+      <main className="feed home-community-main">
+        <header className="home-community-intro">
+          <div>
             <span>
+              <MessagesSquare size={14} />
               {tri(
                 lang,
-                "NAVEGUE POR GÊNERO",
-                "BROWSE BY GENRE",
-                "NAVEGA POR GÉNERO",
+                "AGORA NA COMUNIDADE",
+                "NOW IN THE COMMUNITY",
+                "AHORA EN LA COMUNIDAD",
               )}
             </span>
-            <h2>
+            <h1>
               {tri(
                 lang,
-                "Encontre seu próximo mundo",
-                "Find your next world",
-                "Encuentra tu próximo mundo",
+                "Jogos ficam melhores quando viram conversa.",
+                "Games get better when they become a conversation.",
+                "Los juegos mejoran cuando se convierten en conversación.",
               )}
-            </h2>
+            </h1>
             <p>
               {tri(
                 lang,
-                "Coleções vivas do catálogo, organizadas pelo tipo de experiência.",
-                "Living catalog collections organized by the kind of experience.",
-                "Colecciones vivas del catálogo, organizadas por el tipo de experiencia.",
+                "Veja o que seus amigos estão jogando, leia avaliações recentes e continue seu próprio diário.",
+                "See what friends are playing, read recent reviews, and keep your own journal moving.",
+                "Mira qué juegan tus amigos, lee reseñas recientes y continúa tu propio diario.",
               )}
             </p>
           </div>
-          <div className="genre-collections">
-            {uniqueGenreCollections.map((collection) => (
-              <section className="genre-collection" key={collection.id}>
-                <div className="section-heading">
-                  <div>
-                    <h3>{collection.name[lang]}</h3>
-                    <p>
-                      {tri(
-                        lang,
-                        `${collection.games.length} escolhas populares`,
-                        `${collection.games.length} popular picks`,
-                        `${collection.games.length} elecciones populares`,
+          <div className="home-community-actions">
+            <Link href={`/${lang}/search`}>
+              <Compass size={16} />
+              {tri(lang, "Encontrar um jogo", "Find a game", "Buscar un juego")}
+            </Link>
+            {user && (
+              <Link href={`/${lang}/library`}>
+                {tri(lang, "Minha biblioteca", "My library", "Mi biblioteca")}
+                <ArrowRight size={15} />
+              </Link>
+            )}
+          </div>
+        </header>
+
+        {friendsPlaying.length > 0 && (
+          <section
+            className="home-playing-section"
+            aria-labelledby="playing-now-title"
+          >
+            <div className="home-section-heading">
+              <div>
+                <span>{tri(lang, "AO VIVO", "LIVE", "EN VIVO")}</span>
+                <h2 id="playing-now-title">
+                  {tri(
+                    lang,
+                    "Amigos jogando agora",
+                    "Friends playing now",
+                    "Amigos jugando ahora",
+                  )}
+                </h2>
+              </div>
+              <Gamepad2 size={18} />
+            </div>
+            <div className="home-playing-shelf">
+              {friendsPlaying.map((item) => (
+                <article key={`${item.profileId}:${item.game.id}`}>
+                  <Link
+                    className="home-playing-cover"
+                    href={`/${lang}/game/${item.game.slug}`}
+                  >
+                    <Image src={item.game.coverUrl} alt="" fill sizes="112px" />
+                  </Link>
+                  <div className="home-playing-person">
+                    <Link
+                      className="home-playing-avatar"
+                      href={`/${lang}/u/${item.username}`}
+                    >
+                      {item.avatarUrl ? (
+                        <Image
+                          src={item.avatarUrl}
+                          alt=""
+                          fill
+                          sizes="28px"
+                          unoptimized
+                        />
+                      ) : (
+                        (item.displayName || item.username)
+                          .slice(0, 1)
+                          .toUpperCase()
                       )}
-                    </p>
+                    </Link>
+                    <span>
+                      <Link href={`/${lang}/u/${item.username}`}>
+                        {item.displayName || `@${item.username}`}
+                        {item.verified && <VerifiedMark size={13} />}
+                      </Link>
+                      <Link href={`/${lang}/game/${item.game.slug}`}>
+                        {item.game.name}
+                      </Link>
+                    </span>
                   </div>
-                </div>
-                <ShelfCarousel label={collection.name[lang]} lang={lang}>
-                  {collection.games.map((game) => (
-                    <QuickGameCard
-                      key={game.id}
-                      game={game}
-                      initial={savedById.get(game.id) ?? null}
-                      lang={lang}
-                      enabled={Boolean(user)}
-                      meta={game.rating ? `${game.rating}/100` : undefined}
-                    />
-                  ))}
-                </ShelfCarousel>
-              </section>
-            ))}
-          </div>
-        </section>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
-        <section className="discoveries-section">
-          <div className="discoveries-heading">
-            <span>03 / DISCOVERY</span>
+        <section
+          className="home-reviews-section"
+          aria-labelledby="community-reviews-title"
+        >
+          <div className="home-section-heading">
             <div>
-              <h2>{d.home.discoveries}</h2>
-              <p>{d.home.discoveriesDescription}</p>
+              <span>{tri(lang, "CRÍTICA", "CRITIQUE", "CRÍTICA")}</span>
+              <h2 id="community-reviews-title">
+                {tri(
+                  lang,
+                  "Avaliações recentes",
+                  "Recent reviews",
+                  "Reseñas recientes",
+                )}
+              </h2>
             </div>
           </div>
-          <div className="discovery-lanes">
-            {discoveryLanes.map((lane, laneIndex) => (
-              <section className="discovery-lane" key={lane.key}>
-                <header>
-                  <span>{String(laneIndex + 1).padStart(2, "0")}</span>
-                  <div>
-                    <h3>{lane.title}</h3>
-                    <p>{lane.description}</p>
-                  </div>
-                </header>
-                <ShelfCarousel
-                  label={lane.title}
-                  lang={lang}
-                  className="discovery-games"
-                >
-                  {lane.games.map((game) => (
-                    <QuickGameCard
-                      key={game.id}
-                      game={game}
-                      initial={savedById.get(game.id) ?? null}
-                      lang={lang}
-                      enabled={Boolean(user)}
-                      meta={lane.meta(game)}
-                    />
-                  ))}
-                </ShelfCarousel>
-              </section>
-            ))}
-          </div>
-        </section>
-
-        <section className="explore-section">
-          <div className="section-heading">
-            <div>
-              <h2>{d.home.nextAdventure}</h2>
-              <p>{d.home.nextAdventureDescription}</p>
-            </div>
-          </div>
-          <div className="game-list">
-            {exploreGames.map((game) => (
-              <article className="game-list-row" key={game.id}>
-                <Link
-                  className="list-cover"
-                  href={`/${lang}/game/${game.slug}`}
-                >
-                  <Image
-                    src={resolveGameCover(
-                      game.coverUrl,
-                      savedById.get(game.id)?.custom_cover_url,
+          {reviews.length > 0 ? (
+            <div className="home-review-grid">
+              {reviews.map((review) => (
+                <article key={review.id}>
+                  <Link
+                    className="home-review-cover"
+                    href={`/${lang}/game/${review.gameSlug}`}
+                  >
+                    {review.game && (
+                      <Image
+                        src={review.game.coverUrl}
+                        alt=""
+                        fill
+                        sizes="70px"
+                      />
                     )}
-                    alt=""
-                    fill
-                    sizes="48px"
-                  />
-                </Link>
-                <Link className="list-main" href={`/${lang}/game/${game.slug}`}>
-                  <h3>{game.name}</h3>
-                  <p>
-                    {[game.releaseYear, ...game.genres]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
-                </Link>
-                <div className="list-rating">
-                  <Star size={12} fill="currentColor" />
-                  <strong>{game.rating ?? "—"}</strong>
-                  <span>{game.ratingCount.toLocaleString(lang)}</span>
-                </div>
-              </article>
-            ))}
-          </div>
+                  </Link>
+                  <div>
+                    <span className="home-review-byline">
+                      <Link href={`/${lang}/u/${review.profile.username}`}>
+                        {review.profile.display_name ||
+                          `@${review.profile.username}`}
+                      </Link>
+                      {typeof review.rating === "number" && (
+                        <b>
+                          <Star size={11} fill="currentColor" />
+                          {formatReviewRating(review.rating, review.ratingMode)}
+                        </b>
+                      )}
+                    </span>
+                    <h3>
+                      <Link
+                        href={`/${lang}/review/${review.publicId ?? review.id}`}
+                      >
+                        {review.title || review.game?.name || review.gameSlug}
+                      </Link>
+                    </h3>
+                    {review.content && <p>{review.content}</p>}
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="home-community-empty">
+              <Star size={18} />
+              <p>
+                {tri(
+                  lang,
+                  "As próximas avaliações públicas da comunidade aparecem aqui.",
+                  "The community's next public reviews will appear here.",
+                  "Las próximas reseñas públicas de la comunidad aparecerán aquí.",
+                )}
+              </p>
+            </div>
+          )}
         </section>
+
+        <section
+          className="home-activity-section"
+          aria-labelledby="community-updates-title"
+        >
+          <div className="home-section-heading">
+            <div>
+              <span>{tri(lang, "DIÁRIO", "JOURNAL", "DIARIO")}</span>
+              <h2 id="community-updates-title">
+                {tri(
+                  lang,
+                  "Últimos registros da comunidade",
+                  "Latest community logs",
+                  "Últimos registros de la comunidad",
+                )}
+              </h2>
+            </div>
+          </div>
+          <ActivityStream
+            entries={communityUpdates}
+            lang={lang}
+            viewerId={user?.id ?? null}
+          />
+        </section>
+
+        {user && recentlyViewed.length > 0 && (
+          <HomeGameShelf
+            title={tri(
+              lang,
+              "Vistos recentemente",
+              "Recently viewed",
+              "Vistos recientemente",
+            )}
+            games={recentlyViewed}
+            savedById={savedById}
+            lang={lang}
+            enabled
+          />
+        )}
+
+        {user && forYou.length > 0 && (
+          <HomeGameShelf
+            title={tri(lang, "Pra você", "For you", "Para ti")}
+            games={forYou}
+            savedById={savedById}
+            lang={lang}
+            enabled
+          />
+        )}
+
+        <HomeGameShelf
+          title={d.home.mostLogged}
+          description={d.home.mostLoggedDescription}
+          games={popularGames}
+          savedById={savedById}
+          lang={lang}
+          enabled={Boolean(user)}
+          ranked
+        />
       </main>
 
-      <aside className="right-rail">
+      <aside className="right-rail home-community-rail">
         <section className="rail-intro">
           {user ? (
             <>
+              <span>
+                <Gamepad2 size={14} />
+                {tri(lang, "SEU MOMENTO", "YOUR MOMENT", "TU MOMENTO")}
+              </span>
               <h2>
                 {tri(
                   lang,
@@ -487,15 +397,15 @@ async function HomeContent({ lang }: { lang: UiLang }) {
               <dl className="rail-library-stats">
                 <div>
                   <dt>{tri(lang, "Jogos", "Games", "Juegos")}</dt>
-                  <dd>{libraryCount}</dd>
+                  <dd>{snapshot?.libraryCount ?? 0}</dd>
                 </div>
                 <div>
                   <dt>{tri(lang, "Jogando", "Playing", "Jugando")}</dt>
-                  <dd>{playingCount}</dd>
+                  <dd>{snapshot?.playingCount ?? 0}</dd>
                 </div>
                 <div>
                   <dt>{tri(lang, "Avaliados", "Rated", "Valorados")}</dt>
-                  <dd>{ratedCount}</dd>
+                  <dd>{snapshot?.ratedCount ?? 0}</dd>
                 </div>
               </dl>
               <Link className="rail-primary-action" href={`/${lang}/library`}>
@@ -535,15 +445,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             >
               <span>{index + 1}</span>
               <span className="trend-cover">
-                <Image
-                  src={resolveGameCover(
-                    game.coverUrl,
-                    savedById.get(game.id)?.custom_cover_url,
-                  )}
-                  alt=""
-                  fill
-                  sizes="38px"
-                />
+                <Image src={game.coverUrl} alt="" fill sizes="38px" />
               </span>
               <div>
                 <strong>{game.name}</strong>
@@ -558,4 +460,60 @@ async function HomeContent({ lang }: { lang: UiLang }) {
       </aside>
     </div>
   );
+}
+
+function HomeGameShelf({
+  title,
+  description,
+  games,
+  savedById,
+  lang,
+  enabled,
+  ranked = false,
+}: {
+  title: string;
+  description?: string;
+  games: Awaited<ReturnType<typeof getPopularGames>>;
+  savedById: Map<number, SavedGameState>;
+  lang: UiLang;
+  enabled: boolean;
+  ranked?: boolean;
+}) {
+  if (!games.length) return null;
+  return (
+    <section className="library-section home-catalog-shelf">
+      <div className="section-heading">
+        <div>
+          <h2>{title}</h2>
+          {description && <p>{description}</p>}
+        </div>
+      </div>
+      <ShelfCarousel
+        label={title}
+        lang={lang}
+        className="home-popular-carousel"
+      >
+        {games.map((game, index) => (
+          <QuickGameCard
+            key={game.id}
+            game={game}
+            initial={savedById.get(game.id) ?? null}
+            lang={lang}
+            enabled={enabled}
+            rank={ranked ? index + 1 : undefined}
+          />
+        ))}
+      </ShelfCarousel>
+    </section>
+  );
+}
+
+function formatReviewRating(
+  rating: number,
+  mode?: "stars_5" | "level_5" | "score_10" | "score_100" | "recommend",
+) {
+  if (mode === "stars_5" || mode === "level_5") return `${rating / 20}/5`;
+  if (mode === "score_10") return `${rating / 10}/10`;
+  if (mode === "recommend") return rating >= 50 ? "✓" : "×";
+  return `${Math.round(rating)}/100`;
 }

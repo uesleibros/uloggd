@@ -83,6 +83,34 @@ test("keeps catalog credit in the global footer only", async ({ page }) => {
   );
 });
 
+test("keeps the route search directly below its title and description", async ({
+  page,
+}) => {
+  await openSearch(page);
+
+  const geometry = await page.evaluate(() => {
+    const copy = document.querySelector(
+      ".catalog-search-hero-copy",
+    ) as HTMLElement;
+    const form = document.querySelector(
+      ".catalog-search-main-form",
+    ) as HTMLElement;
+    const copyBox = copy.getBoundingClientRect();
+    const formBox = form.getBoundingClientRect();
+    return {
+      copyBottom: copyBox.bottom,
+      formTop: formBox.top,
+      copyLeft: copyBox.left,
+      formLeft: formBox.left,
+    };
+  });
+
+  expect(geometry.formTop).toBeGreaterThan(geometry.copyBottom);
+  expect(Math.abs(geometry.formLeft - geometry.copyLeft)).toBeLessThanOrEqual(
+    1,
+  );
+});
+
 test("routes creation modes through game selection", async ({ page }) => {
   await openSearch(page, "/pt-BR/search?create=screenshot");
   await expect(

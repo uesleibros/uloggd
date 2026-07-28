@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 import * as Dialog from "@/components/ui/dialog";
 import { Flag, LoaderCircle, Pencil, Play, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -312,11 +314,7 @@ export function ActivityEntryActions({
                     />
                   </label>
                   <label className="social-check">
-                    <input
-                      type="checkbox"
-                      name="spoilers"
-                      defaultChecked={entry.spoilers}
-                    />
+                    <Checkbox name="spoilers" defaultChecked={entry.spoilers} />
                     <span>{t.containsSpoilers}</span>
                   </label>
                 </div>

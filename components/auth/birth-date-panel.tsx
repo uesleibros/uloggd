@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 import {
   CalendarDays,
   Check,
@@ -108,11 +110,7 @@ export function BirthDatePanel({ lang }: { lang: UiLang }) {
           </span>
         </label>
         <label className="birth-date-confirmation">
-          <input
-            type="checkbox"
-            checked={confirmed}
-            onChange={(event) => setConfirmed(event.target.checked)}
-          />
+          <Checkbox checked={confirmed} onCheckedChange={setConfirmed} />
           <span>
             {tri(
               lang,

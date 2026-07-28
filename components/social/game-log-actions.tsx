@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 import * as Dialog from "@/components/ui/dialog";
 import * as Select from "@/components/ui/select";
 import {
@@ -1126,11 +1128,7 @@ function JourneyDayEditor({
           />
         </label>
         <label className="social-check">
-          <input
-            type="checkbox"
-            checked={spoilers}
-            onChange={(event) => setSpoilers(event.target.checked)}
-          />
+          <Checkbox checked={spoilers} onCheckedChange={setSpoilers} />
           <span>{t.containsSpoilers}</span>
         </label>
       </div>

@@ -2,6 +2,7 @@
 
 import * as Dialog from "@/components/ui/dialog";
 import * as Select from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Check, ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -263,26 +264,24 @@ function FilterGroup({
   return (
     <section className="catalog-choice-filter">
       <header>{title}</header>
-      <div
+      <RadioGroup
         className="catalog-segmented-filter"
+        value={value}
+        onValueChange={onChange}
         style={{
           gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))`,
         }}
       >
         {options.map((option) => (
-          <label
+          <RadioGroupItem
             key={option.value}
+            value={option.value}
             data-selected={value === option.value || undefined}
           >
-            <input
-              type="radio"
-              checked={value === option.value}
-              onChange={() => onChange(option.value)}
-            />
             {option.label}
-          </label>
+          </RadioGroupItem>
         ))}
-      </div>
+      </RadioGroup>
     </section>
   );
 }
