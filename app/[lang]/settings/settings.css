@@ -1747,17 +1747,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 14px;
-  padding: 12px 14px;
-  border: 1px solid var(--shell-line);
-  border-radius: 10px;
-  background: var(--console-inset);
+}
+
+.privacy-toggle > span {
   color: var(--screen-dim);
   font-size: 12px;
-  cursor: pointer;
-}
-.privacy-toggle > span {
-  flex: 1;
 }
 .privacy-requests {
   margin-top: 16px;
