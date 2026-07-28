@@ -48,7 +48,80 @@ type ImportResult = {
   existingCount: number;
 };
 
-function errorMessage(lang: UiLang, code: string) {
+type ImportErrorState = {
+  title: string;
+  message: string;
+  reference?: string;
+};
+
+class ImportRequestError extends Error {
+  constructor(
+    code: string,
+    public readonly reference?: string,
+  ) {
+    super(code);
+    this.name = "ImportRequestError";
+  }
+}
+
+function fallbackErrorCode(status: number) {
+  if (status === 401) return "unauthorized";
+  if (status === 403) return "request_blocked";
+  if (status === 429) return "rate_limited";
+  if (status === 502) return "gateway_error";
+  if (status === 503) return "service_unavailable";
+  if (status === 504) return "source_timeout";
+  return "request_failed";
+}
+
+async function readImportResponse<T>(response: Response): Promise<T> {
+  const text = await response.text();
+  let payload: { error?: string; reference?: string } | null = null;
+  if (text) {
+    try {
+      const parsed: unknown = JSON.parse(text);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed))
+        payload = parsed as { error?: string; reference?: string };
+    } catch {
+      payload = null;
+    }
+  }
+  const reference =
+    payload?.reference ??
+    response.headers.get("X-Import-Reference") ??
+    undefined;
+  if (!response.ok || payload?.error)
+    throw new ImportRequestError(
+      payload?.error ?? fallbackErrorCode(response.status),
+      reference,
+    );
+  if (!payload) throw new ImportRequestError("invalid_response", reference);
+  return payload as T;
+}
+
+function errorCopy(lang: UiLang, code: string, reference?: string) {
+  const titles: Record<string, [string, string, string]> = {
+    partner_access_required: [
+      "Conexão aguardando liberação",
+      "Connection awaiting approval",
+      "Conexión pendiente de aprobación",
+    ],
+    source_timeout: [
+      "Backloggd demorou para responder",
+      "Backloggd took too long to respond",
+      "Backloggd tardó demasiado en responder",
+    ],
+    request_blocked: [
+      "Solicitação bloqueada",
+      "Request blocked",
+      "Solicitud bloqueada",
+    ],
+    rate_limited: [
+      "Limite temporário atingido",
+      "Temporary limit reached",
+      "Límite temporal alcanzado",
+    ],
+  };
   const messages: Record<string, [string, string, string]> = {
     invalid_profile: [
       "Informe um usuário ou link público válido do Backloggd.",
@@ -66,9 +139,9 @@ function errorMessage(lang: UiLang, code: string) {
       "La colección debe ser pública durante la validación.",
     ],
     partner_access_required: [
-      "A conexão de parceria ainda não foi liberada pelo Backloggd para este servidor. Nenhum dado foi importado.",
-      "Backloggd has not yet allowed the partner connection for this server. No data was imported.",
-      "Backloggd aún no ha permitido la conexión de socios para este servidor. No se importó ningún dato.",
+      "O Backloggd bloqueou a leitura automática deste servidor. A parceria precisa liberar a integração; nenhum dado foi importado.",
+      "Backloggd blocked this server's automated read. The partner integration needs to be approved; no data was imported.",
+      "Backloggd bloqueó la lectura automática de este servidor. La integración debe ser aprobada; no se importó ningún dato.",
     ],
     source_too_large: [
       "A coleção ultrapassou o limite seguro desta importação.",
@@ -80,18 +153,87 @@ function errorMessage(lang: UiLang, code: string) {
       "You already started three recent checks. Wait a few minutes.",
       "Ya iniciaste tres comprobaciones recientes. Espera unos minutos.",
     ],
+    source_timeout: [
+      "A coleção não respondeu dentro do limite seguro. Aguarde um instante e tente novamente.",
+      "The collection did not respond within the safe time limit. Wait a moment and try again.",
+      "La colección no respondió dentro del límite seguro. Espera un momento e inténtalo de nuevo.",
+    ],
+    source_unavailable: [
+      "O Backloggd respondeu com uma indisponibilidade temporária. Nenhum dado foi importado.",
+      "Backloggd returned a temporary availability error. No data was imported.",
+      "Backloggd devolvió un error temporal de disponibilidad. No se importó ningún dato.",
+    ],
+    invalid_source: [
+      "A resposta do Backloggd não correspondeu a uma coleção pública válida.",
+      "The Backloggd response did not match a valid public collection.",
+      "La respuesta de Backloggd no correspondió a una colección pública válida.",
+    ],
+    catalog_unavailable: [
+      "A coleção foi lida, mas o catálogo não pôde validá-la agora. Tente novamente em alguns minutos.",
+      "The collection was read, but the catalog could not validate it right now. Try again in a few minutes.",
+      "La colección fue leída, pero el catálogo no pudo validarla ahora. Inténtalo de nuevo en unos minutos.",
+    ],
+    partner_configuration_invalid: [
+      "A credencial de parceria está incompleta no servidor. A equipe já pode localizar esta tentativa pela referência abaixo.",
+      "The partner credential is incomplete on the server. The team can locate this attempt using the reference below.",
+      "La credencial de socio está incompleta en el servidor. El equipo puede localizar este intento con la referencia siguiente.",
+    ],
+    request_blocked: [
+      "A proteção de acesso do ambiente interrompeu a solicitação. Recarregue a página e tente novamente.",
+      "The environment's access protection interrupted the request. Reload the page and try again.",
+      "La protección de acceso del entorno interrumpió la solicitud. Recarga la página e inténtalo de nuevo.",
+    ],
+    unauthorized: [
+      "Sua sessão expirou. Entre novamente antes de iniciar a importação.",
+      "Your session expired. Sign in again before starting the import.",
+      "Tu sesión caducó. Inicia sesión de nuevo antes de importar.",
+    ],
+    gateway_error: [
+      "Um serviço externo interrompeu a conferência. Tente novamente em alguns minutos.",
+      "An external service interrupted the check. Try again in a few minutes.",
+      "Un servicio externo interrumpió la comprobación. Inténtalo de nuevo en unos minutos.",
+    ],
+    service_unavailable: [
+      "A importação está temporariamente indisponível. Tente novamente em alguns minutos.",
+      "Import is temporarily unavailable. Try again in a few minutes.",
+      "La importación no está disponible temporalmente. Inténtalo de nuevo en unos minutos.",
+    ],
     preview_expired: [
       "A prévia expirou. Valide o perfil novamente antes de importar.",
       "The preview expired. Validate the profile again before importing.",
       "La vista previa caducó. Valida el perfil de nuevo antes de importar.",
     ],
+    import_not_found: [
+      "Essa prévia não existe mais ou pertence a outra sessão. Valide o perfil novamente.",
+      "This preview no longer exists or belongs to another session. Validate the profile again.",
+      "Esta vista previa ya no existe o pertenece a otra sesión. Valida el perfil de nuevo.",
+    ],
+    import_unavailable: [
+      "Essa prévia não está mais disponível para confirmação. Inicie uma nova conferência.",
+      "This preview is no longer available for confirmation. Start a new check.",
+      "Esta vista previa ya no está disponible para confirmar. Inicia una nueva comprobación.",
+    ],
+    import_failed: [
+      "A biblioteca não pôde salvar a prévia. Nenhum jogo foi adicionado; tente novamente.",
+      "The library could not save the preview. No games were added; try again.",
+      "La biblioteca no pudo guardar la vista previa. No se añadió ningún juego; inténtalo de nuevo.",
+    ],
   };
+  const title = titles[code] ?? [
+    "Não foi possível conferir",
+    "The check could not be completed",
+    "No se pudo completar la comprobación",
+  ];
   const message = messages[code] ?? [
     "Não foi possível concluir a conferência agora. Tente novamente mais tarde.",
     "The check could not be completed right now. Try again later.",
     "No se pudo completar la comprobación. Inténtalo de nuevo más tarde.",
   ];
-  return tri(lang, ...message);
+  return {
+    title: tri(lang, ...title),
+    message: tri(lang, ...message),
+    reference,
+  };
 }
 
 function gameCount(lang: UiLang, count: number) {
@@ -109,7 +251,7 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [pending, setPending] = useState<"preview" | "commit" | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ImportErrorState | null>(null);
   const profileIsUrl = /^https?:\/\//i.test(profile.trim());
 
   async function validateProfile(event: React.FormEvent<HTMLFormElement>) {
@@ -126,19 +268,16 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ profile }),
       });
-      const payload = (await response.json()) as Preview & { error?: string };
-      if (!response.ok || payload.error)
-        throw new Error(payload.error ?? "preview_failed");
+      const payload = await readImportResponse<Preview>(response);
       setPreview(payload);
     } catch (requestError) {
-      setError(
-        errorMessage(
-          lang,
-          requestError instanceof Error
-            ? requestError.message
-            : "preview_failed",
-        ),
-      );
+      const code =
+        requestError instanceof Error ? requestError.message : "preview_failed";
+      const reference =
+        requestError instanceof ImportRequestError
+          ? requestError.reference
+          : undefined;
+      setError(errorCopy(lang, code, reference));
     } finally {
       setPending(null);
     }
@@ -155,23 +294,18 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ importId: preview.importId }),
       });
-      const payload = (await response.json()) as ImportResult & {
-        error?: string;
-      };
-      if (!response.ok || payload.error)
-        throw new Error(payload.error ?? "import_failed");
+      const payload = await readImportResponse<ImportResult>(response);
       setResult(payload);
       setPreview(null);
       router.refresh();
     } catch (requestError) {
-      setError(
-        errorMessage(
-          lang,
-          requestError instanceof Error
-            ? requestError.message
-            : "import_failed",
-        ),
-      );
+      const code =
+        requestError instanceof Error ? requestError.message : "import_failed";
+      const reference =
+        requestError instanceof ImportRequestError
+          ? requestError.reference
+          : undefined;
+      setError(errorCopy(lang, code, reference));
     } finally {
       setPending(null);
     }
@@ -556,10 +690,19 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
       )}
 
       {error && (
-        <p className="backloggd-import-error" role="alert">
+        <div className="backloggd-import-error" role="alert">
           <TriangleAlert size={15} />
-          {error}
-        </p>
+          <div>
+            <strong>{error.title}</strong>
+            <span>{error.message}</span>
+            {error.reference && (
+              <small>
+                {tri(lang, "Referência", "Reference", "Referencia")}:{" "}
+                {error.reference}
+              </small>
+            )}
+          </div>
+        </div>
       )}
     </section>
   );

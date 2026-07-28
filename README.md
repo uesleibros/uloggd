@@ -3,6 +3,7 @@
 The new uloggd platform is built with Next.js, Supabase/PostgreSQL, and IGDB.
 
 Database setup and migration guidance is documented in [docs/database.md](docs/database.md).
+Backloggd partner allowlisting and import diagnostics are documented in [docs/backloggd-import.md](docs/backloggd-import.md).
 
 ## Getting Started
 

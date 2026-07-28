@@ -8,6 +8,23 @@ function sameOrigin(request: Request) {
   return !origin || origin === new URL(request.url).origin;
 }
 
+function failedCommitResponse(
+  error: string,
+  status: number,
+  reference: string,
+) {
+  return Response.json(
+    { error, reference },
+    {
+      status,
+      headers: {
+        "Cache-Control": "private, no-store",
+        "X-Import-Reference": reference,
+      },
+    },
+  );
+}
+
 export async function POST(request: Request) {
   if (!sameOrigin(request))
     return Response.json({ error: "invalid_origin" }, { status: 403 });
@@ -40,17 +57,16 @@ export async function POST(request: Request) {
         : message.includes("not available")
           ? "import_unavailable"
           : "import_failed";
-    return Response.json(
-      { error: code },
-      {
-        status:
-          code === "import_not_found"
-            ? 404
-            : code === "import_failed"
-              ? 500
-              : 409,
-      },
-    );
+    const status =
+      code === "import_not_found" ? 404 : code === "import_failed" ? 500 : 409;
+    console.error("[backloggd-import] commit failed", {
+      importId: parsed.data.importId,
+      code,
+      databaseCode: error.code ?? null,
+      host: new URL(request.url).host,
+      vercelRequestId: request.headers.get("x-vercel-id"),
+    });
+    return failedCommitResponse(code, status, parsed.data.importId);
   }
   return Response.json(data, {
     headers: { "Cache-Control": "private, no-store" },

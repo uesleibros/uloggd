@@ -32,7 +32,40 @@ function errorStatus(error: BackloggdImportError) {
   if (error.code === "profile_not_found") return 404;
   if (error.code === "profile_private") return 403;
   if (error.code === "source_too_large") return 413;
+  if (error.code === "source_timeout") return 504;
+  if (
+    error.code === "partner_access_required" ||
+    error.code === "partner_configuration_invalid"
+  )
+    return 503;
   return 502;
+}
+
+function partnerUserAgent(request: Request) {
+  const requestUrl = new URL(request.url);
+  const hostname = requestUrl.hostname.toLowerCase();
+  const contactOrigin =
+    hostname === "uloggd.com" || hostname.endsWith(".uloggd.com")
+      ? requestUrl.origin
+      : "https://uloggd.com";
+  return `uloggd-partner-import/1.0 (+${contactOrigin})`;
+}
+
+function failedImportResponse(
+  error: string,
+  status: number,
+  reference: string,
+) {
+  return Response.json(
+    { error, reference },
+    {
+      status,
+      headers: {
+        "Cache-Control": "private, no-store",
+        "X-Import-Reference": reference,
+      },
+    },
+  );
 }
 
 async function existingGameIds(
@@ -110,8 +143,11 @@ export async function POST(request: Request) {
   if (createError)
     return Response.json({ error: "service_unavailable" }, { status: 503 });
 
+  const startedAt = Date.now();
   try {
-    const result = await collectAndValidateBackloggdGames(username);
+    const result = await collectAndValidateBackloggdGames(username, {
+      userAgent: partnerUserAgent(request),
+    });
     const sourceOrder = new Map(
       result.sourceGames.map((game, index) => [game.slug, index]),
     );
@@ -172,19 +208,35 @@ export async function POST(request: Request) {
       error instanceof BackloggdImportError
         ? error.code
         : "catalog_unavailable";
-    await admin
+    const { error: failureUpdateError } = await admin
       .from("backloggd_imports")
       .update({ status: "FAILED", error_code: code, items: [] })
       .eq("id", importId)
       .eq("profile_id", user.id);
-    if (!(error instanceof BackloggdImportError))
-      console.error("[backloggd-import] preview failed", error);
-    return Response.json(
-      { error: code },
-      {
-        status:
-          error instanceof BackloggdImportError ? errorStatus(error) : 502,
-      },
+    const diagnostic = {
+      importId,
+      code,
+      sourceUsername: username,
+      host: new URL(request.url).host,
+      vercelRequestId: request.headers.get("x-vercel-id"),
+      stage:
+        error instanceof BackloggdImportError
+          ? (error.context?.stage ?? null)
+          : "catalog_validation",
+      upstreamStatus:
+        error instanceof BackloggdImportError
+          ? (error.context?.upstreamStatus ?? null)
+          : null,
+      durationMs: Date.now() - startedAt,
+      failurePersisted: !failureUpdateError,
+    };
+    if (error instanceof BackloggdImportError)
+      console.warn("[backloggd-import] preview rejected", diagnostic);
+    else console.error("[backloggd-import] preview failed", diagnostic, error);
+    return failedImportResponse(
+      code,
+      error instanceof BackloggdImportError ? errorStatus(error) : 502,
+      importId,
     );
   }
 }

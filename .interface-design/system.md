@@ -315,6 +315,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Backloggd import collects game links only, validates exact slugs against IGDB, skips uncertain matches, and shows a compact cover-led conference shelf before any write. Reviews, ratings, notes, statuses, dates, lists, and journals never cross the boundary.
 - A confirmed import adds only missing games as Unclassified. Existing library rows are immutable during import. The server owns a 30-minute preview session and the database consumes it atomically, so IDs cannot be changed from the client and repeated confirmation cannot duplicate games.
 - The import surface uses the standard panel → inset depth, 44px controls, tabular validation counts, green only for confirmed matches, and blurple only for the final commit. Mobile collapses guardrails, game rows, and actions to one column without removing any validation state.
+- Import failures preserve the panel geometry and state the exact recovery path. Upstream blocks, timeouts, catalog failures, and malformed responses never collapse into one generic gateway message; failed preview sessions expose a safe reference that matches structured server logs without revealing credentials or upstream response bodies.
 
 ### Search recents
 
