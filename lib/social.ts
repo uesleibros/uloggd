@@ -40,12 +40,28 @@ export async function getActivity(
     limit?: number;
     viewerId?: string | null;
     before?: string;
+    kinds?: Array<"review" | "diary" | "screenshot">;
+    rating?: "rated" | "great" | "positive" | "mixed" | "low" | "unrated";
+    spoilers?: "all" | "hide" | "only";
+    order?: "recent" | "oldest" | "rating";
+    search?: string;
   } = {},
 ) {
   // An empty author list means "nobody I follow", which is not the same as
   // "no filter" — without this the feed would show the whole platform.
   if (options.profileIds && !options.profileIds.length) return [];
   const limit = options.limit ?? 30;
+  const includeReviews = !options.kinds || options.kinds.includes("review");
+  const includeDiary = !options.kinds || options.kinds.includes("diary");
+  const includeScreenshots =
+    !options.kinds || options.kinds.includes("screenshot");
+  const oldestFirst = options.order === "oldest";
+  const searchPattern = options.search
+    ?.trim()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean)
+    .slice(0, 12)
+    .join("%");
   const viewerIdPromise =
     options.viewerId === undefined
       ? getAuthUser().then((user) => user?.id ?? null)
@@ -64,21 +80,24 @@ export async function getActivity(
     .select(
       "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
-    .order("created_at", { ascending: false })
+    .order(options.order === "rating" ? "rating" : "created_at", {
+      ascending: oldestFirst,
+      nullsFirst: false,
+    })
     .limit(limit);
   let diaryQuery = supabase
     .from("diary_entries")
     .select(
       "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
-    .order("created_at", { ascending: false })
+    .order("created_at", { ascending: oldestFirst })
     .limit(limit);
   let screenshotsQuery = supabase
     .from("screenshots")
     .select(
       "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,updated_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
-    .order("created_at", { ascending: false })
+    .order("created_at", { ascending: oldestFirst })
     .limit(limit);
   if (options.profileId) {
     reviewsQuery = reviewsQuery.eq("profile_id", options.profileId);
@@ -95,21 +114,88 @@ export async function getActivity(
     diaryQuery = diaryQuery.eq("igdb_id", options.gameId);
     screenshotsQuery = screenshotsQuery.eq("igdb_id", options.gameId);
   }
+  if (searchPattern) {
+    let journeyQuery = supabase
+      .from("journeys")
+      .select("id")
+      .ilike("title", `%${searchPattern}%`)
+      .limit(200);
+    if (options.profileId)
+      journeyQuery = journeyQuery.eq("profile_id", options.profileId);
+    if (options.profileIds)
+      journeyQuery = journeyQuery.in("profile_id", options.profileIds);
+    if (options.gameId)
+      journeyQuery = journeyQuery.eq("igdb_id", options.gameId);
+    const { data: matchingJourneys } = await journeyQuery;
+    const matchingJourneyIds = (matchingJourneys ?? []).map((row) => row.id);
+    const reviewSearch = [
+      `game_slug.ilike.%${searchPattern}%`,
+      `title.ilike.%${searchPattern}%`,
+      `content.ilike.%${searchPattern}%`,
+      `platform.ilike.%${searchPattern}%`,
+    ];
+    const diarySearch = [
+      `game_slug.ilike.%${searchPattern}%`,
+      `note.ilike.%${searchPattern}%`,
+    ];
+    if (matchingJourneyIds.length) {
+      const journeyFilter = `journey_id.in.(${matchingJourneyIds.join(",")})`;
+      reviewSearch.push(journeyFilter);
+      diarySearch.push(journeyFilter);
+    }
+    reviewsQuery = reviewsQuery.or(reviewSearch.join(","));
+    diaryQuery = diaryQuery.or(diarySearch.join(","));
+    screenshotsQuery = screenshotsQuery.or(
+      [
+        `game_slug.ilike.%${searchPattern}%`,
+        `description.ilike.%${searchPattern}%`,
+      ].join(","),
+    );
+  }
+  if (options.rating === "rated")
+    reviewsQuery = reviewsQuery.not("rating", "is", null);
+  else if (options.rating === "great")
+    reviewsQuery = reviewsQuery.gte("rating", 80);
+  else if (options.rating === "positive")
+    reviewsQuery = reviewsQuery.gte("rating", 60).lt("rating", 80);
+  else if (options.rating === "mixed")
+    reviewsQuery = reviewsQuery.gte("rating", 40).lt("rating", 60);
+  else if (options.rating === "low")
+    reviewsQuery = reviewsQuery.lt("rating", 40);
+  else if (options.rating === "unrated")
+    reviewsQuery = reviewsQuery.is("rating", null);
+  if (options.spoilers === "hide") {
+    reviewsQuery = reviewsQuery.eq("contains_spoilers", false);
+    diaryQuery = diaryQuery.eq("contains_spoilers", false);
+    screenshotsQuery = screenshotsQuery.eq("contains_spoilers", false);
+  } else if (options.spoilers === "only") {
+    reviewsQuery = reviewsQuery.eq("contains_spoilers", true);
+    diaryQuery = diaryQuery.eq("contains_spoilers", true);
+    screenshotsQuery = screenshotsQuery.eq("contains_spoilers", true);
+  }
   if (options.before) {
-    reviewsQuery = reviewsQuery.lt("created_at", options.before);
-    diaryQuery = diaryQuery.lt("created_at", options.before);
-    screenshotsQuery = screenshotsQuery.lt("created_at", options.before);
+    const cursorOperator = oldestFirst ? "gt" : "lt";
+    reviewsQuery = reviewsQuery[cursorOperator]("created_at", options.before);
+    diaryQuery = diaryQuery[cursorOperator]("created_at", options.before);
+    screenshotsQuery = screenshotsQuery[cursorOperator](
+      "created_at",
+      options.before,
+    );
   }
   const [{ data: reviews }, { data: diary }, { data: screenshots }] =
-    await Promise.all([reviewsQuery, diaryQuery, screenshotsQuery]);
+    await Promise.all([
+      includeReviews ? reviewsQuery : Promise.resolve({ data: [] }),
+      includeDiary ? diaryQuery : Promise.resolve({ data: [] }),
+      includeScreenshots ? screenshotsQuery : Promise.resolve({ data: [] }),
+    ]);
   const rows = [
     ...(reviews ?? []),
     ...(diary ?? []),
     ...(screenshots ?? []),
   ] as unknown as (Row & Record<string, unknown>)[];
-  const reviewJourneyIds = [
+  const journeyIds = [
     ...new Set(
-      (reviews ?? [])
+      [...(reviews ?? []), ...(diary ?? [])]
         .map((row) => row.journey_id)
         .filter((id): id is string => Boolean(id)),
     ),
@@ -127,13 +213,13 @@ export async function getActivity(
     screenshotLikes,
     signedScreenshots,
   ] = await Promise.all([
-    reviewJourneyIds.length
+    journeyIds.length
       ? supabase
           .from("diary_entries")
           .select(
             "id,journey_id,played_on,ended_on,minutes,note,marks_start,marks_finish",
           )
-          .in("journey_id", reviewJourneyIds)
+          .in("journey_id", journeyIds)
           .order("played_on", { ascending: true })
       : Promise.resolve({ data: [] }),
     getGamesByIds(rows.map((row) => row.igdb_id)),
@@ -294,9 +380,9 @@ export async function getActivity(
             review || screenshot ? undefined : Boolean(row.marks_finish),
           journeyId: String(row.journey_id ?? "") || null,
           journeyTitle: journeyTitleOf(row.journeys) || null,
-          journeySessions: review
-            ? (sessionsByJourney.get(String(row.journey_id)) ?? [])
-            : undefined,
+          journeySessions: screenshot
+            ? undefined
+            : (sessionsByJourney.get(String(row.journey_id)) ?? []),
           spoilers: Boolean(row.contains_spoilers),
           visibility: row.visibility as SocialEntry["visibility"],
           commentsScope: row.comments_scope as SocialEntry["commentsScope"],
@@ -307,7 +393,16 @@ export async function getActivity(
         },
       ];
     })
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .sort((a, b) => {
+      if (options.order === "rating")
+        return (
+          (b.rating ?? -1) - (a.rating ?? -1) ||
+          b.createdAt.localeCompare(a.createdAt)
+        );
+      return oldestFirst
+        ? a.createdAt.localeCompare(b.createdAt)
+        : b.createdAt.localeCompare(a.createdAt);
+    })
     .slice(0, limit);
 }
 

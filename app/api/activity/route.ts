@@ -7,6 +7,14 @@ const querySchema = z.object({
   profile: z.uuid().optional(),
   game: z.coerce.number().int().positive().optional(),
   feed: z.literal("following").optional(),
+  kind: z.enum(["review", "diary"]).optional(),
+  section: z.literal("reviews").optional(),
+  rating: z
+    .enum(["rated", "great", "positive", "mixed", "low", "unrated"])
+    .optional(),
+  spoilers: z.enum(["all", "hide", "only"]).optional(),
+  order: z.enum(["recent", "oldest"]).optional(),
+  q: z.string().trim().max(80).optional(),
   before: z.iso.datetime({ offset: true }),
   limit: z.coerce.number().int().min(1).max(60).default(30),
 });
@@ -20,7 +28,19 @@ export async function GET(request: NextRequest) {
     (!parsed.data.profile && !parsed.data.game && !parsed.data.feed)
   )
     return Response.json({ error: "invalid" }, { status: 400 });
-  const { profile, game, feed, before, limit } = parsed.data;
+  const {
+    profile,
+    game,
+    feed,
+    kind,
+    section,
+    rating,
+    spoilers,
+    order,
+    q,
+    before,
+    limit,
+  } = parsed.data;
   const supabase = await getSupabase();
   if (feed === "following") {
     const viewer = await getAuthUser();
@@ -40,6 +60,15 @@ export async function GET(request: NextRequest) {
     gameId: game,
     before,
     limit,
+    kinds: kind
+      ? [kind]
+      : section === "reviews"
+        ? ["review", "diary"]
+        : undefined,
+    rating,
+    spoilers,
+    order,
+    search: q,
   });
   return Response.json({ entries });
 }

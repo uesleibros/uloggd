@@ -12,6 +12,11 @@ export function LoadMoreActivity({
   gameId,
   feed,
   kind,
+  section,
+  rating,
+  spoilers,
+  order,
+  query,
   pageSize = 30,
   initialCursor,
   hasMore,
@@ -22,6 +27,11 @@ export function LoadMoreActivity({
   gameId?: number;
   feed?: "following";
   kind?: "review" | "diary";
+  section?: "reviews";
+  rating?: "rated" | "great" | "positive" | "mixed" | "low" | "unrated";
+  spoilers?: "all" | "hide" | "only";
+  order?: "recent" | "oldest";
+  query?: string;
   pageSize?: number;
   initialCursor: string | null;
   hasMore: boolean;
@@ -44,6 +54,12 @@ export function LoadMoreActivity({
     if (profileId) search.set("profile", profileId);
     if (gameId) search.set("game", String(gameId));
     if (feed) search.set("feed", feed);
+    if (kind) search.set("kind", kind);
+    else if (section) search.set("section", section);
+    if (rating) search.set("rating", rating);
+    if (spoilers && spoilers !== "all") search.set("spoilers", spoilers);
+    if (order && order !== "recent") search.set("order", order);
+    if (query) search.set("q", query);
     try {
       const response = await fetch(`/api/activity?${search}`);
       if (!response.ok) throw new Error(String(response.status));
@@ -53,10 +69,7 @@ export function LoadMoreActivity({
       if (entries.length < pageSize) setDone(true);
       if (entries.length) {
         setCursor(entries[entries.length - 1].createdAt);
-        const visible = kind
-          ? entries.filter((entry) => entry.kind === kind)
-          : entries;
-        if (visible.length) setExtra((current) => [...current, ...visible]);
+        setExtra((current) => [...current, ...entries]);
       }
     } catch {
       setError(true);

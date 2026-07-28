@@ -6,7 +6,6 @@ import {
   Clock3,
   EyeOff,
   Flag,
-  Map,
   NotebookPen,
   Play,
   Star,
@@ -79,10 +78,12 @@ export function ActivityStream({
   entries,
   lang,
   viewerId,
+  display = "timeline",
 }: {
   entries: SocialEntry[];
   lang: UiLang;
   viewerId?: string | null;
+  display?: "timeline" | "archive";
 }) {
   const t = uiText(lang);
   const playedDate = new Intl.DateTimeFormat(lang, {
@@ -116,7 +117,7 @@ export function ActivityStream({
       </div>
     );
   return (
-    <div className="activity-stream">
+    <div className="activity-stream" data-display={display}>
       {entries.map((entry) => (
         <article
           className="activity-entry"
@@ -320,9 +321,12 @@ export function ActivityStream({
                   </span>
                 )}
                 {entry.journeyTitle && (
-                  <span className="activity-journey-chip">
-                    <Map size={13} /> {entry.journeyTitle}
-                  </span>
+                  <JourneyDetailsDialog
+                    title={entry.journeyTitle}
+                    gameName={entry.game?.name ?? entry.gameSlug}
+                    sessions={entry.journeySessions ?? []}
+                    lang={lang}
+                  />
                 )}
               </div>
             )}

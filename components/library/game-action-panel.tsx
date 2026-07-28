@@ -8,7 +8,6 @@ import {
   Gift,
   Heart,
   LoaderCircle,
-  Play,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -20,7 +19,6 @@ type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
 type State = {
   status: Status;
-  playing: boolean;
   backlog: boolean;
   wishlist: boolean;
   liked: boolean;
@@ -67,7 +65,6 @@ export function GameActionPanel({
   function predict(override: Partial<NonNullable<State>>): NonNullable<State> {
     return {
       status: "BACKLOG",
-      playing: false,
       backlog: false,
       wishlist: false,
       liked: false,
@@ -78,7 +75,7 @@ export function GameActionPanel({
   }
 
   async function update(
-    action: "status" | "playing" | "backlog" | "wishlist" | "liked",
+    action: "status" | "backlog" | "wishlist" | "liked",
     value: boolean | Status,
   ) {
     if (!enabled || pending) return;
@@ -153,7 +150,6 @@ export function GameActionPanel({
     );
 
   const actions = [
-    { key: "playing" as const, label: t.playing, icon: Play },
     { key: "backlog" as const, label: "Backlog", icon: Clock3 },
     {
       key: "wishlist" as const,
@@ -244,11 +240,7 @@ export function GameActionPanel({
           ) : (
             <Icon
               size={14}
-              fill={
-                key === "playing" || (key === "liked" && state?.liked)
-                  ? "currentColor"
-                  : "none"
-              }
+              fill={key === "liked" && state?.liked ? "currentColor" : "none"}
             />
           )}
           {label}
