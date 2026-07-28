@@ -2147,7 +2147,7 @@ html[data-sidebar-collapsed]
   min-width: 0;
   max-width: 100%;
   margin-top: 20px;
-  overflow: hidden;
+  overflow: visible;
 }
 .shelf-carousel-track {
   display: grid;
@@ -12067,19 +12067,17 @@ html
 .home-section-heading > a:hover {
   color: var(--screen-white);
 }
-.home-playing-shelf {
-  display: grid;
-  grid-auto-columns: minmax(142px, 0.22fr);
-  grid-auto-flow: column;
-  gap: 12px;
-  overflow-x: auto;
-  padding: 1px 1px 8px;
-  scroll-snap-type: x proximity;
-  scrollbar-width: thin;
+.home-playing-carousel {
+  margin-top: 0;
 }
-.home-playing-shelf article {
+.home-playing-carousel .shelf-carousel-track {
+  grid-auto-columns: minmax(142px, 0.22fr);
+  gap: 12px;
+  padding: 1px 1px 8px;
+  scroll-snap-type: x mandatory;
+}
+.home-playing-carousel article {
   min-width: 0;
-  scroll-snap-align: start;
 }
 .home-playing-cover {
   position: relative;
@@ -12101,6 +12099,7 @@ html
 }
 .home-playing-cover img,
 .home-playing-avatar img,
+.home-review-avatar img,
 .home-review-cover img {
   object-fit: cover;
 }
@@ -12180,10 +12179,32 @@ html
   gap: 8px;
   min-width: 0;
 }
-.home-review-byline > a {
+.home-review-author {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 6px;
   overflow: hidden;
   color: var(--screen-muted);
   font-size: 10px;
+}
+.home-review-avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--console-raised);
+  color: var(--screen-white);
+  font-size: 9px;
+  font-weight: 650;
+}
+.home-review-author > span:nth-child(2) {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -12294,7 +12315,8 @@ html
 .home-loading-section {
   display: grid;
   gap: 18px;
-  padding: 0 36px 36px;
+  padding: 30px 32px 34px;
+  border-bottom: 1px solid var(--shell-line);
 }
 
 .home-loading-section > span {
@@ -12312,13 +12334,45 @@ html
   aspect-ratio: 3 / 4;
 }
 
+.home-loading-reviews {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.home-loading-reviews > span {
+  height: 112px;
+  border-radius: 10px;
+}
+
+.home-loading-discoveries {
+  gap: 24px;
+}
+
+.home-loading-discovery-lanes {
+  display: grid;
+}
+
+.home-loading-discovery-lane {
+  display: grid;
+  grid-template-columns: 182px minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px 0;
+  border-top: 1px solid var(--shell-line);
+}
+
+.home-loading-discovery-lane > span {
+  width: 130px;
+  height: 36px;
+}
+
 .home-loading-rows {
   display: grid;
   gap: 8px;
 }
 
 .home-loading-rows > span {
-  height: 62px;
+  height: 108px;
 }
 
 .home-loading-rail {
@@ -13674,10 +13728,8 @@ and route recovery. */
   .home-section-heading h2 {
     font-size: 17px;
   }
-  .home-playing-shelf {
+  .home-playing-carousel .shelf-carousel-track {
     grid-auto-columns: 138px;
-    margin-right: -18px;
-    padding-right: 18px;
   }
   .home-review-grid article {
     grid-template-columns: 56px minmax(0, 1fr);
@@ -13710,7 +13762,7 @@ and route recovery. */
   }
 
   .home-loading-section {
-    padding: 0 18px 28px;
+    padding: 26px 18px 30px;
   }
 
   .home-loading-covers {
@@ -13718,6 +13770,14 @@ and route recovery. */
     grid-template-columns: none;
     grid-auto-flow: column;
     overflow: hidden;
+  }
+
+  .home-loading-reviews {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-loading-discovery-lane {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .game-stage-inner,

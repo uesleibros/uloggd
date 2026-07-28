@@ -1,5 +1,7 @@
 const covers = Array.from({ length: 5 });
+const reviewCards = Array.from({ length: 4 });
 const rows = Array.from({ length: 3 });
+const discoveryLanes = Array.from({ length: 3 });
 
 export function HomeSkeleton() {
   return (
@@ -19,8 +21,8 @@ export function HomeSkeleton() {
         </section>
         <section className="home-loading-section">
           <span className="skeleton-block" />
-          <div className="home-loading-covers">
-            {covers.map((_, index) => (
+          <div className="home-loading-reviews">
+            {reviewCards.map((_, index) => (
               <span className="skeleton-block" key={index} />
             ))}
           </div>
@@ -30,6 +32,21 @@ export function HomeSkeleton() {
           <div className="home-loading-rows">
             {rows.map((_, index) => (
               <span className="skeleton-block" key={index} />
+            ))}
+          </div>
+        </section>
+        <section className="home-loading-section home-loading-discoveries">
+          <span className="skeleton-block" />
+          <div className="home-loading-discovery-lanes">
+            {discoveryLanes.map((_, laneIndex) => (
+              <div className="home-loading-discovery-lane" key={laneIndex}>
+                <span className="skeleton-block" />
+                <div className="home-loading-covers">
+                  {covers.map((__, coverIndex) => (
+                    <span className="skeleton-block" key={coverIndex} />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </section>

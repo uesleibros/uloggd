@@ -14,7 +14,7 @@ import { ShelfCarousel } from "@/components/shelf-carousel";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { VerifiedMark } from "@/components/verified-badge";
 import { getHomePersonalization } from "@/lib/history";
-import { getPopularGames } from "@/lib/igdb";
+import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
 import { getActivity, getFollowingIds, getFriendsPlaying } from "@/lib/social";
 import { localeAlternates } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
@@ -55,9 +55,10 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 }
 
 async function HomeContent({ lang }: { lang: UiLang }) {
-  const [d, games, user, supabase] = await Promise.all([
+  const [d, games, discoveries, user, supabase] = await Promise.all([
     getDictionary(lang),
     getPopularGames(),
+    getDiscoveryGames(),
     getAuthUser(),
     getSupabase(),
   ]);
@@ -79,11 +80,61 @@ async function HomeContent({ lang }: { lang: UiLang }) {
   const personalization = await personalizationPromise;
   const { recentlyViewed, forYou } = personalization;
   const popularGames = games.slice(0, 10);
+  const discoveryIds = new Set<number>();
+  const takeDiscoveryGames = (source: Game[], limit: number) => {
+    const result: Game[] = [];
+    for (const game of source) {
+      if (discoveryIds.has(game.id)) continue;
+      discoveryIds.add(game.id);
+      result.push(game);
+      if (result.length === limit) break;
+    }
+    return result;
+  };
+  const releaseFormatter = new Intl.DateTimeFormat(lang, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  const discoveryLanes = [
+    {
+      key: "anticipated",
+      title: d.home.mostAnticipated,
+      description: d.home.mostAnticipatedDescription,
+      games: takeDiscoveryGames(discoveries.anticipated, 8),
+      meta: (game: Game) =>
+        game.hype
+          ? `${game.hype.toLocaleString(lang)} ${tri(lang, "interessados", "following", "interesados")}`
+          : d.home.releaseDatePending,
+    },
+    {
+      key: "upcoming",
+      title: d.home.comingSoon,
+      description: d.home.comingSoonDescription,
+      games: takeDiscoveryGames(discoveries.upcoming, 8),
+      meta: (game: Game) =>
+        game.releaseTimestamp
+          ? releaseFormatter.format(new Date(game.releaseTimestamp * 1000))
+          : d.home.releaseDatePending,
+    },
+    {
+      key: "hidden-gems",
+      title: d.home.hiddenGems,
+      description: d.home.hiddenGemsDescription,
+      games: takeDiscoveryGames(discoveries.hiddenGems, 8),
+      meta: (game: Game) =>
+        typeof game.rating === "number"
+          ? `${Math.round(game.rating)}/100 · ${game.ratingCount.toLocaleString(lang)} ${d.home.registrations}`
+          : d.home.releaseDatePending,
+    },
+  ].filter((lane) => lane.games.length > 0);
   const visibleGameIds = [
     ...new Set([
       ...popularGames.map((game) => game.id),
       ...recentlyViewed.map((game) => game.id),
       ...forYou.map((game) => game.id),
+      ...discoveryLanes.flatMap((lane) => lane.games.map((game) => game.id)),
     ]),
   ];
   const snapshotPromise = user
@@ -198,9 +249,17 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                   )}
                 </h2>
               </div>
-              <Gamepad2 size={18} />
             </div>
-            <div className="home-playing-shelf">
+            <ShelfCarousel
+              label={tri(
+                lang,
+                "Amigos jogando agora",
+                "Friends playing now",
+                "Amigos jugando ahora",
+              )}
+              lang={lang}
+              className="home-playing-carousel"
+            >
               {friendsPlaying.map((item) => (
                 <article key={`${item.profileId}:${item.game.id}`}>
                   <Link
@@ -240,7 +299,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                   </div>
                 </article>
               ))}
-            </div>
+            </ShelfCarousel>
           </section>
         )}
 
@@ -280,9 +339,33 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                   </Link>
                   <div>
                     <span className="home-review-byline">
-                      <Link href={`/${lang}/u/${review.profile.username}`}>
-                        {review.profile.display_name ||
-                          `@${review.profile.username}`}
+                      <Link
+                        className="home-review-author"
+                        href={`/${lang}/u/${review.profile.username}`}
+                      >
+                        <span className="home-review-avatar">
+                          {review.profile.avatar_url ? (
+                            <Image
+                              src={review.profile.avatar_url}
+                              alt=""
+                              fill
+                              sizes="24px"
+                              unoptimized
+                            />
+                          ) : (
+                            (
+                              review.profile.display_name ||
+                              review.profile.username
+                            )
+                              .slice(0, 1)
+                              .toUpperCase()
+                          )}
+                        </span>
+                        <span>
+                          {review.profile.display_name ||
+                            `@${review.profile.username}`}
+                        </span>
+                        {review.profile.verified && <VerifiedMark size={13} />}
                       </Link>
                       {typeof review.rating === "number" && (
                         <b>
@@ -341,6 +424,52 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             viewerId={user?.id ?? null}
           />
         </section>
+
+        {discoveryLanes.length > 0 && (
+          <section
+            className="discoveries-section home-discoveries-section"
+            aria-labelledby="home-discoveries-title"
+          >
+            <div className="discoveries-heading">
+              <span>
+                {tri(lang, "NO RADAR", "ON THE RADAR", "EN EL RADAR")}
+              </span>
+              <div>
+                <h2 id="home-discoveries-title">{d.home.discoveries}</h2>
+                <p>{d.home.discoveriesDescription}</p>
+              </div>
+            </div>
+            <div className="discovery-lanes">
+              {discoveryLanes.map((lane, laneIndex) => (
+                <section className="discovery-lane" key={lane.key}>
+                  <header>
+                    <span>{String(laneIndex + 1).padStart(2, "0")}</span>
+                    <div>
+                      <h3>{lane.title}</h3>
+                      <p>{lane.description}</p>
+                    </div>
+                  </header>
+                  <ShelfCarousel
+                    label={lane.title}
+                    lang={lang}
+                    className="discovery-games"
+                  >
+                    {lane.games.map((game) => (
+                      <QuickGameCard
+                        key={game.id}
+                        game={game}
+                        initial={savedById.get(game.id) ?? null}
+                        lang={lang}
+                        enabled={Boolean(user)}
+                        meta={lane.meta(game)}
+                      />
+                    ))}
+                  </ShelfCarousel>
+                </section>
+              ))}
+            </div>
+          </section>
+        )}
 
         {user && recentlyViewed.length > 0 && (
           <HomeGameShelf

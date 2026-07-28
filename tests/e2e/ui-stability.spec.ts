@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
 
 test("uses Home as the community destination without a separate Feed", async ({
   page,
-}) => {
+}, testInfo) => {
   await page.goto("/pt-BR");
 
   await expect(
@@ -19,6 +19,27 @@ test("uses Home as the community destination without a separate Feed", async ({
   await expect(
     page.getByRole("heading", { name: "Avaliações recentes" }),
   ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Em breve" })).toBeVisible();
+  await expect(page.locator(".discovery-games")).toHaveCount(3);
+  await expect(
+    page.locator(".discovery-games .shelf-carousel-track"),
+  ).toHaveCount(3);
+
+  if (!testInfo.project.name.startsWith("mobile")) {
+    const upcomingTrack = page
+      .getByRole("heading", { name: "Em breve" })
+      .locator("xpath=ancestor::section[contains(@class, 'discovery-lane')]")
+      .locator(".shelf-carousel-track");
+    await page.getByRole("button", { name: "Em breve: próximo" }).click();
+    await expect
+      .poll(() => upcomingTrack.evaluate((node) => node.scrollLeft))
+      .toBeGreaterThan(0);
+  }
+
+  const firstReview = page.locator(".home-review-grid article").first();
+  if ((await firstReview.count()) > 0) {
+    await expect(firstReview.locator(".home-review-avatar")).toBeVisible();
+  }
   await expect(page.locator('a[href="/pt-BR/feed"]')).toHaveCount(0);
 
   const width = await page.evaluate(() => ({
