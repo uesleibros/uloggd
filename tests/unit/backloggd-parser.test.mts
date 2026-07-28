@@ -38,19 +38,26 @@ test("accepts only a Backloggd username or canonical public profile URL", () => 
 
 test("accepts only opaque Backloggd avatar tokens and builds a same-origin path", () => {
   const source = "https://backloggd-avatars.b-cdn.net/avatar_token-123";
+  const s3Source = "https://backloggd-s3.b-cdn.net/storage_token-456";
   assert.equal(normalizeBackloggdAvatarUrl(source), source);
+  assert.equal(normalizeBackloggdAvatarUrl(s3Source), s3Source);
   assert.equal(
     backloggdAvatarProxyPath(source),
-    "/api/imports/backloggd/avatar/avatar_token-123",
+    "/api/imports/backloggd/avatar/avatars/avatar_token-123",
   );
-  assert.equal(backloggdAvatarSourceUrl("avatar_token-123"), source);
+  assert.equal(
+    backloggdAvatarProxyPath(s3Source),
+    "/api/imports/backloggd/avatar/s3/storage_token-456",
+  );
+  assert.equal(backloggdAvatarSourceUrl("avatars", "avatar_token-123"), source);
   assert.equal(
     normalizeBackloggdAvatarUrl(
       "https://backloggd-avatars.b-cdn.net/avatar?redirect=evil",
     ),
     null,
   );
-  assert.equal(backloggdAvatarSourceUrl("../../admin"), null);
+  assert.equal(backloggdAvatarSourceUrl("evil", "avatar_token-123"), null);
+  assert.equal(backloggdAvatarSourceUrl("s3", "../../admin"), null);
 });
 
 test("extracts only canonical Backloggd game links and safe pagination", () => {
@@ -60,7 +67,7 @@ test("extracts only canonical Backloggd game links and safe pagination", () => {
       <html><head><title>Player_One's games</title></head><body>
         <div class="profile-summary">
           <span class="avatar avatar-static">
-            <img src="https://backloggd-avatars.b-cdn.net/avatar-token">
+            <img src="https://backloggd-s3.b-cdn.net/avatar-token">
           </span>
           <h3 class="mr-2 mb-0 main-header">Player One</h3>
         </div>
@@ -84,7 +91,7 @@ test("extracts only canonical Backloggd game links and safe pagination", () => {
   assert.equal(page.profileDisplayName, "Player One");
   assert.equal(
     page.profileAvatarUrl,
-    "https://backloggd-avatars.b-cdn.net/avatar-token",
+    "https://backloggd-s3.b-cdn.net/avatar-token",
   );
   assert.deepEqual(page.pageUrls, [
     "https://backloggd.com/u/Player_One/games/?page=2",

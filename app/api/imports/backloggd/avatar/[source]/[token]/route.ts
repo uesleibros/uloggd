@@ -67,10 +67,10 @@ async function readBoundedImage(response: Response) {
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ token: string }> },
+  { params }: { params: Promise<{ source: string; token: string }> },
 ) {
-  const { token } = await params;
-  const sourceUrl = backloggdAvatarSourceUrl(token);
+  const { source, token } = await params;
+  const sourceUrl = backloggdAvatarSourceUrl(source, token);
   if (!sourceUrl) return new Response(null, { status: 404 });
 
   let upstream: Response;
@@ -80,7 +80,7 @@ export async function GET(
       redirect: "error",
       signal: AbortSignal.timeout(8_000),
       headers: {
-        Accept: "image/avif,image/webp,image/png,image/jpeg,image/gif",
+        Accept: "image/webp,image/png,image/jpeg,image/gif",
         "User-Agent": "uloggd-partner-import/1.0 (+https://uloggd.com)",
       },
     });
