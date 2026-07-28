@@ -85,6 +85,7 @@ export function NavMoreMenu({
                 <DropdownMenu.Item
                   key={item.key}
                   disabled
+                  className="nav-more-disabled"
                   aria-label={
                     pending
                       ? item.label
