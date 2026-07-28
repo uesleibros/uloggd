@@ -70,14 +70,14 @@ export function CommunityScopeSelect({
       </Select.Trigger>
       <Select.Portal>
         <Select.Content
-          className="select-content"
+          className="editor-select-menu"
           position="popper"
           sideOffset={6}
         >
           <Select.Viewport>
             {options.map((option) => (
               <Select.Item
-                className="select-item"
+                className="editor-select-option"
                 value={option.value}
                 key={option.value}
               >

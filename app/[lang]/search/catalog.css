@@ -874,7 +874,6 @@
   font-weight: 560;
 }
 .catalog-sort-menu {
-  z-index: 110;
   min-width: var(--anchor-width);
   padding: 5px;
   border: 1px solid var(--shell-line-strong);

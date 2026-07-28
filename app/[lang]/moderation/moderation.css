@@ -648,7 +648,6 @@
   border-color: var(--brand-blurple);
 }
 .moderation-select-content {
-  z-index: 1000;
   min-width: var(--anchor-width);
   overflow: hidden;
   border: 1px solid var(--shell-line-strong);

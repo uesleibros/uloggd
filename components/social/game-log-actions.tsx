@@ -130,27 +130,18 @@ export function GameLogActions({
 
   async function performReview(fields: ReviewRpcFields) {
     setPending(true);
-    const { review_comments_scope, ...rpcFields } = fields;
     const client = createClient();
-    const { data, error: rpcError } = await client.rpc("create_review", {
+    const { error: rpcError } = await client.rpc("create_review", {
       game_id: game.id,
       game_slug: game.slug,
-      ...rpcFields,
+      ...fields,
     });
-    const row = Array.isArray(data) ? data[0] : data;
-    const { error: scopeError } =
-      !rpcError && row?.id
-        ? await client
-            .from("reviews")
-            .update({ comments_scope: review_comments_scope })
-            .eq("id", row.id)
-        : { error: rpcError };
-    if (!rpcError && !scopeError) {
+    if (!rpcError) {
       router.refresh();
       window.setTimeout(() => setOpen(false), 420);
     }
     setPending(false);
-    return !rpcError && !scopeError;
+    return !rpcError;
   }
 
   async function submitJourneyName() {

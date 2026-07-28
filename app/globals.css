@@ -28,6 +28,7 @@
   --overlay-panel: #151318;
   --overlay-panel-sticky: rgb(21 19 24 / 96%);
   --overlay-shadow: rgb(0 0 0 / 42%);
+  --layer-popover: 1000;
   /* Elevation scale. Every shadow should come from here: a literal black
      stays black in the light theme, which is what made light mode look
      bruised around cards and dialogs. */
@@ -65,6 +66,10 @@
   --state-completed-soft-bg: rgb(56 151 104 / 18%);
   --state-completed-text: #e1fff0;
   --danger-text: #e2aaaa;
+}
+
+.ui-select-positioner {
+  z-index: var(--layer-popover);
 }
 
 :root[data-theme="light"] {
@@ -6293,7 +6298,6 @@ never the tracking violet. */
   transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .editor-select-menu {
-  z-index: 110;
   min-width: var(--anchor-width);
   padding: 5px;
   border: 1px solid var(--shell-line-strong);
@@ -7684,7 +7688,6 @@ and content bars. */
 }
 
 .library-sort-menu {
-  z-index: 130;
   min-width: var(--anchor-width);
   overflow: hidden;
   padding: 5px;

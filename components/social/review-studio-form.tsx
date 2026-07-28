@@ -23,10 +23,6 @@ import { useState } from "react";
 import { StarRating } from "@/components/library/star-rating";
 import type { JourneyOption } from "@/components/social/journey-calendar";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-import {
-  CommunityScopeSelect,
-  type CommunityScope,
-} from "./community-scope-select";
 
 export type ReviewRatingMode =
   "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
@@ -55,7 +51,6 @@ export type ReviewFormInitial = {
   platform: string;
   aspects: ReviewAspect[];
   journeyId?: string | null;
-  commentsScope?: CommunityScope;
 };
 
 export type ReviewRpcFields = {
@@ -78,7 +73,6 @@ export type ReviewRpcFields = {
     note: string | null;
     custom: boolean;
   }>;
-  review_comments_scope: CommunityScope;
 };
 
 export function ReviewStudioForm({
@@ -120,9 +114,6 @@ export function ReviewStudioForm({
   const [spoilers, setSpoilers] = useState(initial?.spoilers ?? false);
   const [visibility, setVisibility] = useState<ReviewVisibility>(
     initial?.visibility ?? "PUBLIC",
-  );
-  const [commentsScope, setCommentsScope] = useState<CommunityScope>(
-    initial?.commentsScope ?? "EVERYONE",
   );
   const [title, setTitle] = useState(initial?.title ?? "");
   const [mastered, setMastered] = useState(initial?.mastered ?? false);
@@ -183,7 +174,6 @@ export function ReviewStudioForm({
           note: note.trim() || null,
           custom: Boolean(custom),
         })),
-      review_comments_scope: commentsScope,
     });
     if (saved) {
       setSuccess(successLabel);
@@ -492,14 +482,6 @@ export function ReviewStudioForm({
               <EditorVisibilitySelect
                 value={visibility}
                 onChange={setVisibility}
-                lang={lang}
-              />
-            </label>
-            <label>
-              <span>{tri(lang, "Comentários", "Comments", "Comentarios")}</span>
-              <CommunityScopeSelect
-                value={commentsScope}
-                onChange={setCommentsScope}
                 lang={lang}
               />
             </label>

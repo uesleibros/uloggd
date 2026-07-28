@@ -132,16 +132,18 @@ export function Content({
   collisionPadding?: number;
   position?: string;
 }) {
-  // The legacy API called this positioning mode `popper`; Base UI always positions
-  // through Positioner, so the compatibility prop is intentionally consumed.
-  void position;
+  // The legacy `popper` mode places the menu beside the trigger. Base UI's
+  // default aligns the selected item over the trigger, so translate that mode
+  // explicitly instead of silently discarding it.
   return (
     <BaseSelect.Positioner
+      className="ui-select-positioner"
       side={side}
       align={align}
       sideOffset={sideOffset}
       alignOffset={alignOffset}
       collisionPadding={collisionPadding}
+      alignItemWithTrigger={position !== "popper"}
     >
       <BaseSelect.Popup {...props} />
     </BaseSelect.Positioner>
