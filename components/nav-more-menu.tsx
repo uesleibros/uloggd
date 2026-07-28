@@ -85,7 +85,6 @@ export function NavMoreMenu({
                 <DropdownMenu.Item
                   key={item.key}
                   disabled
-                  className="nav-more-disabled"
                   aria-label={
                     pending
                       ? item.label
@@ -94,7 +93,7 @@ export function NavMoreMenu({
                 >
                   <Icon size={17} />
                   <span>{item.label}</span>
-                  {!pending && <LockKeyhole size={13} />}
+                  {!pending && <LockKeyhole className="nav-lock" size={13} />}
                 </DropdownMenu.Item>
               );
             }
