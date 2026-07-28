@@ -1152,9 +1152,18 @@ html[data-sidebar-ready] .account-button > svg {
 .main-nav > .nav-disabled,
 .sidebar-bottom > .nav-disabled,
 .nav-more-menu [data-disabled] {
-  cursor: not-allowed;
   color: var(--screen-muted);
   opacity: 0.62;
+  cursor: not-allowed !important;
+}
+
+.nav-more-menu [data-disabled] {
+  pointer-events: auto !important;
+}
+
+.nav-more-menu [data-disabled] *,
+.nav-more-menu [data-disabled] svg {
+  cursor: not-allowed !important;
 }
 
 .nav-disabled .nav-lock,
