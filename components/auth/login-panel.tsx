@@ -60,6 +60,42 @@ export function LoginPanel({
       "Forgot password",
       "Olvidé mi contraseña",
     ),
+    signinDescription: tri(
+      lang,
+      "Acesse sua biblioteca e continue de onde parou.",
+      "Access your library and continue where you left off.",
+      "Accede a tu biblioteca y continúa donde lo dejaste.",
+    ),
+    signupDescription: tri(
+      lang,
+      "Crie sua conta e comece a organizar seus jogos.",
+      "Create your account and start organizing your games.",
+      "Crea tu cuenta y empieza a organizar tus juegos.",
+    ),
+    forgotDescription: tri(
+      lang,
+      "Digite seu e-mail para receber o link de recuperação.",
+      "Enter your email to receive a recovery link.",
+      "Introduce tu correo para recibir el enlace de recuperación.",
+    ),
+    continueWith: tri(
+      lang,
+      "Continue com",
+      "Continue with",
+      "Continuar con",
+    ),
+    continueWithEmail: tri(
+      lang,
+      "ou continue com e-mail",
+      "or continue with email",
+      "o continúa con correo",
+    ),
+    backToSignin: tri(
+      lang,
+      "Voltar para entrar",
+      "Back to sign in",
+      "Volver a iniciar sesión",
+    ),
     email: tri(lang, "E-mail", "Email", "Correo electrónico"),
     password: tri(lang, "Senha", "Password", "Contraseña"),
     confirm: tri(
@@ -479,47 +515,103 @@ export function LoginPanel({
       </section>
     );
 
+  const showProviders = mode === "signin" || mode === "signup";
+
   return (
     <section className="login-panel" aria-labelledby="login-title">
-      <div className="auth-tabs" role="tablist">
+      {mode === "forgot" ? (
         <button
-          role="tab"
-          aria-selected={mode === "signin"}
+          type="button"
+          className="auth-text-button"
           onClick={() => changeMode("signin")}
         >
-          {copy.signin}
+          {copy.backToSignin}
         </button>
-        <button
-          role="tab"
-          aria-selected={mode === "signup"}
-          onClick={() => changeMode("signup")}
-        >
-          {copy.signup}
-        </button>
-        <button
-          role="tab"
-          aria-selected={mode === "forgot"}
-          onClick={() => changeMode("forgot")}
-        >
-          {copy.forgot}
-        </button>
-      </div>
-      <div className="login-panel-heading">
+      ) : (
+        <div className="auth-tabs" role="tablist" aria-label={d.auth.title}>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "signin"}
+            tabIndex={mode === "signin" ? 0 : -1}
+            onClick={() => changeMode("signin")}
+          >
+            {copy.signin}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "signup"}
+            tabIndex={mode === "signup" ? 0 : -1}
+            onClick={() => changeMode("signup")}
+          >
+            {copy.signup}
+          </button>
+        </div>
+      )}
+
+      <header className="login-panel-heading">
         <h1 id="login-title">
           {mode === "signin"
-            ? d.auth.title
+            ? copy.signin
             : mode === "signup"
               ? copy.signup
               : copy.forgot}
         </h1>
         <p>
           {mode === "signin"
-            ? d.auth.description
+            ? copy.signinDescription
             : mode === "signup"
-              ? copy.checkBody
-              : copy.genericRecovery}
+              ? copy.signupDescription
+              : copy.forgotDescription}
         </p>
-      </div>
+      </header>
+
+      {showProviders && (
+        <div className="auth-alternatives" aria-label={copy.continueWith}>
+          <div className="auth-divider">
+            <span>{copy.continueWith}</span>
+          </div>
+
+          <div className="provider-grid">
+            {providers.map(([provider, label, Icon]) => (
+              <button
+                type="button"
+                key={provider}
+                onClick={() => signInWithOAuth(provider, label)}
+                disabled={pending !== null}
+                aria-label={`${copy.continueWith} ${label}`}
+              >
+                {pending === provider ? (
+                  <LoaderCircle className="spin" size={20} />
+                ) : (
+                  <Icon />
+                )}
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {showProviders && (
+        <div className="auth-divider">
+          <span>{copy.continueWithEmail}</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="auth-error" role="alert">
+          {error}
+        </div>
+      )}
+
+      {message && (
+        <div className="auth-success" role="status">
+          {message}
+        </div>
+      )}
+
       <form className="auth-form" onSubmit={submit} noValidate>
         <label>
           {copy.email}
@@ -538,9 +630,11 @@ export function LoginPanel({
             </span>
           )}
         </label>
+
         {mode !== "forgot" && (
           <label>
             {copy.password}
+
             <input
               name="password"
               type="password"
@@ -558,18 +652,31 @@ export function LoginPanel({
               }
               onChange={() => clearFieldError("password")}
             />
+
             {mode === "signup" && !fieldErrors.password && (
               <span className="auth-field-hint" id="password-hint">
                 {copy.passwordRules}
               </span>
             )}
+
             {fieldErrors.password && (
               <span className="auth-field-error" id="password-error">
                 {fieldErrors.password}
               </span>
             )}
+
+            {mode === "signin" && (
+              <button
+                type="button"
+                className="auth-text-button"
+                onClick={() => changeMode("forgot")}
+              >
+                {copy.forgot}
+              </button>
+            )}
           </label>
         )}
+
         {mode === "signup" && (
           <>
             <label>
@@ -591,6 +698,7 @@ export function LoginPanel({
                 </span>
               )}
             </label>
+
             <div className="auth-checkbox-group">
               <label className="auth-checkbox">
                 <Checkbox
@@ -612,12 +720,18 @@ export function LoginPanel({
             </div>
           </>
         )}
+
         <AuthTurnstile
           ref={turnstile}
           language={lang}
           onToken={setCaptchaToken}
         />
-        <button className="auth-primary" disabled={pending !== null}>
+
+        <button
+          type="submit"
+          className="auth-primary"
+          disabled={pending !== null}
+        >
           {pending === mode && <LoaderCircle className="spin" size={18} />}{" "}
           {mode === "signin"
             ? copy.submitSignin
@@ -626,58 +740,34 @@ export function LoginPanel({
               : copy.submitForgot}
         </button>
       </form>
+
       {mode === "signin" && (
-        <>
+        <div className="auth-alternatives">
           <div className="auth-divider">
             <span>{d.auth.otherMethods}</span>
           </div>
-          <div className="auth-alternatives">
-            <button
-              className="passkey-button"
-              onClick={signInWithPasskey}
-              disabled={pending !== null}
-            >
-              <span className="passkey-icon">
-                {pending === "passkey" ? (
-                  <LoaderCircle className="spin" size={23} />
-                ) : (
-                  <Fingerprint size={25} />
-                )}
-              </span>
-              <span>
-                <strong>{d.auth.passkeyLabel}</strong>
-                <small>{d.auth.passkeyHint}</small>
-              </span>
-            </button>
-            <div className="provider-grid">
-              {providers.map(([provider, label, Icon]) => (
-                <button
-                  key={provider}
-                  onClick={() => signInWithOAuth(provider, label)}
-                  disabled={pending !== null}
-                >
-                  {pending === provider ? (
-                    <LoaderCircle className="spin" size={20} />
-                  ) : (
-                    <Icon />
-                  )}
-                  <span>{label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-      {error && (
-        <div className="auth-error" role="alert">
-          {error}
+
+          <button
+            type="button"
+            className="passkey-button"
+            onClick={signInWithPasskey}
+            disabled={pending !== null}
+          >
+            <span className="passkey-icon">
+              {pending === "passkey" ? (
+                <LoaderCircle className="spin" size={23} />
+              ) : (
+                <Fingerprint size={25} />
+              )}
+            </span>
+            <span>
+              <strong>{d.auth.passkeyLabel}</strong>
+              <small>{d.auth.passkeyHint}</small>
+            </span>
+          </button>
         </div>
       )}
-      {message && (
-        <div className="auth-success" role="status">
-          {message}
-        </div>
-      )}
+
       <p className="auth-legal">
         {d.auth.legalPrefix}{" "}
         <Link href={`/${lang}/legal/terms`}>{d.legal.terms}</Link> {d.auth.and}{" "}
