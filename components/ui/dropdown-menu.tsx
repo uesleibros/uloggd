@@ -96,6 +96,7 @@ export function Content({
 }) {
   return (
     <BaseMenu.Positioner
+      className="ui-dropdown-menu-positioner"
       side={side}
       align={align}
       sideOffset={sideOffset}
