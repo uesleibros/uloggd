@@ -21,7 +21,7 @@ import { MobileGameSearch } from "./game-search";
 import { SidebarCollapseButton } from "./sidebar-collapse-button";
 import { SmartHeader } from "./smart-header";
 import { NotificationCenter } from "./notifications/notification-center";
-import { NavMoreMenu } from "./nav-more-menu";
+import { NavMoreMenu, type MoreItem } from "./nav-more-menu";
 import { QuickCreateAction } from "./quick-create-action";
 import { tri } from "@/lib/ui-text";
 
@@ -50,9 +50,11 @@ export function PlatformNavigation({
   pending?: boolean;
 }) {
   const isAuthenticated = Boolean(account);
+
   const profileHref = account?.username
     ? `/${lang}/u/${account.username}`
     : `/${lang}/onboarding/username`;
+
   // Four primary destinations; everything else lives behind "More", so the
   // rail stays short no matter how many secondary pages exist.
   const nav = [
@@ -85,17 +87,29 @@ export function PlatformNavigation({
       requiresAuth: true,
     },
   ] as const;
-  // Kept visible signed-out too: hiding these would mean a visitor never
-  // learns the features exist. The proxy sends them through login first.
-  const moreItems = [
-    { key: "star", label: d.nav.reviews, href: `/${lang}/reviews` },
-    { key: "list", label: d.nav.lists, href: `/${lang}/lists` },
+
+  // Authenticated features remain visible while signed out, but are disabled
+  // so visitors can discover them without navigating away.
+  const moreItems: MoreItem[] = [
+    {
+      key: "star",
+      label: d.nav.reviews,
+      href: `/${lang}/reviews`,
+      requiresAuth: true,
+    },
+    {
+      key: "list",
+      label: d.nav.lists,
+      href: `/${lang}/lists`,
+      requiresAuth: true,
+    },
     ...(account?.role === "ADMIN" || account?.role === "MODERATOR"
       ? [
           {
             key: "moderation",
             label: tri(lang, "Moderação", "Moderation", "Moderación"),
             href: `/${lang}/moderation`,
+            requiresAuth: true,
           },
         ]
       : []),
@@ -105,6 +119,7 @@ export function PlatformNavigation({
             key: "settings",
             label: d.nav.settings,
             href: `/${lang}/settings?tab=general`,
+            requiresAuth: true,
           },
         ]
       : []),
@@ -116,87 +131,158 @@ export function PlatformNavigation({
         <div className="sidebar-frame">
           <div className="sidebar-brand">
             <Brand lang={lang} />
-            <span className="product-stage">{d.platform.beta}</span>
+
+            <span className="product-stage">
+              {d.platform.beta}
+            </span>
           </div>
+
           <div className="sidebar-scroll">
-            <nav className="main-nav" aria-label={d.platform.navigation}>
-              <span className="nav-label">{d.platform.navigation}</span>
+            <nav
+              className="main-nav"
+              aria-label={d.platform.navigation}
+            >
+              <span className="nav-label">
+                {d.platform.navigation}
+              </span>
+
               {nav.map((item) => {
                 const NavIcon = iconMap[item.icon];
+
                 if (item.requiresAuth && !isAuthenticated) {
                   return (
                     <Tooltip
                       key={item.key}
                       side="right"
-                      label={pending ? item.label : d.actions.requiresSignIn}
+                      label={
+                        pending
+                          ? item.label
+                          : d.actions.requiresSignIn
+                      }
                     >
-                      <span className="nav-disabled" aria-disabled="true">
+                      <span
+                        className="nav-disabled"
+                        aria-disabled="true"
+                      >
                         <NavIcon size={20} />
+
                         <span>{item.label}</span>
+
                         {!pending && (
-                          <LockKeyhole className="nav-lock" size={12} />
+                          <LockKeyhole
+                            className="nav-lock"
+                            size={12}
+                          />
                         )}
                       </span>
                     </Tooltip>
                   );
                 }
+
                 return (
-                  <Tooltip key={item.key} label={item.label} side="right">
-                    <ActiveLink href={item.href} aria-label={item.label}>
+                  <Tooltip
+                    key={item.key}
+                    label={item.label}
+                    side="right"
+                  >
+                    <ActiveLink
+                      href={item.href}
+                      aria-label={item.label}
+                    >
                       <NavIcon size={20} />
                       <span>{item.label}</span>
                     </ActiveLink>
                   </Tooltip>
                 );
               })}
-              <NavMoreMenu items={moreItems} label={d.nav.more} />
+
+              <NavMoreMenu
+                items={moreItems}
+                label={d.nav.more}
+                isAuthenticated={isAuthenticated}
+                pending={pending}
+                requiresSignIn={d.actions.requiresSignIn}
+              />
             </nav>
+
             <QuickCreateAction
               lang={lang}
               enabled={isAuthenticated && !pending}
               requiresSignIn={d.actions.requiresSignIn}
             />
-            {/* Settings and moderation moved into the "More" menu above; a
-                signed-out visitor still gets the locked hint here. */}
+
+            {/* Settings stays visible and locked outside the More menu for
+                signed-out visitors. */}
             {!isAuthenticated && (
               <div className="sidebar-bottom">
                 <Tooltip
                   side="right"
-                  label={pending ? d.nav.settings : d.actions.requiresSignIn}
+                  label={
+                    pending
+                      ? d.nav.settings
+                      : d.actions.requiresSignIn
+                  }
                 >
-                  <span className="nav-disabled" aria-disabled="true">
+                  <span
+                    className="nav-disabled"
+                    aria-disabled="true"
+                  >
                     <Settings size={20} />
+
                     <span>{d.nav.settings}</span>
-                    {!pending && <LockKeyhole className="nav-lock" size={12} />}
+
+                    {!pending && (
+                      <LockKeyhole
+                        className="nav-lock"
+                        size={12}
+                      />
+                    )}
                   </span>
                 </Tooltip>
               </div>
             )}
           </div>
+
           {pending ? (
-            <div className="account-button account-slot-skeleton" aria-hidden>
+            <div
+              className="account-button account-slot-skeleton"
+              aria-hidden
+            >
               <span className="skeleton-block" />
+
               <div>
                 <span className="skeleton-block" />
                 <span className="skeleton-block" />
               </div>
             </div>
           ) : account ? (
-            <AccountMenu account={account} lang={lang} />
+            <AccountMenu
+              account={account}
+              lang={lang}
+            />
           ) : (
-            <Link className="account-button" href={`/${lang}/login`}>
-              <span className="signed-out-icon" aria-hidden>
+            <Link
+              className="account-button"
+              href={`/${lang}/login`}
+            >
+              <span
+                className="signed-out-icon"
+                aria-hidden
+              >
                 <LogIn size={18} />
               </span>
+
               <div>
                 <strong>{d.actions.signIn}</strong>
                 <small>{d.actions.syncJourney}</small>
               </div>
+
               <span aria-hidden>↗</span>
             </Link>
           )}
         </div>
       </aside>
+
       <SidebarCollapseButton lang={lang} />
 
       <SmartHeader className="mobile-header">
@@ -218,6 +304,7 @@ export function PlatformNavigation({
             requiresSignIn: d.actions.requiresSignIn,
           }}
         />
+
         <div className="mobile-header-actions">
           {viewerId && (
             <NotificationCenter
@@ -226,7 +313,9 @@ export function PlatformNavigation({
               labels={d.notifications}
             />
           )}
+
           <LocaleSwitcher locale={lang} />
+
           <MobileGameSearch
             dictionary={d}
             lang={lang}
@@ -234,6 +323,7 @@ export function PlatformNavigation({
           />
         </div>
       </SmartHeader>
+
       <QuickCreateAction
         lang={lang}
         enabled={isAuthenticated && !pending}
