@@ -2356,7 +2356,7 @@ a.year-top-game:hover .year-top-copy strong {
     color 150ms ease-out;
 }
 .profile-more-trigger:hover,
-.profile-more-trigger[data-open] {
+.profile-more-trigger[data-popup-open] {
   border-color: var(--brand-blurple);
   background: var(--console-hover);
   color: var(--screen-white);

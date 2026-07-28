@@ -6,6 +6,34 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
+test("opens shared menus without composition errors and preserves motion", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name.startsWith("mobile"));
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+
+  await page.goto("/pt-BR");
+  const languageTrigger = page.locator(".locale-switcher-trigger").first();
+  await expect(languageTrigger).toBeVisible();
+  await languageTrigger.click();
+
+  const menu = page.locator(".locale-menu");
+  await expect(menu).toBeVisible();
+  await expect(languageTrigger).toHaveAttribute("data-popup-open", "");
+  await expect(menu).toHaveAttribute("data-open", "");
+  expect(
+    await menu.evaluate(
+      (element) => getComputedStyle(element).animationDuration,
+    ),
+  ).toBe("0.15s");
+  expect(errors).toEqual([]);
+
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeHidden();
+  expect(errors).toEqual([]);
+});
+
 test("keeps the advanced-filter sheet themed and inside the mobile viewport", async ({
   page,
 }, testInfo) => {
@@ -22,7 +50,9 @@ test("keeps the advanced-filter sheet themed and inside the mobile viewport", as
   await expect(dialog).toBeVisible();
   await expect(footer).toBeVisible();
   await dialog.evaluate(async (element) => {
-    await Promise.all(element.getAnimations().map((animation) => animation.finished));
+    await Promise.all(
+      element.getAnimations().map((animation) => animation.finished),
+    );
   });
 
   const geometry = await page.evaluate(() => {
