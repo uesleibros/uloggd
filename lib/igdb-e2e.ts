@@ -31,6 +31,7 @@ export const e2eCatalogOptions: CatalogSearchOptions = {
   engines: [
     { id: 1, name: "E2E Engine" },
     { id: 2, name: "E2E Engine Next" },
+    { id: 3, name: "PowerPoint" },
   ],
   types: [{ id: 0, name: "Main Game" }],
   perspectives: [
@@ -116,6 +117,7 @@ export function e2eGameBySlug(slug: string): GameDetail | null {
       themes: [],
       modes: [],
       engines: [{ id: 1, name: "E2E Engine" }],
+      developers: [],
       publishers: [],
     },
     engines: ["E2E Engine"],
@@ -155,12 +157,7 @@ export async function searchE2eCatalog(filters: CatalogSearchFilters) {
       );
     const matchesEngines =
       !filters.engines.length ||
-      filters.engines.some((id) =>
-        game.engines.includes(
-          e2eCatalogOptions.engines.find((option) => option.id === id)?.name ??
-            "",
-        ),
-      );
+      filters.engines.some((name) => game.engines.includes(name));
     const currentYear = new Date().getUTCFullYear();
     const matchesRelease =
       filters.releaseStatus === "all" ||

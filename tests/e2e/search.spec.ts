@@ -170,6 +170,32 @@ test("opens the filters dialog and applies a complete draft once", async ({
   await expect(page).toHaveURL(/perspectives=1/);
 });
 
+test("searches every vocabulary and keeps engine names in the URL", async ({
+  page,
+}) => {
+  await openSearch(page);
+  await page.getByRole("button", { name: "Filtros avançados" }).click();
+
+  const groups = page.locator(".catalog-filter-group");
+  await expect(groups).toHaveCount(8);
+  await expect(page.locator(".catalog-filter-search input")).toHaveCount(8);
+
+  await page.getByText("Engine", { exact: true }).click();
+  await page.getByPlaceholder("Pesquisar em engine").fill("PowerPoint");
+  await page
+    .locator(".catalog-filter-options > label")
+    .filter({ hasText: "PowerPoint" })
+    .click();
+  await page.getByRole("button", { name: "Aplicar filtros" }).click();
+
+  await expect(page).toHaveURL(/engines=PowerPoint/);
+  await expect(
+    page.locator(".catalog-active-filters").getByText("PowerPoint", {
+      exact: true,
+    }),
+  ).toBeVisible();
+});
+
 test("navigates by page number, last page, and direct jump", async ({
   page,
 }) => {

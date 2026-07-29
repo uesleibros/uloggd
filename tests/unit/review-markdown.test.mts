@@ -24,13 +24,24 @@ test("review markdown renders basic formatting, mentions and spoilers", () => {
   assert.match(html, /class="md-spoiler"/);
 });
 
-test("review markdown strips showcase-only embeds and raw media", () => {
+test("review markdown renders safe images and spoiler images", () => {
   const html = renderReview(
-    '!game(celeste)\n\n<img src="https://example.com/cover.jpg" alt="cover" />\n\n![cover](https://example.com/cover.jpg)\n\nhttps://youtube.com/watch?v=dQw4w9WgXcQ',
+    '![cover](https://example.com/cover.jpg)\n\n<spoilerimg src="https://example.com/ending.jpg" alt="ending" />',
+  );
+
+  assert.match(html, /src="https:\/\/example\.com\/cover\.jpg"/);
+  assert.match(html, /src="https:\/\/example\.com\/ending\.jpg"/);
+  assert.match(html, /class="md-spoiler"/);
+  assert.match(html, /loading="lazy"/);
+});
+
+test("review markdown strips showcase-only embeds and unsafe media", () => {
+  const html = renderReview(
+    '!game(celeste)\n\n<img src="javascript:alert(1)" alt="unsafe" />\n\nhttps://youtube.com/watch?v=dQw4w9WgXcQ',
   );
 
   assert.doesNotMatch(html, /class="md-gc/);
-  assert.doesNotMatch(html, /<img/);
+  assert.doesNotMatch(html, /javascript:/);
   assert.doesNotMatch(html, /<iframe/);
   assert.match(html, /!game\(celeste\)/);
 });

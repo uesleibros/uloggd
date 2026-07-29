@@ -84,6 +84,17 @@ function numberList(value: string | string[] | undefined) {
     .slice(0, 24);
 }
 
+function nameList(value: string | string[] | undefined) {
+  return [
+    ...new Set(
+      (first(value) ?? "")
+        .split(",")
+        .map((item) => item.normalize("NFKC").trim())
+        .filter((item) => item.length > 0 && item.length <= 80),
+    ),
+  ].slice(0, 24);
+}
+
 function boundedNumber(
   value: string | string[] | undefined,
   minimum: number,
@@ -361,7 +372,7 @@ export default async function SearchPage({
     platforms: numberList(query.platforms),
     themes: numberList(query.themes),
     modes: numberList(query.modes),
-    engines: numberList(query.engines),
+    engines: nameList(query.engines),
     types: numberList(query.types),
     perspectives: numberList(query.perspectives),
     publishers: numberList(query.publishers),
@@ -398,8 +409,19 @@ export default async function SearchPage({
       option,
     ]),
   );
+  const selectedEngineNames = new Set(
+    baseOptions.engines.map((option) => option.name.toLocaleLowerCase()),
+  );
   const options = {
     ...baseOptions,
+    engines: [
+      ...baseOptions.engines,
+      ...filters.engines.flatMap((name, index) =>
+        selectedEngineNames.has(name.toLocaleLowerCase())
+          ? []
+          : [{ id: -(index + 1), name }],
+      ),
+    ],
     publishers: [...publisherOptions.values()].sort((a, b) =>
       a.name.localeCompare(b.name),
     ),

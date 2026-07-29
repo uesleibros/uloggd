@@ -166,30 +166,40 @@ const REVIEW_TAGS = new Set([
   "h5",
   "h6",
   "hr",
+  "img",
   "li",
   "mention",
   "ol",
   "p",
   "pre",
   "spoiler",
+  "spoilerimg",
   "strong",
   "ul",
 ]);
 
 // Reviews deliberately accept a much smaller language than profile showcases.
-// The server stores plain Markdown; this render boundary strips media, game
-// embeds, layout directives and raw HTML even if someone hand-types them.
+// The server stores plain Markdown; this render boundary permits only inert
+// images alongside prose and strips game embeds, active media and layout
+// directives even if someone hand-types them.
 const reviewSanitizeSchema = {
   ...defaultSchema,
   tagNames: [
     ...(defaultSchema.tagNames ?? []).filter((tag) => REVIEW_TAGS.has(tag)),
     "mention",
     "spoiler",
+    "spoilerimg",
   ],
   attributes: {
     ...defaultSchema.attributes,
+    img: ["src", "alt", "loading"],
     mention: [],
     spoiler: [],
+    spoilerimg: ["src", "alt"],
+  },
+  protocols: {
+    ...defaultSchema.protocols,
+    src: ["https"],
   },
 };
 
@@ -545,9 +555,9 @@ function MdGameCarousel({
   useEffect(() => {
     const node = viewport.current;
     if (!node) return;
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+    const reducedMotion =
+      document.documentElement.dataset.reduceMotion === "true" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const placeInMiddleCopy = () => {
       const loopWidth = node.scrollWidth / 3;
       if (loopWidth > 0 && node.scrollLeft === 0) node.scrollLeft = loopWidth;

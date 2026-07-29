@@ -29,7 +29,7 @@ import { tri, type UiLang } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 import "../publisher.css";
 
-type Props = PageProps<"/[lang]/publisher/[slug]">;
+type Props = PageProps<"/[lang]/company/[slug]">;
 
 function websiteLabel(url: string) {
   try {
@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: company.name,
     description,
-    alternates: localeAlternates(lang, `/publisher/${company.slug}`),
+    alternates: localeAlternates(lang, `/company/${company.slug}`),
     openGraph: {
       title: `${company.name} · uloggd`,
       description,
@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /**
- * A big publisher needs several IGDB pages to count every dated release, so the
+ * A large company needs several IGDB pages to count every dated release, so the
  * chart streams in after the shell instead of delaying the whole page.
  */
 async function ReleaseTimeline({
@@ -376,11 +376,13 @@ async function CompanyEvents({
   );
 }
 
-export default async function PublisherPage({ params }: Props) {
+export default async function CompanyPage({ params }: Props) {
   const { lang, slug } = await params;
   if (!hasLocale(lang)) notFound();
-  const [company, user]: [CompanyProfile | null, Awaited<ReturnType<typeof getAuthUser>>] =
-    await Promise.all([getCompanyBySlug(slug), getAuthUser()]);
+  const [company, user]: [
+    CompanyProfile | null,
+    Awaited<ReturnType<typeof getAuthUser>>,
+  ] = await Promise.all([getCompanyBySlug(slug), getAuthUser()]);
   if (!company) notFound();
 
   const highlights = [...company.published, ...company.developed];
@@ -415,7 +417,8 @@ export default async function PublisherPage({ params }: Props) {
   // A company's visual identity must reflect work it actually developed.
   // Publishing credit still belongs in the catalogue, but never supplies the
   // hero artwork because that would visually attribute another studio's work.
-  const backdrop = company.developed.find((game) => game.heroUrl)?.heroUrl ?? null;
+  const backdrop =
+    company.developed.find((game) => game.heroUrl)?.heroUrl ?? null;
   const searchHref = `/${lang}/search?publishers=${company.id}`;
   // IGDB's own vocabulary, translated where it has an obvious equivalent and
   // passed through capitalised where it does not.
@@ -456,7 +459,7 @@ export default async function PublisherPage({ params }: Props) {
           "@context": "https://schema.org",
           "@type": "Organization",
           name: company.name,
-          url: `${SITE_URL}/${lang}/publisher/${company.slug}`,
+          url: `${SITE_URL}/${lang}/company/${company.slug}`,
           ...(company.logoUrl ? { logo: company.logoUrl } : {}),
           ...(summary ? { description: summary } : {}),
           ...(founded ? { foundingDate: String(founded) } : {}),
@@ -473,7 +476,7 @@ export default async function PublisherPage({ params }: Props) {
                 parentOrganization: {
                   "@type": "Organization",
                   name: company.parent.name,
-                  url: `${SITE_URL}/${lang}/publisher/${company.parent.slug}`,
+                  url: `${SITE_URL}/${lang}/company/${company.parent.slug}`,
                 },
               }
             : {}),
@@ -526,7 +529,7 @@ export default async function PublisherPage({ params }: Props) {
               {company.parent && (
                 <span>
                   <Building2 size={13} aria-hidden />{" "}
-                  <Link href={`/${lang}/publisher/${company.parent.slug}`}>
+                  <Link href={`/${lang}/company/${company.parent.slug}`}>
                     {company.parent.name}
                   </Link>
                 </span>

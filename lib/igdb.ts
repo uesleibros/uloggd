@@ -119,7 +119,8 @@ export type CatalogSearchFilters = {
   platforms: number[];
   themes: number[];
   modes: number[];
-  engines: number[];
+  /** Human-readable names keep shared search URLs understandable. */
+  engines: string[];
   types: number[];
   perspectives: number[];
   publishers: number[];
@@ -525,6 +526,61 @@ export async function searchCatalogPublishers(query: string) {
     .slice(0, 30);
 }
 
+function safeEngineNames(names: string[]) {
+  return [...new Set(names.map((name) => name.normalize("NFKC").trim()))]
+    .filter((name) => name.length > 0 && name.length <= 80)
+    .slice(0, 24);
+}
+
+export async function getCatalogEngineOptions(names: string[]) {
+  const safeNames = safeEngineNames(names);
+  if (!safeNames.length) return [];
+  if (process.env.ULOGGD_E2E === "1") {
+    const { e2eCatalogOptions } = await import("@/lib/igdb-e2e");
+    const wanted = new Set(safeNames.map((name) => name.toLocaleLowerCase()));
+    return e2eCatalogOptions.engines.filter((option) =>
+      wanted.has(option.name.toLocaleLowerCase()),
+    );
+  }
+  return queryIgdbRaw<CatalogOption>(
+    "game_engines",
+    `fields id,name; where (${safeNames
+      .map((name) => `name = "${escapeIgdb(name)}"`)
+      .join(" | ")}); limit 24;`,
+    24 * CACHE_HOURS,
+  );
+}
+
+export async function searchCatalogEngines(query: string) {
+  const normalized = query
+    .normalize("NFKC")
+    .trim()
+    .replace(/\s+/g, " ")
+    .slice(0, 60);
+  if (normalized.length < 2) return [];
+  if (process.env.ULOGGD_E2E === "1") {
+    const { e2eCatalogOptions } = await import("@/lib/igdb-e2e");
+    return e2eCatalogOptions.engines.filter((option) =>
+      option.name.toLocaleLowerCase().includes(normalized.toLocaleLowerCase()),
+    );
+  }
+  const results = await queryIgdbRaw<CatalogOption>(
+    "game_engines",
+    `fields id,name; where name ~ *"${escapeIgdb(normalized)}"*; limit 100;`,
+    6 * CACHE_HOURS,
+  );
+  const needle = normalized.toLocaleLowerCase();
+  return results
+    .toSorted((a, b) => {
+      const aName = a.name.toLocaleLowerCase();
+      const bName = b.name.toLocaleLowerCase();
+      const aRank = aName === needle ? 0 : aName.startsWith(needle) ? 1 : 2;
+      const bRank = bName === needle ? 0 : bName.startsWith(needle) ? 1 : 2;
+      return aRank - bRank || a.name.localeCompare(b.name);
+    })
+    .slice(0, 30);
+}
+
 export type CompanySearchResult = {
   id: number;
   name: string;
@@ -636,7 +692,12 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
   addIds("platforms", filters.platforms);
   addIds("themes", filters.themes);
   addIds("game_modes", filters.modes);
-  addIds("game_engines", filters.engines);
+  const engineOptions = await getCatalogEngineOptions(filters.engines);
+  if (filters.engines.length && !engineOptions.length) clauses.push("id = -1");
+  addIds(
+    "game_engines",
+    engineOptions.map((engine) => engine.id),
+  );
   addIds("player_perspectives", filters.perspectives);
   addIds("involved_companies.company", filters.publishers);
   // Only meaningful next to a company: on its own the role clause would match
@@ -891,8 +952,9 @@ export type GameDetail = Game & {
     themes: { id: number; name: string }[];
     modes: { id: number; name: string }[];
     engines: { id: number; name: string }[];
-    // slug is what links a game to its publisher page; it is optional because
+    // slug is what links a game to its company page; it is optional because
     // IGDB occasionally has a company row without one.
+    developers: { id: number; name: string; slug?: string }[];
     publishers: { id: number; name: string; slug?: string }[];
   };
   ageRatings: {
@@ -1087,6 +1149,10 @@ export const getGameBySlug = cache(async function getGameBySlug(
       themes: raw.themes ?? [],
       modes: raw.game_modes ?? [],
       engines: raw.game_engines ?? [],
+      developers:
+        raw.involved_companies
+          ?.filter((item) => item.developer && item.company)
+          .map((item) => item.company!) ?? [],
       publishers:
         raw.involved_companies
           ?.filter((item) => item.publisher && item.company)
@@ -1407,7 +1473,7 @@ export const getCompanyBySlug = cache(async function getCompanyBySlug(
 
 /**
  * Sweeps every dated release for one company, one field per row. A big
- * publisher needs several pages — IGDB caps a request at 500 — so this is kept
+ * company needs several pages — IGDB caps a request at 500 — so this is kept
  * out of getCompanyBySlug and streamed into the page behind Suspense instead of
  * holding the shell hostage.
  */

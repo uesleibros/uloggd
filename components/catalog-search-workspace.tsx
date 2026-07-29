@@ -110,18 +110,18 @@ function OptionGroup({
   options,
   selected,
   onChange,
-  searchable = false,
-  remoteSearch = false,
+  remoteEndpoint,
+  valueForOption = (option) => option.id,
   initiallyOpen = false,
   lang,
 }: {
   title: string;
   param: DraftArrayKey;
   options: CatalogOption[];
-  selected: number[];
-  onChange: (param: DraftArrayKey, values: number[]) => void;
-  searchable?: boolean;
-  remoteSearch?: boolean;
+  selected: Array<number | string>;
+  onChange: (param: DraftArrayKey, values: Array<number | string>) => void;
+  remoteEndpoint?: "publishers" | "engines";
+  valueForOption?: (option: CatalogOption) => number | string;
   initiallyOpen?: boolean;
   lang: UiLang;
 }) {
@@ -130,13 +130,13 @@ function OptionGroup({
   const [remotePending, setRemotePending] = useState(false);
   useEffect(() => {
     const normalized = query.trim();
-    if (!remoteSearch || normalized.length < 2) return;
+    if (!remoteEndpoint || normalized.length < 2) return;
     const controller = new AbortController();
     const timeout = window.setTimeout(async () => {
       setRemotePending(true);
       try {
         const response = await fetch(
-          `/api/igdb/publishers?q=${encodeURIComponent(normalized)}`,
+          `/api/igdb/${remoteEndpoint}?q=${encodeURIComponent(normalized)}`,
           { signal: controller.signal },
         );
         const payload = (await response.json()) as {
@@ -154,10 +154,10 @@ function OptionGroup({
       window.clearTimeout(timeout);
       controller.abort();
     };
-  }, [query, remoteSearch]);
+  }, [query, remoteEndpoint]);
   const visible = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
-    if (remoteSearch && normalized.length >= 2) return remoteOptions;
+    if (remoteEndpoint && normalized.length >= 2) return remoteOptions;
     return normalized
       ? options.filter((option) =>
           [option.name, option.abbreviation, option.group]
@@ -165,7 +165,7 @@ function OptionGroup({
             .some((value) => value!.toLocaleLowerCase().includes(normalized)),
         )
       : options;
-  }, [options, query, remoteOptions, remoteSearch]);
+  }, [options, query, remoteEndpoint, remoteOptions]);
   return (
     <details className="catalog-filter-group" open={initiallyOpen}>
       <summary>
@@ -176,37 +176,44 @@ function OptionGroup({
         </span>
       </summary>
       <div>
-        {searchable && (
-          <label className="catalog-filter-search">
-            <Search size={13} />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={tri(
-                lang,
-                "Filtrar opções",
-                "Filter options",
-                "Filtrar opciones",
-              )}
-            />
-          </label>
-        )}
+        <label className="catalog-filter-search">
+          <Search size={13} />
+          <input
+            value={query}
+            onChange={(event) => {
+              const next = event.target.value;
+              setQuery(next);
+              if (remoteEndpoint && next.trim().length < 2)
+                setRemotePending(false);
+            }}
+            placeholder={tri(
+              lang,
+              `Pesquisar em ${title.toLocaleLowerCase(lang)}`,
+              `Search ${title.toLocaleLowerCase(lang)}`,
+              `Buscar en ${title.toLocaleLowerCase(lang)}`,
+            )}
+          />
+        </label>
         <div
           className="catalog-filter-options"
           data-scroll={visible.length > 6 || undefined}
         >
           {visible.map((option) => {
-            const checked = selected.includes(option.id);
+            const value = valueForOption(option);
+            const checked = selected.some((item) => item === value);
             return (
-              <label key={option.id} data-selected={checked || undefined}>
+              <label
+                key={`${option.id}-${option.name}`}
+                data-selected={checked || undefined}
+              >
                 <Checkbox
                   checked={checked}
                   onCheckedChange={() =>
                     onChange(
                       param,
                       checked
-                        ? selected.filter((id) => id !== option.id)
-                        : [...selected, option.id],
+                        ? selected.filter((item) => item !== value)
+                        : [...selected, value],
                     )
                   }
                 />
@@ -346,12 +353,15 @@ export function CatalogSearchWorkspace({
     );
   }
 
-  function updateArray(param: string, values: number[]) {
+  function updateArray(param: string, values: Array<number | string>) {
     navigate({ [param]: values.length ? values.join(",") : null });
   }
 
-  function updateDraftArray(param: DraftArrayKey, values: number[]) {
-    setDraft((current) => ({ ...current, [param]: values }));
+  function updateDraftArray(
+    param: DraftArrayKey,
+    values: Array<number | string>,
+  ) {
+    setDraft((current) => ({ ...current, [param]: values }) as FilterDraft);
   }
 
   function applyFilters() {
@@ -391,7 +401,6 @@ export function CatalogSearchWorkspace({
         | "platforms"
         | "themes"
         | "modes"
-        | "engines"
         | "types"
         | "perspectives"
         | "publishers"
@@ -402,18 +411,26 @@ export function CatalogSearchWorkspace({
       ["platforms", options.platforms],
       ["themes", options.themes],
       ["modes", options.modes],
-      ["engines", options.engines],
       ["types", options.types],
       ["perspectives", options.perspectives],
       ["publishers", options.publishers],
     ];
-    return groups.flatMap(([key, list]) =>
-      filters[key].map((id) => ({
-        key,
-        id,
-        label: list.find((item) => item.id === id)?.name ?? String(id),
+    return [
+      ...groups.flatMap(([key, list]) =>
+        filters[key].map((id) => ({
+          key,
+          id,
+          label: list.find((item) => item.id === id)?.name ?? String(id),
+          remaining: filters[key].filter((item) => item !== id),
+        })),
+      ),
+      ...filters.engines.map((name) => ({
+        key: "engines" as const,
+        id: name,
+        label: name,
+        remaining: filters.engines.filter((item) => item !== name),
       })),
-    );
+    ];
   }, [filters, options]);
 
   const activeCount =
@@ -705,12 +722,7 @@ export function CatalogSearchWorkspace({
             <button
               type="button"
               key={`${chip.key}-${chip.id}`}
-              onClick={() =>
-                updateArray(
-                  chip.key,
-                  filters[chip.key].filter((id) => id !== chip.id),
-                )
-              }
+              onClick={() => updateArray(chip.key, chip.remaining)}
             >
               {chip.label} <X size={12} />
             </button>
@@ -880,7 +892,6 @@ export function CatalogSearchWorkspace({
                 options={options.platforms}
                 selected={draft.platforms}
                 onChange={updateDraftArray}
-                searchable
                 initiallyOpen
                 lang={lang}
               />
@@ -890,7 +901,6 @@ export function CatalogSearchWorkspace({
                 options={options.genres}
                 selected={draft.genres}
                 onChange={updateDraftArray}
-                searchable
                 lang={lang}
               />
               <OptionGroup
@@ -912,7 +922,6 @@ export function CatalogSearchWorkspace({
                 options={options.themes}
                 selected={draft.themes}
                 onChange={updateDraftArray}
-                searchable
                 lang={lang}
               />
               <OptionGroup
@@ -934,17 +943,17 @@ export function CatalogSearchWorkspace({
                 options={options.engines}
                 selected={draft.engines}
                 onChange={updateDraftArray}
-                searchable
+                valueForOption={(option) => option.name}
+                remoteEndpoint="engines"
                 lang={lang}
               />
               <OptionGroup
-                title={tri(lang, "Publicação", "Publisher", "Distribuidora")}
+                title={tri(lang, "Empresa", "Company", "Empresa")}
                 param="publishers"
                 options={options.publishers}
                 selected={draft.publishers}
                 onChange={updateDraftArray}
-                searchable
-                remoteSearch
+                remoteEndpoint="publishers"
                 lang={lang}
               />
               {/* Only shown once a company is picked: a role with nobody to
@@ -1009,7 +1018,6 @@ export function CatalogSearchWorkspace({
                 options={options.types}
                 selected={draft.types}
                 onChange={updateDraftArray}
-                searchable
                 lang={lang}
               />
 

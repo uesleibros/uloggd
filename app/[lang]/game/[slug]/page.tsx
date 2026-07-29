@@ -295,16 +295,19 @@ export default async function GamePage({ params, searchParams }: Props) {
                   "@type": "Organization",
                   name: item.name,
                   ...(item.slug
-                    ? { url: `${SITE_URL}/${lang}/publisher/${item.slug}` }
+                    ? { url: `${SITE_URL}/${lang}/company/${item.slug}` }
                     : {}),
                 })),
               }
             : {}),
-          ...(game.developers.length
+          ...(game.searchFilters.developers.length
             ? {
-                author: game.developers.map((name) => ({
+                author: game.searchFilters.developers.map((item) => ({
                   "@type": "Organization",
-                  name,
+                  name: item.name,
+                  ...(item.slug
+                    ? { url: `${SITE_URL}/${lang}/company/${item.slug}` }
+                    : {}),
                 })),
               }
             : {}),
@@ -330,6 +333,24 @@ export default async function GamePage({ params, searchParams }: Props) {
             <div />
           </div>
         )}
+        <ShareButton
+          className="game-share-action game-stage-share"
+          title={`${game.name} · uloggd`}
+          text={tri(
+            lang,
+            `Veja ${game.name} no uloggd`,
+            `See ${game.name} on uloggd`,
+            `Mira ${game.name} en uloggd`,
+          )}
+          label={tri(lang, "Compartilhar", "Share", "Compartir")}
+          copiedLabel={tri(
+            lang,
+            "Link copiado",
+            "Link copied",
+            "Enlace copiado",
+          )}
+          lang={lang}
+        />
         <div className="game-stage-inner">
           <CoverSelector
             game={{
@@ -351,24 +372,6 @@ export default async function GamePage({ params, searchParams }: Props) {
               <span>{game.releaseYear ?? "TBA"}</span>
             </div>
             <h1>{game.name}</h1>
-            <ShareButton
-              className="game-share-action"
-              title={`${game.name} · uloggd`}
-              text={tri(
-                lang,
-                `Veja ${game.name} no uloggd`,
-                `See ${game.name} on uloggd`,
-                `Mira ${game.name} en uloggd`,
-              )}
-              label={tri(lang, "Compartilhar", "Share", "Compartir")}
-              copiedLabel={tri(
-                lang,
-                "Link copiado",
-                "Link copied",
-                "Enlace copiado",
-              )}
-              lang={lang}
-            />
             {spawnd.available && (
               <GameTabTrigger className="game-spawnd-cta" tab="spawnd">
                 <SpawndLogo compact />
@@ -495,13 +498,40 @@ export default async function GamePage({ params, searchParams }: Props) {
                         : "—"}
                     </dd>
                   </div>
+                  {game.developers.length > 0 && (
+                    <div>
+                      <dt>
+                        {tri(
+                          lang,
+                          "Desenvolvimento",
+                          "Developed by",
+                          "Desarrollo",
+                        )}
+                      </dt>
+                      <dd>
+                        {game.searchFilters.developers.map((item) => (
+                          <Link
+                            className="game-detail-filter-link"
+                            href={
+                              item.slug
+                                ? `/${lang}/company/${item.slug}`
+                                : `/${lang}/search?publishers=${item.id}&role=developer`
+                            }
+                            key={item.id}
+                          >
+                            {item.name}
+                          </Link>
+                        ))}
+                      </dd>
+                    </div>
+                  )}
                   {game.publishers.length > 0 && (
                     <div>
                       <dt>
                         {tri(lang, "Publicação", "Published by", "Publicación")}
                       </dt>
                       <dd>
-                        {/* With a slug the name goes to the publisher page;
+                        {/* With a slug the name goes to the company page;
                             without one there is nothing to show, so it falls
                             back to the catalogue filtered by that company. */}
                         {game.searchFilters.publishers.map((item) => (
@@ -509,7 +539,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                             className="game-detail-filter-link"
                             href={
                               item.slug
-                                ? `/${lang}/publisher/${item.slug}`
+                                ? `/${lang}/company/${item.slug}`
                                 : `/${lang}/search?publishers=${item.id}`
                             }
                             key={item.id}
@@ -554,7 +584,9 @@ export default async function GamePage({ params, searchParams }: Props) {
                       <dd>
                         {game.searchFilters.engines.map((item) => (
                           <span key={item.id}>
-                            <Link href={`/${lang}/search?engines=${item.id}`}>
+                            <Link
+                              href={`/${lang}/search?engines=${encodeURIComponent(item.name)}`}
+                            >
                               {item.name}
                             </Link>
                           </span>

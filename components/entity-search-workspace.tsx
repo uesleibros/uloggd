@@ -343,7 +343,7 @@ export function EntitySearchWorkspace({
               {companies.map((company) => (
                 <Link
                   className="entity-result-card"
-                  href={`/${lang}/publisher/${company.slug}`}
+                  href={`/${lang}/company/${company.slug}`}
                   key={company.id}
                 >
                   <span className="entity-result-mark entity-result-company">

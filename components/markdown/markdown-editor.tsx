@@ -160,6 +160,10 @@ const reviewToolGroups: Array<Array<[Tool, ComponentType<{ size?: number }>]>> =
       ["mention", AtSign],
       ["spoiler", EyeOff],
     ],
+    [
+      ["image", Image],
+      ["spoilerimage", ImageOff],
+    ],
   ];
 
 const REVIEW_TOOLS = new Set<Tool>(

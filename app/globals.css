@@ -233,6 +233,40 @@ html {
     scroll-behavior: auto;
   }
 }
+
+/* Device-local reading and accessibility preferences are bootstrapped before
+   hydration, so typography never flashes between routes. */
+:root {
+  --reading-text-scale: 1;
+}
+:root[data-interface-font="system"] {
+  --font-inter: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+:root[data-interface-font="readable"] {
+  --font-inter: Verdana, Tahoma, sans-serif;
+}
+:root[data-reading-size="large"] {
+  --reading-text-scale: 1.12;
+}
+:root[data-reading-size="extra-large"] {
+  --reading-text-scale: 1.24;
+}
+:root[data-reading-size="large"] .game-summary > p,
+:root[data-reading-size="large"] .publisher-description,
+:root[data-reading-size="large"] .activity-content,
+:root[data-reading-size="extra-large"] .game-summary > p,
+:root[data-reading-size="extra-large"] .publisher-description,
+:root[data-reading-size="extra-large"] .activity-content {
+  font-size: calc(13px * var(--reading-text-scale));
+}
+:root[data-reduce-motion="true"] *,
+:root[data-reduce-motion="true"] *::before,
+:root[data-reduce-motion="true"] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
 body {
   width: 100%;
   min-height: 100%;
@@ -7343,8 +7377,8 @@ and content bars. */
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 34px;
-  padding: 0 9px;
+  min-height: 38px;
+  padding: 0 12px;
   border: 1px solid var(--shell-line);
   border-radius: 7px;
   background: var(--console-raised);
@@ -7356,8 +7390,14 @@ and content bars. */
   background: var(--console-hover);
   color: var(--screen-white);
 }
-.game-share-action {
-  margin: -3px 0 10px;
+.game-stage-share {
+  position: absolute;
+  z-index: 2;
+  top: 20px;
+  right: 24px;
+  background: color-mix(in srgb, var(--console-panel) 84%, transparent);
+  color: var(--screen-dim);
+  backdrop-filter: blur(12px);
 }
 .report-dialog {
   position: fixed;
@@ -8908,6 +8948,12 @@ a,
   .game-stage {
     min-height: 0;
     border-radius: 0;
+  }
+
+  .game-stage-share {
+    top: 76px;
+    right: 14px;
+    min-height: 40px;
   }
 
   .game-stage .game-hero {
@@ -15351,6 +15397,10 @@ compact and detached on mobile. */
 }
 
 /* Content preferences */
+.content-preferences-stack {
+  display: grid;
+  gap: 16px;
+}
 .content-preferences {
   overflow: hidden;
   border: 1px solid var(--shell-line);
@@ -15451,6 +15501,183 @@ compact and detached on mobile. */
   margin: -8px 20px 18px;
   color: var(--danger-text);
   font-size: 10px;
+}
+
+.interface-preference-body {
+  display: grid;
+  gap: 20px;
+  padding: 18px 20px 20px;
+}
+.interface-preference-field {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.interface-preference-field legend {
+  margin-bottom: 9px;
+  color: var(--screen-dim);
+  font-size: 11px;
+  font-weight: 620;
+}
+.interface-font-options,
+.interface-size-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.interface-font-options > button {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  min-width: 0;
+  min-height: 104px;
+  padding: 13px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  text-align: left;
+}
+.interface-font-options > button:hover,
+.interface-size-options > button:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--console-hover);
+}
+.interface-font-options > button[data-selected],
+.interface-size-options > button[data-selected] {
+  border-color: rgb(88 101 242 / 38%);
+  background: var(--brand-blurple-wash);
+}
+.interface-font-options > button > span {
+  color: var(--screen-white);
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.05em;
+}
+.interface-font-options > button[data-font="system"] {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.interface-font-options > button[data-font="readable"] {
+  font-family: Verdana, Tahoma, sans-serif;
+}
+.interface-font-options strong,
+.interface-font-options small {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.interface-font-options strong {
+  margin-top: 7px;
+  color: var(--screen-white);
+  font-size: 11px;
+  font-weight: 620;
+}
+.interface-font-options small {
+  margin-top: 3px;
+  color: var(--screen-muted);
+  font-size: 9px;
+}
+.interface-font-options i {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--brand-blurple);
+  color: white;
+}
+.interface-font-options i:empty {
+  display: none;
+}
+.interface-size-options > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-raised);
+  color: var(--screen-muted);
+}
+.interface-size-options b {
+  color: var(--screen-white);
+  font-weight: 620;
+}
+.interface-size-options button[data-size="standard"] b {
+  font-size: 12px;
+}
+.interface-size-options button[data-size="large"] b {
+  font-size: 15px;
+}
+.interface-size-options button[data-size="extra-large"] b {
+  font-size: 18px;
+}
+.interface-size-options span {
+  font-size: 10px;
+  font-weight: 600;
+}
+.interface-motion-option {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 64px;
+  padding: 11px 13px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-raised);
+}
+.interface-motion-option > span {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--quiet-hover);
+  color: var(--screen-dim);
+}
+.interface-motion-option label {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.interface-motion-option strong {
+  color: var(--screen-white);
+  font-size: 11px;
+  font-weight: 620;
+}
+.interface-motion-option small {
+  color: var(--screen-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+@media (max-width: 620px) {
+  .interface-font-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .interface-font-options > button {
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: center;
+    min-height: 68px;
+  }
+  .interface-font-options > button > span {
+    grid-row: 1 / span 2;
+  }
+  .interface-font-options strong {
+    margin-top: 0;
+  }
+  .interface-size-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* Read-only journey detail and recent mutual-unfollow confirmation. */
@@ -15797,7 +16024,7 @@ compact and detached on mobile. */
   grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: calc(13px * var(--reading-text-scale, 1));
   line-height: 1.65;
   overflow-wrap: anywhere;
 }
@@ -15816,18 +16043,18 @@ compact and detached on mobile. */
   line-height: 1.3;
 }
 .markdown-body h1 {
-  font-size: 20px;
+  font-size: calc(20px * var(--reading-text-scale, 1));
 }
 .markdown-body h2 {
-  font-size: 17px;
+  font-size: calc(17px * var(--reading-text-scale, 1));
 }
 .markdown-body h3 {
-  font-size: 15px;
+  font-size: calc(15px * var(--reading-text-scale, 1));
 }
 .markdown-body h4,
 .markdown-body h5,
 .markdown-body h6 {
-  font-size: 13px;
+  font-size: calc(13px * var(--reading-text-scale, 1));
 }
 .markdown-body a {
   color: var(--brand-blurple-bright);

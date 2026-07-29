@@ -14,10 +14,12 @@ import { TopProgress } from "@/components/top-progress";
 import { SmartHeader } from "@/components/smart-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeManager } from "@/components/theme-manager";
+import { InterfacePreferencesManager } from "@/components/interface-preferences-manager";
 import { TwemojiManager } from "@/components/twemoji-manager";
 import { TextareaAutosizeManager } from "@/components/textarea-autosize-manager";
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { themeBootstrapScript } from "@/lib/theme";
+import { interfacePreferencesBootstrapScript } from "@/lib/interface-preferences";
 import { jsonLd, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getNavigationAccount } from "@/lib/supabase/auth";
 import {
@@ -158,6 +160,12 @@ export default async function LocaleLayout({
           id="uloggd-theme-bootstrap"
           dangerouslySetInnerHTML={{ __html: themeBootstrapScript }}
         />
+        <script
+          id="uloggd-interface-preferences-bootstrap"
+          dangerouslySetInnerHTML={{
+            __html: interfacePreferencesBootstrapScript,
+          }}
+        />
       </head>
       <body>
         <TopProgress />
@@ -165,6 +173,7 @@ export default async function LocaleLayout({
         <ScrollReset />
         <CommentAnchor />
         <ThemeManager />
+        <InterfacePreferencesManager />
         <TwemojiManager />
         <TextareaAutosizeManager />
         <TooltipProvider>
