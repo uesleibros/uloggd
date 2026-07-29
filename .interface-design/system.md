@@ -388,6 +388,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 ### Global catalog search
 
 - Desktop search is persistent in a 64px content header, up to 420px wide, with `/` as a focus shortcut.
+- Header results cover games, people, and public lists in clearly labeled groups. People use their real avatar, display name, handle, and verified mark; initials are only a missing-image fallback.
 - Results open in a 480px overlay and use dense cover rows: 44px cover, title, year/platform metadata, and a small type label only for DLCs, expansions, and editions.
 - Queries wait 280ms, abort stale requests, cache repeated terms in the browser, and rank exact/prefix matches ahead of IGDB popularity.
 - Mobile keeps only the search trigger in the persistent header. It opens a full-height Base UI Dialog, focuses a 48px input, and uses 72px result rows with 48px covers.
@@ -435,6 +436,8 @@ Light mode uses white elevated overlays, cool-gray neutral controls, charcoal te
 and dark blurple text on tonal brand surfaces. Pure white text is reserved for
 filled brand/semantic actions and content placed over artwork. Focused fields must
 never fall back to a dark surface when the active color scheme is light.
+Filled blurple actions retain pure white text on hover in every theme; generic
+surface-hover rules must never replace their foreground with `--screen-white`.
 
 Every interactive control requires:
 
@@ -487,18 +490,20 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Report dialogs fade their backdrop and enter with a centered scale/offset on desktop or an upward sheet on mobile. Closing always plays the inverse motion before Base UI unmounts the surface.
 - Verified badges are interactive identity signals. Their modal explains what was confirmed, that moderation assigns the badge after review, and that verification is not an endorsement of published content.
 - Workspace headers state each page concept once; eyebrow copy adds context instead of repeating the title. Lists use real collection/game/public counts, a responsive two-column card grid, and a motion-enabled Base UI creation dialog with a custom visibility select.
-- Personal workspaces (`/library`, `/lists`, and `/reviews`) use one full-bleed hero contract: the owner's banner dimmed to 34% and desaturated behind a dark left-weighted scrim, a 64px avatar, large tight-tracked title, and a frosted stats block anchored bottom-right. Reviews and lists use a 96px mobile top safe zone because their two-row stats and optional creation action are taller than the library copy. Their loading states must use the same `workspace-layout-page` and `workspace-page-body` wrappers.
+- Collection workspaces are canonical at `/library/[username]`, `/reviews/[username]`, and `/lists/[username]`. Owner and visitor views share the same `WorkspaceHero`, body geometry, icon language, and responsive behavior; owner-only controls are additive. Flat workspace indexes only resolve the authenticated username, while legacy `/u/[username]/...` collection URLs permanently redirect to the canonical route.
+- These collection workspaces use one full-bleed hero contract: the owner's banner dimmed to 34% and desaturated behind a dark left-weighted scrim, a 64px avatar, large tight-tracked title, and a frosted stats block anchored bottom-right. Reviews and lists use a 96px mobile top safe zone because their two-row stats and optional creation action are taller than the library copy. Their loading states must use the same `workspace-layout-page` and `workspace-page-body` wrappers.
 - Detail pages (review, logs) return via `.page-back-link`: a pill-shaped quiet control whose arrow nudges left on hover, never a bare text link.
 - Verified identity uses the locally stored official blue verification mark across profiles, activity, and signed-in navigation identity.
 - Optional TOTP security covers enrollment, QR/manual secret setup, verification, multiple authenticators, protected removal, login challenge, SSR redirects, and database mutation enforcement for accounts whose next assurance level is AAL2.
 - Profile counters are navigation, not dead statistics: games open the public library, reviews/sessions open filtered history, lists open the public collection index, and follower counts open the corresponding connection tab.
 - The global header is a detached glass surface: desktop uses a wide 56px bar with restrained blur and search space, while mobile uses a compact 54px capsule inset 10px from the viewport. Both retain an opaque fallback when backdrop filters are unavailable.
+- Tooltip portals put their positioning wrapper—not only the painted popup—on the popover layer above the detached header, so stacking contexts can never bury navigation hints beneath the glass surface.
 - Adaptive header visibility distinguishes real mouse hover from touch-synthesized hover. Touching the mobile capsule or one of its closed triggers must never pin it open during downward scroll; only an open menu/dialog, an editable field, or keyboard-visible focus may lock it in place.
 - Home is the community destination; there is no standalone Feed. It opens with a compact community introduction, then real friends-playing, recent review, and journal activity zones before personalized and popular catalog shelves.
 - Home never fabricates an active friend or community post. Signed-out visitors see public activity; the friends-playing shelf renders only when visible followed-library rows exist.
 - Home restores catalog discovery only as a secondary editorial radar below the social journal: Most anticipated, Coming soon, and Sleeper hits share one compact numbered band and never displace the community introduction.
 - Any Home shelf that can overflow uses the shared `ShelfCarousel`: visible, stateful previous/next controls on desktop and native touch scrolling with snap points on mobile. Friends-playing and discovery never expose an unlabelled raw scrollbar.
-- Compact Home review cards always show the author's 24px avatar (initial only as a true fallback), display name, and official verified mark beside the identity before the rating.
+- Home recent reviews reuse the complete `ActivityStream` review card contract; the Home must never maintain a second compact review implementation. Author avatar (initial only as a true fallback), display name, and official verified mark remain part of that shared identity row.
 - On mobile Home, the community introduction begins beneath the glass header with an 88px internal safe offset; it never uses negative route margin or lets actions sit beneath navigation.
 - Mobile header menu and search triggers use explicit 40×40px boxes with zero inherited padding and optically centered icons; the right-side action cluster uses a fixed 4px gap.
 - Full-bleed mobile routes (library hero, profile banner, and game stage, including skeletons) begin behind the glass header and add the same space back inside the hero. Profile identity anchors low in its banner with avatar and name sharing one row; the mobile banner has no side inset or corner radius.
@@ -510,6 +515,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - List surfaces are never motion-dry: detail items enter with a staggered rise, the dragged card compresses slightly while its insertion bar springs in, add-dialog result rows pop in, and the stacked preview cards fan gently apart on card hover — all removed under reduced motion.
 - Creating a list is a focused inline form; adding a game stays contextual on the game page, and owners can also add from the list detail page through a tonal "Adicionar jogos" trigger that opens a Base UI dialog with debounced catalog search, compact result rows, in-list state, and internally scrolling results.
 - List detail pages expose like and share actions together under the header; sharing reuses the product-wide copy/Web-Share choice dialog.
+- List and tier-list detail headers always identify the author with avatar, localized byline, profile link, and verified mark when applicable. Game cards inside lists expose the same viewer-aware quick actions as every other cover surface, backed by one batched saved-state query.
 - List deletion never uses a browser confirm: the destructive action arms in place ("Confirm deletion?") and disarms after a few seconds if not confirmed.
 - List previews lead with a stacked-card cover strip: five rounded physical cards over an inset background, the first fully visible on top and each next tucked partially underneath, filling the strip edge to edge (empty slots stay tonal gradient cards). This same recognizable object is reused on the lists page and profile rail.
 - Owners can edit or delete reviews, diary sessions, and lists without exposing management controls to other viewers. Destructive actions require confirmation and remain visually secondary until hovered.
@@ -524,6 +530,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Comment audience is account-wide and belongs only in Settings → Privacy (`EVERYONE`, `FOLLOWERS`, `NOBODY`); creation editors expose post visibility and spoiler state, never a duplicate comment-privacy control.
 - Community composers reuse `CommunityTextArea` so focus, counter, spacing, and action treatment stay identical.
 - Profile screenshots use a dedicated dense gallery; game metadata and signed media URLs are fetched in batches.
+- Activity screenshots render at their intrinsic aspect ratio across the full content width, without a fixed maximum height or black letterboxing that grows under browser zoom.
 - The profile overview uses a horizontally scrollable row of circular, labeled collection portals (Library, Reviews, Sessions, Lists, Screenshots, Wrapped), with counts as quiet corner badges rather than metric cards.
 - Uploaded profile banners become a full-width atmospheric backdrop behind a lower-anchored identity header, using edge and bottom gradients for readability; avatars have no framing ring, align with the identity on desktop and mobile, and the identity/actions finish before collection portals begin.
 - Community timestamps share one live relative-time formatter in every locale, always using explicit elapsed units from seconds through years; calendar controls, birth dates, and game release metadata remain absolute because they describe a date rather than recency.

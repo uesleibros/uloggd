@@ -1745,6 +1745,22 @@ html[data-sidebar-collapsed]
   background: var(--console-inset);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
 }
+.search-result-avatar {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 650;
+}
+.search-result-avatar img {
+  object-fit: cover;
+}
+.search-result-copy strong {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 .search-result-cover img {
   object-fit: cover;
 }
@@ -9334,6 +9350,36 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   letter-spacing: -0.045em;
   text-wrap: balance;
 }
+.list-detail-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  margin-top: 10px;
+  color: var(--screen-dim);
+}
+.list-detail-author > span {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--console-raised);
+  font-size: 10px;
+  font-weight: 650;
+}
+.list-detail-author img {
+  object-fit: cover;
+}
+.list-detail-author small {
+  font-size: 11px;
+  font-weight: 580;
+}
+.list-detail-author:hover {
+  color: var(--brand-blurple-bright);
+}
 .social-page-header p,
 .list-detail-header p {
   max-width: 620px;
@@ -12118,9 +12164,7 @@ html
   transform: translateY(-3px);
 }
 .home-playing-cover img,
-.home-playing-avatar img,
-.home-review-avatar img,
-.home-review-cover img {
+.home-playing-avatar img {
   object-fit: cover;
 }
 .home-playing-person {
@@ -12167,96 +12211,6 @@ html
   font-size: 9.5px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.home-review-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-.home-review-grid article {
-  display: grid;
-  grid-template-columns: 62px minmax(0, 1fr);
-  gap: 12px;
-  min-height: 112px;
-  padding: 12px;
-  border: 1px solid var(--shell-line);
-  border-radius: 10px;
-  background: var(--console-panel);
-}
-.home-review-cover {
-  position: relative;
-  display: block;
-  width: 62px;
-  aspect-ratio: 3 / 4;
-  overflow: hidden;
-  border-radius: 6px;
-  background: var(--console-inset);
-}
-.home-review-byline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-width: 0;
-}
-.home-review-author {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: 6px;
-  overflow: hidden;
-  color: var(--screen-muted);
-  font-size: 10px;
-}
-.home-review-avatar {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  flex: none;
-  overflow: hidden;
-  border-radius: 50%;
-  background: var(--console-raised);
-  color: var(--screen-white);
-  font-size: 9px;
-  font-weight: 650;
-}
-.home-review-author > span:nth-child(2) {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.home-review-byline b {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex: none;
-  color: var(--achievement-gold);
-  font-size: 10px;
-  font-variant-numeric: tabular-nums;
-}
-.home-review-grid h3 {
-  display: -webkit-box;
-  margin: 8px 0 0;
-  overflow: hidden;
-  color: var(--screen-white);
-  font-size: 12px;
-  font-weight: 620;
-  line-height: 1.35;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-.home-review-grid p {
-  display: -webkit-box;
-  margin: 6px 0 0;
-  overflow: hidden;
-  color: var(--screen-muted);
-  font-size: 10px;
-  line-height: 1.5;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
 }
 .home-community-empty {
   display: flex;
@@ -12356,13 +12310,13 @@ html
 
 .home-loading-reviews {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
 }
 
 .home-loading-reviews > span {
-  height: 112px;
-  border-radius: 10px;
+  height: 154px;
+  border-radius: 12px;
 }
 
 .home-loading-discoveries {
@@ -13540,6 +13494,7 @@ and route recovery. */
 .age-gate-actions a:first-child:hover,
 .not-found-actions a:hover {
   background: var(--brand-blurple-bright);
+  color: #fff;
 }
 .age-gate-actions-guest a:first-child:hover {
   background: var(--console-hover);
@@ -13702,12 +13657,6 @@ and route recovery. */
   }
 }
 
-@media (max-width: 760px) {
-  .home-review-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 @media (max-width: 620px) {
   .platform-content > .home-community-shell {
     margin-top: 0;
@@ -13750,14 +13699,6 @@ and route recovery. */
   }
   .home-playing-carousel .shelf-carousel-track {
     grid-auto-columns: 138px;
-  }
-  .home-review-grid article {
-    grid-template-columns: 56px minmax(0, 1fr);
-    min-height: 102px;
-    padding: 10px;
-  }
-  .home-review-cover {
-    width: 56px;
   }
   .home-activity-section .activity-entry {
     grid-template-columns: 58px minmax(0, 1fr);
@@ -13939,8 +13880,14 @@ and route recovery. */
   border-left: 0;
 }
 .library-hero-stats dt {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   color: var(--screen-muted);
   font-size: 10px;
+}
+.library-hero-stats dt svg {
+  color: var(--brand-blurple-bright);
 }
 .library-hero-stats dd {
   margin: 5px 0 0;
@@ -16787,8 +16734,10 @@ adapted to the current uloggd surface system. */
 }
 
 /* Hover/focus hints replacing the native title attribute. */
+.app-tooltip-positioner {
+  z-index: calc(var(--layer-popover) + 50);
+}
 .app-tooltip {
-  z-index: 10050;
   max-width: 260px;
   padding: 6px 9px;
   border: 1px solid var(--shell-line-strong);
@@ -17651,14 +17600,13 @@ adapted to the current uloggd surface system. */
   margin-top: 4px;
   overflow: hidden;
   border-radius: 10px;
-  background: var(--console-black);
+  background: var(--console-inset);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
 }
 .activity-screenshot img {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 560px;
   object-fit: contain;
 }
 .activity-screenshot > span {

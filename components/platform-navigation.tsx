@@ -54,6 +54,15 @@ export function PlatformNavigation({
   const profileHref = account?.username
     ? `/${lang}/u/${account.username}`
     : `/${lang}/onboarding/username`;
+  const libraryHref = account?.username
+    ? `/${lang}/library/${account.username}`
+    : `/${lang}/onboarding/username`;
+  const reviewsHref = account?.username
+    ? `/${lang}/reviews/${account.username}`
+    : `/${lang}/onboarding/username`;
+  const listsHref = account?.username
+    ? `/${lang}/lists/${account.username}`
+    : `/${lang}/onboarding/username`;
 
   // Four primary destinations; everything else lives behind "More", so the
   // rail stays short no matter how many secondary pages exist.
@@ -76,7 +85,7 @@ export function PlatformNavigation({
       key: "library",
       icon: "library",
       label: d.nav.library,
-      href: `/${lang}/library`,
+      href: libraryHref,
       requiresAuth: true,
     },
     {
@@ -94,13 +103,13 @@ export function PlatformNavigation({
     {
       key: "star",
       label: d.nav.reviews,
-      href: `/${lang}/reviews`,
+      href: reviewsHref,
       requiresAuth: true,
     },
     {
       key: "list",
       label: d.nav.lists,
-      href: `/${lang}/lists`,
+      href: listsHref,
       requiresAuth: true,
     },
     ...(account?.role === "ADMIN" || account?.role === "MODERATOR"
@@ -132,19 +141,12 @@ export function PlatformNavigation({
           <div className="sidebar-brand">
             <Brand lang={lang} />
 
-            <span className="product-stage">
-              {d.platform.beta}
-            </span>
+            <span className="product-stage">{d.platform.beta}</span>
           </div>
 
           <div className="sidebar-scroll">
-            <nav
-              className="main-nav"
-              aria-label={d.platform.navigation}
-            >
-              <span className="nav-label">
-                {d.platform.navigation}
-              </span>
+            <nav className="main-nav" aria-label={d.platform.navigation}>
+              <span className="nav-label">{d.platform.navigation}</span>
 
               {nav.map((item) => {
                 const NavIcon = iconMap[item.icon];
@@ -154,25 +156,15 @@ export function PlatformNavigation({
                     <Tooltip
                       key={item.key}
                       side="right"
-                      label={
-                        pending
-                          ? item.label
-                          : d.actions.requiresSignIn
-                      }
+                      label={pending ? item.label : d.actions.requiresSignIn}
                     >
-                      <span
-                        className="nav-disabled"
-                        aria-disabled="true"
-                      >
+                      <span className="nav-disabled" aria-disabled="true">
                         <NavIcon size={20} />
 
                         <span>{item.label}</span>
 
                         {!pending && (
-                          <LockKeyhole
-                            className="nav-lock"
-                            size={12}
-                          />
+                          <LockKeyhole className="nav-lock" size={12} />
                         )}
                       </span>
                     </Tooltip>
@@ -180,15 +172,8 @@ export function PlatformNavigation({
                 }
 
                 return (
-                  <Tooltip
-                    key={item.key}
-                    label={item.label}
-                    side="right"
-                  >
-                    <ActiveLink
-                      href={item.href}
-                      aria-label={item.label}
-                    >
+                  <Tooltip key={item.key} label={item.label} side="right">
+                    <ActiveLink href={item.href} aria-label={item.label}>
                       <NavIcon size={20} />
                       <span>{item.label}</span>
                     </ActiveLink>
@@ -217,26 +202,14 @@ export function PlatformNavigation({
               <div className="sidebar-bottom">
                 <Tooltip
                   side="right"
-                  label={
-                    pending
-                      ? d.nav.settings
-                      : d.actions.requiresSignIn
-                  }
+                  label={pending ? d.nav.settings : d.actions.requiresSignIn}
                 >
-                  <span
-                    className="nav-disabled"
-                    aria-disabled="true"
-                  >
+                  <span className="nav-disabled" aria-disabled="true">
                     <Settings size={20} />
 
                     <span>{d.nav.settings}</span>
 
-                    {!pending && (
-                      <LockKeyhole
-                        className="nav-lock"
-                        size={12}
-                      />
-                    )}
+                    {!pending && <LockKeyhole className="nav-lock" size={12} />}
                   </span>
                 </Tooltip>
               </div>
@@ -244,10 +217,7 @@ export function PlatformNavigation({
           </div>
 
           {pending ? (
-            <div
-              className="account-button account-slot-skeleton"
-              aria-hidden
-            >
+            <div className="account-button account-slot-skeleton" aria-hidden>
               <span className="skeleton-block" />
 
               <div>
@@ -256,19 +226,10 @@ export function PlatformNavigation({
               </div>
             </div>
           ) : account ? (
-            <AccountMenu
-              account={account}
-              lang={lang}
-            />
+            <AccountMenu account={account} lang={lang} />
           ) : (
-            <Link
-              className="account-button"
-              href={`/${lang}/login`}
-            >
-              <span
-                className="signed-out-icon"
-                aria-hidden
-              >
+            <Link className="account-button" href={`/${lang}/login`}>
+              <span className="signed-out-icon" aria-hidden>
                 <LogIn size={18} />
               </span>
 

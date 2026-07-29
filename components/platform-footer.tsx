@@ -45,6 +45,9 @@ export function PlatformFooter({
           "Enlaces del pie de página",
         )}
       >
+        <a href="mailto:contact@uloggd.com">
+          {tri(lang, "Entrar em contato", "Contact us", "Contactar")}
+        </a>
         <Link href={`/${lang}/legal/terms`}>{d.legal.terms}</Link>
         <Link href={`/${lang}/legal/privacy`}>{d.legal.privacy}</Link>
         <Link href={`/${lang}/legal/cookies`}>

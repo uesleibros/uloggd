@@ -315,7 +315,13 @@ function personalRating(lang: UiLang, rating: number) {
   return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(rating / 20)} ★`;
 }
 
-export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
+export function BackloggdImportSettings({
+  lang,
+  username,
+}: {
+  lang: UiLang;
+  username: string;
+}) {
   const router = useRouter();
   const [profile, setProfile] = useState("");
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -868,7 +874,7 @@ export function BackloggdImportSettings({ lang }: { lang: UiLang }) {
               )}
             </p>
             <div>
-              <Link href={`/${lang}/library`}>
+              <Link href={`/${lang}/library/${username}`}>
                 {tri(
                   lang,
                   "Abrir biblioteca",

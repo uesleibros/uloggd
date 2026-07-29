@@ -48,11 +48,31 @@ export function MobileSidebar({
   account,
 }: MobileSidebarProps) {
   const pathname = usePathname();
+  const username = account?.username;
   const links = [
     [HomeIcon, labels.home, `/${lang}`, false],
-    [LibraryBig, labels.library, `/${lang}/library`, true],
-    [Star, labels.reviews, `/${lang}/reviews`, true],
-    [ListTree, labels.lists, `/${lang}/lists`, true],
+    [
+      LibraryBig,
+      labels.library,
+      username
+        ? `/${lang}/library/${username}`
+        : `/${lang}/onboarding/username`,
+      true,
+    ],
+    [
+      Star,
+      labels.reviews,
+      username
+        ? `/${lang}/reviews/${username}`
+        : `/${lang}/onboarding/username`,
+      true,
+    ],
+    [
+      ListTree,
+      labels.lists,
+      username ? `/${lang}/lists/${username}` : `/${lang}/onboarding/username`,
+      true,
+    ],
     [
       UserRound,
       labels.profile,

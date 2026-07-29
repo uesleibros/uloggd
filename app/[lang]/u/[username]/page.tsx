@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  ArrowLeft,
   Ban,
   BookOpen,
   CalendarDays,
@@ -294,7 +295,8 @@ function SuspendedProfile({
             <RelativeTime value={until} lang={lang} />
           </small>
         )}
-        <Link href={`/${lang}`}>
+        <Link className="page-back-link" href={`/${lang}`}>
+          <ArrowLeft size={15} />
           {tri(lang, "Voltar ao início", "Back home", "Volver al inicio")}
         </Link>
       </section>
@@ -643,25 +645,25 @@ export default async function ProfilePage({ params }: Props) {
           "Explorar perfil",
         )}
       >
-        <Link href={`/${lang}/u/${profile.username}/library`}>
+        <Link href={`/${lang}/library/${profile.username}`}>
           <span className="profile-stat-label">
             <Gamepad2 size={14} /> {t.games}
           </span>
           <strong>{libraryCount.count ?? 0}</strong>
         </Link>
-        <Link href={`/${lang}/u/${profile.username}/activity?type=review`}>
+        <Link href={`/${lang}/reviews/${profile.username}?type=review`}>
           <span className="profile-stat-label">
             <Star size={14} /> {t.reviews}
           </span>
           <strong>{reviewCount.count ?? 0}</strong>
         </Link>
-        <Link href={`/${lang}/u/${profile.username}/activity?type=diary`}>
+        <Link href={`/${lang}/reviews/${profile.username}?type=diary`}>
           <span className="profile-stat-label">
             <BookOpen size={14} /> {t.sessions}
           </span>
           <strong>{diaryCount.count ?? 0}</strong>
         </Link>
-        <Link href={`/${lang}/u/${profile.username}/lists`}>
+        <Link href={`/${lang}/lists/${profile.username}`}>
           <span className="profile-stat-label">
             <List size={14} /> {t.lists}
           </span>
@@ -806,7 +808,7 @@ export default async function ProfilePage({ params }: Props) {
             <aside className="profile-lists">
               <div className="social-section-title">
                 <h2>{t.lists}</h2>
-                <Link href={`/${lang}/u/${profile.username}/lists`}>
+                <Link href={`/${lang}/lists/${profile.username}`}>
                   {tri(lang, "Ver todas", "View all", "Ver todas")}
                 </Link>
               </div>

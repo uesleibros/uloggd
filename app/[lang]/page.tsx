@@ -139,7 +139,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
   ];
   const snapshotPromise = user
     ? (async () => {
-        const [saved, library, playing, rated] = await Promise.all([
+        const [saved, library, playing, rated, profile] = await Promise.all([
           visibleGameIds.length
             ? supabase
                 .from("user_games")
@@ -163,12 +163,18 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             .select("igdb_id", { count: "exact", head: true })
             .eq("profile_id", user.id)
             .not("quick_rating", "is", null),
+          supabase
+            .from("profiles")
+            .select("username")
+            .eq("id", user.id)
+            .maybeSingle(),
         ]);
         return {
           savedGames: saved.data ?? [],
           libraryCount: library.count ?? 0,
           playingCount: playing.count ?? 0,
           ratedCount: rated.count ?? 0,
+          username: profile.data?.username ?? null,
         };
       })()
     : Promise.resolve(null);
@@ -186,6 +192,9 @@ async function HomeContent({ lang }: { lang: UiLang }) {
   const communityUpdates = communityEntries
     .filter((entry) => entry.kind !== "review")
     .slice(0, 6);
+  const libraryHref = snapshot?.username
+    ? `/${lang}/library/${snapshot.username}`
+    : `/${lang}/library`;
 
   return (
     <div className="home-shell home-community-shell">
@@ -224,7 +233,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
               {tri(lang, "Encontrar um jogo", "Find a game", "Buscar un juego")}
             </Link>
             {user && (
-              <Link href={`/${lang}/library`}>
+              <Link href={libraryHref}>
                 {tri(lang, "Minha biblioteca", "My library", "Mi biblioteca")}
                 <ArrowRight size={15} />
               </Link>
@@ -321,71 +330,11 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             </div>
           </div>
           {reviews.length > 0 ? (
-            <div className="home-review-grid">
-              {reviews.map((review) => (
-                <article key={review.id}>
-                  <Link
-                    className="home-review-cover"
-                    href={`/${lang}/game/${review.gameSlug}`}
-                  >
-                    {review.game && (
-                      <Image
-                        src={review.game.coverUrl}
-                        alt=""
-                        fill
-                        sizes="70px"
-                      />
-                    )}
-                  </Link>
-                  <div>
-                    <span className="home-review-byline">
-                      <Link
-                        className="home-review-author"
-                        href={`/${lang}/u/${review.profile.username}`}
-                      >
-                        <span className="home-review-avatar">
-                          {review.profile.avatar_url ? (
-                            <Image
-                              src={review.profile.avatar_url}
-                              alt=""
-                              fill
-                              sizes="24px"
-                              unoptimized
-                            />
-                          ) : (
-                            (
-                              review.profile.display_name ||
-                              review.profile.username
-                            )
-                              .slice(0, 1)
-                              .toUpperCase()
-                          )}
-                        </span>
-                        <span>
-                          {review.profile.display_name ||
-                            `@${review.profile.username}`}
-                        </span>
-                        {review.profile.verified && <VerifiedMark size={13} />}
-                      </Link>
-                      {typeof review.rating === "number" && (
-                        <b>
-                          <Star size={11} fill="currentColor" />
-                          {formatReviewRating(review.rating, review.ratingMode)}
-                        </b>
-                      )}
-                    </span>
-                    <h3>
-                      <Link
-                        href={`/${lang}/review/${review.publicId ?? review.id}`}
-                      >
-                        {review.title || review.game?.name || review.gameSlug}
-                      </Link>
-                    </h3>
-                    {review.content && <p>{review.content}</p>}
-                  </div>
-                </article>
-              ))}
-            </div>
+            <ActivityStream
+              entries={reviews}
+              lang={lang}
+              viewerId={user?.id ?? null}
+            />
           ) : (
             <div className="home-community-empty">
               <Star size={18} />
@@ -537,7 +486,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                   <dd>{snapshot?.ratedCount ?? 0}</dd>
                 </div>
               </dl>
-              <Link className="rail-primary-action" href={`/${lang}/library`}>
+              <Link className="rail-primary-action" href={libraryHref}>
                 {tri(
                   lang,
                   "Abrir biblioteca",
@@ -635,14 +584,4 @@ function HomeGameShelf({
       </ShelfCarousel>
     </section>
   );
-}
-
-function formatReviewRating(
-  rating: number,
-  mode?: "stars_5" | "level_5" | "score_10" | "score_100" | "recommend",
-) {
-  if (mode === "stars_5" || mode === "level_5") return `${rating / 20}/5`;
-  if (mode === "score_10") return `${rating / 10}/10`;
-  if (mode === "recommend") return rating >= 50 ? "✓" : "×";
-  return `${Math.round(rating)}/100`;
 }

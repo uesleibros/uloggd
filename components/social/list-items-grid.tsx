@@ -3,6 +3,7 @@
 import { GripVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import type { ComponentProps } from "react";
 import type { Game } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/client";
 import { QuickGameCard } from "../library/quick-game-card";
@@ -15,6 +16,7 @@ export type ListGridItem = {
   igdbId: number;
   note: string | null;
 };
+type QuickGameInitial = ComponentProps<typeof QuickGameCard>["initial"];
 
 /**
  * `ranked` decides the item chrome: only a ranking paints the numbered badge.
@@ -29,6 +31,8 @@ export function ListItemsGrid({
   isOwner,
   ranked,
   lang,
+  viewerEnabled,
+  initialById,
 }: {
   listId: string;
   items: ListGridItem[];
@@ -36,6 +40,8 @@ export function ListItemsGrid({
   isOwner: boolean;
   ranked: boolean;
   lang: UiLang;
+  viewerEnabled: boolean;
+  initialById: Record<number, QuickGameInitial>;
 }) {
   const pt = lang === "pt-BR";
   const router = useRouter();
@@ -215,9 +221,9 @@ export function ListItemsGrid({
             )}
             <QuickGameCard
               game={game}
-              initial={null}
+              initial={initialById[item.igdbId] ?? null}
               lang={lang}
-              enabled={false}
+              enabled={viewerEnabled}
             />
             {item.note && <p>{item.note}</p>}
             {isOwner && (

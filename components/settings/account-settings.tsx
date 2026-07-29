@@ -280,7 +280,9 @@ export function AccountSettings({
           />
         )}
         {tab === "appearance" && <AppearanceSettings lang={lang} />}
-        {tab === "import" && <BackloggdImportSettings lang={lang} />}
+        {tab === "import" && (
+          <BackloggdImportSettings lang={lang} username={profile.username} />
+        )}
         {tab === "security" && (
           <div className="settings-security-stack">
             <TwoFactorSettings lang={lang} />

@@ -12,6 +12,7 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
 export function ListOwnerControls({
   list,
   lang,
+  returnHref,
 }: {
   list: {
     id: string;
@@ -22,6 +23,7 @@ export function ListOwnerControls({
     kind?: "COLLECTION" | "TIERLIST";
   };
   lang: UiLang;
+  returnHref: string;
 }) {
   const isTierlist = list.kind === "TIERLIST";
   const t = uiText(lang);
@@ -128,7 +130,7 @@ export function ListOwnerControls({
         ),
       );
       setPending(false);
-    } else router.push(`/${lang}/lists`);
+    } else router.push(returnHref);
   }
   return (
     <>

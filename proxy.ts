@@ -13,6 +13,8 @@ const publicSegments = new Set([
   "search",
   "u",
   "lists",
+  "library",
+  "reviews",
   // Company pages are catalogue data, same as /game — nothing on them depends
   // on who is looking, so they stay reachable without an account.
   "publisher",
@@ -28,10 +30,8 @@ const knownSegments = new Set([
   ...publicSegments,
   "entry",
   "explore",
-  "library",
   "moderation",
   "review",
-  "reviews",
   "settings",
   "shot",
   "suspended",
@@ -55,8 +55,6 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(request.nextUrl);
   }
   const segment = pathname.slice(lang.length + 2).split("/")[0] || "";
-  if (segment === "feed")
-    return NextResponse.redirect(new URL(`/${lang}`, request.url), 308);
   let response = NextResponse.next({ request });
   if (process.env.ULOGGD_E2E === "1") return response;
   // Before the auth checks: a URL that matches no route is not a login problem,
@@ -73,11 +71,17 @@ export async function proxy(request: NextRequest) {
     .getAll()
     .some(({ name }) => name.startsWith("sb-"));
   if (!hasAuthCookies) {
-    const privateListsIndex = pathname === `/${lang}/lists`;
+    const privateWorkspaceIndex = ["lists", "library", "reviews"].some(
+      (workspace) => pathname === `/${lang}/${workspace}`,
+    );
     const privateGameLogs = new RegExp(`^/${lang}/game/[^/]+/logs$`).test(
       pathname,
     );
-    if (!publicSegments.has(segment) || privateListsIndex || privateGameLogs) {
+    if (
+      !publicSegments.has(segment) ||
+      privateWorkspaceIndex ||
+      privateGameLogs
+    ) {
       const url = new URL(`/${lang}/login`, request.url);
       url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);
@@ -105,11 +109,17 @@ export async function proxy(request: NextRequest) {
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims.sub ? { id: claimsData.claims.sub } : null;
   if (!user) {
-    const privateListsIndex = pathname === `/${lang}/lists`;
+    const privateWorkspaceIndex = ["lists", "library", "reviews"].some(
+      (workspace) => pathname === `/${lang}/${workspace}`,
+    );
     const privateGameLogs = new RegExp(`^/${lang}/game/[^/]+/logs$`).test(
       pathname,
     );
-    if (!publicSegments.has(segment) || privateListsIndex || privateGameLogs) {
+    if (
+      !publicSegments.has(segment) ||
+      privateWorkspaceIndex ||
+      privateGameLogs
+    ) {
       const url = new URL(`/${lang}/login`, request.url);
       url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);

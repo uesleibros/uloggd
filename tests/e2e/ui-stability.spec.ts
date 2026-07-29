@@ -36,9 +36,11 @@ test("uses Home as the community destination without a separate Feed", async ({
       .toBeGreaterThan(0);
   }
 
-  const firstReview = page.locator(".home-review-grid article").first();
+  const firstReview = page
+    .locator(".home-reviews-section .activity-entry[data-kind='review']")
+    .first();
   if ((await firstReview.count()) > 0) {
-    await expect(firstReview.locator(".home-review-avatar")).toBeVisible();
+    await expect(firstReview.locator(".activity-avatar")).toBeVisible();
   }
   await expect(page.locator('a[href="/pt-BR/feed"]')).toHaveCount(0);
 
@@ -48,11 +50,11 @@ test("uses Home as the community destination without a separate Feed", async ({
   }));
   expect(width.document).toBeLessThanOrEqual(width.viewport);
 
-  const response = await page.request.get("/pt-BR/feed", {
-    maxRedirects: 0,
-  });
-  expect(response.status()).toBe(308);
-  expect(response.headers().location).toBe("/pt-BR");
+  const response = await page.request.get("/pt-BR/feed");
+  expect(response.status()).toBe(404);
+
+  await page.goto("/pt-BR/u/route-contract/library");
+  await expect(page).toHaveURL("/pt-BR/library/route-contract");
 });
 
 test("opens shared menus without composition errors and preserves motion", async ({

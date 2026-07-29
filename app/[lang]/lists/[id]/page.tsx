@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { Suspense } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
 import { LayoutGrid, Layers3, ListOrdered } from "lucide-react";
@@ -9,6 +11,7 @@ import { ListAddGame } from "@/components/social/list-add-game";
 import { ListItemsGrid } from "@/components/social/list-items-grid";
 import { ListOwnerControls } from "@/components/social/list-owner-controls";
 import { ListReport } from "@/components/social/list-report";
+import { ListsByUsername } from "@/components/social/lists-by-username";
 import {
   TierlistBoard,
   TierlistSkeleton,
@@ -18,6 +21,7 @@ import { getTierlist } from "@/lib/tierlists";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { ContentComments } from "@/components/social/content-comments";
+import { VerifiedMark } from "@/components/verified-badge";
 import { localeAlternates } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import {
@@ -36,10 +40,52 @@ function listKey(id: string) {
   return null;
 }
 
+function ListAuthor({
+  owner,
+  lang,
+}: {
+  owner: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    verified: boolean;
+  } | null;
+  lang: UiLang;
+}) {
+  if (!owner?.username) return null;
+  return (
+    <Link className="list-detail-author" href={`/${lang}/u/${owner.username}`}>
+      <span>
+        {owner.avatar_url ? (
+          <Image src={owner.avatar_url} alt="" fill sizes="28px" unoptimized />
+        ) : (
+          owner.username.slice(0, 1).toUpperCase()
+        )}
+      </span>
+      <small>
+        {tri(lang, "por", "by", "por")}{" "}
+        {owner.display_name || `@${owner.username}`}
+      </small>
+      {owner.verified && <VerifiedMark size={13} />}
+    </Link>
+  );
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
+  if (!hasLocale(lang)) return {};
+  const profileMetadata = {
+    title: tri(lang, `Listas de @${id}`, `@${id}'s lists`, `Listas de @${id}`),
+    description: tri(
+      lang,
+      `Coleções e tierlists publicadas por @${id}.`,
+      `Collections and tier lists published by @${id}.`,
+      `Colecciones y tierlists publicadas por @${id}.`,
+    ),
+    alternates: localeAlternates(lang, `/lists/${id}`),
+  } satisfies Metadata;
   const key = listKey(id);
-  if (!hasLocale(lang) || !key) return {};
+  if (!key) return profileMetadata;
   const { data: list } = await (
     await getSupabase()
   )
@@ -49,7 +95,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     )
     .eq(key[0], key[1])
     .maybeSingle();
-  if (!list) return {};
+  if (!list) return profileMetadata;
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const description =
     list.description ||
@@ -123,10 +169,11 @@ async function TierlistBody({
   );
 }
 
-export default async function ListPage({ params }: Props) {
-  const { lang, id } = await params;
+export default async function ListPage({ params, searchParams }: Props) {
+  const [{ lang, id }, query] = await Promise.all([params, searchParams]);
   const key = listKey(id);
-  if (!hasLocale(lang) || !key) notFound();
+  if (!hasLocale(lang)) notFound();
+  if (!key) return <ListsByUsername lang={lang} username={id} query={query} />;
   const supabase = await getSupabase();
   // Both selects are spelled out because supabase-js infers the row type from
   // the literal string; a built-up one degrades to a parser error type.
@@ -134,7 +181,7 @@ export default async function ListPage({ params }: Props) {
     supabase
       .from("game_lists")
       .select(
-        "id,public_id,profile_id,name,description,visibility,ranked,kind,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name,content_comment_scope),game_list_items(id,igdb_id,game_slug,position,note)",
+        "id,public_id,profile_id,name,description,visibility,ranked,kind,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope),game_list_items(id,igdb_id,game_slug,position,note)",
       )
       .eq(key[0], key[1])
       .maybeSingle(),
@@ -148,7 +195,7 @@ export default async function ListPage({ params }: Props) {
     const { data: fallback } = await supabase
       .from("game_lists")
       .select(
-        "id,public_id,profile_id,name,description,visibility,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name,content_comment_scope),game_list_items(id,igdb_id,game_slug,position,note)",
+        "id,public_id,profile_id,name,description,visibility,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope),game_list_items(id,igdb_id,game_slug,position,note)",
       )
       .eq(key[0], key[1])
       .maybeSingle();
@@ -156,7 +203,7 @@ export default async function ListPage({ params }: Props) {
       ? ({ ...fallback, ranked: false } as NonNullable<typeof list>)
       : null;
   }
-  if (!list) notFound();
+  if (!list) return <ListsByUsername lang={lang} username={id} query={query} />;
   if (key[0] === "id") permanentRedirect(`/${lang}/lists/${list.public_id}`);
 
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
@@ -191,6 +238,7 @@ export default async function ListPage({ params }: Props) {
         {user && <RecordView type="list" listId={list.id} />}
         <header className="list-detail-header">
           <h1>{list.name}</h1>
+          <ListAuthor owner={owner} lang={lang} />
           {list.description && <p>{list.description}</p>}
           <div className="list-detail-meta">
             <span className="list-preview-mode" data-mode="tierlist">
@@ -229,7 +277,13 @@ export default async function ListPage({ params }: Props) {
               />
             )}
           </div>
-          {isOwner && <ListOwnerControls list={list} lang={lang} />}
+          {isOwner && (
+            <ListOwnerControls
+              list={list}
+              lang={lang}
+              returnHref={`/${lang}/lists/${owner?.username}`}
+            />
+          )}
         </header>
         <Suspense fallback={<TierlistSkeleton />}>
           <TierlistBody
@@ -268,6 +322,7 @@ export default async function ListPage({ params }: Props) {
     { data: candidateCovers },
     { data: viewerPreference },
     { data: follow },
+    { data: viewerStates },
   ] = await Promise.all([
     getGamesByIds(items.map((item) => item.igdb_id)),
     supabase.rpc("get_content_likes", {
@@ -299,6 +354,18 @@ export default async function ListPage({ params }: Props) {
           .eq("following_id", list.profile_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    user && items.length
+      ? supabase
+          .from("user_games")
+          .select(
+            "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
+          )
+          .eq("profile_id", user.id)
+          .in(
+            "igdb_id",
+            items.map((item) => item.igdb_id),
+          )
+      : Promise.resolve({ data: [] }),
   ]);
   const likeState = likeRows?.[0] as
     { like_count: number; liked_by_viewer: boolean } | undefined;
@@ -328,6 +395,7 @@ export default async function ListPage({ params }: Props) {
       {user && <RecordView type="list" listId={list.id} />}
       <header className="list-detail-header">
         <h1>{list.name}</h1>
+        <ListAuthor owner={owner} lang={lang} />
         {list.description && <p>{list.description}</p>}
         <div className="list-detail-meta">
           <span
@@ -369,7 +437,13 @@ export default async function ListPage({ params }: Props) {
             lang={lang}
           />
         </div>
-        {isOwner && <ListOwnerControls list={list} lang={lang} />}
+        {isOwner && (
+          <ListOwnerControls
+            list={list}
+            lang={lang}
+            returnHref={`/${lang}/lists/${owner?.username}`}
+          />
+        )}
       </header>
       {isOwner && (
         <ListAddGame
@@ -392,6 +466,10 @@ export default async function ListPage({ params }: Props) {
           isOwner={isOwner}
           ranked={Boolean(list.ranked)}
           lang={lang}
+          viewerEnabled={Boolean(user)}
+          initialById={Object.fromEntries(
+            (viewerStates ?? []).map((state) => [state.igdb_id, state]),
+          )}
         />
       ) : (
         <div className="social-empty">

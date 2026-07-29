@@ -94,7 +94,10 @@ export async function LibraryScreen({
       <div className="library-page-body">
         <div className="library-context-bar">
           {!owner && (
-            <Link href={`/${lang}/u/${profile.username}`}>
+            <Link
+              className="page-back-link"
+              href={`/${lang}/u/${profile.username}`}
+            >
               <ArrowLeft size={15} />
               {t.backToProfile}
             </Link>

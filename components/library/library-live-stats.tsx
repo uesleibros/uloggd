@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Gamepad2, Play, Star } from "lucide-react";
 import type { LibraryRecord } from "./library-collection";
 import { uiText, type UiLang } from "@/lib/ui-text";
 
@@ -50,17 +51,23 @@ export function LibraryLiveStats({
   );
 
   return (
-    <dl className="library-hero-stats" aria-live="polite">
+    <dl className="workspace-hero-stats library-hero-stats" aria-live="polite">
       <div>
-        <dt>{t.games}</dt>
+        <dt>
+          <Gamepad2 size={14} /> {t.games}
+        </dt>
         <dd>{stats.games}</dd>
       </div>
       <div>
-        <dt>{t.playing}</dt>
+        <dt>
+          <Play size={14} /> {t.playing}
+        </dt>
         <dd>{stats.playing}</dd>
       </div>
       <div>
-        <dt>{t.rated}</dt>
+        <dt>
+          <Star size={14} /> {t.rated}
+        </dt>
         <dd>{stats.rated}</dd>
       </div>
     </dl>

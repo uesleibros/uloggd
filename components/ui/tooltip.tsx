@@ -29,6 +29,7 @@ export function Tooltip({
       <BaseTooltip.Trigger render={children} />
       <BaseTooltip.Portal>
         <BaseTooltip.Positioner
+          className="app-tooltip-positioner"
           side={side}
           sideOffset={sideOffset}
           collisionPadding={8}
