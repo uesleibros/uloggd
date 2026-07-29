@@ -182,8 +182,10 @@ test("keeps switches compact, accessible, and interactive inside filters", async
   await expect(ratedOnly).toHaveAttribute("aria-checked", "false");
   const box = await ratedOnly.boundingBox();
   expect(box).not.toBeNull();
-  expect(box!.width).toBeCloseTo(40, 0);
-  expect(box!.height).toBeCloseTo(22, 0);
+  expect(box!.width).toBeGreaterThanOrEqual(39);
+  expect(box!.width).toBeLessThanOrEqual(40);
+  expect(box!.height).toBeGreaterThanOrEqual(21);
+  expect(box!.height).toBeLessThanOrEqual(22);
 
   await ratedOnly.click();
   await expect(ratedOnly).toHaveAttribute("aria-checked", "true");

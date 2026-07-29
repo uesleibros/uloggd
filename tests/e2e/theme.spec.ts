@@ -99,5 +99,5 @@ test("applies saved interface font, type scale, and reduced motion before hydrat
     bodyFamily: getComputedStyle(document.body).fontFamily,
   }));
   expect(typography.rootSize).toBeGreaterThan(19.5);
-  expect(typography.bodyFamily).toMatch(/Source_Serif_4/i);
+  expect(typography.bodyFamily).toMatch(/Source Serif 4/i);
 });
