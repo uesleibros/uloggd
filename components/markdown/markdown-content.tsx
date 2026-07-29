@@ -60,7 +60,9 @@ const CONTENT_TRANSFORMS: Array<{
   },
 ];
 
-function processContent(content: string) {
+export type MarkdownContentVariant = "showcase" | "review";
+
+function processContent(content: string, variant: MarkdownContentVariant) {
   // Code spans and fences are shielded from every transform.
   const shielded: string[] = [];
   let result = content.replace(/```[\s\S]*?```|`[^`\n]+`/g, (match) => {
@@ -76,9 +78,9 @@ function processContent(content: string) {
     /\n{3,}/g,
     (run) => `\n\n${"<br />\n\n".repeat(run.length - 2)}`,
   );
-  for (const { pattern, replace } of CONTENT_TRANSFORMS) {
-    result = result.replace(pattern, replace);
-  }
+  if (variant === "showcase")
+    for (const { pattern, replace } of CONTENT_TRANSFORMS)
+      result = result.replace(pattern, replace);
   result = result.replace(/@(\w[\w.-]{0,38})/g, "<mention>$1</mention>");
   result = result.replace(/\|\|([\s\S]+?)\|\|/g, "<spoiler>$1</spoiler>");
   result = result.replace(/\u0000(\d+)\u0000/g, (_, index) =>
@@ -150,8 +152,53 @@ const sanitizeSchema = {
   },
 };
 
+const REVIEW_TAGS = new Set([
+  "a",
+  "blockquote",
+  "br",
+  "code",
+  "del",
+  "em",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "hr",
+  "li",
+  "mention",
+  "ol",
+  "p",
+  "pre",
+  "spoiler",
+  "strong",
+  "ul",
+]);
+
+// Reviews deliberately accept a much smaller language than profile showcases.
+// The server stores plain Markdown; this render boundary strips media, game
+// embeds, layout directives and raw HTML even if someone hand-types them.
+const reviewSanitizeSchema = {
+  ...defaultSchema,
+  tagNames: [
+    ...(defaultSchema.tagNames ?? []).filter((tag) => REVIEW_TAGS.has(tag)),
+    "mention",
+    "spoiler",
+  ],
+  attributes: {
+    ...defaultSchema.attributes,
+    mention: [],
+    spoiler: [],
+  },
+};
+
 const remarkPlugins = [remarkGfm, remarkBreaks, remarkDirective, remarkAlert];
 const rehypePlugins = [rehypeRaw, [rehypeSanitize, sanitizeSchema]] as never[];
+const reviewRehypePlugins = [
+  rehypeRaw,
+  [rehypeSanitize, reviewSanitizeSchema],
+] as never[];
 
 function Spoiler({ children }: { children?: ReactNode }) {
   const [revealed, setRevealed] = useState(false);
@@ -609,13 +656,21 @@ export function MarkdownContent({
   content,
   lang,
   coverOwnerId,
+  variant = "showcase",
 }: {
   content: string;
   lang: UiLang;
   coverOwnerId?: string;
+  variant?: MarkdownContentVariant;
 }) {
-  const processed = useMemo(() => processContent(content), [content]);
-  const slugs = useMemo(() => collectGameSlugs(content), [content]);
+  const processed = useMemo(
+    () => processContent(content, variant),
+    [content, variant],
+  );
+  const slugs = useMemo(
+    () => (variant === "showcase" ? collectGameSlugs(content) : []),
+    [content, variant],
+  );
   const slugKey = slugs.join(",");
   const requestKey = `${coverOwnerId ?? "viewer"}:${slugKey}`;
   // Keyed by the slug list so a content change resets to loading without an
@@ -666,7 +721,7 @@ export function MarkdownContent({
             : only?.type === "text"
               ? only.value
               : "";
-        const videoId = youtubeId(href);
+        const videoId = variant === "showcase" ? youtubeId(href) : null;
         if (videoId) return <YouTubeEmbed videoId={videoId} />;
         const hasBlock = node?.children?.some(
           (child) =>
@@ -675,7 +730,7 @@ export function MarkdownContent({
         return hasBlock ? <div>{children}</div> : <p>{children}</p>;
       },
       a: ({ href, children }: { href?: string; children?: ReactNode }) => {
-        const videoId = youtubeId(href);
+        const videoId = variant === "showcase" ? youtubeId(href) : null;
         if (videoId) return <YouTubeEmbed videoId={videoId} />;
         return (
           <a href={href} target="_blank" rel="noreferrer noopener nofollow">
@@ -788,15 +843,17 @@ export function MarkdownContent({
       },
     };
     return custom as unknown as Components;
-  }, [lang]);
+  }, [lang, variant]);
 
   if (!processed.trim()) return null;
   return (
     <MarkdownGamesContext.Provider value={games}>
-      <div className="markdown-body">
+      <div className="markdown-body" data-variant={variant}>
         <ReactMarkdown
           remarkPlugins={remarkPlugins}
-          rehypePlugins={rehypePlugins}
+          rehypePlugins={
+            variant === "review" ? reviewRehypePlugins : rehypePlugins
+          }
           components={components}
         >
           {processed}

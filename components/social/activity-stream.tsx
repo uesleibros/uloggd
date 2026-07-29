@@ -17,6 +17,7 @@ import { RelativeTime } from "@/components/relative-time";
 import { ActivityEntryActions } from "./activity-entry-actions";
 import { LikeButton } from "./like-button";
 import { MentionText } from "./mention-text";
+import { ReviewMarkdownPreview } from "./review-markdown-preview";
 import { VerifiedBadge } from "../verified-badge";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
@@ -330,8 +331,15 @@ export function ActivityStream({
                 )}
               </div>
             )}
+            {entry.content && entry.kind === "review" && (
+              <ReviewMarkdownPreview
+                content={entry.content}
+                spoilers={entry.spoilers}
+                lang={lang}
+              />
+            )}
             {entry.content &&
-              entry.kind !== "screenshot" &&
+              entry.kind === "diary" &&
               (entry.spoilers ? (
                 <details className="spoiler-content">
                   <summary>

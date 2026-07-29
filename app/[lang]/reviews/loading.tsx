@@ -33,10 +33,25 @@ export default function Loading() {
             <div className="reviews-loading-entry" key={index}>
               <span className="skeleton-block" />
               <div>
-                <span className="skeleton-block" />
-                <span className="skeleton-block" />
-                <span className="skeleton-block" />
-                <span className="skeleton-block" />
+                <header>
+                  <span className="skeleton-block" />
+                  <div>
+                    <span className="skeleton-block" />
+                    <span className="skeleton-block" />
+                  </div>
+                  <span className="skeleton-block" />
+                </header>
+                <span className="skeleton-block reviews-loading-verb" />
+                <span className="skeleton-block reviews-loading-rating" />
+                <div className="reviews-loading-copy">
+                  <span className="skeleton-block" />
+                  <span className="skeleton-block" />
+                  <span className="skeleton-block" />
+                </div>
+                <footer>
+                  <span className="skeleton-block" />
+                  <span className="skeleton-block" />
+                </footer>
               </div>
             </div>
           ))}

@@ -38,6 +38,7 @@ Colors come from console hardware and late-night screens:
 - `--brand-blurple-wash: rgb(88 101 242 / 13%)` — tonal brand surface.
 - `--achievement-gold: #d3b55b` — ratings and achievements only.
 - `--safe-green: #73c69a` — safety and positive status only.
+- `--notification-red: #ed4245` — unread notification count only; always flat, without glow or outline.
 
 Use approximately 60% canvas, 30% panel/raised surfaces, and no more than 10% accent. Do not introduce new accent hues without a semantic role.
 
@@ -131,6 +132,9 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - New review text persists as a local per-IGDB draft until a successful save. Spoiler and visibility choices remain stable while switching editor tabs; visibility uses the shared Base UI Select language rather than a native browser select.
 - Destructive review removal uses an inline two-step confirmation in the sticky footer, never a blocking browser confirm. The review history starts with review count, average rating, session count, and spoiler count; review entries use an inset editorial card distinct from diary rows.
 - Review/session streams use distinct bordered journal cards with a 16px desktop / 12px mobile gap; entries never share a collapsed divider. A review linked to a named journey shows one “View journey” action that opens a read-only Base UI modal with its visible sessions, dates, duration, notes, and start/finish milestones.
+- Review prose uses the shared Markdown editor in a restricted mode: headings, emphasis, strike, links, quotes, inline code, lists, mentions, and text spoilers only. Game cards, media, tables, callouts, raw HTML, and showcase layout directives stay exclusive to the profile showcase. The review renderer enforces that smaller language with its own sanitizer rather than trusting toolbar visibility.
+- Review cards are previews, not complete documents. Their Markdown body measures real overflow, caps at roughly four lines, and fades only when content is actually clipped; the existing “View full review” action remains the explicit continuation. The dedicated review route renders the complete sanitized Markdown inside the same spoiler gate.
+- The profile showcase editor ends after the writing/preview stage. Character progress remains beside the mode tabs; there is no redundant “MD” status footer and no detached help modal.
 
 ## Navigation Patterns
 
@@ -186,7 +190,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 ### Notification inbox
 
-- Authenticated headers expose one 40px bell control with a compact unread badge. Blurple is reserved for unread state and the avatar event marker; read rows remain neutral.
+- Authenticated headers expose one 40px bell control with a compact red unread-count badge. The badge has white numerals, no border, and no glow; read rows remain neutral and blurple stays reserved for interactive selection state.
 - The inbox is a focused 420px desktop surface aligned beneath the header. On mobile it becomes a bottom sheet capped at 84dvh, with safe-area padding and exactly one internal scroll region so actions never fall below the viewport.
 - Inbox motion is origin-aware: desktop enters from the bell edge in 220ms and exits in 160ms; mobile rises from the safe-area edge in 260ms and exits in 180ms. The veil fades independently, all movement uses only transform/opacity, and the global reduced-motion rule removes displacement.
 - Activity rows use avatar, event marker, concise sentence, relative time, and a separate unread dot. They navigate directly to the actor, review, or list and mark themselves read optimistically.
@@ -461,6 +465,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Dropdowns enter in 140–160ms from their trigger origin. Every modal shares the review studio’s fade timing: content enters in 220ms and exits in 150ms; overlays enter in 180ms and exit in 140ms. Centered, anchored, and mobile-sheet surfaces may preserve their spatial transform, but opacity timing and easing remain identical. Never animate layout dimensions.
 - Base UI menus and dialogs must also animate their `data-state="closed"` state for 110–150ms; conditional parents remain mounted until that exit finishes so overlays never disappear abruptly. This includes Base UI Select menus (`menu-out`), and every dialog overlay uses `drawer-backdrop` or an equivalent veil with enter and exit animations — no overlay class may exist only in JSX.
 - Skeletons use the `--skeleton-fill` token (translucent, theme-aware) and must mirror the current layout of the page they cover: when a page's hero or structure changes, its `loading.tsx` changes in the same commit.
+- Review skeletons preserve the real cover/byline/verdict/prose/aspect/action hierarchy. The review archive skeleton also reserves avatar identity, rating, faded-copy geometry, and footer actions instead of substituting generic bars.
 - Destructive actions never use `window.confirm`: the universal pattern is the inline two-step armed button (first tap arms with a warning label and danger tint, second tap executes, auto-disarms after 4s).
 - Danger text always uses `var(--danger-text)`; badges rendered over cover art or banners (index markers, drag handles, media counters) hardcode light ink (#f2f3f7 / #b9bcc5) because their backdrop stays dark in every theme, while anything on tokened surfaces must use tokened text.
 
@@ -535,6 +540,10 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Uploaded profile banners become a full-width atmospheric backdrop behind a lower-anchored identity header, using edge and bottom gradients for readability; avatars have no framing ring, align with the identity on desktop and mobile, and the identity/actions finish before collection portals begin.
 - Community timestamps share one live relative-time formatter in every locale, always using explicit elapsed units from seconds through years; calendar controls, birth dates, and game release metadata remain absolute because they describe a date rather than recency.
 - Auto game showcases use a normalized three-copy loop. Native image/link dragging is disabled, pointer dragging stays inside the middle loop, hover pauses temporarily, and release always resumes motion.
+
+### Moderation queue
+
+- Native disclosure state is read synchronously inside its toggle handler before entering a React state updater. This keeps rapid double-clicks on an empty internal note deterministic and prevents released synthetic-event references from reaching queue state.
 
 - Never fabricate user activity, online counts, progress, or authenticated identity.
 - IGDB catalog data may populate discovery surfaces; clearly distinguish it from uloggd community data.

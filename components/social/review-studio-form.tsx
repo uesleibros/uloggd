@@ -22,8 +22,9 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StarRating } from "@/components/library/star-rating";
+import { MarkdownEditor } from "@/components/markdown/markdown-editor";
 import type { JourneyOption } from "@/components/social/journey-calendar";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -109,11 +110,7 @@ export function ReviewStudioForm({
     initial?.recommended ?? null,
   );
   const [pending, setPending] = useState(false);
-  const [content, setContent] = useState(
-    () =>
-      initial?.content ??
-      (draftKey ? (localStorage.getItem(draftKey) ?? "") : ""),
-  );
+  const [content, setContent] = useState(initial?.content ?? "");
   const [spoilers, setSpoilers] = useState(initial?.spoilers ?? false);
   const [visibility, setVisibility] = useState<ReviewVisibility>(
     initial?.visibility ?? "PUBLIC",
@@ -132,6 +129,14 @@ export function ReviewStudioForm({
   );
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!draftKey || initial?.content) return;
+    const frame = requestAnimationFrame(() => {
+      setContent(localStorage.getItem(draftKey) ?? "");
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [draftKey, initial?.content]);
 
   const reviewHasSubstance =
     content.trim().length > 0 ||
@@ -344,23 +349,30 @@ export function ReviewStudioForm({
               )}
             />
           </label>
-          <label className="review-writing-field">
-            <span>
+          <div className="review-writing-field">
+            <header>
               <b>
                 {tri(lang, "Sua avaliação", "Your review", "Tu valoración")}
               </b>
-              <small>{content.length.toLocaleString(lang)} / 5.000</small>
-            </span>
-            <textarea
+              <small>
+                {tri(
+                  lang,
+                  "Markdown básico · menções e spoilers",
+                  "Basic Markdown · mentions and spoilers",
+                  "Markdown básico · menciones y spoilers",
+                )}
+              </small>
+            </header>
+            <MarkdownEditor
               name="content"
               maxLength={5000}
-              rows={8}
               value={content}
-              onChange={(event) => {
-                setContent(event.target.value);
-                if (draftKey)
-                  localStorage.setItem(draftKey, event.target.value);
+              onChange={(nextContent) => {
+                setContent(nextContent);
+                if (draftKey) localStorage.setItem(draftKey, nextContent);
               }}
+              variant="review"
+              lang={lang}
               placeholder={tri(
                 lang,
                 "O que funcionou? O que não funcionou? O que ficou com você?",
@@ -368,7 +380,7 @@ export function ReviewStudioForm({
                 "¿Qué funcionó? ¿Qué no? ¿Qué se te quedó?",
               )}
             />
-          </label>
+          </div>
         </div>
       )}
 

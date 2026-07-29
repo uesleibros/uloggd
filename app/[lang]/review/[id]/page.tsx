@@ -23,6 +23,7 @@ import { RelativeTime } from "@/components/relative-time";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getGamesByIds } from "@/lib/igdb";
 import { ContentComments } from "@/components/social/content-comments";
+import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { MentionText } from "@/components/social/mention-text";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
@@ -354,14 +355,20 @@ export default async function ReviewPage({ params }: Props) {
                   "Mostrar contenido con spoilers",
                 )}
               </summary>
-              <p>
-                <MentionText text={review.content} lang={lang} />
-              </p>
+              <MarkdownContent
+                content={review.content}
+                lang={lang}
+                variant="review"
+              />
             </details>
           ) : (
-            <p className="review-page-content">
-              <MentionText text={review.content} lang={lang} />
-            </p>
+            <div className="review-page-content">
+              <MarkdownContent
+                content={review.content}
+                lang={lang}
+                variant="review"
+              />
+            </div>
           ))}
 
         {aspects.length > 0 && (

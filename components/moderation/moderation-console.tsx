@@ -905,12 +905,16 @@ export function ModerationConsole({
                     open={
                       openNotes[report.id] ?? Boolean(report.moderator_note)
                     }
-                    onToggle={(event) =>
+                    onToggle={(event) => {
+                      // React releases `currentTarget` after the handler. Read
+                      // the native state now so rapid open/close clicks never
+                      // dereference a cleared synthetic event in the updater.
+                      const isOpen = event.currentTarget.open;
                       setOpenNotes((current) => ({
                         ...current,
-                        [report.id]: event.currentTarget.open,
-                      }))
-                    }
+                        [report.id]: isOpen,
+                      }));
+                    }}
                   >
                     <summary>
                       <NotebookPen size={13} />

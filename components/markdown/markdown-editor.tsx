@@ -1,6 +1,5 @@
 "use client";
 
-import * as Dialog from "@/components/ui/dialog";
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import {
   autocompletion,
@@ -40,7 +39,6 @@ import {
   Bold,
   CheckSquare,
   ChevronDown,
-  CircleHelp,
   Code,
   Columns2,
   Contrast,
@@ -54,7 +52,6 @@ import {
   Image,
   ImageOff,
   ImagePlus,
-  Info,
   Italic,
   Languages,
   LayoutGrid,
@@ -69,12 +66,10 @@ import {
   Pencil,
   Plus,
   Quote,
-  Search,
   Smartphone,
   Strikethrough,
   Table,
   Tag,
-  X,
   Video,
 } from "lucide-react";
 import { createPortal } from "react-dom";
@@ -91,6 +86,7 @@ import { MarkdownContent } from "./markdown-content";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Tab = "write" | "preview" | "sidebyside";
+export type MarkdownEditorVariant = "showcase" | "review";
 type Tool =
   | "bold"
   | "italic"
@@ -143,6 +139,32 @@ const toolGroups: Array<Array<[Tool, ComponentType<{ size?: number }>]>> = [
     ["code", Code],
   ],
 ];
+
+const reviewToolGroups: Array<Array<[Tool, ComponentType<{ size?: number }>]>> =
+  [
+    [
+      ["bold", Bold],
+      ["italic", Italic],
+      ["strikethrough", Strikethrough],
+    ],
+    [
+      ["link", Link2],
+      ["quote", Quote],
+      ["code", Code],
+    ],
+    [
+      ["ul", List],
+      ["ol", ListOrdered],
+    ],
+    [
+      ["mention", AtSign],
+      ["spoiler", EyeOff],
+    ],
+  ];
+
+const REVIEW_TOOLS = new Set<Tool>(
+  reviewToolGroups.flatMap((group) => group.map(([tool]) => tool)),
+);
 
 /**
  * Everything else, behind one menu. All 24 tools used to sit in a single
@@ -382,19 +404,19 @@ async function mentionCompletion(
     );
     if (!response.ok) return null;
     const payload = (await response.json()) as {
-      users?: Array<{
+      people?: Array<{
         username: string;
-        display_name: string | null;
+        displayName: string | null;
         verified: boolean;
       }>;
     };
     return {
       from: match.from + 1,
       filter: false,
-      options: (payload.users ?? []).map((user) => ({
+      options: (payload.people ?? []).map((user) => ({
         label: user.username,
         displayLabel: `@${user.username}`,
-        detail: user.display_name || undefined,
+        detail: user.displayName || undefined,
         type: user.verified ? "constant" : "text",
       })),
     };
@@ -403,296 +425,6 @@ async function mentionCompletion(
   }
 }
 
-type HelpItem = {
-  syntax: string;
-  pt: string;
-  en: string;
-  es: string;
-  // Rendered live in the guide. Falls back to the syntax; "" disables it.
-  demo?: string;
-};
-
-const helpSections: Array<{
-  pt: string;
-  en: string;
-  es: string;
-  items: HelpItem[];
-}> = [
-  {
-    pt: "Texto",
-    en: "Text",
-    es: "Texto",
-    items: [
-      { syntax: "**negrito**", pt: "Negrito", en: "Bold", es: "Negrita" },
-      { syntax: "*itálico*", pt: "Itálico", en: "Italic", es: "Cursiva" },
-      {
-        syntax: "~~riscado~~",
-        pt: "Riscado",
-        en: "Strikethrough",
-        es: "Tachado",
-      },
-      {
-        syntax: "# Título",
-        pt: "Títulos, de # até ######",
-        en: "Headings, from # to ######",
-        es: "Encabezados, de # a ######",
-        demo: "# Título\n## Subtítulo",
-      },
-      {
-        syntax: "[texto](https://url)",
-        pt: "Link",
-        en: "Link",
-        es: "Enlace",
-        demo: "[uloggd](https://uloggd.com)",
-      },
-      {
-        syntax: "> citação",
-        pt: "Citação",
-        en: "Blockquote",
-        es: "Cita",
-        demo: "> Um dos melhores jogos que já joguei.",
-      },
-      {
-        syntax: "`código`",
-        pt: "Código em linha",
-        en: "Inline code",
-        es: "Código en línea",
-        demo: "Use `npm run dev` para começar.",
-      },
-      {
-        syntax: "```\ncódigo\n```",
-        pt: "Bloco de código",
-        en: "Code block",
-        es: "Bloque de código",
-        demo: "```\nconst a = 1;\n```",
-      },
-      {
-        syntax: "---",
-        pt: "Linha separadora",
-        en: "Divider",
-        es: "Línea separadora",
-      },
-      {
-        syntax: "linha 1\nlinha 2",
-        pt: "Uma quebra de linha simples já vale — não precisa de linha em branco. Linhas em branco extras também são mantidas.",
-        en: "A single line break is enough — no blank line needed. Extra blank lines are kept too.",
-        es: "Basta un salto de línea simple — no hace falta una línea en blanco. Las líneas en blanco extra también se conservan.",
-        demo: "linha 1\nlinha 2",
-      },
-    ],
-  },
-  {
-    pt: "Listas e tabelas",
-    en: "Lists and tables",
-    es: "Listas y tablas",
-    items: [
-      {
-        syntax: "- item",
-        pt: "Lista",
-        en: "List",
-        es: "Lista",
-        demo: "- primeiro\n- segundo",
-      },
-      {
-        syntax: "1. item",
-        pt: "Lista numerada",
-        en: "Numbered list",
-        es: "Lista numerada",
-        demo: "1. primeiro\n2. segundo",
-      },
-      {
-        syntax: "- [ ] tarefa",
-        pt: "Checklist — itens marcados ficam riscados",
-        en: "Checklist — checked items are struck through",
-        es: "Checklist — los ítems marcados aparecen tachados",
-        demo: "- [x] zerado\n- [ ] platinado",
-      },
-      {
-        syntax: "| a | b |\n| --- | --- |\n| 1 | 2 |",
-        pt: "Tabela — rola na horizontal quando não cabe",
-        en: "Table — scrolls horizontally when it does not fit",
-        es: "Tabla — se desplaza en horizontal cuando no cabe",
-        demo: "| Jogo | Nota |\n| --- | --- |\n| Celeste | 10 |",
-      },
-    ],
-  },
-  {
-    pt: "Jogos",
-    en: "Games",
-    es: "Juegos",
-    items: [
-      {
-        syntax: "!game(slug)",
-        pt: "Card completo, com capa, sinopse e plataformas",
-        en: "Full card, with cover, summary and platforms",
-        es: "Tarjeta completa, con portada, sinopsis y plataformas",
-        demo: "!game(celeste)",
-      },
-      {
-        syntax: "!game:mini(slug)",
-        pt: "Card compacto, que flui junto com o texto",
-        en: "Compact card that flows inline with the text",
-        es: "Tarjeta compacta, que fluye junto al texto",
-        demo: "Terminei !game:mini(celeste) ontem.",
-      },
-      {
-        syntax: "!game:grid(slug-1, slug-2)",
-        pt: "Grade de capas. Um + depois do slug marca o jogo como favorito",
-        en: "Grid of covers. A + after the slug marks the game as a favourite",
-        es: "Cuadrícula de portadas. Un + después del slug marca el juego como favorito",
-        demo: "!game:grid(celeste, hollow-knight+, hades)",
-      },
-      {
-        syntax: "!game:grid-auto(slug-1, slug-2)",
-        pt: "Carrossel em loop, que pausa quando o mouse passa por cima",
-        en: "Looping carousel that pauses on hover",
-        es: "Carrusel en bucle, que se pausa al pasar el ratón",
-        demo: "!game:grid-auto(celeste, hollow-knight, hades, braid)",
-      },
-      {
-        syntax: "@usuario",
-        pt: "Menção a um perfil",
-        en: "Mention a profile",
-        es: "Mención a un perfil",
-        demo: "",
-      },
-    ],
-  },
-  {
-    pt: "Mídia",
-    en: "Media",
-    es: "Medios",
-    items: [
-      {
-        syntax: "![descrição](https://url)",
-        pt: "Imagem",
-        en: "Image",
-        es: "Imagen",
-        demo: "",
-      },
-      {
-        syntax: '<img src="https://url" width="400" />',
-        pt: "Imagem com largura definida — nunca passa da largura disponível",
-        en: "Image with a set width — never exceeds the available width",
-        es: "Imagen con ancho definido — nunca supera el ancho disponible",
-        demo: "",
-      },
-      {
-        syntax: "https://youtube.com/watch?v=ID",
-        pt: "Colar o link do YouTube já vira player",
-        en: "Pasting a YouTube link turns it into a player",
-        es: "Pegar el enlace de YouTube lo convierte en reproductor",
-        demo: "",
-      },
-      {
-        syntax: '<spoilerimg src="https://url" />',
-        pt: "Imagem borrada até clicarem nela",
-        en: "Image blurred until clicked",
-        es: "Imagen difuminada hasta que la pulsen",
-        demo: "",
-      },
-      {
-        syntax: "||texto escondido||",
-        pt: "Spoiler de texto",
-        en: "Text spoiler",
-        es: "Spoiler de texto",
-        demo: "O final é ||surpreendente||.",
-      },
-    ],
-  },
-  {
-    pt: "Destaques",
-    en: "Callouts",
-    es: "Destacados",
-    items: [
-      {
-        syntax: ":::info\ntexto\n:::",
-        pt: "Caixa de destaque",
-        en: "Callout box",
-        es: "Caja destacada",
-        demo: ":::info\nUm aviso rápido.\n:::",
-      },
-      {
-        syntax: ":::warning / :::danger / :::tip",
-        pt: "Tipos disponíveis: info, note, tip, success, important, warning, danger, bug, question, example",
-        en: "Available types: info, note, tip, success, important, warning, danger, bug, question, example",
-        es: "Tipos disponibles: info, note, tip, success, important, warning, danger, bug, question, example",
-        demo: ":::warning\nCuidado com spoilers.\n:::",
-      },
-    ],
-  },
-  {
-    pt: "Layout",
-    en: "Layout",
-    es: "Diseño",
-    items: [
-      {
-        syntax: "<center>\n\ntexto\n\n</center>",
-        pt: "Centraliza texto, imagens, tabelas e cards",
-        en: "Centres text, images, tables and cards",
-        es: "Centra texto, imágenes, tablas y tarjetas",
-        demo: "<center>\n\n**No meio**\n\n</center>",
-      },
-      {
-        syntax: "<details>\n<summary>Título</summary>\n\ntexto\n\n</details>",
-        pt: "Seção recolhível",
-        en: "Collapsible section",
-        es: "Sección plegable",
-        demo: "<details>\n<summary>Minha lista completa</summary>\n\nConteúdo escondido.\n\n</details>",
-      },
-      {
-        syntax: "<pt>\n\ntexto\n\n</pt>",
-        pt: "Só aparece para quem está lendo em português",
-        en: "Only shows for readers using Portuguese",
-        es: "Solo aparece para quien lee en portugués",
-        demo: "<pt>\n\nVocê está lendo em português.\n\n</pt>\n<en>\n\nYou are reading in English.\n\n</en>",
-      },
-      {
-        syntax: "<en>\n\ntext\n\n</en>",
-        pt: "Só aparece para quem está lendo em inglês. Junto com <pt>, dá para manter as duas versões no mesmo perfil",
-        en: "Only shows for readers using English. Together with <pt>, one profile can carry both versions",
-        es: "Solo aparece para quien lee en inglés. Junto con <pt> y <es>, un mismo perfil puede llevar las tres versiones",
-        demo: "",
-      },
-      {
-        syntax: "<es>\n\ntexto\n\n</es>",
-        pt: "Só aparece para quem está lendo em espanhol",
-        en: "Only shows for readers using Spanish",
-        es: "Solo aparece para quien lee en español",
-        demo: "",
-      },
-      {
-        syntax: "<dark>\n\ntexto\n\n</dark>",
-        pt: "Só aparece para quem está lendo em um tema escuro",
-        en: "Only shows for readers using a dark theme",
-        es: "Solo aparece para quien lee con un tema oscuro",
-        demo: "<dark>\n\nVocê está no tema escuro.\n\n</dark>\n<light>\n\nVocê está no tema claro.\n\n</light>",
-      },
-      {
-        syntax: "<light>\n\ntexto\n\n</light>",
-        pt: "Só aparece no tema claro. Dos quatro temas, só o Claro conta como claro: Cinza, Escuro e Ônix entram como escuros",
-        en: "Only shows on the light theme. Of the four themes only Light counts as light: Gray, Dark and Onyx all count as dark",
-        es: "Solo aparece en el tema claro. De los cuatro temas solo Claro cuenta como claro: Gris, Oscuro y Ónix cuentan como oscuros",
-        demo: "",
-      },
-      {
-        syntax: "<desktop>\n\ntexto\n\n</desktop>",
-        pt: "Só aparece em telas grandes",
-        en: "Only shows on large screens",
-        es: "Solo aparece en pantallas grandes",
-        demo: "",
-      },
-      {
-        syntax: "<mobile>\n\ntexto\n\n</mobile>",
-        pt: "Só aparece em telas pequenas",
-        en: "Only shows on small screens",
-        es: "Solo aparece en pantallas pequeñas",
-        demo: "",
-      },
-    ],
-  },
-];
-
 export function MarkdownEditor({
   value,
   onChange,
@@ -700,6 +432,7 @@ export function MarkdownEditor({
   maxLength = 10000,
   placeholder,
   lang,
+  variant = "showcase",
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -708,12 +441,11 @@ export function MarkdownEditor({
   rows?: number;
   placeholder?: string;
   lang: UiLang;
+  variant?: MarkdownEditorVariant;
 }) {
   const t = uiText(lang);
   const [tab, setTab] = useState<Tab>("write");
   const [fullscreen, setFullscreen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
-  const [helpSearch, setHelpSearch] = useState("");
   const [largeScreen, setLargeScreen] = useState(false);
   const [split, setSplit] = useState(50);
   const hostRef = useRef<HTMLDivElement | null>(null);
@@ -828,7 +560,7 @@ export function MarkdownEditor({
         indentUnit.of("  "),
         keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
         drawSelection(),
-        lineNumbers(),
+        variant === "showcase" ? lineNumbers() : [],
         bracketMatching(),
         autocompletion({ override: [mentionCompletion] }),
         EditorView.lineWrapping,
@@ -850,7 +582,7 @@ export function MarkdownEditor({
       view.destroy();
       viewRef.current = null;
     };
-  }, [activeTab, fullscreen, maxLength, placeholder]);
+  }, [activeTab, fullscreen, maxLength, placeholder, variant]);
 
   useEffect(() => {
     const view = viewRef.current;
@@ -925,6 +657,7 @@ export function MarkdownEditor({
 
   const runTool = useCallback(
     (tool: Tool) => {
+      if (variant === "review" && !REVIEW_TOOLS.has(tool)) return;
       const text = tri(lang, "texto", "text", "texto");
       const actions: Record<Tool, () => void> = {
         bold: () => insertText("**", "**", text),
@@ -990,7 +723,7 @@ export function MarkdownEditor({
       };
       actions[tool]();
     },
-    [insertBlock, insertLine, insertText, lang],
+    [insertBlock, insertLine, insertText, lang, variant],
   );
 
   useEffect(() => {
@@ -998,13 +731,13 @@ export function MarkdownEditor({
       if (!viewRef.current || !(event.ctrlKey || event.metaKey)) return;
       const key = `ctrl+${event.shiftKey ? "shift+" : ""}${event.key.toLowerCase()}`;
       const tool = shortcuts[key];
-      if (!tool) return;
+      if (!tool || (variant === "review" && !REVIEW_TOOLS.has(tool))) return;
       event.preventDefault();
       runTool(tool);
     };
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, [runTool]);
+  }, [runTool, variant]);
 
   useEffect(() => {
     const move = (event: PointerEvent) => {
@@ -1030,32 +763,19 @@ export function MarkdownEditor({
     };
   }, []);
 
-  const stats = useMemo(
-    () => ({
-      words: value.trim() ? value.trim().split(/\s+/).length : 0,
-      lines: value.split("\n").length,
-      percent: Math.min(100, (value.length / maxLength) * 100),
-    }),
-    [maxLength, value],
+  const lengthPercent = useMemo(
+    () => Math.min(100, (value.length / maxLength) * 100),
+    [maxLength, value.length],
   );
-  const helpQuery = helpSearch.trim().toLocaleLowerCase();
-  const filteredHelp = helpSections
-    .map((section) => ({
-      ...section,
-      items: helpQuery
-        ? section.items.filter((item) =>
-            `${item.syntax} ${item.pt} ${item.en}`
-              .toLocaleLowerCase()
-              .includes(helpQuery),
-          )
-        : section.items,
-    }))
-    .filter((section) => section.items.length > 0);
   const showEditor = activeTab !== "preview";
   const showPreview = activeTab !== "write";
 
   const content = (
-    <div className="md-editor" data-fullscreen={fullscreen || undefined}>
+    <div
+      className="md-editor"
+      data-fullscreen={fullscreen || undefined}
+      data-variant={variant}
+    >
       {name && <input type="hidden" name={name} value={value} />}
       <div className="md-editor-tabs">
         <div
@@ -1097,7 +817,7 @@ export function MarkdownEditor({
             </button>
           ))}
         </div>
-        <span data-warning={stats.percent > 90 || undefined}>
+        <span data-warning={lengthPercent > 90 || undefined}>
           {value.length.toLocaleString(lang)}/{maxLength.toLocaleString(lang)}
         </span>
         <button
@@ -1110,8 +830,8 @@ export function MarkdownEditor({
       </div>
       <div className="md-editor-progress">
         <span
-          data-warning={stats.percent > 90 || undefined}
-          style={{ width: `${stats.percent}%` }}
+          data-warning={lengthPercent > 90 || undefined}
+          style={{ width: `${lengthPercent}%` }}
         />
       </div>
       {showEditor && (
@@ -1144,59 +864,68 @@ export function MarkdownEditor({
               </DropdownMenu.Content>
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
-          {toolGroups.map((group, groupIndex) => (
-            <div key={groupIndex}>
-              {group.map(([tool, Icon]) => (
-                <Tooltip key={tool} label={labels[tool]}>
+          {(variant === "review" ? reviewToolGroups : toolGroups).map(
+            (group, groupIndex) => (
+              <div key={groupIndex}>
+                {group.map(([tool, Icon]) => (
+                  <Tooltip key={tool} label={labels[tool]}>
+                    <button
+                      type="button"
+                      aria-label={labels[tool]}
+                      onClick={() => runTool(tool)}
+                    >
+                      <Icon size={16} />
+                    </button>
+                  </Tooltip>
+                ))}
+              </div>
+            ),
+          )}
+          {variant === "showcase" && (
+            <div className="md-editor-toolbar-end">
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
                   <button
                     type="button"
-                    aria-label={labels[tool]}
-                    onClick={() => runTool(tool)}
+                    className="md-insert-trigger"
+                    aria-label={t.insert}
                   >
-                    <Icon size={16} />
+                    <Plus size={16} />
                   </button>
-                </Tooltip>
-              ))}
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Portal>
+                  <DropdownMenu.Content
+                    className="md-insert-menu"
+                    align="end"
+                    sideOffset={6}
+                    collisionPadding={12}
+                  >
+                    {insertGroups.map((group) => (
+                      <div key={group.titleEn}>
+                        <span>
+                          {tri(
+                            lang,
+                            group.titlePt,
+                            group.titleEn,
+                            group.titleEs,
+                          )}
+                        </span>
+                        {group.tools.map(([tool, Icon]) => (
+                          <DropdownMenu.Item
+                            key={tool}
+                            onSelect={() => runTool(tool)}
+                          >
+                            <Icon size={15} />
+                            {labels[tool]}
+                          </DropdownMenu.Item>
+                        ))}
+                      </div>
+                    ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Root>
             </div>
-          ))}
-          <div className="md-editor-toolbar-end">
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild>
-                <button
-                  type="button"
-                  className="md-insert-trigger"
-                  aria-label={t.insert}
-                >
-                  <Plus size={16} />
-                </button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Portal>
-                <DropdownMenu.Content
-                  className="md-insert-menu"
-                  align="end"
-                  sideOffset={6}
-                  collisionPadding={12}
-                >
-                  {insertGroups.map((group) => (
-                    <div key={group.titleEn}>
-                      <span>
-                        {tri(lang, group.titlePt, group.titleEn, group.titleEs)}
-                      </span>
-                      {group.tools.map(([tool, Icon]) => (
-                        <DropdownMenu.Item
-                          key={tool}
-                          onSelect={() => runTool(tool)}
-                        >
-                          <Icon size={15} />
-                          {labels[tool]}
-                        </DropdownMenu.Item>
-                      ))}
-                    </div>
-                  ))}
-                </DropdownMenu.Content>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
-          </div>
+          )}
         </div>
       )}
       <div className="md-editor-stage" ref={splitRef}>
@@ -1235,7 +964,7 @@ export function MarkdownEditor({
           }}
         >
           {value.trim() ? (
-            <MarkdownContent content={value} lang={lang} />
+            <MarkdownContent content={value} lang={lang} variant={variant} />
           ) : (
             <p className="md-editor-empty">
               {tri(
@@ -1248,126 +977,25 @@ export function MarkdownEditor({
           )}
         </div>
       </div>
-      <footer className="md-editor-status">
-        <span>
-          <Info size={13} />
-          <b>MD</b>
-          <i>
-            {stats.words} {tri(lang, "palavras", "words", "palabras")} ·{" "}
-            {stats.lines} {tri(lang, "linhas", "lines", "líneas")}
-          </i>
-        </span>
-        <button
-          type="button"
-          aria-label={t.help}
-          onClick={() => setHelpOpen(true)}
-        >
-          <CircleHelp size={15} />
-        </button>
-      </footer>
     </div>
   );
 
-  return (
-    <>
-      {fullscreen
-        ? createPortal(
-            <div className="md-editor-fullscreen">
-              <button
-                type="button"
-                aria-label={tri(
-                  lang,
-                  "Sair da tela cheia",
-                  "Exit fullscreen",
-                  "Salir de pantalla completa",
-                )}
-                onClick={() => setFullscreen(false)}
-              />
-              {content}
-            </div>,
-            document.body,
-          )
-        : content}
-      <Dialog.Root open={helpOpen} onOpenChange={setHelpOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="md-help-overlay" />
-          <Dialog.Content className="md-help-dialog">
-            <header>
-              <div>
-                <Info size={18} />
-                <Dialog.Title>
-                  {tri(
-                    lang,
-                    "Guia de Markdown",
-                    "Markdown guide",
-                    "Guía de Markdown",
-                  )}
-                </Dialog.Title>
-              </div>
-              <Dialog.Close aria-label={t.close}>
-                <X size={17} />
-              </Dialog.Close>
-            </header>
-            <label>
-              <Search size={15} />
-              <input
-                value={helpSearch}
-                onChange={(event) => setHelpSearch(event.target.value)}
-                placeholder={tri(
-                  lang,
-                  "Buscar recurso…",
-                  "Search features…",
-                  "Buscar función…",
-                )}
-              />
-            </label>
-            <div className="md-help-body">
-              {filteredHelp.map((section) => (
-                <section key={section.en}>
-                  <h3>{tri(lang, section.pt, section.en, section.es)}</h3>
-                  {section.items.map((item) => {
-                    const demo = item.demo ?? item.syntax;
-                    return (
-                      <article key={item.syntax}>
-                        <p>{tri(lang, item.pt, item.en, item.es)}</p>
-                        <div className="md-help-example">
-                          <pre>
-                            <code>{item.syntax}</code>
-                          </pre>
-                          {demo && (
-                            <div className="md-help-render">
-                              <MarkdownContent content={demo} lang={lang} />
-                            </div>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setHelpOpen(false);
-                            insertBlock(item.syntax);
-                          }}
-                        >
-                          {t.insert}
-                        </button>
-                      </article>
-                    );
-                  })}
-                </section>
-              ))}
-              {!filteredHelp.length && (
-                <p className="md-help-empty">
-                  {tri(
-                    lang,
-                    "Nenhum recurso encontrado.",
-                    "No features found.",
-                    "No se encontró ninguna función.",
-                  )}
-                </p>
-              )}
-            </div>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
-    </>
-  );
+  return fullscreen
+    ? createPortal(
+        <div className="md-editor-fullscreen">
+          <button
+            type="button"
+            aria-label={tri(
+              lang,
+              "Sair da tela cheia",
+              "Exit fullscreen",
+              "Salir de pantalla completa",
+            )}
+            onClick={() => setFullscreen(false)}
+          />
+          {content}
+        </div>,
+        document.body,
+      )
+    : content;
 }
