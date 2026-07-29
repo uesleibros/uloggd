@@ -11738,6 +11738,11 @@ details.review-page-content > .markdown-body {
   .list-detail-social {
     flex-wrap: wrap;
   }
+  .list-detail-meta {
+    display: flex;
+    width: fit-content;
+    margin-top: 10px;
+  }
   .journey-calendar {
     padding: 10px;
   }

@@ -211,6 +211,39 @@ test("contains intrinsic review-editor width inside the mobile sheet", async ({
   }
 });
 
+test("stacks list identity and metadata on mobile", async ({
+  page,
+}, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith("mobile"));
+  await page.goto("/pt-BR");
+  const geometry = await page.evaluate(() => {
+    const fixture = document.createElement("header");
+    fixture.className = "list-detail-header";
+    fixture.style.position = "fixed";
+    fixture.style.inset = "0 auto auto 0";
+    fixture.style.width = "100%";
+    fixture.innerHTML = `
+      <h1>Jogos Favoritos</h1>
+      <a class="list-detail-author"><span>F</span><small>por Filipe Garcia</small></a>
+      <div class="list-detail-meta"><span class="list-preview-mode">Coleção</span><small>22 jogos</small></div>`;
+    document.body.append(fixture);
+    const author = fixture.querySelector(".list-detail-author") as HTMLElement;
+    const metadata = fixture.querySelector(".list-detail-meta") as HTMLElement;
+    const authorBox = author.getBoundingClientRect();
+    const metadataBox = metadata.getBoundingClientRect();
+    fixture.remove();
+    return {
+      authorBottom: authorBox.bottom,
+      metadataTop: metadataBox.top,
+      metadataLeft: metadataBox.left,
+      authorLeft: authorBox.left,
+    };
+  });
+
+  expect(geometry.metadataTop).toBeGreaterThanOrEqual(geometry.authorBottom);
+  expect(geometry.metadataLeft).toBe(geometry.authorLeft);
+});
+
 test("keeps profile identity, metadata, and actions in their responsive contract", async ({
   page,
 }, testInfo) => {
