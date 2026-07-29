@@ -5793,8 +5793,10 @@ never the tracking violet. */
 }
 .review-editor-section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   flex: 1 1 auto;
   gap: 18px;
+  width: 100%;
   min-height: 0;
   padding: 20px;
   overflow-x: hidden;
@@ -5974,6 +5976,15 @@ never the tracking violet. */
   font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
+.review-editor-section > *,
+.review-writing-field,
+.review-title-field,
+.review-writing-field .md-editor,
+.review-writing-field .md-editor-tabs,
+.review-writing-field .md-editor-toolbar {
+  min-width: 0;
+  max-width: 100%;
+}
 
 .review-aspects-section > header {
   display: flex;
@@ -6055,7 +6066,7 @@ never the tracking violet. */
 }
 .review-aspect-list {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 .review-aspect-list article {
@@ -6111,7 +6122,7 @@ never the tracking violet. */
 }
 
 .review-details-section {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .review-achievement-toggles {
   grid-column: 1 / -1;
@@ -6340,8 +6351,8 @@ never the tracking violet. */
     right: 0;
     bottom: 0;
     left: 0;
-    width: 100%;
-    max-width: 100%;
+    width: 100dvw;
+    max-width: 100dvw;
     height: min(88dvh, 760px);
     max-height: calc(100dvh - max(24px, env(safe-area-inset-top)));
     margin: 0;
@@ -6387,10 +6398,17 @@ never the tracking violet. */
     padding: 4px 8px 10px;
   }
   .review-section-tabs button {
+    flex: 1 1 0;
+    min-width: 0;
     min-height: 46px;
+    padding-inline: 8px;
   }
   .review-section-tabs button span {
+    min-width: 0;
+    overflow: hidden;
     font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .review-editor-section {
     gap: 16px;
@@ -6399,7 +6417,7 @@ never the tracking violet. */
     padding-bottom: 24px;
   }
   .review-score-stage {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 13px;
     padding: 15px;
   }
@@ -6422,7 +6440,7 @@ never the tracking violet. */
   .review-details-section,
   .review-achievement-toggles,
   .review-publishing-options {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .review-aspects-section > header {
     gap: 10px;

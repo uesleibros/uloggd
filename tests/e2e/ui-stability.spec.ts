@@ -149,6 +149,68 @@ test("keeps the advanced-filter sheet themed and inside the mobile viewport", as
   expect(geometry.overlayAnimationDuration).toBe("0.18s");
 });
 
+test("contains intrinsic review-editor width inside the mobile sheet", async ({
+  page,
+}, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith("mobile"));
+  await page.goto("/pt-BR");
+  await page.evaluate(() => {
+    const fixture = document.createElement("div");
+    fixture.className = "social-editor-dialog review-studio-dialog";
+    fixture.setAttribute("data-testid", "review-sheet-fixture");
+    fixture.innerHTML = `
+      <header><div><span>Editar avaliação</span><h2>The Legend of Zelda: Ocarina of Time</h2></div><button>×</button></header>
+      <form class="social-editor-form">
+        <nav class="review-section-tabs">
+          <button><svg></svg><span>Avaliação</span></button>
+          <button><svg></svg><span>Aspectos</span><small>5</small></button>
+          <button><svg></svg><span>Detalhes</span></button>
+        </nav>
+        <div class="review-editor-section">
+          <label class="review-title-field"><span>Título <small>15/80</small></span><input value="Primeira Zerada" /></label>
+          <div class="review-writing-field">
+            <header><b>Sua avaliação</b><small>Markdown básico · menções e spoilers</small></header>
+            <div class="md-editor" data-variant="review">
+              <div class="md-editor-tabs"><div><button>Escrever</button><button>Visualizar</button></div><button>↗</button></div>
+              <div class="md-editor-toolbar">${Array.from({ length: 5 }, () => `<div><button>B</button><button>I</button><button>@</button></div>`).join("")}</div>
+              <div class="md-editor-stage"><div class="md-editor-write">jogão</div></div>
+            </div>
+          </div>
+        </div>
+        <footer class="review-action-bar"><span class="review-action-status"></span><button>Cancelar</button><button type="submit">Salvar alterações</button></footer>
+      </form>`;
+    document.body.append(fixture);
+  });
+
+  const geometry = await page.evaluate(() => {
+    const viewportWidth = window.innerWidth;
+    const selectors = [
+      "[data-testid='review-sheet-fixture']",
+      "[data-testid='review-sheet-fixture'] .social-editor-form",
+      "[data-testid='review-sheet-fixture'] .review-editor-section",
+      "[data-testid='review-sheet-fixture'] .review-title-field",
+      "[data-testid='review-sheet-fixture'] .review-writing-field",
+      "[data-testid='review-sheet-fixture'] .md-editor",
+    ];
+    return {
+      viewportWidth,
+      documentWidth: document.documentElement.scrollWidth,
+      boxes: selectors.map((selector) => {
+        const element = document.querySelector(selector) as HTMLElement;
+        const box = element.getBoundingClientRect();
+        return { left: box.left, right: box.right, width: box.width };
+      }),
+    };
+  });
+
+  expect(geometry.documentWidth).toBeLessThanOrEqual(geometry.viewportWidth);
+  for (const box of geometry.boxes) {
+    expect(box.left).toBeGreaterThanOrEqual(-1);
+    expect(box.right).toBeLessThanOrEqual(geometry.viewportWidth + 1);
+    expect(box.width).toBeLessThanOrEqual(geometry.viewportWidth + 1);
+  }
+});
+
 test("keeps profile identity, metadata, and actions in their responsive contract", async ({
   page,
 }, testInfo) => {
