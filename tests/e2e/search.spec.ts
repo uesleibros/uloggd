@@ -170,6 +170,35 @@ test("opens the filters dialog and applies a complete draft once", async ({
   await expect(page).toHaveURL(/perspectives=1/);
 });
 
+test("keeps switches compact, accessible, and interactive inside filters", async ({
+  page,
+}) => {
+  await openSearch(page);
+  await page.getByRole("button", { name: "Filtros avançados" }).click();
+
+  const ratedOnly = page.getByRole("switch", {
+    name: "Somente jogos avaliados",
+  });
+  await expect(ratedOnly).toHaveAttribute("aria-checked", "false");
+  const box = await ratedOnly.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.width).toBeCloseTo(40, 0);
+  expect(box!.height).toBeCloseTo(22, 0);
+
+  await ratedOnly.click();
+  await expect(ratedOnly).toHaveAttribute("aria-checked", "true");
+});
+
+test("opens the company directory from its canonical index route", async ({
+  page,
+}) => {
+  await page.goto("/pt-BR/company");
+  await expect(page).toHaveURL("/pt-BR/search?scope=companies");
+  await expect(
+    page.getByRole("heading", { name: "Encontre empresas de jogos" }),
+  ).toBeVisible();
+});
+
 test("searches every vocabulary and keeps engine names in the URL", async ({
   page,
 }) => {

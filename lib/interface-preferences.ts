@@ -2,7 +2,8 @@ export const INTERFACE_PREFERENCES_KEY = "uloggd:interface-preferences";
 export const INTERFACE_PREFERENCES_EVENT =
   "uloggd:interface-preferences-change";
 
-export type InterfaceFont = "inter" | "system" | "readable";
+export type InterfaceFont =
+  "inter" | "system" | "source-sans" | "readable" | "serif";
 export type ReadingSize = "standard" | "large" | "extra-large";
 
 export type InterfacePreferences = {
@@ -26,7 +27,10 @@ export function normalizeInterfacePreferences(
       : {};
   return {
     font:
-      input.font === "system" || input.font === "readable"
+      input.font === "system" ||
+      input.font === "source-sans" ||
+      input.font === "readable" ||
+      input.font === "serif"
         ? input.font
         : "inter",
     readingSize:
@@ -67,4 +71,4 @@ export function saveInterfacePreferences(preferences: InterfacePreferences) {
   window.dispatchEvent(new Event(INTERFACE_PREFERENCES_EVENT));
 }
 
-export const interfacePreferencesBootstrapScript = `(()=>{try{const k="${INTERFACE_PREFERENCES_KEY}",d=document.documentElement,p=JSON.parse(localStorage.getItem(k)||"{}");d.dataset.interfaceFont=p.font==="system"||p.font==="readable"?p.font:"inter";d.dataset.readingSize=p.readingSize==="large"||p.readingSize==="extra-large"?p.readingSize:"standard";d.dataset.reduceMotion=String(p.reduceMotion===true)}catch{}})()`;
+export const interfacePreferencesBootstrapScript = `(()=>{try{const k="${INTERFACE_PREFERENCES_KEY}",d=document.documentElement,p=JSON.parse(localStorage.getItem(k)||"{}"),f=["system","source-sans","readable","serif"].includes(p.font)?p.font:"inter";d.dataset.interfaceFont=f;d.dataset.readingSize=p.readingSize==="large"||p.readingSize==="extra-large"?p.readingSize:"standard";d.dataset.reduceMotion=String(p.reduceMotion===true)}catch{}})()`;

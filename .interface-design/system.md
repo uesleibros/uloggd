@@ -86,9 +86,9 @@ The feed should alternate between expressive/editorial zones and compact working
 
 ## Typography
 
-Primary typeface: Inter Variable through `next/font`, followed by the native Apple system stack (`-apple-system`, `BlinkMacSystemFont`, `SF Pro Text`) as fallback. Never place Arial before the loaded font. Metadata uses the same Inter family with size, weight, color, and tabular numerals providing hierarchy; avoid code-like monospaced labels in the product interface.
+Primary typeface: Inter Variable through `next/font`, followed by the native Apple system stack (`-apple-system`, `BlinkMacSystemFont`, `SF Pro Text`) as fallback. Never place Arial before the loaded font. Device-local alternatives are Source Sans 3, Atkinson Hyperlegible Next, Source Serif 4, and the native system stack; all web fonts are self-hosted through `next/font`. Metadata uses the selected interface family with size, weight, color, and tabular numerals providing hierarchy; avoid code-like monospaced labels in the product interface.
 
-Preferences may replace the interface family on one device with the native system stack or a high-legibility Verdana/Tahoma stack. Reading size has Standard, Large, and Extra Large steps and scales long-form Markdown/prose without inflating dense controls. Font, reading size, and an explicit reduced-motion override live together in the Preferences tab, persist locally, synchronize across tabs, and are applied before hydration.
+Preferences may replace the interface family on one device. Reading size has Standard, Large, and Extra Large steps; CSS typography uses rem units so the root preference scales the whole type hierarchy while fixed control geometry and responsive breakpoints remain stable. Font, reading size, and an explicit reduced-motion override live together in the Preferences tab, persist locally, synchronize across tabs, and are applied before hydration.
 
 Approximate scale (raised in July 2026 after desktop legibility feedback —
 nothing in the product renders below 9px):
@@ -208,7 +208,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Avatar and banner uploads always pass through a Base UI crop modal. Avatar crops at 1:1 to a maximum 640px; banner crops at 3:1 to a maximum 1800px; both export compressed WebP before server upload.
 - Image-provider credentials remain server-only. Upload controls expose loading, invalid-file, provider-failure, remove, and empty states.
 - Primary save controls use blurple only at the commit point, with a 160ms lift on hover, 0.97 press feedback, visible focus ring, and a clearly muted disabled state.
-- Settings includes a query-addressable Preferences tab. Custom-cover scope is account-level: “Only mine” keeps official artwork on other authors’ content, while “Everyone’s” resolves the author’s custom cover on visible libraries, lists, reviews, and sessions. A second device-local section provides live font, reading-size, and reduced-motion controls with representative previews and no account save ceremony.
+- Settings includes a query-addressable Preferences tab. Custom-cover scope is account-level: “Only mine” keeps official artwork on other authors' content, while “Everyone’s” resolves the author’s custom cover on visible libraries, lists, reviews, and sessions. A second device-local section provides five live font choices, three reading-size steps, and reduced motion with representative previews and no account save ceremony.
 
 ### Social connections
 
@@ -434,7 +434,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 ### Shared choice controls
 
-- Switches, checkboxes, radio groups, and two-state toggles use the local shadcn component API backed by Base UI; product code never exposes browser-native checkbox/radio chrome.
+- Switches use the local shadcn-style native button primitive with `role="switch"`, explicit checked state, a 40×22px pill track, and no hidden input that can inherit form sizing. Checkboxes, radio groups, and two-state toggles use the local shadcn component API; product code never exposes browser-native checkbox/radio chrome.
 - Switch rows keep the state control at the leading edge and explain the consequence beside it. Boolean filters use switches, multi-select filters use checkboxes, and mutually exclusive presentation choices use radio groups.
 - Shared controls rely on Base UI `data-checked`, `data-pressed`, `data-disabled`, and focus-visible states so every feature inherits the same motion, contrast, keyboard behavior, and hidden form input semantics.
 

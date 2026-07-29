@@ -237,27 +237,33 @@ html {
 /* Device-local reading and accessibility preferences are bootstrapped before
    hydration, so typography never flashes between routes. */
 :root {
-  --reading-text-scale: 1;
+  --interface-root-font-size: 100%;
+  --interface-font-family:
+    var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Helvetica Neue", sans-serif;
+  font-size: var(--interface-root-font-size);
 }
 :root[data-interface-font="system"] {
-  --font-inter: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --interface-font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    sans-serif;
+}
+:root[data-interface-font="source-sans"] {
+  --interface-font-family:
+    var(--font-source-sans), -apple-system, BlinkMacSystemFont, sans-serif;
 }
 :root[data-interface-font="readable"] {
-  --font-inter: Verdana, Tahoma, sans-serif;
+  --interface-font-family: var(--font-readable), Verdana, Tahoma, sans-serif;
+}
+:root[data-interface-font="serif"] {
+  --interface-font-family:
+    var(--font-source-serif), Georgia, "Times New Roman", serif;
 }
 :root[data-reading-size="large"] {
-  --reading-text-scale: 1.12;
+  --interface-root-font-size: 112%;
 }
 :root[data-reading-size="extra-large"] {
-  --reading-text-scale: 1.24;
-}
-:root[data-reading-size="large"] .game-summary > p,
-:root[data-reading-size="large"] .publisher-description,
-:root[data-reading-size="large"] .activity-content,
-:root[data-reading-size="extra-large"] .game-summary > p,
-:root[data-reading-size="extra-large"] .publisher-description,
-:root[data-reading-size="extra-large"] .activity-content {
-  font-size: calc(13px * var(--reading-text-scale));
+  --interface-root-font-size: 124%;
 }
 :root[data-reduce-motion="true"] *,
 :root[data-reduce-motion="true"] *::before,
@@ -275,13 +281,7 @@ body {
   overflow-x: clip;
   background: var(--console-black);
   color: var(--screen-white);
-  font-family:
-    var(--font-inter),
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Text",
-    "Helvetica Neue",
-    sans-serif;
+  font-family: var(--interface-font-family);
   font-feature-settings:
     "kern" 1,
     "liga" 1,
@@ -422,7 +422,7 @@ html[data-sidebar-collapsed] {
   background: var(--notification-red);
   box-shadow: none;
   color: #fff;
-  font: 700 9px var(--font-inter);
+  font: 700 0.5625rem var(--interface-font-family);
 }
 .notification-backdrop {
   position: fixed;
@@ -475,14 +475,14 @@ html[data-sidebar-collapsed] {
 }
 .notification-header h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 680;
   letter-spacing: -0.03em;
 }
 .notification-header p {
   margin: 4px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .notification-header > button {
   display: grid;
@@ -519,7 +519,7 @@ html[data-sidebar-collapsed] {
   border-radius: 6px;
   background: transparent;
   color: var(--screen-dim);
-  font: 600 10px var(--font-inter);
+  font: 600 0.625rem var(--interface-font-family);
   cursor: pointer;
 }
 .notification-toolbar button:hover,
@@ -580,7 +580,7 @@ html[data-sidebar-collapsed] {
   border-radius: 50%;
   background: var(--console-inset);
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 650;
 }
 .notification-avatar > img {
@@ -606,7 +606,7 @@ html[data-sidebar-collapsed] {
   display: grid;
   gap: 5px;
   min-width: 0;
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.45;
 }
 .notification-copy strong {
@@ -618,7 +618,7 @@ html[data-sidebar-collapsed] {
 }
 .notification-copy time {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .notification-unread {
   width: 7px;
@@ -637,12 +637,12 @@ html[data-sidebar-collapsed] {
 .notification-state strong {
   margin-top: 14px;
   color: var(--screen-white);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .notification-state span {
   max-width: 240px;
   margin-top: 6px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 .notification-state button {
@@ -671,12 +671,12 @@ html[data-sidebar-collapsed] {
   border-radius: 8px;
   background: var(--console-surface);
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .notification-saving {
   padding: 8px 12px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .notification-skeleton {
   display: grid;
@@ -771,12 +771,12 @@ html[data-sidebar-collapsed] {
 .notification-detail-dialog h2 {
   padding-right: 34px;
   color: var(--screen-white);
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 .notification-detail-dialog > p {
   margin-top: 7px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 .notification-detail-dialog > div {
@@ -788,14 +788,14 @@ html[data-sidebar-collapsed] {
 }
 .notification-detail-dialog small {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
 .notification-detail-dialog > div p {
   margin-top: 6px;
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.55;
   white-space: pre-wrap;
 }
@@ -806,7 +806,7 @@ html[data-sidebar-collapsed] {
   border-radius: 8px;
   background: var(--brand-blurple);
   color: white;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
 }
 .profile-comment-removed-notice {
@@ -820,7 +820,7 @@ html[data-sidebar-collapsed] {
 }
 .profile-comment-removed-notice p {
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.55;
 }
 .profile-comment-removed-notice button {
@@ -829,7 +829,7 @@ html[data-sidebar-collapsed] {
   border-radius: 8px;
   background: var(--brand-blurple);
   color: white;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
 }
 .profile-comment-removed-notice footer {
@@ -927,7 +927,7 @@ html[data-sidebar-collapsed] {
   align-items: center;
   gap: 10px;
   width: fit-content;
-  font-size: 23px;
+  font-size: 1.4375rem;
   font-weight: 760;
   letter-spacing: -0.055em;
 }
@@ -1149,7 +1149,7 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid var(--shell-line-strong);
   border-radius: 5px;
   color: var(--screen-muted);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -1161,7 +1161,7 @@ html[data-sidebar-ready] .account-button > svg {
 .nav-label {
   margin: 0 10px 9px;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 650;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1179,7 +1179,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 0 12px;
   border-radius: 8px;
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 430;
   transition:
     background-color 140ms ease-out,
@@ -1247,7 +1247,7 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 9px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 650;
   cursor: pointer;
   transition:
@@ -1332,12 +1332,12 @@ html[data-sidebar-ready] .account-button > svg {
   min-width: 0;
 }
 .quick-create-menu strong {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 650;
 }
 .quick-create-menu small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.35;
   text-wrap: pretty;
 }
@@ -1363,7 +1363,7 @@ html[data-sidebar-ready] .account-button > svg {
   padding: 3px 6px;
   border: 1px solid var(--shell-line);
   border-radius: 5px;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 650;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -1404,7 +1404,7 @@ html[data-sidebar-collapsed]
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -1420,7 +1420,7 @@ html[data-sidebar-collapsed]
 }
 .locale-switcher-trigger small {
   color: var(--screen-muted);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
 }
 .locale-switcher-trigger[data-popup-open] > svg:last-child {
   transform: rotate(180deg);
@@ -1443,7 +1443,7 @@ html[data-sidebar-collapsed]
 .locale-menu-label {
   padding: 7px 9px 6px;
   color: var(--screen-muted);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -1457,12 +1457,12 @@ html[data-sidebar-collapsed]
   border-radius: 6px;
   outline: 0;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   cursor: pointer;
 }
 .locale-menu-item small {
   color: var(--screen-muted);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
 }
 .locale-menu-item svg {
   color: var(--brand-blurple-bright);
@@ -1524,12 +1524,12 @@ html[data-sidebar-collapsed]
 }
 .account-button strong {
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .account-button small {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .account-button > svg {
   color: var(--screen-muted);
@@ -1544,7 +1544,7 @@ html[data-sidebar-collapsed]
   border-radius: 50%;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 700 12px var(--font-inter);
+  font: 700 0.75rem var(--interface-font-family);
   overflow: hidden;
 }
 .account-initial img {
@@ -1585,17 +1585,17 @@ html[data-sidebar-collapsed]
   white-space: nowrap;
 }
 .account-menu-identity strong {
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .account-menu-identity span {
   margin-top: 4px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .account-menu-identity small {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .account-menu [role="separator"] {
   height: 1px;
@@ -1616,7 +1616,7 @@ html[data-sidebar-collapsed]
   outline: 0;
   background: transparent;
   color: var(--danger-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
   cursor: pointer;
 }
 .account-menu-profile,
@@ -1677,7 +1677,7 @@ html[data-sidebar-collapsed]
   outline: 0;
   background: transparent;
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .catalog-search-field input::placeholder {
   color: var(--screen-muted);
@@ -1698,7 +1698,7 @@ html[data-sidebar-collapsed]
 }
 .catalog-search-field kbd {
   border: 1px solid var(--shell-line);
-  font: 500 11px var(--font-inter);
+  font: 500 0.6875rem var(--interface-font-family);
 }
 .desktop-search-dropdown {
   position: absolute;
@@ -1725,7 +1725,7 @@ html[data-sidebar-collapsed]
   border-bottom: 1px solid var(--shell-line);
   background: var(--overlay-panel-sticky);
   color: var(--screen-muted);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -1786,7 +1786,7 @@ html[data-sidebar-collapsed]
   place-items: center;
   overflow: hidden;
   border-radius: 50%;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 650;
 }
 .search-result-avatar img {
@@ -1807,7 +1807,7 @@ html[data-sidebar-collapsed]
   aspect-ratio: 1;
   align-self: center;
   color: var(--screen-muted);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
 }
 .search-result-avatar {
@@ -1832,20 +1832,20 @@ html[data-sidebar-collapsed]
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 640;
 }
 .search-result-copy small {
   margin-top: 4px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .search-result-kind {
   padding: 3px 5px;
   border: 1px solid var(--shell-line);
   border-radius: 4px;
   color: var(--screen-muted);
-  font: 600 10px var(--font-inter);
+  font: 600 0.625rem var(--interface-font-family);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -1865,7 +1865,7 @@ html[data-sidebar-collapsed]
   border-radius: 6px;
   background: rgb(244 128 44 / 8%);
   color: #f3b07e;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 620;
   letter-spacing: 0.025em;
 }
@@ -1881,7 +1881,7 @@ html[data-sidebar-collapsed]
   min-height: 112px;
   padding: 24px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   text-align: center;
 }
 .search-message-error {
@@ -1916,14 +1916,14 @@ html[data-sidebar-collapsed]
 }
 .mobile-search-heading h2 {
   margin: 0;
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 650;
   letter-spacing: -0.035em;
 }
 .mobile-search-heading p {
   margin: 4px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .mobile-search-heading button {
   display: grid;
@@ -1945,7 +1945,7 @@ html[data-sidebar-collapsed]
   flex: none;
 }
 .mobile-search-surface .catalog-search-field input {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .mobile-search-results {
   min-height: 0;
@@ -1963,7 +1963,7 @@ html[data-sidebar-collapsed]
   width: 48px;
 }
 .mobile-search-results .search-result-copy strong {
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 @keyframes search-surface-in {
   from {
@@ -2018,7 +2018,7 @@ html[data-sidebar-collapsed]
 }
 .featured-kicker {
   color: var(--brand-blurple-bright);
-  font: 650 11px var(--font-inter);
+  font: 650 0.6875rem var(--interface-font-family);
   letter-spacing: 0.1em;
 }
 .eyebrow {
@@ -2026,14 +2026,14 @@ html[data-sidebar-collapsed]
   align-items: center;
   gap: 6px;
   color: #bcaeff;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 680;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 .featured-copy h2 {
   margin: 12px 0 9px;
-  font-size: clamp(36px, 5.6vw, 58px);
+  font-size: clamp(2.25rem, 5.6vw, 3.625rem);
   font-weight: 680;
   line-height: 0.98;
   letter-spacing: -0.055em;
@@ -2045,7 +2045,7 @@ html[data-sidebar-collapsed]
   align-items: center;
   gap: 8px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .featured-meta > span {
   display: flex;
@@ -2066,7 +2066,7 @@ html[data-sidebar-collapsed]
   margin: 16px 0 0;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.6;
   text-wrap: pretty;
   -webkit-box-orient: vertical;
@@ -2088,7 +2088,7 @@ html[data-sidebar-collapsed]
   border-radius: 8px;
   background: color-mix(in srgb, var(--console-panel) 88%, transparent);
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
   backdrop-filter: blur(10px);
   transition:
@@ -2134,12 +2134,12 @@ html[data-sidebar-collapsed]
 }
 .genre-section-heading > span {
   color: var(--brand-blurple-bright);
-  font: 650 11px var(--font-inter);
+  font: 650 0.6875rem var(--interface-font-family);
   letter-spacing: 0.09em;
 }
 .genre-section-heading h2 {
   margin: 9px 0 0;
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 640;
   letter-spacing: -0.04em;
   overflow-wrap: anywhere;
@@ -2148,7 +2148,7 @@ html[data-sidebar-collapsed]
 .genre-section-heading p {
   margin: 7px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 .genre-collections {
@@ -2164,7 +2164,7 @@ html[data-sidebar-collapsed]
 }
 .genre-collection .section-heading h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.025em;
 }
@@ -2178,14 +2178,14 @@ html[data-sidebar-collapsed]
 }
 .section-heading h2 {
   margin: 0;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.025em;
 }
 .section-heading p {
   margin: 5px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .section-heading > a {
   display: flex;
@@ -2193,7 +2193,7 @@ html[data-sidebar-collapsed]
   gap: 5px;
   min-height: 28px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .section-heading > a:hover {
@@ -2311,7 +2311,7 @@ html[data-sidebar-collapsed]
   background: rgb(8 7 10 / 80%);
   color: #d8d3dc;
   backdrop-filter: blur(6px);
-  font: 650 11px var(--font-inter);
+  font: 650 0.6875rem var(--interface-font-family);
   pointer-events: none;
 }
 .quick-card-details {
@@ -2333,7 +2333,7 @@ html[data-sidebar-collapsed]
   display: -webkit-box;
   overflow: hidden;
   color: white;
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.25;
   text-align: center;
   -webkit-box-orient: vertical;
@@ -2344,7 +2344,7 @@ html[data-sidebar-collapsed]
   align-items: center;
   gap: 3px;
   color: var(--achievement-gold);
-  font: 650 11px var(--font-inter);
+  font: 650 0.6875rem var(--interface-font-family);
 }
 .quick-action-bar {
   --screen-white: var(--image-foreground);
@@ -2441,7 +2441,7 @@ html[data-sidebar-collapsed]
   padding: 0 8px;
   border-radius: 5px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 450;
   outline: 0;
   cursor: pointer;
@@ -2468,7 +2468,7 @@ html[data-sidebar-collapsed]
   display: block;
   margin-bottom: 5px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .quick-menu [role="menuitem"].quick-menu-remove {
   color: var(--danger-text);
@@ -2511,7 +2511,7 @@ html[data-sidebar-collapsed]
   border-radius: 4px;
   background: rgb(7 6 9 / 90%);
   color: var(--danger-text);
-  font-size: 10px;
+  font-size: 0.625rem;
   text-align: center;
 }
 @keyframes quick-menu-in {
@@ -2527,7 +2527,7 @@ html[data-sidebar-collapsed]
 .quick-game-card h3 {
   margin: 9px 0 3px;
   overflow: hidden;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2536,7 +2536,7 @@ html[data-sidebar-collapsed]
   margin: 0;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2558,7 +2558,7 @@ html[data-sidebar-collapsed]
   flex: none;
   gap: 3px;
   color: var(--achievement-gold);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 620;
 }
 
@@ -2575,12 +2575,12 @@ html[data-sidebar-collapsed]
 }
 .discoveries-heading > span {
   color: var(--brand-blurple-bright);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
   letter-spacing: 0.08em;
 }
 .discoveries-heading h2 {
   margin: 0;
-  font-size: 21px;
+  font-size: 1.3125rem;
   font-weight: 620;
   letter-spacing: -0.035em;
 }
@@ -2591,7 +2591,7 @@ html[data-sidebar-collapsed]
 }
 .discoveries-heading p {
   margin: 5px 0 0;
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .discovery-lanes {
   border-top: 1px solid var(--shell-line);
@@ -2615,18 +2615,18 @@ html[data-sidebar-collapsed]
 }
 .discovery-lane > header > span {
   color: var(--screen-muted);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
   font-variant-numeric: tabular-nums;
 }
 .discovery-lane h3 {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 .discovery-lane header p {
   margin: 5px 0 0;
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
   text-wrap: pretty;
 }
@@ -2655,7 +2655,7 @@ html[data-sidebar-collapsed]
 .library-empty p {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.6;
 }
 .library-grid {
@@ -2673,7 +2673,7 @@ html[data-sidebar-collapsed]
 }
 .library-empty h2 {
   margin: 0 0 7px;
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 
 .game-page {
@@ -2743,7 +2743,7 @@ html[data-sidebar-collapsed]
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 500;
   cursor: pointer;
 }
@@ -2755,7 +2755,7 @@ html[data-sidebar-collapsed]
 .game-cover-change span {
   margin-left: auto;
   color: var(--screen-muted);
-  font: 550 10px var(--font-inter);
+  font: 550 0.625rem var(--interface-font-family);
 }
 .cover-modal-backdrop {
   position: fixed;
@@ -2792,14 +2792,14 @@ html[data-sidebar-collapsed]
 }
 .cover-modal > header h2 {
   margin: 0;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 640;
   letter-spacing: -0.03em;
 }
 .cover-modal > header p {
   margin: 5px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .cover-modal > header button {
   display: grid;
@@ -2869,7 +2869,7 @@ html[data-sidebar-collapsed]
   margin-top: 7px;
   overflow: hidden;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 520;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2878,13 +2878,13 @@ html[data-sidebar-collapsed]
   display: block;
   margin-top: 2px;
   color: var(--safe-green);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .cover-modal > p {
   margin: 0;
   padding: 0 20px 12px;
   color: var(--danger-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .cover-modal > footer {
   display: flex;
@@ -2906,7 +2906,7 @@ html[data-sidebar-collapsed]
   border-radius: 7px;
   background: transparent;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 520;
   cursor: pointer;
 }
@@ -2953,12 +2953,12 @@ html[data-sidebar-collapsed]
 }
 .game-time-panel header span {
   color: var(--brand-blurple-bright);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
   letter-spacing: 0.07em;
 }
 .game-time-panel h2 {
   margin: 3px 0 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 620;
 }
 .game-time-panel dl {
@@ -2977,18 +2977,18 @@ html[data-sidebar-collapsed]
   align-items: center;
   gap: 6px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .game-time-panel dd {
   margin: 0;
   color: var(--screen-white);
-  font: 630 11px var(--font-inter);
+  font: 630 0.6875rem var(--interface-font-family);
   font-variant-numeric: tabular-nums;
 }
 .game-time-panel > p {
   margin: 10px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   text-align: right;
 }
 .game-context-rail .game-score-line {
@@ -3008,12 +3008,12 @@ html[data-sidebar-collapsed]
 }
 .game-similar-rail > header span {
   color: var(--brand-blurple-bright);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
   letter-spacing: 0.07em;
 }
 .game-similar-rail > header h2 {
   margin: 4px 0 10px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 620;
 }
 .game-similar-rail > div {
@@ -3054,24 +3054,24 @@ html[data-sidebar-collapsed]
 }
 .game-similar-rail strong {
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
 }
 .game-similar-rail small {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .game-title-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 12px;
   color: var(--screen-muted);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
 }
 .game-page-content h1 {
   margin: 10px 0 16px;
-  font-size: clamp(30px, 4vw, 44px);
+  font-size: clamp(1.875rem, 4vw, 2.75rem);
   line-height: 1.02;
   letter-spacing: -0.05em;
   text-wrap: balance;
@@ -3091,7 +3091,7 @@ html[data-sidebar-collapsed]
   display: block;
   margin-bottom: 5px;
   color: var(--screen-muted);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
   letter-spacing: 0.07em;
 }
 .star-rating {
@@ -3199,7 +3199,7 @@ html[data-sidebar-collapsed]
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 450;
   cursor: pointer;
 }
@@ -3217,12 +3217,12 @@ html[data-sidebar-collapsed]
   flex-basis: 100%;
   margin: 0;
   color: var(--state-liked-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .game-actions-signed-out {
   margin: 0 0 24px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .game-score-line {
   display: flex;
@@ -3239,12 +3239,12 @@ html[data-sidebar-collapsed]
 }
 .game-score-line strong {
   color: var(--screen-white);
-  font: 680 22px var(--font-inter);
+  font: 680 1.375rem var(--interface-font-family);
 }
 .game-score-line span,
 .game-score-line p {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .game-score-line p {
   margin: 0;
@@ -3254,12 +3254,12 @@ html[data-sidebar-collapsed]
 }
 .game-summary h2 {
   margin: 0 0 10px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .game-summary p {
   margin: 0;
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.7;
   text-wrap: pretty;
 }
@@ -3279,7 +3279,7 @@ html[data-sidebar-collapsed]
 }
 .game-details dt {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .game-details dd {
   display: flex;
@@ -3288,7 +3288,7 @@ html[data-sidebar-collapsed]
   gap: 8px;
   margin: 0;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
@@ -3340,18 +3340,18 @@ html[data-sidebar-collapsed]
 }
 .game-section-heading span {
   color: var(--brand-blurple-bright);
-  font: 600 10px var(--font-inter);
+  font: 600 0.625rem var(--interface-font-family);
   letter-spacing: 0.09em;
 }
 .game-section-heading h2 {
   margin: 5px 0 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 640;
   letter-spacing: -0.03em;
 }
 .game-section-heading small {
   color: var(--screen-muted);
-  font: 550 11px var(--font-inter);
+  font: 550 0.6875rem var(--interface-font-family);
 }
 .game-gallery-grid {
   display: grid;
@@ -3393,7 +3393,7 @@ html[data-sidebar-collapsed]
   gap: 5px;
   background: rgb(7 6 9 / 62%);
   color: white;
-  font: 650 12px var(--font-inter);
+  font: 650 0.75rem var(--interface-font-family);
 }
 .media-lightbox-backdrop {
   position: fixed;
@@ -3454,7 +3454,7 @@ html[data-sidebar-collapsed]
   border-radius: 5px;
   background: var(--image-control);
   color: #b9bcc5;
-  font: 550 11px var(--font-inter);
+  font: 550 0.6875rem var(--interface-font-family);
   transform: translateX(-50%);
 }
 .media-lightbox-pages {
@@ -3507,7 +3507,7 @@ html[data-sidebar-collapsed]
   padding-inline: 3px;
   border-radius: 4px;
   background: rgb(7 6 9 / 78%);
-  font: 650 10px var(--font-inter);
+  font: 650 0.625rem var(--interface-font-family);
   font-variant-numeric: tabular-nums;
 }
 .game-video-grid {
@@ -3538,7 +3538,7 @@ html[data-sidebar-collapsed]
   gap: 6px;
   margin: 8px 0 0;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 500;
 }
 .game-event-list {
@@ -3575,12 +3575,12 @@ html[data-sidebar-collapsed]
 }
 .game-event-list span {
   color: var(--brand-blurple-bright);
-  font: 550 10px var(--font-inter);
+  font: 550 0.625rem var(--interface-font-family);
   text-transform: uppercase;
 }
 .game-event-list h3 {
   margin: 4px 0 0;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 580;
 }
 .game-event-list p {
@@ -3588,7 +3588,7 @@ html[data-sidebar-collapsed]
   margin: 5px 0 0;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.45;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -3610,7 +3610,7 @@ html[data-sidebar-collapsed]
   border: 1px solid var(--shell-line);
   border-radius: 6px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3649,7 +3649,7 @@ html[data-sidebar-collapsed]
   border-radius: 6px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 480;
   cursor: pointer;
 }
@@ -3665,7 +3665,7 @@ html[data-sidebar-collapsed]
 }
 .related-tabs button span {
   color: var(--screen-muted);
-  font: 550 10px var(--font-inter);
+  font: 550 0.625rem var(--interface-font-family);
 }
 .shelf-game {
   min-width: 0;
@@ -3700,7 +3700,7 @@ html[data-sidebar-collapsed]
   background: rgb(8 7 10 / 80%);
   color: #d8d3dc;
   backdrop-filter: blur(6px);
-  font: 650 11px var(--font-inter);
+  font: 650 0.6875rem var(--interface-font-family);
 }
 .shelf-cover > button {
   position: absolute;
@@ -3731,7 +3731,7 @@ html[data-sidebar-collapsed]
 .shelf-game h3 {
   margin: 9px 0 3px;
   overflow: hidden;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3740,7 +3740,7 @@ html[data-sidebar-collapsed]
   margin: 0;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3774,13 +3774,13 @@ html[data-sidebar-collapsed]
 }
 .list-main h3 {
   margin: 0 0 4px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 560;
 }
 .list-main p {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .list-rating {
   display: grid;
@@ -3790,11 +3790,11 @@ html[data-sidebar-collapsed]
   font-variant-numeric: tabular-nums;
 }
 .list-rating strong {
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .list-rating span {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 
 /* Context rail */
@@ -3817,14 +3817,14 @@ html[data-sidebar-collapsed]
   align-items: center;
   gap: 5px;
   color: var(--safe-green);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 .rail-intro h2 {
   margin: 15px 0 8px;
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.035em;
@@ -3833,7 +3833,7 @@ html[data-sidebar-collapsed]
 .rail-intro p {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
   text-wrap: pretty;
 }
@@ -3849,7 +3849,7 @@ html[data-sidebar-collapsed]
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
   cursor: pointer;
 }
@@ -3874,14 +3874,14 @@ html[data-sidebar-collapsed]
 .rail-library-stats dt {
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .rail-library-stats dd {
   margin: 5px 0 0;
   color: var(--screen-white);
-  font: 650 15px var(--font-inter);
+  font: 650 0.9375rem var(--interface-font-family);
   font-variant-numeric: tabular-nums;
 }
 .rail-section {
@@ -3896,12 +3896,12 @@ html[data-sidebar-collapsed]
 }
 .rail-title h2 {
   margin: 0;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 .rail-title span {
   color: var(--screen-muted);
-  font: 500 11px var(--font-inter);
+  font: 500 0.6875rem var(--interface-font-family);
 }
 .trend {
   display: grid;
@@ -3926,7 +3926,7 @@ html[data-sidebar-collapsed]
 }
 .trend > span {
   color: var(--screen-muted);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
   font-variant-numeric: tabular-nums;
 }
 .trend strong,
@@ -3937,13 +3937,13 @@ html[data-sidebar-collapsed]
   white-space: nowrap;
 }
 .trend strong {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
 }
 .trend small {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .trend > svg {
   color: var(--screen-muted);
@@ -3966,7 +3966,7 @@ html[data-sidebar-collapsed]
   padding: 24px 32px;
   border-top: 1px solid var(--shell-line);
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 .platform-footer > div,
@@ -4034,13 +4034,13 @@ html[data-sidebar-collapsed]
 }
 .cookie-banner-copy h2 {
   margin: 0 0 4px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 650;
 }
 .cookie-banner-copy p {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
   text-wrap: pretty;
 }
@@ -4062,7 +4062,7 @@ html[data-sidebar-collapsed]
   border-radius: 7px;
   background: transparent;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -4110,14 +4110,14 @@ html[data-sidebar-collapsed]
 }
 .cookie-modal > header h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 650;
   letter-spacing: -0.035em;
 }
 .cookie-modal > header p {
   margin: 5px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 .cookie-modal > header button {
@@ -4155,14 +4155,14 @@ html[data-sidebar-collapsed]
 }
 .cookie-category-heading h3 {
   margin: 0;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 630;
 }
 .cookie-category-heading > div > span {
   display: block;
   margin-top: 3px;
   color: var(--screen-muted);
-  font: 550 10px var(--font-inter);
+  font: 550 0.625rem var(--interface-font-family);
   text-transform: uppercase;
 }
 .cookie-category-state {
@@ -4184,7 +4184,7 @@ html[data-sidebar-collapsed]
   max-width: 470px;
   margin: 8px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 .cookie-modal > footer {
@@ -4197,7 +4197,7 @@ html[data-sidebar-collapsed]
 }
 .cookie-modal > footer a {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -4237,7 +4237,7 @@ html[data-sidebar-collapsed]
   border-radius: 50%;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
 }
 .mobile-menu-identity img {
   display: block;
@@ -4319,7 +4319,7 @@ html[data-sidebar-collapsed]
   padding: 0 12px;
   border-radius: 8px;
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 430;
 }
 .drawer-navigation a:hover,
@@ -4361,7 +4361,7 @@ html[data-sidebar-collapsed]
 .drawer-secondary a {
   min-height: 52px;
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .drawer-account {
   flex: none;
@@ -4379,12 +4379,12 @@ html[data-sidebar-collapsed]
   display: block;
 }
 .drawer-account strong {
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .drawer-account > div span {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 @keyframes veil-in {
   from {
@@ -4414,7 +4414,7 @@ html[data-sidebar-collapsed]
 .profile-details-form header p {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 .settings-main,
@@ -4530,7 +4530,7 @@ html[data-sidebar-collapsed]
 .login-library-copy h2 {
   max-width: 370px;
   margin: 0 0 10px;
-  font-size: clamp(29px, 3.4vw, 43px);
+  font-size: clamp(1.8125rem, 3.4vw, 2.6875rem);
   font-weight: 620;
   letter-spacing: -0.055em;
   line-height: 1.03;
@@ -4540,7 +4540,7 @@ html[data-sidebar-collapsed]
   max-width: 330px;
   margin: 0;
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.65;
   text-wrap: pretty;
 }
@@ -4559,21 +4559,21 @@ html[data-sidebar-collapsed]
 }
 .login-highlight-list article > span {
   color: var(--screen-muted);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
 }
 .login-highlight-list article > svg {
   color: #8f97f7;
 }
 .login-highlight-list h3 {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 .login-highlight-list p {
   max-width: 380px;
   margin: 6px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
   text-wrap: pretty;
 }
@@ -4588,7 +4588,7 @@ html[data-sidebar-collapsed]
 }
 .login-panel-heading h1 {
   margin: 0 0 10px;
-  font-size: 32px;
+  font-size: 2rem;
   font-weight: 620;
   letter-spacing: -0.05em;
   line-height: 1.08;
@@ -4597,7 +4597,7 @@ html[data-sidebar-collapsed]
 .login-panel-heading p {
   margin: 0;
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.6;
 }
 .passkey-button {
@@ -4638,13 +4638,13 @@ html[data-sidebar-collapsed]
   display: block;
 }
 .passkey-button strong {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 620;
 }
 .passkey-button small {
   margin-top: 3px;
   color: rgb(255 255 255 / 72%);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.35;
 }
 .auth-divider {
@@ -4653,7 +4653,7 @@ html[data-sidebar-collapsed]
   gap: 12px;
   margin: 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -4691,7 +4691,7 @@ html[data-sidebar-collapsed]
   border-radius: 6px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   cursor: pointer;
 }
 .auth-tabs button[aria-selected="true"] {
@@ -4706,7 +4706,7 @@ html[data-sidebar-collapsed]
   display: grid;
   gap: 7px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 500;
 }
 .auth-form input:not([type="checkbox"]) {
@@ -4727,7 +4727,7 @@ html[data-sidebar-collapsed]
 }
 .auth-field-error,
 .auth-field-hint {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 450;
   line-height: 1.45;
   text-wrap: pretty;
@@ -4766,7 +4766,7 @@ html[data-sidebar-collapsed]
   border-radius: 8px;
   background: var(--brand-blurple);
   color: white;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
   transition:
@@ -4789,7 +4789,7 @@ html[data-sidebar-collapsed]
   border-radius: 7px;
   background: rgb(115 198 154 / 8%);
   color: var(--safe-green);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 .turnstile-wrap {
@@ -4807,13 +4807,13 @@ html[data-sidebar-collapsed]
 }
 .auth-state h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: 1.75rem;
   letter-spacing: -0.045em;
 }
 .auth-state p {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.6;
 }
 .auth-text-button {
@@ -4825,7 +4825,7 @@ html[data-sidebar-collapsed]
   border: 0;
   background: transparent;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   cursor: pointer;
 }
 .auth-single {
@@ -4864,14 +4864,14 @@ html[data-sidebar-collapsed]
   min-height: 18px;
   margin: -6px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .field-success {
   color: var(--safe-green);
 }
 .field-error {
   color: var(--danger-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .provider-grid button {
   display: flex;
@@ -4884,7 +4884,7 @@ html[data-sidebar-collapsed]
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
   cursor: pointer;
   transition:
@@ -4909,7 +4909,7 @@ html[data-sidebar-collapsed]
   border-radius: 7px;
   background: rgb(210 105 105 / 8%);
   color: var(--danger-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.45;
 }
 .auth-assurance {
@@ -4918,7 +4918,7 @@ html[data-sidebar-collapsed]
   gap: 9px;
   margin-top: 22px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 .auth-assurance svg {
@@ -4929,12 +4929,12 @@ html[data-sidebar-collapsed]
   display: block;
   margin-bottom: 2px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .auth-legal {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
   text-align: center;
 }
@@ -5236,7 +5236,7 @@ html[data-sidebar-collapsed]
   }
   .featured-copy h2 {
     margin-top: 8px;
-    font-size: 26px;
+    font-size: 1.625rem;
   }
   .featured-meta span:last-child,
   .featured-copy p {
@@ -5329,18 +5329,18 @@ html[data-sidebar-collapsed]
   .login-library-copy h2 {
     max-width: 270px;
     margin: 10px 0 6px;
-    font-size: 24px;
+    font-size: 1.5rem;
   }
   .login-library-copy p {
     max-width: 280px;
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .login-panel {
     max-width: none;
     padding: 30px 20px 40px;
   }
   .login-panel-heading h1 {
-    font-size: 27px;
+    font-size: 1.6875rem;
   }
 }
 .md-mobile-only {
@@ -5491,7 +5491,7 @@ html[data-sidebar-collapsed]
   border-radius: 5px;
   background: var(--quiet-hover);
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   transition:
     background-color 150ms ease-out,
     color 150ms ease-out;
@@ -5656,7 +5656,7 @@ never the tracking violet. */
 .activity-review-title {
   margin-top: 12px;
   color: var(--screen-white);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 640;
   letter-spacing: -0.025em;
 }
@@ -5681,12 +5681,12 @@ never the tracking violet. */
 }
 .activity-aspects dt {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .activity-aspects dd {
   margin: 0;
   color: var(--achievement-gold);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -5698,7 +5698,7 @@ never the tracking violet. */
 }
 .review-rating-copy {
   color: var(--achievement-gold);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
 }
 .review-writing-field > header {
@@ -5710,11 +5710,11 @@ never the tracking violet. */
 }
 .review-writing-field > header b {
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .review-writing-field > header small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .review-writing-field .md-editor-stage,
 .review-writing-field .md-editor-write {
@@ -5779,7 +5779,7 @@ never the tracking violet. */
   border-radius: 7px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 520;
   transition:
     background-color 150ms ease-out,
@@ -5822,7 +5822,7 @@ never the tracking violet. */
   border-radius: 5px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
 .review-editor-section {
@@ -5863,7 +5863,7 @@ never the tracking violet. */
 .review-score-stage > header small,
 .review-aspects-section > header small {
   color: var(--achievement-gold);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 680;
   letter-spacing: 0.09em;
 }
@@ -5871,7 +5871,7 @@ never the tracking violet. */
 .review-aspects-section > header h3 {
   margin-top: 4px;
   color: var(--screen-white);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 640;
   letter-spacing: -0.025em;
 }
@@ -5883,7 +5883,7 @@ never the tracking violet. */
   padding: 0 8px;
   border-radius: 7px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .review-score-stage > header button:hover {
   background: var(--quiet-hover);
@@ -5901,7 +5901,7 @@ never the tracking violet. */
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .review-mode-trigger[data-popup-open] svg {
   transform: rotate(180deg);
@@ -5921,7 +5921,7 @@ never the tracking violet. */
 }
 .review-range-control output {
   color: var(--achievement-gold);
-  font-size: 26px;
+  font-size: 1.625rem;
   font-weight: 680;
   letter-spacing: -0.045em;
   font-variant-numeric: tabular-nums;
@@ -5929,7 +5929,7 @@ never the tracking violet. */
 .review-range-control output small {
   margin-left: 2px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 520;
   letter-spacing: 0;
 }
@@ -5949,7 +5949,7 @@ never the tracking violet. */
   justify-content: space-between;
   margin-top: -12px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
 .review-verdict-line {
@@ -5961,13 +5961,13 @@ never the tracking violet. */
 }
 .review-verdict-line strong {
   color: var(--achievement-gold);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
 .review-verdict-line span {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .review-verdict-line[data-empty] strong {
   color: var(--screen-dim);
@@ -5987,7 +5987,7 @@ never the tracking violet. */
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .review-recommend-control button:first-child[aria-pressed="true"] {
@@ -6007,7 +6007,7 @@ never the tracking violet. */
 }
 .review-title-field small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
 .review-editor-section > *,
@@ -6030,12 +6030,12 @@ never the tracking violet. */
   max-width: 520px;
   margin-top: 5px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 .review-aspects-section > header > span {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
 .review-aspect-presets {
@@ -6053,7 +6053,7 @@ never the tracking violet. */
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .review-aspect-presets button:hover {
   border-color: var(--shell-line-strong);
@@ -6066,7 +6066,7 @@ never the tracking violet. */
 }
 .review-aspect-presets button[data-custom] small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
 .review-platform-trigger {
@@ -6090,12 +6090,12 @@ never the tracking violet. */
 .review-aspects-empty strong {
   margin-top: 10px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .review-aspects-empty p {
   max-width: 300px;
   margin-top: 5px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 .review-aspect-list {
@@ -6127,12 +6127,12 @@ never the tracking violet. */
 .review-aspect-list article > header input {
   min-height: 34px;
   padding: 0 8px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 620;
 }
 .review-aspect-list output {
   color: var(--achievement-gold);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 680;
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -6152,7 +6152,7 @@ never the tracking violet. */
 .review-aspect-list textarea {
   min-height: 64px;
   padding: 8px 9px;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .review-details-section {
@@ -6183,11 +6183,11 @@ never the tracking violet. */
 }
 .review-achievement-toggles strong {
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .review-achievement-toggles small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.4;
 }
 .review-achievement-toggles button[aria-pressed="true"] {
@@ -6251,11 +6251,11 @@ never the tracking violet. */
 }
 .review-spoiler-toggle strong {
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .review-spoiler-toggle small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.4;
 }
 .social-editor-dialog.review-studio-dialog
@@ -6278,7 +6278,7 @@ never the tracking violet. */
   min-width: 0;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -6316,7 +6316,7 @@ never the tracking violet. */
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   cursor: pointer;
 }
 .editor-select-trigger[data-popup-open] svg {
@@ -6348,7 +6348,7 @@ never the tracking violet. */
   border-radius: 5px;
   outline: 0;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   cursor: pointer;
   /* Options stay on one line; the menu grows to the widest label instead of
      wrapping it, so an option without a leading icon can't collapse into the
@@ -6399,7 +6399,7 @@ never the tracking violet. */
   .review-studio-dialog > header h2 {
     max-width: calc(100vw - 126px);
     overflow: hidden;
-    font-size: 16px;
+    font-size: 1rem;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -6440,7 +6440,7 @@ never the tracking violet. */
   .review-section-tabs button span {
     min-width: 0;
     overflow: hidden;
-    font-size: 11px;
+    font-size: 0.6875rem;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -6822,7 +6822,7 @@ and the frosted stats block anchored bottom-right. */
 }
 .share-dialog header span {
   color: var(--brand-blurple-bright);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 650;
   letter-spacing: 0.08em;
 }
@@ -6830,14 +6830,14 @@ and the frosted stats block anchored bottom-right. */
   margin: 5px 0 0;
   overflow: hidden;
   color: var(--screen-white);
-  font-size: 18px;
+  font-size: 1.125rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .share-dialog header p {
   margin: 5px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .share-dialog header button {
   display: grid;
@@ -6894,11 +6894,11 @@ and the frosted stats block anchored bottom-right. */
 }
 .share-dialog-actions strong {
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .share-dialog-actions small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 
 @media (max-width: 620px) {
@@ -6940,19 +6940,19 @@ and the frosted stats block anchored bottom-right. */
 }
 .account-settings-heading > span {
   color: var(--brand-blurple-bright);
-  font: 650 11px var(--font-inter);
+  font: 650 0.6875rem var(--interface-font-family);
   letter-spacing: 0.1em;
 }
 .account-settings-heading h1 {
   margin: 7px 0 0;
   color: var(--screen-white);
-  font-size: 30px;
+  font-size: 1.875rem;
   letter-spacing: -0.045em;
 }
 .account-settings-heading p {
   margin: 8px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.6;
 }
 .account-settings-tabs {
@@ -6973,14 +6973,14 @@ and the frosted stats block anchored bottom-right. */
 }
 .appearance-settings > header > span {
   color: var(--brand-blurple-bright);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 650;
   letter-spacing: 0.1em;
 }
 .appearance-settings h2 {
   margin: 7px 0 0;
   color: var(--screen-white);
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 630;
   letter-spacing: -0.035em;
 }
@@ -6988,7 +6988,7 @@ and the frosted stats block anchored bottom-right. */
   max-width: 610px;
   margin: 7px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.6;
   text-wrap: pretty;
 }
@@ -7117,12 +7117,12 @@ and content bars. */
 }
 .theme-option-copy strong {
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
 }
 .theme-option-copy small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.45;
 }
 .theme-option-check {
@@ -7149,7 +7149,7 @@ and content bars. */
   margin: 0;
   padding: 4px 22px 18px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 
 .account-delete-overlay {
@@ -7223,7 +7223,7 @@ and content bars. */
 }
 .account-delete-dialog h2 {
   color: var(--screen-white);
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 670;
   letter-spacing: -0.035em;
 }
@@ -7231,7 +7231,7 @@ and content bars. */
   max-width: 390px;
   margin-top: 8px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.6;
 }
 .account-delete-summary {
@@ -7242,13 +7242,13 @@ and content bars. */
 }
 .account-delete-summary strong {
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
 }
 .account-delete-summary p {
   margin-top: 4px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 .account-delete-dialog form {
@@ -7260,7 +7260,7 @@ and content bars. */
   display: grid;
   gap: 7px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .account-delete-confirmation strong {
   color: var(--screen-white);
@@ -7275,7 +7275,7 @@ and content bars. */
   outline: 0;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 500 11px var(--font-inter);
+  font: 500 0.6875rem var(--interface-font-family);
   transition:
     border-color 150ms ease-out,
     box-shadow 150ms ease-out,
@@ -7313,12 +7313,12 @@ and content bars. */
 }
 .account-delete-understood p {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 .account-delete-error {
   color: var(--danger-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 .account-delete-actions {
@@ -7330,7 +7330,7 @@ and content bars. */
 .account-delete-actions button {
   min-height: 43px;
   border-radius: 8px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   transition:
     transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
@@ -7370,7 +7370,7 @@ and content bars. */
 .social-x-mark {
   display: grid;
   place-items: center;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
 }
 .game-share-action {
@@ -7383,7 +7383,7 @@ and content bars. */
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   cursor: pointer;
 }
 .game-share-action:hover {
@@ -7418,13 +7418,13 @@ and content bars. */
 }
 .report-dialog header span {
   color: var(--brand-blurple-bright);
-  font-size: 10px;
+  font-size: 0.625rem;
   letter-spacing: 0.08em;
 }
 .report-dialog h2 {
   margin: 5px 0 0;
   color: var(--screen-white);
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 .report-dialog header button {
   width: 36px;
@@ -7451,13 +7451,13 @@ and content bars. */
 .report-dialog legend {
   padding: 0 5px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .report-dialog label {
   display: grid;
   gap: 6px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .report-dialog fieldset label {
   display: flex;
@@ -7478,7 +7478,7 @@ and content bars. */
   border-radius: 7px;
   background: var(--brand-blurple);
   color: white;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
 }
 .report-success {
@@ -7495,7 +7495,7 @@ and content bars. */
 .report-success p {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 @media (max-width: 620px) {
@@ -7685,7 +7685,7 @@ and content bars. */
   outline: 0;
   background: transparent;
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   cursor: pointer;
 }
 
@@ -7730,7 +7730,7 @@ and content bars. */
   border-radius: 5px;
   outline: 0;
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   cursor: pointer;
 }
 
@@ -7907,7 +7907,7 @@ catalog modules second. */
 
 .game-stage .game-page-content h1 {
   margin: 8px 0 10px;
-  font-size: clamp(30px, 3.6vw, 42px);
+  font-size: clamp(1.875rem, 3.6vw, 2.625rem);
 }
 
 .game-stage-description {
@@ -7916,7 +7916,7 @@ catalog modules second. */
   margin: 14px 0 12px;
   overflow: hidden;
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.65;
   text-wrap: pretty;
   -webkit-box-orient: vertical;
@@ -7966,7 +7966,7 @@ catalog modules second. */
   border-radius: 8px;
   background: rgb(16 14 16 / 82%);
   color: #f2f3f7;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
   cursor: pointer;
   backdrop-filter: blur(10px);
@@ -8062,7 +8062,7 @@ catalog modules second. */
 .game-stage-rail .game-score-line > span,
 .game-panel-heading > span {
   color: var(--screen-muted);
-  font: 600 10px var(--font-inter);
+  font: 600 0.625rem var(--interface-font-family);
   letter-spacing: 0.09em;
 }
 
@@ -8073,16 +8073,16 @@ catalog modules second. */
 }
 
 .game-stage-rail .game-score-line strong {
-  font-size: 27px;
+  font-size: 1.6875rem;
 }
 
 .game-stage-rail .game-score-line small {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 .game-stage-rail .game-score-line p {
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 .game-stage-rail .game-time-panel {
@@ -8091,7 +8091,7 @@ catalog modules second. */
 
 .game-stage-rail .game-time-panel > p {
   margin-top: 9px;
-  font-size: 10px;
+  font-size: 0.625rem;
   text-align: left;
 }
 
@@ -8121,7 +8121,7 @@ catalog modules second. */
   border-radius: 7px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 520;
   transition:
     background-color 150ms ease-out,
@@ -8167,7 +8167,7 @@ catalog modules second. */
   padding: 0 12px;
   border-radius: 7px;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 520;
   transition:
     background-color 150ms ease-out,
@@ -8198,7 +8198,7 @@ catalog modules second. */
   border-radius: 5px;
   background: var(--console-inset);
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -8245,7 +8245,7 @@ catalog modules second. */
 .game-page .game-similar-rail > header span,
 .game-page .game-panel-heading > span {
   color: var(--screen-muted);
-  font-family: var(--font-inter);
+  font-family: var(--interface-font-family);
   letter-spacing: 0.045em;
 }
 
@@ -8282,7 +8282,7 @@ catalog modules second. */
 .game-language-table thead th {
   height: 34px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.045em;
   text-align: center;
@@ -8303,7 +8303,7 @@ catalog modules second. */
 
 .game-language-table tbody th {
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 520;
 }
 
@@ -8311,13 +8311,13 @@ catalog modules second. */
   display: block;
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 430;
 }
 
 .game-language-table td {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   vertical-align: middle;
 }
 
@@ -8353,7 +8353,7 @@ catalog modules second. */
   }
 
   .game-language-table thead th {
-    font-size: 9px;
+    font-size: 0.5625rem;
     letter-spacing: 0;
   }
 }
@@ -8405,7 +8405,7 @@ catalog modules second. */
 
 .game-panel-heading h2 {
   margin: 4px 0 0;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 620;
   letter-spacing: -0.025em;
 }
@@ -8416,7 +8416,7 @@ catalog modules second. */
 
 .game-body-layout .game-summary p {
   max-width: 760px;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .game-body-layout .game-section {
@@ -8503,7 +8503,7 @@ catalog modules second. */
 
 .spawnd-player-consent h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 620;
   letter-spacing: -0.025em;
 }
@@ -8512,7 +8512,7 @@ catalog modules second. */
   max-width: 520px;
   margin: 7px 0 0;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.6;
   text-wrap: pretty;
 }
@@ -8528,7 +8528,7 @@ catalog modules second. */
   border-radius: 8px;
   background: var(--screen-white);
   color: var(--console-black);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
   cursor: pointer;
 }
@@ -8552,7 +8552,7 @@ catalog modules second. */
   gap: 10px;
   background: var(--console-inset);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 
@@ -8577,7 +8577,7 @@ catalog modules second. */
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
 }
 
@@ -8631,7 +8631,7 @@ catalog modules second. */
 .spawnd-eyebrow,
 .spawnd-explainer header > span {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.08em;
 }
@@ -8653,13 +8653,13 @@ catalog modules second. */
 }
 .game-age-panel header span {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.08em;
 }
 .game-age-panel h2 {
   margin: 3px 0 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 620;
   letter-spacing: -0.02em;
 }
@@ -8691,7 +8691,7 @@ catalog modules second. */
 }
 .game-age-rating-mark > strong {
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   line-height: 1;
   text-align: center;
@@ -8700,22 +8700,22 @@ catalog modules second. */
   display: grid;
   gap: 5px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .game-age-ratings > div > span:last-child strong {
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 620;
 }
 .game-age-ratings > div > span:last-child small {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.35;
 }
 .game-age-panel > p {
   margin: 14px 0 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.5;
 }
 
@@ -8726,12 +8726,12 @@ catalog modules second. */
 }
 
 .spawnd-panel h2 {
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 620;
 }
 
 .spawnd-panel h3 {
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
 }
 
@@ -8739,7 +8739,7 @@ catalog modules second. */
   max-width: 620px;
   margin: 10px 0 0;
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.65;
   text-wrap: pretty;
 }
@@ -8756,7 +8756,7 @@ catalog modules second. */
   border-radius: 8px;
   background: var(--screen-white);
   color: var(--console-black);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
 }
 
@@ -8791,7 +8791,7 @@ catalog modules second. */
   align-items: center;
   gap: 9px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 .spawnd-explainer li svg {
@@ -8822,11 +8822,11 @@ catalog modules second. */
   }
 
   .spawnd-player-consent h2 {
-    font-size: 15px;
+    font-size: 0.9375rem;
   }
 
   .spawnd-player-consent p {
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
 
   .spawnd-player-consent button {
@@ -9009,7 +9009,7 @@ a,
 
   .game-stage .game-page-content h1 {
     margin: 6px 0 9px;
-    font-size: clamp(25px, 8.5vw, 34px);
+    font-size: clamp(1.5625rem, 8.5vw, 2.125rem);
   }
 
   .game-stage-description,
@@ -9050,7 +9050,7 @@ a,
   }
 
   .game-stage-rail .game-score-line strong {
-    font-size: 21px;
+    font-size: 1.3125rem;
   }
 
   .game-stage-rail .game-time-panel dl {
@@ -9520,13 +9520,13 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   outline: 0;
   background: transparent;
   color: var(--screen-dim);
-  font: 400 12px var(--font-inter);
+  font: 400 0.75rem var(--interface-font-family);
 }
 .library-filter-empty {
   padding: 40px 16px;
   border-top: 1px solid var(--shell-line);
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   text-align: center;
 }
 .social-page,
@@ -9552,14 +9552,14 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   align-items: center;
   gap: 7px;
   color: var(--brand-blurple-bright);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
   letter-spacing: 0.09em;
 }
 .social-page-header h1,
 .list-detail-header h1 {
   margin-top: 9px;
   color: var(--screen-white);
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 650;
   letter-spacing: -0.045em;
   text-wrap: balance;
@@ -9581,14 +9581,14 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   overflow: hidden;
   border-radius: 50%;
   background: var(--console-raised);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 650;
 }
 .list-detail-author img {
   object-fit: cover;
 }
 .list-detail-author small {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 580;
 }
 .list-detail-author:hover {
@@ -9599,7 +9599,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   max-width: 620px;
   margin-top: 8px;
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.65;
 }
 .social-page-header-actions {
@@ -9625,7 +9625,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .social-section-title h2 {
   color: var(--screen-white);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 620;
   letter-spacing: -0.025em;
 }
@@ -9633,7 +9633,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .social-section-title a {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .activity-stream {
   display: grid;
@@ -9658,7 +9658,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border-radius: 9px;
   background: var(--console-panel);
   color: var(--screen-white);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -9675,7 +9675,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .load-more-row span[role="alert"] {
   color: var(--danger-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .activity-entry {
   display: grid;
@@ -9727,7 +9727,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border-radius: 50%;
   background: var(--console-raised);
   color: var(--screen-white);
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
 }
 .activity-avatar img {
   object-fit: cover;
@@ -9741,17 +9741,17 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .activity-user strong {
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 580;
 }
 .activity-user small,
 .activity-body time {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .activity-edited {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-style: italic;
 }
 
@@ -9772,7 +9772,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border-radius: 999px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   transition:
     background-color 130ms ease-out,
@@ -9813,7 +9813,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border-radius: 7px;
   background: none;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 580;
   transition:
     background-color 130ms ease-out,
@@ -9841,7 +9841,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .journey-naming > span {
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 620;
 }
 .journey-naming > div {
@@ -9858,7 +9858,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .journey-naming input:focus-visible {
   outline: 2px solid var(--state-playing-border);
@@ -9874,7 +9874,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border-radius: 8px;
   background: var(--state-playing-soft-bg);
   color: var(--state-playing-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
   transition:
     background-color 130ms ease-out,
@@ -9899,7 +9899,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .journey-naming > p {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 .journey-overview {
@@ -9924,14 +9924,14 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .journey-overview > header span {
   color: var(--state-playing-text);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 650;
   letter-spacing: 0.1em;
 }
 .journey-overview > header strong {
   overflow: hidden;
   color: var(--screen-white);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 630;
   letter-spacing: -0.02em;
   text-overflow: ellipsis;
@@ -9941,7 +9941,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   max-width: 280px;
   margin: 0;
   color: var(--screen-muted);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   line-height: 1.45;
   text-align: right;
 }
@@ -9963,7 +9963,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   align-items: center;
   gap: 5px;
   color: var(--screen-muted);
-  font-size: 9.5px;
+  font-size: 0.59375rem;
   font-weight: 560;
 }
 .journey-overview dt svg {
@@ -9976,7 +9976,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   overflow: hidden;
   margin: 7px 0 0;
   color: var(--screen-white);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 620;
   font-variant-numeric: tabular-nums;
   text-overflow: ellipsis;
@@ -10002,7 +10002,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border-radius: 7px;
   background: var(--state-playing-soft-bg);
   color: var(--state-playing-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   transition:
     background-color 130ms ease-out,
@@ -10038,7 +10038,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .journey-calendar > header strong {
   overflow: hidden;
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   text-overflow: ellipsis;
   text-transform: capitalize;
@@ -10071,7 +10071,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   place-items: center;
   min-height: 22px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -10088,7 +10088,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   min-width: 0;
   border-radius: 7px;
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
   transition:
     background-color 130ms ease-out,
@@ -10102,7 +10102,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .journey-calendar-grid > span small {
   color: inherit;
-  font-size: 9px;
+  font-size: 0.5625rem;
   line-height: 1;
   opacity: 0.75;
 }
@@ -10212,7 +10212,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .journey-calendar-jumps > span {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .journey-calendar-jumps button {
   display: inline-flex;
@@ -10224,7 +10224,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
 }
 .journey-calendar-jumps button:hover:not(:disabled) {
@@ -10237,7 +10237,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .journey-calendar-hint {
   margin: 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 /* Floating count pill while painting days */
@@ -10252,7 +10252,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   background: color-mix(in srgb, var(--console-raised) 82%, transparent);
   backdrop-filter: blur(10px);
   color: var(--tonal-brand-text);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 620;
   opacity: 0;
   pointer-events: none;
@@ -10285,7 +10285,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .journey-open-day > button:hover:not(:disabled) {
@@ -10322,14 +10322,14 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .journey-day-heading span {
   color: var(--brand-blurple-bright);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 650;
   letter-spacing: 0.1em;
 }
 .journey-day-heading strong {
   overflow: hidden;
   color: var(--screen-white);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 620;
   text-overflow: ellipsis;
   text-transform: capitalize;
@@ -10339,7 +10339,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   display: block;
   margin-bottom: 8px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .journey-time-fields > div {
@@ -10350,7 +10350,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .journey-time-fields > div > b {
   margin-top: 8px;
   color: var(--screen-muted);
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 400;
 }
 .journey-time-fields label {
@@ -10368,7 +10368,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   outline: 0;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 560 15px var(--font-inter);
+  font: 560 0.9375rem var(--interface-font-family);
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
@@ -10378,7 +10378,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .journey-time-fields small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .journey-day-actions .journey-day-remove {
   margin-right: auto;
@@ -10415,11 +10415,11 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .journey-milestones strong {
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .journey-milestones small {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.4;
 }
 .journey-milestones button[data-milestone="start"][aria-pressed="true"] {
@@ -10444,7 +10444,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   padding: 0 8px;
   border: 1px solid var(--shell-line);
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .journey-milestone-badge[data-milestone="start"] {
@@ -10512,7 +10512,7 @@ and lists. */
   border-radius: 8px;
   background: transparent;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -10555,7 +10555,7 @@ button.content-like:hover:not(:disabled) {
 }
 .review-markdown-preview .markdown-body {
   gap: 6px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.65;
 }
 .review-preview-spoiler > .review-markdown-preview {
@@ -10569,7 +10569,7 @@ button.content-like:hover:not(:disabled) {
   border: 1px solid var(--shell-line);
   border-radius: 8px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .activity-read-more:hover {
@@ -10610,7 +10610,7 @@ logs) */
   border-radius: 999px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -10659,7 +10659,7 @@ logs) */
 }
 .review-page-eyebrow {
   color: var(--brand-blurple-bright);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 650;
   letter-spacing: 0.1em;
 }
@@ -10669,7 +10669,7 @@ logs) */
 .review-page-identity h1 {
   margin: 6px 0 0;
   color: var(--screen-white);
-  font-size: clamp(21px, 3.4vw, 30px);
+  font-size: clamp(1.3125rem, 3.4vw, 1.875rem);
   font-weight: 650;
   letter-spacing: -0.04em;
   line-height: 1.15;
@@ -10693,7 +10693,7 @@ logs) */
   border-radius: 50%;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
 }
 .review-page-avatar img {
@@ -10701,12 +10701,12 @@ logs) */
 }
 .review-page-byline strong {
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 580;
 }
 .review-page-byline time {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .review-page-verdict {
   display: flex;
@@ -10724,7 +10724,7 @@ logs) */
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 560;
 }
 .review-page-verdict .review-page-rating {
@@ -10734,7 +10734,7 @@ logs) */
 .review-page-content {
   margin: 20px 0 0;
   color: var(--screen-dim);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.7;
   text-wrap: pretty;
 }
@@ -10752,7 +10752,7 @@ details.review-page-content > .markdown-body {
 .review-page-aspects h2 {
   margin: 0;
   color: var(--screen-white);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 620;
   letter-spacing: -0.02em;
 }
@@ -10778,14 +10778,14 @@ details.review-page-content > .markdown-body {
 .review-page-aspects article strong {
   overflow: hidden;
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 580;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .review-page-aspects article output {
   color: var(--achievement-gold);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -10805,7 +10805,7 @@ details.review-page-content > .markdown-body {
 .review-page-aspects article p {
   margin: 9px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 .review-page-footer {
@@ -10827,7 +10827,7 @@ details.review-page-content > .markdown-body {
   border-radius: 8px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .content-share-action:hover {
@@ -10845,7 +10845,7 @@ details.review-page-content > .markdown-body {
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font: 580 11px var(--font-inter);
+  font: 580 0.6875rem var(--interface-font-family);
   white-space: nowrap;
   cursor: pointer;
   transition:
@@ -10899,7 +10899,7 @@ details.review-page-content > .markdown-body {
 .activity-verb {
   margin-top: 11px;
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .activity-verb a {
   color: var(--screen-white);
@@ -10911,7 +10911,7 @@ details.review-page-content > .markdown-body {
   gap: 5px;
   margin-top: 9px;
   color: var(--achievement-gold);
-  font: 600 12px var(--font-inter);
+  font: 600 0.75rem var(--interface-font-family);
 }
 .activity-meta {
   display: flex;
@@ -10919,7 +10919,7 @@ details.review-page-content > .markdown-body {
   gap: 12px;
   margin-top: 9px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .activity-meta span {
   display: inline-flex;
@@ -10930,7 +10930,7 @@ details.review-page-content > .markdown-body {
 .spoiler-content p {
   margin-top: 11px;
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.65;
   white-space: pre-wrap;
   text-wrap: pretty;
@@ -10950,7 +10950,7 @@ details.review-page-content > .markdown-body {
   padding: 0 8px;
   border-radius: 7px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
   transition:
     background-color 130ms ease-out,
@@ -10970,7 +10970,7 @@ details.review-page-content > .markdown-body {
 }
 .activity-entry-actions span[role="alert"] {
   color: var(--danger-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .spoiler-content {
   margin-top: 11px;
@@ -10981,7 +10981,7 @@ details.review-page-content > .markdown-body {
   gap: 6px;
   min-height: 32px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   cursor: pointer;
 }
 .explore-lists,
@@ -11007,21 +11007,21 @@ details.review-page-content > .markdown-body {
 .explore-lists strong,
 .profile-lists strong {
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 580;
 }
 .explore-lists p,
 .profile-lists p {
   margin-top: 4px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 .explore-lists small {
   display: block;
   margin-top: 6px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .social-empty {
   padding: 44px 20px;
@@ -11044,13 +11044,13 @@ details.review-page-content > .markdown-body {
 }
 .social-empty h2 {
   color: var(--screen-white);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
 }
 .social-empty p {
   margin-top: 7px;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .game-log-actions {
   display: flex;
@@ -11071,7 +11071,7 @@ details.review-page-content > .markdown-body {
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
   transition:
     background-color 140ms ease-out,
@@ -11114,12 +11114,12 @@ details.review-page-content > .markdown-body {
 }
 .social-editor-dialog > header span {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .social-editor-dialog > header h2 {
   margin-top: 3px;
   color: var(--screen-white);
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 620;
 }
 .social-editor-dialog > header button {
@@ -11133,7 +11133,7 @@ details.review-page-content > .markdown-body {
 .social-editor-dialog > header time {
   margin-left: auto;
   color: var(--screen-muted);
-  font: 400 12px var(--font-inter);
+  font: 400 0.75rem var(--interface-font-family);
 }
 .social-editor-form,
 .create-list-form {
@@ -11165,7 +11165,7 @@ details.review-page-content > .markdown-body {
   min-height: 48px;
   border-bottom: 2px solid transparent;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 560;
 }
 .game-editor-tabs button[data-active] {
@@ -11177,7 +11177,7 @@ details.review-page-content > .markdown-body {
   display: grid;
   gap: 7px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
 }
 .social-editor-form input,
@@ -11194,7 +11194,7 @@ details.review-page-content > .markdown-body {
   outline: none;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 400 13px var(--font-inter);
+  font: 400 0.8125rem var(--interface-font-family);
 }
 .social-editor-form textarea,
 .create-list-form textarea {
@@ -11281,7 +11281,7 @@ details.review-page-content > .markdown-body {
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -11304,18 +11304,18 @@ details.review-page-content > .markdown-body {
 .social-form-error,
 .create-list-form [role="alert"] {
   color: var(--danger-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .social-form-success {
   color: var(--safe-green);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .social-empty-inline {
   padding: 18px;
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .create-list-form {
   width: min(420px, 100%);
@@ -11332,7 +11332,7 @@ details.review-page-content > .markdown-body {
 }
 .list-detail-header small {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .list-detail-meta {
   display: inline-flex;
@@ -11342,7 +11342,7 @@ details.review-page-content > .markdown-body {
 }
 .list-detail-meta small {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .list-owner-actions {
   display: flex;
@@ -11360,7 +11360,7 @@ details.review-page-content > .markdown-body {
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
 }
 .list-owner-actions button:last-child:hover,
@@ -11374,7 +11374,7 @@ details.review-page-content > .markdown-body {
 .list-item-owner-action span {
   margin-left: 7px;
   color: var(--danger-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .ranked-list-item {
   position: relative;
@@ -11428,7 +11428,7 @@ details.review-page-content > .markdown-body {
   border-radius: 5px;
   background: var(--image-control-strong);
   color: #f2f3f7;
-  font: 600 11px var(--font-inter);
+  font: 600 0.6875rem var(--interface-font-family);
 }
 /* Medal colours for the podium. A ranking's whole point is the first three
    places, and a uniform badge made 1st read the same as 11th. Fixed colours,
@@ -11455,7 +11455,7 @@ details.review-page-content > .markdown-body {
 .ranked-list-item > p {
   margin-top: 7px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .list-owner-actions button[data-armed] {
   border-color: rgb(231 154 154 / 42%);
@@ -11547,7 +11547,7 @@ details.review-page-content > .markdown-body {
 }
 .list-item-tools > span {
   color: var(--danger-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .list-add-game-trigger {
   display: inline-flex;
@@ -11560,7 +11560,7 @@ details.review-page-content > .markdown-body {
   border-radius: 9px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 620;
 }
 .list-add-game-trigger:hover {
@@ -11573,7 +11573,7 @@ details.review-page-content > .markdown-body {
 .list-add-game-empty {
   margin: 12px 2px 4px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 .list-add-game > label {
@@ -11598,7 +11598,7 @@ details.review-page-content > .markdown-body {
   outline: 0;
   background: transparent;
   color: var(--screen-white);
-  font: 500 12px var(--font-inter);
+  font: 500 0.75rem var(--interface-font-family);
 }
 .list-add-game input::placeholder {
   color: var(--screen-muted);
@@ -11625,7 +11625,7 @@ details.review-page-content > .markdown-body {
 .list-add-game-results > p {
   margin: 4px 2px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .list-add-game-status {
   display: flex;
@@ -11666,7 +11666,7 @@ details.review-page-content > .markdown-body {
 .list-add-game-copy strong {
   overflow: hidden;
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 560;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -11674,7 +11674,7 @@ details.review-page-content > .markdown-body {
 .list-add-game-copy small {
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .list-add-game-row > button {
   display: inline-flex;
@@ -11686,7 +11686,7 @@ details.review-page-content > .markdown-body {
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .list-add-game-row > button:hover:not(:disabled) {
@@ -11783,7 +11783,7 @@ details.review-page-content > .markdown-body {
   .activity-body > header time {
     flex: none;
     margin-top: 2px;
-    font-size: 10px;
+    font-size: 0.625rem;
     text-align: right;
   }
   .activity-entry-footer {
@@ -11807,7 +11807,7 @@ details.review-page-content > .markdown-body {
     gap: 2px;
   }
   .journey-calendar-grid > span:not(.journey-calendar-weekday) {
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .review-page-verdict {
     gap: 6px;
@@ -11831,7 +11831,7 @@ details.review-page-content > .markdown-body {
     width: 82px;
   }
   .featured-copy h2 {
-    font-size: 22px;
+    font-size: 1.375rem;
   }
   .library-section,
   .explore-section,
@@ -11886,16 +11886,16 @@ details.review-page-content > .markdown-body {
     padding-top: 60px;
   }
   .game-page-content h1 {
-    font-size: 30px;
+    font-size: 1.875rem;
   }
   .game-summary p {
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .game-action-panel > button,
   .game-status-button {
     min-height: 34px;
     padding-inline: 9px;
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .game-score-line {
     align-items: flex-start;
@@ -11918,7 +11918,7 @@ details.review-page-content > .markdown-body {
     margin-right: 14px;
   }
   .section-heading h2 {
-    font-size: 15px;
+    font-size: 0.9375rem;
   }
   .section-heading > a {
     flex: 0 0 auto;
@@ -12030,11 +12030,11 @@ details.review-page-content > .markdown-body {
     margin-top: 26px;
   }
   .game-title-meta {
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .game-page-content h1 {
     margin-top: 7px;
-    font-size: clamp(28px, 9vw, 36px);
+    font-size: clamp(1.75rem, 9vw, 2.25rem);
     line-height: 1;
   }
   .game-action-panel {
@@ -12044,7 +12044,7 @@ details.review-page-content > .markdown-body {
   .game-status-button {
     min-height: 38px;
     padding-inline: 10px;
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .game-score-line {
     align-items: flex-start;
@@ -12055,7 +12055,7 @@ details.review-page-content > .markdown-body {
     padding-block: 24px;
   }
   .game-summary p {
-    font-size: 12px;
+    font-size: 0.75rem;
   }
   .game-details > div {
     grid-template-columns: 88px minmax(0, 1fr);
@@ -12142,7 +12142,7 @@ details.review-page-content > .markdown-body {
     width: 116px;
   }
   .game-page-content h1 {
-    font-size: 29px;
+    font-size: 1.8125rem;
   }
 }
 
@@ -12276,7 +12276,7 @@ html
   align-items: center;
   gap: 7px;
   color: var(--brand-blurple-bright);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 680;
   letter-spacing: 0.1em;
 }
@@ -12284,7 +12284,7 @@ html
   max-width: 640px;
   margin: 9px 0 0;
   color: var(--screen-white);
-  font-size: clamp(27px, 3vw, 38px);
+  font-size: clamp(1.6875rem, 3vw, 2.375rem);
   font-weight: 660;
   letter-spacing: -0.052em;
   line-height: 1.04;
@@ -12294,7 +12294,7 @@ html
   max-width: 580px;
   margin: 10px 0 0;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.6;
   text-wrap: pretty;
 }
@@ -12316,7 +12316,7 @@ html
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
   transition:
     transform 120ms ease-out,
@@ -12354,7 +12354,7 @@ html
 .home-section-heading h2 {
   margin: 5px 0 0;
   color: var(--screen-white);
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 630;
   letter-spacing: -0.032em;
 }
@@ -12366,7 +12366,7 @@ html
   align-items: center;
   gap: 6px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .home-section-heading > a:hover {
@@ -12424,7 +12424,7 @@ html
   border-radius: 50%;
   background: var(--console-raised);
   color: var(--screen-white);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 650;
 }
 .home-playing-person > span,
@@ -12438,7 +12438,7 @@ html
   gap: 4px;
   overflow: hidden;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 620;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -12447,7 +12447,7 @@ html
   margin-top: 2px;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 9.5px;
+  font-size: 0.59375rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -12468,7 +12468,7 @@ html
 }
 .home-community-empty p {
   margin: 0;
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 .home-activity-section .activity-stream {
@@ -12760,7 +12760,7 @@ html
 }
 .verified-dialog h2 {
   color: var(--screen-white);
-  font-size: 23px;
+  font-size: 1.4375rem;
   font-weight: 660;
   letter-spacing: -0.035em;
 }
@@ -12768,7 +12768,7 @@ html
   max-width: 350px;
   margin-top: 10px;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.6;
   text-wrap: pretty;
 }
@@ -12792,12 +12792,12 @@ html
 }
 .verified-dialog-facts strong {
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
 }
 .verified-dialog-facts span {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 .verified-dialog-confirm {
@@ -12808,7 +12808,7 @@ html
   border-radius: 9px;
   background: var(--brand-blurple);
   color: white;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
 }
 .verified-dialog-close,
@@ -12992,7 +12992,7 @@ html
   border-radius: 12px;
   background: var(--console-raised);
   color: var(--screen-white);
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 680;
   box-shadow: inset 0 0 0 1px var(--shell-line);
 }
@@ -13010,7 +13010,7 @@ html
   align-items: center;
   gap: 7px;
   color: var(--brand-blurple-bright);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   letter-spacing: 0.09em;
 }
@@ -13018,7 +13018,7 @@ html
 .workspace-hero-copy h1 {
   margin: 8px 0 0;
   color: var(--screen-white);
-  font-size: clamp(30px, 4vw, 42px);
+  font-size: clamp(1.875rem, 4vw, 2.625rem);
   font-weight: 660;
   letter-spacing: -0.05em;
   line-height: 1;
@@ -13029,7 +13029,7 @@ html
   max-width: 570px;
   margin: 10px 0 0;
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.65;
   text-wrap: pretty;
 }
@@ -13080,7 +13080,7 @@ html
   align-items: center;
   gap: 5px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   white-space: nowrap;
 }
 
@@ -13091,7 +13091,7 @@ html
 .workspace-hero-stats dd {
   margin: 7px 0 0;
   color: var(--screen-white);
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -13149,7 +13149,7 @@ html
 
 .create-list-dialog > header span {
   color: var(--brand-blurple-bright);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 650;
   letter-spacing: 0.09em;
 }
@@ -13157,7 +13157,7 @@ html
 .create-list-dialog h2 {
   margin-top: 5px;
   color: var(--screen-white);
-  font-size: 20px;
+  font-size: 1.25rem;
   letter-spacing: -0.035em;
 }
 
@@ -13165,7 +13165,7 @@ html
   max-width: 390px;
   margin-top: 6px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 
@@ -13199,7 +13199,7 @@ html
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .create-list-select-content {
@@ -13238,14 +13238,14 @@ html
 
 .create-list-select-copy > span {
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 580;
 }
 
 .create-list-select-item small {
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 
 .create-list-overlay[data-open],
@@ -13320,7 +13320,7 @@ html
   .workspace-hero-avatar {
     width: 52px;
     height: 52px;
-    font-size: 17px;
+    font-size: 1.0625rem;
   }
 
   .workspace-hero-stats {
@@ -13385,7 +13385,7 @@ html
   }
 
   .workspace-hero-copy h1 {
-    font-size: 30px;
+    font-size: 1.875rem;
   }
 
   .workspace-hero-copy .create-list-trigger {
@@ -13451,7 +13451,7 @@ and route recovery. */
   align-items: center;
   width: max-content;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
 .onboarding-progress span {
@@ -13532,7 +13532,7 @@ and route recovery. */
 }
 .birth-date-privacy p {
   margin: 0;
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
   text-wrap: pretty;
 }
@@ -13577,7 +13577,7 @@ and route recovery. */
   align-items: center;
   gap: 6px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   letter-spacing: 0.09em;
 }
@@ -13585,7 +13585,7 @@ and route recovery. */
 .not-found-card h1 {
   max-width: 520px;
   margin: 12px 0 0;
-  font-size: clamp(26px, 4vw, 36px);
+  font-size: clamp(1.625rem, 4vw, 2.25rem);
   font-weight: 650;
   letter-spacing: -0.05em;
   line-height: 1.08;
@@ -13596,7 +13596,7 @@ and route recovery. */
   max-width: 460px;
   margin: 14px 0 0;
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.65;
   text-wrap: pretty;
 }
@@ -13621,7 +13621,7 @@ and route recovery. */
   display: grid;
   gap: 7px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
 }
 .anonymous-age-form label > span {
@@ -13662,7 +13662,7 @@ and route recovery. */
   border-radius: 8px;
   background: var(--brand-blurple-wash);
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
   cursor: pointer;
   transition:
@@ -13682,12 +13682,12 @@ and route recovery. */
 .anonymous-age-form > p {
   margin: 0;
   color: var(--danger-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.45;
 }
 .anonymous-age-form > small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.5;
   text-wrap: pretty;
 }
@@ -13704,7 +13704,7 @@ and route recovery. */
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font: 620 11px var(--font-inter);
+  font: 620 0.6875rem var(--interface-font-family);
   text-decoration: none;
   cursor: pointer;
   transition:
@@ -13758,7 +13758,7 @@ and route recovery. */
   gap: 6px;
   margin-top: 24px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 .not-found-orbit {
@@ -13834,12 +13834,12 @@ and route recovery. */
   }
   .featured-copy h2 {
     max-width: 88%;
-    font-size: 34px;
+    font-size: 2.125rem;
   }
   .featured-copy p {
     display: -webkit-box;
     max-width: 92%;
-    font-size: 11px;
+    font-size: 0.6875rem;
     -webkit-line-clamp: 2;
   }
   .featured-meta span:last-child {
@@ -13859,7 +13859,7 @@ and route recovery. */
     margin-bottom: 28px;
   }
   .genre-section-heading h2 {
-    font-size: 21px;
+    font-size: 1.3125rem;
     line-height: 1.15;
   }
   .genre-collections {
@@ -13908,10 +13908,10 @@ and route recovery. */
     padding: 88px 18px 22px;
   }
   .home-community-intro h1 {
-    font-size: 29px;
+    font-size: 1.8125rem;
   }
   .home-community-intro p {
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
   .home-community-actions {
     display: grid;
@@ -13934,7 +13934,7 @@ and route recovery. */
     margin-bottom: 16px;
   }
   .home-section-heading h2 {
-    font-size: 17px;
+    font-size: 1.0625rem;
   }
   .home-playing-carousel .shelf-carousel-track {
     grid-auto-columns: 138px;
@@ -14066,7 +14066,7 @@ and route recovery. */
   border-radius: 12px;
   background: var(--console-raised);
   color: var(--screen-white);
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 680;
   box-shadow: inset 0 0 0 1px var(--shell-line);
 }
@@ -14081,13 +14081,13 @@ and route recovery. */
   align-items: center;
   gap: 7px;
   color: var(--brand-blurple-bright);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   letter-spacing: 0.09em;
 }
 .library-owner-copy h1 {
   margin: 8px 0 0;
-  font-size: clamp(30px, 4vw, 42px);
+  font-size: clamp(1.875rem, 4vw, 2.625rem);
   font-weight: 660;
   letter-spacing: -0.05em;
   line-height: 1;
@@ -14097,7 +14097,7 @@ and route recovery. */
   max-width: 570px;
   margin: 10px 0 0;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.6;
   text-wrap: pretty;
 }
@@ -14123,7 +14123,7 @@ and route recovery. */
   align-items: center;
   gap: 5px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .library-hero-stats dt svg {
   color: var(--brand-blurple-bright);
@@ -14131,7 +14131,7 @@ and route recovery. */
 .library-hero-stats dd {
   margin: 5px 0 0;
   color: var(--screen-white);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -14153,7 +14153,7 @@ and route recovery. */
   gap: 7px;
   min-height: 38px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 580;
 }
 .library-public-note,
@@ -14162,7 +14162,7 @@ and route recovery. */
   align-items: center;
   gap: 7px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .library-rating-note {
   margin-left: auto;
@@ -14187,13 +14187,13 @@ and route recovery. */
   display: block;
 }
 .library-privacy-control strong {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 590;
 }
 .library-privacy-control small {
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .library-privacy-control > button {
   display: inline-flex;
@@ -14206,7 +14206,7 @@ and route recovery. */
   border-radius: 6px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   cursor: pointer;
 }
 .library-privacy-control > button svg {
@@ -14218,7 +14218,7 @@ and route recovery. */
   left: 24px;
   margin: 3px 0 0;
   color: var(--danger-text);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .library-workspace {
   display: grid;
@@ -14248,7 +14248,7 @@ and route recovery. */
   border-radius: 6px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   cursor: pointer;
 }
 .library-smart-shelves button:hover,
@@ -14261,7 +14261,7 @@ and route recovery. */
 }
 .library-smart-shelves strong {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
   font-variant-numeric: tabular-nums;
 }
@@ -14324,7 +14324,7 @@ focuses the
   outline: 0;
   background: transparent;
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .library-search button {
   display: grid;
@@ -14348,7 +14348,7 @@ focuses the
 }
 .library-sort > span {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -14359,7 +14359,7 @@ focuses the
   outline: 0;
   background: transparent;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .library-view-switch {
   display: grid;
@@ -14392,7 +14392,7 @@ focuses the
   padding-bottom: 10px;
   border-bottom: 1px solid var(--shell-line);
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
 .library-results {
@@ -14438,7 +14438,7 @@ focuses the
   align-self: end;
   margin: 0 0 3px;
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .library-results[data-view="list"] .quick-card-meta {
   align-self: start;
@@ -14462,10 +14462,10 @@ focuses the
 }
 .library-filter-empty h2 {
   color: var(--screen-dim);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .library-filter-empty p {
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .library-filter-empty button {
   min-height: 34px;
@@ -14475,7 +14475,7 @@ focuses the
   border-radius: 6px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   cursor: pointer;
 }
 .library-pagination {
@@ -14506,7 +14506,7 @@ focuses the
   border-radius: 6px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .library-pagination button {
   cursor: pointer;
@@ -14536,14 +14536,14 @@ focuses the
 .library-private h1 {
   margin: 0;
   color: var(--screen-white);
-  font-size: 18px;
+  font-size: 1.125rem;
   letter-spacing: -0.025em;
 }
 .library-empty p,
 .library-private p {
   max-width: 440px;
   margin: 0;
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.6;
 }
 
@@ -14602,10 +14602,10 @@ focuses the
     border-radius: 9px;
   }
   .library-owner-copy h1 {
-    font-size: 28px;
+    font-size: 1.75rem;
   }
   .library-owner-copy p {
-    font-size: 11px;
+    font-size: 0.6875rem;
     -webkit-line-clamp: 2;
   }
   .library-hero-stats {
@@ -14678,7 +14678,7 @@ shareable IGDB search workspace. */
   border-top: 1px solid var(--shell-line);
   border-radius: 7px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .advanced-search-link:hover {
@@ -14702,7 +14702,7 @@ shareable IGDB search workspace. */
   border-radius: 6px;
   background: var(--image-control);
   color: #f2f3f7;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 650;
   backdrop-filter: blur(8px);
 }
@@ -15090,7 +15090,7 @@ shareable IGDB search workspace. */
   outline: 0;
   background: var(--console-inset);
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 .settings-mfa-enroll-row input:focus,
@@ -15436,21 +15436,21 @@ compact and detached on mobile. */
 }
 .content-preferences header small {
   color: var(--brand-blurple-bright);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 650;
   letter-spacing: 0.1em;
 }
 .content-preferences h2 {
   margin: 4px 0 0;
   color: var(--screen-white);
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 630;
   letter-spacing: -0.03em;
 }
 .content-preferences header p {
   margin: 6px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 .content-preference-options {
@@ -15486,13 +15486,13 @@ compact and detached on mobile. */
 }
 .content-preference-options strong {
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 620;
 }
 .content-preference-options small {
   margin-top: 5px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.5;
 }
 .content-preference-options i {
@@ -15511,7 +15511,7 @@ compact and detached on mobile. */
 .content-preferences > p[role="alert"] {
   margin: -8px 20px 18px;
   color: var(--danger-text);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 
 .interface-preference-body {
@@ -15528,14 +15528,19 @@ compact and detached on mobile. */
 .interface-preference-field legend {
   margin-bottom: 9px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
 }
 .interface-font-options,
 .interface-size-options {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+}
+.interface-font-options {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+.interface-size-options {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .interface-font-options > button {
   position: relative;
@@ -15562,15 +15567,24 @@ compact and detached on mobile. */
 }
 .interface-font-options > button > span {
   color: var(--screen-white);
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 650;
   letter-spacing: -0.05em;
+}
+.interface-font-options > button[data-font="inter"] {
+  font-family: var(--font-inter), sans-serif;
 }
 .interface-font-options > button[data-font="system"] {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+.interface-font-options > button[data-font="source-sans"] {
+  font-family: var(--font-source-sans), sans-serif;
+}
 .interface-font-options > button[data-font="readable"] {
-  font-family: Verdana, Tahoma, sans-serif;
+  font-family: var(--font-readable), Verdana, Tahoma, sans-serif;
+}
+.interface-font-options > button[data-font="serif"] {
+  font-family: var(--font-source-serif), Georgia, serif;
 }
 .interface-font-options strong,
 .interface-font-options small {
@@ -15578,18 +15592,19 @@ compact and detached on mobile. */
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .interface-font-options strong {
   margin-top: 7px;
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
+  line-height: 1.25;
 }
 .interface-font-options small {
   margin-top: 3px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 0.5625rem;
+  white-space: nowrap;
 }
 .interface-font-options i {
   position: absolute;
@@ -15623,16 +15638,16 @@ compact and detached on mobile. */
   font-weight: 620;
 }
 .interface-size-options button[data-size="standard"] b {
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .interface-size-options button[data-size="large"] b {
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 .interface-size-options button[data-size="extra-large"] b {
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 .interface-size-options span {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
 }
 .interface-motion-option {
@@ -15662,12 +15677,12 @@ compact and detached on mobile. */
 }
 .interface-motion-option strong {
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
 }
 .interface-motion-option small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.45;
 }
 
@@ -15743,19 +15758,19 @@ compact and detached on mobile. */
 }
 .journey-details-dialog header span {
   color: var(--brand-blurple-bright);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 650;
   letter-spacing: 0.1em;
 }
 .journey-details-dialog h2 {
   margin: 5px 0 0;
-  font-size: 19px;
+  font-size: 1.1875rem;
   letter-spacing: -0.03em;
 }
 .journey-details-dialog header p {
   margin: 4px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .journey-details-dialog header button,
 .recent-unfollow-dialog > button:first-child {
@@ -15784,7 +15799,7 @@ compact and detached on mobile. */
   border-radius: 7px;
   background: var(--console-inset);
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .journey-details-summary strong {
   color: var(--screen-white);
@@ -15809,7 +15824,7 @@ compact and detached on mobile. */
   justify-content: space-between;
   gap: 12px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .journey-details-scroll article > div:first-child > span {
   color: var(--screen-dim);
@@ -15818,7 +15833,7 @@ compact and detached on mobile. */
 .journey-details-scroll article p {
   margin: 8px 0 0;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
   white-space: pre-wrap;
 }
@@ -15832,7 +15847,7 @@ compact and detached on mobile. */
   align-items: center;
   gap: 5px;
   color: var(--brand-blurple-bright);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 600;
 }
 .journey-details-empty {
@@ -15852,7 +15867,7 @@ compact and detached on mobile. */
   border-radius: 7px;
   background: var(--brand-blurple-wash);
   color: var(--brand-blurple-bright);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
 }
 .activity-journey-button:hover {
@@ -15881,14 +15896,14 @@ compact and detached on mobile. */
 }
 .recent-unfollow-dialog h2 {
   margin: 0;
-  font-size: 19px;
+  font-size: 1.1875rem;
   letter-spacing: -0.03em;
 }
 .recent-unfollow-dialog p {
   margin: 8px auto 0;
   max-width: 340px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.6;
 }
 .recent-unfollow-dialog footer {
@@ -15903,7 +15918,7 @@ compact and detached on mobile. */
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .recent-unfollow-dialog footer button:last-child {
@@ -16035,7 +16050,7 @@ compact and detached on mobile. */
   grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   color: var(--screen-dim);
-  font-size: calc(13px * var(--reading-text-scale, 1));
+  font-size: 0.8125rem;
   line-height: 1.65;
   overflow-wrap: anywhere;
 }
@@ -16054,18 +16069,18 @@ compact and detached on mobile. */
   line-height: 1.3;
 }
 .markdown-body h1 {
-  font-size: calc(20px * var(--reading-text-scale, 1));
+  font-size: 1.25rem;
 }
 .markdown-body h2 {
-  font-size: calc(17px * var(--reading-text-scale, 1));
+  font-size: 1.0625rem;
 }
 .markdown-body h3 {
-  font-size: calc(15px * var(--reading-text-scale, 1));
+  font-size: 0.9375rem;
 }
 .markdown-body h4,
 .markdown-body h5,
 .markdown-body h6 {
-  font-size: calc(13px * var(--reading-text-scale, 1));
+  font-size: 0.8125rem;
 }
 .markdown-body a {
   color: var(--brand-blurple-bright);
@@ -16094,7 +16109,7 @@ compact and detached on mobile. */
   border-radius: 5px;
   background: var(--console-inset);
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .markdown-body pre {
   padding: 12px 14px;
@@ -16125,7 +16140,7 @@ compact and detached on mobile. */
   width: 100%;
   min-width: 320px;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .markdown-body td,
 .markdown-body th {
@@ -16156,7 +16171,7 @@ compact and detached on mobile. */
 .md-summary {
   padding: 9px 12px;
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   user-select: none;
@@ -16307,7 +16322,7 @@ adapted to the current uloggd surface system. */
   min-width: 34px;
   padding: 0 9px;
   color: var(--screen-muted);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 560;
 }
 .md-editor-tabs button > svg {
@@ -16332,7 +16347,7 @@ adapted to the current uloggd surface system. */
 .md-editor-tabs > span {
   margin-left: auto;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
 .md-editor-tabs > span[data-warning] {
@@ -16437,11 +16452,11 @@ adapted to the current uloggd surface system. */
 }
 .md-heading-menu strong {
   min-width: 22px;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .md-heading-menu span {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .md-editor-stage {
   display: flex;
@@ -16467,7 +16482,7 @@ adapted to the current uloggd surface system. */
 }
 .md-editor .cm-tooltip-autocomplete > ul {
   max-height: 210px;
-  font-family: var(--font-inter);
+  font-family: var(--interface-font-family);
 }
 .md-editor .cm-tooltip-autocomplete > ul > li {
   min-height: 36px;
@@ -16481,7 +16496,7 @@ adapted to the current uloggd surface system. */
 .md-editor .cm-completionDetail {
   margin-left: 10px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .md-editor .cm-uloggd-mention {
   border-radius: 4px;
@@ -16503,7 +16518,7 @@ adapted to the current uloggd surface system. */
   font-weight: 650;
 }
 .md-editor[data-variant="review"] .cm-scroller {
-  font-family: var(--font-inter);
+  font-family: var(--interface-font-family);
   line-height: 1.65;
 }
 .md-editor[data-variant="review"] .cm-content {
@@ -16514,7 +16529,7 @@ adapted to the current uloggd surface system. */
 }
 .md-editor-empty {
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .md-editor .md-editor-preview {
   min-width: 0;
@@ -16660,7 +16675,7 @@ adapted to the current uloggd surface system. */
 }
 .md-gc-title a {
   color: var(--screen-white);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 640;
   text-decoration: none;
 }
@@ -16669,13 +16684,13 @@ adapted to the current uloggd surface system. */
 }
 .md-gc-title b {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 560;
 }
 .md-gc-copy small {
   overflow: hidden;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 0.625rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -16683,7 +16698,7 @@ adapted to the current uloggd surface system. */
   display: -webkit-box;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -16729,7 +16744,7 @@ adapted to the current uloggd surface system. */
 .md-gc-mini strong {
   overflow: hidden;
   color: var(--screen-white);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 620;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -16737,7 +16752,7 @@ adapted to the current uloggd surface system. */
 .md-gc-mini small {
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 9.5px;
+  font-size: 0.59375rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -16792,14 +16807,14 @@ adapted to the current uloggd surface system. */
   overflow: hidden;
   margin-top: 4px;
   color: var(--screen-white);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .md-gc-tile small {
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 0.5625rem;
 }
 .md-gc-carousel {
   display: block;
@@ -16887,7 +16902,7 @@ adapted to the current uloggd surface system. */
   border-radius: 7px;
   background: var(--console-inset);
   color: var(--screen-muted);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   vertical-align: middle;
 }
 @media (max-width: 620px) {
@@ -16945,7 +16960,7 @@ adapted to the current uloggd surface system. */
   background: var(--overlay-panel);
   box-shadow: 0 10px 28px var(--overlay-shadow);
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
   line-height: 1.45;
   transform-origin: var(--transform-origin);
@@ -17047,7 +17062,7 @@ adapted to the current uloggd surface system. */
 .list-preview-name {
   overflow: hidden;
   color: var(--screen-white);
-  font-size: 13.5px;
+  font-size: 0.84375rem;
   font-weight: 620;
   letter-spacing: -0.01em;
   text-overflow: ellipsis;
@@ -17061,7 +17076,7 @@ adapted to the current uloggd surface system. */
   flex-wrap: wrap;
   gap: 3px 10px;
   color: var(--screen-muted);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   font-weight: 550;
 }
 .list-preview-facts > span {
@@ -17074,7 +17089,7 @@ adapted to the current uloggd surface system. */
   overflow: hidden;
   margin-top: 2px;
   color: var(--screen-dim);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   line-height: 1.5;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -17221,7 +17236,7 @@ adapted to the current uloggd surface system. */
   border-radius: 8px;
   outline: 0;
   color: var(--screen-dim);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
@@ -17278,7 +17293,7 @@ adapted to the current uloggd surface system. */
   display: block;
   padding: 2px 8px 5px;
   color: var(--screen-muted);
-  font-size: 9.5px;
+  font-size: 0.59375rem;
   font-weight: 680;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -17292,7 +17307,7 @@ adapted to the current uloggd surface system. */
   border-radius: 7px;
   outline: 0;
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   cursor: pointer;
 }
 .md-insert-menu [role="menuitem"][data-highlighted] {
@@ -17372,11 +17387,11 @@ adapted to the current uloggd surface system. */
 }
 .screenshot-dropzone > span strong {
   color: var(--screen-white);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .screenshot-dropzone > span small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .screenshot-dropzone img {
   display: block;
@@ -17398,7 +17413,7 @@ adapted to the current uloggd surface system. */
 .screenshot-description > span,
 .screenshot-options > label > span:first-child {
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .screenshot-description textarea {
@@ -17408,7 +17423,7 @@ adapted to the current uloggd surface system. */
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 12px/1.55 var(--font-inter);
+  font: 0.75rem/1.55 var(--interface-font-family);
   resize: vertical;
 }
 .screenshot-description > small {
@@ -17416,7 +17431,7 @@ adapted to the current uloggd surface system. */
   right: 8px;
   bottom: 8px;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-variant-numeric: tabular-nums;
 }
 .screenshot-options {
@@ -17438,7 +17453,7 @@ adapted to the current uloggd surface system. */
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   cursor: pointer;
 }
 .screenshot-studio > footer {
@@ -17463,7 +17478,7 @@ adapted to the current uloggd surface system. */
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 620;
 }
 .screenshot-studio > footer button[type="submit"] {
@@ -17497,18 +17512,18 @@ adapted to the current uloggd surface system. */
   align-items: center;
   gap: 7px;
   color: var(--brand-blurple-bright);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 680;
   letter-spacing: 0.08em;
 }
 .screenshot-gallery-header h1 {
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 650;
   letter-spacing: -0.045em;
 }
 .screenshot-gallery-header p {
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .screenshot-gallery-grid {
   display: grid;
@@ -17550,14 +17565,14 @@ adapted to the current uloggd surface system. */
   gap: 7px;
   background: rgb(11 10 13 / 84%);
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-style: normal;
   font-weight: 650;
   backdrop-filter: blur(14px);
 }
 .screenshot-gallery-card > strong {
   overflow: hidden;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 620;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -17566,7 +17581,7 @@ adapted to the current uloggd surface system. */
   display: -webkit-box;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.45;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -17589,12 +17604,12 @@ adapted to the current uloggd surface system. */
 }
 .diary-entry-post > header > span {
   color: var(--brand-blurple-bright);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 680;
   letter-spacing: 0.08em;
 }
 .diary-entry-post h1 {
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 650;
   letter-spacing: -0.045em;
 }
@@ -17614,11 +17629,11 @@ adapted to the current uloggd surface system. */
   align-items: center;
   gap: 6px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .diary-entry-post > p {
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.65;
   white-space: pre-wrap;
 }
@@ -17653,11 +17668,11 @@ adapted to the current uloggd surface system. */
 }
 .screenshot-spoiler-gate > summary strong {
   color: var(--screen-white);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .screenshot-spoiler-gate > summary span {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .screenshot-spoiler-gate[open] > summary {
   display: none;
@@ -17667,7 +17682,7 @@ adapted to the current uloggd surface system. */
   padding: 16px 18px;
   border-top: 1px solid var(--shell-line);
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.6;
   white-space: pre-wrap;
 }
@@ -17684,7 +17699,7 @@ adapted to the current uloggd surface system. */
 .screenshot-post-body > header time {
   margin-left: auto;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .screenshot-post-body > header > .verified-badge {
   align-self: flex-start;
@@ -17754,14 +17769,14 @@ adapted to the current uloggd surface system. */
 }
 .screenshot-author strong {
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .screenshot-author small,
 .screenshot-post-body > p {
   color: var(--screen-dim);
 }
 .screenshot-author small {
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .screenshot-game {
   display: flex;
@@ -17769,12 +17784,12 @@ adapted to the current uloggd surface system. */
   gap: 7px;
   width: fit-content;
   color: var(--brand-blurple-bright);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
 }
 .screenshot-post-body > p {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.6;
   white-space: pre-wrap;
   text-wrap: pretty;
@@ -17818,7 +17833,7 @@ adapted to the current uloggd surface system. */
   gap: 8px;
   background: rgb(11 10 13 / 88%);
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   backdrop-filter: blur(18px);
 }
@@ -17879,7 +17894,7 @@ adapted to the current uloggd surface system. */
   padding: 0;
   border: 0;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
 }
 /* Ranking is a switch under the format cards, not a card of its own. */
@@ -17903,14 +17918,14 @@ adapted to the current uloggd surface system. */
 .create-list-rank-toggle strong {
   display: block;
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 620;
 }
 .create-list-rank-toggle small {
   display: block;
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   line-height: 1.4;
 }
 /* Shared shadcn controls use Base UI state attributes. Visible browser form
@@ -17993,13 +18008,20 @@ adapted to the current uloggd surface system. */
   color: var(--tonal-brand-text);
 }
 .ui-switch {
+  appearance: none;
   position: relative;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
   width: 40px;
   min-width: 40px;
+  max-width: 40px;
   height: 22px;
+  min-height: 22px;
+  max-height: 22px;
+  margin: 0;
   padding: 2px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 999px;
@@ -18010,6 +18032,7 @@ adapted to the current uloggd surface system. */
     border-color 150ms ease;
 }
 .ui-switch[data-checked] {
+  border-color: color-mix(in srgb, var(--brand-blurple) 78%, white 22%);
   background: var(--brand-blurple);
   box-shadow: none;
 }
@@ -18017,27 +18040,13 @@ adapted to the current uloggd surface system. */
   opacity: 0.48;
   cursor: not-allowed;
 }
-/* The form-wide input rule sets a 42px min-height and a border; the invisible
-   input has to shed all of it so only the track shows. */
-.ui-switch input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  opacity: 0;
-  cursor: pointer;
-}
 .ui-switch-thumb {
   display: block;
+  flex: 0 0 auto;
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--screen-white);
+  background: white;
   box-shadow: 0 1px 3px var(--shadow-soft);
   transform: translateX(0);
   transition: transform 150ms ease;
@@ -18045,15 +18054,14 @@ adapted to the current uloggd surface system. */
 .ui-switch[data-checked] .ui-switch-thumb {
   transform: translateX(18px);
 }
-.ui-switch:focus-visible,
-.ui-switch:focus-within {
+.ui-switch:focus-visible {
   outline: 2px solid var(--brand-blurple);
   outline-offset: 2px;
 }
 .create-list-mode legend {
   padding: 0;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 550;
 }
 .create-list-mode > .ui-radio-item {
@@ -18091,12 +18099,12 @@ adapted to the current uloggd surface system. */
 }
 .create-list-mode > .ui-radio-item strong {
   color: var(--screen-white);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   font-weight: 600;
 }
 .create-list-mode > .ui-radio-item small {
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.45;
 }
 .create-list-mode > .ui-radio-item[data-selected] {
@@ -18110,7 +18118,7 @@ adapted to the current uloggd surface system. */
 .create-list-hint {
   margin: -2px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 
@@ -18132,13 +18140,13 @@ adapted to the current uloggd surface system. */
 }
 .lists-toolbar-heading h2 {
   color: var(--screen-white);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 620;
   letter-spacing: -0.01em;
 }
 .lists-toolbar-heading p {
   color: var(--screen-muted);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 550;
 }
 .lists-mode-tabs {
@@ -18180,7 +18188,7 @@ adapted to the current uloggd surface system. */
   outline: none;
   background: transparent;
   color: var(--screen-white);
-  font: 400 13px var(--font-inter);
+  font: 400 0.8125rem var(--interface-font-family);
 }
 .lists-search-clear {
   position: absolute;
@@ -18210,7 +18218,7 @@ adapted to the current uloggd surface system. */
   gap: 5px;
   min-width: 160px;
   color: var(--screen-dim);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   font-weight: 550;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -18225,7 +18233,7 @@ adapted to the current uloggd surface system. */
   border-radius: 9px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 550;
 }
 .lists-clear-filters:hover {
@@ -18278,7 +18286,7 @@ adapted to the current uloggd surface system. */
   border-radius: 12px;
   background: var(--console-inset);
   color: var(--screen-muted);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   text-align: center;
 }
 
@@ -18292,7 +18300,7 @@ adapted to the current uloggd surface system. */
   border-radius: 999px;
   background: var(--console-raised);
   color: var(--screen-muted);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -18318,7 +18326,7 @@ adapted to the current uloggd surface system. */
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .list-report-trigger:hover {
@@ -18342,7 +18350,7 @@ adapted to the current uloggd surface system. */
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 /* Un-ranked collections don't paint the numbered rank badge, so remove the
@@ -18402,7 +18410,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 .pagination button:hover:not(:disabled) {
@@ -18415,13 +18423,13 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .pagination-summary strong {
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
 .pagination-summary span {
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .pagination-pages {
   display: flex;
@@ -18433,7 +18441,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .pagination-pages > span {
   width: 24px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   text-align: center;
 }
 .pagination-pages button[aria-current="page"] {
@@ -18452,7 +18460,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .pagination-jump label {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .pagination-jump input {
   width: 58px;
@@ -18463,7 +18471,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   outline: 0;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 560 11px var(--font-inter);
+  font: 560 0.6875rem var(--interface-font-family);
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
@@ -18566,7 +18574,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   display: grid;
   place-items: center;
   padding: 8px 6px;
-  font: 700 18px var(--font-inter);
+  font: 700 1.125rem var(--interface-font-family);
   letter-spacing: -0.02em;
   text-align: center;
   overflow-wrap: anywhere;
@@ -18584,7 +18592,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   grid-template-columns: 34px minmax(0, 1fr);
 }
 .tierlist-board[data-compact] .tierlist-row-label {
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .tierlist-board[data-compact] .tierlist-row-games {
   padding: 3px;
@@ -18615,7 +18623,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .tierlist-pool-empty {
   padding: 16px;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 /* ── Editor ──────────────────────────────────────────────────────────────*/
@@ -18644,7 +18652,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-editor-bar p {
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 /* Same primary action as the review studio and the list dialog. */
 .tierlist-save {
@@ -18658,7 +18666,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 9px;
   background: var(--brand-blurple);
   color: white;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 620;
   white-space: nowrap;
 }
@@ -18674,7 +18682,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 8px;
   background: color-mix(in srgb, var(--danger-text) 10%, transparent);
   color: var(--danger-text);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
 }
 .tierlist-rows {
   display: grid;
@@ -18707,7 +18715,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   place-items: center;
   gap: 2px;
   padding: 6px 4px;
-  font: 700 17px var(--font-inter);
+  font: 700 1.0625rem var(--interface-font-family);
 }
 .tierlist-edit-label b {
   overflow-wrap: anywhere;
@@ -18812,7 +18820,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 6px;
   outline: 0;
   color: var(--screen-dim);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   cursor: pointer;
 }
 .tierlist-sort-menu [role="menuitem"][data-highlighted] {
@@ -18828,7 +18836,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border: 1px dashed var(--shell-line-strong);
   border-radius: 10px;
   color: var(--screen-dim);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 600;
 }
 .tierlist-add-tier:hover {
@@ -18857,7 +18865,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-pool h3 {
   color: var(--screen-white);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 620;
 }
 .tierlist-pool header small {
@@ -18865,7 +18873,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 999px;
   background: var(--console-inset);
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
 /* Standard bordered search box, same height and treatment as the lists toolbar
@@ -18892,7 +18900,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   min-width: 0;
   background: transparent;
   color: var(--screen-white);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .tierlist-pool-games {
   display: flex;
@@ -18937,14 +18945,14 @@ article[id^="comment-"][data-highlight]:focus-visible {
   gap: 8px;
   padding: 8px 14px;
   border-radius: 8px;
-  font: 700 16px var(--font-inter);
+  font: 700 1rem var(--interface-font-family);
   opacity: 0.95;
 }
 .tierlist-ghost-tier small {
   padding: 1px 7px;
   border-radius: 999px;
   background: rgb(0 0 0 / 22%);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .tierlist-dialog-overlay {
@@ -18973,7 +18981,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-dialog h3 {
   color: var(--screen-white);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 640;
 }
 .tierlist-dialog header button {
@@ -18983,7 +18991,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   display: grid;
   gap: 6px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .tierlist-dialog-field input {
@@ -18993,7 +19001,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 600 15px var(--font-inter);
+  font: 600 0.9375rem var(--interface-font-family);
 }
 .tierlist-dialog-swatches {
   display: flex;
@@ -19036,7 +19044,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 620;
 }
 .tierlist-dialog-save {
@@ -19136,7 +19144,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 6px;
   background: var(--console-inset);
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
 .reviews-scope-tabs a[aria-current="page"] b {
@@ -19176,7 +19184,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   outline: 0;
   background: transparent;
   color: var(--screen-white);
-  font: 500 12px var(--font-inter);
+  font: 500 0.75rem var(--interface-font-family);
 }
 .reviews-search input::placeholder {
   color: var(--screen-muted);
@@ -19190,7 +19198,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 7px;
   background: var(--brand-blurple);
   color: white;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
 }
 .reviews-filter-row {
@@ -19210,13 +19218,13 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 580;
   cursor: pointer;
 }
 .reviews-filter-trigger > span:first-of-type {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .reviews-filter-trigger > span:first-of-type::after {
   content: ":";
@@ -19264,7 +19272,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 7px;
   outline: 0;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   cursor: pointer;
 }
 .reviews-filter-option[data-highlighted] {
@@ -19316,21 +19324,21 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .reviews-results-heading > div > span,
 .reviews-game-heading > span {
   color: var(--brand-blurple-bright);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 700;
   letter-spacing: 0.1em;
 }
 .reviews-results-heading h2 {
   margin-top: 5px;
   color: var(--screen-white);
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 630;
   letter-spacing: -0.03em;
 }
 .reviews-results-heading > p {
   max-width: 440px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.55;
   text-align: right;
 }
@@ -19354,13 +19362,13 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .reviews-filter-empty h2 {
   color: var(--screen-white);
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 .reviews-filter-empty p {
   max-width: 420px;
   margin-top: 6px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 .reviews-game-archive {
@@ -19403,7 +19411,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   margin-top: 4px;
   overflow: hidden;
   color: var(--screen-white);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 650;
   letter-spacing: -0.025em;
   text-overflow: ellipsis;
@@ -19420,7 +19428,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   align-items: center;
   gap: 4px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
 .reviews-game-summary {
@@ -19438,7 +19446,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 620;
 }
 .reviews-game-summary strong {
@@ -19733,7 +19741,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   }
   .reviews-search button::after {
     color: white;
-    font-size: 14px;
+    font-size: 0.875rem;
     content: "→";
   }
   .reviews-filter-trigger {
@@ -19750,7 +19758,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
     margin-top: 22px;
   }
   .reviews-results-heading h2 {
-    font-size: 17px;
+    font-size: 1.0625rem;
   }
   .reviews-game-heading > div span:nth-child(3) {
     display: none;

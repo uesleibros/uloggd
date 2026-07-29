@@ -148,7 +148,7 @@
   align-items: center;
   gap: 8px;
   color: var(--brand-blurple-bright);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 700;
   letter-spacing: 0.12em;
 }
@@ -157,7 +157,7 @@
   border: 1px solid var(--shell-line-strong);
   border-radius: 999px;
   color: var(--screen-muted);
-  font-size: 8.5px;
+  font-size: 0.53125rem;
   letter-spacing: 0.06em;
 }
 .publisher-status[data-status="active"] {
@@ -172,7 +172,7 @@
 .publisher-identity h1 {
   margin-top: 6px;
   color: var(--screen-white);
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 650;
   letter-spacing: -0.045em;
   line-height: 1.1;
@@ -184,7 +184,7 @@
   gap: 6px 14px;
   margin-top: 9px;
   color: var(--screen-dim);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
 }
 .publisher-meta span {
   display: inline-flex;
@@ -192,7 +192,7 @@
   gap: 5px;
 }
 .publisher-meta b {
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1;
 }
 .publisher-meta a {
@@ -205,7 +205,7 @@
   max-width: 640px;
   margin-top: 10px;
   color: var(--screen-dim);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.55;
   white-space: pre-wrap;
 }
@@ -225,7 +225,7 @@
   border-radius: 999px;
   background: var(--console-inset);
   color: var(--screen-dim);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   font-weight: 560;
 }
 .publisher-links a:hover {
@@ -260,7 +260,7 @@
   align-items: center;
   gap: 5px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   white-space: nowrap;
 }
 .publisher-stats dt svg {
@@ -269,13 +269,13 @@
 .publisher-stats dd {
   margin: 6px 0 0;
   color: var(--screen-white);
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
 .publisher-stats dd small {
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 550;
 }
 
@@ -292,14 +292,14 @@
 }
 .publisher-section h2 {
   color: var(--screen-white);
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 640;
   letter-spacing: -0.02em;
 }
 .publisher-section > header p {
   margin-top: 4px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .publisher-see-all {
   flex: none;
@@ -307,7 +307,7 @@
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   color: var(--screen-dim);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -362,7 +362,7 @@
   display: -webkit-box;
   overflow: hidden;
   color: var(--screen-white);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   font-weight: 620;
   line-height: 1.3;
   -webkit-box-orient: vertical;
@@ -372,14 +372,14 @@
   display: block;
   margin-top: 5px;
   color: var(--screen-muted);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
 }
 /* The wait is the point of this card, so it gets the accent, not the date. */
 .publisher-countdown {
   display: block;
   margin-top: 3px;
   color: var(--brand-blurple-bright);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   font-weight: 600;
 }
 
@@ -404,7 +404,7 @@
 }
 .publisher-trailers h3 {
   margin-top: 9px;
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   font-weight: 620;
 }
 .publisher-trailers h3 a {
@@ -417,7 +417,7 @@
   display: block;
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
 }
 
 /* ── Events ───────────────────────────────────────────────────────────── */
@@ -456,7 +456,7 @@
   display: block;
   overflow: hidden;
   color: var(--screen-white);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -465,7 +465,7 @@
   display: block;
   margin-top: 2px;
   color: var(--screen-muted);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
 }
 .publisher-events a {
   display: inline-flex;
@@ -475,7 +475,7 @@
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   color: var(--screen-dim);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -522,7 +522,7 @@
   border-radius: 0 0 12px 12px;
   background: var(--console-panel);
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .publisher-timeline-skeleton {
   height: 130px;
@@ -573,7 +573,7 @@
     align-self: center;
   }
   .publisher-identity h1 {
-    font-size: 21px;
+    font-size: 1.3125rem;
   }
   .publisher-description,
   .publisher-links,

@@ -17,6 +17,7 @@ const publicSegments = new Set([
   "reviews",
   // Company pages are catalogue data, same as /game — nothing on them depends
   // on who is looking, so they stay reachable without an account.
+  "company",
   "publisher",
   // Where dead URLs land; gating it behind auth would turn every 404 into a
   // login redirect again.

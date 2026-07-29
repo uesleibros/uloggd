@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import {
+  Atkinson_Hyperlegible_Next,
+  Inter,
+  Source_Sans_3,
+  Source_Serif_4,
+} from "next/font/google";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PlatformNavigation } from "@/components/platform-navigation";
@@ -33,6 +38,19 @@ import "../globals.css";
 import "./profile.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const sourceSans = Source_Sans_3({
+  variable: "--font-source-sans",
+  subsets: ["latin"],
+});
+const readable = Atkinson_Hyperlegible_Next({
+  variable: "--font-readable",
+  subsets: ["latin"],
+  adjustFontFallback: false,
+});
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
+  subsets: ["latin"],
+});
 
 export async function generateMetadata({
   params,
@@ -142,7 +160,11 @@ export default async function LocaleLayout({
   const dictionary = await getDictionary(lang);
 
   return (
-    <html lang={lang} className={inter.variable} suppressHydrationWarning>
+    <html
+      lang={lang}
+      className={`${inter.variable} ${sourceSans.variable} ${readable.variable} ${sourceSerif.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script
           type="application/ld+json"

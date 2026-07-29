@@ -20,6 +20,12 @@ test("interface preferences accept only supported local values", () => {
   );
 });
 
+test("interface preferences preserve every bundled font choice", () => {
+  for (const font of ["system", "source-sans", "readable", "serif"] as const) {
+    assert.equal(normalizeInterfacePreferences({ font }).font, font);
+  }
+});
+
 test("interface preferences fall back safely for malformed storage", () => {
   assert.deepEqual(
     normalizeInterfacePreferences({

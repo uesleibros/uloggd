@@ -71,3 +71,33 @@ test("automatic theme follows device appearance changes", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await expect(root).toHaveAttribute("data-theme", "light");
 });
+
+test("applies saved interface font, type scale, and reduced motion before hydration", async ({
+  page,
+}) => {
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      "uloggd:interface-preferences",
+      JSON.stringify({
+        font: "serif",
+        readingSize: "extra-large",
+        reduceMotion: true,
+      }),
+    ),
+  );
+  await page.goto("/pt-BR/search");
+
+  const root = page.locator("html");
+  await expect(root).toHaveAttribute("data-interface-font", "serif");
+  await expect(root).toHaveAttribute("data-reading-size", "extra-large");
+  await expect(root).toHaveAttribute("data-reduce-motion", "true");
+
+  const typography = await page.evaluate(() => ({
+    rootSize: Number.parseFloat(
+      getComputedStyle(document.documentElement).fontSize,
+    ),
+    bodyFamily: getComputedStyle(document.body).fontFamily,
+  }));
+  expect(typography.rootSize).toBeGreaterThan(19.5);
+  expect(typography.bodyFamily).toMatch(/Source_Serif_4/i);
+});

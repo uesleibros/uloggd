@@ -19,7 +19,7 @@
 .catalog-results-heading-copy > span,
 .catalog-filter-dialog-head > div:first-child > span {
   color: var(--brand-blurple-bright);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   letter-spacing: 0.1em;
 }
@@ -32,7 +32,7 @@
   max-width: 760px;
   margin: 0;
   color: var(--screen-white);
-  font-size: clamp(24px, 2.4vw, 30px);
+  font-size: clamp(1.5rem, 2.4vw, 1.875rem);
   font-weight: 660;
   letter-spacing: -0.052em;
   line-height: 1.04;
@@ -42,7 +42,7 @@
   max-width: 680px;
   margin: 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.65;
   text-wrap: pretty;
 }
@@ -86,7 +86,7 @@
   outline: 0;
   background: transparent;
   color: var(--screen-white);
-  font: 500 14px var(--font-inter);
+  font: 500 0.875rem var(--interface-font-family);
 }
 .catalog-search-main-form input::placeholder {
   color: var(--screen-muted);
@@ -100,7 +100,7 @@
   padding: 0 17px;
   border-radius: 8px;
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 620;
 }
 .catalog-search-main-form button[type="submit"] {
@@ -121,7 +121,7 @@
   gap: 0;
   margin: 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .catalog-search-signals span {
   display: inline-flex;
@@ -153,7 +153,7 @@
   border-radius: 7px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 560;
   animation: catalog-chip-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
@@ -192,7 +192,7 @@
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 .catalog-filter-trigger > svg {
@@ -214,7 +214,7 @@
   border-radius: 5px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -273,7 +273,7 @@
 .catalog-filter-dialog-head h2 {
   margin: 0;
   color: var(--screen-white);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 630;
   letter-spacing: -0.032em;
 }
@@ -290,7 +290,7 @@
   border-radius: 7px;
   background: transparent;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 560;
 }
 .catalog-filter-clear:hover {
@@ -334,7 +334,7 @@
 .catalog-filter-dialog-actions > span {
   min-height: 12px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .catalog-filter-dialog-actions > button {
   min-height: 40px;
@@ -343,7 +343,7 @@
   border-radius: 8px;
   background: var(--brand-blurple);
   color: white;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 640;
 }
 .catalog-filter-dialog-actions > button:hover:not(:disabled) {
@@ -363,7 +363,7 @@
 }
 .catalog-choice-filter > header {
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 .catalog-segmented-filter {
@@ -383,7 +383,7 @@
   padding-inline: 5px;
   border-radius: 5px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 580;
   cursor: pointer;
 }
@@ -412,7 +412,7 @@
   color: var(--screen-muted);
 }
 .catalog-boolean-filters b {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 540;
 }
 .catalog-boolean-filters label {
@@ -430,7 +430,7 @@
   min-height: 46px;
   padding: 0 14px;
   color: var(--screen-dim);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
   list-style: none;
@@ -459,7 +459,7 @@
   border-radius: 5px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .catalog-filter-group[open] > summary svg:last-child {
   transform: rotate(180deg);
@@ -492,7 +492,7 @@
   outline: 0;
   background: transparent;
   color: var(--screen-dim);
-  font: 500 11px var(--font-inter);
+  font: 500 0.6875rem var(--interface-font-family);
 }
 .catalog-filter-options {
   display: grid;
@@ -548,7 +548,7 @@
 }
 .catalog-filter-options strong {
   overflow: hidden;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 540;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -557,7 +557,7 @@
   margin-top: 2px;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 9px;
+  font-size: 0.5625rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -567,7 +567,7 @@
   gap: 6px;
   margin: 8px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .catalog-range-filter {
   display: grid;
@@ -593,7 +593,7 @@
   display: grid;
   gap: 5px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .catalog-range-filter input {
   width: 100%;
@@ -605,7 +605,7 @@
   outline: 0;
   background: var(--console-inset);
   color: var(--screen-white);
-  font: 500 11px var(--font-inter);
+  font: 500 0.6875rem var(--interface-font-family);
 }
 .catalog-range-filter input:focus {
   border-color: var(--brand-blurple);
@@ -633,14 +633,14 @@
 }
 .catalog-context-total > span {
   color: var(--brand-blurple-bright);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 650;
   letter-spacing: 0.1em;
 }
 .catalog-context-total > strong {
   margin-top: 4px;
   color: var(--screen-white);
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 650;
   letter-spacing: -0.05em;
   line-height: 1;
@@ -648,7 +648,7 @@
 }
 .catalog-context-total > small {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.45;
 }
 .catalog-context-card > header,
@@ -661,7 +661,7 @@
 .catalog-context-card > header > strong,
 .catalog-context-navigation strong {
   color: var(--screen-white);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 610;
 }
 .catalog-context-card > header > span {
@@ -673,7 +673,7 @@
   border-radius: 6px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 650;
 }
 .catalog-context-card dl {
@@ -691,7 +691,7 @@
 .catalog-context-card dt,
 .catalog-context-card dd {
   margin: 0;
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .catalog-context-card dt {
   color: var(--screen-muted);
@@ -720,7 +720,7 @@
   border-radius: 7px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 10px;
+  font-size: 0.625rem;
   text-align: left;
 }
 .catalog-context-chips button:hover {
@@ -736,7 +736,7 @@
 .catalog-context-card > p {
   margin: 13px 0 0;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.5;
 }
 .catalog-context-card > a {
@@ -745,7 +745,7 @@
   min-height: 30px;
   margin-top: 9px;
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 580;
 }
 .catalog-context-card > a:hover {
@@ -753,7 +753,7 @@
 }
 .catalog-context-navigation > div:first-child > span {
   color: var(--screen-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 .catalog-context-navigation > div:last-child {
   display: grid;
@@ -768,7 +768,7 @@
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
 }
 .catalog-context-navigation button:hover:not(:disabled) {
@@ -814,14 +814,14 @@
 .catalog-results-heading h2 {
   margin: 5px 0 0;
   color: var(--screen-white);
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 630;
   letter-spacing: -0.035em;
 }
 .catalog-results-heading p {
   margin: 5px 0 0;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .catalog-sort-trigger {
   display: inline-flex;
@@ -835,7 +835,7 @@
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 560;
 }
 .catalog-sort-menu {
@@ -860,7 +860,7 @@
   border-radius: 5px;
   outline: 0;
   color: var(--screen-dim);
-  font-size: 12px;
+  font-size: 0.75rem;
   cursor: pointer;
 }
 .catalog-sort-option[data-highlighted],
@@ -892,12 +892,12 @@
 .catalog-results-empty h2 {
   margin: 4px 0 0;
   color: var(--screen-white);
-  font-size: 17px;
+  font-size: 1.0625rem;
 }
 .catalog-results-empty p {
   max-width: 440px;
   margin: 0;
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.6;
 }
 .catalog-results-empty a {
@@ -907,7 +907,7 @@
   border-radius: 7px;
   background: var(--brand-blurple-wash);
   color: var(--tonal-brand-text);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   line-height: 36px;
 }
@@ -1076,7 +1076,7 @@
     border-radius: 11px;
   }
   .catalog-search-hero h1 {
-    font-size: 25px;
+    font-size: 1.5625rem;
   }
   .catalog-search-main-form {
     grid-template-columns: minmax(0, 1fr) auto auto;
@@ -1185,7 +1185,7 @@
     padding-inline: 15px;
   }
   .catalog-search-hero h1 {
-    font-size: 25px;
+    font-size: 1.5625rem;
   }
   .catalog-results-grid,
   .catalog-results-loading-grid {
@@ -1280,7 +1280,7 @@
   gap: 5px;
   overflow: hidden;
   color: var(--screen-white);
-  font-size: 14px;
+  font-size: 0.875rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1290,14 +1290,14 @@
   gap: 3px;
   margin-top: 4px;
   color: var(--screen-muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .entity-result-copy p {
   display: -webkit-box;
   margin-top: 7px;
   overflow: hidden;
   color: var(--screen-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.45;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -1317,7 +1317,7 @@
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
 }
 .catalog-context-navigation a:hover {

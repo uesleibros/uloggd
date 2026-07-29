@@ -118,18 +118,33 @@ export function ContentPreferences({
       ),
     },
     {
-      id: "readable",
-      title: tri(
+      id: "source-sans",
+      title: "Source Sans 3",
+      sample: tri(
         lang,
-        "Alta legibilidade",
-        "High legibility",
-        "Alta legibilidad",
+        "Aberta e equilibrada",
+        "Open and balanced",
+        "Abierta y equilibrada",
       ),
+    },
+    {
+      id: "readable",
+      title: "Atkinson Hyperlegible",
       sample: tri(
         lang,
         "Letras mais distintas",
         "More distinct letters",
         "Letras más distintas",
+      ),
+    },
+    {
+      id: "serif",
+      title: "Source Serif 4",
+      sample: tri(
+        lang,
+        "Confortável para textos",
+        "Comfortable for reading",
+        "Cómoda para leer",
       ),
     },
   ];
