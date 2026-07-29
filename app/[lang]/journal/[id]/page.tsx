@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { cache } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -20,9 +21,9 @@ import { MentionText } from "@/components/social/mention-text";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { getGamesByIds } from "@/lib/igdb";
-import { localeAlternates } from "@/lib/seo";
+import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
-import { tri, uiText } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
@@ -54,68 +55,142 @@ function sessionDays(start: string, end: string | null) {
   );
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { lang, id } = await params;
+const getJourneyRecord = cache(async (id: string) => {
   const key = journeyKey(id);
-  if (!hasLocale(lang) || !key) return {};
-  const { data: journey } = await (
-    await getSupabase()
-  )
+  if (!key) return null;
+  const supabase = await getSupabase();
+  const { data, error } = await supabase
     .from("journeys")
-    .select(
-      "public_id,igdb_id,game_slug,title,profiles!journeys_profile_id_fkey(username)",
-    )
+    .select(journeySelect)
     .eq(key[0], key[1])
     .maybeSingle();
-  if (!journey) return {};
+  // A database/schema failure is not a missing page. Keeping these states
+  // separate prevents an operational issue from being cached and indexed as a
+  // real 404 while still letting Next render not-found for unknown IDs.
+  if (error)
+    throw new Error(`Journal lookup failed (${error.code || "unknown"})`);
+  if (!data) return null;
+  const { data: suspension, error: suspensionError } = await supabase.rpc(
+    "profile_suspension",
+    { target: data.profile_id },
+  );
+  if (suspensionError)
+    throw new Error(
+      `Journal moderation lookup failed (${suspensionError.code || "unknown"})`,
+    );
+  return { journey: data, key, suspended: Boolean(suspension?.length) };
+});
+
+function journeyDescription(
+  lang: UiLang,
+  username: string,
+  gameName: string,
+  sessionCount: number,
+) {
+  if (!sessionCount)
+    return tri(
+      lang,
+      `Acompanhe a jornada de @${username} em ${gameName}.`,
+      `Follow @${username}'s journey through ${gameName}.`,
+      `Sigue el recorrido de @${username} en ${gameName}.`,
+    );
+  return tri(
+    lang,
+    `${sessionCount} ${sessionCount === 1 ? "sessão pública" : "sessões públicas"} na jornada de @${username} em ${gameName}.`,
+    `${sessionCount} public ${sessionCount === 1 ? "session" : "sessions"} in @${username}'s journey through ${gameName}.`,
+    `${sessionCount} ${sessionCount === 1 ? "sesión pública" : "sesiones públicas"} en el recorrido de @${username} en ${gameName}.`,
+  );
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang, id } = await params;
+  if (!hasLocale(lang)) return {};
+  const record = await getJourneyRecord(id);
+  if (!record) return {};
+  if (record.suspended)
+    return {
+      title: tri(
+        lang,
+        "Jornada indisponível",
+        "Journey unavailable",
+        "Recorrido no disponible",
+      ),
+      robots: { index: false, follow: false },
+    };
+  const { journey } = record;
   const profile = Array.isArray(journey.profiles)
     ? journey.profiles[0]
     : journey.profiles;
+  if (!profile?.username) return {};
+  const { count: publicSessionCount, error: sessionCountError } = await (
+    await getSupabase()
+  )
+    .from("diary_entries")
+    .select("id", { count: "exact", head: true })
+    .eq("journey_id", journey.id)
+    .eq("visibility", "PUBLIC");
+  if (sessionCountError)
+    throw new Error(
+      `Journal metadata lookup failed (${sessionCountError.code || "unknown"})`,
+    );
   const game = (await getGamesByIds([journey.igdb_id]))[0];
   const gameName = game?.name ?? journey.game_slug;
   const title = `${journey.title} · ${gameName}`;
-  const description = tri(
+  const description = journeyDescription(
     lang,
-    `Acompanhe a jornada de @${profile?.username} em ${gameName}.`,
-    `Follow @${profile?.username}'s journey through ${gameName}.`,
-    `Sigue el recorrido de @${profile?.username} en ${gameName}.`,
+    profile.username,
+    gameName,
+    publicSessionCount ?? 0,
   );
+  const image = game?.heroUrl ?? game?.coverUrl;
   return {
     title,
     description,
+    authors: [
+      {
+        name: profile.display_name || `@${profile.username}`,
+        url: `/${lang}/u/${profile.username}`,
+      },
+    ],
+    creator: profile.display_name || `@${profile.username}`,
+    publisher: "uloggd",
+    category: "games",
+    keywords: [gameName, journey.title, "uloggd", "game journal"],
     alternates: localeAlternates(lang, `/journal/${journey.public_id}`),
+    robots:
+      (publicSessionCount ?? 0) > 0
+        ? undefined
+        : { index: false, follow: true },
     openGraph: {
       title: `${title} · uloggd`,
       description,
       type: "article",
       siteName: "uloggd",
-      images: game?.coverUrl
-        ? [{ url: game.coverUrl, alt: gameName }]
-        : undefined,
+      locale: tri(lang, "pt_BR", "en_US", "es_ES"),
+      publishedTime: journey.created_at,
+      modifiedTime: journey.updated_at,
+      authors: [`${SITE_URL}/${lang}/u/${profile.username}`],
+      images: image ? [{ url: image, alt: gameName }] : undefined,
     },
     twitter: {
-      card: game?.coverUrl ? "summary_large_image" : "summary",
+      card: game?.heroUrl ? "summary_large_image" : "summary",
       title: `${title} · uloggd`,
       description,
-      images: game?.coverUrl ? [game.coverUrl] : undefined,
+      images: image ? [image] : undefined,
     },
   };
 }
 
 export default async function JournalPage({ params }: Props) {
   const { lang, id } = await params;
-  const key = journeyKey(id);
-  if (!hasLocale(lang) || !key) notFound();
-  const supabase = await getSupabase();
-  const [{ data: journey }, user] = await Promise.all([
-    supabase
-      .from("journeys")
-      .select(journeySelect)
-      .eq(key[0], key[1])
-      .maybeSingle(),
+  if (!hasLocale(lang) || !journeyKey(id)) notFound();
+  const [record, user] = await Promise.all([
+    getJourneyRecord(id),
     getAuthUser(),
   ]);
-  if (!journey) notFound();
+  if (!record) notFound();
+  if (record.suspended) notFound();
+  const { journey, key } = record;
   if (key[0] === "id")
     permanentRedirect(`/${lang}/journal/${journey.public_id}`);
 
@@ -124,7 +199,8 @@ export default async function JournalPage({ params }: Props) {
     : journey.profiles;
   if (!profile?.username) notFound();
 
-  const [games, { data: sessions }, { data: reviews }] = await Promise.all([
+  const supabase = await getSupabase();
+  const [games, sessionResult, reviewResult] = await Promise.all([
     getGamesByIds([journey.igdb_id]),
     supabase
       .from("diary_entries")
@@ -141,8 +217,21 @@ export default async function JournalPage({ params }: Props) {
       .order("created_at", { ascending: false })
       .limit(3),
   ]);
+  if (sessionResult.error)
+    throw new Error(
+      `Journal sessions failed (${sessionResult.error.code || "unknown"})`,
+    );
+  if (reviewResult.error)
+    throw new Error(
+      `Journal reviews failed (${reviewResult.error.code || "unknown"})`,
+    );
+  const sessions = sessionResult.data;
+  const reviews = reviewResult.data;
   const game = games[0] ?? null;
   const visibleSessions = sessions ?? [];
+  const publicSessions = visibleSessions.filter(
+    (session) => session.visibility === "PUBLIC",
+  );
   const totalMinutes = visibleSessions.reduce(
     (total, session) => total + (session.minutes ?? 0),
     0,
@@ -162,9 +251,85 @@ export default async function JournalPage({ params }: Props) {
     year: "numeric",
     timeZone: "UTC",
   });
+  const gameName = game?.name ?? journey.game_slug;
+  const canonicalUrl = `${SITE_URL}/${lang}/journal/${journey.public_id}`;
+  const publicUpdatedAt = publicSessions.reduce(
+    (latest, session) =>
+      Date.parse(session.updated_at) > Date.parse(latest)
+        ? session.updated_at
+        : latest,
+    journey.updated_at,
+  );
+  const structuredDescription = journeyDescription(
+    lang,
+    profile.username,
+    gameName,
+    publicSessions.length,
+  );
 
   return (
     <main className="social-page journal-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Article",
+              "@id": `${canonicalUrl}#journal`,
+              url: canonicalUrl,
+              headline: journey.title,
+              description: structuredDescription,
+              inLanguage: lang,
+              datePublished: journey.created_at,
+              dateModified: publicUpdatedAt,
+              ...(game
+                ? { image: [game.heroUrl ?? game.coverUrl].filter(Boolean) }
+                : {}),
+              author: {
+                "@type": "Person",
+                name: profile.display_name || `@${profile.username}`,
+                url: `${SITE_URL}/${lang}/u/${profile.username}`,
+              },
+              publisher: {
+                "@type": "Organization",
+                name: "uloggd",
+                url: SITE_URL,
+              },
+              mainEntityOfPage: canonicalUrl,
+              about: {
+                "@type": "VideoGame",
+                name: gameName,
+                url: `${SITE_URL}/${lang}/game/${journey.game_slug}`,
+              },
+              isPartOf: { "@id": `${SITE_URL}/#website` },
+            },
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: tri(lang, "Início", "Home", "Inicio"),
+                  item: `${SITE_URL}/${lang}`,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: gameName,
+                  item: `${SITE_URL}/${lang}/game/${journey.game_slug}`,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: journey.title,
+                  item: canonicalUrl,
+                },
+              ],
+            },
+          ],
+        })}
+      />
       <Link
         className="page-back-link"
         href={`/${lang}/game/${journey.game_slug}`}

@@ -59,14 +59,23 @@ export async function generateMetadata({
   const locale = hasLocale(lang) ? lang : "pt-BR";
   const dictionary = await getDictionary(locale);
   return {
-    metadataBase: new URL(
-      process.env.NEXT_PUBLIC_SITE_URL || "https://uloggd.com",
-    ),
+    metadataBase: new URL(SITE_URL),
     title: { default: "uloggd", template: "%s · uloggd" },
     description: dictionary.home.subtitle,
     applicationName: "uloggd",
+    authors: [{ name: "uloggd", url: SITE_URL }],
+    creator: "uloggd",
+    publisher: "uloggd",
+    keywords: [
+      "uloggd",
+      "game journal",
+      "gaming community",
+      "game reviews",
+      "game library",
+    ],
     category: "games",
     referrer: "origin-when-cross-origin",
+    formatDetection: { address: false, email: false, telephone: false },
     robots: {
       index: true,
       follow: true,
@@ -83,13 +92,16 @@ export async function generateMetadata({
       siteName: "uloggd",
       title: "uloggd",
       description: dictionary.home.subtitle,
+      url: `/${locale}`,
       locale:
         locale === "pt-BR" ? "pt_BR" : locale === "en" ? "en_US" : "es_ES",
+      images: [{ url: "/logo.jpg", width: 1280, height: 1280, alt: "uloggd" }],
     },
     twitter: {
       card: "summary",
       title: "uloggd",
       description: dictionary.home.subtitle,
+      images: ["/logo.jpg"],
     },
   };
 }
@@ -170,12 +182,37 @@ export default async function LocaleLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={jsonLd({
             "@context": "https://schema.org",
-            "@type": "WebSite",
-            "@id": `${SITE_URL}/#website`,
-            url: SITE_URL,
-            name: "uloggd",
-            alternateName: "Uloggd",
-            inLanguage: lang,
+            "@graph": [
+              {
+                "@type": "Organization",
+                "@id": `${SITE_URL}/#organization`,
+                name: "uloggd",
+                url: SITE_URL,
+                logo: {
+                  "@type": "ImageObject",
+                  url: `${SITE_URL}/logo.jpg`,
+                  width: 1280,
+                  height: 1280,
+                },
+              },
+              {
+                "@type": "WebSite",
+                "@id": `${SITE_URL}/#website`,
+                url: SITE_URL,
+                name: "uloggd",
+                alternateName: "Uloggd",
+                inLanguage: lang,
+                publisher: { "@id": `${SITE_URL}/#organization` },
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: {
+                    "@type": "EntryPoint",
+                    urlTemplate: `${SITE_URL}/${lang}/search?q={search_term_string}`,
+                  },
+                  "query-input": "required name=search_term_string",
+                },
+              },
+            ],
           })}
         />
         <script

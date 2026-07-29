@@ -1,8 +1,18 @@
 import type { Metadata } from "next";
 import { locales, type Locale } from "@/app/[lang]/dictionaries";
 
+const vercelProductionHost =
+  process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+  process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL;
+
+// An explicit origin wins. On Vercel, fall back to the project's production
+// custom domain instead of the branch/deployment URL so canonicals, sitemap
+// entries and social cards all agree (currently dev.uloggd.com while closed).
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://uloggd.com"
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (vercelProductionHost
+    ? `https://${vercelProductionHost}`
+    : "https://uloggd.com")
 ).replace(/\/$/, "");
 
 /**

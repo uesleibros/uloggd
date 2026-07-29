@@ -15,6 +15,14 @@ const publicSegments = new Set([
   "lists",
   "library",
   "reviews",
+  // Public community documents are protected by their own row-level
+  // visibility rules. Keeping the detail routes public lets shared links and
+  // search crawlers reach PUBLIC posts while FOLLOWERS/private rows still
+  // resolve as unavailable for anonymous visitors.
+  "entry",
+  "journal",
+  "review",
+  "shot",
   // Company pages are catalogue data, same as /game — nothing on them depends
   // on who is looking, so they stay reachable without an account.
   "company",
@@ -29,12 +37,9 @@ const publicSegments = new Set([
 // headers are already gone and notFound() can only mark the HTML noindex.
 const knownSegments = new Set([
   ...publicSegments,
-  "entry",
   "explore",
   "moderation",
-  "review",
   "settings",
-  "shot",
   "suspended",
 ]);
 
