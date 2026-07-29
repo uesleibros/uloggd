@@ -135,7 +135,7 @@ export async function ListsWorkspacePage({
           },
         ]}
       >
-        <CreateListForm lang={lang} />
+        <CreateListForm lang={lang} defaultOpen={query.create === "1"} />
       </WorkspaceHero>
       <div className="workspace-page-body">
         {heroTotal === 0 ? (

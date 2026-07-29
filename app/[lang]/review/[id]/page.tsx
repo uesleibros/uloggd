@@ -40,7 +40,7 @@ type Aspect = {
 };
 
 const reviewSelect =
-  "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
+  "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title,public_id),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
 
 function reviewKey(id: string) {
   if (/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
@@ -177,6 +177,7 @@ export default async function ReviewPage({ params }: Props) {
     ? review.journeys[0]
     : review.journeys;
   const journeyTitle = journeyJoin?.title ?? null;
+  const journeyPublicId = journeyJoin?.public_id ?? null;
   const ratingMode = (review.rating_mode ?? "stars_5") as RatingMode;
   const aspects = (review.aspect_ratings ?? []) as Aspect[];
   const playedDate = new Intl.DateTimeFormat(lang, {
@@ -212,6 +213,7 @@ export default async function ReviewPage({ params }: Props) {
     content: review.content,
     journeyId: review.journey_id,
     journeyTitle,
+    journeyPublicId,
     spoilers: Boolean(review.contains_spoilers),
     visibility: review.visibility,
     createdAt: review.created_at,
@@ -312,10 +314,10 @@ export default async function ReviewPage({ params }: Props) {
                   <Gamepad2 size={13} /> {review.platform}
                 </span>
               )}
-              {journeyTitle && (
+              {journeyTitle && journeyPublicId && (
                 <Link
                   className="review-page-journey"
-                  href={`/${lang}/game/${review.game_slug}/logs`}
+                  href={`/${lang}/journal/${journeyPublicId}`}
                 >
                   <Map size={13} /> {journeyTitle}
                 </Link>

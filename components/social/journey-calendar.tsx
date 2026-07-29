@@ -27,7 +27,11 @@ export type JourneySession = {
   journeyId: string | null;
 };
 
-export type JourneyOption = { id: string; title: string };
+export type JourneyOption = {
+  id: string;
+  title: string;
+  publicId?: string | null;
+};
 
 function pad(value: number) {
   return String(value).padStart(2, "0");

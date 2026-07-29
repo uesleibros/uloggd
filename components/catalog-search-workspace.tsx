@@ -306,6 +306,7 @@ export function CatalogSearchWorkspace({
   total,
   totalPages,
   saved,
+  communityRatings,
   enabled,
   createMode = null,
   scopeTabs,
@@ -317,6 +318,7 @@ export function CatalogSearchWorkspace({
   total: number;
   totalPages: number;
   saved: Record<number, SavedState>;
+  communityRatings: Record<number, { rating: number; count: number }>;
   enabled: boolean;
   createMode?: "review" | "screenshot" | null;
   scopeTabs?: ReactNode;
@@ -471,7 +473,12 @@ export function CatalogSearchWorkspace({
     },
     {
       value: "rating",
-      label: tri(lang, "Melhor avaliados", "Highest rated", "Mejor valorados"),
+      label: tri(
+        lang,
+        "Melhor nota no IGDB",
+        "Highest IGDB score",
+        "Mejor nota en IGDB",
+      ),
     },
     {
       value: "newest",
@@ -499,13 +506,23 @@ export function CatalogSearchWorkspace({
       : null,
     filters.ratingMin !== null
       ? {
-          label: t.minimumScore,
+          label: tri(
+            lang,
+            "Nota mínima no IGDB",
+            "Minimum IGDB score",
+            "Nota mínima en IGDB",
+          ),
           value: `${filters.ratingMin}/100`,
         }
       : null,
     filters.ratingCountMin !== null
       ? {
-          label: tri(lang, "Avaliações", "Ratings", "Valoraciones"),
+          label: tri(
+            lang,
+            "Avaliações no IGDB",
+            "IGDB ratings",
+            "Valoraciones en IGDB",
+          ),
           value: `${filters.ratingCountMin.toLocaleString(lang)}+`,
         }
       : null,
@@ -586,13 +603,13 @@ export function CatalogSearchWorkspace({
   if (filters.ratingMin !== null)
     scalarChips.push({
       key: "rating",
-      label: `${tri(lang, "Nota", "Score", "Nota")} ${filters.ratingMin}+`,
+      label: `IGDB ${filters.ratingMin}+`,
       changes: { rating: null },
     });
   if (filters.ratingCountMin !== null)
     scalarChips.push({
       key: "votes",
-      label: `${filters.ratingCountMin.toLocaleString(lang)}+ ${tri(lang, "avaliações", "ratings", "valoraciones")}`,
+      label: `${filters.ratingCountMin.toLocaleString(lang)}+ ${tri(lang, "avaliações no IGDB", "IGDB ratings", "valoraciones en IGDB")}`,
       changes: { votes: null },
     });
 
@@ -1220,7 +1237,15 @@ export function CatalogSearchWorkspace({
                       meta={[
                         game.releaseYear,
                         game.platforms[0],
-                        game.rating ? `${game.rating}/100` : null,
+                        communityRatings[game.id]
+                          ? `${tri(lang, "Comunidade", "Community", "Comunidad")} ${communityRatings[game.id].rating}/100`
+                          : tri(
+                              lang,
+                              "Sem nota da comunidade",
+                              "No community score",
+                              "Sin nota de la comunidad",
+                            ),
+                        game.rating ? `IGDB ${game.rating}/100` : null,
                       ]
                         .filter(Boolean)
                         .join(" · ")}

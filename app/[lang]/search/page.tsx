@@ -16,6 +16,7 @@ import {
   type CatalogSearchFilters,
 } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
+import { getCommunityGameRatings } from "@/lib/community-ratings";
 import type { ListPreview } from "@/lib/lists-types";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getSpawndGame } from "@/lib/spawnd";
@@ -437,6 +438,7 @@ export default async function SearchPage({
         total={result.total}
         totalPages={result.totalPages}
         saved={{}}
+        communityRatings={{}}
         enabled={false}
         createMode={createMode}
         scopeTabs={
@@ -447,7 +449,13 @@ export default async function SearchPage({
       />
     );
   }
-  const user = await getAuthUser();
+  const [user, communityRatingMap] = await Promise.all([
+    getAuthUser(),
+    getCommunityGameRatings(
+      supabase,
+      result.games.map((game) => game.id),
+    ),
+  ]);
   const { data: savedGames } =
     user && result.games.length
       ? await supabase
@@ -468,6 +476,7 @@ export default async function SearchPage({
     ...game,
     spawndAvailable: getSpawndGame({ igdbId: game.id, lang }).available,
   }));
+  const communityRatings = Object.fromEntries(communityRatingMap);
 
   return (
     <CatalogSearchWorkspace
@@ -479,6 +488,7 @@ export default async function SearchPage({
       total={result.total}
       totalPages={result.totalPages}
       saved={saved}
+      communityRatings={communityRatings}
       enabled={Boolean(user)}
       createMode={createMode}
       scopeTabs={

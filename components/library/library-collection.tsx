@@ -2,8 +2,6 @@
 
 import * as Select from "@/components/ui/select";
 import {
-  ChevronLeft,
-  ChevronRight,
   ChevronDown,
   Check,
   LayoutGrid,
@@ -16,6 +14,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Game } from "@/lib/igdb";
 import { QuickGameCard } from "./quick-game-card";
+import { Pagination } from "@/components/pagination";
+import { ViewSwitch } from "@/components/view-switch";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export type LibraryRecord = {
@@ -114,7 +114,7 @@ export function LibraryCollection({
       })
       .sort((a, b) => compareRecords(a, b, byId, sort));
   }, [activeRecords, byId, filter, searchParams, sort]);
-  const pageSize = view === "grid" ? 24 : 14;
+  const pageSize = 24;
   const totalPages = Math.max(1, Math.ceil(visibleRecords.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const pageRecords = visibleRecords.slice(
@@ -367,42 +367,38 @@ export function LibraryCollection({
             </Select.Portal>
           </Select.Root>
         </div>
-        <div
-          className="library-view-switch"
-          aria-label={tri(
+        <ViewSwitch
+          value={view}
+          label={tri(
             lang,
             "Modo de visualização",
             "View mode",
             "Modo de visualización",
           )}
-        >
-          <button
-            type="button"
-            data-active={view === "grid" || undefined}
-            onClick={() => update({ view: null })}
-            aria-label={tri(
-              lang,
-              "Visualizar em grade",
-              "Grid view",
-              "Vista de cuadrícula",
-            )}
-          >
-            <LayoutGrid size={17} />
-          </button>
-          <button
-            type="button"
-            data-active={view === "list" || undefined}
-            onClick={() => update({ view: "list" })}
-            aria-label={tri(
-              lang,
-              "Visualizar em lista",
-              "List view",
-              "Vista de lista",
-            )}
-          >
-            <List size={17} />
-          </button>
-        </div>
+          items={[
+            {
+              value: "grid",
+              label: tri(
+                lang,
+                "Visualizar em grade",
+                "Grid view",
+                "Vista de cuadrícula",
+              ),
+              icon: <LayoutGrid size={15} />,
+            },
+            {
+              value: "list",
+              label: tri(
+                lang,
+                "Visualizar em lista",
+                "List view",
+                "Vista de lista",
+              ),
+              icon: <List size={15} />,
+            },
+          ]}
+          onChange={(next) => update({ view: next === "grid" ? null : next })}
+        />
       </div>
       <div className="library-results-meta">
         <span>
@@ -470,53 +466,13 @@ export function LibraryCollection({
           })}
         </div>
       )}
-      {totalPages > 1 && (
-        <nav
-          className="library-pagination"
-          aria-label={tri(
-            lang,
-            "Paginação da biblioteca",
-            "Library pagination",
-            "Paginación de la biblioteca",
-          )}
-        >
-          <button
-            type="button"
-            disabled={currentPage === 1}
-            onClick={() => update({ page: String(currentPage - 1) })}
-          >
-            <ChevronLeft size={16} />
-            {t.previous}
-          </button>
-          <div>
-            {paginationItems(currentPage, totalPages).map((item, index) =>
-              item === "…" ? (
-                <span key={`ellipsis-${index}`}>…</span>
-              ) : (
-                <button
-                  type="button"
-                  key={item}
-                  data-current={item === currentPage || undefined}
-                  aria-current={item === currentPage ? "page" : undefined}
-                  onClick={() =>
-                    update({ page: item === 1 ? null : String(item) })
-                  }
-                >
-                  {item}
-                </button>
-              ),
-            )}
-          </div>
-          <button
-            type="button"
-            disabled={currentPage === totalPages}
-            onClick={() => update({ page: String(currentPage + 1) })}
-          >
-            {t.next}
-            <ChevronRight size={16} />
-          </button>
-        </nav>
-      )}
+      <Pagination
+        page={currentPage}
+        totalPages={totalPages}
+        lang={lang}
+        className="library-pagination"
+        onGo={(next) => update({ page: next === 1 ? null : String(next) })}
+      />
     </div>
   );
 }
@@ -560,19 +516,4 @@ function compareRecords(
       gameA.name.localeCompare(gameB.name)
     );
   return b.updated_at.localeCompare(a.updated_at);
-}
-function paginationItems(current: number, total: number): (number | "…")[] {
-  if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1);
-  const values = new Set(
-    [1, total, current - 1, current, current + 1].filter(
-      (value) => value >= 1 && value <= total,
-    ),
-  );
-  const sorted = [...values].sort((a, b) => a - b);
-  const result: (number | "…")[] = [];
-  sorted.forEach((value, index) => {
-    if (index && value - sorted[index - 1] > 1) result.push("…");
-    result.push(value);
-  });
-  return result;
 }

@@ -3,15 +3,20 @@
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import {
   Ellipsis,
+  HomeIcon,
+  LibraryBig,
   ListTree,
   LockKeyhole,
+  Search,
   Settings,
   ShieldCheck,
   Star,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { navigationPathIsActive } from "@/lib/navigation";
 
 /**
  * Secondary destinations, folded away so the sidebar keeps a short primary
@@ -19,6 +24,10 @@ import { usePathname } from "next/navigation";
  * component cannot hand a component reference to a client one.
  */
 const icons: Record<string, LucideIcon> = {
+  home: HomeIcon,
+  search: Search,
+  library: LibraryBig,
+  user: UserRound,
   star: Star,
   list: ListTree,
   moderation: ShieldCheck,
@@ -49,8 +58,8 @@ export function NavMoreMenu({
 
   if (!items.length) return null;
 
-  const holdsCurrent = items.some(
-    (item) => pathname === item.href.split("?")[0],
+  const holdsCurrent = items.some((item) =>
+    navigationPathIsActive(pathname, item.href),
   );
 
   return (
@@ -86,9 +95,7 @@ export function NavMoreMenu({
                   key={item.key}
                   disabled
                   aria-label={
-                    pending
-                      ? item.label
-                      : `${item.label}: ${requiresSignIn}`
+                    pending ? item.label : `${item.label}: ${requiresSignIn}`
                   }
                 >
                   <Icon size={17} />
@@ -103,7 +110,7 @@ export function NavMoreMenu({
                 <Link
                   href={item.href}
                   data-active={
-                    pathname === item.href.split("?")[0] || undefined
+                    navigationPathIsActive(pathname, item.href) || undefined
                   }
                 >
                   <Icon size={17} />

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FaXTwitter } from "react-icons/fa6";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
+import packageInfo from "@/package.json";
 import { CookieSettingsButton } from "./cookie-settings-button";
 import { tri } from "@/lib/ui-text";
 
@@ -15,6 +16,7 @@ export function PlatformFooter({
     <footer className="platform-footer">
       <div>
         <strong>© 2026 uloggd</strong>
+        <span className="platform-version">v{packageInfo.version}</span>
         <span>
           {d.platform.gameData}{" "}
           <a

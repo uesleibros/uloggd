@@ -6,6 +6,7 @@ import {
   Clock3,
   EyeOff,
   Flag,
+  Map,
   NotebookPen,
   Play,
   Star,
@@ -20,10 +21,6 @@ import { MentionText } from "./mention-text";
 import { ReviewMarkdownPreview } from "./review-markdown-preview";
 import { VerifiedBadge } from "../verified-badge";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-import {
-  JourneyDetailsDialog,
-  type JourneyDetailSession,
-} from "./journey-details-dialog";
 
 export type SocialEntry = {
   id: string;
@@ -65,7 +62,7 @@ export type SocialEntry = {
   marksFinish?: boolean;
   journeyId?: string | null;
   journeyTitle?: string | null;
-  journeySessions?: JourneyDetailSession[];
+  journeyPublicId?: string | null;
   spoilers: boolean;
   visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
   commentsScope?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
@@ -276,13 +273,14 @@ export function ActivityStream({
                   )}
                   {entry.replay && <span>{t.replay}</span>}
                   {entry.platform && <span>{entry.platform}</span>}
-                  {entry.journeyTitle && (
-                    <JourneyDetailsDialog
-                      title={entry.journeyTitle}
-                      gameName={entry.game?.name ?? entry.gameSlug}
-                      sessions={entry.journeySessions ?? []}
-                      lang={lang}
-                    />
+                  {entry.journeyTitle && entry.journeyPublicId && (
+                    <Link
+                      className="activity-journey-button"
+                      href={`/${lang}/journal/${entry.journeyPublicId}`}
+                    >
+                      <Map size={13} />
+                      {entry.journeyTitle}
+                    </Link>
                   )}
                 </div>
               )}
@@ -321,13 +319,14 @@ export function ActivityStream({
                     {tri(lang, "Terminou", "Finished", "Terminó")}
                   </span>
                 )}
-                {entry.journeyTitle && (
-                  <JourneyDetailsDialog
-                    title={entry.journeyTitle}
-                    gameName={entry.game?.name ?? entry.gameSlug}
-                    sessions={entry.journeySessions ?? []}
-                    lang={lang}
-                  />
+                {entry.journeyTitle && entry.journeyPublicId && (
+                  <Link
+                    className="activity-journey-button"
+                    href={`/${lang}/journal/${entry.journeyPublicId}`}
+                  >
+                    <Map size={13} />
+                    {entry.journeyTitle}
+                  </Link>
                 )}
               </div>
             )}

@@ -14,6 +14,7 @@ import { ShelfCarousel } from "@/components/shelf-carousel";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { VerifiedMark } from "@/components/verified-badge";
 import { getHomePersonalization } from "@/lib/history";
+import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
 import { getActivity, getFollowingIds, getFriendsPlaying } from "@/lib/social";
 import { localeAlternates } from "@/lib/seo";
@@ -97,6 +98,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
     year: "numeric",
     timeZone: "UTC",
   });
+  let communityRatings = new Map<number, { rating: number; count: number }>();
   const discoveryLanes = [
     {
       key: "anticipated",
@@ -124,9 +126,11 @@ async function HomeContent({ lang }: { lang: UiLang }) {
       description: d.home.hiddenGemsDescription,
       games: takeDiscoveryGames(discoveries.hiddenGems, 8),
       meta: (game: Game) =>
-        typeof game.rating === "number"
-          ? `${Math.round(game.rating)}/100 · ${game.ratingCount.toLocaleString(lang)} ${d.home.registrations}`
-          : d.home.releaseDatePending,
+        communityRatings.has(game.id)
+          ? `${communityRatings.get(game.id)!.rating}/100 · ${communityRatings.get(game.id)!.count.toLocaleString(lang)} ${tri(lang, "avaliações no uloggd", "ratings on uloggd", "valoraciones en uloggd")}`
+          : typeof game.rating === "number"
+            ? `IGDB ${Math.round(game.rating)}/100`
+            : d.home.releaseDatePending,
     },
   ].filter((lane) => lane.games.length > 0);
   const visibleGameIds = [
@@ -178,11 +182,18 @@ async function HomeContent({ lang }: { lang: UiLang }) {
         };
       })()
     : Promise.resolve(null);
-  const [communityEntries, friendsPlaying, snapshot] = await Promise.all([
-    communityPromise,
-    friendsPlayingPromise,
-    snapshotPromise,
-  ]);
+  const communityRatingsPromise = getCommunityGameRatings(
+    supabase,
+    visibleGameIds,
+  );
+  const [communityEntries, friendsPlaying, snapshot, communityRatingResult] =
+    await Promise.all([
+      communityPromise,
+      friendsPlayingPromise,
+      snapshotPromise,
+      communityRatingsPromise,
+    ]);
+  communityRatings = communityRatingResult;
   const savedById = new Map(
     (snapshot?.savedGames ?? []).map((item) => [item.igdb_id, item]),
   );
@@ -528,7 +539,16 @@ async function HomeContent({ lang }: { lang: UiLang }) {
               <div>
                 <strong>{game.name}</strong>
                 <small>
-                  {game.ratingCount.toLocaleString(lang)} {d.home.registrations}
+                  {communityRatings.has(game.id)
+                    ? `${communityRatings.get(game.id)!.rating}/100 · ${communityRatings.get(game.id)!.count.toLocaleString(lang)} ${tri(lang, "avaliações", "ratings", "valoraciones")}`
+                    : typeof game.rating === "number"
+                      ? `IGDB ${Math.round(game.rating)}/100`
+                      : tri(
+                          lang,
+                          "Sem nota da comunidade",
+                          "No community score",
+                          "Sin nota de la comunidad",
+                        )}
                 </small>
               </div>
               <ArrowUpRight size={14} />

@@ -2,7 +2,7 @@
 
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { BookOpen, LockKeyhole, Plus, ScanLine } from "lucide-react";
+import { BookOpen, Layers3, LockKeyhole, Plus, ScanLine } from "lucide-react";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 export function QuickCreateAction({
@@ -10,11 +10,13 @@ export function QuickCreateAction({
   enabled,
   mobile = false,
   requiresSignIn,
+  listsHref,
 }: {
   lang: UiLang;
   enabled: boolean;
   mobile?: boolean;
   requiresSignIn: string;
+  listsHref: string;
 }) {
   const createLabel = tri(lang, "Criar", "Create", "Crear");
   const reviewLabel = tri(
@@ -90,6 +92,26 @@ export function QuickCreateAction({
                       "Publique um momento do seu jogo",
                       "Share a moment from your game",
                       "Comparte un momento de tu juego",
+                    )}
+                  </small>
+                </span>
+              </Link>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item asChild>
+              <Link href={`${listsHref}?create=1`}>
+                <span className="quick-create-menu-icon" aria-hidden>
+                  <Layers3 size={18} />
+                </span>
+                <span>
+                  <strong>
+                    {tri(lang, "Criar lista", "Create list", "Crear lista")}
+                  </strong>
+                  <small>
+                    {tri(
+                      lang,
+                      "Monte uma coleção, ranking ou tierlist",
+                      "Build a collection, ranking, or tier list",
+                      "Crea una colección, ranking o tierlist",
                     )}
                   </small>
                 </span>

@@ -1,38 +1,20 @@
 import Link from "next/link";
-import { Tooltip } from "@/components/ui/tooltip";
-import {
-  HomeIcon,
-  LibraryBig,
-  ListTree,
-  LogIn,
-  LockKeyhole,
-  Search,
-  Settings,
-  Star,
-  UserRound,
-} from "lucide-react";
+import { LogIn } from "lucide-react";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { AccountMenu, type NavigationAccount } from "./account-menu";
 import { Brand } from "./brand";
-import { ActiveLink } from "./active-link";
 import { LocaleSwitcher } from "./locale-switcher";
 import { MobileSidebar } from "./mobile-sidebar";
 import { MobileGameSearch } from "./game-search";
 import { SidebarCollapseButton } from "./sidebar-collapse-button";
 import { SmartHeader } from "./smart-header";
 import { NotificationCenter } from "./notifications/notification-center";
-import { NavMoreMenu, type MoreItem } from "./nav-more-menu";
 import { QuickCreateAction } from "./quick-create-action";
 import { tri } from "@/lib/ui-text";
-
-const iconMap = {
-  home: HomeIcon,
-  library: LibraryBig,
-  star: Star,
-  user: UserRound,
-  list: ListTree,
-  search: Search,
-};
+import {
+  AdaptiveSidebarNavigation,
+  type SidebarNavigationItem,
+} from "./adaptive-sidebar-navigation";
 
 export function PlatformNavigation({
   lang,
@@ -64,9 +46,7 @@ export function PlatformNavigation({
     ? `/${lang}/lists/${account.username}`
     : `/${lang}/onboarding/username`;
 
-  // Four primary destinations; everything else lives behind "More", so the
-  // rail stays short no matter how many secondary pages exist.
-  const nav = [
+  const nav: SidebarNavigationItem[] = [
     {
       key: "home",
       icon: "home",
@@ -90,24 +70,21 @@ export function PlatformNavigation({
     },
     {
       key: "user",
-      icon: "user",
+      icon: "profile",
       label: d.nav.profile,
       href: profileHref,
       requiresAuth: true,
     },
-  ] as const;
-
-  // Authenticated features remain visible while signed out, but are disabled
-  // so visitors can discover them without navigating away.
-  const moreItems: MoreItem[] = [
     {
       key: "star",
+      icon: "star",
       label: d.nav.reviews,
       href: reviewsHref,
       requiresAuth: true,
     },
     {
       key: "list",
+      icon: "list",
       label: d.nav.lists,
       href: listsHref,
       requiresAuth: true,
@@ -116,22 +93,20 @@ export function PlatformNavigation({
       ? [
           {
             key: "moderation",
+            icon: "moderation" as const,
             label: tri(lang, "Moderação", "Moderation", "Moderación"),
             href: `/${lang}/moderation`,
             requiresAuth: true,
           },
         ]
       : []),
-    ...(isAuthenticated
-      ? [
-          {
-            key: "settings",
-            label: d.nav.settings,
-            href: `/${lang}/settings?tab=general`,
-            requiresAuth: true,
-          },
-        ]
-      : []),
+    {
+      key: "settings",
+      icon: "settings",
+      label: d.nav.settings,
+      href: `/${lang}/settings?tab=general`,
+      requiresAuth: true,
+    },
   ];
 
   return (
@@ -140,80 +115,24 @@ export function PlatformNavigation({
         <div className="sidebar-frame">
           <div className="sidebar-brand">
             <Brand lang={lang} />
-
-            <span className="product-stage">{d.platform.beta}</span>
           </div>
 
           <div className="sidebar-scroll">
-            <nav className="main-nav" aria-label={d.platform.navigation}>
-              <span className="nav-label">{d.platform.navigation}</span>
-
-              {nav.map((item) => {
-                const NavIcon = iconMap[item.icon];
-
-                if (item.requiresAuth && !isAuthenticated) {
-                  return (
-                    <Tooltip
-                      key={item.key}
-                      side="right"
-                      label={pending ? item.label : d.actions.requiresSignIn}
-                    >
-                      <span className="nav-disabled" aria-disabled="true">
-                        <NavIcon size={20} />
-
-                        <span>{item.label}</span>
-
-                        {!pending && (
-                          <LockKeyhole className="nav-lock" size={12} />
-                        )}
-                      </span>
-                    </Tooltip>
-                  );
-                }
-
-                return (
-                  <Tooltip key={item.key} label={item.label} side="right">
-                    <ActiveLink href={item.href} aria-label={item.label}>
-                      <NavIcon size={20} />
-                      <span>{item.label}</span>
-                    </ActiveLink>
-                  </Tooltip>
-                );
-              })}
-
-              <NavMoreMenu
-                items={moreItems}
-                label={d.nav.more}
-                isAuthenticated={isAuthenticated}
-                pending={pending}
-                requiresSignIn={d.actions.requiresSignIn}
-              />
-            </nav>
+            <AdaptiveSidebarNavigation
+              items={nav}
+              moreLabel={d.nav.more}
+              navigationLabel={d.platform.navigation}
+              isAuthenticated={isAuthenticated}
+              pending={pending}
+              requiresSignIn={d.actions.requiresSignIn}
+            />
 
             <QuickCreateAction
               lang={lang}
               enabled={isAuthenticated && !pending}
               requiresSignIn={d.actions.requiresSignIn}
+              listsHref={listsHref}
             />
-
-            {/* Settings stays visible and locked outside the More menu for
-                signed-out visitors. */}
-            {!isAuthenticated && (
-              <div className="sidebar-bottom">
-                <Tooltip
-                  side="right"
-                  label={pending ? d.nav.settings : d.actions.requiresSignIn}
-                >
-                  <span className="nav-disabled" aria-disabled="true">
-                    <Settings size={20} />
-
-                    <span>{d.nav.settings}</span>
-
-                    {!pending && <LockKeyhole className="nav-lock" size={12} />}
-                  </span>
-                </Tooltip>
-              </div>
-            )}
           </div>
 
           {pending ? (
@@ -290,6 +209,7 @@ export function PlatformNavigation({
         enabled={isAuthenticated && !pending}
         mobile
         requiresSignIn={d.actions.requiresSignIn}
+        listsHref={listsHref}
       />
     </>
   );

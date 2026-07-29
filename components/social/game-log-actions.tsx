@@ -18,6 +18,7 @@ import {
   Map,
   Pencil,
   ScanLine,
+  Search,
   Play,
   Plus,
   Trash2,
@@ -107,6 +108,7 @@ export function GameLogActions({
   } | null>(null);
   const [openDayValue, setOpenDayValue] = useState(today);
   const [listChoice, setListChoice] = useState(lists[0]?.id ?? "");
+  const [listQuery, setListQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -119,6 +121,11 @@ export function GameLogActions({
     selectedJourney === "loose"
       ? !session.journeyId
       : session.journeyId === entryJourney,
+  );
+  const filteredLists = lists.filter((list) =>
+    list.name
+      .toLocaleLowerCase()
+      .includes(listQuery.trim().toLocaleLowerCase()),
   );
 
   function sessionFor(day: string) {
@@ -192,7 +199,11 @@ export function GameLogActions({
         ),
       );
     } else {
-      const created = { id: data.id as string, title: data.title as string };
+      const created = {
+        id: data.id as string,
+        title: data.title as string,
+        publicId: (data.public_id as string | null) ?? null,
+      };
       setJourneyList((current) => [...current, created]);
       setSelectedJourney(created.id);
       setNaming(null);
@@ -405,9 +416,9 @@ export function GameLogActions({
       setSuccess(
         tri(
           lang,
-          "Salvo na sua jornada.",
-          "Saved to your journey.",
-          "Guardado en tu recorrido.",
+          "Adicionado à lista.",
+          "Added to the list.",
+          "Añadido a la lista.",
         ),
       );
       router.refresh();
@@ -430,6 +441,7 @@ export function GameLogActions({
     setDayEditor(null);
     setNaming(null);
     setNamingTitle("");
+    if (nextMode === "list") setListQuery("");
     setMode(nextMode);
     setOpen(true);
   }
@@ -596,6 +608,20 @@ export function GameLogActions({
                 </div>
                 {activeJourney && naming === null && (
                   <div className="journey-manage">
+                    {activeJourney.publicId && (
+                      <Link
+                        href={`/${lang}/journal/${activeJourney.publicId}`}
+                        onClick={() => setOpen(false)}
+                      >
+                        <Map size={12} />{" "}
+                        {tri(
+                          lang,
+                          "Visualizar jornada",
+                          "View journey",
+                          "Ver recorrido",
+                        )}
+                      </Link>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
@@ -839,51 +865,72 @@ export function GameLogActions({
             {mode === "list" && (
               <form action={submitList} className="social-editor-form">
                 {lists.length ? (
-                  <label>
-                    <span>{t.list}</span>
-                    <Select.Root
-                      value={listChoice}
-                      onValueChange={setListChoice}
-                    >
-                      <Select.Trigger className="editor-select-trigger">
-                        <Select.Value
-                          placeholder={tri(
-                            lang,
-                            "Selecione uma lista",
-                            "Select a list",
-                            "Selecciona una lista",
-                          )}
-                        />
-                        <Select.Icon>
-                          <ChevronDown size={14} />
-                        </Select.Icon>
-                      </Select.Trigger>
-                      <Select.Portal>
-                        <Select.Content
-                          className="editor-select-menu"
-                          position="popper"
-                          sideOffset={6}
-                          collisionPadding={12}
+                  <fieldset className="game-list-picker">
+                    <legend>{t.list}</legend>
+                    <label className="game-list-picker-search">
+                      <Search size={14} aria-hidden />
+                      <input
+                        value={listQuery}
+                        onChange={(event) => setListQuery(event.target.value)}
+                        placeholder={tri(
+                          lang,
+                          "Buscar nas suas listas…",
+                          "Search your lists…",
+                          "Buscar en tus listas…",
+                        )}
+                        aria-label={tri(
+                          lang,
+                          "Buscar lista",
+                          "Search lists",
+                          "Buscar lista",
+                        )}
+                        autoFocus
+                      />
+                      {listQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setListQuery("")}
+                          aria-label={t.clear}
                         >
-                          <Select.Viewport>
-                            {lists.map((list) => (
-                              <Select.Item
-                                className="editor-select-option"
-                                value={list.id}
-                                key={list.id}
-                              >
-                                <ListPlus size={14} />
-                                <Select.ItemText>{list.name}</Select.ItemText>
-                                <Select.ItemIndicator>
-                                  <Check size={13} />
-                                </Select.ItemIndicator>
-                              </Select.Item>
-                            ))}
-                          </Select.Viewport>
-                        </Select.Content>
-                      </Select.Portal>
-                    </Select.Root>
-                  </label>
+                          <X size={13} />
+                        </button>
+                      )}
+                    </label>
+                    <div className="game-list-picker-results">
+                      {filteredLists.length ? (
+                        filteredLists.map((list) => (
+                          <button
+                            type="button"
+                            key={list.id}
+                            data-active={listChoice === list.id || undefined}
+                            aria-pressed={listChoice === list.id}
+                            onClick={() => setListChoice(list.id)}
+                          >
+                            <ListPlus size={15} />
+                            <span>{list.name}</span>
+                            {listChoice === list.id && <Check size={14} />}
+                          </button>
+                        ))
+                      ) : (
+                        <p>
+                          {tri(
+                            lang,
+                            "Nenhuma lista encontrada.",
+                            "No lists found.",
+                            "No se encontraron listas.",
+                          )}
+                        </p>
+                      )}
+                    </div>
+                    <small>
+                      {tri(
+                        lang,
+                        `${filteredLists.length} de ${lists.length} listas`,
+                        `${filteredLists.length} of ${lists.length} lists`,
+                        `${filteredLists.length} de ${lists.length} listas`,
+                      )}
+                    </small>
+                  </fieldset>
                 ) : (
                   <p className="social-empty-inline">
                     {tri(

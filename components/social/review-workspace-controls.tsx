@@ -14,6 +14,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { ViewSwitch } from "@/components/view-switch";
 
 type Option = { value: string; label: string };
 
@@ -198,40 +199,35 @@ export function ReviewWorkspaceControls({
             navigate({ order: value === "recent" ? null : value })
           }
         />
-        <div
-          className="reviews-view-switch"
-          role="group"
-          aria-label={tri(
+        <ViewSwitch
+          value={state.view}
+          label={tri(
             lang,
             "Modo de exibição",
             "Display mode",
             "Modo de visualización",
           )}
-        >
-          <button
-            type="button"
-            data-active={state.view === "timeline" || undefined}
-            aria-pressed={state.view === "timeline"}
-            onClick={() => navigate({ view: null })}
-            title={tri(lang, "Linha do tempo", "Timeline", "Cronología")}
-          >
-            <LayoutList size={15} />
-          </button>
-          <button
-            type="button"
-            data-active={state.view === "games" || undefined}
-            aria-pressed={state.view === "games"}
-            onClick={() => navigate({ view: "games" })}
-            title={tri(
-              lang,
-              "Agrupar por jogo",
-              "Group by game",
-              "Agrupar por juego",
-            )}
-          >
-            <LibraryBig size={15} />
-          </button>
-        </div>
+          items={[
+            {
+              value: "timeline",
+              label: tri(lang, "Linha do tempo", "Timeline", "Cronología"),
+              icon: <LayoutList size={15} />,
+            },
+            {
+              value: "games",
+              label: tri(
+                lang,
+                "Agrupar por jogo",
+                "Group by game",
+                "Agrupar por juego",
+              ),
+              icon: <LibraryBig size={15} />,
+            },
+          ]}
+          onChange={(next) =>
+            navigate({ view: next === "timeline" ? null : next })
+          }
+        />
         {activeFilters > 0 && (
           <button
             type="button"

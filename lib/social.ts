@@ -23,10 +23,14 @@ type Row = {
 function profileOf(value: Row["profiles"]): ProfileJoin | null {
   return Array.isArray(value) ? (value[0] ?? null) : value;
 }
-function journeyTitleOf(value: unknown): string | null {
+function journeyOf(value: unknown): { title: string; publicId: string } | null {
   const joined = Array.isArray(value) ? value[0] : value;
-  if (joined && typeof joined === "object" && "title" in joined)
-    return String((joined as { title: unknown }).title ?? "") || null;
+  if (joined && typeof joined === "object" && "title" in joined) {
+    const journey = joined as { title?: unknown; public_id?: unknown };
+    const title = String(journey.title ?? "");
+    const publicId = String(journey.public_id ?? "");
+    if (title && publicId) return { title, publicId };
+  }
   return null;
 }
 
@@ -78,7 +82,7 @@ export async function getActivity(
   let reviewsQuery = supabase
     .from("reviews")
     .select(
-      "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
+      "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title,public_id),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
     .order(options.order === "rating" ? "rating" : "created_at", {
       ascending: oldestFirst,
@@ -88,7 +92,7 @@ export async function getActivity(
   let diaryQuery = supabase
     .from("diary_entries")
     .select(
-      "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified)",
+      "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title,public_id),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
     .order("created_at", { ascending: oldestFirst })
     .limit(limit);
@@ -217,18 +221,10 @@ export async function getActivity(
     (row) => !("storage_path" in row) && !("rating" in row),
   );
   const selectedScreenshots = rows.filter((row) => "storage_path" in row);
-  const journeyIds = [
-    ...new Set(
-      [...selectedReviews, ...selectedDiary]
-        .map((row) => row.journey_id)
-        .filter((id): id is string => Boolean(id)),
-    ),
-  ];
   const reviewIds = selectedReviews.map((row) => row.id);
   const diaryIds = selectedDiary.map((row) => row.id);
   const screenshotIds = selectedScreenshots.map((row) => row.id);
   const [
-    { data: journeySessionRows },
     games,
     viewerId,
     viewerPreference,
@@ -237,15 +233,6 @@ export async function getActivity(
     screenshotLikes,
     signedScreenshots,
   ] = await Promise.all([
-    journeyIds.length
-      ? supabase
-          .from("diary_entries")
-          .select(
-            "id,journey_id,played_on,ended_on,minutes,note,marks_start,marks_finish",
-          )
-          .in("journey_id", journeyIds)
-          .order("played_on", { ascending: true })
-      : Promise.resolve({ data: [] }),
     getGamesByIds(rows.map((row) => row.igdb_id)),
     viewerIdPromise,
     viewerPreferencePromise,
@@ -274,21 +261,6 @@ export async function getActivity(
         )
       : Promise.resolve({ data: [] }),
   ]);
-  const sessionsByJourney = new Map<string, SocialEntry["journeySessions"]>();
-  for (const session of journeySessionRows ?? []) {
-    if (!session.journey_id) continue;
-    const current = sessionsByJourney.get(session.journey_id) ?? [];
-    current.push({
-      id: session.id,
-      playedOn: session.played_on,
-      endedOn: session.ended_on,
-      minutes: session.minutes,
-      note: session.note,
-      marksStart: session.marks_start,
-      marksFinish: session.marks_finish,
-    });
-    sessionsByJourney.set(session.journey_id, current);
-  }
   const coverProfileIds =
     viewerPreference?.custom_cover_scope === "EVERYONE"
       ? [...new Set(rows.map((row) => row.profile_id))]
@@ -335,6 +307,7 @@ export async function getActivity(
       if (!profile?.username) return [];
       const screenshot = "storage_path" in row;
       const review = !screenshot && "rating" in row;
+      const journey = journeyOf(row.journeys);
       return [
         {
           id: row.id,
@@ -403,10 +376,8 @@ export async function getActivity(
           marksFinish:
             review || screenshot ? undefined : Boolean(row.marks_finish),
           journeyId: String(row.journey_id ?? "") || null,
-          journeyTitle: journeyTitleOf(row.journeys) || null,
-          journeySessions: screenshot
-            ? undefined
-            : (sessionsByJourney.get(String(row.journey_id)) ?? []),
+          journeyTitle: journey?.title ?? null,
+          journeyPublicId: journey?.publicId ?? null,
           spoilers: Boolean(row.contains_spoilers),
           visibility: row.visibility as SocialEntry["visibility"],
           commentsScope: row.comments_scope as SocialEntry["commentsScope"],

@@ -9,7 +9,7 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -47,10 +47,17 @@ function createListErrorMessage(message: string, lang: UiLang) {
   );
 }
 
-export function CreateListForm({ lang }: { lang: UiLang }) {
+export function CreateListForm({
+  lang,
+  defaultOpen = false,
+}: {
+  lang: UiLang;
+  defaultOpen?: boolean;
+}) {
   const t = uiText(lang);
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const [open, setOpen] = useState(defaultOpen);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Format and ranking are independent: a collection can be ranked (numbered
@@ -61,6 +68,18 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
   // button stays busy until router.refresh() has re-rendered the grid.
   const [refreshing, startRefresh] = useTransition();
   const busy = pending || refreshing;
+
+  function setDialogOpen(next: boolean) {
+    setOpen(next);
+    if (!next) {
+      const params = new URLSearchParams(window.location.search);
+      if (!params.has("create")) return;
+      params.delete("create");
+      router.replace(`${pathname}${params.size ? `?${params}` : ""}`, {
+        scroll: false,
+      });
+    }
+  }
 
   async function submit(formData: FormData) {
     setPending(true);
@@ -146,14 +165,14 @@ export function CreateListForm({ lang }: { lang: UiLang }) {
           return;
         }
         router.refresh();
-        if (!halfApplied) setOpen(false);
+        if (!halfApplied) setDialogOpen(false);
       });
     }
     setPending(false);
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root open={open} onOpenChange={setDialogOpen}>
       <Dialog.Trigger asChild>
         <button className="create-list-trigger" type="button">
           <Plus size={16} />{" "}

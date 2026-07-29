@@ -134,7 +134,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - The review commit bar is a dedicated bottom surface, never inherited through negative generic-editor offsets. Desktop keeps quiet success copy beside Cancel and Publish; mobile splits the two 44px actions proportionally. Publishing lives entirely inside the stable-width submit button, swapping its label for a spinner and “Publicando…”, disabling every close path, and preventing duplicate submissions.
 - New review text persists as a local per-IGDB draft until a successful save. Spoiler and visibility choices remain stable while switching editor tabs; visibility uses the shared Base UI Select language rather than a native browser select.
 - Destructive review removal uses an inline two-step confirmation in the sticky footer, never a blocking browser confirm. The review history starts with review count, average rating, session count, and spoiler count; review entries use an inset editorial card distinct from diary rows.
-- Review/session streams use distinct bordered journal cards with a 16px desktop / 12px mobile gap; entries never share a collapsed divider. A review linked to a named journey shows one “View journey” action that opens a read-only Base UI modal with its visible sessions, dates, duration, notes, and start/finish milestones.
+- Review/session streams use distinct bordered journal cards with a 16px desktop / 12px mobile gap; entries never share a collapsed divider. A named journey renders as a direct Map link to its canonical journal page, where visible sessions, dates, duration, notes, and start/finish milestones have room to breathe.
 - Review prose uses the shared Markdown editor in a restricted mode: headings, emphasis, strike, links, quotes, inline code, lists, mentions, text spoilers, HTTPS images, and HTTPS spoiler images. Active media, game cards, tables, callouts, sized raw images, and showcase layout directives stay exclusive to the profile showcase. The review renderer enforces that smaller language and HTTPS-only image protocol with its own sanitizer rather than trusting toolbar visibility.
 - Review cards are previews, not complete documents. Their Markdown body measures real overflow, caps at roughly four lines, and fades only when content is actually clipped; the existing “View full review” action remains the explicit continuation. The dedicated review route renders the complete sanitized Markdown inside the same spoiler gate.
 - The profile showcase editor ends after the writing/preview stage. Character progress remains beside the mode tabs; there is no redundant “MD” status footer and no detached help modal.
@@ -145,7 +145,8 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 - 264px wide, sticky, full viewport height.
 - Solid `console-panel` background with `shell-line-strong` right border.
-- Brand plus subtle beta stage at top.
+- Brand stands alone at the top; product stage/version metadata never competes with navigation.
+- Direct destinations are height-adaptive: reveal every row that fits in the viewport, reserve one 52px row for “More” only while destinations overflow, and recalculate on resize. Route priority stays Home, Search, Library, Profile, Reviews, Lists, Moderation, Settings.
 - Navigation rows are uniformly 52px high with an 8px radius on desktop, compact, and mobile drawer states; compact icon hit areas are 48px wide inside the 64px rail.
 - Current route uses the same persistent graphite surface as hover, with a white icon and label. Do not add a dot, rail, or blurple fill to the selected row.
 - Quick-log action is tonal, not a large saturated pill.
@@ -158,7 +159,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 - 64px wide below 1100px.
 - Icons remain centered in 44px hit areas.
-- Text, keyboard hint, beta label, and account metadata collapse.
+- Text, keyboard hint, and account metadata collapse.
 
 ### Mobile navigation
 
@@ -246,7 +247,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 ### Quick create
 
 - Creation has one persistent `+` entry point: a 56px circular floating action above the mobile safe area and a 44px tonal action inside the desktop/compact sidebar.
-- The origin-aware Base UI menu is the stable extensibility point for new journal formats. Available actions lead with icon, title, and one-line intent; planned formats remain visible but disabled with an explicit availability label.
+- The origin-aware menu is the stable extensibility point for creation. Review, screenshot, and list creation are all real destinations; list creation opens the canonical owner workspace with its create dialog already active.
 - Starting content that needs a game first enters catalog selection mode, preserves filters while browsing, and opens the selected creation studio automatically on the game route.
 - Signed-out creation controls stay visible but muted and locked, matching protected navigation instead of fabricating an authenticated workflow.
 
@@ -272,13 +273,14 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Home adds live RPG, Shooter, Adventure, Strategy, and Indie catalog lanes from IGDB. Genre lanes use six covers per desktop viewport and touch-sized cards on mobile.
 - A game appears only once across the entire home: the spotlight, popular shelf, compact exploration list, genre lanes, and discovery lanes share one ordered ID registry. Multi-lane areas allocate candidates round-robin so an earlier genre cannot starve a later one; larger IGDB candidate pools absorb overlap while preserving source ranking inside each lane.
 - Every home lane is contained through a zero-minimum-width chain from section to carousel track. Mobile never uses negative outer margins; only the track owns horizontal overflow, keeping the document itself locked to the viewport.
-- “Hidden gems” requires an 80+ catalog score, 50–349 ratings, release at least two years ago, main-game type, and no IGDB franchise or collection association; current hits, famous franchise editions, ports, and remasters must not qualify merely because one entry has few ratings.
+- “Hidden gems” uses an 80+ IGDB catalog score and 50–349 IGDB ratings for candidate selection, requires release at least two years ago, main-game type, and no IGDB franchise or collection association; the visible card still prioritizes the uloggd community score. Current hits, famous franchise editions, ports, and remasters must not qualify merely because one entry has few ratings.
 
 ### Library workspace
 
 - Owner and public profile libraries share one Steam-inspired workspace: identity/banner stage, real collection counts, smart shelves, dense controls, and the active-shelf cover language.
 - Smart shelves expose All, Playing, Backlog, Wishlist, Completed, Favorites, and Rated with real counts. Search matches title or genre; sorting supports recent, oldest, personal rating, title, and release year.
-- Grid shows 24 games per page; compact list shows 14. Filter, sort, view, query, and page state live in the URL so a public collection view can be shared.
+- Grid and compact list both show 24 games per page. Filter, sort, view, query, and page state live in the URL so a public collection view can be shared.
+- Library and review workspaces share one 40px two-option view switch: inset 3px frame, two 38px icon targets, blurple/raised active state, and no layout shift between surfaces.
 - Every breakpoint uses the same horizontal, touch-scrollable smart-shelf tabs above the results; mobile keeps two cover columns or compact rows with full-width search and pagination actions.
 - The owner can switch the library between Public and Private. Public `user_games` reads are enforced by RLS against `profiles.library_visibility`; quick actions and removal never render for visitors.
 - Large libraries load IGDB details in batches of 100 rather than silently truncating the collection. Loading mirrors the hero, tools, rail, and cover grid.
@@ -328,7 +330,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 ### Search recents
 
 - Opening an empty global search shows up to six recently selected games stored only in browser local storage. Rows reuse the standard search result anatomy, refresh their current catalog metadata, preserve the spawnd playable mark, and include an explicit clear action. Desktop results stay centered to the input bar rather than drifting toward header actions.
-- The dedicated catalog explorer is public and reachable from desktop navigation, the global search footer, and Enter on a typed global query. Its complete state is URL-owned: query, multi-select genres/platforms/themes/modes/types, release years, minimum score/votes, sorting, and page.
+- The dedicated catalog explorer is public and reachable from desktop navigation, the global search footer, and Enter on a typed global query. Its complete state is URL-owned: query, multi-select genres/platforms/themes/modes/types, release years, IGDB minimum score/votes, sorting, and page. IGDB-based filter/sort labels must name IGDB explicitly; result cards present the uloggd community score first and IGDB as secondary source data.
 - Standard desktop and tablet use a 276px/240px refinement rail beside a responsive active-shelf result grid. At 1440px and above the explorer becomes a deliberate three-zone workspace: a 260px refinement rail, the catalog grid, and a 224px contextual rail for result count, active scope, removable filters, and adjacent-page navigation. Below that threshold the context returns to removable chips above the grid instead of compressing cover art.
 - Mobile turns the refinement rail into one contained collapsible surface, keeps sorting full-width, preserves two cover columns, and moves active chips into a horizontal overflow rail; no filtering capability disappears at a breakpoint and the document itself must never scroll horizontally.
 - Filter vocabularies come from the current IGDB genres, platforms, themes, game modes, game engines, player perspectives, companies, and game types endpoints rather than hardcoded product lists. Every vocabulary group owns a compact search input; bounded lists filter locally, while the company and engine fields debounce against dedicated server endpoints so options beyond IGDB's first 500 rows remain reachable. Engine state uses its human-readable name in the URL and active chips, then resolves that exact name to an IGDB ID only at the server query boundary. Platform choices additionally expose abbreviation and family/type metadata. Result queries use current `game_type`, never deprecated `category`, combine filters server-side, and paginate 24 covers at a time.
@@ -336,6 +338,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - The refinement rail always uses its natural content height and never creates an internal card-level scroll area. The card ends directly after its commit footer, immediately following the release-window fields; the document owns vertical scrolling. Individual long option lists may retain their compact local option scroll. Filter edits remain a local draft until “Apply filters”; the URL and catalog request update once per batch rather than after every checkbox or field blur. Clearing inside the rail also remains a draft until committed.
 - Beyond genre, platform, theme, mode, type, year, and reception, discovery supports IGDB player perspective, released/upcoming state, rated-only, and anticipated-only constraints. Only the platform group opens initially so the rail stays scannable even as its vocabulary grows.
 - Catalog pagination uses the real filtered IGDB count, adjacent page numbers, explicit first/last actions, and a direct numeric jump capped to the supported 100-page window. Desktop keeps the three control groups on one quiet divider; mobile stacks them and makes the page rail horizontally scrollable. The explorer header is a compact work strip rather than a second landing hero: title and caption form one short copy block, and the 48px route-owned search field sits directly beneath it at every breakpoint. The field may grow to the useful content width but never moves beside the copy. Header and workspace surfaces enter in 220–260ms, opened filter content settles in 160ms, result changes use a 220ms cover stagger plus a thin pending line, and the wide contextual rail re-enters on scope changes. All movement is removed under reduced motion.
+- Every page-numbered workspace uses this same Pagination component and 24-item page size where the surface is a collection. Timeline feeds may retain “load more” because they are chronological streams, not page-addressable collections.
 - The explorer avoids decorative glyph clusters, promotional glow, icon-led section labels, and repeated catalog-provider credit. Icons remain only where they communicate a control state (search, disclosure, selection, removal); URL persistence reads as restrained text metadata, while the single IGDB credit lives in the global footer and links to the official site.
 - Search loading mirrors the final geometry rather than using monolithic placeholders: real hero copy/search/meta rows, the desktop sticky filter rail or mobile disclosure shell, the result heading and sort control, plus 3:4 covers with title and metadata lines. At wide desktop it also reserves the contextual rail. Skeleton spacing shares the final 32px desktop / 24px mobile workspace separation so hydration never produces a visible layout jump.
 
@@ -355,10 +358,10 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 ### Game context rail
 
-- Desktop game pages use cover / primary content / context rail columns. The stage action rail and the overview context rail share the same 280px width above the tablet breakpoint, so personal controls, catalog score, duration, and metadata form one continuous right edge.
+- Desktop game pages use cover / primary content / context rail columns. The stage action rail and the overview context rail share the same 280px width above the tablet breakpoint, so personal controls, community score, duration, and metadata form one continuous right edge.
 - The game stage is a cinematic full-width banner rather than a floating card: no side/top border or radius, artwork starts at the content canvas top behind navigation, and the identity grid adds the header height back internally so controls remain unobscured. Its loading skeleton mirrors the same geometry.
-- The context rail owns IGDB time-to-beat data, catalog score, release, genres, platforms, developers, publishers, themes, modes, and engine. Developers and publishers are separate labeled rows and both link to the canonical `/company/[slug]` route; legacy `/publisher/[slug]` URLs permanently redirect there.
-- Share is a quiet utility aligned to the right rail immediately above the catalog score, clear of the title and gameplay actions. Tablet keeps it above the score in the rail's narrow column; mobile preserves document order between personal actions and the compact score row. It retains the shared 38px/40px contract.
+- The context rail owns IGDB time-to-beat data, uloggd community score, a compact explicitly labeled IGDB score, release, genres, platforms, developers, publishers, themes, modes, and engine. Community rating is the dominant score and drives structured aggregate data; IGDB is always visually secondary. Developers and publishers are separate labeled rows and both link to the canonical `/company/[slug]` route; legacy `/publisher/[slug]` URLs permanently redirect there.
+- Share is a quiet utility aligned to the right rail immediately above the community score, clear of the title and gameplay actions. Tablet keeps it above the score in the rail's narrow column; mobile preserves document order between personal actions and the compact score row. It retains the shared 38px/40px contract.
 - Similar games appear as a short compact-cover list in the context rail, not as another full related-games tab.
 - Tablet moves the rail below primary content; mobile stacks cover, content, and context without a persistent side column.
 - After About, gallery, videos, events, links, and related games span the combined cover + primary-content width while the context rail continues independently at the right.
@@ -385,7 +388,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 - The full-screen gallery keeps previous/next controls for sequential browsing and adds a bottom thumbnail strip with numbered direct navigation for jumping to any image.
 - The active thumbnail uses an emphasis border and full opacity; inactive thumbnails remain subdued. The strip scrolls horizontally on narrow screens without changing the image stage geometry.
-- On mobile game stages, the catalog score is a compact horizontal row after the cover/title quick-action area. It must not sit above the cover or compete with the artwork banner.
+- On mobile game stages, the community score is a compact horizontal row after the cover/title quick-action area, with IGDB reduced to a secondary labeled line. It must not sit above the cover or compete with the artwork banner.
 
 ### Compact game row
 
@@ -431,6 +434,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - When only necessary storage exists, show a compact informational notice with “Continue with necessary” and “Settings”; never fabricate an “Accept all” choice for inactive categories.
 - Cookie settings use a focused Base UI modal listing Necessary, Preferences, Analytics, and Marketing. Necessary is always active; unused optional categories remain visibly unavailable.
 - The footer always reopens settings. Any future optional category must remain off until a valid choice and offer equally prominent accept and reject actions.
+- The global footer shows the package-owned product version beside the copyright; navigation never carries a BETA badge.
 
 ### Shared choice controls
 
@@ -469,7 +473,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Dropdowns enter in 140–160ms from their trigger origin. Every modal shares the review studio’s fade timing: content enters in 220ms and exits in 150ms; overlays enter in 180ms and exit in 140ms. Centered, anchored, and mobile-sheet surfaces may preserve their spatial transform, but opacity timing and easing remain identical. Never animate layout dimensions.
 - Base UI menus and dialogs must also animate their `data-state="closed"` state for 110–150ms; conditional parents remain mounted until that exit finishes so overlays never disappear abruptly. This includes Base UI Select menus (`menu-out`), and every dialog overlay uses `drawer-backdrop` or an equivalent veil with enter and exit animations — no overlay class may exist only in JSX.
 - Skeletons use the `--skeleton-fill` token (translucent, theme-aware) and must mirror the current layout of the page they cover: when a page's hero or structure changes, its `loading.tsx` changes in the same commit.
-- Review skeletons preserve the real cover/byline/verdict/prose/aspect/action hierarchy. The review archive skeleton also reserves avatar identity, rating, faded-copy geometry, and footer actions instead of substituting generic bars.
+- Review skeletons preserve the real cover/byline/verdict/prose/aspect/action hierarchy. Journey skeletons preserve the cover/identity hero, four-part summary, and numbered session timeline. The review archive skeleton also reserves avatar identity, rating, faded-copy geometry, and footer actions instead of substituting generic bars.
 - Destructive actions never use `window.confirm`: the universal pattern is the inline two-step armed button (first tap arms with a warning label and danger tint, second tap executes, auto-disarms after 4s).
 - Danger text always uses `var(--danger-text)`; badges rendered over cover art or banners (index markers, drag handles, media counters) hardcode light ink (#f2f3f7 / #b9bcc5) because their backdrop stays dark in every theme, while anything on tokened surfaces must use tokened text.
 
@@ -482,14 +486,15 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Session milestones use Play (playing blue) for "started here" and Flag (completed green) for "finished here", consistently across calendar marks, editor toggles, and activity badges. The per-game timeline sums covered days alongside minutes.
 - Journeys are named playthroughs (up to 20 per game): a player must name a journey before logging sessions into it, and sessions logged before the feature live in a "Sessões avulsas" bucket. The log dialog exposes journeys as pill chips (Map icon, playing-blue active state) with a dashed "Nova jornada" chip, quiet rename/armed-delete controls under the active chip, and an inline naming panel; deleting a journey cascades its sessions after a two-step armed confirmation. The calendar, bulk drag, and day editor all operate within the selected journey only.
 - Calendar drags select the full contiguous span between the anchor day and the pointer — the player does not need to touch every day — and days inside the pending span visually fuse (radius drop + bridging wash) exactly like committed session bars.
-- A review can link to one of the game's journeys through a "Jornada" Base UI select in the Details tab ("Nenhuma" clears it). The journey title then renders as a Map chip on activity rows and as a link chip on the review page pointing to the game's logs timeline.
+- A review can link to one of the game's journeys through a "Jornada" select in the Details tab ("Nenhuma" clears it). The title renders as a Map link on activity and review surfaces and opens the canonical public `/journal/[public_id]` page, never a read-only modal.
+- A journey page uses the same detail-language as reviews: game cover, author avatar/verification, restrained share utility, four compact progress metrics, a numbered responsive timeline, spoiler-gated notes, per-session deep links, owner edit/remove controls, and linked reviews. Individual `/entry/[public_id]` pages mirror the review cover/byline/verdict/action structure and return to their parent journey when one exists.
 - Activity rows are previews, never the full document: review text clamps to four lines and every review row links to its dedicated page. Each review owns a public route (`/review/[id]`) presenting cover, byline, verdict chips (rating, mastered, replay, platform, played dates), the complete spoiler-gated text, aspect bars with their 0–100 scores and notes, like and share actions, and owner edit/delete. Visibility follows the same PUBLIC/FOLLOWERS/owner rules as the stream.
 - Reviews, journeys, and lists can be liked by other signed-in users through a heart control with a tabular count in the liked coral palette. Liking is optimistic, toggles through one server round-trip, and never renders as an action on one's own content — authors and signed-out visitors see a static count instead. Like counts appear on activity rows, list preview cards, and list detail headers.
 - Activity rows use a 72px physical cover, compact identity, one activity verb, and optional body content; mobile reduces the cover to 56px instead of flattening the hierarchy.
 - Spoilers stay behind an explicit disclosure control, and public feeds never reveal private entries.
 - Game pages expose review, session, and list actions as quiet secondary controls below the primary library state.
 - Game quick actions never repeat the selected library status: Playing lives only in the status selector, while Backlog, Wishlist, and Liked remain independent one-tap flags.
-- The private reviews workspace is a critical archive, not a generic feed: a compact scope rail separates reviews from journey sessions, one inset workbench owns game/rating/spoiler/order/search filters, and the alternate game view gathers reviews plus linked journeys into cover-led dossiers. Ratings stay gold, selected controls stay blurple, filtered empty states explain recovery, and journey chips open the complete linked session set.
+- The private reviews workspace is a critical archive, not a generic feed: a compact scope rail separates reviews from journey sessions, one inset workbench owns game/rating/spoiler/order/search filters, and the alternate game view gathers reviews plus linked journeys into cover-led dossiers. Ratings stay gold, selected controls stay blurple, filtered empty states explain recovery, and journey links open the canonical journal page.
 
 ### Public profiles and lists
 
@@ -552,7 +557,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Native disclosure state is read synchronously inside its toggle handler before entering a React state updater. This keeps rapid double-clicks on an empty internal note deterministic and prevents released synthetic-event references from reaching queue state.
 
 - Never fabricate user activity, online counts, progress, or authenticated identity.
-- IGDB catalog data may populate discovery surfaces; clearly distinguish it from uloggd community data.
+- IGDB catalog data may populate discovery surfaces, but every displayed site score prioritizes the aggregate of normalized uloggd player ratings. IGDB scores remain explicitly labeled secondary/external data; IGDB-backed filters state their source instead of implying a community aggregate.
 - Use direct product language, not promotional copy.
 - Empty social areas should explain what becomes available after accounts/data exist.
 - Portuguese is the primary product language; every new interface string must also be represented in the English dictionary.

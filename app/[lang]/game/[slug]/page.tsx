@@ -39,6 +39,7 @@ import { SpawndLogo } from "@/components/spawnd-logo";
 import { hasLocale } from "../../dictionaries";
 import { ShareButton } from "@/components/share-button";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { getCommunityGameRatings } from "@/lib/community-ratings";
 
 type Props = PageProps<"/[lang]/game/[slug]">;
 
@@ -116,52 +117,62 @@ export default async function GamePage({ params, searchParams }: Props) {
   const relatedIds = game.related.flatMap((group) =>
     group.games.map((related) => related.id),
   );
-  const [ageProfileResult, savedResult, listsResult, logResult, journeyResult] =
-    await Promise.all([
-      user && supabase
-        ? supabase
-            .from("profiles")
-            .select("birth_date")
-            .eq("id", user.id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      user && supabase
-        ? supabase
-            .from("user_games")
-            .select(
-              "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-            )
-            .eq("profile_id", user.id)
-            .in("igdb_id", [game.id, ...relatedIds])
-        : Promise.resolve({ data: [] }),
-      user && supabase
-        ? supabase
-            .from("game_lists")
-            .select("id,name")
-            .eq("profile_id", user.id)
-            .order("updated_at", { ascending: false })
-        : Promise.resolve({ data: [] }),
-      user && supabase
-        ? supabase
-            .from("diary_entries")
-            .select(
-              "id,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,journey_id",
-            )
-            .eq("profile_id", user.id)
-            .eq("igdb_id", game.id)
-            .order("played_on", { ascending: false })
-            .limit(366)
-        : Promise.resolve({ data: [] }),
-      user && supabase
-        ? supabase
-            .from("journeys")
-            .select("id,title")
-            .eq("profile_id", user.id)
-            .eq("igdb_id", game.id)
-            .order("created_at", { ascending: true })
-        : Promise.resolve({ data: [] }),
-    ]);
+  const [
+    ageProfileResult,
+    savedResult,
+    listsResult,
+    logResult,
+    journeyResult,
+    communityRatings,
+  ] = await Promise.all([
+    user && supabase
+      ? supabase
+          .from("profiles")
+          .select("birth_date")
+          .eq("id", user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    user && supabase
+      ? supabase
+          .from("user_games")
+          .select(
+            "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
+          )
+          .eq("profile_id", user.id)
+          .in("igdb_id", [game.id, ...relatedIds])
+      : Promise.resolve({ data: [] }),
+    user && supabase
+      ? supabase
+          .from("game_lists")
+          .select("id,name")
+          .eq("profile_id", user.id)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [] }),
+    user && supabase
+      ? supabase
+          .from("diary_entries")
+          .select(
+            "id,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,journey_id",
+          )
+          .eq("profile_id", user.id)
+          .eq("igdb_id", game.id)
+          .order("played_on", { ascending: false })
+          .limit(366)
+      : Promise.resolve({ data: [] }),
+    user && supabase
+      ? supabase
+          .from("journeys")
+          .select("id,title,public_id")
+          .eq("profile_id", user.id)
+          .eq("igdb_id", game.id)
+          .order("created_at", { ascending: true })
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? getCommunityGameRatings(supabase, [game.id])
+      : Promise.resolve(new Map()),
+  ]);
   const ageProfile = ageProfileResult.data;
+  const communityRating = communityRatings.get(game.id) ?? null;
   if (user && !ageProfile?.birth_date) redirect(`/${lang}/onboarding/username`);
   if (
     brazilRating &&
@@ -209,10 +220,11 @@ export default async function GamePage({ params, searchParams }: Props) {
       journeyId: entry.journey_id,
     }),
   );
-  const ownJourneyOptions = (journeyResult.data ?? []) as Array<{
-    id: string;
-    title: string;
-  }>;
+  const ownJourneyOptions = (journeyResult.data ?? []).map((journey) => ({
+    id: journey.id,
+    title: journey.title,
+    publicId: journey.public_id,
+  }));
   const ownLogCount = ownJourneys.length;
   const savedById = new Map(
     (savedGames ?? []).map((saved) => [saved.igdb_id, saved]),
@@ -311,14 +323,14 @@ export default async function GamePage({ params, searchParams }: Props) {
                 })),
               }
             : {}),
-          // A rating with no votes behind it is not an aggregate; omitting it
-          // beats publishing a number Google would flag as unsupported.
-          ...(game.rating !== null && game.ratingCount > 0
+          // Schema.org describes the score owned by uloggd. IGDB remains an
+          // explicitly external reference in the visible interface.
+          ...(communityRating
             ? {
                 aggregateRating: {
                   "@type": "AggregateRating",
-                  ratingValue: game.rating,
-                  ratingCount: game.ratingCount,
+                  ratingValue: communityRating.rating,
+                  ratingCount: communityRating.count,
                   bestRating: 100,
                   worstRating: 0,
                 },
@@ -411,20 +423,36 @@ export default async function GamePage({ params, searchParams }: Props) {
               <span>
                 {tri(
                   lang,
-                  "NOTA DO CATÁLOGO",
-                  "CATALOG SCORE",
-                  "NOTA DEL CATÁLOGO",
+                  "NOTA DA COMUNIDADE",
+                  "COMMUNITY SCORE",
+                  "NOTA DE LA COMUNIDAD",
                 )}
               </span>
               <div>
                 <Star size={17} fill="currentColor" />
-                <strong>{game.rating ?? "—"}</strong>
+                <strong>{communityRating?.rating ?? "—"}</strong>
                 <small>/100</small>
               </div>
               <p>
-                {game.ratingCount.toLocaleString(lang)}{" "}
-                {tri(lang, "avaliações", "ratings", "valoraciones")}
+                {communityRating
+                  ? `${communityRating.count.toLocaleString(lang)} ${tri(lang, "avaliações no uloggd", "ratings on uloggd", "valoraciones en uloggd")}`
+                  : tri(
+                      lang,
+                      "Ainda sem notas da comunidade",
+                      "No community ratings yet",
+                      "Aún sin notas de la comunidad",
+                    )}
               </p>
+              {game.rating !== null && game.ratingCount > 0 && (
+                <div className="game-external-score">
+                  <span>IGDB</span>
+                  <strong>{game.rating}/100</strong>
+                  <small>
+                    {game.ratingCount.toLocaleString(lang)}{" "}
+                    {tri(lang, "avaliações", "ratings", "valoraciones")}
+                  </small>
+                </div>
+              )}
             </div>
           </aside>
         </div>

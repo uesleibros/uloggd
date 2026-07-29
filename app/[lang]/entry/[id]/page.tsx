@@ -1,11 +1,25 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, Clock3, Gamepad2 } from "lucide-react";
-import { notFound } from "next/navigation";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Clock3,
+  EyeOff,
+  Flag,
+  Gamepad2,
+  Map,
+  Play,
+} from "lucide-react";
+import { notFound, permanentRedirect } from "next/navigation";
+import { ActivityEntryActions } from "@/components/social/activity-entry-actions";
+import type { SocialEntry } from "@/components/social/activity-stream";
 import { ContentComments } from "@/components/social/content-comments";
 import { RelativeTime } from "@/components/relative-time";
 import { LikeButton } from "@/components/social/like-button";
+import { MentionText } from "@/components/social/mention-text";
 import { ShareButton } from "@/components/share-button";
+import { VerifiedBadge } from "@/components/verified-badge";
 import { getGamesByIds } from "@/lib/igdb";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, uiText } from "@/lib/ui-text";
@@ -14,10 +28,25 @@ import { localeAlternates } from "@/lib/seo";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
 
+function entryKey(id: string) {
+  if (/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
+    return ["public_id", id] as const;
+  if (/^[0-9a-f-]{36}$/i.test(id)) return ["id", id] as const;
+  return null;
+}
+
+function formatMinutes(minutes: number) {
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (!hours) return `${minutes} min`;
+  if (!rest) return `${hours}h`;
+  return `${hours}h ${rest}min`;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
-  if (!hasLocale(lang) || !/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
-    return {};
+  const key = entryKey(id);
+  if (!hasLocale(lang) || !key) return {};
   const { data: entry } = await (
     await getSupabase()
   )
@@ -25,7 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .select(
       "public_id,igdb_id,game_slug,note,contains_spoilers,played_on,profiles!diary_entries_profile_id_fkey(username)",
     )
-    .eq("public_id", id)
+    .eq(key[0], key[1])
     .maybeSingle();
   if (!entry) return {};
   const profile = Array.isArray(entry.profiles)
@@ -77,20 +106,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DiaryEntryPage({ params }: Props) {
   const { lang, id } = await params;
-  if (!hasLocale(lang) || !/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
-    notFound();
+  const key = entryKey(id);
+  if (!hasLocale(lang) || !key) notFound();
   const supabase = await getSupabase();
   const [{ data: entry }, user] = await Promise.all([
     supabase
       .from("diary_entries")
       .select(
-        "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,minutes,note,contains_spoilers,visibility,comments_scope,created_at,profiles!diary_entries_profile_id_fkey(username,display_name,content_comment_scope)",
+        "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title,public_id),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)",
       )
-      .eq("public_id", id)
+      .eq(key[0], key[1])
       .maybeSingle(),
     getAuthUser(),
   ]);
   if (!entry) notFound();
+  if (key[0] === "id") permanentRedirect(`/${lang}/entry/${entry.public_id}`);
   const profile = Array.isArray(entry.profiles)
     ? entry.profiles[0]
     : entry.profiles;
@@ -111,9 +141,19 @@ export default async function DiaryEntryPage({ params }: Props) {
       : Promise.resolve({ data: null }),
   ]);
   const game = games[0];
+  const journey = Array.isArray(entry.journeys)
+    ? entry.journeys[0]
+    : entry.journeys;
   const like = likes?.[0] as
     { like_count: number; liked_by_viewer: boolean } | undefined;
   const t = uiText(lang);
+  const isOwner = user?.id === entry.profile_id;
+  const playedDate = new Intl.DateTimeFormat(lang, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
   const canComment =
     Boolean(user) &&
     (user?.id === entry.profile_id ||
@@ -121,34 +161,141 @@ export default async function DiaryEntryPage({ params }: Props) {
         (profile.content_comment_scope === "FOLLOWERS" && Boolean(follow))) &&
         (entry.comments_scope === "EVERYONE" ||
           (entry.comments_scope === "FOLLOWERS" && Boolean(follow)))));
+  const activityEntry: SocialEntry = {
+    id: entry.id,
+    publicId: entry.public_id,
+    kind: "diary",
+    profileId: entry.profile_id,
+    profile,
+    igdbId: entry.igdb_id,
+    gameSlug: entry.game_slug,
+    game: game ?? null,
+    playedOn: entry.played_on,
+    endedOn: entry.ended_on,
+    minutes: entry.minutes,
+    content: entry.note,
+    marksStart: entry.marks_start,
+    marksFinish: entry.marks_finish,
+    journeyId: entry.journey_id,
+    journeyTitle: journey?.title ?? null,
+    journeyPublicId: journey?.public_id ?? null,
+    spoilers: entry.contains_spoilers,
+    visibility: entry.visibility,
+    commentsScope: entry.comments_scope,
+    createdAt: entry.created_at,
+    updatedAt: entry.updated_at,
+  };
   return (
     <main className="social-page diary-entry-page">
-      <article className="diary-entry-post">
-        <header>
-          <h1>{game?.name ?? entry.game_slug}</h1>
-          <Link href={`/${lang}/u/${profile.username}`}>
-            {profile.display_name || `@${profile.username}`}
+      <Link
+        className="page-back-link"
+        href={
+          journey?.public_id
+            ? `/${lang}/journal/${journey.public_id}`
+            : `/${lang}/game/${entry.game_slug}`
+        }
+      >
+        <ArrowLeft size={14} />
+        {journey?.public_id
+          ? tri(
+              lang,
+              "Voltar à jornada",
+              "Back to journey",
+              "Volver al recorrido",
+            )
+          : tri(lang, "Voltar ao jogo", "Back to game", "Volver al juego")}
+      </Link>
+      <article className="review-page-card diary-entry-card">
+        <header className="review-page-header">
+          <Link
+            className="review-page-cover"
+            href={`/${lang}/game/${entry.game_slug}`}
+          >
+            {game?.coverUrl && (
+              <Image src={game.coverUrl} alt="" fill sizes="96px" />
+            )}
           </Link>
-        </header>
-        <div className="diary-entry-meta">
-          <span>
-            <CalendarDays size={14} />
-            <RelativeTime value={`${entry.played_on}T00:00:00Z`} lang={lang} />
-          </span>
-          {entry.minutes && (
-            <span>
-              <Clock3 size={14} /> {Math.floor(entry.minutes / 60)}h{" "}
-              {entry.minutes % 60}m
+          <div className="review-page-identity">
+            <span className="review-page-eyebrow">
+              {tri(lang, "SESSÃO", "SESSION", "SESIÓN")}
             </span>
-          )}
-          <Link href={`/${lang}/game/${entry.game_slug}`}>
-            <Gamepad2 size={14} /> {tri(lang, "Jogo", "Game", "Juego")}
-          </Link>
-        </div>
+            <h1>
+              {playedDate.format(new Date(`${entry.played_on}T00:00:00Z`))}
+            </h1>
+            <Link
+              className="diary-entry-game"
+              href={`/${lang}/game/${entry.game_slug}`}
+            >
+              <Gamepad2 size={13} /> {game?.name ?? entry.game_slug}
+            </Link>
+            <div className="review-page-byline">
+              <Link
+                href={`/${lang}/u/${profile.username}`}
+                className="review-page-avatar"
+              >
+                {profile.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt=""
+                    fill
+                    sizes="28px"
+                    unoptimized
+                  />
+                ) : (
+                  profile.username.slice(0, 1).toUpperCase()
+                )}
+              </Link>
+              <Link href={`/${lang}/u/${profile.username}`}>
+                <strong>
+                  {profile.display_name || `@${profile.username}`}
+                </strong>
+              </Link>
+              {profile.verified && <VerifiedBadge lang={lang} />}
+              <RelativeTime value={entry.created_at} lang={lang} />
+            </div>
+            <div className="review-page-verdict">
+              {entry.ended_on && (
+                <span>
+                  <CalendarDays size={13} />
+                  {playedDate.format(
+                    new Date(`${entry.played_on}T00:00:00Z`),
+                  )}{" "}
+                  – {playedDate.format(new Date(`${entry.ended_on}T00:00:00Z`))}
+                </span>
+              )}
+              {entry.minutes ? (
+                <span>
+                  <Clock3 size={13} /> {formatMinutes(entry.minutes)}
+                </span>
+              ) : null}
+              {entry.marks_start && (
+                <span>
+                  <Play size={12} fill="currentColor" />
+                  {tri(lang, "Início", "Start", "Inicio")}
+                </span>
+              )}
+              {entry.marks_finish && (
+                <span>
+                  <Flag size={12} fill="currentColor" />
+                  {tri(lang, "Fim", "Finish", "Fin")}
+                </span>
+              )}
+              {journey?.public_id && (
+                <Link
+                  className="review-page-journey"
+                  href={`/${lang}/journal/${journey.public_id}`}
+                >
+                  <Map size={13} /> {journey.title}
+                </Link>
+              )}
+            </div>
+          </div>
+        </header>
         {entry.note &&
           (entry.contains_spoilers ? (
-            <details className="spoiler-content">
+            <details className="spoiler-content review-page-content">
               <summary>
+                <EyeOff size={14} />
                 {tri(
                   lang,
                   "Mostrar spoilers",
@@ -156,10 +303,14 @@ export default async function DiaryEntryPage({ params }: Props) {
                   "Mostrar spoilers",
                 )}
               </summary>
-              <p>{entry.note}</p>
+              <p>
+                <MentionText text={entry.note} lang={lang} />
+              </p>
             </details>
           ) : (
-            <p>{entry.note}</p>
+            <p className="review-page-content diary-entry-note">
+              <MentionText text={entry.note} lang={lang} />
+            </p>
           ))}
         <footer className="review-page-footer">
           <LikeButton
@@ -183,6 +334,9 @@ export default async function DiaryEntryPage({ params }: Props) {
             copiedLabel={t.linkCopied}
             lang={lang}
           />
+          {isOwner && (
+            <ActivityEntryActions entry={activityEntry} lang={lang} />
+          )}
         </footer>
       </article>
       <ContentComments
