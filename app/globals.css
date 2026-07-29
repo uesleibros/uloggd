@@ -7391,10 +7391,7 @@ and content bars. */
   color: var(--screen-white);
 }
 .game-stage-share {
-  position: absolute;
-  z-index: 2;
-  top: 20px;
-  right: 24px;
+  justify-self: end;
   background: color-mix(in srgb, var(--console-panel) 84%, transparent);
   color: var(--screen-dim);
   backdrop-filter: blur(12px);
@@ -8909,6 +8906,15 @@ a,
     align-items: stretch;
   }
 
+  .game-stage .game-action-panel {
+    grid-row: 1 / span 2;
+  }
+
+  .game-stage-share,
+  .game-stage-rail .game-score-line {
+    grid-column: 2;
+  }
+
   .game-stage-rail .game-time-panel dl {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -8951,9 +8957,14 @@ a,
   }
 
   .game-stage-share {
-    top: 76px;
-    right: 14px;
+    grid-column: 1;
     min-height: 40px;
+  }
+
+  .game-stage .game-action-panel,
+  .game-stage-rail .game-score-line {
+    grid-column: 1;
+    grid-row: auto;
   }
 
   .game-stage .game-hero {

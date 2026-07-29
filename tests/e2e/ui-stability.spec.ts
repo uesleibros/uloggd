@@ -149,6 +149,35 @@ test("keeps the advanced-filter sheet themed and inside the mobile viewport", as
   expect(geometry.overlayAnimationDuration).toBe("0.18s");
 });
 
+test("keeps game sharing visible above the desktop catalog score", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name.startsWith("mobile"));
+  await page.goto("/pt-BR/game/e2e-game-1");
+  await expect(
+    page.getByRole("heading", { name: "E2E Game 01" }),
+  ).toBeVisible();
+
+  const share = page.locator(".game-stage-share");
+  const score = page.locator(".game-stage-rail .game-score-line");
+  const rail = page.locator(".game-stage-rail");
+  await expect(share).toBeVisible();
+  await expect(score).toBeVisible();
+
+  const [shareBox, scoreBox, railBox] = await Promise.all([
+    share.boundingBox(),
+    score.boundingBox(),
+    rail.boundingBox(),
+  ]);
+  expect(shareBox).not.toBeNull();
+  expect(scoreBox).not.toBeNull();
+  expect(railBox).not.toBeNull();
+  expect(shareBox!.y + shareBox!.height).toBeLessThanOrEqual(scoreBox!.y);
+  expect(
+    Math.abs(shareBox!.x + shareBox!.width - (railBox!.x + railBox!.width)),
+  ).toBeLessThanOrEqual(1);
+});
+
 test("contains intrinsic review-editor width inside the mobile sheet", async ({
   page,
 }, testInfo) => {

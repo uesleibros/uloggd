@@ -333,24 +333,6 @@ export default async function GamePage({ params, searchParams }: Props) {
             <div />
           </div>
         )}
-        <ShareButton
-          className="game-share-action game-stage-share"
-          title={`${game.name} · uloggd`}
-          text={tri(
-            lang,
-            `Veja ${game.name} no uloggd`,
-            `See ${game.name} on uloggd`,
-            `Mira ${game.name} en uloggd`,
-          )}
-          label={tri(lang, "Compartilhar", "Share", "Compartir")}
-          copiedLabel={tri(
-            lang,
-            "Link copiado",
-            "Link copied",
-            "Enlace copiado",
-          )}
-          lang={lang}
-        />
         <div className="game-stage-inner">
           <CoverSelector
             game={{
@@ -406,6 +388,24 @@ export default async function GamePage({ params, searchParams }: Props) {
               initial={state}
               lang={lang}
               enabled={Boolean(user)}
+            />
+            <ShareButton
+              className="game-share-action game-stage-share"
+              title={`${game.name} · uloggd`}
+              text={tri(
+                lang,
+                `Veja ${game.name} no uloggd`,
+                `See ${game.name} on uloggd`,
+                `Mira ${game.name} en uloggd`,
+              )}
+              label={tri(lang, "Compartilhar", "Share", "Compartir")}
+              copiedLabel={tri(
+                lang,
+                "Link copiado",
+                "Link copied",
+                "Enlace copiado",
+              )}
+              lang={lang}
             />
             <div className="game-score-line">
               <span>
