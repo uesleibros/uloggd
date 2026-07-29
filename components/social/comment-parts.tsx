@@ -2,8 +2,14 @@
 
 import { Heart } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { RelativeTime } from "@/components/relative-time";
+import {
+  COMMENT_MAX_CHARACTERS,
+  commentCharacterCount,
+  isValidCommentBody,
+  limitCommentInput,
+} from "@/lib/comments";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { MentionText } from "./mention-text";
 
@@ -23,40 +29,62 @@ import { MentionText } from "./mention-text";
  * a broken button.
  */
 export function commentErrorMessage(message: string, lang: UiLang) {
-  if (message.includes("comments unavailable"))
+  const detail = message.toLocaleLowerCase();
+  if (detail.includes("comments unavailable"))
     return tri(
       lang,
       "Quem publicou limitou quem pode comentar aqui.",
       "The author limited who can comment here.",
       "Quien lo publicó limitó quién puede comentar aquí.",
     );
-  if (message.includes("interaction unavailable"))
+  if (detail.includes("interaction unavailable"))
     return tri(
       lang,
       "Vocês não podem interagir por causa de um bloqueio.",
       "You cannot interact because of a block.",
       "No pueden interactuar debido a un bloqueo.",
     );
-  if (message.includes("rate") || message.includes("daily"))
+  if (detail.includes("rate") || detail.includes("daily"))
     return tri(
       lang,
       "Você comentou muitas vezes. Aguarde um pouco.",
       "You are commenting too quickly. Please wait.",
       "Estás comentando demasiado rápido. Espera un poco.",
     );
-  if (message.includes("depth"))
+  if (detail.includes("depth"))
     return tri(
       lang,
       "Esta conversa atingiu o limite de respostas.",
       "This conversation reached its reply limit.",
       "Esta conversación alcanzó el límite de respuestas.",
     );
-  if (message.includes("invalid comment"))
+  if (detail.includes("parent comment"))
     return tri(
       lang,
-      "Este comentário tem caracteres não aceitos ou passa de 500.",
-      "This comment has unsupported characters or exceeds 500.",
-      "Este comentario tiene caracteres no admitidos o supera los 500.",
+      "O comentário respondido foi removido ou não está mais disponível.",
+      "The comment you replied to was removed or is no longer available.",
+      "El comentario respondido fue eliminado o ya no está disponible.",
+    );
+  if (detail.includes("content unavailable"))
+    return tri(
+      lang,
+      "Esta publicação não está mais disponível para comentários.",
+      "This post is no longer available for comments.",
+      "Esta publicación ya no está disponible para comentarios.",
+    );
+  if (detail.includes("authentication required"))
+    return tri(
+      lang,
+      "Sua sessão expirou. Entre novamente para comentar.",
+      "Your session expired. Sign in again to comment.",
+      "Tu sesión expiró. Inicia sesión de nuevo para comentar.",
+    );
+  if (detail.includes("invalid comment"))
+    return tri(
+      lang,
+      "Use até 500 caracteres e remova caracteres de controle invisíveis.",
+      "Use up to 500 characters and remove invisible control characters.",
+      "Usa hasta 500 caracteres y elimina caracteres de control invisibles.",
     );
   return tri(
     lang,
@@ -209,6 +237,7 @@ export function CommentInlineForm({
   submitLabel,
   submitIcon,
   placeholder,
+  error,
   onChange,
   onCancel,
   onSubmit,
@@ -220,11 +249,14 @@ export function CommentInlineForm({
   submitLabel: string;
   submitIcon?: ReactNode;
   placeholder?: string;
+  error?: string;
   onChange: (value: string) => void;
   onCancel: () => void;
   onSubmit: () => void;
 }) {
   const t = uiText(lang);
+  const characterCount = commentCharacterCount(value);
+  const errorId = useId();
   return (
     <form
       className="profile-comment-inline-form profile-reply-form"
@@ -237,17 +269,25 @@ export function CommentInlineForm({
       <textarea
         autoFocus
         value={value}
-        maxLength={500}
         rows={2}
         placeholder={placeholder}
-        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
+        onChange={(event) => onChange(limitCommentInput(event.target.value))}
       />
+      {error && (
+        <p id={errorId} className="profile-comment-form-error" role="alert">
+          {error}
+        </p>
+      )}
       <footer>
-        <small>{value.length}/500</small>
+        <small>
+          {characterCount}/{COMMENT_MAX_CHARACTERS}
+        </small>
         <button type="button" onClick={onCancel}>
           {t.cancel}
         </button>
-        <button type="submit" disabled={!value.trim() || pending}>
+        <button type="submit" disabled={!isValidCommentBody(value) || pending}>
           {submitIcon}
           {submitLabel}
         </button>
@@ -265,6 +305,8 @@ export function CommunityTextArea({
   placeholder,
   className,
   action,
+  countCodePoints = false,
+  error,
   onChange,
 }: {
   id: string;
@@ -275,22 +317,44 @@ export function CommunityTextArea({
   placeholder: string;
   className?: string;
   action?: ReactNode;
+  countCodePoints?: boolean;
+  error?: string;
   onChange: (value: string) => void;
 }) {
+  const characterCount = countCodePoints
+    ? commentCharacterCount(value)
+    : value.length;
   return (
     <div className={className}>
       <label htmlFor={id}>{label}</label>
       <textarea
         id={id}
         value={value}
-        maxLength={maxLength}
+        maxLength={countCodePoints ? undefined : maxLength}
         rows={rows}
         placeholder={placeholder}
-        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        onChange={(event) =>
+          onChange(
+            countCodePoints
+              ? limitCommentInput(event.target.value, maxLength)
+              : event.target.value,
+          )
+        }
       />
+      {error && (
+        <p
+          id={`${id}-error`}
+          className="profile-comment-form-error"
+          role="alert"
+        >
+          {error}
+        </p>
+      )}
       <footer>
         <small>
-          {value.length}/{maxLength}
+          {characterCount}/{maxLength}
         </small>
         {action}
       </footer>

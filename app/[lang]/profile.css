@@ -1263,6 +1263,18 @@
   border-color: var(--brand-blurple);
   box-shadow: 0 0 0 3px var(--brand-blurple-wash);
 }
+.profile-comment-composer textarea[aria-invalid="true"],
+.profile-comment-inline-form textarea[aria-invalid="true"] {
+  border-color: var(--danger-text);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger-text) 14%, transparent);
+}
+.profile-comment-form-error {
+  margin: 0;
+  color: var(--danger-text);
+  font-size: 0.625rem;
+  font-weight: 560;
+  line-height: 1.45;
+}
 .profile-comment-composer footer {
   display: flex;
   align-items: center;

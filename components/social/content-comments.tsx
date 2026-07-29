@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import { VerifiedMark } from "@/components/verified-badge";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
@@ -76,6 +77,7 @@ export function ContentComments({
   >({});
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorTarget, setErrorTarget] = useState<string | null>(null);
 
   const fetchRows = useCallback(async () => {
     const { data, error: loadError } = await createClient().rpc(
@@ -92,6 +94,7 @@ export function ContentComments({
       setLikes({});
     } catch {
       setError(t.couldNotLoad);
+      setErrorTarget(null);
     }
   }, [fetchRows, t.couldNotLoad]);
 
@@ -102,18 +105,34 @@ export function ContentComments({
         if (active) setRows(data);
       })
       .catch(() => {
-        if (active) setError(t.couldNotLoad);
+        if (active) {
+          setError(t.couldNotLoad);
+          setErrorTarget(null);
+        }
       });
     return () => {
       active = false;
     };
   }, [fetchRows, t.couldNotLoad]);
 
-  async function submit(text: string, parentId: string | null) {
-    const clean = text.trim();
-    if (!clean || pending) return;
-    setPending(parentId ? `reply-${parentId}` : "create");
+  function clearTargetedError(target: string) {
+    if (errorTarget !== target) return;
     setError(null);
+    setErrorTarget(null);
+  }
+
+  async function submit(text: string, parentId: string | null) {
+    const clean = normalizeCommentBody(text);
+    if (!clean || pending) return;
+    const pendingKey = parentId ? `reply-${parentId}` : "create";
+    if (!isValidCommentBody(clean)) {
+      setError(commentErrorMessage("invalid comment", lang));
+      setErrorTarget(pendingKey);
+      return;
+    }
+    setPending(pendingKey);
+    setError(null);
+    setErrorTarget(null);
     const { error: createError } = await createClient().rpc(
       "create_content_comment",
       {
@@ -125,6 +144,7 @@ export function ContentComments({
     );
     if (createError) {
       setError(commentErrorMessage(createError.message, lang));
+      setErrorTarget(pendingKey);
     } else {
       if (parentId) {
         setReplyTo(null);
@@ -136,15 +156,25 @@ export function ContentComments({
   }
 
   async function update(id: string) {
-    if (!editBody.trim() || pending) return;
-    setPending(`edit-${id}`);
+    const clean = normalizeCommentBody(editBody);
+    const pendingKey = `edit-${id}`;
+    if (!clean || pending) return;
+    if (!isValidCommentBody(clean)) {
+      setError(commentErrorMessage("invalid comment", lang));
+      setErrorTarget(pendingKey);
+      return;
+    }
+    setPending(pendingKey);
     setError(null);
+    setErrorTarget(null);
     const { error: updateError } = await createClient().rpc(
       "update_content_comment",
-      { target_comment: id, comment_body: editBody },
+      { target_comment: id, comment_body: clean },
     );
-    if (updateError) setError(commentErrorMessage(updateError.message, lang));
-    else {
+    if (updateError) {
+      setError(commentErrorMessage(updateError.message, lang));
+      setErrorTarget(pendingKey);
+    } else {
       setEditing(null);
       setEditBody("");
       await reload();
@@ -165,12 +195,15 @@ export function ContentComments({
     setArmedDelete(null);
     setPending(`delete-${id}`);
     setError(null);
+    setErrorTarget(null);
     const { error: deleteError } = await createClient().rpc(
       "delete_content_comment",
       { target_comment: id },
     );
-    if (deleteError) setError(t.couldNotRemove);
-    else await reload();
+    if (deleteError) {
+      setError(t.couldNotRemove);
+      setErrorTarget(null);
+    } else await reload();
     setPending(null);
   }
 
@@ -193,6 +226,7 @@ export function ContentComments({
           "No se pudo copiar el enlace.",
         ),
       );
+      setErrorTarget(null);
     }
   }
 
@@ -281,9 +315,20 @@ export function ContentComments({
                     <LoaderCircle className="spin" size={13} aria-hidden />
                   ) : null
                 }
-                onChange={setEditBody}
-                onCancel={() => setEditing(null)}
+                onChange={(value) => {
+                  setEditBody(value);
+                  clearTargetedError(`edit-${comment.id}`);
+                }}
+                onCancel={() => {
+                  clearTargetedError(`edit-${comment.id}`);
+                  setEditing(null);
+                }}
                 onSubmit={() => void update(comment.id)}
+                error={
+                  errorTarget === `edit-${comment.id}`
+                    ? (error ?? undefined)
+                    : undefined
+                }
               />
             ) : null
           }
@@ -302,9 +347,12 @@ export function ContentComments({
                   <button
                     className="profile-comment-reply-action"
                     type="button"
-                    onClick={() =>
-                      setReplyTo(replyTo === comment.id ? null : comment.id)
-                    }
+                    onClick={() => {
+                      setError(null);
+                      setErrorTarget(null);
+                      setReplyBody("");
+                      setReplyTo(replyTo === comment.id ? null : comment.id);
+                    }}
                   >
                     <CornerDownRight size={13} />
                     {t.reply}
@@ -315,6 +363,8 @@ export function ContentComments({
                     type="button"
                     onClick={() => {
                       setReplyTo(null);
+                      setError(null);
+                      setErrorTarget(null);
                       setEditBody(comment.body);
                       setEditing(comment.id);
                     }}
@@ -414,9 +464,20 @@ export function ContentComments({
               "Write your reply…",
               "Escribe tu respuesta…",
             )}
-            onChange={setReplyBody}
-            onCancel={() => setReplyTo(null)}
+            onChange={(value) => {
+              setReplyBody(value);
+              clearTargetedError(`reply-${comment.id}`);
+            }}
+            onCancel={() => {
+              clearTargetedError(`reply-${comment.id}`);
+              setReplyTo(null);
+            }}
             onSubmit={() => void submit(replyBody, comment.id)}
+            error={
+              errorTarget === `reply-${comment.id}`
+                ? (error ?? undefined)
+                : undefined
+            }
           />
         )}
 
@@ -503,9 +564,17 @@ export function ContentComments({
               "Add something to the conversation…",
               "Añade algo a la conversación…",
             )}
-            onChange={setBody}
+            onChange={(value) => {
+              setBody(value);
+              clearTargetedError("create");
+            }}
+            countCodePoints
+            error={errorTarget === "create" ? (error ?? undefined) : undefined}
             action={
-              <button type="submit" disabled={!body.trim() || Boolean(pending)}>
+              <button
+                type="submit"
+                disabled={!isValidCommentBody(body) || Boolean(pending)}
+              >
                 {pending === "create" ? (
                   <LoaderCircle className="spin" size={14} aria-hidden />
                 ) : (
@@ -541,7 +610,7 @@ export function ContentComments({
         </p>
       )}
 
-      {error && (
+      {error && !errorTarget && (
         <p className="profile-comments-error" role="alert">
           {error}
         </p>

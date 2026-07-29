@@ -21,6 +21,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import { reportReasonIcon } from "@/lib/report-reasons";
 import { VerifiedMark } from "@/components/verified-badge";
 import {
@@ -88,6 +89,7 @@ export function ProfileComments({
     null,
   );
   const [error, setError] = useState<string | null>(null);
+  const [errorTarget, setErrorTarget] = useState<string | null>(null);
   const [reporting, setReporting] = useState<ProfileComment | null>(null);
   const [reportReason, setReportReason] = useState("HARASSMENT");
   const [reportDetails, setReportDetails] = useState("");
@@ -130,15 +132,22 @@ export function ProfileComments({
   }, [awaitingCommentId]);
 
   async function createComment(content: string, parentId: string | null) {
-    if (!content.trim() || pending) return;
+    const clean = normalizeCommentBody(content);
+    if (!clean || pending) return;
     const pendingKey = parentId ? `reply-${parentId}` : "create";
+    if (!isValidCommentBody(clean)) {
+      setError(commentErrorMessage("invalid comment", lang));
+      setErrorTarget(pendingKey);
+      return;
+    }
     setPending(pendingKey);
     setError(null);
+    setErrorTarget(null);
     const { data: created, error: createError } = await createClient().rpc(
       "create_profile_comment",
       {
         target_profile: profileId,
-        comment_body: content,
+        comment_body: clean,
         parent_comment: parentId,
       },
     );
@@ -152,7 +161,10 @@ export function ProfileComments({
         setReplyBody("");
         setRemovedReplyNotice(true);
         router.refresh();
-      } else setError(commentErrorMessage(createError.message, lang));
+      } else {
+        setError(commentErrorMessage(createError.message, lang));
+        setErrorTarget(pendingKey);
+      }
       setPending(null);
     } else {
       if (parentId) {
@@ -167,15 +179,25 @@ export function ProfileComments({
   }
 
   async function updateComment(commentId: string) {
-    if (!editBody.trim() || pending) return;
-    setPending(`edit-${commentId}`);
+    const clean = normalizeCommentBody(editBody);
+    const pendingKey = `edit-${commentId}`;
+    if (!clean || pending) return;
+    if (!isValidCommentBody(clean)) {
+      setError(commentErrorMessage("invalid comment", lang));
+      setErrorTarget(pendingKey);
+      return;
+    }
+    setPending(pendingKey);
     setError(null);
+    setErrorTarget(null);
     const { error: updateError } = await createClient().rpc(
       "update_profile_comment",
-      { target_comment: commentId, comment_body: editBody },
+      { target_comment: commentId, comment_body: clean },
     );
-    if (updateError) setError(commentErrorMessage(updateError.message, lang));
-    else {
+    if (updateError) {
+      setError(commentErrorMessage(updateError.message, lang));
+      setErrorTarget(pendingKey);
+    } else {
       setEditing(null);
       setEditBody("");
       router.refresh();
@@ -199,11 +221,12 @@ export function ProfileComments({
     setArmedDelete(null);
     setPending(`delete-${comment.id}`);
     setError(null);
+    setErrorTarget(null);
     const { data, error: deleteError } = await createClient().rpc(
       "delete_profile_comment",
       { target_comment: comment.id },
     );
-    if (deleteError || data !== true)
+    if (deleteError || data !== true) {
       setError(
         tri(
           lang,
@@ -212,7 +235,8 @@ export function ProfileComments({
           "No se pudo eliminar.",
         ),
       );
-    else router.refresh();
+      setErrorTarget(null);
+    } else router.refresh();
     setPending(null);
   }
 
@@ -221,6 +245,7 @@ export function ProfileComments({
     if (!viewerId || !reporting || pending) return;
     setPending(`report-${reporting.id}`);
     setError(null);
+    setErrorTarget(null);
     const { error: reportError } = await createClient()
       .from("reports")
       .insert({
@@ -231,7 +256,7 @@ export function ProfileComments({
         reason: reportReason,
         details: reportDetails.trim() || null,
       });
-    if (reportError)
+    if (reportError) {
       setError(
         tri(
           lang,
@@ -240,7 +265,8 @@ export function ProfileComments({
           "No se pudo enviar la denuncia.",
         ),
       );
-    else {
+      setErrorTarget(null);
+    } else {
       setReporting(null);
       setReportDetails("");
     }
@@ -269,6 +295,7 @@ export function ProfileComments({
           "No se pudo copiar el enlace.",
         ),
       );
+      setErrorTarget(null);
     }
   }
 
@@ -276,6 +303,7 @@ export function ProfileComments({
     if (!blocking || pending) return;
     setPending(`block-${blocking.author_id}`);
     setError(null);
+    setErrorTarget(null);
     const { error: blockError } = await createClient().rpc("block_profile", {
       target_profile: blocking.author_id,
     });
@@ -288,6 +316,7 @@ export function ProfileComments({
           "No se pudo bloquear a este usuario.",
         ),
       );
+      setErrorTarget(null);
     } else {
       setBlocking(null);
       router.refresh();
@@ -296,15 +325,25 @@ export function ProfileComments({
   }
 
   function startReply(comment: ProfileComment) {
+    setError(null);
+    setErrorTarget(null);
     setEditing(null);
     setReplyBody("");
     setReplyTo(comment.id);
   }
 
   function startEdit(comment: ProfileComment) {
+    setError(null);
+    setErrorTarget(null);
     setReplyTo(null);
     setEditBody(comment.body);
     setEditing(comment.id);
+  }
+
+  function clearTargetedError(target: string) {
+    if (errorTarget !== target) return;
+    setError(null);
+    setErrorTarget(null);
   }
 
   async function toggleLike(comment: ProfileComment) {
@@ -331,6 +370,7 @@ export function ProfileComments({
         [comment.id]: { ...current, pending: false },
       }));
       setError(commentErrorMessage(likeError.message, lang));
+      setErrorTarget(null);
       return;
     }
     const result = Array.isArray(data) ? data[0] : data;
@@ -391,9 +431,20 @@ export function ProfileComments({
                     <LoaderCircle className="spin" size={13} aria-hidden />
                   ) : null
                 }
-                onChange={setEditBody}
-                onCancel={() => setEditing(null)}
+                onChange={(value) => {
+                  setEditBody(value);
+                  clearTargetedError(`edit-${comment.id}`);
+                }}
+                onCancel={() => {
+                  clearTargetedError(`edit-${comment.id}`);
+                  setEditing(null);
+                }}
                 onSubmit={() => void updateComment(comment.id)}
+                error={
+                  errorTarget === `edit-${comment.id}`
+                    ? (error ?? undefined)
+                    : undefined
+                }
               />
             ) : null
           }
@@ -546,9 +597,20 @@ export function ProfileComments({
               "Write your reply…",
               "Escribe tu respuesta…",
             )}
-            onChange={setReplyBody}
-            onCancel={() => setReplyTo(null)}
+            onChange={(value) => {
+              setReplyBody(value);
+              clearTargetedError(`reply-${comment.id}`);
+            }}
+            onCancel={() => {
+              clearTargetedError(`reply-${comment.id}`);
+              setReplyTo(null);
+            }}
             onSubmit={() => void createComment(replyBody, comment.id)}
+            error={
+              errorTarget === `reply-${comment.id}`
+                ? (error ?? undefined)
+                : undefined
+            }
           />
         )}
         {comment.replies.length > 0 && (
@@ -615,9 +677,17 @@ export function ProfileComments({
               "Add something to the conversation…",
               "Añade algo a la conversación…",
             )}
-            onChange={setBody}
+            onChange={(value) => {
+              setBody(value);
+              clearTargetedError("create");
+            }}
+            countCodePoints
+            error={errorTarget === "create" ? (error ?? undefined) : undefined}
             action={
-              <button type="submit" disabled={!body.trim() || Boolean(pending)}>
+              <button
+                type="submit"
+                disabled={!isValidCommentBody(body) || Boolean(pending)}
+              >
                 {pending === "create" ? (
                   <LoaderCircle className="spin" size={14} aria-hidden />
                 ) : (
@@ -655,7 +725,7 @@ export function ProfileComments({
         </p>
       )}
 
-      {error && (
+      {error && !errorTarget && (
         <p className="profile-comments-error" role="alert">
           {error}
         </p>

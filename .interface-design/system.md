@@ -539,6 +539,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Reviews, lists, screenshots, and diary sessions share one community-post contract: compact public URL, like, comments, and share.
 - Comment audience is account-wide and belongs only in Settings → Privacy (`EVERYONE`, `FOLLOWERS`, `NOBODY`); creation editors expose post visibility and spoiler state, never a duplicate comment-privacy control.
 - Community composers reuse `CommunityTextArea` so focus, counter, spacing, and action treatment stay identical.
+- Comment composers normalize CRLF, allow intentional line breaks and tabs, and enforce the shared 500 Unicode-code-point limit on the client and in PostgreSQL. Validation errors stay directly below the active composer or inline editor; the section-level error row is reserved for loading and non-form actions.
 - Profile screenshots use a dedicated dense gallery; game metadata and signed media URLs are fetched in batches.
 - Activity screenshots render at their intrinsic aspect ratio across the full content width, without a fixed maximum height or black letterboxing that grows under browser zoom.
 - The profile overview uses a horizontally scrollable row of circular, labeled collection portals (Library, Reviews, Sessions, Lists, Screenshots, Wrapped), with counts as quiet corner badges rather than metric cards.
