@@ -2224,6 +2224,7 @@ html[data-sidebar-collapsed]
 }
 .shelf-carousel-controls {
   position: absolute;
+  z-index: 1;
   right: 0;
   bottom: calc(100% + 16px);
   display: flex;
@@ -12867,24 +12868,6 @@ html
   font-size: 0.6875rem;
   line-height: 1.5;
 }
-.home-social-carousel {
-  margin-top: 0;
-}
-.home-social-carousel .shelf-carousel-track {
-  grid-auto-columns: minmax(390px, calc((100% - 12px) / 2));
-  align-items: start;
-  gap: 12px;
-}
-.home-social-carousel .activity-entry {
-  align-self: start;
-}
-.home-review-carousel .review-markdown-preview-content {
-  max-height: 5.25em;
-}
-.home-review-carousel .activity-aspects {
-  max-height: 28px;
-  overflow: hidden;
-}
 .home-activity-section .activity-stream {
   gap: 10px;
 }
@@ -14579,7 +14562,7 @@ and route recovery. */
     display: none;
   }
   .discovery-games {
-    padding-top: 0;
+    padding-top: 44px;
   }
 }
 
@@ -14631,9 +14614,6 @@ and route recovery. */
   }
   .home-playing-carousel .shelf-carousel-track {
     grid-auto-columns: 138px;
-  }
-  .home-social-carousel .shelf-carousel-track {
-    grid-auto-columns: min(86vw, 360px);
   }
   .home-activity-section .activity-entry {
     grid-template-columns: 58px minmax(0, 1fr);

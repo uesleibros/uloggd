@@ -346,16 +346,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
               entries={reviews}
               lang={lang}
               viewerId={user?.id ?? null}
-              carousel={{
-                label: tri(
-                  lang,
-                  "Avaliações recentes",
-                  "Recent reviews",
-                  "Reseñas recientes",
-                ),
-                autoPlay: true,
-                className: "home-social-carousel home-review-carousel",
-              }}
             />
           ) : (
             <div className="home-community-empty">
@@ -393,16 +383,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             entries={communityUpdates}
             lang={lang}
             viewerId={user?.id ?? null}
-            carousel={{
-              label: tri(
-                lang,
-                "Últimos registros da comunidade",
-                "Latest community logs",
-                "Últimos registros de la comunidad",
-              ),
-              autoPlay: true,
-              className: "home-social-carousel home-log-carousel",
-            }}
           />
         </section>
 
