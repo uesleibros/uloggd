@@ -23,7 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import { reportReasonIcon } from "@/lib/report-reasons";
-import { VerifiedMark } from "@/components/verified-badge";
+import { VerifiedNameMark } from "@/components/verified-badge";
 import {
   commentErrorMessage,
   buildCommentTree,
@@ -417,7 +417,7 @@ export function ProfileComments({
           avatarUrl={comment.author.avatar_url}
           createdAt={comment.created_at}
           edited={edited}
-          badge={comment.author.verified ? <VerifiedMark size={13} /> : null}
+          badge={comment.author.verified ? <VerifiedNameMark /> : null}
           body={comment.body}
           editor={
             editing === comment.id ? (

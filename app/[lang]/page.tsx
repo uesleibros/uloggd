@@ -12,7 +12,7 @@ import {
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
 import { ActivityStream } from "@/components/social/activity-stream";
-import { VerifiedMark } from "@/components/verified-badge";
+import { VerifiedNameMark } from "@/components/verified-badge";
 import { getHomePersonalization } from "@/lib/history";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
@@ -311,7 +311,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                     <span>
                       <Link href={`/${lang}/u/${item.username}`}>
                         {item.displayName || `@${item.username}`}
-                        {item.verified && <VerifiedMark size={13} />}
+                        {item.verified && <VerifiedNameMark />}
                       </Link>
                       <Link href={`/${lang}/game/${item.game.slug}`}>
                         {item.game.name}

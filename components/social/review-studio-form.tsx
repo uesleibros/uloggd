@@ -27,6 +27,7 @@ import { StarRating } from "@/components/library/star-rating";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
 import type { JourneyOption } from "@/components/social/journey-calendar";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { useLocalToday } from "@/components/use-local-today";
 
 export type ReviewRatingMode =
   "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
@@ -101,6 +102,7 @@ export function ReviewStudioForm({
   onPerform: (fields: ReviewRpcFields) => Promise<boolean>;
 }) {
   const t = uiText(lang);
+  const today = useLocalToday();
   const [reviewSection, setReviewSection] = useState<ReviewSection>("review");
   const [rating, setRating] = useState<number | null>(initial?.rating ?? null);
   const [ratingMode, setRatingMode] = useState<ReviewRatingMode>(
@@ -466,7 +468,7 @@ export function ReviewStudioForm({
               <input
                 type="date"
                 value={startedOn}
-                max={new Date().toISOString().slice(0, 10)}
+                max={today || undefined}
                 onChange={(event) => setStartedOn(event.target.value)}
               />
             </label>
@@ -478,7 +480,7 @@ export function ReviewStudioForm({
                 type="date"
                 value={finishedOn}
                 min={startedOn || undefined}
-                max={new Date().toISOString().slice(0, 10)}
+                max={today || undefined}
                 onChange={(event) => setFinishedOn(event.target.value)}
               />
             </label>

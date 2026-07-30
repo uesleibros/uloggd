@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { VerifiedMark } from "../verified-badge";
+import { VerifiedNameMark } from "../verified-badge";
 import type { UiLang } from "@/lib/ui-text";
 
 export type ConnectionPerson = {
@@ -42,7 +42,7 @@ export function ConnectionCard({
         <span className="profile-connection-copy">
           <strong>
             <span>{person.display_name || `@${person.username}`}</span>
-            {person.verified && <VerifiedMark size={16} />}
+            {person.verified && <VerifiedNameMark />}
           </strong>
           <small>@{person.username}</small>
           {person.bio && <p>{person.bio}</p>}

@@ -509,7 +509,7 @@
 .moderation-user-card p strong {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   color: var(--screen-white);
   font-size: 0.6875rem;
 }

@@ -19,6 +19,15 @@ export function VerifiedMark({ size = 18 }: { size?: number }) {
   );
 }
 
+/** Same 24px identity slot used by the interactive profile badge. */
+export function VerifiedNameMark() {
+  return (
+    <span className="verified-name-mark" aria-hidden="true">
+      <VerifiedMark />
+    </span>
+  );
+}
+
 export function VerifiedBadge({ lang }: { lang: UiLang }) {
   const t = uiText(lang);
 

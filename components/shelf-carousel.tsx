@@ -60,7 +60,7 @@ export function ShelfCarousel({
         pauseReasons.current.size === 0 &&
         max > 2
       ) {
-        const next = node.scrollLeft + direction.current * elapsed * 0.009;
+        const next = node.scrollLeft + direction.current * elapsed * 0.018;
         if (next >= max) {
           node.scrollLeft = max;
           direction.current = -1;

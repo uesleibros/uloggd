@@ -24,7 +24,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useRef, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { VerifiedMark } from "@/components/verified-badge";
+import { VerifiedMark, VerifiedNameMark } from "@/components/verified-badge";
 import { Pagination } from "@/components/pagination";
 import { RelativeTime } from "@/components/relative-time";
 import {
@@ -1170,7 +1170,7 @@ export function ModerationConsole({
                       <p>
                         <strong>
                           {profileName(profile)}
-                          {profile.verified && <VerifiedMark size={15} />}
+                          {profile.verified && <VerifiedNameMark />}
                         </strong>
                         <span>@{profile.username}</span>
                         <small>

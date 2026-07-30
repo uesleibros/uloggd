@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { VerifiedMark } from "./verified-badge";
+import { VerifiedNameMark } from "./verified-badge";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 export type NavigationAccount = {
@@ -59,7 +59,7 @@ export function AccountMenu({
         <span className="account-copy">
           <strong>
             <span>{label}</span>
-            {account.verified && <VerifiedMark size={16} />}
+            {account.verified && <VerifiedNameMark />}
           </strong>
           <small>{handle}</small>
         </span>
@@ -76,7 +76,7 @@ export function AccountMenu({
           <div className="account-menu-identity">
             <strong>
               <span>{label}</span>
-              {account.verified && <VerifiedMark size={16} />}
+              {account.verified && <VerifiedNameMark />}
             </strong>
             <span>{handle}</span>
             <small>{account.email}</small>

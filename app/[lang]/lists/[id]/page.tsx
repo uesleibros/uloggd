@@ -21,7 +21,7 @@ import { getTierlist } from "@/lib/tierlists";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { ContentComments } from "@/components/social/content-comments";
-import { VerifiedMark } from "@/components/verified-badge";
+import { VerifiedNameMark } from "@/components/verified-badge";
 import { localeAlternates } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import {
@@ -66,7 +66,7 @@ function ListAuthor({
         {tri(lang, "por", "by", "por")}{" "}
         {owner.display_name || `@${owner.username}`}
       </small>
-      {owner.verified && <VerifiedMark size={13} />}
+      {owner.verified && <VerifiedNameMark />}
     </Link>
   );
 }

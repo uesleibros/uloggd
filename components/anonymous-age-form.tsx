@@ -4,6 +4,7 @@ import { CalendarDays, LoaderCircle, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { birthDateLimits } from "@/lib/age-access";
+import { useLocalToday } from "@/components/use-local-today";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 export function AnonymousAgeForm({
@@ -15,6 +16,7 @@ export function AnonymousAgeForm({
 }) {
   const pt = lang === "pt-BR";
   const router = useRouter();
+  const today = useLocalToday();
   const limits = useMemo(() => birthDateLimits(), []);
   const [value, setValue] = useState("");
   const [pending, setPending] = useState(false);
@@ -65,7 +67,7 @@ export function AnonymousAgeForm({
             type="date"
             value={value}
             min={limits.min}
-            max={new Date().toISOString().slice(0, 10)}
+            max={today || undefined}
             required
             autoComplete="bday"
             onChange={(event) => {

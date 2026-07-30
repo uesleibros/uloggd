@@ -25,7 +25,8 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useLocalToday } from "@/components/use-local-today";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
@@ -95,7 +96,7 @@ export function GameLogActions({
   const [mode, setMode] = useState<Mode | null>(initialMode);
   const [open, setOpen] = useState(Boolean(initialMode));
   const [pending, setPending] = useState(false);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = useLocalToday();
   const [sessions, setSessions] = useState(journeys);
   const [journeyList, setJourneyList] = useState(journeyOptions);
   const [prevJourneys, setPrevJourneys] = useState(journeys);
@@ -112,11 +113,20 @@ export function GameLogActions({
   const [namingTitle, setNamingTitle] = useState("");
   const [naming, setNaming] = useState<"create" | "rename" | null>(null);
   const [journeyArmed, setJourneyArmed] = useState(false);
+  const [journeyDeleting, setJourneyDeleting] = useState(false);
+  const journeyDisarmTimer = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (journeyDisarmTimer.current)
+        window.clearTimeout(journeyDisarmTimer.current);
+    },
+    [],
+  );
   const [dayEditor, setDayEditor] = useState<{
     day: string;
     session: JourneySession | null;
   } | null>(null);
-  const [openDayValue, setOpenDayValue] = useState(today);
+  const [openDayValue, setOpenDayValue] = useState("");
   const [listChoice, setListChoice] = useState(lists[0]?.id ?? "");
   const [listQuery, setListQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -227,10 +237,18 @@ export function GameLogActions({
     if (!activeJourney || pending) return;
     if (!journeyArmed) {
       setJourneyArmed(true);
-      window.setTimeout(() => setJourneyArmed(false), 4000);
+      if (journeyDisarmTimer.current)
+        window.clearTimeout(journeyDisarmTimer.current);
+      journeyDisarmTimer.current = window.setTimeout(
+        () => setJourneyArmed(false),
+        4000,
+      );
       return;
     }
+    if (journeyDisarmTimer.current)
+      window.clearTimeout(journeyDisarmTimer.current);
     setJourneyArmed(false);
+    setJourneyDeleting(true);
     setPending(true);
     const { error: rpcError } = await createClient().rpc("delete_journey", {
       target_journey: activeJourney.id,
@@ -244,6 +262,7 @@ export function GameLogActions({
           "No se pudo eliminar.",
         ),
       );
+      setJourneyDeleting(false);
       setPending(false);
       return;
     }
@@ -257,6 +276,8 @@ export function GameLogActions({
       journeyList.find((journey) => journey.id !== activeJourney.id)?.id ??
       (hasLoose ? "loose" : null);
     setSelectedJourney(fallback);
+    setJourneyDeleting(false);
+    setPending(false);
     router.refresh();
   }
 
@@ -390,17 +411,18 @@ export function GameLogActions({
   }
 
   async function removeDay() {
-    if (!dayEditor?.session) return;
+    if (!dayEditor?.session) return false;
     setPending(true);
     const { error: rpcError } = await createClient().rpc("delete_diary_entry", {
       entry_id: dayEditor.session.id,
     });
     if (rpcError) {
       setPending(false);
-      return;
+      return false;
     }
     setDayEditor(null);
     router.refresh();
+    return true;
   }
 
   async function submitList() {
@@ -670,6 +692,7 @@ export function GameLogActions({
                         setSelectedJourney(journey.id);
                         setNaming(null);
                         setJourneyArmed(false);
+                        setJourneyDeleting(false);
                       }}
                     >
                       <Map size={12} /> {journey.title}
@@ -683,6 +706,7 @@ export function GameLogActions({
                         setSelectedJourney("loose");
                         setNaming(null);
                         setJourneyArmed(false);
+                        setJourneyDeleting(false);
                       }}
                     >
                       {tri(
@@ -741,16 +765,23 @@ export function GameLogActions({
                       data-armed={journeyArmed || undefined}
                       onClick={deleteJourney}
                       disabled={pending}
+                      aria-busy={journeyDeleting}
                     >
-                      <Trash2 size={12} />{" "}
-                      {journeyArmed
-                        ? tri(
-                            lang,
-                            "Excluir jornada e sessões?",
-                            "Delete journey and sessions?",
-                            "¿Eliminar recorrido y sesiones?",
-                          )
-                        : t.delete}
+                      {journeyDeleting ? (
+                        <LoaderCircle className="spin" size={12} aria-hidden />
+                      ) : (
+                        <Trash2 size={12} />
+                      )}{" "}
+                      {journeyDeleting
+                        ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
+                        : journeyArmed
+                          ? tri(
+                              lang,
+                              "Excluir jornada e sessões?",
+                              "Delete journey and sessions?",
+                              "¿Eliminar recorrido y sesiones?",
+                            )
+                          : t.delete}
                     </button>
                   </div>
                 )}
@@ -908,8 +939,8 @@ export function GameLogActions({
                           </span>
                           <input
                             type="date"
-                            max={today}
-                            value={openDayValue}
+                            max={today || undefined}
+                            value={openDayValue || today}
                             onChange={(event) =>
                               setOpenDayValue(event.target.value)
                             }
@@ -917,10 +948,11 @@ export function GameLogActions({
                         </label>
                         <button
                           type="button"
-                          disabled={!openDayValue || pending}
-                          onClick={() =>
-                            openDay(openDayValue, sessionFor(openDayValue))
-                          }
+                          disabled={!(openDayValue || today) || pending}
+                          onClick={() => {
+                            const day = openDayValue || today;
+                            if (day) openDay(day, sessionFor(day));
+                          }}
                         >
                           {t.open}
                         </button>
@@ -1101,7 +1133,7 @@ function JourneyDayEditor({
   pending: boolean;
   onBack: () => void;
   onSave: (payload: DayPayload) => Promise<boolean>;
-  onRemove?: () => void;
+  onRemove?: () => Promise<boolean>;
 }) {
   const t = uiText(lang);
   const total = session?.minutes ?? 0;
@@ -1119,7 +1151,17 @@ function JourneyDayEditor({
   const [commentsScope, setCommentsScope] = useState<CommunityScope>(
     session?.commentsScope ?? "EVERYONE",
   );
-  const [failed, setFailed] = useState(false);
+  const [failure, setFailure] = useState<"save" | "remove" | null>(null);
+  const [removeArmed, setRemoveArmed] = useState(false);
+  const [removePending, setRemovePending] = useState(false);
+  const removeDisarmTimer = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (removeDisarmTimer.current)
+        window.clearTimeout(removeDisarmTimer.current);
+    },
+    [],
+  );
 
   const rangeLabel = new Intl.DateTimeFormat(lang, {
     weekday: "long",
@@ -1130,7 +1172,7 @@ function JourneyDayEditor({
   }).format(new Date(`${session?.start ?? day}T00:00:00Z`));
 
   async function submit() {
-    setFailed(false);
+    setFailure(null);
     const totalMinutes =
       (Number(hours) || 0) * 60 + Math.min(59, Number(minutes) || 0);
     const saved = await onSave({
@@ -1142,7 +1184,31 @@ function JourneyDayEditor({
       visibility,
       commentsScope,
     });
-    if (!saved) setFailed(true);
+    if (!saved) setFailure("save");
+  }
+
+  async function remove() {
+    if (!onRemove || pending || removePending) return;
+    if (!removeArmed) {
+      setRemoveArmed(true);
+      if (removeDisarmTimer.current)
+        window.clearTimeout(removeDisarmTimer.current);
+      removeDisarmTimer.current = window.setTimeout(
+        () => setRemoveArmed(false),
+        4000,
+      );
+      return;
+    }
+    if (removeDisarmTimer.current)
+      window.clearTimeout(removeDisarmTimer.current);
+    setRemoveArmed(false);
+    setRemovePending(true);
+    setFailure(null);
+    const removed = await onRemove();
+    if (!removed) {
+      setRemovePending(false);
+      setFailure("remove");
+    }
   }
 
   return (
@@ -1287,14 +1353,21 @@ function JourneyDayEditor({
           <span>{t.containsSpoilers}</span>
         </label>
       </div>
-      {failed && (
+      {failure && (
         <p className="social-form-error" role="alert">
-          {tri(
-            lang,
-            "Não foi possível salvar a sessão.",
-            "Could not save the session.",
-            "No se pudo guardar la sesión.",
-          )}
+          {failure === "remove"
+            ? tri(
+                lang,
+                "Não foi possível excluir a sessão.",
+                "Could not delete the session.",
+                "No se pudo eliminar la sesión.",
+              )
+            : tri(
+                lang,
+                "Não foi possível salvar a sessão.",
+                "Could not save the session.",
+                "No se pudo guardar la sesión.",
+              )}
         </p>
       )}
       <footer className="journey-day-actions">
@@ -1302,10 +1375,26 @@ function JourneyDayEditor({
           <button
             type="button"
             className="journey-day-remove"
-            onClick={onRemove}
-            disabled={pending}
+            onClick={() => void remove()}
+            disabled={pending || removePending}
+            data-armed={removeArmed || undefined}
+            aria-busy={removePending}
           >
-            <Trash2 size={14} /> {t.remove}
+            {removePending ? (
+              <LoaderCircle className="spin" size={14} aria-hidden />
+            ) : (
+              <Trash2 size={14} />
+            )}{" "}
+            {removePending
+              ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
+              : removeArmed
+                ? tri(
+                    lang,
+                    "Excluir mesmo?",
+                    "Really delete?",
+                    "¿Eliminar de verdad?",
+                  )
+                : t.remove}
           </button>
         )}
         <button type="button" onClick={onBack} disabled={pending}>
@@ -1317,8 +1406,10 @@ function JourneyDayEditor({
           data-loading={pending || undefined}
           disabled={pending}
         >
-          {pending && <LoaderCircle className="spin" size={15} aria-hidden />}
-          {pending
+          {pending && !removePending && (
+            <LoaderCircle className="spin" size={15} aria-hidden />
+          )}
+          {pending && !removePending
             ? t.saving
             : tri(lang, "Salvar sessão", "Save session", "Guardar sesión")}
         </button>

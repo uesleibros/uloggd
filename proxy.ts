@@ -11,6 +11,7 @@ const publicSegments = new Set([
   "onboarding",
   "game",
   "search",
+  "verification",
   "u",
   "lists",
   "library",

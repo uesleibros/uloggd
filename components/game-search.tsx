@@ -20,7 +20,7 @@ import type { Dictionary } from "@/app/[lang]/dictionaries";
 import type { GameSearchResult } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/client";
 import { SpawndLogo } from "./spawnd-logo";
-import { VerifiedMark } from "./verified-badge";
+import { VerifiedNameMark } from "./verified-badge";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type SearchList = { id: string; name: string; owner: string | null };
@@ -344,7 +344,7 @@ function ResultList({
                 <span className="search-result-copy">
                   <strong>
                     {person.displayName || `@${person.username}`}
-                    {person.verified && <VerifiedMark size={13} />}
+                    {person.verified && <VerifiedNameMark />}
                   </strong>
                   <small>@{person.username}</small>
                 </span>

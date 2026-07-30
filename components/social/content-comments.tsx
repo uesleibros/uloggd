@@ -15,7 +15,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
-import { VerifiedMark } from "@/components/verified-badge";
+import { VerifiedNameMark } from "@/components/verified-badge";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
   commentErrorMessage,
@@ -301,7 +301,7 @@ export function ContentComments({
           avatarUrl={comment.avatar_url}
           createdAt={comment.created_at}
           edited={edited}
-          badge={comment.verified ? <VerifiedMark size={13} /> : null}
+          badge={comment.verified ? <VerifiedNameMark /> : null}
           body={comment.body}
           editor={
             editing === comment.id ? (

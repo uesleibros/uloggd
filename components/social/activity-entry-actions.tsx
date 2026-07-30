@@ -7,6 +7,7 @@ import { Flag, LoaderCircle, Pencil, Play, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useLocalToday } from "@/components/use-local-today";
 import type { SocialEntry } from "./activity-stream";
 import { EditReviewDialog } from "./edit-review-dialog";
 import { EditorVisibilitySelect } from "./review-studio-form";
@@ -22,7 +23,7 @@ export function ActivityEntryActions({
   const { id, kind } = entry;
   const t = uiText(lang);
   const router = useRouter();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = useLocalToday();
   const [editing, setEditing] = useState(false);
   const [pending, setPending] = useState(false);
   const [armed, setArmed] = useState(false);
@@ -170,7 +171,7 @@ export function ActivityEntryActions({
                     <span>{t.from}</span>
                     <input
                       type="date"
-                      max={journeyEnd || today}
+                      max={journeyEnd || today || undefined}
                       value={journeyStart}
                       onChange={(event) => {
                         const next = event.target.value;
@@ -192,7 +193,7 @@ export function ActivityEntryActions({
                     <input
                       type="date"
                       min={journeyStart || undefined}
-                      max={today}
+                      max={today || undefined}
                       value={journeyEnd}
                       onChange={(event) => setJourneyEnd(event.target.value)}
                     />
