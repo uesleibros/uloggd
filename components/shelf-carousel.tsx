@@ -98,6 +98,11 @@ export function ShelfCarousel({
     if (value) pauseReasons.current.add(reason);
     else pauseReasons.current.delete(reason);
   }
+  function toggleManualPause() {
+    const willResume = manualPaused;
+    if (willResume) pauseReasons.current.clear();
+    setManualPaused(!manualPaused);
+  }
   return (
     <div
       className={`shelf-carousel ${className}`}
@@ -130,7 +135,7 @@ export function ShelfCarousel({
           <button
             type="button"
             className="shelf-carousel-autoplay-control"
-            onClick={() => setManualPaused((current) => !current)}
+            onClick={toggleManualPause}
             aria-pressed={manualPaused}
             aria-label={`${label}: ${
               manualPaused
