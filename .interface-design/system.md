@@ -80,6 +80,7 @@ Base unit: **4px**.
 - The sidebar shell itself stays at zero margin and padding. A single full-height `sidebar-frame` owns the 12px expanded and 8px compact internal gutter; compact brand, navigation, and account targets are all exactly 48px and the scroll region never adds a second horizontal gutter.
 - Context rail: 320px full; 290px compact; hidden at 960px and below to prevent tablet overflow.
 - The application canvas is full-viewport; never cap the global shell or center it inside decorative outer gutters. Width constraints belong to readable text and focused controls, not the product frame.
+- Primary route workspaces and detail documents anchor to the start edge of the content canvas. A readable max-width may constrain the document, but leftover width stays on the trailing side; centered geometry is reserved for authentication, dialogs, empty states, and transient status surfaces.
 - Game pages use a full-bleed artwork stage behind the floating header with only a quiet bottom divider. The tabbed content below retains a compact 16px desktop / 10px mobile gutter; larger spacing belongs between cover, primary content, and context rail rather than outside the hero.
 
 The feed should alternate between expressive/editorial zones and compact working zones. Do not give every section the same gap, card shape, or density.
@@ -270,7 +271,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - A saved custom cover is a library-wide preference: every authenticated catalog surface resolves it before the IGDB default.
 - Cover cards remain stationary on hover; reveal titles and quick actions through overlays only, without vertical lift.
 - Mobile discovery lanes become horizontal snap shelves across the full 0–620px range; cards stay between 112px and 132px so cover art, titles, and three quick-action targets remain usable instead of compressing into a four-column grid.
-- Home shelves use user-controlled horizontal carousels with snap, drag/touch scrolling, and quiet 36px previous/next controls. They never auto-advance.
+- Home shelves move in a slow, reversible auto-scroll while preserving snap, drag/touch scrolling, and quiet 36px previous/next controls. Auto-scroll pauses independently for hover, pointer interaction, or focus, stops while the tab is hidden, and is fully disabled by reduced-motion preference.
 - Home adds live RPG, Shooter, Adventure, Strategy, and Indie catalog lanes from IGDB. Genre lanes use six covers per desktop viewport and touch-sized cards on mobile.
 - A game appears only once across the entire home: the spotlight, popular shelf, compact exploration list, genre lanes, and discovery lanes share one ordered ID registry. Multi-lane areas allocate candidates round-robin so an earlier genre cannot starve a later one; larger IGDB candidate pools absorb overlap while preserving source ranking inside each lane.
 - Every home lane is contained through a zero-minimum-width chain from section to carousel track. Mobile never uses negative outer margins; only the track owns horizontal overflow, keeping the document itself locked to the viewport.
@@ -301,6 +302,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Verified profiles use one compact blurple rosette beside the display name. Activating it opens a restrained, text-led explanation that verification confirms the represented identity and is not an endorsement; supporting facts never use decorative icons.
 - The badge follows the account into profile headers and community activity without changing name hierarchy.
 - Verification is assigned only by moderators after an external Google Forms review. Profile settings never expose an in-product request form or request status; verified accounts simply receive the public badge across identity surfaces.
+- A public `/verification` document explains authenticity, non-endorsement, human review, and possible badge removal in plain language. Both that document and the badge explanation link to the external application form without collecting credentials inside uloggd.
 
 ### Account settings
 
@@ -519,8 +521,9 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Home is the community destination; there is no standalone Feed. It opens with a compact community introduction, then real friends-playing, recent review, and journal activity zones before personalized and popular catalog shelves.
 - Home never fabricates an active friend or community post. Signed-out visitors see public activity; the friends-playing shelf renders only when visible followed-library rows exist.
 - Home restores catalog discovery only as a secondary editorial radar below the social journal: Most anticipated, Coming soon, and Sleeper hits share one compact numbered band and never displace the community introduction.
-- Any Home shelf that can overflow uses the shared `ShelfCarousel`: visible, stateful previous/next controls on desktop and native touch scrolling with snap points on mobile. Friends-playing and discovery never expose an unlabelled raw scrollbar.
+- Any Home shelf that can overflow uses the shared `ShelfCarousel`: visible, stateful previous/next controls on desktop, native touch scrolling with snap points on mobile, and the slow accessible auto-scroll contract. Friends-playing and discovery never expose an unlabelled raw scrollbar.
 - Home recent reviews reuse the complete `ActivityStream` review card contract; the Home must never maintain a second compact review implementation. Author avatar (initial only as a true fallback), display name, and official verified mark remain part of that shared identity row.
+- Home recent reviews and latest journal records render as separate horizontally scrolling `ActivityStream` carousels. Cards reserve vertical breathing room inside the overflow track so hover/focus treatments are never clipped at the top edge.
 - On mobile Home, the community introduction begins beneath the glass header with an 88px internal safe offset; it never uses negative route margin or lets actions sit beneath navigation.
 - Mobile header menu and search triggers use explicit 40×40px boxes with zero inherited padding and optically centered icons; the right-side action cluster uses a fixed 4px gap.
 - Full-bleed mobile routes (library hero, profile banner, and game stage, including skeletons) begin behind the glass header and add the same space back inside the hero. Profile identity anchors low in its banner with avatar and name sharing one row; the mobile banner has no side inset or corner radius.
@@ -549,6 +552,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Community composers reuse `CommunityTextArea` so focus, counter, spacing, and action treatment stay identical.
 - Comment composers normalize CRLF, allow intentional line breaks and tabs, and enforce the shared 500 Unicode-code-point limit on the client and in PostgreSQL. Validation errors stay directly below the active composer or inline editor; the section-level error row is reserved for loading and non-form actions.
 - Profile screenshots use a dedicated dense gallery; game metadata and signed media URLs are fetched in batches.
+- Screenshot gallery and screenshot detail routes anchor their bounded document to the start of the content canvas, matching review and journey details instead of floating in the viewport center.
 - Activity screenshots render at their intrinsic aspect ratio across the full content width, without a fixed maximum height or black letterboxing that grows under browser zoom.
 - The profile overview uses a horizontally scrollable row of circular, labeled collection portals (Library, Reviews, Sessions, Lists, Screenshots, Wrapped), with counts as quiet corner badges rather than metric cards.
 - Uploaded profile banners become a full-width atmospheric backdrop behind a lower-anchored identity header, using edge and bottom gradients for readability; avatars have no framing ring, align with the identity on desktop and mobile, and the identity/actions finish before collection portals begin.

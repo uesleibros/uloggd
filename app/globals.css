@@ -2205,6 +2205,7 @@ html[data-sidebar-collapsed]
   grid-auto-flow: column;
   grid-auto-columns: calc((100% - 56px) / 5);
   gap: 14px;
+  padding: 6px 1px 8px;
   overflow-x: auto;
   overscroll-behavior-inline: contain;
   scroll-behavior: smooth;
@@ -12765,7 +12766,7 @@ html
 .home-playing-carousel .shelf-carousel-track {
   grid-auto-columns: minmax(142px, 0.22fr);
   gap: 12px;
-  padding: 1px 1px 8px;
+  padding: 6px 1px 8px;
   scroll-snap-type: x mandatory;
 }
 .home-playing-carousel article {
@@ -12857,6 +12858,17 @@ html
   margin: 0;
   font-size: 0.6875rem;
   line-height: 1.5;
+}
+.home-social-carousel {
+  margin-top: 0;
+}
+.home-social-carousel .shelf-carousel-track {
+  grid-auto-columns: minmax(390px, calc((100% - 12px) / 2));
+  align-items: stretch;
+  gap: 12px;
+}
+.home-social-carousel .activity-entry {
+  height: 100%;
 }
 .home-activity-section .activity-stream {
   gap: 10px;
@@ -13198,8 +13210,32 @@ html
   font-size: 0.6875rem;
   font-weight: 620;
 }
+.verified-dialog-learn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 20px;
+  border-radius: 9px;
+  background: var(--brand-blurple);
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: 620;
+}
+.verified-dialog-learn + .verified-dialog-confirm {
+  margin-top: 7px;
+  background: transparent;
+  color: var(--screen-muted);
+}
+.verified-dialog-learn:hover {
+  background: var(--brand-blurple-bright);
+  color: white;
+}
 .verified-dialog-close,
-.verified-dialog-confirm {
+.verified-dialog-confirm,
+.verified-dialog-learn {
   transition:
     transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
     background-color 150ms ease-out,
@@ -13214,8 +13250,221 @@ html
   transform: translateY(-1px);
 }
 .verified-dialog-close:active,
-.verified-dialog-confirm:active {
+.verified-dialog-confirm:active,
+.verified-dialog-learn:active {
   transform: scale(0.96);
+}
+
+/* Public verification explainer: an editorial document anchored to the
+   product canvas, with the application process kept as a quiet context rail. */
+.verification-page {
+  width: min(100%, 1180px);
+  margin-inline: 0 auto;
+}
+.verification-document {
+  max-width: 1100px;
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 14px;
+  background: var(--console-panel);
+}
+.verification-hero {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+  padding: 32px;
+  border-bottom: 1px solid var(--shell-line);
+  background: var(--console-raised);
+}
+.verification-mark {
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 14px;
+  background: var(--console-inset);
+}
+.verification-hero > div:last-child {
+  max-width: 720px;
+}
+.verification-hero > div:last-child > span,
+.verification-copy > section > span,
+.verification-process > span {
+  color: var(--brand-blurple-bright);
+  font-size: 0.625rem;
+  font-weight: 680;
+  letter-spacing: 0.1em;
+}
+.verification-hero h1 {
+  margin: 8px 0 0;
+  color: var(--screen-white);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 680;
+  letter-spacing: -0.055em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+.verification-hero p {
+  max-width: 650px;
+  margin: 13px 0 0;
+  color: var(--screen-dim);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+.verification-apply,
+.verification-process > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 15px;
+  border-radius: 9px;
+  background: var(--brand-blurple);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 630;
+  transition:
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 150ms ease-out;
+}
+.verification-apply {
+  margin-top: 20px;
+}
+.verification-apply:hover,
+.verification-process > a:hover {
+  background: var(--brand-blurple-bright);
+  color: white;
+  transform: translateY(-1px);
+}
+.verification-apply:active,
+.verification-process > a:active {
+  transform: scale(0.98);
+}
+.verification-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: start;
+}
+.verification-copy {
+  padding: 32px;
+  border-right: 1px solid var(--shell-line);
+}
+.verification-copy > section h2,
+.verification-process h2 {
+  margin: 7px 0 0;
+  color: var(--screen-white);
+  font-size: 1.25rem;
+  font-weight: 640;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.verification-copy > section p {
+  max-width: 640px;
+  margin: 10px 0 0;
+  color: var(--screen-dim);
+  font-size: 0.75rem;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+.verification-principles {
+  display: grid;
+  margin-top: 28px;
+  border-top: 1px solid var(--shell-line);
+}
+.verification-principles > section {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 14px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--shell-line);
+}
+.verification-principles > section > span {
+  color: var(--brand-blurple-bright);
+  font-size: 0.625rem;
+  font-weight: 680;
+  font-variant-numeric: tabular-nums;
+}
+.verification-principles h3 {
+  color: var(--screen-white);
+  font-size: 0.875rem;
+  font-weight: 630;
+}
+.verification-principles p {
+  max-width: 620px;
+  margin: 6px 0 0;
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+.verification-note {
+  margin-top: 30px;
+}
+.verification-process {
+  position: sticky;
+  top: 88px;
+  display: grid;
+  align-content: start;
+  padding: 28px 22px;
+  background: var(--console-inset);
+}
+.verification-process ol {
+  display: grid;
+  gap: 0;
+  margin: 18px 0 20px;
+  padding: 0;
+  list-style: none;
+}
+.verification-process li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+  padding-bottom: 18px;
+}
+.verification-process li:not(:last-child)::before {
+  position: absolute;
+  top: 30px;
+  bottom: 0;
+  left: 14px;
+  width: 1px;
+  background: var(--shell-line-strong);
+  content: "";
+}
+.verification-process li > span {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 50%;
+  background: var(--console-raised);
+  color: var(--tonal-brand-text);
+  font-size: 0.625rem;
+  font-weight: 680;
+  font-variant-numeric: tabular-nums;
+}
+.verification-process li p {
+  margin: 2px 0 0;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.verification-process > a {
+  width: 100%;
+}
+.verification-process > small {
+  margin-top: 12px;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  line-height: 1.55;
+  text-wrap: pretty;
 }
 .activity-user .verified-badge {
   width: 18px;
@@ -13258,6 +13507,41 @@ html
     padding: 26px 20px calc(20px + env(safe-area-inset-bottom));
     border-radius: 16px 16px 0 0;
     transform: none;
+  }
+  .verification-page {
+    padding-inline: 14px;
+  }
+  .verification-document {
+    border-radius: 12px;
+  }
+  .verification-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding: 22px 18px;
+  }
+  .verification-mark {
+    width: 72px;
+    height: 72px;
+    border-radius: 11px;
+  }
+  .verification-mark .verified-mark {
+    width: 42px;
+    height: 42px;
+  }
+  .verification-hero h1 {
+    font-size: 2.125rem;
+  }
+  .verification-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .verification-copy {
+    padding: 24px 18px;
+    border-right: 0;
+  }
+  .verification-process {
+    position: static;
+    padding: 24px 18px;
+    border-top: 1px solid var(--shell-line);
   }
   .verified-dialog[data-open] {
     animation-name: verified-sheet-in;
@@ -14272,6 +14556,14 @@ and route recovery. */
   .shelf-carousel-controls {
     display: none;
   }
+  .shelf-carousel[data-autoplay] .shelf-carousel-controls {
+    display: flex;
+  }
+  .shelf-carousel[data-autoplay]
+    .shelf-carousel-controls
+    button:not(.shelf-carousel-autoplay-control) {
+    display: none;
+  }
   .discovery-games {
     padding-top: 0;
   }
@@ -14325,6 +14617,9 @@ and route recovery. */
   }
   .home-playing-carousel .shelf-carousel-track {
     grid-auto-columns: 138px;
+  }
+  .home-social-carousel .shelf-carousel-track {
+    grid-auto-columns: min(86vw, 360px);
   }
   .home-activity-section .activity-entry {
     grid-template-columns: 58px minmax(0, 1fr);
@@ -15390,6 +15685,9 @@ shareable IGDB search workspace. */
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .shelf-carousel-autoplay-control {
+    display: none;
+  }
   .report-dialog-overlay[data-state],
   .report-dialog[data-state],
   .report-success {
@@ -17733,7 +18031,7 @@ adapted to the current uloggd surface system. */
 }
 .screenshot-gallery-page {
   width: min(100%, 1180px);
-  margin-inline: auto;
+  margin-inline: 0 auto;
 }
 .screenshot-gallery-header {
   display: grid;
@@ -18247,7 +18545,7 @@ details.journal-session-note > p {
 
 .diary-entry-page {
   width: min(100%, 780px);
-  margin-inline: auto;
+  margin-inline: 0 auto;
 }
 .diary-entry-game {
   display: inline-flex;
@@ -19806,7 +20104,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .reviews-workspace {
   width: 100%;
   max-width: 1180px;
-  margin-inline: auto;
+  margin-inline: 0 auto;
 }
 .reviews-scope-tabs {
   margin: 0 0 14px;

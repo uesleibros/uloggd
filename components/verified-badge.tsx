@@ -2,7 +2,8 @@
 
 import * as Dialog from "@/components/ui/dialog";
 import Image from "next/image";
-import { X } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, X } from "lucide-react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function VerifiedMark({ size = 18 }: { size?: number }) {
@@ -107,6 +108,18 @@ export function VerifiedBadge({ lang }: { lang: UiLang }) {
             </div>
           </div>
 
+          <Link
+            className="verified-dialog-learn"
+            href={`/${lang}/verification`}
+          >
+            {tri(
+              lang,
+              "Saiba mais sobre verificação",
+              "Learn more about verification",
+              "Más sobre la verificación",
+            )}
+            <ArrowRight size={14} />
+          </Link>
           <Dialog.Close className="verified-dialog-confirm">
             {tri(lang, "Entendi", "Got it", "Entendido")}
           </Dialog.Close>

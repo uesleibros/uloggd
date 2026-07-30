@@ -1725,7 +1725,7 @@
 }
 .profile-subpage {
   max-width: 1120px;
-  margin-inline: auto;
+  margin-inline: 0 auto;
 }
 .profile-subpage-header {
   max-width: 720px;

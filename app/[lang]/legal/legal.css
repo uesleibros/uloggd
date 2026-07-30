@@ -9,12 +9,12 @@
   justify-content: space-between;
   width: min(calc(100% - 40px), 920px);
   min-height: 82px;
-  margin: auto;
+  margin: 0 20px;
   border-bottom: 1px solid var(--shell-line);
 }
 .legal-page {
   width: min(calc(100% - 40px), 760px);
-  margin: auto;
+  margin: 0 20px;
   padding: 72px 0 100px;
 }
 .legal-document-nav {
@@ -132,10 +132,12 @@
   .legal-header {
     width: min(calc(100% - 28px), 920px);
     min-height: 56px;
+    margin-inline: 14px;
   }
   .legal-page {
     width: min(calc(100% - 32px), 760px);
     padding: 24px 0 80px;
+    margin-inline: 16px;
   }
   .legal-document-nav {
     display: grid;

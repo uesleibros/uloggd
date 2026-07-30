@@ -279,6 +279,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
               )}
               lang={lang}
               className="home-playing-carousel"
+              autoPlay
             >
               {friendsPlaying.map((item) => (
                 <article key={`${item.profileId}:${item.game.id}`}>
@@ -345,6 +346,16 @@ async function HomeContent({ lang }: { lang: UiLang }) {
               entries={reviews}
               lang={lang}
               viewerId={user?.id ?? null}
+              carousel={{
+                label: tri(
+                  lang,
+                  "Avaliações recentes",
+                  "Recent reviews",
+                  "Reseñas recientes",
+                ),
+                autoPlay: true,
+                className: "home-social-carousel home-review-carousel",
+              }}
             />
           ) : (
             <div className="home-community-empty">
@@ -382,6 +393,16 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             entries={communityUpdates}
             lang={lang}
             viewerId={user?.id ?? null}
+            carousel={{
+              label: tri(
+                lang,
+                "Últimos registros da comunidade",
+                "Latest community logs",
+                "Últimos registros de la comunidad",
+              ),
+              autoPlay: true,
+              className: "home-social-carousel home-log-carousel",
+            }}
           />
         </section>
 
@@ -413,6 +434,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                     label={lane.title}
                     lang={lang}
                     className="discovery-games"
+                    autoPlay
                   >
                     {lane.games.map((game) => (
                       <QuickGameCard
@@ -590,6 +612,7 @@ function HomeGameShelf({
         label={title}
         lang={lang}
         className="home-popular-carousel"
+        autoPlay
       >
         {games.map((game, index) => (
           <QuickGameCard

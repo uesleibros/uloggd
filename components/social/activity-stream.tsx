@@ -20,6 +20,7 @@ import { LikeButton } from "./like-button";
 import { MentionText } from "./mention-text";
 import { ReviewMarkdownPreview } from "./review-markdown-preview";
 import { VerifiedBadge } from "../verified-badge";
+import { ShelfCarousel } from "../shelf-carousel";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export type SocialEntry = {
@@ -77,11 +78,13 @@ export function ActivityStream({
   lang,
   viewerId,
   display = "timeline",
+  carousel,
 }: {
   entries: SocialEntry[];
   lang: UiLang;
   viewerId?: string | null;
   display?: "timeline" | "archive";
+  carousel?: { label: string; autoPlay?: boolean; className?: string };
 }) {
   const t = uiText(lang);
   const playedDate = new Intl.DateTimeFormat(lang, {
@@ -114,308 +117,308 @@ export function ActivityStream({
         </p>
       </div>
     );
-  return (
-    <div className="activity-stream" data-display={display}>
-      {entries.map((entry) => (
-        <article
-          className="activity-entry"
-          data-kind={entry.kind}
-          key={`${entry.kind}-${entry.id}`}
-        >
-          <Link
-            className="activity-cover"
-            href={`/${lang}/game/${entry.gameSlug}`}
-          >
-            {entry.game && (
-              <Image src={entry.game.coverUrl} alt="" fill sizes="72px" />
-            )}
-          </Link>
-          <div className="activity-body">
-            <header>
-              <div className="activity-user">
-                <Link
-                  href={`/${lang}/u/${entry.profile.username}`}
-                  className="activity-avatar"
-                >
-                  {entry.profile.avatar_url ? (
-                    <Image
-                      src={entry.profile.avatar_url}
-                      alt=""
-                      fill
-                      sizes="32px"
-                      unoptimized
-                    />
-                  ) : (
-                    entry.profile.username.slice(0, 1).toUpperCase()
-                  )}
-                </Link>
-                <span>
-                  <strong>
-                    <Link href={`/${lang}/u/${entry.profile.username}`}>
-                      {entry.profile.display_name ||
-                        `@${entry.profile.username}`}
-                    </Link>
-                    {entry.profile.verified && <VerifiedBadge lang={lang} />}
-                  </strong>
-                  <Link href={`/${lang}/u/${entry.profile.username}`}>
-                    <small>@{entry.profile.username}</small>
-                  </Link>
-                </span>
-              </div>
-              <RelativeTime value={entry.createdAt} lang={lang}>
-                {entry.updatedAt &&
-                  new Date(entry.updatedAt).getTime() -
-                    new Date(entry.createdAt).getTime() >
-                    1000 && (
-                    <small className="activity-edited">
-                      {" "}
-                      · {tri(lang, "editada", "edited", "editada")}
-                    </small>
-                  )}
-              </RelativeTime>
-            </header>
-            <p className="activity-verb">
-              {entry.kind === "review"
-                ? tri(lang, "avaliou", "reviewed", "reseñó")
-                : entry.kind === "screenshot"
-                  ? tri(
-                      lang,
-                      "compartilhou uma captura de",
-                      "shared a screenshot from",
-                      "compartió una captura de",
-                    )
-                  : entry.endedOn
-                    ? tri(
-                        lang,
-                        "registrou uma jornada em",
-                        "logged a journey in",
-                        "registró un recorrido en",
-                      )
-                    : tri(
-                        lang,
-                        "registrou uma sessão de",
-                        "logged a session of",
-                        "registró una sesión de",
-                      )}{" "}
-              <Link href={`/${lang}/game/${entry.gameSlug}`}>
-                {entry.game?.name ?? entry.gameSlug}
-              </Link>
-            </p>
-            {entry.kind === "screenshot" && entry.imageUrl && (
-              <Link
-                className="activity-screenshot"
-                href={`/${lang}/shot/${entry.publicId ?? entry.id}`}
-              >
+  const items = entries.map((entry) => (
+    <article
+      className="activity-entry"
+      data-kind={entry.kind}
+      key={`${entry.kind}-${entry.id}`}
+    >
+      <Link className="activity-cover" href={`/${lang}/game/${entry.gameSlug}`}>
+        {entry.game && (
+          <Image src={entry.game.coverUrl} alt="" fill sizes="72px" />
+        )}
+      </Link>
+      <div className="activity-body">
+        <header>
+          <div className="activity-user">
+            <Link
+              href={`/${lang}/u/${entry.profile.username}`}
+              className="activity-avatar"
+            >
+              {entry.profile.avatar_url ? (
                 <Image
-                  src={entry.imageUrl}
+                  src={entry.profile.avatar_url}
                   alt=""
-                  width={entry.imageWidth ?? 1280}
-                  height={entry.imageHeight ?? 720}
-                  sizes="(max-width: 760px) 100vw, 640px"
+                  fill
+                  sizes="32px"
                   unoptimized
                 />
-                {entry.spoilers && (
-                  <span>
-                    <EyeOff size={18} />
-                    {tri(
-                      lang,
-                      "Revelar captura",
-                      "Reveal screenshot",
-                      "Revelar captura",
-                    )}
-                  </span>
-                )}
-              </Link>
-            )}
-            {entry.kind === "review" && typeof entry.rating === "number" && (
-              <div
-                className="activity-rating"
-                aria-label={formatActivityRating(
-                  entry.rating,
-                  entry.ratingMode,
-                  lang,
-                )}
-              >
-                {entry.ratingMode === "recommend" ? (
-                  entry.recommended ? (
-                    <Check size={14} />
-                  ) : (
-                    <X size={14} />
-                  )
-                ) : (
-                  <Star size={14} fill="currentColor" />
-                )}{" "}
-                {entry.ratingMode === "recommend"
-                  ? entry.recommended
-                    ? t.recommended
-                    : t.notRecommended
-                  : formatActivityRating(entry.rating, entry.ratingMode, lang)}
-              </div>
-            )}
-            {entry.kind === "review" && entry.title && (
-              <h3 className="activity-review-title">
-                <Link href={`/${lang}/review/${entry.publicId ?? entry.id}`}>
-                  {entry.title}
-                </Link>
-              </h3>
-            )}
-            {entry.kind === "review" &&
-              (entry.mastered ||
-                entry.replay ||
-                entry.platform ||
-                entry.journeyTitle) && (
-                <div className="activity-meta activity-review-meta">
-                  {entry.mastered && (
-                    <span>
-                      <Trophy size={13} />{" "}
-                      {tri(lang, "Dominado", "Mastered", "Dominado")}
-                    </span>
-                  )}
-                  {entry.replay && <span>{t.replay}</span>}
-                  {entry.platform && <span>{entry.platform}</span>}
-                  {entry.journeyTitle && entry.journeyPublicId && (
-                    <Link
-                      className="activity-journey-button"
-                      href={`/${lang}/journal/${entry.journeyPublicId}`}
-                    >
-                      <Map size={13} />
-                      {entry.journeyTitle}
-                    </Link>
-                  )}
-                </div>
-              )}
-            {entry.kind === "diary" && (
-              <div className="activity-meta">
-                <span>
-                  <CalendarDays size={13} />{" "}
-                  {entry.playedOn
-                    ? entry.endedOn
-                      ? `${playedDate.format(new Date(`${entry.playedOn}T00:00:00Z`))} – ${playedDate.format(new Date(`${entry.endedOn}T00:00:00Z`))}`
-                      : playedDate.format(
-                          new Date(`${entry.playedOn}T00:00:00Z`),
-                        )
-                    : "—"}
-                </span>
-                {entry.minutes ? (
-                  <span>
-                    <Clock3 size={13} /> {entry.minutes} min
-                  </span>
-                ) : null}
-                {entry.marksStart && (
-                  <span
-                    className="journey-milestone-badge"
-                    data-milestone="start"
-                  >
-                    <Play size={12} fill="currentColor" />{" "}
-                    {tri(lang, "Começou", "Started", "Empezó")}
-                  </span>
-                )}
-                {entry.marksFinish && (
-                  <span
-                    className="journey-milestone-badge"
-                    data-milestone="finish"
-                  >
-                    <Flag size={12} fill="currentColor" />{" "}
-                    {tri(lang, "Terminou", "Finished", "Terminó")}
-                  </span>
-                )}
-                {entry.journeyTitle && entry.journeyPublicId && (
-                  <Link
-                    className="activity-journey-button"
-                    href={`/${lang}/journal/${entry.journeyPublicId}`}
-                  >
-                    <Map size={13} />
-                    {entry.journeyTitle}
-                  </Link>
-                )}
-              </div>
-            )}
-            {entry.content && entry.kind === "review" && (
-              <ReviewMarkdownPreview
-                content={entry.content}
-                spoilers={entry.spoilers}
-                lang={lang}
-              />
-            )}
-            {entry.content &&
-              entry.kind === "diary" &&
-              (entry.spoilers ? (
-                <details className="spoiler-content">
-                  <summary>
-                    <EyeOff size={14} />{" "}
-                    {tri(
-                      lang,
-                      "Mostrar conteúdo com spoilers",
-                      "Show spoiler content",
-                      "Mostrar contenido con spoilers",
-                    )}
-                  </summary>
-                  <p>
-                    <MentionText text={entry.content} lang={lang} />
-                  </p>
-                </details>
               ) : (
-                <p className="activity-content">
-                  <MentionText text={entry.content} lang={lang} />
-                </p>
-              ))}
-            {entry.kind === "review" &&
-              entry.aspects &&
-              entry.aspects.length > 0 && (
-                <dl className="activity-aspects">
-                  {entry.aspects.map((aspect) => (
-                    <div key={aspect.label}>
-                      <dt>{aspect.label}</dt>
-                      <dd>{aspect.rating}</dd>
-                    </div>
-                  ))}
-                </dl>
+                entry.profile.username.slice(0, 1).toUpperCase()
               )}
-            <div className="activity-entry-footer">
-              <LikeButton
-                contentType={entry.kind}
-                contentId={entry.id}
-                count={entry.likes ?? 0}
-                liked={Boolean(entry.likedByViewer)}
-                canLike={Boolean(viewerId) && viewerId !== entry.profileId}
-                lang={lang}
-              />
-              {entry.kind === "review" && (
-                <Link
-                  className="activity-read-more"
-                  href={`/${lang}/review/${entry.publicId ?? entry.id}`}
-                >
-                  {tri(
+            </Link>
+            <span>
+              <strong>
+                <Link href={`/${lang}/u/${entry.profile.username}`}>
+                  {entry.profile.display_name || `@${entry.profile.username}`}
+                </Link>
+                {entry.profile.verified && <VerifiedBadge lang={lang} />}
+              </strong>
+              <Link href={`/${lang}/u/${entry.profile.username}`}>
+                <small>@{entry.profile.username}</small>
+              </Link>
+            </span>
+          </div>
+          <RelativeTime value={entry.createdAt} lang={lang}>
+            {entry.updatedAt &&
+              new Date(entry.updatedAt).getTime() -
+                new Date(entry.createdAt).getTime() >
+                1000 && (
+                <small className="activity-edited">
+                  {" "}
+                  · {tri(lang, "editada", "edited", "editada")}
+                </small>
+              )}
+          </RelativeTime>
+        </header>
+        <p className="activity-verb">
+          {entry.kind === "review"
+            ? tri(lang, "avaliou", "reviewed", "reseñó")
+            : entry.kind === "screenshot"
+              ? tri(
+                  lang,
+                  "compartilhou uma captura de",
+                  "shared a screenshot from",
+                  "compartió una captura de",
+                )
+              : entry.endedOn
+                ? tri(
                     lang,
-                    "Ver avaliação completa",
-                    "View full review",
-                    "Ver reseña completa",
-                  )}
-                </Link>
+                    "registrou uma jornada em",
+                    "logged a journey in",
+                    "registró un recorrido en",
+                  )
+                : tri(
+                    lang,
+                    "registrou uma sessão de",
+                    "logged a session of",
+                    "registró una sesión de",
+                  )}{" "}
+          <Link href={`/${lang}/game/${entry.gameSlug}`}>
+            {entry.game?.name ?? entry.gameSlug}
+          </Link>
+        </p>
+        {entry.kind === "screenshot" && entry.imageUrl && (
+          <Link
+            className="activity-screenshot"
+            href={`/${lang}/shot/${entry.publicId ?? entry.id}`}
+          >
+            <Image
+              src={entry.imageUrl}
+              alt=""
+              width={entry.imageWidth ?? 1280}
+              height={entry.imageHeight ?? 720}
+              sizes="(max-width: 760px) 100vw, 640px"
+              unoptimized
+            />
+            {entry.spoilers && (
+              <span>
+                <EyeOff size={18} />
+                {tri(
+                  lang,
+                  "Revelar captura",
+                  "Reveal screenshot",
+                  "Revelar captura",
+                )}
+              </span>
+            )}
+          </Link>
+        )}
+        {entry.kind === "review" && typeof entry.rating === "number" && (
+          <div
+            className="activity-rating"
+            aria-label={formatActivityRating(
+              entry.rating,
+              entry.ratingMode,
+              lang,
+            )}
+          >
+            {entry.ratingMode === "recommend" ? (
+              entry.recommended ? (
+                <Check size={14} />
+              ) : (
+                <X size={14} />
+              )
+            ) : (
+              <Star size={14} fill="currentColor" />
+            )}{" "}
+            {entry.ratingMode === "recommend"
+              ? entry.recommended
+                ? t.recommended
+                : t.notRecommended
+              : formatActivityRating(entry.rating, entry.ratingMode, lang)}
+          </div>
+        )}
+        {entry.kind === "review" && entry.title && (
+          <h3 className="activity-review-title">
+            <Link href={`/${lang}/review/${entry.publicId ?? entry.id}`}>
+              {entry.title}
+            </Link>
+          </h3>
+        )}
+        {entry.kind === "review" &&
+          (entry.mastered ||
+            entry.replay ||
+            entry.platform ||
+            entry.journeyTitle) && (
+            <div className="activity-meta activity-review-meta">
+              {entry.mastered && (
+                <span>
+                  <Trophy size={13} />{" "}
+                  {tri(lang, "Dominado", "Mastered", "Dominado")}
+                </span>
               )}
-              {entry.kind === "screenshot" && (
+              {entry.replay && <span>{t.replay}</span>}
+              {entry.platform && <span>{entry.platform}</span>}
+              {entry.journeyTitle && entry.journeyPublicId && (
                 <Link
-                  className="activity-read-more"
-                  href={`/${lang}/shot/${entry.publicId ?? entry.id}`}
+                  className="activity-journey-button"
+                  href={`/${lang}/journal/${entry.journeyPublicId}`}
                 >
-                  {tri(lang, "Ver captura", "View screenshot", "Ver captura")}
+                  <Map size={13} />
+                  {entry.journeyTitle}
                 </Link>
-              )}
-              {entry.kind === "diary" && entry.publicId && (
-                <Link
-                  className="activity-read-more"
-                  href={`/${lang}/entry/${entry.publicId}`}
-                >
-                  {tri(lang, "Ver sessão", "View session", "Ver sesión")}
-                </Link>
-              )}
-              {viewerId === entry.profileId && entry.kind !== "screenshot" && (
-                <ActivityEntryActions entry={entry} lang={lang} />
               )}
             </div>
+          )}
+        {entry.kind === "diary" && (
+          <div className="activity-meta">
+            <span>
+              <CalendarDays size={13} />{" "}
+              {entry.playedOn
+                ? entry.endedOn
+                  ? `${playedDate.format(new Date(`${entry.playedOn}T00:00:00Z`))} – ${playedDate.format(new Date(`${entry.endedOn}T00:00:00Z`))}`
+                  : playedDate.format(new Date(`${entry.playedOn}T00:00:00Z`))
+                : "—"}
+            </span>
+            {entry.minutes ? (
+              <span>
+                <Clock3 size={13} /> {entry.minutes} min
+              </span>
+            ) : null}
+            {entry.marksStart && (
+              <span className="journey-milestone-badge" data-milestone="start">
+                <Play size={12} fill="currentColor" />{" "}
+                {tri(lang, "Começou", "Started", "Empezó")}
+              </span>
+            )}
+            {entry.marksFinish && (
+              <span className="journey-milestone-badge" data-milestone="finish">
+                <Flag size={12} fill="currentColor" />{" "}
+                {tri(lang, "Terminou", "Finished", "Terminó")}
+              </span>
+            )}
+            {entry.journeyTitle && entry.journeyPublicId && (
+              <Link
+                className="activity-journey-button"
+                href={`/${lang}/journal/${entry.journeyPublicId}`}
+              >
+                <Map size={13} />
+                {entry.journeyTitle}
+              </Link>
+            )}
           </div>
-        </article>
-      ))}
+        )}
+        {entry.content && entry.kind === "review" && (
+          <ReviewMarkdownPreview
+            content={entry.content}
+            spoilers={entry.spoilers}
+            lang={lang}
+          />
+        )}
+        {entry.content &&
+          entry.kind === "diary" &&
+          (entry.spoilers ? (
+            <details className="spoiler-content">
+              <summary>
+                <EyeOff size={14} />{" "}
+                {tri(
+                  lang,
+                  "Mostrar conteúdo com spoilers",
+                  "Show spoiler content",
+                  "Mostrar contenido con spoilers",
+                )}
+              </summary>
+              <p>
+                <MentionText text={entry.content} lang={lang} />
+              </p>
+            </details>
+          ) : (
+            <p className="activity-content">
+              <MentionText text={entry.content} lang={lang} />
+            </p>
+          ))}
+        {entry.kind === "review" &&
+          entry.aspects &&
+          entry.aspects.length > 0 && (
+            <dl className="activity-aspects">
+              {entry.aspects.map((aspect) => (
+                <div key={aspect.label}>
+                  <dt>{aspect.label}</dt>
+                  <dd>{aspect.rating}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        <div className="activity-entry-footer">
+          <LikeButton
+            contentType={entry.kind}
+            contentId={entry.id}
+            count={entry.likes ?? 0}
+            liked={Boolean(entry.likedByViewer)}
+            canLike={Boolean(viewerId) && viewerId !== entry.profileId}
+            lang={lang}
+          />
+          {entry.kind === "review" && (
+            <Link
+              className="activity-read-more"
+              href={`/${lang}/review/${entry.publicId ?? entry.id}`}
+            >
+              {tri(
+                lang,
+                "Ver avaliação completa",
+                "View full review",
+                "Ver reseña completa",
+              )}
+            </Link>
+          )}
+          {entry.kind === "screenshot" && (
+            <Link
+              className="activity-read-more"
+              href={`/${lang}/shot/${entry.publicId ?? entry.id}`}
+            >
+              {tri(lang, "Ver captura", "View screenshot", "Ver captura")}
+            </Link>
+          )}
+          {entry.kind === "diary" && entry.publicId && (
+            <Link
+              className="activity-read-more"
+              href={`/${lang}/entry/${entry.publicId}`}
+            >
+              {tri(lang, "Ver sessão", "View session", "Ver sesión")}
+            </Link>
+          )}
+          {viewerId === entry.profileId && entry.kind !== "screenshot" && (
+            <ActivityEntryActions entry={entry} lang={lang} />
+          )}
+        </div>
+      </div>
+    </article>
+  ));
+  if (carousel)
+    return (
+      <ShelfCarousel
+        label={carousel.label}
+        lang={lang}
+        autoPlay={carousel.autoPlay}
+        className={carousel.className ?? ""}
+      >
+        {items}
+      </ShelfCarousel>
+    );
+  return (
+    <div className="activity-stream" data-display={display}>
+      {items}
     </div>
   );
 }

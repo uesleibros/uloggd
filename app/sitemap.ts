@@ -187,6 +187,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const shell = [
     ...entry("/", { changeFrequency: "daily", priority: 1 }),
     ...entry("/search", { changeFrequency: "daily", priority: 0.8 }),
+    ...entry("/verification", {
+      changeFrequency: "monthly",
+      priority: 0.4,
+    }),
     ...LEGAL_DOCUMENTS.flatMap((document) =>
       entry(`/legal/${document}`, {
         changeFrequency: "yearly",
