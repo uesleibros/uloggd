@@ -367,9 +367,9 @@ export function JourneyCalendar({
       <p className="journey-calendar-hint">
         {tri(
           lang,
-          "Toque em um dia para editar a sessão. Arraste para adicionar vários dias — ou remover, começando por um dia jogado.",
-          "Tap a day to edit its session. Drag to add several days — or remove, starting from a played day.",
-          "Toca un día para editar su sesión. Arrastra para añadir varios días, o para quitarlos empezando por un día jugado.",
+          "Toque para editar; arraste para adicionar ou remover vários dias.",
+          "Tap to edit; drag to add or remove several days.",
+          "Toca para editar; arrastra para añadir o quitar varios días.",
         )}
       </p>
       <div

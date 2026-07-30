@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowRight,
   CalendarDays,
+  Check,
   Clock3,
   EyeOff,
   Flag,
@@ -13,6 +14,7 @@ import {
   Map,
   Play,
   Star,
+  X,
 } from "lucide-react";
 import { notFound, permanentRedirect } from "next/navigation";
 import { ActivityEntryActions } from "@/components/social/activity-entry-actions";
@@ -45,6 +47,26 @@ function formatMinutes(minutes: number) {
   if (!hours) return `${minutes} min`;
   if (!rest) return `${hours}h`;
   return `${hours}h ${rest}min`;
+}
+
+function formatReviewRating(
+  rating: number | null,
+  mode: string | null,
+  recommended: boolean | null,
+  lang: UiLang,
+) {
+  if (mode === "recommend") {
+    if (recommended === null) return null;
+    return recommended
+      ? tri(lang, "Recomenda", "Recommends", "Recomienda")
+      : tri(lang, "Não recomenda", "Doesn't recommend", "No recomienda");
+  }
+  if (rating === null) return null;
+  if (mode === "score_100") return `${rating}/100`;
+  if (mode === "score_10")
+    return `${(rating / 10).toLocaleString(lang, { maximumFractionDigits: 1 })}/10`;
+  if (mode === "level_5") return `${Math.round(rating / 20)}/5`;
+  return `${(rating / 20).toLocaleString(lang, { maximumFractionDigits: 1 })}/5`;
 }
 
 function sessionDays(start: string, end: string | null) {
@@ -212,7 +234,7 @@ export default async function JournalPage({ params }: Props) {
       .order("created_at", { ascending: true }),
     supabase
       .from("reviews")
-      .select("public_id,title,rating,created_at")
+      .select("public_id,title,rating,rating_mode,recommended,created_at")
       .eq("journey_id", journey.id)
       .order("created_at", { ascending: false })
       .limit(3),
@@ -249,6 +271,11 @@ export default async function JournalPage({ params }: Props) {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: "UTC",
+  });
+  const routeDate = new Intl.DateTimeFormat(lang, {
+    day: "2-digit",
+    month: "short",
     timeZone: "UTC",
   });
   const gameName = game?.name ?? journey.game_slug;
@@ -436,197 +463,281 @@ export default async function JournalPage({ params }: Props) {
           </div>
         </dl>
 
-        <section className="journal-page-timeline">
-          <header>
-            <div>
-              <span>
-                {tri(lang, "LINHA DO TEMPO", "TIMELINE", "CRONOLOGÍA")}
-              </span>
-              <h2>
-                {tri(
-                  lang,
-                  "O caminho desta jornada",
-                  "This journey's path",
-                  "El camino de este recorrido",
-                )}
-              </h2>
-            </div>
-            <Gamepad2 size={18} />
-          </header>
+        <div
+          className="journal-page-layout"
+          data-has-rail={
+            visibleSessions.length > 0 || (reviews ?? []).length > 0
+              ? ""
+              : undefined
+          }
+        >
+          <section className="journal-page-timeline">
+            <header>
+              <div>
+                <span>
+                  {tri(lang, "LINHA DO TEMPO", "TIMELINE", "CRONOLOGÍA")}
+                </span>
+                <h2>
+                  {tri(
+                    lang,
+                    "O caminho desta jornada",
+                    "This journey's path",
+                    "El camino de este recorrido",
+                  )}
+                </h2>
+              </div>
+              <Gamepad2 size={18} />
+            </header>
 
-          {visibleSessions.length ? (
-            <div className="journal-timeline-list">
-              {visibleSessions.map((session, index) => {
-                const activityEntry: SocialEntry = {
-                  id: session.id,
-                  publicId: session.public_id,
-                  kind: "diary",
-                  profileId: session.profile_id,
-                  profile,
-                  igdbId: journey.igdb_id,
-                  gameSlug: journey.game_slug,
-                  game,
-                  playedOn: session.played_on,
-                  endedOn: session.ended_on,
-                  minutes: session.minutes,
-                  content: session.note,
-                  marksStart: session.marks_start,
-                  marksFinish: session.marks_finish,
-                  journeyId: journey.id,
-                  journeyTitle: journey.title,
-                  journeyPublicId: journey.public_id,
-                  spoilers: session.contains_spoilers,
-                  visibility: session.visibility,
-                  commentsScope: session.comments_scope,
-                  createdAt: session.created_at,
-                  updatedAt: session.updated_at,
-                };
-                return (
-                  <article className="journal-session" key={session.id}>
-                    <span className="journal-session-node" aria-hidden>
-                      {index + 1}
-                    </span>
-                    <div>
-                      <header>
-                        <time dateTime={session.played_on}>
-                          {date.format(
-                            new Date(`${session.played_on}T00:00:00Z`),
-                          )}
-                          {session.ended_on
-                            ? ` – ${date.format(new Date(`${session.ended_on}T00:00:00Z`))}`
-                            : ""}
-                        </time>
-                        {session.minutes ? (
-                          <span>
-                            <Clock3 size={12} />
-                            {formatMinutes(session.minutes)}
-                          </span>
-                        ) : null}
-                      </header>
-                      {(session.marks_start || session.marks_finish) && (
-                        <div className="journal-session-milestones">
-                          {session.marks_start && (
-                            <span data-milestone="start">
-                              <Play size={11} fill="currentColor" />
-                              {tri(lang, "Início", "Start", "Inicio")}
+            {visibleSessions.length ? (
+              <div className="journal-timeline-list">
+                {visibleSessions.map((session, index) => {
+                  const activityEntry: SocialEntry = {
+                    id: session.id,
+                    publicId: session.public_id,
+                    kind: "diary",
+                    profileId: session.profile_id,
+                    profile,
+                    igdbId: journey.igdb_id,
+                    gameSlug: journey.game_slug,
+                    game,
+                    playedOn: session.played_on,
+                    endedOn: session.ended_on,
+                    minutes: session.minutes,
+                    content: session.note,
+                    marksStart: session.marks_start,
+                    marksFinish: session.marks_finish,
+                    journeyId: journey.id,
+                    journeyTitle: journey.title,
+                    journeyPublicId: journey.public_id,
+                    spoilers: session.contains_spoilers,
+                    visibility: session.visibility,
+                    commentsScope: session.comments_scope,
+                    createdAt: session.created_at,
+                    updatedAt: session.updated_at,
+                  };
+                  return (
+                    <article
+                      className="journal-session"
+                      id={`session-${session.public_id}`}
+                      key={session.id}
+                    >
+                      <span className="journal-session-node" aria-hidden>
+                        {index + 1}
+                      </span>
+                      <div>
+                        <header>
+                          <time dateTime={session.played_on}>
+                            {date.format(
+                              new Date(`${session.played_on}T00:00:00Z`),
+                            )}
+                            {session.ended_on
+                              ? ` – ${date.format(new Date(`${session.ended_on}T00:00:00Z`))}`
+                              : ""}
+                          </time>
+                          {session.minutes ? (
+                            <span>
+                              <Clock3 size={12} />
+                              {formatMinutes(session.minutes)}
                             </span>
-                          )}
-                          {session.marks_finish && (
-                            <span data-milestone="finish">
-                              <Flag size={11} fill="currentColor" />
-                              {tri(lang, "Fim", "Finish", "Fin")}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      {session.note &&
-                        (session.contains_spoilers ? (
-                          <details className="spoiler-content journal-session-note">
-                            <summary>
-                              <EyeOff size={13} />
-                              {tri(
-                                lang,
-                                "Mostrar anotação com spoilers",
-                                "Show spoiler note",
-                                "Mostrar nota con spoilers",
-                              )}
-                            </summary>
-                            <p>
+                          ) : null}
+                        </header>
+                        {(session.marks_start || session.marks_finish) && (
+                          <div className="journal-session-milestones">
+                            {session.marks_start && (
+                              <span data-milestone="start">
+                                <Play size={11} fill="currentColor" />
+                                {tri(lang, "Início", "Start", "Inicio")}
+                              </span>
+                            )}
+                            {session.marks_finish && (
+                              <span data-milestone="finish">
+                                <Flag size={11} fill="currentColor" />
+                                {tri(lang, "Fim", "Finish", "Fin")}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {session.note &&
+                          (session.contains_spoilers ? (
+                            <details className="spoiler-content journal-session-note">
+                              <summary>
+                                <EyeOff size={13} />
+                                {tri(
+                                  lang,
+                                  "Mostrar anotação com spoilers",
+                                  "Show spoiler note",
+                                  "Mostrar nota con spoilers",
+                                )}
+                              </summary>
+                              <p>
+                                <MentionText text={session.note} lang={lang} />
+                              </p>
+                            </details>
+                          ) : (
+                            <p className="journal-session-note">
                               <MentionText text={session.note} lang={lang} />
                             </p>
-                          </details>
-                        ) : (
-                          <p className="journal-session-note">
-                            <MentionText text={session.note} lang={lang} />
-                          </p>
-                        ))}
-                      <footer>
-                        <Link href={`/${lang}/entry/${session.public_id}`}>
-                          {tri(
-                            lang,
-                            "Abrir sessão",
-                            "Open session",
-                            "Abrir sesión",
+                          ))}
+                        <footer>
+                          <Link href={`/${lang}/entry/${session.public_id}`}>
+                            {tri(
+                              lang,
+                              "Abrir sessão",
+                              "Open session",
+                              "Abrir sesión",
+                            )}
+                            <ArrowRight size={13} />
+                          </Link>
+                          {isOwner && (
+                            <ActivityEntryActions
+                              entry={activityEntry}
+                              lang={lang}
+                            />
                           )}
-                          <ArrowRight size={13} />
-                        </Link>
-                        {isOwner && (
-                          <ActivityEntryActions
-                            entry={activityEntry}
-                            lang={lang}
-                          />
-                        )}
-                      </footer>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="journal-page-empty">
-              <Map size={24} />
-              <strong>
-                {tri(
-                  lang,
-                  "Nenhuma sessão visível",
-                  "No visible sessions",
-                  "No hay sesiones visibles",
-                )}
-              </strong>
-              <p>
-                {tri(
-                  lang,
-                  "As sessões públicas desta jornada aparecerão aqui.",
-                  "Public sessions from this journey will appear here.",
-                  "Las sesiones públicas de este recorrido aparecerán aquí.",
-                )}
-              </p>
-            </div>
-          )}
-        </section>
-
-        {(reviews ?? []).length > 0 && (
-          <section className="journal-page-reviews">
-            <span>
-              {tri(
-                lang,
-                "AVALIAÇÕES VINCULADAS",
-                "LINKED REVIEWS",
-                "RESEÑAS VINCULADAS",
-              )}
-            </span>
-            <div>
-              {(reviews ?? []).map((review) => (
-                <Link
-                  href={`/${lang}/review/${review.public_id}`}
-                  key={review.public_id}
-                >
-                  <div>
-                    <strong>
-                      {review.title ||
-                        tri(
-                          lang,
-                          "Avaliação da jornada",
-                          "Journey review",
-                          "Reseña del recorrido",
-                        )}
-                    </strong>
-                    <small>{date.format(new Date(review.created_at))}</small>
-                  </div>
-                  {typeof review.rating === "number" && (
-                    <span>
-                      <Star size={12} fill="currentColor" />
-                      {(review.rating / 20).toLocaleString(lang, {
-                        maximumFractionDigits: 1,
-                      })}
-                    </span>
+                        </footer>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="journal-page-empty">
+                <Map size={24} />
+                <strong>
+                  {tri(
+                    lang,
+                    "Nenhuma sessão visível",
+                    "No visible sessions",
+                    "No hay sesiones visibles",
                   )}
-                  <ArrowRight size={14} />
-                </Link>
-              ))}
-            </div>
+                </strong>
+                <p>
+                  {tri(
+                    lang,
+                    "As sessões públicas desta jornada aparecerão aqui.",
+                    "Public sessions from this journey will appear here.",
+                    "Las sesiones públicas de este recorrido aparecerán aquí.",
+                  )}
+                </p>
+              </div>
+            )}
           </section>
-        )}
+
+          {(visibleSessions.length > 0 || (reviews ?? []).length > 0) && (
+            <aside className="journal-page-rail">
+              {visibleSessions.length > 0 && (
+                <nav
+                  className="journal-route-map"
+                  aria-label={tri(
+                    lang,
+                    "Mapa da jornada",
+                    "Journey map",
+                    "Mapa del recorrido",
+                  )}
+                >
+                  <header>
+                    <span>{tri(lang, "PERCURSO", "ROUTE", "RECORRIDO")}</span>
+                    <strong>
+                      {tri(
+                        lang,
+                        "Navegue pelas sessões",
+                        "Jump between sessions",
+                        "Navega por las sesiones",
+                      )}
+                    </strong>
+                  </header>
+                  <div>
+                    {visibleSessions.map((session, index) => (
+                      <a
+                        href={`#session-${session.public_id}`}
+                        key={session.public_id}
+                      >
+                        <span>{String(index + 1).padStart(2, "0")}</span>
+                        <div>
+                          <strong>
+                            {routeDate.format(
+                              new Date(`${session.played_on}T00:00:00Z`),
+                            )}
+                          </strong>
+                          <small>
+                            {session.marks_start
+                              ? tri(lang, "Início", "Start", "Inicio")
+                              : session.marks_finish
+                                ? tri(lang, "Fim", "Finish", "Fin")
+                                : session.minutes
+                                  ? formatMinutes(session.minutes)
+                                  : tri(lang, "Sessão", "Session", "Sesión")}
+                          </small>
+                        </div>
+                        <ArrowRight size={12} />
+                      </a>
+                    ))}
+                  </div>
+                </nav>
+              )}
+
+              {(reviews ?? []).length > 0 && (
+                <section className="journal-page-reviews">
+                  <span>
+                    {tri(
+                      lang,
+                      "AVALIAÇÕES VINCULADAS",
+                      "LINKED REVIEWS",
+                      "RESEÑAS VINCULADAS",
+                    )}
+                  </span>
+                  <div>
+                    {(reviews ?? []).map((review) => {
+                      const score = formatReviewRating(
+                        review.rating,
+                        review.rating_mode,
+                        review.recommended,
+                        lang,
+                      );
+                      return (
+                        <Link
+                          href={`/${lang}/review/${review.public_id}`}
+                          key={review.public_id}
+                        >
+                          <div>
+                            <strong>
+                              {review.title ||
+                                tri(
+                                  lang,
+                                  "Avaliação da jornada",
+                                  "Journey review",
+                                  "Reseña del recorrido",
+                                )}
+                            </strong>
+                            <small>
+                              {date.format(new Date(review.created_at))}
+                            </small>
+                          </div>
+                          {score && (
+                            <span>
+                              {review.rating_mode === "recommend" ? (
+                                review.recommended ? (
+                                  <Check size={12} />
+                                ) : (
+                                  <X size={12} />
+                                )
+                              ) : (
+                                <Star size={12} fill="currentColor" />
+                              )}
+                              {score}
+                            </span>
+                          )}
+                          <ArrowRight size={14} />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+            </aside>
+          )}
+        </div>
       </article>
     </main>
   );

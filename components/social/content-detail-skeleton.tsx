@@ -74,21 +74,29 @@ export function ContentDetailSkeleton({
               <span className="skeleton-block" key={index} />
             ))}
           </div>
-          <section>
-            <span className="skeleton-block" />
-            <div>
-              {Array.from({ length: 3 }, (_, index) => (
-                <article key={index}>
-                  <span className="skeleton-block" />
-                  <div>
+          <div className="skeleton-journal-layout">
+            <section>
+              <span className="skeleton-block" />
+              <div>
+                {Array.from({ length: 3 }, (_, index) => (
+                  <article key={index}>
                     <span className="skeleton-block" />
-                    <span className="skeleton-block" />
-                    <span className="skeleton-block" />
-                  </div>
-                </article>
+                    <div>
+                      <span className="skeleton-block" />
+                      <span className="skeleton-block" />
+                      <span className="skeleton-block" />
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+            <aside>
+              <span className="skeleton-block" />
+              {Array.from({ length: 4 }, (_, index) => (
+                <span className="skeleton-block" key={index} />
               ))}
-            </div>
-          </section>
+            </aside>
+          </div>
         </article>
       </main>
     );

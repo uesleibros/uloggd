@@ -3,14 +3,12 @@
 import { Checkbox } from "@/components/ui/checkbox";
 
 import * as Dialog from "@/components/ui/dialog";
-import * as Select from "@/components/ui/select";
 import {
   ArrowLeft,
   BookOpen,
   CalendarDays,
   CalendarPlus,
   Check,
-  ChevronDown,
   Clock3,
   Flag,
   ListPlus,
@@ -21,6 +19,7 @@ import {
   Search,
   Play,
   Plus,
+  Star,
   Trash2,
   X,
 } from "lucide-react";
@@ -49,6 +48,15 @@ import { CommunityTextArea } from "./comment-parts";
 
 type Mode = "review" | "diary" | "list" | "screenshot";
 type ListOption = { id: string; name: string };
+export type ReviewOption = {
+  publicId: string;
+  title: string | null;
+  rating: number | null;
+  ratingMode: "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
+  recommended: boolean | null;
+  createdAt: string;
+  journeyTitle: string | null;
+};
 type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
 type SelectedJourney = string | "loose" | null;
 type DayPayload = {
@@ -69,6 +77,7 @@ export function GameLogActions({
   logCount,
   journeys = [],
   journeyOptions = [],
+  reviews = [],
   initialMode = null,
 }: {
   game: { id: number; slug: string; name: string; releaseYear: number | null };
@@ -78,6 +87,7 @@ export function GameLogActions({
   logCount: number;
   journeys?: JourneySession[];
   journeyOptions?: JourneyOption[];
+  reviews?: ReviewOption[];
   initialMode?: Mode | null;
 }) {
   const t = uiText(lang);
@@ -470,6 +480,26 @@ export function GameLogActions({
           timeZone: "UTC",
         }).format(new Date(`${value}T00:00:00Z`))
       : "—";
+  const reviewDate = new Intl.DateTimeFormat(lang, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+  const reviewScore = (review: ReviewOption) => {
+    if (review.ratingMode === "recommend") {
+      if (review.recommended === null) return null;
+      return review.recommended
+        ? tri(lang, "Recomenda", "Recommends", "Recomienda")
+        : tri(lang, "Não recomenda", "Doesn't recommend", "No recomienda");
+    }
+    if (review.rating === null) return null;
+    if (review.ratingMode === "score_100") return `${review.rating}/100`;
+    if (review.ratingMode === "score_10")
+      return `${(review.rating / 10).toLocaleString(lang, { maximumFractionDigits: 1 })}/10`;
+    if (review.ratingMode === "level_5")
+      return `${Math.round(review.rating / 20)}/5`;
+    return `${(review.rating / 20).toLocaleString(lang, { maximumFractionDigits: 1 })}/5`;
+  };
 
   return (
     <>
@@ -507,7 +537,7 @@ export function GameLogActions({
         <Dialog.Portal>
           <Dialog.Overlay className="drawer-backdrop" />
           <Dialog.Content
-            className={`social-editor-dialog${mode === "review" ? " review-studio-dialog" : ""}`}
+            className={`social-editor-dialog${mode === "review" ? " review-studio-dialog" : ""}${mode === "diary" ? " journey-studio-dialog" : ""}`}
             aria-describedby={undefined}
           >
             <header>
@@ -521,31 +551,105 @@ export function GameLogActions({
               </Dialog.Close>
             </header>
             {mode === "review" && (
-              <ReviewStudioForm
-                lang={lang}
-                platforms={platforms}
-                journeyOptions={journeyList}
-                draftKey={`uloggd:review-draft:${game.id}`}
-                submitLabel={tri(
-                  lang,
-                  "Publicar avaliação",
-                  "Publish review",
-                  "Publicar reseña",
-                )}
-                busyLabel={tri(
-                  lang,
-                  "Publicando…",
-                  "Publishing…",
-                  "Publicando…",
-                )}
-                successLabel={tri(
-                  lang,
-                  "Salvo na sua jornada.",
-                  "Saved to your journey.",
-                  "Guardado en tu recorrido.",
-                )}
-                onPerform={performReview}
-              />
+              <>
+                <section className="review-history-strip">
+                  <header>
+                    <div>
+                      <strong>
+                        {tri(
+                          lang,
+                          "Suas avaliações",
+                          "Your reviews",
+                          "Tus reseñas",
+                        )}
+                      </strong>
+                      <small>
+                        {tri(
+                          lang,
+                          "Cada publicação vira uma avaliação independente.",
+                          "Each publication becomes a separate review.",
+                          "Cada publicación se convierte en una reseña independiente.",
+                        )}
+                      </small>
+                    </div>
+                    <span>{reviews.length}</span>
+                  </header>
+                  <div role="list">
+                    <span data-new role="listitem">
+                      <Plus size={12} />
+                      {tri(lang, "Nova", "New", "Nueva")}
+                    </span>
+                    {reviews.map((review) => {
+                      const score = reviewScore(review);
+                      return (
+                        <Link
+                          key={review.publicId}
+                          href={`/${lang}/review/${review.publicId}`}
+                          role="listitem"
+                          onClick={() => setOpen(false)}
+                        >
+                          <div>
+                            <strong>
+                              {review.title ||
+                                tri(
+                                  lang,
+                                  "Avaliação sem título",
+                                  "Untitled review",
+                                  "Reseña sin título",
+                                )}
+                            </strong>
+                            <small>
+                              {reviewDate.format(new Date(review.createdAt))}
+                              {review.journeyTitle
+                                ? ` · ${review.journeyTitle}`
+                                : ""}
+                            </small>
+                          </div>
+                          {score && (
+                            <span>
+                              {review.ratingMode === "recommend" ? (
+                                review.recommended ? (
+                                  <Check size={11} />
+                                ) : (
+                                  <X size={11} />
+                                )
+                              ) : (
+                                <Star size={11} fill="currentColor" />
+                              )}{" "}
+                              {score}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </section>
+                <ReviewStudioForm
+                  lang={lang}
+                  platforms={platforms}
+                  journeyOptions={journeyList}
+                  draftKey={`uloggd:review-draft:${game.id}`}
+                  submitLabel={tri(
+                    lang,
+                    "Publicar nova avaliação",
+                    "Publish new review",
+                    "Publicar nueva reseña",
+                  )}
+                  busyLabel={tri(
+                    lang,
+                    "Publicando…",
+                    "Publishing…",
+                    "Publicando…",
+                  )}
+                  successLabel={tri(
+                    lang,
+                    "Nova avaliação publicada.",
+                    "New review published.",
+                    "Nueva reseña publicada.",
+                  )}
+                  onPerform={performReview}
+                />
+              </>
             )}
             {mode === "screenshot" && (
               <ScreenshotStudioForm
@@ -726,69 +830,102 @@ export function GameLogActions({
                   </div>
                 )}
                 {selectedJourney !== null && (
-                  <>
-                    <section className="journey-overview">
-                      <header>
-                        <div>
+                  <div className="journey-editor-workspace">
+                    <div className="journey-editor-summary">
+                      <section className="journey-overview">
+                        <header>
+                          <div>
+                            <span>
+                              {tri(
+                                lang,
+                                "DIÁRIO DE JOGO",
+                                "PLAY JOURNAL",
+                                "DIARIO DE JUEGO",
+                              )}
+                            </span>
+                            <strong>
+                              {activeJourney?.title ??
+                                tri(
+                                  lang,
+                                  "Sessões avulsas",
+                                  "Loose sessions",
+                                  "Sesiones sueltas",
+                                )}
+                            </strong>
+                          </div>
+                          <p>
+                            {tri(
+                              lang,
+                              "Toque em um dia para registrar o que aconteceu.",
+                              "Choose a day to record what happened.",
+                              "Elige un día para registrar lo que pasó.",
+                            )}
+                          </p>
+                        </header>
+                        <dl>
+                          <div>
+                            <dt>
+                              <CalendarDays size={13} /> {t.sessions}
+                            </dt>
+                            <dd>{currentSessions.length}</dd>
+                          </div>
+                          <div>
+                            <dt>
+                              <Clock3 size={13} />{" "}
+                              {tri(lang, "Tempo", "Time", "Tiempo")}
+                            </dt>
+                            <dd>{formatSessionTime(journeyMinutes) ?? "—"}</dd>
+                          </div>
+                          <div>
+                            <dt>
+                              <Play size={12} />{" "}
+                              {tri(lang, "Início", "Start", "Inicio")}
+                            </dt>
+                            <dd>{journeyDate(journeyStarted)}</dd>
+                          </div>
+                          <div
+                            data-finished={
+                              Boolean(journeyFinished) || undefined
+                            }
+                          >
+                            <dt>
+                              <Flag size={12} />{" "}
+                              {tri(lang, "Fim", "Finish", "Fin")}
+                            </dt>
+                            <dd>{journeyDate(journeyFinished)}</dd>
+                          </div>
+                        </dl>
+                      </section>
+                      <div className="journey-open-day">
+                        <label>
                           <span>
                             {tri(
                               lang,
-                              "DIÁRIO DE JOGO",
-                              "PLAY JOURNAL",
-                              "DIARIO DE JUEGO",
+                              "Abrir um dia",
+                              "Open a day",
+                              "Abrir un día",
                             )}
                           </span>
-                          <strong>
-                            {activeJourney?.title ??
-                              tri(
-                                lang,
-                                "Sessões avulsas",
-                                "Loose sessions",
-                                "Sesiones sueltas",
-                              )}
-                          </strong>
-                        </div>
-                        <p>
-                          {tri(
-                            lang,
-                            "Toque em um dia para registrar o que aconteceu.",
-                            "Choose a day to record what happened.",
-                            "Elige un día para registrar lo que pasó.",
-                          )}
-                        </p>
-                      </header>
-                      <dl>
-                        <div>
-                          <dt>
-                            <CalendarDays size={13} /> {t.sessions}
-                          </dt>
-                          <dd>{currentSessions.length}</dd>
-                        </div>
-                        <div>
-                          <dt>
-                            <Clock3 size={13} />{" "}
-                            {tri(lang, "Tempo", "Time", "Tiempo")}
-                          </dt>
-                          <dd>{formatSessionTime(journeyMinutes) ?? "—"}</dd>
-                        </div>
-                        <div>
-                          <dt>
-                            <Play size={12} />{" "}
-                            {tri(lang, "Início", "Start", "Inicio")}
-                          </dt>
-                          <dd>{journeyDate(journeyStarted)}</dd>
-                        </div>
-                        <div
-                          data-finished={Boolean(journeyFinished) || undefined}
+                          <input
+                            type="date"
+                            max={today}
+                            value={openDayValue}
+                            onChange={(event) =>
+                              setOpenDayValue(event.target.value)
+                            }
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          disabled={!openDayValue || pending}
+                          onClick={() =>
+                            openDay(openDayValue, sessionFor(openDayValue))
+                          }
                         >
-                          <dt>
-                            <Flag size={12} />{" "}
-                            {tri(lang, "Fim", "Finish", "Fin")}
-                          </dt>
-                          <dd>{journeyDate(journeyFinished)}</dd>
-                        </div>
-                      </dl>
-                    </section>
+                          {t.open}
+                        </button>
+                      </div>
+                    </div>
                     <JourneyCalendar
                       lang={lang}
                       maxDate={today}
@@ -798,36 +935,7 @@ export function GameLogActions({
                       onBulkAdd={bulkAdd}
                       onBulkRemove={bulkRemove}
                     />
-                    <div className="journey-open-day">
-                      <label>
-                        <span>
-                          {tri(
-                            lang,
-                            "Abrir um dia",
-                            "Open a day",
-                            "Abrir un día",
-                          )}
-                        </span>
-                        <input
-                          type="date"
-                          max={today}
-                          value={openDayValue}
-                          onChange={(event) =>
-                            setOpenDayValue(event.target.value)
-                          }
-                        />
-                      </label>
-                      <button
-                        type="button"
-                        disabled={!openDayValue || pending}
-                        onClick={() =>
-                          openDay(openDayValue, sessionFor(openDayValue))
-                        }
-                      >
-                        {t.open}
-                      </button>
-                    </div>
-                  </>
+                  </div>
                 )}
                 {error && (
                   <p className="social-form-error" role="alert">

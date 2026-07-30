@@ -5719,6 +5719,117 @@ never the tracking violet. */
 .review-studio-dialog > header {
   flex: none;
 }
+.review-history-strip {
+  display: grid;
+  flex: none;
+  gap: 9px;
+  padding: 10px 16px 12px;
+  border-bottom: 1px solid var(--shell-line);
+  background: var(--console-inset);
+}
+.review-history-strip > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.review-history-strip > header > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.review-history-strip > header strong {
+  color: var(--screen-white);
+  font-size: 0.6875rem;
+  font-weight: 640;
+}
+.review-history-strip > header small {
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 0.59375rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.review-history-strip > header > span {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+}
+.review-history-strip > div {
+  display: flex;
+  gap: 7px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.review-history-strip > div::-webkit-scrollbar {
+  display: none;
+}
+.review-history-strip > div > span[data-new],
+.review-history-strip > div > a {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-height: 38px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+}
+.review-history-strip > div > span[data-new] {
+  gap: 6px;
+  padding: 0 11px;
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+  color: var(--tonal-brand-text);
+  font-size: 0.6875rem;
+  font-weight: 640;
+}
+.review-history-strip > div > a {
+  gap: 12px;
+  min-width: 190px;
+  max-width: 260px;
+  padding: 6px 10px;
+  background: var(--console-raised);
+}
+.review-history-strip > div > a:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--console-hover);
+}
+.review-history-strip > div > a > div {
+  min-width: 0;
+}
+.review-history-strip > div > a strong,
+.review-history-strip > div > a small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.review-history-strip > div > a strong {
+  color: var(--screen-white);
+  font-size: 0.625rem;
+  font-weight: 620;
+}
+.review-history-strip > div > a small {
+  margin-top: 3px;
+  color: var(--screen-muted);
+  font-size: 0.5625rem;
+}
+.review-history-strip > div > a > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  color: var(--achievement-gold);
+  font-size: 0.625rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
 .review-studio-dialog .social-editor-form {
   display: flex;
   flex: 1 1 auto;
@@ -9403,30 +9514,35 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   height: 62px;
   border-radius: 0;
 }
-.skeleton-journal-detail > section {
-  padding: 24px;
+.skeleton-journal-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 286px;
 }
-.skeleton-journal-detail > section > span {
+.skeleton-journal-layout > section {
+  padding: 24px;
+  border-right: 1px solid var(--shell-line);
+}
+.skeleton-journal-layout > section > span {
   width: 170px;
   height: 20px;
 }
-.skeleton-journal-detail > section > div {
+.skeleton-journal-layout > section > div {
   display: grid;
   gap: 10px;
   margin-top: 18px;
   padding-left: 18px;
 }
-.skeleton-journal-detail > section article {
+.skeleton-journal-layout > section article {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
   gap: 12px;
 }
-.skeleton-journal-detail > section article > span {
+.skeleton-journal-layout > section article > span {
   width: 32px;
   height: 32px;
   border-radius: 50%;
 }
-.skeleton-journal-detail > section article > div {
+.skeleton-journal-layout > section article > div {
   display: grid;
   gap: 9px;
   min-height: 106px;
@@ -9434,17 +9550,34 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border: 1px solid var(--shell-line);
   border-radius: 10px;
 }
-.skeleton-journal-detail > section article > div > span:first-child {
+.skeleton-journal-layout > section article > div > span:first-child {
   width: 42%;
   height: 12px;
 }
-.skeleton-journal-detail > section article > div > span:nth-child(2) {
+.skeleton-journal-layout > section article > div > span:nth-child(2) {
   width: 88%;
   height: 10px;
 }
-.skeleton-journal-detail > section article > div > span:last-child {
+.skeleton-journal-layout > section article > div > span:last-child {
   width: 64%;
   height: 10px;
+}
+.skeleton-journal-layout > aside {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 24px 18px;
+  background: var(--console-inset);
+}
+.skeleton-journal-layout > aside > span:first-child {
+  width: 116px;
+  height: 16px;
+  margin-bottom: 5px;
+}
+.skeleton-journal-layout > aside > span:not(:first-child) {
+  width: 100%;
+  height: 44px;
+  border-radius: 8px;
 }
 .skeleton-review-comments {
   display: grid;
@@ -9482,11 +9615,18 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   .skeleton-journal-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .skeleton-journal-detail > section {
-    padding: 20px 14px;
+  .skeleton-journal-layout {
+    grid-template-columns: minmax(0, 1fr);
   }
-  .skeleton-journal-detail > section > div {
+  .skeleton-journal-layout > section {
+    padding: 20px 14px;
+    border-right: 0;
+  }
+  .skeleton-journal-layout > section > div {
     padding-left: 0;
+  }
+  .skeleton-journal-layout > aside {
+    display: none;
   }
   .skeleton-review-verdict span:last-child {
     display: none;
@@ -10107,6 +10247,39 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.journey-studio-dialog {
+  width: min(920px, calc(100vw - 32px));
+}
+.journey-studio-dialog .journey-editor {
+  gap: 12px;
+}
+.journey-editor-workspace {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.72fr) minmax(430px, 1.28fr);
+  gap: 12px;
+  min-width: 0;
+}
+.journey-editor-summary {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+}
+.journey-studio-dialog .journey-picker,
+.journey-studio-dialog .journey-manage {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.journey-studio-dialog .journey-picker::-webkit-scrollbar,
+.journey-studio-dialog .journey-manage::-webkit-scrollbar {
+  display: none;
+}
+.journey-studio-dialog .journey-picker button,
+.journey-studio-dialog .journey-manage button,
+.journey-studio-dialog .journey-manage a {
+  flex: 0 0 auto;
+}
 /* Journey links on activity rows and the review page */
 .review-page-journey {
   display: inline-flex;
@@ -10131,7 +10304,6 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 
 /* Journey calendar: drag-across-days range picker inside the log modal. */
 .journey-calendar {
-  grid-column: 1 / -1;
   display: grid;
   gap: 8px;
   padding: 12px;
@@ -10200,7 +10372,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   place-content: center;
   justify-items: center;
   gap: 1px;
-  aspect-ratio: 1;
+  height: 42px;
   min-width: 0;
   border-radius: 7px;
   color: var(--screen-dim);
@@ -17648,8 +17820,8 @@ adapted to the current uloggd surface system. */
   -webkit-line-clamp: 2;
 }
 .journal-page {
-  width: min(100%, 920px);
-  margin-inline: auto;
+  width: min(100%, 1180px);
+  margin-inline: 0 auto;
 }
 .journal-page-card {
   overflow: hidden;
@@ -17754,6 +17926,109 @@ adapted to the current uloggd surface system. */
 }
 .journal-page-timeline {
   padding: 24px;
+}
+.journal-page-layout[data-has-rail] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 286px;
+  align-items: start;
+}
+.journal-page-layout[data-has-rail] .journal-page-timeline {
+  border-right: 1px solid var(--shell-line);
+}
+.journal-page-rail {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+  padding: 24px 18px;
+  background: var(--console-inset);
+}
+.journal-route-map > header {
+  display: grid;
+  gap: 5px;
+}
+.journal-route-map > header span {
+  color: var(--brand-blurple-bright);
+  font-size: 0.5625rem;
+  font-weight: 680;
+  letter-spacing: 0.1em;
+}
+.journal-route-map > header strong {
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 630;
+}
+.journal-route-map > div {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  max-height: 460px;
+  margin-top: 13px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.journal-route-map > div::before {
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 17px;
+  width: 1px;
+  background: var(--shell-line-strong);
+  content: "";
+}
+.journal-route-map a {
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 12px;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 5px 7px 5px 0;
+  border-radius: 8px;
+  color: var(--screen-dim);
+}
+.journal-route-map a:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.journal-route-map a > span {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 26px;
+  border: 1px solid var(--state-playing-border);
+  border-radius: 999px;
+  background: var(--console-inset);
+  color: var(--state-playing-text);
+  font-size: 0.5625rem;
+  font-weight: 680;
+  font-variant-numeric: tabular-nums;
+}
+.journal-route-map a > div {
+  min-width: 0;
+}
+.journal-route-map a strong,
+.journal-route-map a small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.journal-route-map a strong {
+  color: var(--screen-white);
+  font-size: 0.6875rem;
+  font-weight: 620;
+}
+.journal-route-map a small {
+  margin-top: 2px;
+  color: var(--screen-muted);
+  font-size: 0.5625rem;
+}
+.journal-route-map a > svg {
+  color: var(--screen-muted);
+}
+.journal-session {
+  scroll-margin-top: 84px;
 }
 .journal-page-timeline > header {
   display: flex;
@@ -17923,7 +18198,7 @@ details.journal-session-note > p {
   line-height: 1.55;
 }
 .journal-page-reviews {
-  padding: 0 24px 24px;
+  padding: 0;
 }
 .journal-page-reviews > div {
   display: grid;
@@ -17932,7 +18207,7 @@ details.journal-session-note > p {
 }
 .journal-page-reviews > div > a {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   min-height: 54px;
@@ -17940,6 +18215,9 @@ details.journal-session-note > p {
   border: 1px solid var(--shell-line);
   border-radius: 9px;
   background: var(--console-raised);
+}
+.journal-page-reviews > div > a > svg {
+  display: none;
 }
 .journal-page-reviews > div > a:hover {
   border-color: var(--shell-line-strong);
@@ -18033,7 +18311,7 @@ details.journal-session-note > p {
     margin-left: 0;
   }
   .journal-page-reviews {
-    padding: 0 14px 18px;
+    padding: 0;
   }
 }
 .screenshot-post {
@@ -20182,5 +20460,141 @@ article[id^="comment-"][data-highlight]:focus-visible {
   .reviews-filter-menu,
   .reviews-game-dossier {
     animation: none !important;
+  }
+}
+
+/* Journey workspaces stay start-anchored and dense enough to expose the
+   complete month before any secondary controls. */
+@media (max-width: 980px) {
+  .journal-page-layout[data-has-rail] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .journal-page-layout[data-has-rail] .journal-page-timeline {
+    border-right: 0;
+  }
+  .journal-page-rail {
+    border-top: 1px solid var(--shell-line);
+  }
+  .journal-route-map > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: none;
+    overflow: visible;
+  }
+  .journal-route-map > div::before {
+    display: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .journey-studio-dialog .journey-editor {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .journey-studio-dialog .journey-picker,
+  .journey-studio-dialog .journey-manage {
+    gap: 5px;
+  }
+  .journey-studio-dialog .journey-picker button {
+    min-height: 30px;
+    padding-inline: 10px;
+  }
+  .journey-studio-dialog .journey-manage button,
+  .journey-studio-dialog .journey-manage a {
+    min-height: 26px;
+    padding-inline: 7px;
+  }
+  .journey-editor-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "calendar"
+      "summary";
+    gap: 8px;
+  }
+  .journey-editor-workspace > .journey-calendar {
+    grid-area: calendar;
+  }
+  .journey-editor-summary {
+    grid-area: summary;
+    gap: 8px;
+  }
+  .journey-calendar {
+    gap: 5px;
+    padding: 8px;
+  }
+  .journey-calendar > header button {
+    width: 30px;
+    height: 30px;
+  }
+  .journey-calendar-weekday {
+    min-height: 16px;
+    font-size: 0.59375rem;
+  }
+  .journey-calendar-grid > span:not(.journey-calendar-weekday) {
+    height: 32px;
+    border-radius: 6px;
+    font-size: 0.65625rem;
+  }
+  .journey-calendar-grid > span small {
+    font-size: 0.5rem;
+  }
+  .journey-day-marks {
+    top: 2px;
+    right: 2px;
+  }
+  .journey-calendar-jumps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .journey-calendar-jumps > span {
+    display: none;
+  }
+  .journey-calendar-jumps button {
+    justify-content: center;
+    gap: 3px;
+    min-height: 25px;
+    padding: 0 3px;
+    font-size: 0.5625rem;
+  }
+  .journey-calendar-hint {
+    font-size: 0.59375rem;
+    line-height: 1.35;
+  }
+  .journey-overview > header {
+    padding: 10px 11px 9px;
+  }
+  .journey-overview > header p {
+    display: none;
+  }
+  .journey-overview dl > div {
+    padding: 9px 10px;
+  }
+  .journey-overview dd {
+    margin-top: 5px;
+    font-size: 0.75rem;
+  }
+  .journey-open-day {
+    gap: 7px;
+  }
+  .journey-open-day input,
+  .journey-open-day > button {
+    min-height: 38px;
+  }
+  .review-history-strip {
+    padding: 8px 12px 10px;
+  }
+  .review-history-strip > header small {
+    max-width: calc(100vw - 96px);
+  }
+  .review-history-strip > div > a {
+    min-width: 174px;
+    max-width: 220px;
+  }
+  .journal-page-rail {
+    gap: 20px;
+    padding: 18px 14px;
+  }
+  .journal-route-map > div {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

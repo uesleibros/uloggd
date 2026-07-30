@@ -123,6 +123,7 @@ export default async function GamePage({ params, searchParams }: Props) {
     listsResult,
     logResult,
     journeyResult,
+    reviewResult,
     communityRatings,
   ] = await Promise.all([
     user && supabase
@@ -166,6 +167,17 @@ export default async function GamePage({ params, searchParams }: Props) {
           .eq("profile_id", user.id)
           .eq("igdb_id", game.id)
           .order("created_at", { ascending: true })
+      : Promise.resolve({ data: [] }),
+    user && supabase
+      ? supabase
+          .from("reviews")
+          .select(
+            "public_id,title,rating,rating_mode,recommended,created_at,journeys!reviews_journey_id_fkey(title)",
+          )
+          .eq("profile_id", user.id)
+          .eq("igdb_id", game.id)
+          .order("created_at", { ascending: false })
+          .limit(20)
       : Promise.resolve({ data: [] }),
     supabase
       ? getCommunityGameRatings(supabase, [game.id])
@@ -225,6 +237,20 @@ export default async function GamePage({ params, searchParams }: Props) {
     title: journey.title,
     publicId: journey.public_id,
   }));
+  const ownReviews = (reviewResult.data ?? []).map((review) => {
+    const linkedJourney = Array.isArray(review.journeys)
+      ? review.journeys[0]
+      : review.journeys;
+    return {
+      publicId: review.public_id,
+      title: review.title,
+      rating: review.rating,
+      ratingMode: review.rating_mode,
+      recommended: review.recommended,
+      createdAt: review.created_at,
+      journeyTitle: linkedJourney?.title ?? null,
+    };
+  });
   const ownLogCount = ownJourneys.length;
   const savedById = new Map(
     (savedGames ?? []).map((saved) => [saved.igdb_id, saved]),
@@ -384,6 +410,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                 logCount={ownLogCount}
                 journeys={ownJourneys}
                 journeyOptions={ownJourneyOptions}
+                reviews={ownReviews}
                 initialMode={
                   query.review === "1"
                     ? "review"
