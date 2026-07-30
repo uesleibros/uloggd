@@ -14543,6 +14543,13 @@ and route recovery. */
     padding-right: 0;
     overflow: hidden;
   }
+  .home-popular-carousel {
+    padding-top: 44px;
+  }
+  .home-popular-carousel .shelf-carousel-controls {
+    top: 0;
+    bottom: auto;
+  }
   .home-popular-carousel .shelf-carousel-track,
   .discovery-games .shelf-carousel-track,
   .genre-collection .shelf-carousel-track {
