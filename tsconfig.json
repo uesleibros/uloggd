@@ -6,6 +6,10 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    // The database tests import their harness by its real filename, which is
+    // how the Node test runner resolves it at runtime. Safe here because
+    // nothing is emitted: Next builds the app.
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
