@@ -73,6 +73,25 @@ after the loading/skeleton consistency pass.
 - Textareas use content-driven sizing across review, diary, profile, list, and
   report composers, growing until a viewport-safe scroll limit.
 
+## Done in the organization accounts pass (July 2026)
+
+- A profile can declare that it represents an organization — a store, studio,
+  publisher, outlet, or community — through `profiles.account_type`, with an
+  optional 60-character tagline. Registration is open; the verified badge stays
+  a separate moderation decision, and the editor says so.
+- Modelled beside `role`, not inside it. `role` is the permission ladder and
+  `moderate_account` refuses when `actor_role = 'MODERATOR' and target_role <>
+  'USER'`, so an ORGANIZATION role would have put every organization out of
+  ordinary moderators' reach — the account type most exposed to impersonation,
+  since anyone may register one.
+- Moderation can revoke a claim with `DEMOTE_ORGANIZATION`: the account returns
+  to a person and the tagline clears, the account itself survives, a reason is
+  required, and it is recorded as `USER_ORG_REVOKED`. The console shows the
+  account type on the user card.
+- The mark appears on the profile, in quick search, the activity feed,
+  connections, and people search. It is deliberately neutral: the claim is
+  self-declared, so it must not read like the verified badge.
+
 ## Next: polish and correctness
 
 1. **Search keyboard navigation across sections.** Arrow keys only walk game
@@ -81,6 +100,9 @@ after the loading/skeleton consistency pass.
    viewer's own follow graph.
 3. **Error telemetry storage.** `/api/telemetry` only logs; consider a
    Supabase table with retention if log scraping proves insufficient.
+4. **Organization mark in comments.** Comment authors come from
+   `get_content_comments` and the profile thread function, both fixed
+   `returns table(...)` shapes, so the account type is not carried there yet.
 
 ## Later: features
 

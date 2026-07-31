@@ -3,7 +3,7 @@
 import * as Dialog from "@/components/ui/dialog";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, Building2, X } from "lucide-react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function VerifiedMark({ size = 18 }: { size?: number }) {
@@ -35,6 +35,24 @@ export function VerifiedNameMark() {
  * verifying organisation — uloggd is the authority here, so uloggd is the
  * source shown.
  */
+/**
+ * Says an account represents an organization rather than a person.
+ *
+ * Neutral on purpose, and never styled like the verified mark: registering an
+ * organization is open to anyone, so this is the account's own claim about
+ * itself, while the blue badge is moderation vouching for it. Conflating the
+ * two visually would lend unearned weight to a self-declaration.
+ */
+export function OrganizationMark({ lang }: { lang: UiLang }) {
+  const label = tri(lang, "Organização", "Organization", "Organización");
+  return (
+    <span className="organization-mark" title={label}>
+      <Building2 size={12} aria-hidden />
+      <span className="sr-only">{label}</span>
+    </span>
+  );
+}
+
 export function VerifiedBadge({
   lang,
   verifiedAt,

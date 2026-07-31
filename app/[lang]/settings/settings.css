@@ -81,9 +81,14 @@
 }
 
 /* Account type picker */
-.account-type-dialog {
-  width: min(460px, calc(100vw - 32px));
-  max-width: min(460px, calc(100vw - 32px));
+/* Desktop only. Below the sheet breakpoint the dialog is a full-width bottom
+   sheet, and this file loads after globals.css — an unscoped width here would
+   outrank the sheet rule by source order and pin it to the left edge. */
+@media (min-width: 621px) {
+  .account-type-dialog {
+    width: min(460px, calc(100vw - 32px));
+    max-width: min(460px, calc(100vw - 32px));
+  }
 }
 .account-type-choices {
   display: grid;

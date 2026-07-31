@@ -21,7 +21,7 @@ import { JournalGallery } from "./journal-gallery";
 import { ActivityEntryActions } from "./activity-entry-actions";
 import { LikeButton } from "./like-button";
 import { ReviewMarkdownPreview } from "./review-markdown-preview";
-import { VerifiedBadge } from "../verified-badge";
+import { OrganizationMark, VerifiedBadge } from "../verified-badge";
 import { ShelfCarousel } from "../shelf-carousel";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -35,6 +35,7 @@ export type SocialEntry = {
     display_name: string | null;
     avatar_url: string | null;
     verified: boolean;
+    account_type?: "PERSON" | "ORGANIZATION";
   };
   igdbId: number;
   gameSlug: string;
@@ -157,6 +158,9 @@ export function ActivityStream({
                 <Link href={`/${lang}/u/${entry.profile.username}`}>
                   {entry.profile.display_name || `@${entry.profile.username}`}
                 </Link>
+                {entry.profile.account_type === "ORGANIZATION" && (
+                  <OrganizationMark lang={lang} />
+                )}
                 {entry.profile.verified && <VerifiedBadge lang={lang} />}
               </strong>
               <Link href={`/${lang}/u/${entry.profile.username}`}>

@@ -11,6 +11,7 @@ type ProfileJoin = {
   display_name: string | null;
   avatar_url: string | null;
   verified: boolean;
+  account_type?: "PERSON" | "ORGANIZATION";
 };
 type Row = {
   id: string;
@@ -83,7 +84,7 @@ export async function getActivity(
   let reviewsQuery = supabase
     .from("reviews")
     .select(
-      "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title,public_id),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified)",
+      "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title,public_id),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified,account_type)",
     )
     .order(options.order === "rating" ? "rating" : "created_at", {
       ascending: oldestFirst,
@@ -93,14 +94,14 @@ export async function getActivity(
   let diaryQuery = supabase
     .from("diary_entries")
     .select(
-      "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title,public_id),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified)",
+      "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title,public_id),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified,account_type)",
     )
     .order("created_at", { ascending: oldestFirst })
     .limit(limit);
   let screenshotsQuery = supabase
     .from("screenshots")
     .select(
-      "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,updated_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified)",
+      "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,updated_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,account_type)",
     )
     .order("created_at", { ascending: oldestFirst })
     .limit(limit);

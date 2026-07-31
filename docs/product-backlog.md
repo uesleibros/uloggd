@@ -39,6 +39,21 @@ product behavior and privacy rules are agreed.
 - Provide copy-link and native Web Share paths with equivalent feedback.
 - Add revocation behavior for content changed from public to private.
 
+## 6. Organization accounts
+
+Shipped as a self-declared account type; these are the decisions it left open.
+
+- Define the dispute path: what evidence lets a brand reclaim a handle someone
+  else registered, who adjudicates, and what happens to the squatter's existing
+  content and followers. `IMPERSONATION` reports and `DEMOTE_ORGANIZATION`
+  already exist, so this is policy rather than plumbing.
+- Decide how person-shaped requirements should read for an organization. Note
+  that relaxing the age gate for them would be a trivial bypass, since anyone
+  may self-declare; the safe change is copy — the birth date belongs to the
+  operator, not to the brand.
+- Decide whether organizations should be discoverable as a filter, and whether
+  their journeys, library, and wrapped pages make sense or should be hidden.
+
 ## Release gate
 
 Every item requires Portuguese and English copy, responsive loading/empty/error

@@ -27,7 +27,7 @@ export async function getConnectionsPage(
   let request = supabase
     .from("follows")
     .select(
-      `created_at,person:profiles!${fk}!inner(id,username,display_name,bio,avatar_url,verified)`,
+      `created_at,person:profiles!${fk}!inner(id,username,display_name,bio,avatar_url,verified,account_type)`,
     )
     .eq(followers ? "following_id" : "follower_id", options.profileId)
     .order("created_at", { ascending: false })

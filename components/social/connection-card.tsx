@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { VerifiedNameMark } from "../verified-badge";
+import { OrganizationMark, VerifiedNameMark } from "../verified-badge";
 import type { UiLang } from "@/lib/ui-text";
 
 export type ConnectionPerson = {
@@ -11,6 +11,7 @@ export type ConnectionPerson = {
   bio: string | null;
   avatar_url: string | null;
   verified: boolean;
+  account_type?: "PERSON" | "ORGANIZATION";
 };
 
 export function ConnectionCard({
@@ -42,6 +43,9 @@ export function ConnectionCard({
         <span className="profile-connection-copy">
           <strong>
             <span>{person.display_name || `@${person.username}`}</span>
+            {person.account_type === "ORGANIZATION" && (
+              <OrganizationMark lang={lang} />
+            )}
             {person.verified && <VerifiedNameMark />}
           </strong>
           <small>@{person.username}</small>

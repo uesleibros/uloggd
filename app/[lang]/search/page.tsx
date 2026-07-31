@@ -180,9 +180,12 @@ export default async function SearchPage({
           : "relevance";
       let request = supabase
         .from("profiles")
-        .select("id,username,display_name,avatar_url,bio,verified", {
-          count: "exact",
-        })
+        .select(
+          "id,username,display_name,avatar_url,bio,verified,account_type",
+          {
+            count: "exact",
+          },
+        )
         .not("username", "is", null);
       if (safeQuery.length >= 2)
         request = request.or(
@@ -208,6 +211,7 @@ export default async function SearchPage({
         avatar_url: person.avatar_url,
         bio: person.bio,
         verified: Boolean(person.verified),
+        account_type: person.account_type,
       }));
       const total = count ?? 0;
       return (
