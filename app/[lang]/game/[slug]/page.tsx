@@ -26,6 +26,7 @@ import { GameLogActions } from "@/components/social/game-log-actions";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { getGameBySlug } from "@/lib/igdb";
 import { isOldEnough } from "@/lib/age-access";
+import { getOwnAgeProfile } from "@/lib/own-age-profile";
 import {
   ANONYMOUS_AGE_COOKIE,
   readAnonymousAgeAssertion,
@@ -118,7 +119,7 @@ export default async function GamePage({ params, searchParams }: Props) {
     group.games.map((related) => related.id),
   );
   const [
-    ageProfileResult,
+    ageProfile,
     savedResult,
     listsResult,
     logResult,
@@ -126,13 +127,10 @@ export default async function GamePage({ params, searchParams }: Props) {
     reviewResult,
     communityRatings,
   ] = await Promise.all([
-    user && supabase
-      ? supabase
-          .from("profiles")
-          .select("birth_date")
-          .eq("id", user.id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
+    // `birth_date` is no longer selectable from `profiles`, since column
+    // privileges are what keep it off the public API. This definer function
+    // returns the caller's own row and nothing else.
+    user && supabase ? getOwnAgeProfile(supabase) : Promise.resolve(null),
     user && supabase
       ? supabase
           .from("user_games")
@@ -183,7 +181,6 @@ export default async function GamePage({ params, searchParams }: Props) {
       ? getCommunityGameRatings(supabase, [game.id])
       : Promise.resolve(new Map()),
   ]);
-  const ageProfile = ageProfileResult.data;
   const communityRating = communityRatings.get(game.id) ?? null;
   if (user && !ageProfile?.birth_date) redirect(`/${lang}/onboarding/username`);
   if (

@@ -222,10 +222,12 @@ export function AccountSettings({
                   )}
                 </small>
                 <strong>
-                  {new Intl.DateTimeFormat(lang, {
-                    dateStyle: "long",
-                    timeZone: "UTC",
-                  }).format(new Date(`${profile.birth_date}T00:00:00Z`))}
+                  {profile.birth_date
+                    ? new Intl.DateTimeFormat(lang, {
+                        dateStyle: "long",
+                        timeZone: "UTC",
+                      }).format(new Date(`${profile.birth_date}T00:00:00Z`))
+                    : tri(lang, "Não informada", "Not provided", "No indicada")}
                 </strong>
                 <p>
                   {/* An organization has no birth date. The stored one belongs

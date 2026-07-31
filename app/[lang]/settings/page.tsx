@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { AccountSettings } from "@/components/settings/account-settings";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getOwnAgeProfile } from "@/lib/own-age-profile";
 import { hasLocale } from "../dictionaries";
 
 const PRIVACY_PAGE_SIZE = 20;
@@ -15,6 +16,7 @@ export default async function SettingsPage({
   if (!user) redirect(`/${lang}/login?next=/${lang}/settings?tab=general`);
   const [
     { data: profile },
+    age,
     { count: infractions },
     blockResult,
     requestResult,
@@ -22,10 +24,13 @@ export default async function SettingsPage({
     supabase
       .from("profiles")
       .select(
-        "username,username_changed_at,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,birth_date,youtube_username,instagram_username,twitter_username,custom_cover_scope,profile_comment_scope,content_comment_scope,profile_visibility,is_private,account_type,organization_tagline",
+        "username,username_changed_at,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,youtube_username,instagram_username,twitter_username,custom_cover_scope,profile_comment_scope,content_comment_scope,profile_visibility,is_private,account_type,organization_tagline",
       )
       .eq("id", user.id)
       .single(),
+    // Birth date is readable only through the definer function now, so the
+    // card that displays it gets it alongside the rest of the profile.
+    getOwnAgeProfile(supabase),
     supabase
       .from("profile_infractions")
       .select("id", { count: "exact", head: true })
@@ -52,7 +57,7 @@ export default async function SettingsPage({
   if (!profile?.username) redirect(`/${lang}/onboarding/username`);
   return (
     <AccountSettings
-      profile={profile}
+      profile={{ ...profile, birth_date: age?.birth_date ?? null }}
       blockedProfiles={(blockResult.data ?? []).flatMap((row) => {
         const blocked = Array.isArray(row.blocked)
           ? row.blocked[0]

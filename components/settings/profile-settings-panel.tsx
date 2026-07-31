@@ -50,7 +50,9 @@ export type Profile = {
   thought: string | null;
   avatar_url: string | null;
   banner_url: string | null;
-  birth_date: string;
+  // Nullable because it arrives from `own_age_profile()` rather than the
+  // profile row, and that function answers nothing for a caller with no row.
+  birth_date: string | null;
   youtube_username: string | null;
   instagram_username: string | null;
   twitter_username: string | null;

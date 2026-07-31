@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { defaultLocale, locales } from "./app/[lang]/dictionaries";
+import { getOwnAgeProfile } from "./lib/own-age-profile";
 
 const ONBOARDED_COOKIE = "uloggd-onboarded";
 const publicSegments = new Set([
@@ -158,12 +159,18 @@ export async function proxy(request: NextRequest) {
   let onboardingIncomplete =
     request.cookies.get(ONBOARDED_COOKIE)?.value !== user.id;
   if (onboardingIncomplete) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("username,birth_date")
-      .eq("id", user.id)
-      .maybeSingle();
-    onboardingIncomplete = !profile?.username || !profile.birth_date;
+    // `birth_date` left the readable columns of `profiles`, so it comes from
+    // the definer function that scopes it to the caller. Both run on the same
+    // cookie miss, which the cookie above keeps rare.
+    const [{ data: profile }, age] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", user.id)
+        .maybeSingle(),
+      getOwnAgeProfile(supabase),
+    ]);
+    onboardingIncomplete = !profile?.username || !age?.birth_date;
     if (!onboardingIncomplete)
       response.cookies.set(ONBOARDED_COOKIE, user.id, {
         httpOnly: true,
