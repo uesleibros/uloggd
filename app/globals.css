@@ -10241,24 +10241,22 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
    padding — hard-coding the desktop value overflowed the tighter mobile
    padding and put the horizontal scrollbar back. */
 .journey-editor .studio-step-bar {
-  margin: -20px -20px 0;
-}
-@media (max-width: 620px) {
-  .journey-studio-dialog .journey-editor .studio-step-bar {
-    margin: -10px -12px 0;
-    padding: 8px 12px;
-  }
+  margin: calc(var(--editor-pad-y) * -1) calc(var(--editor-pad-x) * -1) 0;
+  padding-inline: var(--editor-pad-x);
 }
 /* Both choosers sit inside a `.social-editor-form`, so the sticky-footer and
    button styling already applied to editor footers carries over; only the
    primary action needs saying. */
+/* Its children carry their own padding, so the step itself has none — and the
+   bleed variables have to say so or the footer would hang off the edge. */
 .studio-choose-step {
+  --editor-pad-x: 0px;
+  --editor-pad-y: 0px;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   gap: 0;
   min-height: 0;
-  padding: 0;
 }
 .studio-choose-actions {
   flex: none;
@@ -10274,7 +10272,6 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   opacity: 0.5;
   cursor: default;
 }
-/* The review chooser is the whole step now, so its list gets the room. */
 /* As its own step the strip owns the dialog body, so it scrolls the list
    instead of the row, and its cards wrap into a grid. */
 .review-history-strip[data-standalone] {
@@ -11840,11 +11837,18 @@ details.review-page-content > .markdown-body {
   color: var(--screen-muted);
   font: 400 0.75rem var(--interface-font-family);
 }
+/* The sticky footer and the step bar bleed to the form's edges with negative
+   margins. Hard-coding 20px there meant they overhung by 8px once the journey
+   editor tightened its padding on mobile — visibly misaligned, and enough to
+   put the horizontal scrollbar back. The padding is a variable so both track
+   it. */
 .social-editor-form,
 .create-list-form {
+  --editor-pad-x: 20px;
+  --editor-pad-y: 20px;
   display: grid;
   gap: 16px;
-  padding: 20px;
+  padding: var(--editor-pad-y) var(--editor-pad-x);
 }
 /* `overflow-y: auto` alone makes the other axis compute to `auto` too, so any
    child that overshot by a pixel gave the whole modal a horizontal scrollbar.
@@ -11951,9 +11955,9 @@ details.review-page-content > .markdown-body {
 .social-editor-dialog .social-editor-form > footer {
   position: sticky;
   z-index: 2;
-  bottom: -20px;
-  margin: 4px -20px -20px;
-  padding: 14px 20px max(14px, env(safe-area-inset-bottom));
+  bottom: calc(var(--editor-pad-y) * -1);
+  margin: 4px calc(var(--editor-pad-x) * -1) calc(var(--editor-pad-y) * -1);
+  padding: 14px var(--editor-pad-x) max(14px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--shell-line);
   background: var(--overlay-panel-sticky);
   backdrop-filter: blur(10px);
@@ -12594,7 +12598,7 @@ details.review-page-content > .markdown-body {
   }
   .social-editor-dialog .social-editor-form > footer {
     bottom: 0;
-    margin: 4px -20px 0;
+    margin: 4px calc(var(--editor-pad-x) * -1) 0;
   }
   .social-editor-dialog[data-closed] {
     animation-name: social-modal-sheet-out;
@@ -21474,9 +21478,12 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 
 @media (max-width: 620px) {
-  .journey-studio-dialog .journey-editor {
+  .journey-studio-dialog .journey-editor,
+  .journey-studio-dialog .journey-day-sheet,
+  .journey-studio-dialog .journey-day-editor {
+    --editor-pad-x: 12px;
+    --editor-pad-y: 10px;
     gap: 8px;
-    padding: 10px 12px;
   }
   .journey-studio-dialog .journey-manage {
     gap: 5px;

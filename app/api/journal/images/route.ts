@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { JOURNAL_IMAGE_LIMIT } from "@/lib/journal-entry";
 
 export const runtime = "nodejs";
@@ -8,6 +7,7 @@ const acceptedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxInputBytes = 12 * 1024 * 1024;
 const maxCaption = 200;
 const uuid = /^[0-9a-f-]{36}$/i;
+const imgchestUrl = /^https:\/\/(?:cdn\.)?imgchest\.com\//i;
 
 function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
@@ -15,26 +15,29 @@ function sameOrigin(request: Request) {
   return origin === new URL(request.url).origin;
 }
 
-async function removeUpload(
-  storagePath: string,
-  supabase: Awaited<ReturnType<typeof createClient>>,
-) {
-  const { error } = await supabase.storage
-    .from("screenshots")
-    .remove([storagePath]);
-  if (!error) return;
+/**
+ * Best-effort remote cleanup. One image per post, so removing the post removes
+ * the image; a failure here leaves an orphan on imgchest but must not stop the
+ * row from going away, or the gallery would keep showing a deleted image.
+ */
+async function removeRemote(remoteId: string | null) {
+  const apiKey = process.env.IMGCHEST_API_KEY;
+  if (!remoteId || !apiKey) return;
   try {
-    await createAdminClient().storage.from("screenshots").remove([storagePath]);
-  } catch (cleanupError) {
-    console.error("[journal-images] orphan cleanup failed", {
-      storagePath,
+    await fetch(`https://api.imgchest.com/v1/post/${remoteId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+  } catch (error) {
+    console.error("[journal-images] remote cleanup failed", {
+      remoteId,
       error,
-      cleanupError,
     });
   }
 }
 
-/** Ordered images for one entry, signed for the caller RLS already approved. */
+/** Ordered images for one entry. RLS decides whether the rows come back. */
 export async function GET(request: Request) {
   const entryId = new URL(request.url).searchParams.get("entry");
   if (!entryId || !uuid.test(entryId))
@@ -43,7 +46,7 @@ export async function GET(request: Request) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("diary_entry_images")
-    .select("id,storage_path,caption,width,height,position")
+    .select("id,image_url,caption,width,height,position")
     .eq("entry_id", entryId)
     .order("position", { ascending: true })
     .limit(JOURNAL_IMAGE_LIMIT);
@@ -51,32 +54,14 @@ export async function GET(request: Request) {
     console.error("[journal-images] read failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503 });
   }
-  const rows = data ?? [];
-  if (!rows.length) return Response.json({ images: [] });
-
-  const { data: signed } = await supabase.storage
-    .from("screenshots")
-    .createSignedUrls(
-      rows.map((row) => String(row.storage_path)),
-      3600,
-    );
-  const urlByPath = new Map(
-    (signed ?? []).map((item) => [item.path, item.signedUrl]),
-  );
   return Response.json({
-    images: rows.flatMap((row) => {
-      const url = urlByPath.get(String(row.storage_path));
-      if (!url) return [];
-      return [
-        {
-          id: row.id,
-          url,
-          width: row.width,
-          height: row.height,
-          caption: row.caption,
-        },
-      ];
-    }),
+    images: (data ?? []).map((row) => ({
+      id: row.id,
+      url: row.image_url,
+      width: row.width,
+      height: row.height,
+      caption: row.caption,
+    })),
   });
 }
 
@@ -89,6 +74,10 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return Response.json({ error: "unauthorized" }, { status: 401 });
+
+  const apiKey = process.env.IMGCHEST_API_KEY;
+  if (!apiKey)
+    return Response.json({ error: "upload_unavailable" }, { status: 503 });
 
   const input = await request.formData();
   const image = input.get("image");
@@ -107,7 +96,7 @@ export async function POST(request: Request) {
   }
 
   // The entry must be the caller's own: RLS would reject the insert anyway, but
-  // failing before the upload keeps orphan files out of storage entirely.
+  // failing before the upload keeps orphans off imgchest entirely.
   const { data: entry } = await supabase
     .from("diary_entries")
     .select("id,profile_id")
@@ -138,7 +127,8 @@ export async function POST(request: Request) {
   let height: number;
   try {
     // Keep the native image processor out of route discovery/build workers;
-    // it is loaded only for an authenticated upload request.
+    // it is loaded only for an authenticated upload request. It also gives the
+    // dimensions, which the imgchest response does not carry.
     const { default: sharp } = await import("sharp");
     const source = sharp(await image.arrayBuffer(), {
       failOn: "warning",
@@ -172,45 +162,60 @@ export async function POST(request: Request) {
     return Response.json({ error: "invalid_image" }, { status: 400 });
   }
 
-  const id = crypto.randomUUID();
-  const storagePath = `${user.id}/journal/${id}.webp`;
-  const { error: uploadError } = await supabase.storage
-    .from("screenshots")
-    .upload(storagePath, processed, {
-      contentType: "image/webp",
-      cacheControl: "31536000",
-      upsert: false,
+  const upload = new FormData();
+  upload.append(
+    "images[]",
+    new Blob([new Uint8Array(processed)], { type: "image/webp" }),
+    `journal-${entryId}.webp`,
+  );
+  upload.append("privacy", "hidden");
+
+  let response: Response;
+  try {
+    response = await fetch("https://api.imgchest.com/v1/post", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: upload,
+      signal: AbortSignal.timeout(20_000),
     });
-  if (uploadError) {
-    console.error("[journal-images] storage upload failed", uploadError);
+  } catch {
     return Response.json({ error: "upload_failed" }, { status: 502 });
   }
+  if (!response.ok)
+    return Response.json({ error: "upload_failed" }, { status: 502 });
 
-  const { error: insertError } = await supabase
+  const payload = (await response.json()) as {
+    data?: { id?: string; images?: Array<{ link?: string }> };
+  };
+  const url = payload.data?.images?.[0]?.link;
+  const remoteId = payload.data?.id ?? null;
+  if (!url || !imgchestUrl.test(url))
+    return Response.json({ error: "upload_failed" }, { status: 502 });
+
+  const { data: created, error: insertError } = await supabase
     .from("diary_entry_images")
     .insert({
-      id,
       entry_id: entryId,
       profile_id: user.id,
-      storage_path: storagePath,
+      image_url: url,
+      remote_id: remoteId,
       caption: caption || null,
       width,
       height,
       position,
-    });
-  if (insertError) {
+    })
+    .select("id")
+    .single();
+  if (insertError || !created) {
     console.error("[journal-images] database insert failed", insertError);
-    await removeUpload(storagePath, supabase);
+    await removeRemote(remoteId);
     return Response.json({ error: "publish_failed" }, { status: 500 });
   }
 
-  const { data: signed } = await supabase.storage
-    .from("screenshots")
-    .createSignedUrl(storagePath, 3600);
   return Response.json(
     {
-      id,
-      url: signed?.signedUrl ?? null,
+      id: created.id,
+      url,
       width,
       height,
       caption: caption || null,
@@ -233,7 +238,7 @@ export async function DELETE(request: Request) {
 
   const { data: image } = await supabase
     .from("diary_entry_images")
-    .select("id,profile_id,storage_path")
+    .select("id,profile_id,remote_id")
     .eq("id", id)
     .maybeSingle();
   if (!image || image.profile_id !== user.id)
@@ -246,6 +251,6 @@ export async function DELETE(request: Request) {
     .eq("profile_id", user.id);
   if (deleteError)
     return Response.json({ error: "delete_failed" }, { status: 500 });
-  await removeUpload(image.storage_path, supabase);
+  await removeRemote(image.remote_id);
   return new Response(null, { status: 204 });
 }

@@ -19,11 +19,13 @@ soft delete so descendant replies remain readable in context.
 
 Journal entries (`diary_entries`) are keyed by day, not unique per day: one game
 day can hold several entries, each with an optional wall-clock `started_at`.
-Their images live in `diary_entry_images`, ordered by `position`, and share the
-private `screenshots` storage bucket under `{owner}/journal/`. The bucket's
-owner-scoped insert and delete policies already cover that prefix; only the read
-policy checks both tables, through `screenshot_file_visible` and
-`diary_image_file_visible`.
+Their images live in `diary_entry_images`, ordered by `position`, and are hosted
+on imgchest — the same host as avatars and banners — with the final URL in
+`image_url` and the imgchest post id in `remote_id` so deletes can clean up
+remotely. RLS decides who can read the row, and therefore who is shown the
+image in the app, but an imgchest link is reachable by anyone holding it: a
+PRIVATE entry's images are protected by URL obscurity, not by the database.
+Supabase Storage is used only for screenshots.
 
 Supabase Auth owns identities in `auth.users`. `public.profiles.id` references `auth.users.id` with cascade deletion. A database trigger creates the public profile after signup.
 
