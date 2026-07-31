@@ -57,6 +57,10 @@
     "screenshotComment": "commented on your screenshot:",
     "screenshotReply": "replied to your screenshot comment:",
     "screenshotCommentLike": "liked your screenshot comment:",
+    "journalLike": "liked your session of",
+    "postComment": "commented on your post:",
+    "postReply": "replied to your comment:",
+    "postCommentLike": "liked your comment:",
     "unknownUser": "Someone",
     "unread": "Unread",
     "preferencesTitle": "What you want to receive",
@@ -66,6 +70,7 @@
     "listLikes": "List likes",
     "comments": "Profile comments",
     "screenshots": "Screenshot activity",
+    "journalLikes": "Journal likes",
     "saving": "Saving…"
   },
   "search": {

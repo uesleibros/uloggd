@@ -57,6 +57,10 @@
     "screenshotComment": "comentó en tu captura:",
     "screenshotReply": "respondió a tu comentario en la captura:",
     "screenshotCommentLike": "le dio me gusta a tu comentario en la captura:",
+    "journalLike": "le gustó tu sesión de",
+    "postComment": "comentó en tu publicación:",
+    "postReply": "respondió a tu comentario:",
+    "postCommentLike": "le gustó tu comentario:",
     "unknownUser": "Alguien",
     "unread": "Sin leer",
     "preferencesTitle": "Lo que quieres recibir",
@@ -66,6 +70,7 @@
     "listLikes": "Me gusta en listas",
     "comments": "Comentarios del perfil",
     "screenshots": "Actividad en capturas",
+    "journalLikes": "Me gusta en el diario",
     "saving": "Guardando…"
   },
   "search": {

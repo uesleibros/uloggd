@@ -37,7 +37,10 @@ type NotificationKind =
   | "screenshot_like"
   | "screenshot_comment"
   | "screenshot_comment_like"
-  | "moderation_comment_removed";
+  | "moderation_comment_removed"
+  | "journal_like"
+  | "post_comment"
+  | "post_comment_like";
 type NotificationRow = {
   id: string;
   actor_id: string;
@@ -58,6 +61,7 @@ type Preferences = {
   list_likes_enabled: boolean;
   comments_enabled: boolean;
   screenshots_enabled: boolean;
+  journal_likes_enabled: boolean;
 };
 type CommentTarget = {
   ownerUsername: string;
@@ -69,6 +73,12 @@ type ScreenshotCommentTarget = {
   commentPublicId: string;
   isReply: boolean;
 };
+/** `route` already carries the post's segment, e.g. `review/aB3…`. */
+type PostCommentTarget = {
+  route: string;
+  commentPublicId: string;
+  isReply: boolean;
+};
 
 const defaultPreferences: Preferences = {
   follows_enabled: true,
@@ -76,6 +86,7 @@ const defaultPreferences: Preferences = {
   list_likes_enabled: true,
   comments_enabled: true,
   screenshots_enabled: true,
+  journal_likes_enabled: true,
 };
 
 export function NotificationCenter({
@@ -100,6 +111,9 @@ export function NotificationCenter({
   const [screenshotCommentTargets, setScreenshotCommentTargets] = useState<
     Record<string, ScreenshotCommentTarget>
   >({});
+  const [postCommentTargets, setPostCommentTargets] = useState<
+    Record<string, PostCommentTarget>
+  >({});
   const [preferences, setPreferences] =
     useState<Preferences>(defaultPreferences);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
@@ -121,7 +135,7 @@ export function NotificationCenter({
       supabase
         .from("notification_preferences")
         .select(
-          "follows_enabled,review_likes_enabled,list_likes_enabled,comments_enabled,screenshots_enabled",
+          "follows_enabled,review_likes_enabled,list_likes_enabled,comments_enabled,screenshots_enabled,journal_likes_enabled",
         )
         .eq("profile_id", viewerId)
         .maybeSingle(),
@@ -157,12 +171,24 @@ export function NotificationCenter({
           item.target_id,
       )
       .map((item) => item.target_id as string);
+    const journalIds = rows
+      .filter((item) => item.kind === "journal_like" && item.target_id)
+      .map((item) => item.target_id as string);
+    const postCommentIds = rows
+      .filter(
+        (item) =>
+          (item.kind === "post_comment" || item.kind === "post_comment_like") &&
+          item.target_id,
+      )
+      .map((item) => item.target_id as string);
     const [
       { data: comments },
       { data: reviews },
       { data: lists },
       { data: screenshots },
       { data: screenshotComments },
+      { data: journalEntries },
+      { data: postComments },
     ] = await Promise.all([
       commentIds.length
         ? supabase
@@ -189,6 +215,18 @@ export function NotificationCenter({
             .in("id", screenshotCommentIds)
             .eq("content_type", "screenshot")
         : Promise.resolve({ data: [] }),
+      journalIds.length
+        ? supabase
+            .from("diary_entries")
+            .select("id,public_id")
+            .in("id", journalIds)
+        : Promise.resolve({ data: [] }),
+      postCommentIds.length
+        ? supabase
+            .from("content_comments")
+            .select("id,public_id,parent_id,content_id,content_type")
+            .in("id", postCommentIds)
+        : Promise.resolve({ data: [] }),
     ]);
     const commentShotIds = [
       ...new Set(
@@ -201,6 +239,49 @@ export function NotificationCenter({
           .select("id,public_id")
           .in("id", commentShotIds)
       : { data: [] };
+    // A post comment can hang under a review, a list or a journal entry, and
+    // each lives on a different route, so the parents are resolved per table.
+    const postParents = {
+      review: [] as string[],
+      list: [] as string[],
+      diary: [] as string[],
+    };
+    for (const comment of postComments ?? []) {
+      const bucket =
+        postParents[comment.content_type as keyof typeof postParents];
+      if (bucket) bucket.push(comment.content_id);
+    }
+    const [
+      { data: parentReviews },
+      { data: parentLists },
+      { data: parentEntries },
+    ] = await Promise.all([
+      postParents.review.length
+        ? supabase
+            .from("reviews")
+            .select("id,public_id")
+            .in("id", postParents.review)
+        : Promise.resolve({ data: [] }),
+      postParents.list.length
+        ? supabase
+            .from("game_lists")
+            .select("id,public_id")
+            .in("id", postParents.list)
+        : Promise.resolve({ data: [] }),
+      postParents.diary.length
+        ? supabase
+            .from("diary_entries")
+            .select("id,public_id")
+            .in("id", postParents.diary)
+        : Promise.resolve({ data: [] }),
+    ]);
+    const postRouteById = new Map<string, string>();
+    for (const row of parentReviews ?? [])
+      postRouteById.set(row.id, `review/${row.public_id}`);
+    for (const row of parentLists ?? [])
+      postRouteById.set(row.id, `lists/${row.public_id}`);
+    for (const row of parentEntries ?? [])
+      postRouteById.set(row.id, `entry/${row.public_id}`);
     const ownerIds = (comments ?? []).map((comment) => comment.profile_id);
     const profileIds = [...new Set([...actorIds, ...ownerIds])];
     let nextActors: Record<string, Actor> = {};
@@ -248,9 +329,31 @@ export function NotificationCenter({
     setCommentTargets(nextCommentTargets);
     setContentTargets(
       Object.fromEntries(
-        [...(reviews ?? []), ...(lists ?? []), ...(screenshots ?? [])].map(
-          (item) => [item.id, item.public_id],
-        ),
+        [
+          ...(reviews ?? []),
+          ...(lists ?? []),
+          ...(screenshots ?? []),
+          ...(journalEntries ?? []),
+        ].map((item) => [item.id, item.public_id]),
+      ),
+    );
+    setPostCommentTargets(
+      Object.fromEntries(
+        (postComments ?? []).flatMap((comment) => {
+          const route = postRouteById.get(comment.content_id);
+          return route
+            ? [
+                [
+                  comment.id,
+                  {
+                    route,
+                    commentPublicId: comment.public_id,
+                    isReply: Boolean(comment.parent_id),
+                  },
+                ],
+              ]
+            : [];
+        }),
       ),
     );
     const shotPublicIds = new Map(
@@ -403,6 +506,7 @@ export function NotificationCenter({
                   ["list_likes_enabled", labels.listLikes],
                   ["comments_enabled", labels.comments],
                   ["screenshots_enabled", labels.screenshots],
+                  ["journal_likes_enabled", labels.journalLikes],
                 ] as const
               ).map(([key, label]) => (
                 <label className="notification-preference" key={key}>
@@ -475,6 +579,12 @@ export function NotificationCenter({
                     const isScreenshotComment =
                       item.kind === "screenshot_comment" ||
                       item.kind === "screenshot_comment_like";
+                    const isPostComment =
+                      item.kind === "post_comment" ||
+                      item.kind === "post_comment_like";
+                    const postCommentTarget = item.target_id
+                      ? postCommentTargets[item.target_id]
+                      : null;
                     const actorProfile = actor?.username
                       ? `/${lang}/u/${actor.username}`
                       : `/${lang}`;
@@ -489,21 +599,30 @@ export function NotificationCenter({
                               ? screenshotCommentTarget
                                 ? `/${lang}/shot/${screenshotCommentTarget.shotPublicId}#comment-${screenshotCommentTarget.commentPublicId}`
                                 : actorProfile
-                              : item.kind === "review_like" && item.target_id
-                                ? `/${lang}/review/${contentTargets[item.target_id] ?? item.target_id}`
-                                : item.kind === "screenshot_like" &&
-                                    item.target_id
-                                  ? `/${lang}/shot/${contentTargets[item.target_id] ?? item.target_id}`
-                                  : item.kind === "list_like" && item.target_id
-                                    ? `/${lang}/lists/${contentTargets[item.target_id] ?? item.target_id}`
-                                    : actorProfile;
+                              : isPostComment
+                                ? postCommentTarget
+                                  ? `/${lang}/${postCommentTarget.route}#comment-${postCommentTarget.commentPublicId}`
+                                  : actorProfile
+                                : item.kind === "journal_like" && item.target_id
+                                  ? `/${lang}/entry/${contentTargets[item.target_id] ?? item.target_id}`
+                                  : item.kind === "review_like" &&
+                                      item.target_id
+                                    ? `/${lang}/review/${contentTargets[item.target_id] ?? item.target_id}`
+                                    : item.kind === "screenshot_like" &&
+                                        item.target_id
+                                      ? `/${lang}/shot/${contentTargets[item.target_id] ?? item.target_id}`
+                                      : item.kind === "list_like" &&
+                                          item.target_id
+                                        ? `/${lang}/lists/${contentTargets[item.target_id] ?? item.target_id}`
+                                        : actorProfile;
                     const Icon =
                       item.kind === "moderation_comment_removed"
                         ? ShieldAlert
                         : item.kind === "follow"
                           ? UserPlus
                           : item.kind === "profile_comment" ||
-                              item.kind === "screenshot_comment"
+                              item.kind === "screenshot_comment" ||
+                              item.kind === "post_comment"
                             ? MessageCircle
                             : Heart;
                     const content = (
@@ -559,7 +678,16 @@ export function NotificationCenter({
                                             : item.kind ===
                                                 "screenshot_comment_like"
                                               ? labels.screenshotCommentLike
-                                              : labels.listLike}
+                                              : item.kind === "journal_like"
+                                                ? labels.journalLike
+                                                : item.kind === "post_comment"
+                                                  ? postCommentTarget?.isReply
+                                                    ? labels.postReply
+                                                    : labels.postComment
+                                                  : item.kind ===
+                                                      "post_comment_like"
+                                                    ? labels.postCommentLike
+                                                    : labels.listLike}
                                 {item.target_title && (
                                   <>
                                     {" "}
@@ -592,7 +720,9 @@ export function NotificationCenter({
                       >
                         {content}
                       </button>
-                    ) : (isCommentNotification || isScreenshotComment) &&
+                    ) : (isCommentNotification ||
+                        isScreenshotComment ||
+                        isPostComment) &&
                       item.target_id ? (
                       <button
                         type="button"
