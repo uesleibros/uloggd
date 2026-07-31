@@ -67,6 +67,22 @@ export type ReviewOption = {
 };
 type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
 type SelectedJourney = string | "loose" | null;
+/** "images" means the entry is stored and only its gallery failed. */
+type SaveOutcome = "saved" | "images" | "failed";
+
+/**
+ * A row-returning RPC reaches the client as the row or as a one-element array
+ * depending on how PostgREST reads the function's return type. Reading the
+ * fields off the raw payload is how creating a second journey ended up storing
+ * an id of `undefined`: the picker then had a nameless entry selected and every
+ * session logged from it went to the loose pile instead of the new journey.
+ */
+function firstRow(data: unknown) {
+  const row = Array.isArray(data) ? data[0] : data;
+  return row && typeof row === "object"
+    ? (row as Record<string, unknown>)
+    : null;
+}
 type DayPayload = {
   minutes: number | null;
   /** `HH:MM` when the player pinned an hour, empty when the day is enough. */
@@ -148,6 +164,15 @@ export function GameLogActions({
     typeof selectedJourney === "string" && selectedJourney !== "loose"
       ? (journeyList.find((journey) => journey.id === selectedJourney) ?? null)
       : null;
+  // A selection can outlive what it points at — a journey deleted in another
+  // tab, or a create that failed server-side. Falling back keeps the editor
+  // from silently writing sessions into a journey that is not there.
+  const missingSelection =
+    typeof selectedJourney === "string" &&
+    selectedJourney !== "loose" &&
+    !activeJourney;
+  if (missingSelection)
+    setSelectedJourney(journeyList[0]?.id ?? (hasLoose ? "loose" : null));
   const entryJourney = activeJourney?.id ?? null;
   const currentSessions = sessions.filter((session) =>
     selectedJourney === "loose"
@@ -221,7 +246,8 @@ export function GameLogActions({
       "create_journey",
       { game_id: game.id, game_slug: game.slug, journey_title: title },
     );
-    if (rpcError || !data) {
+    const row = firstRow(data);
+    if (rpcError || !row?.id) {
       setError(
         tri(
           lang,
@@ -232,9 +258,9 @@ export function GameLogActions({
       );
     } else {
       const created = {
-        id: data.id as string,
-        title: data.title as string,
-        publicId: (data.public_id as string | null) ?? null,
+        id: String(row.id),
+        title: String(row.title ?? title),
+        publicId: (row.public_id as string | null) ?? null,
       };
       setJourneyList((current) => [...current, created]);
       setSelectedJourney(created.id);
@@ -381,11 +407,43 @@ export function GameLogActions({
     }
   }
 
+  /**
+   * Clearing a whole day. Reusing the calendar's bulk delete means the day
+   * sheet and a drag-erase remove exactly the same rows, so the two paths
+   * cannot disagree about what "this day" covers.
+   */
+  async function removeWholeDay(day: string) {
+    if (pending || !sessionsFor(day).length) return false;
+    setError(null);
+    setPending(true);
+    const { error: rpcError } = await createClient().rpc(
+      "bulk_delete_diary_days",
+      { game_id: game.id, days: [day], entry_journey: entryJourney },
+    );
+    if (rpcError) {
+      setPending(false);
+      setError(t.couldNotRemove);
+      return false;
+    }
+    setSessions((current) =>
+      current.filter(
+        (session) =>
+          !(day >= session.start && day <= (session.end ?? session.start)) ||
+          (selectedJourney === "loose"
+            ? Boolean(session.journeyId)
+            : session.journeyId !== entryJourney),
+      ),
+    );
+    setOpenDay(null);
+    router.refresh();
+    return true;
+  }
+
   async function saveDay(
     payload: DayPayload,
     commitImages: (entryId: string) => Promise<boolean>,
-  ) {
-    if (!dayEditor) return false;
+  ): Promise<SaveOutcome> {
+    if (!dayEditor) return "failed";
     setPending(true);
     const supabase = createClient();
     const { session, day } = dayEditor;
@@ -418,30 +476,32 @@ export function GameLogActions({
         });
     if (rpcError) {
       setPending(false);
-      return false;
+      return "failed";
     }
-    const saved = Array.isArray(data) ? data[0] : data;
-    const entryId = session?.id ?? saved?.id;
-    if (entryId) {
+    const entryId = session?.id ?? firstRow(data)?.id;
+    if (typeof entryId === "string") {
       const { error: scopeError } = await supabase
         .from("diary_entries")
         .update({ comments_scope: payload.commentsScope })
         .eq("id", entryId);
       if (scopeError) {
         setPending(false);
-        return false;
+        return "failed";
       }
       // Images can only be attached once the entry exists, so they are the last
-      // step. A failure here leaves the saved entry alone and reports back.
+      // step. The entry itself is already saved at this point, so a failure
+      // here is reported as an image failure — saying the session could not be
+      // saved would send the author back to rewrite a note that is safely
+      // stored.
       if (!(await commitImages(entryId))) {
         setPending(false);
         router.refresh();
-        return false;
+        return "images";
       }
     }
     setDayEditor(null);
     router.refresh();
-    return true;
+    return "saved";
   }
 
   async function removeDay() {
@@ -521,6 +581,8 @@ export function GameLogActions({
     (total, session) => total + (session.minutes ?? 0),
     0,
   );
+  const journeyDays = new Set(currentSessions.map((session) => session.start))
+    .size;
   const sortedJourneySessions = [...currentSessions].sort((a, b) =>
     a.start.localeCompare(b.start),
   );
@@ -720,11 +782,15 @@ export function GameLogActions({
             )}
             {mode === "diary" && !openDay && !dayEditor && (
               <div className="social-editor-form journey-editor">
-                <div className="journey-picker">
+                <div
+                  className="journey-picker"
+                  aria-busy={pending || undefined}
+                >
                   {journeyList.map((journey) => (
                     <button
                       key={journey.id}
                       type="button"
+                      disabled={pending}
                       data-active={selectedJourney === journey.id || undefined}
                       onClick={() => {
                         setSelectedJourney(journey.id);
@@ -739,6 +805,7 @@ export function GameLogActions({
                   {hasLoose && (
                     <button
                       type="button"
+                      disabled={pending}
                       data-active={selectedJourney === "loose" || undefined}
                       onClick={() => {
                         setSelectedJourney("loose");
@@ -758,9 +825,12 @@ export function GameLogActions({
                   <button
                     type="button"
                     data-new
+                    disabled={pending}
+                    data-active={naming === "create" || undefined}
                     onClick={() => {
                       setNaming("create");
                       setNamingTitle("");
+                      setJourneyArmed(false);
                     }}
                   >
                     <Plus size={12} />{" "}
@@ -833,17 +903,26 @@ export function GameLogActions({
                             "Rename journey",
                             "Renombrar recorrido",
                           )
-                        : tri(
-                            lang,
-                            "Dê um nome à sua jornada",
-                            "Name your journey",
-                            "Ponle nombre a tu recorrido",
-                          )}
+                        : journeyList.length
+                          ? tri(
+                              lang,
+                              `Nova jornada de ${game.name}`,
+                              `New ${game.name} journey`,
+                              `Nuevo recorrido de ${game.name}`,
+                            )
+                          : tri(
+                              lang,
+                              "Dê um nome à sua jornada",
+                              "Name your journey",
+                              "Ponle nombre a tu recorrido",
+                            )}
                     </span>
                     <div>
                       <input
                         value={namingTitle}
                         maxLength={80}
+                        autoFocus
+                        disabled={pending}
                         placeholder={tri(
                           lang,
                           "ex: Primeira campanha, Replay 2026…",
@@ -886,7 +965,7 @@ export function GameLogActions({
                         </button>
                       )}
                     </div>
-                    {selectedJourney === null && (
+                    {naming !== "rename" && (
                       <p>
                         {tri(
                           lang,
@@ -898,7 +977,11 @@ export function GameLogActions({
                     )}
                   </div>
                 )}
-                {selectedJourney !== null && (
+                {/* Naming a *new* journey hides the calendar: it belongs to the
+                    journey being replaced, and leaving it up buried the input
+                    far enough down the dialog that "New journey" read as a
+                    dead button. */}
+                {selectedJourney !== null && naming !== "create" && (
                   <div className="journey-editor-workspace">
                     <div className="journey-editor-summary">
                       <section className="journey-overview">
@@ -937,6 +1020,15 @@ export function GameLogActions({
                               <CalendarDays size={13} /> {t.sessions}
                             </dt>
                             <dd>{currentSessions.length}</dd>
+                          </div>
+                          {/* Entries and days stopped being the same number the
+                              moment a day could hold more than one. */}
+                          <div>
+                            <dt>
+                              <CalendarDays size={13} />{" "}
+                              {tri(lang, "Dias", "Days", "Días")}
+                            </dt>
+                            <dd>{journeyDays || "—"}</dd>
                           </div>
                           <div>
                             <dt>
@@ -1021,6 +1113,7 @@ export function GameLogActions({
             )}
             {mode === "diary" && openDay && !dayEditor && (
               <JourneyDaySheet
+                key={openDay}
                 day={openDay}
                 sessions={sessionsFor(openDay)}
                 journeyTitle={journeyLabel}
@@ -1029,6 +1122,7 @@ export function GameLogActions({
                 onBack={() => setOpenDay(null)}
                 onEdit={(session) => editEntry(openDay, session)}
                 onCreate={() => editEntry(openDay, null)}
+                onRemoveDay={() => removeWholeDay(openDay)}
               />
             )}
             {mode === "diary" && dayEditor && (
@@ -1172,6 +1266,7 @@ function JourneyDaySheet({
   onBack,
   onEdit,
   onCreate,
+  onRemoveDay,
 }: {
   day: string;
   sessions: JourneySession[];
@@ -1181,8 +1276,41 @@ function JourneyDaySheet({
   onBack: () => void;
   onEdit: (session: JourneySession) => void;
   onCreate: () => void;
+  onRemoveDay: () => Promise<boolean>;
 }) {
   const t = uiText(lang);
+  const [dayArmed, setDayArmed] = useState(false);
+  const [dayRemoving, setDayRemoving] = useState(false);
+  const [dayFailed, setDayFailed] = useState(false);
+  const dayDisarmTimer = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (dayDisarmTimer.current) window.clearTimeout(dayDisarmTimer.current);
+    },
+    [],
+  );
+
+  async function removeDay() {
+    if (pending || dayRemoving || !sessions.length) return;
+    if (!dayArmed) {
+      setDayArmed(true);
+      if (dayDisarmTimer.current) window.clearTimeout(dayDisarmTimer.current);
+      dayDisarmTimer.current = window.setTimeout(
+        () => setDayArmed(false),
+        4000,
+      );
+      return;
+    }
+    if (dayDisarmTimer.current) window.clearTimeout(dayDisarmTimer.current);
+    setDayArmed(false);
+    setDayRemoving(true);
+    setDayFailed(false);
+    if (!(await onRemoveDay())) {
+      setDayRemoving(false);
+      setDayFailed(true);
+    }
+  }
+
   const dayLabel = new Intl.DateTimeFormat(lang, {
     weekday: "long",
     day: "numeric",
@@ -1224,7 +1352,7 @@ function JourneyDaySheet({
         )}
       </div>
       {sessions.length ? (
-        <ol className="journey-day-entries">
+        <ol className="journey-day-entries" aria-busy={pending || undefined}>
           {sessions.map((session, index) => {
             const clock = formatEntryTime(session.startedAt, lang);
             const length = formatSessionTime(session.minutes);
@@ -1281,7 +1409,48 @@ function JourneyDaySheet({
           )}
         </p>
       )}
+      {dayFailed && (
+        <p className="social-form-error" role="alert">
+          {tri(
+            lang,
+            "Não foi possível excluir os registros desse dia.",
+            "Could not delete this day's entries.",
+            "No se pudieron eliminar los registros de ese día.",
+          )}
+        </p>
+      )}
       <footer className="journey-day-actions">
+        {sessions.length > 0 && (
+          <button
+            type="button"
+            className="journey-day-remove"
+            onClick={() => void removeDay()}
+            disabled={pending}
+            data-armed={dayArmed || undefined}
+            aria-busy={dayRemoving}
+          >
+            {dayRemoving ? (
+              <LoaderCircle className="spin" size={14} aria-hidden />
+            ) : (
+              <Trash2 size={14} />
+            )}{" "}
+            {dayRemoving
+              ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
+              : dayArmed
+                ? tri(
+                    lang,
+                    `Excluir os ${sessions.length} registros?`,
+                    `Delete all ${sessions.length} entries?`,
+                    `¿Eliminar los ${sessions.length} registros?`,
+                  )
+                : tri(
+                    lang,
+                    "Excluir o dia",
+                    "Delete the day",
+                    "Eliminar el día",
+                  )}
+          </button>
+        )}
         <button type="button" onClick={onBack} disabled={pending}>
           {t.back}
         </button>
@@ -1330,7 +1499,7 @@ function JourneyEntryEditor({
   onSave: (
     payload: DayPayload,
     commitImages: (entryId: string) => Promise<boolean>,
-  ) => Promise<boolean>;
+  ) => Promise<SaveOutcome>;
   onRemove?: () => Promise<boolean>;
 }) {
   const t = uiText(lang);
@@ -1388,7 +1557,9 @@ function JourneyEntryEditor({
       },
       images.commit,
     );
-    if (!saved) setFailure("save");
+    // "images" already surfaced its own message inside the gallery editor, and
+    // the entry is stored, so it must not claim the session failed to save.
+    if (saved === "failed") setFailure("save");
   }
 
   async function remove() {

@@ -7,6 +7,7 @@ import {
   Clock3,
   FastForward,
   Flag,
+  LoaderCircle,
   Play,
   Rewind,
 } from "lucide-react";
@@ -279,6 +280,14 @@ export function JourneyCalendar({
           <ChevronRight size={15} />
         </button>
       </header>
+      {/* The grid dims while a write is in flight; without a spinner over it a
+          slow save just looks like the calendar stopped responding. */}
+      {busy && (
+        <p className="journey-calendar-busy" role="status">
+          <LoaderCircle className="spin" size={15} aria-hidden />
+          {tri(lang, "Salvando…", "Saving…", "Guardando…")}
+        </p>
+      )}
       <div
         ref={gridRef}
         className="journey-calendar-grid"

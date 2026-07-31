@@ -9455,6 +9455,17 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .skeleton-review-copy span:last-child {
   width: 61%;
 }
+/* Holds the shape of a journal entry's ordered gallery while it loads. */
+.skeleton-entry-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  margin-top: 20px;
+}
+.skeleton-entry-gallery span {
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+}
 .skeleton-review-aspects {
   display: grid;
   gap: 12px;
@@ -10061,9 +10072,21 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border-style: dashed;
   color: var(--screen-muted);
 }
-.journey-picker button[data-new]:hover {
+.journey-picker button[data-new]:hover,
+.journey-picker button[data-new][data-active] {
   border-color: var(--state-playing-border);
   color: var(--state-playing-text);
+}
+.journey-picker button[data-new][data-active] {
+  background: var(--state-playing-soft-bg);
+}
+.journey-picker button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.journey-picker button:disabled:hover {
+  background: var(--console-raised);
+  color: var(--screen-dim);
 }
 .journey-manage {
   grid-column: 1 / -1;
@@ -10310,6 +10333,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 
 /* Journey calendar: drag-across-days range picker inside the log modal. */
 .journey-calendar {
+  position: relative;
   display: grid;
   gap: 8px;
   padding: 12px;
@@ -10409,6 +10433,28 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .journey-calendar[data-busy] .journey-calendar-grid {
   opacity: 0.6;
   pointer-events: none;
+}
+/* Floats over the dimmed grid rather than sitting above it: inserting a row
+   would push the whole calendar down every time a save started. */
+.journey-calendar-busy {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--state-playing-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--console-raised) 92%, transparent);
+  color: var(--state-playing-text);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  transform: translate(-50%, -50%);
 }
 .journey-calendar-grid:not([data-dragging]) > span[data-day]:hover {
   background: var(--console-hover);
@@ -10790,6 +10836,10 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   opacity: 0.55;
   cursor: default;
 }
+.journey-day-entries[aria-busy="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}
 .journey-day-entries b {
   color: var(--brand-blurple-bright);
   font-size: 0.75rem;
@@ -10812,6 +10862,11 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .journey-day-entries small {
   color: var(--screen-muted);
   font-size: 0.625rem;
+}
+/* Three actions live here once a day has entries — delete, back, add — so the
+   row wraps instead of squeezing the labels on a narrow dialog. */
+.journey-day-actions {
+  flex-wrap: wrap;
 }
 .journey-day-actions [data-primary] {
   display: inline-flex;
@@ -11957,6 +12012,7 @@ details.review-page-content > .markdown-body {
   .ranked-list-item[data-drop-after]::after,
   .list-add-game-row,
   .journey-day-editor,
+  .journey-day-sheet,
   .journey-calendar-grid > span:not(.journey-calendar-weekday) {
     animation: none;
     transition-duration: 0.01ms;
@@ -18754,6 +18810,20 @@ adapted to the current uloggd surface system. */
   font-size: 0.59375rem;
   font-weight: 680;
   font-variant-numeric: tabular-nums;
+}
+/* A second entry on an already-numbered day: the marker shrinks to a bead so
+   the timeline still reads as one day rather than two. */
+.journal-session[data-continues-day] .journal-session-node {
+  width: 12px;
+  height: 12px;
+  margin: 10px;
+  border-color: var(--shell-line-strong);
+  background: var(--shell-line-strong);
+}
+.journal-session-same-day {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
 }
 .journal-session > div {
   min-width: 0;

@@ -72,12 +72,33 @@ function formatReviewRating(
   return `${(rating / 20).toLocaleString(lang, { maximumFractionDigits: 1 })}/5`;
 }
 
-function sessionDays(start: string, end: string | null) {
-  if (!end) return 1;
-  return Math.max(
-    1,
-    Math.round((Date.parse(end) - Date.parse(start)) / 86_400_000) + 1,
-  );
+/**
+ * Distinct calendar days a set of entries touches.
+ *
+ * Summing each entry's span would double-count now that a day can hold several
+ * entries: three sessions logged on one afternoon are one day played, not
+ * three. Ranges still contribute every day they cover.
+ */
+function distinctPlayedDays(
+  entries: Array<{ played_on: string; ended_on: string | null }>,
+) {
+  const days = new Set<string>();
+  for (const entry of entries) {
+    const start = Date.parse(`${entry.played_on}T00:00:00Z`);
+    const end = entry.ended_on
+      ? Date.parse(`${entry.ended_on}T00:00:00Z`)
+      : start;
+    // Guard against a malformed range standing in for an unbounded loop.
+    const span = Math.min(
+      Math.max(0, Math.round((end - start) / 86_400_000)),
+      3650,
+    );
+    for (let offset = 0; offset <= span; offset += 1)
+      days.add(
+        new Date(start + offset * 86_400_000).toISOString().slice(0, 10),
+      );
+  }
+  return days.size;
 }
 
 const getJourneyRecord = cache(async (id: string) => {
@@ -267,13 +288,14 @@ export default async function JournalPage({ params }: Props) {
     (total, session) => total + (session.minutes ?? 0),
     0,
   );
-  const totalDays = visibleSessions.reduce(
-    (total, session) =>
-      total + sessionDays(session.played_on, session.ended_on),
-    0,
-  );
+  const totalDays = distinctPlayedDays(visibleSessions);
   const firstSession = visibleSessions[0] ?? null;
   const lastSession = visibleSessions.at(-1) ?? null;
+  // A plain record, not a Map: `Map` is the lucide journey icon in this file.
+  const dayNumbers: Record<string, number> = {};
+  for (const session of visibleSessions)
+    if (!(session.played_on in dayNumbers))
+      dayNumbers[session.played_on] = Object.keys(dayNumbers).length + 1;
   const isOwner = user?.id === journey.profile_id;
   const t = uiText(lang);
   const date = new Intl.DateTimeFormat(lang, {
@@ -501,6 +523,12 @@ export default async function JournalPage({ params }: Props) {
             {visibleSessions.length ? (
               <div className="journal-timeline-list">
                 {visibleSessions.map((session, index) => {
+                  // A day can hold several entries, so the timeline numbers
+                  // days rather than rows: repeating the same date down three
+                  // consecutive cards read as duplicated sessions.
+                  const previous = visibleSessions[index - 1];
+                  const continuesDay =
+                    previous?.played_on === session.played_on;
                   const activityEntry: SocialEntry = {
                     id: session.id,
                     publicId: session.public_id,
@@ -529,22 +557,34 @@ export default async function JournalPage({ params }: Props) {
                   return (
                     <article
                       className="journal-session"
+                      data-continues-day={continuesDay || undefined}
                       id={`session-${session.public_id}`}
                       key={session.id}
                     >
                       <span className="journal-session-node" aria-hidden>
-                        {index + 1}
+                        {continuesDay ? "" : dayNumbers[session.played_on]}
                       </span>
                       <div>
                         <header>
-                          <time dateTime={session.played_on}>
-                            {date.format(
-                              new Date(`${session.played_on}T00:00:00Z`),
-                            )}
-                            {session.ended_on
-                              ? ` – ${date.format(new Date(`${session.ended_on}T00:00:00Z`))}`
-                              : ""}
-                          </time>
+                          {continuesDay ? (
+                            <span className="journal-session-same-day">
+                              {tri(
+                                lang,
+                                "No mesmo dia",
+                                "Same day",
+                                "El mismo día",
+                              )}
+                            </span>
+                          ) : (
+                            <time dateTime={session.played_on}>
+                              {date.format(
+                                new Date(`${session.played_on}T00:00:00Z`),
+                              )}
+                              {session.ended_on
+                                ? ` – ${date.format(new Date(`${session.ended_on}T00:00:00Z`))}`
+                                : ""}
+                            </time>
+                          )}
                           {session.started_at && (
                             <span>
                               <Clock3 size={12} />

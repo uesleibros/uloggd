@@ -101,6 +101,55 @@ export function ContentDetailSkeleton({
       </main>
     );
 
+  // A journal entry is a cover, a byline, its play metadata, the note, and an
+  // ordered gallery. The generic two-block placeholder collapsed all of that
+  // into a stub, so the page jumped once the real entry arrived.
+  if (kind === "entry")
+    return (
+      <main
+        className="social-page social-skeleton diary-entry-page content-detail-skeleton content-detail-skeleton-entry"
+        aria-busy="true"
+        aria-label="Loading journal entry"
+      >
+        <span className="skeleton-block skeleton-back" />
+        <article className="review-page-card skeleton-review-detail">
+          <header>
+            <span className="skeleton-block" />
+            <div>
+              <span className="skeleton-block" />
+              <div className="skeleton-review-byline">
+                <span className="skeleton-block" />
+                <span className="skeleton-block" />
+                <span className="skeleton-block" />
+              </div>
+              <div className="skeleton-review-verdict">
+                <span className="skeleton-block" />
+                <span className="skeleton-block" />
+              </div>
+            </div>
+          </header>
+          <div className="skeleton-review-copy">
+            {Array.from({ length: 3 }, (_, index) => (
+              <span className="skeleton-block" key={index} />
+            ))}
+          </div>
+          <div className="skeleton-entry-gallery">
+            {Array.from({ length: 2 }, (_, index) => (
+              <span className="skeleton-block" key={index} />
+            ))}
+          </div>
+          <footer>
+            <span className="skeleton-block" />
+            <span className="skeleton-block" />
+          </footer>
+        </article>
+        <section className="skeleton-review-comments">
+          <span className="skeleton-block" />
+          <span className="skeleton-block" />
+        </section>
+      </main>
+    );
+
   return (
     <main
       className={`social-page social-skeleton content-detail-skeleton content-detail-skeleton-${kind}`}
