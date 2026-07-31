@@ -78,12 +78,7 @@ export function LoginPanel({
       "Enter your email to receive a recovery link.",
       "Introduce tu correo para recibir el enlace de recuperación.",
     ),
-    continueWith: tri(
-      lang,
-      "Continue com",
-      "Continue with",
-      "Continuar con",
-    ),
+    continueWith: tri(lang, "Continue com", "Continue with", "Continuar con"),
     continueWithEmail: tri(
       lang,
       "ou continue com e-mail",
@@ -663,7 +658,6 @@ export function LoginPanel({
                 {fieldErrors.password}
               </span>
             )}
-
           </label>
         )}
 

@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { Gamepad2, LibraryBig, ListChecks, MessageSquareText, RefreshCw, Sparkles } from "lucide-react";
+import {
+  Gamepad2,
+  LibraryBig,
+  ListChecks,
+  MessageSquareText,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 import { redirect, notFound } from "next/navigation";
 import { LoginPanel } from "@/components/auth/login-panel";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
