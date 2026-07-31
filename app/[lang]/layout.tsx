@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Atkinson_Hyperlegible_Next,
   Inter,
@@ -109,6 +109,20 @@ export async function generateMetadata({
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
 }
+
+/**
+ * `viewport-fit: cover` is what lets a bottom sheet reach the physical bottom
+ * of a phone screen instead of stopping above the gesture bar. Without it the
+ * viewport ends at the system inset and every `env(safe-area-inset-*)` in the
+ * stylesheet resolves to zero — the sheets, drawers and sticky footers here
+ * were all written expecting those insets, so they were compensating for
+ * something that never reported a value.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 // Auth reads cookies, so it stays behind Suspense to keep the static shell
 // and route loading skeletons streaming immediately on hard loads.
