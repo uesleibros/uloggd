@@ -94,7 +94,9 @@ export default async function ModerationPage({
 
   let accountQuery = supabase
     .from("profiles")
-    .select("id,username,display_name,avatar_url,role,verified,created_at")
+    .select(
+      "id,username,display_name,avatar_url,role,verified,account_type,created_at",
+    )
     .order("created_at", { ascending: false })
     .limit(search.length >= 2 ? 20 : 0);
   if (search.length >= 2) {
@@ -154,7 +156,7 @@ export default async function ModerationPage({
       ? supabase
           .from("profiles")
           .select(
-            "id,username,display_name,avatar_url,role,verified,created_at",
+            "id,username,display_name,avatar_url,role,verified,account_type,created_at",
           )
           .in("id", profileIds)
       : Promise.resolve({ data: [] }),

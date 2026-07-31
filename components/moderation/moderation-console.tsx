@@ -4,6 +4,7 @@ import * as Dialog from "@/components/ui/dialog";
 import * as Select from "@/components/ui/select";
 import {
   Ban,
+  Building2,
   Camera,
   Check,
   ChevronDown,
@@ -43,6 +44,7 @@ type Profile = {
   avatar_url: string | null;
   role: Role;
   verified: boolean;
+  account_type: "PERSON" | "ORGANIZATION";
   created_at: string;
 };
 type Report = {
@@ -104,7 +106,8 @@ function rangeLabel(
   );
 }
 
-type ProfileAction = "BAN" | "UNBAN" | "VERIFY" | "UNVERIFY";
+type ProfileAction =
+  "BAN" | "UNBAN" | "VERIFY" | "UNVERIFY" | "DEMOTE_ORGANIZATION";
 type Removal =
   | { kind: "COMMENT"; reportId: string; commentId: string }
   | { kind: "SCREENSHOT"; reportId: string; screenshotId: string };
@@ -266,6 +269,13 @@ export function ModerationConsole({
     if (action === "UNBAN") return tri(lang, "Desbanir", "Unban", "Desbanear");
     if (action === "VERIFY")
       return tri(lang, "Verificar", "Verify", "Verificar");
+    if (action === "DEMOTE_ORGANIZATION")
+      return tri(
+        lang,
+        "Revogar organização",
+        "Revoke organization",
+        "Revocar organización",
+      );
     return tri(
       lang,
       "Retirar verificação",
@@ -352,7 +362,9 @@ export function ModerationConsole({
     const safeSearch = query.replace(/[%_,()]/g, "");
     const { data, error: searchError } = await createClient()
       .from("profiles")
-      .select("id,username,display_name,avatar_url,role,verified,created_at")
+      .select(
+        "id,username,display_name,avatar_url,role,verified,account_type,created_at",
+      )
       .or(`username.ilike.%${safeSearch}%,display_name.ilike.%${safeSearch}%`)
       .order("verified", { ascending: false })
       .order("username", { ascending: true })
@@ -427,7 +439,9 @@ export function ModerationConsole({
   async function performProfileAction() {
     if (!targetAction || pending) return;
     const requiresReason =
-      targetAction.action === "BAN" || targetAction.action === "UNBAN";
+      targetAction.action === "BAN" ||
+      targetAction.action === "UNBAN" ||
+      targetAction.action === "DEMOTE_ORGANIZATION";
     if (requiresReason && reason.trim().length < 3) return;
     setPending(`profile-${targetAction.profile.id}`);
     setError(null);
@@ -468,6 +482,10 @@ export function ModerationConsole({
                     : targetAction.action === "UNVERIFY"
                       ? false
                       : profile.verified,
+                account_type:
+                  targetAction.action === "DEMOTE_ORGANIZATION"
+                    ? "PERSON"
+                    : profile.account_type,
               }
             : profile,
         ),
@@ -483,6 +501,10 @@ export function ModerationConsole({
                     : targetAction.action === "UNVERIFY"
                       ? false
                       : profile.verified,
+                account_type:
+                  targetAction.action === "DEMOTE_ORGANIZATION"
+                    ? "PERSON"
+                    : profile.account_type,
               }
             : profile,
         ),
@@ -1177,6 +1199,9 @@ export function ModerationConsole({
                         <span>@{profile.username}</span>
                         <small>
                           {profile.role}
+                          {profile.account_type === "ORGANIZATION"
+                            ? ` · ${tri(lang, "ORGANIZAÇÃO", "ORGANIZATION", "ORGANIZACIÓN")}`
+                            : ""}
                           {banned
                             ? ` · ${tri(lang, "BANIDO", "BANNED", "BANEADO")}`
                             : ""}
@@ -1192,6 +1217,26 @@ export function ModerationConsole({
                       )}
                       {!protectedTarget && (
                         <>
+                          {profile.account_type === "ORGANIZATION" && (
+                            <button
+                              type="button"
+                              disabled={Boolean(pending)}
+                              onClick={() =>
+                                openProfileAction(
+                                  profile,
+                                  "DEMOTE_ORGANIZATION",
+                                )
+                              }
+                            >
+                              <Building2 size={13} />
+                              {tri(
+                                lang,
+                                "Revogar organização",
+                                "Revoke organization",
+                                "Revocar organización",
+                              )}
+                            </button>
+                          )}
                           <button
                             type="button"
                             disabled={Boolean(pending)}
