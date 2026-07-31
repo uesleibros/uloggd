@@ -19,6 +19,7 @@ import { TopProgress } from "@/components/top-progress";
 import { SmartHeader } from "@/components/smart-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeManager } from "@/components/theme-manager";
+import { ServiceWorkerManager } from "@/components/service-worker-manager";
 import { InterfacePreferencesManager } from "@/components/interface-preferences-manager";
 import { TwemojiManager } from "@/components/twemoji-manager";
 import { TextareaAutosizeManager } from "@/components/textarea-autosize-manager";
@@ -103,6 +104,21 @@ export async function generateMetadata({
       description: dictionary.home.subtitle,
       images: ["/logo.jpg"],
     },
+    // iOS ignores the web manifest for standalone display and home screen
+    // icons, so the same intent has to be stated again here or an install on
+    // iPhone opens in a Safari tab with browser chrome.
+    appleWebApp: {
+      capable: true,
+      title: "uloggd",
+      statusBarStyle: "black-translucent",
+    },
+    icons: {
+      icon: [
+        { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+        { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
+      apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+    },
   };
 }
 
@@ -122,6 +138,13 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // Paints the system bars to match the app instead of leaving a white strip
+  // above an installed window. Both schemes are listed because the site has a
+  // light theme and a single value would be wrong in one of them.
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0b0a0d" },
+    { media: "(prefers-color-scheme: light)", color: "#e3e5e9" },
+  ],
 };
 
 // Auth reads cookies, so it stays behind Suspense to keep the static shell
@@ -248,6 +271,7 @@ export default async function LocaleLayout({
         <ThemeManager />
         <InterfacePreferencesManager />
         <TwemojiManager />
+        <ServiceWorkerManager />
         <TextareaAutosizeManager />
         <TooltipProvider>
           <div className="platform-shell">

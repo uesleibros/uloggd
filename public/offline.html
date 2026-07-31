@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0b0a0d" />
+    <title>Sem conexão · uloggd</title>
+    <!--
+      Served by the service worker when a navigation cannot reach the network.
+      Everything is inline because the only guarantee at this point is that this
+      one file was cached: a stylesheet or a font it linked to might not have
+      been, and a fallback page that renders unstyled is worse than no fallback.
+
+      The copy is chosen from the browser's own language rather than the URL,
+      since the URL that failed may not carry one, and the app's dictionaries
+      are not reachable offline anyway.
+    -->
+    <style>
+      :root {
+        color-scheme: dark;
+        --console-black: #0b0a0d;
+        --screen-white: #f4f2f6;
+        --muted: #9b98a6;
+        --line: rgb(244 242 246 / 12%);
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          color-scheme: light;
+          --console-black: #e3e5e9;
+          --screen-white: #17191e;
+          --muted: #5b5f6b;
+          --line: rgb(23 25 30 / 14%);
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100svh;
+        display: grid;
+        place-items: center;
+        padding: max(24px, env(safe-area-inset-top)) 24px
+          max(24px, env(safe-area-inset-bottom));
+        background: var(--console-black);
+        color: var(--screen-white);
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          "Helvetica Neue",
+          Arial,
+          sans-serif;
+        text-align: center;
+      }
+      main {
+        max-width: 30rem;
+        display: grid;
+        gap: 14px;
+        justify-items: center;
+      }
+      .mark {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        object-fit: cover;
+      }
+      h1 {
+        margin: 6px 0 0;
+        font-size: clamp(1.35rem, 5vw, 1.7rem);
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.55;
+        font-size: 0.98rem;
+      }
+      button {
+        margin-top: 10px;
+        padding: 11px 22px;
+        border: 0;
+        border-radius: 999px;
+        background: #5865f2;
+        color: #fff;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #7983f5;
+      }
+      button:focus-visible {
+        outline: 2px solid #5865f2;
+        outline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img
+        class="mark"
+        src="/icons/icon-192.png"
+        alt=""
+        width="72"
+        height="72"
+      />
+      <h1 id="title">Você está sem conexão</h1>
+      <p id="body">
+        Não conseguimos carregar esta página. Assim que a internet voltar, é só
+        tentar de novo.
+      </p>
+      <button id="retry" type="button">Tentar novamente</button>
+    </main>
+    <script>
+      (function () {
+        var copy = {
+          pt: {
+            title: "Você está sem conexão",
+            body: "Não conseguimos carregar esta página. Assim que a internet voltar, é só tentar de novo.",
+            retry: "Tentar novamente",
+            lang: "pt-BR",
+          },
+          en: {
+            title: "You are offline",
+            body: "We could not load this page. Try again once your connection is back.",
+            retry: "Try again",
+            lang: "en",
+          },
+          es: {
+            title: "Estás sin conexión",
+            body: "No pudimos cargar esta página. Inténtalo de nuevo cuando vuelva la conexión.",
+            retry: "Intentar de nuevo",
+            lang: "es",
+          },
+        };
+        var tag = (navigator.language || "pt").slice(0, 2).toLowerCase();
+        var text = copy[tag] || copy.pt;
+        document.documentElement.lang = text.lang;
+        document.getElementById("title").textContent = text.title;
+        document.getElementById("body").textContent = text.body;
+        document.getElementById("retry").textContent = text.retry;
+
+        document.getElementById("retry").addEventListener("click", function () {
+          location.reload();
+        });
+        // Reloads on its own the moment the device reports a connection, so
+        // someone who walked back into signal does not have to notice a button.
+        window.addEventListener("online", function () {
+          location.reload();
+        });
+      })();
+    </script>
+  </body>
+</html>
