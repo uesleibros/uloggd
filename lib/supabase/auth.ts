@@ -25,17 +25,24 @@ export const getNavigationAccount = cache(async () => {
   const user = await getAuthUser();
   if (!user) return null;
   const supabase = await getSupabase();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username,display_name,avatar_url,verified,role")
-    .eq("id", user.id)
-    .maybeSingle();
+  // `role` is revoked from `authenticated`, so it cannot ride along in this
+  // select: naming it fails the whole request and the header loses the avatar
+  // and username with it. It comes from the definer function scoped to the
+  // caller instead.
+  const [{ data: profile }, { data: role }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("username,display_name,avatar_url,verified")
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase.rpc("own_account_role"),
+  ]);
   return {
     email: user.email ?? "",
     username: profile?.username ?? null,
     displayName: profile?.display_name ?? null,
     avatarUrl: profile?.avatar_url ?? null,
     verified: profile?.verified ?? false,
-    role: profile?.role ?? "USER",
+    role: role ?? "USER",
   };
 });

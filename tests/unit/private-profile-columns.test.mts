@@ -18,10 +18,31 @@ import path from "node:path";
  *
  * Reads source rather than the database so it needs no credentials.
  */
+/** Revoked from every public role, and never granted back. */
+const AGE_COLUMNS = ["birth_date", "age_assured_at", "age_assurance_method"];
+
 const PRIVATE_COLUMNS = [
   "birth_date",
   "age_assured_at",
   "age_assurance_method",
+  // Added after this test was written and did not catch the follow-up: the
+  // migration that revoked `role` from `authenticated` left one select naming
+  // it, `getNavigationAccount`, which every signed-in page calls for the header
+  // avatar. The request failed as a whole, so users lost their own name and
+  // photo while everyone else's profile still rendered. Reached production.
+  "role",
+];
+
+/**
+ * The definer functions that replaced the revoked reads. Asserting they exist
+ * keeps the scan above honest: a scan that finds no offending select because
+ * the replacements were deleted along with their callers would pass.
+ */
+const REPLACEMENTS = [
+  "own_age_profile",
+  "own_account_role",
+  "moderation_search_accounts",
+  "moderation_profiles",
 ];
 
 const SKIP_DIRECTORIES = new Set([
@@ -116,9 +137,56 @@ test("the migration revokes the table grant before granting columns", async () =
   assert.ok(grant >= 0, "the per-column grants are missing");
   assert.ok(revoke < grant, "the table revoke must come before the grants");
 
-  for (const column of PRIVATE_COLUMNS)
+  for (const column of AGE_COLUMNS)
     assert.ok(
       !new RegExp(`^\\s*${column},?\\s*$`, "m").test(sql),
       `${column} appears in a grant list and would stay readable`,
+    );
+});
+
+test("role is revoked from signed-in accounts too", async () => {
+  // This migration grants `role` to `authenticated` so the moderation console
+  // keeps working, and the next one takes it back once the console reads
+  // through definer functions. Both halves have to stay, in that order, or
+  // signed-in users can enumerate the moderators again.
+  const root = path.join(process.cwd(), "supabase", "migrations");
+  const names = (await readdir(root))
+    .filter((name) => name.endsWith(".sql"))
+    .sort();
+  const combined = (
+    await Promise.all(
+      names.map((name) => readFile(path.join(root, name), "utf8")),
+    )
+  ).join("\n");
+
+  const revoke = combined.search(
+    /revoke\s+select\s*\(\s*role\s*\)\s+on\s+public\.profiles\s+from\s+authenticated/i,
+  );
+  assert.ok(revoke >= 0, "role is never revoked from authenticated");
+
+  const lastGrant = combined.lastIndexOf(
+    "role\n) on public.profiles to authenticated",
+  );
+  assert.ok(
+    lastGrant < revoke,
+    "a grant of role to authenticated comes after the revoke and undoes it",
+  );
+});
+
+test("the replacement functions the app depends on exist", async () => {
+  const root = path.join(process.cwd(), "supabase", "migrations");
+  const names = await readdir(root);
+  const sql = (
+    await Promise.all(
+      names
+        .filter((name) => name.endsWith(".sql"))
+        .map((name) => readFile(path.join(root, name), "utf8")),
+    )
+  ).join("\n");
+
+  for (const fn of REPLACEMENTS)
+    assert.ok(
+      new RegExp(`create (or replace )?function public\\.${fn}\\b`).test(sql),
+      `${fn} is gone, so the reads that depend on it have nowhere to go`,
     );
 });

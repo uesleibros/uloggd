@@ -359,16 +359,13 @@ export function ModerationConsole({
     if (query.length < 2 || searching) return;
     setSearching(true);
     setError(null);
-    const safeSearch = query.replace(/[%_,()]/g, "");
-    const { data, error: searchError } = await createClient()
-      .from("profiles")
-      .select(
-        "id,username,display_name,avatar_url,role,verified,account_type,created_at",
-      )
-      .or(`username.ilike.%${safeSearch}%,display_name.ilike.%${safeSearch}%`)
-      .order("verified", { ascending: false })
-      .order("username", { ascending: true })
-      .limit(20);
+    // `role` cannot be selected from `profiles` any more, and the console is
+    // the one caller that needs it. The definer function checks the caller is
+    // a moderator, and carries the cap and the escaping with it.
+    const { data, error: searchError } = await createClient().rpc(
+      "moderation_search_accounts",
+      { term: query },
+    );
     if (searchError) {
       setError(
         tri(

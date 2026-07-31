@@ -13,6 +13,10 @@ import {
   isMissingSchemaError,
   warnSchemaGap,
 } from "@/lib/supabase/schema-fallback";
+import {
+  getModerationProfiles,
+  searchModerationAccounts,
+} from "@/lib/moderation-accounts";
 import { hasLocale } from "../dictionaries";
 import "./moderation.css";
 
@@ -29,12 +33,10 @@ export default async function ModerationPage({
   const user = await getAuthUser();
   if (!user) notFound();
   const supabase = await getSupabase();
-  const { data: actor } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (actor?.role !== "MODERATOR" && actor?.role !== "ADMIN") notFound();
+  // `role` is revoked from `authenticated`, so the gate asks the definer
+  // function that answers only for the caller.
+  const { data: actorRole } = await supabase.rpc("own_account_role");
+  if (actorRole !== "MODERATOR" && actorRole !== "ADMIN") notFound();
 
   const requestedStatus =
     typeof query.status === "string" ? query.status.toUpperCase() : "OPEN";
@@ -92,21 +94,13 @@ export default async function ModerationPage({
     .range(reportOffset, reportOffset + MODERATION_PAGE_SIZE - 1);
   if (status !== "ALL") reportQuery = reportQuery.eq("status", status);
 
-  let accountQuery = supabase
-    .from("profiles")
-    .select(
-      "id,username,display_name,avatar_url,role,verified,account_type,created_at",
-    )
-    .order("created_at", { ascending: false })
-    .limit(search.length >= 2 ? 20 : 0);
-  if (search.length >= 2) {
-    const safeSearch = search.replace(/[%_,()]/g, "");
-    accountQuery = accountQuery.or(
-      `username.ilike.%${safeSearch}%,display_name.ilike.%${safeSearch}%`,
-    );
-  }
+  // The search moved into a definer function: it carries the minimum length,
+  // the cap and the ordering, so they cannot drift from what the console is
+  // allowed to see. It also escapes `like` metacharacters instead of stripping
+  // them, which the old caller-side sanitising could not do.
+  const accountQuery = searchModerationAccounts(supabase, search);
 
-  const [{ data: reports }, { data: searchedAccounts }, { data: actions }] =
+  const [{ data: reports }, searchedAccounts, { data: actions }] =
     await Promise.all([
       reportQuery,
       accountQuery,
@@ -128,7 +122,7 @@ export default async function ModerationPage({
           report.reporter_id,
           report.target_profile_id,
         ]),
-        ...(searchedAccounts ?? []).map((profile) => profile.id),
+        ...searchedAccounts.map((profile) => profile.id),
         ...(actions ?? []).flatMap((action) => [
           action.moderator_id,
           action.target_profile_id,
@@ -147,19 +141,12 @@ export default async function ModerationPage({
       : [],
   );
   const [
-    { data: profiles },
+    profiles,
     { data: comments },
     screenshotResult,
     { data: moderationStates },
   ] = await Promise.all([
-    profileIds.length
-      ? supabase
-          .from("profiles")
-          .select(
-            "id,username,display_name,avatar_url,role,verified,account_type,created_at",
-          )
-          .in("id", profileIds)
-      : Promise.resolve({ data: [] }),
+    getModerationProfiles(supabase, profileIds),
     commentIds.length
       ? supabase
           .from("profile_comments")
@@ -230,12 +217,12 @@ export default async function ModerationPage({
         .map((report) => `${report.id}:${report.status}`)
         .join(",")}:${actions?.[0]?.id ?? ""}`}
       lang={lang}
-      actorRole={actor.role}
+      actorRole={actorRole}
       initialStatus={status}
       initialSearch={search}
       reports={reportRows}
       statusCounts={statusCounts}
-      accounts={searchedAccounts ?? []}
+      accounts={searchedAccounts}
       profiles={profiles ?? []}
       comments={comments ?? []}
       screenshots={screenshots}
