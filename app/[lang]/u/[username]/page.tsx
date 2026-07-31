@@ -313,7 +313,7 @@ export default async function ProfilePage({ params }: Props) {
     supabase
       .from("profiles")
       .select(
-        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,account_type,organization_tagline,youtube_username,instagram_username,twitter_username,profile_comment_scope,verifier:profiles!profiles_verified_by_fkey(username,display_name,avatar_url)",
+        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,account_type,organization_tagline,youtube_username,instagram_username,twitter_username,profile_comment_scope,verifier:verified_by(username,display_name,avatar_url)",
       )
       .ilike("username", username)
       .maybeSingle(),
@@ -534,6 +534,13 @@ export default async function ProfilePage({ params }: Props) {
                   <VerifiedBadge
                     lang={lang}
                     verifiedAt={profile.verified_at}
+                    /* Embedded as `verifier:verified_by`, not
+                       `profiles!profiles_verified_by_fkey`. On a
+                       self-referencing table the constraint hint fails to
+                       resolve at all, and hinting the table plus the column
+                       resolves the reverse direction: the profiles this
+                       account has verified, rather than the one that verified
+                       it. */
                     verifiedBy={
                       Array.isArray(profile.verifier)
                         ? profile.verifier[0]
