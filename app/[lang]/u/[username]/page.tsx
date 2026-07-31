@@ -312,7 +312,7 @@ export default async function ProfilePage({ params }: Props) {
     supabase
       .from("profiles")
       .select(
-        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,youtube_username,instagram_username,twitter_username,profile_comment_scope",
+        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,youtube_username,instagram_username,twitter_username,profile_comment_scope",
       )
       .ilike("username", username)
       .maybeSingle(),
@@ -526,7 +526,9 @@ export default async function ProfilePage({ params }: Props) {
             <div>
               <div className="profile-verified-title">
                 <h1>{profile.display_name || `@${profile.username}`}</h1>
-                {profile.verified && <VerifiedBadge lang={lang} />}
+                {profile.verified && (
+                  <VerifiedBadge lang={lang} verifiedAt={profile.verified_at} />
+                )}
               </div>
               <div className="profile-meta-row">
                 <p className="profile-handle">

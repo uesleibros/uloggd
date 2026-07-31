@@ -5777,7 +5777,7 @@ never the tracking violet. */
 .review-history-strip > div::-webkit-scrollbar {
   display: none;
 }
-.review-history-strip > div > span[data-new],
+.review-history-strip > div > [data-new],
 .review-history-strip > div > a {
   display: flex;
   align-items: center;
@@ -5786,8 +5786,10 @@ never the tracking violet. */
   border: 1px solid var(--shell-line);
   border-radius: 8px;
 }
-.review-history-strip > div > span[data-new] {
+/* The chip is a real button now: it advances to the editor step. */
+.review-history-strip > div > [data-new] {
   gap: 6px;
+  cursor: pointer;
   padding: 0 11px;
   border-color: var(--brand-blurple);
   background: var(--brand-blurple-wash);
@@ -10195,6 +10197,105 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   font-size: 0.65625rem;
   font-weight: 550;
 }
+
+/* Both studios open on a chooser and step into the editor; this is the bar
+   that walks back, and the chooser's own footer. */
+.studio-step-bar {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--shell-line);
+  background: var(--console-inset);
+}
+.studio-step-bar > button {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 999px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.65625rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.studio-step-bar > button:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.studio-step-bar > span {
+  overflow: hidden;
+  min-width: 0;
+  color: var(--screen-white);
+  font-size: 0.71875rem;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Full-bleed inside the form, so the negative margin has to track the form's
+   padding — hard-coding the desktop value overflowed the tighter mobile
+   padding and put the horizontal scrollbar back. */
+.journey-editor .studio-step-bar {
+  margin: -20px -20px 0;
+}
+@media (max-width: 620px) {
+  .journey-studio-dialog .journey-editor .studio-step-bar {
+    margin: -10px -12px 0;
+    padding: 8px 12px;
+  }
+}
+/* Both choosers sit inside a `.social-editor-form`, so the sticky-footer and
+   button styling already applied to editor footers carries over; only the
+   primary action needs saying. */
+.studio-choose-step {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+  padding: 0;
+}
+.studio-choose-actions {
+  flex: none;
+}
+.studio-choose-actions [data-primary] {
+  background: var(--brand-blurple);
+  color: white;
+}
+.studio-choose-actions [data-primary]:hover:not(:disabled) {
+  background: var(--brand-blurple-bright);
+}
+.studio-choose-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+/* The review chooser is the whole step now, so its list gets the room. */
+/* As its own step the strip owns the dialog body, so it scrolls the list
+   instead of the row, and its cards wrap into a grid. */
+.review-history-strip[data-standalone] {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 14px 16px;
+  border-bottom: 0;
+  background: transparent;
+}
+.review-history-strip[data-standalone] > div {
+  flex-wrap: wrap;
+  align-content: start;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.review-history-strip[data-standalone] > div > a {
+  flex: 1 1 220px;
+}
 .journey-manage {
   grid-column: 1 / -1;
   display: flex;
@@ -12476,11 +12577,16 @@ details.review-page-content > .markdown-body {
   .social-form-row {
     grid-template-columns: 1fr;
   }
+  /* As a bottom sheet the dialog spans the viewport, so any desktop
+     `max-width` has to be released here — leaving one pinned the sheet to the
+     left edge with a gap down the right side. */
   .social-editor-dialog {
     top: auto;
+    right: 0;
     bottom: 0;
     left: 0;
     width: 100%;
+    max-width: 100%;
     max-height: calc(100dvh - 28px);
     border-radius: 14px 14px 0 0;
     transform: none;
@@ -13508,11 +13614,52 @@ html
   line-height: 1.6;
   text-wrap: pretty;
 }
+/* Who granted the badge, stated before the explanatory copy — it is the first
+   thing someone opening this dialog is actually asking. */
+.verified-dialog-source {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  margin-top: 20px;
+  padding: 11px 13px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 11px;
+  background: var(--console-inset);
+  text-align: left;
+}
+.verified-dialog-source-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--brand-blurple-wash);
+}
+.verified-dialog-source p {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+}
+.verified-dialog-source strong {
+  color: var(--screen-muted);
+  font-size: 0.59375rem;
+  font-weight: 640;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.verified-dialog-source span {
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 620;
+}
 .verified-dialog-facts {
   display: grid;
   gap: 8px;
   width: 100%;
-  margin-top: 22px;
+  margin-top: 18px;
   text-align: left;
 }
 .verified-dialog-facts > div {
@@ -19266,11 +19413,13 @@ details.journal-session-note > .markdown-body {
   background: var(--console-hover);
   color: var(--screen-white);
 }
+/* Capped on desktop only: as a bottom sheet it spans the viewport, and a
+   leftover cap would pin it to the left edge on wider phones and tablets. */
 .screenshot-edit-dialog {
-  max-width: 560px;
+  max-width: min(560px, 100%);
 }
 .screenshot-report-dialog {
-  max-width: 440px;
+  max-width: min(440px, 100%);
 }
 .screenshot-report-trigger {
   width: 100%;

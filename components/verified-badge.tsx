@@ -28,8 +28,28 @@ export function VerifiedNameMark() {
   );
 }
 
-export function VerifiedBadge({ lang }: { lang: UiLang }) {
+/**
+ * `verifiedAt` is the moment moderation granted the badge. The moderator who
+ * granted it is stored too (`profiles.verified_by`), but naming an individual
+ * staff member on every verified profile is not the same thing as naming a
+ * verifying organisation — uloggd is the authority here, so uloggd is the
+ * source shown.
+ */
+export function VerifiedBadge({
+  lang,
+  verifiedAt,
+}: {
+  lang: UiLang;
+  verifiedAt?: string | null;
+}) {
   const t = uiText(lang);
+  const grantedOn = verifiedAt
+    ? new Intl.DateTimeFormat(lang, {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(new Date(verifiedAt))
+    : null;
 
   return (
     <Dialog.Root>
@@ -73,6 +93,21 @@ export function VerifiedBadge({ lang }: { lang: UiLang }) {
               "uloggd confirmó que esta cuenta representa a la persona, marca u organización indicada en el perfil.",
             )}
           </Dialog.Description>
+
+          <div className="verified-dialog-source">
+            <span className="verified-dialog-source-mark" aria-hidden>
+              <VerifiedMark size={20} />
+            </span>
+            <p>
+              <strong>
+                {tri(lang, "Verificado por", "Verified by", "Verificado por")}
+              </strong>
+              <span>
+                uloggd
+                {grantedOn ? ` · ${grantedOn}` : ""}
+              </span>
+            </p>
+          </div>
 
           <div className="verified-dialog-facts">
             <div>

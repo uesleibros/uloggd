@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import * as Dialog from "@/components/ui/dialog";
 import {
   ArrowLeft,
+  ArrowRight,
   BookOpen,
   CalendarDays,
   CalendarPlus,
@@ -147,6 +148,13 @@ export function GameLogActions({
     },
     [],
   );
+  /**
+   * Both studios open on a chooser and only then show the editor. Stacking the
+   * full list and the editor in one scroll made the dialog long enough that the
+   * form was off-screen, and it got worse with every journey or review added.
+   * `step` is what "Trocar" walks back to.
+   */
+  const [step, setStep] = useState<"choose" | "work">("choose");
   // A day is a list of entries now, so opening one lands on the day sheet;
   // the single-entry editor is a second step from there.
   const [openDay, setOpenDay] = useState<string | null>(null);
@@ -266,6 +274,7 @@ export function GameLogActions({
       setSelectedJourney(created.id);
       setNaming(null);
       setNamingTitle("");
+      setStep("work");
       router.refresh();
     }
     setPending(false);
@@ -316,6 +325,7 @@ export function GameLogActions({
     setSelectedJourney(fallback);
     setJourneyDeleting(false);
     setPending(false);
+    setStep("choose");
     router.refresh();
   }
 
@@ -564,6 +574,7 @@ export function GameLogActions({
   function openMode(nextMode: Mode) {
     setError(null);
     setSuccess(null);
+    setStep("choose");
     setOpenDay(null);
     setDayEditor(null);
     setNaming(null);
@@ -672,9 +683,9 @@ export function GameLogActions({
                 <X size={19} />
               </Dialog.Close>
             </header>
-            {mode === "review" && (
-              <>
-                <section className="review-history-strip">
+            {mode === "review" && step === "choose" && (
+              <div className="social-editor-form studio-choose-step">
+                <section className="review-history-strip" data-standalone>
                   <header>
                     <div>
                       <strong>
@@ -697,10 +708,15 @@ export function GameLogActions({
                     <span>{reviews.length}</span>
                   </header>
                   <div role="list">
-                    <span data-new role="listitem">
+                    <button
+                      type="button"
+                      data-new
+                      role="listitem"
+                      onClick={() => setStep("work")}
+                    >
                       <Plus size={12} />
                       {tri(lang, "Nova", "New", "Nueva")}
-                    </span>
+                    </button>
                     {reviews.map((review) => {
                       const score = reviewScore(review);
                       return (
@@ -746,6 +762,40 @@ export function GameLogActions({
                     })}
                   </div>
                 </section>
+                <footer className="studio-choose-actions">
+                  <Dialog.Close type="button">{t.cancel}</Dialog.Close>
+                  <button
+                    type="button"
+                    data-primary
+                    onClick={() => setStep("work")}
+                  >
+                    <Plus size={14} />
+                    {tri(
+                      lang,
+                      "Escrever nova avaliação",
+                      "Write a new review",
+                      "Escribir nueva reseña",
+                    )}
+                  </button>
+                </footer>
+              </div>
+            )}
+            {mode === "review" && step === "work" && (
+              <>
+                <div className="studio-step-bar">
+                  <button type="button" onClick={() => setStep("choose")}>
+                    <ArrowLeft size={14} />
+                    {tri(
+                      lang,
+                      "Trocar avaliação",
+                      "Switch review",
+                      "Cambiar reseña",
+                    )}
+                  </button>
+                  <span>
+                    {tri(lang, "Nova avaliação", "New review", "Nueva reseña")}
+                  </span>
+                </div>
                 <ReviewStudioForm
                   lang={lang}
                   platforms={platforms}
@@ -780,296 +830,338 @@ export function GameLogActions({
                 onCancel={() => setOpen(false)}
               />
             )}
-            {mode === "diary" && !openDay && !dayEditor && (
-              <div className="social-editor-form journey-editor">
-                {/* Mirrors the review history strip: every journey for this
+            {mode === "diary" &&
+              step === "choose" &&
+              !openDay &&
+              !dayEditor && (
+                <div className="social-editor-form journey-editor">
+                  {/* Mirrors the review history strip: every journey for this
                     game is listed with its own size, selected in place, and
                     deleted from its own row — the old pill row scrolled the
                     titles off screen and hid delete behind a selection. */}
-                <section
-                  className="journey-history-strip"
-                  aria-busy={pending || undefined}
-                >
-                  <header>
-                    <div>
-                      <strong>
-                        {tri(
-                          lang,
-                          "Suas jornadas",
-                          "Your journeys",
-                          "Tus recorridos",
-                        )}
-                      </strong>
-                      <small>
-                        {tri(
-                          lang,
-                          "Cada jornada é uma passagem pelo jogo.",
-                          "Each journey is one playthrough.",
-                          "Cada recorrido es una partida.",
-                        )}
-                      </small>
-                    </div>
-                    <span>{journeyList.length}</span>
-                  </header>
-                  <div role="list">
-                    <button
-                      type="button"
-                      data-new
-                      role="listitem"
-                      disabled={pending}
-                      data-active={naming === "create" || undefined}
-                      onClick={() => {
-                        setNaming("create");
-                        setNamingTitle("");
-                        setJourneyArmed(false);
-                      }}
-                    >
-                      <Plus size={12} />
-                      {tri(lang, "Nova", "New", "Nueva")}
-                    </button>
-                    {journeyList.map((journey) => {
-                      const count = sessions.filter(
-                        (session) => session.journeyId === journey.id,
-                      ).length;
-                      const active = selectedJourney === journey.id;
-                      return (
+                  <section
+                    className="journey-history-strip"
+                    aria-busy={pending || undefined}
+                  >
+                    <header>
+                      <div>
+                        <strong>
+                          {tri(
+                            lang,
+                            "Suas jornadas",
+                            "Your journeys",
+                            "Tus recorridos",
+                          )}
+                        </strong>
+                        <small>
+                          {tri(
+                            lang,
+                            "Cada jornada é uma passagem pelo jogo.",
+                            "Each journey is one playthrough.",
+                            "Cada recorrido es una partida.",
+                          )}
+                        </small>
+                      </div>
+                      <span>{journeyList.length}</span>
+                    </header>
+                    <div role="list">
+                      <button
+                        type="button"
+                        data-new
+                        role="listitem"
+                        disabled={pending}
+                        data-active={naming === "create" || undefined}
+                        onClick={() => {
+                          setNaming("create");
+                          setNamingTitle("");
+                          setJourneyArmed(false);
+                        }}
+                      >
+                        <Plus size={12} />
+                        {tri(lang, "Nova", "New", "Nueva")}
+                      </button>
+                      {journeyList.map((journey) => {
+                        const count = sessions.filter(
+                          (session) => session.journeyId === journey.id,
+                        ).length;
+                        const active = selectedJourney === journey.id;
+                        return (
+                          <div
+                            key={journey.id}
+                            role="listitem"
+                            data-active={active || undefined}
+                          >
+                            <button
+                              type="button"
+                              disabled={pending}
+                              aria-pressed={active}
+                              onClick={() => {
+                                setSelectedJourney(journey.id);
+                                setNaming(null);
+                                setJourneyArmed(false);
+                                setJourneyDeleting(false);
+                                setStep("work");
+                              }}
+                            >
+                              <Map size={13} aria-hidden />
+                              <span>
+                                <strong>{journey.title}</strong>
+                                <small>
+                                  {tri(
+                                    lang,
+                                    `${count} ${count === 1 ? "registro" : "registros"}`,
+                                    `${count} ${count === 1 ? "entry" : "entries"}`,
+                                    `${count} ${count === 1 ? "registro" : "registros"}`,
+                                  )}
+                                </small>
+                              </span>
+                              {active && <Check size={13} aria-hidden />}
+                            </button>
+                            <button
+                              type="button"
+                              data-delete
+                              disabled={pending}
+                              data-armed={(active && journeyArmed) || undefined}
+                              aria-busy={active && journeyDeleting}
+                              aria-label={tri(
+                                lang,
+                                `Excluir ${journey.title}`,
+                                `Delete ${journey.title}`,
+                                `Eliminar ${journey.title}`,
+                              )}
+                              onClick={() => {
+                                if (!active) {
+                                  setSelectedJourney(journey.id);
+                                  setJourneyArmed(false);
+                                  setJourneyDeleting(false);
+                                  return;
+                                }
+                                void deleteJourney();
+                              }}
+                            >
+                              {active && journeyDeleting ? (
+                                <LoaderCircle
+                                  className="spin"
+                                  size={13}
+                                  aria-hidden
+                                />
+                              ) : (
+                                <Trash2 size={13} aria-hidden />
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {hasLoose && (
                         <div
-                          key={journey.id}
                           role="listitem"
-                          data-active={active || undefined}
+                          data-active={selectedJourney === "loose" || undefined}
                         >
                           <button
                             type="button"
                             disabled={pending}
-                            aria-pressed={active}
+                            aria-pressed={selectedJourney === "loose"}
                             onClick={() => {
-                              setSelectedJourney(journey.id);
+                              setSelectedJourney("loose");
                               setNaming(null);
                               setJourneyArmed(false);
                               setJourneyDeleting(false);
+                              setStep("work");
                             }}
                           >
-                            <Map size={13} aria-hidden />
+                            <CalendarDays size={13} aria-hidden />
                             <span>
-                              <strong>{journey.title}</strong>
-                              <small>
+                              <strong>
                                 {tri(
                                   lang,
-                                  `${count} ${count === 1 ? "registro" : "registros"}`,
-                                  `${count} ${count === 1 ? "entry" : "entries"}`,
-                                  `${count} ${count === 1 ? "registro" : "registros"}`,
+                                  "Sessões avulsas",
+                                  "Loose sessions",
+                                  "Sesiones sueltas",
                                 )}
+                              </strong>
+                              <small>
+                                {
+                                  sessions.filter(
+                                    (session) => !session.journeyId,
+                                  ).length
+                                }
                               </small>
                             </span>
-                            {active && <Check size={13} aria-hidden />}
-                          </button>
-                          <button
-                            type="button"
-                            data-delete
-                            disabled={pending}
-                            data-armed={(active && journeyArmed) || undefined}
-                            aria-busy={active && journeyDeleting}
-                            aria-label={tri(
-                              lang,
-                              `Excluir ${journey.title}`,
-                              `Delete ${journey.title}`,
-                              `Eliminar ${journey.title}`,
-                            )}
-                            onClick={() => {
-                              if (!active) {
-                                setSelectedJourney(journey.id);
-                                setJourneyArmed(false);
-                                setJourneyDeleting(false);
-                                return;
-                              }
-                              void deleteJourney();
-                            }}
-                          >
-                            {active && journeyDeleting ? (
-                              <LoaderCircle
-                                className="spin"
-                                size={13}
-                                aria-hidden
-                              />
-                            ) : (
-                              <Trash2 size={13} aria-hidden />
+                            {selectedJourney === "loose" && (
+                              <Check size={13} aria-hidden />
                             )}
                           </button>
                         </div>
-                      );
-                    })}
-                    {hasLoose && (
-                      <div
-                        role="listitem"
-                        data-active={selectedJourney === "loose" || undefined}
-                      >
-                        <button
-                          type="button"
-                          disabled={pending}
-                          aria-pressed={selectedJourney === "loose"}
-                          onClick={() => {
-                            setSelectedJourney("loose");
-                            setNaming(null);
-                            setJourneyArmed(false);
-                            setJourneyDeleting(false);
-                          }}
-                        >
-                          <CalendarDays size={13} aria-hidden />
-                          <span>
-                            <strong>
-                              {tri(
-                                lang,
-                                "Sessões avulsas",
-                                "Loose sessions",
-                                "Sesiones sueltas",
-                              )}
-                            </strong>
-                            <small>
-                              {
-                                sessions.filter((session) => !session.journeyId)
-                                  .length
-                              }
-                            </small>
-                          </span>
-                          {selectedJourney === "loose" && (
-                            <Check size={13} aria-hidden />
-                          )}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  {journeyArmed && activeJourney && (
-                    <p className="journey-history-warning" role="status">
-                      {tri(
-                        lang,
-                        `Tocar de novo exclui “${activeJourney.title}” e todos os seus registros.`,
-                        `Tap again to delete “${activeJourney.title}” and all its entries.`,
-                        `Toca otra vez para eliminar “${activeJourney.title}” y todos sus registros.`,
-                      )}
-                    </p>
-                  )}
-                </section>
-                {activeJourney && naming === null && (
-                  <div className="journey-manage">
-                    {activeJourney.publicId && (
-                      <Link
-                        href={`/${lang}/journal/${activeJourney.publicId}`}
-                        onClick={() => setOpen(false)}
-                      >
-                        <Map size={12} />{" "}
-                        {tri(
-                          lang,
-                          "Visualizar jornada",
-                          "View journey",
-                          "Ver recorrido",
-                        )}
-                      </Link>
-                    )}
-                    {/* Delete lives on the journey's own row in the strip
-                        above; repeating it here made the selected journey the
-                        only one that could be removed. */}
-                    <button
-                      type="button"
-                      disabled={pending}
-                      onClick={() => {
-                        setNaming("rename");
-                        setNamingTitle(activeJourney.title);
-                      }}
-                    >
-                      <Pencil size={12} />{" "}
-                      {tri(lang, "Renomear", "Rename", "Renombrar")}
-                    </button>
-                  </div>
-                )}
-                {namingOpen && (
-                  <div className="journey-naming">
-                    <span>
-                      {naming === "rename"
-                        ? tri(
-                            lang,
-                            "Renomear jornada",
-                            "Rename journey",
-                            "Renombrar recorrido",
-                          )
-                        : journeyList.length
-                          ? tri(
-                              lang,
-                              `Nova jornada de ${game.name}`,
-                              `New ${game.name} journey`,
-                              `Nuevo recorrido de ${game.name}`,
-                            )
-                          : tri(
-                              lang,
-                              "Dê um nome à sua jornada",
-                              "Name your journey",
-                              "Ponle nombre a tu recorrido",
-                            )}
-                    </span>
-                    <div>
-                      <input
-                        value={namingTitle}
-                        maxLength={80}
-                        autoFocus
-                        disabled={pending}
-                        placeholder={tri(
-                          lang,
-                          "ex: Primeira campanha, Replay 2026…",
-                          "e.g. First playthrough, 2026 replay…",
-                          "ej.: Primera campaña, Repetición 2026…",
-                        )}
-                        onChange={(event) => setNamingTitle(event.target.value)}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                            void submitJourneyName();
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        disabled={!namingTitle.trim() || pending}
-                        onClick={() => void submitJourneyName()}
-                      >
-                        {pending ? (
-                          <LoaderCircle
-                            className="spin"
-                            size={13}
-                            aria-hidden
-                          />
-                        ) : (
-                          <Check size={13} />
-                        )}
-                        {naming === "rename"
-                          ? t.save
-                          : tri(lang, "Criar", "Create", "Crear")}
-                      </button>
-                      {naming !== null && selectedJourney !== null && (
-                        <button
-                          type="button"
-                          data-quiet
-                          onClick={() => setNaming(null)}
-                        >
-                          {t.cancel}
-                        </button>
                       )}
                     </div>
-                    {naming !== "rename" && (
-                      <p>
+                    {journeyArmed && activeJourney && (
+                      <p className="journey-history-warning" role="status">
                         {tri(
                           lang,
-                          "Cada jornada é uma passagem pelo jogo — você pode criar quantas quiser e registrar as sessões de cada uma.",
-                          "Each journey is one playthrough — create as many as you want and log each one's sessions.",
-                          "Cada recorrido es una partida completa: crea los que quieras y registra las sesiones de cada uno.",
+                          `Tocar de novo exclui “${activeJourney.title}” e todos os seus registros.`,
+                          `Tap again to delete “${activeJourney.title}” and all its entries.`,
+                          `Toca otra vez para eliminar “${activeJourney.title}” y todos sus registros.`,
                         )}
                       </p>
                     )}
+                  </section>
+                  {namingOpen && (
+                    <div className="journey-naming">
+                      <span>
+                        {naming === "rename"
+                          ? tri(
+                              lang,
+                              "Renomear jornada",
+                              "Rename journey",
+                              "Renombrar recorrido",
+                            )
+                          : journeyList.length
+                            ? tri(
+                                lang,
+                                `Nova jornada de ${game.name}`,
+                                `New ${game.name} journey`,
+                                `Nuevo recorrido de ${game.name}`,
+                              )
+                            : tri(
+                                lang,
+                                "Dê um nome à sua jornada",
+                                "Name your journey",
+                                "Ponle nombre a tu recorrido",
+                              )}
+                      </span>
+                      <div>
+                        <input
+                          value={namingTitle}
+                          maxLength={80}
+                          autoFocus
+                          disabled={pending}
+                          placeholder={tri(
+                            lang,
+                            "ex: Primeira campanha, Replay 2026…",
+                            "e.g. First playthrough, 2026 replay…",
+                            "ej.: Primera campaña, Repetición 2026…",
+                          )}
+                          onChange={(event) =>
+                            setNamingTitle(event.target.value)
+                          }
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              void submitJourneyName();
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          disabled={!namingTitle.trim() || pending}
+                          onClick={() => void submitJourneyName()}
+                        >
+                          {pending ? (
+                            <LoaderCircle
+                              className="spin"
+                              size={13}
+                              aria-hidden
+                            />
+                          ) : (
+                            <Check size={13} />
+                          )}
+                          {naming === "rename"
+                            ? t.save
+                            : tri(lang, "Criar", "Create", "Crear")}
+                        </button>
+                        {naming !== null && selectedJourney !== null && (
+                          <button
+                            type="button"
+                            data-quiet
+                            onClick={() => setNaming(null)}
+                          >
+                            {t.cancel}
+                          </button>
+                        )}
+                      </div>
+                      {naming !== "rename" && (
+                        <p>
+                          {tri(
+                            lang,
+                            "Cada jornada é uma passagem pelo jogo — você pode criar quantas quiser e registrar as sessões de cada uma.",
+                            "Each journey is one playthrough — create as many as you want and log each one's sessions.",
+                            "Cada recorrido es una partida completa: crea los que quieras y registra las sesiones de cada uno.",
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  <footer className="studio-choose-actions">
+                    <Dialog.Close type="button" disabled={pending}>
+                      {t.cancel}
+                    </Dialog.Close>
+                    <button
+                      type="button"
+                      data-primary
+                      disabled={pending || selectedJourney === null}
+                      onClick={() => setStep("work")}
+                    >
+                      {tri(
+                        lang,
+                        "Abrir o diário",
+                        "Open the journal",
+                        "Abrir el diario",
+                      )}
+                      <ArrowRight size={14} />
+                    </button>
+                  </footer>
+                </div>
+              )}
+            {mode === "diary" &&
+              step === "work" &&
+              !openDay &&
+              !dayEditor &&
+              selectedJourney !== null && (
+                <div className="social-editor-form journey-editor">
+                  <div className="studio-step-bar">
+                    <button type="button" onClick={() => setStep("choose")}>
+                      <ArrowLeft size={14} />
+                      {tri(
+                        lang,
+                        "Trocar jornada",
+                        "Switch journey",
+                        "Cambiar recorrido",
+                      )}
+                    </button>
+                    <span>{journeyLabel}</span>
                   </div>
-                )}
-                {/* Naming a *new* journey hides the calendar: it belongs to the
-                    journey being replaced, and leaving it up buried the input
-                    far enough down the dialog that "New journey" read as a
-                    dead button. */}
-                {selectedJourney !== null && naming !== "create" && (
+                  {activeJourney && naming === null && (
+                    <div className="journey-manage">
+                      {activeJourney.publicId && (
+                        <Link
+                          href={`/${lang}/journal/${activeJourney.publicId}`}
+                          onClick={() => setOpen(false)}
+                        >
+                          <Map size={12} />{" "}
+                          {tri(
+                            lang,
+                            "Visualizar jornada",
+                            "View journey",
+                            "Ver recorrido",
+                          )}
+                        </Link>
+                      )}
+                      {/* Delete lives on the journey's own row in the strip
+                        above; repeating it here made the selected journey the
+                        only one that could be removed. */}
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => {
+                          setNaming("rename");
+                          setNamingTitle(activeJourney.title);
+                        }}
+                      >
+                        <Pencil size={12} />{" "}
+                        {tri(lang, "Renomear", "Rename", "Renombrar")}
+                      </button>
+                    </div>
+                  )}
                   <div className="journey-editor-workspace">
                     <div className="journey-editor-summary">
                       <section className="journey-overview">
@@ -1186,19 +1278,18 @@ export function GameLogActions({
                       onBulkRemove={bulkRemove}
                     />
                   </div>
-                )}
-                {error && (
-                  <p className="social-form-error" role="alert">
-                    {error}
-                  </p>
-                )}
-                <footer>
-                  <Dialog.Close type="button" disabled={pending}>
-                    {tri(lang, "Concluído", "Done", "Hecho")}
-                  </Dialog.Close>
-                </footer>
-              </div>
-            )}
+                  {error && (
+                    <p className="social-form-error" role="alert">
+                      {error}
+                    </p>
+                  )}
+                  <footer>
+                    <Dialog.Close type="button" disabled={pending}>
+                      {tri(lang, "Concluído", "Done", "Hecho")}
+                    </Dialog.Close>
+                  </footer>
+                </div>
+              )}
             {mode === "diary" && openDay && !dayEditor && (
               <JourneyDaySheet
                 key={openDay}
