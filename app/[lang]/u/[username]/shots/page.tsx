@@ -2,14 +2,23 @@ import Image from "next/image";
 import Link from "next/link";
 import { EyeOff, Images } from "lucide-react";
 import { notFound } from "next/navigation";
+import { PageLinks } from "@/components/page-links";
 import { getGamesByIds } from "@/lib/igdb";
 import { getSupabase } from "@/lib/supabase/auth";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../../../dictionaries";
 
-type Props = { params: Promise<{ lang: string; username: string }> };
+type Props = {
+  params: Promise<{ lang: string; username: string }>;
+  searchParams: Promise<{ page?: string }>;
+};
 
-export default async function ScreenshotGalleryPage({ params }: Props) {
+const SHOTS_PAGE_SIZE = 60;
+
+export default async function ScreenshotGalleryPage({
+  params,
+  searchParams,
+}: Props) {
   const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
   const supabase = await getSupabase();
@@ -19,14 +28,19 @@ export default async function ScreenshotGalleryPage({ params }: Props) {
     .ilike("username", username)
     .maybeSingle();
   if (!profile) notFound();
-  const { data: shots } = await supabase
+  // It used to stop at sixty with nothing to say so: an author with more
+  // screenshots simply could not reach the older ones.
+  const page = Math.max(1, Number((await searchParams).page) || 1);
+  const { data: shots, count: shotCount } = await supabase
     .from("screenshots")
     .select(
       "id,public_id,igdb_id,game_slug,storage_path,description,contains_spoilers,width,height,created_at",
+      { count: "exact" },
     )
     .eq("profile_id", profile.id)
     .order("created_at", { ascending: false })
-    .limit(60);
+    .range((page - 1) * SHOTS_PAGE_SIZE, page * SHOTS_PAGE_SIZE - 1);
+  const pageCount = Math.max(1, Math.ceil((shotCount ?? 0) / SHOTS_PAGE_SIZE));
   const [{ data: signed }, games] = await Promise.all([
     shots?.length
       ? supabase.storage.from("screenshots").createSignedUrls(
@@ -61,39 +75,57 @@ export default async function ScreenshotGalleryPage({ params }: Props) {
         </p>
       </header>
       {shots?.length ? (
-        <div className="screenshot-gallery-grid">
-          {shots.map((shot) => {
-            const url = urlByPath.get(shot.storage_path);
-            if (!url) return null;
-            const game = gameById.get(shot.igdb_id);
-            return (
-              <Link
-                href={`/${lang}/shot/${shot.public_id}`}
-                key={shot.id}
-                className="screenshot-gallery-card"
-              >
-                <span className="screenshot-gallery-media">
-                  <Image
-                    src={url}
-                    alt={shot.description || game?.name || shot.game_slug}
-                    width={shot.width}
-                    height={shot.height}
-                    sizes="(max-width: 620px) 50vw, (max-width: 1100px) 33vw, 280px"
-                    unoptimized
-                  />
-                  {shot.contains_spoilers && (
-                    <i>
-                      <EyeOff size={16} />{" "}
-                      {tri(lang, "Spoiler", "Spoiler", "Spoiler")}
-                    </i>
-                  )}
-                </span>
-                <strong>{game?.name ?? shot.game_slug}</strong>
-                {shot.description && <small>{shot.description}</small>}
-              </Link>
-            );
-          })}
-        </div>
+        <>
+          <div className="screenshot-gallery-grid">
+            {shots.map((shot) => {
+              const url = urlByPath.get(shot.storage_path);
+              if (!url) return null;
+              const game = gameById.get(shot.igdb_id);
+              return (
+                <Link
+                  href={`/${lang}/shot/${shot.public_id}`}
+                  key={shot.id}
+                  className="screenshot-gallery-card"
+                >
+                  <span className="screenshot-gallery-media">
+                    <Image
+                      src={url}
+                      alt={shot.description || game?.name || shot.game_slug}
+                      width={shot.width}
+                      height={shot.height}
+                      sizes="(max-width: 620px) 50vw, (max-width: 1100px) 33vw, 280px"
+                      unoptimized
+                    />
+                    {shot.contains_spoilers && (
+                      <i>
+                        <EyeOff size={16} />{" "}
+                        {tri(lang, "Spoiler", "Spoiler", "Spoiler")}
+                      </i>
+                    )}
+                  </span>
+                  <strong>{game?.name ?? shot.game_slug}</strong>
+                  {shot.description && <small>{shot.description}</small>}
+                </Link>
+              );
+            })}
+          </div>
+          <PageLinks
+            page={page}
+            pageCount={pageCount}
+            hrefFor={(next) =>
+              next === 1
+                ? `/${lang}/u/${profile.username}/shots`
+                : `/${lang}/u/${profile.username}/shots?page=${next}`
+            }
+            lang={lang}
+            label={tri(
+              lang,
+              "Páginas de capturas",
+              "Screenshot pages",
+              "Páginas de capturas",
+            )}
+          />
+        </>
       ) : (
         <div className="social-empty">
           <span>

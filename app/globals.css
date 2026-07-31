@@ -19122,6 +19122,44 @@ adapted to the current uloggd surface system. */
 .journal-route-map a > svg {
   color: var(--screen-muted);
 }
+/* Server-rendered page links, shared by the surfaces that page through a
+   `?page=` query string instead of the client Pagination control. */
+.page-links {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--shell-line);
+}
+.page-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.page-links a:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.page-links a[rel="next"] {
+  justify-self: end;
+}
+.page-links small {
+  color: var(--screen-muted);
+  font-size: 0.65625rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .journal-session {
   scroll-margin-top: 84px;
 }

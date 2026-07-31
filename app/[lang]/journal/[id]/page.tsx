@@ -20,6 +20,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { ActivityEntryActions } from "@/components/social/activity-entry-actions";
 import type { SocialEntry } from "@/components/social/activity-stream";
 import { JournalGallery } from "@/components/social/journal-gallery";
+import { PageLinks } from "@/components/page-links";
 import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
@@ -31,7 +32,12 @@ import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 
-type Props = { params: Promise<{ lang: string; id: string }> };
+type Props = {
+  params: Promise<{ lang: string; id: string }>;
+  searchParams: Promise<{ page?: string }>;
+};
+
+const SESSION_PAGE_SIZE = 40;
 
 const publicIdPattern = /^[23456789A-HJ-NP-Za-km-z]{10}$/;
 const uuidPattern = /^[0-9a-f-]{36}$/i;
@@ -227,7 +233,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function JournalPage({ params }: Props) {
+export default async function JournalPage({ params, searchParams }: Props) {
   const { lang, id } = await params;
   if (!hasLocale(lang) || !journeyKey(id)) notFound();
   const [record, user] = await Promise.all([
@@ -246,25 +252,42 @@ export default async function JournalPage({ params }: Props) {
   if (!profile?.username) notFound();
 
   const supabase = await getSupabase();
-  const [games, sessionResult, reviewResult] = await Promise.all([
-    getGamesByIds([journey.igdb_id]),
-    supabase
-      .from("diary_entries")
-      .select(
-        "id,public_id,profile_id,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at",
-      )
-      .eq("journey_id", journey.id)
-      .order("played_on", { ascending: true })
-      // Within a day, the clock decides; untimed entries fall in behind them.
-      .order("started_at", { ascending: true, nullsFirst: false })
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("reviews")
-      .select("public_id,title,rating,rating_mode,recommended,created_at")
-      .eq("journey_id", journey.id)
-      .order("created_at", { ascending: false })
-      .limit(3),
-  ]);
+  const page = Math.max(1, Number((await searchParams).page) || 1);
+  // Two reads instead of one. The totals, the period and the day numbering all
+  // need every entry, but they only need three columns; the timeline needs the
+  // whole row plus a gallery per entry, and a long journey now runs to hundreds
+  // of entries with up to twelve images each.
+  const [games, summaryResult, sessionResult, reviewResult] = await Promise.all(
+    [
+      getGamesByIds([journey.igdb_id]),
+      supabase
+        .from("diary_entries")
+        .select("played_on,ended_on,minutes,visibility,updated_at")
+        .eq("journey_id", journey.id)
+        .order("played_on", { ascending: true }),
+      supabase
+        .from("diary_entries")
+        .select(
+          "id,public_id,profile_id,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at",
+        )
+        .eq("journey_id", journey.id)
+        .order("played_on", { ascending: true })
+        // Within a day, the clock decides; untimed entries fall in behind them.
+        .order("started_at", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: true })
+        .range((page - 1) * SESSION_PAGE_SIZE, page * SESSION_PAGE_SIZE - 1),
+      supabase
+        .from("reviews")
+        .select("public_id,title,rating,rating_mode,recommended,created_at")
+        .eq("journey_id", journey.id)
+        .order("created_at", { ascending: false })
+        .limit(3),
+    ],
+  );
+  if (summaryResult.error)
+    throw new Error(
+      `Journal summary failed (${summaryResult.error.code || "unknown"})`,
+    );
   if (sessionResult.error)
     throw new Error(
       `Journal sessions failed (${sessionResult.error.code || "unknown"})`,
@@ -273,27 +296,36 @@ export default async function JournalPage({ params }: Props) {
     throw new Error(
       `Journal reviews failed (${reviewResult.error.code || "unknown"})`,
     );
-  const sessions = sessionResult.data;
   const reviews = reviewResult.data;
+  const game = games[0] ?? null;
+  // Every entry, three columns: what the header and the day numbering need.
+  const allSessions = summaryResult.data ?? [];
+  // One page of full rows: what the timeline renders.
+  const visibleSessions = sessionResult.data ?? [];
   const imagesByEntry = await getJournalImages(
     supabase,
-    (sessions ?? []).map((session) => session.id),
+    visibleSessions.map((session) => session.id),
   );
-  const game = games[0] ?? null;
-  const visibleSessions = sessions ?? [];
-  const publicSessions = visibleSessions.filter(
+  const publicSessions = allSessions.filter(
     (session) => session.visibility === "PUBLIC",
   );
-  const totalMinutes = visibleSessions.reduce(
+  const totalMinutes = allSessions.reduce(
     (total, session) => total + (session.minutes ?? 0),
     0,
   );
-  const totalDays = distinctPlayedDays(visibleSessions);
-  const firstSession = visibleSessions[0] ?? null;
-  const lastSession = visibleSessions.at(-1) ?? null;
-  // A plain record, not a Map: `Map` is the lucide journey icon in this file.
+  const totalDays = distinctPlayedDays(allSessions);
+  const sessionTotal = allSessions.length;
+  const pageCount = Math.max(1, Math.ceil(sessionTotal / SESSION_PAGE_SIZE));
+  const journeyPageHref = (next: number) =>
+    next === 1
+      ? `/${lang}/journal/${journey.public_id}`
+      : `/${lang}/journal/${journey.public_id}?page=${next}`;
+  const firstSession = allSessions[0] ?? null;
+  const lastSession = allSessions.at(-1) ?? null;
+  // Numbered across the whole journey, not the page: day 3 must stay day 3 on
+  // page two. A plain record, not a Map, because `Map` is the lucide icon here.
   const dayNumbers: Record<string, number> = {};
-  for (const session of visibleSessions)
+  for (const session of allSessions)
     if (!(session.played_on in dayNumbers))
       dayNumbers[session.played_on] = Object.keys(dayNumbers).length + 1;
   const isOwner = user?.id === journey.profile_id;
@@ -527,8 +559,15 @@ export default async function JournalPage({ params }: Props) {
                   // days rather than rows: repeating the same date down three
                   // consecutive cards read as duplicated sessions.
                   const previous = visibleSessions[index - 1];
-                  const continuesDay =
-                    previous?.played_on === session.played_on;
+                  // The first row of a page has no predecessor here, so a day
+                  // split across the page boundary would restate its date and
+                  // its number. The whole-journey day map settles it: if the
+                  // page starts mid-day, that row continues one.
+                  const continuesDay = previous
+                    ? previous.played_on === session.played_on
+                    : page > 1 &&
+                      allSessions[(page - 1) * SESSION_PAGE_SIZE - 1]
+                        ?.played_on === session.played_on;
                   const activityEntry: SocialEntry = {
                     id: session.id,
                     publicId: session.public_id,
@@ -668,6 +707,19 @@ export default async function JournalPage({ params }: Props) {
                     </article>
                   );
                 })}
+                <PageLinks
+                  page={page}
+                  pageCount={pageCount}
+                  hrefFor={journeyPageHref}
+                  lang={lang}
+                  label={tri(
+                    lang,
+                    "Páginas da jornada",
+                    "Journey pages",
+                    "Páginas del recorrido",
+                  )}
+                  className="journal-timeline-pages"
+                />
               </div>
             ) : (
               <div className="journal-page-empty">
